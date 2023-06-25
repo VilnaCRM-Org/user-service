@@ -1,0 +1,24 @@
+name: load testing
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+
+      - name: Install Artillery
+        run: npm install -g artillery@latest
+
+      - name: Execute load tests
+        run: TARGET_URL=${{ vars.WEBSITE_URL }} artillery run artillery/*.yml
