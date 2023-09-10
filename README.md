@@ -1,12 +1,10 @@
 [![SWUbanner](./public/supportUkraine.svg)](https://supportukrainenow.org/)
 
-# template for modern JavaScript applications
+# Template for modern SSR applications
 
-![Latest Stable Version](https://poser.pugx.org/VilnaCRM-Org/frontend-ssr-template/v/stable.svg)
-[![Test status](https://github.com/VilnaCRM-Org/frontend-ssr-template/workflows/Tests/badge.svg)](https://github.com/VilnaCRM-Org/frontend-ssr-template/actions)
-[![codecov](https://codecov.io/gh/VilnaCRM-Org/frontend-ssr-template/branch/main/graph/badge.svg?token=J3SGCHIFD5)](https://codecov.io/gh/VilnaCRM-Org/frontend-ssr-template)
-[![CodeScene Code Health](https://codescene.io/projects/39799/status-badges/code-health)](https://codescene.io/projects/39799)
-[![CodeScene System Mastery](https://codescene.io/projects/39799/status-badges/system-mastery)](https://codescene.io/projects/39799)
+[![CodeScene Code Health](https://codescene.io/projects/43861/status-badges/code-health)](https://codescene.io/projects/43861)
+[![CodeScene System Mastery](https://codescene.io/projects/43861/status-badges/system-mastery)](https://codescene.io/projects/43861)
+[![codecov](https://codecov.io/gh/VilnaCRM-Org/frontend-ssr-template/graph/badge.svg?token=MPFDUSMZ2I)](https://codecov.io/gh/VilnaCRM-Org/frontend-ssr-template)
 
 ## Possibilities
 
@@ -73,8 +71,6 @@ and before you ask a question,
 ## Tests
 
 [Tests](https://github.com/VilnaCRM-Org/frontend-ssr-template/actions)
-
-[![Test status](https://github.com/VilnaCRM-Org/frontend-ssr-template/workflows/Tests/badge.svg)](https://github.com/VilnaCRM-Org/frontend-ssr-template/actions)
 
 If this isn't passing, is there something you can do to help?
 

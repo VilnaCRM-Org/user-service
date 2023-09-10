@@ -17,37 +17,14 @@ jobs:
         with:
           node-version: ${{ vars.NODE_VERSION }}
 
-      - name: Cache pnpm dependencies
-        id: cache-pnpm-dependencies
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-dependencies-
-
-      - name: Cache pnpm build
-        id: cache-pnpm-build
-        uses: actions/cache@v3
-        with:
-          path: .next
-          key: ${{ runner.os }}-next-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-next-
-
       - name: Install pnpm
         run: npm install -g pnpm
 
       - name: Install dependencies
         run: pnpm i --frozen-lockfile
-        if: |
-          steps.cache-pnpm-dependencies.outputs.cache-hit != 'true' ||
-          steps.cache-pnpm-packages.outputs.cache-hit != 'true'
 
       - name: Build
         run: pnpm run build
-        if: |
-          steps.cache-pnpm-build.outputs.cache-hit != 'true'
 
       - name: Cypress run
         uses: cypress-io/github-action@v5

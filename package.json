@@ -12,7 +12,7 @@
     "generate-ts-doc": "api-extractor run --local --verbose",
     "lint:next": "next lint",
     "lint:tsc": "tsc",
-    "lint:md": "markdownlint **/*.md",
+    "lint:md": "markdownlint -i CHANGELOG.md **/*.md",
     "test:e2e": "cypress run --headless --browser chrome",
     "test:e2e-local": "cypress open",
     "test:unit": "jest --verbose",

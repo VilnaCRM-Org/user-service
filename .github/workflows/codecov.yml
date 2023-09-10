@@ -1,0 +1,44 @@
+name: codecov
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  codecov:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+
+      - name: Cache pnpm dependencies
+        id: cache-pnpm-dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-dependencies-
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm i --frozen-lockfile
+        if: |
+          steps.cache-pnpm-dependencies.outputs.cache-hit != 'true' ||
+          steps.cache-pnpm-packages.outputs.cache-hit != 'true'
+
+      - name: Run unit tests
+        run: pnpm run test:unit
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
