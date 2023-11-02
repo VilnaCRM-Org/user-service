@@ -1,0 +1,19 @@
+config:
+  target: $TARGET_URL
+  phases:
+    - duration: 10
+      arrivalRate: 10
+  environments:
+    default:
+      TARGET_URL: http://example.com
+
+scenarios:
+  - name: "Emit an event"
+    engine: "socketio"
+    flow:
+      - emit:
+          channel: "echo"
+          data: "Hello from Artillery"
+          response:
+            channel: "echoResponse"
+            data: "Hello from Artillery"

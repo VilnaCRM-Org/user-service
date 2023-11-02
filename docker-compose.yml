@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  nodejs:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"

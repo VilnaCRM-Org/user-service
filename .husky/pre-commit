@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+pnpm lint:next && git diff --name-only main | grep -E "(.js$|.ts$|.tsx$)"
+pnpm lint:tsc --noEmit $(git diff --cached --name-only | grep '\.ts$')
+pnpm lint:markdown && git diff --name-only main | grep -E "(.md$)"
+pnpm test:unit $(git diff --cached --name-only | grep '.ts$')

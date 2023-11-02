@@ -1,0 +1,11 @@
+name: Format yaml files
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  yamlfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: norwd/fmtya@v1
