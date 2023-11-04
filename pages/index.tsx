@@ -13,7 +13,7 @@ export default function Home() {
   return (
     <div>
       {/* eslint-disable-next-line react/button-has-type */}
-      <button onClick={click}>{ t('hello') }</button>
+      <button onClick={click}>{t('hello')}</button>
     </div>
   );
 }
