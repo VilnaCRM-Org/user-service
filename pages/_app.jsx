@@ -1,8 +1,10 @@
 import '../styles/globals.css';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import * as Sentry from '@sentry/react';
 import i18n from '../i18n';
 import 'dotenv/config';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN_KEY,
@@ -17,14 +19,46 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 });
 
+const customBreakpoints = {
+  xs: 0,
+  sm: 375,
+  md: 640,
+  lg: 1024,
+  xl: 1440,
+};
+
 // eslint-disable-next-line react/prop-types
 function MyApp({ Component, pageProps }) {
+  const theme = createTheme(
+    {
+      palette: {
+        mode: 'light',
+      },
+      breakpoints: {
+        values: customBreakpoints,
+      },
+      typography: {},
+      components: {
+        MuiContainer: {
+          styleOverrides: {
+            root: {
+              '@media (min-width: 375px)': {
+                paddingLeft: '0px',
+                paddingRight: '0px',
+              },
+            },
+          },
+        },
+      },
+    });
+
   useEffect(() => {
     document.documentElement.dir = i18n.dir();
   }, []);
 
-  // eslint-disable-next-line react/jsx-props-no-spreading
-  return <Component {...pageProps} />;
+  return <ThemeProvider theme={theme}>
+    <Component {...pageProps} />
+  </ThemeProvider>;
 }
 
 export default MyApp;

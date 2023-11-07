@@ -1,19 +1,11 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import {useTranslation} from 'react-i18next';
+import {LandingComponent} from "@/features/landing";
 
 export default function Home() {
-  const { t } = useTranslation();
-
-  const click = () => {
-    setTimeout(() => {
-      console.log('done');
-    }, 2000);
-  };
+  const {t} = useTranslation();
 
   return (
-    <div>
-      {/* eslint-disable-next-line react/button-has-type */}
-      <button onClick={click}>{ t('hello') }</button>
-    </div>
+    <LandingComponent/>
   );
 }

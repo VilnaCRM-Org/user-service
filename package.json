@@ -26,6 +26,7 @@
     "@apollo/client": "^3.8.7",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.16",
     "@mui/material": "^5.14.16",
     "@sentry/node": "^7.77.0",
     "@sentry/react": "^7.77.0",
