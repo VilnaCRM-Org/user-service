@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import { Grid } from '@mui/material';
 import { Button } from '@/components/ui/Button/Button';
 import * as React from 'react';

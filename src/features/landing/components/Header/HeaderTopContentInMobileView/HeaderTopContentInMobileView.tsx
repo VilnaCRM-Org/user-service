@@ -1,8 +1,5 @@
 import * as React from 'react';
 import { Grid, IconButton } from '@mui/material';
-import {
-  HeaderActionButtons,
-} from '@/features/landing/components/Header/HeaderActionButtons/HeaderActionButtons';
 import { VilnaMainIcon } from '@/features/landing/components/Icons/VilnaMainIcon/VilnaMainIcon';
 import { CustomLink } from '@/components/ui/CustomLink/CustomLink';
 import { VilnaMenuIcon } from '@/features/landing/components/Icons/VilnaMenuIcon/VilnaMenuIcon';
