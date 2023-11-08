@@ -3,7 +3,6 @@ import React, { useEffect, useMemo } from 'react';
 import * as Sentry from '@sentry/react';
 import i18n from '../i18n';
 import 'dotenv/config';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 Sentry.init({

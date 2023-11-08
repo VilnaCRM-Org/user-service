@@ -6,13 +6,20 @@ import * as React from 'react';
 interface IHeaderDrawerActionButtonsProps {
   onSignInButtonClick: () => void;
   onTryItOutButtonClick: () => void;
+  onDrawerClose: () => void;
 }
 
 export function HeaderDrawerActionButtons({
                                             onSignInButtonClick,
                                             onTryItOutButtonClick,
+                                            onDrawerClose,
                                           }: IHeaderDrawerActionButtonsProps) {
   const { t } = useTranslation();
+
+  const handleTryItOutClickWithDrawerClose = () => {
+    onDrawerClose();
+    onTryItOutButtonClick();
+  };
 
   return (
     <Grid container justifyContent={'space-between'} flexGrow={0}
@@ -30,7 +37,7 @@ export function HeaderDrawerActionButtons({
         </Button>
       </Grid>
       <Grid item xs={6} sm={6}>
-        <Button customVariant={'light-blue'} onClick={onTryItOutButtonClick}
+        <Button customVariant={'light-blue'} onClick={handleTryItOutClickWithDrawerClose}
                 fullWidth style={{ marginLeft: '4.5px' }}>
           {t('Спробувати')}
         </Button>

@@ -11,6 +11,7 @@ interface IHeaderTopContentInMobileViewProps {
   onSignInButtonClick: () => void;
   onTryItOutButtonClick: () => void;
   onMobileViewDrawerClose: () => void;
+  onDrawerClose: () => void;
 }
 
 const logoStyle = {
@@ -24,6 +25,7 @@ export function HeaderTopContentInMobileView({
                                                onSignInButtonClick,
                                                onTryItOutButtonClick,
                                                onMobileViewDrawerClose,
+                                               onDrawerClose
                                              }: IHeaderTopContentInMobileViewProps) {
   return (
     <>
@@ -48,7 +50,7 @@ export function HeaderTopContentInMobileView({
         </IconButton>
       </Grid>
       <HeaderDrawerActionButtons onSignInButtonClick={onSignInButtonClick}
-                                 onTryItOutButtonClick={onTryItOutButtonClick} />
+                                 onTryItOutButtonClick={onTryItOutButtonClick} onDrawerClose={onDrawerClose}/>
     </>
   );
 }

@@ -48,7 +48,8 @@ export function HeaderDrawerMenu({
             }}>
         <HeaderTopContentInMobileView onSignInButtonClick={onSignInButtonClick}
                                       onTryItOutButtonClick={onTryItOutButtonClick}
-                                      onMobileViewDrawerClose={onToggleDrawer} />
+                                      onMobileViewDrawerClose={onToggleDrawer}
+                                      onDrawerClose={onToggleDrawer} />
 
         <Grid item sx={{ width: '100%' }}>
           <HeaderMobileLink href='/' linkNameText='Переваги' onClick={onToggleDrawer} />

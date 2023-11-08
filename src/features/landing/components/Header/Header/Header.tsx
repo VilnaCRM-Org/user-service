@@ -14,6 +14,9 @@ import {
 } from '@/features/landing/components/Header/HeaderActionButtons/HeaderActionButtons';
 import { HeaderDrawerMenu } from '../HeaderDrawerMenu/HeaderDrawerMenu';
 import { useState } from 'react';
+import {
+  scrollToRegistrationSection
+} from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 
 type Position =
   'sticky'
@@ -76,9 +79,7 @@ export function Header() {
   const {
     isSmallest,
     isMobile,
-    isTablet,
     isLaptop,
-    isDesktop,
   } = useScreenSize();
 
   const toggleDrawer = () => {
@@ -93,6 +94,7 @@ export function Header() {
   };
 
   const handleTryItOutButtonClick = () => {
+    scrollToRegistrationSection();
   };
 
   return (
@@ -128,7 +130,7 @@ export function Header() {
               display: (isMobile || isSmallest) ? 'inline-block' : 'none',
               justifySelf: 'flex-end',
             }}>
-            <VilnaMenuIcon isActive={false} />
+            <VilnaMenuIcon isActive={false}/>
           </IconButton>
 
           {/* Header Main Links */}

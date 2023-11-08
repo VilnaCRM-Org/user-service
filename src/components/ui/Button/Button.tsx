@@ -60,6 +60,7 @@ export function Button({
   const [isActive, setIsActive] = useState(false);
 
   const handleButtonClick = () => {
+    onClick();
   };
 
   // if by default custom variant is light blue, apply default styles
@@ -73,7 +74,7 @@ export function Button({
     fontStyle: 'normal',
     fontWeight: 500,
     lineHeight: '18px',
-    color: '#FFFFFF',
+    color: ButtonColorEnum.DEFAULT,
     outline: 'none',
     border: `1px solid ${ButtonBorderColorEnum.DEFAULT}`,
     ...style,
