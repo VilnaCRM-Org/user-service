@@ -53,6 +53,18 @@ services:
         published: ${HTTP3_PORT:-443}
         protocol: udp
 
+  database:
+    image: mariadb:latest
+    environment:
+      MYSQL_DATABASE: 'db'
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - '3306:3306'
+    volumes:
+      - db_data:/var/lib/mysql
+
 # Mercure is installed as a Caddy module, prevent the Flex recipe from installing another service
 ###> symfony/mercure-bundle ###
 ###< symfony/mercure-bundle ###
@@ -61,5 +73,6 @@ volumes:
   php_socket:
   caddy_data:
   caddy_config:
+  db_data:
 ###> symfony/mercure-bundle ###
 ###< symfony/mercure-bundle ###
