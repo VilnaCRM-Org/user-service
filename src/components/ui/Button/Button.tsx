@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { CSSProperties, useState } from 'react';
 import { ButtonProps } from '@mui/material';
 
 const DEFAULT_BUTTON_BORDER_RADIUS = '5.7rem';
@@ -41,7 +41,9 @@ interface IButtonProps extends ButtonProps {
   buttonSize?: 'big' | 'medium';
   isDisabled?: boolean;
   className?: string;
+  fullWidth?: boolean;
   onClick: () => void;
+  style?: CSSProperties;
 }
 
 export function Button({
@@ -50,6 +52,8 @@ export function Button({
                          isDisabled = false,
                          buttonSize = 'medium',
                          onClick,
+                         fullWidth,
+                         style,
                          ...props
                        }: IButtonProps) {
   const [isHovered, setIsHovered] = useState(false);
@@ -60,6 +64,7 @@ export function Button({
 
   // if by default custom variant is light blue, apply default styles
   let buttonStyle: React.CSSProperties = {
+    width: fullWidth ? '100%' : 'auto',
     backgroundColor: ButtonBackgroundEnum.DEFAULT_BLUE,
     borderRadius: DEFAULT_BUTTON_BORDER_RADIUS,
     padding: buttonSize === 'medium' ? '16px 24px' : '20px 30px',
@@ -71,6 +76,7 @@ export function Button({
     color: '#FFFFFF',
     outline: 'none',
     border: `1px solid ${ButtonBorderColorEnum.DEFAULT}`,
+    ...style,
   };
 
   let hoverStyle: React.CSSProperties = {

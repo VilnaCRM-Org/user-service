@@ -44,21 +44,22 @@ export function HeaderDrawerMenu({
               flexDirection: 'column',
               justifyContent: 'space-between',
               alignItems: 'center',
+              padding: '6px 15px 24px 15px',
             }}>
         <HeaderTopContentInMobileView onSignInButtonClick={onSignInButtonClick}
                                       onTryItOutButtonClick={onTryItOutButtonClick}
                                       onMobileViewDrawerClose={onToggleDrawer} />
 
-        <Grid item>
+        <Grid item sx={{ width: '100%' }}>
           <HeaderMobileLink href='/' linkNameText='Переваги' onClick={onToggleDrawer} />
         </Grid>
-        <Grid item>
+        <Grid item sx={{ width: '100%' }}>
           <HeaderMobileLink href='/' linkNameText='Для кого' onClick={onToggleDrawer} />
         </Grid>
-        <Grid item>
+        <Grid item sx={{ width: '100%' }}>
           <HeaderMobileLink href='/' linkNameText='Інтеграція' onClick={onToggleDrawer} />
         </Grid>
-        <Grid item>
+        <Grid item sx={{ width: '100%' }}>
           <HeaderMobileLink href='/' linkNameText='Контакти' onClick={onToggleDrawer} />
         </Grid>
       </Grid>

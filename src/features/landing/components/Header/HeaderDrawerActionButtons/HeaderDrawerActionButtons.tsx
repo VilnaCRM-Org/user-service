@@ -10,21 +10,29 @@ interface IHeaderDrawerActionButtonsProps {
 }
 
 export function HeaderDrawerActionButtons({
-                                      onSignInButtonClick,
-                                      onTryItOutButtonClick,
-                                    }: IHeaderDrawerActionButtonsProps) {
+                                            onSignInButtonClick,
+                                            onTryItOutButtonClick,
+                                          }: IHeaderDrawerActionButtonsProps) {
   const { t } = useTranslation();
 
   return (
-    <Grid container gap={'8px'} justifyContent={'flex-end'} flexGrow={0}
-          sx={{ maxWidth: '238px', md: { display: 'none' }, marginBottom: '16px'}}>
-      <Grid item>
-        <Button customVariant={'transparent-white'} onClick={onSignInButtonClick}>
+    <Grid container justifyContent={'space-between'} flexGrow={0}
+          sx={{
+            display: 'flex',
+            width: '100%',
+            maxWidth: '100%',
+            md: { display: 'none' },
+            marginBottom: '16px',
+          }}>
+      <Grid item xs={6} sm={6}>
+        <Button customVariant={'transparent-white'} onClick={onSignInButtonClick}
+                fullWidth style={{ marginRight: '4.5px' }}>
           {t('Увійти')}
         </Button>
       </Grid>
-      <Grid item>
-        <Button customVariant={'light-blue'} onClick={onTryItOutButtonClick}>
+      <Grid item xs={6} sm={6}>
+        <Button customVariant={'light-blue'} onClick={onTryItOutButtonClick}
+                fullWidth style={{ marginLeft: '4.5px' }}>
           {t('Спробувати')}
         </Button>
       </Grid>
