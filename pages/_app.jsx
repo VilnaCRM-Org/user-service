@@ -1,5 +1,5 @@
 import '../styles/globals.css';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import * as Sentry from '@sentry/react';
 import i18n from '../i18n';
 import 'dotenv/config';
