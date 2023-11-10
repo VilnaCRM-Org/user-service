@@ -44,6 +44,7 @@ RUN set -eux; \
     	zip \
     	apcu \
 		opcache \
+        pdo_mysql \
     ;
 
 ###> recipes ###

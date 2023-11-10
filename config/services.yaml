@@ -20,3 +20,11 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    _instanceof:
+        # services whose classes are instances of CustomInterface will be tagged automatically
+        App\Shared\Domain\Bus\Command\CommandHandler:
+            tags: [ 'app.command_handler' ]
+
+    App\Shared\Infrastructure\Bus\Command\InMemorySymfonyCommandBus:
+        arguments: [ !tagged app.command_handler ]

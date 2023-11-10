@@ -1,3 +1,3 @@
 controllers:
-    resource: ../src/Shared/Infrastructure/Controller/
+    resource: ../src/Controller/
     type: attribute

@@ -69,6 +69,9 @@ doctrine-migrations-migrate: ## Executes a migration to a specified version or t
 doctrine-migrations-generate: ## Generates a blank migration class
 	$(SYMFONY) d:m:g
 
+doctrine-migrations-create: ## Generates migrations from entities
+	$(DOCKER_COMPOSE) symfony console make:migration
+
 cache-clear: ## Clears and warms up the application cache for a given environment and debug mode
 	$(SYMFONY) c:c
 
