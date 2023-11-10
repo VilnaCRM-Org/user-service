@@ -1,8 +1,6 @@
 import { useEffect } from 'react';
 import { Box } from '@mui/material';
-import {
-  ABOUT_VILNA_SECTION_MAIN_BACKGROUND_SHAPE_IN_BASE64,
-} from '@/features/landing/utils/constants/constants';
+import AboutVilnaMainShape from '@/features/landing/assets/svg/AboutVilnaMainShape.svg';
 import {
   scrollToRegistrationSection,
 } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
@@ -15,7 +13,7 @@ import {
 } from '@/features/landing/components/AboutVilnaSection/AboutVilnaSecondaryImages/AboutVilnaSecondaryImages';
 
 const allSectionStyle: React.CSSProperties = {
-  backgroundImage: `url(${ABOUT_VILNA_SECTION_MAIN_BACKGROUND_SHAPE_IN_BASE64})`,
+  backgroundImage: `url(${AboutVilnaMainShape.src})`,
   backgroundRepeat: 'no-repeat',
   backgroundSize: '100% 100%',
   backgroundPosition: 'center',

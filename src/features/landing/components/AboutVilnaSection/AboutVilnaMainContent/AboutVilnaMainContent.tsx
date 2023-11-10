@@ -75,7 +75,5 @@ export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMain
         {t('Спробувати')}
       </Button>
     </Container>
-
   );
-
 }
