@@ -25,7 +25,6 @@ final readonly class SignUpCommand implements Command
         return $this->initials;
     }
 
-
     public function getPassword(): string
     {
         return $this->password;
