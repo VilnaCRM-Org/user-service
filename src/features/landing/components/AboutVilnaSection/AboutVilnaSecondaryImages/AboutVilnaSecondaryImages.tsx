@@ -1,11 +1,21 @@
-import { Box, Container } from '@mui/material';
+import { Box, Container, Grid } from '@mui/material';
 import MobileViewDummyContainerImg
   from '@/features/landing/assets/img/MobileViewDummyContainerImg.png';
 import DummyContainerImg from '@/features/landing/assets/img/DummyContainerImg.png';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import AboutVilnaSecondaryShape from '@/features/landing/assets/img/AboutVilnaSecondaryShape.png';
 
-const backgroundSvgContainerStyle: React.CSSProperties = {
+const outerContainerStyles: React.CSSProperties = {
+  maxWidth: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'flex-start',
+  alignItems: 'center',
+  height: '100%',
+  margin: '0 auto',
+};
+
+const backgroundImageContainerStyle: React.CSSProperties = {
   backgroundImage: `url(${AboutVilnaSecondaryShape.src})`,
   backgroundRepeat: 'no-repeat',
   backgroundSize: 'cover',
@@ -45,13 +55,12 @@ export function AboutVilnaSecondaryImages() {
   const { isMobile, isSmallest } = useScreenSize();
 
   return (
-    <Container sx={{
-      maxWidth: '100%',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: (isMobile || isSmallest) ? 'flex-start' : 'stretch',
-    }}>
-      <Container sx={backgroundSvgContainerStyle} />
+    <Grid item
+          sx={{
+            ...outerContainerStyles,
+            justifySelf: (isMobile || isSmallest) ? 'start' : 'stretch',
+          }}>
+      <Container sx={backgroundImageContainerStyle} />
       <Container sx={bottomContainerStyle}>
         <Box sx={{
           display: 'flex',
@@ -70,6 +79,6 @@ export function AboutVilnaSecondaryImages() {
           }
         </Box>
       </Container>
-    </Container>
+    </Grid>
   );
 }

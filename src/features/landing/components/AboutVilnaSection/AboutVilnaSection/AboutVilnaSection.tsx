@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Box } from '@mui/material';
+import { Grid } from '@mui/material';
 import AboutVilnaMainShape from '@/features/landing/assets/svg/AboutVilnaMainShape.svg';
 import {
   scrollToRegistrationSection,
@@ -22,7 +22,8 @@ const allSectionStyle: React.CSSProperties = {
   position: 'relative',
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'center',
+  justifyContent: 'flex-start',
+  gap: '58px',
   padding: '10px',
 };
 
@@ -52,7 +53,8 @@ export function AboutVilnaSection() {
   }, [isTablet, isMobile, isSmallest]);
 
   return (
-    <Box
+    <Grid
+      container
       sx={{
         ...allSectionStyle,
         ...mainBoxStylesForTablet,
@@ -62,6 +64,6 @@ export function AboutVilnaSection() {
       <AboutVilnaMainContent onTryItOutButtonClick={handleTryItOutButtonClick} />
       {/* Images Container */}
       <AboutVilnaSecondaryImages />
-    </Box>
+    </Grid>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Container, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 
 import { Button } from '@/components/ui/Button/Button';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
@@ -34,7 +34,8 @@ export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMain
   }, [isMobile, isSmallest]);
 
   return (
-    <Container
+    <Grid
+      item
       sx={{
         ...mainContentContainerStyle,
         ...mainContentContainerStylesForMobileOrLower,
@@ -74,6 +75,6 @@ export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMain
               }}>
         {t('Спробувати')}
       </Button>
-    </Container>
+    </Grid>
   );
 }
