@@ -1,6 +1,5 @@
-import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 import { Button } from '@/components/ui/Button/Button';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
@@ -14,32 +13,15 @@ const mainContentContainerStyle: React.CSSProperties = {
   flexDirection: 'column',
   alignItems: 'center',
   textAlign: 'center',
+  marginBottom: '58px',
 };
 
 export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMainContentProps) {
   const { t } = useTranslation();
   const { isMobile, isSmallest } = useScreenSize();
 
-  let mainContentContainerStylesForMobileOrLower: React.CSSProperties = {};
-
-  useEffect(() => {
-    if (isMobile || isSmallest) {
-      mainContentContainerStylesForMobileOrLower = {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        textAlign: 'left',
-      };
-    }
-  }, [isMobile, isSmallest]);
-
   return (
-    <Grid
-      item
-      sx={{
-        ...mainContentContainerStyle,
-        ...mainContentContainerStylesForMobileOrLower,
-      }}>
+    <Box sx={mainContentContainerStyle}>
       <Typography variant={'h1'}
                   sx={{
                     color: '#1A1C1E',
@@ -70,11 +52,10 @@ export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMain
       <Button onClick={onTryItOutButtonClick} customVariant={'light-blue'} buttonSize={'big'}
               style={{
                 marginTop: '16px',
-                marginBottom: (isMobile || isSmallest) ? '30px' : '0px',
                 alignSelf: (isMobile || isSmallest) ? 'flex-start' : 'center',
               }}>
         {t('Спробувати')}
       </Button>
-    </Grid>
+    </Box>
   );
 }

@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { Grid } from '@mui/material';
 import AboutVilnaMainShape from '@/features/landing/assets/svg/AboutVilnaMainShape.svg';
 import {
   scrollToRegistrationSection,
@@ -11,6 +10,7 @@ import {
 import {
   AboutVilnaSecondaryImages,
 } from '@/features/landing/components/AboutVilnaSection/AboutVilnaSecondaryImages/AboutVilnaSecondaryImages';
+import { Box } from '@mui/material';
 
 const allSectionStyle: React.CSSProperties = {
   backgroundImage: `url(${AboutVilnaMainShape.src})`,
@@ -18,24 +18,17 @@ const allSectionStyle: React.CSSProperties = {
   backgroundSize: '100% 100%',
   backgroundPosition: 'center',
   width: '100%',
-  minHeight: 'calc(1070px - 58px)', // 58px is the space between, 1070px is the default height of section
-  position: 'relative',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'flex-start',
-  gap: '58px',
   padding: '10px',
 };
 
 export function AboutVilnaSection() {
-  const { isTablet, isMobile, isSmallest } = useScreenSize();
+  const { isTablet } = useScreenSize();
 
   const handleTryItOutButtonClick = () => {
     scrollToRegistrationSection();
   };
 
   let mainBoxStylesForTablet: React.CSSProperties = {};
-  let mainBoxStylesForMobileOrLower: React.CSSProperties = {};
 
   useEffect(() => {
     if (isTablet) {
@@ -44,26 +37,18 @@ export function AboutVilnaSection() {
         marginRight: '31.7px',
       };
     }
-
-    if (isMobile || isSmallest) {
-      mainBoxStylesForMobileOrLower = {
-        minHeight: 'calc(1070px - 71px)',
-      };
-    }
-  }, [isTablet, isMobile, isSmallest]);
+  }, [isTablet]);
 
   return (
-    <Grid
-      container
+    <Box
       sx={{
         ...allSectionStyle,
         ...mainBoxStylesForTablet,
-        ...mainBoxStylesForMobileOrLower,
       }}>
       {/* Main Content (like: headings, text, button etc.) */}
       <AboutVilnaMainContent onTryItOutButtonClick={handleTryItOutButtonClick} />
       {/* Images Container */}
       <AboutVilnaSecondaryImages />
-    </Grid>
+    </Box>
   );
 }

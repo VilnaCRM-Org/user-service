@@ -1,4 +1,4 @@
-import { Box, Container, Grid } from '@mui/material';
+import { Box, Container } from '@mui/material';
 import MobileViewDummyContainerImg
   from '@/features/landing/assets/img/MobileViewDummyContainerImg.png';
 import DummyContainerImg from '@/features/landing/assets/img/DummyContainerImg.png';
@@ -6,31 +6,12 @@ import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenS
 import AboutVilnaSecondaryShape from '@/features/landing/assets/img/AboutVilnaSecondaryShape.png';
 
 const outerContainerStyles: React.CSSProperties = {
-  maxWidth: '100%',
   display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'flex-start',
-  alignItems: 'center',
-  height: '100%',
+  justifyContent: 'center',
   margin: '0 auto',
-};
-
-const backgroundImageContainerStyle: React.CSSProperties = {
-  backgroundImage: `url(${AboutVilnaSecondaryShape.src})`,
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: 'cover',
-  backgroundPosition: 'bottom',
-  position: 'absolute',
-  bottom: 0,
-  width: '100%',
-  maxWidth: '93.75%',
-  height: '493px',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'flex-end',
-  alignItems: 'center',
-  borderRadius: '48px',
-  overflow: 'hidden',
+  position: 'relative',
+  height: '551px',
+  maxWidth: '100%',
 };
 
 const crmPlaceholderImageStyle: React.CSSProperties = {
@@ -41,27 +22,44 @@ const crmPlaceholderImageStyle: React.CSSProperties = {
   objectFit: 'cover',
 };
 
-const bottomContainerStyle: React.CSSProperties = {
-  position: 'absolute',
-  bottom: 0,
+const containerWithCRMImageStyle: React.CSSProperties = {
   width: '100%',
   height: '100%',
-  maxHeight: '527px',
   display: 'flex',
   justifyContent: 'center',
+  position: 'absolute',
+  bottom: 0,
+  zIndex: '900',
+};
+
+const backgroundImageContainerStyle: React.CSSProperties = {
+  backgroundImage: `url(${AboutVilnaSecondaryShape.src})`,
+  backgroundRepeat: 'no-repeat',
+  backgroundSize: 'cover',
+  backgroundPosition: 'bottom',
+  width: '100%',
+  maxWidth: '93.75%',
+  height: '89%',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'flex-end',
+  alignItems: 'center',
+  borderRadius: '48px',
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  zIndex: '800',
 };
 
 export function AboutVilnaSecondaryImages() {
   const { isMobile, isSmallest } = useScreenSize();
 
   return (
-    <Grid item
-          sx={{
-            ...outerContainerStyles,
-            justifySelf: (isMobile || isSmallest) ? 'start' : 'stretch',
-          }}>
-      <Container sx={backgroundImageContainerStyle} />
-      <Container sx={bottomContainerStyle}>
+    <Box sx={{
+      ...outerContainerStyles,
+      justifySelf: (isMobile || isSmallest) ? 'start' : 'stretch',
+    }}>
+      <Container sx={containerWithCRMImageStyle}>
         <Box sx={{
           display: 'flex',
           justifyContent: 'center',
@@ -79,6 +77,7 @@ export function AboutVilnaSecondaryImages() {
           }
         </Box>
       </Container>
-    </Grid>
+      <Container sx={backgroundImageContainerStyle} />
+    </Box>
   );
 }
