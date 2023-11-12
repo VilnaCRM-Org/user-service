@@ -58,6 +58,7 @@ export function AboutVilnaSecondaryImages() {
     <Box sx={{
       ...outerContainerStyles,
       justifySelf: (isMobile || isSmallest) ? 'start' : 'stretch',
+      height: (isMobile || isSmallest) ? '284px' : '551px',
     }}>
       <Container sx={containerWithCRMImageStyle}>
         <Box sx={{
