@@ -18,7 +18,7 @@ const allSectionStyle: React.CSSProperties = {
   backgroundSize: '100% 100%',
   backgroundPosition: 'center',
   width: '100%',
-  padding: '10px',
+  padding: '10px 10px 56px 10px',
 };
 
 export function AboutVilnaSection() {
