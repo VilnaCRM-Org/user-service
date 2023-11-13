@@ -20,7 +20,13 @@ export function WhyWeSection() {
 
   return (
     <Container sx={{ padding: '56px 0 89px 0' }}>
-      <WhyWeSectionHeader style={{ padding: (isTablet) ? '0 32px 0 32px' : '0 0 0 0' }} />
+      <WhyWeSectionHeader
+        style={{
+          padding:
+            (isTablet) ? '0 32px 0 32px'
+              : (isMobile || isSmallest) ? '0 15px 0 15px'
+                : '0 0 0 0',
+        }} />
       <>
         {(isMobile || isSmallest) ? <WhyWeSectionSlider cardItems={cardItems} /> :
           <WhyWeSectionCardItems cardItems={cardItems} />}

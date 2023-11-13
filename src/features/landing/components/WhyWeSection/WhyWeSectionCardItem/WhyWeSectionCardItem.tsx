@@ -5,6 +5,7 @@ import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
 
 interface IWhyWeSectionItemCardItemProps {
   cardItem: IWhyWeCardItem;
+  style?: React.CSSProperties;
 }
 
 const cartItemStyle: React.CSSProperties = {
@@ -21,7 +22,7 @@ const cartItemStyle: React.CSSProperties = {
   gap: '13px',
 };
 
-export function WhyWeSectionCardItem({ cardItem }: IWhyWeSectionItemCardItemProps) {
+export function WhyWeSectionCardItem({ cardItem, style }: IWhyWeSectionItemCardItemProps) {
   const { imageSrc, title, text } = cardItem;
   const { t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
@@ -40,6 +41,7 @@ export function WhyWeSectionCardItem({ cardItem }: IWhyWeSectionItemCardItemProp
       onMouseOut={handleMouseOut}
       sx={{
         ...cartItemStyle,
+        ...style,
         boxShadow: isHovered ? '0px 8px 27px 0px rgba(49, 59, 67, 0.14)' : 'none',
         cursor: isHovered ? 'pointer' : 'default',
       }}>
