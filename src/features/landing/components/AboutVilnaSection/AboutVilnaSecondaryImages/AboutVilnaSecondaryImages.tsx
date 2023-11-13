@@ -1,9 +1,9 @@
 import { Box, Container } from '@mui/material';
 import MobileViewDummyContainerImg
-  from '@/features/landing/assets/img/MobileViewDummyContainerImg.png';
-import DummyContainerImg from '@/features/landing/assets/img/DummyContainerImg.png';
+  from '../../../../../../public/assets/img/MobileViewDummyContainerImg.png';
+import DummyContainerImg from '../../../../../../public/assets/img/DummyContainerImg.png';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import AboutVilnaSecondaryShape from '@/features/landing/assets/img/AboutVilnaSecondaryShape.png';
+import AboutVilnaSecondaryShape from '../../../../../../public/assets/img/AboutVilnaSecondaryShape.png';
 
 const outerContainerStyles: React.CSSProperties = {
   display: 'flex',
