@@ -15,6 +15,7 @@ import {
 
 const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
 
+// TODO: Change Carousel to a newer one
 export function WhyWeSectionSlider({ cardItems }: { cardItems: IWhyWeCardItem[] }) {
   const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState(0);
