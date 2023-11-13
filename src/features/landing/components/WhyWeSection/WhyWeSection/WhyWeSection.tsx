@@ -11,6 +11,17 @@ import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenS
 import { CARD_ITEMS } from '@/features/landing/utils/constants/constants';
 import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
 
+const TOOLTIP_ICONS: string[] = [
+  '/assets/img/TooltipIcons/1.png',
+  '/assets/img/TooltipIcons/2.png',
+  '/assets/img/TooltipIcons/3.png',
+  '/assets/img/TooltipIcons/4.png',
+  '/assets/img/TooltipIcons/5.png',
+  '/assets/img/TooltipIcons/6.png',
+  '/assets/img/TooltipIcons/7.png',
+  '/assets/img/TooltipIcons/8.png',
+];
+
 export function WhyWeSection() {
   const [
     cardItems,
@@ -29,7 +40,7 @@ export function WhyWeSection() {
         }} />
       <>
         {(isMobile || isSmallest) ? <WhyWeSectionSlider cardItems={cardItems} /> :
-          <WhyWeSectionCardItems cardItems={cardItems} />}
+          <WhyWeSectionCardItems cardItems={cardItems} tooltipIcons={TOOLTIP_ICONS} />}
       </>
     </Container>
   );
