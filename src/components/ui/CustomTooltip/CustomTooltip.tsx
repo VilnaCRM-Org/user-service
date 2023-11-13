@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { createStyles, Grid, Tooltip, Typography } from '@mui/material';
 import { makeStyles, Theme } from '@material-ui/core/styles';
 
-interface IWhyWeTooltipProps {
+interface ICustomTooltipProps {
   title: string;
   text: string;
   icons: string[];
@@ -30,7 +30,7 @@ const useCustomStyles = makeStyles((theme: Theme) => createStyles({
 }));
 
 
-export function WhyWeTooltip({ title, text, icons, children }: IWhyWeTooltipProps) {
+export function CustomTooltip({ title, text, icons, children }: ICustomTooltipProps) {
   const classes = useCustomStyles();
 
   const iconsJSX = useMemo(() => {
@@ -80,7 +80,6 @@ export function WhyWeTooltip({ title, text, icons, children }: IWhyWeTooltipProp
           </Grid>
         </div>
       }
-      sx={{}}
       classes={{ tooltip: classes.tooltip }}
     >
       <span>{children}</span>

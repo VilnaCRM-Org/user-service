@@ -3,7 +3,7 @@ import { Grid } from '@mui/material';
 
 import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
 import { WhyWeSectionCardItem } from '../WhyWeSectionCardItem/WhyWeSectionCardItem';
-import { WhyWeTooltip } from '@/features/landing/components/WhyWeSection/WhyWeTooltip/WhyWeTooltip';
+import { CustomTooltip } from '@/components/ui/CustomTooltip/CustomTooltip';
 
 interface IWhyWeSectionCardItemsRowProps {
   cardItems: IWhyWeCardItem[];
@@ -25,11 +25,11 @@ export function WhyWeSectionCardItemsRow({
       {
         cardItems.map(cardItem => {
           return <Grid item key={cardItem.id} xs={4}>
-            <WhyWeTooltip title={'Regular services'}
-                          text={'Integrate in a few clicks'}
-                          icons={tooltipIcons}>
+            <CustomTooltip title={'Regular services'}
+                           text={'Integrate in a few clicks'}
+                           icons={tooltipIcons}>
               <WhyWeSectionCardItem cardItem={cardItem} />
-            </WhyWeTooltip>
+            </CustomTooltip>
           </Grid>;
         })
       }
