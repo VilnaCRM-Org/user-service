@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Button as MUIButton, Container, MobileStepper } from '@mui/material';
+import { Box, Container, MobileStepper } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import SwipeableViews from 'react-swipeable-views';
 import { autoPlay } from 'react-swipeable-views-utils';
@@ -20,16 +20,6 @@ export function WhyWeSectionSlider({ cardItems }: { cardItems: IWhyWeCardItem[] 
   const [activeStep, setActiveStep] = useState(0);
   const [currentActiveItem, setCurrentActiveItem] = useState(cardItems[0]);
   const maxSteps = cardItems.length;
-
-  const handleNext = () => {
-    setCurrentActiveItem(cardItems[activeStep + 1]);
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-  };
-
-  const handleBack = () => {
-    setCurrentActiveItem(cardItems[activeStep - 1]);
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
 
   const handleStepChange = (step: number) => {
     setCurrentActiveItem(cardItems[step]);
