@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { Grid, Box } from '@mui/material';
 import {
   ForWhoMainBackgroundSvg,

@@ -1,35 +1,39 @@
 @font-face {
   font-family: 'GolosText-Black';
-  src: url('/src/assets/fonts/Golos/GolosText-Black.ttf') format('truetype');
+  src: url('/public/assets/fonts/Golos/GolosText-Black.ttf') format('truetype');
 }
 
 @font-face {
   font-family: 'GolosText-Bold';
-  src: url('/src/assets/fonts/Golos/GolosText-Bold.ttf') format('truetype');
+  src: url('/public/assets/fonts/Golos/GolosText-Bold.ttf') format('truetype');
 }
 
 @font-face {
   font-family: 'GolosText-ExtraBold';
-  src: url('/src/assets/fonts/Golos/GolosText-ExtraBold.ttf') format('truetype');
+  src: url('/public/assets/fonts/Golos/GolosText-ExtraBold.ttf') format('truetype');
 }
 
 @font-face {
   font-family: 'GolosText-Medium';
-  src: url('/src/assets/fonts/Golos/GolosText-Medium.ttf') format('truetype');
+  src: url('/public/assets/fonts/Golos/GolosText-Medium.ttf') format('truetype');
 }
 
 @font-face {
   font-family: 'GolosText-Regular';
-  src: url('/src/assets/fonts/Golos/GolosText-Regular.ttf') format('truetype');
+  src: url('/public/assets/fonts/Golos/GolosText-Regular.ttf') format('truetype');
 }
 
 @font-face {
   font-family: 'GolosText-SemiBold';
-  src: url('/src/assets/fonts/Golos/GolosText-SemiBold.ttf') format('truetype');
+  src: url('/public/assets/fonts/Golos/GolosText-SemiBold.ttf') format('truetype');
 }
 
 @font-face {
   font-family: 'Inter-Regular';
-  src: url('/src/assets/fonts/Inter/Inter-Regular.ttf') format('truetype');
+  src: url('/public/assets/fonts/Inter/Inter-Regular.ttf') format('truetype');
 }
 
+@font-face {
+  font-family: 'Stolz-Regular';
+  src: url('/public/assets/fonts/Stolz/stolzl_regular.otf') format('opentype');
+}
