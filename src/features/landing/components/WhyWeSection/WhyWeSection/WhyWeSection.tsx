@@ -30,7 +30,7 @@ export function WhyWeSection() {
   const { isMobile, isSmallest, isTablet } = useScreenSize();
 
   return (
-    <Container sx={{ padding: '56px 0 89px 0' }}>
+    <Container sx={{ padding: '56px 0 56px 0' }}>
       <WhyWeSectionHeader
         style={{
           padding:
