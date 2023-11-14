@@ -7,10 +7,10 @@ namespace App\Controller;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\SignUpCommand;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Request;
 
 #[AsController]
 final class SignUpHttpController extends AbstractController
@@ -28,7 +28,7 @@ final class SignUpHttpController extends AbstractController
             $commandBus->dispatch(new SignUpCommand($email, $initials, $password));
 
             return new Response('', Response::HTTP_CREATED);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return new Response('An error occurred', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

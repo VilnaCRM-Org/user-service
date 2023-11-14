@@ -26,5 +26,11 @@ services:
         App\Shared\Domain\Bus\Command\CommandHandler:
             tags: [ 'app.command_handler' ]
 
+        App\Shared\Domain\Bus\Event\DomainEventSubscriber:
+            tags: [ 'app.event_subscriber' ]
+
     App\Shared\Infrastructure\Bus\Command\InMemorySymfonyCommandBus:
         arguments: [ !tagged app.command_handler ]
+
+    App\Shared\Infrastructure\Bus\Event\InMemorySymfonyEventBus:
+        arguments: [ !tagged app.event_subscriber ]

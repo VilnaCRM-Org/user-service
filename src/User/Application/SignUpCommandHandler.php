@@ -8,12 +8,14 @@ use App\Shared\Domain\Bus\Command\CommandHandler;
 use App\Shared\Domain\UuidGenerator;
 use App\User\Domain\Entity\User;
 use App\User\Domain\UserRepository;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final readonly class SignUpCommandHandler implements CommandHandler
 {
     public function __construct(
         private UserRepository $repository,
-        private UuidGenerator $uuidGenerator
+        private UuidGenerator $uuidGenerator,
+        private ValidatorInterface $validator,
     ) {
     }
 
@@ -26,6 +28,11 @@ final readonly class SignUpCommandHandler implements CommandHandler
 
         $user = new User($id, $email, $initials, $password);
 
-        $this->repository->save($user);
+        $errors = $this->validator->validate($user);
+        if (count($errors) > 0) {
+            throw new \RuntimeException((string) $errors);
+        } else {
+            $this->repository->save($user);
+        }
     }
 }
