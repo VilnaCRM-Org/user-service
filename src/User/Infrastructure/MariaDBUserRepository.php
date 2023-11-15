@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure;
 
+use App\Shared\Domain\Bus\Event\EventBus;
+use App\Shared\Infrastructure\Bus\Event\UserRegisteredEvent;
 use App\User\Domain\Entity\User;
 use App\User\Domain\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class MariaDBUserRepository implements UserRepository
 {
-    public function __construct(private EntityManagerInterface $entityManager)
+    public function __construct(private EntityManagerInterface $entityManager, private EventBus $eventBus)
     {
     }
 
@@ -18,5 +20,7 @@ final readonly class MariaDBUserRepository implements UserRepository
     {
         $this->entityManager->persist($user);
         $this->entityManager->flush();
+
+        // $this->eventBus->publish(new UserRegisteredEvent());
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application;
 
 use App\Shared\Domain\Bus\Command\CommandHandler;
-use App\Shared\Domain\UuidGenerator;
+use App\Shared\Domain\ValueObject\Uuid;
 use App\User\Domain\Entity\User;
 use App\User\Domain\UserRepository;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -14,14 +14,13 @@ final readonly class SignUpCommandHandler implements CommandHandler
 {
     public function __construct(
         private UserRepository $repository,
-        private UuidGenerator $uuidGenerator,
         private ValidatorInterface $validator,
     ) {
     }
 
     public function __invoke(SignUpCommand $command): void
     {
-        $id = $this->uuidGenerator->generate();
+        $id = Uuid::random()->value();
         $email = $command->getEmail();
         $initials = $command->getInitials();
         $password = $command->getPassword();

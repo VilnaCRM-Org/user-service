@@ -5,25 +5,14 @@ declare(strict_types=1);
 namespace App\User\Domain\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GraphQl\Mutation;
-use App\User\Infrastructure\UserRegisterMutationResolver;
+use App\User\Infrastructure\RegisterUserProcessor;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
-#[ApiResource(graphQlOperations: [
-    new Mutation(resolver: UserRegisterMutationResolver::class, args: [
-        'email' => [
-            'type' => 'String!',
-        ],
-        'initials' => [
-            'type' => 'String!',
-        ],
-        'password' => [
-            'type' => 'String!',
-        ],
-    ], deserialize: false, validate: false, write: false, name: 'register'),
-])]
+#[ApiResource(normalizationContext: ['groups' => ['output']],
+    input: UserInputDto::class, processor: RegisterUserProcessor::class)]
 class User
 {
     public function __construct(
@@ -41,15 +30,18 @@ class User
     #[ORM\Id]
     #[ORM\Column]
     #[Assert\NotBlank]
+    #[Groups(['output'])]
     private string $id;
 
     #[ORM\Column(type: 'string', length: 255, unique: true)]
     #[Assert\NotBlank]
     #[Assert\Email]
+    #[Groups(['output'])]
     private string $email;
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank]
+    #[Groups(['output'])]
     private string $initials;
 
     #[ORM\Column(type: 'string', length: 255)]
