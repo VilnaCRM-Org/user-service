@@ -34,7 +34,7 @@ export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMain
                     marginTop: (isMobile || isSmallest) ? '32px' : '80px',
                     textAlign: (isMobile || isSmallest) ? 'left' : 'inherit',
                   }}>
-        {t('Перша українська CRM з відкритим кодом')}
+        {t('The first Ukrainian open source CRM')}
       </Typography>
       <Typography variant={'body1'} sx={{
         marginTop: '16px',
@@ -47,14 +47,14 @@ export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMain
         maxWidth: '692px',
         textAlign: (isMobile || isSmallest) ? 'left' : 'inherit',
       }}>
-        {t('Наша мета — підтримати українських підприємців. Саме тому ми створили Vilna, зручну та безкоштовну CRM-систему — аби ви могли займатися бізнесом, а не витрачати час на налаштування')}
+        {t('Our goal is to support Ukrainian entrepreneurs. That\'s why we created Vilna, a convenient and free CRM system - so you can do business, not spend time on settings')}
       </Typography>
       <Button onClick={onTryItOutButtonClick} customVariant={'light-blue'} buttonSize={'big'}
               style={{
                 marginTop: '16px',
                 alignSelf: (isMobile || isSmallest) ? 'flex-start' : 'center',
               }}>
-        {t('Спробувати')}
+        {t('Try it out')}
       </Button>
     </Box>
   );
