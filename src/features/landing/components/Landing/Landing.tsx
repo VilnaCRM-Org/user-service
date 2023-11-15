@@ -5,12 +5,16 @@ import { WhyWeSection } from '@/features/landing/components/WhyWeSection/WhyWeSe
 import {
   ForWhoSection,
 } from '@/features/landing/components/ForWhoSection/ForWhoSection/ForWhoSection';
+import {
+  UnlimitedIntegrationsSection
+} from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsSection/UnlimitedIntegrationsSection';
 
 export default function Landing() {
   return <Layout>
     <AboutVilnaSection />
     <WhyWeSection />
     <ForWhoSection />
+    <UnlimitedIntegrationsSection />
     <section id={REGISTRATION_SECTION_ID}>
       <h1>Registration Placeholder</h1>
       <p>Registration body Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab commodi,

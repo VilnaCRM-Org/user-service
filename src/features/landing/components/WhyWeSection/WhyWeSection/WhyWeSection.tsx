@@ -8,7 +8,7 @@ import {
   WhyWeSectionCardItems,
 } from '@/features/landing/components/WhyWeSection/WhyWeSectionCardItems/WhyWeSectionCardItems';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { CARD_ITEMS } from '@/features/landing/utils/constants/constants';
+import { WHY_WE_CARD_ITEMS } from '@/features/landing/utils/constants/constants';
 import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
 
 const TOOLTIP_ICONS: string[] = [
@@ -26,7 +26,7 @@ export function WhyWeSection() {
   const [
     cardItems,
     setCardItems,
-  ] = useState<IWhyWeCardItem[]>(CARD_ITEMS);
+  ] = useState<IWhyWeCardItem[]>(WHY_WE_CARD_ITEMS);
   const { isMobile, isSmallest, isTablet } = useScreenSize();
 
   return (

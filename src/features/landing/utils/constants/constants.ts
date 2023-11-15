@@ -1,8 +1,9 @@
 import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
+import { IUnlimitedIntegrationsItem } from '@/features/landing/types/unlimited-integrations/types';
 
 export const REGISTRATION_SECTION_ID = 'registration-section';
 
-export const CARD_ITEMS: IWhyWeCardItem[] = [
+export const WHY_WE_CARD_ITEMS: IWhyWeCardItem[] = [
   {
     id: 'card-item-1',
     imageSrc: '/assets/img/WhyWeSection/1_code.png',
@@ -40,5 +41,38 @@ export const CARD_ITEMS: IWhyWeCardItem[] = [
     imageSrc: '/assets/img/WhyWeSection/6_migration.png',
     text: 'Switch to Vilna in a few clicks with ready-made migration scripts from amoCRM and HubSpot',
     title: 'Bonus: easy migration',
+  },
+];
+
+export const UNLIMITED_INTEGRATIONS_CARD_ITEMS: IUnlimitedIntegrationsItem[] = [
+  {
+    id: 'item_1',
+    imageSrc: '/assets/img/UnlimitedIntegrations/Ruby_1.png',
+    text: 'In case you didn\'t find it\n' +
+      'ready integration is required',
+    title: 'Public API',
+    imageTitle: 'Ruby Image 1',
+  },
+  {
+    id: 'item_2',
+    imageSrc: '/assets/img/UnlimitedIntegrations/Ruby_2.png',
+    text: 'Integrate <a href="/" target="_blank">familiar services</a> in a few clicks',
+    title: 'Ready plugins for CMS',
+    imageTitle: 'Ruby Image 2',
+  },
+  {
+    id: 'item_3',
+    imageSrc: '/assets/img/UnlimitedIntegrations/Ruby_3.png',
+    text: 'Get data about any events in CRM and automate complex business processes',
+    title: 'Web hook system',
+    imageTitle: 'Ruby Image 3',
+  },
+  {
+    id: 'item_4',
+    imageSrc: '/assets/img/UnlimitedIntegrations/Ruby_4.png',
+    text: 'For custom integrations\n' +
+      'with specific products',
+    title: 'Public libraries',
+    imageTitle: 'Ruby Image 4',
   },
 ];
