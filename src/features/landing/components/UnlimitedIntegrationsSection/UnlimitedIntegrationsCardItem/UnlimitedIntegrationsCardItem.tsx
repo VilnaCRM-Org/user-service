@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, Grid, Paper, Typography } from '@mui/material';
+import { Card, Paper, Typography } from '@mui/material';
 import { IUnlimitedIntegrationsItem } from '@/features/landing/types/unlimited-integrations/types';
 
 interface IUnlimitedIntegrationsCardItemProps {
@@ -9,15 +9,16 @@ interface IUnlimitedIntegrationsCardItemProps {
 }
 
 const styles = {
-  mainGrid: {
-    flexGrow: 1,
-  },
   card: {
     padding: '40px 32px 66px 25px',
     display: 'flex',
     flexDirection: 'column',
     minHeight: '332px',
     height: '100%',
+    width: '100%',
+    border: '1px solid #EAECEE',
+    borderRadius: '12px',
+    cursor: 'pointer',
   },
   paperWithImage: {
     width: '100%',
@@ -58,7 +59,6 @@ export function UnlimitedIntegrationsCardItem({ cardItem , style }: IUnlimitedIn
   const { t } = useTranslation();
 
   return (
-    <Grid item xs={12} md={6} lg={3} sx={{ ...styles.mainGrid }}>
       <Card sx={{
         ...styles.card,
         ...style,
@@ -84,6 +84,5 @@ export function UnlimitedIntegrationsCardItem({ cardItem , style }: IUnlimitedIn
           <span dangerouslySetInnerHTML={{ __html: t(cardItem.text) }} />
         </Typography>
       </Card>
-    </Grid>
   );
 }

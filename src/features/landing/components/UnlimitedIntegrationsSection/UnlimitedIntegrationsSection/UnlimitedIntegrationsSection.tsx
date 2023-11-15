@@ -13,13 +13,14 @@ import {
 
 export function UnlimitedIntegrationsSection() {
   const { isTablet, isSmallest, isMobile } = useScreenSize();
+  const isLowerThanOrEqualToTablet = isTablet || isMobile || isSmallest;
 
   return (
     <Box
       sx={{
         padding: '56px 0 56px 0',
-        paddingLeft: (isTablet || isMobile || isSmallest) ? '34px' : '0',
-        paddingRight: (isTablet || isMobile || isSmallest) ? '34px' : '0',
+        paddingLeft: (isLowerThanOrEqualToTablet) ? '34px' : '0',
+        paddingRight: (isLowerThanOrEqualToTablet) ? '34px' : '0',
         background: '#FFF',
       }}>
       <Container sx={{ width: '100%', maxWidth: '1192px', margin: '0 auto' }}>
@@ -29,7 +30,6 @@ export function UnlimitedIntegrationsSection() {
           <UnlimitedIntregrationsSlider cardItems={UNLIMITED_INTEGRATIONS_CARD_ITEMS} /> :
           <UnlimitedIntegrationsCardItems cardItems={UNLIMITED_INTEGRATIONS_CARD_ITEMS} />
         }
-
       </Container>
     </Box>
   );

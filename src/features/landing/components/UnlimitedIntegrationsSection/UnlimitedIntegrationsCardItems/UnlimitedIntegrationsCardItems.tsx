@@ -9,10 +9,20 @@ interface IUnlimitedIntegrationsCardItemsProps {
   cardItems: IUnlimitedIntegrationsItem[];
 }
 
+const styles = {
+  mainGrid: {
+    flexGrow: 1,
+  },
+};
+
 export function UnlimitedIntegrationsCardItems({ cardItems }: IUnlimitedIntegrationsCardItemsProps) {
   const cardItemsJSX = useMemo(() => {
     return cardItems.map((cardItem) => {
-      return <UnlimitedIntegrationsCardItem key={cardItem.id} cardItem={cardItem} />;
+      return (
+        <Grid item xs={12} md={6} lg={3} sx={{ ...styles.mainGrid }}>
+          <UnlimitedIntegrationsCardItem key={cardItem.id} cardItem={cardItem} />
+        </Grid>
+      );
     });
   }, [cardItems]);
 

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Box, Typography } from '@mui/material';
+import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 const style = {
   mainBox: {
@@ -29,15 +30,20 @@ const style = {
     fontStyle: 'normal',
     fontWeight: '700',
     lineHeight: 'normal',
-    textAlign: 'center'
+    textAlign: 'inherit',
   },
 };
 
 export function UnlimitedIntegrationsTexts() {
   const { t } = useTranslation();
+  const { isMobile, isSmallest } = useScreenSize();
 
   return (
-    <Box sx={{ ...style.mainBox }}>
+    <Box sx={{
+      ...style.mainBox,
+      alignItems: (isMobile || isSmallest) ? 'flex-start' : 'center',
+      textAlign: (isMobile || isSmallest) ? 'left' : 'center',
+    }}>
       <Typography component={'h2'} variant={'h2'} sx={{
         ...style.mainHeading,
       }}>

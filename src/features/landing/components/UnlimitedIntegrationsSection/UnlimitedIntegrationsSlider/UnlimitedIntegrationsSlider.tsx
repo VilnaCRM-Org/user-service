@@ -1,13 +1,8 @@
 import { useState } from 'react';
 import { Box, Container, MobileStepper } from '@mui/material';
-import { useTranslation } from 'react-i18next';
 import SwipeableViews from 'react-swipeable-views';
 import { autoPlay } from 'react-swipeable-views-utils';
 
-import { Button } from '@/components/ui/Button/Button';
-import {
-  scrollToRegistrationSection,
-} from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 import { IUnlimitedIntegrationsItem } from '@/features/landing/types/unlimited-integrations/types';
 import {
   UnlimitedIntegrationsCardItem,
@@ -19,7 +14,6 @@ const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
 export function UnlimitedIntregrationsSlider({ cardItems }: {
   cardItems: IUnlimitedIntegrationsItem[]
 }) {
-  const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState(0);
   const [currentActiveItem, setCurrentActiveItem] = useState(cardItems[0]);
   const maxSteps = cardItems.length;
@@ -29,12 +23,8 @@ export function UnlimitedIntregrationsSlider({ cardItems }: {
     setActiveStep(step);
   };
 
-  const handleTryItOutButtonClick = () => {
-    scrollToRegistrationSection();
-  };
-
   return (
-    <Box sx={{ padding: '0 15px 0 15px' }}>
+    <Box sx={{ padding: '0' }}>
       <Container>
         <AutoPlaySwipeableViews
           axis='x'
@@ -54,6 +44,7 @@ export function UnlimitedIntregrationsSlider({ cardItems }: {
                 style={{
                   height: '100%',
                   overflow: 'hidden',
+                  width: '100%'
                 }} />
             </Box>
           ))}
