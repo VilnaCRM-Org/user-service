@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Grid, Typography } from '@mui/material';
 
 import { Button } from '@/components/ui/Button/Button';
+import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 const styles = {
   mainGridContainer: {
@@ -34,36 +35,41 @@ export function ForWhoMainTextsContent({ onTryItOutButtonClick }: {
   onTryItOutButtonClick: () => void;
 }) {
   const { t } = useTranslation();
+  const { isSmallest, isMobile } = useScreenSize();
 
   return (
-    <Grid item container md={6} sx={{ ...styles.mainGridContainer }}>
+    <Grid item container xs={12} md={6} sx={{ ...styles.mainGridContainer }}>
 
       {/* Top Content */}
       <Grid item>
-        <Typography variant={'h2'} component={'h2'} sx={{ ...styles.mainHeading }} >
-          { t('For who')}
-          </Typography>
+        <Typography variant={'h2'} component={'h2'} sx={{ ...styles.mainHeading }}>
+          {t('For who')}
+        </Typography>
 
-          <Typography variant={'body1'} component={'p'}
+        <Typography variant={'body1'} component={'p'}
                     sx={{ marginTop: '16px', width: '100%', maxWidth: '343px' }}>
           {t('We created Vilna, focusing on the specifics of the service business,\n' +
             'which is not suitable for ordinary e-commerce templates')}
         </Typography>
-        <Button customVariant={'light-blue'}
-                buttonSize={'big'}
-                style={{ marginTop: '24px' }}
-                onClick={onTryItOutButtonClick}>{t('Try it out')}</Button>
+        {(isMobile || isSmallest) ? null : (
+          <Button customVariant={'light-blue'}
+                  buttonSize={'big'}
+                  style={{ marginTop: '24px' }}
+                  onClick={onTryItOutButtonClick}>{t('Try it out')}</Button>
+        )}
       </Grid>
 
       {/* Bottom content */}
-      <Grid item>
-        <Typography variant={'h4'} component={'h4'}
-                    sx={{
-                      ...styles.secondaryHeading,
-                    }}>
-          {t('Our CRM is ideal if you:')}
-        </Typography>
-      </Grid>
+      {(isMobile || isSmallest) ? null : (
+        <Grid item>
+          <Typography variant={'h4'} component={'h4'}
+                      sx={{
+                        ...styles.secondaryHeading,
+                      }}>
+            {t('Our CRM is ideal if you:')}
+          </Typography>
+        </Grid>
+      )}
     </Grid>
   );
 }

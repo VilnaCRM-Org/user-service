@@ -2,6 +2,7 @@ import { Grid, Box } from '@mui/material';
 import {
   ForWhoMainBackgroundSvg,
 } from '@/features/landing/components/ForWhoSection/ForWhoMainBackgroundSvg/ForWhoMainBackgroundSvg';
+import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 const styles = {
   container: {
@@ -18,6 +19,8 @@ const styles = {
     position: 'absolute',
     top: 0,
     zIndex: 750,
+    paddingTop: '58px',
+
   },
   mainImageBox: {
     position: 'absolute',
@@ -49,7 +52,7 @@ export function ForWhoImagesContent({
   secondaryImageTitle: string;
 }) {
   return (
-    <Grid item md={6} sx={{ ...styles.container }}>
+    <Grid item xs={12} md={6} sx={{ ...styles.container }}>
       {/* Main Background SVG */}
       <Box sx={{ ...styles.mainBackgroundSvgBox }}>
         <ForWhoMainBackgroundSvg />

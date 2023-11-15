@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Card, Grid, Paper, Typography } from '@mui/material';
+import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 interface IForWhoSectionCardItemProps {
   imageSrc: string;
@@ -22,6 +23,7 @@ const style = {
     alignItems: 'center',
     gap: '12px',
     minHeight: '115px',
+    boxShadow: '0px 8px 27px 0px rgba(49, 59, 67, 0.14)',
   },
 };
 
@@ -30,11 +32,17 @@ export function ForWhoSectionCardItem({
                                         imageAltText,
                                         text,
                                       }: IForWhoSectionCardItemProps) {
+  const { isMobile, isSmallest } = useScreenSize();
   const { t } = useTranslation();
 
   return (
     <Grid item md={6} xs={12} sx={{ alignSelf: 'stretch' }}>
-      <Card sx={{ ...style.card }}>
+      <Card sx={{
+        ...style.card,
+        boxShadow: (isMobile || isSmallest) ? 'none' : '0px 8px 27px 0px rgba(49, 59, 67, 0.14)',
+        padding: (isMobile || isSmallest) ? '0' : '27px 32px 28px 32px',
+        minHeight: (isMobile || isSmallest) ? 'max-content': '115px',
+      }}>
         <Paper elevation={0}>
           <img src={imageSrc} alt={imageAltText} style={{ width: '100%', height: '100%' }} />
         </Paper>

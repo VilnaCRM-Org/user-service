@@ -12,6 +12,11 @@ import {
 import {
   ForWhoSectionCardItem,
 } from '@/features/landing/components/ForWhoSection/ForWhoSectionCardItem/ForWhoSectionCardItem';
+import {
+  ForWhoSectionCards,
+} from '@/features/landing/components/ForWhoSection/ForWhoSectionCards/ForWhoSectionCards';
+import { ForWhoSectionCardsMobile } from '../ForWhoSectionCardsMobile/ForWhoSectionCardsMobile';
+import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 const images = {
   mainImage: {
@@ -45,7 +50,7 @@ const styles = {
     padding: '56px 0 206px 0',
     backgroundColor: '#FBFBFB',
   },
-  mainContainer: {
+  secondaryBoxContainer: {
     maxWidth: '1192px',
     margin: '0 auto',
     height: '100%',
@@ -54,11 +59,16 @@ const styles = {
   mainGrid: {
     height: '100%',
     width: '100%',
+    padding: '58px 34px 0 34px',
+    display: 'flex',
+    justifyContent: 'center',
   },
 };
 
+// TODO: Remove Padding 16px Left and Right on mobile devices or lower, basically override Container's default styles
 export function ForWhoSection() {
   const [cardItems, setCardItems] = useState(CARD_ITEMS);
+  const { isSmallest, isMobile } = useScreenSize();
   const handleTryItOutButtonClick = () => {
     scrollToRegistrationSection();
   };
@@ -73,7 +83,7 @@ export function ForWhoSection() {
   return (
     <Box
       sx={{ ...styles.mainBox }}>
-      <Container sx={{ ...styles.mainContainer }}>
+      <Box sx={{ ...styles.secondaryBoxContainer }}>
         <Grid container sx={{ ...styles.mainGrid }}>
           {/* Main Texts (Top and Bottom) */}
           <ForWhoMainTextsContent onTryItOutButtonClick={handleTryItOutButtonClick} />
@@ -85,15 +95,11 @@ export function ForWhoSection() {
             secondaryImageTitle={images.secondaryImage.title}
             secondaryImageSrc={images.secondaryImage.src} />
         </Grid>
-        <Grid container alignItems={'stretch'} spacing={3}
-              sx={{
-                position: 'absolute',
-                bottom: '-150px',
-                zIndex: 900,
-              }}>
-          {[...cardItemsJSX]}
-        </Grid>
-      </Container>
+
+        {/* Card Items */}
+        {(isMobile || isSmallest) ? <ForWhoSectionCardsMobile cardItemsJSX={cardItemsJSX} /> :
+          <ForWhoSectionCards cardItemsJSX={cardItemsJSX} />}
+      </Box>
     </Box>
   );
 }
