@@ -19,8 +19,8 @@ export function UnlimitedIntegrationsCardItems({ cardItems }: IUnlimitedIntegrat
   const cardItemsJSX = useMemo(() => {
     return cardItems.map((cardItem) => {
       return (
-        <Grid item xs={12} md={6} lg={3} sx={{ ...styles.mainGrid }}>
-          <UnlimitedIntegrationsCardItem key={cardItem.id} cardItem={cardItem} />
+        <Grid key={cardItem.id} item xs={12} md={6} lg={3} sx={{ ...styles.mainGrid }}>
+          <UnlimitedIntegrationsCardItem cardItem={cardItem} />
         </Grid>
       );
     });
