@@ -15,7 +15,7 @@ import {
 import { HeaderDrawerMenu } from '../HeaderDrawerMenu/HeaderDrawerMenu';
 import { useState } from 'react';
 import {
-  scrollToRegistrationSection
+  scrollToRegistrationSection,
 } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 
 type Position =
@@ -29,7 +29,7 @@ type Position =
   | 'unset';
 
 const appBarContainerStyle: {
-  height: string;
+  minHeight: string;
   position: Position | undefined; // Use the defined Position type here
   top: number;
   backgroundColor: string;
@@ -40,8 +40,9 @@ const appBarContainerStyle: {
   alignItems: string;
   width: string;
   justifyContent: string;
+  flexGrow: number;
 } = {
-  height: '64px',
+  minHeight: '64px',
   position: 'sticky',
   top: 0,
   backgroundColor: 'white',
@@ -52,6 +53,7 @@ const appBarContainerStyle: {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
+  flexGrow: 1,
 };
 
 const logoStyle = {
@@ -122,16 +124,17 @@ export function Header() {
             <VilnaMainIcon />
           </CustomLink>
 
-          {/* Menu Icon */}
-          <IconButton
-            onClick={handleMenuButtonClick}
-            edge='start' color='inherit' aria-label='menu'
-            sx={{
-              display: (isMobile || isSmallest) ? 'inline-block' : 'none',
-              justifySelf: 'flex-end',
-            }}>
-            <VilnaMenuIcon isActive={false}/>
-          </IconButton>
+          {
+            /* Menu Icon */
+            (isMobile || isSmallest) ? (<IconButton
+              onClick={handleMenuButtonClick}
+              edge='start' color='inherit' aria-label='menu'
+              sx={{
+                justifySelf: 'flex-end',
+              }}>
+              <VilnaMenuIcon isActive={false} />
+            </IconButton>) : null
+          }
 
           {/* Header Main Links */}
           <HeaderMainLinks />

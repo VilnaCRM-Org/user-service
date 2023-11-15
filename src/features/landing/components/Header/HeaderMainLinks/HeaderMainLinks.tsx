@@ -44,25 +44,25 @@ export function HeaderMainLinks() {
           }}>
       <Grid item>
         <CustomLink href={'/'} style={{ textDecoration: 'none', color: 'black' }}>
-          {t('Переваги')}
+          {t('Advantages')}
         </CustomLink>
       </Grid>
 
       <Grid item>
         <CustomLink href={'/'} style={{ textDecoration: 'none', color: 'black' }}>
-          {t('Для кого')}
+          {t('For who')}
         </CustomLink>
       </Grid>
 
       <Grid item>
         <CustomLink href={'/'} style={{ textDecoration: 'none', color: 'black' }}>
-          {t('Інтеграція')}
+          {t('Integration')}
         </CustomLink>
       </Grid>
 
       <Grid item>
         <CustomLink href={'/'} style={{ textDecoration: 'none', color: 'black' }}>
-          {t('Контакти')}
+          {t('Contacts')}
         </CustomLink>
       </Grid>
     </Grid>
