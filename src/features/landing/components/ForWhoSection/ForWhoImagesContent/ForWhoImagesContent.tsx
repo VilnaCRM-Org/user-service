@@ -2,7 +2,6 @@ import { Grid, Box } from '@mui/material';
 import {
   ForWhoMainBackgroundSvg,
 } from '@/features/landing/components/ForWhoSection/ForWhoMainBackgroundSvg/ForWhoMainBackgroundSvg';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 const styles = {
   container: {
@@ -20,7 +19,6 @@ const styles = {
     top: 0,
     zIndex: 750,
     paddingTop: '58px',
-
   },
   mainImageBox: {
     position: 'absolute',

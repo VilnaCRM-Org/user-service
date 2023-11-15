@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Box, Container, Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import {
   scrollToRegistrationSection,
 } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
@@ -62,10 +62,10 @@ const styles = {
     padding: '58px 34px 0 34px',
     display: 'flex',
     justifyContent: 'center',
+    alignItems: 'flex-start',
   },
 };
 
-// TODO: Remove Padding 16px Left and Right on mobile devices or lower, basically override Container's default styles
 export function ForWhoSection() {
   const [cardItems, setCardItems] = useState(CARD_ITEMS);
   const { isSmallest, isMobile } = useScreenSize();

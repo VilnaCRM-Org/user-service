@@ -44,7 +44,7 @@ export function ForWhoSectionCardItem({
         minHeight: (isMobile || isSmallest) ? 'max-content': '115px',
       }}>
         <Paper elevation={0}>
-          <img src={imageSrc} alt={imageAltText} style={{ width: '100%', height: '100%' }} />
+          <img src={imageSrc} alt={imageAltText} style={{ width: '100%', height: '100%', minWidth: '20px' }} />
         </Paper>
         <Typography variant={'body1'} component={'p'} sx={{ ...style.text }}>
           {t(text)}
