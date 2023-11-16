@@ -3,7 +3,7 @@ import { UnlimitedIntegrationsTexts } from '../UnlimitedIntegrationsTexts/Unlimi
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import { UnlimitedIntegrationsCardItems } from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsCardItems/UnlimitedIntegrationsCardItems';
 import { UNLIMITED_INTEGRATIONS_CARD_ITEMS } from '@/features/landing/utils/constants/constants';
-import { UnlimitedIntegrationsSlider } from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsSlider/UnlimitedIntegrationsSlider';
+import UnlimitedIntegrationsSlider from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsSlider/UnlimitedIntegrationsSlider';
 
 export function UnlimitedIntegrationsSection() {
   const { isTablet, isSmallest, isMobile } = useScreenSize();
