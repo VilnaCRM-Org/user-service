@@ -10,7 +10,6 @@ import { UNLIMITED_INTEGRATIONS_CARD_ITEMS } from '@/features/landing/utils/cons
 import {
   UnlimitedIntregrationsSlider,
 } from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsSlider/UnlimitedIntegrationsSlider';
-import { useEffect, useState } from 'react';
 
 export function UnlimitedIntegrationsSection() {
   const { isTablet, isSmallest, isMobile } = useScreenSize();
