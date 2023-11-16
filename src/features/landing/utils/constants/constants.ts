@@ -1,7 +1,8 @@
 import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
 import { IUnlimitedIntegrationsItem } from '@/features/landing/types/unlimited-integrations/types';
+import { ISocialLink } from '@/features/landing/types/social/types';
 
-export const REGISTRATION_SECTION_ID = 'registration-section';
+export const SIGN_UP_SECTION_ID = 'SIGN_UP_SECTION_ID';
 
 export const WHY_WE_CARD_ITEMS: IWhyWeCardItem[] = [
   {
@@ -75,4 +76,12 @@ export const UNLIMITED_INTEGRATIONS_CARD_ITEMS: IUnlimitedIntegrationsItem[] = [
     title: 'Public libraries',
     imageTitle: 'Ruby Image 4',
   },
+];
+
+export const SOCIAL_LINKS: ISocialLink[] = [
+  { id: 'google-link', icon: '/assets/img/SocialMedia/Icons/Google.png', title: 'Google', linkHref: '/' },
+  { id: 'facebook-link', icon: '/assets/img/SocialMedia/Icons/Facebook.png', title: 'Facebook', linkHref: '/' },
+  { id: 'github-link', icon: '/assets/img/SocialMedia/Icons/Github.png', title: 'GitHub', linkHref: '/' },
+  { id: 'twitter-link', icon: '/assets/img/SocialMedia/Icons/Twitter.png', title: 'Twitter', linkHref: '/' },
+
 ];
