@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button/Button';
 import {
   scrollToRegistrationSection,
 } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
+import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 interface IForWhoSectionCardsMobileProps {
   cardItemsJSX: React.ReactNode;
@@ -37,6 +38,7 @@ const styles = {
 
 export function ForWhoSectionCardsMobile({ cardItemsJSX }: IForWhoSectionCardsMobileProps) {
   const { t } = useTranslation();
+  const { isSmallest } = useScreenSize();
 
   return (
     <Box sx={{
@@ -48,6 +50,7 @@ export function ForWhoSectionCardsMobile({ cardItemsJSX }: IForWhoSectionCardsMo
         <Typography variant={'h4'} component={'h4'}
                     sx={{
                       ...styles.heading,
+                      fontSize: (isSmallest) ? '22px' : styles.heading.fontSize,
                     }}>
           {t('Our CRM is ideal if you:')}
         </Typography>

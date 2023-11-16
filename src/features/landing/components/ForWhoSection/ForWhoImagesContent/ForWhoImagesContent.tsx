@@ -57,14 +57,14 @@ export function ForWhoImagesContent({
   const [mainImageBoxStylesForMobileOrLower, setMainImageBoxStylesForMobileOrLower] = useState<React.CSSProperties>({});
   const [secondaryImageBoxStylesForTablet, setSecondaryImageBoxStylesForTablet] = useState<React.CSSProperties>({});
   const [secondaryImageBoxStylesForMobileOrLower, setSecondaryImageBoxStylesForMobileOrLower] = useState<React.CSSProperties>({});
-  const [mainBackgroundSvgBoxStylesForMobileOrLower, setMainBackgroundSvgBoxStylesForMobileOrLower] = useState<React.CSSProperties>({});
+  const [mainBackgroundSvgBoxStylesForSmallest, setMainBackgroundSvgBoxStylesForSmallest] = useState<React.CSSProperties>({});
 
   const resetStylesForTabletAndMobileAndLower = () => {
     setMainImageBoxStylesForTablet({});
     setMainImageBoxStylesForMobileOrLower({});
     setSecondaryImageBoxStylesForTablet({});
     setSecondaryImageBoxStylesForMobileOrLower({});
-    setMainBackgroundSvgBoxStylesForMobileOrLower({});
+    setMainBackgroundSvgBoxStylesForSmallest({});
   };
 
   useEffect(() => {
@@ -96,8 +96,10 @@ export function ForWhoImagesContent({
         bottom: '66px',
         maxWidth: '148px',
       });
+    }
 
-      setMainBackgroundSvgBoxStylesForMobileOrLower({
+    if (isSmallest) {
+      setMainBackgroundSvgBoxStylesForSmallest({
         minWidth: '100vw',
       });
     }
@@ -109,7 +111,7 @@ export function ForWhoImagesContent({
       <Box
         sx={{
           ...styles.mainBackgroundSvgBox,
-          ...mainBackgroundSvgBoxStylesForMobileOrLower,
+          ...mainBackgroundSvgBoxStylesForSmallest,
           paddingTop: (isSmallest) ? '0' : '58px',
         }}>
         <ForWhoMainBackgroundSvg />
