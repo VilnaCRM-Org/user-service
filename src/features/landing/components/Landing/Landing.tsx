@@ -4,10 +4,9 @@ import { WhyWeSection } from '@/features/landing/components/WhyWeSection/WhyWeSe
 import {
   ForWhoSection,
 } from '@/features/landing/components/ForWhoSection/ForWhoSection/ForWhoSection';
-import {
-  UnlimitedIntegrationsSection
-} from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsSection/UnlimitedIntegrationsSection';
-import { SignUpSection } from '@/features/landing/components/SignUpSection/SignUpSection/SignUpSection';
+import UnlimitedIntegrationsSection
+  from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsSection/UnlimitedIntegrationsSection';
+import SignUpSection from '@/features/landing/components/SignUpSection/SignUpSection/SignUpSection';
 
 export default function Landing() {
   return <Layout>

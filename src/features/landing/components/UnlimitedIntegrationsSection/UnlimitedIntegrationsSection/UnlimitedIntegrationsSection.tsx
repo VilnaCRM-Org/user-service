@@ -1,19 +1,44 @@
 import { Box, Container } from '@mui/material';
-import { UnlimitedIntegrationsTexts } from '../UnlimitedIntegrationsTexts/UnlimitedIntegrationsTexts';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { UnlimitedIntegrationsCardItems } from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsCardItems/UnlimitedIntegrationsCardItems';
-import { UNLIMITED_INTEGRATIONS_CARD_ITEMS } from '@/features/landing/utils/constants/constants';
-import UnlimitedIntegrationsSlider from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsSlider/UnlimitedIntegrationsSlider';
+import { useEffect, useRef } from 'react';
 
-export function UnlimitedIntegrationsSection() {
+import UnlimitedIntegrationsCardItems from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsCardItems/UnlimitedIntegrationsCardItems';
+import UnlimitedIntegrationsSlider
+  from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsSlider/UnlimitedIntegrationsSlider';
+import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { UNLIMITED_INTEGRATIONS_CARD_ITEMS } from '@/features/landing/utils/constants/constants';
+
+import {
+  UnlimitedIntegrationsTexts,
+} from '../UnlimitedIntegrationsTexts/UnlimitedIntegrationsTexts';
+
+export default function UnlimitedIntegrationsSection() {
   const { isTablet, isSmallest, isMobile } = useScreenSize();
+
+  const paddingLeftForMainBox = useRef('0px');
+  const paddingRightForMainBox = useRef('0px');
+
+  useEffect(() => {
+    if (isMobile || isSmallest) {
+      paddingLeftForMainBox.current = '23px';
+      paddingRightForMainBox.current = '23px';
+      return;
+    }
+    if (isTablet) {
+      paddingLeftForMainBox.current = '34px';
+      paddingRightForMainBox.current = '34px';
+      return;
+    }
+
+    paddingLeftForMainBox.current = '0px';
+    paddingRightForMainBox.current = '0px';
+  }, [isTablet, isSmallest, isMobile]);
 
   return (
     <Box
       sx={{
         padding: '56px 0 56px 0',
-        paddingLeft: isMobile || isSmallest ? '23px' : isTablet ? '34px' : '0',
-        paddingRight: isMobile || isSmallest ? '23px' : isTablet ? '34px' : '0',
+        paddingLeft: paddingLeftForMainBox.current,
+        paddingRight: paddingRightForMainBox.current,
         background: '#FFF',
       }}
     >

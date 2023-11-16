@@ -1,7 +1,10 @@
-import { useMemo } from 'react';
 import { Grid } from '@mui/material';
+import { useMemo } from 'react';
+
+import {
+  UnlimitedIntegrationsCardItem,
+} from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsCardItem/UnlimitedIntegrationsCardItem';
 import { IUnlimitedIntegrationsItem } from '@/features/landing/types/unlimited-integrations/types';
-import { UnlimitedIntegrationsCardItem } from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsCardItem/UnlimitedIntegrationsCardItem';
 
 interface IUnlimitedIntegrationsCardItemsProps {
   cardItems: IUnlimitedIntegrationsItem[];
@@ -13,21 +16,18 @@ const styles = {
   },
 };
 
-export function UnlimitedIntegrationsCardItems({
-  cardItems,
-}: IUnlimitedIntegrationsCardItemsProps) {
-  const cardItemsJSX = useMemo(() => {
-    return cardItems.map((cardItem) => {
-      return (
-        <Grid key={cardItem.id} item xs={12} md={6} lg={3} sx={{ ...styles.mainGrid }}>
-          <UnlimitedIntegrationsCardItem cardItem={cardItem} />
-        </Grid>
-      );
-    });
-  }, [cardItems]);
+export default function UnlimitedIntegrationsCardItems({
+                                                         cardItems,
+                                                       }: IUnlimitedIntegrationsCardItemsProps) {
+  const cardItemsJSX = useMemo(() => cardItems.map((cardItem) => (
+      <Grid key={cardItem.id} item xs={12} md={6} lg={3} sx={{ ...styles.mainGrid }}>
+        <UnlimitedIntegrationsCardItem cardItem={cardItem} />
+      </Grid>),
+    )
+    , [cardItems]);
 
   return (
-    <Grid container spacing={'12px'}>
+    <Grid container spacing='12px' sx={{ padding: '0 10px' }}>
       {[...cardItemsJSX]}
     </Grid>
   );
