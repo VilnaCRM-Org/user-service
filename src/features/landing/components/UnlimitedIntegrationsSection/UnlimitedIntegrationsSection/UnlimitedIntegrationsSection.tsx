@@ -8,7 +8,7 @@ import {
 } from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsCardItems/UnlimitedIntegrationsCardItems';
 import { UNLIMITED_INTEGRATIONS_CARD_ITEMS } from '@/features/landing/utils/constants/constants';
 import {
-  UnlimitedIntregrationsSlider,
+  UnlimitedIntegrationsSlider,
 } from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsSlider/UnlimitedIntegrationsSlider';
 
 export function UnlimitedIntegrationsSection() {
@@ -18,15 +18,15 @@ export function UnlimitedIntegrationsSection() {
     <Box
       sx={{
         padding: '56px 0 56px 0',
-        paddingLeft: (isMobile || isSmallest) ? '0' : (isTablet) ? '34px' : '0',
-        paddingRight: (isMobile || isSmallest) ? '0' : (isTablet) ? '34px' : '0',
+        paddingLeft: (isMobile || isSmallest) ? '23px' : (isTablet) ? '34px' : '0',
+        paddingRight: (isMobile || isSmallest) ? '23px' : (isTablet) ? '34px' : '0',
         background: '#FFF',
       }}>
-      <Container sx={{ width: '100%', maxWidth: '1192px', margin: '0 auto' }}>
+      <Container sx={{ width: '100%', maxWidth: '1192px', margin: '0 auto', padding: '0' }}>
         <UnlimitedIntegrationsTexts />
         {
           (isMobile || isSmallest) ?
-            <UnlimitedIntregrationsSlider cardItems={UNLIMITED_INTEGRATIONS_CARD_ITEMS} /> :
+            <UnlimitedIntegrationsSlider cardItems={UNLIMITED_INTEGRATIONS_CARD_ITEMS} /> :
             <UnlimitedIntegrationsCardItems cardItems={UNLIMITED_INTEGRATIONS_CARD_ITEMS} />
         }
       </Container>

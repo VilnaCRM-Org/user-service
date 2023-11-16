@@ -10,8 +10,14 @@ import {
 
 const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
 
+const styles = {
+  mobileStepper: {
+    display: 'flex', justifyContent: 'center', marginTop: '25px',
+  },
+};
+
 // TODO: Change Carousel to a newer one
-export function UnlimitedIntregrationsSlider({ cardItems }: {
+export function UnlimitedIntegrationsSlider({ cardItems }: {
   cardItems: IUnlimitedIntegrationsItem[]
 }) {
   const [activeStep, setActiveStep] = useState(0);
@@ -25,7 +31,7 @@ export function UnlimitedIntregrationsSlider({ cardItems }: {
 
   return (
     <Box sx={{ padding: '0' }}>
-      <Container>
+      <Container style={{ padding: '0' }}>
         <AutoPlaySwipeableViews
           axis='x'
           index={activeStep}
@@ -44,7 +50,7 @@ export function UnlimitedIntregrationsSlider({ cardItems }: {
                 style={{
                   height: '100%',
                   overflow: 'hidden',
-                  width: '100%'
+                  width: '100%',
                 }} />
             </Box>
           ))}
@@ -56,7 +62,7 @@ export function UnlimitedIntregrationsSlider({ cardItems }: {
           activeStep={activeStep}
           nextButton={null}
           backButton={null}
-          sx={{ display: 'flex', justifyContent: 'center', marginTop: '25px' }} />
+          sx={{ ...styles.mobileStepper }} />
       </Container>
     </Box>
   );
