@@ -46,11 +46,13 @@ export function UnlimitedIntegrationsTexts() {
     }}>
       <Typography component={'h2'} variant={'h2'} sx={{
         ...style.mainHeading,
+        fontSize: (isMobile || isSmallest) ? '22px' : '36px',
       }}>
         {t('Unlimited')}
       </Typography>
 
-      <Typography component={'h3'} variant={'h3'} sx={{ ...style.secondaryHeading }}>
+      <Typography component={'h3'} variant={'h3'} sx={{ ...style.secondaryHeading,
+        fontSize: (isMobile || isSmallest) ? '28px' : '46px'}}>
         {t('possibilities of integration')}
       </Typography>
     </Box>
