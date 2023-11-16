@@ -10,25 +10,25 @@ import { UNLIMITED_INTEGRATIONS_CARD_ITEMS } from '@/features/landing/utils/cons
 import {
   UnlimitedIntregrationsSlider,
 } from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsSlider/UnlimitedIntegrationsSlider';
+import { useEffect, useState } from 'react';
 
 export function UnlimitedIntegrationsSection() {
   const { isTablet, isSmallest, isMobile } = useScreenSize();
-  const isLowerThanOrEqualToTablet = isTablet || isMobile || isSmallest;
 
   return (
     <Box
       sx={{
         padding: '56px 0 56px 0',
-        paddingLeft: (isLowerThanOrEqualToTablet) ? '34px' : '0',
-        paddingRight: (isLowerThanOrEqualToTablet) ? '34px' : '0',
+        paddingLeft: (isMobile || isSmallest) ? '0' : (isTablet) ? '34px' : '0',
+        paddingRight: (isMobile || isSmallest) ? '0' : (isTablet) ? '34px' : '0',
         background: '#FFF',
       }}>
       <Container sx={{ width: '100%', maxWidth: '1192px', margin: '0 auto' }}>
         <UnlimitedIntegrationsTexts />
         {
           (isMobile || isSmallest) ?
-          <UnlimitedIntregrationsSlider cardItems={UNLIMITED_INTEGRATIONS_CARD_ITEMS} /> :
-          <UnlimitedIntegrationsCardItems cardItems={UNLIMITED_INTEGRATIONS_CARD_ITEMS} />
+            <UnlimitedIntregrationsSlider cardItems={UNLIMITED_INTEGRATIONS_CARD_ITEMS} /> :
+            <UnlimitedIntegrationsCardItems cardItems={UNLIMITED_INTEGRATIONS_CARD_ITEMS} />
         }
       </Container>
     </Box>
