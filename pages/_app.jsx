@@ -22,6 +22,7 @@ const customBreakpoints = {
   xs: 0,
   sm: 375,
   md: 640,
+  smallTablet: 850,
   lg: 1024,
   xl: 1440,
 };

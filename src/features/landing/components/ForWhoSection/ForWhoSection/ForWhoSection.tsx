@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Box, Grid } from '@mui/material';
+
 import {
   scrollToRegistrationSection,
 } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
@@ -61,14 +62,14 @@ const styles = {
     width: '100%',
     padding: '58px 34px 0 34px',
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 };
 
 export function ForWhoSection() {
   const [cardItems, setCardItems] = useState(CARD_ITEMS);
-  const { isSmallest, isMobile } = useScreenSize();
+  const { isSmallest, isMobile, isSmallTablet } = useScreenSize();
   const handleTryItOutButtonClick = () => {
     scrollToRegistrationSection();
   };
@@ -82,9 +83,15 @@ export function ForWhoSection() {
 
   return (
     <Box
-      sx={{ ...styles.mainBox }}>
+      sx={{ ...styles.mainBox, marginTop: (isMobile || isSmallest) ? '0' : '89px' }}>
       <Box sx={{ ...styles.secondaryBoxContainer }}>
-        <Grid container sx={{ ...styles.mainGrid }}>
+        <Grid container sx={{
+          ...styles.mainGrid,
+          flexDirection: (isSmallTablet || isMobile || isSmallest) ? 'column' : 'row',
+          alignItems: (isSmallTablet) ? 'center' : 'stretch',
+          paddingTop: (isMobile || isSmallest) ? '38px' : '58px',
+          gap: (isSmallTablet) ? '59px' : (isSmallest) ? '0' : 'normal',
+        }}>
           {/* Main Texts (Top and Bottom) */}
           <ForWhoMainTextsContent onTryItOutButtonClick={handleTryItOutButtonClick} />
 

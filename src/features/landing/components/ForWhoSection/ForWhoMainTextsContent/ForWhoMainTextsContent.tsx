@@ -7,27 +7,17 @@ import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenS
 const styles = {
   mainGridContainer: {
     height: '100%',
-    minHeight: '498px',
     width: '100%',
     maxWidth: '343px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
+    marginBottom: '38px',
   },
   mainHeading: {
     width: '100%',
     maxWidth: '343px',
-  },
-  secondaryHeading: {
-    maxWidth: '374px',
-    width: '100%',
-    color: '#1A1C1E',
-    fontFamily: 'Stolz-Regular, sans-serif',
-    fontSize: '28px',
-    fontStyle: 'normal',
-    fontWeight: 700,
-    lineHeight: 'normal',
   },
 };
 
@@ -38,8 +28,7 @@ export function ForWhoMainTextsContent({ onTryItOutButtonClick }: {
   const { isSmallest, isMobile } = useScreenSize();
 
   return (
-    <Grid item container xs={12} md={6} sx={{ ...styles.mainGridContainer }}>
-
+    <Grid item container sx={{ ...styles.mainGridContainer }}>
       {/* Top Content */}
       <Grid item>
         <Typography variant={'h2'} component={'h2'} sx={{ ...styles.mainHeading }}>
@@ -58,18 +47,6 @@ export function ForWhoMainTextsContent({ onTryItOutButtonClick }: {
                   onClick={onTryItOutButtonClick}>{t('Try it out')}</Button>
         )}
       </Grid>
-
-      {/* Bottom content */}
-      {(isMobile || isSmallest) ? null : (
-        <Grid item>
-          <Typography variant={'h4'} component={'h4'}
-                      sx={{
-                        ...styles.secondaryHeading,
-                      }}>
-            {t('Our CRM is ideal if you:')}
-          </Typography>
-        </Grid>
-      )}
     </Grid>
   );
 }
