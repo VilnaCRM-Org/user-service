@@ -11,9 +11,9 @@ interface IHeaderActionButtonsProps {
 }
 
 export function HeaderActionButtons({
-                                      onSignInButtonClick,
-                                      onTryItOutButtonClick,
-                                    }: IHeaderActionButtonsProps) {
+  onSignInButtonClick,
+  onTryItOutButtonClick,
+}: IHeaderActionButtonsProps) {
   const { t } = useTranslation();
   const { isMobile, isSmallest } = useScreenSize();
 
@@ -22,27 +22,33 @@ export function HeaderActionButtons({
   }
 
   return (
-    <Grid container
-          sx={{
-            display: 'flex',
-            maxWidth: '250px',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            gap: '8px',
-            width: '100%',
-            md: { display: 'none' },
-          }}>
+    <Grid
+      container
+      sx={{
+        display: 'flex',
+        maxWidth: '250px',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        gap: '8px',
+        width: '100%',
+        md: { display: 'none' },
+      }}
+    >
       <Grid item>
-        <Button customVariant='transparent-white'
-                onClick={onSignInButtonClick}
-                style={{ width: '100%', maxWidth: '119px' }}>
+        <Button
+          customVariant="transparent-white"
+          onClick={onSignInButtonClick}
+          style={{ width: '100%', maxWidth: '119px' }}
+        >
           {t('Log in')}
         </Button>
       </Grid>
       <Grid item>
-        <Button customVariant='light-blue'
-                onClick={onTryItOutButtonClick}
-                style={{ width: '100%', maxWidth: '119px' }}>
+        <Button
+          customVariant="light-blue"
+          onClick={onTryItOutButtonClick}
+          style={{ width: '100%', maxWidth: '119px' }}
+        >
           {t('Try it out')}
         </Button>
       </Grid>

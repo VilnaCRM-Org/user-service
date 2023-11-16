@@ -5,13 +5,9 @@ import SwipeableViews from 'react-swipeable-views';
 import { autoPlay } from 'react-swipeable-views-utils';
 
 import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
-import {
-  WhyWeSectionCardItem,
-} from '@/features/landing/components/WhyWeSection/WhyWeSectionCardItem/WhyWeSectionCardItem';
+import { WhyWeSectionCardItem } from '@/features/landing/components/WhyWeSection/WhyWeSectionCardItem/WhyWeSectionCardItem';
 import { Button } from '@/components/ui/Button/Button';
-import {
-  scrollToRegistrationSection,
-} from '@/features/landing/utils/helpers/scrollToRegistrationSection';
+import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 
 const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
 
@@ -35,38 +31,48 @@ export function WhyWeSectionSlider({ cardItems }: { cardItems: IWhyWeCardItem[] 
     <Box sx={{ padding: '0 15px 0 15px' }}>
       <Container>
         <AutoPlaySwipeableViews
-          axis='x'
+          axis="x"
           index={activeStep}
           onChangeIndex={handleStepChange}
           enableMouseEvents
         >
           {cardItems.map((item, index) => (
-            <Box key={index} sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '100%',
-            }}>
-              <WhyWeSectionCardItem cardItem={item}
-                                    style={{
-                                      height: '100%',
-                                      overflow: 'hidden',
-                                    }} />
+            <Box
+              key={index}
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100%',
+              }}
+            >
+              <WhyWeSectionCardItem
+                cardItem={item}
+                style={{
+                  height: '100%',
+                  overflow: 'hidden',
+                }}
+              />
             </Box>
           ))}
         </AutoPlaySwipeableViews>
 
         <MobileStepper
           steps={maxSteps}
-          position='static'
+          position="static"
           activeStep={activeStep}
           nextButton={null}
           backButton={null}
-          sx={{ display: 'flex', justifyContent: 'center', marginTop: '25px' }} />
+          sx={{ display: 'flex', justifyContent: 'center', marginTop: '25px' }}
+        />
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Button customVariant={'light-blue'}
-                  onClick={handleTryItOutButtonClick}
-                  style={{ marginTop: '24px' }}>{t('Try it out')}</Button>
+          <Button
+            customVariant={'light-blue'}
+            onClick={handleTryItOutButtonClick}
+            style={{ marginTop: '24px' }}
+          >
+            {t('Try it out')}
+          </Button>
         </Box>
       </Container>
     </Box>

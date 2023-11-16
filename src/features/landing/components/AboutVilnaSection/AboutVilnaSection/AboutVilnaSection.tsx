@@ -1,15 +1,9 @@
 import React, { useEffect } from 'react';
 import AboutVilnaMainShape from '@/features/landing/assets/svg/AboutVilnaMainShape.svg';
-import {
-  scrollToRegistrationSection,
-} from '@/features/landing/utils/helpers/scrollToRegistrationSection';
+import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import {
-  AboutVilnaMainContent,
-} from '@/features/landing/components/AboutVilnaSection/AboutVilnaMainContent/AboutVilnaMainContent';
-import {
-  AboutVilnaSecondaryImages,
-} from '@/features/landing/components/AboutVilnaSection/AboutVilnaSecondaryImages/AboutVilnaSecondaryImages';
+import { AboutVilnaMainContent } from '@/features/landing/components/AboutVilnaSection/AboutVilnaMainContent/AboutVilnaMainContent';
+import { AboutVilnaSecondaryImages } from '@/features/landing/components/AboutVilnaSection/AboutVilnaSecondaryImages/AboutVilnaSecondaryImages';
 import { Box } from '@mui/material';
 
 const allSectionStyle: React.CSSProperties = {
@@ -44,7 +38,8 @@ export function AboutVilnaSection() {
       sx={{
         ...allSectionStyle,
         ...mainBoxStylesForTablet,
-      }}>
+      }}
+    >
       {/* Main Content (like: headings, text, button etc.) */}
       <AboutVilnaMainContent onTryItOutButtonClick={handleTryItOutButtonClick} />
       {/* Images Container */}

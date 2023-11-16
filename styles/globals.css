@@ -1,10 +1,10 @@
-@import "./fonts.css";
+@import './fonts.css';
 
 html,
 body {
   padding: 0;
   margin: 0;
-  font-family: "GolosText-Regular", sans-serif;
+  font-family: 'GolosText-Regular', sans-serif;
   scroll-behavior: smooth;
 }
 
@@ -20,7 +20,7 @@ a {
 }
 
 @media (prefers-color-scheme: dark) {
-/*  html {
+  /*  html {
     color-scheme: dark;
   }*/
 }

@@ -9,40 +9,49 @@ interface ICustomTooltipProps {
   children: React.ReactNode;
 }
 
-const useCustomStyles = makeStyles((theme: Theme) => createStyles({
-  tooltip: {
-    backgroundColor: theme.palette.common.white || '#FFF',
-    color: theme.palette.text.primary || '#000',
-    maxWidth: 'none',
-  },
-  content: {
-    width: '100%',
-    maxWidth: '330px',
-    height: '213px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    padding: '18px 24px 18px 24px',
-    borderRadius: '8px',
-    border: '1px solid #D0D4D8',
-    backgroundColor: '#FFF',
-  },
-}));
-
+const useCustomStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    tooltip: {
+      backgroundColor: theme.palette.common.white || '#FFF',
+      color: theme.palette.text.primary || '#000',
+      maxWidth: 'none',
+    },
+    content: {
+      width: '100%',
+      maxWidth: '330px',
+      height: '213px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      padding: '18px 24px 18px 24px',
+      borderRadius: '8px',
+      border: '1px solid #D0D4D8',
+      backgroundColor: '#FFF',
+    },
+  })
+);
 
 export function CustomTooltip({ title, text, icons, children }: ICustomTooltipProps) {
   const classes = useCustomStyles();
 
   const iconsJSX = useMemo(() => {
     return icons.map((iconSrc, index) => (
-      <Grid item key={index} sx={{
-        maxWidth: '25%',
-        height: '100%',
-        maxHeight: '45px',
-        alignSelf: 'center',
-      }} xs={3}>
-        <img src={iconSrc} alt={`Integration image ${index}`}
-             style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+      <Grid
+        item
+        key={index}
+        sx={{
+          maxWidth: '25%',
+          height: '100%',
+          maxHeight: '45px',
+          alignSelf: 'center',
+        }}
+        xs={3}
+      >
+        <img
+          src={iconSrc}
+          alt={`Integration image ${index}`}
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+        />
       </Grid>
     ));
   }, [icons]);
@@ -62,9 +71,12 @@ export function CustomTooltip({ title, text, icons, children }: ICustomTooltipPr
               fontStyle: 'normal',
               fontWeight: 600,
               lineHeight: 'normal',
-            }}>{title}</Typography>
+            }}
+          >
+            {title}
+          </Typography>
           <Typography
-            variant='body1'
+            variant="body1"
             component={'p'}
             sx={{
               color: '#000',
@@ -74,7 +86,10 @@ export function CustomTooltip({ title, text, icons, children }: ICustomTooltipPr
               fontWeight: 500,
               lineHeight: '18px',
               marginBottom: '22px',
-            }}>{text}</Typography>
+            }}
+          >
+            {text}
+          </Typography>
           <Grid container spacing={1}>
             {[...iconsJSX]}
           </Grid>

@@ -1,21 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 
-import {
-  scrollToRegistrationSection,
-} from '@/features/landing/utils/helpers/scrollToRegistrationSection';
-import {
-  ForWhoMainTextsContent,
-} from '@/features/landing/components/ForWhoSection/ForWhoMainTextsContent/ForWhoMainTextsContent';
-import {
-  ForWhoImagesContent,
-} from '@/features/landing/components/ForWhoSection/ForWhoImagesContent/ForWhoImagesContent';
-import {
-  ForWhoSectionCardItem,
-} from '@/features/landing/components/ForWhoSection/ForWhoSectionCardItem/ForWhoSectionCardItem';
-import {
-  ForWhoSectionCards,
-} from '@/features/landing/components/ForWhoSection/ForWhoSectionCards/ForWhoSectionCards';
+import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
+import { ForWhoMainTextsContent } from '@/features/landing/components/ForWhoSection/ForWhoMainTextsContent/ForWhoMainTextsContent';
+import { ForWhoImagesContent } from '@/features/landing/components/ForWhoSection/ForWhoImagesContent/ForWhoImagesContent';
+import { ForWhoSectionCardItem } from '@/features/landing/components/ForWhoSection/ForWhoSectionCardItem/ForWhoSectionCardItem';
+import { ForWhoSectionCards } from '@/features/landing/components/ForWhoSection/ForWhoSectionCards/ForWhoSectionCards';
 import { ForWhoSectionCardsMobile } from '../ForWhoSectionCardsMobile/ForWhoSectionCardsMobile';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
@@ -76,22 +66,30 @@ export function ForWhoSection() {
 
   const cardItemsJSX = useMemo(() => {
     return cardItems.map((cardItem) => {
-      return <ForWhoSectionCardItem key={cardItem.id} imageSrc={cardItem.imageSrc}
-                                    imageAltText={cardItem.imageAltText} text={cardItem.text} />;
+      return (
+        <ForWhoSectionCardItem
+          key={cardItem.id}
+          imageSrc={cardItem.imageSrc}
+          imageAltText={cardItem.imageAltText}
+          text={cardItem.text}
+        />
+      );
     });
   }, [cardItems]);
 
   return (
-    <Box
-      sx={{ ...styles.mainBox, marginTop: (isMobile || isSmallest) ? '0' : '89px' }}>
+    <Box sx={{ ...styles.mainBox, marginTop: isMobile || isSmallest ? '0' : '89px' }}>
       <Box sx={{ ...styles.secondaryBoxContainer }}>
-        <Grid container sx={{
-          ...styles.mainGrid,
-          flexDirection: (isSmallTablet || isMobile || isSmallest) ? 'column' : 'row',
-          alignItems: (isSmallTablet) ? 'center' : 'stretch',
-          paddingTop: (isMobile || isSmallest) ? '38px' : '58px',
-          gap: (isSmallTablet) ? '59px' : (isSmallest) ? '0' : 'normal',
-        }}>
+        <Grid
+          container
+          sx={{
+            ...styles.mainGrid,
+            flexDirection: isSmallTablet || isMobile || isSmallest ? 'column' : 'row',
+            alignItems: isSmallTablet ? 'center' : 'stretch',
+            paddingTop: isMobile || isSmallest ? '38px' : '58px',
+            gap: isSmallTablet ? '59px' : isSmallest ? '0' : 'normal',
+          }}
+        >
           {/* Main Texts (Top and Bottom) */}
           <ForWhoMainTextsContent onTryItOutButtonClick={handleTryItOutButtonClick} />
 
@@ -100,12 +98,16 @@ export function ForWhoSection() {
             mainImageSrc={images.mainImage.src}
             mainImageTitle={images.mainImage.title}
             secondaryImageTitle={images.secondaryImage.title}
-            secondaryImageSrc={images.secondaryImage.src} />
+            secondaryImageSrc={images.secondaryImage.src}
+          />
         </Grid>
 
         {/* Card Items */}
-        {(isMobile || isSmallest) ? <ForWhoSectionCardsMobile cardItemsJSX={cardItemsJSX} /> :
-          <ForWhoSectionCards cardItemsJSX={cardItemsJSX} />}
+        {isMobile || isSmallest ? (
+          <ForWhoSectionCardsMobile cardItemsJSX={cardItemsJSX} />
+        ) : (
+          <ForWhoSectionCards cardItemsJSX={cardItemsJSX} />
+        )}
       </Box>
     </Box>
   );

@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Grid, Box } from '@mui/material';
-import {
-  ForWhoMainBackgroundSvg,
-} from '@/features/landing/components/ForWhoSection/ForWhoMainBackgroundSvg/ForWhoMainBackgroundSvg';
+import { ForWhoMainBackgroundSvg } from '@/features/landing/components/ForWhoSection/ForWhoMainBackgroundSvg/ForWhoMainBackgroundSvg';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 const styles = {
@@ -42,22 +40,27 @@ const styles = {
 };
 
 export function ForWhoImagesContent({
-                                      mainImageSrc,
-                                      mainImageTitle,
-                                      secondaryImageSrc,
-                                      secondaryImageTitle,
-                                    }: {
+  mainImageSrc,
+  mainImageTitle,
+  secondaryImageSrc,
+  secondaryImageTitle,
+}: {
   mainImageSrc: string;
   mainImageTitle: string;
   secondaryImageSrc: string;
   secondaryImageTitle: string;
 }) {
   const { isTablet, isMobile, isSmallest } = useScreenSize();
-  const [mainImageBoxStylesForTablet, setMainImageBoxStylesForTablet] = useState<React.CSSProperties>({});
-  const [mainImageBoxStylesForMobileOrLower, setMainImageBoxStylesForMobileOrLower] = useState<React.CSSProperties>({});
-  const [secondaryImageBoxStylesForTablet, setSecondaryImageBoxStylesForTablet] = useState<React.CSSProperties>({});
-  const [secondaryImageBoxStylesForMobileOrLower, setSecondaryImageBoxStylesForMobileOrLower] = useState<React.CSSProperties>({});
-  const [mainBackgroundSvgBoxStylesForSmallest, setMainBackgroundSvgBoxStylesForSmallest] = useState<React.CSSProperties>({});
+  const [mainImageBoxStylesForTablet, setMainImageBoxStylesForTablet] =
+    useState<React.CSSProperties>({});
+  const [mainImageBoxStylesForMobileOrLower, setMainImageBoxStylesForMobileOrLower] =
+    useState<React.CSSProperties>({});
+  const [secondaryImageBoxStylesForTablet, setSecondaryImageBoxStylesForTablet] =
+    useState<React.CSSProperties>({});
+  const [secondaryImageBoxStylesForMobileOrLower, setSecondaryImageBoxStylesForMobileOrLower] =
+    useState<React.CSSProperties>({});
+  const [mainBackgroundSvgBoxStylesForSmallest, setMainBackgroundSvgBoxStylesForSmallest] =
+    useState<React.CSSProperties>({});
 
   const resetStylesForTabletAndMobileAndLower = () => {
     setMainImageBoxStylesForTablet({});
@@ -112,8 +115,9 @@ export function ForWhoImagesContent({
         sx={{
           ...styles.mainBackgroundSvgBox,
           ...mainBackgroundSvgBoxStylesForSmallest,
-          paddingTop: (isSmallest) ? '0' : '58px',
-        }}>
+          paddingTop: isSmallest ? '0' : '58px',
+        }}
+      >
         <ForWhoMainBackgroundSvg />
       </Box>
 
@@ -123,9 +127,13 @@ export function ForWhoImagesContent({
           ...styles.mainImageBox,
           ...mainImageBoxStylesForTablet,
           ...mainImageBoxStylesForMobileOrLower,
-        }}>
-        <img src={mainImageSrc} alt={mainImageTitle}
-             style={{ maxWidth: '100%', objectFit: 'cover' }} />
+        }}
+      >
+        <img
+          src={mainImageSrc}
+          alt={mainImageTitle}
+          style={{ maxWidth: '100%', objectFit: 'cover' }}
+        />
       </Box>
 
       {/*  Secondary Image Box */}
@@ -134,9 +142,13 @@ export function ForWhoImagesContent({
           ...styles.secondaryImageBox,
           ...secondaryImageBoxStylesForTablet,
           ...secondaryImageBoxStylesForMobileOrLower,
-        }}>
-        <img src={secondaryImageSrc} alt={secondaryImageTitle}
-             style={{ maxWidth: '100%', objectFit: 'cover' }} />
+        }}
+      >
+        <img
+          src={secondaryImageSrc}
+          alt={secondaryImageTitle}
+          style={{ maxWidth: '100%', objectFit: 'cover' }}
+        />
       </Box>
     </Grid>
   );

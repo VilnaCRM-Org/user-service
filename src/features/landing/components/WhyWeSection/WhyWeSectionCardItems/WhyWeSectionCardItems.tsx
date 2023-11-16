@@ -13,15 +13,18 @@ export function WhyWeSectionCardItems({ cardItems, tooltipIcons }: IWhyWeSection
 
   return (
     <Container sx={{ width: '100%', maxWidth: '1192px' }}>
-      <WhyWeSectionCardItemsRow cardItems={cardItems.slice(0, 3)}
-                                style={{ padding: isTablet ? '0 32px 0 32px' : '0 0 0 0' }}
-                                tooltipIcons={tooltipIcons} />
-      <WhyWeSectionCardItemsRow cardItems={cardItems.slice(3, 6)}
-                                style={{
-                                  padding: isTablet ? '0 32px 0 32px' : '0 0 0 0',
-                                  marginTop: '13px',
-                                }}
-                                tooltipIcons={tooltipIcons}
+      <WhyWeSectionCardItemsRow
+        cardItems={cardItems.slice(0, 3)}
+        style={{ padding: isTablet ? '0 32px 0 32px' : '0 0 0 0' }}
+        tooltipIcons={tooltipIcons}
+      />
+      <WhyWeSectionCardItemsRow
+        cardItems={cardItems.slice(3, 6)}
+        style={{
+          padding: isTablet ? '0 32px 0 32px' : '0 0 0 0',
+          marginTop: '13px',
+        }}
+        tooltipIcons={tooltipIcons}
       />
     </Container>
   );

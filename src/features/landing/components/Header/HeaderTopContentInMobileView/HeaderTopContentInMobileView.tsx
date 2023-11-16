@@ -3,9 +3,7 @@ import { Grid, IconButton } from '@mui/material';
 import { VilnaMainIcon } from '@/features/landing/components/Icons/VilnaMainIcon/VilnaMainIcon';
 import { CustomLink } from '@/components/ui/CustomLink/CustomLink';
 import { VilnaMenuIcon } from '@/features/landing/components/Icons/VilnaMenuIcon/VilnaMenuIcon';
-import {
-  HeaderDrawerActionButtons,
-} from '@/features/landing/components/Header/HeaderDrawerActionButtons/HeaderDrawerActionButtons';
+import { HeaderDrawerActionButtons } from '@/features/landing/components/Header/HeaderDrawerActionButtons/HeaderDrawerActionButtons';
 
 interface IHeaderTopContentInMobileViewProps {
   onSignInButtonClick: () => void;
@@ -22,35 +20,42 @@ const logoStyle = {
 };
 
 export function HeaderTopContentInMobileView({
-                                               onSignInButtonClick,
-                                               onTryItOutButtonClick,
-                                               onMobileViewDrawerClose,
-                                               onDrawerClose
-                                             }: IHeaderTopContentInMobileViewProps) {
+  onSignInButtonClick,
+  onTryItOutButtonClick,
+  onMobileViewDrawerClose,
+  onDrawerClose,
+}: IHeaderTopContentInMobileViewProps) {
   return (
     <>
-      <Grid container
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '12px',
-            }}>
-        <CustomLink href={'/'}
-                    style={logoStyle}>
+      <Grid
+        container
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '12px',
+        }}
+      >
+        <CustomLink href={'/'} style={logoStyle}>
           <VilnaMainIcon />
         </CustomLink>
         <IconButton
           onClick={onMobileViewDrawerClose}
-          edge='start' color='inherit' aria-label='menu'
+          edge="start"
+          color="inherit"
+          aria-label="menu"
           sx={{
             justifySelf: 'flex-end',
-          }}>
+          }}
+        >
           <VilnaMenuIcon isActive={true} />
         </IconButton>
       </Grid>
-      <HeaderDrawerActionButtons onSignInButtonClick={onSignInButtonClick}
-                                 onTryItOutButtonClick={onTryItOutButtonClick} onDrawerClose={onDrawerClose}/>
+      <HeaderDrawerActionButtons
+        onSignInButtonClick={onSignInButtonClick}
+        onTryItOutButtonClick={onTryItOutButtonClick}
+        onDrawerClose={onDrawerClose}
+      />
     </>
   );
 }

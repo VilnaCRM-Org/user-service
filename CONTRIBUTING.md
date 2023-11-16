@@ -46,6 +46,7 @@ If you find an issue to work on, you are welcome to open a PR with a fix.
 1. Fork the repository.
 
 - Using GitHub Desktop:
+
   - [Getting started with GitHub Desktop](https://docs.github.com/en/desktop/installing-and-configuring-github-desktop/getting-started-with-github-desktop)
     will guide you through setting up Desktop.
   - Once Desktop is set up, you can use
@@ -64,6 +65,8 @@ If you find an issue to work on, you are welcome to open a PR with a fix.
 
 Commit the changes once you are happy with them.
 Don't forget to self-review to speed up the review process:zap:.
+
+Our commits are based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 
 ### Pull Request
 

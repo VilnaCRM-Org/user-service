@@ -16,9 +16,7 @@ const styles = {
   },
 };
 
-export function ForWhoSectionCards({ cardItemsJSX }: {
-  cardItemsJSX: React.ReactNode;
-}) {
+export function ForWhoSectionCards({ cardItemsJSX }: { cardItemsJSX: React.ReactNode }) {
   const { t } = useTranslation();
   const { isSmallest } = useScreenSize();
 
@@ -26,24 +24,29 @@ export function ForWhoSectionCards({ cardItemsJSX }: {
     <>
       <Box sx={{ padding: '0 34px 0 34px' }}>
         <Grid item>
-          <Typography variant={'h4'} component={'h4'}
-                      sx={{
-                        ...styles.secondaryHeading,
-                        fontSize: (isSmallest) ? '22px' : styles.secondaryHeading.fontSize,
-                      }}>
+          <Typography
+            variant={'h4'}
+            component={'h4'}
+            sx={{
+              ...styles.secondaryHeading,
+              fontSize: isSmallest ? '22px' : styles.secondaryHeading.fontSize,
+            }}
+          >
             {t('Our CRM is ideal if you:')}
           </Typography>
         </Grid>
       </Box>
-      <Grid container
-            alignItems={'stretch'}
-            spacing={3}
-            sx={{
-              position: 'absolute',
-              bottom: '-150px',
-              zIndex: 900,
-              padding: '0 34px',
-            }}>
+      <Grid
+        container
+        alignItems={'stretch'}
+        spacing={3}
+        sx={{
+          position: 'absolute',
+          bottom: '-150px',
+          zIndex: 900,
+          padding: '0 34px',
+        }}
+      >
         {cardItemsJSX}
       </Grid>
     </>

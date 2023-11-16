@@ -1,7 +1,5 @@
-import semver from 'semver';
-import packageJSON from './package.json' assert { type: 'json' };
-
-const { engines } = packageJSON;
+const semver = require('semver');
+const { engines } = require('./package.json');
 
 const version = engines.node;
 if (!semver.satisfies(process.version, version)) {

@@ -11,7 +11,7 @@ enum ButtonBackgroundEnum {
   WHITE = '#FFF',
   WHITE_ACTIVE = '#FFF',
   WHITE_HOVER = '#EAECEE',
-  WHITE_DISABLED = '#E1E7EA'
+  WHITE_DISABLED = '#E1E7EA',
 }
 
 enum ButtonBorderColorEnum {
@@ -22,7 +22,7 @@ enum ButtonBorderColorEnum {
   WHITE = '#969B9D',
   WHITE_ACTIVE = '#EAECEE',
   WHITE_HOVER = '#EAECEE',
-  WHITE_DISABLED = '#E1E7EA'
+  WHITE_DISABLED = '#E1E7EA',
 }
 
 enum ButtonColorEnum {
@@ -33,7 +33,7 @@ enum ButtonColorEnum {
   WHITE = '#1B2327',
   WHITE_ACTIVE = '#1B2327',
   WHITE_HOVER = '#1B2327',
-  WHITE_DISABLED = '#FFFFFF'
+  WHITE_DISABLED = '#FFFFFF',
 }
 
 interface IButtonProps extends ButtonProps {
@@ -47,15 +47,15 @@ interface IButtonProps extends ButtonProps {
 }
 
 export function Button({
-                         children,
-                         customVariant,
-                         isDisabled = false,
-                         buttonSize = 'medium',
-                         onClick,
-                         fullWidth,
-                         style,
-                         ...props
-                       }: IButtonProps) {
+  children,
+  customVariant,
+  isDisabled = false,
+  buttonSize = 'medium',
+  onClick,
+  fullWidth,
+  style,
+  ...props
+}: IButtonProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isActive, setIsActive] = useState(false);
 
@@ -69,7 +69,7 @@ export function Button({
     backgroundColor: ButtonBackgroundEnum.DEFAULT_BLUE,
     borderRadius: DEFAULT_BUTTON_BORDER_RADIUS,
     padding: buttonSize === 'medium' ? '16px 24px' : '20px 30px',
-    fontFamily: '\'GolosText-Regular\', sans-serif',
+    fontFamily: "'GolosText-Regular', sans-serif",
     fontSize: '15px',
     fontStyle: 'normal',
     fontWeight: 500,
@@ -136,18 +136,23 @@ export function Button({
     };
   }
 
-  return <button {...props} style={{
-    ...buttonStyle,
-    ...(isHovered && hoverStyle),
-    ...(isActive && activeStyle),
-    ...(isDisabled && disabledStyle),
-  }}
-                 onMouseEnter={() => setIsHovered(true)}
-                 onMouseLeave={() => setIsHovered(false)}
-                 onMouseDown={() => setIsActive(true)}
-                 onMouseUp={() => setIsActive(false)}
-                 onClick={isDisabled ? undefined : handleButtonClick}
-                 disabled={isDisabled}>
-    {children}
-  </button>;
+  return (
+    <button
+      {...props}
+      style={{
+        ...buttonStyle,
+        ...(isHovered && hoverStyle),
+        ...(isActive && activeStyle),
+        ...(isDisabled && disabledStyle),
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onMouseDown={() => setIsActive(true)}
+      onMouseUp={() => setIsActive(false)}
+      onClick={isDisabled ? undefined : handleButtonClick}
+      disabled={isDisabled}
+    >
+      {children}
+    </button>
+  );
 }

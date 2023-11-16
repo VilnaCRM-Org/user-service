@@ -19,20 +19,22 @@ export const WHY_WE_CARD_ITEMS: IWhyWeCardItem[] = [
   {
     id: 'card-item-3',
     imageSrc: '/assets/img/WhyWeSection/3_templates.png',
-    text: 'You have: an online store, courses or a web studio\n' +
+    text:
+      'You have: an online store, courses or a web studio\n' +
       'We have: special templates that will save you time',
     title: 'Ready templates',
   },
   {
     id: 'card-item-4',
     imageSrc: '/assets/img/WhyWeSection/4_services.png',
-    text: 'We know the specific needs of EdTech, agencies and service providers - that\'s why we created a CRM that\'s easy to use',
+    text: "We know the specific needs of EdTech, agencies and service providers - that's why we created a CRM that's easy to use",
     title: 'Ideal for services',
   },
   {
     id: 'card-item-5',
     imageSrc: '/assets/img/WhyWeSection/5_integrations.png',
-    text: 'Connect your CMS and IP telephony in a few clicks.\n' +
+    text:
+      'Connect your CMS and IP telephony in a few clicks.\n' +
       'And for specific integrations, use Zapier, APIs, and public libraries',
     title: 'All required integrations',
   },
@@ -48,8 +50,7 @@ export const UNLIMITED_INTEGRATIONS_CARD_ITEMS: IUnlimitedIntegrationsItem[] = [
   {
     id: 'item_1',
     imageSrc: '/assets/img/UnlimitedIntegrations/Ruby_1.png',
-    text: 'In case you didn\'t find it\n' +
-      'ready integration is required',
+    text: "In case you didn't find it\n" + 'ready integration is required',
     title: 'Public API',
     imageTitle: 'Ruby Image 1',
   },
@@ -70,8 +71,7 @@ export const UNLIMITED_INTEGRATIONS_CARD_ITEMS: IUnlimitedIntegrationsItem[] = [
   {
     id: 'item_4',
     imageSrc: '/assets/img/UnlimitedIntegrations/Ruby_4.png',
-    text: 'For custom integrations\n' +
-      'with specific products',
+    text: 'For custom integrations\n' + 'with specific products',
     title: 'Public libraries',
     imageTitle: 'Ruby Image 4',
   },

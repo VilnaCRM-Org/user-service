@@ -28,24 +28,30 @@ const style = {
 };
 
 export function ForWhoSectionCardItem({
-                                        imageSrc,
-                                        imageAltText,
-                                        text,
-                                      }: IForWhoSectionCardItemProps) {
+  imageSrc,
+  imageAltText,
+  text,
+}: IForWhoSectionCardItemProps) {
   const { isMobile, isSmallest } = useScreenSize();
   const { t } = useTranslation();
 
   return (
     <Grid item md={6} xs={12} sx={{ alignSelf: 'stretch', flexGrow: '1' }}>
-      <Card sx={{
-        ...style.card,
-        boxShadow: (isMobile || isSmallest) ? 'none' : '0px 8px 27px 0px rgba(49, 59, 67, 0.14)',
-        padding: (isMobile || isSmallest) ? '0' : '27px 32px 28px 32px',
-        minHeight: (isMobile || isSmallest) ? 'max-content': '115px',
-        height: '100%',
-      }}>
+      <Card
+        sx={{
+          ...style.card,
+          boxShadow: isMobile || isSmallest ? 'none' : '0px 8px 27px 0px rgba(49, 59, 67, 0.14)',
+          padding: isMobile || isSmallest ? '0' : '27px 32px 28px 32px',
+          minHeight: isMobile || isSmallest ? 'max-content' : '115px',
+          height: '100%',
+        }}
+      >
         <Paper elevation={0}>
-          <img src={imageSrc} alt={imageAltText} style={{ width: '100%', height: '100%', minWidth: '20px' }} />
+          <img
+            src={imageSrc}
+            alt={imageAltText}
+            style={{ width: '100%', height: '100%', minWidth: '20px' }}
+          />
         </Paper>
         <Typography variant={'body1'} component={'p'} sx={{ ...style.text }}>
           {t(text)}

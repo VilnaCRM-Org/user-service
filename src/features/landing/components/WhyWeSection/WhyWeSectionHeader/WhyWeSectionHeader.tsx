@@ -34,19 +34,31 @@ export function WhyWeSectionHeader({ style }: IWhyWeSectionHeaderProps) {
   const { t } = useTranslation();
   const { isSmallest } = useScreenSize();
 
-  return <Box sx={{ ...style }}>
-    <Typography variant='h1' component='h2' sx={{
-      ...styles.mainHeading,
-      fontSize: (isSmallest) ? '28px' : styles.mainHeading.fontSize,
-    }}>
-      {t('Why we')}
-    </Typography>
+  return (
+    <Box sx={{ ...style }}>
+      <Typography
+        variant="h1"
+        component="h2"
+        sx={{
+          ...styles.mainHeading,
+          fontSize: isSmallest ? '28px' : styles.mainHeading.fontSize,
+        }}
+      >
+        {t('Why we')}
+      </Typography>
 
-    <Typography variant='body1' component={'p'} sx={{
-      ...styles.text,
-      fontSize: (isSmallest) ? '15px' : styles.text.fontSize,
-    }}>
-      {t('Unlimited customization options or ease of use - we\'ve made it easy for any business to manage sales')}
-    </Typography>
-  </Box>;
+      <Typography
+        variant="body1"
+        component={'p'}
+        sx={{
+          ...styles.text,
+          fontSize: isSmallest ? '15px' : styles.text.fontSize,
+        }}
+      >
+        {t(
+          "Unlimited customization options or ease of use - we've made it easy for any business to manage sales"
+        )}
+      </Typography>
+    </Box>
+  );
 }

@@ -1,9 +1,7 @@
 import { useMemo } from 'react';
 import { Grid } from '@mui/material';
 import { IUnlimitedIntegrationsItem } from '@/features/landing/types/unlimited-integrations/types';
-import {
-  UnlimitedIntegrationsCardItem,
-} from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsCardItem/UnlimitedIntegrationsCardItem';
+import { UnlimitedIntegrationsCardItem } from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsCardItem/UnlimitedIntegrationsCardItem';
 
 interface IUnlimitedIntegrationsCardItemsProps {
   cardItems: IUnlimitedIntegrationsItem[];
@@ -15,7 +13,9 @@ const styles = {
   },
 };
 
-export function UnlimitedIntegrationsCardItems({ cardItems }: IUnlimitedIntegrationsCardItemsProps) {
+export function UnlimitedIntegrationsCardItems({
+  cardItems,
+}: IUnlimitedIntegrationsCardItemsProps) {
   const cardItemsJSX = useMemo(() => {
     return cardItems.map((cardItem) => {
       return (

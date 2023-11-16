@@ -39,20 +39,29 @@ export function UnlimitedIntegrationsTexts() {
   const { isMobile, isSmallest } = useScreenSize();
 
   return (
-    <Box sx={{
-      ...style.mainBox,
-      alignItems: (isMobile || isSmallest) ? 'flex-start' : 'center',
-      textAlign: (isMobile || isSmallest) ? 'left' : 'center',
-    }}>
-      <Typography component={'h2'} variant={'h2'} sx={{
-        ...style.mainHeading,
-        fontSize: (isMobile || isSmallest) ? '22px' : '36px',
-      }}>
+    <Box
+      sx={{
+        ...style.mainBox,
+        alignItems: isMobile || isSmallest ? 'flex-start' : 'center',
+        textAlign: isMobile || isSmallest ? 'left' : 'center',
+      }}
+    >
+      <Typography
+        component={'h2'}
+        variant={'h2'}
+        sx={{
+          ...style.mainHeading,
+          fontSize: isMobile || isSmallest ? '22px' : '36px',
+        }}
+      >
         {t('Unlimited')}
       </Typography>
 
-      <Typography component={'h3'} variant={'h3'} sx={{ ...style.secondaryHeading,
-        fontSize: (isMobile || isSmallest) ? '28px' : '46px'}}>
+      <Typography
+        component={'h3'}
+        variant={'h3'}
+        sx={{ ...style.secondaryHeading, fontSize: isMobile || isSmallest ? '28px' : '46px' }}
+      >
         {t('possibilities of integration')}
       </Typography>
     </Box>

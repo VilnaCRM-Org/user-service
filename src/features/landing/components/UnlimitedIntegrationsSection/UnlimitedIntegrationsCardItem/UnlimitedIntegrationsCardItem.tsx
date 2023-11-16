@@ -55,34 +55,51 @@ const styles = {
   },
 };
 
-export function UnlimitedIntegrationsCardItem({ cardItem , style }: IUnlimitedIntegrationsCardItemProps) {
+export function UnlimitedIntegrationsCardItem({
+  cardItem,
+  style,
+}: IUnlimitedIntegrationsCardItemProps) {
   const { t } = useTranslation();
 
   return (
-      <Card sx={{
+    <Card
+      sx={{
         ...styles.card,
         ...style,
-      }}>
-        <Paper
-          sx={{
-            ...styles.paperWithImage,
-          }}
-          elevation={0}>
-          <img src={cardItem.imageSrc} alt={cardItem.imageTitle}
-               style={{ ...styles.imageInsideOfPaper, objectFit: 'cover' }} />
-        </Paper>
+      }}
+    >
+      <Paper
+        sx={{
+          ...styles.paperWithImage,
+        }}
+        elevation={0}
+      >
+        <img
+          src={cardItem.imageSrc}
+          alt={cardItem.imageTitle}
+          style={{ ...styles.imageInsideOfPaper, objectFit: 'cover' }}
+        />
+      </Paper>
 
-        <Typography component={'h4'} variant={'h4'} sx={{
+      <Typography
+        component={'h4'}
+        variant={'h4'}
+        sx={{
           ...styles.title,
-        }}>
-          {t(cardItem.title)}
-        </Typography>
+        }}
+      >
+        {t(cardItem.title)}
+      </Typography>
 
-        <Typography component={'p'} variant={'body1'} sx={{
+      <Typography
+        component={'p'}
+        variant={'body1'}
+        sx={{
           ...styles.text,
-        }}>
-          <span dangerouslySetInnerHTML={{ __html: t(cardItem.text) }} />
-        </Typography>
-      </Card>
+        }}
+      >
+        <span dangerouslySetInnerHTML={{ __html: t(cardItem.text) }} />
+      </Typography>
+    </Card>
   );
 }

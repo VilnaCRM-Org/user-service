@@ -12,27 +12,31 @@ interface IWhyWeSectionCardItemsRowProps {
 }
 
 export function WhyWeSectionCardItemsRow({
-                                           cardItems,
-                                           style,
-                                           tooltipIcons,
-                                         }: IWhyWeSectionCardItemsRowProps) {
+  cardItems,
+  style,
+  tooltipIcons,
+}: IWhyWeSectionCardItemsRowProps) {
   return (
-    <Grid container
-          sx={{
-            ...style,
-          }}
-          spacing={'13px'}>
-      {
-        cardItems.map(cardItem => {
-          return <Grid item key={cardItem.id} xs={4}>
-            <CustomTooltip title={'Regular services'}
-                           text={'Integrate in a few clicks'}
-                           icons={tooltipIcons}>
+    <Grid
+      container
+      sx={{
+        ...style,
+      }}
+      spacing={'13px'}
+    >
+      {cardItems.map((cardItem) => {
+        return (
+          <Grid item key={cardItem.id} xs={4}>
+            <CustomTooltip
+              title={'Regular services'}
+              text={'Integrate in a few clicks'}
+              icons={tooltipIcons}
+            >
               <WhyWeSectionCardItem cardItem={cardItem} />
             </CustomTooltip>
-          </Grid>;
-        })
-      }
+          </Grid>
+        );
+      })}
     </Grid>
   );
 }

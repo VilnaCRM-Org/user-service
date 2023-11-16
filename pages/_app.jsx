@@ -29,36 +29,37 @@ const customBreakpoints = {
 
 // eslint-disable-next-line react/prop-types
 function MyApp({ Component, pageProps }) {
-  const theme = createTheme(
-    {
-      palette: {
-        mode: 'light',
-      },
-      breakpoints: {
-        values: customBreakpoints,
-      },
-      typography: {},
-      components: {
-        MuiContainer: {
-          styleOverrides: {
-            root: {
-              '@media (min-width: 375px)': {
-                paddingLeft: '0px',
-                paddingRight: '0px',
-              },
+  const theme = createTheme({
+    palette: {
+      mode: 'light',
+    },
+    breakpoints: {
+      values: customBreakpoints,
+    },
+    typography: {},
+    components: {
+      MuiContainer: {
+        styleOverrides: {
+          root: {
+            '@media (min-width: 375px)': {
+              paddingLeft: '0px',
+              paddingRight: '0px',
             },
           },
         },
       },
-    });
+    },
+  });
 
   useEffect(() => {
     document.documentElement.dir = i18n.dir();
   }, []);
 
-  return <ThemeProvider theme={theme}>
-    <Component {...pageProps} />
-  </ThemeProvider>;
+  return (
+    <ThemeProvider theme={theme}>
+      <Component {...pageProps} />
+    </ThemeProvider>
+  );
 }
 
 export default MyApp;

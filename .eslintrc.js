@@ -4,25 +4,27 @@ module.exports = {
     node: true,
     es6: true,
     jest: true,
+    browser: true,
   },
-  parserOptions: { ecmaVersion: 8, sourceType: 'module' },
-  ignorePatterns: ['node_modules/*', 'docker-compose.yml', 'pnpm-lock.yaml'],
+  parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+  ignorePatterns: [
+    'node_modules/*',
+    'docker-compose.yml',
+    'pnpm-lock.yaml',
+    '.github/*',
+    'artillery/*',
+  ],
   extends: [
     'eslint:recommended',
-    'next',
     'plugin:storybook/recommended',
     'airbnb',
     'airbnb/hooks',
     'plugin:@next/next/recommended',
+    'prettier',
   ],
   overrides: [
     {
-      files: [
-        '**/*.ts',
-        '**/*.tsx',
-        '**/*.spec.js',
-        '**/*.spec.jsx',
-      ],
+      files: ['**/*.ts', '**/*.tsx', '**/*.spec.js', '**/*.spec.jsx'],
       parser: '@typescript-eslint/parser',
       settings: {
         react: { version: 'detect' },

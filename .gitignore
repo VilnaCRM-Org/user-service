@@ -46,3 +46,8 @@ next-env.d.ts
 
 ./tsconfig.tsbuildinfo
 
+.vscode/
+./.vscode/
+
+./storybook-static
+storybook-static

@@ -7,18 +7,12 @@ import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenS
 enum GapForLinksEnum {
   Tablet = '10px',
   Laptop = '16px',
-  Desktop = '32px'
+  Desktop = '32px',
 }
 
 export function HeaderMainLinks() {
   const { t } = useTranslation();
-  const {
-    isDesktop,
-    isLaptop,
-    isTablet,
-    isMobile,
-    isSmallest,
-  } = useScreenSize();
+  const { isDesktop, isLaptop, isTablet, isMobile, isSmallest } = useScreenSize();
 
   if (isMobile || isSmallest) {
     return null;
@@ -35,13 +29,17 @@ export function HeaderMainLinks() {
   }
 
   return (
-    <Grid container justifyContent={'center'} gap={'32px'}
-          sx={{
-            display: 'flex',
-            flexGrow: 1,
-            justifyContent: 'center',
-            gap: gapForLinks,
-          }}>
+    <Grid
+      container
+      justifyContent={'center'}
+      gap={'32px'}
+      sx={{
+        display: 'flex',
+        flexGrow: 1,
+        justifyContent: 'center',
+        gap: gapForLinks,
+      }}
+    >
       <Grid item>
         <CustomLink href={'/'} style={{ textDecoration: 'none', color: 'black' }}>
           {t('Advantages')}

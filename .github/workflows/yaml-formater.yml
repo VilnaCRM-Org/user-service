@@ -2,7 +2,7 @@ name: Format yaml files
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
 
 jobs:
   yamlfmt:

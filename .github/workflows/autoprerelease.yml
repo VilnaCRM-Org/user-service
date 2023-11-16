@@ -2,7 +2,7 @@ name: generate changelog and create pre release
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
     paths-ignore:
       - 'package.json'
       - 'CHANGELOG.md'
@@ -25,9 +25,9 @@ jobs:
         uses: TriPSs/conventional-changelog-action@v3
         with:
           github-token: ${{ secrets.REPO_GITHUB_TOKEN }}
-          output-file: "false"
-          version-file: "package.json"
-          pre-release: "true"
+          output-file: 'false'
+          version-file: 'package.json'
+          pre-release: 'true'
 
       - name: Create Release
         uses: actions/create-release@v1

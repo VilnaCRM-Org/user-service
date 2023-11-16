@@ -6,20 +6,14 @@ import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenS
 import { CustomLink } from '@/components/ui/CustomLink/CustomLink';
 import { VilnaMainIcon } from '../../Icons/VilnaMainIcon/VilnaMainIcon';
 
-import {
-  HeaderMainLinks,
-} from '@/features/landing/components/Header/HeaderMainLinks/HeaderMainLinks';
-import {
-  HeaderActionButtons,
-} from '@/features/landing/components/Header/HeaderActionButtons/HeaderActionButtons';
+import { HeaderMainLinks } from '@/features/landing/components/Header/HeaderMainLinks/HeaderMainLinks';
+import { HeaderActionButtons } from '@/features/landing/components/Header/HeaderActionButtons/HeaderActionButtons';
 import { HeaderDrawerMenu } from '../HeaderDrawerMenu/HeaderDrawerMenu';
 import { useState } from 'react';
-import {
-  scrollToRegistrationSection,
-} from '@/features/landing/utils/helpers/scrollToRegistrationSection';
+import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 
 type Position =
-  'sticky'
+  | 'sticky'
   | 'relative'
   | 'absolute'
   | 'fixed'
@@ -78,11 +72,7 @@ const appBarStylesIfScreenResolutionIsLaptop = (isLaptop: boolean) => {
 
 export function Header() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const {
-    isSmallest,
-    isMobile,
-    isLaptop,
-  } = useScreenSize();
+  const { isSmallest, isMobile, isLaptop } = useScreenSize();
 
   const toggleDrawer = () => {
     setIsDrawerOpen(!isDrawerOpen);
@@ -92,62 +82,76 @@ export function Header() {
     toggleDrawer();
   };
 
-  const handleSignInButtonClick = () => {
-  };
+  const handleSignInButtonClick = () => {};
 
   const handleTryItOutButtonClick = () => {
     scrollToRegistrationSection();
   };
 
   return (
-    <AppBar sx={{
-      ...appBarContainerStyle,
-      ...(appBarStylesIfScreenResolutionIsLaptop(isLaptop)),
-    }} elevation={0}>
-      <Container sx={{
-        width: '100%',
-        '& .MuiContainer-root': {
-          paddingLeft: 0,
-          paddingRight: 0,
-        },
-      }}>
-        <Toolbar disableGutters
-                 sx={{
-                   display: 'flex',
-                   justifyContent: 'space-between',
-                   alignItems: 'center',
-                   maxWidth: '100%',
-                 }}>
+    <AppBar
+      sx={{
+        ...appBarContainerStyle,
+        ...appBarStylesIfScreenResolutionIsLaptop(isLaptop),
+      }}
+      elevation={0}
+    >
+      <Container
+        sx={{
+          width: '100%',
+          '& .MuiContainer-root': {
+            paddingLeft: 0,
+            paddingRight: 0,
+          },
+        }}
+      >
+        <Toolbar
+          disableGutters
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            maxWidth: '100%',
+          }}
+        >
           {/* Main Vilna Icon */}
-          <CustomLink href={'/'}
-                      style={logoStyle}>
+          <CustomLink href={'/'} style={logoStyle}>
             <VilnaMainIcon />
           </CustomLink>
 
           {
             /* Menu Icon */
-            (isMobile || isSmallest) ? (<IconButton
-              onClick={handleMenuButtonClick}
-              edge='start' color='inherit' aria-label='menu'
-              sx={{
-                justifySelf: 'flex-end',
-              }}>
-              <VilnaMenuIcon isActive={false} />
-            </IconButton>) : null
+            isMobile || isSmallest ? (
+              <IconButton
+                onClick={handleMenuButtonClick}
+                edge="start"
+                color="inherit"
+                aria-label="menu"
+                sx={{
+                  justifySelf: 'flex-end',
+                }}
+              >
+                <VilnaMenuIcon isActive={false} />
+              </IconButton>
+            ) : null
           }
 
           {/* Header Main Links */}
           <HeaderMainLinks />
 
           {/* Header Action Buttons */}
-          <HeaderActionButtons onSignInButtonClick={handleSignInButtonClick}
-                               onTryItOutButtonClick={handleTryItOutButtonClick} />
+          <HeaderActionButtons
+            onSignInButtonClick={handleSignInButtonClick}
+            onTryItOutButtonClick={handleTryItOutButtonClick}
+          />
         </Toolbar>
       </Container>
-      <HeaderDrawerMenu isDrawerOpen={isDrawerOpen} onToggleDrawer={toggleDrawer}
-                        onSignInButtonClick={handleSignInButtonClick}
-                        onTryItOutButtonClick={handleTryItOutButtonClick} />
+      <HeaderDrawerMenu
+        isDrawerOpen={isDrawerOpen}
+        onToggleDrawer={toggleDrawer}
+        onSignInButtonClick={handleSignInButtonClick}
+        onTryItOutButtonClick={handleTryItOutButtonClick}
+      />
     </AppBar>
   );
 }
-

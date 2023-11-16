@@ -10,10 +10,10 @@ interface IHeaderDrawerActionButtonsProps {
 }
 
 export function HeaderDrawerActionButtons({
-                                            onSignInButtonClick,
-                                            onTryItOutButtonClick,
-                                            onDrawerClose,
-                                          }: IHeaderDrawerActionButtonsProps) {
+  onSignInButtonClick,
+  onTryItOutButtonClick,
+  onDrawerClose,
+}: IHeaderDrawerActionButtonsProps) {
   const { t } = useTranslation();
 
   const handleTryItOutClickWithDrawerClose = () => {
@@ -22,23 +22,35 @@ export function HeaderDrawerActionButtons({
   };
 
   return (
-    <Grid container justifyContent={'space-between'} flexGrow={0}
-          sx={{
-            display: 'flex',
-            width: '100%',
-            maxWidth: '100%',
-            md: { display: 'none' },
-            marginBottom: '16px',
-          }}>
+    <Grid
+      container
+      justifyContent={'space-between'}
+      flexGrow={0}
+      sx={{
+        display: 'flex',
+        width: '100%',
+        maxWidth: '100%',
+        md: { display: 'none' },
+        marginBottom: '16px',
+      }}
+    >
       <Grid item xs={6} sm={6}>
-        <Button customVariant={'transparent-white'} onClick={onSignInButtonClick}
-                fullWidth style={{ marginRight: '4.5px' }}>
+        <Button
+          customVariant={'transparent-white'}
+          onClick={onSignInButtonClick}
+          fullWidth
+          style={{ marginRight: '4.5px' }}
+        >
           {t('Увійти')}
         </Button>
       </Grid>
       <Grid item xs={6} sm={6}>
-        <Button customVariant={'light-blue'} onClick={handleTryItOutClickWithDrawerClose}
-                fullWidth style={{ marginLeft: '4.5px' }}>
+        <Button
+          customVariant={'light-blue'}
+          onClick={handleTryItOutClickWithDrawerClose}
+          fullWidth
+          style={{ marginLeft: '4.5px' }}
+        >
           {t('Спробувати')}
         </Button>
       </Grid>

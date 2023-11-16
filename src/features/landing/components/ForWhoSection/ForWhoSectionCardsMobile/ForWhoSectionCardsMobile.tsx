@@ -2,9 +2,7 @@ import React from 'react';
 import { Box, Grid, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button/Button';
-import {
-  scrollToRegistrationSection,
-} from '@/features/landing/utils/helpers/scrollToRegistrationSection';
+import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 interface IForWhoSectionCardsMobileProps {
@@ -41,25 +39,36 @@ export function ForWhoSectionCardsMobile({ cardItemsJSX }: IForWhoSectionCardsMo
   const { isSmallest } = useScreenSize();
 
   return (
-    <Box sx={{
-      ...styles.mainBox,
-    }}>
-      <Grid item sx={{
-        ...styles.mainGrid,
-      }}>
-        <Typography variant={'h4'} component={'h4'}
-                    sx={{
-                      ...styles.heading,
-                      fontSize: (isSmallest) ? '22px' : styles.heading.fontSize,
-                    }}>
+    <Box
+      sx={{
+        ...styles.mainBox,
+      }}
+    >
+      <Grid
+        item
+        sx={{
+          ...styles.mainGrid,
+        }}
+      >
+        <Typography
+          variant={'h4'}
+          component={'h4'}
+          sx={{
+            ...styles.heading,
+            fontSize: isSmallest ? '22px' : styles.heading.fontSize,
+          }}
+        >
           {t('Our CRM is ideal if you:')}
         </Typography>
 
         <Box sx={{ marginBottom: '32px' }}>{cardItemsJSX}</Box>
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-          <Button customVariant={'light-blue'} onClick={scrollToRegistrationSection}
-                  buttonSize={'medium'}>
+          <Button
+            customVariant={'light-blue'}
+            onClick={scrollToRegistrationSection}
+            buttonSize={'medium'}
+          >
             {t('Try it out')}
           </Button>
         </Box>

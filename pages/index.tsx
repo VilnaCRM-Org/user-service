@@ -5,7 +5,5 @@ import { LandingComponent } from '@/features/landing';
 export default function Home() {
   const { t } = useTranslation();
 
-  return (
-    <LandingComponent />
-  );
+  return <LandingComponent />;
 }

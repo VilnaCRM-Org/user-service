@@ -44,9 +44,14 @@ export function WhyWeSectionCardItem({ cardItem, style }: IWhyWeSectionItemCardI
         ...style,
         boxShadow: isHovered ? '0px 8px 27px 0px rgba(49, 59, 67, 0.14)' : 'none',
         cursor: isHovered ? 'pointer' : 'default',
-      }}>
-      <Icon sx={{width: '100%', maxWidth: '70px', height: '70px'}}>
-        <img src={imageSrc} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      }}
+    >
+      <Icon sx={{ width: '100%', maxWidth: '70px', height: '70px' }}>
+        <img
+          src={imageSrc}
+          alt={title}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
       </Icon>
       <Typography
         variant={'h3'}
@@ -59,20 +64,24 @@ export function WhyWeSectionCardItem({ cardItem, style }: IWhyWeSectionItemCardI
           fontStyle: 'normal',
           fontWeight: 700,
           lineHeight: 'normal',
-        }}>
+        }}
+      >
         {t(title)}
       </Typography>
-      <Typography variant={'body1'} component={'p'} sx={{
-        color: '#1A1C1E',
-        fontFamily: 'GolosText-Regular, sans-serif',
-        fontSize: '18px',
-        fontStyle: 'normal',
-        fontWeight: 400,
-        lineHeight: '30px',
-      }}>
+      <Typography
+        variant={'body1'}
+        component={'p'}
+        sx={{
+          color: '#1A1C1E',
+          fontFamily: 'GolosText-Regular, sans-serif',
+          fontSize: '18px',
+          fontStyle: 'normal',
+          fontWeight: 400,
+          lineHeight: '30px',
+        }}
+      >
         {t(text)}
       </Typography>
     </Card>
   );
-
 }

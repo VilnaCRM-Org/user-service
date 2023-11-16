@@ -1,6 +1,5 @@
 import { Box, Container } from '@mui/material';
-import MobileViewDummyContainerImg
-  from '../../../../../../public/assets/img/MobileViewDummyContainerImg.png';
+import MobileViewDummyContainerImg from '../../../../../../public/assets/img/MobileViewDummyContainerImg.png';
 import DummyContainerImg from '../../../../../../public/assets/img/DummyContainerImg.png';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import AboutVilnaSecondaryShape from '../../../../../../public/assets/img/AboutVilnaSecondaryShape.png';
@@ -55,27 +54,35 @@ export function AboutVilnaSecondaryImages() {
   const { isMobile, isSmallest } = useScreenSize();
 
   return (
-    <Box sx={{
-      ...outerContainerStyles,
-      justifySelf: (isMobile || isSmallest) ? 'start' : 'stretch',
-      height: (isMobile || isSmallest) ? '284px' : '551px',
-    }}>
+    <Box
+      sx={{
+        ...outerContainerStyles,
+        justifySelf: isMobile || isSmallest ? 'start' : 'stretch',
+        height: isMobile || isSmallest ? '284px' : '551px',
+      }}
+    >
       <Container sx={containerWithCRMImageStyle}>
-        <Box sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          maxWidth: (isMobile || isSmallest) ? '57%' : '100%',
-        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            maxWidth: isMobile || isSmallest ? '57%' : '100%',
+          }}
+        >
           {/* DUMMY IMAGE, replace with real picture in production */}
-          {(isMobile || isSmallest) ? (
-              <img src={MobileViewDummyContainerImg.src} alt='Dummy Img (should be replaced)'
-                   style={{ ...crmPlaceholderImageStyle, objectFit: 'cover', width: '100%' }} />
-            ) :
-            (
-              <img src={DummyContainerImg.src} alt='Dummy Img (should be replaced)'
-                   style={crmPlaceholderImageStyle} />
-            )
-          }
+          {isMobile || isSmallest ? (
+            <img
+              src={MobileViewDummyContainerImg.src}
+              alt="Dummy Img (should be replaced)"
+              style={{ ...crmPlaceholderImageStyle, objectFit: 'cover', width: '100%' }}
+            />
+          ) : (
+            <img
+              src={DummyContainerImg.src}
+              alt="Dummy Img (should be replaced)"
+              style={crmPlaceholderImageStyle}
+            />
+          )}
         </Box>
       </Container>
       <Container sx={backgroundImageContainerStyle} />

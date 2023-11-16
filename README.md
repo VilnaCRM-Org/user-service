@@ -12,6 +12,7 @@
 - A lot of CI checks to ensure the highest code quality that can be
   (Security checks, Code style fixer, static linters, DeepScan, Snyk)
 - Configured testing tools: [Cypress](https://www.cypress.io/), [Jest](https://jestjs.io/)
+- This template is based on [bulletproof-react](https://github.com/alan2207/bulletproof-react/tree/master)
 - Much more!
 
 ## Why you might need it
@@ -32,7 +33,7 @@ on the software availability and distribution.
 
 You can clone this repository locally or use Github functionality "Use this template"
 
-Install [node.js](https://nodejs.org/en/) and [pnpm](https://pnpm.io/)
+Install [node.js](https://nodejs.org/en/) 20 version or higher and [pnpm](https://pnpm.io/)
 
 Use pnpm install for installing all dependencies and pnpm run dev for running application
 
