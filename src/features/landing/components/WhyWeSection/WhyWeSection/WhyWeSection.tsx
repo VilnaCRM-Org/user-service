@@ -19,7 +19,7 @@ const TOOLTIP_ICONS: string[] = [
 ];
 
 export function WhyWeSection() {
-  const [cardItems, setCardItems] = useState<IWhyWeCardItem[]>(WHY_WE_CARD_ITEMS);
+  const [cardItems] = useState<IWhyWeCardItem[]>(WHY_WE_CARD_ITEMS);
   const { isMobile, isSmallest, isTablet } = useScreenSize();
 
   return (

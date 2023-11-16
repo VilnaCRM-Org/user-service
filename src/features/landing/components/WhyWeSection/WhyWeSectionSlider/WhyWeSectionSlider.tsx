@@ -51,6 +51,7 @@ export function WhyWeSectionSlider({ cardItems }: { cardItems: IWhyWeCardItem[] 
                 style={{
                   height: '100%',
                   overflow: 'hidden',
+                  margin: '0 5px',
                 }}
               />
             </Box>
