@@ -1,7 +1,7 @@
-import { LinkProps } from 'next/link';
 import { Grid, Typography } from '@mui/material';
+import { LinkProps } from 'next/link';
 
-import { CustomLink } from '@/components/ui/CustomLink/CustomLink';
+import CustomLink from '@/components/ui/CustomLink/CustomLink';
 import ArrowDownIcon from '@/features/landing/components/Icons/ArrowDownIcon/ArrowDownIcon';
 
 interface IHeaderMobileLinkProps extends LinkProps {

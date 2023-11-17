@@ -1,9 +1,7 @@
 import { Grid } from '@mui/material';
 import { useMemo } from 'react';
 
-import {
-  UnlimitedIntegrationsCardItem,
-} from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsCardItem/UnlimitedIntegrationsCardItem';
+import UnlimitedIntegrationsCardItem from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsCardItem/UnlimitedIntegrationsCardItem';
 import { IUnlimitedIntegrationsItem } from '@/features/landing/types/unlimited-integrations/types';
 
 interface IUnlimitedIntegrationsCardItemsProps {

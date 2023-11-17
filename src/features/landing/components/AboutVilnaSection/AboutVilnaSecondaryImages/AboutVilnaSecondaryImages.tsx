@@ -19,6 +19,8 @@ const crmPlaceholderImageStyle: React.CSSProperties = {
   height: '100%',
   display: 'inline-block',
   objectFit: 'cover',
+  pointerEvents: 'none',
+  userSelect: 'none',
 };
 
 const containerWithCRMImageStyle: React.CSSProperties = {
@@ -48,9 +50,11 @@ const backgroundImageContainerStyle: React.CSSProperties = {
   position: 'absolute',
   bottom: 0,
   zIndex: '800',
+  pointerEvents: 'none',
+  userSelect: 'none',
 };
 
-export function AboutVilnaSecondaryImages() {
+export default function AboutVilnaSecondaryImages() {
   const { isMobile, isSmallest } = useScreenSize();
 
   return (

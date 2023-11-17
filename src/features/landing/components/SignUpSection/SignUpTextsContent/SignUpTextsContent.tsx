@@ -1,10 +1,12 @@
-import { CustomLink } from '@/components/ui/CustomLink/CustomLink';
 import { Grid, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { SignUpSocials } from '../SignUpSocials/SignUpSocials';
+
+import CustomLink from '@/components/ui/CustomLink/CustomLink';
 import { ISocialLink } from '@/features/landing/types/social/types';
 
-export function SignUpTextsContent({ socialLinks }: {
+import { SignUpSocials } from '../SignUpSocials/SignUpSocials';
+
+export default function SignUpTextsContent({ socialLinks }: {
   socialLinks: ISocialLink[]
 }) {
   const { t } = useTranslation();
@@ -13,7 +15,7 @@ export function SignUpTextsContent({ socialLinks }: {
     <Grid item>
       <Typography>
         {t('Register now and free up time for business development with ')}
-        <CustomLink href={'/'}>VilnaCRM</CustomLink>
+        <CustomLink href='/'>VilnaCRM</CustomLink>
       </Typography>
       <SignUpSocials socialLinks={socialLinks} />
     </Grid>

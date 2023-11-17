@@ -1,8 +1,12 @@
-import * as React from 'react';
-import Drawer from '@mui/material/Drawer';
 import { Grid } from '@mui/material';
-import { HeaderMobileLink } from '@/features/landing/components/Header/HeaderMobileLink/HeaderMobileLink';
-import { HeaderTopContentInMobileView } from '@/features/landing/components/Header/HeaderTopContentInMobileView/HeaderTopContentInMobileView';
+import Drawer from '@mui/material/Drawer';
+import * as React from 'react';
+
+import {
+  HeaderMobileLink,
+} from '@/features/landing/components/Header/HeaderMobileLink/HeaderMobileLink';
+import HeaderTopContentInMobileView
+  from '@/features/landing/components/Header/HeaderTopContentInMobileView/HeaderTopContentInMobileView';
 
 interface IHeaderDrawerMenuProps {
   isDrawerOpen: boolean;
@@ -11,12 +15,12 @@ interface IHeaderDrawerMenuProps {
   onTryItOutButtonClick: () => void;
 }
 
-export function HeaderDrawerMenu({
-  isDrawerOpen,
-  onToggleDrawer,
-  onSignInButtonClick,
-  onTryItOutButtonClick,
-}: IHeaderDrawerMenuProps) {
+export default function HeaderDrawerMenu({
+                                           isDrawerOpen,
+                                           onToggleDrawer,
+                                           onSignInButtonClick,
+                                           onTryItOutButtonClick,
+                                         }: IHeaderDrawerMenuProps) {
   const drawerStyles = {
     position: 'absolute',
     bottom: isDrawerOpen ? '0' : '-100%', // Slide in from the bottom or hide
@@ -25,7 +29,7 @@ export function HeaderDrawerMenu({
 
   return (
     <Drawer
-      anchor="right"
+      anchor='right'
       open={isDrawerOpen}
       onClose={onToggleDrawer}
       elevation={4}
@@ -42,6 +46,9 @@ export function HeaderDrawerMenu({
           justifyContent: 'space-between',
           alignItems: 'center',
           padding: '6px 15px 24px 15px',
+          maxWidth: '100%',
+          width: '100%',
+          margin: '0 auto',
         }}
       >
         <HeaderTopContentInMobileView
@@ -52,16 +59,16 @@ export function HeaderDrawerMenu({
         />
 
         <Grid item sx={{ width: '100%' }}>
-          <HeaderMobileLink href="/" linkNameText="Переваги" onClick={onToggleDrawer} />
+          <HeaderMobileLink href='/' linkNameText='Переваги' onClick={onToggleDrawer} />
         </Grid>
         <Grid item sx={{ width: '100%' }}>
-          <HeaderMobileLink href="/" linkNameText="Для кого" onClick={onToggleDrawer} />
+          <HeaderMobileLink href='/' linkNameText='Для кого' onClick={onToggleDrawer} />
         </Grid>
         <Grid item sx={{ width: '100%' }}>
-          <HeaderMobileLink href="/" linkNameText="Інтеграція" onClick={onToggleDrawer} />
+          <HeaderMobileLink href='/' linkNameText='Інтеграція' onClick={onToggleDrawer} />
         </Grid>
         <Grid item sx={{ width: '100%' }}>
-          <HeaderMobileLink href="/" linkNameText="Контакти" onClick={onToggleDrawer} />
+          <HeaderMobileLink href='/' linkNameText='Контакти' onClick={onToggleDrawer} />
         </Grid>
       </Grid>
     </Drawer>

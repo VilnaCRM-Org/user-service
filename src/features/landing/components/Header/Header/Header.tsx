@@ -1,16 +1,16 @@
-import * as React from 'react';
 import { AppBar, Container, IconButton, Toolbar } from '@mui/material';
-
-import { VilnaMenuIcon } from '../../Icons/VilnaMenuIcon/VilnaMenuIcon';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { CustomLink } from '@/components/ui/CustomLink/CustomLink';
-import { VilnaMainIcon } from '../../Icons/VilnaMainIcon/VilnaMainIcon';
-
-import { HeaderMainLinks } from '@/features/landing/components/Header/HeaderMainLinks/HeaderMainLinks';
-import { HeaderActionButtons } from '@/features/landing/components/Header/HeaderActionButtons/HeaderActionButtons';
-import { HeaderDrawerMenu } from '../HeaderDrawerMenu/HeaderDrawerMenu';
+import * as React from 'react';
 import { useState } from 'react';
+
+import CustomLink from '@/components/ui/CustomLink/CustomLink';
+import { HeaderActionButtons } from '@/features/landing/components/Header/HeaderActionButtons/HeaderActionButtons';
+import HeaderMainLinks from '@/features/landing/components/Header/HeaderMainLinks/HeaderMainLinks';
+import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
+
+import VilnaMainIcon from '../../Icons/VilnaMainIcon/VilnaMainIcon';
+import { VilnaMenuIcon } from '../../Icons/VilnaMenuIcon/VilnaMenuIcon';
+import HeaderDrawerMenu from '../HeaderDrawerMenu/HeaderDrawerMenu';
 
 type Position =
   | 'sticky'
@@ -57,22 +57,30 @@ const logoStyle = {
   justifySelf: 'flex-start',
 };
 
-const appBarStylesIfScreenResolutionIsLaptop = (isLaptop: boolean) => {
+const appBarStylesIfScreenResolution = (isLaptop: boolean, isSmallest: boolean) => {
   if (isLaptop) {
     return {
       paddingLeft: '32px',
       paddingRight: '32px',
     };
   }
+
+  if (isSmallest) {
+    return {
+      paddingLeft: '0',
+      paddingRight: '0',
+    }
+  }
+
   return {
-    paddingLeft: '0',
-    paddingRight: '0',
+    paddingLeft: '10px',
+    paddingRight: '10px',
   };
 };
 
-export function Header() {
+export default function Header() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const { isSmallest, isMobile, isLaptop } = useScreenSize();
+  const { isSmallest, isMobile, isLaptop, isSmallTablet } = useScreenSize();
 
   const toggleDrawer = () => {
     setIsDrawerOpen(!isDrawerOpen);
@@ -92,7 +100,7 @@ export function Header() {
     <AppBar
       sx={{
         ...appBarContainerStyle,
-        ...appBarStylesIfScreenResolutionIsLaptop(isLaptop),
+        ...appBarStylesIfScreenResolution(isLaptop, isSmallest)
       }}
       elevation={0}
     >
@@ -115,13 +123,13 @@ export function Header() {
           }}
         >
           {/* Main Vilna Icon */}
-          <CustomLink href={'/'} style={logoStyle}>
+          <CustomLink href="/" style={logoStyle}>
             <VilnaMainIcon />
           </CustomLink>
 
           {
             /* Menu Icon */
-            isMobile || isSmallest ? (
+            (isMobile || isSmallest || isSmallTablet) ? (
               <IconButton
                 onClick={handleMenuButtonClick}
                 edge="start"

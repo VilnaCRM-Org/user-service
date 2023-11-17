@@ -28,10 +28,10 @@ const useCustomStyles = makeStyles((theme: Theme) =>
       border: '1px solid #D0D4D8',
       backgroundColor: '#FFF',
     },
-  })
+  }),
 );
 
-export function CustomTooltip({ title, text, icons, children }: ICustomTooltipProps) {
+export default function CustomTooltip({ title, text, icons, children }: ICustomTooltipProps) {
   const classes = useCustomStyles();
 
   const iconsJSX = useMemo(() => {
@@ -49,8 +49,14 @@ export function CustomTooltip({ title, text, icons, children }: ICustomTooltipPr
       >
         <img
           src={iconSrc}
-          alt={`Integration image ${index}`}
-          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          alt={`Integration ${index}`}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
         />
       </Grid>
     ));
@@ -62,8 +68,8 @@ export function CustomTooltip({ title, text, icons, children }: ICustomTooltipPr
       title={
         <div className={classes.content}>
           <Typography
-            variant={'h5'}
-            component={'h5'}
+            variant='h5'
+            component='h5'
             sx={{
               color: '#000',
               fontFamily: 'GolosText-Regular, sans-serif',
@@ -76,8 +82,8 @@ export function CustomTooltip({ title, text, icons, children }: ICustomTooltipPr
             {title}
           </Typography>
           <Typography
-            variant="body1"
-            component={'p'}
+            variant='body1'
+            component='p'
             sx={{
               color: '#000',
               fontFamily: 'Inter-Regular, sans-serif',

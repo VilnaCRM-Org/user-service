@@ -1,11 +1,9 @@
 import React from 'react';
 
-export function SignUpWrapperWithBackground({ children }: {
+export default function SignUpWrapperWithBackground({ children }: {
   children: React.ReactNode;
 }) {
   return (
-    <>
-      {children}
-    </>
+    <>{children}</>
   );
 }

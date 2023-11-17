@@ -5,7 +5,8 @@ import { autoPlay } from 'react-swipeable-views-utils';
 
 import { IUnlimitedIntegrationsItem } from '@/features/landing/types/unlimited-integrations/types';
 
-import { UnlimitedIntegrationsCardItem } from '../UnlimitedIntegrationsCardItem/UnlimitedIntegrationsCardItem';
+import UnlimitedIntegrationsCardItem
+  from '../UnlimitedIntegrationsCardItem/UnlimitedIntegrationsCardItem';
 
 const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
 
@@ -19,8 +20,8 @@ const styles = {
 
 // TODO: Change Carousel to a newer one
 export default function UnlimitedIntegrationsSlider({
-  cardItems,
-}: {
+                                                      cardItems,
+                                                    }: {
   cardItems: IUnlimitedIntegrationsItem[];
 }) {
   const [activeStep, setActiveStep] = useState(0);
@@ -36,7 +37,7 @@ export default function UnlimitedIntegrationsSlider({
     <Box sx={{ padding: '0' }}>
       <Container style={{ padding: '0' }}>
         <AutoPlaySwipeableViews
-          axis="x"
+          axis='x'
           index={activeStep}
           onChangeIndex={handleStepChange}
           enableMouseEvents
@@ -66,7 +67,7 @@ export default function UnlimitedIntegrationsSlider({
 
         <MobileStepper
           steps={maxSteps}
-          position="static"
+          position='static'
           activeStep={activeStep}
           nextButton={null}
           backButton={null}

@@ -1,5 +1,5 @@
-import React, { CSSProperties, useState } from 'react';
 import { ButtonProps } from '@mui/material';
+import React, { CSSProperties, useState } from 'react';
 
 const DEFAULT_BUTTON_BORDER_RADIUS = '5.7rem';
 

@@ -1,4 +1,4 @@
-export function VilnaMainIcon() {
+export default function VilnaMainIcon() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

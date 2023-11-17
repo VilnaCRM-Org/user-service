@@ -15,9 +15,9 @@ export function HeaderActionButtons({
   onTryItOutButtonClick,
 }: IHeaderActionButtonsProps) {
   const { t } = useTranslation();
-  const { isMobile, isSmallest } = useScreenSize();
+  const { isMobile, isSmallest, isSmallTablet } = useScreenSize();
 
-  if (isMobile || isSmallest) {
+  if (isMobile || isSmallest || isSmallTablet) {
     return null;
   }
 

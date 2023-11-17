@@ -1,9 +1,9 @@
 import '../styles/globals.css';
 import React, { useEffect } from 'react';
 import * as Sentry from '@sentry/react';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import i18n from '../i18n';
 import 'dotenv/config';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN_KEY,

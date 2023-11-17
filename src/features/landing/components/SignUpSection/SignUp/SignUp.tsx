@@ -1,4 +1,4 @@
-export function SignUp() {
+export default function SignUp() {
   return (
     <>
       Sign Up Component

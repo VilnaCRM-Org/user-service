@@ -1,13 +1,14 @@
-import { useMemo, useState } from 'react';
 import { Box, Grid } from '@mui/material';
+import { useMemo, useState } from 'react';
 
-import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
-import { ForWhoMainTextsContent } from '@/features/landing/components/ForWhoSection/ForWhoMainTextsContent/ForWhoMainTextsContent';
 import { ForWhoImagesContent } from '@/features/landing/components/ForWhoSection/ForWhoImagesContent/ForWhoImagesContent';
+import { ForWhoMainTextsContent } from '@/features/landing/components/ForWhoSection/ForWhoMainTextsContent/ForWhoMainTextsContent';
 import { ForWhoSectionCardItem } from '@/features/landing/components/ForWhoSection/ForWhoSectionCardItem/ForWhoSectionCardItem';
 import { ForWhoSectionCards } from '@/features/landing/components/ForWhoSection/ForWhoSectionCards/ForWhoSectionCards';
-import { ForWhoSectionCardsMobile } from '../ForWhoSectionCardsMobile/ForWhoSectionCardsMobile';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
+
+import ForWhoSectionCardsMobile from '../ForWhoSectionCardsMobile/ForWhoSectionCardsMobile';
 
 const images = {
   mainImage: {
@@ -57,25 +58,21 @@ const styles = {
   },
 };
 
-export function ForWhoSection() {
-  const [cardItems, setCardItems] = useState(CARD_ITEMS);
+export default function ForWhoSection() {
+  const [cardItems,] = useState(CARD_ITEMS);
   const { isSmallest, isMobile, isSmallTablet } = useScreenSize();
   const handleTryItOutButtonClick = () => {
     scrollToRegistrationSection();
   };
 
-  const cardItemsJSX = useMemo(() => {
-    return cardItems.map((cardItem) => {
-      return (
+  const cardItemsJSX = useMemo(() => cardItems.map((cardItem) => (
         <ForWhoSectionCardItem
           key={cardItem.id}
           imageSrc={cardItem.imageSrc}
           imageAltText={cardItem.imageAltText}
           text={cardItem.text}
         />
-      );
-    });
-  }, [cardItems]);
+      )), [cardItems]);
 
   return (
     <Box sx={{ ...styles.mainBox, marginTop: isMobile || isSmallest ? '0' : '89px' }}>

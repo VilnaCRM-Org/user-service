@@ -68,5 +68,5 @@ export function CustomInput({
       )}
     </div>
   );
-};
+}
 

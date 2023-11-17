@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material';
-import { CustomLink } from '../CustomLink/CustomLink';
+
+import CustomLink from '../CustomLink/CustomLink';
 
 interface ISocialLinkProps {
   icon: string;
@@ -47,7 +48,7 @@ export function SocialLink({ icon, title, linkHref }: ISocialLinkProps) {
                objectFit: 'cover',
              }} />
       </Box>
-      <Typography variant={'body1'} component={'p'} sx={{
+      <Typography variant="body1" component="p" sx={{
         ...styles.text,
       }}>{title}</Typography>
     </CustomLink>

@@ -55,10 +55,10 @@ const styles = {
   },
 };
 
-export function UnlimitedIntegrationsCardItem({
-  cardItem,
-  style,
-}: IUnlimitedIntegrationsCardItemProps) {
+export default function UnlimitedIntegrationsCardItem({
+                                                cardItem,
+                                                style,
+                                              }: IUnlimitedIntegrationsCardItemProps) {
   const { t } = useTranslation();
 
   return (
@@ -77,7 +77,12 @@ export function UnlimitedIntegrationsCardItem({
         <img
           src={cardItem.imageSrc}
           alt={cardItem.imageTitle}
-          style={{ ...styles.imageInsideOfPaper, objectFit: 'cover' }}
+          style={{
+            ...styles.imageInsideOfPaper,
+            objectFit: 'cover',
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
         />
       </Paper>
 
@@ -103,3 +108,7 @@ export function UnlimitedIntegrationsCardItem({
     </Card>
   );
 }
+
+UnlimitedIntegrationsCardItem.defaultProps = {
+  style: {},
+};

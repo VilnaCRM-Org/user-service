@@ -1,21 +1,26 @@
-import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
 import { Container } from '@mui/material';
-import { WhyWeSectionCardItemsRow } from '../WhyWeSectionCardItemsRow/WhyWeSectionCardItemsRow';
+
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
+
+import WhyWeSectionCardItemsRow from '../WhyWeSectionCardItemsRow/WhyWeSectionCardItemsRow';
 
 interface IWhyWeSectionCardItemsProps {
   cardItems: IWhyWeCardItem[];
   tooltipIcons: string[];
 }
 
-export function WhyWeSectionCardItems({ cardItems, tooltipIcons }: IWhyWeSectionCardItemsProps) {
+export default function WhyWeSectionCardItems({
+                                                cardItems,
+                                                tooltipIcons,
+                                              }: IWhyWeSectionCardItemsProps) {
   const { isTablet } = useScreenSize();
 
   return (
     <Container sx={{ width: '100%', maxWidth: '1192px' }}>
       <WhyWeSectionCardItemsRow
         cardItems={cardItems.slice(0, 3)}
-        style={{ padding: isTablet ? '0 32px 0 32px' : '0 0 0 0' }}
+        style={{ padding: isTablet ? '0 32px 0 32px' : '0 12px 0 12px' }}
         tooltipIcons={tooltipIcons}
       />
       <WhyWeSectionCardItemsRow

@@ -20,6 +20,8 @@ const styles = {
     right: 0,
     zIndex: 750,
     paddingTop: '58px',
+    pointerEvents: 'none',
+    userSelect: 'none',
   },
   mainImageBox: {
     position: 'absolute',
@@ -28,6 +30,8 @@ const styles = {
     right: '63px',
     maxWidth: '627px',
     width: '100%',
+    pointerEvents: 'none',
+    userSelect: 'none',
   },
   secondaryImageBox: {
     position: 'absolute',
@@ -36,6 +40,8 @@ const styles = {
     right: '34px',
     maxWidth: '255px',
     width: '100%',
+    pointerEvents: 'none',
+    userSelect: 'none',
   },
 };
 

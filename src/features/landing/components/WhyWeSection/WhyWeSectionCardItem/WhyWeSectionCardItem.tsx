@@ -1,6 +1,7 @@
-import { useState } from 'react';
 import { Card, Icon, Typography } from '@mui/material';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
 import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
 
 interface IWhyWeSectionItemCardItemProps {
@@ -22,7 +23,7 @@ const cartItemStyle: React.CSSProperties = {
   gap: '13px',
 };
 
-export function WhyWeSectionCardItem({ cardItem, style }: IWhyWeSectionItemCardItemProps) {
+export default function WhyWeSectionCardItem({ cardItem, style }: IWhyWeSectionItemCardItemProps) {
   const { imageSrc, title, text } = cardItem;
   const { t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
@@ -48,14 +49,21 @@ export function WhyWeSectionCardItem({ cardItem, style }: IWhyWeSectionItemCardI
     >
       <Icon sx={{ width: '100%', maxWidth: '70px', height: '70px' }}>
         <img
+          draggable={false}
           src={imageSrc}
           alt={title}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
         />
       </Icon>
       <Typography
-        variant={'h3'}
-        component={'h3'}
+        variant='h3'
+        component='h3'
         sx={{
           color: '#1A1C1E',
           textAlign: 'left',
@@ -69,8 +77,8 @@ export function WhyWeSectionCardItem({ cardItem, style }: IWhyWeSectionItemCardI
         {t(title)}
       </Typography>
       <Typography
-        variant={'body1'}
-        component={'p'}
+        variant='body1'
+        component='p'
         sx={{
           color: '#1A1C1E',
           fontFamily: 'GolosText-Regular, sans-serif',
@@ -85,3 +93,7 @@ export function WhyWeSectionCardItem({ cardItem, style }: IWhyWeSectionItemCardI
     </Card>
   );
 }
+
+WhyWeSectionCardItem.defaultProps = {
+  style: {},
+};

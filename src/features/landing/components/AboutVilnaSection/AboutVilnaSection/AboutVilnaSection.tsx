@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
-import AboutVilnaMainShape from '@/features/landing/assets/svg/AboutVilnaMainShape.svg';
-import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { AboutVilnaMainContent } from '@/features/landing/components/AboutVilnaSection/AboutVilnaMainContent/AboutVilnaMainContent';
-import { AboutVilnaSecondaryImages } from '@/features/landing/components/AboutVilnaSection/AboutVilnaSecondaryImages/AboutVilnaSecondaryImages';
 import { Box } from '@mui/material';
+import React, { useEffect } from 'react';
+
+import AboutVilnaMainShape from '@/features/landing/assets/svg/AboutVilnaMainShape.svg';
+import { AboutVilnaMainContent } from '@/features/landing/components/AboutVilnaSection/AboutVilnaMainContent/AboutVilnaMainContent';
+import AboutVilnaSecondaryImages from '@/features/landing/components/AboutVilnaSection/AboutVilnaSecondaryImages/AboutVilnaSecondaryImages';
+import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 
 const allSectionStyle: React.CSSProperties = {
   backgroundImage: `url(${AboutVilnaMainShape.src})`,
@@ -15,7 +16,7 @@ const allSectionStyle: React.CSSProperties = {
   padding: '10px 10px 56px 10px',
 };
 
-export function AboutVilnaSection() {
+export default function AboutVilnaSection() {
   const { isTablet } = useScreenSize();
 
   const handleTryItOutButtonClick = () => {

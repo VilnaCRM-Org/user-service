@@ -1,11 +1,13 @@
-import { useState } from 'react';
 import { Container } from '@mui/material';
-import { WhyWeSectionHeader } from '@/features/landing/components/WhyWeSection/WhyWeSectionHeader/WhyWeSectionHeader';
-import { WhyWeSectionSlider } from '../WhyWeSectionSlider/WhyWeSectionSlider';
-import { WhyWeSectionCardItems } from '@/features/landing/components/WhyWeSection/WhyWeSectionCardItems/WhyWeSectionCardItems';
+import { useEffect, useRef, useState } from 'react';
+
+import WhyWeSectionCardItems from '@/features/landing/components/WhyWeSection/WhyWeSectionCardItems/WhyWeSectionCardItems';
+import WhyWeSectionHeader from '@/features/landing/components/WhyWeSection/WhyWeSectionHeader/WhyWeSectionHeader';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { WHY_WE_CARD_ITEMS } from '@/features/landing/utils/constants/constants';
 import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
+import { WHY_WE_CARD_ITEMS } from '@/features/landing/utils/constants/constants';
+
+import WhyWeSectionSlider from '../WhyWeSectionSlider/WhyWeSectionSlider';
 
 const TOOLTIP_ICONS: string[] = [
   '/assets/img/TooltipIcons/1.png',
@@ -18,28 +20,31 @@ const TOOLTIP_ICONS: string[] = [
   '/assets/img/TooltipIcons/8.png',
 ];
 
-export function WhyWeSection() {
+export default function WhyWeSection() {
   const [cardItems] = useState<IWhyWeCardItem[]>(WHY_WE_CARD_ITEMS);
-  const { isMobile, isSmallest, isTablet } = useScreenSize();
+  const { isMobile, isSmallest, isTablet, isLaptop, isDesktop } = useScreenSize();
+
+  const sectionHeaderPadding = useRef('0 0 0 0');
+
+  useEffect(() => {
+    if (isLaptop || isDesktop) {
+      sectionHeaderPadding.current = '0 0 0 0';
+      return;
+    }
+
+    if (isMobile || isSmallest) {
+      sectionHeaderPadding.current = '0 15px 0 15px';
+    }
+  }, [isTablet, isMobile, isSmallest]);
 
   return (
     <Container sx={{ padding: '56px 0 56px 0' }}>
-      <WhyWeSectionHeader
-        style={{
-          padding: isTablet
-            ? '0 32px 0 32px'
-            : isMobile || isSmallest
-            ? '0 15px 0 15px'
-            : '0 0 0 0',
-        }}
-      />
-      <>
-        {isMobile || isSmallest ? (
-          <WhyWeSectionSlider cardItems={cardItems} />
-        ) : (
-          <WhyWeSectionCardItems cardItems={cardItems} tooltipIcons={TOOLTIP_ICONS} />
-        )}
-      </>
+      <WhyWeSectionHeader />
+      {isMobile || isSmallest ? (
+        <WhyWeSectionSlider cardItems={cardItems} />
+      ) : (
+        <WhyWeSectionCardItems cardItems={cardItems} tooltipIcons={TOOLTIP_ICONS} />
+      )}
     </Container>
   );
 }

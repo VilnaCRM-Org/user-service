@@ -1,9 +1,10 @@
-import React from 'react';
 import { Grid } from '@mui/material';
+import React from 'react';
 
+import CustomTooltip from '@/components/ui/CustomTooltip/CustomTooltip';
 import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
-import { WhyWeSectionCardItem } from '../WhyWeSectionCardItem/WhyWeSectionCardItem';
-import { CustomTooltip } from '@/components/ui/CustomTooltip/CustomTooltip';
+
+import WhyWeSectionCardItem from '../WhyWeSectionCardItem/WhyWeSectionCardItem';
 
 interface IWhyWeSectionCardItemsRowProps {
   cardItems: IWhyWeCardItem[];
@@ -11,32 +12,35 @@ interface IWhyWeSectionCardItemsRowProps {
   tooltipIcons: string[];
 }
 
-export function WhyWeSectionCardItemsRow({
-  cardItems,
-  style,
-  tooltipIcons,
-}: IWhyWeSectionCardItemsRowProps) {
+export default function WhyWeSectionCardItemsRow({
+                                                   cardItems,
+                                                   style,
+                                                   tooltipIcons,
+                                                 }: IWhyWeSectionCardItemsRowProps) {
   return (
     <Grid
       container
+      spacing='13px'
+      justifyContent='center'
       sx={{
         ...style,
       }}
-      spacing={'13px'}
     >
-      {cardItems.map((cardItem) => {
-        return (
-          <Grid item key={cardItem.id} xs={4}>
-            <CustomTooltip
-              title={'Regular services'}
-              text={'Integrate in a few clicks'}
-              icons={tooltipIcons}
-            >
-              <WhyWeSectionCardItem cardItem={cardItem} />
-            </CustomTooltip>
-          </Grid>
-        );
-      })}
+      {cardItems.map((cardItem) => (
+        <Grid item key={cardItem.id} md={6} lg={4}>
+          <CustomTooltip
+            title='Regular services'
+            text='Integrate in a few clicks'
+            icons={tooltipIcons}
+          >
+            <WhyWeSectionCardItem cardItem={cardItem} />
+          </CustomTooltip>
+        </Grid>
+      ))}
     </Grid>
   );
 }
+
+WhyWeSectionCardItemsRow.defaultProps = {
+  style: {},
+};

@@ -8,10 +8,14 @@ interface ILinkProps extends MuiLinkProps {
   color?: string;
 }
 
-export function CustomLink({ href, children, ...props }: ILinkProps) {
+export default function CustomLink({ href, children, ...props }: ILinkProps) {
   return (
     <Link href={href} {...props}>
       {children}
     </Link>
   );
 }
+
+CustomLink.defaultProps = {
+  color: 'inherit',
+};

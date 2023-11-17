@@ -1,6 +1,7 @@
-import React from 'react';
 import { Box, Typography } from '@mui/material';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 interface IWhyWeSectionHeaderProps {
@@ -30,15 +31,18 @@ const styles = {
   },
 };
 
-export function WhyWeSectionHeader({ style }: IWhyWeSectionHeaderProps) {
+export default function WhyWeSectionHeader({ style }: IWhyWeSectionHeaderProps) {
   const { t } = useTranslation();
-  const { isSmallest } = useScreenSize();
+  const { isSmallest, isTablet, isMobile } = useScreenSize();
 
   return (
-    <Box sx={{ ...style }}>
+    <Box sx={{
+      ...style,
+      padding: (isTablet || isMobile || isSmallest) ? '0 32px 0 32px' : '0 12px 0 12px',
+    }}>
       <Typography
-        variant="h1"
-        component="h2"
+        variant='h1'
+        component='h2'
         sx={{
           ...styles.mainHeading,
           fontSize: isSmallest ? '28px' : styles.mainHeading.fontSize,
@@ -48,17 +52,21 @@ export function WhyWeSectionHeader({ style }: IWhyWeSectionHeaderProps) {
       </Typography>
 
       <Typography
-        variant="body1"
-        component={'p'}
+        variant='body1'
+        component='p'
         sx={{
           ...styles.text,
           fontSize: isSmallest ? '15px' : styles.text.fontSize,
         }}
       >
         {t(
-          "Unlimited customization options or ease of use - we've made it easy for any business to manage sales"
+          'Unlimited customization options or ease of use - we\'ve made it easy for any business to manage sales',
         )}
       </Typography>
     </Box>
   );
 }
+
+WhyWeSectionHeader.defaultProps = {
+  style: {},
+};

@@ -34,7 +34,7 @@ const styles = {
   },
 };
 
-export function ForWhoSectionCardsMobile({ cardItemsJSX }: IForWhoSectionCardsMobileProps) {
+export default function ForWhoSectionCardsMobile({ cardItemsJSX }: IForWhoSectionCardsMobileProps) {
   const { t } = useTranslation();
   const { isSmallest } = useScreenSize();
 

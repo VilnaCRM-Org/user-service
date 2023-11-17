@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Grid, IconButton } from '@mui/material';
-import { VilnaMainIcon } from '@/features/landing/components/Icons/VilnaMainIcon/VilnaMainIcon';
-import { CustomLink } from '@/components/ui/CustomLink/CustomLink';
+import VilnaMainIcon from '@/features/landing/components/Icons/VilnaMainIcon/VilnaMainIcon';
+import CustomLink from '@/components/ui/CustomLink/CustomLink';
 import { VilnaMenuIcon } from '@/features/landing/components/Icons/VilnaMenuIcon/VilnaMenuIcon';
 import { HeaderDrawerActionButtons } from '@/features/landing/components/Header/HeaderDrawerActionButtons/HeaderDrawerActionButtons';
 
@@ -19,7 +19,7 @@ const logoStyle = {
   color: 'black',
 };
 
-export function HeaderTopContentInMobileView({
+export default function HeaderTopContentInMobileView({
   onSignInButtonClick,
   onTryItOutButtonClick,
   onMobileViewDrawerClose,
@@ -36,7 +36,7 @@ export function HeaderTopContentInMobileView({
           marginBottom: '12px',
         }}
       >
-        <CustomLink href={'/'} style={logoStyle}>
+        <CustomLink href='/' style={logoStyle}>
           <VilnaMainIcon />
         </CustomLink>
         <IconButton
@@ -48,7 +48,7 @@ export function HeaderTopContentInMobileView({
             justifySelf: 'flex-end',
           }}
         >
-          <VilnaMenuIcon isActive={true} />
+          <VilnaMenuIcon isActive />
         </IconButton>
       </Grid>
       <HeaderDrawerActionButtons

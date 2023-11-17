@@ -1,21 +1,21 @@
-import { useState } from 'react';
 import { Box, Container, MobileStepper } from '@mui/material';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SwipeableViews from 'react-swipeable-views';
 import { autoPlay } from 'react-swipeable-views-utils';
 
-import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
-import { WhyWeSectionCardItem } from '@/features/landing/components/WhyWeSection/WhyWeSectionCardItem/WhyWeSectionCardItem';
 import { Button } from '@/components/ui/Button/Button';
+import WhyWeSectionCardItem from '@/features/landing/components/WhyWeSection/WhyWeSectionCardItem/WhyWeSectionCardItem';
+import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
 import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 
 const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
 
 // TODO: Change Carousel to a newer one
-export function WhyWeSectionSlider({ cardItems }: { cardItems: IWhyWeCardItem[] }) {
+export default function WhyWeSectionSlider({ cardItems }: { cardItems: IWhyWeCardItem[] }) {
   const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState(0);
-  const [currentActiveItem, setCurrentActiveItem] = useState(cardItems[0]);
+  const [, setCurrentActiveItem] = useState(cardItems[0]);
   const maxSteps = cardItems.length;
 
   const handleStepChange = (step: number) => {
@@ -68,7 +68,7 @@ export function WhyWeSectionSlider({ cardItems }: { cardItems: IWhyWeCardItem[] 
         />
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
           <Button
-            customVariant={'light-blue'}
+            customVariant='light-blue'
             onClick={handleTryItOutButtonClick}
             style={{ marginTop: '24px' }}
           >
