@@ -65,6 +65,11 @@ services:
     volumes:
       - db_data:/var/lib/mysql
 
+  redis:
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
+
 # Mercure is installed as a Caddy module, prevent the Flex recipe from installing another service
 ###> symfony/mercure-bundle ###
 ###< symfony/mercure-bundle ###

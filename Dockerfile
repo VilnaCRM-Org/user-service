@@ -45,6 +45,7 @@ RUN set -eux; \
     	apcu \
 		opcache \
         pdo_mysql \
+        redis \
     ;
 
 ###> recipes ###
