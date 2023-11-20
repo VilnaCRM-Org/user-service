@@ -2,10 +2,10 @@ import { Grid, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
+import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import { ISocialLink } from '@/features/landing/types/social/types';
 
 import SignUpSocials from '../SignUpSocials/SignUpSocials';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 const styles = {
   mainGrid: {

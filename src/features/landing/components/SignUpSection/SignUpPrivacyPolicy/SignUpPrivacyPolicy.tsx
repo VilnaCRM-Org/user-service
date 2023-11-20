@@ -1,8 +1,9 @@
-import CustomCheckbox from '@/components/ui/CustomCheckbox/CustomCheckbox';
-import React from 'react';
-import { CHECKBOX_PRIVACY_POLICY_ID } from '@/features/landing/types/sign-up/types';
 import { Typography } from '@mui/material';
+import React from 'react';
+
+import CustomCheckbox from '@/components/ui/CustomCheckbox/CustomCheckbox';
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
+import { CHECKBOX_PRIVACY_POLICY_ID } from '@/features/landing/types/sign-up/types';
 
 interface ISignUpPrivacyPolicyProps {
   isCheckboxChecked: boolean;
