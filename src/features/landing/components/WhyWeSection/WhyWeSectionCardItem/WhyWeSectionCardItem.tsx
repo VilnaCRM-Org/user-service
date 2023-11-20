@@ -64,7 +64,7 @@ export default function WhyWeSectionCardItem({ cardItem, style }: IWhyWeSectionI
       <Typography
         variant='h3'
         component='h3'
-        sx={{
+        style={{
           color: '#1A1C1E',
           textAlign: 'left',
           fontFamily: 'GolosText-Regular, sans-serif',
@@ -79,7 +79,7 @@ export default function WhyWeSectionCardItem({ cardItem, style }: IWhyWeSectionI
       <Typography
         variant='body1'
         component='p'
-        sx={{
+        style={{
           color: '#1A1C1E',
           fontFamily: 'GolosText-Regular, sans-serif',
           fontSize: '18px',

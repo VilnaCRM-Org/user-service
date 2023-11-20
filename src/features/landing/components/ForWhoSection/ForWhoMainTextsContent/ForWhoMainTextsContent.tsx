@@ -1,5 +1,5 @@
-import { useTranslation } from 'react-i18next';
 import { Grid, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/Button/Button';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
@@ -18,13 +18,30 @@ const styles = {
   mainHeading: {
     width: '100%',
     maxWidth: '343px',
+    color: '#1A1C1E',
+    textAlign: 'inherit',
+    fontFamily: 'GolosText-Bold, sans-serif',
     fontSize: '46px',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    lineHeight: 'normal',
+  },
+  mainText: {
+    marginTop: '16px',
+    width: '100%',
+    maxWidth: '343px',
+    color: '#1A1C1E',
+    fontFamily: 'GolosText-Regular, sans-seriv',
+    fontSize: '18px',
+    fontStyle: 'normal',
+    fontWeight: '400',
+    lineHeight: '30px',
   },
 };
 
 export function ForWhoMainTextsContent({
-  onTryItOutButtonClick,
-}: {
+                                         onTryItOutButtonClick,
+                                       }: {
   onTryItOutButtonClick: () => void;
 }) {
   const { t } = useTranslation();
@@ -35,9 +52,9 @@ export function ForWhoMainTextsContent({
       {/* Top Content */}
       <Grid item>
         <Typography
-          variant={'h2'}
-          component={'h2'}
-          sx={{
+          variant='h2'
+          component='h2'
+          style={{
             ...styles.mainHeading,
             fontSize: isSmallest ? '28px' : styles.mainHeading.fontSize,
           }}
@@ -46,24 +63,22 @@ export function ForWhoMainTextsContent({
         </Typography>
 
         <Typography
-          variant={'body1'}
-          component={'p'}
-          sx={{
-            marginTop: '16px',
-            width: '100%',
-            maxWidth: '343px',
+          variant='body1'
+          component='p'
+          style={{
+            ...styles.mainText,
             fontSize: isSmallest ? '15px' : '18px',
           }}
         >
           {t(
             'We created Vilna, focusing on the specifics of the service business,\n' +
-              'which is not suitable for ordinary e-commerce templates'
+            'which is not suitable for ordinary e-commerce templates',
           )}
         </Typography>
         {isMobile || isSmallest ? null : (
           <Button
-            customVariant={'light-blue'}
-            buttonSize={'big'}
+            customVariant='light-blue'
+            buttonSize='big'
             style={{ marginTop: '24px' }}
             onClick={onTryItOutButtonClick}
           >

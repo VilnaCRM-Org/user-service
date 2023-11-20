@@ -43,7 +43,7 @@ export default function WhyWeSectionHeader({ style }: IWhyWeSectionHeaderProps) 
       <Typography
         variant='h1'
         component='h2'
-        sx={{
+        style={{
           ...styles.mainHeading,
           fontSize: isSmallest ? '28px' : styles.mainHeading.fontSize,
         }}
@@ -54,7 +54,7 @@ export default function WhyWeSectionHeader({ style }: IWhyWeSectionHeaderProps) 
       <Typography
         variant='body1'
         component='p'
-        sx={{
+        style={{
           ...styles.text,
           fontSize: isSmallest ? '15px' : styles.text.fontSize,
         }}

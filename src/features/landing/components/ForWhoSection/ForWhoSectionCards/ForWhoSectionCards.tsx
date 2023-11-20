@@ -1,6 +1,7 @@
-import React from 'react';
 import { Box, Grid, Typography } from '@mui/material';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 const styles = {
@@ -25,9 +26,9 @@ export function ForWhoSectionCards({ cardItemsJSX }: { cardItemsJSX: React.React
       <Box sx={{ padding: '0 34px 0 34px' }}>
         <Grid item>
           <Typography
-            variant={'h4'}
-            component={'h4'}
-            sx={{
+            variant="h4"
+            component="h4"
+            style={{
               ...styles.secondaryHeading,
               fontSize: isSmallest ? '22px' : styles.secondaryHeading.fontSize,
             }}
@@ -38,7 +39,7 @@ export function ForWhoSectionCards({ cardItemsJSX }: { cardItemsJSX: React.React
       </Box>
       <Grid
         container
-        alignItems={'stretch'}
+        alignItems="stretch"
         spacing={3}
         sx={{
           position: 'absolute',

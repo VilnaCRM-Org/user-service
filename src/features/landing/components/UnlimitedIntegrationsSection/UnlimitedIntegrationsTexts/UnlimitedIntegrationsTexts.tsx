@@ -1,5 +1,6 @@
-import { useTranslation } from 'react-i18next';
 import { Box, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
+
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 const style = {
@@ -47,9 +48,9 @@ export function UnlimitedIntegrationsTexts() {
       }}
     >
       <Typography
-        component={'h2'}
-        variant={'h2'}
-        sx={{
+        component="h2"
+        variant="h2"
+        style={{
           ...style.mainHeading,
           fontSize: isMobile || isSmallest ? '22px' : '36px',
         }}
@@ -58,9 +59,9 @@ export function UnlimitedIntegrationsTexts() {
       </Typography>
 
       <Typography
-        component={'h3'}
-        variant={'h3'}
-        sx={{ ...style.secondaryHeading, fontSize: isMobile || isSmallest ? '28px' : '46px' }}
+        component="h3"
+        variant="h3"
+        style={{ ...style.secondaryHeading, fontSize: isMobile || isSmallest ? '28px' : '46px' }}
       >
         {t('possibilities of integration')}
       </Typography>

@@ -70,7 +70,7 @@ export default function CustomTooltip({ title, text, icons, children }: ICustomT
           <Typography
             variant='h5'
             component='h5'
-            sx={{
+            style={{
               color: '#000',
               fontFamily: 'GolosText-Regular, sans-serif',
               fontSize: '18px',
@@ -84,7 +84,7 @@ export default function CustomTooltip({ title, text, icons, children }: ICustomT
           <Typography
             variant='body1'
             component='p'
-            sx={{
+            style={{
               color: '#000',
               fontFamily: 'Inter-Regular, sans-serif',
               fontSize: '14px',

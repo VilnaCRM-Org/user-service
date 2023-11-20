@@ -1,6 +1,7 @@
+import { Card, Paper, Typography } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, Paper, Typography } from '@mui/material';
+
 import { IUnlimitedIntegrationsItem } from '@/features/landing/types/unlimited-integrations/types';
 
 interface IUnlimitedIntegrationsCardItemProps {
@@ -87,9 +88,9 @@ export default function UnlimitedIntegrationsCardItem({
       </Paper>
 
       <Typography
-        component={'h4'}
-        variant={'h4'}
-        sx={{
+        component="h4"
+        variant="h4"
+        style={{
           ...styles.title,
         }}
       >
@@ -97,9 +98,9 @@ export default function UnlimitedIntegrationsCardItem({
       </Typography>
 
       <Typography
-        component={'p'}
-        variant={'body1'}
-        sx={{
+        component="p"
+        variant="body1"
+        style={{
           ...styles.text,
         }}
       >

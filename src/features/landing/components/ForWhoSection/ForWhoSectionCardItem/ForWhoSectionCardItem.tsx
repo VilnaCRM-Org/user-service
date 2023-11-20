@@ -1,5 +1,6 @@
-import { useTranslation } from 'react-i18next';
 import { Card, Grid, Paper, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
+
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 interface IForWhoSectionCardItemProps {
@@ -53,7 +54,7 @@ export function ForWhoSectionCardItem({
             style={{ width: '100%', height: '100%', minWidth: '20px' }}
           />
         </Paper>
-        <Typography variant={'body1'} component={'p'} sx={{ ...style.text }}>
+        <Typography variant="body1" component="p" style={{ ...style.text }}>
           {t(text)}
         </Typography>
       </Card>

@@ -42,25 +42,27 @@ interface IButtonProps extends ButtonProps {
   isDisabled?: boolean;
   className?: string;
   fullWidth?: boolean;
-  onClick: () => void;
+  onClick?: () => void;
   style?: CSSProperties;
 }
 
 export function Button({
-  children,
-  customVariant,
-  isDisabled = false,
-  buttonSize = 'medium',
-  onClick,
-  fullWidth,
-  style,
-  ...props
-}: IButtonProps) {
+                         children,
+                         customVariant,
+                         isDisabled = false,
+                         buttonSize = 'medium',
+                         onClick,
+                         fullWidth,
+                         style,
+                         ...props
+                       }: IButtonProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isActive, setIsActive] = useState(false);
 
   const handleButtonClick = () => {
-    onClick();
+    if (onClick) {
+      onClick();
+    }
   };
 
   // if by default custom variant is light blue, apply default styles
@@ -69,7 +71,7 @@ export function Button({
     backgroundColor: ButtonBackgroundEnum.DEFAULT_BLUE,
     borderRadius: DEFAULT_BUTTON_BORDER_RADIUS,
     padding: buttonSize === 'medium' ? '16px 24px' : '20px 30px',
-    fontFamily: "'GolosText-Regular', sans-serif",
+    fontFamily: '\'GolosText-Regular\', sans-serif',
     fontSize: '15px',
     fontStyle: 'normal',
     fontWeight: 500,

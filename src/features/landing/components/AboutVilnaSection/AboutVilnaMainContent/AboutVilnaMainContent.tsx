@@ -1,6 +1,6 @@
+import { Box, Typography } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Typography } from '@mui/material';
 
 import { Button } from '@/components/ui/Button/Button';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
@@ -24,8 +24,8 @@ export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMain
   return (
     <Box sx={mainContentContainerStyle}>
       <Typography
-        variant={'h1'}
-        sx={{
+        variant="h1"
+        style={{
           color: '#1A1C1E',
           fontFamily: 'GolosText-Regular, sans-serif',
           fontSize: isMobile || isSmallest ? '32px' : '56px',
@@ -40,8 +40,8 @@ export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMain
         {t('The first Ukrainian open source CRM')}
       </Typography>
       <Typography
-        variant={'body1'}
-        sx={{
+        variant="body1"
+        style={{
           marginTop: '16px',
           color: '#1A1C1E',
           fontFamily: 'GolosText-Regular, sans-serif',
@@ -59,8 +59,8 @@ export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMain
       </Typography>
       <Button
         onClick={onTryItOutButtonClick}
-        customVariant={'light-blue'}
-        buttonSize={'big'}
+        customVariant="light-blue"
+        buttonSize="big"
         style={{
           marginTop: '16px',
           alignSelf: isMobile || isSmallest ? 'flex-start' : 'center',
