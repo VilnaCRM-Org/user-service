@@ -6,7 +6,7 @@ namespace App\User\Application;
 
 use App\Shared\Domain\Bus\Command\CommandHandler;
 use App\Shared\Domain\ValueObject\Uuid;
-use App\User\Domain\Entity\User;
+use App\User\Domain\Entity\User\User;
 use App\User\Domain\UserRepository;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 

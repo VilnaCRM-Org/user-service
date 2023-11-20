@@ -6,9 +6,10 @@ namespace App\User\Infrastructure;
 
 use App\Shared\Domain\Bus\Event\EventBus;
 use App\Shared\Infrastructure\Bus\Event\UserRegisteredEvent;
-use App\User\Domain\Entity\User;
+use App\User\Domain\Entity\User\User;
 use App\User\Domain\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 
 final readonly class MariaDBUserRepository implements UserRepository
 {
@@ -22,5 +23,16 @@ final readonly class MariaDBUserRepository implements UserRepository
         $this->entityManager->flush();
 
         // $this->eventBus->publish(new UserRegisteredEvent());
+    }
+
+    public function find(string $userID): User
+    {
+        $user = $this->entityManager->find(User::class, $userID);
+
+        if (!$user) {
+            throw new InvalidArgumentException('User not found');
+        }
+
+        return $user;
     }
 }

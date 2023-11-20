@@ -34,10 +34,3 @@ services:
 
     App\Shared\Infrastructure\Bus\Event\InMemorySymfonyEventBus:
         arguments: [ !tagged app.event_subscriber ]
-
-    App\User\Domain\Infrastructure\RedisTokenRepository:
-        arguments: [app.redis_adapter]
-
-#    Symfony\Component\Cache\Adapter\RedisAdapter:
-#        arguments:
-#            - '@cache.app'  # Reference to the "app" cache pool defined in cache.yaml
