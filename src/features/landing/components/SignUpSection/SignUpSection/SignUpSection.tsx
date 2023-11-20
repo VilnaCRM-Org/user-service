@@ -1,13 +1,11 @@
 import { Box, Container, Grid } from '@mui/material';
 
-import SignUp from '@/features/landing/components/SignUpSection/SignUp/SignUp'
-import SignUpTextsContent
-  from '@/features/landing/components/SignUpSection/SignUpTextsContent/SignUpTextsContent';
+import SignUp from '@/features/landing/components/SignUpSection/SignUp/SignUp';
+import SignUpTextsContent from '@/features/landing/components/SignUpSection/SignUpTextsContent/SignUpTextsContent';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import { SIGN_UP_SECTION_ID, SOCIAL_LINKS } from '@/features/landing/utils/constants/constants';
 
-import SignUpWrapperWithBackground
-  from '../SignUpWrapperWithBackground/SignUpWrapperWithBackground';
+import SignUpWrapperWithBackground from '../SignUpWrapperWithBackground/SignUpWrapperWithBackground';
 
 const styles = {
   mainBox: {
@@ -20,6 +18,9 @@ const styles = {
   },
   mainBoxTablet: {
     padding: '56px 34px 0 34px',
+  },
+  mainBoxSmallest: {
+    padding: '32px 15px 0 15px',
   },
   mainContainer: {
     width: '100%',
@@ -44,7 +45,8 @@ export default function SignUpSection() {
       id={SIGN_UP_SECTION_ID}
       sx={{
         ...styles.mainBox,
-        ...((isTablet || isMobile || isSmallest) ? { ...styles.mainBoxTablet } : {}),
+        ...(isTablet || isMobile || isSmallest ? { ...styles.mainBoxTablet } : {}),
+        ...(isSmallest ? { ...styles.mainBoxSmallest } : {}),
       }}
     >
       <SignUpWrapperWithBackground>

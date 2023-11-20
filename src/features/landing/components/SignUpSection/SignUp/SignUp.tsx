@@ -31,6 +31,9 @@ const styles = {
     lineHeight: 'normal',
     marginBottom: '32px',
   },
+  mainHeadingSmallest: {
+    fontSize: '22px',
+  },
   mainGrid: {
     height: '100%',
     minHeight: '548px',
@@ -83,7 +86,11 @@ export default function SignUp() {
           : '1px 1px 41px 0px rgba(59, 68, 80, 0.05)',
       }}
     >
-      <Typography style={{ ...styles.mainHeading }} component="h2" variant="h1">
+      <Typography
+        style={{ ...styles.mainHeading, ...(isSmallest ? styles.mainHeadingSmallest : {}) }}
+        component="h2"
+        variant="h1"
+      >
         {t('Or register on the site:')}
       </Typography>
 
