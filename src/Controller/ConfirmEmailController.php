@@ -7,9 +7,6 @@ namespace App\Controller;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\Shared\Infrastructure\TokenNotFoundError;
 use App\User\Application\ConfirmEmailCommand;
-use Doctrine\DBAL\Exception\TableNotFoundException;
-use Exception;
-use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,8 +21,8 @@ final class ConfirmEmailController extends AbstractController
     {
         try {
             $token = $request->query->get('token');
-            if(!$token){
-                throw new InvalidArgumentException('Token was empty');
+            if (!$token) {
+                throw new \InvalidArgumentException('Token was empty');
             }
 
             $commandBus->dispatch(new ConfirmEmailCommand($token));
@@ -33,7 +30,7 @@ final class ConfirmEmailController extends AbstractController
             return new Response('', Response::HTTP_CREATED);
         } catch (TokenNotFoundError $error) {
             return new Response($error->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
-        } catch (InvalidArgumentException $error){
+        } catch (\InvalidArgumentException $error) {
             return new Response($error->getMessage(), Response::HTTP_NOT_FOUND);
         }
     }
