@@ -1,5 +1,5 @@
 import { Typography, Box } from '@material-ui/core';
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface ICustomInputProps {
@@ -68,16 +68,16 @@ const styles = {
 };
 
 export default function CustomInput({
-                                      id,
-                                      label,
-                                      value,
-                                      onChange,
-                                      disabled = false,
-                                      error = '',
-                                      placeholder,
-                                      style,
-                                      type,
-                                    }: ICustomInputProps) {
+  id,
+  label,
+  value,
+  onChange,
+  disabled = false,
+  error = '',
+  placeholder,
+  style,
+  type,
+}: ICustomInputProps) {
   const { t } = useTranslation();
   const [isFocused, setIsFocused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -101,8 +101,8 @@ export default function CustomInput({
   return (
     <Box sx={{ ...styles.mainBox, ...style }}>
       <Typography
-        variant='body1'
-        component='label'
+        variant="body1"
+        component="label"
         htmlFor={id}
         style={{ ...styles.label, ...style }}
       >
@@ -127,11 +127,7 @@ export default function CustomInput({
         }}
       />
       {error && (
-        <Typography
-          component='p'
-          variant='body1'
-          style={{ ...styles.errorMessage }}
-        >
+        <Typography component="p" variant="body1" style={{ ...styles.errorMessage }}>
           {error}
         </Typography>
       )}

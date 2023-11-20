@@ -4,15 +4,12 @@ import React from 'react';
 const styles = {
   mainGridWithBackground: {
     width: '100%',
-    background: `url('/assets/img/Registration/Background.png')`,
-    backgroundSize: 'contain',
+    background: `url('/assets/svg/sign-up-background-svg.svg')`,
+    backgroundSize: 'cover',
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'center',
     height: '100%',
     maxWidth: '100%',
-    maxHeight: '548px',
-    alignSelf: 'stretch',
-    position: 'relative',
   },
 };
 
