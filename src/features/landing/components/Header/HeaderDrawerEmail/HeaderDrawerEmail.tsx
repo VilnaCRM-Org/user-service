@@ -36,7 +36,7 @@ export default function HeaderDrawerEmail({ style }: { style?: React.CSSProperti
         ...style,
       }}
     >
-      <Typography style={{ ...styles.mainLink, textAlign: 'center' }}>
+      <Typography style={{ ...styles.mainLink, textAlign: 'center', padding: '19px 10px' }}>
         <Paper elevation={0} style={{ border: 'none' }}>
           <img src="/assets/svg/header-drawer/at-sign.svg" alt="At sign" />
         </Paper>

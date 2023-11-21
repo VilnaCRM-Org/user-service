@@ -22,8 +22,8 @@ const styles = {
 export default function FooterSocials() {
   return (
     <Box sx={{ ...styles.mainBox }}>
-      {SOCIALS.map(({ url, id }) => (
-          <CustomLink key={id} href='' style={{ ...styles.link }}>
+      {SOCIALS.map(({ url, id, href }) => (
+          <CustomLink key={id} href={href} style={{ ...styles.link }}>
             <img src={url} alt={id} style={{ ...styles.img }} />
           </CustomLink>
         ))}
