@@ -2,6 +2,8 @@ import { Grid } from '@mui/material';
 import Drawer from '@mui/material/Drawer';
 import * as React from 'react';
 
+import HeaderDrawerEmail
+  from '@/features/landing/components/Header/HeaderDrawerEmail/HeaderDrawerEmail';
 import {
   HeaderMobileLink,
 } from '@/features/landing/components/Header/HeaderMobileLink/HeaderMobileLink';
@@ -69,6 +71,10 @@ export default function HeaderDrawerMenu({
         </Grid>
         <Grid item sx={{ width: '100%' }}>
           <HeaderMobileLink href='/' linkNameText='Контакти' onClick={onToggleDrawer} />
+        </Grid>
+
+        <Grid item sx={{ width: '100%' }}>
+          <HeaderDrawerEmail />
         </Grid>
       </Grid>
     </Drawer>
