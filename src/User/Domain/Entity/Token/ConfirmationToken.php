@@ -12,7 +12,7 @@ use App\User\Infrastructure\Token\TokenProvider;
 #[Mutation(resolver: ConfirmEmailMutationResolver::class, args: [
     'tokenValue' => [
         'type' => 'String!',
-    ]
+    ],
 ], input: ConfirmEmailInputDto::class, name: 'confirm')]
 class ConfirmationToken
 {
