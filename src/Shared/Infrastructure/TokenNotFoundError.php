@@ -6,6 +6,6 @@ class TokenNotFoundError extends \RuntimeException
 {
     public function __construct()
     {
-        parent::__construct('ConfirmationToken not found');
+        parent::__construct('Confirmation token not found');
     }
 }

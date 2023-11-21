@@ -3,15 +3,16 @@
 namespace App\User\Application;
 
 use App\Shared\Domain\Bus\Command\Command;
+use App\User\Domain\Entity\Token\ConfirmationToken;
 
 class ConfirmEmailCommand implements Command
 {
-    public function __construct(private string $tokenValue)
+    public function __construct(private ConfirmationToken $token)
     {
     }
 
-    public function getTokenValue(): string
+    public function getToken(): ConfirmationToken
     {
-        return $this->tokenValue;
+        return $this->token;
     }
 }

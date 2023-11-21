@@ -1,6 +1,6 @@
 <?php
 
-namespace App\User\Infrastructure;
+namespace App\User\Infrastructure\Repository;
 
 use App\Shared\Infrastructure\TokenNotFoundError;
 use App\User\Domain\Entity\Token\ConfirmationToken;
@@ -42,6 +42,6 @@ class RedisTokenRepository implements TokenRepository
 
     public function delete(ConfirmationToken $token): void
     {
-        $this->redisAdapter->delete($token->getTokenValue());
+        $this->redisAdapter->delete(self::REDIS_KEY_PREFIX.$token->getTokenValue());
     }
 }

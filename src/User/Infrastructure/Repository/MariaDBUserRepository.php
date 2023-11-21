@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure;
+namespace App\User\Infrastructure\Repository;
 
 use App\Shared\Domain\Bus\Event\EventBus;
-use App\Shared\Infrastructure\Bus\Event\UserRegisteredEvent;
 use App\User\Domain\Entity\User\User;
 use App\User\Domain\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
