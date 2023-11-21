@@ -32,8 +32,15 @@ const styles = {
   mainGrid: {
     display: 'flex',
     justifyContent: 'space-between',
+    alignItems: 'center',
     height: '100%',
     width: '100%',
+  },
+  mainGridTablet: {
+    gap: '62px',
+  },
+  mainGridMobileOrSmaller: {
+    gap: '32px',
   },
 };
 
@@ -47,6 +54,7 @@ export default function SignUpSection() {
         ...styles.mainBox,
         ...(isTablet || isMobile || isSmallest ? { ...styles.mainBoxTablet } : {}),
         ...(isSmallest ? { ...styles.mainBoxSmallest } : {}),
+        padding: isSmallest || isMobile ? '32px 15px 0 15px' : styles.mainBox.padding,
       }}
     >
       <SignUpWrapperWithBackground>
@@ -59,8 +67,9 @@ export default function SignUpSection() {
             container
             sx={{
               ...styles.mainGrid,
+              ...(isTablet ? styles.mainGridTablet : {}),
+              ...(isMobile || isSmallest ? styles.mainGridMobileOrSmaller : {}),
               flexDirection: isTablet || isMobile || isSmallest ? 'column' : 'row',
-              gap: isTablet || isMobile || isSmallest ? '62px' : '0',
             }}
           >
             <SignUpTextsContent socialLinks={SOCIAL_LINKS} />

@@ -2,8 +2,23 @@ import { Box, Grid, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import SocialLink from '@/components/ui/SocialLink/SocialLink';
-import { ISocialLink } from '@/features/landing/types/social/types';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { ISocialLink } from '@/features/landing/types/social/types';
+
+const styles = {
+  typographyHeading: {
+    color: '#57595B',
+    fontFamily: 'GolosText-Bold, sans-serif',
+    fontSize: '22px',
+    fontStyle: 'normal',
+    fontWeight: '700',
+    lineHeight: 'normal',
+    marginTop: '40px',
+  },
+  typographyHeadingMobileOrSmaller: {
+    marginTop: '0',
+  },
+};
 
 export default function SignUpSocials({ socialLinks }: { socialLinks: ISocialLink[] }) {
   const { t } = useTranslation();
@@ -15,13 +30,8 @@ export default function SignUpSocials({ socialLinks }: { socialLinks: ISocialLin
         component="p"
         variant="body1"
         style={{
-          color: '#57595B',
-          fontFamily: 'GolosText-Bold, sans-serif',
-          fontSize: '22px',
-          fontStyle: 'normal',
-          fontWeight: '700',
-          lineHeight: 'normal',
-          marginTop: '40px',
+          ...styles.typographyHeading,
+          ...(isSmallest || isMobile ? styles.typographyHeadingMobileOrSmaller : {}),
         }}
       >
         {t('Log in with a convenient social network:')}
@@ -29,12 +39,12 @@ export default function SignUpSocials({ socialLinks }: { socialLinks: ISocialLin
 
       <Grid
         container
-        spacing={1.5}
+        spacing={(isSmallest || isMobile) ? 1 : 1.5}
         sx={{
           width: '100%',
           marginTop: '24px',
           display: 'flex',
-          justifyContent: (isSmallest || isMobile || isSmallTablet) ? 'center' : 'flex-start',
+          justifyContent: isSmallest || isMobile || isSmallTablet ? 'center' : 'flex-start',
         }}
       >
         {socialLinks.map(({ id, linkHref, icon, title }) => (

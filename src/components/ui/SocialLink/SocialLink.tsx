@@ -2,12 +2,14 @@ import { Box, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 import CustomLink from '../CustomLink/CustomLink';
+import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 interface ISocialLinkProps {
   icon: string;
   title: string;
   linkHref: string;
   isDisabled?: boolean;
+  style?: React.CSSProperties;
 }
 
 const styles = {
@@ -22,6 +24,13 @@ const styles = {
     background: '#FFF',
     width: '100%',
     maxWidth: '188px',
+  },
+  mainTablet: {
+    padding: '18px 36px 18px 36px',
+  },
+  mainMobile: {
+    padding: '18px 37.5px 18px 38.5px',
+    maxWidth: '169px',
   },
   imageBox: {
     width: '100%',
@@ -56,9 +65,10 @@ const styles = {
   },
 };
 
-export default function SocialLink({ icon, title, linkHref, isDisabled }: ISocialLinkProps) {
+export default function SocialLink({ icon, title, linkHref, isDisabled, style }: ISocialLinkProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isActive, setIsActive] = useState(false);
+  const { isTablet, isSmallest, isMobile } = useScreenSize();
 
   const handleMouseEnter = () => {
     if (!isDisabled) {
@@ -93,33 +103,50 @@ export default function SocialLink({ icon, title, linkHref, isDisabled }: ISocia
   }, []);
 
   return (
-    <CustomLink href={linkHref}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-                onMouseDown={handleMouseDown}
-                onMouseUp={handleMouseUp}
-                style={{
-                  ...styles.main,
-                  ...(isHovered && styles.mainHoverState),
-                  ...(isActive && styles.mainActiveState),
-                  ...(isDisabled && styles.mainDisabledState),
-                }}>
-      <Box sx={{
-        ...styles.imageBox,
-      }}>
-        <img src={icon} alt={title}
-             style={{
-               ...styles.image,
-               objectFit: 'cover',
-             }} />
+    <CustomLink
+      href={linkHref}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      style={{
+        ...styles.main,
+        ...(isTablet ? styles.mainTablet : {}),
+        ...((isMobile || isSmallest) ? styles.mainMobile : {}),
+        ...(isHovered && styles.mainHoverState),
+        ...(isActive && styles.mainActiveState),
+        ...(isDisabled && styles.mainDisabledState),
+      }}
+    >
+      <Box
+        sx={{
+          ...styles.imageBox,
+        }}
+      >
+        <img
+          src={icon}
+          alt={title}
+          style={{
+            ...styles.image,
+            objectFit: 'cover',
+          }}
+        />
       </Box>
-      <Typography variant='body1' component='p' style={{
-        ...styles.text, textAlign: 'center',
-      }}>{title}</Typography>
+      <Typography
+        variant="body1"
+        component="p"
+        style={{
+          ...styles.text,
+          textAlign: 'center',
+        }}
+      >
+        {title}
+      </Typography>
     </CustomLink>
   );
 }
 
 SocialLink.defaultProps = {
   isDisabled: false,
+  style: {},
 };

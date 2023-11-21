@@ -23,6 +23,10 @@ const styles = {
     lineHeight: 'normal',
     marginBottom: '40px',
   },
+  mainHeadingMobileOrSmaller: {
+    fontSize: '28px',
+    marginBottom: '20px',
+  },
   mainLink: {
     color: '#1EAEFF',
     fontFamily: 'GolosText-Bold, sans-serif',
@@ -47,6 +51,7 @@ export default function SignUpTextsContent({ socialLinks }: {
           }}>
       <Typography component='h2' variant='h2' style={{
         ...styles.mainHeading,
+        ...((isSmallest || isMobile) ? styles.mainHeadingMobileOrSmaller : {})
       }}>
         {t('Register now and free up time for business development with ')}
         <CustomLink href='/' style={{ ...styles.mainLink }}>VilnaCRM</CustomLink>

@@ -30,11 +30,15 @@ const styles = {
     fontWeight: '600',
     lineHeight: 'normal',
     marginBottom: '32px',
+    alignSelf: 'flex-start',
   },
   mainHeadingSmallest: {
     fontSize: '22px',
   },
   mainGrid: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
     height: '100%',
     minHeight: '548px',
     width: '100$',
@@ -77,17 +81,20 @@ export default function SignUp() {
   return (
     <Grid
       item
-      lg={6}
-      md={12}
+      lg={6} md={12}
       sx={{
         ...styles.mainGrid,
         boxShadow: !(isSmallest || isMobile || isTablet)
           ? '-25px 105px #E1E7EA, 1px 1px 41px 0px rgba(59, 68, 80, 0.05)'
           : '1px 1px 41px 0px rgba(59, 68, 80, 0.05)',
+        padding: isSmallest || isMobile ? '24px 24px 32px 24px' : styles.mainGrid.padding,
       }}
     >
       <Typography
-        style={{ ...styles.mainHeading, ...(isSmallest ? styles.mainHeadingSmallest : {}) }}
+        style={{
+          ...styles.mainHeading,
+          ...(isSmallest || isMobile ? styles.mainHeadingSmallest : {}),
+        }}
         component="h2"
         variant="h1"
       >

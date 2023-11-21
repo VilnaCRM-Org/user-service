@@ -11,6 +11,17 @@ interface ISignUpPrivacyPolicyProps {
   onPrivacyPolicyCheckboxChange: (checked: boolean) => void;
 }
 
+const styles = {
+  typography: {
+    color: '#404142',
+    fontFamily: '"Inter-Regular", sans-serif',
+    fontSize: '14px',
+    fontStyle: 'normal',
+    fontWeight: '500',
+    lineHeight: '18px',
+  },
+};
+
 export default function SignUpPrivacyPolicy({
   isCheckboxChecked,
   onPrivacyPolicyCheckboxChange,
@@ -21,7 +32,7 @@ export default function SignUpPrivacyPolicy({
   };
 
   const checkboxLabelJSX = (
-    <Typography>
+    <Typography style={{ ...styles.typography }}>
       {t('I have read and accept')}{' '}
       <CustomLink href="/" target="_blank">
         {t('the Privacy Policy')}
