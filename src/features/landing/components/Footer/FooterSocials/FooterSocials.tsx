@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
 
 const SOCIALS = [
@@ -21,13 +22,11 @@ const styles = {
 export default function FooterSocials() {
   return (
     <Box sx={{ ...styles.mainBox }}>
-      {SOCIALS.map(({ url, id }) => {
-        return (
+      {SOCIALS.map(({ url, id }) => (
           <CustomLink key={id} href='' style={{ ...styles.link }}>
             <img src={url} alt={id} style={{ ...styles.img }} />
           </CustomLink>
-        );
-      })}
+        ))}
     </Box>
   );
 }

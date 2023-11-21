@@ -9,15 +9,20 @@ const styles = {
     fontStyle: 'normal',
     fontWeight: '500',
     lineHeight: '18px',
+    alignSelf: 'center',
   },
 };
 
-export default function FooterCopyright() {
+export default function FooterCopyright({ style }: { style?: React.CSSProperties }) {
   const { t } = useTranslation();
 
   return (
-    <Typography style={{ ...styles.copyrightText }}>
+    <Typography style={{ ...styles.copyrightText, ...style }}>
       {t(`Copyright © ТОВ “Вільна СРМ”, 2023`)}
     </Typography>
   );
 }
+
+FooterCopyright.defaultProps = {
+  style: {},
+};

@@ -1,8 +1,9 @@
-import { Box, Container } from '@mui/material';
+import { Container } from '@mui/material';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
+import FooterConfidential
+  from '@/features/landing/components/Footer/FooterConfidential/FooterConfidential';
 import VilnaMainIcon from '@/features/landing/components/Icons/VilnaMainIcon/VilnaMainIcon';
-import { useTranslation } from 'react-i18next';
 
 const styles = {
   mainContainer: {
@@ -38,21 +39,12 @@ const styles = {
 };
 
 export default function FooterHead() {
-  const { t } = useTranslation();
-
   return (
     <Container sx={{ ...styles.mainContainer }}>
       <CustomLink href="/" style={{ ...styles.logo }}>
         <VilnaMainIcon />
       </CustomLink>
-      <Box sx={{ ...styles.confidentialsBox }}>
-        <CustomLink href="/" style={{ ...styles.confidentialLink }}>
-          {t('Privacy policy')}
-        </CustomLink>
-        <CustomLink href="/" style={{ ...styles.confidentialLink }}>
-          {t('Usage policy')}
-        </CustomLink>
-      </Box>
+      <FooterConfidential />
     </Container>
   );
 }

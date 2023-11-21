@@ -18,15 +18,19 @@ const styles = {
   },
 };
 
-export default function FooterEmail() {
+export default function FooterEmail({ style }: { style?: React.CSSProperties }) {
   const { t } = useTranslation();
 
   return (
     <CustomLink
       href="mailto:info@vilnacrm.com"
-      style={{ ...styles.mainLink, textAlign: 'center' }}
+      style={{ ...styles.mainLink, textAlign: 'center', ...style }}
     >
       {t('info@vilnacrm.com')}
     </CustomLink>
   );
 }
+
+FooterEmail.defaultProps = {
+  style: {},
+};
