@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import CustomCheckbox from '@/components/ui/CustomCheckbox/CustomCheckbox';
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
 import { CHECKBOX_PRIVACY_POLICY_ID } from '@/features/landing/types/sign-up/types';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 interface ISignUpPrivacyPolicyProps {
   isCheckboxChecked: boolean;
@@ -26,22 +27,22 @@ export default function SignUpPrivacyPolicy({
   isCheckboxChecked,
   onPrivacyPolicyCheckboxChange,
 }: ISignUpPrivacyPolicyProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const handleCheckboxChange = (checked: boolean) => {
     onPrivacyPolicyCheckboxChange(checked);
   };
 
   const checkboxLabelJSX = (
     <Typography style={{ ...styles.typography }}>
-      {t('I have read and accept')}{' '}
+      {t('sign_up.form.confidential_text.firstText')}{' '}
       <CustomLink href="/" target="_blank">
-        {t('the Privacy Policy')}
+        {t('sign_up.form.confidential_text.firstLink')}
       </CustomLink>{' '}
-      {t('and')}{' '}
+      {t('sign_up.form.confidential_text.secondText')}{' '}
       <CustomLink href="/" target="_blank">
-        {t('Use Policy')}
+        {t('sign_up.form.confidential_text.secondLink')}
       </CustomLink>{' '}
-      {t('of the VilnaCRM service')}
+      {t('sign_up.form.confidential_text.thirdText')}
     </Typography>
   );
 

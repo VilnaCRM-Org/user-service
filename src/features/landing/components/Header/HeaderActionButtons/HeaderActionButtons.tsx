@@ -1,9 +1,10 @@
-import * as React from 'react';
 import { Grid } from '@mui/material';
+import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/Button/Button';
-import { useTranslation } from 'react-i18next';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 interface IHeaderActionButtonsProps {
   onSignInButtonClick: () => void;
@@ -14,7 +15,7 @@ export function HeaderActionButtons({
   onSignInButtonClick,
   onTryItOutButtonClick,
 }: IHeaderActionButtonsProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isMobile, isSmallest, isSmallTablet } = useScreenSize();
 
   if (isMobile || isSmallest || isSmallTablet) {
@@ -38,18 +39,18 @@ export function HeaderActionButtons({
         <Button
           customVariant="transparent-white"
           onClick={onSignInButtonClick}
-          style={{ width: '100%', maxWidth: '119px' }}
+          style={{ width: '100%' }}
         >
-          {t('Log in')}
+          {t('header.actions.log_in')}
         </Button>
       </Grid>
       <Grid item>
         <Button
           customVariant="light-blue"
           onClick={onTryItOutButtonClick}
-          style={{ width: '100%', maxWidth: '119px' }}
+          style={{ width: '100%' }}
         >
-          {t('Try it out')}
+          {t('header.actions.try_it_out')}
         </Button>
       </Grid>
     </Grid>

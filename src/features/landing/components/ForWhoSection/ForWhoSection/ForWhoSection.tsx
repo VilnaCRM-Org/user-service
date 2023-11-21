@@ -26,13 +26,13 @@ const CARD_ITEMS = [
     id: 'card_1',
     imageSrc: '/assets/img/ForWho/Ruby.png',
     imageAltText: 'Ruby 1',
-    text: 'A private entrepreneur is a psychologist, tutor or dropshipper',
+    text: 'for_who.card_text_1',
   },
   {
     id: 'card_2',
     imageSrc: '/assets/img/ForWho/Ruby.png',
     imageAltText: 'Ruby 2',
-    text: 'medium-scale local project - online courses, design studio or small outsourcing',
+    text: 'for_who.card_text_2',
   },
 ];
 

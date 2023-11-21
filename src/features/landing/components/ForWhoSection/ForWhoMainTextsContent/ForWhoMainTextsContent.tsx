@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/Button/Button';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 const styles = {
   mainGridContainer: {
@@ -40,11 +41,11 @@ const styles = {
 };
 
 export function ForWhoMainTextsContent({
-                                         onTryItOutButtonClick,
-                                       }: {
+  onTryItOutButtonClick,
+}: {
   onTryItOutButtonClick: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isSmallest, isMobile } = useScreenSize();
 
   return (
@@ -52,37 +53,35 @@ export function ForWhoMainTextsContent({
       {/* Top Content */}
       <Grid item>
         <Typography
-          variant='h2'
-          component='h2'
+          variant="h2"
+          component="h2"
           style={{
             ...styles.mainHeading,
             fontSize: isSmallest ? '28px' : styles.mainHeading.fontSize,
+            textAlign: 'inherit',
           }}
         >
-          {t('For who')}
+          {t('for_who.heading_main')}
         </Typography>
 
         <Typography
-          variant='body1'
-          component='p'
+          variant="body1"
+          component="p"
           style={{
             ...styles.mainText,
             fontSize: isSmallest ? '15px' : '18px',
           }}
         >
-          {t(
-            'We created Vilna, focusing on the specifics of the service business,\n' +
-            'which is not suitable for ordinary e-commerce templates',
-          )}
+          {t('for_who.text_main')}
         </Typography>
         {isMobile || isSmallest ? null : (
           <Button
-            customVariant='light-blue'
-            buttonSize='big'
+            customVariant="light-blue"
+            buttonSize="big"
             style={{ marginTop: '24px' }}
             onClick={onTryItOutButtonClick}
           >
-            {t('Try it out')}
+            {t('for_who.button_text')}
           </Button>
         )}
       </Grid>

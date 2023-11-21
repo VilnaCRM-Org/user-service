@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import { ISocialLink } from '@/features/landing/types/social/types';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 import SignUpSocials from '../SignUpSocials/SignUpSocials';
 
@@ -37,24 +38,32 @@ const styles = {
   },
 };
 
-export default function SignUpTextsContent({ socialLinks }: {
-  socialLinks: ISocialLink[]
-}) {
-  const { t } = useTranslation();
+export default function SignUpTextsContent({ socialLinks }: { socialLinks: ISocialLink[] }) {
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isSmallest, isMobile, isTablet } = useScreenSize();
 
   return (
-    <Grid item lg={6} md={12}
-          sx={{
-            ...styles.mainGrid,
-            textAlign: (isSmallest || isMobile || isTablet) ? 'center' : styles.mainGrid.textAlign,
-          }}>
-      <Typography component='h2' variant='h2' style={{
-        ...styles.mainHeading,
-        ...((isSmallest || isMobile) ? styles.mainHeadingMobileOrSmaller : {})
-      }}>
-        {t('Register now and free up time for business development with ')}
-        <CustomLink href='/' style={{ ...styles.mainLink }}>VilnaCRM</CustomLink>
+    <Grid
+      item
+      lg={6}
+      md={12}
+      sx={{
+        ...styles.mainGrid,
+        textAlign: isSmallest || isMobile || isTablet ? 'center' : styles.mainGrid.textAlign,
+      }}
+    >
+      <Typography
+        component="h2"
+        variant="h2"
+        style={{
+          ...styles.mainHeading,
+          ...(isSmallest || isMobile ? styles.mainHeadingMobileOrSmaller : {}),
+        }}
+      >
+        {t('sign_up.main_heading')}
+        <CustomLink href="/" style={{ ...styles.mainLink }}>
+          VilnaCRM
+        </CustomLink>
       </Typography>
       <SignUpSocials socialLinks={socialLinks} />
     </Grid>

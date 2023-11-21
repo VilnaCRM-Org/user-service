@@ -2,6 +2,7 @@ import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 const style = {
   mainBox: {
@@ -36,7 +37,7 @@ const style = {
 };
 
 export function UnlimitedIntegrationsTexts() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isMobile, isSmallest } = useScreenSize();
 
   return (
@@ -55,15 +56,19 @@ export function UnlimitedIntegrationsTexts() {
           fontSize: isMobile || isSmallest ? '22px' : '36px',
         }}
       >
-        {t('Unlimited')}
+        {t('unlimited_possibilities.main_heading_text')}
       </Typography>
 
       <Typography
         component="h3"
         variant="h3"
-        style={{ ...style.secondaryHeading, fontSize: isMobile || isSmallest ? '28px' : '46px' }}
+        style={{
+          ...style.secondaryHeading,
+          fontSize: isMobile || isSmallest ? '28px' : '46px',
+          textAlign: 'inherit',
+        }}
       >
-        {t('possibilities of integration')}
+        {t('unlimited_possibilities.secondary_heading_text')}
       </Typography>
     </Box>
   );

@@ -14,6 +14,7 @@ import {
 } from '@/features/landing/types/sign-up/types';
 
 import SignUpPrivacyPolicy from '../SignUpPrivacyPolicy/SignUpPrivacyPolicy';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 interface IFormData {
   username: string;
@@ -60,7 +61,7 @@ const styles = {
 };
 
 export default function SignUp() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isSmallest, isMobile, isTablet } = useScreenSize();
   const { control, handleSubmit, formState } = useForm<IFormData>();
   const { errors } = formState;
@@ -98,7 +99,7 @@ export default function SignUp() {
         component="h2"
         variant="h1"
       >
-        {t('Or register on the site:')}
+        {t('sign_up.form.heading_main')}
       </Typography>
 
       <form
@@ -112,15 +113,15 @@ export default function SignUp() {
           name="username"
           control={control}
           defaultValue=""
-          rules={{ required: t('Your firstname and lastname are required') as string }}
+          rules={{ required: t('sign_up.form.name_input.required') as string }}
           render={({ field }) => (
             <CustomInput
               id={INPUT_ID_FOR_USER_FIRST_AND_LAST_NAME}
-              label={t('Your firstname and lastname')}
+              label={t('sign_up.form.name_input.label')}
               onChange={field.onChange}
               value={field.value}
               error={errors.username?.message}
-              placeholder={t('Mykhailo Svetskyi')}
+              placeholder={t('sign_up.form.name_input.placeholder')}
               type="text"
             />
           )}
@@ -129,15 +130,15 @@ export default function SignUp() {
           name="email"
           control={control}
           defaultValue=""
-          rules={{ required: 'Email is required', pattern: /^\S+@\S+$/i }}
+          rules={{ required: t('sign_up.form.email_input.required') as string, pattern: /^\S+@\S+$/i }}
           render={({ field }) => (
             <CustomInput
               id={INPUT_ID_FOR_EMAIL}
-              label={t('Email')}
+              label={t('sign_up.form.email_input.label')}
               onChange={field.onChange}
               value={field.value}
               error={errors.email?.message}
-              placeholder="vilnaCRM@gmail.com"
+              placeholder={t('sign_up.form.email_input.placeholder')}
               style={{ marginTop: '22px' }}
               type="email"
             />
@@ -148,18 +149,18 @@ export default function SignUp() {
           control={control}
           defaultValue=""
           rules={{
-            required: 'Password is required',
+            required: t('sign_up.form.password_input.required') as string,
             pattern: {
               value: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^\w\d\s:])([^\s]){8,32}$/,
               message: t(
-                'Invalid password. Must meet requirements: no whitespaces, at least one uppercase, one lowercase, one digit, one special symbol, and 8-32 characters long.'
+                'sign_up.form.password_input.message'
               ),
             },
           }}
           render={({ field }) => (
             <CustomInput
               id={INPUT_ID_FOR_PASSWORD}
-              label={t('Password')}
+              label={t('sign_up.form.password_input.label')}
               onChange={field.onChange}
               value={field.value}
               error={errors.password?.message}
@@ -181,7 +182,7 @@ export default function SignUp() {
           type="submit"
           style={{ alignSelf: isSmallest || isMobile || isTablet ? 'stretch' : 'flex-start' }}
         >
-          {t('Sign-Up')}
+          {t('sign_up.form.button-text')}
         </Button>
       </form>
     </Grid>

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/Button/Button';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 interface IAboutVilnaMainContentProps {
   onTryItOutButtonClick: () => void;
@@ -18,7 +19,7 @@ const mainContentContainerStyle: React.CSSProperties = {
 };
 
 export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMainContentProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isMobile, isSmallest } = useScreenSize();
 
   return (
@@ -37,7 +38,7 @@ export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMain
           textAlign: isMobile || isSmallest ? 'left' : 'inherit',
         }}
       >
-        {t('The first Ukrainian open source CRM')}
+        {t('about_vilna.heading_main')}
       </Typography>
       <Typography
         variant="body1"
@@ -53,9 +54,7 @@ export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMain
           textAlign: isMobile || isSmallest ? 'left' : 'inherit',
         }}
       >
-        {t(
-          "Our goal is to support Ukrainian entrepreneurs. That's why we created Vilna, a convenient and free CRM system - so you can do business, not spend time on settings"
-        )}
+        {t('about_vilna.text_main')}
       </Typography>
       <Button
         onClick={onTryItOutButtonClick}
@@ -66,7 +65,7 @@ export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMain
           alignSelf: isMobile || isSmallest ? 'flex-start' : 'center',
         }}
       >
-        {t('Try it out')}
+        {t('about_vilna.button_main')}
       </Button>
     </Box>
   );

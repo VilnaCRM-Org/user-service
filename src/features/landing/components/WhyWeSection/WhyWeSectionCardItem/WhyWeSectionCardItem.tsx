@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 interface IWhyWeSectionItemCardItemProps {
   cardItem: IWhyWeCardItem;
@@ -25,7 +26,7 @@ const cartItemStyle: React.CSSProperties = {
 
 export default function WhyWeSectionCardItem({ cardItem, style }: IWhyWeSectionItemCardItemProps) {
   const { imageSrc, title, text } = cardItem;
-  const { t } = useTranslation();
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseOver = () => {
@@ -62,8 +63,8 @@ export default function WhyWeSectionCardItem({ cardItem, style }: IWhyWeSectionI
         />
       </Icon>
       <Typography
-        variant='h3'
-        component='h3'
+        variant="h3"
+        component="h3"
         style={{
           color: '#1A1C1E',
           textAlign: 'left',
@@ -77,8 +78,8 @@ export default function WhyWeSectionCardItem({ cardItem, style }: IWhyWeSectionI
         {t(title)}
       </Typography>
       <Typography
-        variant='body1'
-        component='p'
+        variant="body1"
+        component="p"
         style={{
           color: '#1A1C1E',
           fontFamily: 'GolosText-Regular, sans-serif',

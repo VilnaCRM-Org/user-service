@@ -1,7 +1,9 @@
 import '../styles/globals.css';
-import React, { useEffect } from 'react';
 import * as Sentry from '@sentry/react';
+import React, { useEffect } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import PropTypes from 'prop-types';
+
 import i18n from '../i18n';
 import 'dotenv/config';
 
@@ -29,6 +31,8 @@ const customBreakpoints = {
 
 // eslint-disable-next-line react/prop-types
 function MyApp({ Component, pageProps }) {
+  const { language } = pageProps;
+
   const theme = createTheme({
     palette: {
       mode: 'light',
@@ -53,7 +57,12 @@ function MyApp({ Component, pageProps }) {
 
   useEffect(() => {
     document.documentElement.dir = i18n.dir();
-  }, []);
+  }, [language]);
+
+  // Server-side rendering to set the initial language
+  if (typeof window === 'undefined') {
+    i18n.changeLanguage(language);
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -61,5 +70,12 @@ function MyApp({ Component, pageProps }) {
     </ThemeProvider>
   );
 }
+
+MyApp.propTypes = {
+  Component: PropTypes.elementType.isRequired,
+  pageProps: PropTypes.shape({
+    language: PropTypes.string.isRequired,
+  }).isRequired,
+};
 
 export default MyApp;

@@ -3,6 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 const styles = {
   secondaryHeading: {
@@ -18,7 +19,7 @@ const styles = {
 };
 
 export function ForWhoSectionCards({ cardItemsJSX }: { cardItemsJSX: React.ReactNode }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isSmallest } = useScreenSize();
 
   return (
@@ -33,7 +34,7 @@ export function ForWhoSectionCards({ cardItemsJSX }: { cardItemsJSX: React.React
               fontSize: isSmallest ? '22px' : styles.secondaryHeading.fontSize,
             }}
           >
-            {t('Our CRM is ideal if you:')}
+            {t('for_who.heading_secondary')}
           </Typography>
         </Grid>
       </Box>

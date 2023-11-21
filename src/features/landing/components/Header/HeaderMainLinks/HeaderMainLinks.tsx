@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 enum GapForLinksEnum {
   Tablet = '10px',
@@ -12,7 +13,7 @@ enum GapForLinksEnum {
 }
 
 export default function HeaderMainLinks() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isDesktop, isLaptop, isTablet, isMobile, isSmallest, isSmallTablet } = useScreenSize();
 
   if (isMobile || isSmallest || isSmallTablet) {
@@ -43,25 +44,25 @@ export default function HeaderMainLinks() {
     >
       <Grid item>
         <CustomLink href='/' style={{ textDecoration: 'none', color: 'black', fontSize: '15px' }}>
-          {t('Advantages')}
+          {t('header.advantages')}
         </CustomLink>
       </Grid>
 
       <Grid item>
         <CustomLink href='/' style={{ textDecoration: 'none', color: 'black', fontSize: '15px' }}>
-          {t('For who')}
+          {t('header.for_who')}
         </CustomLink>
       </Grid>
 
       <Grid item>
         <CustomLink href='/' style={{ textDecoration: 'none', color: 'black', fontSize: '15px' }}>
-          {t('Integration')}
+          {t('header.integration')}
         </CustomLink>
       </Grid>
 
       <Grid item>
         <CustomLink href='/' style={{ textDecoration: 'none', color: 'black', fontSize: '15px' }}>
-          {t('Contacts')}
+          {t('header.contacts')}
         </CustomLink>
       </Grid>
     </Grid>

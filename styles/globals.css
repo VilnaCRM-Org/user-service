@@ -24,3 +24,9 @@ a {
     color-scheme: dark;
   }*/
 }
+
+.unlimited-integrations-link-style {
+  text-decoration: underline;
+  color: #1EAEFF;
+  font-weight: 700;
+}

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import SocialLink from '@/components/ui/SocialLink/SocialLink';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import { ISocialLink } from '@/features/landing/types/social/types';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 const styles = {
   typographyHeading: {
@@ -21,7 +22,7 @@ const styles = {
 };
 
 export default function SignUpSocials({ socialLinks }: { socialLinks: ISocialLink[] }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isSmallest, isMobile, isSmallTablet } = useScreenSize();
 
   return (
@@ -34,7 +35,7 @@ export default function SignUpSocials({ socialLinks }: { socialLinks: ISocialLin
           ...(isSmallest || isMobile ? styles.typographyHeadingMobileOrSmaller : {}),
         }}
       >
-        {t('Log in with a convenient social network:')}
+        {t('sign_up.socials_main_heading')}
       </Typography>
 
       <Grid

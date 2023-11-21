@@ -13,15 +13,15 @@ interface IWhyWeSectionCardItemsRowProps {
 }
 
 export default function WhyWeSectionCardItemsRow({
-                                                   cardItems,
-                                                   style,
-                                                   tooltipIcons,
-                                                 }: IWhyWeSectionCardItemsRowProps) {
+  cardItems,
+  style,
+  tooltipIcons,
+}: IWhyWeSectionCardItemsRowProps) {
   return (
     <Grid
       container
-      spacing='13px'
-      justifyContent='center'
+      spacing="13px"
+      justifyContent="center"
       sx={{
         ...style,
       }}
@@ -29,8 +29,8 @@ export default function WhyWeSectionCardItemsRow({
       {cardItems.map((cardItem) => (
         <Grid item key={cardItem.id} md={6} lg={4}>
           <CustomTooltip
-            title='Regular services'
-            text='Integrate in a few clicks'
+            title="Regular services"
+            text="Integrate in a few clicks"
             icons={tooltipIcons}
           >
             <WhyWeSectionCardItem cardItem={cardItem} />

@@ -3,6 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 interface IWhyWeSectionHeaderProps {
   style?: React.CSSProperties;
@@ -32,7 +33,7 @@ const styles = {
 };
 
 export default function WhyWeSectionHeader({ style }: IWhyWeSectionHeaderProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isSmallest, isTablet, isMobile } = useScreenSize();
 
   return (
@@ -45,10 +46,11 @@ export default function WhyWeSectionHeader({ style }: IWhyWeSectionHeaderProps) 
         component='h2'
         style={{
           ...styles.mainHeading,
+          textAlign: 'left',
           fontSize: isSmallest ? '28px' : styles.mainHeading.fontSize,
         }}
       >
-        {t('Why we')}
+        {t('why_we.heading')}
       </Typography>
 
       <Typography
@@ -60,7 +62,7 @@ export default function WhyWeSectionHeader({ style }: IWhyWeSectionHeaderProps) 
         }}
       >
         {t(
-          'Unlimited customization options or ease of use - we\'ve made it easy for any business to manage sales',
+          'why_we.subtitle',
         )}
       </Typography>
     </Box>

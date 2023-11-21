@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 const styles = {
   confidentialsBox: {
@@ -29,7 +30,7 @@ const styles = {
 };
 
 export default function FooterConfidential({ style }: { style?: React.CSSProperties }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isMobile, isSmallest } = useScreenSize();
 
   return (
@@ -39,10 +40,10 @@ export default function FooterConfidential({ style }: { style?: React.CSSPropert
       ...style,
     }}>
       <CustomLink href='/' style={{ ...styles.confidentialLink }}>
-        {t('Privacy policy')}
+        {t('footer.privacy')}
       </CustomLink>
       <CustomLink href='/' style={{ ...styles.confidentialLink }}>
-        {t('Usage policy')}
+        {t('footer.usagePolicy')}
       </CustomLink>
     </Box>
   );

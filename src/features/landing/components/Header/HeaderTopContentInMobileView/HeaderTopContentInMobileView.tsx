@@ -1,9 +1,10 @@
-import * as React from 'react';
 import { Grid, IconButton } from '@mui/material';
-import VilnaMainIcon from '@/features/landing/components/Icons/VilnaMainIcon/VilnaMainIcon';
+import * as React from 'react';
+
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
+import HeaderDrawerActionButtons from '@/features/landing/components/Header/HeaderDrawerActionButtons/HeaderDrawerActionButtons';
+import VilnaMainIcon from '@/features/landing/components/Icons/VilnaMainIcon/VilnaMainIcon';
 import { VilnaMenuIcon } from '@/features/landing/components/Icons/VilnaMenuIcon/VilnaMenuIcon';
-import { HeaderDrawerActionButtons } from '@/features/landing/components/Header/HeaderDrawerActionButtons/HeaderDrawerActionButtons';
 
 interface IHeaderTopContentInMobileViewProps {
   onSignInButtonClick: () => void;

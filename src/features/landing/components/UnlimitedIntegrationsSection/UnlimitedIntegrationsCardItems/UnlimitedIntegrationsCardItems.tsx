@@ -15,17 +15,20 @@ const styles = {
 };
 
 export default function UnlimitedIntegrationsCardItems({
-                                                         cardItems,
-                                                       }: IUnlimitedIntegrationsCardItemsProps) {
-  const cardItemsJSX = useMemo(() => cardItems.map((cardItem) => (
-      <Grid key={cardItem.id} item xs={12} md={6} lg={3} sx={{ ...styles.mainGrid }}>
-        <UnlimitedIntegrationsCardItem cardItem={cardItem} />
-      </Grid>),
-    )
-    , [cardItems]);
+  cardItems,
+}: IUnlimitedIntegrationsCardItemsProps) {
+  const cardItemsJSX = useMemo(
+    () =>
+      cardItems.map((cardItem) => (
+        <Grid key={cardItem.id} item xs={12} md={6} lg={3} sx={{ ...styles.mainGrid }}>
+          <UnlimitedIntegrationsCardItem cardItem={cardItem} />
+        </Grid>
+      )),
+    [cardItems]
+  );
 
   return (
-    <Grid container spacing='12px' sx={{ padding: '0 10px' }}>
+    <Grid container spacing="12px" sx={{ padding: '0 10px' }}>
       {[...cardItemsJSX]}
     </Grid>
   );

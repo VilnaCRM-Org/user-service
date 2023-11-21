@@ -1,8 +1,10 @@
 import { Card, Paper, Typography } from '@mui/material';
 import React from 'react';
+import ReactHtmlParser from 'react-html-parser';
 import { useTranslation } from 'react-i18next';
 
 import { IUnlimitedIntegrationsItem } from '@/features/landing/types/unlimited-integrations/types';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 interface IUnlimitedIntegrationsCardItemProps {
   cardItem: IUnlimitedIntegrationsItem;
@@ -57,10 +59,10 @@ const styles = {
 };
 
 export default function UnlimitedIntegrationsCardItem({
-                                                cardItem,
-                                                style,
-                                              }: IUnlimitedIntegrationsCardItemProps) {
-  const { t } = useTranslation();
+  cardItem,
+  style,
+}: IUnlimitedIntegrationsCardItemProps) {
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
 
   return (
     <Card
@@ -104,7 +106,7 @@ export default function UnlimitedIntegrationsCardItem({
           ...styles.text,
         }}
       >
-        <span dangerouslySetInnerHTML={{ __html: t(cardItem.text) }} />
+        {ReactHtmlParser(t(cardItem.text))}
       </Typography>
     </Card>
   );

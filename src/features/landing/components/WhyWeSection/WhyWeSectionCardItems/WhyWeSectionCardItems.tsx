@@ -11,9 +11,9 @@ interface IWhyWeSectionCardItemsProps {
 }
 
 export default function WhyWeSectionCardItems({
-                                                cardItems,
-                                                tooltipIcons,
-                                              }: IWhyWeSectionCardItemsProps) {
+  cardItems,
+  tooltipIcons,
+}: IWhyWeSectionCardItemsProps) {
   const { isTablet } = useScreenSize();
 
   return (
