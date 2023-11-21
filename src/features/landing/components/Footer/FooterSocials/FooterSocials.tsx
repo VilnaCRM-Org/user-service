@@ -23,7 +23,7 @@ export default function FooterSocials() {
     <Box sx={{ ...styles.mainBox }}>
       {SOCIALS.map(({ url, id }) => {
         return (
-          <CustomLink key={id} href={''} style={{ ...styles.link }}>
+          <CustomLink key={id} href='' style={{ ...styles.link }}>
             <img src={url} alt={id} style={{ ...styles.img }} />
           </CustomLink>
         );

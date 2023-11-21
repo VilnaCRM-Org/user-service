@@ -1,8 +1,9 @@
 import { Box, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-import CustomLink from '../CustomLink/CustomLink';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+
+import CustomLink from '../CustomLink/CustomLink';
 
 interface ISocialLinkProps {
   icon: string;
@@ -116,6 +117,7 @@ export default function SocialLink({ icon, title, linkHref, isDisabled, style }:
         ...(isHovered && styles.mainHoverState),
         ...(isActive && styles.mainActiveState),
         ...(isDisabled && styles.mainDisabledState),
+        ...style,
       }}
     >
       <Box
