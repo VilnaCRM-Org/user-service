@@ -1,5 +1,7 @@
 # config/packages/security.yaml
 security:
+  enable_authenticator_manager: true
+
   firewalls:
     dev:
       pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -7,6 +9,8 @@ security:
     main:
       lazy: true
 
+#  access_control:
+#    - { path: ^/authorize, roles: ROLE_OAUTH2_EMAIL }
 
       # activate different ways to authenticate
       # https://symfony.com/doc/current/security.html#firewalls-authentication
