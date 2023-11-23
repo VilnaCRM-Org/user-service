@@ -6,5 +6,4 @@ use App\Shared\Domain\Bus\Command\CommandResponse;
 
 class SignUpCommandResponse implements CommandResponse
 {
-
 }

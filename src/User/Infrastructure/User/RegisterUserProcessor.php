@@ -7,14 +7,8 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\Shared\Domain\ValueObject\Uuid;
 use App\User\Application\SignUpCommand;
-use App\User\Domain\Entity\Token\ConfirmationToken;
 use App\User\Domain\Entity\User\User;
 use App\User\Domain\Entity\User\UserInputDto;
-use App\User\Domain\TokenRepository;
-use App\User\Domain\UserRepository;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 readonly class RegisterUserProcessor implements ProcessorInterface
 {
