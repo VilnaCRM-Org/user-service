@@ -4,7 +4,9 @@ namespace App\User\Infrastructure\User;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Shared\Domain\Bus\Command\CommandBus;
 use App\Shared\Domain\ValueObject\Uuid;
+use App\User\Application\SignUpCommand;
 use App\User\Domain\Entity\Token\ConfirmationToken;
 use App\User\Domain\Entity\User\User;
 use App\User\Domain\Entity\User\UserInputDto;
@@ -16,8 +18,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 readonly class RegisterUserProcessor implements ProcessorInterface
 {
-    public function __construct(private UserRepository $userRepository, private UserPasswordHasherInterface $passwordHasher,
-        private MailerInterface $mailer, private TokenRepository $tokenRepository)
+    public function __construct(private CommandBus $commandBus)
     {
     }
 
@@ -30,28 +31,8 @@ readonly class RegisterUserProcessor implements ProcessorInterface
         $plaintextPassword = $data->password;
         $user = new User($id, $data->email, $data->initials, $plaintextPassword);
 
-        $hashedPassword = $this->passwordHasher->hashPassword(
-            $user,
-            $plaintextPassword
-        );
-        $user->setPassword($hashedPassword);
-
-        $this->userRepository->save($user);
-
-        $token = ConfirmationToken::generateToken($user->getId());
-
-        $this->tokenRepository->save($token);
-
-        $tokenValue = $token->getTokenValue();
-
-        $email = (new Email())
-            ->from('hello@example.com')
-            ->to($user->getEmail())
-            ->subject('Time for Symfony Mailer!')
-            ->text("Your email confirmation token - $tokenValue")
-            ->html('<p>See Twig integration for better HTML integration!</p>');
-
-        $this->mailer->send($email);
+        $commandResponse = $this->commandBus->dispatch(
+            new SignUpCommand($data->email, $data->initials, $plaintextPassword));
 
         return $user;
     }

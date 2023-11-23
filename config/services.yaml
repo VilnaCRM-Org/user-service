@@ -34,3 +34,8 @@ services:
 
     App\Shared\Infrastructure\Bus\Event\InMemorySymfonyEventBus:
         arguments: [ !tagged app.event_subscriber ]
+
+    App\Shared\Infrastructure\OpenApiFactory:
+         decorates: 'api_platform.openapi.factory'
+         arguments: [ '@App\Shared\Infrastructure\OpenApiFactory.inner' ]
+         autoconfigure: true

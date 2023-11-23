@@ -19,6 +19,7 @@
         "doctrine/orm": "^2.13",
         "lambdish/phunctional": "v2.1.0",
         "league/oauth2-server-bundle": "*",
+        "lexik/jwt-authentication-bundle": "*",
         "phpmailer/phpmailer": "^6.6",
         "ramsey/uuid": "4.7.5",
         "sebastian/phpcpd": "^6.0",
@@ -81,7 +82,8 @@
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
         },
         "post-install-cmd": [
-            "@auto-scripts"
+            "@auto-scripts",
+            "php bin/console lexik:jwt:generate-keypair --skip-if-exists"
         ],
         "post-update-cmd": [
             "@auto-scripts"

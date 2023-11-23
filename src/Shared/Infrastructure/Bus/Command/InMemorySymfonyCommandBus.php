@@ -33,10 +33,10 @@ final readonly class InMemorySymfonyCommandBus implements CommandBus
     /**
      * @throws \Throwable
      */
-    public function dispatch(Command $command): void
+    public function dispatch(Command $command): ?object
     {
         try {
-            $this->bus->dispatch($command);
+            return $this->bus->dispatch($command);
         } catch (NoHandlerForMessageException) {
             throw new CommandNotRegisteredError($command);
         } catch (HandlerFailedException $error) {

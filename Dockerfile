@@ -46,6 +46,7 @@ RUN set -eux; \
 		opcache \
         pdo_mysql \
         redis \
+        openssl \
     ;
 
 ###> recipes ###

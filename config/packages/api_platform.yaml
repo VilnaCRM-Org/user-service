@@ -1,3 +1,34 @@
 api_platform:
+    enable_swagger: true
+    enable_swagger_ui: true
+    enable_re_doc: true
+    enable_entrypoint: true
+    enable_docs: true
     mapping:
         paths: [ '%kernel.project_dir%/src/User/Domain/Entity' ]
+    oauth:
+        # To enable or disable OAuth.
+        enabled: true
+
+        # The OAuth client ID.
+        clientId: ''
+
+        # The OAuth client secret.
+        clientSecret: ''
+
+        # The OAuth type.
+        type: 'oauth2'
+
+        # The OAuth flow grant type.
+        flow: 'application'
+
+        # The OAuth token url.
+        tokenUrl: '/token'
+
+        # The OAuth authentication url.
+        authorizationUrl: '/authorize'
+
+        # The OAuth scopes.
+        scopes:
+            EMAIL: "This scope value requests access to the email."
+
