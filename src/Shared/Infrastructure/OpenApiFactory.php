@@ -19,12 +19,14 @@ class OpenApiFactory implements OpenApiFactoryInterface
 
         $openApi->getPaths()->addPath(
             '/token', new Model\PathItem(post: new Model\Operation(
-                responses: [new Response(description: 'Access token provided',
+                responses: [200 => new Response(description: 'Access token provided',
                     content: new \ArrayObject([
                         'application/json' => [
-                            'example' => ['token_type' => 'Bearer',
-                                'expires_in' => '3600',
-                                'access_token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJkYzBiYzYzMjNmMTZmZWNkNDIyNGEzODYwY2E4OTRjNSIsImp0aSI6IjY5MGZhODFmYWE0YjdlNmExZDZjNThjMzI5N2IzYjViYjAwMGVlMGExMTlmMGQ5YzNjZjkxMTIzY2JlMGRlZTI4MjcxMDYxYTNmYzU1NDM4IiwiaWF0IjoxNzAwNzUxOTU0LjgzMDE5OSwibmJmIjoxNzAwNzUxOTU0LjgzMDIxOCwiZXhwIjoxNzAwNzU1NTU0Ljc5NDg1NSwic3ViIjoiIiwic2NvcGVzIjpbIkVNQUlMIl19.cDUpuOfe4Bazx-N241qYDW0rktSJfeVtnZckDMFt_dxy7pHByupef5JkC1GOZWt8GkW-Uc1d5vaGjopMowjFuQEWS-OowCjj5WHrS528UwwKFHevrLpAAR-GDfMpOu97mMd4XMhXNKIcp0rGutoWeh4aHM90p815q3YTiFtTidGksYqhLZgUzusyG_iLNzLDTbCME-9UMgk8rtjuvHrldRAMnbCloBURbyOM2x7ObFpnjosobX2D5upMbsGAXenswiZM8CUVVbUPPW358Q3ygGWiA1lN4w0WFSjba7NZdZ3fh5Ht--fcQHCae_ZNQp-SwSy5xe2vRKIRaxilWr-x7g'],
+                            'example' => [
+                                'token_type' => 'Bearer',
+                                'expires_in' => 3600,
+                                'access_token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJkYzBiYzYzMjNmMTZmZWNkNDIyNGEzODYwY2E4OTRjNSIsImp0aSI6IjY5MGZhODFmYWE0YjdlNmExZDZjNThjMzI5N2IzYjViYjAwMGVlMGExMTlmMGQ5YzNjZjkxMTIzY2JlMGRlZTI4MjcxMDYxYTNmYzU1NDM4IiwiaWF0IjoxNzAwNzUxOTU0LjgzMDE5OSwibmJmIjoxNzAwNzUxOTU0LjgzMDIxOCwiZXhwIjoxNzAwNzU1NTU0Ljc5NDg1NSwic3ViIjoiIiwic2NvcGVzIjpbIkVNQUlMIl19.cDUpuOfe4Bazx-N241qYDW0rktSJfeVtnZckDMFt_dxy7pHByupef5JkC1GOZWt8GkW-Uc1d5vaGjopMowjFuQEWS-OowCjj5WHrS528UwwKFHevrLpAAR-GDfMpOu97mMd4XMhXNKIcp0rGutoWeh4aHM90p815q3YTiFtTidGksYqhLZgUzusyG_iLNzLDTbCME-9UMgk8rtjuvHrldRAMnbCloBURbyOM2x7ObFpnjosobX2D5upMbsGAXenswiZM8CUVVbUPPW358Q3ygGWiA1lN4w0WFSjba7NZdZ3fh5Ht--fcQHCae_ZNQp-SwSy5xe2vRKIRaxilWr-x7g',
+                            ],
                         ],
                     ]), )],
                 summary: 'Requests for access token', description: 'Request for access token',

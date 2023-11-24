@@ -11,8 +11,20 @@ final readonly class SignUpCommand implements Command
     public function __construct(
         private string $email,
         private string $initials,
-        private string $password
+        private string $password,
     ) {
+    }
+
+    private SignUpCommandResponse $response;
+
+    public function getResponse(): SignUpCommandResponse
+    {
+        return $this->response;
+    }
+
+    public function setResponse(SignUpCommandResponse $response): void
+    {
+        $this->response = $response;
     }
 
     public function getEmail(): string

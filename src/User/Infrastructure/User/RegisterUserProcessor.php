@@ -5,9 +5,7 @@ namespace App\User\Infrastructure\User;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
-use App\Shared\Domain\ValueObject\Uuid;
 use App\User\Application\SignUpCommand;
-use App\User\Domain\Entity\User\User;
 use App\User\Domain\Entity\User\UserInputDto;
 
 readonly class RegisterUserProcessor implements ProcessorInterface
@@ -19,15 +17,11 @@ readonly class RegisterUserProcessor implements ProcessorInterface
     /**
      * @param UserInputDto $data
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): User
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): object
     {
-        $id = Uuid::random()->value();
-        $plaintextPassword = $data->password;
-        $user = new User($id, $data->email, $data->initials, $plaintextPassword);
+        $command = new SignUpCommand($data->email, $data->initials, $data->password);
+        $this->commandBus->dispatch($command);
 
-        $commandResponse = $this->commandBus->dispatch(
-            new SignUpCommand($data->email, $data->initials, $plaintextPassword));
-
-        return $user;
+        return $command->getResponse()->getCreatedUser();
     }
 }
