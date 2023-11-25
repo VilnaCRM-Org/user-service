@@ -72,7 +72,7 @@ export function Button({
     borderRadius: DEFAULT_BUTTON_BORDER_RADIUS,
     padding: buttonSize === 'medium' ? '16px 24px' : '20px 30px',
     fontFamily: '\'GolosText-Regular\', sans-serif',
-    fontSize: '15px',
+    fontSize: buttonSize === 'big' ? '18px' : '15px',
     fontStyle: 'normal',
     fontWeight: 500,
     lineHeight: '18px',

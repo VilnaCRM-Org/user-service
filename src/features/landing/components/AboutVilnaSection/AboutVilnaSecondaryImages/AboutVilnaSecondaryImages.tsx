@@ -1,95 +1,86 @@
 import { Box, Container } from '@mui/material';
-import MobileViewDummyContainerImg from '../../../../../../public/assets/img/MobileViewDummyContainerImg.png';
-import DummyContainerImg from '../../../../../../public/assets/img/DummyContainerImg.png';
+
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+
 import AboutVilnaSecondaryShape from '../../../../../../public/assets/img/AboutVilnaSecondaryShape.png';
+import AboutVilnaBackgroundWithMainSvg from '@/features/landing/components/AboutVilnaSection/AboutVilnaBackgroundWithMainSvg/AboutVilnaBackgroundWithMainSvg';
+import AboutVilnaDesktopNotchSvg from '@/features/landing/components/AboutVilnaSection/AboutVilnaDesktopNotchSvg/AboutVilnaDesktopNotchSvg';
+import AboutVilnaMainCRMImage from '@/features/landing/components/AboutVilnaSection/AboutVilnaMainCRMImage/AboutVilnaMainCRMImage';
 
-const outerContainerStyles: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'center',
-  margin: '0 auto',
-  position: 'relative',
-  height: '551px',
-  maxWidth: '100%',
+const CRM_IMAGES = {
+  desktop: {
+    imageSrc: '/assets/img/DummyContainerImg.png',
+    imageAltText: 'Vilna CRM Desktop',
+  },
+  mobile: {
+    imageSrc: '/assets/img/MobileViewDummyContainerImg.png',
+    imageAltText: 'Vilna CRM Mobile',
+  },
 };
 
-const crmPlaceholderImageStyle: React.CSSProperties = {
-  width: '83%',
-  maxWidth: '766px',
-  height: '100%',
-  display: 'inline-block',
-  objectFit: 'cover',
-  pointerEvents: 'none',
-  userSelect: 'none',
-};
-
-const containerWithCRMImageStyle: React.CSSProperties = {
-  width: '100%',
-  height: '100%',
-  display: 'flex',
-  justifyContent: 'center',
-  position: 'absolute',
-  bottom: 0,
-  zIndex: '900',
-};
-
-const backgroundImageContainerStyle: React.CSSProperties = {
-  backgroundImage: `url(${AboutVilnaSecondaryShape.src})`,
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: 'cover',
-  backgroundPosition: 'bottom',
-  width: '100%',
-  maxWidth: '93.75%',
-  height: '89%',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'flex-end',
-  alignItems: 'center',
-  borderRadius: '48px',
-  overflow: 'hidden',
-  position: 'absolute',
-  bottom: 0,
-  zIndex: '800',
-  pointerEvents: 'none',
-  userSelect: 'none',
+const styles = {
+  outerContainerStyles: {
+    display: 'flex',
+    justifyContent: 'center',
+    margin: '0 auto',
+    position: 'relative',
+    height: '543px',
+    maxWidth: '100%',
+  },
+  containerWithCRMImageStyle: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    position: 'absolute',
+    bottom: 0,
+    zIndex: '900',
+  },
+  backgroundImageContainerStyle: {
+    backgroundImage: `url(${AboutVilnaSecondaryShape.src})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: 'cover',
+    backgroundPosition: 'bottom',
+    width: '100%',
+    maxWidth: '1192px',
+    height: '493px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    borderRadius: '48px',
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    zIndex: '800',
+    pointerEvents: 'none',
+    userSelect: 'none',
+  },
 };
 
 export default function AboutVilnaSecondaryImages() {
-  const { isMobile, isSmallest } = useScreenSize();
+  const { isMobile, isSmallest, isDesktop, isLaptop } = useScreenSize();
 
   return (
     <Box
       sx={{
-        ...outerContainerStyles,
+        ...styles.outerContainerStyles,
         justifySelf: isMobile || isSmallest ? 'start' : 'stretch',
         height: isMobile || isSmallest ? '284px' : '551px',
       }}
     >
-      <Container sx={containerWithCRMImageStyle}>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            maxWidth: isMobile || isSmallest ? '57%' : '100%',
-          }}
-        >
-          {/* DUMMY IMAGE, replace with real picture in production */}
-          {isMobile || isSmallest ? (
-            <img
-              src={MobileViewDummyContainerImg.src}
-              alt="Dummy Img (should be replaced)"
-              style={{ ...crmPlaceholderImageStyle, objectFit: 'cover', width: '100%' }}
+      <Container sx={{ ...styles.containerWithCRMImageStyle }}>
+        {isDesktop || isLaptop ? (
+          <AboutVilnaBackgroundWithMainSvg>
+            <AboutVilnaDesktopNotchSvg />
+            <AboutVilnaMainCRMImage
+              imageAltText={CRM_IMAGES.desktop.imageAltText}
+              imageSrc={CRM_IMAGES.desktop.imageSrc}
             />
-          ) : (
-            <img
-              src={DummyContainerImg.src}
-              alt="Dummy Img (should be replaced)"
-              style={crmPlaceholderImageStyle}
-            />
-          )}
-        </Box>
+          </AboutVilnaBackgroundWithMainSvg>
+        ) : null}
       </Container>
-      <Container sx={backgroundImageContainerStyle} />
+      <Container sx={{ ...styles.backgroundImageContainerStyle }} />
     </Box>
   );
 }

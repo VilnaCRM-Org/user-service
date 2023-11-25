@@ -49,6 +49,10 @@ function MyApp({ Component, pageProps }) {
               paddingLeft: '0px',
               paddingRight: '0px',
             },
+            '@media (min-width: 1024px)': {
+              width: '100%',
+              maxWidth: '1192px',
+            }
           },
         },
       },

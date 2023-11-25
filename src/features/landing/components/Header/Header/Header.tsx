@@ -12,70 +12,32 @@ import VilnaMainIcon from '../../Icons/VilnaMainIcon/VilnaMainIcon';
 import { VilnaMenuIcon } from '../../Icons/VilnaMenuIcon/VilnaMenuIcon';
 import HeaderDrawerMenu from '../HeaderDrawerMenu/HeaderDrawerMenu';
 
-type Position =
-  | 'sticky'
-  | 'relative'
-  | 'absolute'
-  | 'fixed'
-  | 'static'
-  | 'initial'
-  | 'inherit'
-  | 'unset';
-
-const appBarContainerStyle: {
-  minHeight: string;
-  position: Position | undefined; // Use the defined Position type here
-  top: number;
-  backgroundColor: string;
-  zIndex: number;
-  maxWidth: string;
-  margin: string;
-  display: string;
-  alignItems: string;
-  width: string;
-  justifyContent: string;
-  flexGrow: number;
-} = {
-  minHeight: '64px',
-  position: 'sticky',
-  top: 0,
-  backgroundColor: 'white',
-  zIndex: 1000,
-  maxWidth: '100%',
-  width: '100%',
-  margin: '0 auto',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  flexGrow: 1,
-};
-
-const logoStyle = {
-  textDecoration: 'none',
-  color: 'black',
-  width: '130px',
-  justifySelf: 'flex-start',
-};
-
-const appBarStylesIfScreenResolution = (isLaptop: boolean, isSmallest: boolean) => {
-  if (isLaptop) {
-    return {
-      paddingLeft: '32px',
-      paddingRight: '32px',
-    };
-  }
-
-  if (isSmallest) {
-    return {
-      paddingLeft: '0',
-      paddingRight: '0',
-    }
-  }
-
-  return {
-    paddingLeft: '10px',
-    paddingRight: '10px',
-  };
+const styles = {
+  appBar: {
+    height: '100%',
+    maxHeight: '64px',
+    position: 'sticky',
+    top: 0,
+    backgroundColor: 'white',
+    zIndex: 1000,
+    maxWidth: '100%',
+    width: '100%',
+    margin: '0 auto',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexGrow: 1,
+  },
+  logo: {
+    textDecoration: 'none',
+    color: 'black',
+    width: '130px',
+    justifySelf: 'flex-start',
+  },
+  paddingDefault: {
+    paddingLeft: '0',
+    paddingRight: '0',
+  },
 };
 
 export default function Header() {
@@ -99,14 +61,21 @@ export default function Header() {
   return (
     <AppBar
       sx={{
-        ...appBarContainerStyle,
-        ...appBarStylesIfScreenResolution(isLaptop, isSmallest)
+        ...styles.appBar,
+        ...(isLaptop ? { paddingLeft: '32px', paddingRight: '32px' } : styles.paddingDefault),
+        ...(isSmallest
+          ? {
+              paddingLeft: '0',
+              paddingRight: '0',
+            }
+          : styles.paddingDefault),
       }}
       elevation={0}
     >
       <Container
         sx={{
           width: '100%',
+          maxWidth: '1192px',
           '& .MuiContainer-root': {
             paddingLeft: 0,
             paddingRight: 0,
@@ -123,13 +92,13 @@ export default function Header() {
           }}
         >
           {/* Main Vilna Icon */}
-          <CustomLink href="/" style={logoStyle}>
+          <CustomLink href="/" style={{ ...styles.logo }}>
             <VilnaMainIcon />
           </CustomLink>
 
           {
             /* Menu Icon */
-            (isMobile || isSmallest || isSmallTablet) ? (
+            isMobile || isSmallest || isSmallTablet ? (
               <IconButton
                 onClick={handleMenuButtonClick}
                 edge="start"

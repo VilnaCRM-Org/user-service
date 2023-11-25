@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 
 import Footer from '@/features/landing/components/Footer/Footer/Footer';
 import Header from '@/features/landing/components/Header/Header/Header';
+
 import i18n from '../../../../../i18n';
 
 export default function Layout({ children }: { children: React.ReactNode }) {

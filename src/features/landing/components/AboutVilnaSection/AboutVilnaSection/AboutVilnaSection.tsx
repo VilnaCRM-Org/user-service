@@ -2,7 +2,7 @@ import { Box } from '@mui/material';
 import React, { useEffect } from 'react';
 
 import AboutVilnaMainShape from '@/features/landing/assets/svg/AboutVilnaMainShape.svg';
-import { AboutVilnaMainContent } from '@/features/landing/components/AboutVilnaSection/AboutVilnaMainContent/AboutVilnaMainContent';
+import AboutVilnaMainContent from '@/features/landing/components/AboutVilnaSection/AboutVilnaMainContent/AboutVilnaMainContent';
 import AboutVilnaSecondaryImages from '@/features/landing/components/AboutVilnaSection/AboutVilnaSecondaryImages/AboutVilnaSecondaryImages';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';

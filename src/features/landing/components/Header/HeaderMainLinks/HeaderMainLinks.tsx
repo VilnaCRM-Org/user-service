@@ -6,40 +6,23 @@ import CustomLink from '@/components/ui/CustomLink/CustomLink';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
-enum GapForLinksEnum {
-  Tablet = '10px',
-  Laptop = '16px',
-  Desktop = '32px',
-}
-
 export default function HeaderMainLinks() {
   const { t } = useTranslation(TRANSLATION_NAMESPACE);
-  const { isDesktop, isLaptop, isTablet, isMobile, isSmallest, isSmallTablet } = useScreenSize();
+  const { isMobile, isSmallest, isSmallTablet } = useScreenSize();
 
   if (isMobile || isSmallest || isSmallTablet) {
     return null;
-  }
-
-  let gapForLinks = '32px';
-
-  if (isTablet) {
-    gapForLinks = GapForLinksEnum.Tablet;
-  } else if (isLaptop) {
-    gapForLinks = GapForLinksEnum.Laptop;
-  } else if (isDesktop) {
-    gapForLinks = GapForLinksEnum.Desktop;
   }
 
   return (
     <Grid
       container
       justifyContent='center'
-      gap='32px'
       sx={{
         display: 'flex',
-        flexGrow: 1,
-        justifyContent: 'center',
-        gap: gapForLinks,
+        justifyContent: 'flex-end',
+        gap: '32px',
+        marginRight: '9.96875rem',
       }}
     >
       <Grid item>

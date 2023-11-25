@@ -15,33 +15,31 @@ const mainContentContainerStyle: React.CSSProperties = {
   flexDirection: 'column',
   alignItems: 'center',
   textAlign: 'center',
-  marginBottom: '58px',
+  marginBottom: '46px',
 };
 
-export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMainContentProps) {
+export default function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMainContentProps) {
   const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isMobile, isSmallest } = useScreenSize();
 
   return (
     <Box sx={mainContentContainerStyle}>
       <Typography
-        variant="h1"
         style={{
           color: '#1A1C1E',
-          fontFamily: 'GolosText-Regular, sans-serif',
+          fontFamily: 'GolosText-Bold, sans-serif',
           fontSize: isMobile || isSmallest ? '32px' : '56px',
           fontStyle: 'normal',
           fontWeight: 700,
           lineHeight: 'normal',
-          maxWidth: '680px',
-          marginTop: isMobile || isSmallest ? '32px' : '80px',
+          maxWidth: '701px',
+          marginTop: isMobile || isSmallest ? '32px' : '70px',
           textAlign: isMobile || isSmallest ? 'left' : 'inherit',
         }}
       >
         {t('about_vilna.heading_main')}
       </Typography>
       <Typography
-        variant="body1"
         style={{
           marginTop: '16px',
           color: '#1A1C1E',
@@ -61,7 +59,7 @@ export function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMain
         customVariant="light-blue"
         buttonSize="big"
         style={{
-          marginTop: '16px',
+          marginTop: '39px',
           alignSelf: isMobile || isSmallest ? 'flex-start' : 'center',
         }}
       >

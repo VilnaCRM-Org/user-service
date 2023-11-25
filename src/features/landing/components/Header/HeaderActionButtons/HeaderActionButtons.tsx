@@ -30,8 +30,8 @@ export function HeaderActionButtons({
         maxWidth: '250px',
         justifyContent: 'flex-end',
         alignItems: 'center',
-        gap: '8px',
         width: '100%',
+        gap: '8px',
         md: { display: 'none' },
       }}
     >
