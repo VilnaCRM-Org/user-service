@@ -6,11 +6,29 @@ import CustomLink from '@/components/ui/CustomLink/CustomLink';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
+const styles = {
+  mainGrid: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: '32px',
+    marginRight: '9.96875rem', // 159px
+  },
+  mainGridTablet: {
+    marginRight: '8.5rem', // 136px
+  },
+  link: {
+    textDecoration: 'none',
+    color: 'black',
+    fontSize: '15px'
+  },
+};
+
 export default function HeaderMainLinks() {
   const { t } = useTranslation(TRANSLATION_NAMESPACE);
-  const { isMobile, isSmallest, isSmallTablet } = useScreenSize();
+  const { isMobile, isSmallest, isSmallTablet, isTablet, isBigTablet } = useScreenSize();
 
-  if (isMobile || isSmallest || isSmallTablet) {
+  if (isMobile || isSmallest || isSmallTablet || isBigTablet) {
     return null;
   }
 
@@ -19,32 +37,30 @@ export default function HeaderMainLinks() {
       container
       justifyContent='center'
       sx={{
-        display: 'flex',
-        justifyContent: 'flex-end',
-        gap: '32px',
-        marginRight: '9.96875rem',
+        ...styles.mainGrid,
+      ...((isTablet) ? styles.mainGridTablet : {})
       }}
     >
       <Grid item>
-        <CustomLink href='/' style={{ textDecoration: 'none', color: 'black', fontSize: '15px' }}>
+        <CustomLink href='/' style={{ ...styles.link }}>
           {t('header.advantages')}
         </CustomLink>
       </Grid>
 
       <Grid item>
-        <CustomLink href='/' style={{ textDecoration: 'none', color: 'black', fontSize: '15px' }}>
+        <CustomLink href='/' style={{ ...styles.link }}>
           {t('header.for_who')}
         </CustomLink>
       </Grid>
 
       <Grid item>
-        <CustomLink href='/' style={{ textDecoration: 'none', color: 'black', fontSize: '15px' }}>
+        <CustomLink href='/' style={{ ...styles.link }}>
           {t('header.integration')}
         </CustomLink>
       </Grid>
 
       <Grid item>
-        <CustomLink href='/' style={{ textDecoration: 'none', color: 'black', fontSize: '15px' }}>
+        <CustomLink href='/' style={{ ...styles.link }}>
           {t('header.contacts')}
         </CustomLink>
       </Grid>

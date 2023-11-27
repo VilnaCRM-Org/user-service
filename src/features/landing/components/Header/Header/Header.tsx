@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useState } from 'react';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
-import { HeaderActionButtons } from '@/features/landing/components/Header/HeaderActionButtons/HeaderActionButtons';
+import HeaderActionButtons from '@/features/landing/components/Header/HeaderActionButtons/HeaderActionButtons';
 import HeaderMainLinks from '@/features/landing/components/Header/HeaderMainLinks/HeaderMainLinks';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
@@ -28,6 +28,10 @@ const styles = {
     justifyContent: 'space-between',
     flexGrow: 1,
   },
+  appBarTablet: {
+    padding: '10px 32px 11px 32px',
+  },
+  appBarMobileOrLower: {},
   logo: {
     textDecoration: 'none',
     color: 'black',
@@ -42,7 +46,7 @@ const styles = {
 
 export default function Header() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const { isSmallest, isMobile, isLaptop, isSmallTablet } = useScreenSize();
+  const { isSmallest, isMobile, isSmallTablet, isTablet, isBigTablet } = useScreenSize();
 
   const toggleDrawer = () => {
     setIsDrawerOpen(!isDrawerOpen);
@@ -62,13 +66,8 @@ export default function Header() {
     <AppBar
       sx={{
         ...styles.appBar,
-        ...(isLaptop ? { paddingLeft: '32px', paddingRight: '32px' } : styles.paddingDefault),
-        ...(isSmallest
-          ? {
-              paddingLeft: '0',
-              paddingRight: '0',
-            }
-          : styles.paddingDefault),
+        ...(isTablet ? styles.appBarTablet : styles.paddingDefault),
+        maxHeight: isTablet || isMobile || isSmallest ? '72px' : styles.appBar.maxHeight,
       }}
       elevation={0}
     >
@@ -98,7 +97,7 @@ export default function Header() {
 
           {
             /* Menu Icon */
-            isMobile || isSmallest || isSmallTablet ? (
+            isMobile || isSmallest || isSmallTablet || isBigTablet ? (
               <IconButton
                 onClick={handleMenuButtonClick}
                 edge="start"

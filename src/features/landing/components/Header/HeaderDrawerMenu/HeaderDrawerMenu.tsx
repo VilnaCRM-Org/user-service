@@ -38,7 +38,7 @@ export default function HeaderDrawerMenu({
       elevation={4}
       sx={{ ...drawerStyles }}
       PaperProps={{
-        sx: { width: '100%' },
+        sx: { width: '100%', maxWidth: '31.25rem' },
       }}
     >
       <Grid

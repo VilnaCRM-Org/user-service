@@ -11,14 +11,14 @@ interface IHeaderActionButtonsProps {
   onTryItOutButtonClick: () => void;
 }
 
-export function HeaderActionButtons({
+export default function HeaderActionButtons({
   onSignInButtonClick,
   onTryItOutButtonClick,
 }: IHeaderActionButtonsProps) {
   const { t } = useTranslation(TRANSLATION_NAMESPACE);
-  const { isMobile, isSmallest, isSmallTablet } = useScreenSize();
+  const { isMobile, isSmallest, isSmallTablet, isBigTablet } = useScreenSize();
 
-  if (isMobile || isSmallest || isSmallTablet) {
+  if (isMobile || isSmallest || isSmallTablet || isBigTablet) {
     return null;
   }
 

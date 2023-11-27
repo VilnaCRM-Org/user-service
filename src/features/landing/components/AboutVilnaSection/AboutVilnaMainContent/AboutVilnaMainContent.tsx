@@ -10,45 +10,68 @@ interface IAboutVilnaMainContentProps {
   onTryItOutButtonClick: () => void;
 }
 
-const mainContentContainerStyle: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  textAlign: 'center',
-  marginBottom: '46px',
+const styles = {
+  mainContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    marginBottom: '46px',
+  },
+  headingMain: {
+    color: '#1A1C1E',
+    fontFamily: 'GolosText-Bold, sans-serif',
+    fontStyle: 'normal',
+    fontWeight: 700,
+    lineHeight: 'normal',
+    maxWidth: '701px',
+    fontSize: '56px',
+    marginTop: '70px',
+    textAlign: 'inherit',
+  },
+  headingMainMobileOrSmaller: {
+    fontSize: '32px',
+    marginTop: '32px',
+    textAlign: 'left',
+  },
+  textMain: {
+    marginTop: '16px',
+    color: '#1A1C1E',
+    fontFamily: 'GolosText-Regular, sans-serif',
+    fontStyle: 'normal',
+    fontWeight: 400,
+    lineHeight: '30px',
+    maxWidth: '692px',
+    fontSize: '18px',
+    textAlign: 'inherit',
+  },
+  textMainMobileOrSmaller: {
+    fontSize: '15px',
+    textAlign: 'left',
+  },
 };
 
-export default function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutVilnaMainContentProps) {
+export default function AboutVilnaMainContent({
+                                                onTryItOutButtonClick,
+                                              }: IAboutVilnaMainContentProps) {
   const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isMobile, isSmallest } = useScreenSize();
 
   return (
-    <Box sx={mainContentContainerStyle}>
+    <Box sx={{ ...styles.mainContainer }}>
       <Typography
         style={{
-          color: '#1A1C1E',
-          fontFamily: 'GolosText-Bold, sans-serif',
-          fontSize: isMobile || isSmallest ? '32px' : '56px',
-          fontStyle: 'normal',
-          fontWeight: 700,
-          lineHeight: 'normal',
-          maxWidth: '701px',
-          marginTop: isMobile || isSmallest ? '32px' : '70px',
-          textAlign: isMobile || isSmallest ? 'left' : 'inherit',
+          ...styles.headingMain,
+          ...(isSmallest || isMobile ? styles.headingMainMobileOrSmaller : {}),
+          textAlign: isSmallest || isMobile ? 'left' : 'inherit',
         }}
       >
         {t('about_vilna.heading_main')}
       </Typography>
       <Typography
         style={{
-          marginTop: '16px',
-          color: '#1A1C1E',
-          fontFamily: 'GolosText-Regular, sans-serif',
-          fontSize: isMobile || isSmallest ? '15px' : '18px',
-          fontStyle: 'normal',
-          fontWeight: 400,
-          lineHeight: '30px',
-          maxWidth: '692px',
+          ...styles.textMain,
+          ...(isMobile || isSmallest ? styles.textMainMobileOrSmaller : {}),
           textAlign: isMobile || isSmallest ? 'left' : 'inherit',
         }}
       >
@@ -56,8 +79,8 @@ export default function AboutVilnaMainContent({ onTryItOutButtonClick }: IAboutV
       </Typography>
       <Button
         onClick={onTryItOutButtonClick}
-        customVariant="light-blue"
-        buttonSize="big"
+        customVariant='light-blue'
+        buttonSize='big'
         style={{
           marginTop: '39px',
           alignSelf: isMobile || isSmallest ? 'flex-start' : 'center',
