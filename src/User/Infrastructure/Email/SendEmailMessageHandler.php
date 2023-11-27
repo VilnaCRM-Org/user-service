@@ -32,7 +32,6 @@ class SendEmailMessageHandler implements DomainEventSubscriber
         $tokenValue = $token->getTokenValue();
 
         $email = (new Email())
-            ->from('vilnaCRM@example.com')
             ->to($emailAddress)
             ->subject('VilnaCRM email confirmation')
             ->text("Your email confirmation token - $tokenValue")
@@ -40,6 +39,6 @@ class SendEmailMessageHandler implements DomainEventSubscriber
 
         $this->mailer->send($email);
 
-        $this->logger->info('Send confirmation token to ' . $emailAddress);
+        $this->logger->info('Send confirmation token to '.$emailAddress);
     }
 }

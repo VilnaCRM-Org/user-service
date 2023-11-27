@@ -3,7 +3,7 @@ framework:
         pools:
             app:
                 adapter: cache.adapter.redis
-                default_lifetime: 3600 # Set the expiration time in seconds
+                default_lifetime: 86400 # Set the expiration time in seconds for 24 hours
                 provider: '%env(resolve:REDIS_URL)%'
 
             # Unique name of your app: used to compute stable namespaces for cache keys.

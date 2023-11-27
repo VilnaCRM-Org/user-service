@@ -2,13 +2,13 @@
 
 namespace App\User\Domain\Entity\Token;
 
-use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\Patch;
 use App\User\Infrastructure\Token\ConfirmEmailMutationResolver;
-use App\User\Infrastructure\Token\TokenProvider;
+use App\User\Infrastructure\Token\TokenProcessor;
 
-#[Get(shortName: 'confirm', provider: TokenProvider::class)]
+#[Patch(shortName: 'users_confirm_email', input: ConfirmEmailInputDto::class,
+    processor: TokenProcessor::class)]
 #[Mutation(resolver: ConfirmEmailMutationResolver::class, args: [
     'tokenValue' => [
         'type' => 'String!',
@@ -16,7 +16,6 @@ use App\User\Infrastructure\Token\TokenProvider;
 ], input: ConfirmEmailInputDto::class, name: 'confirm')]
 class ConfirmationToken
 {
-    #[ApiProperty(identifier: true)]
     private string $tokenValue;
 
     private string $userID;

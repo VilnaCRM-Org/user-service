@@ -27,13 +27,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->email = $email;
         $this->initials = $initials;
         $this->password = $password;
-        $this->roles = [];
+        $this->roles = ['ROLE_USER'];
         $this->confirmed = false;
     }
 
     #[ORM\Id]
     #[ORM\Column]
-    #[Assert\NotBlank]
     #[Groups(['output'])]
     private string $id;
 
@@ -53,9 +52,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $password;
 
     #[ORM\Column(type: 'boolean')]
+    #[Groups(['output'])]
     private bool $confirmed;
 
     #[ORM\Column(type: 'json')]
+    #[Groups(['output'])]
     private array $roles;
 
     public function getId(): string
@@ -101,8 +102,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }
