@@ -5,11 +5,11 @@ import { useState } from 'react';
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
 import HeaderActionButtons from '@/features/landing/components/Header/HeaderActionButtons/HeaderActionButtons';
 import HeaderMainLinks from '@/features/landing/components/Header/HeaderMainLinks/HeaderMainLinks';
+import VilnaMenuIcon from '@/features/landing/components/Icons/VilnaMenuIcon/VilnaMenuIcon';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 
 import VilnaMainIcon from '../../Icons/VilnaMainIcon/VilnaMainIcon';
-import { VilnaMenuIcon } from '../../Icons/VilnaMenuIcon/VilnaMenuIcon';
 import HeaderDrawerMenu from '../HeaderDrawerMenu/HeaderDrawerMenu';
 
 const styles = {
@@ -28,10 +28,12 @@ const styles = {
     justifyContent: 'space-between',
     flexGrow: 1,
   },
-  appBarTablet: {
-    padding: '10px 32px 11px 32px',
+  appBarLaptopOrLower: {
+    padding: '7px 32px 11px 32px',
   },
-  appBarMobileOrLower: {},
+  appBarMobileOrLower: {
+    padding: '0 15px 0 15px',
+  },
   logo: {
     textDecoration: 'none',
     color: 'black',
@@ -46,7 +48,7 @@ const styles = {
 
 export default function Header() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const { isSmallest, isMobile, isSmallTablet, isTablet, isBigTablet } = useScreenSize();
+  const { isSmallest, isMobile, isSmallTablet, isTablet, isBigTablet, isLaptop } = useScreenSize();
 
   const toggleDrawer = () => {
     setIsDrawerOpen(!isDrawerOpen);
@@ -66,7 +68,8 @@ export default function Header() {
     <AppBar
       sx={{
         ...styles.appBar,
-        ...(isTablet ? styles.appBarTablet : styles.paddingDefault),
+        ...(isLaptop || isTablet ? styles.appBarLaptopOrLower : styles.paddingDefault),
+        ...(isMobile || isSmallest ? styles.appBarMobileOrLower : {}),
         maxHeight: isTablet || isMobile || isSmallest ? '72px' : styles.appBar.maxHeight,
       }}
       elevation={0}
@@ -100,11 +103,11 @@ export default function Header() {
             isMobile || isSmallest || isSmallTablet || isBigTablet ? (
               <IconButton
                 onClick={handleMenuButtonClick}
-                edge="start"
                 color="inherit"
                 aria-label="menu"
                 sx={{
                   justifySelf: 'flex-end',
+                  padding: '0'
                 }}
               >
                 <VilnaMenuIcon isActive={false} />

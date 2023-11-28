@@ -4,8 +4,8 @@ import React from 'react';
 import AboutVilnaMainShape from '@/features/landing/assets/svg/AboutVilnaMainShape.svg';
 import AboutVilnaMainContent from '@/features/landing/components/AboutVilnaSection/AboutVilnaMainContent/AboutVilnaMainContent';
 import AboutVilnaSecondaryImages from '@/features/landing/components/AboutVilnaSection/AboutVilnaSecondaryImages/AboutVilnaSecondaryImages';
-import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 
 const styles = {
   allSectionStyle: {
@@ -20,10 +20,13 @@ const styles = {
     paddingLeft: '31.77px',
     paddingRight: '31.77px',
   },
+  allSectionMobileOrSmaller: {
+    padding: '0 19px 0px 15px',
+  },
 };
 
 export default function AboutVilnaSection() {
-  const { isTablet } = useScreenSize();
+  const { isTablet, isLaptop, isMobile, isSmallest } = useScreenSize();
 
   const handleTryItOutButtonClick = () => {
     scrollToRegistrationSection();
@@ -33,7 +36,8 @@ export default function AboutVilnaSection() {
     <Box
       sx={{
         ...styles.allSectionStyle,
-        ...(isTablet ? styles.allSectionTabletStyle : {})
+        ...(isTablet || isLaptop ? styles.allSectionTabletStyle : {}),
+        ...(isSmallest || isMobile ? styles.allSectionMobileOrSmaller : {}),
       }}
     >
       {/* Main Content (like: headings, text, button etc.) */}

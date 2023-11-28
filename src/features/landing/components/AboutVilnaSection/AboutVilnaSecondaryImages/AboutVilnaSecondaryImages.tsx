@@ -1,13 +1,13 @@
 import { Box, Container } from '@mui/material';
 
+import AboutVilnaBackgroundWithMainSvg from '@/features/landing/components/AboutVilnaSection/AboutVilnaBackgroundWithMainSvg/AboutVilnaBackgroundWithMainSvg';
+import AboutVilnaDesktopNotchSvg from '@/features/landing/components/AboutVilnaSection/AboutVilnaDesktopNotchSvg/AboutVilnaDesktopNotchSvg';
+import AboutVilnaIphoneBackground from '@/features/landing/components/AboutVilnaSection/AboutVilnaIphoneBackground/AboutVilnaIphoneBackground';
+import AboutVilnaMainCRMImage from '@/features/landing/components/AboutVilnaSection/AboutVilnaMainCRMImage/AboutVilnaMainCRMImage';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 import AboutVilnaSecondaryShape from '../../../../../../public/assets/img/AboutVilnaSecondaryShape.png';
-import AboutVilnaBackgroundWithMainSvg from '@/features/landing/components/AboutVilnaSection/AboutVilnaBackgroundWithMainSvg/AboutVilnaBackgroundWithMainSvg';
-import AboutVilnaDesktopNotchSvg from '@/features/landing/components/AboutVilnaSection/AboutVilnaDesktopNotchSvg/AboutVilnaDesktopNotchSvg';
-import AboutVilnaMainCRMImage from '@/features/landing/components/AboutVilnaSection/AboutVilnaMainCRMImage/AboutVilnaMainCRMImage';
 import AboutVilnaBackgroundWithSecondaryPng from '../AboutVilnaBackgroundWithSecondarySvg/AboutVilnaBackgroundWithSecondaryPng';
-import AboutVilnaIphoneBackground from '@/features/landing/components/AboutVilnaSection/AboutVilnaIphoneBackground/AboutVilnaIphoneBackground';
 
 const CRM_IMAGES = {
   desktop: {
@@ -29,6 +29,9 @@ const styles = {
     height: '33.9375rem', // 543px
     width: '100%',
   },
+  outerContainerForSmallTabletOrMobileOrLower: {
+    height: '328px',
+  },
   containerWithCRMImage: {
     width: '100%',
     height: '100%',
@@ -39,7 +42,7 @@ const styles = {
     bottom: 0,
     zIndex: '900',
   },
-  containerWithCRMImageMobileOrLower: {
+  containerWithCRMImageSmallTabletOrMobileOrLower: {
     maxHeight: '17.75rem', // 284px
   },
   backgroundSecondaryShapeImageContainer: {
@@ -65,6 +68,10 @@ const styles = {
   },
   backgroundSecondaryShapeImageContainerTablet: {
     maxWidth: '60rem', // 960px
+  },
+  backgroundSecondaryShapeImageContainerSmallTabletOrMobileOrLower: {
+    maxHeight: '284px',
+    height: '100%',
   },
 };
 
@@ -105,14 +112,19 @@ export default function AboutVilnaSecondaryImages() {
     <Box
       sx={{
         ...styles.outerContainer,
-        justifySelf: isMobile || isSmallest ? 'start' : 'stretch',
-        height: isMobile || isSmallest ? '17.75rem' : '34.4375rem', // 284px and 551px
+        ...(isSmallTablet || isMobile || isSmallest
+          ? styles.outerContainerForSmallTabletOrMobileOrLower
+          : {}),
+
+        height: isMobile || isSmallest || isSmallTablet ? '17.75rem' : '34.4375rem', // 284px and 551px
       }}
     >
       <Container
         sx={{
           ...styles.containerWithCRMImage,
-          ...(isMobile || isSmallest ? styles.containerWithCRMImageMobileOrLower : {}),
+          ...(isMobile || isSmallest || isSmallTablet
+            ? styles.containerWithCRMImageSmallTabletOrMobileOrLower
+            : {}),
         }}
       >
         {isDesktop || isLaptop || isBigTablet ? contentForBigTabletOrLaptopOrDesktop : null}
@@ -123,6 +135,9 @@ export default function AboutVilnaSecondaryImages() {
         sx={{
           ...styles.backgroundSecondaryShapeImageContainer,
           ...(isTablet ? styles.backgroundSecondaryShapeImageContainerTablet : {}),
+          ...(isSmallTablet || isMobile || isSmallest
+            ? styles.backgroundSecondaryShapeImageContainerSmallTabletOrMobileOrLower
+            : {}),
         }}
       />
     </Box>

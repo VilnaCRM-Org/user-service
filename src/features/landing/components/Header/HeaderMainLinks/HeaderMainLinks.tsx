@@ -14,19 +14,19 @@ const styles = {
     gap: '32px',
     marginRight: '9.96875rem', // 159px
   },
-  mainGridTablet: {
-    marginRight: '8.5rem', // 136px
+  mainGridLaptop: {
+    marginRight: '8.125rem', // 136px
   },
   link: {
     textDecoration: 'none',
     color: 'black',
-    fontSize: '15px'
+    fontSize: '15px',
   },
 };
 
 export default function HeaderMainLinks() {
   const { t } = useTranslation(TRANSLATION_NAMESPACE);
-  const { isMobile, isSmallest, isSmallTablet, isTablet, isBigTablet } = useScreenSize();
+  const { isMobile, isSmallest, isSmallTablet, isLaptop, isBigTablet } = useScreenSize();
 
   if (isMobile || isSmallest || isSmallTablet || isBigTablet) {
     return null;
@@ -35,32 +35,32 @@ export default function HeaderMainLinks() {
   return (
     <Grid
       container
-      justifyContent='center'
+      justifyContent="center"
       sx={{
         ...styles.mainGrid,
-      ...((isTablet) ? styles.mainGridTablet : {})
+        ...(isLaptop ? styles.mainGridLaptop : {}),
       }}
     >
       <Grid item>
-        <CustomLink href='/' style={{ ...styles.link }}>
+        <CustomLink href="/" style={{ ...styles.link }}>
           {t('header.advantages')}
         </CustomLink>
       </Grid>
 
       <Grid item>
-        <CustomLink href='/' style={{ ...styles.link }}>
+        <CustomLink href="/" style={{ ...styles.link }}>
           {t('header.for_who')}
         </CustomLink>
       </Grid>
 
       <Grid item>
-        <CustomLink href='/' style={{ ...styles.link }}>
+        <CustomLink href="/" style={{ ...styles.link }}>
           {t('header.integration')}
         </CustomLink>
       </Grid>
 
       <Grid item>
-        <CustomLink href='/' style={{ ...styles.link }}>
+        <CustomLink href="/" style={{ ...styles.link }}>
           {t('header.contacts')}
         </CustomLink>
       </Grid>

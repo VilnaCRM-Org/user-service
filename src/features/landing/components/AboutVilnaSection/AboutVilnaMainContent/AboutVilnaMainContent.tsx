@@ -16,7 +16,7 @@ const styles = {
     flexDirection: 'column',
     alignItems: 'center',
     textAlign: 'center',
-    marginBottom: '46px',
+    marginBottom: '48px',
   },
   mainContainerMobile: {
     marginBottom: '115px',
@@ -32,10 +32,15 @@ const styles = {
     marginTop: '70px',
     textAlign: 'inherit',
   },
+  headingMainLaptopOrLower: {
+    marginTop: '78px',
+    paddingLeft: '20px',
+  },
   headingMainMobileOrSmaller: {
     fontSize: '32px',
-    marginTop: '32px',
+    marginTop: '28px',
     textAlign: 'left',
+    maxWidth: '341px',
   },
   textMain: {
     marginTop: '16px',
@@ -48,9 +53,14 @@ const styles = {
     fontSize: '18px',
     textAlign: 'inherit',
   },
+  textMainLaptopOrLower: {
+    paddingLeft: '19px',
+  },
   textMainMobileOrSmaller: {
     fontSize: '15px',
     textAlign: 'left',
+    lineHeight: '25px',
+    marginTop: '12px',
   },
 };
 
@@ -58,7 +68,7 @@ export default function AboutVilnaMainContent({
   onTryItOutButtonClick,
 }: IAboutVilnaMainContentProps) {
   const { t } = useTranslation(TRANSLATION_NAMESPACE);
-  const { isMobile, isSmallest } = useScreenSize();
+  const { isMobile, isSmallest, isLaptop, isTablet } = useScreenSize();
 
   return (
     <Box
@@ -70,6 +80,7 @@ export default function AboutVilnaMainContent({
       <Typography
         style={{
           ...styles.headingMain,
+          ...(isLaptop || isTablet ? styles.headingMainLaptopOrLower : {}),
           ...(isSmallest || isMobile ? styles.headingMainMobileOrSmaller : {}),
           textAlign: isSmallest || isMobile ? 'left' : 'inherit',
         }}
@@ -79,6 +90,7 @@ export default function AboutVilnaMainContent({
       <Typography
         style={{
           ...styles.textMain,
+          ...(isTablet || isLaptop ? styles.textMainLaptopOrLower : {}),
           ...(isMobile || isSmallest ? styles.textMainMobileOrSmaller : {}),
           textAlign: isMobile || isSmallest ? 'left' : 'inherit',
         }}
@@ -88,9 +100,9 @@ export default function AboutVilnaMainContent({
       <Button
         onClick={onTryItOutButtonClick}
         customVariant="light-blue"
-        buttonSize="big"
+        buttonSize={isMobile || isSmallest ? 'medium' : 'big'}
         style={{
-          marginTop: '39px',
+          marginTop: isMobile || isSmallest ? '24px' : '39px',
           alignSelf: isMobile || isSmallest ? 'flex-start' : 'center',
         }}
       >
