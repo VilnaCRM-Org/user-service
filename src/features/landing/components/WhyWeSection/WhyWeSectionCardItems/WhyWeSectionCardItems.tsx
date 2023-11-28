@@ -14,20 +14,22 @@ export default function WhyWeSectionCardItems({
   cardItems,
   tooltipIcons,
 }: IWhyWeSectionCardItemsProps) {
-  const { isTablet } = useScreenSize();
+  const { isLaptop, isTablet, isMobile, isSmallest } = useScreenSize();
 
   return (
     <Container sx={{ width: '100%', maxWidth: '1192px' }}>
       <WhyWeSectionCardItemsRow
         cardItems={cardItems.slice(0, 3)}
-        style={{ padding: isTablet ? '0 32px 0 32px' : '0 12px 0 12px' }}
         tooltipIcons={tooltipIcons}
+        style={{
+          padding: isLaptop || isTablet || isMobile || isSmallest ? '0 31px 0 32px' : '0',
+        }}
       />
       <WhyWeSectionCardItemsRow
         cardItems={cardItems.slice(3, 6)}
         style={{
-          padding: isTablet ? '0 32px 0 32px' : '0 0 0 0',
           marginTop: '13px',
+          padding: isLaptop || isTablet || isMobile || isSmallest ? '0 31px 0 32px' : '0',
         }}
         tooltipIcons={tooltipIcons}
       />

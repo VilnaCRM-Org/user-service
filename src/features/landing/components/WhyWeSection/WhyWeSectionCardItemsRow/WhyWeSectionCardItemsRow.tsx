@@ -20,8 +20,8 @@ export default function WhyWeSectionCardItemsRow({
   return (
     <Grid
       container
-      spacing="13px"
       justifyContent="center"
+      columnSpacing={1.625}
       sx={{
         ...style,
       }}

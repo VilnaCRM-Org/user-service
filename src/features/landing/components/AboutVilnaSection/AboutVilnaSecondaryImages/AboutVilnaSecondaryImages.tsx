@@ -72,6 +72,7 @@ const styles = {
   backgroundSecondaryShapeImageContainerSmallTabletOrMobileOrLower: {
     maxHeight: '284px',
     height: '100%',
+    borderRadius: '24px',
   },
 };
 

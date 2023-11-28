@@ -18,6 +18,9 @@
     "why_we": {
       "heading": "Why we",
       "subtitle": "Unlimited customization options or ease of use - we've made it easy for any business to manage sales",
+      "button": {
+        "try_it_out": "Try it out"
+      },
       "headers": {
         "header_1": "Open source",
         "header_2": "Ease of setup",
@@ -29,7 +32,7 @@
       "texts": {
         "text_1": "Thanks to the open source code, you can modify and add CRM functions as you need them",
         "text_2": "Configure the system in a few clicks without programming knowledge and receive orders from your website in a few minutes",
-        "text_3": "You have: an online store, courses or a web studio. We have: special templates that will save you time",
+        "text_3": "You have: an online store, courses or a web studio. <br /> <br /> We have: special templates that will save you time",
         "text_4": "We know the specific needs of EdTech, agencies, and service providers — that's why we've created a CRM that's easy to use right away",
         "text_5": "Connect your CMS and IP telephony in a few clicks. And for specific integrations, use Zapier, APIs, and public libraries",
         "text_6": "Switch to Vilna in a few clicks with ready-made migration scripts from amoCRM and HubSpot"
@@ -121,6 +124,9 @@
     "why_we": {
       "heading": "Чому ми",
       "subtitle": "Безмежні можливості кастомізації чи простота у використанні — ми подбали, щоб керувати продажами було зручно будь-якому бізнесу",
+      "button": {
+        "try_it_out": "Спробувати"
+      },
       "headers": {
         "header_1": "Open source",
         "header_2": "Легкість у налаштуванні",
@@ -132,7 +138,7 @@
       "texts": {
         "text_1": "Завдяки відкритому вихідному коду ви можете змінити та доповнити функції CRM так, як потрібно саме вам",
         "text_2": "Налаштовуйте систему у декілька кліків без знань у програмуванні та отримуйте замовлення з вашого сайту за кілька хвилин",
-        "text_3": "У вас: онлайн-магазин, курси чи веб-студія У нас: спеціальні шаблони, які збережуть ваш час",
+        "text_3": "У вас: онлайн-магазин, курси чи веб-студія <br /> <br /> У нас: спеціальні шаблони, які збережуть ваш час",
         "text_4": "Ми знаємо специфічні запити EdTech, агентств та провайтерів послуг  — саме тому створили CRM, з якою зручно одразу ",
         "text_5": "Підключіть вашу CMS та IP-телефонію у кілька кліків. А для специфічних інтеграцій використовуйте Zapier, API та публічні бібліотеки",
         "text_6": "Переходьте на Vilna у кілька кліків за допомогою готових сценаріїв міграції з amoCRM та HubSpot"

@@ -10,15 +10,28 @@ interface IWhyWeSectionHeaderProps {
 }
 
 const styles = {
+  mainBox: {
+    padding: '0 0 0 0',
+  },
+  mainBoxMobileOrLower: {
+    padding: '0 15px 0 15px',
+  },
+  mainBoxTabletOrLaptop: {
+    padding: '0 32px 0 32px',
+  },
   mainHeading: {
     color: '#1A1C1E',
     textAlign: 'left',
-    fontFamily: 'GolosText-Regular, sans-serif',
+    fontFamily: 'GolosText-Bold, sans-serif',
     fontSize: '46px',
     fontStyle: 'normal',
     fontWeight: 700,
     lineHeight: 'normal',
     marginBottom: '16px',
+  },
+  mainHeadingMobileOrSmaller: {
+    marginBottom: '8px',
+    fontSize: '28px',
   },
   text: {
     color: '#1A1C1E',
@@ -27,43 +40,48 @@ const styles = {
     fontStyle: 'normal',
     fontWeight: 400,
     lineHeight: '30px',
-    maxWidth: '632px',
+    maxWidth: '39.5rem', // 632px
     marginBottom: '40px',
+  },
+  textMobileOrSmaller: {
+    fontSize: '15px',
+    marginBottom: '24px',
+    lineHeight: '25px',
   },
 };
 
 export default function WhyWeSectionHeader({ style }: IWhyWeSectionHeaderProps) {
   const { t } = useTranslation(TRANSLATION_NAMESPACE);
-  const { isSmallest, isTablet, isMobile } = useScreenSize();
+  const { isSmallest, isTablet, isMobile, isLaptop } = useScreenSize();
 
   return (
-    <Box sx={{
-      ...style,
-      padding: (isTablet || isMobile || isSmallest) ? '0 32px 0 32px' : '0 12px 0 12px',
-    }}>
+    <Box
+      sx={{
+        ...style,
+        ...styles.mainBox,
+        ...(isLaptop || isTablet ? styles.mainBoxTabletOrLaptop : {}),
+        ...(isSmallest || isMobile ? styles.mainBoxMobileOrLower : {}),
+      }}
+    >
       <Typography
-        variant='h1'
-        component='h2'
         style={{
           ...styles.mainHeading,
+          ...(isMobile || isSmallest ? styles.mainHeadingMobileOrSmaller : {}),
           textAlign: 'left',
-          fontSize: isSmallest ? '28px' : styles.mainHeading.fontSize,
         }}
       >
         {t('why_we.heading')}
       </Typography>
 
       <Typography
-        variant='body1'
-        component='p'
+        variant="body1"
+        component="p"
         style={{
           ...styles.text,
-          fontSize: isSmallest ? '15px' : styles.text.fontSize,
+          ...(isSmallest || isMobile ? styles.textMobileOrSmaller : {}),
         }}
       >
-        {t(
-          'why_we.subtitle',
-        )}
+        {t('why_we.subtitle')}
       </Typography>
     </Box>
   );

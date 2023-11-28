@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { ForWhoImagesContent } from '@/features/landing/components/ForWhoSection/ForWhoImagesContent/ForWhoImagesContent';
 import { ForWhoMainTextsContent } from '@/features/landing/components/ForWhoSection/ForWhoMainTextsContent/ForWhoMainTextsContent';
 import { ForWhoSectionCardItem } from '@/features/landing/components/ForWhoSection/ForWhoSectionCardItem/ForWhoSectionCardItem';
-import { ForWhoSectionCards } from '@/features/landing/components/ForWhoSection/ForWhoSectionCards/ForWhoSectionCards';
+import ForWhoSectionCards from '@/features/landing/components/ForWhoSection/ForWhoSectionCards/ForWhoSectionCards';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 

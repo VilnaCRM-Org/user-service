@@ -1,9 +1,11 @@
-import React from 'react';
 import { Box, Grid, Typography } from '@mui/material';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+
 import { Button } from '@/components/ui/Button/Button';
-import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
+import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 interface IForWhoSectionCardsMobileProps {
   cardItemsJSX: React.ReactNode;
@@ -25,7 +27,7 @@ const styles = {
     maxWidth: '374px',
     width: '100%',
     color: '#1A1C1E',
-    fontFamily: 'Stolz-Regular, sans-serif',
+    fontFamily: 'Stolzl-Regular, sans-serif',
     fontSize: '28px',
     fontStyle: 'normal',
     fontWeight: 700,
@@ -35,7 +37,7 @@ const styles = {
 };
 
 export default function ForWhoSectionCardsMobile({ cardItemsJSX }: IForWhoSectionCardsMobileProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isSmallest } = useScreenSize();
 
   return (
@@ -51,25 +53,23 @@ export default function ForWhoSectionCardsMobile({ cardItemsJSX }: IForWhoSectio
         }}
       >
         <Typography
-          variant={'h4'}
-          component={'h4'}
-          sx={{
+          style={{
             ...styles.heading,
             fontSize: isSmallest ? '22px' : styles.heading.fontSize,
           }}
         >
-          {t('Our CRM is ideal if you:')}
+          {t('for_who.heading_secondary')}
         </Typography>
 
         <Box sx={{ marginBottom: '32px' }}>{cardItemsJSX}</Box>
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
           <Button
-            customVariant={'light-blue'}
+            customVariant="light-blue"
             onClick={scrollToRegistrationSection}
-            buttonSize={'medium'}
+            buttonSize="medium"
           >
-            {t('Try it out')}
+            {t('for_who.button_text')}
           </Button>
         </Box>
       </Grid>

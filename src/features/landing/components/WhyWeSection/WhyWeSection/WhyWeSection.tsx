@@ -22,25 +22,12 @@ const TOOLTIP_ICONS: string[] = [
 
 export default function WhyWeSection() {
   const [cardItems] = useState<IWhyWeCardItem[]>(WHY_WE_CARD_ITEMS);
-  const { isMobile, isSmallest, isTablet, isLaptop, isDesktop } = useScreenSize();
-
-  const sectionHeaderPadding = useRef('0 0 0 0');
-
-  useEffect(() => {
-    if (isLaptop || isDesktop) {
-      sectionHeaderPadding.current = '0 0 0 0';
-      return;
-    }
-
-    if (isMobile || isSmallest) {
-      sectionHeaderPadding.current = '0 15px 0 15px';
-    }
-  }, [isTablet, isMobile, isSmallest]);
+  const { isMobile, isSmallest, isTablet } = useScreenSize();
 
   return (
-    <Container sx={{ padding: '56px 0 56px 0' }}>
+    <Container sx={{ padding: '56px 31px 0px 32px' }}>
       <WhyWeSectionHeader />
-      {isMobile || isSmallest ? (
+      {isMobile || isSmallest || isTablet ? (
         <WhyWeSectionSlider cardItems={cardItems} />
       ) : (
         <WhyWeSectionCardItems cardItems={cardItems} tooltipIcons={TOOLTIP_ICONS} />

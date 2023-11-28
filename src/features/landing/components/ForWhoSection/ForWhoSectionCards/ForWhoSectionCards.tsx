@@ -10,7 +10,7 @@ const styles = {
     maxWidth: '374px',
     width: '100%',
     color: '#1A1C1E',
-    fontFamily: 'Stolz-Regular, sans-serif',
+    fontFamily: 'Stolzl-Regular, sans-serif',
     fontSize: '28px',
     fontStyle: 'normal',
     fontWeight: 700,
@@ -18,7 +18,7 @@ const styles = {
   },
 };
 
-export function ForWhoSectionCards({ cardItemsJSX }: { cardItemsJSX: React.ReactNode }) {
+export default function ForWhoSectionCards({ cardItemsJSX }: { cardItemsJSX: React.ReactNode }) {
   const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isSmallest } = useScreenSize();
 
