@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/Button/Button';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
+import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 
 interface IForWhoSectionCardsMobileProps {
   cardItemsJSX: React.ReactNode;

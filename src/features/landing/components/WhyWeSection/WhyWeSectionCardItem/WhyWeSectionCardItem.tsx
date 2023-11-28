@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import ReactHtmlParser from 'react-html-parser';
 import { useTranslation } from 'react-i18next';
 
+import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
 import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 interface IWhyWeSectionItemCardItemProps {
   cardItem: IWhyWeCardItem;

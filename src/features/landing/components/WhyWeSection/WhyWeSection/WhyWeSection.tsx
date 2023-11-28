@@ -1,5 +1,5 @@
 import { Container } from '@mui/material';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import WhyWeSectionCardItems from '@/features/landing/components/WhyWeSection/WhyWeSectionCardItems/WhyWeSectionCardItems';
 import WhyWeSectionHeader from '@/features/landing/components/WhyWeSection/WhyWeSectionHeader/WhyWeSectionHeader';
