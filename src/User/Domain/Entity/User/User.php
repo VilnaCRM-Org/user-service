@@ -5,16 +5,43 @@ declare(strict_types=1);
 namespace App\User\Domain\Entity\User;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\User\Domain\Entity\Email\RetryDto;
+use App\User\Domain\Entity\Token\ConfirmEmailInputDto;
+use App\User\Infrastructure\Token\ConfirmEmailMutationResolver;
+use App\User\Infrastructure\User\InvalidPasswordError;
 use App\User\Infrastructure\User\RegisterUserProcessor;
+use App\User\Infrastructure\User\UserPatchProcessor;
+use App\User\Infrastructure\User\UserPutProcessor;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
-#[ApiResource(normalizationContext: ['groups' => ['output']],
-    input: UserInputDto::class, processor: RegisterUserProcessor::class)]
+#[ApiResource(normalizationContext: ['groups' => ['output']], input: UserInputDto::class,
+    exceptionToStatus: [InvalidPasswordError::class => 410])]
+#[Get]
+#[GetCollection(paginationClientItemsPerPage: true)]
+#[Post(processor: RegisterUserProcessor::class)]
+#[Patch(input: UserPatchDto::class, processor: UserPatchProcessor::class)]
+#[Put(input: UserPutDto::class, processor: UserPutProcessor::class)]
+#[Delete]
+// #[Post(uriTemplate: 'retry', input: RetryDto::class, processor: RetryProcessor::class)]
+#[Mutation(resolver: ConfirmEmailMutationResolver::class, args: [
+    'tokenValue' => [
+        'type' => 'String!',
+    ],
+], input: ConfirmEmailInputDto::class, name: 'confirm')]
+#[Mutation(name: 'create')]
+#[Mutation(name: 'update')]
+#[Mutation(name: 'delete')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public function __construct(
@@ -37,18 +64,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $id;
 
     #[ORM\Column(type: 'string', length: 255, unique: true)]
-    #[Assert\NotBlank]
-    #[Assert\Email]
     #[Groups(['output'])]
     private string $email;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Assert\NotBlank]
     #[Groups(['output'])]
     private string $initials;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Assert\NotBlank]
     private string $password;
 
     #[ORM\Column(type: 'boolean')]
