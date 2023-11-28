@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
-class SendEmailMessageHandler implements DomainEventSubscriber
+class UserRegisteredEventSubscriber implements DomainEventSubscriber
 {
     public function __construct(private MailerInterface $mailer,
         private TokenRepository $tokenRepository,

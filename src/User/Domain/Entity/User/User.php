@@ -14,6 +14,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\User\Domain\Entity\Email\RetryDto;
 use App\User\Domain\Entity\Token\ConfirmEmailInputDto;
+use App\User\Infrastructure\Email\RetryProcessor;
 use App\User\Infrastructure\Token\ConfirmEmailMutationResolver;
 use App\User\Infrastructure\User\InvalidPasswordError;
 use App\User\Infrastructure\User\RegisterUserProcessor;
@@ -33,7 +34,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[Patch(input: UserPatchDto::class, processor: UserPatchProcessor::class)]
 #[Put(input: UserPutDto::class, processor: UserPutProcessor::class)]
 #[Delete]
-// #[Post(uriTemplate: 'retry', input: RetryDto::class, processor: RetryProcessor::class)]
+#[Post(uriTemplate: 'retry', input: RetryDto::class, processor: RetryProcessor::class)]
 #[Mutation(resolver: ConfirmEmailMutationResolver::class, args: [
     'tokenValue' => [
         'type' => 'String!',
