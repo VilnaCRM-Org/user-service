@@ -1,8 +1,8 @@
 import { Box, Grid } from '@mui/material';
 import { useMemo, useState } from 'react';
 
-import { ForWhoImagesContent } from '@/features/landing/components/ForWhoSection/ForWhoImagesContent/ForWhoImagesContent';
-import { ForWhoMainTextsContent } from '@/features/landing/components/ForWhoSection/ForWhoMainTextsContent/ForWhoMainTextsContent';
+import ForWhoImagesContent from '@/features/landing/components/ForWhoSection/ForWhoImagesContent/ForWhoImagesContent';
+import ForWhoMainTextsContent from '@/features/landing/components/ForWhoSection/ForWhoMainTextsContent/ForWhoMainTextsContent';
 import { ForWhoSectionCardItem } from '@/features/landing/components/ForWhoSection/ForWhoSectionCardItem/ForWhoSectionCardItem';
 import ForWhoSectionCards from '@/features/landing/components/ForWhoSection/ForWhoSectionCards/ForWhoSectionCards';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
@@ -42,6 +42,9 @@ const styles = {
     padding: '56px 0 206px 0',
     backgroundColor: '#FBFBFB',
   },
+  mainBoxMobileOrLower: {
+    paddingTop: '0',
+  },
   secondaryBoxContainer: {
     maxWidth: '1192px',
     margin: '0 auto',
@@ -56,31 +59,45 @@ const styles = {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  mainGridMobileOrSmaller: {
+    padding: '32px 42px 38px 15px',
+  },
 };
 
 export default function ForWhoSection() {
-  const [cardItems,] = useState(CARD_ITEMS);
+  const [cardItems] = useState(CARD_ITEMS);
   const { isSmallest, isMobile, isSmallTablet } = useScreenSize();
   const handleTryItOutButtonClick = () => {
     scrollToRegistrationSection();
   };
 
-  const cardItemsJSX = useMemo(() => cardItems.map((cardItem) => (
+  const cardItemsJSX = useMemo(
+    () =>
+      cardItems.map((cardItem) => (
         <ForWhoSectionCardItem
           key={cardItem.id}
           imageSrc={cardItem.imageSrc}
           imageAltText={cardItem.imageAltText}
           text={cardItem.text}
         />
-      )), [cardItems]);
+      )),
+    [cardItems]
+  );
 
   return (
-    <Box sx={{ ...styles.mainBox, marginTop: isMobile || isSmallest ? '0' : '89px' }}>
+    <Box
+      sx={{
+        ...styles.mainBox,
+        ...(isMobile || isSmallest ? styles.mainBoxMobileOrLower : {}),
+        marginTop: isMobile || isSmallest ? '0' : '89px',
+      }}
+    >
       <Box sx={{ ...styles.secondaryBoxContainer }}>
         <Grid
           container
           sx={{
             ...styles.mainGrid,
+            ...(isMobile || isSmallest ? styles.mainGridMobileOrSmaller : {}),
             flexDirection: isSmallTablet || isMobile || isSmallest ? 'column' : 'row',
             alignItems: isSmallTablet ? 'center' : 'stretch',
             paddingTop: isMobile || isSmallest ? '38px' : '58px',

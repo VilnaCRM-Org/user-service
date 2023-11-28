@@ -47,6 +47,7 @@ const styles = {
     fontSize: '15px',
     marginBottom: '24px',
     lineHeight: '25px',
+    paddingRight: '20px',
   },
 };
 

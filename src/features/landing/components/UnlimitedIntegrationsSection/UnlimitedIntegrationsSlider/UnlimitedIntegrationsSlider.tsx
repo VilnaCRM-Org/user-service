@@ -1,14 +1,11 @@
 import { Box, Container, MobileStepper } from '@mui/material';
 import { useState } from 'react';
 import SwipeableViews from 'react-swipeable-views';
-import { autoPlay } from 'react-swipeable-views-utils';
 
 import { IUnlimitedIntegrationsItem } from '@/features/landing/types/unlimited-integrations/types';
 
 import UnlimitedIntegrationsCardItem
   from '../UnlimitedIntegrationsCardItem/UnlimitedIntegrationsCardItem';
-
-const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
 
 const styles = {
   mobileStepper: {
@@ -36,7 +33,7 @@ export default function UnlimitedIntegrationsSlider({
   return (
     <Box sx={{ padding: '0' }}>
       <Container style={{ padding: '0' }}>
-        <AutoPlaySwipeableViews
+        <SwipeableViews
           axis='x'
           index={activeStep}
           onChangeIndex={handleStepChange}
@@ -63,7 +60,7 @@ export default function UnlimitedIntegrationsSlider({
               />
             </Box>
           ))}
-        </AutoPlaySwipeableViews>
+        </SwipeableViews>
 
         <MobileStepper
           steps={maxSteps}

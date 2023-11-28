@@ -40,7 +40,7 @@ const styles = {
   },
 };
 
-export function ForWhoMainTextsContent({
+export default function ForWhoMainTextsContent({
   onTryItOutButtonClick,
 }: {
   onTryItOutButtonClick: () => void;
@@ -57,7 +57,7 @@ export function ForWhoMainTextsContent({
           component="h2"
           style={{
             ...styles.mainHeading,
-            fontSize: isSmallest ? '28px' : styles.mainHeading.fontSize,
+            fontSize: isSmallest || isMobile ? '28px' : styles.mainHeading.fontSize,
             textAlign: 'inherit',
           }}
         >
@@ -69,7 +69,7 @@ export function ForWhoMainTextsContent({
           component="p"
           style={{
             ...styles.mainText,
-            fontSize: isSmallest ? '15px' : '18px',
+            fontSize: isSmallest || isMobile ? '15px' : '18px',
           }}
         >
           {t('for_who.text_main')}

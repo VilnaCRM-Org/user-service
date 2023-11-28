@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
 import { Grid, Box } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+
 import { ForWhoMainBackgroundSvg } from '@/features/landing/components/ForWhoSection/ForWhoMainBackgroundSvg/ForWhoMainBackgroundSvg';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
@@ -45,7 +46,7 @@ const styles = {
   },
 };
 
-export function ForWhoImagesContent({
+export default function ForWhoImagesContent({
   mainImageSrc,
   mainImageTitle,
   secondaryImageSrc,

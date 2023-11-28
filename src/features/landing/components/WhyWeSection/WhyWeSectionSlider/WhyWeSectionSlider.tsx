@@ -1,4 +1,4 @@
-import { Box, Container, MobileStepper } from '@mui/material';
+import { Box, MobileStepper } from '@mui/material';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SwipeableViews from 'react-swipeable-views';
@@ -27,7 +27,6 @@ export default function WhyWeSectionSlider({ cardItems }: { cardItems: IWhyWeCar
 
   return (
     <Box sx={{ padding: '0 15px 0 15px' }}>
-      <Container>
         <SwipeableViews
           axis="x"
           index={activeStep}
@@ -42,17 +41,19 @@ export default function WhyWeSectionSlider({ cardItems }: { cardItems: IWhyWeCar
                 justifyContent: 'center',
                 alignItems: 'center',
                 height: '100%',
+                maxHeight: '263px',
               }}
             >
               <WhyWeSectionCardItem
                 cardItem={item}
                 isSmall
                 style={{
+                  width: '100%',
                   height: '100%',
+                  maxHeight: '263px',
                   overflow: 'hidden',
                   margin: '0 5px',
                   padding: '16px 18px 72px 16px',
-                  maxHeight: '263px',
                 }}
               />
             </Box>
@@ -69,7 +70,7 @@ export default function WhyWeSectionSlider({ cardItems }: { cardItems: IWhyWeCar
           sx={{
             display: 'flex',
             justifyContent: 'center',
-            marginTop: '25px',
+            marginTop: '22px',
             '& .MuiMobileStepper-dot:not(:last-child)': {
               marginRight: '24px',
             },
@@ -79,12 +80,11 @@ export default function WhyWeSectionSlider({ cardItems }: { cardItems: IWhyWeCar
           <Button
             customVariant="light-blue"
             onClick={handleTryItOutButtonClick}
-            style={{ marginTop: '24px' }}
+            style={{ marginTop: '14px' }}
           >
             {t('why_we.button.try_it_out')}
           </Button>
         </Box>
-      </Container>
     </Box>
   );
 }
