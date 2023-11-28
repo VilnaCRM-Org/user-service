@@ -6,7 +6,8 @@ import AboutVilnaSecondaryShape from '../../../../../../public/assets/img/AboutV
 import AboutVilnaBackgroundWithMainSvg from '@/features/landing/components/AboutVilnaSection/AboutVilnaBackgroundWithMainSvg/AboutVilnaBackgroundWithMainSvg';
 import AboutVilnaDesktopNotchSvg from '@/features/landing/components/AboutVilnaSection/AboutVilnaDesktopNotchSvg/AboutVilnaDesktopNotchSvg';
 import AboutVilnaMainCRMImage from '@/features/landing/components/AboutVilnaSection/AboutVilnaMainCRMImage/AboutVilnaMainCRMImage';
-import AboutVilnaBackgroundWithSecondarySvg from '../AboutVilnaBackgroundWithSecondarySvg/AboutVilnaBackgroundWithSecondarySvg';
+import AboutVilnaBackgroundWithSecondaryPng from '../AboutVilnaBackgroundWithSecondarySvg/AboutVilnaBackgroundWithSecondaryPng';
+import AboutVilnaIphoneBackground from '@/features/landing/components/AboutVilnaSection/AboutVilnaIphoneBackground/AboutVilnaIphoneBackground';
 
 const CRM_IMAGES = {
   desktop: {
@@ -38,14 +39,18 @@ const styles = {
     bottom: 0,
     zIndex: '900',
   },
-  backgroundImageContainer: {
+  containerWithCRMImageMobileOrLower: {
+    maxHeight: '17.75rem', // 284px
+  },
+  backgroundSecondaryShapeImageContainer: {
     backgroundImage: `url(${AboutVilnaSecondaryShape.src})`,
     backgroundRepeat: 'no-repeat',
     backgroundSize: 'cover',
     backgroundPosition: 'bottom',
     width: '100%',
-    maxWidth: '1192px',
-    height: '493px',
+    maxWidth: '74.5rem', // 1192px
+    height: '100%',
+    maxHeight: '30.8125rem', // 493px
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'flex-end',
@@ -58,7 +63,7 @@ const styles = {
     pointerEvents: 'none',
     userSelect: 'none',
   },
-  backgroundImageContainerTablet: {
+  backgroundSecondaryShapeImageContainerTablet: {
     maxWidth: '60rem', // 960px
   },
 };
@@ -78,12 +83,22 @@ export default function AboutVilnaSecondaryImages() {
   );
 
   const contentForSmallTabletOrMobileOrSmaller = (
-    <AboutVilnaBackgroundWithSecondarySvg>
+    <AboutVilnaBackgroundWithSecondaryPng>
       <AboutVilnaMainCRMImage
         imageAltText={CRM_IMAGES.mobile.imageAltText}
         imageSrc={CRM_IMAGES.mobile.imageSrc}
+        style={{
+          position: 'absolute',
+          zIndex: '500',
+          top: '-33px',
+          left: '12.16px',
+          height: '316.77px',
+          width: '100%',
+          maxWidth: '201.925px',
+        }}
       />
-    </AboutVilnaBackgroundWithSecondarySvg>
+      <AboutVilnaIphoneBackground />
+    </AboutVilnaBackgroundWithSecondaryPng>
   );
 
   return (
@@ -97,6 +112,7 @@ export default function AboutVilnaSecondaryImages() {
       <Container
         sx={{
           ...styles.containerWithCRMImage,
+          ...(isMobile || isSmallest ? styles.containerWithCRMImageMobileOrLower : {}),
         }}
       >
         {isDesktop || isLaptop || isBigTablet ? contentForBigTabletOrLaptopOrDesktop : null}
@@ -105,8 +121,8 @@ export default function AboutVilnaSecondaryImages() {
       </Container>
       <Container
         sx={{
-          ...styles.backgroundImageContainer,
-          ...(isTablet ? styles.backgroundImageContainerTablet : {}),
+          ...styles.backgroundSecondaryShapeImageContainer,
+          ...(isTablet ? styles.backgroundSecondaryShapeImageContainerTablet : {}),
         }}
       />
     </Box>

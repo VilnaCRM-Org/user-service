@@ -23,7 +23,7 @@ export default function AboutVilnaMainCRMImage({
         left: '1.15875rem', // 18.54px
         zIndex: '750',
         overflow: 'hidden',
-        borderRadius: '12px',
+        borderRadius: '12px 12px 0 0',
         ...style,
       }}
     >

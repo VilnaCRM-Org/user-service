@@ -18,6 +18,9 @@ const styles = {
     textAlign: 'center',
     marginBottom: '46px',
   },
+  mainContainerMobile: {
+    marginBottom: '115px',
+  },
   headingMain: {
     color: '#1A1C1E',
     fontFamily: 'GolosText-Bold, sans-serif',
@@ -52,13 +55,18 @@ const styles = {
 };
 
 export default function AboutVilnaMainContent({
-                                                onTryItOutButtonClick,
-                                              }: IAboutVilnaMainContentProps) {
+  onTryItOutButtonClick,
+}: IAboutVilnaMainContentProps) {
   const { t } = useTranslation(TRANSLATION_NAMESPACE);
   const { isMobile, isSmallest } = useScreenSize();
 
   return (
-    <Box sx={{ ...styles.mainContainer }}>
+    <Box
+      sx={{
+        ...styles.mainContainer,
+        ...(isMobile || isSmallest ? styles.mainContainerMobile : {}),
+      }}
+    >
       <Typography
         style={{
           ...styles.headingMain,
@@ -79,8 +87,8 @@ export default function AboutVilnaMainContent({
       </Typography>
       <Button
         onClick={onTryItOutButtonClick}
-        customVariant='light-blue'
-        buttonSize='big'
+        customVariant="light-blue"
+        buttonSize="big"
         style={{
           marginTop: '39px',
           alignSelf: isMobile || isSmallest ? 'flex-start' : 'center',
