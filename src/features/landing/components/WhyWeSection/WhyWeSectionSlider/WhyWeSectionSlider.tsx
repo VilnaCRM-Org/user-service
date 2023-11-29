@@ -52,7 +52,7 @@ export default function WhyWeSectionSlider({ cardItems }: { cardItems: IWhyWeCar
                   height: '100%',
                   maxHeight: '263px',
                   overflow: 'hidden',
-                  margin: '0 5px',
+                  margin: '0 5px 0 0',
                   padding: '16px 18px 72px 16px',
                 }}
               />

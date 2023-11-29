@@ -43,6 +43,9 @@ const styles = {
     maxWidth: '39.5rem', // 632px
     marginBottom: '40px',
   },
+  textLaptopOrLower: {
+    marginBottom: '32px',
+  },
   textMobileOrSmaller: {
     fontSize: '15px',
     marginBottom: '24px',
@@ -79,6 +82,7 @@ export default function WhyWeSectionHeader({ style }: IWhyWeSectionHeaderProps) 
         component="p"
         style={{
           ...styles.text,
+          ... (isLaptop || isTablet ? styles.textLaptopOrLower: {}),
           ...(isSmallest || isMobile ? styles.textMobileOrSmaller : {}),
         }}
       >

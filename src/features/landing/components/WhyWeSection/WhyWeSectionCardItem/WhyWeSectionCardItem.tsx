@@ -29,10 +29,10 @@ const styles = {
     gap: '13px',
   },
   cardItemLaptopOrLower: {
-    maxHeight: '23.75rem', // 380px
+    minHeight: '23.75rem', // 380px
   },
   cardItemMobileOrSmallest: {
-    maxHeight: '16.4375rem', // 263px
+    minHeight: '16.4375rem', // 263px
   },
   icon: {
     width: '100%',
@@ -61,6 +61,7 @@ const styles = {
   titleMobileOrSmallest: {
     fontSize: '18px',
     fontWeight: '600',
+    paddingTop: '3px',
   },
   text: {
     color: '#1A1C1E',
@@ -100,7 +101,8 @@ export default function WhyWeSectionCardItem({
       onMouseOut={handleMouseOut}
       sx={{
         ...styles.cardItem,
-        ...(isLaptop || isTablet || isMobile || isSmallest ? styles.cardItemLaptopOrLower : {}),
+        ...(isLaptop || isTablet  ? styles.cardItemLaptopOrLower : {}),
+        ...(isMobile || isSmallest ? styles.cardItemMobileOrSmallest : {}),
         boxShadow: isHovered ? '0px 8px 27px 0px rgba(49, 59, 67, 0.14)' : 'none',
         cursor: isHovered ? 'pointer' : 'default',
         ...style,
