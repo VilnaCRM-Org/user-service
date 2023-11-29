@@ -26,6 +26,7 @@ const styles = {
     fontStyle: 'normal',
     fontWeight: '700',
     lineHeight: 'normal',
+    marginTop: '76px',
   },
   mainText: {
     marginTop: '16px',

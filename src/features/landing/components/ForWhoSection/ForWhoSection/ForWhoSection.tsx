@@ -42,8 +42,12 @@ const styles = {
     padding: '56px 0 206px 0',
     backgroundColor: '#FBFBFB',
   },
+  mainBoxLaptopOrLower: {
+    padding: '0 34px 206px 34px',
+  },
   mainBoxMobileOrLower: {
     paddingTop: '0',
+    marginTop: '0',
   },
   secondaryBoxContainer: {
     maxWidth: '1192px',
@@ -54,7 +58,7 @@ const styles = {
   mainGrid: {
     height: '100%',
     width: '100%',
-    padding: '58px 34px 0 34px',
+    padding: '58px 0 0 0',
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -66,7 +70,7 @@ const styles = {
 
 export default function ForWhoSection() {
   const [cardItems] = useState(CARD_ITEMS);
-  const { isSmallest, isMobile, isSmallTablet } = useScreenSize();
+  const { isSmallest, isMobile, isSmallTablet, isLaptop, isTablet } = useScreenSize();
   const handleTryItOutButtonClick = () => {
     scrollToRegistrationSection();
   };
@@ -88,8 +92,8 @@ export default function ForWhoSection() {
     <Box
       sx={{
         ...styles.mainBox,
+        ...(isLaptop || isTablet ? styles.mainBoxLaptopOrLower : {}),
         ...(isMobile || isSmallest ? styles.mainBoxMobileOrLower : {}),
-        marginTop: isMobile || isSmallest ? '0' : '89px',
       }}
     >
       <Box sx={{ ...styles.secondaryBoxContainer }}>

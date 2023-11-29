@@ -1,8 +1,16 @@
 import React from 'react';
 
-export function ForWhoMainBackgroundSvg({ style }: { style?: React.CSSProperties }) {
+export default function ForWhoMainBackgroundSvg({
+  style,
+  width,
+  height,
+}: {
+  style?: React.CSSProperties;
+  width?: string;
+  height?: string;
+}) {
   return (
-    <svg style={style} viewBox="0 0 821 880" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg style={style} viewBox={`0 0 ${width} ${height}`} fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
         d="M149 148C149 130.327 163.327 116 181 116H719C736.673 116 751 130.327 751 148V880H149V148Z"
         fill="#1EAEFF"
@@ -91,3 +99,9 @@ export function ForWhoMainBackgroundSvg({ style }: { style?: React.CSSProperties
     </svg>
   );
 }
+
+ForWhoMainBackgroundSvg.defaultProps = {
+  style: {},
+  width: '821',
+  height: '880',
+};

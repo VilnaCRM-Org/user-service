@@ -24,7 +24,7 @@ export default function ForWhoSectionCards({ cardItemsJSX }: { cardItemsJSX: Rea
 
   return (
     <>
-      <Box sx={{ padding: '0 34px 0 34px' }}>
+      <Box sx={{ padding: '0 0 0 0' }}>
         <Grid item>
           <Typography
             variant="h4"
@@ -46,7 +46,7 @@ export default function ForWhoSectionCards({ cardItemsJSX }: { cardItemsJSX: Rea
           position: 'absolute',
           bottom: '-150px',
           zIndex: 900,
-          padding: '0 34px',
+          padding: '0',
         }}
       >
         {cardItemsJSX}

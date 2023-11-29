@@ -1,7 +1,7 @@
 import { Grid, Box } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
-import { ForWhoMainBackgroundSvg } from '@/features/landing/components/ForWhoSection/ForWhoMainBackgroundSvg/ForWhoMainBackgroundSvg';
+import ForWhoMainBackgroundSvg from '@/features/landing/components/ForWhoSection/ForWhoMainBackgroundSvg/ForWhoMainBackgroundSvg';
 import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
 
 const styles = {
@@ -16,31 +16,36 @@ const styles = {
   mainBackgroundSvgBox: {
     height: '100%',
     width: '100%',
+    maxWidth: '47.375rem', // 758px
     position: 'absolute',
     top: 0,
-    right: 0,
+    right: '-70px',
     zIndex: 750,
     paddingTop: '58px',
     pointerEvents: 'none',
     userSelect: 'none',
+  },
+  mainBackgroundSvgBoxLaptopAndLower: {
+    right: '-31px',
   },
   mainImageBox: {
     position: 'absolute',
     zIndex: 800,
     top: '-58px',
     right: '63px',
-    maxWidth: '627px',
-    width: '100%',
+    height: '27.5rem', // 440px
+    width: '39.1875rem', // 627px
     pointerEvents: 'none',
     userSelect: 'none',
+    marginTop: '58px',
   },
   secondaryImageBox: {
     position: 'absolute',
     zIndex: 850,
     bottom: '32px',
     right: '34px',
-    maxWidth: '255px',
-    width: '100%',
+    width: '15.9375rem', // 255px
+    height: '23.125rem', // 370px
     pointerEvents: 'none',
     userSelect: 'none',
   },
@@ -57,7 +62,7 @@ export default function ForWhoImagesContent({
   secondaryImageSrc: string;
   secondaryImageTitle: string;
 }) {
-  const { isTablet, isMobile, isSmallest } = useScreenSize();
+  const { isTablet, isMobile, isSmallest, isLaptop } = useScreenSize();
   const [mainImageBoxStylesForTablet, setMainImageBoxStylesForTablet] =
     useState<React.CSSProperties>({});
   const [mainImageBoxStylesForMobileOrLower, setMainImageBoxStylesForMobileOrLower] =
@@ -111,6 +116,7 @@ export default function ForWhoImagesContent({
     if (isSmallest) {
       setMainBackgroundSvgBoxStylesForSmallest({
         minWidth: '100vw',
+        paddingTop: '58px',
       });
     }
   }, [isTablet, isMobile, isSmallest]);
@@ -121,11 +127,11 @@ export default function ForWhoImagesContent({
       <Box
         sx={{
           ...styles.mainBackgroundSvgBox,
+          ...(isLaptop || isTablet || isMobile ? styles.mainBackgroundSvgBoxLaptopAndLower : {}),
           ...mainBackgroundSvgBoxStylesForSmallest,
-          paddingTop: isSmallest ? '0' : '58px',
         }}
       >
-        <ForWhoMainBackgroundSvg />
+        <ForWhoMainBackgroundSvg style={{ width: '100%' }}/>
       </Box>
 
       {/*  Main Image Box */}
@@ -139,7 +145,7 @@ export default function ForWhoImagesContent({
         <img
           src={mainImageSrc}
           alt={mainImageTitle}
-          style={{ maxWidth: '100%', objectFit: 'cover' }}
+          style={{ maxWidth: '100%', width: '100%', objectFit: 'cover' }}
         />
       </Box>
 
@@ -154,7 +160,7 @@ export default function ForWhoImagesContent({
         <img
           src={secondaryImageSrc}
           alt={secondaryImageTitle}
-          style={{ maxWidth: '100%', objectFit: 'cover' }}
+          style={{ maxWidth: '100%', width: '100%', objectFit: 'cover' }}
         />
       </Box>
     </Grid>
