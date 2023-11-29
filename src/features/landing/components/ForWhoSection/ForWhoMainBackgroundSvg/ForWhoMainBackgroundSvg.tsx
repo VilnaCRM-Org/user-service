@@ -102,6 +102,6 @@ export default function ForWhoMainBackgroundSvg({
 
 ForWhoMainBackgroundSvg.defaultProps = {
   style: {},
-  width: '821',
-  height: '880',
+  width: '861',
+  height: '577.92',
 };

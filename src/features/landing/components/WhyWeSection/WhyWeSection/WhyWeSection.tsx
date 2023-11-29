@@ -25,7 +25,7 @@ export default function WhyWeSection() {
   const { isMobile, isSmallest, isTablet } = useScreenSize();
 
   return (
-    <Container sx={{ padding: '56px 31px 0px 32px' }}>
+    <Container sx={{ padding: '56px 31px 56px 32px', marginBottom: '89px', }}>
       <WhyWeSectionHeader />
       {isMobile || isSmallest || isTablet ? (
         <WhyWeSectionSlider cardItems={cardItems} />
