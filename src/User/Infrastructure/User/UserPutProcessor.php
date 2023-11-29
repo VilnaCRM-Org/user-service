@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\User\Domain\Entity\User\UserPutDto;
 use App\User\Domain\UserRepository;
+use App\User\Infrastructure\Exceptions\InvalidPasswordError;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserPutProcessor implements ProcessorInterface

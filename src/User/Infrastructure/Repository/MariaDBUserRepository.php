@@ -7,6 +7,7 @@ namespace App\User\Infrastructure\Repository;
 use App\Shared\Domain\Bus\Event\EventBus;
 use App\User\Domain\Entity\User\User;
 use App\User\Domain\UserRepository;
+use App\User\Infrastructure\Exceptions\UserNotFoundError;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class MariaDBUserRepository implements UserRepository
@@ -28,7 +29,7 @@ final readonly class MariaDBUserRepository implements UserRepository
         $user = $this->entityManager->find(User::class, $userID);
 
         if (!$user) {
-            throw new \InvalidArgumentException('User not found');
+            throw new UserNotFoundError();
         }
 
         return $user;

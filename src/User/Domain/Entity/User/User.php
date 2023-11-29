@@ -15,8 +15,11 @@ use ApiPlatform\Metadata\Put;
 use App\User\Domain\Entity\Email\RetryDto;
 use App\User\Domain\Entity\Token\ConfirmEmailInputDto;
 use App\User\Infrastructure\Email\RetryProcessor;
+use App\User\Infrastructure\Exceptions\EmptyIdError;
+use App\User\Infrastructure\Exceptions\InvalidPasswordError;
+use App\User\Infrastructure\Exceptions\TokenNotFoundError;
+use App\User\Infrastructure\Exceptions\UserNotFoundError;
 use App\User\Infrastructure\Token\ConfirmEmailMutationResolver;
-use App\User\Infrastructure\User\InvalidPasswordError;
 use App\User\Infrastructure\User\RegisterUserProcessor;
 use App\User\Infrastructure\User\UserPatchProcessor;
 use App\User\Infrastructure\User\UserPutProcessor;
@@ -27,14 +30,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity]
 #[ApiResource(normalizationContext: ['groups' => ['output']], input: UserInputDto::class,
-    exceptionToStatus: [InvalidPasswordError::class => 410])]
+    exceptionToStatus: [InvalidPasswordError::class => 410, UserNotFoundError::class => 404,
+        TokenNotFoundError::class => 404, EmptyIdError::class => 400])]
 #[Get]
 #[GetCollection(paginationClientItemsPerPage: true)]
 #[Post(processor: RegisterUserProcessor::class)]
 #[Patch(input: UserPatchDto::class, processor: UserPatchProcessor::class)]
 #[Put(input: UserPutDto::class, processor: UserPutProcessor::class)]
 #[Delete]
-#[Post(uriTemplate: 'retry', input: RetryDto::class, processor: RetryProcessor::class)]
+#[Post(uriTemplate: '/users/{id}/resend-confirmation-email', input: RetryDto::class,
+    processor: RetryProcessor::class)]
 #[Mutation(resolver: ConfirmEmailMutationResolver::class, args: [
     'tokenValue' => [
         'type' => 'String!',
@@ -50,7 +55,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         string $email,
         string $initials,
         string $password
-    ) {
+    )
+    {
         $this->id = $id;
         $this->email = $email;
         $this->initials = $initials;

@@ -38,4 +38,4 @@ services:
     App\Shared\Infrastructure\OpenApiFactory:
          decorates: 'api_platform.openapi.factory'
          arguments: [ '@App\Shared\Infrastructure\OpenApiFactory.inner' ]
-         autoconfigure: true
+         autoconfigure: false

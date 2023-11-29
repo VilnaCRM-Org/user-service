@@ -12,8 +12,8 @@ use Symfony\Component\Mime\Email;
 class SendConfirmationEmailCommandHandler implements CommandHandler
 {
     public function __construct(private MailerInterface $mailer,
-                                private TokenRepository $tokenRepository,
-                                private LoggerInterface $logger)
+        private TokenRepository $tokenRepository,
+        private LoggerInterface $logger)
     {
     }
 

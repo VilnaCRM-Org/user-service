@@ -5,6 +5,7 @@ namespace App\User\Infrastructure\User;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
+use App\User\Application\SendConfirmationEmailCommand;
 use App\User\Application\SignUpCommand;
 use App\User\Domain\Entity\User\UserInputDto;
 
@@ -22,6 +23,10 @@ readonly class RegisterUserProcessor implements ProcessorInterface
         $command = new SignUpCommand($data->email, $data->initials, $data->password);
         $this->commandBus->dispatch($command);
 
-        return $command->getResponse()->getCreatedUser();
+        $user = $command->getResponse()->getCreatedUser();
+
+        $this->commandBus->dispatch(new SendConfirmationEmailCommand($user->getEmail(), $user->getPassword()));
+
+        return $user;
     }
 }

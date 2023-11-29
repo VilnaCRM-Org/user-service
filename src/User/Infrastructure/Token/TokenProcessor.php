@@ -21,14 +21,10 @@ class TokenProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        try {
-            $token = $this->tokenRepository->find($data->tokenValue);
+        $token = $this->tokenRepository->find($data->tokenValue);
 
-            $this->commandBus->dispatch(new ConfirmEmailCommand($token));
+        $this->commandBus->dispatch(new ConfirmEmailCommand($token));
 
-            return new Response(status: 200);
-        } catch (\InvalidArgumentException) {
-            return new Response(status: 400);
-        }
+        return new Response(status: 200);
     }
 }
