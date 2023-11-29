@@ -9,6 +9,7 @@ const styles = {
     height: '39.8125rem', // 637px
     width: '51.25rem', // 820px
     position: 'relative',
+    top: '58px',
   },
   mainBackgroundSvgBox: {
     height: '36.12rem', // 577.92px
@@ -67,7 +68,7 @@ export default function ForWhoImagesContent({
           ...(isLaptop || isTablet || isMobile ? styles.mainBackgroundSvgBoxLaptopAndLower : {}),
         }}
       >
-        <ForWhoMainBackgroundSvg />
+        <ForWhoMainBackgroundSvg style={{ width: '53.8125rem', height: '36.12rem' }} />
       </Box>
 
       {/*  Main Image Box */}
