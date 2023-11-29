@@ -74,7 +74,7 @@ const styles = {
 
 export default function ForWhoSection() {
   const [cardItems] = useState(CARD_ITEMS);
-  const { isSmallest, isMobile, isSmallTablet, isLaptop, isTablet } = useScreenSize();
+  const { isSmallest, isMobile, isLaptop, isTablet } = useScreenSize();
   const handleTryItOutButtonClick = () => {
     scrollToRegistrationSection();
   };
@@ -106,9 +106,6 @@ export default function ForWhoSection() {
           sx={{
             ...styles.mainGrid,
             ...(isMobile || isSmallest ? styles.mainGridMobileOrSmaller : {}),
-            flexDirection: isSmallTablet || isMobile || isSmallest ? 'column' : 'row',
-            alignItems: isSmallTablet ? 'center' : 'stretch',
-            gap: isSmallTablet ? '59px' : isSmallest ? '0' : 'normal',
           }}
         >
           {/* Main Texts (Top and Bottom) */}

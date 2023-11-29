@@ -6,8 +6,10 @@ import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenS
 
 const styles = {
   container: {
-    height: '39.8125rem', // 637px
-    width: '51.25rem', // 820px
+    height: '100%',
+    width: '100%',
+    maxHeight: '39.8125rem', // 637px
+    maxWidth: '51.25rem', // 820px
     position: 'relative',
     top: '58px',
   },
@@ -29,10 +31,18 @@ const styles = {
     zIndex: 800,
     top: '0',
     right: '63px',
-    height: '27.5rem', // 440px
-    width: '39.1875rem', // 627px
+    height: '100%',
+    width: '100%',
+    maxHeight: '27.5rem', // 440px
+    maxWidth: '39.1875rem', // 627px
     pointerEvents: 'none',
     userSelect: 'none',
+  },
+  mainImage: {
+    width: '100%',
+    height: '100%',
+    maxWidth: '100%',
+    objectFit: 'cover',
   },
   secondaryImageBox: {
     position: 'absolute',
@@ -43,6 +53,11 @@ const styles = {
     height: '23.125rem', // 370px
     pointerEvents: 'none',
     userSelect: 'none',
+  },
+  secondaryImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
   },
 };
 
@@ -80,7 +95,7 @@ export default function ForWhoImagesContent({
         <img
           src={mainImageSrc}
           alt={mainImageTitle}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{ ...styles.mainImage, objectFit: 'cover' }}
         />
       </Box>
 
@@ -93,7 +108,7 @@ export default function ForWhoImagesContent({
         <img
           src={secondaryImageSrc}
           alt={secondaryImageTitle}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{ ...styles.secondaryImage, objectFit: 'cover' }}
         />
       </Box>
     </Grid>
