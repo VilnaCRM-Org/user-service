@@ -1,12 +1,12 @@
 import { useTheme } from '@mui/material/styles';
 
-export function useCustomBreakpoints() {
+export default function useCustomBreakpoints() {
   const theme = useTheme();
-  const xs = theme.breakpoints.values.xs;
-  const sm = theme.breakpoints.values.sm;
-  const md = theme.breakpoints.values.md;
-  const lg = theme.breakpoints.values.lg;
-  const xl = theme.breakpoints.values.xl;
+  const { xs } = theme.breakpoints.values;
+  const { sm } = theme.breakpoints.values;
+  const { md } = theme.breakpoints.values;
+  const { lg } = theme.breakpoints.values;
+  const { xl } = theme.breakpoints.values;
 
   return {
     xs,
