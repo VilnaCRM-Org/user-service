@@ -17,36 +17,86 @@ class OpenApiFactory implements OpenApiFactoryInterface
     {
         $openApi = $this->decorated->__invoke($context);
 
-        //Overriding User endpoints
+        $standartRespose400 = new Response(description: 'Invalid input', content: new \ArrayObject([
+            'application/json' => [
+                'schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'type' => ['type' => 'string'],
+                        'title' => ['type' => 'string'],
+                        'detail' => ['type' => 'string'],
+                    ],
+                ],
+                'example' => [
+                    'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
+                    'title' => 'An error occurred',
+                    'detail' => 'The input data is misformatted.',
+                ],
+            ],
+        ]), );
+
+        $standartRespose404 = new Response(description: 'Entity not found', content: new \ArrayObject([
+            'application/json' => [
+                'schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'type' => ['type' => 'string'],
+                        'title' => ['type' => 'string'],
+                        'detail' => ['type' => 'string'],
+                    ],
+                ],
+                'example' => [
+                    'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
+                    'title' => 'An error occurred',
+                    'detail' => 'Entity not found',
+                ],
+            ],
+        ]), );
+
+        $standartRespose422 = new Response(description: 'Validation error', content: new \ArrayObject([
+            'application/json' => [
+                'schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'type' => ['type' => 'string'],
+                        'title' => ['type' => 'string'],
+                        'detail' => ['type' => 'string'],
+                        'violations' => ['type' => 'array'],
+                    ],
+                ],
+                'example' => [
+                    'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
+                    'title' => 'An error occurred',
+                    'detail' => 'some_property: This value should not be blank.',
+                    'violations' => [
+                        'propertyPath' => 'some_property',
+                        'message' => 'This value should not be blank.',
+                        'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+                    ],
+                ],
+            ],
+        ]), );
+
+        // Overriding User endpoints
         $pathItem = $openApi->getPaths()->getPath('/api/users/{id}/resend-confirmation-email');
         $operation = $pathItem->getPost();
 
+        $UuidWithExamplePathParam = new Model\Parameter(name: 'id', in: 'path', description: 'User identifier', required: true,
+            example: '2b10b7a3-67f0-40ea-a367-44263321592a');
+
         $openApi->getPaths()->addPath('/api/users/{id}/resend-confirmation-email', $pathItem->withPost(
             $operation
-                ->withParameters(
-                    [new Model\Parameter(name: 'id', in: 'path', description: 'User identifier', required: true,
-                        example: '2b10b7a3-67f0-40ea-a367-44263321592a')])
+                ->withParameters([$UuidWithExamplePathParam])
                 ->withDescription('Resends confirmation email')
                 ->withSummary('Resends confirmation email')
-                ->withRequestBody(new Model\RequestBody(content: new \ArrayObject([
-                    'application/json' => [
-                        'example' => '{}'
-                    ],
-                ])))
+                ->withRequestBody()
                 ->withResponses([200 => new Response(description: 'Email was send again', content: new \ArrayObject([
                     'application/json' => [
-                        'example' => '{}'
+                        'example' => '{}',
                     ],
-                ]),),
-                    404 => new Response(description: 'User not found', content: new \ArrayObject([
-                        'application/json' => [
-                            'example' => [
-                                'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
-                                'title' => 'An error occurred',
-                                'detail' => 'User not found',
-                            ],
-                        ],
-                    ]),), 400 => new Response(description: 'Empty ID passed', content: new \ArrayObject([
+                ]), ),
+                    404 => $standartRespose404,
+                    400 => new Response(description: 'Empty ID passed', content: new \ArrayObject([
                         'application/json' => [
                             'example' => [
                                 'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
@@ -54,50 +104,46 @@ class OpenApiFactory implements OpenApiFactoryInterface
                                 'detail' => 'User ID cannot be empty',
                             ],
                         ],
-                    ]),)])
+                    ]), )])
         ));
+
+        $pathItem = $openApi->getPaths()->getPath('/api/users');
+        $operationPost = $pathItem->getPost();
+
+        $openApi->getPaths()->addPath('/api/users', $pathItem->withPost(
+            $operationPost->withParameters([$UuidWithExamplePathParam])
+                ->withResponse(400, $standartRespose400)
+                ->withResponse(422, $standartRespose422)));
 
         $pathItem = $openApi->getPaths()->getPath('/api/users/{id}');
         $operationPut = $pathItem->getPut();
         $operationPatch = $pathItem->getPatch();
         $operationDelete = $pathItem->getDelete();
+        $operationGet = $pathItem->getGet();
 
         $openApi->getPaths()->addPath('/api/users/{id}', $pathItem->withPut(
-            $operationPut->withParameters(
-                [new Model\Parameter(name: 'id', in: 'path', description: 'User identifier', required: true,
-                    example: '2b10b7a3-67f0-40ea-a367-44263321592a')])
+            $operationPut->withParameters([$UuidWithExamplePathParam])
+                ->withResponse(400, $standartRespose400)
+                ->withResponse(404, $standartRespose404)
+                ->withResponse(422, $standartRespose422)
         )->withPatch(
-            $operationPatch->withParameters(
-                [new Model\Parameter(name: 'id', in: 'path', description: 'User identifier', required: true,
-                    example: '2b10b7a3-67f0-40ea-a367-44263321592a')])
+            $operationPatch->withParameters([$UuidWithExamplePathParam])
+                ->withResponse(400, $standartRespose400)
+                ->withResponse(404, $standartRespose404)
+                ->withResponse(422, $standartRespose422)
         )->withDelete(
-            $operationDelete->withParameters(
-                [new Model\Parameter(name: 'id', in: 'path', description: 'User identifier', required: true,
-                    example: '2b10b7a3-67f0-40ea-a367-44263321592a')])
-        ));
+            $operationDelete->withParameters([$UuidWithExamplePathParam])
+            ->withResponse(404, $standartRespose404)
+        )->withGet($operationGet->withResponse(404, $standartRespose404)));
 
-        //Adding OAuth endpoints
-        $openApi->getPaths()->addPath(
-            '/oauth/token', new Model\PathItem(post: new Model\Operation(
-            responses: [200 => new Response(description: 'Access token returned',
-                content: new \ArrayObject([
-                    'application/json' => [
-                        'example' => [
-                            'token_type' => 'Bearer',
-                            'expires_in' => 3600,
-                            'access_token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJkYzBiYzYzMjNmMTZmZWNkNDIyNGEzODYwY2E4OTRjNSIsImp0aSI6IjY5MGZhODFmYWE0YjdlNmExZDZjNThjMzI5N2IzYjViYjAwMGVlMGExMTlmMGQ5YzNjZjkxMTIzY2JlMGRlZTI4MjcxMDYxYTNmYzU1NDM4IiwiaWF0IjoxNzAwNzUxOTU0LjgzMDE5OSwibmJmIjoxNzAwNzUxOTU0LjgzMDIxOCwiZXhwIjoxNzAwNzU1NTU0Ljc5NDg1NSwic3ViIjoiIiwic2NvcGVzIjpbIkVNQUlMIl19.cDUpuOfe4Bazx-N241qYDW0rktSJfeVtnZckDMFt_dxy7pHByupef5JkC1GOZWt8GkW-Uc1d5vaGjopMowjFuQEWS-OowCjj5WHrS528UwwKFHevrLpAAR-GDfMpOu97mMd4XMhXNKIcp0rGutoWeh4aHM90p815q3YTiFtTidGksYqhLZgUzusyG_iLNzLDTbCME-9UMgk8rtjuvHrldRAMnbCloBURbyOM2x7ObFpnjosobX2D5upMbsGAXenswiZM8CUVVbUPPW358Q3ygGWiA1lN4w0WFSjba7NZdZ3fh5Ht--fcQHCae_ZNQp-SwSy5xe2vRKIRaxilWr-x7g',
-                        ],
-                    ],
-                ]),)],
-            summary: 'Requests for access token', description: 'Request for access token',
-            requestBody: new Model\RequestBody(description: 'Request for access token', content: new \ArrayObject([
-                'application/json' => [
-                    'example' => ['grant_type' => 'client_credentials',
-                        'client_id' => 'dc0bc6323f16fecd4224a3860ca894c5',
-                        'client_secret' => '8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc777ec51a79507182836799d166776094c5b8bccc00e4d4cbb9a136a5d244349c6eee67b8c'],
-                ],
-            ])
-            ))));
+        $pathItem = $openApi->getPaths()->getPath('/api/users/confirm');
+        $operationPatch = $pathItem->getPatch();
+
+        $openApi->getPaths()->addPath('/api/users/confirm', $pathItem->withPatch(
+            $operationPost->withParameters([$UuidWithExamplePathParam])
+                ->withResponse(400, $standartRespose400)
+                ->withResponse(404, $standartRespose404)
+                ->withResponse(422, $standartRespose422)));
 
         return $openApi;
     }

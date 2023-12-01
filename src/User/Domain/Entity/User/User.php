@@ -55,8 +55,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         string $email,
         string $initials,
         string $password
-    )
-    {
+    ) {
         $this->id = $id;
         $this->email = $email;
         $this->initials = $initials;
@@ -151,7 +150,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        return $this->id;
+        return $this->email;
     }
 
     public function isConfirmed(): bool

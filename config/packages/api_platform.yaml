@@ -2,18 +2,18 @@ api_platform:
     error_formats:
         jsonproblem: [ 'application/problem+json' ]
 
-    mapping:
-        paths: [ '%kernel.project_dir%/src/User/Domain/Entity' ]
+    resource_class_directories:
+        - '%kernel.project_dir%/src/User/Domain/Entity'
 
     oauth:
         # To enable or disable OAuth.
-        enabled: false
+        enabled: true
 
         # The OAuth client ID.
-        clientId: ''
+        clientId: 'dc0bc6323f16fecd4224a3860ca894c5'
 
         # The OAuth client secret.
-        clientSecret: ''
+        clientSecret: '8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc777ec51a79507182836799d166776094c5b8bccc00e4d4cbb9a136a5d244349c6eee67b8c'
 
         # The OAuth type.
         type: 'oauth2'
@@ -22,10 +22,10 @@ api_platform:
         flow: 'application'
 
         # The OAuth token url.
-        tokenUrl: '/token'
+        tokenUrl: '/api/oauth/token'
 
         # The OAuth authentication url.
-        authorizationUrl: '/authorize'
+        authorizationUrl: '/api/oauth/authorize'
 
         # The OAuth scopes.
         scopes:

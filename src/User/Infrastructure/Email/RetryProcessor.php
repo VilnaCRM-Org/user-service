@@ -18,7 +18,7 @@ class RetryProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        if($uriVariables['id']){
+        if ($uriVariables['id']) {
             throw new EmptyIdError();
         }
 

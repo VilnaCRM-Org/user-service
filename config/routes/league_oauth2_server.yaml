@@ -1,4 +1,4 @@
 oauth2_server:
-    prefix: '/oauth/'
+    prefix: '/api/oauth/'
     resource: '@LeagueOAuth2ServerBundle/Resources/config/routes.php'
     type: php
