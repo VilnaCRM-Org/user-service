@@ -49,7 +49,7 @@ resources:
               type: 'string'
               in: 'query'
               required: false
-              example: 'EMAIL'
+              example: 'EMAIL PROFILE'
           responses:
             302:
               description: 'Redirect to the provided redirect URI with authorization code.'
@@ -60,6 +60,9 @@ resources:
                     type: string
                     format: uri
                     example: "https://example.com/oauth/callback?code=e7f8c62113a47f7a5a9dca1f"
+              content:
+                application/json:
+                  example: '{}'
             400:
               description: 'Unsupported grant type'
               content:

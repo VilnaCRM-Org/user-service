@@ -16,10 +16,11 @@ class ConfirmEmailCommandHandler implements CommandHandler
     public function __invoke(ConfirmEmailCommand $command): void
     {
         $token = $command->getToken();
-        $this->tokenRepository->delete($token);
 
         $user = $this->userRepository->find($token->getUserID());
         $user->setConfirmed(true);
+
+        $this->tokenRepository->delete($token);
         $this->userRepository->save($user);
     }
 }

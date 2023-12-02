@@ -25,7 +25,7 @@ readonly class RegisterUserProcessor implements ProcessorInterface
 
         $user = $command->getResponse()->getCreatedUser();
 
-        $this->commandBus->dispatch(new SendConfirmationEmailCommand($user->getEmail(), $user->getPassword()));
+        $this->commandBus->dispatch(new SendConfirmationEmailCommand($user->getEmail(), $user->getId()));
 
         return $user;
     }

@@ -17,7 +17,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
     {
         $openApi = $this->decorated->__invoke($context);
 
-        $standartRespose400 = new Response(description: 'Invalid input', content: new \ArrayObject([
+        $standartRespose400 = new Response(description: 'Bad request', content: new \ArrayObject([
             'application/json' => [
                 'schema' => [
                     'type' => 'object',
@@ -33,9 +33,9 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'detail' => 'The input data is misformatted.',
                 ],
             ],
-        ]), );
+        ]),);
 
-        $standartRespose404 = new Response(description: 'Entity not found', content: new \ArrayObject([
+        $standartRespose404 = new Response(description: 'User not found', content: new \ArrayObject([
             'application/json' => [
                 'schema' => [
                     'type' => 'object',
@@ -48,10 +48,10 @@ class OpenApiFactory implements OpenApiFactoryInterface
                 'example' => [
                     'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
                     'title' => 'An error occurred',
-                    'detail' => 'Entity not found',
+                    'detail' => 'User not found',
                 ],
             ],
-        ]), );
+        ]),);
 
         $standartRespose422 = new Response(description: 'Validation error', content: new \ArrayObject([
             'application/json' => [
@@ -75,7 +75,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     ],
                 ],
             ],
-        ]), );
+        ]),);
 
         // Overriding User endpoints
         $pathItem = $openApi->getPaths()->getPath('/api/users/{id}/resend-confirmation-email');
@@ -89,29 +89,24 @@ class OpenApiFactory implements OpenApiFactoryInterface
                 ->withParameters([$UuidWithExamplePathParam])
                 ->withDescription('Resends confirmation email')
                 ->withSummary('Resends confirmation email')
-                ->withRequestBody()
+                ->withRequestBody(new Model\RequestBody(content: new \ArrayObject([
+                    'application/json' => [
+                        'example' => '{}',
+                    ],])))
                 ->withResponses([200 => new Response(description: 'Email was send again', content: new \ArrayObject([
                     'application/json' => [
                         'example' => '{}',
                     ],
-                ]), ),
-                    404 => $standartRespose404,
-                    400 => new Response(description: 'Empty ID passed', content: new \ArrayObject([
-                        'application/json' => [
-                            'example' => [
-                                'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
-                                'title' => 'An error occurred',
-                                'detail' => 'User ID cannot be empty',
-                            ],
-                        ],
-                    ]), )])
+                ]),),
+                    404 => $standartRespose404
+                    ])
         ));
 
         $pathItem = $openApi->getPaths()->getPath('/api/users');
         $operationPost = $pathItem->getPost();
 
         $openApi->getPaths()->addPath('/api/users', $pathItem->withPost(
-            $operationPost->withParameters([$UuidWithExamplePathParam])
+            $operationPost
                 ->withResponse(400, $standartRespose400)
                 ->withResponse(422, $standartRespose422)));
 
@@ -121,29 +116,63 @@ class OpenApiFactory implements OpenApiFactoryInterface
         $operationDelete = $pathItem->getDelete();
         $operationGet = $pathItem->getGet();
 
+        $oldPasswordErrorResponse = new Response(description: 'Old password mismatch', content: new \ArrayObject([
+            'application/json' => [
+                'schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'type' => ['type' => 'string'],
+                        'title' => ['type' => 'string'],
+                        'detail' => ['type' => 'string'],
+                    ],
+                ],
+                'example' => [
+                    'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
+                    'title' => 'An error occurred',
+                    'detail' => 'Old password is invalid',
+                ],
+            ],]),);
+
         $openApi->getPaths()->addPath('/api/users/{id}', $pathItem->withPut(
             $operationPut->withParameters([$UuidWithExamplePathParam])
                 ->withResponse(400, $standartRespose400)
                 ->withResponse(404, $standartRespose404)
                 ->withResponse(422, $standartRespose422)
+                ->withResponse(410, $oldPasswordErrorResponse)
         )->withPatch(
             $operationPatch->withParameters([$UuidWithExamplePathParam])
                 ->withResponse(400, $standartRespose400)
                 ->withResponse(404, $standartRespose404)
                 ->withResponse(422, $standartRespose422)
+                ->withResponse(410, $oldPasswordErrorResponse)
         )->withDelete(
             $operationDelete->withParameters([$UuidWithExamplePathParam])
-            ->withResponse(404, $standartRespose404)
+                ->withResponses([
+                    204 => new Response(description: 'User resource deleted', content: new \ArrayObject([
+                        'application/json' => [
+                            'example' => '{}',
+                        ],
+                    ]),),
+                    404 => $standartRespose404])
         )->withGet($operationGet->withResponse(404, $standartRespose404)));
 
         $pathItem = $openApi->getPaths()->getPath('/api/users/confirm');
         $operationPatch = $pathItem->getPatch();
 
         $openApi->getPaths()->addPath('/api/users/confirm', $pathItem->withPatch(
-            $operationPost->withParameters([$UuidWithExamplePathParam])
-                ->withResponse(400, $standartRespose400)
-                ->withResponse(404, $standartRespose404)
-                ->withResponse(422, $standartRespose422)));
+            $operationPatch->withDescription('Confirms the User')->withSummary('Confirms the User')
+                ->withResponses([
+                200 => new Response(description: 'User confirmed', content: new \ArrayObject([
+                    'application/json' => [
+                        'example' => '{}',
+                    ],]),),
+                404 => new Response(description: 'Token not found or expired', content: new \ArrayObject([
+                    'application/json' => [
+                        'example' => '{}',
+                    ],]),)
+            ],
+            )
+        ));
 
         return $openApi;
     }

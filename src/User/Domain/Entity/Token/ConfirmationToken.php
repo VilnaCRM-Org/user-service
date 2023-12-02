@@ -3,10 +3,11 @@
 namespace App\User\Domain\Entity\Token;
 
 use ApiPlatform\Metadata\Patch;
+use App\User\Infrastructure\Exceptions\TokenNotFoundError;
 use App\User\Infrastructure\Token\TokenProcessor;
 
-#[Patch(uriTemplate: 'users/confirm', shortName: 'User', input: ConfirmEmailInputDto::class,
-    processor: TokenProcessor::class)]
+#[Patch(uriTemplate: 'users/confirm', exceptionToStatus: [TokenNotFoundError::class => 404], shortName: 'User',
+    input: ConfirmEmailInputDto::class, processor: TokenProcessor::class)]
 class ConfirmationToken
 {
     private string $tokenValue;

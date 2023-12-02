@@ -15,7 +15,6 @@ use ApiPlatform\Metadata\Put;
 use App\User\Domain\Entity\Email\RetryDto;
 use App\User\Domain\Entity\Token\ConfirmEmailInputDto;
 use App\User\Infrastructure\Email\RetryProcessor;
-use App\User\Infrastructure\Exceptions\EmptyIdError;
 use App\User\Infrastructure\Exceptions\InvalidPasswordError;
 use App\User\Infrastructure\Exceptions\TokenNotFoundError;
 use App\User\Infrastructure\Exceptions\UserNotFoundError;
@@ -31,7 +30,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity]
 #[ApiResource(normalizationContext: ['groups' => ['output']], input: UserInputDto::class,
     exceptionToStatus: [InvalidPasswordError::class => 410, UserNotFoundError::class => 404,
-        TokenNotFoundError::class => 404, EmptyIdError::class => 400])]
+        TokenNotFoundError::class => 404])]
 #[Get]
 #[GetCollection(paginationClientItemsPerPage: true)]
 #[Post(processor: RegisterUserProcessor::class)]
