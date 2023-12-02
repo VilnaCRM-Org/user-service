@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next';
 
 import CustomCheckbox from '@/components/ui/CustomCheckbox/CustomCheckbox';
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
-import { CHECKBOX_PRIVACY_POLICY_ID } from '@/features/landing/types/sign-up/types';
-import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
+
+import { CHECKBOX_PRIVACY_POLICY_ID } from '../../../types/sign-up/types';
+import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 interface ISignUpPrivacyPolicyProps {
   isCheckboxChecked: boolean;

@@ -1,13 +1,12 @@
 import { Box, Container } from '@mui/material';
 
-import AboutVilnaBackgroundWithMainSvg from '@/features/landing/components/AboutVilnaSection/AboutVilnaBackgroundWithMainSvg/AboutVilnaBackgroundWithMainSvg';
-import AboutVilnaDesktopNotchSvg from '@/features/landing/components/AboutVilnaSection/AboutVilnaDesktopNotchSvg/AboutVilnaDesktopNotchSvg';
-import AboutVilnaIphoneBackground from '@/features/landing/components/AboutVilnaSection/AboutVilnaIphoneBackground/AboutVilnaIphoneBackground';
-import AboutVilnaMainCRMImage from '@/features/landing/components/AboutVilnaSection/AboutVilnaMainCRMImage/AboutVilnaMainCRMImage';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-
 import AboutVilnaSecondaryShape from '../../../../../../public/assets/img/AboutVilnaSecondaryShape.png';
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import AboutVilnaBackgroundWithMainSvg from '../AboutVilnaBackgroundWithMainSvg/AboutVilnaBackgroundWithMainSvg';
 import AboutVilnaBackgroundWithSecondaryPng from '../AboutVilnaBackgroundWithSecondarySvg/AboutVilnaBackgroundWithSecondaryPng';
+import AboutVilnaDesktopNotchSvg from '../AboutVilnaDesktopNotchSvg/AboutVilnaDesktopNotchSvg';
+import AboutVilnaIphoneBackground from '../AboutVilnaIphoneBackground/AboutVilnaIphoneBackground';
+import AboutVilnaMainCRMImage from '../AboutVilnaMainCRMImage/AboutVilnaMainCRMImage';
 
 const CRM_IMAGES = {
   desktop: {

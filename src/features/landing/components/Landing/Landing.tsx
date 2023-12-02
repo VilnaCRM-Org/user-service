@@ -1,10 +1,9 @@
-import ForWhoSection from '@/features/landing/components/ForWhoSection/ForWhoSection/ForWhoSection';
-import Layout from '@/features/landing/components/Layout/Layout';
-import SignUpSection from '@/features/landing/components/SignUpSection/SignUpSection/SignUpSection';
-import UnlimitedIntegrationsSection from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsSection/UnlimitedIntegrationsSection';
-import WhyWeSection from '@/features/landing/components/WhyWeSection/WhyWeSection/WhyWeSection';
-
 import AboutVilnaSection from '../AboutVilnaSection/AboutVilnaSection/AboutVilnaSection';
+import ForWhoSection from '../ForWhoSection/ForWhoSection/ForWhoSection';
+import Layout from '../Layout/Layout';
+import SignUpSection from '../SignUpSection/SignUpSection/SignUpSection';
+import UnlimitedIntegrationsSection from '../UnlimitedIntegrationsSection/UnlimitedIntegrationsSection/UnlimitedIntegrationsSection';
+import WhyWeSection from '../WhyWeSection/WhyWeSection/WhyWeSection';
 
 export default function Landing() {
   return (

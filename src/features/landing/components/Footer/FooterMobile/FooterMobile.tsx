@@ -1,11 +1,12 @@
 import { Box, Container } from '@mui/material';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
-import FooterConfidential from '@/features/landing/components/Footer/FooterConfidential/FooterConfidential';
-import FooterCopyright from '@/features/landing/components/Footer/FooterCopyright/FooterCopyright';
-import FooterEmail from '@/features/landing/components/Footer/FooterEmail/FooterEmail';
-import FooterSocials from '@/features/landing/components/Footer/FooterSocials/FooterSocials';
-import VilnaMainIcon from '@/features/landing/components/Icons/VilnaMainIcon/VilnaMainIcon';
+
+import VilnaMainIcon from '../../Icons/VilnaMainIcon/VilnaMainIcon';
+import FooterConfidential from '../FooterConfidential/FooterConfidential';
+import FooterCopyright from '../FooterCopyright/FooterCopyright';
+import FooterEmail from '../FooterEmail/FooterEmail';
+import FooterSocials from '../FooterSocials/FooterSocials';
 
 const styles = {
   logo: {

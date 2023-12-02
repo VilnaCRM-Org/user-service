@@ -1,4 +1,5 @@
 import { Paper, Typography } from '@mui/material';
+import Image from 'next/image';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
 
@@ -38,7 +39,7 @@ export default function HeaderDrawerEmail({ style }: { style?: React.CSSProperti
     >
       <Typography style={{ ...styles.mainLink, textAlign: 'center', padding: '19px 10px' }}>
         <Paper elevation={0} style={{ border: 'none' }}>
-          <img src="/assets/svg/header-drawer/at-sign.svg" alt="At sign" />
+          <Image width={24} height={24} src="/assets/svg/header-drawer/at-sign.svg" alt="At sign" />
         </Paper>
         <Typography
           style={{

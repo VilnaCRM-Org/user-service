@@ -2,10 +2,11 @@ import { Box, Grid, Typography } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '@/components/ui/Button/Button';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
-import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
+import Button from '@/components/ui/Button/Button';
+
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
+import scrollToRegistrationSection from '../../../utils/helpers/scrollToRegistrationSection';
 
 interface IForWhoSectionCardsMobileProps {
   cardItemsJSX: React.ReactNode;

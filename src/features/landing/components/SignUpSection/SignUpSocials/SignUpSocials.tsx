@@ -2,9 +2,10 @@ import { Box, Grid, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import SocialLink from '@/components/ui/SocialLink/SocialLink';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { ISocialLink } from '@/features/landing/types/social/types';
-import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
+
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import ISocialLink from '../../../types/social/types';
+import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 const styles = {
   typographyHeading: {
@@ -40,7 +41,7 @@ export default function SignUpSocials({ socialLinks }: { socialLinks: ISocialLin
 
       <Grid
         container
-        spacing={(isSmallest || isMobile) ? 1 : 1.5}
+        spacing={isSmallest || isMobile ? 1 : 1.5}
         sx={{
           width: '100%',
           marginTop: '24px',

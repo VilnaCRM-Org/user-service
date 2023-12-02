@@ -2,8 +2,9 @@ import { Grid } from '@mui/material';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '@/components/ui/Button/Button';
-import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
+import Button from '@/components/ui/Button/Button';
+
+import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 interface IHeaderDrawerActionButtonsProps {
   onSignInButtonClick: () => void;

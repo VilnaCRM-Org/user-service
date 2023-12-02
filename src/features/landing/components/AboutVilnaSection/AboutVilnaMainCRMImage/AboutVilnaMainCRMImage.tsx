@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import Image from 'next/image';
 import React from 'react';
 
 export default function AboutVilnaMainCRMImage({
@@ -27,10 +28,12 @@ export default function AboutVilnaMainCRMImage({
         ...style,
       }}
     >
-      <img
+      <Image
+        width={2000}
+        height={1300}
         src={imageSrc}
         alt={imageAltText}
-        style={{ width: '100%', maxWidth: '100%', display: 'block' }}
+        style={{ width: 'auto', height: 'auto', maxWidth: '100%', display: 'block' }}
       />
     </Box>
   );

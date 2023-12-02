@@ -2,8 +2,7 @@ import { Box, Container, MobileStepper } from '@mui/material';
 import { useState } from 'react';
 import SwipeableViews from 'react-swipeable-views';
 
-import { IUnlimitedIntegrationsItem } from '@/features/landing/types/unlimited-integrations/types';
-
+import IUnlimitedIntegrationsItem from '../../../types/unlimited-integrations/types';
 import UnlimitedIntegrationsCardItem from '../UnlimitedIntegrationsCardItem/UnlimitedIntegrationsCardItem';
 
 const styles = {

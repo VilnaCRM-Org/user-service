@@ -15,7 +15,7 @@ export default function AboutVilnaDesktopNotchSvg({ style }: { style?: React.CSS
       viewBox="0 0 112 21"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      style={{...styles, position: 'absolute', ...style, }}
+      style={{ ...styles, position: 'absolute', ...style }}
     >
       <path
         d="M0.241272 3.42883H6.41934C7.81526 3.42883 8.94688 4.56045 8.94688 5.95637V15.224C8.94688 18.0159 11.2101 20.2791 14.002 20.2791H97.2718C100.064 20.2791 102.327 18.0159 102.327 15.224V5.95637C102.327 4.56045 103.459 3.42883 104.854 3.42883H111.032H0.241272Z"

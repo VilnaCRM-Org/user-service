@@ -1,11 +1,12 @@
 import { Card, Icon, Typography } from '@mui/material';
+import Image from 'next/image';
 import React, { useState } from 'react';
 import ReactHtmlParser from 'react-html-parser';
 import { useTranslation } from 'react-i18next';
 
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
-import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import IWhyWeCardItem from '../../../types/why-we/types';
+import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 interface IWhyWeSectionItemCardItemProps {
   cardItem: IWhyWeCardItem;
@@ -42,6 +43,7 @@ const styles = {
   image: {
     width: '100%',
     height: '100%',
+    maxWidth: '100%',
     objectFit: 'contain',
     pointerEvents: 'none',
     userSelect: 'none',
@@ -101,7 +103,7 @@ export default function WhyWeSectionCardItem({
       onMouseOut={handleMouseOut}
       sx={{
         ...styles.cardItem,
-        ...(isLaptop || isTablet  ? styles.cardItemLaptopOrLower : {}),
+        ...(isLaptop || isTablet ? styles.cardItemLaptopOrLower : {}),
         ...(isMobile || isSmallest ? styles.cardItemMobileOrSmallest : {}),
         boxShadow: isHovered ? '0px 8px 27px 0px rgba(49, 59, 67, 0.14)' : 'none',
         cursor: isHovered ? 'pointer' : 'default',
@@ -109,7 +111,9 @@ export default function WhyWeSectionCardItem({
       }}
     >
       <Icon sx={{ ...styles.icon, ...(isSmall ? { width: '50px', height: '50px' } : {}) }}>
-        <img
+        <Image
+          width={140}
+          height={140}
           draggable={false}
           src={imageSrc}
           alt={title}

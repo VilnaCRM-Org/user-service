@@ -3,8 +3,9 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
+
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 const styles = {
   mainGrid: {
@@ -13,6 +14,7 @@ const styles = {
     alignItems: 'center',
     gap: '32px',
     marginRight: '9.96875rem', // 159px
+    color: 'black',
   },
   mainGridLaptop: {
     marginRight: '8.125rem', // 136px

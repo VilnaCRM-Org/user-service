@@ -1,6 +1,6 @@
-import { SIGN_UP_SECTION_ID } from '@/features/landing/utils/constants/constants';
+import { SIGN_UP_SECTION_ID } from '../constants/constants';
 
-export function scrollToRegistrationSection() {
+export default function scrollToRegistrationSection() {
   const registrationSection = document.getElementById(SIGN_UP_SECTION_ID);
 
   if (registrationSection) {

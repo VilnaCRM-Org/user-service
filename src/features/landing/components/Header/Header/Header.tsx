@@ -3,14 +3,14 @@ import * as React from 'react';
 import { useState } from 'react';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
-import HeaderActionButtons from '@/features/landing/components/Header/HeaderActionButtons/HeaderActionButtons';
-import HeaderMainLinks from '@/features/landing/components/Header/HeaderMainLinks/HeaderMainLinks';
-import VilnaMenuIcon from '@/features/landing/components/Icons/VilnaMenuIcon/VilnaMenuIcon';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
 
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import scrollToRegistrationSection from '../../../utils/helpers/scrollToRegistrationSection';
 import VilnaMainIcon from '../../Icons/VilnaMainIcon/VilnaMainIcon';
+import VilnaMenuIcon from '../../Icons/VilnaMenuIcon/VilnaMenuIcon';
+import HeaderActionButtons from '../HeaderActionButtons/HeaderActionButtons';
 import HeaderDrawerMenu from '../HeaderDrawerMenu/HeaderDrawerMenu';
+import HeaderMainLinks from '../HeaderMainLinks/HeaderMainLinks';
 
 const styles = {
   appBar: {
@@ -107,7 +107,7 @@ export default function Header() {
                 aria-label="menu"
                 sx={{
                   justifySelf: 'flex-end',
-                  padding: '0'
+                  padding: '0',
                 }}
               >
                 <VilnaMenuIcon isActive={false} />

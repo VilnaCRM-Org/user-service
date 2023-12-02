@@ -2,7 +2,8 @@ import { Grid, Typography } from '@mui/material';
 import { LinkProps } from 'next/link';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
-import ArrowDownIcon from '@/features/landing/components/Icons/ArrowDownIcon/ArrowDownIcon';
+
+import ArrowDownIcon from '../../Icons/ArrowDownIcon/ArrowDownIcon';
 
 interface IHeaderMobileLinkProps extends LinkProps {
   href: string;
@@ -33,7 +34,7 @@ const typographyLinkStyles: React.CSSProperties = {
   lineHeight: 'normal',
 };
 
-export function HeaderMobileLink({ href, linkNameText }: IHeaderMobileLinkProps) {
+export default function HeaderMobileLink({ href, linkNameText }: IHeaderMobileLinkProps) {
   return (
     <CustomLink href={href} style={headerMobileLinkStyle}>
       <Grid container sx={innerLinkContainerStyle}>

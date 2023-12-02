@@ -1,9 +1,9 @@
 import { Container } from '@mui/material';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
-import FooterConfidential
-  from '@/features/landing/components/Footer/FooterConfidential/FooterConfidential';
-import VilnaMainIcon from '@/features/landing/components/Icons/VilnaMainIcon/VilnaMainIcon';
+
+import VilnaMainIcon from '../../Icons/VilnaMainIcon/VilnaMainIcon';
+import FooterConfidential from '../FooterConfidential/FooterConfidential';
 
 const styles = {
   mainContainer: {

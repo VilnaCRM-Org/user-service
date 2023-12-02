@@ -1,5 +1,5 @@
-import { Typography, Box } from '@material-ui/core';
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import { Typography, Box } from '@mui/material';
+import React, { ChangeEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface ICustomInputProps {
@@ -134,3 +134,9 @@ export default function CustomInput({
     </Box>
   );
 }
+
+CustomInput.defaultProps = {
+  disabled: false,
+  error: null,
+  style: {},
+};

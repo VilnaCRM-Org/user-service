@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import Image from 'next/image';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
 
@@ -14,7 +15,7 @@ export default function HeaderDrawerSocials() {
     <Box sx={{ display: 'flex', justifyContent: 'center', gap: '30px' }}>
       {SOCIALS.map(({ url, id, href }) => (
         <CustomLink key={id} href={href}>
-          <img src={url} alt={id}/>
+          <Image width={25} height={25} src={url} alt={id} />
         </CustomLink>
       ))}
     </Box>

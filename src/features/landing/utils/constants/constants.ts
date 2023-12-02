@@ -1,6 +1,6 @@
-import { ISocialLink } from '@/features/landing/types/social/types';
-import { IUnlimitedIntegrationsItem } from '@/features/landing/types/unlimited-integrations/types';
-import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
+import ISocialLink from '../../types/social/types';
+import IUnlimitedIntegrationsItem from '../../types/unlimited-integrations/types';
+import IWhyWeCardItem from '../../types/why-we/types';
 
 export const SIGN_UP_SECTION_ID = 'SIGN_UP_SECTION_ID';
 
@@ -75,11 +75,30 @@ export const UNLIMITED_INTEGRATIONS_CARD_ITEMS: IUnlimitedIntegrationsItem[] = [
 ];
 
 export const SOCIAL_LINKS: ISocialLink[] = [
-  { id: 'google-link', icon: '/assets/img/SocialMedia/Icons/Google.png', title: 'Google', linkHref: '/' },
-  { id: 'facebook-link', icon: '/assets/img/SocialMedia/Icons/Facebook.png', title: 'Facebook', linkHref: '/' },
-  { id: 'github-link', icon: '/assets/img/SocialMedia/Icons/Github.png', title: 'GitHub', linkHref: '/' },
-  { id: 'twitter-link', icon: '/assets/img/SocialMedia/Icons/Twitter.png', title: 'Twitter', linkHref: '/' },
+  {
+    id: 'google-link',
+    icon: '/assets/img/SocialMedia/Icons/Google.png',
+    title: 'Google',
+    linkHref: '/',
+  },
+  {
+    id: 'facebook-link',
+    icon: '/assets/img/SocialMedia/Icons/Facebook.png',
+    title: 'Facebook',
+    linkHref: '/',
+  },
+  {
+    id: 'github-link',
+    icon: '/assets/img/SocialMedia/Icons/Github.png',
+    title: 'GitHub',
+    linkHref: '/',
+  },
+  {
+    id: 'twitter-link',
+    icon: '/assets/img/SocialMedia/Icons/Twitter.png',
+    title: 'Twitter',
+    linkHref: '/',
+  },
 ];
 
 export const TRANSLATION_NAMESPACE = 'landing';
-

@@ -3,12 +3,11 @@ import Drawer from '@mui/material/Drawer';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import HeaderDrawerEmail from '@/features/landing/components/Header/HeaderDrawerEmail/HeaderDrawerEmail';
-import HeaderDrawerSocials
-  from '@/features/landing/components/Header/HeaderDrawerSocials/HeaderDrawerSocials';
-import { HeaderMobileLink } from '@/features/landing/components/Header/HeaderMobileLink/HeaderMobileLink';
-import HeaderTopContentInMobileView from '@/features/landing/components/Header/HeaderTopContentInMobileView/HeaderTopContentInMobileView';
-import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
+import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
+import HeaderDrawerEmail from '../HeaderDrawerEmail/HeaderDrawerEmail';
+import HeaderDrawerSocials from '../HeaderDrawerSocials/HeaderDrawerSocials';
+import HeaderMobileLink from '../HeaderMobileLink/HeaderMobileLink';
+import HeaderTopContentInMobileView from '../HeaderTopContentInMobileView/HeaderTopContentInMobileView';
 
 interface IHeaderDrawerMenuProps {
   isDrawerOpen: boolean;
@@ -62,13 +61,21 @@ export default function HeaderDrawerMenu({
         />
 
         <Grid item sx={{ width: '100%' }}>
-          <HeaderMobileLink href="/" linkNameText={t('header.advantages')} onClick={onToggleDrawer} />
+          <HeaderMobileLink
+            href="/"
+            linkNameText={t('header.advantages')}
+            onClick={onToggleDrawer}
+          />
         </Grid>
         <Grid item sx={{ width: '100%' }}>
           <HeaderMobileLink href="/" linkNameText={t('header.for_who')} onClick={onToggleDrawer} />
         </Grid>
         <Grid item sx={{ width: '100%' }}>
-          <HeaderMobileLink href="/" linkNameText={t('header.integration')} onClick={onToggleDrawer} />
+          <HeaderMobileLink
+            href="/"
+            linkNameText={t('header.integration')}
+            onClick={onToggleDrawer}
+          />
         </Grid>
         <Grid item sx={{ width: '100%' }}>
           <HeaderMobileLink href="/" linkNameText={t('header.contacts')} onClick={onToggleDrawer} />
@@ -78,7 +85,7 @@ export default function HeaderDrawerMenu({
           <HeaderDrawerEmail />
         </Grid>
 
-        <Grid item sx={{width: '100%', marginTop: '26px'}}>
+        <Grid item sx={{ width: '100%', marginTop: '26px' }}>
           <HeaderDrawerSocials />
         </Grid>
       </Grid>

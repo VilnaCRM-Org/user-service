@@ -2,8 +2,8 @@ import { Grid } from '@mui/material';
 import React from 'react';
 
 import CustomTooltip from '@/components/ui/CustomTooltip/CustomTooltip';
-import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
 
+import IWhyWeCardItem from '../../../types/why-we/types';
 import WhyWeSectionCardItem from '../WhyWeSectionCardItem/WhyWeSectionCardItem';
 
 interface IWhyWeSectionCardItemsRowProps {

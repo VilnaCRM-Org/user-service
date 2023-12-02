@@ -1,6 +1,7 @@
-import { Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
+
+import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 const styles = {
   copyrightText: {
@@ -18,9 +19,7 @@ export default function FooterCopyright({ style }: { style?: React.CSSProperties
   const { t } = useTranslation(TRANSLATION_NAMESPACE);
 
   return (
-    <Typography style={{ ...styles.copyrightText, ...style }}>
-      {t(`footer.copyright`)}
-    </Typography>
+    <Typography style={{ ...styles.copyrightText, ...style }}>{t(`footer.copyright`)}</Typography>
   );
 }
 

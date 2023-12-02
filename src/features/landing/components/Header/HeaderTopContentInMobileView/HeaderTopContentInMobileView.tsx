@@ -2,9 +2,10 @@ import { Grid, IconButton } from '@mui/material';
 import * as React from 'react';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
-import HeaderDrawerActionButtons from '@/features/landing/components/Header/HeaderDrawerActionButtons/HeaderDrawerActionButtons';
-import VilnaMainIcon from '@/features/landing/components/Icons/VilnaMainIcon/VilnaMainIcon';
-import VilnaMenuIcon from '@/features/landing/components/Icons/VilnaMenuIcon/VilnaMenuIcon';
+
+import VilnaMainIcon from '../../Icons/VilnaMainIcon/VilnaMainIcon';
+import VilnaMenuIcon from '../../Icons/VilnaMenuIcon/VilnaMenuIcon';
+import HeaderDrawerActionButtons from '../HeaderDrawerActionButtons/HeaderDrawerActionButtons';
 
 interface IHeaderTopContentInMobileViewProps {
   onSignInButtonClick: () => void;
@@ -37,7 +38,7 @@ export default function HeaderTopContentInMobileView({
           marginBottom: '12px',
         }}
       >
-        <CustomLink href='/' style={logoStyle}>
+        <CustomLink href="/" style={logoStyle}>
           <VilnaMainIcon />
         </CustomLink>
         <IconButton

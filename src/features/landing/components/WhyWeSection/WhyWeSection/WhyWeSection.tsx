@@ -1,12 +1,11 @@
 import { Container } from '@mui/material';
 import { useState } from 'react';
 
-import WhyWeSectionCardItems from '@/features/landing/components/WhyWeSection/WhyWeSectionCardItems/WhyWeSectionCardItems';
-import WhyWeSectionHeader from '@/features/landing/components/WhyWeSection/WhyWeSectionHeader/WhyWeSectionHeader';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
-import { WHY_WE_CARD_ITEMS } from '@/features/landing/utils/constants/constants';
-
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import IWhyWeCardItem from '../../../types/why-we/types';
+import { WHY_WE_CARD_ITEMS } from '../../../utils/constants/constants';
+import WhyWeSectionCardItems from '../WhyWeSectionCardItems/WhyWeSectionCardItems';
+import WhyWeSectionHeader from '../WhyWeSectionHeader/WhyWeSectionHeader';
 import WhyWeSectionSlider from '../WhyWeSectionSlider/WhyWeSectionSlider';
 
 const TOOLTIP_ICONS: string[] = [
@@ -25,7 +24,7 @@ export default function WhyWeSection() {
   const { isMobile, isSmallest, isTablet } = useScreenSize();
 
   return (
-    <Container sx={{ padding: '56px 31px 56px 32px', marginBottom: '89px', }}>
+    <Container sx={{ padding: '56px 31px 56px 32px', marginBottom: '89px' }}>
       <WhyWeSectionHeader />
       {isMobile || isSmallest || isTablet ? (
         <WhyWeSectionSlider cardItems={cardItems} />

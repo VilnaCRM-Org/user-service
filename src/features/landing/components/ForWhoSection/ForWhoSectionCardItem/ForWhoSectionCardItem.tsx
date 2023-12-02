@@ -1,8 +1,9 @@
 import { Card, Grid, Paper, Typography } from '@mui/material';
+import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 interface IForWhoSectionCardItemProps {
   imageSrc: string;
@@ -30,7 +31,7 @@ const style = {
   },
 };
 
-export function ForWhoSectionCardItem({
+export default function ForWhoSectionCardItem({
   imageSrc,
   imageAltText,
   text,
@@ -50,10 +51,12 @@ export function ForWhoSectionCardItem({
         }}
       >
         <Paper elevation={0}>
-          <img
+          <Image
+            width={24}
+            height={24}
             src={imageSrc}
             alt={imageAltText}
-            style={{ width: '100%', height: '100%', minWidth: '20px' }}
+            style={{ width: 'auto', height: 'auto', maxWidth: '100%', minWidth: '20px' }}
           />
         </Paper>
         <Typography variant="body1" component="p" style={{ ...style.text }}>

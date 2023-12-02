@@ -1,8 +1,9 @@
 import { Grid, Box } from '@mui/material';
+import Image from 'next/image';
 import React from 'react';
 
-import ForWhoMainBackgroundSvg from '@/features/landing/components/ForWhoSection/ForWhoMainBackgroundSvg/ForWhoMainBackgroundSvg';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import ForWhoMainBackgroundSvg from '../ForWhoMainBackgroundSvg/ForWhoMainBackgroundSvg';
 
 const styles = {
   container: {
@@ -39,8 +40,8 @@ const styles = {
     userSelect: 'none',
   },
   mainImage: {
-    width: '100%',
-    height: '100%',
+    width: 'auto',
+    height: 'auto',
     maxWidth: '100%',
     objectFit: 'cover',
   },
@@ -55,8 +56,9 @@ const styles = {
     userSelect: 'none',
   },
   secondaryImage: {
-    width: '100%',
-    height: '100%',
+    width: 'auto',
+    height: 'auto',
+    maxWidth: '100%',
     objectFit: 'cover',
   },
 };
@@ -75,7 +77,7 @@ export default function ForWhoImagesContent({
   const { isTablet, isMobile, isLaptop } = useScreenSize();
 
   return (
-    <Grid item sx={{ ...styles.container }}>
+    <Grid item xs={12} md={8} sx={{ ...styles.container }}>
       {/* Main Background SVG */}
       <Box
         sx={{
@@ -92,7 +94,9 @@ export default function ForWhoImagesContent({
           ...styles.mainImageBox,
         }}
       >
-        <img
+        <Image
+          width={1398}
+          height={1024}
           src={mainImageSrc}
           alt={mainImageTitle}
           style={{ ...styles.mainImage, objectFit: 'cover' }}
@@ -105,7 +109,9 @@ export default function ForWhoImagesContent({
           ...styles.secondaryImageBox,
         }}
       >
-        <img
+        <Image
+          width={654}
+          height={868}
           src={secondaryImageSrc}
           alt={secondaryImageTitle}
           style={{ ...styles.secondaryImage, objectFit: 'cover' }}

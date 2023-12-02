@@ -53,6 +53,16 @@ module.exports = {
         'plugin:jest-dom/recommended',
       ],
       rules: {
+        'import/extensions': [
+          'error',
+          'ignorePackages',
+          {
+            js: 'never',
+            jsx: 'never',
+            ts: 'never',
+            tsx: 'never',
+          },
+        ],
         'no-restricted-imports': [
           'error',
           {
@@ -86,6 +96,8 @@ module.exports = {
         '@typescript-eslint/no-empty-function': ['off'],
         '@typescript-eslint/no-explicit-any': ['off'],
         '@typescript-eslint/no-var-requires': ['off'],
+        'no-shadow': 'off',
+        '@typescript-eslint/no-shadow': 'warn',
       },
     },
   ],

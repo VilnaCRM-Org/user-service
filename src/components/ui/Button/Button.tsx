@@ -1,40 +1,11 @@
 import { ButtonProps } from '@mui/material';
 import React, { CSSProperties, useState } from 'react';
 
+import ButtonBackgroundEnum from '@/types/Button/ButtonBackgroundEnum';
+import ButtonBorderColorEnum from '@/types/Button/ButtonBorderColorEnum';
+import ButtonColorEnum from '@/types/Button/ButtonColorEnum';
+
 const DEFAULT_BUTTON_BORDER_RADIUS = '5.7rem';
-
-enum ButtonBackgroundEnum {
-  DEFAULT_BLUE = '#1EAEFF',
-  DEFAULT_ACTIVE = '#0399ED',
-  DEFAULT_HOVER = '#00A3FF',
-  DEFAULT_DISABLED = '#E1E7EA',
-  WHITE = '#FFF',
-  WHITE_ACTIVE = '#FFF',
-  WHITE_HOVER = '#EAECEE',
-  WHITE_DISABLED = '#E1E7EA',
-}
-
-enum ButtonBorderColorEnum {
-  DEFAULT = '#1EAEFF',
-  DEFAULT_ACTIVE = '#0399ED',
-  DEFAULT_HOVER = '#00A3FF',
-  DEFAULT_DISABLED = '#E1E7EA',
-  WHITE = '#969B9D',
-  WHITE_ACTIVE = '#EAECEE',
-  WHITE_HOVER = '#EAECEE',
-  WHITE_DISABLED = '#E1E7EA',
-}
-
-enum ButtonColorEnum {
-  DEFAULT = '#FFFFFF',
-  DEFAULT_ACTIVE = '#FFFFFF',
-  DEFAULT_HOVER = '#FFFFFF',
-  DEFAULT_DISABLED = '#FFFFFF',
-  WHITE = '#1B2327',
-  WHITE_ACTIVE = '#1B2327',
-  WHITE_HOVER = '#1B2327',
-  WHITE_DISABLED = '#FFFFFF',
-}
 
 interface IButtonProps extends ButtonProps {
   customVariant: 'light-blue' | 'transparent-white';
@@ -44,18 +15,20 @@ interface IButtonProps extends ButtonProps {
   fullWidth?: boolean;
   onClick?: () => void;
   style?: CSSProperties;
+  type?: 'button' | 'submit' | 'reset';
 }
 
-export function Button({
-                         children,
-                         customVariant,
-                         isDisabled = false,
-                         buttonSize = 'medium',
-                         onClick,
-                         fullWidth,
-                         style,
-                         ...props
-                       }: IButtonProps) {
+export default function Button({
+  children,
+  customVariant,
+  isDisabled = false,
+  buttonSize = 'medium',
+  onClick,
+  fullWidth,
+  style,
+  type = 'button',
+  className,
+}: IButtonProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isActive, setIsActive] = useState(false);
 
@@ -71,7 +44,7 @@ export function Button({
     backgroundColor: ButtonBackgroundEnum.DEFAULT_BLUE,
     borderRadius: DEFAULT_BUTTON_BORDER_RADIUS,
     padding: buttonSize === 'medium' ? '16px 24px' : '20px 30px',
-    fontFamily: '\'GolosText-Regular\', sans-serif',
+    fontFamily: "'GolosText-Regular', sans-serif",
     fontSize: buttonSize === 'big' ? '18px' : '15px',
     fontStyle: 'normal',
     fontWeight: 500,
@@ -140,7 +113,7 @@ export function Button({
 
   return (
     <button
-      {...props}
+      type={type === 'submit' ? 'submit' : 'button'}
       style={{
         ...buttonStyle,
         ...(isHovered && hoverStyle),
@@ -153,8 +126,19 @@ export function Button({
       onMouseUp={() => setIsActive(false)}
       onClick={isDisabled ? undefined : handleButtonClick}
       disabled={isDisabled}
+      className={className}
     >
       {children}
     </button>
   );
 }
+
+Button.defaultProps = {
+  buttonSize: 'medium',
+  isDisabled: false,
+  className: '',
+  fullWidth: false,
+  style: {},
+  type: 'button',
+  onClick: () => {},
+};

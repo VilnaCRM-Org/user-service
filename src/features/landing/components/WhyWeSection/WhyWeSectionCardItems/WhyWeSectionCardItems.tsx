@@ -1,8 +1,7 @@
 import { Container } from '@mui/material';
 
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { IWhyWeCardItem } from '@/features/landing/types/why-we/types';
-
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import IWhyWeCardItem from '../../../types/why-we/types';
 import WhyWeSectionCardItemsRow from '../WhyWeSectionCardItemsRow/WhyWeSectionCardItemsRow';
 
 interface IWhyWeSectionCardItemsProps {

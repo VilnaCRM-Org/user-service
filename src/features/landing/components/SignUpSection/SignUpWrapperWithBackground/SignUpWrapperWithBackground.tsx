@@ -13,10 +13,10 @@ const styles = {
   },
 };
 
-export default function SignUpWrapperWithBackground({ children }: {
-  children: React.ReactNode;
-}) {
+export default function SignUpWrapperWithBackground({ children }: { children: React.ReactNode }) {
   return (
-    <Grid item lg={6} md={12} sx={{ ...styles.mainGridWithBackground }}>{children}</Grid>
+    <Grid item lg={6} md={12} sx={{ ...styles.mainGridWithBackground }}>
+      {children}
+    </Grid>
   );
 }

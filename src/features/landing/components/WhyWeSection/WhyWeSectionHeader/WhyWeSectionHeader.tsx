@@ -2,8 +2,8 @@ import { Box, Typography } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 interface IWhyWeSectionHeaderProps {
   style?: React.CSSProperties;
@@ -82,7 +82,7 @@ export default function WhyWeSectionHeader({ style }: IWhyWeSectionHeaderProps) 
         component="p"
         style={{
           ...styles.text,
-          ... (isLaptop || isTablet ? styles.textLaptopOrLower: {}),
+          ...(isLaptop || isTablet ? styles.textLaptopOrLower : {}),
           ...(isSmallest || isMobile ? styles.textMobileOrSmaller : {}),
         }}
       >

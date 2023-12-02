@@ -1,13 +1,12 @@
 import { Box, Grid } from '@mui/material';
 import { useMemo, useState } from 'react';
 
-import ForWhoImagesContent from '@/features/landing/components/ForWhoSection/ForWhoImagesContent/ForWhoImagesContent';
-import ForWhoMainTextsContent from '@/features/landing/components/ForWhoSection/ForWhoMainTextsContent/ForWhoMainTextsContent';
-import { ForWhoSectionCardItem } from '@/features/landing/components/ForWhoSection/ForWhoSectionCardItem/ForWhoSectionCardItem';
-import ForWhoSectionCards from '@/features/landing/components/ForWhoSection/ForWhoSectionCards/ForWhoSectionCards';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { scrollToRegistrationSection } from '@/features/landing/utils/helpers/scrollToRegistrationSection';
-
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import scrollToRegistrationSection from '../../../utils/helpers/scrollToRegistrationSection';
+import ForWhoImagesContent from '../ForWhoImagesContent/ForWhoImagesContent';
+import ForWhoMainTextsContent from '../ForWhoMainTextsContent/ForWhoMainTextsContent';
+import ForWhoSectionCardItem from '../ForWhoSectionCardItem/ForWhoSectionCardItem';
+import ForWhoSectionCards from '../ForWhoSectionCards/ForWhoSectionCards';
 import ForWhoSectionCardsMobile from '../ForWhoSectionCardsMobile/ForWhoSectionCardsMobile';
 
 const images = {

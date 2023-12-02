@@ -2,8 +2,8 @@ import { Box, Grid, Typography } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 const styles = {
   mainBox: {

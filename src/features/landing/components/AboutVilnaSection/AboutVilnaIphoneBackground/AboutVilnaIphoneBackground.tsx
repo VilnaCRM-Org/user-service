@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import Image from 'next/image';
 import React from 'react';
 
 const styles = {
@@ -12,7 +13,8 @@ const styles = {
     overflow: 'clip',
   },
   image: {
-    width: '100%',
+    width: 'auto',
+    height: 'auto',
     maxWidth: '100%',
   },
 };
@@ -20,10 +22,12 @@ const styles = {
 export default function AboutVilnaIphoneBackground({ style }: { style?: React.CSSProperties }) {
   return (
     <Box sx={{ ...styles.box, ...style }}>
-      <img
+      <Image
+        width={1450}
+        height={2936}
         src="/assets/img/AboutVilna/iphone_picture.png"
         alt="Iphone Background"
-        style={{ ...styles.image}}
+        style={{ ...styles.image }}
       />
     </Box>
   );

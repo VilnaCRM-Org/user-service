@@ -3,18 +3,17 @@ import { useState } from 'react';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { Button } from '@/components/ui/Button/Button';
+import Button from '@/components/ui/Button/Button';
 import CustomInput from '@/components/ui/CustomInput/CustomInput';
-import { createUser } from '@/features/landing/api/service/userService';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
 import {
   INPUT_ID_FOR_EMAIL,
   INPUT_ID_FOR_PASSWORD,
   INPUT_ID_FOR_USER_FIRST_AND_LAST_NAME,
-} from '@/features/landing/types/sign-up/types';
-
+} from '../../../types/sign-up/types';
+import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 import SignUpPrivacyPolicy from '../SignUpPrivacyPolicy/SignUpPrivacyPolicy';
-import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 interface IFormData {
   username: string;
@@ -49,6 +48,7 @@ const styles = {
     background: '#FFF',
     padding: '36px 40px 40px 40px',
     boxShadow: '-25px 105px #E1E7EA, 1px 1px 41px 0px rgba(59, 68, 80, 0.05)',
+    zIndex: '50',
   },
   form: {
     display: 'flex',
@@ -68,21 +68,15 @@ export default function SignUp() {
   const [isPrivacyPolicyCheckboxChecked, setIsPrivacyPolicyCheckboxChecked] =
     useState<boolean>(false);
 
-  const onSubmit: SubmitHandler<IFormData> = async ({ email, username, password }) => {
-    if (!isPrivacyPolicyCheckboxChecked) {
-      return;
-    }
-
-    try {
-      const { id, email: userEmail, initials } = await createUser(email, username, password);
-      alert(`Successfully registered with id: ${id}, email: ${userEmail}, initials: ${initials}`);
-    } catch (error) {}
+  const onSubmit: SubmitHandler<IFormData> = async () => {
+    // do form submit
   };
 
   return (
     <Grid
       item
-      lg={6} md={12}
+      lg={6}
+      md={12}
       sx={{
         ...styles.mainGrid,
         boxShadow: !(isSmallest || isMobile || isTablet)
@@ -130,7 +124,10 @@ export default function SignUp() {
           name="email"
           control={control}
           defaultValue=""
-          rules={{ required: t('sign_up.form.email_input.required') as string, pattern: /^\S+@\S+$/i }}
+          rules={{
+            required: t('sign_up.form.email_input.required') as string,
+            pattern: /^\S+@\S+$/i,
+          }}
           render={({ field }) => (
             <CustomInput
               id={INPUT_ID_FOR_EMAIL}
@@ -152,9 +149,7 @@ export default function SignUp() {
             required: t('sign_up.form.password_input.required') as string,
             pattern: {
               value: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^\w\d\s:])([^\s]){8,32}$/,
-              message: t(
-                'sign_up.form.password_input.message'
-              ),
+              message: t('sign_up.form.password_input.message'),
             },
           }}
           render={({ field }) => (

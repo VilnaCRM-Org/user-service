@@ -1,15 +1,11 @@
 import { Box, Container } from '@mui/material';
 import { useEffect, useRef } from 'react';
 
-import UnlimitedIntegrationsCardItems from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsCardItems/UnlimitedIntegrationsCardItems';
-import UnlimitedIntegrationsSlider
-  from '@/features/landing/components/UnlimitedIntegrationsSection/UnlimitedIntegrationsSlider/UnlimitedIntegrationsSlider';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { UNLIMITED_INTEGRATIONS_CARD_ITEMS } from '@/features/landing/utils/constants/constants';
-
-import {
-  UnlimitedIntegrationsTexts,
-} from '../UnlimitedIntegrationsTexts/UnlimitedIntegrationsTexts';
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import { UNLIMITED_INTEGRATIONS_CARD_ITEMS } from '../../../utils/constants/constants';
+import UnlimitedIntegrationsCardItems from '../UnlimitedIntegrationsCardItems/UnlimitedIntegrationsCardItems';
+import UnlimitedIntegrationsSlider from '../UnlimitedIntegrationsSlider/UnlimitedIntegrationsSlider';
+import UnlimitedIntegrationsTexts from '../UnlimitedIntegrationsTexts/UnlimitedIntegrationsTexts';
 
 export default function UnlimitedIntegrationsSection() {
   const { isTablet, isSmallest, isMobile } = useScreenSize();

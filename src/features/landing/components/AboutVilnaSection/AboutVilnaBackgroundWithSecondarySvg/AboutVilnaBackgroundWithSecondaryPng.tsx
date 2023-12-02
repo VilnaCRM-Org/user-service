@@ -17,7 +17,10 @@ const styles = {
   },
 };
 
-export default function AboutVilnaBackgroundWithSecondaryPng({ children, style }: IBackgroundProps) {
+export default function AboutVilnaBackgroundWithSecondaryPng({
+  children,
+  style,
+}: IBackgroundProps) {
   return <Box style={{ ...styles.mainBox, position: 'relative', ...style }}>{children}</Box>;
 }
 

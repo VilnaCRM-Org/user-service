@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import Image from 'next/image';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
 
@@ -16,17 +17,20 @@ const styles = {
     gap: '27px',
   },
   link: {},
-  img: {},
+  img: {
+    height: 'auto',
+    width: 'auto',
+  },
 };
 
 export default function FooterSocials() {
   return (
     <Box sx={{ ...styles.mainBox }}>
       {SOCIALS.map(({ url, id, href }) => (
-          <CustomLink key={id} href={href} style={{ ...styles.link }}>
-            <img src={url} alt={id} style={{ ...styles.img }} />
-          </CustomLink>
-        ))}
+        <CustomLink key={id} href={href} style={{ ...styles.link }}>
+          <Image width={20} height={20} src={url} alt={id} style={{ ...styles.img }} />
+        </CustomLink>
+      ))}
     </Box>
   );
 }

@@ -2,10 +2,10 @@ import { Grid, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { ISocialLink } from '@/features/landing/types/social/types';
-import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import ISocialLink from '../../../types/social/types';
+import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 import SignUpSocials from '../SignUpSocials/SignUpSocials';
 
 const styles = {
@@ -14,6 +14,7 @@ const styles = {
     flexDirection: 'column',
     alignItems: 'center',
     textAlign: 'left',
+    zIndex: '100',
   },
   mainHeading: {
     color: '#1A1C1E',

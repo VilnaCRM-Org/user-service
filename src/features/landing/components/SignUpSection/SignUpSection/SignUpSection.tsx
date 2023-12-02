@@ -1,10 +1,9 @@
 import { Box, Container, Grid } from '@mui/material';
 
-import SignUp from '@/features/landing/components/SignUpSection/SignUp/SignUp';
-import SignUpTextsContent from '@/features/landing/components/SignUpSection/SignUpTextsContent/SignUpTextsContent';
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
-import { SIGN_UP_SECTION_ID, SOCIAL_LINKS } from '@/features/landing/utils/constants/constants';
-
+import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
+import { SIGN_UP_SECTION_ID, SOCIAL_LINKS } from '../../../utils/constants/constants';
+import SignUp from '../SignUp/SignUp';
+import SignUpTextsContent from '../SignUpTextsContent/SignUpTextsContent';
 import SignUpWrapperWithBackground from '../SignUpWrapperWithBackground/SignUpWrapperWithBackground';
 
 const styles = {

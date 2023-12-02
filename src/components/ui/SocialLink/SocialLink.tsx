@@ -1,7 +1,8 @@
 import { Box, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
 
-import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenSize';
+import useScreenSize from '@/hooks/useScreenSize/useScreenSize';
 
 import CustomLink from '../CustomLink/CustomLink';
 
@@ -113,7 +114,7 @@ export default function SocialLink({ icon, title, linkHref, isDisabled, style }:
       style={{
         ...styles.main,
         ...(isTablet ? styles.mainTablet : {}),
-        ...((isMobile || isSmallest) ? styles.mainMobile : {}),
+        ...(isMobile || isSmallest ? styles.mainMobile : {}),
         ...(isHovered && styles.mainHoverState),
         ...(isActive && styles.mainActiveState),
         ...(isDisabled && styles.mainDisabledState),
@@ -125,7 +126,9 @@ export default function SocialLink({ icon, title, linkHref, isDisabled, style }:
           ...styles.imageBox,
         }}
       >
-        <img
+        <Image
+          width={45}
+          height={44}
           src={icon}
           alt={title}
           style={{

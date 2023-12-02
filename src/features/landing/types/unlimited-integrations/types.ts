@@ -1,4 +1,4 @@
-export interface IUnlimitedIntegrationsItem {
+export default interface IUnlimitedIntegrationsItem {
   id: string;
   imageSrc: string;
   imageTitle: string;

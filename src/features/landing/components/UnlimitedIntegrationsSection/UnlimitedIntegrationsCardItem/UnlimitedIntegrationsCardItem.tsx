@@ -1,10 +1,11 @@
 import { Card, Paper, Typography } from '@mui/material';
+import Image from 'next/image';
 import React from 'react';
 import ReactHtmlParser from 'react-html-parser';
 import { useTranslation } from 'react-i18next';
 
-import { IUnlimitedIntegrationsItem } from '@/features/landing/types/unlimited-integrations/types';
-import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
+import IUnlimitedIntegrationsItem from '../../../types/unlimited-integrations/types';
+import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 interface IUnlimitedIntegrationsCardItemProps {
   cardItem: IUnlimitedIntegrationsItem;
@@ -33,6 +34,7 @@ const styles = {
   imageInsideOfPaper: {
     height: '100%',
     width: '100%',
+    maxWidth: '100%',
   },
   title: {
     color: '#1A1C1E',
@@ -77,7 +79,9 @@ export default function UnlimitedIntegrationsCardItem({
         }}
         elevation={0}
       >
-        <img
+        <Image
+          width={150}
+          height={150}
           src={cardItem.imageSrc}
           alt={cardItem.imageTitle}
           style={{
