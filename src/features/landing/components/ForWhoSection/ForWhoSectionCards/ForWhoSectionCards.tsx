@@ -6,6 +6,11 @@ import { useScreenSize } from '@/features/landing/hooks/useScreenSize/useScreenS
 import { TRANSLATION_NAMESPACE } from '@/features/landing/utils/constants/constants';
 
 const styles = {
+  mainBox: {
+    position: 'relative',
+    top: '-13.4375rem', // -215px
+    padding: '0 0 0 0',
+  },
   secondaryHeading: {
     maxWidth: '374px',
     width: '100%',
@@ -23,21 +28,17 @@ export default function ForWhoSectionCards({ cardItemsJSX }: { cardItemsJSX: Rea
   const { isSmallest } = useScreenSize();
 
   return (
-    <>
-      <Box sx={{ padding: '0 0 0 0' }}>
-        <Grid item>
-          <Typography
-            variant="h4"
-            component="h4"
-            style={{
-              ...styles.secondaryHeading,
-              fontSize: isSmallest ? '22px' : styles.secondaryHeading.fontSize,
-            }}
-          >
-            {t('for_who.heading_secondary')}
-          </Typography>
-        </Grid>
-      </Box>
+    <Box sx={{ ...styles.mainBox }}>
+      <Grid item>
+        <Typography
+          style={{
+            ...styles.secondaryHeading,
+            fontSize: isSmallest ? '22px' : styles.secondaryHeading.fontSize,
+          }}
+        >
+          {t('for_who.heading_secondary')}
+        </Typography>
+      </Grid>
       <Grid
         container
         alignItems="stretch"
@@ -51,6 +52,6 @@ export default function ForWhoSectionCards({ cardItemsJSX }: { cardItemsJSX: Rea
       >
         {cardItemsJSX}
       </Grid>
-    </>
+    </Box>
   );
 }

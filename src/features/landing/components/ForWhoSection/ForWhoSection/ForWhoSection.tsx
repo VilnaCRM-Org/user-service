@@ -38,9 +38,12 @@ const CARD_ITEMS = [
 
 const styles = {
   mainBox: {
-    margin: '89px auto 0 auto',
+    margin: '0 auto 0 auto',
     padding: '56px 0 206px 0',
     backgroundColor: '#FBFBFB',
+    height: '100%',
+    maxHeight: '44.875rem', // 718px
+    overflow: 'visible',
   },
   mainBoxLaptopOrLower: {
     padding: '0 34px 206px 34px',
@@ -56,9 +59,10 @@ const styles = {
     position: 'relative',
   },
   mainGrid: {
-    height: '100%',
+    height: '39.8125rem', // 637px
     width: '100%',
-    padding: '58px 0 0 0',
+    maxWidth: '74.5rem', // 1192px
+    padding: '0 0 0 0',
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -70,7 +74,7 @@ const styles = {
 
 export default function ForWhoSection() {
   const [cardItems] = useState(CARD_ITEMS);
-  const { isSmallest, isMobile, isSmallTablet, isLaptop, isTablet } = useScreenSize();
+  const { isSmallest, isMobile, isLaptop, isTablet } = useScreenSize();
   const handleTryItOutButtonClick = () => {
     scrollToRegistrationSection();
   };
@@ -102,10 +106,6 @@ export default function ForWhoSection() {
           sx={{
             ...styles.mainGrid,
             ...(isMobile || isSmallest ? styles.mainGridMobileOrSmaller : {}),
-            flexDirection: isSmallTablet || isMobile || isSmallest ? 'column' : 'row',
-            alignItems: isSmallTablet ? 'center' : 'stretch',
-            paddingTop: isMobile || isSmallest ? '38px' : '58px',
-            gap: isSmallTablet ? '59px' : isSmallest ? '0' : 'normal',
           }}
         >
           {/* Main Texts (Top and Bottom) */}

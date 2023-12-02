@@ -26,6 +26,7 @@ const style = {
     gap: '12px',
     minHeight: '115px',
     boxShadow: '0px 8px 27px 0px rgba(49, 59, 67, 0.14)',
+    borderRadius: '12px',
   },
 };
 
