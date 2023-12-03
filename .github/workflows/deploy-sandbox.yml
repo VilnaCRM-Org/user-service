@@ -1,9 +1,8 @@
-name: deploy to the sandbox
+name: deploy to prod
 
 on:
-  pull_request:
-    branches:
-      - main
+  push:
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -37,53 +36,5 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Create S3 Bucket
-        run: |
-          BUCKET_NAME=frontend-sandbox-${GITHUB_SHA::8}
-          aws s3 mb s3://$BUCKET_NAME
-          aws s3 website s3://$BUCKET_NAME --index-document index.html
-
       - name: Upload to S3
-        run: aws s3 sync ./build s3://$BUCKET_NAME --acl public-read
-
-      - name: Create CloudFront Distribution
-        id: cloudfront
-        run: |
-          DISTRIBUTION_ID=$(aws cloudfront create-distribution --origin-domain-name $BUCKET_NAME.s3.amazonaws.com --query 'Distribution.Id' --output text)
-          echo "::set-output name=distribution_id::$DISTRIBUTION_ID"
-          echo "CloudFront Distribution ID: $DISTRIBUTION_ID"
-
-      - name: Create Route 53 Record
-        run: |
-          DOMAIN_NAME="vilnacrm.com"
-          SUBDOMAIN="${GITHUB_SHA::8}.vilnacrm.com"
-          DISTRIBUTION_DOMAIN_NAME=$(aws cloudfront get-distribution --id ${{ steps.cloudfront.outputs.distribution_id }} --query 'Distribution.DomainName' --output text)
-          HOSTED_ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name $DOMAIN_NAME --query 'HostedZones[0].Id' --output text)
-          aws route53 change-resource-record-sets --hosted-zone-id $HOSTED_ZONE_ID --change-batch '{
-              "Changes": [{
-                "Action": "UPSERT",
-                "ResourceRecordSet": {
-                  "Name": "'$SUBDOMAIN'",
-                  "Type": "A",
-                  "AliasTarget":{
-                    "HostedZoneId": "'$HOSTED_ZONE_ID'",
-                    "DNSName": "'$DISTRIBUTION_DOMAIN_NAME'",
-                    "EvaluateTargetHealth": false
-                  }
-                }
-              }]
-            }'
-      - name: Comment PR with Subdomain URL
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const url = `https://${SUBDOMAIN}`; // Construct the subdomain URL
-            const message = `🚀 Deployed frontend is available at: ${url}`;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: message
-            });
+        run: aws s3 sync ./out s3://${{ vars.PROD_BUCKET_NAME }}

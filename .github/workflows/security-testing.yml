@@ -1,45 +1,42 @@
-name: security testing
+name: performance testing
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [ "main" ]
 
 jobs:
-  analyze:
-    name: Analyze
+  performance:
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ['typescript']
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Cache CodeQL databases
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+
+      - name: Cache pnpm dependencies
+        id: cache-pnpm-dependencies
         uses: actions/cache@v3
         with:
-          path: ${{ runner.workspace }}/codeql_databases
-          key: ${{ runner.os }}-codeql-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: node_modules
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-codeql-
+            ${{ runner.os }}-dependencies-
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: ${{ matrix.language }}
+      - name: Install pnpm
+        run: npm install -g pnpm
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+      - name: Install dependencies
+        run: pnpm i --frozen-lockfile
+        if: |
+          steps.cache-pnpm-dependencies.outputs.cache-hit != 'true' ||
+          steps.cache-pnpm-packages.outputs.cache-hit != 'true'
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
-        with:
-          category: '/language:${{matrix.language}}'
+      - name: Run desktop performance test
+        run: pnpm run lighthouse:desktop
+
+      - name: Run mobile performance test
+        run: pnpm run lighthouse:mobile
