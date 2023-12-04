@@ -7,7 +7,7 @@ use App\User\Infrastructure\Exceptions\TokenNotFoundError;
 use App\User\Infrastructure\Token\TokenProcessor;
 
 #[Patch(uriTemplate: 'users/confirm', exceptionToStatus: [TokenNotFoundError::class => 404], shortName: 'User',
-    input: ConfirmEmailInputDto::class, processor: TokenProcessor::class)]
+    input: ConfirmUserDto::class, processor: TokenProcessor::class)]
 class ConfirmationToken
 {
     private string $tokenValue;

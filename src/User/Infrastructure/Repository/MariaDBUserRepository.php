@@ -4,24 +4,28 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Repository;
 
-use App\Shared\Domain\Bus\Event\EventBus;
 use App\User\Domain\Entity\User\User;
 use App\User\Domain\UserRepository;
+use App\User\Infrastructure\Exceptions\DuplicateEmailError;
 use App\User\Infrastructure\Exceptions\UserNotFoundError;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 
 final readonly class MariaDBUserRepository implements UserRepository
 {
-    public function __construct(private EntityManagerInterface $entityManager, private EventBus $eventBus)
+    public function __construct(private EntityManagerInterface $entityManager)
     {
     }
 
     public function save(User $user): void
     {
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
-
-        // $this->eventBus->publish(new UserRegisteredEvent());
+        try {
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+        }
+        catch (UniqueConstraintViolationException $e){
+            throw new DuplicateEmailError($user->getEmail());
+        }
     }
 
     public function find(string $userID): User

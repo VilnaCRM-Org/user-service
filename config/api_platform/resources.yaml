@@ -50,6 +50,11 @@ resources:
               in: 'query'
               required: false
               example: 'EMAIL PROFILE'
+            - name: 'state'
+              type: 'string'
+              in: 'query'
+              required: false
+              example: 'abc123def456'
           responses:
             302:
               description: 'Redirect to the provided redirect URI with authorization code.'
@@ -62,7 +67,7 @@ resources:
                     example: "https://example.com/oauth/callback?code=e7f8c62113a47f7a5a9dca1f"
               content:
                 application/json:
-                  example: '{}'
+                  example: ''
             400:
               description: 'Unsupported grant type'
               content:
@@ -113,6 +118,7 @@ resources:
                     client_secret: { type: string }
                     redirect_uri: { type: string }
                     code: { type: string }
+                    refresh_token: { type: string }
                 example:
                   grant_type: 'authorization_code'
                   client_id: 'dc0bc6323f16fecd4224a3860ca894c5'

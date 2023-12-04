@@ -5,7 +5,7 @@ namespace App\User\Application;
 use App\Shared\Domain\Bus\Command\Command;
 use App\User\Domain\Entity\Token\ConfirmationToken;
 
-class ConfirmEmailCommand implements Command
+class ConfirmUserCommand implements Command
 {
     public function __construct(private ConfirmationToken $token)
     {

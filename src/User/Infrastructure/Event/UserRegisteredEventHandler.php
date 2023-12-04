@@ -1,16 +1,15 @@
 <?php
 
-namespace App\User\Infrastructure\Email;
+namespace App\User\Infrastructure\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriber;
-use App\Shared\Infrastructure\Bus\Event\UserRegisteredEvent;
 use App\User\Domain\Entity\Token\ConfirmationToken;
 use App\User\Domain\TokenRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
-class UserRegisteredEventSubscriber implements DomainEventSubscriber
+class UserRegisteredEventHandler implements DomainEventSubscriber
 {
     public function __construct(private MailerInterface $mailer,
         private TokenRepository $tokenRepository,

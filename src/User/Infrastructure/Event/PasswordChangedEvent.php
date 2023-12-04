@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Shared\Infrastructure\Bus\Event;
+namespace App\User\Infrastructure\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 
-class UserRegisteredEvent extends DomainEvent
+class PasswordChangedEvent extends DomainEvent
 {
     public function __construct(
-        string $id,
+        string $userId,
         private string $email,
         string $eventId = null,
         string $occurredOn = null
     ) {
-        parent::__construct($id, $eventId, $occurredOn);
+        parent::__construct($userId, $eventId, $occurredOn);
     }
 
     public static function fromPrimitives(string $aggregateId, array $body, string $eventId, string $occurredOn): DomainEvent
@@ -22,7 +22,7 @@ class UserRegisteredEvent extends DomainEvent
 
     public static function eventName(): string
     {
-        return 'user.registered';
+        return 'password.changed';
     }
 
     public function toPrimitives(): array

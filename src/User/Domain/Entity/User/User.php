@@ -9,44 +9,48 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\GraphQl\Query;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\User\Domain\Entity\Email\RetryDto;
-use App\User\Domain\Entity\Token\ConfirmEmailInputDto;
+use App\User\Domain\Entity\Token\ConfirmUserDto;
 use App\User\Infrastructure\Email\RetryProcessor;
+use App\User\Infrastructure\Exceptions\DuplicateEmailError;
 use App\User\Infrastructure\Exceptions\InvalidPasswordError;
 use App\User\Infrastructure\Exceptions\TokenNotFoundError;
 use App\User\Infrastructure\Exceptions\UserNotFoundError;
-use App\User\Infrastructure\Token\ConfirmEmailMutationResolver;
+use App\User\Infrastructure\Token\ConfirmUserMutationResolver;
 use App\User\Infrastructure\User\RegisterUserProcessor;
 use App\User\Infrastructure\User\UserPatchProcessor;
 use App\User\Infrastructure\User\UserPutProcessor;
+use App\User\Infrastructure\User\UserUpdateMutationResolver;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity]
-#[ApiResource(normalizationContext: ['groups' => ['output']], input: UserInputDto::class,
+#[ApiResource(normalizationContext: ['groups' => ['output']],
     exceptionToStatus: [InvalidPasswordError::class => 410, UserNotFoundError::class => 404,
         TokenNotFoundError::class => 404])]
 #[Get]
 #[GetCollection(paginationClientItemsPerPage: true)]
-#[Post(processor: RegisterUserProcessor::class)]
+#[Post(exceptionToStatus: [DuplicateEmailError::class => 409], input: UserInputDto::class, processor: RegisterUserProcessor::class)]
 #[Patch(input: UserPatchDto::class, processor: UserPatchProcessor::class)]
 #[Put(input: UserPutDto::class, processor: UserPutProcessor::class)]
 #[Delete]
 #[Post(uriTemplate: '/users/{id}/resend-confirmation-email', input: RetryDto::class,
     processor: RetryProcessor::class)]
-#[Mutation(resolver: ConfirmEmailMutationResolver::class, args: [
-    'tokenValue' => [
-        'type' => 'String!',
-    ],
-], input: ConfirmEmailInputDto::class, name: 'confirm')]
+#[Mutation(resolver: ConfirmUserMutationResolver::class,
+    input: ConfirmUserDto::class, name: 'confirm')]
 #[Mutation(name: 'create')]
-#[Mutation(name: 'update')]
+#[Mutation(resolver: UserUpdateMutationResolver::class,
+    input: UserUpdateMutationDto::class, name: 'update')]
 #[Mutation(name: 'delete')]
+#[Query]
+#[QueryCollection]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public function __construct(
