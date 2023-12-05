@@ -8,8 +8,8 @@ use App\User\Domain\Entity\User\User;
 use App\User\Domain\UserRepository;
 use App\User\Infrastructure\Exceptions\DuplicateEmailError;
 use App\User\Infrastructure\Exceptions\UserNotFoundError;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class MariaDBUserRepository implements UserRepository
 {
@@ -22,8 +22,7 @@ final readonly class MariaDBUserRepository implements UserRepository
         try {
             $this->entityManager->persist($user);
             $this->entityManager->flush();
-        }
-        catch (UniqueConstraintViolationException $e){
+        } catch (UniqueConstraintViolationException $e) {
             throw new DuplicateEmailError($user->getEmail());
         }
     }

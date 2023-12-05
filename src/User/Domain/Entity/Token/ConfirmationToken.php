@@ -4,20 +4,39 @@ namespace App\User\Domain\Entity\Token;
 
 use ApiPlatform\Metadata\Patch;
 use App\User\Infrastructure\Exceptions\TokenNotFoundError;
-use App\User\Infrastructure\Token\TokenProcessor;
+use App\User\Infrastructure\Token\ConfirmUserProcessor;
 
 #[Patch(uriTemplate: 'users/confirm', exceptionToStatus: [TokenNotFoundError::class => 404], shortName: 'User',
-    input: ConfirmUserDto::class, processor: TokenProcessor::class)]
+    input: ConfirmUserDto::class, processor: ConfirmUserProcessor::class)]
 class ConfirmationToken
 {
-    private string $tokenValue;
+    private int $timesSent;
+    private \DateTime $allowedToSendAfter;
 
-    private string $userID;
-
-    public function __construct(string $tokenValue, string $userID)
+    public function __construct(private string $tokenValue, private string $userID)
     {
-        $this->tokenValue = $tokenValue;
-        $this->userID = $userID;
+        $this->timesSent = 0;
+        $this->allowedToSendAfter = new \DateTime();
+    }
+
+    public function getTimesSent(): int
+    {
+        return $this->timesSent;
+    }
+
+    public function setTimesSent(int $timesSent): void
+    {
+        $this->timesSent = $timesSent;
+    }
+
+    public function getAllowedToSendAfter(): \DateTime
+    {
+        return $this->allowedToSendAfter;
+    }
+
+    public function setAllowedToSendAfter(\DateTime $allowedToSendAfter): void
+    {
+        $this->allowedToSendAfter = $allowedToSendAfter;
     }
 
     public function getTokenValue(): string

@@ -24,10 +24,9 @@ class PasswordChangedEventHandler implements DomainEventSubscriber
         $email = (new Email())
             ->to($emailAddress)
             ->subject('Password Change Notification')
-            ->text("Your account password has been updated. If you made this change, no action is needed. If not, or if you have concerns, contact our support team ")
+            ->text('Your account password has been updated. If you made this change, no action is needed. If not, or if you have concerns, contact our support team ')
             ->html('<p>See Twig integration for better HTML integration!</p>');
 
         $this->mailer->send($email);
-
     }
 }

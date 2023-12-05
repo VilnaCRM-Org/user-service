@@ -3,10 +3,7 @@
 namespace App\User\Infrastructure\User;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
-use App\Shared\Domain\Bus\Command\CommandBus;
 use App\Shared\Domain\Bus\Event\EventBus;
-use App\User\Application\ConfirmUserCommand;
-use App\User\Domain\TokenRepository;
 use App\User\Domain\UserRepository;
 use App\User\Infrastructure\Event\PasswordChangedEvent;
 use App\User\Infrastructure\Exceptions\InvalidPasswordError;
@@ -14,14 +11,14 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserUpdateMutationResolver implements MutationResolverInterface
 {
-    public function __construct(private UserRepository              $userRepository,
-                                private UserPasswordHasherInterface $passwordHasher, private EventBus $eventBus)
+    public function __construct(private UserRepository $userRepository,
+        private UserPasswordHasherInterface $passwordHasher, private EventBus $eventBus)
     {
     }
 
     public function __invoke(?object $item, array $context): ?object
     {
-        $userId = $item->userId;;
+        $userId = $item->userId;
         $user = $this->userRepository->find($userId);
         $passwordChanged = false;
         if ($this->passwordHasher->isPasswordValid($user, $item->oldPassword)) {

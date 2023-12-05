@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\SendConfirmationEmailCommand;
 use App\User\Application\SignUpCommand;
+use App\User\Domain\Entity\Token\ConfirmationToken;
 use App\User\Domain\Entity\User\UserInputDto;
 
 readonly class RegisterUserProcessor implements ProcessorInterface
@@ -24,8 +25,9 @@ readonly class RegisterUserProcessor implements ProcessorInterface
         $this->commandBus->dispatch($command);
 
         $user = $command->getResponse()->getCreatedUser();
+        $token = ConfirmationToken::generateToken($user->getId());
 
-        $this->commandBus->dispatch(new SendConfirmationEmailCommand($user->getEmail(), $user->getId()));
+        $this->commandBus->dispatch(new SendConfirmationEmailCommand($user->getEmail(), $token));
 
         return $user;
     }

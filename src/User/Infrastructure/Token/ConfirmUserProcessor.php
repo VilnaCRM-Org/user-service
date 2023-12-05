@@ -10,7 +10,7 @@ use App\User\Domain\Entity\Token\ConfirmUserDto;
 use App\User\Domain\TokenRepository;
 use Symfony\Component\HttpFoundation\Response;
 
-class TokenProcessor implements ProcessorInterface
+class ConfirmUserProcessor implements ProcessorInterface
 {
     public function __construct(private TokenRepository $tokenRepository, private CommandBus $commandBus)
     {
@@ -21,7 +21,7 @@ class TokenProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        $token = $this->tokenRepository->find($data->token);
+        $token = $this->tokenRepository->findByTokenValue($data->token);
 
         $this->commandBus->dispatch(new ConfirmUserCommand($token));
 

@@ -3,7 +3,6 @@
 namespace App\User\Application;
 
 use App\Shared\Domain\Bus\Command\CommandHandler;
-use App\User\Domain\Entity\Token\ConfirmationToken;
 use App\User\Domain\TokenRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -20,10 +19,11 @@ class SendConfirmationEmailCommandHandler implements CommandHandler
     public function __invoke(SendConfirmationEmailCommand $command)
     {
         $emailAddress = $command->getEmailAddress();
-        $userID = $command->getUserId();
-        $token = ConfirmationToken::generateToken($userID);
-        $this->tokenRepository->save($token);
+        $token = $command->getToken();
         $tokenValue = $token->getTokenValue();
+
+        $token->setTimesSent($token->getTimesSent() + 1);
+        $this->tokenRepository->save($token);
 
         $email = (new Email())
             ->to($emailAddress)

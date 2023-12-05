@@ -11,6 +11,8 @@ use Symfony\Contracts\Cache\CacheInterface;
 class RedisTokenRepository implements TokenRepository
 {
     private const REDIS_KEY_PREFIX = 'token-';
+    private const TOKEN_VALUE_PREFIX = 'tokenValue-';
+    private const USER_ID_PREFIX = 'userID-';
 
     public function __construct(private CacheInterface $redisAdapter, private SerializerInterface $serializer)
     {
@@ -18,17 +20,36 @@ class RedisTokenRepository implements TokenRepository
 
     public function save(ConfirmationToken $token): void
     {
-        $key = self::REDIS_KEY_PREFIX.$token->getTokenValue();
+        $tokenValue = $token->getTokenValue();
+        $userId = $token->getUserID();
         $serializedToken = $this->serializer->serialize($token, 'json');
 
-        $cacheItem = $this->redisAdapter->getItem($key);
+        $cacheItem = $this->redisAdapter->getItem(self::TOKEN_VALUE_PREFIX.$tokenValue);
+        $cacheItem->set($serializedToken);
+        $this->redisAdapter->save($cacheItem);
+
+        $cacheItem = $this->redisAdapter->getItem(self::USER_ID_PREFIX.$userId);
         $cacheItem->set($serializedToken);
         $this->redisAdapter->save($cacheItem);
     }
 
-    public function find(string $token): ConfirmationToken
+    public function findByTokenValue(string $tokenValue): ConfirmationToken
     {
-        $key = self::REDIS_KEY_PREFIX.$token;
+        $key = self::TOKEN_VALUE_PREFIX.$tokenValue;
+
+        $cacheItem = $this->redisAdapter->getItem($key);
+        $serializedToken = $cacheItem->get();
+
+        if (null !== $serializedToken) {
+            return $this->serializer->deserialize($serializedToken, ConfirmationToken::class, 'json');
+        } else {
+            throw new TokenNotFoundError();
+        }
+    }
+
+    public function findByUserId(string $userId): ConfirmationToken
+    {
+        $key = self::USER_ID_PREFIX.$userId;
 
         $cacheItem = $this->redisAdapter->getItem($key);
         $serializedToken = $cacheItem->get();
@@ -42,6 +63,9 @@ class RedisTokenRepository implements TokenRepository
 
     public function delete(ConfirmationToken $token): void
     {
-        $this->redisAdapter->delete(self::REDIS_KEY_PREFIX.$token->getTokenValue());
+        $tokenValue = $token->getTokenValue();
+        $userId = $token->getUserID();
+        $this->redisAdapter->delete(self::TOKEN_VALUE_PREFIX.$tokenValue);
+        $this->redisAdapter->delete(self::USER_ID_PREFIX.$userId);
     }
 }

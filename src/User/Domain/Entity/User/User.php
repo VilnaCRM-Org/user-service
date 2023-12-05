@@ -15,12 +15,15 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\User\Domain\Entity\Email\RetryDto;
+use App\User\Domain\Entity\Email\RetryMutationDto;
 use App\User\Domain\Entity\Token\ConfirmUserDto;
+use App\User\Infrastructure\Email\RetryMutationResolver;
 use App\User\Infrastructure\Email\RetryProcessor;
 use App\User\Infrastructure\Exceptions\DuplicateEmailError;
 use App\User\Infrastructure\Exceptions\InvalidPasswordError;
 use App\User\Infrastructure\Exceptions\TokenNotFoundError;
 use App\User\Infrastructure\Exceptions\UserNotFoundError;
+use App\User\Infrastructure\Exceptions\UserTimedOutError;
 use App\User\Infrastructure\Token\ConfirmUserMutationResolver;
 use App\User\Infrastructure\User\RegisterUserProcessor;
 use App\User\Infrastructure\User\UserPatchProcessor;
@@ -37,18 +40,20 @@ use Symfony\Component\Serializer\Annotation\Groups;
         TokenNotFoundError::class => 404])]
 #[Get]
 #[GetCollection(paginationClientItemsPerPage: true)]
-#[Post(exceptionToStatus: [DuplicateEmailError::class => 409], input: UserInputDto::class, processor: RegisterUserProcessor::class)]
+#[Post(exceptionToStatus: [DuplicateEmailError::class => 409], input: UserInputDto::class,
+    processor: RegisterUserProcessor::class)]
 #[Patch(input: UserPatchDto::class, processor: UserPatchProcessor::class)]
 #[Put(input: UserPutDto::class, processor: UserPutProcessor::class)]
 #[Delete]
-#[Post(uriTemplate: '/users/{id}/resend-confirmation-email', input: RetryDto::class,
-    processor: RetryProcessor::class)]
+#[Post(uriTemplate: '/users/{id}/resend-confirmation-email', exceptionToStatus: [UserTimedOutError::class => 429],
+    input: RetryDto::class, processor: RetryProcessor::class)]
 #[Mutation(resolver: ConfirmUserMutationResolver::class,
     input: ConfirmUserDto::class, name: 'confirm')]
 #[Mutation(name: 'create')]
 #[Mutation(resolver: UserUpdateMutationResolver::class,
     input: UserUpdateMutationDto::class, name: 'update')]
 #[Mutation(name: 'delete')]
+#[Mutation(resolver: RetryMutationResolver::class, input: RetryMutationDto::class, name: 'resendEmailTo')]
 #[Query]
 #[QueryCollection]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
