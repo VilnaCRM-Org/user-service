@@ -99,7 +99,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                         'message' => 'This value should not be blank.',
                         'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                     ],
-                    'status' => 404,
+                    'status' => 422,
                 ],
             ],
         ]), );
@@ -226,7 +226,6 @@ class OpenApiFactory implements OpenApiFactoryInterface
         )->withGet($operationGet->withParameters([$UuidWithExamplePathParam])
             ->withResponse(404, $standardResponse404)));
 
-
         // Customising confirm endpoint
         $pathItem = $openApi->getPaths()->getPath('/api/users/confirm');
         $operationPatch = $pathItem->getPatch();
@@ -246,9 +245,8 @@ class OpenApiFactory implements OpenApiFactoryInterface
                 )
         ));
 
-
         // Adding 500 response to all endpoints
-        foreach (array_keys($openApi->getPaths()->getPaths()) as $path){
+        foreach (array_keys($openApi->getPaths()->getPaths()) as $path) {
             $pathItem = $openApi->getPaths()->getPath($path);
             $operationGet = $pathItem->getGet();
             $operationPost = $pathItem->getPost();
@@ -256,19 +254,19 @@ class OpenApiFactory implements OpenApiFactoryInterface
             $operationPatch = $pathItem->getPatch();
             $operationDelete = $pathItem->getDelete();
 
-            if($operationGet){
+            if ($operationGet) {
                 $pathItem = $pathItem->withGet($operationGet->withResponse(500, $standardResponse500));
             }
-            if($operationPost){
+            if ($operationPost) {
                 $pathItem = $pathItem->withPost($operationPost->withResponse(500, $standardResponse500));
             }
-            if($operationPut){
+            if ($operationPut) {
                 $pathItem = $pathItem->withPut($operationPut->withResponse(500, $standardResponse500));
             }
-            if($operationPatch){
+            if ($operationPatch) {
                 $pathItem = $pathItem->withPatch($operationPatch->withResponse(500, $standardResponse500));
             }
-            if($operationDelete){
+            if ($operationDelete) {
                 $pathItem = $pathItem->withDelete($operationDelete->withResponse(500, $standardResponse500));
             }
 
