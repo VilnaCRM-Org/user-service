@@ -17,8 +17,8 @@ use ApiPlatform\Metadata\Put;
 use App\User\Domain\Entity\Email\RetryDto;
 use App\User\Domain\Entity\Email\RetryMutationDto;
 use App\User\Domain\Entity\Token\ConfirmUserDto;
-use App\User\Infrastructure\Email\RetryMutationResolver;
-use App\User\Infrastructure\Email\RetryProcessor;
+use App\User\Infrastructure\Email\ResendEmailMutationResolver;
+use App\User\Infrastructure\Email\ResendEmailProcessor;
 use App\User\Infrastructure\Exceptions\DuplicateEmailError;
 use App\User\Infrastructure\Exceptions\InvalidPasswordError;
 use App\User\Infrastructure\Exceptions\TokenNotFoundError;
@@ -46,14 +46,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[Put(input: UserPutDto::class, processor: UserPutProcessor::class)]
 #[Delete]
 #[Post(uriTemplate: '/users/{id}/resend-confirmation-email', exceptionToStatus: [UserTimedOutError::class => 429],
-    input: RetryDto::class, processor: RetryProcessor::class)]
+    input: RetryDto::class, processor: ResendEmailProcessor::class)]
 #[Mutation(resolver: ConfirmUserMutationResolver::class,
     input: ConfirmUserDto::class, name: 'confirm')]
 #[Mutation(name: 'create')]
 #[Mutation(resolver: UserUpdateMutationResolver::class,
     input: UserUpdateMutationDto::class, name: 'update')]
 #[Mutation(name: 'delete')]
-#[Mutation(resolver: RetryMutationResolver::class, input: RetryMutationDto::class, name: 'resendEmailTo')]
+#[Mutation(resolver: ResendEmailMutationResolver::class, input: RetryMutationDto::class, name: 'resendEmailTo')]
 #[Query]
 #[QueryCollection]
 class User implements UserInterface, PasswordAuthenticatedUserInterface

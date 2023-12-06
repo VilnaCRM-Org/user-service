@@ -2,29 +2,27 @@
 
 namespace App\User\Infrastructure\Email;
 
-use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\SendConfirmationEmailCommand;
-use App\User\Domain\Entity\Email\RetryDto;
 use App\User\Domain\Entity\Token\ConfirmationToken;
 use App\User\Domain\TokenRepository;
 use App\User\Domain\UserRepository;
 use App\User\Infrastructure\Exceptions\TokenNotFoundError;
 use App\User\Infrastructure\Exceptions\UserTimedOutError;
+use Symfony\Component\HttpFoundation\Response;
 
-class RetryMutationResolver implements MutationResolverInterface
+class ResendEmailProcessor implements ProcessorInterface
 {
     public function __construct(private CommandBus $commandBus, private UserRepository $userRepository,
         private TokenRepository $tokenRepository)
     {
     }
 
-    /**
-     * @param RetryDto $item
-     */
-    public function __invoke(?object $item, array $context): ?object
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        $user = $this->userRepository->find($item->userId);
+        $user = $this->userRepository->find($uriVariables['id']);
         try {
             $token = $this->tokenRepository->findByUserId($user->getId());
         } catch (TokenNotFoundError) {
@@ -53,6 +51,6 @@ class RetryMutationResolver implements MutationResolverInterface
         $this->commandBus->dispatch(
             new SendConfirmationEmailCommand($user->getEmail(), $token));
 
-        return $user;
+        return new Response(status: 200);
     }
 }

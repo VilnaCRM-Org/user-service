@@ -17,7 +17,8 @@ class OpenApiFactory implements OpenApiFactoryInterface
     {
         $openApi = $this->decorated->__invoke($context);
 
-        $standartRespose400 = new Response(description: 'Bad request', content: new \ArrayObject([
+        // Describing some standard responses
+        $standardResponse500 = new Response(description: 'Internal server error', content: new \ArrayObject([
             'application/json' => [
                 'schema' => [
                     'type' => 'object',
@@ -25,17 +26,39 @@ class OpenApiFactory implements OpenApiFactoryInterface
                         'type' => ['type' => 'string'],
                         'title' => ['type' => 'string'],
                         'detail' => ['type' => 'string'],
+                        'status' => ['type' => 'integer'],
+                    ],
+                ],
+                'example' => [
+                    'type' => '/errors/500',
+                    'title' => 'An error occurred',
+                    'detail' => 'Something went wrong',
+                    'status' => 500,
+                ],
+            ],
+        ]), );
+
+        $standardResponse400 = new Response(description: 'Bad request', content: new \ArrayObject([
+            'application/json' => [
+                'schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'type' => ['type' => 'string'],
+                        'title' => ['type' => 'string'],
+                        'detail' => ['type' => 'string'],
+                        'status' => ['type' => 'integer'],
                     ],
                 ],
                 'example' => [
                     'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
                     'title' => 'An error occurred',
                     'detail' => 'The input data is misformatted.',
+                    'status' => 400,
                 ],
             ],
         ]), );
 
-        $standartRespose404 = new Response(description: 'User not found', content: new \ArrayObject([
+        $standardResponse404 = new Response(description: 'User not found', content: new \ArrayObject([
             'application/json' => [
                 'schema' => [
                     'type' => 'object',
@@ -43,17 +66,19 @@ class OpenApiFactory implements OpenApiFactoryInterface
                         'type' => ['type' => 'string'],
                         'title' => ['type' => 'string'],
                         'detail' => ['type' => 'string'],
+                        'status' => ['type' => 'integer'],
                     ],
                 ],
                 'example' => [
                     'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
                     'title' => 'An error occurred',
                     'detail' => 'User not found',
+                    'status' => 404,
                 ],
             ],
         ]), );
 
-        $standartRespose422 = new Response(description: 'Validation error', content: new \ArrayObject([
+        $standardResponse422 = new Response(description: 'Validation error', content: new \ArrayObject([
             'application/json' => [
                 'schema' => [
                     'type' => 'object',
@@ -62,6 +87,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                         'title' => ['type' => 'string'],
                         'detail' => ['type' => 'string'],
                         'violations' => ['type' => 'array'],
+                        'status' => ['type' => 'integer'],
                     ],
                 ],
                 'example' => [
@@ -73,6 +99,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                         'message' => 'This value should not be blank.',
                         'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                     ],
+                    'status' => 404,
                 ],
             ],
         ]), );
@@ -98,7 +125,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                         'example' => '',
                     ],
                 ]), ),
-                    404 => $standartRespose404,
+                    404 => $standardResponse404,
                     429 => new Response(description: 'User was timed out', content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
@@ -107,12 +134,14 @@ class OpenApiFactory implements OpenApiFactoryInterface
                                     'type' => ['type' => 'string'],
                                     'title' => ['type' => 'string'],
                                     'detail' => ['type' => 'string'],
+                                    'status' => ['type' => 'integer'],
                                 ],
                             ],
                             'example' => [
                                 'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
                                 'title' => 'An error occurred',
                                 'detail' => 'Cannot send new email till 05 Dec 2023 14:55:45',
+                                'status' => 429,
                             ],
                         ],
                     ]), ),
@@ -125,7 +154,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
 
         $openApi->getPaths()->addPath('/api/users', $pathItem->withPost(
             $operationPost
-                ->withResponse(400, $standartRespose400)
+                ->withResponse(400, $standardResponse400)
                 ->withResponse(409, new Response(description: 'Duplicate email', content: new \ArrayObject([
                     'application/json' => [
                         'schema' => [
@@ -134,17 +163,19 @@ class OpenApiFactory implements OpenApiFactoryInterface
                                 'type' => ['type' => 'string'],
                                 'title' => ['type' => 'string'],
                                 'detail' => ['type' => 'string'],
+                                'status' => ['type' => 'integer'],
                             ],
                         ],
                         'example' => [
+                            'status' => 409,
                             'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
                             'title' => 'An error occurred',
                             'detail' => 'user@example.com address is already registered. Please use a different email address or try logging in.',
                         ],
                     ],
                 ]), ))
-                ->withResponse(422, $standartRespose422))
-            ->withGet($operationGet->withResponse(400, $standartRespose400)));
+                ->withResponse(422, $standardResponse422))
+            ->withGet($operationGet->withResponse(400, $standardResponse400)));
 
         $pathItem = $openApi->getPaths()->getPath('/api/users/{id}');
         $operationPut = $pathItem->getPut();
@@ -157,6 +188,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                 'schema' => [
                     'type' => 'object',
                     'properties' => [
+                        'status' => ['type' => 'integer'],
                         'type' => ['type' => 'string'],
                         'title' => ['type' => 'string'],
                         'detail' => ['type' => 'string'],
@@ -166,20 +198,21 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
                     'title' => 'An error occurred',
                     'detail' => 'Old password is invalid',
+                    'status' => 410,
                 ],
             ], ]), );
 
         $openApi->getPaths()->addPath('/api/users/{id}', $pathItem->withPut(
             $operationPut->withParameters([$UuidWithExamplePathParam])
-                ->withResponse(400, $standartRespose400)
-                ->withResponse(404, $standartRespose404)
-                ->withResponse(422, $standartRespose422)
+                ->withResponse(400, $standardResponse400)
+                ->withResponse(404, $standardResponse404)
+                ->withResponse(422, $standardResponse422)
                 ->withResponse(410, $oldPasswordErrorResponse)
         )->withPatch(
             $operationPatch->withParameters([$UuidWithExamplePathParam])
-                ->withResponse(400, $standartRespose400)
-                ->withResponse(404, $standartRespose404)
-                ->withResponse(422, $standartRespose422)
+                ->withResponse(400, $standardResponse400)
+                ->withResponse(404, $standardResponse404)
+                ->withResponse(422, $standardResponse422)
                 ->withResponse(410, $oldPasswordErrorResponse)
         )->withDelete(
             $operationDelete->withParameters([$UuidWithExamplePathParam])
@@ -189,10 +222,12 @@ class OpenApiFactory implements OpenApiFactoryInterface
                             'example' => '',
                         ],
                     ]), ),
-                    404 => $standartRespose404])
+                    404 => $standardResponse404])
         )->withGet($operationGet->withParameters([$UuidWithExamplePathParam])
-            ->withResponse(404, $standartRespose404)));
+            ->withResponse(404, $standardResponse404)));
 
+
+        // Customising confirm endpoint
         $pathItem = $openApi->getPaths()->getPath('/api/users/confirm');
         $operationPatch = $pathItem->getPatch();
 
@@ -210,6 +245,35 @@ class OpenApiFactory implements OpenApiFactoryInterface
                 ],
                 )
         ));
+
+
+        // Adding 500 response to all endpoints
+        foreach (array_keys($openApi->getPaths()->getPaths()) as $path){
+            $pathItem = $openApi->getPaths()->getPath($path);
+            $operationGet = $pathItem->getGet();
+            $operationPost = $pathItem->getPost();
+            $operationPut = $pathItem->getPut();
+            $operationPatch = $pathItem->getPatch();
+            $operationDelete = $pathItem->getDelete();
+
+            if($operationGet){
+                $pathItem = $pathItem->withGet($operationGet->withResponse(500, $standardResponse500));
+            }
+            if($operationPost){
+                $pathItem = $pathItem->withPost($operationPost->withResponse(500, $standardResponse500));
+            }
+            if($operationPut){
+                $pathItem = $pathItem->withPut($operationPut->withResponse(500, $standardResponse500));
+            }
+            if($operationPatch){
+                $pathItem = $pathItem->withPatch($operationPatch->withResponse(500, $standardResponse500));
+            }
+            if($operationDelete){
+                $pathItem = $pathItem->withDelete($operationDelete->withResponse(500, $standardResponse500));
+            }
+
+            $openApi->getPaths()->addPath($path, $pathItem);
+        }
 
         return $openApi;
     }

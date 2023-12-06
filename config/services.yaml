@@ -39,3 +39,6 @@ services:
          decorates: 'api_platform.openapi.factory'
          arguments: [ '@App\Shared\Infrastructure\OpenApiFactory.inner' ]
          autoconfigure: false
+
+    api_platform.state.error_provider:
+        class: 'App\Shared\Infrastructure\ErrorProvider'
