@@ -3,6 +3,7 @@ default:
         default:
             contexts:
                 - App\Tests\Behat\DemoContext
+                - App\Tests\Behat\UserCrudContext
 
     extensions:
         FriendsOfBehat\SymfonyExtension:

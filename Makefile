@@ -58,6 +58,11 @@ phpunit: ## The PHP unit testing framework
 	$(EXEC_PHP) ./vendor/bin/phpunit
 
 behat: ## A php framework for autotesting business expectations
+	$(DOCKER_COMPOSE) exec -e APP_ENV=test php bin/console doctrine:database:drop --force --if-exists
+	$(DOCKER_COMPOSE) exec -e APP_ENV=test php bin/console doctrine:database:create
+	$(DOCKER_COMPOSE) exec -e APP_ENV=test php bin/console doctrine:migrations:migrate --no-interaction
+	$(DOCKER_COMPOSE) exec -e APP_ENV=test php bin/console doctrine:schema:update --force
+	$(DOCKER_COMPOSE) exec -e APP_ENV=test php bin/console doctrine:fixtures:load
 	$(DOCKER_COMPOSE) exec -e APP_ENV=test php ./vendor/bin/behat
 
 artillery: ## run Load testing
