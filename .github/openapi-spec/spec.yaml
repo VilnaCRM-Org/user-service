@@ -25,7 +25,7 @@ paths:
                 example: 'https://example.com/oauth/callback?code=e7f8c62113a47f7a5a9dca1f'
           content:
             application/json:
-              example: '{}'
+              example: ''
         400:
           description: 'Unsupported grant type'
           content:
@@ -56,6 +56,22 @@ paths:
                 error: invalid_client
                 error_description: 'Client authentication failed'
                 message: 'Client authentication failed'
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
       summary: 'Requests for authorization code'
       description: 'Requests for authorization code'
       parameters:
@@ -107,6 +123,18 @@ paths:
           explode: false
           allowReserved: false
           example: 'EMAIL PROFILE'
+        -
+          name: state
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: false
+          schema: []
+          style: form
+          explode: false
+          allowReserved: false
+          example: abc123def456
       deprecated: false
     parameters: []
   /api/oauth/token:
@@ -161,6 +189,22 @@ paths:
                 error: invalid_client
                 error_description: 'Client authentication failed'
                 message: 'Client authentication failed'
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
       summary: 'Requests for access token'
       description: 'Requests for access token'
       parameters: []
@@ -180,6 +224,8 @@ paths:
                 redirect_uri:
                   type: string
                 code:
+                  type: string
+                refresh_token:
                   type: string
             example:
               grant_type: authorization_code
@@ -214,6 +260,38 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/User-output'
+        400:
+          description: 'Bad request'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'The input data is misformatted.'
+                status: 400
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
       summary: 'Retrieves the collection of User resources.'
       description: 'Retrieves the collection of User resources.'
       parameters:
@@ -270,10 +348,12 @@ paths:
                   type: { type: string }
                   title: { type: string }
                   detail: { type: string }
+                  status: { type: integer }
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
+                status: 400
         422:
           description: 'Validation error'
           content:
@@ -285,6 +365,7 @@ paths:
                   title: { type: string }
                   detail: { type: string }
                   violations: { type: array }
+                  status: { type: integer }
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
@@ -293,6 +374,39 @@ paths:
                   propertyPath: some_property
                   message: 'This value should not be blank.'
                   code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
+                status: 422
+        409:
+          description: 'Duplicate email'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                status: 409
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
       summary: 'Creates a User resource.'
       description: 'Creates a User resource.'
       parameters: []
@@ -318,12 +432,28 @@ paths:
           description: 'User confirmed'
           content:
             application/json:
-              example: '{}'
+              example: ''
         404:
           description: 'Token not found or expired'
           content:
             application/json:
-              example: '{}'
+              example: ''
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
       summary: 'Confirms the User'
       description: 'Confirms the User'
       parameters: []
@@ -332,7 +462,7 @@ paths:
         content:
           application/merge-patch+json:
             schema:
-              $ref: '#/components/schemas/User.ConfirmEmailInputDto'
+              $ref: '#/components/schemas/User.ConfirmUserDto'
         required: true
       deprecated: false
     parameters: []
@@ -361,10 +491,28 @@ paths:
                   type: { type: string }
                   title: { type: string }
                   detail: { type: string }
+                  status: { type: integer }
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'User not found'
+                status: 404
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
       summary: 'Retrieves a User resource.'
       description: 'Retrieves a User resource.'
       parameters:
@@ -375,11 +523,11 @@ paths:
           required: true
           deprecated: false
           allowEmptyValue: false
-          schema:
-            type: string
+          schema: []
           style: simple
           explode: false
           allowReserved: false
+          example: 2b10b7a3-67f0-40ea-a367-44263321592a
       deprecated: false
     put:
       operationId: api_users_id_put
@@ -406,10 +554,12 @@ paths:
                   type: { type: string }
                   title: { type: string }
                   detail: { type: string }
+                  status: { type: integer }
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
+                status: 400
         422:
           description: 'Validation error'
           content:
@@ -421,6 +571,7 @@ paths:
                   title: { type: string }
                   detail: { type: string }
                   violations: { type: array }
+                  status: { type: integer }
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
@@ -429,6 +580,7 @@ paths:
                   propertyPath: some_property
                   message: 'This value should not be blank.'
                   code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
+                status: 422
         404:
           description: 'User not found'
           content:
@@ -439,12 +591,30 @@ paths:
                   type: { type: string }
                   title: { type: string }
                   detail: { type: string }
+                  status: { type: integer }
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'User not found'
+                status: 404
         410:
           description: 'Old password mismatch'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: integer }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'Old password is invalid'
+                status: 410
+        500:
+          description: 'Internal server error'
           content:
             application/json:
               schema:
@@ -453,10 +623,12 @@ paths:
                   type: { type: string }
                   title: { type: string }
                   detail: { type: string }
+                  status: { type: integer }
               example:
-                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                type: /errors/500
                 title: 'An error occurred'
-                detail: 'Old password is invalid'
+                detail: 'Something went wrong'
+                status: 500
       summary: 'Replaces the User resource.'
       description: 'Replaces the User resource.'
       parameters:
@@ -492,7 +664,7 @@ paths:
           description: 'User resource deleted'
           content:
             application/json:
-              example: '{}'
+              example: ''
         404:
           description: 'User not found'
           content:
@@ -503,10 +675,28 @@ paths:
                   type: { type: string }
                   title: { type: string }
                   detail: { type: string }
+                  status: { type: integer }
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'User not found'
+                status: 404
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
       summary: 'Removes the User resource.'
       description: 'Removes the User resource.'
       parameters:
@@ -548,10 +738,12 @@ paths:
                   type: { type: string }
                   title: { type: string }
                   detail: { type: string }
+                  status: { type: integer }
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
+                status: 400
         422:
           description: 'Validation error'
           content:
@@ -563,6 +755,7 @@ paths:
                   title: { type: string }
                   detail: { type: string }
                   violations: { type: array }
+                  status: { type: integer }
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
@@ -571,6 +764,7 @@ paths:
                   propertyPath: some_property
                   message: 'This value should not be blank.'
                   code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
+                status: 422
         404:
           description: 'User not found'
           content:
@@ -581,12 +775,30 @@ paths:
                   type: { type: string }
                   title: { type: string }
                   detail: { type: string }
+                  status: { type: integer }
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'User not found'
+                status: 404
         410:
           description: 'Old password mismatch'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: integer }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'Old password is invalid'
+                status: 410
+        500:
+          description: 'Internal server error'
           content:
             application/json:
               schema:
@@ -595,10 +807,12 @@ paths:
                   type: { type: string }
                   title: { type: string }
                   detail: { type: string }
+                  status: { type: integer }
               example:
-                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                type: /errors/500
                 title: 'An error occurred'
-                detail: 'Old password is invalid'
+                detail: 'Something went wrong'
+                status: 500
       summary: 'Updates the User resource.'
       description: 'Updates the User resource.'
       parameters:
@@ -633,7 +847,7 @@ paths:
           description: 'Email was send again'
           content:
             application/json:
-              example: '{}'
+              example: ''
         404:
           description: 'User not found'
           content:
@@ -644,10 +858,44 @@ paths:
                   type: { type: string }
                   title: { type: string }
                   detail: { type: string }
+                  status: { type: integer }
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'User not found'
+                status: 404
+        429:
+          description: 'User was timed out'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'Cannot send new email till 05 Dec 2023 14:55:45'
+                status: 429
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
       summary: 'Resends confirmation email'
       description: 'Resends confirmation email'
       parameters:
@@ -710,6 +958,11 @@ components:
       description: ''
       deprecated: false
       properties:
+        timesSent:
+          type: integer
+        allowedToSendAfter:
+          type: string
+          format: date-time
         tokenValue:
           type: string
         userID:
@@ -731,12 +984,12 @@ components:
           type: array
           items:
             type: string
-    User.ConfirmEmailInputDto:
+    User.ConfirmUserDto:
       type: object
       description: ''
       deprecated: false
       properties:
-        tokenValue:
+        token:
           type: string
     User.RetryDto:
       type: object
@@ -870,6 +1123,11 @@ components:
         '@type':
           readOnly: true
           type: string
+        timesSent:
+          type: integer
+        allowedToSendAfter:
+          type: string
+          format: date-time
         tokenValue:
           type: string
         userID:
