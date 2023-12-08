@@ -22,20 +22,20 @@
         "try_it_out": "Try it out"
       },
       "headers": {
-        "header_1": "Open source",
-        "header_2": "Ease of setup",
-        "header_3": "Ready templates",
-        "header_4": "Ideal for services",
-        "header_5": "All required integrations",
-        "header_6": "Bonus: easy migration"
+        "header_open_source": "Open source",
+        "header_ease_of_setup": "Ease of setup",
+        "header_ready_templates": "Ready templates",
+        "header_ideal_for_services": "Ideal for services",
+        "header_all_required_integrations": "All required integrations",
+        "header_bonus": "Bonus: easy migration"
       },
       "texts": {
-        "text_1": "Thanks to the open source code, you can modify and add CRM functions as you need them",
-        "text_2": "Configure the system in a few clicks without programming knowledge and receive orders from your website in a few minutes",
-        "text_3": "You have: an online store, courses or a web studio. <br /> <br /> We have: special templates that will save you time",
-        "text_4": "We know the specific needs of EdTech, agencies, and service providers — that's why we've created a CRM that's easy to use right away",
-        "text_5": "Connect your CMS and IP telephony in a few clicks. And for specific integrations, use Zapier, APIs, and public libraries",
-        "text_6": "Switch to Vilna in a few clicks with ready-made migration scripts from amoCRM and HubSpot"
+        "text_open_source": "Thanks to the open source code, you can modify and add CRM functions as you need them",
+        "text_configure_system": "Configure the system in a few clicks without programming knowledge and receive orders from your website in a few minutes",
+        "text_you_have_store": "You have: an online store, courses or a web studio. <br /> <br /> We have: special templates that will save you time",
+        "text_we_know_specific_needs": "We know the specific needs of EdTech, agencies, and service providers — that's why we've created a CRM that's easy to use right away",
+        "text_connect_your_cms": "Connect your CMS and IP telephony in a few clicks. And for specific integrations, use Zapier, APIs, and public libraries",
+        "text_switch_to_vilna": "Switch to Vilna in a few clicks with ready-made migration scripts from amoCRM and HubSpot"
       }
     },
     "for_who": {
@@ -43,29 +43,29 @@
       "text_main": "We created Vilna, focusing on the specifics of the service business, which is not suitable for ordinary e-commerce templates",
       "button_text": "Try it out",
       "heading_secondary": "Our CRM is ideal if you:",
-      "card_text_1": "A private entrepreneur is a psychologist, tutor or dropshipper",
-      "card_text_2": "medium-scale local project - online courses, design studio or small outsourcing"
+      "card_text_title": "A private entrepreneur is a psychologist, tutor or dropshipper",
+      "card_text_business": "medium-scale local project - online courses, design studio or small outsourcing"
     },
     "unlimited_possibilities": {
       "main_heading_text": "Limitless",
       "secondary_heading_text": "integration options",
       "cards_headings": {
-        "heading_1": "Public API",
-        "heading_2": "Ready plugins for CMS",
-        "heading_3": "Web Hook System",
-        "heading_4": "Public Libraries"
+        "heading_public_api": "Public API",
+        "heading_ready_plugins": "Ready plugins for CMS",
+        "heading_system": "Web Hook System",
+        "heading_libraries": "Public Libraries"
       },
       "cards_texts": {
-        "text_1": "For cases when you did not find the desired ready-made integration ",
-        "text_2": "Integrate <a href=\"/\" target=\"_blank\" class=\"unlimited-integrations-link-style\">familiar services</a> in a few clicks",
-        "text_3": "Get data about any event in CRM and automate complex business processes",
-        "text_4": "For custom integrations with specific products"
+        "text_for_cases": "For cases when you did not find the desired ready-made integration ",
+        "text_integrate": "Integrate <a href=\"/\" target=\"_blank\" class=\"unlimited-integrations-link-style\">familiar services</a> in a few clicks",
+        "text_get_data": "Get data about any event in CRM and automate complex business processes",
+        "text_for_custom": "For custom integrations with specific products"
       },
       "card_image_titles": {
-        "title_1": "Зображення Ruby 1",
-        "title_2": "Зображення Ruby 2",
-        "title_3": "Зображення Ruby 3",
-        "title_4": "Зображення Ruby 4"
+        "title_for_first": "Image of Ruby 1",
+        "title_for_second": "Image of Ruby 2",
+        "title_for_third": "Image of Ruby 3",
+        "title_for_fourth": "Image of Ruby 4"
       }
     },
     "sign_up": {
@@ -128,20 +128,20 @@
         "try_it_out": "Спробувати"
       },
       "headers": {
-        "header_1": "Open source",
-        "header_2": "Легкість у налаштуванні",
-        "header_3": "Готові шаблони",
-        "header_4": "Ідеальна для сервісів",
-        "header_5": "Усі потрібні інтеграції",
-        "header_6": "Бонус: легка міграція"
+        "header_open_source": "Open source",
+        "header_ease_of_setup": "Легкість у налаштуванні",
+        "header_ready_templates": "Готові шаблони",
+        "header_ideal_for_services": "Ідеальна для сервісів",
+        "header_all_required_integrations": "Усі потрібні інтеграції",
+        "header_bonus": "Бонус: легка міграція"
       },
       "texts": {
-        "text_1": "Завдяки відкритому вихідному коду ви можете змінити та доповнити функції CRM так, як потрібно саме вам",
-        "text_2": "Налаштовуйте систему у декілька кліків без знань у програмуванні та отримуйте замовлення з вашого сайту за кілька хвилин",
-        "text_3": "У вас: онлайн-магазин, курси чи веб-студія <br /> <br /> У нас: спеціальні шаблони, які збережуть ваш час",
-        "text_4": "Ми знаємо специфічні запити EdTech, агентств та провайтерів послуг  — саме тому створили CRM, з якою зручно одразу ",
-        "text_5": "Підключіть вашу CMS та IP-телефонію у кілька кліків. А для специфічних інтеграцій використовуйте Zapier, API та публічні бібліотеки",
-        "text_6": "Переходьте на Vilna у кілька кліків за допомогою готових сценаріїв міграції з amoCRM та HubSpot"
+        "text_open_source": "Завдяки відкритому вихідному коду ви можете змінити та доповнити функції CRM так, як потрібно саме вам",
+        "text_configure_system": "Налаштовуйте систему у декілька кліків без знань у програмуванні та отримуйте замовлення з вашого сайту за кілька хвилин",
+        "text_you_have_store": "У вас: онлайн-магазин, курси чи веб-студія <br /> <br /> У нас: спеціальні шаблони, які збережуть ваш час",
+        "text_we_know_specific_needs": "Ми знаємо специфічні запити EdTech, агентств та провайтерів послуг  — саме тому створили CRM, з якою зручно одразу ",
+        "text_connect_your_cms": "Підключіть вашу CMS та IP-телефонію у кілька кліків. А для специфічних інтеграцій використовуйте Zapier, API та публічні бібліотеки",
+        "text_switch_to_vilna": "Переходьте на Vilna у кілька кліків за допомогою готових сценаріїв міграції з amoCRM та HubSpot"
       }
     },
     "for_who": {
@@ -149,17 +149,17 @@
       "text_main": "Ми створили Vilna, орієнтуючись на специфіку сервісного бізнесу, якому не підходять звичайні e-commerce шаблони",
       "button_text": "Спробувати",
       "heading_secondary": "Наша CRM ідеально підійде, якщо ви:",
-      "card_text_1": "Приватний підприємець — психолог, репетитор чи дропшипер",
-      "card_text_2": "локальний проект середнього масштабу — онлайн-курси, дизайн-студія чи невеликий аутсорс"
+      "card_text_title": "Приватний підприємець — психолог, репетитор чи дропшипер",
+      "card_text_business": "локальний проект середнього масштабу — онлайн-курси, дизайн-студія чи невеликий аутсорс"
     },
     "unlimited_possibilities": {
       "main_heading_text": "Безмежні",
       "secondary_heading_text": "можливості інтеграції",
       "cards_headings": {
-        "heading_1": "Публічний API",
-        "heading_2": "Готові плагіни для CMS",
-        "heading_3": "Система веб-хуків",
-        "heading_4": "Публічні бібліотеки"
+        "heading_public_api": "Публічний API",
+        "heading_ready_plugins": "Готові плагіни для CMS",
+        "heading_system": "Система веб-хуків",
+        "heading_libraries": "Публічні бібліотеки"
       },
       "cards_texts": {
         "text_1": "Для випадків, коли ви не знайшли потрібну готову інтеграцію ",
@@ -168,10 +168,10 @@
         "text_4": "Для кастомних інтеграцій зі специфічними продуктами"
       },
       "card_image_titles": {
-        "title_1": "Ruby Image 1",
-        "title_2": "Ruby Image 2",
-        "title_3": "Ruby Image 3",
-        "title_4": "Ruby Image 4"
+        "title_for_first": "Зображення діаманту 1",
+        "title_for_second": "Зображення діаманту 2",
+        "title_for_third": "Зображення діаманту 3",
+        "title_for_fourth": "Зображення діаманту 4"
       }
     },
     "sign_up": {

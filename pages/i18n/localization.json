@@ -52,22 +52,22 @@
           "main_heading_text": "Limitless",
           "secondary_heading_text": "integration options",
           "cards_headings": {
-            "heading_1": "Public API",
-            "heading_2": "Ready plugins for CMS",
-            "heading_3": "Web Hook System",
-            "heading_4": "Public Libraries"
+            "heading_public_api": "Public API",
+            "heading_ready_plugins": "Ready plugins for CMS",
+            "heading_system": "Web Hook System",
+            "heading_libraries": "Public Libraries"
           },
           "cards_texts": {
-            "text_1": "For cases when you did not find the desired ready-made integration ",
-            "text_2": "Integrate <a href=\"/\" target=\"_blank\" class=\"unlimited-integrations-link-style\">familiar services</a> in a few clicks",
-            "text_3": "Get data about any event in CRM and automate complex business processes",
-            "text_4": "For custom integrations with specific products"
+            "text_for_cases": "For cases when you did not find the desired ready-made integration ",
+            "text_integrate": "Integrate <a href=\"/\" target=\"_blank\" class=\"unlimited-integrations-link-style\">familiar services</a> in a few clicks",
+            "text_get_data": "Get data about any event in CRM and automate complex business processes",
+            "text_for_custom": "For custom integrations with specific products"
           },
           "card_image_titles": {
-            "title_1": "Image of Ruby 1",
-            "title_2": "Image of Ruby 2",
-            "title_3": "Image of Ruby 3",
-            "title_4": "Image of Ruby 4"
+            "title_for_first": "Image of Ruby 1",
+            "title_for_second": "Image of Ruby 2",
+            "title_for_third": "Image of Ruby 3",
+            "title_for_fourth": "Image of Ruby 4"
           }
         },
         "sign_up": {
@@ -158,22 +158,22 @@
           "main_heading_text": "Безмежні",
           "secondary_heading_text": "можливості інтеграції",
           "cards_headings": {
-            "heading_1": "Публічний API",
-            "heading_2": "Готові плагіни для CMS",
-            "heading_3": "Система веб-хуків",
-            "heading_4": "Публічні бібліотеки"
+            "heading_public_api": "Публічний API",
+            "heading_ready_plugins": "Готові плагіни для CMS",
+            "heading_system": "Система веб-хуків",
+            "heading_libraries": "Публічні бібліотеки"
           },
           "cards_texts": {
-            "text_1": "Для випадків, коли ви не знайшли потрібну готову інтеграцію ",
-            "text_2": "Інтегруйте <a href=\"/\" target=\"_blank\" class=\"unlimited-integrations-link-style\">знайомі служби</a> кількома кліками",
-            "text_3": "Отримуйте дані про будь-які івенти у CRM та автоматизуйте складні бізнес-процеси",
-            "text_4": "Для кастомних інтеграцій зі специфічними продуктами"
+            "text_for_cases": "Для випадків, коли ви не знайшли потрібну готову інтеграцію ",
+            "text_integrate": "Інтегруйте <a href=\"/\" target=\"_blank\" class=\"unlimited-integrations-link-style\">знайомі служби</a> кількома кліками",
+            "text_get_data": "Отримуйте дані про будь-які івенти у CRM та автоматизуйте складні бізнес-процеси",
+            "text_for_custom": "Для кастомних інтеграцій зі специфічними продуктами"
           },
           "card_image_titles": {
-            "title_1": "Зображення діаманту 1",
-            "title_2": "Зображення діаманту 2",
-            "title_3": "Зображення діаманту 3",
-            "title_4": "Зображення діаманту 4"
+            "title_for_first": "Зображення діаманту 1",
+            "title_for_second": "Зображення діаманту 2",
+            "title_for_third": "Зображення діаманту 3",
+            "title_for_fourth": "Зображення діаманту 4"
           }
         },
         "sign_up": {
