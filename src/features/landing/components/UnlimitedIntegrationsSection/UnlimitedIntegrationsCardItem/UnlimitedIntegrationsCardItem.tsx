@@ -82,7 +82,7 @@ export default function UnlimitedIntegrationsCardItem({
           width={150}
           height={150}
           src={cardItem.imageSrc}
-          alt={cardItem.imageTitle}
+          alt={t(cardItem.imageTitle)}
           style={{
             ...styles.imageInsideOfPaper,
             objectFit: 'cover',
