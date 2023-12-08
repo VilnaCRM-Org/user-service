@@ -2,7 +2,8 @@ name: codecov
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   codecov:
