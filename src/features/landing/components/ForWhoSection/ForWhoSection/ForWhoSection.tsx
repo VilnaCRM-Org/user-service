@@ -25,13 +25,13 @@ const CARD_ITEMS = [
     id: 'card_1',
     imageSrc: '/assets/img/ForWho/Ruby.png',
     imageAltText: 'Ruby 1',
-    text: 'for_who.card_text_1',
+    text: 'for_who.card_text_title',
   },
   {
     id: 'card_2',
     imageSrc: '/assets/img/ForWho/Ruby.png',
     imageAltText: 'Ruby 2',
-    text: 'for_who.card_text_2',
+    text: 'for_who.card_text_business',
   },
 ];
 
