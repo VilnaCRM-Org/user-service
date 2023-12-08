@@ -37,15 +37,15 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity]
 #[ApiResource(normalizationContext: ['groups' => ['output']],
     exceptionToStatus: [InvalidPasswordError::class => 410, UserNotFoundError::class => 404,
-        TokenNotFoundError::class => 404])]
+        TokenNotFoundError::class => 404, DuplicateEmailError::class => 409])]
 #[Get]
 #[GetCollection(paginationClientItemsPerPage: true)]
-#[Post(exceptionToStatus: [DuplicateEmailError::class => 409], input: UserInputDto::class,
-    processor: RegisterUserProcessor::class)]
+#[Post(input: UserInputDto::class, processor: RegisterUserProcessor::class)]
 #[Patch(input: UserPatchDto::class, processor: UserPatchProcessor::class)]
 #[Put(input: UserPutDto::class, processor: UserPutProcessor::class)]
 #[Delete]
-#[Post(uriTemplate: '/users/{id}/resend-confirmation-email', exceptionToStatus: [UserTimedOutError::class => 429],
+#[Post(uriTemplate: '/users/{id}/resend-confirmation-email', exceptionToStatus: [UserTimedOutError::class => 429,
+    UserNotFoundError::class => 404],
     input: RetryDto::class, processor: ResendEmailProcessor::class)]
 #[Mutation(resolver: ConfirmUserMutationResolver::class,
     input: ConfirmUserDto::class, name: 'confirm')]

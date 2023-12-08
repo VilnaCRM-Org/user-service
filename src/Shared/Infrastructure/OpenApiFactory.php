@@ -152,28 +152,30 @@ class OpenApiFactory implements OpenApiFactoryInterface
         $operationPost = $pathItem->getPost();
         $operationGet = $pathItem->getGet();
 
+        $duplicateEmailResponse = new Response(description: 'Duplicate email', content: new \ArrayObject([
+            'application/json' => [
+                'schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'type' => ['type' => 'string'],
+                        'title' => ['type' => 'string'],
+                        'detail' => ['type' => 'string'],
+                        'status' => ['type' => 'integer'],
+                    ],
+                ],
+                'example' => [
+                    'status' => 409,
+                    'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
+                    'title' => 'An error occurred',
+                    'detail' => 'user@example.com address is already registered. Please use a different email address or try logging in.',
+                ],
+            ],
+        ]), );
+
         $openApi->getPaths()->addPath('/api/users', $pathItem->withPost(
             $operationPost
                 ->withResponse(400, $standardResponse400)
-                ->withResponse(409, new Response(description: 'Duplicate email', content: new \ArrayObject([
-                    'application/json' => [
-                        'schema' => [
-                            'type' => 'object',
-                            'properties' => [
-                                'type' => ['type' => 'string'],
-                                'title' => ['type' => 'string'],
-                                'detail' => ['type' => 'string'],
-                                'status' => ['type' => 'integer'],
-                            ],
-                        ],
-                        'example' => [
-                            'status' => 409,
-                            'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
-                            'title' => 'An error occurred',
-                            'detail' => 'user@example.com address is already registered. Please use a different email address or try logging in.',
-                        ],
-                    ],
-                ]), ))
+                ->withResponse(409, $duplicateEmailResponse)
                 ->withResponse(422, $standardResponse422))
             ->withGet($operationGet->withResponse(400, $standardResponse400)));
 
@@ -206,14 +208,16 @@ class OpenApiFactory implements OpenApiFactoryInterface
             $operationPut->withParameters([$UuidWithExamplePathParam])
                 ->withResponse(400, $standardResponse400)
                 ->withResponse(404, $standardResponse404)
-                ->withResponse(422, $standardResponse422)
+                ->withResponse(409, $duplicateEmailResponse)
                 ->withResponse(410, $oldPasswordErrorResponse)
+                ->withResponse(422, $standardResponse422)
         )->withPatch(
             $operationPatch->withParameters([$UuidWithExamplePathParam])
                 ->withResponse(400, $standardResponse400)
                 ->withResponse(404, $standardResponse404)
-                ->withResponse(422, $standardResponse422)
+                ->withResponse(409, $duplicateEmailResponse)
                 ->withResponse(410, $oldPasswordErrorResponse)
+                ->withResponse(422, $standardResponse422)
         )->withDelete(
             $operationDelete->withParameters([$UuidWithExamplePathParam])
                 ->withResponses([
