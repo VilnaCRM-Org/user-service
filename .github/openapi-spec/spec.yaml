@@ -597,6 +597,22 @@ paths:
                 title: 'An error occurred'
                 detail: 'User not found'
                 status: 404
+        409:
+          description: 'Duplicate email'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                status: 409
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
         410:
           description: 'Old password mismatch'
           content:
@@ -781,6 +797,22 @@ paths:
                 title: 'An error occurred'
                 detail: 'User not found'
                 status: 404
+        409:
+          description: 'Duplicate email'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                status: 409
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
         410:
           description: 'Old password mismatch'
           content:
