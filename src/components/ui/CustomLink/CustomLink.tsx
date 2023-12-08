@@ -7,7 +7,6 @@ interface ILinkProps extends MuiLinkProps {
   children: ReactNode;
   replace?: boolean;
   scroll?: boolean;
-  prefetch?: boolean;
   legacyBehavior?: boolean;
   passHref?: boolean;
   shallow?: boolean;
@@ -20,7 +19,6 @@ export default function CustomLink({
   children,
   scroll = true,
   replace = false,
-  prefetch = true,
   legacyBehavior = false,
   shallow = false,
   passHref = false,
@@ -32,7 +30,6 @@ export default function CustomLink({
       href={href}
       replace={replace}
       scroll={scroll}
-      prefetch={prefetch}
       legacyBehavior={legacyBehavior}
       shallow={shallow}
       passHref={passHref}
@@ -46,7 +43,6 @@ export default function CustomLink({
 CustomLink.defaultProps = {
   replace: false,
   scroll: true,
-  prefetch: true,
   passHref: false,
   legacyBehavior: false,
   shallow: false,
