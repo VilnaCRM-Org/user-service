@@ -9,37 +9,37 @@ export const WHY_WE_CARD_ITEMS: IWhyWeCardItem[] = [
     id: 'card-item-1',
     imageSrc: '/assets/img/WhyWeSection/1_code.png',
     title: 'why_we.headers.header_open_source',
-    text: 'why_we.texts.text_1',
+    text: 'why_we.texts.text_open_source',
   },
   {
     id: 'card-item-2',
     imageSrc: '/assets/img/WhyWeSection/2_settings.png',
     title: 'why_we.headers.header_ease_of_setup',
-    text: 'why_we.texts.text_2',
+    text: 'why_we.texts.text_configure_system',
   },
   {
     id: 'card-item-3',
     imageSrc: '/assets/img/WhyWeSection/3_templates.png',
     title: 'why_we.headers.header_ready_templates',
-    text: 'why_we.texts.text_3',
+    text: 'why_we.texts.text_you_have_store',
   },
   {
     id: 'card-item-4',
     imageSrc: '/assets/img/WhyWeSection/4_services.png',
     title: 'why_we.headers.header_ideal_for_services',
-    text: 'why_we.texts.text_4',
+    text: 'why_we.texts.text_we_know_specific_needs',
   },
   {
     id: 'card-item-5',
     imageSrc: '/assets/img/WhyWeSection/5_integrations.png',
     title: 'why_we.headers.header_all_required_integrations',
-    text: 'why_we.texts.text_5',
+    text: 'why_we.texts.text_connect_your_cms',
   },
   {
     id: 'card-item-6',
     imageSrc: '/assets/img/WhyWeSection/6_migration.png',
     title: 'why_we.headers.header_bonus',
-    text: 'why_we.texts.text_6',
+    text: 'why_we.texts.text_switch_to_vilna',
   },
 ];
 
