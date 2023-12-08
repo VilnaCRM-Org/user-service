@@ -49,4 +49,3 @@ next-env.d.ts
 .vscode
 
 ./storybook-static
-storybook-static
