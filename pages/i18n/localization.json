@@ -24,12 +24,12 @@
             "try_it_out": "Try it out"
           },
           "headers": {
-            "header_1": "Open source",
-            "header_2": "Ease of setup",
-            "header_3": "Ready templates",
-            "header_4": "Ideal for services",
-            "header_5": "All required integrations",
-            "header_6": "Bonus: easy migration"
+            "header_open_source": "Open source",
+            "header_ease_of_setup": "Ease of setup",
+            "header_ready_templates": "Ready templates",
+            "header_ideal_for_services": "Ideal for services",
+            "header_all_required_integrations": "All required integrations",
+            "header_bonus": "Bonus: easy migration"
           },
           "texts": {
             "text_1": "Thanks to the open source code, you can modify and add CRM functions as you need them",
@@ -130,12 +130,12 @@
             "try_it_out": "Спробувати"
           },
           "headers": {
-            "header_1": "Open source",
-            "header_2": "Легкість у налаштуванні",
-            "header_3": "Готові шаблони",
-            "header_4": "Ідеальна для сервісів",
-            "header_5": "Усі потрібні інтеграції",
-            "header_6": "Бонус: легка міграція"
+            "header_open_source": "Open source",
+            "header_ease_of_setup": "Легкість у налаштуванні",
+            "header_ready_templates": "Готові шаблони",
+            "header_ideal_for_services": "Ідеальна для сервісів",
+            "header_all_required_integrations": "Усі потрібні інтеграції",
+            "header_bonus": "Бонус: легка міграція"
           },
           "texts": {
             "text_1": "Завдяки відкритому вихідному коду ви можете змінити та доповнити функції CRM так, як потрібно саме вам",
