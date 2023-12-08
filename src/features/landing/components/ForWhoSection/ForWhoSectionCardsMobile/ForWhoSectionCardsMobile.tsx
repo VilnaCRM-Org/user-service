@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import Button from '@/components/ui/Button/Button';
 
 import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 import scrollToRegistrationSection from '../../../utils/helpers/scrollToRegistrationSection';
 
 interface IForWhoSectionCardsMobileProps {
@@ -38,7 +37,7 @@ const styles = {
 };
 
 export default function ForWhoSectionCardsMobile({ cardItemsJSX }: IForWhoSectionCardsMobileProps) {
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
   const { isSmallest } = useScreenSize();
 
   return (

@@ -3,7 +3,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 const styles = {
   mainBox: {
@@ -24,7 +23,7 @@ const styles = {
 };
 
 export default function ForWhoSectionCards({ cardItemsJSX }: { cardItemsJSX: React.ReactNode }) {
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
   const { isSmallest } = useScreenSize();
 
   return (

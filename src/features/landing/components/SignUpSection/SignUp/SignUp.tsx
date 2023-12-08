@@ -12,7 +12,6 @@ import {
   INPUT_ID_FOR_PASSWORD,
   INPUT_ID_FOR_USER_FIRST_AND_LAST_NAME,
 } from '../../../types/sign-up/types';
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 import SignUpPrivacyPolicy from '../SignUpPrivacyPolicy/SignUpPrivacyPolicy';
 
 interface IFormData {
@@ -61,7 +60,7 @@ const styles = {
 };
 
 export default function SignUp() {
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
   const { isSmallest, isMobile, isTablet } = useScreenSize();
   const { control, handleSubmit, formState } = useForm<IFormData>();
   const { errors } = formState;

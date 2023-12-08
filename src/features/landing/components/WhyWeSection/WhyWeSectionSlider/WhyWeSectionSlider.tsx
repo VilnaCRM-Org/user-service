@@ -6,13 +6,12 @@ import SwipeableViews from 'react-swipeable-views';
 import Button from '@/components/ui/Button/Button';
 
 import IWhyWeCardItem from '../../../types/why-we/types';
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 import scrollToRegistrationSection from '../../../utils/helpers/scrollToRegistrationSection';
 import WhyWeSectionCardItem from '../WhyWeSectionCardItem/WhyWeSectionCardItem';
 
 // TODO: Change Carousel to a newer one
 export default function WhyWeSectionSlider({ cardItems }: { cardItems: IWhyWeCardItem[] }) {
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState(0);
   const [, setCurrentActiveItem] = useState(cardItems[0]);
   const maxSteps = cardItems.length;

@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
 
 import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 const styles = {
   confidentialsBox: {
@@ -31,7 +30,7 @@ const styles = {
 };
 
 export default function FooterConfidential({ style }: { style?: React.CSSProperties }) {
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
   const { isMobile, isSmallest } = useScreenSize();
 
   return (

@@ -100,5 +100,3 @@ export const SOCIAL_LINKS: ISocialLink[] = [
     linkHref: '/',
   },
 ];
-
-export const TRANSLATION_NAMESPACE = 'landing';

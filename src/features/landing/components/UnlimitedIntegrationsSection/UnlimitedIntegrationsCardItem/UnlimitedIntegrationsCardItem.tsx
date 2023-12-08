@@ -5,7 +5,6 @@ import ReactHtmlParser from 'react-html-parser';
 import { useTranslation } from 'react-i18next';
 
 import IUnlimitedIntegrationsItem from '../../../types/unlimited-integrations/types';
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 interface IUnlimitedIntegrationsCardItemProps {
   cardItem: IUnlimitedIntegrationsItem;
@@ -64,7 +63,7 @@ export default function UnlimitedIntegrationsCardItem({
   cardItem,
   style,
 }: IUnlimitedIntegrationsCardItemProps) {
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
 
   return (
     <Card

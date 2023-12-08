@@ -4,8 +4,6 @@ import { useTranslation } from 'react-i18next';
 
 import Button from '@/components/ui/Button/Button';
 
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
-
 interface IHeaderDrawerActionButtonsProps {
   onSignInButtonClick: () => void;
   onTryItOutButtonClick: () => void;
@@ -17,7 +15,7 @@ export default function HeaderDrawerActionButtons({
   onTryItOutButtonClick,
   onDrawerClose,
 }: IHeaderDrawerActionButtonsProps) {
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
 
   const handleTryItOutClickWithDrawerClose = () => {
     onDrawerClose();

@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import Button from '@/components/ui/Button/Button';
 
 import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 interface IAboutVilnaMainContentProps {
   onTryItOutButtonClick: () => void;
@@ -68,7 +67,7 @@ const styles = {
 export default function AboutVilnaMainContent({
   onTryItOutButtonClick,
 }: IAboutVilnaMainContentProps) {
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
   const { isMobile, isSmallest, isLaptop, isTablet } = useScreenSize();
 
   return (

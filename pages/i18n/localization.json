@@ -7,7 +7,10 @@
           "for_who": "For who",
           "integration": "Integration",
           "contacts": "Contacts",
-          "actions": { "try_it_out": "Try it out", "log_in": "Log in" }
+          "actions": {
+            "try_it_out": "Try it out",
+            "log_in": "Log in"
+          }
         },
         "about_vilna": {
           "heading_main": "The first Ukrainian open source CRM",
@@ -17,7 +20,9 @@
         "why_we": {
           "heading": "Why we",
           "subtitle": "Unlimited customization options or ease of use - we've made it easy for any business to manage sales",
-          "button": { "try_it_out": "Try it out" },
+          "button": {
+            "try_it_out": "Try it out"
+          },
           "headers": {
             "header_1": "Open source",
             "header_2": "Ease of setup",
@@ -108,7 +113,10 @@
           "for_who": "Для кого",
           "integration": "Інтеграція",
           "contacts": "Контакти",
-          "actions": { "try_it_out": "Спробувати", "log_in": "Войти" }
+          "actions": {
+            "try_it_out": "Спробувати",
+            "log_in": "Войти"
+          }
         },
         "about_vilna": {
           "heading_main": "Перша українська CRM з відкритим кодом",
@@ -118,7 +126,9 @@
         "why_we": {
           "heading": "Чому ми",
           "subtitle": "Безмежні можливості кастомізації чи простота у використанні — ми подбали, щоб керувати продажами було зручно будь-якому бізнесу",
-          "button": { "try_it_out": "Спробувати" },
+          "button": {
+            "try_it_out": "Спробувати"
+          },
           "headers": {
             "header_1": "Open source",
             "header_2": "Легкість у налаштуванні",

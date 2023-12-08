@@ -5,7 +5,6 @@ import CustomLink from '@/components/ui/CustomLink/CustomLink';
 
 import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
 import ISocialLink from '../../../types/social/types';
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 import SignUpSocials from '../SignUpSocials/SignUpSocials';
 
 const styles = {
@@ -40,7 +39,7 @@ const styles = {
 };
 
 export default function SignUpTextsContent({ socialLinks }: { socialLinks: ISocialLink[] }) {
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
   const { isSmallest, isMobile, isTablet } = useScreenSize();
 
   return (

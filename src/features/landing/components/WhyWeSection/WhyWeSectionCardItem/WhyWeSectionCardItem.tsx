@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 
 import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
 import IWhyWeCardItem from '../../../types/why-we/types';
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 interface IWhyWeSectionItemCardItemProps {
   cardItem: IWhyWeCardItem;
@@ -85,7 +84,7 @@ export default function WhyWeSectionCardItem({
   isSmall,
 }: IWhyWeSectionItemCardItemProps) {
   const { imageSrc, title, text } = cardItem;
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
   const { isLaptop, isSmallest, isMobile, isTablet } = useScreenSize();
 

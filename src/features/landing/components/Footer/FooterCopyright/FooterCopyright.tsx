@@ -1,8 +1,6 @@
 import { Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
-
 const styles = {
   copyrightText: {
     color: '#404142',
@@ -16,7 +14,7 @@ const styles = {
 };
 
 export default function FooterCopyright({ style }: { style?: React.CSSProperties }) {
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
 
   return (
     <Typography style={{ ...styles.copyrightText, ...style }}>{t(`footer.copyright`)}</Typography>

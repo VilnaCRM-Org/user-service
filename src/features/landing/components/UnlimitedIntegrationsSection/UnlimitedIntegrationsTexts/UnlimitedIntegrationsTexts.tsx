@@ -2,7 +2,6 @@ import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 const style = {
   mainBox: {
@@ -37,7 +36,7 @@ const style = {
 };
 
 export default function UnlimitedIntegrationsTexts() {
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
   const { isMobile, isSmallest } = useScreenSize();
 
   return (

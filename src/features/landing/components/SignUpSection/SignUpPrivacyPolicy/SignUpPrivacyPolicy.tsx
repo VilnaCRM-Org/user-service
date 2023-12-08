@@ -6,7 +6,6 @@ import CustomCheckbox from '@/components/ui/CustomCheckbox/CustomCheckbox';
 import CustomLink from '@/components/ui/CustomLink/CustomLink';
 
 import { CHECKBOX_PRIVACY_POLICY_ID } from '../../../types/sign-up/types';
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 interface ISignUpPrivacyPolicyProps {
   isCheckboxChecked: boolean;
@@ -28,7 +27,7 @@ export default function SignUpPrivacyPolicy({
   isCheckboxChecked,
   onPrivacyPolicyCheckboxChange,
 }: ISignUpPrivacyPolicyProps) {
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
   const handleCheckboxChange = (checked: boolean) => {
     onPrivacyPolicyCheckboxChange(checked);
   };

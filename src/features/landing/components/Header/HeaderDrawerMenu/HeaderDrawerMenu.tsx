@@ -3,7 +3,6 @@ import Drawer from '@mui/material/Drawer';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 import HeaderDrawerEmail from '../HeaderDrawerEmail/HeaderDrawerEmail';
 import HeaderDrawerSocials from '../HeaderDrawerSocials/HeaderDrawerSocials';
 import HeaderMobileLink from '../HeaderMobileLink/HeaderMobileLink';
@@ -22,7 +21,7 @@ export default function HeaderDrawerMenu({
   onSignInButtonClick,
   onTryItOutButtonClick,
 }: IHeaderDrawerMenuProps) {
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
   const drawerStyles = {
     position: 'absolute',
     bottom: isDrawerOpen ? '0' : '-100%', // Slide in from the bottom or hide

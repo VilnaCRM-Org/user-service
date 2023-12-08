@@ -3,7 +3,6 @@ import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 
 import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 interface IForWhoSectionCardItemProps {
   imageSrc: string;
@@ -37,7 +36,7 @@ export default function ForWhoSectionCardItem({
   text,
 }: IForWhoSectionCardItemProps) {
   const { isMobile, isSmallest } = useScreenSize();
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
 
   return (
     <Grid item md={6} xs={12} sx={{ alignSelf: 'stretch', flexGrow: '1' }}>

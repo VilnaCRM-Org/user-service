@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import Button from '@/components/ui/Button/Button';
 
 import useScreenSize from '../../../hooks/useScreenSize/useScreenSize';
-import { TRANSLATION_NAMESPACE } from '../../../utils/constants/constants';
 
 const styles = {
   mainGridContainer: {
@@ -47,7 +46,7 @@ export default function ForWhoMainTextsContent({
 }: {
   onTryItOutButtonClick: () => void;
 }) {
-  const { t } = useTranslation(TRANSLATION_NAMESPACE);
+  const { t } = useTranslation();
   const { isSmallest, isMobile } = useScreenSize();
 
   return (
