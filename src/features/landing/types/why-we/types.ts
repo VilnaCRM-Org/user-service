@@ -1,5 +1,5 @@
 export default interface IWhyWeCardItem {
-  id: string | number;
+  id: string;
   imageSrc: string;
   title: string;
   text: string;
