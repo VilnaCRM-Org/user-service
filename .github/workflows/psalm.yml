@@ -17,6 +17,7 @@ jobs:
         with:
           composer_require_dev: true
           composer_ignore_platform_reqs: true
+          no_cache: true
 
       - name: Psalm Security
         uses: docker://vimeo/psalm-github-actions
