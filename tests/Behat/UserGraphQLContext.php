@@ -2,17 +2,11 @@
 
 namespace App\Tests\Behat;
 
-use App\User\Domain\Entity\User\User;
-use App\User\Domain\UserRepository;
-use App\User\Infrastructure\Exceptions\UserNotFoundError;
 use Behat\Behat\Context\Context;
-use Faker\Factory;
-use Faker\Generator;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserGraphQLContext implements Context
 {
@@ -22,39 +16,11 @@ class UserGraphQLContext implements Context
     private string $queryName;
     private array $responseContent;
 
-    private Generator $faker;
-
     public function __construct(
-        private readonly KernelInterface    $kernel, private ?Response $response, private UserRepository $userRepository,
-        private UserPasswordHasherInterface $passwordHasher
-    )
-    {
+        private readonly KernelInterface $kernel, private ?Response $response
+    ) {
         $this->responseContent = [];
-        $this->faker = Factory::create();
     }
-
-//    /**
-//     * @Given user with id :id and password :password exists
-//     */
-//    public function userWithIdAndPasswordExists(string $id, string $password): void
-//    {
-//        try {
-//            $user = $this->userRepository->find($id);
-//            if (!$this->passwordHasher->isPasswordValid($user, $password)) {
-//                throw new UserNotFoundError();
-//            }
-//        } catch (UserNotFoundError) {
-//            $user = new User($id, $this->faker->email, $this->faker->name, $password);
-//
-//            $hashedPassword = $this->passwordHasher->hashPassword(
-//                $user,
-//                $password
-//            );
-//            $user->setPassword($hashedPassword);
-//
-//            $this->userRepository->save($user);
-//        }
-//    }
 
     /**
      * @Given creating user with email :email initials :initials password :password
@@ -62,19 +28,19 @@ class UserGraphQLContext implements Context
     public function creatingUser(string $email, string $initials, string $password): void
     {
         $this->queryName = 'createUser';
-        $mutation = "
-        mutation {" . $this->queryName . "
+        $mutation = '
+        mutation {'.$this->queryName."
             (input: {
                 email: \"$email\"
                 initials: \"$initials\"
                 password: \"$password\"
             }) {
                 user {
-                    " . implode("\n", $this->responseContent) . "
+                    ".implode("\n", $this->responseContent).'
                 }
             }
         }
-    ";
+    ';
 
         $this->query = $mutation;
     }
@@ -85,19 +51,19 @@ class UserGraphQLContext implements Context
     public function updatingUser(string $id, string $email, string $oldPassword): void
     {
         $this->queryName = 'updateUser';
-        $mutation = "
+        $mutation = '
         mutation {
-            " . $this->queryName . "(input: {
+            '.$this->queryName."(input: {
                 userId: \"$id\"
                 email: \"$email\"
                 oldPassword: \"$oldPassword\"
             }) {
                 user {
-                    " . implode("\n", $this->responseContent) . "
+                    ".implode("\n", $this->responseContent).'
                 }
             }
         }
-    ";
+    ';
 
         $this->query = $mutation;
     }
