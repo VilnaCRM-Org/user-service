@@ -2,7 +2,7 @@ name: memory leak testing
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
 
 jobs:
   memory-leak-testing:
