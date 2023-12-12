@@ -1,4 +1,4 @@
-Feature: User CRUD Operations
+Feature: User Operations
   In order to manage users
   As a system administrator
   I want to perform CRUD operations on user records

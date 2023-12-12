@@ -17,12 +17,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use Zenstruck\Messenger\Test\InteractsWithMessenger;
 
-class UserCrudContext implements Context
+class UserContext implements Context
 {
-    use InteractsWithMessenger;
-
     private array $requestBody;
     private Generator $faker;
 

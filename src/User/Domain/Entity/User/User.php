@@ -25,6 +25,7 @@ use App\User\Infrastructure\Exceptions\TokenNotFoundError;
 use App\User\Infrastructure\Exceptions\UserNotFoundError;
 use App\User\Infrastructure\Exceptions\UserTimedOutError;
 use App\User\Infrastructure\Token\ConfirmUserMutationResolver;
+use App\User\Infrastructure\User\RegisterUserMutationResolver;
 use App\User\Infrastructure\User\RegisterUserProcessor;
 use App\User\Infrastructure\User\UserPatchProcessor;
 use App\User\Infrastructure\User\UserPutProcessor;
@@ -49,7 +50,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     input: RetryDto::class, processor: ResendEmailProcessor::class)]
 #[Mutation(resolver: ConfirmUserMutationResolver::class,
     input: ConfirmUserDto::class, name: 'confirm')]
-#[Mutation(name: 'create')]
+#[Mutation(resolver: RegisterUserMutationResolver::class, input: UserInputDto::class, name: 'create')]
 #[Mutation(resolver: UserUpdateMutationResolver::class,
     input: UserUpdateMutationDto::class, name: 'update')]
 #[Mutation(name: 'delete')]
