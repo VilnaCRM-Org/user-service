@@ -7,17 +7,21 @@ use App\Shared\Domain\Bus\Event\EventBus;
 use App\User\Domain\UserRepository;
 use App\User\Infrastructure\Event\PasswordChangedEvent;
 use App\User\Infrastructure\Exceptions\InvalidPasswordError;
+use App\User\Infrastructure\MutationInputValidator;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserUpdateMutationResolver implements MutationResolverInterface
 {
     public function __construct(private UserRepository $userRepository,
-        private UserPasswordHasherInterface $passwordHasher, private EventBus $eventBus)
-    {
+        private UserPasswordHasherInterface $passwordHasher, private EventBus $eventBus,
+        private MutationInputValidator $validator
+    ) {
     }
 
     public function __invoke(?object $item, array $context): ?object
     {
+        $this->validator->validate($item);
+
         $userId = $item->userId;
         $user = $this->userRepository->find($userId);
         $passwordChanged = false;

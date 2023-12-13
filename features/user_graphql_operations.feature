@@ -28,13 +28,12 @@ Feature: User GraphQL Operations
     When graphQL request is send
     Then user's id and email should be returned
 
-    #TODO should work fine after adding email check to UserUpdateMutationResolver
-#  Scenario: Updating user to duplicate email
-#    Given requesting to return user's id and email
-#    And user with id "updateToDuplicateEmailGraphQLUserId" and password "pass" exists
-#    And updating user with id "updateToDuplicateEmailGraphQLUserId" and password "pass" to new email "testUpdateGraphQL@mail.com"
-#    When graphQL request is send
-#    Then graphql error response should be returned
+  Scenario: Updating user to duplicate email
+    Given requesting to return user's id and email
+    And user with id "updateToDuplicateEmailGraphQLUserId" and password "pass" exists
+    And updating user with id "updateToDuplicateEmailGraphQLUserId" and password "pass" to new email "testUpdateGraphQL@mail.com"
+    When graphQL request is send
+    Then graphql error response should be returned
 
   Scenario: Updating user with wrong password
     Given requesting to return user's id and email
@@ -48,9 +47,8 @@ Feature: User GraphQL Operations
     When graphQL request is send
     Then graphql error response should be returned
 
-  #TODO should work fine after fixing validation for GraphQL mutation
-#  Scenario: Updating user to invalid email
-#    Given requesting to return user's id and email
-#    And updating user with id "updateGraphQLUserId" and password "pass" to new email "test"
-#    When graphQL request is send
-#    Then graphql error response should be returned
+  Scenario: Updating user to invalid email
+    Given requesting to return user's id and email
+    And updating user with id "updateGraphQLUserId" and password "pass" to new email "test"
+    When graphQL request is send
+    Then graphql error response should be returned

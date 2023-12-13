@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\GraphQl\DeleteMutation;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
@@ -53,7 +54,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[Mutation(resolver: RegisterUserMutationResolver::class, input: UserInputDto::class, name: 'create')]
 #[Mutation(resolver: UserUpdateMutationResolver::class,
     input: UserUpdateMutationDto::class, name: 'update')]
-#[Mutation(name: 'delete')]
+#[DeleteMutation(name: 'delete')]
 #[Mutation(resolver: ResendEmailMutationResolver::class, input: RetryMutationDto::class, name: 'resendEmailTo')]
 #[Query]
 #[QueryCollection]

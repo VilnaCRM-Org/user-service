@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 class UserGraphQLContext implements Context
 {
-    private string $GraphQL_Endpoint_Uri = 'https://localhost/api/graphql';
+    private string $GRAPHQL_ENDPOINT_URI = 'https://localhost/api/graphql';
 
     private string $query;
     private string $queryName;
@@ -83,7 +83,7 @@ class UserGraphQLContext implements Context
     public function sendGraphQlRequest(): void
     {
         $this->response = $this->kernel->handle(Request::create(
-            $this->GraphQL_Endpoint_Uri,
+            $this->GRAPHQL_ENDPOINT_URI,
             'POST',
             [],
             [],
