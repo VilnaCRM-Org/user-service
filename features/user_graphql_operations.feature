@@ -7,7 +7,7 @@ Feature: User GraphQL Operations
     Given requesting to return user's id and email
     And creating user with email "graphqltest@mail.com" initials "name" password "pass"
     When graphQL request is send
-    Then user's id and email should be returned
+    Then requested fields should be returned
 
   Scenario: Creating a user with duplicate email
     Given requesting to return user's id and email
@@ -26,7 +26,7 @@ Feature: User GraphQL Operations
     And user with id "updateGraphQLUserId" and password "pass" exists
     And updating user with id "updateGraphQLUserId" and password "pass" to new email "testUpdateGraphQL@mail.com"
     When graphQL request is send
-    Then user's id and email should be returned
+    Then requested fields should be returned
 
   Scenario: Updating user to duplicate email
     Given requesting to return user's id and email
@@ -52,3 +52,62 @@ Feature: User GraphQL Operations
     And updating user with id "updateGraphQLUserId" and password "pass" to new email "test"
     When graphQL request is send
     Then graphql error response should be returned
+
+  Scenario: Deleting user
+    Given requesting to return user's id
+    And user with id "deleteGraphQLUserId" exists
+    And deleting user with id "deleteGraphQLUserId"
+    When graphQL request is send
+    Then requested fields should be returned
+
+  Scenario: Deleting non-existing user
+    Given requesting to return user's id
+    And deleting user with id "wrongDeleteGraphQLUserId"
+    When graphQL request is send
+    Then graphql error response should be returned
+
+  Scenario: Confirm user
+    Given requesting to return user's id and email
+    And user with id "confirmGraphQLUserId" exists
+    And user with id "confirmGraphQLUserId" has confirmation token "confirmationToken"
+    And confirming user with token "confirmationToken" via graphQl
+    When graphQL request is send
+    Then requested fields should be returned
+
+  Scenario: Confirm with expired token
+    Given requesting to return user's id and email
+    And confirming user with token "expiredToken" via graphQl
+    When graphQL request is send
+    Then graphql error response should be returned
+
+  Scenario: Resend email to user
+    Given requesting to return user's id and email
+    And user with id "resendEmailGraphQLUserId" exists
+    And resending email to user with id "resendEmailGraphQLUserId"
+    When graphQL request is send
+    Then requesting to return user's id and email
+
+  Scenario: Resend email non-existing to user
+    Given requesting to return user's id and email
+    And resending email to user with id "wrongResendEmailGraphQLUserId"
+    When graphQL request is send
+    Then graphql error response should be returned
+
+  Scenario: Getting user
+    Given requesting to return user's id and email
+    And user with id "getQLUserId" exists
+    And getting user with id "getGraphQLUserId"
+    When graphQL request is send
+    Then requesting to return user's id and email
+
+  Scenario: Getting non-existing user
+    Given requesting to return user's id and email
+    And getting user with id "wrongGetGraphQLUserId"
+    When graphQL request is send
+    Then graphql error response should be returned
+
+  Scenario: Getting collection of users
+    Given requesting to return user's id and email
+    And getting collection of users
+    When graphQL request is send
+    Then collection of users should be returned

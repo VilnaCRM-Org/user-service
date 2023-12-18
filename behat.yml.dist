@@ -5,6 +5,7 @@ default:
                 - App\Tests\Behat\DemoContext
                 - App\Tests\Behat\UserGraphQLContext
                 - App\Tests\Behat\UserContext
+                - App\Tests\Behat\UserOperationsContext
 
     extensions:
         FriendsOfBehat\SymfonyExtension:

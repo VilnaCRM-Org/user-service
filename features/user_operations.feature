@@ -138,11 +138,13 @@ Feature: User Operations
     Then the response status code should be 404
 
   Scenario: Confirming user
-    Given user with id "conformUserId" exists
-    And user with id "conformUserId" has a confirmation token assigned to him
+    Given user with id "confirmUserId" exists
+    And user with id "confirmUserId" has confirmation token "confirmationToken"
+    And confirming user with token "confirmationToken"
     When PATCH request is send to "https://localhost/api/users/confirm"
     Then the response status code should be 200
 
   Scenario: Confirming user with expired token
     When PATCH request is send to "https://localhost/api/users/confirm"
+    And confirming user with token "expiredToken"
     Then the response status code should be 404

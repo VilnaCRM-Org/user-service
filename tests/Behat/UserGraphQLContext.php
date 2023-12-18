@@ -11,6 +11,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class UserGraphQLContext implements Context
 {
     private string $GRAPHQL_ENDPOINT_URI = 'https://localhost/api/graphql';
+    private string $GRAPHQL_ID_PREFIX = '/api/users/';
 
     private string $query;
     private string $queryName;
@@ -18,8 +19,67 @@ class UserGraphQLContext implements Context
 
     public function __construct(
         private readonly KernelInterface $kernel, private ?Response $response
-    ) {
+    )
+    {
         $this->responseContent = [];
+    }
+
+    /**
+     * @Given requesting to return user's id and email
+     */
+    public function expectingToGetIdAndEmail(): void
+    {
+        $this->responseContent[] = 'id';
+        $this->responseContent[] = 'email';
+    }
+
+    /**
+     * @Given requesting to return user's id
+     */
+    public function expectingToGetId(): void
+    {
+        $this->responseContent[] = 'id';
+    }
+
+    /**
+     * @Given getting user with id :id
+     */
+    public function gettingUser(string $id): void
+    {
+        $this->queryName = 'user';
+        $id = $this->GRAPHQL_ID_PREFIX . $id;
+        $mutation = "
+        query{
+            $this->queryName
+            (id: \"$id\") {
+                 " . implode("\n", $this->responseContent) . '
+            }
+        }
+    ';
+
+        $this->query = $mutation;
+    }
+
+    /**
+     * @Given getting collection of users
+     */
+    public function gettingCollectionOfUsers(): void
+    {
+        $this->queryName = 'users';
+        $mutation = "
+        query {
+            $this->queryName
+            (first: 1) {
+              edges{
+                   node{
+                        " . implode("\n", $this->responseContent) . "
+                        }
+                   }
+            }
+        }
+    ";
+
+        $this->query = $mutation;
     }
 
     /**
@@ -28,21 +88,8 @@ class UserGraphQLContext implements Context
     public function creatingUser(string $email, string $initials, string $password): void
     {
         $this->queryName = 'createUser';
-        $mutation = '
-        mutation {'.$this->queryName."
-            (input: {
-                email: \"$email\"
-                initials: \"$initials\"
-                password: \"$password\"
-            }) {
-                user {
-                    ".implode("\n", $this->responseContent).'
-                }
-            }
-        }
-    ';
-
-        $this->query = $mutation;
+        $this->query = $this->createMutation($this->queryName,
+            ['initials' => $initials, 'email' => $email, 'password' => $password], $this->responseContent);
     }
 
     /**
@@ -51,30 +98,57 @@ class UserGraphQLContext implements Context
     public function updatingUser(string $id, string $email, string $oldPassword): void
     {
         $this->queryName = 'updateUser';
-        $mutation = '
-        mutation {
-            '.$this->queryName."(input: {
-                userId: \"$id\"
-                email: \"$email\"
-                oldPassword: \"$oldPassword\"
-            }) {
-                user {
-                    ".implode("\n", $this->responseContent).'
-                }
-            }
-        }
-    ';
-
-        $this->query = $mutation;
+        $this->query = $this->createMutation($this->queryName,
+            ['userId' => $id, 'email' => $email, 'oldPassword' => $oldPassword], $this->responseContent);
     }
 
     /**
-     * @Given requesting to return user's id and email
+     * @Given confirming user with token :token via graphQl
      */
-    public function expectingToGet(): void
+    public function confirmingUserWithToken(string $token): void
     {
-        $this->responseContent[] = 'id';
-        $this->responseContent[] = 'email';
+        $this->queryName = 'confirmUser';
+        $this->query = $this->createMutation($this->queryName, ['token' => $token], $this->responseContent);
+    }
+
+    /**
+     * @Given resending email to user with id :id
+     */
+    public function resendEmailToUser(string $id): void
+    {
+        $this->queryName = 'resendEmailToUser';
+        $this->query = $this->createMutation($this->queryName, ['userId' => $id], $this->responseContent);
+    }
+
+    /**
+     * @Given deleting user with id :id
+     */
+    public function deleteUser(string $id): void
+    {
+        $this->queryName = 'deleteUser';
+        $id = $this->GRAPHQL_ID_PREFIX . $id;
+
+        $this->query = $this->createMutation($this->queryName, ['id' => $id], $this->responseContent);
+    }
+
+    private function createMutation(string $name, array $inputArray, array $responseFields): string
+    {
+        $input = '';
+        foreach ($inputArray as $key => $value) {
+            $input .= $key . ':"' . $value . "\"\n";
+        }
+
+        return "
+        mutation {
+            $name(input: {
+                " . $input . "
+            }) {
+                user {
+                    " . implode("\n", $responseFields) . "
+                }
+            }
+        }
+    ";
     }
 
     /**
@@ -94,14 +168,29 @@ class UserGraphQLContext implements Context
     }
 
     /**
-     * @Then user's id and email should be returned
+     * @Then requested fields should be returned
      */
-    public function theResponseShouldContainAReturnedUser(): void
+    public function theResponseShouldContainRequestedFields(): void
     {
         $userData = json_decode($this->response->getContent(), true)['data'][$this->queryName]['user'];
 
         foreach ($this->responseContent as $item) {
             Assert::assertArrayHasKey($item, $userData);
+        }
+    }
+
+    /**
+     * @Then collection of users should be returned
+     */
+    public function collectionOfUsersShouldBeReturned(): void
+    {
+        $userData = json_decode($this->response->getContent(), true)['data'][$this->queryName]['edges'];
+
+        Assert::assertIsArray($userData);
+        foreach ($userData as $user) {
+            foreach ($this->responseContent as $item) {
+                Assert::assertArrayHasKey($item, $user["node"]);
+            }
         }
     }
 
