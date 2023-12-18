@@ -17,10 +17,9 @@ class UserContext implements Context
     private Generator $faker;
 
     public function __construct(
-        private UserRepository              $userRepository,
+        private UserRepository $userRepository,
         private UserPasswordHasherInterface $passwordHasher, private TokenRepository $tokenRepository
-    )
-    {
+    ) {
         $this->faker = Factory::create();
     }
 

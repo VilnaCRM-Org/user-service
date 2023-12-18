@@ -19,8 +19,7 @@ class UserGraphQLContext implements Context
 
     public function __construct(
         private readonly KernelInterface $kernel, private ?Response $response
-    )
-    {
+    ) {
         $this->responseContent = [];
     }
 
@@ -47,12 +46,12 @@ class UserGraphQLContext implements Context
     public function gettingUser(string $id): void
     {
         $this->queryName = 'user';
-        $id = $this->GRAPHQL_ID_PREFIX . $id;
+        $id = $this->GRAPHQL_ID_PREFIX.$id;
         $mutation = "
         query{
             $this->queryName
             (id: \"$id\") {
-                 " . implode("\n", $this->responseContent) . '
+                 ".implode("\n", $this->responseContent).'
             }
         }
     ';
@@ -72,12 +71,12 @@ class UserGraphQLContext implements Context
             (first: 1) {
               edges{
                    node{
-                        " . implode("\n", $this->responseContent) . "
+                        ".implode("\n", $this->responseContent).'
                         }
                    }
             }
         }
-    ";
+    ';
 
         $this->query = $mutation;
     }
@@ -126,7 +125,7 @@ class UserGraphQLContext implements Context
     public function deleteUser(string $id): void
     {
         $this->queryName = 'deleteUser';
-        $id = $this->GRAPHQL_ID_PREFIX . $id;
+        $id = $this->GRAPHQL_ID_PREFIX.$id;
 
         $this->query = $this->createMutation($this->queryName, ['id' => $id], $this->responseContent);
     }
@@ -135,20 +134,20 @@ class UserGraphQLContext implements Context
     {
         $input = '';
         foreach ($inputArray as $key => $value) {
-            $input .= $key . ':"' . $value . "\"\n";
+            $input .= $key.':"'.$value."\"\n";
         }
 
         return "
         mutation {
             $name(input: {
-                " . $input . "
+                ".$input.'
             }) {
                 user {
-                    " . implode("\n", $responseFields) . "
+                    '.implode("\n", $responseFields).'
                 }
             }
         }
-    ";
+    ';
     }
 
     /**
@@ -189,7 +188,7 @@ class UserGraphQLContext implements Context
         Assert::assertIsArray($userData);
         foreach ($userData as $user) {
             foreach ($this->responseContent as $item) {
-                Assert::assertArrayHasKey($item, $user["node"]);
+                Assert::assertArrayHasKey($item, $user['node']);
             }
         }
     }
