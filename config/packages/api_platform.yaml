@@ -4,7 +4,9 @@ api_platform:
             rfc_7807_compliant_errors: true
 
     formats:
+        json: [ 'application/json' ]
         graphql: [ 'application/graphql' ]
+        jsonld:   ['application/ld+json']
 
     error_formats:
         jsonproblem: [ 'application/problem+json' ]

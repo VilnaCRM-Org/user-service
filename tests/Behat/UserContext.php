@@ -6,6 +6,7 @@ use App\User\Domain\Entity\Token\ConfirmationToken;
 use App\User\Domain\Entity\User\User;
 use App\User\Domain\TokenRepository;
 use App\User\Domain\UserRepository;
+use App\User\Infrastructure\Exceptions\DuplicateEmailError;
 use App\User\Infrastructure\Exceptions\UserNotFoundError;
 use Behat\Behat\Context\Context;
 use Faker\Factory;
@@ -30,6 +31,19 @@ class UserContext implements Context
     {
         $token = new ConfirmationToken($token, $id);
         $this->tokenRepository->save($token);
+    }
+
+    /**
+     * @Given user with email :email and password :password exists
+     */
+    public function userWithEmailAndPasswordExists(string $email, string $password): void
+    {
+        try {
+            $this->userRepository->save(new User($this->faker->uuid, $email,
+                $this->faker->name, $password));
+        } catch (DuplicateEmailError) {
+
+        }
     }
 
     /**
