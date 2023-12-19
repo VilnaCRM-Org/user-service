@@ -42,7 +42,6 @@ class UserContext implements Context
             $this->userRepository->save(new User($this->faker->uuid, $email,
                 $this->faker->name, $password));
         } catch (DuplicateEmailError) {
-
         }
     }
 

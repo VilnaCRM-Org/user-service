@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Faker\Factory;
 use Faker\Generator;
 use League\Bundle\OAuth2ServerBundle\Event\AuthorizationRequestResolveEvent;
+use League\Bundle\OAuth2ServerBundle\Model\Client;
 use League\Bundle\OAuth2ServerBundle\OAuth2Events;
 use League\Bundle\OAuth2ServerBundle\ValueObject\RedirectUri;
 use PHPUnit\Framework\Assert;
@@ -14,7 +15,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use League\Bundle\OAuth2ServerBundle\Model\Client;
 
 class OAuthContext implements Context
 {
@@ -25,7 +25,7 @@ class OAuthContext implements Context
     private string $authCode;
 
     public function __construct(private readonly KernelInterface $kernel, private SerializerInterface $serializer,
-                                private ?Response                $response, private EntityManagerInterface $entityManager)
+        private ?Response $response, private EntityManagerInterface $entityManager)
     {
         $this->faker = Factory::create();
     }
@@ -45,7 +45,6 @@ class OAuthContext implements Context
     {
         $this->obtainAccessTokenInput = new AuthorizationCodeGrantInput($id, $secret, $uri, $this->authCode);
     }
-
 
     /**
      * @Given passing client id :id and redirect_uri :uri
@@ -77,13 +76,13 @@ class OAuthContext implements Context
             });
 
         $this->response = $this->kernel->handle(Request::create(
-            'api/oauth/authorize?' . $this->obtainAuthorizeCodeInput->toUriParams(),
+            'api/oauth/authorize?'.$this->obtainAuthorizeCodeInput->toUriParams(),
             'GET',
             [],
             [],
             [],
             ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',]
+                'CONTENT_TYPE' => 'application/json', ]
         ));
 
         $this->authCode = Request::create($this->response->headers->get('location'))->query->get('code');
@@ -102,7 +101,7 @@ class OAuthContext implements Context
             [],
             [],
             ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',],
+                'CONTENT_TYPE' => 'application/json', ],
             $this->serializer->serialize($this->obtainAccessTokenInput, 'json')
         ));
     }
@@ -136,7 +135,7 @@ class ObtainAccessTokenInput
 
 class ClientCredentialsGrantInput extends ObtainAccessTokenInput
 {
-    public function __construct(public string $client_id, public string $client_secret, ?string $grant_type = null)
+    public function __construct(public string $client_id, public string $client_secret, string $grant_type = null)
     {
         parent::__construct($grant_type);
     }
@@ -145,7 +144,7 @@ class ClientCredentialsGrantInput extends ObtainAccessTokenInput
 class AuthorizationCodeGrantInput extends ObtainAccessTokenInput
 {
     public function __construct(public string $client_id, public string $client_secret, public string $redirect_uri,
-                                public string $code, ?string $grant_type = null)
+        public string $code, string $grant_type = null)
     {
         parent::__construct($grant_type);
     }
@@ -153,7 +152,6 @@ class AuthorizationCodeGrantInput extends ObtainAccessTokenInput
 
 readonly class ObtainAuthorizeCodeInput
 {
-
     public string $response_type;
 
     public function __construct(public string $client_id, public string $redirect_uri)
