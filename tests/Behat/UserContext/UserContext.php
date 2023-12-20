@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Behat;
+namespace App\Tests\Behat\UserContext;
 
 use App\User\Domain\Entity\Token\ConfirmationToken;
 use App\User\Domain\Entity\User\User;
@@ -39,8 +39,15 @@ class UserContext implements Context
     public function userWithEmailAndPasswordExists(string $email, string $password): void
     {
         try {
-            $this->userRepository->save(new User($this->faker->uuid, $email,
-                $this->faker->name, $password));
+            $user = new User($this->faker->uuid, $email, $this->faker->name, $password);
+
+            $hashedPassword = $this->passwordHasher->hashPassword(
+                $user,
+                $password
+            );
+            $user->setPassword($hashedPassword);
+
+            $this->userRepository->save($user);
         } catch (DuplicateEmailError) {
         }
     }

@@ -1,8 +1,11 @@
 <?php
 
-namespace App\Tests\Behat;
+namespace App\Tests\Behat\UserContext;
 
-use App\User\Domain\Entity\User\User;
+use App\Tests\Behat\UserContext\Input\ConfirmUserInput;
+use App\Tests\Behat\UserContext\Input\CreateUserInput;
+use App\Tests\Behat\UserContext\Input\RequestInput;
+use App\Tests\Behat\UserContext\Input\UpdateUserInput;
 use Behat\Behat\Context\Context;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,63 +15,53 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class UserOperationsContext implements Context
 {
-    private array $requestBody;
+    private RequestInput $requestBody;
 
     public function __construct(
         private readonly KernelInterface $kernel, private SerializerInterface $serializer,
         private ?Response $response
     ) {
-        $this->requestBody = [];
+        $this->requestBody = new RequestInput;
     }
 
     /**
      * @Given updating user with email :email, initials :initials, oldPassword :oldPassword, newPassword :newPassword
      */
-    public function replacingUser($email, $initials, $oldPassword, $newPassword): void
+    public function replacingUser(string $email, string $initials, string $oldPassword, string $newPassword): void
     {
-        $this->requestBody['email'] = $email;
-        $this->requestBody['initials'] = $initials;
-        $this->requestBody['oldPassword'] = $oldPassword;
-        $this->requestBody['newPassword'] = $newPassword;
+        $this->requestBody = new UpdateUserInput($email, $initials, $oldPassword, $newPassword);
     }
 
     /**
      * @Given creating user with email :email, initials :initials, password :password
      */
-    public function creatingUser($email, $initials, $password): void
+    public function creatingUser(string $email, string $initials, string $password): void
     {
-        $this->requestBody['email'] = $email;
-        $this->requestBody['initials'] = $initials;
-        $this->requestBody['password'] = $password;
+        $this->requestBody = new CreateUserInput($email, $initials, $password);
     }
 
     /**
      * @Given confirming user with token :token
      */
-    public function confirmingUserWithToken($token): void
+    public function confirmingUserWithToken(string $token): void
     {
-        $this->requestBody['token'] = $token;
+        $this->requestBody = new ConfirmUserInput($token);
     }
 
     /**
-     * @Given creating user with misformatted data
+     * @Given creating user with invalid input
      */
     public function creatingUserWithMisformattedData(): void
     {
-        $this->requestBody['email'] = 1;
-        $this->requestBody['initials'] = 2;
-        $this->requestBody['password'] = 3;
+        $this->requestBody = new CreateUserInput();
     }
 
     /**
-     * @Given updating user with misformatted data
+     * @Given updating user with invalid input
      */
     public function replacingUserWithMisformattedData(): void
     {
-        $this->requestBody['email'] = 1;
-        $this->requestBody['initials'] = 2;
-        $this->requestBody['oldPassword'] = 3;
-        $this->requestBody['newPassword'] = 3;
+        $this->requestBody = new UpdateUserInput();
     }
 
     /**
@@ -94,7 +87,7 @@ class UserOperationsContext implements Context
     /**
      * @Then the response status code should be :statusCode
      */
-    public function theResponseStatusCodeShouldBe($statusCode): void
+    public function theResponseStatusCodeShouldBe(string $statusCode): void
     {
         if (null === $this->response) {
             throw new \RuntimeException('No response received');
@@ -115,12 +108,29 @@ class UserOperationsContext implements Context
     }
 
     /**
-     * @Then user should be returned
+     * @Then user with email :email and initials :initials should be returned
      */
-    public function theResponseShouldContainAReturnedUser(): void
+    public function userWithEmailAndInitialsShouldBeReturned(string $email, string $initials): void
     {
         $data = json_decode($this->response->getContent(), true);
         Assert::assertArrayHasKey('id', $data);
+        Assert::assertArrayHasKey('email', $data);
+        Assert::assertEquals($email, $data['email']);
+        Assert::assertArrayHasKey('initials', $data);
+        Assert::assertEquals($initials, $data['initials']);
+        Assert::assertArrayHasKey('confirmed', $data);
+        Assert::assertArrayHasKey('roles', $data);
+        Assert::assertArrayNotHasKey('password', $data);
+    }
+
+    /**
+     * @Then user with id :id should be returned
+     */
+    public function UserWithIdShouldBeReturned(string $id): void
+    {
+        $data = json_decode($this->response->getContent(), true);
+        Assert::assertArrayHasKey('id', $data);
+        Assert::assertEquals($id, $data['id']);
         Assert::assertArrayHasKey('email', $data);
         Assert::assertArrayHasKey('initials', $data);
         Assert::assertArrayHasKey('confirmed', $data);

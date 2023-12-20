@@ -2,12 +2,7 @@
 #    resource: ../src/Controller/
 #    type: attribute
 
-oauth2_authorize:
-  path: '/api/oauth/authorize'
-  controller: 'league.oauth2_server.controller.authorization::indexAction'
-  methods: ['GET'] # specify the HTTP methods you want to allow for this route
-
-oauth2_token:
-  path: '/api/oauth/token'
-  controller: 'league.oauth2_server.controller.token::indexAction'
-  methods: ['POST'] # specify the HTTP methods you want to allow for this route
+oauth2_server:
+  prefix: '/api/oauth/'
+  resource: '@LeagueOAuth2ServerBundle/Resources/config/routes.php'
+  type: php

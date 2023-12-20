@@ -1,7 +1,12 @@
 <?php
 
-namespace App\Tests\Behat;
+namespace App\Tests\Behat\OAuthContext;
 
+use App\Tests\Behat\OAuthContext\Input\AuthorizationCodeGrantInput;
+use App\Tests\Behat\OAuthContext\Input\ClientCredentialsGrantInput;
+use App\Tests\Behat\OAuthContext\Input\ObtainAccessTokenInput;
+use App\Tests\Behat\OAuthContext\Input\ObtainAuthorizeCodeInput;
+use App\Tests\Behat\OAuthContext\Input\PasswordGrantInput;
 use Behat\Behat\Context\Context;
 use Doctrine\ORM\EntityManagerInterface;
 use Faker\Factory;
@@ -55,7 +60,15 @@ class OAuthContext implements Context
     }
 
     /**
-     * @Given client with id :id, secret :secret exists and redirect uri :uri
+     * @Given passing client id :id, client secret :secret, email :email and password :password
+     */
+    public function passingIdSecretEmailAndPassword(string $id, string $secret, string $email, string $password): void
+    {
+        $this->obtainAccessTokenInput = new PasswordGrantInput($id, $secret, $email, $password);
+    }
+
+    /**
+     * @Given client with id :id, secret :secret and redirect uri :uri exists
      */
     public function clientExists(string $id, string $secret, string $uri): void
     {
@@ -107,7 +120,7 @@ class OAuthContext implements Context
     }
 
     /**
-     * @Then  access token should be provided
+     * @Then access token should be provided
      */
     public function accessTokenShouldBeProvided(): void
     {
@@ -124,49 +137,45 @@ class OAuthContext implements Context
 
         Assert::assertArrayHasKey('access_token', $data);
     }
-}
 
-class ObtainAccessTokenInput
-{
-    public function __construct(public ?string $grant_type = null)
+    /**
+     * @Then invalid credentials error should be returned
+     */
+    public function invalidCredentialsError(): void
     {
-    }
-}
+        $data = json_decode($this->response->getContent(), true);
 
-class ClientCredentialsGrantInput extends ObtainAccessTokenInput
-{
-    public function __construct(public string $client_id, public string $client_secret, string $grant_type = null)
-    {
-        parent::__construct($grant_type);
-    }
-}
+        Assert::assertSame(Response::HTTP_UNAUTHORIZED, $this->response->getStatusCode());
 
-class AuthorizationCodeGrantInput extends ObtainAccessTokenInput
-{
-    public function __construct(public string $client_id, public string $client_secret, public string $redirect_uri,
-        public string $code, string $grant_type = null)
-    {
-        parent::__construct($grant_type);
-    }
-}
+        Assert::assertArrayHasKey('error', $data);
+        Assert::assertEquals('invalid_client', $data['error']);
 
-readonly class ObtainAuthorizeCodeInput
-{
-    public string $response_type;
+        Assert::assertArrayHasKey('error_description', $data);
+        Assert::assertEquals('Client authentication failed', $data['error_description']);
 
-    public function __construct(public string $client_id, public string $redirect_uri)
-    {
-        $this->response_type = 'code';
+        Assert::assertArrayHasKey('message', $data);
+        Assert::assertEquals('Client authentication failed', $data['message']);
     }
 
-    public function toUriParams(): string
+    /**
+     * @Then unsupported grant type error should be returned
+     */
+    public function unsupportedGrantTypeError(): void
     {
-        $queryParams = [
-            'response_type' => $this->response_type,
-            'client_id' => $this->client_id,
-            'redirect_uri' => $this->redirect_uri,
-        ];
+        $data = json_decode($this->response->getContent(), true);
 
-        return http_build_query($queryParams);
+        Assert::assertSame(Response::HTTP_BAD_REQUEST, $this->response->getStatusCode());
+
+        Assert::assertArrayHasKey('error', $data);
+        Assert::assertEquals('unsupported_grant_type', $data['error']);
+
+        Assert::assertArrayHasKey('error_description', $data);
+        Assert::assertEquals('The authorization grant type is not supported by the authorization server.',
+            $data['error_description']);
+
+        Assert::assertArrayHasKey('message', $data);
+        Assert::assertEquals('The authorization grant type is not supported by the authorization server.',
+            $data['message']);
     }
+
 }

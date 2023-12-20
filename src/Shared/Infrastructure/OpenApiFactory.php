@@ -263,9 +263,9 @@ class OpenApiFactory implements OpenApiFactoryInterface
                 ],
                 'example' => [
                     'error' => 'unsupported_grant_type',
-                    'error_description' => 'The authorization grant type is not supported by the authorization server',
+                    'error_description' => 'The authorization grant type is not supported by the authorization server.',
                     'hint' => 'Check that all required parameters have been provided',
-                    'message' => 'The authorization grant type is not supported by the authorization server',
+                    'message' => 'The authorization grant type is not supported by the authorization server.',
                 ],
             ], ]), );
         $invalidClientCredentialsResponse = new Response(description: 'Invalid client credentials', content: new \ArrayObject([

@@ -3,10 +3,10 @@ default:
         default:
             contexts:
                 - App\Tests\Behat\DemoContext
-                - App\Tests\Behat\UserGraphQLContext
-                - App\Tests\Behat\UserContext
-                - App\Tests\Behat\UserOperationsContext
-                - App\Tests\Behat\OAuthContext
+                - App\Tests\Behat\UserGraphQLContext\UserGraphQLContext
+                - App\Tests\Behat\UserContext\UserContext
+                - App\Tests\Behat\UserContext\UserOperationsContext
+                - App\Tests\Behat\OAuthContext\OAuthContext
 
     extensions:
         FriendsOfBehat\SymfonyExtension:

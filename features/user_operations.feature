@@ -16,7 +16,7 @@ Feature: User Operations
     Given creating user with email "test@mail.com", initials "initials", password "pass"
     When POST request is send to "https://localhost/api/users"
     Then the response status code should be 201
-    And user should be returned
+    And user with email "test@mail.com" and initials "initials" should be returned
 
   Scenario: Creating a user with duplicate email
     Given creating user with email "test@mail.com", initials "initials", password "pass"
@@ -29,7 +29,7 @@ Feature: User Operations
     Then the response status code should be 422
 
   Scenario: Creating a user with wrong input
-    Given creating user with misformatted data
+    Given creating user with invalid input
     When POST request is send to "https://localhost/api/users"
     Then the response status code should be 400
 
@@ -37,7 +37,7 @@ Feature: User Operations
     Given user with id "getUserId" exists
     When GET request is send to "https://localhost/api/users/getUserId"
     Then the response status code should be 200
-    And user should be returned
+    And user with id "getUserId" should be returned
 
   Scenario: Getting a non-existing user
     When GET request is send to "https://localhost/api/users/nonExistingId"
@@ -57,7 +57,7 @@ Feature: User Operations
     And updating user with email "testput@mail.com", initials "initials", oldPassword "pass", newPassword "pass"
     When PUT request is send to "https://localhost/api/users/putUserId"
     Then the response status code should be 200
-    And user should be returned
+    And user with id "putUserId" should be returned
 
   Scenario: Replacing user with wrong password
     Given user with id "putUserId" and password "pass" exists
@@ -77,7 +77,7 @@ Feature: User Operations
 
   Scenario: Replacing a user with wrong input
     Given user with id "putUserId" exists
-    And updating user with misformatted data
+    And updating user with invalid input
     When PUT request is send to "https://localhost/api/users/putUserId"
     Then the response status code should be 400
 
@@ -92,7 +92,7 @@ Feature: User Operations
     And updating user with email "testupdate@mail.com", initials "initials", oldPassword "pass", newPassword "pass"
     When PATCH request is send to "https://localhost/api/users/patchUserId"
     Then the response status code should be 200
-    And user should be returned
+    And user with id "patchUserId" should be returned
 
   Scenario: Updating user with wrong password
     Given user with id "patchUserId" and password "pass" exists
@@ -112,7 +112,7 @@ Feature: User Operations
 
   Scenario: Updating a user with wrong input
     Given user with id "patchUserId" exists
-    And updating user with misformatted data
+    And updating user with invalid input
     When PATCH request is send to "https://localhost/api/users/patchUserId"
     Then the response status code should be 400
 

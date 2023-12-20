@@ -54,7 +54,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[Mutation(resolver: RegisterUserMutationResolver::class, input: UserInputDto::class, name: 'create')]
 #[Mutation(resolver: UserUpdateMutationResolver::class,
     input: UserUpdateMutationDto::class, name: 'update')]
-#[DeleteMutation(name: 'delete')]
+#[DeleteMutation(normalizationContext: ['groups' => ['deleteMutationOutput']], name: 'delete')]
 #[Mutation(resolver: ResendEmailMutationResolver::class, input: RetryMutationDto::class, name: 'resendEmailTo')]
 #[Query]
 #[QueryCollection]
@@ -76,7 +76,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Id]
     #[ORM\Column]
-    #[Groups(['output'])]
+    #[Groups(['output', 'deleteMutationOutput'])]
     private string $id;
 
     #[ORM\Column(type: 'string', length: 255, unique: true)]
