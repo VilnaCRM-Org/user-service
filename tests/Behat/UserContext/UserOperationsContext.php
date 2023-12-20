@@ -21,7 +21,7 @@ class UserOperationsContext implements Context
         private readonly KernelInterface $kernel, private SerializerInterface $serializer,
         private ?Response $response
     ) {
-        $this->requestBody = new RequestInput;
+        $this->requestBody = new RequestInput();
     }
 
     /**

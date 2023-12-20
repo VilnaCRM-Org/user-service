@@ -177,5 +177,4 @@ class OAuthContext implements Context
         Assert::assertEquals('The authorization grant type is not supported by the authorization server.',
             $data['message']);
     }
-
 }
