@@ -1,18 +1,19 @@
-import AboutVilnaSection from '../AboutVilnaSection/AboutVilnaSection/AboutVilnaSection';
-import ForWhoSection from '../ForWhoSection/ForWhoSection/ForWhoSection';
-import Layout from '../Layout/Layout';
-import SignUpSection from '../SignUpSection/SignUpSection/SignUpSection';
-import UnlimitedIntegrationsSection from '../UnlimitedIntegrationsSection/UnlimitedIntegrationsSection/UnlimitedIntegrationsSection';
-import WhyWeSection from '../WhyWeSection/WhyWeSection/WhyWeSection';
+import { Container } from '@mui/material';
 
-export default function Landing() {
+import AboutUs from '../AboutUs';
+import Header from '../Header';
+import Possibilities from '../Possibilities';
+import WhyUs from '../WhyUs/WhyUs';
+
+function Landing() {
   return (
-    <Layout>
-      <AboutVilnaSection />
-      <WhyWeSection />
-      <ForWhoSection />
-      <UnlimitedIntegrationsSection />
-      <SignUpSection />
-    </Layout>
+    <Container maxWidth="xl">
+      <Header />
+      <AboutUs />
+      <WhyUs />
+      <Possibilities />
+    </Container>
   );
 }
+
+export default Landing;

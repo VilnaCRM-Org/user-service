@@ -69,13 +69,21 @@ module.exports = {
             patterns: ['@/features/*/*'],
           },
         ],
-        'linebreak-style': ['error', 'unix'],
+        'linebreak-style': ['error', 'windows'],
         'react/prop-types': 'off',
 
         'import/order': [
           'error',
           {
-            groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object'],
+            groups: [
+              'builtin',
+              'external',
+              'internal',
+              'parent',
+              'sibling',
+              'index',
+              'object',
+            ],
             'newlines-between': 'always',
             alphabetize: { order: 'asc', caseInsensitive: true },
           },
@@ -85,7 +93,10 @@ module.exports = {
         'import/no-named-as-default': 'off',
 
         'react/react-in-jsx-scope': 'off',
-        'react/jsx-filename-extension': ['error', { extensions: ['.jsx', '.tsx'] }],
+        'react/jsx-filename-extension': [
+          'error',
+          { extensions: ['.jsx', '.tsx'] },
+        ],
 
         'jsx-a11y/anchor-is-valid': 'off',
 

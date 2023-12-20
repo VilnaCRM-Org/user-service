@@ -7,10 +7,7 @@
           "for_who": "For who",
           "integration": "Integration",
           "contacts": "Contacts",
-          "actions": {
-            "try_it_out": "Try it out",
-            "log_in": "Log in"
-          }
+          "actions": { "try_it_out": "Try it out", "log_in": "Log in" }
         },
         "about_vilna": {
           "heading_main": "The first Ukrainian open source CRM",
@@ -20,9 +17,7 @@
         "why_we": {
           "heading": "Why we",
           "subtitle": "Unlimited customization options or ease of use - we've made it easy for any business to manage sales",
-          "button": {
-            "try_it_out": "Try it out"
-          },
+          "button": { "try_it_out": "Try it out" },
           "headers": {
             "header_open_source": "Open source",
             "header_ease_of_setup": "Ease of setup",
@@ -113,10 +108,7 @@
           "for_who": "Для кого",
           "integration": "Інтеграція",
           "contacts": "Контакти",
-          "actions": {
-            "try_it_out": "Спробувати",
-            "log_in": "Войти"
-          }
+          "actions": { "try_it_out": "Спробувати", "log_in": "Войти" }
         },
         "about_vilna": {
           "heading_main": "Перша українська CRM з відкритим кодом",
@@ -126,9 +118,7 @@
         "why_we": {
           "heading": "Чому ми",
           "subtitle": "Безмежні можливості кастомізації чи простота у використанні — ми подбали, щоб керувати продажами було зручно будь-якому бізнесу",
-          "button": {
-            "try_it_out": "Спробувати"
-          },
+          "button": { "try_it_out": "Спробувати" },
           "headers": {
             "header_open_source": "Open source",
             "header_ease_of_setup": "Легкість у налаштуванні",
@@ -164,10 +154,10 @@
             "heading_libraries": "Публічні бібліотеки"
           },
           "cards_texts": {
-            "text_for_cases": "Для випадків, коли ви не знайшли потрібну готову інтеграцію ",
-            "text_integrate": "Інтегруйте <a href=\"/\" target=\"_blank\" class=\"unlimited-integrations-link-style\">знайомі служби</a> кількома кліками",
-            "text_get_data": "Отримуйте дані про будь-які івенти у CRM та автоматизуйте складні бізнес-процеси",
-            "text_for_custom": "Для кастомних інтеграцій зі специфічними продуктами"
+            "text_1": "Для випадків, коли ви не знайшли потрібну готову інтеграцію ",
+            "text_2": "Інтегруйте <a href=\"/\" target=\"_blank\" class=\"unlimited-integrations-link-style\">знайомі служби</a> кількома кліками",
+            "text_3": "Отримуйте дані про будь-які івенти у CRM та автоматизуйте складні бізнес-процеси",
+            "text_4": "Для кастомних інтеграцій зі специфічними продуктами"
           },
           "card_image_titles": {
             "title_for_first": "Зображення діаманту 1",

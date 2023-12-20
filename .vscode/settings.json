@@ -3,5 +3,12 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
-  }
+  },
+  "i18n-ally.localesPaths": [
+    "pages/i18n",
+    "src/features/documentation/i18n",
+    "src/features/example/i18n",
+    "src/features/landing/i18n",
+    "src/features/registration/i18n"
+  ]
 }

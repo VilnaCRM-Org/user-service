@@ -11,7 +11,10 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN_KEY,
   integrations: [
     new Sentry.BrowserTracing({
-      tracePropagationTargets: [process.env.LOCALHOST, /^https:\/\/yourserver\.io\/api/],
+      tracePropagationTargets: [
+        process.env.LOCALHOST,
+        /^https:\/\/yourserver\.io\/api/,
+      ],
     }),
     new Sentry.Replay(),
   ],
@@ -28,11 +31,17 @@ const customBreakpoints = {
   lg: 1024,
   xl: 1440,
 };
+const colors = {
+  black: '#1A1C1E',
+};
 
 // eslint-disable-next-line react/prop-types
 function MyApp({ Component }) {
   const theme = createTheme({
     palette: {
+      black: {
+        main: colors.black,
+      },
       mode: 'light',
     },
     breakpoints: {
@@ -49,7 +58,19 @@ function MyApp({ Component }) {
             },
             '@media (min-width: 1024px)': {
               width: '100%',
-              maxWidth: '1192px',
+              maxWidth: '1190px',
+            },
+          },
+        },
+        MuiToolbar: {
+          styleOverrides: {
+            paddingLeft: '0px',
+            paddingRight: '0px',
+            root: {
+              '@media (min-width: 375px)': {
+                paddingLeft: '0px',
+                paddingRight: '0px',
+              },
             },
           },
         },
