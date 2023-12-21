@@ -1,8 +1,18 @@
 <?php
 
-namespace App\Tests\Behat;
+namespace App\Tests\Behat\UserGraphQLContext;
 
+use App\Tests\Behat\UserGraphQLContext\Input\ConfirmUserGraphQLMutationInput;
+use App\Tests\Behat\UserGraphQLContext\Input\CreateUserGraphQLMutationInput;
+use App\Tests\Behat\UserGraphQLContext\Input\DeleteUserGraphQLMutationInput;
+use App\Tests\Behat\UserGraphQLContext\Input\GraphQLMutationInput;
+use App\Tests\Behat\UserGraphQLContext\Input\ResendEmailToUserGraphQLMutationInput;
+use App\Tests\Behat\UserGraphQLContext\Input\UpdateUserGraphQLMutationInput;
 use Behat\Behat\Context\Context;
+use GraphQL\Actions\Mutation;
+use GraphQL\RequestBuilder\Argument;
+use GraphQL\RequestBuilder\RootType;
+use GraphQL\RequestBuilder\Type;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,10 +27,13 @@ class UserGraphQLContext implements Context
     private string $queryName;
     private array $responseContent;
 
+    private GraphQLMutationInput $graphQLInput;
+
     public function __construct(
-        private readonly KernelInterface $kernel, private ?Response $response
+        private readonly KernelInterface $kernel, private ?Response $response,
     ) {
         $this->responseContent = [];
+        $this->graphQLInput = new GraphQLMutationInput();
     }
 
     /**
@@ -47,16 +60,11 @@ class UserGraphQLContext implements Context
     {
         $this->queryName = 'user';
         $id = $this->GRAPHQL_ID_PREFIX.$id;
-        $mutation = "
-        query{
-            $this->queryName
-            (id: \"$id\") {
-                 ".implode("\n", $this->responseContent).'
-            }
-        }
-    ';
 
-        $this->query = $mutation;
+        $query = (string) (new RootType($this->queryName))->addArgument(new Argument('id', $id))
+            ->addSubTypes($this->responseContent);
+
+        $this->query = 'query'.$query;
     }
 
     /**
@@ -65,20 +73,12 @@ class UserGraphQLContext implements Context
     public function gettingCollectionOfUsers(): void
     {
         $this->queryName = 'users';
-        $mutation = "
-        query {
-            $this->queryName
-            (first: 1) {
-              edges{
-                   node{
-                        ".implode("\n", $this->responseContent).'
-                        }
-                   }
-            }
-        }
-    ';
 
-        $this->query = $mutation;
+        $query = (string) (new RootType($this->queryName))->addArgument(new Argument('first', 1))
+            ->addSubType((new Type('edges'))->addSubType((new Type('node'))
+                ->addSubTypes($this->responseContent)));
+
+        $this->query = 'query'.$query;
     }
 
     /**
@@ -87,8 +87,9 @@ class UserGraphQLContext implements Context
     public function creatingUser(string $email, string $initials, string $password): void
     {
         $this->queryName = 'createUser';
-        $this->query = $this->createMutation($this->queryName,
-            ['initials' => $initials, 'email' => $email, 'password' => $password], $this->responseContent);
+        $this->graphQLInput = new CreateUserGraphQLMutationInput($email, $initials, $password);
+
+        $this->query = $this->createMutation($this->queryName, $this->graphQLInput, $this->responseContent);
     }
 
     /**
@@ -97,8 +98,9 @@ class UserGraphQLContext implements Context
     public function updatingUser(string $id, string $email, string $oldPassword): void
     {
         $this->queryName = 'updateUser';
-        $this->query = $this->createMutation($this->queryName,
-            ['userId' => $id, 'email' => $email, 'oldPassword' => $oldPassword], $this->responseContent);
+        $this->graphQLInput = new UpdateUserGraphQLMutationInput($id, $email, $oldPassword);
+
+        $this->query = $this->createMutation($this->queryName, $this->graphQLInput, $this->responseContent);
     }
 
     /**
@@ -107,7 +109,9 @@ class UserGraphQLContext implements Context
     public function confirmingUserWithToken(string $token): void
     {
         $this->queryName = 'confirmUser';
-        $this->query = $this->createMutation($this->queryName, ['token' => $token], $this->responseContent);
+        $this->graphQLInput = new ConfirmUserGraphQLMutationInput($token);
+
+        $this->query = $this->createMutation($this->queryName, $this->graphQLInput, $this->responseContent);
     }
 
     /**
@@ -116,7 +120,9 @@ class UserGraphQLContext implements Context
     public function resendEmailToUser(string $id): void
     {
         $this->queryName = 'resendEmailToUser';
-        $this->query = $this->createMutation($this->queryName, ['userId' => $id], $this->responseContent);
+        $this->graphQLInput = new ResendEmailToUserGraphQLMutationInput($id);
+
+        $this->query = $this->createMutation($this->queryName, $this->graphQLInput, $this->responseContent);
     }
 
     /**
@@ -126,28 +132,17 @@ class UserGraphQLContext implements Context
     {
         $this->queryName = 'deleteUser';
         $id = $this->GRAPHQL_ID_PREFIX.$id;
+        $this->graphQLInput = new DeleteUserGraphQLMutationInput($id);
 
-        $this->query = $this->createMutation($this->queryName, ['id' => $id], $this->responseContent);
+        $this->query = $this->createMutation($this->queryName, $this->graphQLInput, $this->responseContent);
     }
 
-    private function createMutation(string $name, array $inputArray, array $responseFields): string
+    private function createMutation(string $name, GraphQLMutationInput $input, array $responseFields): string
     {
-        $input = '';
-        foreach ($inputArray as $key => $value) {
-            $input .= $key.':"'.$value."\"\n";
-        }
+        $mutation = (string) (new RootType($name))->addArgument(new Argument('input', $input->toGraphQLArguments()))
+            ->addSubType((new Type('user'))->addSubTypes($responseFields));
 
-        return "
-        mutation {
-            $name(input: {
-                ".$input.'
-            }) {
-                user {
-                    '.implode("\n", $responseFields).'
-                }
-            }
-        }
-    ';
+        return 'mutation'.$mutation;
     }
 
     /**
@@ -167,11 +162,27 @@ class UserGraphQLContext implements Context
     }
 
     /**
-     * @Then requested fields should be returned
+     * @Then mutation response should return requested fields
      */
-    public function theResponseShouldContainRequestedFields(): void
+    public function mutationResponseShouldContainRequestedFields(): void
     {
         $userData = json_decode($this->response->getContent(), true)['data'][$this->queryName]['user'];
+
+        foreach ($this->responseContent as $fieldName) {
+            Assert::assertArrayHasKey($fieldName, $userData);
+            if (property_exists($this->graphQLInput, $fieldName)) {
+                Assert::assertEquals($this->graphQLInput->$fieldName, $userData[$fieldName]);
+            }
+        }
+    }
+
+    /**
+     * @Then query response should return requested fields
+     */
+    public function queryResponseShouldContainRequestedFields(): void
+    {
+        error_log($this->response->getContent());
+        $userData = json_decode($this->response->getContent(), true)['data'][$this->queryName];
 
         foreach ($this->responseContent as $item) {
             Assert::assertArrayHasKey($item, $userData);

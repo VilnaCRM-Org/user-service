@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ac2a1ebe4ed4d8a4b7eb239623f476ac",
+    "content-hash": "7a3f6ec701cbe682a107378cd1549aee",
     "packages": [
         {
             "name": "api-platform/core",
@@ -171,6 +171,66 @@
                 "source": "https://github.com/api-platform/core/tree/v3.2.8"
             },
             "time": "2023-12-20T12:08:00+00:00"
+        },
+        {
+            "name": "blackbonjour/stdlib",
+            "version": "3.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/BlackBonjour/stdlib.git",
+                "reference": "2c2538996b19a0cb32f5d9a6a626880e1542b93a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/BlackBonjour/stdlib/zipball/2c2538996b19a0cb32f5d9a6a626880e1542b93a",
+                "reference": "2c2538996b19a0cb32f5d9a6a626880e1542b93a",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "9.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "BlackBonjour\\Stdlib\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Erick Dyck",
+                    "email": "info@erickdyck.de",
+                    "homepage": "http://www.erickdyck.de"
+                }
+            ],
+            "description": "Standard library for PHP",
+            "homepage": "https://github.com/BlackBonjour/stdlib",
+            "keywords": [
+                "assertion",
+                "hashmap",
+                "manipulation",
+                "map",
+                "php",
+                "stdlib",
+                "string",
+                "utf-8",
+                "util",
+                "utility"
+            ],
+            "support": {
+                "issues": "https://github.com/BlackBonjour/stdlib/issues",
+                "source": "https://github.com/BlackBonjour/stdlib",
+                "wiki": "https://github.com/BlackBonjour/stdlib/wiki"
+            },
+            "time": "2022-06-01T12:07:10+00:00"
         },
         {
             "name": "brick/math",
@@ -1669,6 +1729,51 @@
                 "source": "https://github.com/doctrine/sql-formatter/tree/1.1.3"
             },
             "time": "2022-05-23T21:33:49+00:00"
+        },
+        {
+            "name": "dpauli/graphql-request-builder",
+            "version": "1.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dpauli/php-graphql-request-builder.git",
+                "reference": "21a7ba9588e7063c36ce615632b38a3e48c0baff"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dpauli/php-graphql-request-builder/zipball/21a7ba9588e7063c36ce615632b38a3e48c0baff",
+                "reference": "21a7ba9588e7063c36ce615632b38a3e48c0baff",
+                "shasum": ""
+            },
+            "require": {
+                "blackbonjour/stdlib": "3.*",
+                "ext-json": "*",
+                "php": ">=7.4.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "3.*",
+                "phpmd/phpmd": "2.*",
+                "phpstan/phpstan": "0.*",
+                "phpunit/phpunit": "9.*",
+                "squizlabs/php_codesniffer": "3.*",
+                "vimeo/psalm": "4.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "GraphQL\\RequestBuilder\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Request Builder for GraphQL payload",
+            "homepage": "https://github.com/dpauli/php-graphql-request-builder",
+            "support": {
+                "issues": "https://github.com/dpauli/php-graphql-request-builder/issues",
+                "source": "https://github.com/dpauli/php-graphql-request-builder/tree/1.8.0"
+            },
+            "time": "2021-05-13T20:07:50+00:00"
         },
         {
             "name": "egulias/email-validator",
