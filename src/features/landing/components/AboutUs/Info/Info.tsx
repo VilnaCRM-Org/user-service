@@ -1,19 +1,21 @@
 'use client';
 
-import { Stack, Button, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+
+import CustomButton from '@/components/ui/UIButton/UIButton';
 
 function Info() {
   const { t } = useTranslation();
   return (
-    <Stack maxWidth="701px">
+    <Stack maxWidth="43.813rem">
       <Typography
         variant="h1"
         sx={{
           color: '#1A1C1E',
           fontFamily: 'Golos',
-          fontSize: '56px',
+          fontSize: '3.5rem',
           fontWeight: 'bold',
           textAlign: 'center',
         }}
@@ -23,33 +25,21 @@ function Info() {
       <Typography
         variant="h4"
         sx={{
-          mt: '16px',
+          mt: '1rem',
           color: '#1A1C1E',
           fontFamily: 'Golos',
-          fontSize: '18px',
+          fontSize: '1.125rem',
           fontWeight: 'normal',
           textAlign: 'center',
-          lineHeight: '30px',
+          lineHeight: '1.875rem',
+          mb: '39px',
         }}
       >
         {t('about_vilna.text_main')}
       </Typography>
-      <Button
-        variant="contained"
-        sx={{
-          mt: '39px',
-          py: '16px',
-          px: '24px',
-          borderRadius: '57px',
-          fontFamily: 'Golos',
-          fontSize: '12px',
-          fontWeight: '500',
-          lineHeight: '18px',
-          alignSelf: 'center',
-        }}
-      >
+      <CustomButton variant="contained" size="medium">
         {t('about_vilna.button_main')}
-      </Button>
+      </CustomButton>
     </Stack>
   );
 }

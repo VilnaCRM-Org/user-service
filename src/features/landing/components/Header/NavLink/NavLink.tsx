@@ -7,7 +7,16 @@ function NavLink({ links }: { links: { id: number; value: string }[] }) {
       <List sx={{ display: 'flex' }}>
         {links.map(link => (
           <ListItem key={link.id}>
-            <Link href="#" sx={{ color: '#57595B' }} underline="none">
+            <Link
+              href="#"
+              sx={{
+                fontSize: '0.938.rem',
+                fontWeight: '500',
+                lineHeight: '1.125rem',
+                fontFamily: 'Golos',
+              }}
+              underline="none"
+            >
               {link.value}
             </Link>
           </ListItem>

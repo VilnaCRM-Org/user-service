@@ -8,13 +8,13 @@ function Text() {
   const { t } = useTranslation();
 
   return (
-    <Stack maxWidth="632px" spacing={2}>
+    <Stack maxWidth="39.5rem" spacing={2}>
       <Typography
         variant="h1"
         sx={{
           color: '#1A1C1E',
           fontFamily: 'Golos',
-          fontSize: '46px',
+          fontSize: '2.875rem',
           fontWeight: 'bold',
         }}
       >
@@ -25,9 +25,9 @@ function Text() {
         sx={{
           color: '#1A1C1E',
           fontFamily: 'Golos',
-          fontSize: '18px',
+          fontSize: '1.125rem',
           fontWeight: 'normal',
-          lineHeight: '30px',
+          lineHeight: '1.875rem',
         }}
       >
         {t('why_we.subtitle')}

@@ -38,7 +38,8 @@ class LocalizationGenerator {
     if (!featureFolders.length) return;
 
     const localizationObj = featureFolders.reduce((acc, folder) => {
-      const parsedLocalizationFromFolder = this.getLocalizationFromFolder(folder);
+      const parsedLocalizationFromFolder =
+        this.getLocalizationFromFolder(folder);
 
       return { ...acc, ...parsedLocalizationFromFolder };
     }, {});
@@ -54,17 +55,22 @@ class LocalizationGenerator {
   }
 
   getFeatureFolders() {
-    const featureDirectories = fs.readdirSync(this.featurePath, { withFileTypes: true });
+    const featureDirectories = fs.readdirSync(this.featurePath, {
+      withFileTypes: true,
+    });
 
     return featureDirectories
-      .filter((directory) => directory.isDirectory())
-      .map((directory) => directory.name);
+      .filter(directory => directory.isDirectory())
+      .map(directory => directory.name);
   }
 
   getLocalizationFromFolder(folder) {
-    const localizationFiles = fs.readdirSync(this.pathToI18nFolder.replace('{folder}', folder), {
-      withFileTypes: true,
-    });
+    const localizationFiles = fs.readdirSync(
+      this.pathToI18nFolder.replace('{folder}', folder),
+      {
+        withFileTypes: true,
+      }
+    );
 
     return localizationFiles.reduce((localizations, file) => {
       if (!file.isFile()) return localizations;
@@ -74,7 +80,9 @@ class LocalizationGenerator {
       if (fileType !== this.jsonFileType) return localizations;
 
       const localizationContent = fs.readFileSync(
-        this.pathToI18nFile.replace('{folder}', folder).replace('{file.name}', file.name),
+        this.pathToI18nFile
+          .replace('{folder}', folder)
+          .replace('{file.name}', file.name),
         'utf8'
       );
       const parsedLocalization = JSON.parse(localizationContent);
@@ -90,7 +98,7 @@ class LocalizationGenerator {
 
   // eslint-disable-next-line class-methods-use-this
   writeLocalizationFile(fileContent, filePath) {
-    fs.writeFile(filePath, fileContent, (err) => {
+    fs.writeFile(filePath, fileContent, err => {
       if (err) {
         throw new Error(err);
       }

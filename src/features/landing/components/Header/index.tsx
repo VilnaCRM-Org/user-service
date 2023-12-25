@@ -1,8 +1,12 @@
-import { AppBar, Toolbar } from '@mui/material';
+import { AppBar, Container } from '@mui/material';
+import Image from 'next/image';
 
-import VilnaMainIcon from '../Icons/VilnaMainIcon/VilnaMainIcon';
+import ToolBar from '@/components/ui/UIToolBar/UIToolBar';
 
-import Buttons from './Buttons/Buttons';
+import Logo from '../../assets/svg/Logo/Logo.svg';
+
+import AuthenticationButtons from './AuthenticationButtons/AuthenticationButtons';
+import Drawer from './Drawer/Drawer';
 import NavLink from './NavLink/NavLink';
 
 const links = [
@@ -16,13 +20,21 @@ function Header() {
   return (
     <AppBar
       position="static"
-      sx={{ backgroundColor: 'white', boxShadow: 'none' }}
+      sx={{
+        backgroundColor: 'white',
+        boxShadow: 'none',
+        position: 'fixed',
+        zIndex: 1000,
+      }}
     >
-      <Toolbar sx={{ p: 0, justifyContent: 'space-between' }}>
-        <VilnaMainIcon />
-        <NavLink links={links} />
-        <Buttons />
-      </Toolbar>
+      <Container maxWidth="xl">
+        <ToolBar>
+          <Image src={Logo} alt="Header Image" width={131} height={44} />
+          <NavLink links={links} />
+          <AuthenticationButtons />
+          <Drawer />
+        </ToolBar>
+      </Container>
     </AppBar>
   );
 }

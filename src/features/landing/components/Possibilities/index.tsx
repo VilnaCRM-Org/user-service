@@ -6,7 +6,7 @@ import Text from './Text/Text';
 
 function Possibilities() {
   return (
-    <Box sx={{ mt: '112px' }}>
+    <Box sx={{ mt: '7rem' }}>
       <Text />
       <CardList />
     </Box>

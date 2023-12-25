@@ -1,6 +1,6 @@
-const fs = require('fs');
+import fs from 'fs';
 
-const LocalizationGenerator = require('../../localizationGenerator');
+const LocalizationGenerator = require('../../localizationGenerator').default;
 
 const FEATURE_FOLDERS = [
   { name: 'folder1', isDirectory: () => true },
@@ -27,7 +27,7 @@ function mockedWriteFile() {
   return jest.spyOn(fs, 'writeFile');
 }
 
-jest.mock('fs');
+// jest.mock('fs');
 
 describe('LocalizationGenerator', () => {
   afterEach(() => {
@@ -73,10 +73,14 @@ describe('LocalizationGenerator', () => {
       const generator = new LocalizationGenerator();
       generator.writeLocalizationFile(fileContent, filePath);
 
-      expect(mockWriteFile).toHaveBeenCalledWith(filePath, fileContent, expect.any(Function));
+      expect(mockWriteFile).toHaveBeenCalledWith(
+        filePath,
+        fileContent,
+        expect.any(Function)
+      );
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      fs.unlink(filePath, (_) => {});
+      fs.unlink(filePath, _ => {});
     });
 
     it('should throw an error if file write fails', () => {

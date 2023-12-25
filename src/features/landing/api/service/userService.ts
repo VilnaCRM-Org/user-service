@@ -1,5 +1,5 @@
 const createUser = async (email: string, initials: string) => {
-  await new Promise<void>((resolve) => {
+  await new Promise<void>(resolve => {
     setTimeout(() => {
       resolve();
     }, 2000);

@@ -27,7 +27,7 @@ jobs:
         with:
           github-token: ${{ secrets.REPO_GITHUB_TOKEN }}
           output-file: 'CHANGELOG.md'
-          version-file: "package.json"
+          version-file: 'package.json'
 
       - name: Create Release
         uses: actions/create-release@v1

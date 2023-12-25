@@ -1,12 +1,14 @@
 import { Stack } from '@mui/material';
 import React from 'react';
 
+import DeviceImage from './DeviceImage/DeviceImage';
 import Info from './Info/Info';
 
 function AboutUs() {
   return (
-    <Stack sx={{ mt: '80px' }} component="section" alignItems="center">
+    <Stack component="section" alignItems="center" sx={{ pt: '9rem' }}>
       <Info />
+      <DeviceImage />
     </Stack>
   );
 }

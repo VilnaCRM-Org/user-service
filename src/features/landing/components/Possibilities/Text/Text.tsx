@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -8,30 +8,28 @@ function Text() {
   const { t } = useTranslation();
 
   return (
-    <Stack sx={{ width: '100%', justifyContent: 'center' }}>
-      <Button
-        variant="contained"
-        color="secondary"
+    <Stack justifyContent="center" width="100%">
+      <Box
         sx={{
-          py: '12px',
-          px: '32px',
+          padding: '12px 32px',
           alignSelf: 'center',
-          borderRadius: '16px',
+          borderRadius: '1rem',
           fontFamily: 'Golos',
-          fontSize: '36px',
+          fontSize: '2.25rem',
           fontWeight: '600',
           lineHeight: 'normal',
+          backgroundColor: '#FFC01E',
         }}
       >
         {t('unlimited_possibilities.main_heading_text')}
-      </Button>
+      </Box>
       <Typography
         variant="h2"
         sx={{
-          mt: '7px',
+          mt: '0.438rem',
           color: '#1A1C1E',
           fontFamily: 'Golos',
-          fontSize: '46px',
+          fontSize: '2.875rem',
           fontWeight: 'bold',
           textAlign: 'center',
         }}
