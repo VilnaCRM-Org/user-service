@@ -23,6 +23,7 @@ function AuthSection() {
     formState: { errors },
   } = useForm<RegisterItem>();
   const onSubmit = (data: RegisterItem) => {
+
     console.log(data);
   };
   return (
