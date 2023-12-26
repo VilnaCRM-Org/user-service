@@ -26,6 +26,7 @@ export const repeatStyles: Interpolation<{ theme: Theme }> = {
   textDecoration: 'none',
   fontSize: '0.938rem',
   fontWeight: '500',
+  padding: '16px 24px',
   lineHeight: '1.125',
 };
 
@@ -41,8 +42,8 @@ const theme = createTheme({
           },
           style: {
             ...repeatStyles,
-            width: '137px',
-            height: '50px',
+            // width: '137px',
+            // height: '50px',
             backgroundColor: '#1EAEFF',
             borderRadius: '3.563rem',
             '&:hover': {
@@ -91,8 +92,8 @@ const theme = createTheme({
             size: 'small',
           },
           style: {
-            width: '93px',
-            height: '50px',
+            // width: '93px',
+            // height: '50px',
             color: 'black',
             backgroundColor: 'white',
             border: '1px solid #969B9D',
@@ -100,7 +101,7 @@ const theme = createTheme({
             ...repeatStyles,
             '&:hover': {
               backgroundColor: '#EAECEE',
-              border: 'none',
+              border: '1px solid rgba(0,0,0,0)',
             },
             '&:active': {
               border: '1px solid #EAECEE',

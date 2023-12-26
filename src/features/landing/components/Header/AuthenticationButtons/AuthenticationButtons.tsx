@@ -10,10 +10,10 @@ function Buttons() {
   const { t } = useTranslation();
   return (
     <Stack spacing={1} direction="row">
-      <CustomButton variant="outlined" size="small">
+      <CustomButton variant="outlined" size="small" fullWidth>
         {t('header.actions.log_in')}
       </CustomButton>
-      <CustomButton variant="contained" size="small">
+      <CustomButton variant="contained" size="small" fullWidth>
         {t('header.actions.try_it_out')}
       </CustomButton>
     </Stack>

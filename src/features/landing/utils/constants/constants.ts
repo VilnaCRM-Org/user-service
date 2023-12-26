@@ -20,6 +20,8 @@ import ISocialLink from '../../types/social/types';
 import IUnlimitedIntegrationsItem from '../../types/unlimited-integrations/types';
 import IWhyWeCardItem from '../../types/why-we/types';
 
+console.log(FaceBookIcon);
+
 export const SIGN_UP_SECTION_ID = 'SIGN_UP_SECTION_ID';
 
 export const WHY_WE_CARD_ITEMS: IWhyWeCardItem[] = [

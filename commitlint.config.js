@@ -1,7 +1,7 @@
 module.exports = {
   extends: ['@commitlint/config-conventional'],
   rules: {
-    'check-task-number-rule': [2, 'always'],
+    // 'check-task-number-rule': [2, 'always'],
   },
   listOfNames: [
     'build',
@@ -19,7 +19,7 @@ module.exports = {
   plugins: [
     {
       rules: {
-        'check-task-number-rule': (data) => {
+        'check-task-number-rule': data => {
           const list = this.listOfNames.join('|');
 
           const regexp = new RegExp(`(${list})(.#(\\d+)).:`, 'gm');
@@ -28,7 +28,10 @@ module.exports = {
 
           const correctCommit = data.header.includes(taskNumber) || false;
 
-          return [correctCommit, `your task number incorrect (${this.listOfNames.join('|')}(#1))`];
+          return [
+            correctCommit,
+            `your task number incorrect (${this.listOfNames.join('|')}(#1))`,
+          ];
         },
       },
     },

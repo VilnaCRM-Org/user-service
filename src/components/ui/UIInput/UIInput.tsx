@@ -9,13 +9,20 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           div: {},
+          fieldSet: {
+            border: 'none',
+            maxWidth: '460px',
+          },
           input: {
+            boxSizing: 'border-box',
             padding: '0 28px',
             height: '64px',
             borderRadius: '8px',
             border: '1px solid  #D0D4D8',
             background: ' #FFF',
-            '&:hover': {},
+            '&:hover': {
+              border: '1px solid  #969B9D',
+            },
             '&:focus': {},
             '&:active': {},
           },
@@ -23,26 +30,9 @@ const theme = createTheme({
       },
     },
   },
-  // components: {
-  //   MuiInput: {
-  //     styleOverrides: {
-  //       root: {
-  //         input: {
-  //           padding: '0 28px',
-  //           height: '64px',
-  //           borderRadius: '8px',
-  //           background: ' #FFF',
-  //           '&:hover': {},
-  //           '&:focus': {},
-  //           '&:active': {},
-  //         },
-  //       },
-  //     },
-  //   },
-  // },
 });
 
-const UIInput = forwardRef<UIInputProps>(
+const UIInput = forwardRef<HTMLInputElement, UIInputProps>(
   ({ placeholder, hasError, ...rest }, ref) => (
     <ThemeProvider theme={theme}>
       <TextField

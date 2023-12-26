@@ -1,14 +1,16 @@
 import { Stack } from '@mui/material';
 import React from 'react';
 
+// import BackgroundImages from './BackgroundImages/BackgroundImages';
 import DeviceImage from './DeviceImage/DeviceImage';
-import Info from './Info/Info';
+import TextInfo from './TextInfo/TextInfo';
 
 function AboutUs() {
   return (
     <Stack component="section" alignItems="center" sx={{ pt: '9rem' }}>
-      <Info />
+      <TextInfo />
       <DeviceImage />
+      {/* <BackgroundImages /> */}
     </Stack>
   );
 }

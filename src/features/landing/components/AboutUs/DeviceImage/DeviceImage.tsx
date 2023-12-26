@@ -1,30 +1,32 @@
 import { Box } from '@mui/material';
-import Image from 'next/image';
 import React from 'react';
 
-import DeskTop from '../../../assets/img/AboutVilna/desktop.png';
+import NotchCameraImage from '../../../assets/img/AboutVilna/Notch&Camera.svg';
+import MainImageSrc from '../../../assets/img/AboutVilna/Screen.png';
+import MainImage from '../MainImage/MainImage';
+import Notch from '../Notch/Notch';
 
 function DeviceImage() {
   return (
     <Box
       sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        backgroundImage: `url('/assets/backGroundDesktop.png')`,
-        backgroundRepeat: 'no-repeat',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        width: '1192px',
-        height: '493px',
+        border: '3px solid #78797D',
+        borderRadius: '30px',
+        overflow: 'hidden',
       }}
     >
-      <Image
-        src={DeskTop}
-        alt="Header Image"
-        width={960}
-        height={545}
-        style={{}}
-      />
+      <Box
+        sx={{
+          border: '4px solid #232122',
+          borderRadius: '25px',
+          backgroundColor: '#1A1C1E',
+          padding: '12px',
+          overflow: 'hidden',
+        }}
+      >
+        <Notch imageSrc={NotchCameraImage.src} />
+        <MainImage imageSrc={MainImageSrc.src} />
+      </Box>
     </Box>
   );
 }
