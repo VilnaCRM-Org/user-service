@@ -42,8 +42,8 @@ jobs:
         with:
           ref: main
           path: base
-      - name: Run OpenAPI Diff (from HEAD revision)
-        uses: mvegter/openapi-diff-action@v0.23.5
+      - name: Running OpenAPI Spec diff action
+        uses: oasdiff/oasdiff-action/breaking@main
         with:
-          head-spec: head/.github/openapi-spec/spec.yaml
-          base-spec: base/.github/openapi-spec/spec.yaml
+          base: base/.github/openapi-spec/spec.yaml
+          revision: head/.github/openapi-spec/spec.yaml

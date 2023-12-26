@@ -378,6 +378,8 @@ class OpenApiFactory implements OpenApiFactoryInterface
             $openApi->getPaths()->addPath($path, $pathItem);
         }
 
+        $openApi = $openApi->withServers([new Model\Server('https://localhost')]);
+
         return $openApi;
     }
 }
