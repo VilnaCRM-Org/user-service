@@ -14,7 +14,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class UserPutProcessor implements ProcessorInterface
 {
     public function __construct(private UserRepositoryInterface $userRepository,
-        private UserPasswordHasherInterface                     $passwordHasher, private EventBus $eventBus)
+        private UserPasswordHasherInterface $passwordHasher, private EventBus $eventBus)
     {
     }
 

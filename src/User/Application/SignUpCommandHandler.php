@@ -14,7 +14,7 @@ final readonly class SignUpCommandHandler implements CommandHandler
 {
     public function __construct(
         private UserPasswordHasherInterface $passwordHasher,
-        private UserRepositoryInterface     $userRepository,
+        private UserRepositoryInterface $userRepository,
     ) {
     }
 

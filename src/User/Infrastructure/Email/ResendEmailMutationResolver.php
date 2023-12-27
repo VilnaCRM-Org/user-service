@@ -15,7 +15,7 @@ use App\User\Infrastructure\Exception\UserTimedOutException;
 class ResendEmailMutationResolver implements MutationResolverInterface
 {
     public function __construct(private CommandBus $commandBus, private UserRepositoryInterface $userRepository,
-        private TokenRepositoryInterface           $tokenRepository)
+        private TokenRepositoryInterface $tokenRepository)
     {
     }
 

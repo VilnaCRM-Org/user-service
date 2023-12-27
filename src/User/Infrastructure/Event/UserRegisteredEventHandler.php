@@ -12,8 +12,8 @@ use Symfony\Component\Mime\Email;
 class UserRegisteredEventHandler implements DomainEventSubscriber
 {
     public function __construct(private MailerInterface $mailer,
-        private TokenRepositoryInterface                $tokenRepository,
-        private LoggerInterface                         $logger)
+        private TokenRepositoryInterface $tokenRepository,
+        private LoggerInterface $logger)
     {
     }
 

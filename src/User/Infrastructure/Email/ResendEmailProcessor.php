@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 class ResendEmailProcessor implements ProcessorInterface
 {
     public function __construct(private CommandBus $commandBus, private UserRepositoryInterface $userRepository,
-        private TokenRepositoryInterface           $tokenRepository)
+        private TokenRepositoryInterface $tokenRepository)
     {
     }
 

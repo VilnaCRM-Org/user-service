@@ -12,7 +12,7 @@ use App\User\Domain\UserRepositoryInterface;
 class ConfirmUserMutationResolver implements MutationResolverInterface
 {
     public function __construct(private TokenRepositoryInterface $tokenRepository, private CommandBus $commandBus,
-                                private UserRepositoryInterface  $userRepository)
+        private UserRepositoryInterface $userRepository)
     {
     }
 

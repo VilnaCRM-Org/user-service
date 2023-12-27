@@ -13,8 +13,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class UserUpdateMutationResolver implements MutationResolverInterface
 {
     public function __construct(private UserRepositoryInterface $userRepository,
-        private UserPasswordHasherInterface                     $passwordHasher, private EventBus $eventBus,
-        private MutationInputValidator                          $validator
+        private UserPasswordHasherInterface $passwordHasher, private EventBus $eventBus,
+        private MutationInputValidator $validator
     ) {
     }
 
