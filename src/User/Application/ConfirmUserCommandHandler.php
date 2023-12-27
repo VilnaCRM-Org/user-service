@@ -3,13 +3,13 @@
 namespace App\User\Application;
 
 use App\Shared\Domain\Bus\Command\CommandHandler;
-use App\User\Domain\TokenRepository;
-use App\User\Domain\UserRepository;
+use App\User\Domain\TokenRepositoryInterface;
+use App\User\Domain\UserRepositoryInterface;
 
 class ConfirmUserCommandHandler implements CommandHandler
 {
     public function __construct(
-        private TokenRepository $tokenRepository, private UserRepository $userRepository
+        private TokenRepositoryInterface $tokenRepository, private UserRepositoryInterface $userRepository
     ) {
     }
 

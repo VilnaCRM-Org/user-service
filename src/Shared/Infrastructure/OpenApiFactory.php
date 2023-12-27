@@ -36,7 +36,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'status' => 500,
                 ],
             ],
-        ]), );
+        ]),);
 
         $standardResponse400 = new Response(description: 'Bad request', content: new \ArrayObject([
             'application/json' => [
@@ -56,7 +56,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'status' => 400,
                 ],
             ],
-        ]), );
+        ]),);
 
         $standardResponse404 = new Response(description: 'User not found', content: new \ArrayObject([
             'application/json' => [
@@ -76,7 +76,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'status' => 404,
                 ],
             ],
-        ]), );
+        ]),);
 
         $standardResponse422 = new Response(description: 'Validation error', content: new \ArrayObject([
             'application/json' => [
@@ -102,7 +102,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'status' => 422,
                 ],
             ],
-        ]), );
+        ]),);
 
         // Overriding User endpoints
         $pathItem = $openApi->getPaths()->getPath('/api/users/{id}/resend-confirmation-email');
@@ -119,14 +119,14 @@ class OpenApiFactory implements OpenApiFactoryInterface
                 ->withRequestBody(new Model\RequestBody(content: new \ArrayObject([
                     'application/json' => [
                         'example' => '{}',
-                    ], ])))
+                    ],])))
                 ->withResponses([200 => new Response(description: 'Email was send again', content: new \ArrayObject([
                     'application/json' => [
                         'example' => '',
                     ],
-                ]), ),
+                ]),),
                     404 => $standardResponse404,
-                    429 => new Response(description: 'User was timed out', content: new \ArrayObject([
+                    429 => new Response(description: 'Too many requests', content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
@@ -144,7 +144,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                                 'status' => 429,
                             ],
                         ],
-                    ]), ),
+                    ]),),
                 ])
         ));
 
@@ -170,7 +170,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'detail' => 'user@example.com address is already registered. Please use a different email address or try logging in.',
                 ],
             ],
-        ]), );
+        ]),);
 
         $openApi->getPaths()->addPath('/api/users', $pathItem->withPost(
             $operationPost
@@ -202,7 +202,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'detail' => 'Old password is invalid',
                     'status' => 410,
                 ],
-            ], ]), );
+            ],]),);
 
         $openApi->getPaths()->addPath('/api/users/{id}', $pathItem->withPut(
             $operationPut->withParameters([$UuidWithExamplePathParam])
@@ -225,7 +225,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                         'application/json' => [
                             'example' => '',
                         ],
-                    ]), ),
+                    ]),),
                     404 => $standardResponse404])
         )->withGet($operationGet->withParameters([$UuidWithExamplePathParam])
             ->withResponse(404, $standardResponse404)));
@@ -240,11 +240,11 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     200 => new Response(description: 'User confirmed', content: new \ArrayObject([
                         'application/json' => [
                             'example' => '',
-                        ], ]), ),
+                        ],]),),
                     404 => new Response(description: 'Token not found or expired', content: new \ArrayObject([
                         'application/json' => [
                             'example' => '',
-                        ], ]), ),
+                        ],]),),
                 ],
                 )
         ));
@@ -267,7 +267,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'hint' => 'Check that all required parameters have been provided',
                     'message' => 'The authorization grant type is not supported by the authorization server.',
                 ],
-            ], ]), );
+            ],]),);
         $invalidClientCredentialsResponse = new Response(description: 'Invalid client credentials', content: new \ArrayObject([
             'application/json' => [
                 'schema' => [
@@ -283,31 +283,33 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'error_description' => 'Client authentication failed',
                     'message' => 'Client authentication failed',
                 ],
-            ], ]), );
+            ],]),);
 
         $openApi->getPaths()->addPath('/api/oauth/authorize',
-            new Model\PathItem(summary: 'Requests for authorization code', description: 'Requests for authorization code', get: new Model\Operation(responses: [302 => new Response(
+            new Model\PathItem(summary: 'Requests for authorization code', description: 'Requests for authorization code',
+                get: new Model\Operation(tags: ['OAuth'], responses: [302 => new Response(
                 description: 'Redirect to the provided redirect URI with authorization code.', content: new \ArrayObject([
                 'application/json' => [
                     'example' => '',
-                ], ]), headers: new \ArrayObject(['Location' => new Model\Header(description: 'The URI to redirect to for user authorization',
-                    schema: ['type' => 'string', 'format' => 'uri', 'example' => 'https://example.com/oauth/callback?code=e7f8c62113a47f7a5a9dca1f'])]), ),
-                    400 => $unsupportedGrantTypeResponse,
-                    401 => $invalidClientCredentialsResponse], parameters: [
-                    new Model\Parameter(name: 'response_type', in: 'query', description: 'Response type',
-                        required: true, example: 'code'),
-                    new Model\Parameter(name: 'client_id', in: 'query', description: 'Client ID',
-                        required: true, example: 'dc0bc6323f16fecd4224a3860ca894c5'),
-                    new Model\Parameter(name: 'redirect_uri', in: 'query', description: 'Redirect uri',
-                        required: true, example: 'https://example.com/oauth/callback'),
-                    new Model\Parameter(name: 'scope', in: 'query', description: 'Scope',
-                        required: false, example: 'EMAIL PROFILE'),
-                    new Model\Parameter(name: 'state', in: 'query', description: 'State',
-                        required: false, example: 'abc123def456'),
-                ])));
+                ],]), headers: new \ArrayObject(['Location' => new Model\Header(description: 'The URI to redirect to for user authorization',
+                schema: ['type' => 'string', 'format' => 'uri', 'example' => 'https://example.com/oauth/callback?code=e7f8c62113a47f7a5a9dca1f&state=af0ifjsldkj'])]),),
+                400 => $unsupportedGrantTypeResponse,
+                401 => $invalidClientCredentialsResponse], parameters: [
+                new Model\Parameter(name: 'response_type', in: 'query', description: 'Response type',
+                    required: true, example: 'code'),
+                new Model\Parameter(name: 'client_id', in: 'query', description: 'Client ID',
+                    required: true, example: 'dc0bc6323f16fecd4224a3860ca894c5'),
+                new Model\Parameter(name: 'redirect_uri', in: 'query', description: 'Redirect uri',
+                    required: true, example: 'https://example.com/oauth/callback'),
+                new Model\Parameter(name: 'scope', in: 'query', description: 'Scope',
+                    required: false, example: 'profile email'),
+                new Model\Parameter(name: 'state', in: 'query', description: 'State',
+                    required: false, example: 'af0ifjsldkj'),
+            ])));
 
         $openApi->getPaths()->addPath('/api/oauth/token',
-            new Model\PathItem(summary: 'Requests for access token', description: 'Requests for access token', post: new Model\Operation(responses: [200 => new Response(description: 'Access token returned',
+            new Model\PathItem(summary: 'Requests for access token', description: 'Requests for access token',
+                post: new Model\Operation(tags: ['OAuth'], responses: [200 => new Response(description: 'Access token returned',
                 content: new \ArrayObject([
                     'application/json' => [
                         'schema' => [
@@ -325,30 +327,30 @@ class OpenApiFactory implements OpenApiFactoryInterface
                             'access_token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdW',
                             'refresh_token' => 'df9b4ae7ce2e1e8f2a3c1b4d',
                         ],
-                    ], ]), ),
-                    400 => $unsupportedGrantTypeResponse,
-                    401 => $invalidClientCredentialsResponse], requestBody: new Model\RequestBody(
-                        content: new \ArrayObject([
-                            'application/json' => [
-                                'schema' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'grant_type' => ['type' => 'string'],
-                                        'client_id' => ['type' => 'string'],
-                                        'client_secret' => ['type' => 'string'],
-                                        'redirect_uri' => ['type' => 'string'],
-                                        'code' => ['type' => 'string'],
-                                        'refresh_token' => ['type' => 'string'],
-                                    ],
-                                ],
-                                'example' => [
-                                    'grant_type' => 'authorization_code',
-                                    'client_id' => 'dc0bc6323f16fecd4224a3860ca894c5',
-                                    'client_secret' => '8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc777ec5',
-                                    'redirect_uri' => 'https://example.com/oauth/callback',
-                                    'code' => 'e7f8c62113a47f7a5a9dca1f',
-                                ],
-                            ], ])))));
+                    ],]),),
+                400 => $unsupportedGrantTypeResponse,
+                401 => $invalidClientCredentialsResponse], requestBody: new Model\RequestBody(
+                content: new \ArrayObject([
+                    'application/json' => [
+                        'schema' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'grant_type' => ['type' => 'string'],
+                                'client_id' => ['type' => 'string'],
+                                'client_secret' => ['type' => 'string'],
+                                'redirect_uri' => ['type' => 'string'],
+                                'code' => ['type' => 'string'],
+                                'refresh_token' => ['type' => 'string'],
+                            ],
+                        ],
+                        'example' => [
+                            'grant_type' => 'authorization_code',
+                            'client_id' => 'dc0bc6323f16fecd4224a3860ca894c5',
+                            'client_secret' => '8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc777ec5',
+                            'redirect_uri' => 'https://example.com/oauth/callback',
+                            'code' => 'e7f8c62113a47f7a5a9dca1f',
+                        ],
+                    ],])))));
 
         // Adding 500 response to all endpoints
         foreach (array_keys($openApi->getPaths()->getPaths()) as $path) {

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\User\Infrastructure\Exceptions;
+namespace App\User\Infrastructure\Exception;
 
-class DuplicateEmailError extends \RuntimeException
+class DuplicateEmailException extends \RuntimeException
 {
     public function __construct(string $email)
     {

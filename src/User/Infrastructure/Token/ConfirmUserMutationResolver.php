@@ -6,13 +6,13 @@ use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\ConfirmUserCommand;
 use App\User\Domain\Entity\Token\ConfirmUserDto;
-use App\User\Domain\TokenRepository;
-use App\User\Domain\UserRepository;
+use App\User\Domain\TokenRepositoryInterface;
+use App\User\Domain\UserRepositoryInterface;
 
 class ConfirmUserMutationResolver implements MutationResolverInterface
 {
-    public function __construct(private TokenRepository $tokenRepository, private CommandBus $commandBus,
-        private UserRepository $userRepository)
+    public function __construct(private TokenRepositoryInterface $tokenRepository, private CommandBus $commandBus,
+                                private UserRepositoryInterface  $userRepository)
     {
     }
 

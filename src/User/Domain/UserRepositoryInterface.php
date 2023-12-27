@@ -6,7 +6,7 @@ namespace App\User\Domain;
 
 use App\User\Domain\Entity\User\User;
 
-interface UserRepository
+interface UserRepositoryInterface
 {
     public function save(User $user): void;
 

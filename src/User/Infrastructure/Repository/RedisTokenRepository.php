@@ -3,12 +3,12 @@
 namespace App\User\Infrastructure\Repository;
 
 use App\User\Domain\Entity\Token\ConfirmationToken;
-use App\User\Domain\TokenRepository;
-use App\User\Infrastructure\Exceptions\TokenNotFoundError;
+use App\User\Domain\TokenRepositoryInterface;
+use App\User\Infrastructure\Exception\TokenNotFoundException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 
-class RedisTokenRepository implements TokenRepository
+class RedisTokenRepository implements TokenRepositoryInterface
 {
     private const REDIS_KEY_PREFIX = 'token-';
     private const TOKEN_VALUE_PREFIX = 'tokenValue-';
@@ -43,7 +43,7 @@ class RedisTokenRepository implements TokenRepository
         if (null !== $serializedToken) {
             return $this->serializer->deserialize($serializedToken, ConfirmationToken::class, 'json');
         } else {
-            throw new TokenNotFoundError();
+            throw new TokenNotFoundException();
         }
     }
 
@@ -57,7 +57,7 @@ class RedisTokenRepository implements TokenRepository
         if (null !== $serializedToken) {
             return $this->serializer->deserialize($serializedToken, ConfirmationToken::class, 'json');
         } else {
-            throw new TokenNotFoundError();
+            throw new TokenNotFoundException();
         }
     }
 

@@ -7,16 +7,16 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\SendConfirmationEmailCommand;
 use App\User\Domain\Entity\Token\ConfirmationToken;
-use App\User\Domain\TokenRepository;
-use App\User\Domain\UserRepository;
-use App\User\Infrastructure\Exceptions\TokenNotFoundError;
-use App\User\Infrastructure\Exceptions\UserTimedOutError;
+use App\User\Domain\TokenRepositoryInterface;
+use App\User\Domain\UserRepositoryInterface;
+use App\User\Infrastructure\Exception\TokenNotFoundException;
+use App\User\Infrastructure\Exception\UserTimedOutException;
 use Symfony\Component\HttpFoundation\Response;
 
 class ResendEmailProcessor implements ProcessorInterface
 {
-    public function __construct(private CommandBus $commandBus, private UserRepository $userRepository,
-        private TokenRepository $tokenRepository)
+    public function __construct(private CommandBus $commandBus, private UserRepositoryInterface $userRepository,
+        private TokenRepositoryInterface           $tokenRepository)
     {
     }
 
@@ -25,12 +25,12 @@ class ResendEmailProcessor implements ProcessorInterface
         $user = $this->userRepository->find($uriVariables['id']);
         try {
             $token = $this->tokenRepository->findByUserId($user->getId());
-        } catch (TokenNotFoundError) {
+        } catch (TokenNotFoundException) {
             $token = ConfirmationToken::generateToken($user->getId());
         }
 
         if ($token->getAllowedToSendAfter() > new \DateTime()) {
-            throw new UserTimedOutError($token->getAllowedToSendAfter());
+            throw new UserTimedOutException($token->getAllowedToSendAfter());
         }
 
         $datetime = new \DateTime();

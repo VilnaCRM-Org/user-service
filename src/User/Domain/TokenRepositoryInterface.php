@@ -4,7 +4,7 @@ namespace App\User\Domain;
 
 use App\User\Domain\Entity\Token\ConfirmationToken;
 
-interface TokenRepository
+interface TokenRepositoryInterface
 {
     public function save(ConfirmationToken $token): void;
 

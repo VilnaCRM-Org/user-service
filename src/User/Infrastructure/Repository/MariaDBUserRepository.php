@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Repository;
 
 use App\User\Domain\Entity\User\User;
-use App\User\Domain\UserRepository;
-use App\User\Infrastructure\Exceptions\DuplicateEmailError;
-use App\User\Infrastructure\Exceptions\UserNotFoundError;
+use App\User\Domain\UserRepositoryInterface;
+use App\User\Infrastructure\Exception\DuplicateEmailException;
+use App\User\Infrastructure\Exception\UserNotFoundException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 
-final readonly class MariaDBUserRepository implements UserRepository
+final readonly class MariaDBUserRepository implements UserRepositoryInterface
 {
     public function __construct(private EntityManagerInterface $entityManager)
     {
@@ -23,7 +23,7 @@ final readonly class MariaDBUserRepository implements UserRepository
             $this->entityManager->persist($user);
             $this->entityManager->flush();
         } catch (UniqueConstraintViolationException $e) {
-            throw new DuplicateEmailError($user->getEmail());
+            throw new DuplicateEmailException($user->getEmail());
         }
     }
 
@@ -32,7 +32,7 @@ final readonly class MariaDBUserRepository implements UserRepository
         $user = $this->entityManager->find(User::class, $userID);
 
         if (!$user) {
-            throw new UserNotFoundError();
+            throw new UserNotFoundException();
         }
 
         return $user;

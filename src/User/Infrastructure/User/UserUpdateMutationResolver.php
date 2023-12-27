@@ -4,17 +4,17 @@ namespace App\User\Infrastructure\User;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Event\EventBus;
-use App\User\Domain\UserRepository;
+use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Event\PasswordChangedEvent;
-use App\User\Infrastructure\Exceptions\InvalidPasswordError;
+use App\User\Infrastructure\Exception\InvalidPasswordException;
 use App\User\Infrastructure\MutationInputValidator;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserUpdateMutationResolver implements MutationResolverInterface
 {
-    public function __construct(private UserRepository $userRepository,
-        private UserPasswordHasherInterface $passwordHasher, private EventBus $eventBus,
-        private MutationInputValidator $validator
+    public function __construct(private UserRepositoryInterface $userRepository,
+        private UserPasswordHasherInterface                     $passwordHasher, private EventBus $eventBus,
+        private MutationInputValidator                          $validator
     ) {
     }
 
@@ -48,7 +48,7 @@ class UserUpdateMutationResolver implements MutationResolverInterface
 
             return $user;
         } else {
-            throw new InvalidPasswordError();
+            throw new InvalidPasswordException();
         }
     }
 }

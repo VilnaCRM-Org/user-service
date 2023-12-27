@@ -3,7 +3,7 @@
 namespace App\User\Application;
 
 use App\Shared\Domain\Bus\Command\CommandHandler;
-use App\User\Domain\TokenRepository;
+use App\User\Domain\TokenRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -11,8 +11,8 @@ use Symfony\Component\Mime\Email;
 class SendConfirmationEmailCommandHandler implements CommandHandler
 {
     public function __construct(private MailerInterface $mailer,
-        private TokenRepository $tokenRepository,
-        private LoggerInterface $logger)
+        private TokenRepositoryInterface                $tokenRepository,
+        private LoggerInterface                         $logger)
     {
     }
 

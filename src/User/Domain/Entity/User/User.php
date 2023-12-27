@@ -20,11 +20,11 @@ use App\User\Domain\Entity\Email\RetryMutationDto;
 use App\User\Domain\Entity\Token\ConfirmUserDto;
 use App\User\Infrastructure\Email\ResendEmailMutationResolver;
 use App\User\Infrastructure\Email\ResendEmailProcessor;
-use App\User\Infrastructure\Exceptions\DuplicateEmailError;
-use App\User\Infrastructure\Exceptions\InvalidPasswordError;
-use App\User\Infrastructure\Exceptions\TokenNotFoundError;
-use App\User\Infrastructure\Exceptions\UserNotFoundError;
-use App\User\Infrastructure\Exceptions\UserTimedOutError;
+use App\User\Infrastructure\Exception\DuplicateEmailException;
+use App\User\Infrastructure\Exception\InvalidPasswordException;
+use App\User\Infrastructure\Exception\TokenNotFoundException;
+use App\User\Infrastructure\Exception\UserNotFoundException;
+use App\User\Infrastructure\Exception\UserTimedOutException;
 use App\User\Infrastructure\Token\ConfirmUserMutationResolver;
 use App\User\Infrastructure\User\RegisterUserMutationResolver;
 use App\User\Infrastructure\User\RegisterUserProcessor;
@@ -38,16 +38,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity]
 #[ApiResource(normalizationContext: ['groups' => ['output']],
-    exceptionToStatus: [InvalidPasswordError::class => 410, UserNotFoundError::class => 404,
-        TokenNotFoundError::class => 404, DuplicateEmailError::class => 409])]
+    exceptionToStatus: [InvalidPasswordException::class => 410, UserNotFoundException::class => 404,
+        TokenNotFoundException::class => 404, DuplicateEmailException::class => 409])]
 #[Get]
 #[GetCollection(paginationClientItemsPerPage: true)]
 #[Post(input: UserInputDto::class, processor: RegisterUserProcessor::class)]
 #[Patch(input: UserPatchDto::class, processor: UserPatchProcessor::class)]
 #[Put(input: UserPutDto::class, processor: UserPutProcessor::class)]
 #[Delete]
-#[Post(uriTemplate: '/users/{id}/resend-confirmation-email', exceptionToStatus: [UserTimedOutError::class => 429,
-    UserNotFoundError::class => 404],
+#[Post(uriTemplate: '/users/{id}/resend-confirmation-email', exceptionToStatus: [UserTimedOutException::class => 429,
+    UserNotFoundException::class => 404],
     input: RetryDto::class, processor: ResendEmailProcessor::class)]
 #[Mutation(resolver: ConfirmUserMutationResolver::class,
     input: ConfirmUserDto::class, name: 'confirm')]

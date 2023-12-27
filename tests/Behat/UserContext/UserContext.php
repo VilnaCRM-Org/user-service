@@ -4,10 +4,10 @@ namespace App\Tests\Behat\UserContext;
 
 use App\User\Domain\Entity\Token\ConfirmationToken;
 use App\User\Domain\Entity\User\User;
-use App\User\Domain\TokenRepository;
-use App\User\Domain\UserRepository;
-use App\User\Infrastructure\Exceptions\DuplicateEmailError;
-use App\User\Infrastructure\Exceptions\UserNotFoundError;
+use App\User\Domain\TokenRepositoryInterface;
+use App\User\Domain\UserRepositoryInterface;
+use App\User\Infrastructure\Exception\DuplicateEmailException;
+use App\User\Infrastructure\Exception\UserNotFoundException;
 use Behat\Behat\Context\Context;
 use Faker\Factory;
 use Faker\Generator;
@@ -18,8 +18,8 @@ class UserContext implements Context
     private Generator $faker;
 
     public function __construct(
-        private UserRepository $userRepository,
-        private UserPasswordHasherInterface $passwordHasher, private TokenRepository $tokenRepository
+        private UserRepositoryInterface     $userRepository,
+        private UserPasswordHasherInterface $passwordHasher, private TokenRepositoryInterface $tokenRepository
     ) {
         $this->faker = Factory::create();
     }
@@ -48,7 +48,7 @@ class UserContext implements Context
             $user->setPassword($hashedPassword);
 
             $this->userRepository->save($user);
-        } catch (DuplicateEmailError) {
+        } catch (DuplicateEmailException) {
         }
     }
 
@@ -59,7 +59,7 @@ class UserContext implements Context
     {
         try {
             $this->userRepository->find($id);
-        } catch (UserNotFoundError) {
+        } catch (UserNotFoundException) {
             $this->userRepository->save(new User($id, $this->faker->email, $this->faker->name, $this->faker->password));
         }
     }
@@ -72,9 +72,9 @@ class UserContext implements Context
         try {
             $user = $this->userRepository->find($id);
             if (!$this->passwordHasher->isPasswordValid($user, $password)) {
-                throw new UserNotFoundError();
+                throw new UserNotFoundException();
             }
-        } catch (UserNotFoundError) {
+        } catch (UserNotFoundException) {
             $user = new User($id, $this->faker->email, $this->faker->name, $password);
 
             $hashedPassword = $this->passwordHasher->hashPassword(

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\User\Infrastructure\Exceptions;
+namespace App\User\Infrastructure\Exception;
 
-class UserTimedOutError extends \RuntimeException
+class UserTimedOutException extends \RuntimeException
 {
     public function __construct(\DateTime $timeOutTill)
     {

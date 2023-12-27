@@ -4,7 +4,7 @@ namespace App\User\Infrastructure\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriber;
 use App\User\Domain\Entity\Token\ConfirmationToken;
-use App\User\Domain\TokenRepository;
+use App\User\Domain\TokenRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -12,8 +12,8 @@ use Symfony\Component\Mime\Email;
 class UserRegisteredEventHandler implements DomainEventSubscriber
 {
     public function __construct(private MailerInterface $mailer,
-        private TokenRepository $tokenRepository,
-        private LoggerInterface $logger)
+        private TokenRepositoryInterface                $tokenRepository,
+        private LoggerInterface                         $logger)
     {
     }
 

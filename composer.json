@@ -19,10 +19,10 @@
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.13",
         "dpauli/graphql-request-builder": "^1.8",
-        "fakerphp/faker": "*",
-        "lambdish/phunctional": "v2.1.0",
-        "league/oauth2-server-bundle": "*",
-        "lexik/jwt-authentication-bundle": "*",
+        "fakerphp/faker": "^1.23.0",
+        "lambdish/phunctional": "v2.1.*",
+        "league/oauth2-server-bundle": "^0.5.0",
+        "lexik/jwt-authentication-bundle": "^2.20.3",
         "phpmailer/phpmailer": "^6.6",
         "ramsey/uuid": "4.7.5",
         "sebastian/phpcpd": "^6.0",
@@ -123,9 +123,9 @@
         "symfony/css-selector": "6.2.*",
         "symfony/maker-bundle": "^1.47",
         "symfony/phpunit-bridge": "^6.2",
-        "vimeo/psalm": "*",
+        "vimeo/psalm": "^4.30.0",
         "weirdan/doctrine-psalm-plugin": "^2.5",
-        "zenstruck/messenger-test": "*"
+        "zenstruck/messenger-test": "^1.9.1"
     },
     "version": "1.1.0"
 }

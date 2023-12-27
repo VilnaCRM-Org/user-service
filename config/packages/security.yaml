@@ -8,9 +8,6 @@ security:
         class: App\User\Domain\Entity\User\User
         property: email
 
-#  access_control:
-#    - { path: ^/api/oauth/authorize, roles: ROLE_USER }
-
   firewalls:
     main:
       stateless: true

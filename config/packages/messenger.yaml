@@ -3,7 +3,7 @@ framework:
     # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
     # failure_transport: failed
     transports:
-      async:
+      send-email:
         dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
 
         # default configuration
@@ -23,7 +23,7 @@ framework:
 
     routing:
       # Route your messages to the transports
-      'Symfony\Component\Mailer\Messenger\SendEmailMessage': async
+      'Symfony\Component\Mailer\Messenger\SendEmailMessage': send-email
 
 when@test:
   framework:
@@ -31,4 +31,4 @@ when@test:
       transports:
           # replace with your transport name here (e.g., my_transport: 'in-memory://')
           # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
-        async: 'in-memory://'
+        send-email: 'in-memory://'

@@ -6,15 +6,15 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Event\EventBus;
 use App\User\Domain\Entity\User\UserPutDto;
-use App\User\Domain\UserRepository;
+use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Event\PasswordChangedEvent;
-use App\User\Infrastructure\Exceptions\InvalidPasswordError;
+use App\User\Infrastructure\Exception\InvalidPasswordException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserPutProcessor implements ProcessorInterface
 {
-    public function __construct(private UserRepository $userRepository,
-        private UserPasswordHasherInterface $passwordHasher, private EventBus $eventBus)
+    public function __construct(private UserRepositoryInterface $userRepository,
+        private UserPasswordHasherInterface                     $passwordHasher, private EventBus $eventBus)
     {
     }
 
@@ -39,7 +39,7 @@ class UserPutProcessor implements ProcessorInterface
 
             return $user;
         } else {
-            throw new InvalidPasswordError();
+            throw new InvalidPasswordException();
         }
     }
 }

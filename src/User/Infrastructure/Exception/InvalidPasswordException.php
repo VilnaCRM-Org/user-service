@@ -1,8 +1,8 @@
 <?php
 
-namespace App\User\Infrastructure\Exceptions;
+namespace App\User\Infrastructure\Exception;
 
-class InvalidPasswordError extends \RuntimeException
+class InvalidPasswordException extends \RuntimeException
 {
     public function __construct()
     {

@@ -11,10 +11,12 @@ DOCKER_COMPOSE   = docker compose
 EXEC_PHP      = $(DOCKER_COMPOSE) exec php
 COMPOSER      = $(EXEC_PHP) composer
 GIT           = git
+EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
 
 # Alias
 SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_BIN   = $(EXEC_PHP) symfony
+SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
 
 # Executables: vendors
 PHPUNIT       = ./vendor/bin/phpunit
@@ -58,12 +60,12 @@ phpunit: ## The PHP unit testing framework
 	$(EXEC_PHP) ./vendor/bin/phpunit
 
 behat: ## A php framework for autotesting business expectations
-	$(DOCKER_COMPOSE) exec -e APP_ENV=test php bin/console c:c
-	$(DOCKER_COMPOSE) exec -e APP_ENV=test php bin/console doctrine:database:drop --force --if-exists
-	$(DOCKER_COMPOSE) exec -e APP_ENV=test php bin/console doctrine:database:create
-	$(DOCKER_COMPOSE) exec -e APP_ENV=test php bin/console doctrine:migrations:migrate --no-interaction
-	$(DOCKER_COMPOSE) exec -e APP_ENV=test php bin/console doctrine:schema:update --force
-	$(DOCKER_COMPOSE) exec -e APP_ENV=test php ./vendor/bin/behat
+	$(SYMFONY_TEST_ENV) c:c
+	$(SYMFONY_TEST_ENV) doctrine:database:drop --force --if-exists
+	$(SYMFONY_TEST_ENV) doctrine:database:create
+	$(SYMFONY_TEST_ENV) doctrine:migrations:migrate --no-interaction
+	$(SYMFONY_TEST_ENV) doctrine:schema:update --force
+	$(EXEC_PHP_TEST_ENV) ./vendor/bin/behat
 
 artillery: ## run Load testing
 	$(DOCKER) run --rm -v "${PWD}/tests/Load:/tests/Load" artilleryio/artillery:latest run $(addprefix /tests/Load/,$(ARTILLERY_FILES))

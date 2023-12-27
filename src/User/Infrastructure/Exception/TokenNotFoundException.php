@@ -1,8 +1,8 @@
 <?php
 
-namespace App\User\Infrastructure\Exceptions;
+namespace App\User\Infrastructure\Exception;
 
-class TokenNotFoundError extends \RuntimeException
+class TokenNotFoundException extends \RuntimeException
 {
     public function __construct()
     {

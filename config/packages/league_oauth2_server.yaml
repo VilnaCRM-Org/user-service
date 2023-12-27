@@ -13,19 +13,19 @@ league_oauth2_server:
     encryption_key: '%env(resolve:OAUTH_ENCRYPTION_KEY)%' # Required
 
     # The type of value of 'encryption_key'
-    encryption_key_type:  plain # One of "plain"; "defuse"
+    encryption_key_type: defuse # One of "plain"; "defuse"
 
     # How long the issued access token should be valid for.
     # The value should be a valid interval: http://php.net/manual/en/dateinterval.construct.php#refsect1-dateinterval.construct-parameters
-    access_token_ttl:     PT1H
+    access_token_ttl: '%env(resolve:ACCESS_TOKEN_TTL)%'
 
     # How long the issued refresh token should be valid for.
     # The value should be a valid interval: http://php.net/manual/en/dateinterval.construct.php#refsect1-dateinterval.construct-parameters
-    refresh_token_ttl:    P1M
+    refresh_token_ttl: '%env(resolve:REFRESH_TOKEN_TTL)%'
 
     # How long the issued auth code should be valid for.
     # The value should be a valid interval: http://php.net/manual/en/dateinterval.construct.php#refsect1-dateinterval.construct-parameters
-    auth_code_ttl:        PT10M
+    auth_code_ttl: '%env(resolve:AUTH_CODE_TTL)%'
 
     # Whether to enable the client credentials grant
     enable_client_credentials_grant: true
@@ -54,11 +54,11 @@ league_oauth2_server:
   scopes:
     # Scopes that you wish to utilize in your application.
     # This should be a simple array of strings.
-    available:               ['EMAIL', 'ID']
+    available: ['email', 'profile']
 
     # Scopes that will be assigned when no scope given.
     # This should be a simple array of strings.
-    default:                 ['EMAIL']
+    default: ['email']
 
   # Configures different persistence methods that can be used by the bundle for saving client and token data.
   # Only one persistence method can be configured at a time.
@@ -66,15 +66,20 @@ league_oauth2_server:
     doctrine:
 
       # Name of the entity manager that you wish to use for managing clients and tokens.
-      entity_manager:       default
+      entity_manager: default
 
       # Table name prefix.
-      table_prefix:         oauth2_
+      table_prefix: oauth2_
     # in_memory:            ~
 
   # Set a custom prefix that replaces the default 'ROLE_OAUTH2_' role prefix
-  role_prefix:          ROLE_OAUTH2_
+  role_prefix: ROLE_OAUTH2_
 
   client:
     # Set a custom client class. Must be a League\Bundle\OAuth2ServerBundle\Model\Client
-    classname:        League\Bundle\OAuth2ServerBundle\Model\Client
+    classname: League\Bundle\OAuth2ServerBundle\Model\Client
+
+when@test:
+  league_oauth2_server:
+    authorization_server:
+      encryption_key_type: plain

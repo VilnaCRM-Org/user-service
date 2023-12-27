@@ -1,13 +1,11 @@
 monolog:
   handlers:
-    # this "file_log" key could be anything
-    file_log:
+    stdout_handler:
       type: stream
-      # log to var/log/(environment).log
-      path: "%kernel.logs_dir%/%kernel.environment%.log"
-      # log *all* messages (debug is lowest level)
+      path: "php://stdout"
       level: debug
 
-    syslog_handler:
-      type: syslog
+    stderr_handler:
+      type: stream
+      path: "php://stderr"
       level: error

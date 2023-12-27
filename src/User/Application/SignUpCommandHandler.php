@@ -7,14 +7,14 @@ namespace App\User\Application;
 use App\Shared\Domain\Bus\Command\CommandHandler;
 use App\Shared\Domain\ValueObject\Uuid;
 use App\User\Domain\Entity\User\User;
-use App\User\Domain\UserRepository;
+use App\User\Domain\UserRepositoryInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final readonly class SignUpCommandHandler implements CommandHandler
 {
     public function __construct(
         private UserPasswordHasherInterface $passwordHasher,
-        private UserRepository $userRepository,
+        private UserRepositoryInterface     $userRepository,
     ) {
     }
 

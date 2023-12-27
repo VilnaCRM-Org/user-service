@@ -68,7 +68,7 @@ COPY --link infrastructure/docker/php/docker-entrypoint.sh /usr/local/bin/docker
 RUN chmod +x /usr/local/bin/docker-entrypoint
 
 ENTRYPOINT ["docker-entrypoint"]
-CMD ["sh", "-c", "php-fpm & php bin/console messenger:consume async"]
+CMD ["sh", "-c", "php-fpm & php bin/console messenger:consume send-email"]
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
 ENV COMPOSER_ALLOW_SUPERUSER=1

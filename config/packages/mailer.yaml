@@ -3,4 +3,4 @@ framework:
   mailer:
     dsn: '%env(MAILER_DSN)%'
     envelope:
-      sender: 'vilnaCRM@example.com'
+      sender: '%env(MAIL_SENDER)%'
