@@ -1,9 +1,11 @@
 'use client';
 
-import { Typography, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+
+import UITypography from '../ui/UITypography/UITypography';
 
 interface CardItemInterface {
   item: {
@@ -11,6 +13,8 @@ interface CardItemInterface {
     imageSrc: string;
     title: string;
     text: string;
+    width?: number;
+    height?: number;
   };
   type: 'WhyUs' | 'Possibilities';
 }
@@ -32,32 +36,18 @@ function CardItem({ item, type }: CardItemInterface) {
             border: '1px solid #EAECEE',
           }}
         >
-          <Image src={item.imageSrc} alt="Card Image" width={60} height={60} />
-          <Typography
-            variant="h5"
-            sx={{
-              color: '#1A1C1E',
-              fontFamily: 'Golos',
-              fontSize: '1.75rem',
-              fontWeight: 'bold',
-              mt: '1rem',
-            }}
-          >
+          <Image
+            src={item.imageSrc}
+            alt="Card Image"
+            width={item.width}
+            height={item.height}
+          />
+          <UITypography variant="h6" sx={{ pt: '32px' }}>
             {t(item.title)}
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              mt: '0.75rem',
-              color: '#1A1C1E',
-              fontFamily: 'Golos',
-              fontSize: '1.125rem',
-              fontWeight: 'normal',
-              lineHeight: '1.875rem',
-            }}
-          >
+          </UITypography>
+          <UITypography variant="bodyText16" sx={{ mt: '0.75rem' }}>
             {t(item.text)}
-          </Typography>
+          </UITypography>
         </Box>
       )}
       {type === 'WhyUs' && (
@@ -72,31 +62,12 @@ function CardItem({ item, type }: CardItemInterface) {
           }}
         >
           <Image src={item.imageSrc} alt="Card Image" width={70} height={70} />
-          <Typography
-            variant="h5"
-            sx={{
-              color: '#1A1C1E',
-              fontFamily: 'Golos',
-              fontSize: '1.75rem',
-              fontWeight: 'bold',
-              mt: '1rem',
-            }}
-          >
+          <UITypography variant="h5" sx={{ pt: '12px' }}>
             {t(item.title)}
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              mt: '0.75rem',
-              color: '#1A1C1E',
-              fontFamily: 'Golos',
-              fontSize: '1.125rem',
-              fontWeight: 'normal',
-              lineHeight: '1.875rem',
-            }}
-          >
+          </UITypography>
+          <UITypography variant="bodyText18" sx={{ mt: '0.75rem' }}>
             {t(item.text)}
-          </Typography>
+          </UITypography>
         </Box>
       )}
     </Box>

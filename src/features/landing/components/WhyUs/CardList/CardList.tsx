@@ -8,7 +8,7 @@ function CardList() {
   const styles = {
     grid: {
       display: 'grid',
-      gridTemplateColumns: 'repeat(3,minmax(15.625rem, 24.375rem))',
+      gridTemplateColumns: 'repeat(3,minmax(15.625rem, 24.3125rem))',
       marginTop: '2.5rem',
       gap: '0.813rem',
     },

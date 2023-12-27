@@ -1,11 +1,13 @@
-@font-face {
+/* @font-face {
   font-family: 'GolosText-Black';
-  src: url('/assets/fonts/Golos/GolosText-Black.ttf') format('truetype');
+  src: url('')
+    format('truetype');
 }
 
 @font-face {
   font-family: 'GolosText-Bold';
-  src: url('/assets/fonts/Golos/GolosText-Bold.ttf') format('truetype');
+  src: url('/src/features/landing/assets/fonts/Golos/GolosText-Bold.ttf')
+    format('truetype');
 }
 
 @font-face {
@@ -15,7 +17,8 @@
 
 @font-face {
   font-family: 'GolosText-Medium';
-  src: url('/assets/fonts/Golos/GolosText-Medium.ttf') format('truetype');
+  src: url('/src/features/landing/assets/fonts/Golos/GolosText-Medium.ttf')
+    format('truetype');
 }
 
 @font-face {
@@ -36,4 +39,63 @@
 @font-face {
   font-family: 'Stolzl-Regular';
   src: url('/assets/fonts/Stolzl/stolzl_regular.otf') format('opentype');
+} */
+@font-face {
+  font-family: 'Golos';
+  font-display: swap;
+  font-weight: 400;
+  src: url('~/src/features//landing/assets/fonts/Golos/GolosText-Regular.ttf')
+    format('ttf');
+}
+
+@font-face {
+  font-family: 'Golos';
+  font-display: swap;
+  font-weight: 500;
+  src: url('~/src/features//landing/assets/fonts/Golos/GolosText-Medium.ttf')
+    format('ttf');
+}
+@font-face {
+  font-family: 'Golos';
+  font-display: swap;
+  font-weight: 600;
+  src: url('~/src/features//landing/assets/fonts/Golos/GolosText-SemiBold.ttf')
+    format('ttf');
+}
+@font-face {
+  font-family: 'Golos';
+  font-display: swap;
+  font-weight: 700;
+  src: url('~/src/features//landing/assets/fonts/Golos/GolosText-Bold.ttf')
+    format('ttf');
+}
+@font-face {
+  font-family: 'Golos';
+  font-display: swap;
+  font-weight: 800;
+  src: url('~/src/features//landing/assets/fonts/Golos/GolosText-ExtraBold.ttf')
+    format('ttf');
+}
+@font-face {
+  font-family: 'Golos';
+  font-display: swap;
+  font-weight: 900;
+  src: url('~/src/features//landing/assets/fonts/Golos/GolosText-Black.ttf')
+    format('ttf');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-display: swap;
+  font-weight: 400;
+  src: url('~/src/features/landing/assets/fonts/Inter/Inter-Regular.ttf')
+    format('ttf');
+}
+
+@font-face {
+  font-family: 'Stolzl';
+  font-display: swap;
+  font-weight: 400;
+  src: url('~/src/features/landing/assets/fonts/Stolzl/stolzl_regular.otf')
+    format('otf');
 }

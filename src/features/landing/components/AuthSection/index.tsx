@@ -1,17 +1,12 @@
-import {
-  Box,
-  Checkbox,
-  Container,
-  FormControlLabel,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Box, Container, Stack } from '@mui/material';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
 import UIButton from '@/components/ui/UIButton/UIButton';
+import UICheckbox from '@/components/ui/UICheckbox/UICheckbox';
 import UIInput from '@/components/ui/UIInput/UIInput';
 import UILabel from '@/components/ui/UILabel/UILabel';
+import UITypography from '@/components/ui/UITypography/UITypography';
 
 import SignUpText from './SignUpText/SignUpText';
 
@@ -81,9 +76,9 @@ function AuthSection() {
           <SignUpText />
           <Box
             sx={{
-              padding: '35px',
+              padding: '36px 40px 40px',
               width: '50%',
-              maxWidth: '507px',
+              maxWidth: '502px',
               borderRadius: '32px 32px 0px 0px',
               border: '1px solid  #E1E7EA',
               background: '#FFF',
@@ -91,10 +86,11 @@ function AuthSection() {
             }}
           >
             <form onSubmit={handleSubmit(onSubmit)}>
-              <Typography variant="h4" sx={{ mb: '32px' }}>
+              <UITypography variant="h4" sx={{ mb: '32px' }}>
                 Або зареєструйтеся на сайті:
-              </Typography>
+              </UITypography>
               <UILabel
+                sx={{ mt: '22px', paddingBottom: '9px' }}
                 title="Ваше ім’я та прізвище"
                 errorText={
                   errors.FullName?.message ||
@@ -115,6 +111,7 @@ function AuthSection() {
                 />
               </UILabel>
               <UILabel
+                sx={{ mt: '22px', paddingBottom: '9px' }}
                 title="E-mail"
                 errorText={
                   errors.Email?.message || 'Виникла помилка. Перевірте ще раз'
@@ -132,6 +129,7 @@ function AuthSection() {
                 />
               </UILabel>
               <UILabel
+                sx={{ mt: '22px', paddingBottom: '9px' }}
                 title="Пароль"
                 errorText={
                   errors.Password?.message ||
@@ -150,11 +148,8 @@ function AuthSection() {
                   })}
                 />
               </UILabel>
-              <FormControlLabel
-                sx={{ pt: '20px', pb: '32px' }}
-                control={<Checkbox defaultChecked />}
-                label="Я прочитав та приймаю Політику Конфіденційності та Політику Використання сервісу VilnaCRM"
-              />
+
+              <UICheckbox />
               <UIButton variant="contained" size="medium" type="submit">
                 Реєєстрація
               </UIButton>

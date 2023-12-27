@@ -94,11 +94,11 @@ const theme = createTheme({
           style: {
             // width: '93px',
             // height: '50px',
+            ...repeatStyles,
             color: 'black',
             backgroundColor: 'white',
             border: '1px solid #969B9D',
             borderRadius: '3.563rem',
-            ...repeatStyles,
             '&:hover': {
               backgroundColor: '#EAECEE',
               border: '1px solid rgba(0,0,0,0)',

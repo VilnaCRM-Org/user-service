@@ -10,10 +10,10 @@ function NavLink({ links }: { links: { id: number; value: string }[] }) {
             <Link
               href="#"
               sx={{
-                fontSize: '0.938.rem',
+                fontSize: '0.938rem',
                 fontWeight: '500',
                 lineHeight: '1.125rem',
-                fontFamily: 'Golos',
+                fontFamily: 'Golos Text',
               }}
               underline="none"
             >

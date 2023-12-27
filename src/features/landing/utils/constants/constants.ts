@@ -2,6 +2,10 @@ import FaceBookIcon from '../../assets/img/SocialMedia/Icons/Facebook.png';
 import GitHubIcon from '../../assets/img/SocialMedia/Icons/Github.png';
 import GoogleIcon from '../../assets/img/SocialMedia/Icons/Google.png';
 import TwitterIcon from '../../assets/img/SocialMedia/Icons/Twitter.png';
+import UltimatedRuby1Icon from '../../assets/img/UnlimitedIntegrations/Ruby_1.png';
+import UltimatedRuby2Icon from '../../assets/img/UnlimitedIntegrations/Ruby_2.png';
+import UltimatedRuby3Icon from '../../assets/img/UnlimitedIntegrations/Ruby_3.png';
+import UltimatedRuby4Icon from '../../assets/img/UnlimitedIntegrations/Ruby_4.png';
 import WhyUsCodeIcon from '../../assets/img/WhyWeSection/1_code.png';
 import WhyUsSettingsIcon from '../../assets/img/WhyWeSection/2_settings.png';
 import WhyUsTemplatesIcon from '../../assets/img/WhyWeSection/3_templates.png';
@@ -66,28 +70,36 @@ export const WHY_WE_CARD_ITEMS: IWhyWeCardItem[] = [
 export const UNLIMITED_INTEGRATIONS_CARD_ITEMS: IUnlimitedIntegrationsItem[] = [
   {
     id: 'item_1',
-    imageSrc: '/assets/img/UnlimitedIntegrations/Ruby_1.png',
+    imageSrc: UltimatedRuby1Icon,
+    width: 77,
+    height: 65,
     text: 'unlimited_possibilities.cards_texts.text_1',
     title: 'unlimited_possibilities.cards_headings.heading_public_api',
     imageTitle: 'unlimited_possibilities.card_image_titles.title_for_first',
   },
   {
     id: 'item_2',
-    imageSrc: '/assets/img/UnlimitedIntegrations/Ruby_2.png',
+    width: 44,
+    height: 75,
+    imageSrc: UltimatedRuby2Icon,
     text: 'unlimited_possibilities.cards_texts.text_2',
     title: 'unlimited_possibilities.cards_headings.heading_ready_plugins',
     imageTitle: 'unlimited_possibilities.card_image_titles.title_for_second',
   },
   {
     id: 'item_3',
-    imageSrc: '/assets/img/UnlimitedIntegrations/Ruby_3.png',
+    imageSrc: UltimatedRuby3Icon,
+    width: 50,
+    height: 80,
     text: 'unlimited_possibilities.cards_texts.text_3',
     title: 'unlimited_possibilities.cards_headings.heading_system',
     imageTitle: 'unlimited_possibilities.card_image_titles.title_for_third',
   },
   {
     id: 'item_4',
-    imageSrc: '/assets/img/UnlimitedIntegrations/Ruby_4.png',
+    imageSrc: UltimatedRuby4Icon,
+    width: 75,
+    height: 67,
     text: 'unlimited_possibilities.cards_texts.text_4',
     title: 'unlimited_possibilities.cards_headings.heading_libraries',
     imageTitle: 'unlimited_possibilities.card_image_titles.title_for_fourth',

@@ -11,12 +11,12 @@ function Footer() {
   return (
     <Stack
       sx={{
-        borderTop: '1px solid  #E1E7EA)',
+        borderTop: '1px solid  #E1E7EA',
         background: '#FFF',
         boxShadow: '0px -5px 46px 0px rgba(198, 209, 220, 0.25)',
       }}
     >
-      <Box sx={{ paddingTop: '11px', paddingBottom: '6px' }}>
+      <Box sx={{ paddingTop: '11px' }}>
         <Container
           sx={{
             display: 'flex',
@@ -25,7 +25,7 @@ function Footer() {
             justifyContent: 'space-between',
           }}
         >
-          <Image src={Logo} alt="Logo" width={131} height={44} />
+          <Image src={Logo} alt="Logo" width={143} height={49} />
           <PrivacyPolicy />
         </Container>
       </Box>

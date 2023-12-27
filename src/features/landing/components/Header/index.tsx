@@ -6,7 +6,7 @@ import ToolBar from '@/components/ui/UIToolBar/UIToolBar';
 import Logo from '../../assets/svg/Logo/Logo.svg';
 
 import AuthenticationButtons from './AuthenticationButtons/AuthenticationButtons';
-import Drawer from './Drawer/Drawer';
+// import Drawer from './Drawer/Drawer';
 import NavLink from './NavLink/NavLink';
 
 const links = [
@@ -32,7 +32,6 @@ function Header() {
           <Image src={Logo} alt="Header Image" width={131} height={44} />
           <NavLink links={links} />
           <AuthenticationButtons />
-          <Drawer />
         </ToolBar>
       </Container>
     </AppBar>

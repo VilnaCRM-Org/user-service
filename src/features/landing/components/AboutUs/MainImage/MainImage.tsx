@@ -6,7 +6,9 @@ function MainImage({ imageSrc }: { imageSrc: string }) {
     <Box
       sx={{
         overflow: 'hidden',
-        borderRadius: '10px',
+        // borderRadius: '10px',
+        borderTopRightRadius: '10px',
+        borderTopLeftRadius: '10px',
         marginTop: '-18px',
       }}
     >

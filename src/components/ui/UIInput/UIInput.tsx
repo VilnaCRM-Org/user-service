@@ -23,6 +23,14 @@ const theme = createTheme({
             '&:hover': {
               border: '1px solid  #969B9D',
             },
+            '&::placeholder': {
+              color: '#969B9D',
+              fontFamily: 'Inter',
+              fontSize: '16px',
+              fontDtyle: 'normal',
+              fontWeight: '400',
+              lineHeight: '18px',
+            },
             '&:focus': {},
             '&:active': {},
           },

@@ -11,14 +11,17 @@ function DeviceImage() {
     <Box
       sx={{
         border: '3px solid #78797D',
-        borderRadius: '30px',
+        borderBottom: '10px solid #252525',
+        borderTopRightRadius: '30px',
+        borderTopLeftRadius: '30px',
         overflow: 'hidden',
       }}
     >
       <Box
         sx={{
           border: '4px solid #232122',
-          borderRadius: '25px',
+          borderTopRightRadius: '25px',
+          borderTopLeftRadius: '25px',
           backgroundColor: '#1A1C1E',
           padding: '12px',
           overflow: 'hidden',

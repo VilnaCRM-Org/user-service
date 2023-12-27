@@ -1,8 +1,10 @@
 'use client';
 
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+
+import UITypography from '@/components/ui/UITypography/UITypography';
 
 function PrivacyPolicy() {
   const { t } = useTranslation();
@@ -16,7 +18,7 @@ function PrivacyPolicy() {
           background: '#F4F5F6',
         }}
       >
-        <Typography>{t('footer.privacy')}</Typography>
+        <UITypography variant="medium16">{t('footer.privacy')}</UITypography>
       </Box>
       <Box
         sx={{
@@ -25,7 +27,9 @@ function PrivacyPolicy() {
           background: '#F4F5F6',
         }}
       >
-        <Typography>{t('footer.usagePolicy')}</Typography>
+        <UITypography variant="medium16">
+          {t('footer.usagePolicy')}
+        </UITypography>
       </Box>
     </Stack>
   );

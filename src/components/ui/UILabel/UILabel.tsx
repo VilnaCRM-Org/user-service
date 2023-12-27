@@ -1,23 +1,22 @@
-import {
-  createTheme,
-  InputLabel,
-  ThemeProvider,
-  Typography,
-} from '@mui/material';
+import { createTheme, InputLabel, ThemeProvider } from '@mui/material';
+
+import UITypography from '../UITypography/UITypography';
 
 import { labelProps } from './UILabelType';
 
 const theme = createTheme({});
 
-function UILabel({ children, errorText, hasError, title }: labelProps) {
+function UILabel({ children, sx, errorText, hasError, title }: labelProps) {
   return (
     <ThemeProvider theme={theme}>
-      <Typography sx={{ paddingBottom: '9px' }}>{title}</Typography>
+      <UITypography variant="medium14" sx={sx}>
+        {title}
+      </UITypography>
       <InputLabel>{children}</InputLabel>
       {hasError ? (
-        <Typography sx={{ color: 'red', pt: '4px' }} variant="body2">
+        <UITypography sx={{ color: 'red', pt: '4px' }} variant="medium14">
           {errorText}
-        </Typography>
+        </UITypography>
       ) : null}
     </ThemeProvider>
   );

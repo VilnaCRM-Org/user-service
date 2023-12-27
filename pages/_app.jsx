@@ -41,7 +41,9 @@ function MyApp({ Component }) {
     // breakpoints: {
     //   values: customBreakpoints,
     // },
-    typography: {},
+    typography: {
+      fontFamily: ['Golos Text'].join(','),
+    },
     components: {
       MuiContainer: {
         styleOverrides: {

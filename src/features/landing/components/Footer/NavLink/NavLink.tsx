@@ -14,7 +14,7 @@ import React from 'react';
 function NavLink({ item }: any) {
   return (
     <Box sx={{ margin: '10px' }}>
-      <Image src={item.icon} alt={item.title} width={22} height={22} />
+      <Image src={item.icon} alt={item.title} width={20} height={20} />
     </Box>
   );
 }
