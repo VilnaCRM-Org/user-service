@@ -16,14 +16,12 @@ use Symfony\Component\Serializer\SerializerInterface;
 class UserOperationsContext implements Context
 {
     private RequestInput $requestBody;
-    private string $API_BASE_URL;
 
     public function __construct(
         private readonly KernelInterface $kernel, private SerializerInterface $serializer,
         private ?Response $response
     ) {
         $this->requestBody = new RequestInput();
-        $this->API_BASE_URL = getenv('API_BASE_URL');
     }
 
     /**
