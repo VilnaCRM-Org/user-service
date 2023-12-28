@@ -1,11 +1,14 @@
 monolog:
   handlers:
-    stdout_handler:
-      type: stream
-      path: "php://stdout"
-      level: debug
-
     stderr_handler:
       type: stream
       path: "php://stderr"
       level: error
+
+when@prod:
+  monolog:
+    handlers:
+      stdout_handler:
+        type: stream
+        path: "php://stdout"
+        level: debug

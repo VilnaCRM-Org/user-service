@@ -37,23 +37,36 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity]
-#[ApiResource(normalizationContext: ['groups' => ['output']],
+#[ApiResource(
+    normalizationContext: ['groups' => ['output']],
     exceptionToStatus: [InvalidPasswordException::class => 410, UserNotFoundException::class => 404,
-        TokenNotFoundException::class => 404, DuplicateEmailException::class => 409])]
+    TokenNotFoundException::class => 404,
+    DuplicateEmailException::class => 409]
+)]
 #[Get]
 #[GetCollection(paginationClientItemsPerPage: true)]
 #[Post(input: UserInputDto::class, processor: RegisterUserProcessor::class)]
 #[Patch(input: UserPatchDto::class, processor: UserPatchProcessor::class)]
 #[Put(input: UserPutDto::class, processor: UserPutProcessor::class)]
 #[Delete]
-#[Post(uriTemplate: '/users/{id}/resend-confirmation-email', exceptionToStatus: [UserTimedOutException::class => 429,
+#[Post(
+    uriTemplate: '/users/{id}/resend-confirmation-email',
+    exceptionToStatus: [UserTimedOutException::class => 429,
     UserNotFoundException::class => 404],
-    input: RetryDto::class, processor: ResendEmailProcessor::class)]
-#[Mutation(resolver: ConfirmUserMutationResolver::class,
-    input: ConfirmUserDto::class, name: 'confirm')]
+    input: RetryDto::class,
+    processor: ResendEmailProcessor::class
+)]
+#[Mutation(
+    resolver: ConfirmUserMutationResolver::class,
+    input: ConfirmUserDto::class,
+    name: 'confirm'
+)]
 #[Mutation(resolver: RegisterUserMutationResolver::class, input: UserInputDto::class, name: 'create')]
-#[Mutation(resolver: UserUpdateMutationResolver::class,
-    input: UserUpdateMutationDto::class, name: 'update')]
+#[Mutation(
+    resolver: UserUpdateMutationResolver::class,
+    input: UserUpdateMutationDto::class,
+    name: 'update'
+)]
 #[DeleteMutation(normalizationContext: ['groups' => ['deleteMutationOutput']], name: 'delete')]
 #[Mutation(resolver: ResendEmailMutationResolver::class, input: RetryMutationDto::class, name: 'resendEmailTo')]
 #[Query]

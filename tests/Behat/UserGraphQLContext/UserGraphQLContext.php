@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 class UserGraphQLContext implements Context
 {
-    private string $GRAPHQL_ENDPOINT_URI = 'https://localhost/api/graphql';
+    private string $GRAPHQL_ENDPOINT_URI = '/api/graphql';
     private string $GRAPHQL_ID_PREFIX = '/api/users/';
 
     private string $query;

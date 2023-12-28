@@ -2,7 +2,7 @@
 
 namespace App\User\Infrastructure\Exception;
 
-class DuplicateEmailException extends \RuntimeException
+class DuplicateEmailException extends \LogicException
 {
     public function __construct(string $email)
     {

@@ -18,7 +18,6 @@ services:
       start_period: 30s
     environment:
       # Run "composer require symfony/orm-pack" to install and configure Doctrine ORM
-      # DATABASE_URL: ${DATABASE_URL}
       # Run "composer require symfony/mercure-bundle" to install and configure the Mercure integration
       MERCURE_URL: ${CADDY_MERCURE_URL:-http://caddy/.well-known/mercure}
       MERCURE_PUBLIC_URL: https://${SERVER_NAME:-localhost}/.well-known/mercure
@@ -61,24 +60,17 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
-      - '3306:3306'
+      - '${DB_PORT}:3306'
     volumes:
       - db_data:/var/lib/mysql
 
   redis:
     image: "redis:latest"
     ports:
-      - "6379:6379"
-
-# Mercure is installed as a Caddy module, prevent the Flex recipe from installing another service
-###> symfony/mercure-bundle ###
-###< symfony/mercure-bundle ###
+      - "${REDIS_PORT}:6379"
 
 volumes:
   php_socket:
   caddy_data:
   caddy_config:
   db_data:
-
-###> symfony/mercure-bundle ###
-###< symfony/mercure-bundle ###

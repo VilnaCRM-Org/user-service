@@ -89,7 +89,7 @@ class OAuthContext implements Context
             });
 
         $this->response = $this->kernel->handle(Request::create(
-            'api/oauth/authorize?'.$this->obtainAuthorizeCodeInput->toUriParams(),
+            '/api/oauth/authorize?'.$this->obtainAuthorizeCodeInput->toUriParams(),
             'GET',
             [],
             [],
@@ -108,7 +108,7 @@ class OAuthContext implements Context
     {
         $this->obtainAccessTokenInput->grant_type = $grantType;
         $this->response = $this->kernel->handle(Request::create(
-            'api/oauth/token',
+            '/api/oauth/token',
             'POST',
             [],
             [],

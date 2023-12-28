@@ -27,5 +27,7 @@ services:
 ###> symfony/mailer ###
   mailer:
     image: schickling/mailcatcher
-    ports: ["1025:1025", "1080:1080"]
+    ports:
+      - "${MAILCATCHER_SMTP_PORT}:1025"
+      - "${MAILCATCHER_HTTP_PORT}:1080"
 ###< symfony/mailer ###

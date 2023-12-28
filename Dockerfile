@@ -36,6 +36,7 @@ RUN apk add --no-cache \
 		file \
 		gettext \
 		git \
+        supervisor \
 	;
 
 RUN set -eux; \
@@ -67,8 +68,11 @@ HEALTHCHECK --interval=10s --timeout=3s --retries=3 CMD ["docker-healthcheck"]
 COPY --link infrastructure/docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
 RUN chmod +x /usr/local/bin/docker-entrypoint
 
+COPY --link infrastructure/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+
 ENTRYPOINT ["docker-entrypoint"]
-CMD ["sh", "-c", "php-fpm & php bin/console messenger:consume send-email"]
+CMD ["sh", "-c", "php-fpm & supervisord -c /etc/supervisor/supervisord.conf"]
+# & supervisorctl start messenger-consume:*
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
 ENV COMPOSER_ALLOW_SUPERUSER=1
