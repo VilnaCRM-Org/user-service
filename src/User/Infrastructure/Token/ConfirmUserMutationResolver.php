@@ -4,8 +4,8 @@ namespace App\User\Infrastructure\Token;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
-use App\User\Application\ConfirmUserCommand;
-use App\User\Domain\Entity\Token\ConfirmUserDto;
+use App\User\Application\Command\ConfirmUserCommand;
+use App\User\Application\DTO\Token\ConfirmUserDto;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
 

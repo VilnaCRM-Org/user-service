@@ -1,8 +1,9 @@
 <?php
 
-namespace App\User\Domain\Entity\Token;
+namespace App\User\Domain\Entity;
 
 use ApiPlatform\Metadata\Patch;
+use App\User\Application\DTO\Token\ConfirmUserDto;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
 use App\User\Infrastructure\Token\ConfirmUserProcessor;
 

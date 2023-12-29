@@ -6,6 +6,9 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ApiResource\Error;
 use ApiPlatform\State\ProviderInterface;
 
+/**
+ * @implements ProviderInterface<Error>
+ */
 final class ErrorProvider implements ProviderInterface
 {
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null

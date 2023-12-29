@@ -2,7 +2,7 @@
 
 namespace App\User\Infrastructure\Repository;
 
-use App\User\Domain\Entity\Token\ConfirmationToken;
+use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
 use Symfony\Component\Serializer\SerializerInterface;

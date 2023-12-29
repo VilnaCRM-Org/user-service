@@ -4,13 +4,14 @@ namespace App\User\Infrastructure\Email;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
-use App\User\Application\SendConfirmationEmailCommand;
-use App\User\Domain\Entity\Email\RetryDto;
-use App\User\Domain\Entity\Token\ConfirmationToken;
+use App\User\Application\Command\SendConfirmationEmailCommand;
+use App\User\Application\DTO\Email\RetryDto;
+use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
 use App\User\Infrastructure\Exception\UserTimedOutException;
+
 
 class ResendEmailMutationResolver implements MutationResolverInterface
 {

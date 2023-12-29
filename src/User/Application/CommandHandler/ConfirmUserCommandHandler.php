@@ -1,8 +1,9 @@
 <?php
 
-namespace App\User\Application;
+namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandler;
+use App\User\Application\Command\ConfirmUserCommand;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
 

@@ -2,7 +2,7 @@
 
 namespace App\User\Domain;
 
-use App\User\Domain\Entity\Token\ConfirmationToken;
+use App\User\Domain\Entity\ConfirmationToken;
 
 interface TokenRepositoryInterface
 {

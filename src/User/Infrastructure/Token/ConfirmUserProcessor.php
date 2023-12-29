@@ -5,11 +5,15 @@ namespace App\User\Infrastructure\Token;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
-use App\User\Application\ConfirmUserCommand;
-use App\User\Domain\Entity\Token\ConfirmUserDto;
+use App\User\Application\Command\ConfirmUserCommand;
+use App\User\Application\DTO\Token\ConfirmUserDto;
+use App\User\Domain\Entity\User;
 use App\User\Domain\TokenRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @implements ProcessorInterface<Response>
+ */
 class ConfirmUserProcessor implements ProcessorInterface
 {
     public function __construct(private TokenRepositoryInterface $tokenRepository, private CommandBus $commandBus)

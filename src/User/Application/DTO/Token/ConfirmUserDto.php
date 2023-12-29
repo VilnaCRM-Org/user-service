@@ -1,6 +1,6 @@
 <?php
 
-namespace App\User\Domain\Entity\Token;
+namespace App\User\Application\DTO\Token;
 
 class ConfirmUserDto
 {

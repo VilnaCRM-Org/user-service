@@ -5,11 +5,15 @@ namespace App\User\Infrastructure\User;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
-use App\User\Application\SendConfirmationEmailCommand;
-use App\User\Application\SignUpCommand;
-use App\User\Domain\Entity\Token\ConfirmationToken;
-use App\User\Domain\Entity\User\UserInputDto;
+use App\User\Application\Command\SendConfirmationEmailCommand;
+use App\User\Application\Command\SignUpCommand;
+use App\User\Application\DTO\User\UserInputDto;
+use App\User\Domain\Entity\ConfirmationToken;
+use App\User\Domain\Entity\User;
 
+/**
+ * @implements ProcessorInterface<User>
+ */
 readonly class RegisterUserProcessor implements ProcessorInterface
 {
     public function __construct(private CommandBus $commandBus)

@@ -5,14 +5,18 @@ namespace App\User\Infrastructure\Email;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
-use App\User\Application\SendConfirmationEmailCommand;
-use App\User\Domain\Entity\Token\ConfirmationToken;
+use App\User\Application\Command\SendConfirmationEmailCommand;
+use App\User\Domain\Entity\ConfirmationToken;
+use App\User\Domain\Entity\User;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
 use App\User\Infrastructure\Exception\UserTimedOutException;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @implements ProcessorInterface<Response>
+ */
 class ResendEmailProcessor implements ProcessorInterface
 {
     public function __construct(private CommandBus $commandBus, private UserRepositoryInterface $userRepository,

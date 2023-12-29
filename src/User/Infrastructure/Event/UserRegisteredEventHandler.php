@@ -3,7 +3,7 @@
 namespace App\User\Infrastructure\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriber;
-use App\User\Domain\Entity\Token\ConfirmationToken;
+use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\TokenRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Domain\Entity\User;
+namespace App\User\Domain\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
@@ -15,9 +15,13 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use App\User\Domain\Entity\Email\RetryDto;
-use App\User\Domain\Entity\Email\RetryMutationDto;
-use App\User\Domain\Entity\Token\ConfirmUserDto;
+use App\User\Application\DTO\Email\RetryDto;
+use App\User\Application\DTO\Email\RetryMutationDto;
+use App\User\Application\DTO\Token\ConfirmUserDto;
+use App\User\Application\DTO\User\UserInputDto;
+use App\User\Application\DTO\User\UserPatchDto;
+use App\User\Application\DTO\User\UserPutDto;
+use App\User\Application\DTO\User\UserUpdateMutationDto;
 use App\User\Infrastructure\Email\ResendEmailMutationResolver;
 use App\User\Infrastructure\Email\ResendEmailProcessor;
 use App\User\Infrastructure\Exception\DuplicateEmailException;
@@ -32,16 +36,18 @@ use App\User\Infrastructure\User\UserPatchProcessor;
 use App\User\Infrastructure\User\UserPutProcessor;
 use App\User\Infrastructure\User\UserUpdateMutationResolver;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity]
 #[ApiResource(
     normalizationContext: ['groups' => ['output']],
     exceptionToStatus: [InvalidPasswordException::class => 410, UserNotFoundException::class => 404,
-    TokenNotFoundException::class => 404,
-    DuplicateEmailException::class => 409]
+        TokenNotFoundException::class => 404,
+        DuplicateEmailException::class => 409]
 )]
 #[Get]
 #[GetCollection(paginationClientItemsPerPage: true)]
@@ -52,7 +58,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[Post(
     uriTemplate: '/users/{id}/resend-confirmation-email',
     exceptionToStatus: [UserTimedOutException::class => 429,
-    UserNotFoundException::class => 404],
+        UserNotFoundException::class => 404],
     input: RetryDto::class,
     processor: ResendEmailProcessor::class
 )]
@@ -74,7 +80,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public function __construct(
-        string $id,
+        Uuid $id,
         string $email,
         string $initials,
         string $password
@@ -88,9 +94,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     #[ORM\Id]
-    #[ORM\Column]
+    #[ORM\Column(type: UuidType::NAME, unique: true)]
     #[Groups(['output', 'deleteMutationOutput'])]
-    private string $id;
+    private Uuid $id;
 
     #[ORM\Column(type: 'string', length: 255, unique: true)]
     #[Groups(['output'])]
@@ -111,7 +117,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['output'])]
     private array $roles;
 
-    public function getId(): string
+    public function getId(): Uuid
     {
         return $this->id;
     }

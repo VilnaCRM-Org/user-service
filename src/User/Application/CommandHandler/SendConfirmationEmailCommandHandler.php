@@ -1,8 +1,9 @@
 <?php
 
-namespace App\User\Application;
+namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandler;
+use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Domain\TokenRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;

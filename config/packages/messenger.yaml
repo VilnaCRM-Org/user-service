@@ -1,12 +1,9 @@
 framework:
   messenger:
-
-
     transports:
       send-email:
         dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
 
-        # default configuration
         retry_strategy:
           max_retries: 3
           # milliseconds delay
@@ -16,7 +13,14 @@ framework:
 
         failure_transport: failed-send-email
 
-      failed-send-email: 'doctrine://default?queue_name=failed_send_email'
+      failed-send-email:
+        dsn: 'doctrine://default?queue_name=failed_send_email'
+
+        retry_strategy:
+          max_retries: 9999999
+          delay: 60000
+          multiplier: 2
+          max_delay: 0
 
     routing:
       # Route your messages to the transports

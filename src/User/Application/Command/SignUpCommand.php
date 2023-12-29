@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application;
+namespace App\User\Application\Command;
 
 use App\Shared\Domain\Bus\Command\Command;
 
-final readonly class SignUpCommand implements Command
+final class SignUpCommand implements Command
 {
     public function __construct(
         private string $email,
@@ -15,7 +15,7 @@ final readonly class SignUpCommand implements Command
     ) {
     }
 
-    private SignUpCommandResponse $response;
+    public SignUpCommandResponse $response;
 
     public function getResponse(): SignUpCommandResponse
     {

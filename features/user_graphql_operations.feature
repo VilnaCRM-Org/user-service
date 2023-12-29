@@ -23,53 +23,53 @@ Feature: User GraphQL Operations
 
   Scenario: Updating user
     Given requesting to return user's id and email
-    And user with id "updateGraphQLUserId" and password "pass" exists
-    And updating user with id "updateGraphQLUserId" and password "pass" to new email "testUpdateGraphQL@mail.com"
+    And user with id "8be90127-9840-4235-a6da-39b8debfb110" and password "pass" exists
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb110" and password "pass" to new email "testUpdateGraphQL@mail.com"
     When graphQL request is send
     Then mutation response should return requested fields
 
   Scenario: Updating user to duplicate email
     Given requesting to return user's id and email
-    And user with id "updateToDuplicateEmailGraphQLUserId" and password "pass" exists
-    And updating user with id "updateToDuplicateEmailGraphQLUserId" and password "pass" to new email "testUpdateGraphQL@mail.com"
+    And user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "pass" exists
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "pass" to new email "testUpdateGraphQL@mail.com"
     When graphQL request is send
     Then graphql error response should be returned
 
   Scenario: Updating user with wrong password
     Given requesting to return user's id and email
-    And updating user with id "updateGraphQLUserId" and password "wrongPass" to new email "testUpdateGraphQL@mail.com"
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "wrongPass" to new email "testUpdateGraphQL@mail.com"
     When graphQL request is send
     Then graphql error response should be returned
 
   Scenario: Updating a non-existing user
     Given requesting to return user's id and email
-    And updating user with id "wrongUpdateGraphQLUserId" and password "pass" to new email "testUpdateGraphQL@mail.com"
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb112" and password "pass" to new email "testUpdateGraphQL@mail.com"
     When graphQL request is send
     Then graphql error response should be returned
 
   Scenario: Updating user to invalid email
     Given requesting to return user's id and email
-    And updating user with id "updateGraphQLUserId" and password "pass" to new email "test"
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "pass" to new email "test"
     When graphQL request is send
     Then graphql error response should be returned
 
   Scenario: Deleting user
     Given requesting to return user's id
-    And user with id "deleteGraphQLUserId" exists
-    And deleting user with id "deleteGraphQLUserId"
+    And user with id "8be90127-9840-4235-a6da-39b8debfb111" exists
+    And deleting user with id "8be90127-9840-4235-a6da-39b8debfb111"
     When graphQL request is send
     Then mutation response should return requested fields
 
   Scenario: Deleting non-existing user
     Given requesting to return user's id
-    And deleting user with id "wrongDeleteGraphQLUserId"
+    And deleting user with id "8be90127-9840-4235-a6da-39b8debfb112"
     When graphQL request is send
     Then graphql error response should be returned
 
   Scenario: Confirm user
     Given requesting to return user's id and email
-    And user with id "confirmGraphQLUserId" exists
-    And user with id "confirmGraphQLUserId" has confirmation token "confirmationToken"
+    And user with id "8be90127-9840-4235-a6da-39b8debfb113" exists
+    And user with id "8be90127-9840-4235-a6da-39b8debfb113" has confirmation token "confirmationToken"
     And confirming user with token "confirmationToken" via graphQl
     When graphQL request is send
     Then mutation response should return requested fields
@@ -82,8 +82,8 @@ Feature: User GraphQL Operations
 
   Scenario: Resend email to user
     Given requesting to return user's id and email
-    And user with id "resendEmailGraphQLUserId" exists
-    And resending email to user with id "resendEmailGraphQLUserId"
+    And user with id "8be90127-9840-4235-a6da-39b8debfb113" exists
+    And resending email to user with id "8be90127-9840-4235-a6da-39b8debfb113"
     When graphQL request is send
     Then mutation response should return requested fields
 
@@ -95,14 +95,14 @@ Feature: User GraphQL Operations
 
   Scenario: Getting user
     Given requesting to return user's id and email
-    And user with id "getGraphQLUserId" exists
-    And getting user with id "getGraphQLUserId"
+    And user with id "8be90127-9840-4235-a6da-39b8debfb113" exists
+    And getting user with id "8be90127-9840-4235-a6da-39b8debfb113"
     When graphQL request is send
     Then query response should return requested fields
 
   Scenario: Getting non-existing user
     Given requesting to return user's id and email
-    And getting user with id "wrongGetGraphQLUserId"
+    And getting user with id "8be90127-9840-4235-a6da-39b8debfb112"
     When graphQL request is send
     Then graphql error response should be returned
 

@@ -2,8 +2,8 @@
 
 namespace App\Tests\Behat\UserContext;
 
-use App\User\Domain\Entity\Token\ConfirmationToken;
-use App\User\Domain\Entity\User\User;
+use App\User\Domain\Entity\ConfirmationToken;
+use App\User\Domain\Entity\UserFactory;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\DuplicateEmailException;
@@ -12,6 +12,7 @@ use Behat\Behat\Context\Context;
 use Faker\Factory;
 use Faker\Generator;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Uid\Uuid;
 
 class UserContext implements Context
 {
@@ -19,7 +20,9 @@ class UserContext implements Context
 
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private UserPasswordHasherInterface $passwordHasher, private TokenRepositoryInterface $tokenRepository
+        private UserPasswordHasherInterface $passwordHasher,
+        private TokenRepositoryInterface $tokenRepository,
+        private UserFactory $userFactory
     ) {
         $this->faker = Factory::create();
     }
@@ -39,7 +42,7 @@ class UserContext implements Context
     public function userWithEmailAndPasswordExists(string $email, string $password): void
     {
         try {
-            $user = new User($this->faker->uuid, $email, $this->faker->name, $password);
+            $user = $this->userFactory->create($email, $this->faker->name, $password);
 
             $hashedPassword = $this->passwordHasher->hashPassword(
                 $user,
@@ -60,7 +63,8 @@ class UserContext implements Context
         try {
             $this->userRepository->find($id);
         } catch (UserNotFoundException) {
-            $this->userRepository->save(new User($id, $this->faker->email, $this->faker->name, $this->faker->password));
+            $user = $this->userFactory->create($this->faker->email, $this->faker->name, $this->faker->password, Uuid::fromString($id));
+            $this->userRepository->save($user);
         }
     }
 
@@ -75,7 +79,8 @@ class UserContext implements Context
                 throw new UserNotFoundException();
             }
         } catch (UserNotFoundException) {
-            $user = new User($id, $this->faker->email, $this->faker->name, $password);
+            $user = $this->userFactory->
+            create($this->faker->email, $this->faker->name, $password, Uuid::fromString($id));
 
             $hashedPassword = $this->passwordHasher->hashPassword(
                 $user,

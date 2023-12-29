@@ -43,8 +43,11 @@ services:
     api_platform.state.error_provider:
         class: 'App\Shared\Infrastructure\ErrorProvider'
 
+    App\User\Domain\UserFactory:
+        class: 'App\User\Domain\UserFactory'
+
     # Event listener for OAuth2 password grant
-    App\User\Application\EventListener\UserResolveListener:
+    App\OAuth\Application\EventListener\UserResolveListener:
         arguments:
             - '@security.user_providers'
             - '@security.password_hasher'

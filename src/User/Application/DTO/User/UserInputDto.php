@@ -1,10 +1,10 @@
 <?php
 
-namespace App\User\Domain\Entity\User;
+namespace App\User\Application\DTO\User;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-class UserPutDto
+class UserInputDto
 {
     #[Assert\NotBlank]
     #[Assert\Email]
@@ -14,8 +14,5 @@ class UserPutDto
     public string $initials;
 
     #[Assert\NotBlank]
-    public string $oldPassword;
-
-    #[Assert\NotBlank]
-    public string $newPassword;
+    public string $password;
 }

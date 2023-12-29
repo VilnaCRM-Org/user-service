@@ -1,6 +1,6 @@
 <?php
 
-namespace App\User\Application\EventListener;
+namespace App\OAuth\Application\EventListener;
 
 use League\Bundle\OAuth2ServerBundle\Event\UserResolveEvent;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;

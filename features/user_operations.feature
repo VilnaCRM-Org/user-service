@@ -34,112 +34,112 @@ Feature: User Operations
     Then the response status code should be 400
 
   Scenario: Getting a user
-    Given user with id "getUserId" exists
-    When GET request is send to "/api/users/getUserId"
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb220" exists
+    When GET request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb220"
     Then the response status code should be 200
-    And user with id "getUserId" should be returned
+    And user with id "8be90127-9840-4235-a6da-39b8debfb220" should be returned
 
   Scenario: Getting a non-existing user
-    When GET request is send to "/api/users/nonExistingId"
+    When GET request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221"
     Then the response status code should be 404
 
   Scenario: Deleting a user
-    Given user with id "deleteUserId" exists
-    When DELETE request is send to "/api/users/deleteUserId"
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb220" exists
+    When DELETE request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb220"
     Then the response status code should be 204
 
   Scenario: Deleting a non-existing user
-    When DELETE request is send to "/api/users/nonExistingId"
+    When DELETE request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221"
     Then the response status code should be 404
 
   Scenario: Replacing user
-    Given user with id "putUserId" and password "pass" exists
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "pass" exists
     And updating user with email "testput@mail.com", initials "initials", oldPassword "pass", newPassword "pass"
-    When PUT request is send to "/api/users/putUserId"
+    When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 200
-    And user with id "putUserId" should be returned
+    And user with id "8be90127-9840-4235-a6da-39b8debfb222" should be returned
 
   Scenario: Replacing user with wrong password
-    Given user with id "putUserId" and password "pass" exists
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "pass" exists
     And updating user with email "testput@mail.com", initials "initials", oldPassword "wrongPass", newPassword "pass"
-    When PUT request is send to "/api/users/putUserId"
+    When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 410
 
   Scenario: Replacing a non-existing user
-    When PUT request is send to "/api/users//nonExistingId"
+    When PUT request is send to "/api/users//8be90127-9840-4235-a6da-39b8debfb221"
     Then the response status code should be 404
 
   Scenario: Replacing user with duplicate email
-    Given user with id "putUserId" and password "pass" exists
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "pass" exists
     And updating user with email "test@mail.com", initials "initials", oldPassword "pass", newPassword "pass"
-    When PUT request is send to "/api/users/putUserId"
+    When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 409
 
   Scenario: Replacing a user with wrong input
-    Given user with id "putUserId" exists
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
     And updating user with invalid input
-    When PUT request is send to "/api/users/putUserId"
+    When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 400
 
   Scenario: Replacing user with invalid email
-    Given user with id "putUserId" exists
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
     And updating user with email "test", initials "initials", oldPassword "pass", newPassword "pass"
-    When PUT request is send to "/api/users/putUserId"
+    When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 422
 
   Scenario: Updating user
-    Given user with id "patchUserId" and password "pass" exists
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "pass" exists
     And updating user with email "testupdate@mail.com", initials "initials", oldPassword "pass", newPassword "pass"
-    When PATCH request is send to "/api/users/patchUserId"
+    When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 200
-    And user with id "patchUserId" should be returned
+    And user with id "8be90127-9840-4235-a6da-39b8debfb222" should be returned
 
   Scenario: Updating user with wrong password
-    Given user with id "patchUserId" and password "pass" exists
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "pass" exists
     And updating user with email "testpatch@mail.com", initials "initials", oldPassword "wrongPass", newPassword "pass"
-    When PATCH request is send to "/api/users/patchUserId"
+    When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 410
 
   Scenario: Updating a non-existing user
-    When PATCH request is send to "/api/users//nonExistingId"
+    When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221"
     Then the response status code should be 404
 
   Scenario: Updating user with duplicate email
-    Given user with id "patchUserId" and password "pass" exists
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "pass" exists
     And updating user with email "test@mail.com", initials "initials", oldPassword "pass", newPassword "pass"
-    When PATCH request is send to "/api/users/patchUserId"
+    When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 409
 
   Scenario: Updating a user with wrong input
-    Given user with id "patchUserId" exists
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
     And updating user with invalid input
-    When PATCH request is send to "/api/users/patchUserId"
+    When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 400
 
   Scenario: Updating user with invalid email
-    Given user with id "patchUserId" exists
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
     And updating user with email "test", initials "initials", oldPassword "pass", newPassword "pass"
-    When PATCH request is send to "/api/users/patchUserId"
+    When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 422
 
   Scenario: Resending email to user
-    Given user with id "retryEmailUserId" exists
-    When POST request is send to "/api/users/retryEmailUserId/resend-confirmation-email"
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
+    When POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222/resend-confirmation-email"
     Then the response status code should be 200
 
   Scenario: Resending email to user while he's timed out
-    Given user with id "retryEmailUserId" exists
-    When POST request is send to "/api/users/retryEmailUserId/resend-confirmation-email"
-    And POST request is send to "/api/users/retryEmailUserId/resend-confirmation-email"
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
+    When POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222/resend-confirmation-email"
+    And POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222/resend-confirmation-email"
     Then the response status code should be 429
 
   Scenario: Resending email to non-existing user
-    When POST request is send to "/api/users/nonExistingId/resend-confirmation-email"
+    When POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221/resend-confirmation-email"
     Then the response status code should be 404
 
   Scenario: Confirming user
-    Given user with id "confirmUserId" exists
-    And user with id "confirmUserId" has confirmation token "confirmationToken"
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb223" exists
+    And user with id "8be90127-9840-4235-a6da-39b8debfb223" has confirmation token "confirmationToken"
     And confirming user with token "confirmationToken"
     When PATCH request is send to "/api/users/confirm"
     Then the response status code should be 200

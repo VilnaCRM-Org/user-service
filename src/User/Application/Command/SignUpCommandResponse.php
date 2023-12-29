@@ -1,9 +1,9 @@
 <?php
 
-namespace App\User\Application;
+namespace App\User\Application\Command;
 
 use App\Shared\Domain\Bus\Command\CommandResponse;
-use App\User\Domain\Entity\User\User;
+use App\User\Domain\Entity\User;
 
 class SignUpCommandResponse implements CommandResponse
 {

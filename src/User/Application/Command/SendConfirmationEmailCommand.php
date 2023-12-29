@@ -1,9 +1,9 @@
 <?php
 
-namespace App\User\Application;
+namespace App\User\Application\Command;
 
 use App\Shared\Domain\Bus\Command\Command;
-use App\User\Domain\Entity\Token\ConfirmationToken;
+use App\User\Domain\Entity\ConfirmationToken;
 
 class SendConfirmationEmailCommand implements Command
 {

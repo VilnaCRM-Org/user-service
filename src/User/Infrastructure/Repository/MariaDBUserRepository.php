@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Repository;
 
-use App\User\Domain\Entity\User\User;
+use App\User\Domain\Entity\User;
 use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\DuplicateEmailException;
 use App\User\Infrastructure\Exception\UserNotFoundException;
