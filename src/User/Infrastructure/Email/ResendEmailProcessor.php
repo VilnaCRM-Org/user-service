@@ -7,7 +7,6 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Domain\Entity\ConfirmationToken;
-use App\User\Domain\Entity\User;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\TokenNotFoundException;

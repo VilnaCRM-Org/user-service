@@ -12,7 +12,6 @@ use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
 use App\User\Infrastructure\Exception\UserTimedOutException;
 
-
 class ResendEmailMutationResolver implements MutationResolverInterface
 {
     public function __construct(private CommandBus $commandBus, private UserRepositoryInterface $userRepository,

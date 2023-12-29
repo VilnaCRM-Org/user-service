@@ -7,7 +7,6 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\Command\ConfirmUserCommand;
 use App\User\Application\DTO\Token\ConfirmUserDto;
-use App\User\Domain\Entity\User;
 use App\User\Domain\TokenRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 
