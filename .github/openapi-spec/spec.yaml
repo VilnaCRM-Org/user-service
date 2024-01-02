@@ -5,27 +5,35 @@ info:
   version: 0.0.0
 servers:
   -
-    url: /
+    url: 'https://localhost'
     description: ''
 paths:
   /api/oauth/authorize:
+    summary: 'Requests for authorization code'
+    description: 'Requests for authorization code'
     get:
-      operationId: authorize
       tags:
         - OAuth
       responses:
         302:
           description: 'Redirect to the provided redirect URI with authorization code.'
-          headers:
-            Location:
-              description: 'The URI to redirect to for user authorization'
-              schema:
-                type: string
-                format: uri
-                example: 'https://example.com/oauth/callback?code=e7f8c62113a47f7a5a9dca1f'
           content:
             application/json:
               example: ''
+          headers:
+            Location:
+              in: header
+              description: 'The URI to redirect to for user authorization'
+              required: false
+              deprecated: false
+              allowEmptyValue: false
+              schema:
+                type: string
+                format: uri
+                example: 'https://example.com/oauth/callback?code=e7f8c62113a47f7a5a9dca1f&state=af0ifjsldkj'
+              style: simple
+              explode: false
+              allowReserved: false
         400:
           description: 'Unsupported grant type'
           content:
@@ -34,7 +42,7 @@ paths:
                 type: object
                 properties:
                   error: { type: string }
-                  error_description: { type: integer }
+                  error_description: { type: string }
                   hint: { type: string }
                   message: { type: string }
               example:
@@ -50,7 +58,7 @@ paths:
                 type: object
                 properties:
                   error: { type: string }
-                  error_description: { type: integer }
+                  error_description: { type: string }
                   message: { type: string }
               example:
                 error: invalid_client
@@ -72,13 +80,11 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-      summary: 'Requests for authorization code'
-      description: 'Requests for authorization code'
       parameters:
         -
           name: response_type
           in: query
-          description: ''
+          description: 'Response type'
           required: true
           deprecated: false
           allowEmptyValue: false
@@ -90,7 +96,7 @@ paths:
         -
           name: client_id
           in: query
-          description: ''
+          description: 'Client ID'
           required: true
           deprecated: false
           allowEmptyValue: false
@@ -102,7 +108,7 @@ paths:
         -
           name: redirect_uri
           in: query
-          description: ''
+          description: 'Redirect uri'
           required: true
           deprecated: false
           allowEmptyValue: false
@@ -114,7 +120,7 @@ paths:
         -
           name: scope
           in: query
-          description: ''
+          description: Scope
           required: false
           deprecated: false
           allowEmptyValue: false
@@ -122,11 +128,11 @@ paths:
           style: form
           explode: false
           allowReserved: false
-          example: 'EMAIL PROFILE'
+          example: 'profile email'
         -
           name: state
           in: query
-          description: ''
+          description: State
           required: false
           deprecated: false
           allowEmptyValue: false
@@ -134,12 +140,12 @@ paths:
           style: form
           explode: false
           allowReserved: false
-          example: abc123def456
-      deprecated: false
+          example: af0ifjsldkj
     parameters: []
   /api/oauth/token:
+    summary: 'Requests for access token'
+    description: 'Requests for access token'
     post:
-      operationId: token
       tags:
         - OAuth
       responses:
@@ -157,7 +163,7 @@ paths:
               example:
                 token_type: Bearer
                 expires_in: 3600
-                access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJkYzBiYzYzMjNmMTZmZWNkNDIyNGEzODYwY2E4OTRjNSIsImp0aSI6IjY5MGZhODFmYWE0YjdlNmExZDZjNThjMzI5N2IzYjViYjAwMGVlMGExMTlmMGQ5YzNjZjkxMTIzY2JlMGRlZTI4MjcxMDYxYTNmYzU1NDM4IiwiaWF0IjoxNzAwNzUxOTU0LjgzMDE5OSwibmJmIjoxNzAwNzUxOTU0LjgzMDIxOCwiZXhwIjoxNzAwNzU1NTU0Ljc5NDg1NSwic3ViIjoiIiwic2NvcGVzIjpbIkVNQUlMIl19.cDUpuOfe4Bazx-N241qYDW0rktSJfeVtnZckDMFt_dxy7pHByupef5JkC1GOZWt8GkW-Uc1d5vaGjopMowjFuQEWS-OowCjj5WHrS528UwwKFHevrLpAAR-GDfMpOu97mMd4XMhXNKIcp0rGutoWeh4aHM90p815q3YTiFtTidGksYqhLZgUzusyG_iLNzLDTbCME-9UMgk8rtjuvHrldRAMnbCloBURbyOM2x7ObFpnjosobX2D5upMbsGAXenswiZM8CUVVbUPPW358Q3ygGWiA1lN4w0WFSjba7NZdZ3fh5Ht--fcQHCae_ZNQp-SwSy5xe2vRKIRaxilWr-x7g
+                access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdW
                 refresh_token: df9b4ae7ce2e1e8f2a3c1b4d
         400:
           description: 'Unsupported grant type'
@@ -167,7 +173,7 @@ paths:
                 type: object
                 properties:
                   error: { type: string }
-                  error_description: { type: integer }
+                  error_description: { type: string }
                   hint: { type: string }
                   message: { type: string }
               example:
@@ -183,7 +189,7 @@ paths:
                 type: object
                 properties:
                   error: { type: string }
-                  error_description: { type: integer }
+                  error_description: { type: string }
                   message: { type: string }
               example:
                 error: invalid_client
@@ -205,9 +211,6 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-      summary: 'Requests for access token'
-      description: 'Requests for access token'
-      parameters: []
       requestBody:
         description: ''
         content:
@@ -230,11 +233,10 @@ paths:
             example:
               grant_type: authorization_code
               client_id: dc0bc6323f16fecd4224a3860ca894c5
-              client_secret: 8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc777ec51a79507182836799d166776094c5b8bccc00e4d4cbb9a136a5d244349c6eee67b8c
+              client_secret: 8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc777ec5
               redirect_uri: 'https://example.com/oauth/callback'
               code: e7f8c62113a47f7a5a9dca1f
         required: false
-      deprecated: false
     parameters: []
   /api/users:
     get:
@@ -245,6 +247,16 @@ paths:
         200:
           description: 'User collection'
           content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User-output'
+            application/graphql:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User-output'
             application/ld+json:
               schema:
                 type: object
@@ -255,11 +267,6 @@ paths:
                   'hydra:search': { type: object, properties: { '@type': { type: string }, 'hydra:template': { type: string }, 'hydra:variableRepresentation': { type: string }, 'hydra:mapping': { type: array, items: { type: object, properties: { '@type': { type: string }, variable: { type: string }, property: { type: [string, 'null'] }, required: { type: boolean } } } } } }
                 required:
                   - 'hydra:member'
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User-output'
         400:
           description: 'Bad request'
           content:
@@ -331,12 +338,15 @@ paths:
         201:
           description: 'User resource created'
           content:
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/User.jsonld-output'
             application/json:
               schema:
                 $ref: '#/components/schemas/User-output'
+            application/graphql:
+              schema:
+                $ref: '#/components/schemas/User-output'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/User.jsonld-output'
           links: {  }
         400:
           description: 'Bad request'
@@ -413,12 +423,15 @@ paths:
       requestBody:
         description: 'The new User resource'
         content:
-          application/ld+json:
-            schema:
-              $ref: '#/components/schemas/User.UserInputDto.jsonld'
           application/json:
             schema:
               $ref: '#/components/schemas/User.UserInputDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/User.UserInputDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/User.UserInputDto.jsonld'
         required: true
       deprecated: false
     parameters: []
@@ -475,12 +488,15 @@ paths:
         200:
           description: 'User resource'
           content:
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/User.jsonld-output'
             application/json:
               schema:
                 $ref: '#/components/schemas/User-output'
+            application/graphql:
+              schema:
+                $ref: '#/components/schemas/User-output'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/User.jsonld-output'
         404:
           description: 'User not found'
           content:
@@ -537,12 +553,15 @@ paths:
         200:
           description: 'User resource updated'
           content:
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/User.jsonld-output'
             application/json:
               schema:
                 $ref: '#/components/schemas/User-output'
+            application/graphql:
+              schema:
+                $ref: '#/components/schemas/User-output'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/User.jsonld-output'
           links: {  }
         400:
           description: 'Bad request'
@@ -663,12 +682,15 @@ paths:
       requestBody:
         description: 'The updated User resource'
         content:
-          application/ld+json:
-            schema:
-              $ref: '#/components/schemas/User.UserPutDto.jsonld'
           application/json:
             schema:
               $ref: '#/components/schemas/User.UserPutDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/User.UserPutDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/User.UserPutDto.jsonld'
         required: true
       deprecated: false
     delete:
@@ -737,12 +759,15 @@ paths:
         200:
           description: 'User resource updated'
           content:
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/User.jsonld-output'
             application/json:
               schema:
                 $ref: '#/components/schemas/User-output'
+            application/graphql:
+              schema:
+                $ref: '#/components/schemas/User-output'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/User.jsonld-output'
           links: {  }
         400:
           description: 'Bad request'
@@ -897,7 +922,7 @@ paths:
                 detail: 'User not found'
                 status: 404
         429:
-          description: 'User was timed out'
+          description: 'Too many requests'
           content:
             application/json:
               schema:
@@ -953,38 +978,6 @@ paths:
     parameters: []
 components:
   schemas:
-    OAuth:
-      type: object
-      description: ''
-      deprecated: false
-    OAuth.jsonld:
-      type: object
-      description: ''
-      deprecated: false
-      properties:
-        '@context':
-          readOnly: true
-          oneOf:
-            -
-              type: string
-            -
-              type: object
-              properties:
-                '@vocab':
-                  type: string
-                hydra:
-                  type: string
-                  enum: ['http://www.w3.org/ns/hydra/core#']
-              required:
-                - '@vocab'
-                - hydra
-              additionalProperties: true
-        '@id':
-          readOnly: true
-          type: string
-        '@type':
-          readOnly: true
-          type: string
     User:
       type: object
       description: ''
@@ -1209,17 +1202,6 @@ components:
   examples: {  }
   requestBodies: {  }
   headers: {  }
-  securitySchemes:
-    oauth:
-      type: oauth2
-      description: 'OAuth 2.0 application Grant'
-      flows:
-        clientCredentials:
-          authorizationUrl: /api/oauth/authorize
-          tokenUrl: /api/oauth/token
-          scopes:
-            EMAIL: 'This scope value requests access to the email.'
-security:
-  -
-    oauth: []
+  securitySchemes: {  }
+security: []
 tags: []
