@@ -48,7 +48,7 @@ class UserPatchProcessor implements ProcessorInterface
             $this->userRepository->save($user);
 
             if ($passwordChanged) {
-                $this->eventBus->publish(new PasswordChangedEvent($user->getId(), $user->getEmail()));
+                $this->eventBus->publish(new PasswordChangedEvent($user->getEmail()));
             }
 
             return $user;

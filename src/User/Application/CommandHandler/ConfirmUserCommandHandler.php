@@ -3,14 +3,15 @@
 namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandler;
+use App\Shared\Domain\Bus\Event\EventBus;
 use App\User\Application\Command\ConfirmUserCommand;
-use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
 
 class ConfirmUserCommandHandler implements CommandHandler
 {
     public function __construct(
-        private TokenRepositoryInterface $tokenRepository, private UserRepositoryInterface $userRepository
+        private UserRepositoryInterface $userRepository,
+        private EventBus $eventBus
     ) {
     }
 
@@ -19,9 +20,8 @@ class ConfirmUserCommandHandler implements CommandHandler
         $token = $command->getToken();
 
         $user = $this->userRepository->find($token->getUserID());
-        $user->setConfirmed(true);
+        $this->eventBus->publish($user->confirm($token));
 
-        $this->tokenRepository->delete($token);
         $this->userRepository->save($user);
     }
 }

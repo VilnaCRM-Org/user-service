@@ -19,7 +19,7 @@ class PasswordChangedEventHandler implements DomainEventSubscriber
 
     public function __invoke(PasswordChangedEvent $passwordChangedEvent)
     {
-        $emailAddress = $passwordChangedEvent->getEmail();
+        $emailAddress = $passwordChangedEvent->email;
 
         $email = (new Email())
             ->to($emailAddress)

@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\Command\SendConfirmationEmailCommand;
+use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
@@ -52,7 +53,7 @@ class ResendEmailProcessor implements ProcessorInterface
         }
 
         $this->commandBus->dispatch(
-            new SendConfirmationEmailCommand($user->getEmail(), $token));
+            new SendConfirmationEmailCommand(new ConfirmationEmail($token, $user)));
 
         return new Response(status: 200);
     }

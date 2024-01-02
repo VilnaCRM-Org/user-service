@@ -39,7 +39,7 @@ class UserPutProcessor implements ProcessorInterface
             $user->setPassword($hashedPassword);
             $this->userRepository->save($user);
 
-            $this->eventBus->publish(new PasswordChangedEvent($user->getId(), $user->getEmail()));
+            $this->eventBus->publish(new PasswordChangedEvent($user->getEmail()));
 
             return $user;
         } else {

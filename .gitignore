@@ -34,3 +34,5 @@
 ###< league/oauth2-server-bundle ###
 
 /config/keys
+supervisord.log
+supervisord.pid

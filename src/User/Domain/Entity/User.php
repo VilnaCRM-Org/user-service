@@ -24,6 +24,7 @@ use App\User\Application\DTO\User\UserPutDto;
 use App\User\Application\DTO\User\UserUpdateMutationDto;
 use App\User\Infrastructure\Email\ResendEmailMutationResolver;
 use App\User\Infrastructure\Email\ResendEmailProcessor;
+use App\User\Infrastructure\Event\UserConfirmedEvent;
 use App\User\Infrastructure\Exception\DuplicateEmailException;
 use App\User\Infrastructure\Exception\InvalidPasswordException;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
@@ -80,11 +81,14 @@ use Symfony\Component\Uid\Uuid;
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public function __construct(
-        Uuid $id,
         string $email,
         string $initials,
-        string $password
+        string $password,
+        Uuid $id = null,
     ) {
+        if (!$id) {
+            $id = Uuid::v6();
+        }
         $this->id = $id;
         $this->email = $email;
         $this->initials = $initials;
@@ -122,7 +126,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->id;
     }
 
-    public function setId(string $id): void
+    public function setId(Uuid $id): void
     {
         $this->id = $id;
     }
@@ -180,6 +184,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUserIdentifier(): string
     {
         return $this->email;
+    }
+
+    public function confirm(ConfirmationToken $token): UserConfirmedEvent
+    {
+        $this->confirmed = true;
+
+        return new UserConfirmedEvent($token);
     }
 
     public function isConfirmed(): bool

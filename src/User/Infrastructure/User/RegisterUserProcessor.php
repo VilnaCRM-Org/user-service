@@ -8,6 +8,7 @@ use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Application\Command\SignUpCommand;
 use App\User\Application\DTO\User\UserInputDto;
+use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Entity\User;
 
@@ -31,7 +32,7 @@ readonly class RegisterUserProcessor implements ProcessorInterface
         $user = $command->getResponse()->getCreatedUser();
         $token = ConfirmationToken::generateToken($user->getId());
 
-        $this->commandBus->dispatch(new SendConfirmationEmailCommand($user->getEmail(), $token));
+        $this->commandBus->dispatch(new SendConfirmationEmailCommand(new ConfirmationEmail($token, $user)));
 
         return $user;
     }

@@ -6,6 +6,7 @@ use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Application\DTO\Email\RetryDto;
+use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
@@ -51,7 +52,7 @@ class ResendEmailMutationResolver implements MutationResolverInterface
         }
 
         $this->commandBus->dispatch(
-            new SendConfirmationEmailCommand($user->getEmail(), $token));
+            new SendConfirmationEmailCommand(new ConfirmationEmail($token, $user)));
 
         return $user;
     }

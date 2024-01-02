@@ -3,21 +3,11 @@
 namespace App\User\Application\Command;
 
 use App\Shared\Domain\Bus\Command\Command;
-use App\User\Domain\Entity\ConfirmationToken;
+use App\User\Domain\Aggregate\ConfirmationEmail;
 
-class SendConfirmationEmailCommand implements Command
+readonly class SendConfirmationEmailCommand implements Command
 {
-    public function __construct(private string $emailAddress, private ConfirmationToken $token)
+    public function __construct(public ConfirmationEmail $confirmationEmail)
     {
-    }
-
-    public function getEmailAddress(): string
-    {
-        return $this->emailAddress;
-    }
-
-    public function getToken(): ConfirmationToken
-    {
-        return $this->token;
     }
 }

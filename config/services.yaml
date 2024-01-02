@@ -44,7 +44,6 @@ services:
         class: 'App\Shared\Infrastructure\ErrorProvider'
 
     App\User\Domain\UserFactory:
-        class: 'App\User\Domain\UserFactory'
 
     # Event listener for OAuth2 password grant
     App\OAuth\Application\EventListener\UserResolveListener:
