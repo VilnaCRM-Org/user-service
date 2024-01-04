@@ -999,6 +999,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
         email:
           type: string
         initials:
@@ -1187,6 +1188,7 @@ components:
           type: string
         id:
           type: string
+          format: uuid
         email:
           type: string
         initials:
