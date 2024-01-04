@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Infrastructure\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
@@ -10,8 +12,8 @@ class UserConfirmedEvent extends DomainEvent
     public function __construct(
         public readonly ConfirmationToken $token,
         string $eventId = null,
-        string $occurredOn = null)
-    {
+        string $occurredOn = null
+    ) {
         parent::__construct($eventId, $occurredOn);
     }
 

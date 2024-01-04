@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Domain\Entity;
 
 use ApiPlatform\Metadata\Patch;
@@ -18,6 +20,11 @@ class ConfirmationToken
     {
         $this->timesSent = 0;
         $this->allowedToSendAfter = new \DateTime();
+    }
+
+    public function incrementTimesSent(): void
+    {
+        ++$this->timesSent;
     }
 
     public function getTimesSent(): int
@@ -58,10 +65,5 @@ class ConfirmationToken
     public function setUserID(string $userID): void
     {
         $this->userID = $userID;
-    }
-
-    public static function generateToken(string $userID): ConfirmationToken
-    {
-        return new ConfirmationToken(bin2hex(random_bytes(10)), $userID);
     }
 }

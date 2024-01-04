@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Infrastructure\User;
 
 use ApiPlatform\Metadata\Operation;
@@ -17,9 +19,11 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  */
 class UserPatchProcessor implements ProcessorInterface
 {
-    public function __construct(private UserRepositoryInterface $userRepository,
-        private UserPasswordHasherInterface $passwordHasher, private EventBus $eventBus)
-    {
+    public function __construct(
+        private UserRepositoryInterface $userRepository,
+        private UserPasswordHasherInterface $passwordHasher,
+        private EventBus $eventBus
+    ) {
     }
 
     /**
@@ -28,7 +32,7 @@ class UserPatchProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         $userId = $uriVariables['id'];
-        $user = $this->userRepository->find($userId);
+        $user = $this->userRepository->find((string)$userId);
         $passwordChanged = false;
         if ($this->passwordHasher->isPasswordValid($user, $data->oldPassword)) {
             if ($data->email) {
@@ -52,8 +56,7 @@ class UserPatchProcessor implements ProcessorInterface
             }
 
             return $user;
-        } else {
-            throw new InvalidPasswordException();
         }
+        throw new InvalidPasswordException();
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Infrastructure\User;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
@@ -12,8 +14,10 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserUpdateMutationResolver implements MutationResolverInterface
 {
-    public function __construct(private UserRepositoryInterface $userRepository,
-        private UserPasswordHasherInterface $passwordHasher, private EventBus $eventBus,
+    public function __construct(
+        private UserRepositoryInterface $userRepository,
+        private UserPasswordHasherInterface $passwordHasher,
+        private EventBus $eventBus,
         private MutationInputValidator $validator
     ) {
     }
@@ -47,8 +51,7 @@ class UserUpdateMutationResolver implements MutationResolverInterface
             }
 
             return $user;
-        } else {
-            throw new InvalidPasswordException();
         }
+        throw new InvalidPasswordException();
     }
 }

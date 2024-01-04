@@ -48,7 +48,8 @@ use Symfony\Component\Uid\Uuid;
     normalizationContext: ['groups' => ['output']],
     exceptionToStatus: [InvalidPasswordException::class => 410, UserNotFoundException::class => 404,
         TokenNotFoundException::class => 404,
-        DuplicateEmailException::class => 409]
+        DuplicateEmailException::class => 409,
+    ]
 )]
 #[Get]
 #[GetCollection(paginationClientItemsPerPage: true)]
@@ -59,7 +60,8 @@ use Symfony\Component\Uid\Uuid;
 #[Post(
     uriTemplate: '/users/{id}/resend-confirmation-email',
     exceptionToStatus: [UserTimedOutException::class => 429,
-        UserNotFoundException::class => 404],
+        UserNotFoundException::class => 404,
+    ],
     input: RetryDto::class,
     processor: ResendEmailProcessor::class
 )]
@@ -84,11 +86,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         string $email,
         string $initials,
         string $password,
-        Uuid $id = null,
+        Uuid $id,
     ) {
-        if (!$id) {
-            $id = Uuid::v6();
-        }
         $this->id = $id;
         $this->email = $email;
         $this->initials = $initials;
@@ -121,9 +120,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['output'])]
     private array $roles;
 
-    public function getId(): Uuid
+    public function getId(): string
     {
-        return $this->id;
+        return (string)$this->id;
     }
 
     public function setId(Uuid $id): void

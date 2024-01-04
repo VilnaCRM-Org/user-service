@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Infrastructure\User;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
-use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Application\Command\SignUpCommand;
 use App\User\Application\DTO\User\UserInputDto;
-use App\User\Domain\Aggregate\ConfirmationEmail;
-use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Entity\User;
 
 /**
@@ -29,11 +28,6 @@ readonly class RegisterUserProcessor implements ProcessorInterface
         $command = new SignUpCommand($data->email, $data->initials, $data->password);
         $this->commandBus->dispatch($command);
 
-        $user = $command->getResponse()->getCreatedUser();
-        $token = ConfirmationToken::generateToken($user->getId());
-
-        $this->commandBus->dispatch(new SendConfirmationEmailCommand(new ConfirmationEmail($token, $user)));
-
-        return $user;
+        return $command->getResponse()->getCreatedUser();
     }
 }

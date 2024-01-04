@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Infrastructure\Token;
 
 use ApiPlatform\Metadata\Operation;
@@ -15,8 +17,10 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ConfirmUserProcessor implements ProcessorInterface
 {
-    public function __construct(private TokenRepositoryInterface $tokenRepository, private CommandBus $commandBus)
-    {
+    public function __construct(
+        private TokenRepositoryInterface $tokenRepository,
+        private CommandBus $commandBus
+    ) {
     }
 
     /**

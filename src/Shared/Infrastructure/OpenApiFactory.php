@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Shared\Infrastructure;
 
 use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
@@ -202,7 +204,8 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'detail' => 'Old password is invalid',
                     'status' => 410,
                 ],
-            ], ]), );
+            ],
+            ]), );
 
         $openApi->getPaths()->addPath('/api/users/{id}', $pathItem->withPut(
             $operationPut->withParameters([$UuidWithExamplePathParam])
@@ -240,11 +243,13 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     200 => new Response(description: 'User confirmed', content: new \ArrayObject([
                         'application/json' => [
                             'example' => '',
-                        ], ]), ),
+                        ],
+                        ]), ),
                     404 => new Response(description: 'Token not found or expired', content: new \ArrayObject([
                         'application/json' => [
                             'example' => '',
-                        ], ]), ),
+                        ],
+                        ]), ),
                 ],
                 )
         ));
@@ -267,7 +272,8 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'hint' => 'Check that all required parameters have been provided',
                     'message' => 'The authorization grant type is not supported by the authorization server.',
                 ],
-            ], ]), );
+            ],
+            ]), );
         $invalidClientCredentialsResponse = new Response(description: 'Invalid client credentials', content: new \ArrayObject([
             'application/json' => [
                 'schema' => [
@@ -283,7 +289,8 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'error_description' => 'Client authentication failed',
                     'message' => 'Client authentication failed',
                 ],
-            ], ]), );
+            ],
+            ]), );
 
         $openApi->getPaths()->addPath('/api/oauth/authorize',
             new Model\PathItem(summary: 'Requests for authorization code', description: 'Requests for authorization code',
@@ -295,16 +302,36 @@ class OpenApiFactory implements OpenApiFactoryInterface
                         schema: ['type' => 'string', 'format' => 'uri', 'example' => 'https://example.com/oauth/callback?code=e7f8c62113a47f7a5a9dca1f&state=af0ifjsldkj'])]), ),
                 400 => $unsupportedGrantTypeResponse,
                 401 => $invalidClientCredentialsResponse], parameters: [
-                        new Model\Parameter(name: 'response_type', in: 'query', description: 'Response type',
-                            required: true, example: 'code'),
-                        new Model\Parameter(name: 'client_id', in: 'query', description: 'Client ID',
-                            required: true, example: 'dc0bc6323f16fecd4224a3860ca894c5'),
-                        new Model\Parameter(name: 'redirect_uri', in: 'query', description: 'Redirect uri',
-                            required: true, example: 'https://example.com/oauth/callback'),
-                        new Model\Parameter(name: 'scope', in: 'query', description: 'Scope',
-                            required: false, example: 'profile email'),
-                        new Model\Parameter(name: 'state', in: 'query', description: 'State',
-                            required: false, example: 'af0ifjsldkj'),
+                        new Model\Parameter(
+                            name: 'response_type',
+                            in: 'query',
+                            description: 'Response type',
+                            required: true,
+                            example: 'code'),
+                        new Model\Parameter(
+                            name: 'client_id',
+                            in: 'query',
+                            description: 'Client ID',
+                            required: true,
+                            example: 'dc0bc6323f16fecd4224a3860ca894c5'),
+                        new Model\Parameter(
+                            name: 'redirect_uri',
+                            in: 'query',
+                            description: 'Redirect uri',
+                            required: true,
+                            example: 'https://example.com/oauth/callback'),
+                        new Model\Parameter(
+                            name: 'scope',
+                            in: 'query',
+                            description: 'Scope',
+                            required: false,
+                            example: 'profile email'),
+                        new Model\Parameter(
+                            name: 'state',
+                            in: 'query',
+                            description: 'State',
+                            required: false,
+                            example: 'af0ifjsldkj'),
             ])));
 
         $openApi->getPaths()->addPath('/api/oauth/token',
@@ -329,7 +356,8 @@ class OpenApiFactory implements OpenApiFactoryInterface
                             ],
                         ], ]), ),
                 400 => $unsupportedGrantTypeResponse,
-                401 => $invalidClientCredentialsResponse], requestBody: new Model\RequestBody(
+                401 => $invalidClientCredentialsResponse,
+                ], requestBody: new Model\RequestBody(
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
@@ -350,7 +378,8 @@ class OpenApiFactory implements OpenApiFactoryInterface
                                 'redirect_uri' => 'https://example.com/oauth/callback',
                                 'code' => 'e7f8c62113a47f7a5a9dca1f',
                             ],
-                        ], ])))));
+                        ],
+                        ])))));
 
         // Adding 500 response to all endpoints
         foreach (array_keys($openApi->getPaths()->getPaths()) as $path) {
@@ -380,8 +409,6 @@ class OpenApiFactory implements OpenApiFactoryInterface
             $openApi->getPaths()->addPath($path, $pathItem);
         }
 
-        $openApi = $openApi->withServers([new Model\Server('https://localhost')]);
-
-        return $openApi;
+        return $openApi->withServers([new Model\Server('https://localhost')]);
     }
 }

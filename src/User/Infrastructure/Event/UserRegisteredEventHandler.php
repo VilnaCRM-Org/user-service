@@ -1,19 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Infrastructure\Event;
 
+use App\Shared\Domain\Bus\Command\CommandBus;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriber;
-use App\User\Domain\Entity\ConfirmationToken;
-use App\User\Domain\TokenRepositoryInterface;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
+use App\User\Application\Command\SendConfirmationEmailCommand;
+use App\User\Domain\Aggregate\ConfirmationEmail;
+use App\User\Domain\Entity\ConfirmationTokenFactory;
 
 class UserRegisteredEventHandler implements DomainEventSubscriber
 {
-    public function __construct(private MailerInterface $mailer,
-        private TokenRepositoryInterface $tokenRepository,
-        private LoggerInterface $logger)
+    public function __construct(
+        private CommandBus $commandBus,
+        private ConfirmationTokenFactory $tokenFactory)
     {
     }
 
@@ -22,22 +23,11 @@ class UserRegisteredEventHandler implements DomainEventSubscriber
         return [UserRegisteredEvent::class];
     }
 
-    public function __invoke(UserRegisteredEvent $userRegisteredEvent)
+    public function __invoke(UserRegisteredEvent $event): void
     {
-        $emailAddress = $userRegisteredEvent->getEmail();
-        $userID = $userRegisteredEvent->aggregateId();
-        $token = ConfirmationToken::generateToken($userID);
-        $this->tokenRepository->save($token);
-        $tokenValue = $token->getTokenValue();
+        $user = $event->user;
+        $token = $this->tokenFactory->create((string)$user->getId());
 
-        $email = (new Email())
-            ->to($emailAddress)
-            ->subject('VilnaCRM email confirmation')
-            ->text("Your email confirmation token - $tokenValue")
-            ->html('<p>See Twig integration for better HTML integration!</p>');
-
-        $this->mailer->send($email);
-
-        $this->logger->info('Send confirmation token to '.$emailAddress);
+        $this->commandBus->dispatch(new SendConfirmationEmailCommand(new ConfirmationEmail($token, $user)));
     }
 }

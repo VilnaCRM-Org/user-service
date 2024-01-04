@@ -126,7 +126,7 @@ class UserOperationsContext implements Context
     /**
      * @Then user with id :id should be returned
      */
-    public function UserWithIdShouldBeReturned(string $id): void
+    public function userWithIdShouldBeReturned(string $id): void
     {
         $data = json_decode($this->response->getContent(), true);
         Assert::assertArrayHasKey('id', $data);

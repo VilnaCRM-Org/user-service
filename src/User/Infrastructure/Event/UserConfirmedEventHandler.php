@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Infrastructure\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriber;
@@ -11,13 +13,13 @@ class UserConfirmedEventHandler implements DomainEventSubscriber
     {
     }
 
+    public function __invoke(UserConfirmedEvent $userConfirmedEvent): void
+    {
+        $this->tokenRepository->delete($userConfirmedEvent->token);
+    }
+
     public static function subscribedTo(): array
     {
         return [UserConfirmedEvent::class];
-    }
-
-    public function __invoke(UserConfirmedEvent $userConfirmedEvent)
-    {
-        $this->tokenRepository->delete($userConfirmedEvent->token);
     }
 }

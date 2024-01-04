@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandler;
@@ -16,6 +18,8 @@ class SendConfirmationEmailCommandHandler implements CommandHandler
     {
         $confirmationEmail = $command->confirmationEmail;
 
-        $this->eventBus->publish($confirmationEmail->send());
+        $confirmationEmail->send();
+
+        $this->eventBus->publish(...$confirmationEmail->pullDomainEvents());
     }
 }

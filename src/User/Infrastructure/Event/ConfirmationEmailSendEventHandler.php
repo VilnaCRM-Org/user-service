@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Infrastructure\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriber;
@@ -21,7 +23,7 @@ class ConfirmationEmailSendEventHandler implements DomainEventSubscriber
         return [ConfirmationEmailSendEvent::class];
     }
 
-    public function __invoke(ConfirmationEmailSendEvent $event)
+    public function __invoke(ConfirmationEmailSendEvent $event): void
     {
         $token = $event->token;
         $tokenValue = $token->getTokenValue();
@@ -32,7 +34,7 @@ class ConfirmationEmailSendEventHandler implements DomainEventSubscriber
         $email = (new Email())
             ->to($emailAddress)
             ->subject('VilnaCRM email confirmation')
-            ->text("Your email confirmation token - $tokenValue")
+            ->text("Your email confirmation token - {$tokenValue}")
             ->html('<p>See Twig integration for better HTML integration!</p>');
 
         $this->mailer->send($email);

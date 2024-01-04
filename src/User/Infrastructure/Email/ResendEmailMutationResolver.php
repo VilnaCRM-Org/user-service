@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Infrastructure\Email;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
@@ -8,6 +10,7 @@ use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Application\DTO\Email\RetryDto;
 use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Entity\ConfirmationToken;
+use App\User\Domain\Entity\ConfirmationTokenFactory;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
@@ -16,7 +19,7 @@ use App\User\Infrastructure\Exception\UserTimedOutException;
 class ResendEmailMutationResolver implements MutationResolverInterface
 {
     public function __construct(private CommandBus $commandBus, private UserRepositoryInterface $userRepository,
-        private TokenRepositoryInterface $tokenRepository)
+        private TokenRepositoryInterface $tokenRepository, private ConfirmationTokenFactory $tokenFactory)
     {
     }
 
@@ -27,9 +30,9 @@ class ResendEmailMutationResolver implements MutationResolverInterface
     {
         $user = $this->userRepository->find($item->userId);
         try {
-            $token = $this->tokenRepository->findByUserId($user->getId());
+            $token = $this->tokenRepository->findByUserId((string)$user->getId());
         } catch (TokenNotFoundException) {
-            $token = ConfirmationToken::generateToken($user->getId());
+            $token = $this->tokenFactory->create((string)$user->getId());
         }
 
         if ($token->getAllowedToSendAfter() > new \DateTime()) {

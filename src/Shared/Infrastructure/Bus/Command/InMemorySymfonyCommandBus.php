@@ -13,7 +13,7 @@ use Symfony\Component\Messenger\Handler\HandlersLocator;
 use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 
-final readonly class InMemorySymfonyCommandBus implements CommandBus
+class InMemorySymfonyCommandBus implements CommandBus
 {
     private MessageBus $bus;
 

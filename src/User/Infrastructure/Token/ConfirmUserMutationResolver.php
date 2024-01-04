@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Infrastructure\Token;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
@@ -11,9 +13,11 @@ use App\User\Domain\UserRepositoryInterface;
 
 class ConfirmUserMutationResolver implements MutationResolverInterface
 {
-    public function __construct(private TokenRepositoryInterface $tokenRepository, private CommandBus $commandBus,
-        private UserRepositoryInterface $userRepository)
-    {
+    public function __construct(
+        private TokenRepositoryInterface $tokenRepository,
+        private CommandBus $commandBus,
+        private UserRepositoryInterface $userRepository
+    ) {
     }
 
     /**

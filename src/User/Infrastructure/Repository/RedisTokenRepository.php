@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\User\Infrastructure\Repository;
 
 use App\User\Domain\Entity\ConfirmationToken;
@@ -42,9 +44,8 @@ class RedisTokenRepository implements TokenRepositoryInterface
 
         if (null !== $serializedToken) {
             return $this->serializer->deserialize($serializedToken, ConfirmationToken::class, 'json');
-        } else {
-            throw new TokenNotFoundException();
         }
+        throw new TokenNotFoundException();
     }
 
     public function findByUserId(string $userId): ConfirmationToken
@@ -56,9 +57,8 @@ class RedisTokenRepository implements TokenRepositoryInterface
 
         if (null !== $serializedToken) {
             return $this->serializer->deserialize($serializedToken, ConfirmationToken::class, 'json');
-        } else {
-            throw new TokenNotFoundException();
         }
+        throw new TokenNotFoundException();
     }
 
     public function delete(ConfirmationToken $token): void
