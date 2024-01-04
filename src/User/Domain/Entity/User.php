@@ -89,9 +89,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         string $email,
         string $initials,
         string $password,
-        Uuid   $id,
-    )
-    {
+        Uuid $id,
+    ) {
         $this->id = $id;
         $this->email = $email;
         $this->initials = $initials;
@@ -126,7 +125,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getId(): string
     {
-        return (string)$this->id;
+        return (string) $this->id;
     }
 
     public function setId(Uuid $id): void
@@ -196,7 +195,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return new UserConfirmedEvent($token);
     }
 
-
     /**
      * @return array<DomainEvent>
      */
@@ -206,8 +204,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         string $newPassword,
         string $oldPassword,
         string $hashedNewPassword
-    ): array
-    {
+    ): array {
         $events = [];
 
         if ($newEmail != $this->email) {
@@ -226,7 +223,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $events;
     }
-
 
     public function isConfirmed(): bool
     {

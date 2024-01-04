@@ -19,9 +19,8 @@ class UserPatchProcessor implements ProcessorInterface
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private CommandBus              $commandBus
-    )
-    {
+        private CommandBus $commandBus
+    ) {
     }
 
     /**
@@ -30,7 +29,7 @@ class UserPatchProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         $userId = $uriVariables['id'];
-        $user = $this->userRepository->find((string)$userId);
+        $user = $this->userRepository->find((string) $userId);
 
         $newEmail = $data->email ?? $user->getEmail();
         $newInitials = $data->initials ?? $user->getInitials();

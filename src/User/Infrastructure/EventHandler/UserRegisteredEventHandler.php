@@ -16,8 +16,7 @@ class UserRegisteredEventHandler implements DomainEventSubscriber
     public function __construct(
         private CommandBus $commandBus,
         private ConfirmationTokenFactory $tokenFactory
-    )
-    {
+    ) {
     }
 
     public static function subscribedTo(): array

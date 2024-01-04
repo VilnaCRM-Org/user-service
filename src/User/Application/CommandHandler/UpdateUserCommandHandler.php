@@ -8,7 +8,6 @@ use App\Shared\Domain\Bus\Command\CommandHandler;
 use App\Shared\Domain\Bus\Event\EventBus;
 use App\User\Application\Command\UpdateUserCommand;
 use App\User\Domain\UserRepositoryInterface;
-use App\User\Infrastructure\Event\PasswordChangedEvent;
 use App\User\Infrastructure\Exception\InvalidPasswordException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -18,8 +17,7 @@ class UpdateUserCommandHandler implements CommandHandler
         private EventBus $eventBus,
         private UserPasswordHasherInterface $passwordHasher,
         private UserRepositoryInterface $userRepository
-    )
-    {
+    ) {
     }
 
     public function __invoke(UpdateUserCommand $command): void
