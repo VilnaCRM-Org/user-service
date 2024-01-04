@@ -1,10 +1,9 @@
-'use client';
-
-import { Drawer, Box, Stack, Typography } from '@mui/material';
+import { Drawer, Box, Stack } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 
 import UIButton from '@/components/ui/UIButton/UIButton';
+import UITypography from '@/components/ui/UITypography/UITypography';
 
 import AtSignImage from '../../../assets/svg/header-drawer/at-sign.svg';
 import Bars from '../../../assets/svg/header-drawer/menu-04.svg';
@@ -69,7 +68,7 @@ function UiDrawer() {
           <Box
             sx={{
               border: '1px solid #E1E7EA',
-              py: '19px',
+              py: '18px',
               borderRadius: '8px',
               mt: '6px',
             }}
@@ -81,21 +80,11 @@ function UiDrawer() {
               flexDirection="row"
             >
               <Image src={AtSignImage} alt="ExitImage" width={24} height={24} />
-              <Typography
-                sx={{
-                  color: '#57595B',
-                  fontFamily: 'Golos',
-                  fontSize: '18px',
-                  fontStyle: 'normal',
-                  fontWeight: '600',
-                  lineHeight: 'normal',
-                }}
-              >
-                info@vilnacrm.com
-              </Typography>
+              <UITypography variant="demi18">info@vilnacrm.com</UITypography>
             </Stack>
           </Box>
           <Stack
+            pr="12px"
             justifyContent="center"
             gap="8px"
             flexDirection="row"
@@ -103,7 +92,7 @@ function UiDrawer() {
           >
             {DRAWER_SOCIAL_LINKS.map(({ icon, title, id }) => (
               <Box key={id} sx={{ margin: '12px' }}>
-                <Image src={icon} alt={title} width={24} height={24} key={id} />
+                <Image src={icon} alt={title} width={25} height={25} key={id} />
               </Box>
             ))}
           </Stack>

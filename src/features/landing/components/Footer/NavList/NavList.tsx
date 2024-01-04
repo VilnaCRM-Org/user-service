@@ -6,7 +6,12 @@ import NavLink from '../NavLink/NavLink';
 
 function NavList() {
   return (
-    <Stack direction="row" gap="8px" alignItems="center">
+    <Stack
+      direction="row"
+      alignItems="center"
+      mt="6px"
+      sx={{ gap: { xs: '4px', sm: '8px', xl: '8px' } }}
+    >
       {FOOTER_SOCIAL_LINKS.map(item => (
         <NavLink item={item} key={item.id} />
       ))}

@@ -1,7 +1,7 @@
 module.exports = {
   extends: ['@commitlint/config-conventional'],
   rules: {
-    // 'check-task-number-rule': [2, 'always'],
+    'check-task-number-rule': [2, 'always'],
   },
   listOfNames: [
     'build',

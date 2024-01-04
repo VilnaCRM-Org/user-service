@@ -1,10 +1,8 @@
-'use client';
-
 import { Stack } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import CustomButton from '@/components/ui/UIButton/UIButton';
+import UIButton from '@/components/ui/UIButton/UIButton';
 import UITypography from '@/components/ui/UITypography/UITypography';
 
 function TextInfo() {
@@ -24,9 +22,9 @@ function TextInfo() {
       >
         {t('about_vilna.text_main')}
       </UITypography>
-      <CustomButton variant="contained" size="medium">
+      <UIButton variant="contained" size="medium">
         {t('about_vilna.button_main')}
-      </CustomButton>
+      </UIButton>
     </Stack>
   );
 }

@@ -3,17 +3,16 @@ import {
   Checkbox,
   ThemeProvider,
   createTheme,
-  Stack,
 } from '@mui/material';
 import React from 'react';
-
-import UITypography from '../UITypography/UITypography';
 
 const theme = createTheme({
   components: {
     MuiCheckbox: {
       styleOverrides: {
         root: {
+          svg: { display: 'none' },
+          appearance: 'none',
           width: '24px',
           height: '24px',
           borderRadius: '8px',
@@ -28,18 +27,13 @@ const theme = createTheme({
   },
 });
 
-function UICheckbox() {
+function UICheckbox({ label }: { label: string | React.ReactNode }) {
   return (
     <ThemeProvider theme={theme}>
       <FormControlLabel
         sx={{ pt: '20px', pb: '32px' }}
         control={<Checkbox />}
-        label={
-          <UITypography variant="medium14">
-            Я прочитав та приймаю Політику Конфіденційності та Політику
-            Використання сервісу VilnaCRM
-          </UITypography>
-        }
+        label={label}
       />
     </ThemeProvider>
   );

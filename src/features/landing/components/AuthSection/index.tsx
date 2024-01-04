@@ -24,60 +24,54 @@ function AuthSection() {
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterItem>();
-  const onSubmit = (data: RegisterItem) => {
-    console.log(data);
-  };
 
-  const isLengthValid = (value: string) =>
+  const onSubmit = (data: RegisterItem) => console.log(data);
+  const isLengthValid = (value: string): boolean =>
     value.length >= 8 && value.length <= 64;
 
-  const hasNumber = (value: string) => /[0-9]/.test(value);
+  const hasNumber = (value: string): boolean => /[0-9]/.test(value);
 
-  const hasUppercase = (value: string) => /[A-Z]/.test(value);
+  const hasUppercase = (value: string): boolean => /[A-Z]/.test(value);
 
-  function validatePassword(value: string) {
+  const validatePassword = (value: string): string | boolean => {
     if (!isLengthValid(value))
       return 'Password must be between 8 and 64 characters long';
     if (!hasNumber(value)) return 'Password must contain at least one number';
     if (!hasUppercase(value))
       return 'Password must contain at least one uppercase letter';
     return true;
-  }
+  };
 
-  function isValidEmailFormat(email: string) {
-    return /^.+@.+\..+$/.test(email);
-  }
+  const isValidEmailFormat = (email: string): boolean =>
+    /^.+@.+\..+$/.test(email);
 
-  function validateEmail(email: string) {
+  const validateEmail = (email: string): string | boolean => {
     if (!isValidEmailFormat(email)) return 'Invalid email format';
     return true;
-  }
+  };
 
-  function isValidFullNameFormat(fullName: string) {
-    return /^[^\d\s]+\s[^\d\s]+$/.test(fullName);
-  }
+  const isValidFullNameFormat = (fullName: string): boolean =>
+    /^[^\d\s]+\s[^\d\s]+$/.test(fullName);
 
-  function validateFullName(fullName: string) {
+  const hasEmptyParts = (fullName: string): boolean =>
+    fullName.split(' ').some(part => part.length === 0);
+
+  const validateFullName = (fullName: string): string | boolean => {
     if (!isValidFullNameFormat(fullName)) return 'Invalid full name format';
-    if (fullName.split(' ').some(part => part.length === 0))
+    if (hasEmptyParts(fullName))
       return 'Name and surname should have at least 1 character';
     return true;
-  }
+  };
 
   return (
     <Box sx={{ background: '#FBFBFB', mb: '2px' }}>
       <Container>
-        <Stack
-          alignItems="center"
-          direction="row"
-          gap="128px"
-          sx={{ pt: '65px' }}
-        >
+        <Stack direction="row" justifyContent="space-between">
           <SignUpText />
           <Box
             sx={{
               padding: '36px 40px 40px',
-              width: '50%',
+              mt: '65px',
               maxWidth: '502px',
               borderRadius: '32px 32px 0px 0px',
               border: '1px solid  #E1E7EA',
@@ -149,7 +143,14 @@ function AuthSection() {
                 />
               </UILabel>
 
-              <UICheckbox />
+              <UICheckbox
+                label={
+                  <UITypography variant="medium14">
+                    Я прочитав та приймаю Політику Конфіденційності та Політику
+                    Використання сервісу VilnaCRM
+                  </UITypography>
+                }
+              />
               <UIButton variant="contained" size="medium" type="submit">
                 Реєєстрація
               </UIButton>

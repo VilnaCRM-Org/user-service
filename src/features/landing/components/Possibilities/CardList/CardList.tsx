@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material';
+import { Grid } from '@mui/material';
 import React from 'react';
 
 import CardItem from '@/components/CardItem/CardItem';
@@ -8,19 +8,19 @@ import { UNLIMITED_INTEGRATIONS_CARD_ITEMS } from '../../../utils/constants/cons
 function CardList() {
   const styles = {
     grid: {
-      display: 'flex',
-      flexDirection: 'row',
+      display: 'grid',
+      gridTemplateColumns: { md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
       marginTop: '2rem',
       gap: '0.75rem',
     },
   };
 
   return (
-    <Stack sx={{ ...styles.grid }}>
+    <Grid sx={{ ...styles.grid }}>
       {UNLIMITED_INTEGRATIONS_CARD_ITEMS.map(item => (
         <CardItem item={item} key={item.id} type="Possibilities" />
       ))}
-    </Stack>
+    </Grid>
   );
 }
 

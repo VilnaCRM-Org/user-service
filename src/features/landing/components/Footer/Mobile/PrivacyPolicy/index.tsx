@@ -1,4 +1,4 @@
-import { Box, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -8,30 +8,23 @@ function PrivacyPolicy() {
   const { t } = useTranslation();
 
   return (
-    <Stack
-      direction="row"
-      gap="8px"
-      alignItems="center"
-      sx={{
-        marginRight: '-3px',
-        marginBottom: '5px',
-        flexDirection: { xs: 'column', md: 'row' },
-      }}
-    >
-      <Box
+    <>
+      <Stack
+        alignItems="center"
         sx={{
-          width: '244px',
-          padding: '8px 16px',
+          width: '100%',
+          padding: '17px 16px',
           borderRadius: '8px',
           background: '#F4F5F6',
         }}
       >
         <UITypography variant="medium16">{t('footer.privacy')}</UITypography>
-      </Box>
-      <Box
+      </Stack>
+      <Stack
+        alignItems="center"
         sx={{
-          width: '255px',
-          padding: '8px 16px',
+          width: '100%',
+          padding: '17px 16px',
           borderRadius: '8px',
           background: '#F4F5F6',
         }}
@@ -39,8 +32,8 @@ function PrivacyPolicy() {
         <UITypography variant="medium16">
           {t('footer.usagePolicy')}
         </UITypography>
-      </Box>
-    </Stack>
+      </Stack>
+    </>
   );
 }
 

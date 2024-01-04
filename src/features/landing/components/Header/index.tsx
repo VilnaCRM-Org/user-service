@@ -1,12 +1,13 @@
-import { AppBar, Container } from '@mui/material';
+import { useTheme } from '@emotion/react';
+import { AppBar, Container, useMediaQuery } from '@mui/material';
 import Image from 'next/image';
 
 import ToolBar from '@/components/ui/UIToolBar/UIToolBar';
 
 import Logo from '../../assets/svg/Logo/Logo.svg';
 
-import AuthenticationButtons from './AuthenticationButtons/AuthenticationButtons';
-// import Drawer from './Drawer/Drawer';
+import AuthenticationButtons from './AuthenticationButtons';
+import Drawer from './Drawer/Drawer';
 import NavLink from './NavLink/NavLink';
 
 const links = [
@@ -17,6 +18,9 @@ const links = [
 ];
 
 function Header() {
+  const theme = useTheme();
+  const tablet = useMediaQuery(theme.breakpoints.up('lg'));
+
   return (
     <AppBar
       position="static"
@@ -30,8 +34,13 @@ function Header() {
       <Container maxWidth="xl">
         <ToolBar>
           <Image src={Logo} alt="Header Image" width={131} height={44} />
-          <NavLink links={links} />
-          <AuthenticationButtons />
+          {tablet && (
+            <>
+              <NavLink links={links} />
+              <AuthenticationButtons />
+            </>
+          )}
+          {!tablet && <Drawer />}
         </ToolBar>
       </Container>
     </AppBar>

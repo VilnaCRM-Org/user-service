@@ -1,6 +1,8 @@
-import { Stack, Typography } from '@mui/material';
+import { Stack } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
+
+import UITypography from '@/components/ui/UITypography/UITypography';
 
 import AtSignImage from '../../../../assets/svg/header-drawer/chevron-down.svg';
 
@@ -23,18 +25,7 @@ function DrawerItem({ item }: DrawerItemProps) {
         padding: '19px 20px',
       }}
     >
-      <Typography
-        sx={{
-          color: '#57595B',
-          fontFamily: 'Golos',
-          fontSize: '18px',
-          fontStyle: 'normal',
-          fontWeight: '600',
-          lineHeight: 'normal',
-        }}
-      >
-        {item.title}
-      </Typography>
+      <UITypography variant="demi18">{item.title}</UITypography>
       <Image src={AtSignImage} alt="Header Image" width={24} height={24} />
     </Stack>
   );

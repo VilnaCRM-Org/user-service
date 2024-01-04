@@ -1,9 +1,24 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import { ThemeProvider, Typography, createTheme } from '@mui/material';
+import { TypographyProps } from '@mui/material/Typography';
 
-import { UITypographyProps } from './UITypographyTypes';
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    medium16: true;
+    medium15: true;
+    medium14: true;
+    regular16: true;
+    bodyText18: true;
+    bodyText16: true;
+    bold22: true;
+    demi18: true;
+    button: true;
+    bodyMobile: true;
+  }
+}
 
 const fonts = {
-  golos: 'Golos Text',
+  golos: 'Golos',
   inter: 'Inter',
 };
 
@@ -23,6 +38,23 @@ const textStyles = {
 };
 
 const theme = createTheme({
+  components: {
+    MuiTypography: {
+      defaultProps: {
+        variantMapping: {
+          medium16: 'p',
+          medium15: 'p',
+          medium14: 'p',
+          regular16: 'p',
+          bodyText18: 'p',
+          bodyText16: 'p',
+          bold22: 'p',
+          demi18: 'p',
+          button: 'p',
+        },
+      },
+    },
+  },
   typography: {
     h1: {
       ...hStyles,
@@ -62,6 +94,7 @@ const theme = createTheme({
       fontFamily: fonts.golos,
       fontStyle: 'normal',
       fontSize: '15px',
+      fontWeight: '500',
       color: '#57595B',
     },
     medium14: {
@@ -109,37 +142,21 @@ const theme = createTheme({
       fontWeight: '600',
       lineHeight: 'normal',
     },
-  },
-  components: {
-    MuiTypography: {
-      defaultProps: {
-        variantMapping: {
-          medium16: 'p',
-          medium15: 'p',
-          medium14: 'p',
-          regular16: 'p',
-          bodyText18: 'p',
-          bodyText16: 'p',
-          bold22: 'p',
-          demi18: 'p',
-          button: 'p',
-        },
-      },
+    bodyMobile: {
+      color: '#1A1C1E',
+      fontFamily: fonts.golos,
+      fontSize: '15px',
+      fontStyle: 'normal',
+      fontWeight: '400',
+      lineHeight: '25px',
     },
   },
 });
 
-export default function UITypography({
-  children,
-  variant,
-  sx,
-  component,
-}: UITypographyProps) {
+export default function UITypography({ children, ...props }: TypographyProps) {
   return (
     <ThemeProvider theme={theme}>
-      <Typography variant={variant} sx={sx} component={component}>
-        {children}
-      </Typography>
+      <Typography {...props}>{children}</Typography>
     </ThemeProvider>
   );
 }

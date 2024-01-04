@@ -1,87 +1,45 @@
-/* @font-face {
-  font-family: 'GolosText-Black';
-  src: url('')
-    format('truetype');
-}
-
-@font-face {
-  font-family: 'GolosText-Bold';
-  src: url('/src/features/landing/assets/fonts/Golos/GolosText-Bold.ttf')
-    format('truetype');
-}
-
-@font-face {
-  font-family: 'GolosText-ExtraBold';
-  src: url('/assets/fonts/Golos/GolosText-ExtraBold.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'GolosText-Medium';
-  src: url('/src/features/landing/assets/fonts/Golos/GolosText-Medium.ttf')
-    format('truetype');
-}
-
-@font-face {
-  font-family: 'GolosText-Regular';
-  src: url('/assets/fonts/Golos/GolosText-Regular.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'GolosText-SemiBold';
-  src: url('/assets/fonts/Golos/GolosText-SemiBold.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'Inter-Regular';
-  src: url('/assets/fonts/Inter/Inter-Regular.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'Stolzl-Regular';
-  src: url('/assets/fonts/Stolzl/stolzl_regular.otf') format('opentype');
-} */
 @font-face {
   font-family: 'Golos';
   font-display: swap;
   font-weight: 400;
-  src: url('~/src/features//landing/assets/fonts/Golos/GolosText-Regular.ttf')
-    format('ttf');
+  src: url('~/src/features/landing/assets/fonts/Golos/GolosText-Regular.ttf')
+    format('TrueType');
 }
 
 @font-face {
   font-family: 'Golos';
   font-display: swap;
   font-weight: 500;
-  src: url('~/src/features//landing/assets/fonts/Golos/GolosText-Medium.ttf')
-    format('ttf');
+  src: url('~/src/features/landing/assets/fonts/Golos/GolosText-Medium.ttf')
+    format('TrueType');
 }
 @font-face {
   font-family: 'Golos';
   font-display: swap;
   font-weight: 600;
-  src: url('~/src/features//landing/assets/fonts/Golos/GolosText-SemiBold.ttf')
-    format('ttf');
+  src: url('~/src/features/landing/assets/fonts/Golos/GolosText-SemiBold.ttf')
+    format('TrueType');
 }
 @font-face {
   font-family: 'Golos';
   font-display: swap;
   font-weight: 700;
-  src: url('~/src/features//landing/assets/fonts/Golos/GolosText-Bold.ttf')
-    format('ttf');
+  src: url('~/src/features/landing/assets/fonts/Golos/GolosText-Bold.ttf')
+    format('TrueType');
 }
 @font-face {
   font-family: 'Golos';
   font-display: swap;
   font-weight: 800;
-  src: url('~/src/features//landing/assets/fonts/Golos/GolosText-ExtraBold.ttf')
-    format('ttf');
+  src: url('~/src/features/landing/assets/fonts/Golos/GolosText-ExtraBold.ttf')
+    format('TrueType');
 }
 @font-face {
   font-family: 'Golos';
   font-display: swap;
   font-weight: 900;
-  src: url('~/src/features//landing/assets/fonts/Golos/GolosText-Black.ttf')
-    format('ttf');
+  src: url('~/src/features/landing/assets/fonts/Golos/GolosText-Black.ttf')
+    format('TrueType');
 }
 
 @font-face {
@@ -89,7 +47,7 @@
   font-display: swap;
   font-weight: 400;
   src: url('~/src/features/landing/assets/fonts/Inter/Inter-Regular.ttf')
-    format('ttf');
+    format('TrueType');
 }
 
 @font-face {
@@ -97,5 +55,5 @@
   font-display: swap;
   font-weight: 400;
   src: url('~/src/features/landing/assets/fonts/Stolzl/stolzl_regular.otf')
-    format('otf');
+    format('OpenType');
 }

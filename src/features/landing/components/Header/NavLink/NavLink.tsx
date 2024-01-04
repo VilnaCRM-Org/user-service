@@ -3,7 +3,7 @@ import React from 'react';
 
 function NavLink({ links }: { links: { id: number; value: string }[] }) {
   return (
-    <Stack component="nav">
+    <Stack component="nav" ml="106px">
       <List sx={{ display: 'flex' }}>
         {links.map(link => (
           <ListItem key={link.id}>
@@ -13,7 +13,7 @@ function NavLink({ links }: { links: { id: number; value: string }[] }) {
                 fontSize: '0.938rem',
                 fontWeight: '500',
                 lineHeight: '1.125rem',
-                fontFamily: 'Golos Text',
+                fontFamily: 'Golos',
               }}
               underline="none"
             >

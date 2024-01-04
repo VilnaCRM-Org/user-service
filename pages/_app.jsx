@@ -23,39 +23,28 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 });
 
-// const customBreakpoints = {
-//   xs: 0,
-//   sm: 375,
-//   md: 640,
-//   smallTablet: 850,
-//   lg: 1024,
-//   xl: 1440,
-// };
-
 // eslint-disable-next-line react/prop-types
 function MyApp({ Component }) {
   const theme = createTheme({
     palette: {
       mode: 'light',
     },
-    // breakpoints: {
-    //   values: customBreakpoints,
-    // },
+    breakpoints: {
+      values: { xs: 375, sm: 640, md: 768, lg: 1024, xl: 1440 },
+    },
     typography: {
-      fontFamily: ['Golos Text'].join(','),
+      fontFamily: ['Golos'],
     },
     components: {
       MuiContainer: {
         styleOverrides: {
           root: {
             '@media (min-width: 23.438rem)': {
-              // 375px
               padding: '0 15px',
             },
             '@media (min-width: 64rem)': {
-              // 1024px
               width: '100%',
-              maxWidth: '78.375rem', // 1254px
+              maxWidth: '78.375rem',
               paddingLeft: '2rem',
               paddingRight: '2rem',
             },

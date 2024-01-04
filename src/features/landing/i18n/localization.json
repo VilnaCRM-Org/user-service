@@ -57,7 +57,7 @@
       },
       "cards_texts": {
         "text_for_cases": "For cases when you did not find the desired ready-made integration ",
-        "text_integrate": "Integrate <a href=\"/\" target=\"_blank\" class=\"unlimited-integrations-link-style\">familiar services</a> in a few clicks",
+        "text_integrate": "Integrate familiar services</a> in a few clicks",
         "text_get_data": "Get data about any event in CRM and automate complex business processes",
         "text_for_custom": "For custom integrations with specific products"
       },
@@ -100,7 +100,7 @@
       }
     },
     "footer": {
-      "copyright": "Copyright © ТОВ “Vilna CRM”, 2023",
+      "copyright": "Copyright © ТОВ “Vilna CRM”, 2022",
       "privacy": "Privacy policy",
       "usagePolicy": "Usage policy"
     }
@@ -163,7 +163,7 @@
       },
       "cards_texts": {
         "text_1": "Для випадків, коли ви не знайшли потрібну готову інтеграцію ",
-        "text_2": "Інтегруйте <a href=\"/\" target=\"_blank\" class=\"unlimited-integrations-link-style\">знайомі служби</a> кількома кліками",
+        "text_2": "Інтегруйте знайомі служби</a> кількома кліками",
         "text_3": "Отримуйте дані про будь-які івенти у CRM та автоматизуйте складні бізнес-процеси",
         "text_4": "Для кастомних інтеграцій зі специфічними продуктами"
       },
@@ -206,7 +206,7 @@
       }
     },
     "footer": {
-      "copyright": "Copyright © ТОВ “Вільна СРМ”, 2023",
+      "copyright": "Copyright © ТОВ “Вільна СРМ”, 2022",
       "privacy": "Політика конфіденційності",
       "usagePolicy": "Політика використовування"
     }

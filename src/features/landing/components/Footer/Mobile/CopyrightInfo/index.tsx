@@ -4,15 +4,13 @@ import { useTranslation } from 'react-i18next';
 
 import UITypography from '@/components/ui/UITypography/UITypography';
 
-function Text() {
+function CopyrightInfo() {
   const { t } = useTranslation();
-
   return (
-    <Stack maxWidth="39.5rem" spacing={2}>
-      <UITypography variant="h2">{t('why_we.heading')}</UITypography>
-      <UITypography variant="bodyText18">{t('why_we.subtitle')}</UITypography>
+    <Stack alignItems="center" sx={{ color: '#404142', pt: '16px' }}>
+      <UITypography variant="medium15">{t('footer.copyright')}</UITypography>
     </Stack>
   );
 }
 
-export default Text;
+export default CopyrightInfo;

@@ -11,8 +11,8 @@ import SocialList from '../SocialList/SocialList';
 function SignUpText() {
   const { t } = useTranslation();
   return (
-    <Box sx={{ width: '55%' }}>
-      <UITypography variant="h2" sx={{ whiteSpace: 'pre-line' }}>
+    <Box maxWidth="561px" sx={{ mt: '136px' }}>
+      <UITypography variant="h2" sx={{ whiteSpace: 'pre-line', pb: '40px' }}>
         {t('sign_up.main_heading')}
         <UITypography variant="h2" component="span" sx={{ color: '#1EAEFF' }}>
           {' VilnaCRM'}

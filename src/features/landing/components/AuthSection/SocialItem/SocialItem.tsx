@@ -22,8 +22,8 @@ function SocialItem({ item }: SocialItemProps) {
       alignItems="center"
       justifyContent="center"
       sx={{
-        width: '188px',
-        py: '18px',
+        width: '189px',
+        py: '17px',
         borderRadius: '12px',
         border: '1px solid  #E1E7EA',
         background: '#FFF',

@@ -24,7 +24,7 @@ const tabItems = [
 
 function DrawerList() {
   return (
-    <Stack direction="column" gap="6px" mt="12px">
+    <Stack direction="column" gap="6px" mt="16px">
       {tabItems.map(item => (
         <DrawerItem item={item} key={item.id} />
       ))}

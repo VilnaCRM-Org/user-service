@@ -1,12 +1,9 @@
-/* @import './fonts.css'; */
-@import url('https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+@import './fonts.css';
 html,
 body {
   padding: 0;
   margin: 0;
-  /* font-family: 'GolosText-Black', sans-serif; */
-  font-family: 'Golos Text', sans-serif;
+  font-family: 'Golos', sans-serif;
   scroll-behavior: smooth;
 }
 

@@ -7,7 +7,7 @@ function Notch({ imageSrc }: { imageSrc: string }) {
       sx={{
         position: 'relative',
         margin: '0 auto',
-        top: '-4px',
+        bottom: '4px',
         left: '0',
         backgroundImage: `url(${imageSrc})`,
         backgroundRepeat: 'no-repeat',

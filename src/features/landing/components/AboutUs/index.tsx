@@ -1,16 +1,24 @@
-import { Stack } from '@mui/material';
+import { Stack, Box } from '@mui/material';
 import React from 'react';
 
-// import BackgroundImages from './BackgroundImages/BackgroundImages';
+import BackgroundImages from './BackgroundImages/BackgroundImages';
 import DeviceImage from './DeviceImage/DeviceImage';
 import TextInfo from './TextInfo/TextInfo';
 
 function AboutUs() {
   return (
-    <Stack component="section" alignItems="center" sx={{ pt: '9rem' }}>
+    <Stack
+      component="section"
+      alignItems="center"
+      sx={{
+        pt: '9rem',
+        position: 'relative',
+        maxWidth: '100dvw',
+      }}
+    >
       <TextInfo />
       <DeviceImage />
-      {/* <BackgroundImages /> */}
+      <BackgroundImages />
     </Stack>
   );
 }

@@ -6,7 +6,7 @@ import Text from './Text/Text';
 
 function WhyUs() {
   return (
-    <Box>
+    <Box mt="112px">
       <Text />
       <CardList />
     </Box>
