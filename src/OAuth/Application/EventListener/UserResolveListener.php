@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\OAuth\Application\EventListener;
 
 use League\Bundle\OAuth2ServerBundle\Event\UserResolveEvent;

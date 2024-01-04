@@ -6,7 +6,7 @@ namespace App\User\Application\Transformer;
 
 use App\User\Application\Command\SignUpCommand;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Entity\UserFactory;
+use App\User\Domain\Factory\UserFactory;
 
 class SignUpTransformer
 {
@@ -16,10 +16,6 @@ class SignUpTransformer
 
     public function transformToUser(SignUpCommand $command): User
     {
-        $email = $command->email;
-        $initials = $command->initials;
-        $password = $command->password;
-
-        return $this->userFactory->create($email, $initials, $password);
+        return $this->userFactory->create($command->email, $command->initials, $command->password);
     }
 }

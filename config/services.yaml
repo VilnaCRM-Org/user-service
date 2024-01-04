@@ -45,8 +45,10 @@ services:
     api_platform.state.error_provider:
         class: 'App\Shared\Infrastructure\ErrorProvider'
 
-    App\User\Domain\UserFactory:
-    App\User\Domain\ConfirmationTokenFactory:
+    App\User\Domain\Factory\UserFactory:
+    App\User\Domain\Factory\ConfirmationTokenFactory:
+        arguments:
+            $tokenLength: 10
 
     # Event listener for OAuth2 password grant
     App\OAuth\Application\EventListener\UserResolveListener:

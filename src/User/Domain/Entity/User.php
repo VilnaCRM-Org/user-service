@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\User\Application\DTO\Email\RetryDto;
 use App\User\Application\DTO\Email\RetryMutationDto;
 use App\User\Application\DTO\Token\ConfirmUserDto;
@@ -24,6 +25,8 @@ use App\User\Application\DTO\User\UserPutDto;
 use App\User\Application\DTO\User\UserUpdateMutationDto;
 use App\User\Infrastructure\Email\ResendEmailMutationResolver;
 use App\User\Infrastructure\Email\ResendEmailProcessor;
+use App\User\Infrastructure\Event\EmailChangedEvent;
+use App\User\Infrastructure\Event\PasswordChangedEvent;
 use App\User\Infrastructure\Event\UserConfirmedEvent;
 use App\User\Infrastructure\Exception\DuplicateEmailException;
 use App\User\Infrastructure\Exception\InvalidPasswordException;
@@ -86,8 +89,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         string $email,
         string $initials,
         string $password,
-        Uuid $id,
-    ) {
+        Uuid   $id,
+    )
+    {
         $this->id = $id;
         $this->email = $email;
         $this->initials = $initials;
@@ -191,6 +195,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return new UserConfirmedEvent($token);
     }
+
+
+    /**
+     * @return array<DomainEvent>
+     */
+    public function update(
+        string $newEmail,
+        string $newInitials,
+        string $newPassword,
+        string $oldPassword,
+        string $hashedNewPassword
+    ): array
+    {
+        $events = [];
+
+        if ($newEmail != $this->email) {
+            $this->confirmed = false;
+            $events[] = new EmailChangedEvent($this);
+        }
+
+        $this->email = $newEmail;
+
+        if ($newPassword != $oldPassword) {
+            $events[] = new PasswordChangedEvent($this->email);
+        }
+
+        $this->initials = $newInitials;
+        $this->password = $hashedNewPassword;
+
+        return $events;
+    }
+
 
     public function isConfirmed(): bool
     {

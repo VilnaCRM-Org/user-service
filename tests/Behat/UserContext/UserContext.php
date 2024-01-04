@@ -3,7 +3,7 @@
 namespace App\Tests\Behat\UserContext;
 
 use App\User\Domain\Entity\ConfirmationToken;
-use App\User\Domain\Entity\UserFactory;
+use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\DuplicateEmailException;

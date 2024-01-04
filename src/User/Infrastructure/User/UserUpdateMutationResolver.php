@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\User;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
+use ApiPlatform\Metadata\Operation;
+use App\Shared\Domain\Bus\Command\CommandBus;
 use App\Shared\Domain\Bus\Event\EventBus;
+use App\User\Application\Command\UpdateUserCommand;
 use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Event\PasswordChangedEvent;
 use App\User\Infrastructure\Exception\InvalidPasswordException;
@@ -16,8 +19,7 @@ class UserUpdateMutationResolver implements MutationResolverInterface
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private UserPasswordHasherInterface $passwordHasher,
-        private EventBus $eventBus,
+        private CommandBus              $commandBus,
         private MutationInputValidator $validator
     ) {
     }
@@ -28,30 +30,14 @@ class UserUpdateMutationResolver implements MutationResolverInterface
 
         $userId = $item->userId;
         $user = $this->userRepository->find($userId);
-        $passwordChanged = false;
-        if ($this->passwordHasher->isPasswordValid($user, $item->oldPassword)) {
-            if ($item->email) {
-                $user->setEmail($item->email);
-            }
-            if ($item->initials) {
-                $user->setInitials($item->initials);
-            }
-            if ($item->newPassword) {
-                $passwordChanged = true;
-                $hashedPassword = $this->passwordHasher->hashPassword(
-                    $user,
-                    $item->newPassword
-                );
-                $user->setPassword($hashedPassword);
-            }
-            $this->userRepository->save($user);
 
-            if ($passwordChanged) {
-                $this->eventBus->publish(new PasswordChangedEvent($user->getEmail()));
-            }
+        $newEmail = $item->email ?? $user->getEmail();
+        $newInitials = $item->initials ?? $user->getInitials();
+        $newPassword = $item->newPassword ?? $item->oldPassword;
 
-            return $user;
-        }
-        throw new InvalidPasswordException();
+        $this->commandBus->dispatch(
+            new UpdateUserCommand($user, $newEmail, $newInitials, $newPassword, $item->oldPassword));
+
+        return $user;
     }
 }

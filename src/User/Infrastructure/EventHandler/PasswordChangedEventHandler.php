@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\Event;
+namespace App\User\Infrastructure\EventHandler;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriber;
+use App\User\Infrastructure\Event\PasswordChangedEvent;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 

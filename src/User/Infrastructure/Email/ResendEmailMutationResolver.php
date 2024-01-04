@@ -9,8 +9,7 @@ use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Application\DTO\Email\RetryDto;
 use App\User\Domain\Aggregate\ConfirmationEmail;
-use App\User\Domain\Entity\ConfirmationToken;
-use App\User\Domain\Entity\ConfirmationTokenFactory;
+use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
@@ -30,9 +29,9 @@ class ResendEmailMutationResolver implements MutationResolverInterface
     {
         $user = $this->userRepository->find($item->userId);
         try {
-            $token = $this->tokenRepository->findByUserId((string)$user->getId());
+            $token = $this->tokenRepository->findByUserId((string) $user->getId());
         } catch (TokenNotFoundException) {
-            $token = $this->tokenFactory->create((string)$user->getId());
+            $token = $this->tokenFactory->create((string) $user->getId());
         }
 
         if ($token->getAllowedToSendAfter() > new \DateTime()) {

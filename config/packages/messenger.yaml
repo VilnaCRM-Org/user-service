@@ -17,10 +17,7 @@ framework:
         dsn: 'doctrine://default?queue_name=failed_send_email'
 
         retry_strategy:
-          max_retries: 9999999
-          delay: 60000
-          multiplier: 2
-          max_delay: 0
+          service: 'App\Shared\Infrastructure\RetryStrategy\InfiniteRetryStrategy'
 
     routing:
       # Route your messages to the transports

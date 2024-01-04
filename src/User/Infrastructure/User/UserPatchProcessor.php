@@ -6,13 +6,11 @@ namespace App\User\Infrastructure\User;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Shared\Domain\Bus\Event\EventBus;
+use App\Shared\Domain\Bus\Command\CommandBus;
+use App\User\Application\Command\UpdateUserCommand;
 use App\User\Application\DTO\User\UserPutDto;
 use App\User\Domain\Entity\User;
 use App\User\Domain\UserRepositoryInterface;
-use App\User\Infrastructure\Event\PasswordChangedEvent;
-use App\User\Infrastructure\Exception\InvalidPasswordException;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  * @implements ProcessorInterface<User>
@@ -21,9 +19,9 @@ class UserPatchProcessor implements ProcessorInterface
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private UserPasswordHasherInterface $passwordHasher,
-        private EventBus $eventBus
-    ) {
+        private CommandBus              $commandBus
+    )
+    {
     }
 
     /**
@@ -33,30 +31,14 @@ class UserPatchProcessor implements ProcessorInterface
     {
         $userId = $uriVariables['id'];
         $user = $this->userRepository->find((string)$userId);
-        $passwordChanged = false;
-        if ($this->passwordHasher->isPasswordValid($user, $data->oldPassword)) {
-            if ($data->email) {
-                $user->setEmail($data->email);
-            }
-            if ($data->initials) {
-                $user->setInitials($data->initials);
-            }
-            if ($data->newPassword) {
-                $passwordChanged = true;
-                $hashedPassword = $this->passwordHasher->hashPassword(
-                    $user,
-                    $data->newPassword
-                );
-                $user->setPassword($hashedPassword);
-            }
-            $this->userRepository->save($user);
 
-            if ($passwordChanged) {
-                $this->eventBus->publish(new PasswordChangedEvent($user->getEmail()));
-            }
+        $newEmail = $data->email ?? $user->getEmail();
+        $newInitials = $data->initials ?? $user->getInitials();
+        $newPassword = $data->newPassword ?? $data->oldPassword;
 
-            return $user;
-        }
-        throw new InvalidPasswordException();
+        $this->commandBus->dispatch(
+            new UpdateUserCommand($user, $newEmail, $newInitials, $newPassword, $data->oldPassword));
+
+        return $user;
     }
 }

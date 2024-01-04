@@ -9,7 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Domain\Aggregate\ConfirmationEmail;
-use App\User\Domain\Entity\ConfirmationTokenFactory;
+use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
@@ -28,11 +28,11 @@ class ResendEmailProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        $user = $this->userRepository->find((string)$uriVariables['id']);
+        $user = $this->userRepository->find((string) $uriVariables['id']);
         try {
-            $token = $this->tokenRepository->findByUserId((string)$user->getId());
+            $token = $this->tokenRepository->findByUserId((string) $user->getId());
         } catch (TokenNotFoundException) {
-            $token = $this->tokenFactory->create((string)$user->getId());
+            $token = $this->tokenFactory->create((string) $user->getId());
         }
         if ($token->getAllowedToSendAfter() > new \DateTime()) {
             throw new UserTimedOutException($token->getAllowedToSendAfter());
