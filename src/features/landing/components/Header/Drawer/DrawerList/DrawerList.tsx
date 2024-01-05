@@ -1,7 +1,7 @@
 import { Stack } from '@mui/material';
 import React from 'react';
 
-import DrawerItem from '../DrawerItem/DrawerItem';
+import { DrawerItem } from '../DrawerItem';
 
 const tabItems = [
   {

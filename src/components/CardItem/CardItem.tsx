@@ -3,7 +3,7 @@ import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import UITypography from '../ui/UITypography/UITypography';
+import UITypography from '../ui/UiTypography/UiTypography';
 
 interface CardItemInterface {
   item: {
@@ -88,7 +88,12 @@ function CardItem({ item, type }: CardItemInterface) {
               </UITypography>
             </Grid>
           ) : (
-            <Box sx={{ height: '297px', mt: '24px' }}>
+            <Box
+              sx={{
+                height: '297px',
+                mt: '24px',
+              }}
+            >
               <Grid
                 key={item.id}
                 sx={{

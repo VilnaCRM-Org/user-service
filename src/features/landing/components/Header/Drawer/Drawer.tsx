@@ -2,8 +2,7 @@ import { Drawer, Box, Stack } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 
-import UIButton from '@/components/ui/UIButton/UIButton';
-import UITypography from '@/components/ui/UITypography/UITypography';
+import { UiButton, UiTypography } from '@/components/ui';
 
 import AtSignImage from '../../../assets/svg/header-drawer/at-sign.svg';
 import Bars from '../../../assets/svg/header-drawer/menu-04.svg';
@@ -57,12 +56,12 @@ function UiDrawer() {
             gap="9px"
             mt="12px"
           >
-            <UIButton variant="outlined" size="small" fullWidth>
+            <UiButton variant="outlined" size="small" fullWidth>
               Войти
-            </UIButton>
-            <UIButton variant="contained" size="small" fullWidth>
+            </UiButton>
+            <UiButton variant="contained" size="small" fullWidth>
               Спробувати
-            </UIButton>
+            </UiButton>
           </Stack>
           <DrawerList />
           <Box
@@ -80,7 +79,7 @@ function UiDrawer() {
               flexDirection="row"
             >
               <Image src={AtSignImage} alt="ExitImage" width={24} height={24} />
-              <UITypography variant="demi18">info@vilnacrm.com</UITypography>
+              <UiTypography variant="demi18">info@vilnacrm.com</UiTypography>
             </Stack>
           </Box>
           <Stack

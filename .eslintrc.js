@@ -91,6 +91,7 @@ module.exports = {
         'import/default': 'off',
         'import/no-named-as-default-member': 'off',
         'import/no-named-as-default': 'off',
+        'import/prefer-default-export': 'off',
 
         'react/react-in-jsx-scope': 'off',
         'react/jsx-filename-extension': [

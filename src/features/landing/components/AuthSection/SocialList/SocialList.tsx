@@ -2,7 +2,7 @@ import { Stack } from '@mui/material';
 import React from 'react';
 
 import { SOCIAL_LINKS } from '../../../utils/constants/constants';
-import SocialItem from '../SocialItem/SocialItem';
+import { SocialItem } from '../SocialItem';
 
 function SocialList() {
   return (

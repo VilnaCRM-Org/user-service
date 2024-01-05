@@ -1,7 +1,7 @@
 import { Stack } from '@mui/material';
 import React from 'react';
 
-import UITypography from '@/components/ui/UITypography/UITypography';
+import { UiTypography } from '@/components/ui';
 
 function Gmail() {
   return (
@@ -15,9 +15,9 @@ function Gmail() {
         border: '1px solid  #D0D4D8',
       }}
     >
-      <UITypography variant="demi18" sx={{ color: '#1B2327' }}>
+      <UiTypography variant="demi18" sx={{ color: '#1B2327' }}>
         info@vilnacrm.com
-      </UITypography>
+      </UiTypography>
     </Stack>
   );
 }

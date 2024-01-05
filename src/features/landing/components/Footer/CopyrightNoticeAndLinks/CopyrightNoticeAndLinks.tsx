@@ -2,18 +2,18 @@ import { Box, Stack } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import UITypography from '@/components/ui/UITypography/UITypography';
+import { UiTypography } from '@/components/ui';
 
-import NavList from '../NavList/NavList';
+import { NavList } from '../NavList';
 
 function CopyrightNoticeAndLinks() {
   const { t } = useTranslation();
 
   return (
     <>
-      <UITypography variant="medium15" sx={{ color: '#404142' }}>
+      <UiTypography variant="medium15" sx={{ color: '#404142' }}>
         {t('footer.copyright')}
-      </UITypography>
+      </UiTypography>
       <Stack direction="row" gap="14px" alignItems="center">
         <Box
           sx={{
@@ -23,9 +23,9 @@ function CopyrightNoticeAndLinks() {
             border: '1px solid  #D0D4D8',
           }}
         >
-          <UITypography variant="medium15" sx={{ color: '#1B2327' }}>
+          <UiTypography variant="medium15" sx={{ color: '#1B2327' }}>
             info@vilnacrm.com
-          </UITypography>
+          </UiTypography>
         </Box>
         <NavList />
       </Stack>

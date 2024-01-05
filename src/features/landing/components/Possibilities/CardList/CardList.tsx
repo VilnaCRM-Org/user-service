@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
 import React from 'react';
 
-import CardItem from '@/components/CardItem/CardItem';
+import { CardItem } from '@/components/CardItem';
 
 import { UNLIMITED_INTEGRATIONS_CARD_ITEMS } from '../../../utils/constants/constants';
 

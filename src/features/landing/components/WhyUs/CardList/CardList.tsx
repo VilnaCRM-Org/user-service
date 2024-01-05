@@ -3,7 +3,8 @@ import React from 'react';
 import { Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-import CardItem from '../../../../../components/CardItem/CardItem';
+import { CardItem } from '@/components/CardItem';
+
 import { WHY_WE_CARD_ITEMS } from '../../../utils/constants/constants';
 
 import 'swiper/css';

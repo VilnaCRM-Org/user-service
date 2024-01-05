@@ -2,7 +2,7 @@ import { Stack } from '@mui/material';
 import React from 'react';
 
 import { FOOTER_SOCIAL_LINKS } from '../../../utils/constants/constants';
-import NavLink from '../NavLink/NavLink';
+import { NavLink } from '../NavLink';
 
 function NavList() {
   return (

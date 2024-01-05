@@ -2,17 +2,16 @@ import { Stack } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import UIButton from '@/components/ui/UIButton/UIButton';
-import UITypography from '@/components/ui/UITypography/UITypography';
+import { UiButton, UiTypography } from '@/components/ui';
 
 function TextInfo() {
   const { t } = useTranslation();
   return (
     <Stack maxWidth="43.813rem" mb="50px">
-      <UITypography variant="h1" sx={{ textAlign: 'center' }}>
+      <UiTypography variant="h1" sx={{ textAlign: 'center' }}>
         {t('about_vilna.heading_main')}
-      </UITypography>
-      <UITypography
+      </UiTypography>
+      <UiTypography
         variant="bodyText18"
         sx={{
           mt: '1rem',
@@ -21,10 +20,10 @@ function TextInfo() {
         }}
       >
         {t('about_vilna.text_main')}
-      </UITypography>
-      <UIButton variant="contained" size="medium">
+      </UiTypography>
+      <UiButton variant="contained" size="medium">
         {t('about_vilna.button_main')}
-      </UIButton>
+      </UiButton>
     </Stack>
   );
 }

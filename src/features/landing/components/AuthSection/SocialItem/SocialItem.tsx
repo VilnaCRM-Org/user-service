@@ -2,7 +2,7 @@ import { Stack } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 
-import UITypography from '@/components/ui/UITypography/UITypography';
+import { UiTypography } from '@/components/ui';
 
 interface SocialItemProps {
   // item: {
@@ -30,7 +30,7 @@ function SocialItem({ item }: SocialItemProps) {
       }}
     >
       <Image src={item.icon} alt={item.title} width={22} height={22} />
-      <UITypography variant="demi18">{item.title}</UITypography>
+      <UiTypography variant="demi18">{item.title}</UiTypography>
     </Stack>
   );
 }

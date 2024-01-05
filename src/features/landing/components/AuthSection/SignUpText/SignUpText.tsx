@@ -4,24 +4,24 @@ import { Box } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import UITypography from '@/components/ui/UITypography/UITypography';
+import { UiTypography } from '@/components/ui';
 
-import SocialList from '../SocialList/SocialList';
+import { SocialList } from '../SocialList';
 
 function SignUpText() {
   const { t } = useTranslation();
   return (
     <Box maxWidth="561px" sx={{ mt: '136px' }}>
-      <UITypography variant="h2" sx={{ whiteSpace: 'pre-line', pb: '40px' }}>
+      <UiTypography variant="h2" sx={{ whiteSpace: 'pre-line', pb: '40px' }}>
         {t('sign_up.main_heading')}
-        <UITypography variant="h2" component="span" sx={{ color: '#1EAEFF' }}>
+        <UiTypography variant="h2" component="span" sx={{ color: '#1EAEFF' }}>
           {' VilnaCRM'}
-        </UITypography>
-      </UITypography>
+        </UiTypography>
+      </UiTypography>
       <Box maxWidth="390px">
-        <UITypography variant="bold22" sx={{ mb: '24px' }}>
+        <UiTypography variant="bold22" sx={{ mb: '24px' }}>
           {t('sign_up.socials_main_heading')}
-        </UITypography>
+        </UiTypography>
         <SocialList />
       </Box>
     </Box>

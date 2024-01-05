@@ -3,8 +3,8 @@ import React from 'react';
 
 import NotchCameraImage from '../../../assets/img/AboutVilna/Notch&Camera.svg';
 import MainImageSrc from '../../../assets/img/AboutVilna/Screen.png';
-import MainImage from '../MainImage/MainImage';
-import Notch from '../Notch/Notch';
+import { MainImage } from '../MainImage';
+import { Notch } from '../Notch';
 
 function DeviceImage() {
   return (

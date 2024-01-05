@@ -2,7 +2,7 @@ import { Stack } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import UITypography from '@/components/ui/UITypography/UITypography';
+import { UiTypography } from '@/components/ui';
 
 function PrivacyPolicy() {
   const { t } = useTranslation();
@@ -18,7 +18,7 @@ function PrivacyPolicy() {
           background: '#F4F5F6',
         }}
       >
-        <UITypography variant="medium16">{t('footer.privacy')}</UITypography>
+        <UiTypography variant="medium16">{t('footer.privacy')}</UiTypography>
       </Stack>
       <Stack
         alignItems="center"
@@ -29,9 +29,9 @@ function PrivacyPolicy() {
           background: '#F4F5F6',
         }}
       >
-        <UITypography variant="medium16">
+        <UiTypography variant="medium16">
           {t('footer.usagePolicy')}
-        </UITypography>
+        </UiTypography>
       </Stack>
     </>
   );

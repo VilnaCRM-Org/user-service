@@ -1,4 +1,4 @@
-import '../styles/globals.css';
+import '../styles/global.css';
 import * as Sentry from '@sentry/react';
 import React, { useEffect } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -30,16 +30,19 @@ function MyApp({ Component }) {
       mode: 'light',
     },
     breakpoints: {
-      values: { xs: 375, sm: 640, md: 768, lg: 1024, xl: 1440 },
+      values: { xs: 375.98, sm: 640.98, md: 767.98, lg: 1023.98, xl: 1439.98 },
     },
     typography: {
-      fontFamily: ['Golos'],
+      fontFamily: 'Golos',
     },
     components: {
       MuiContainer: {
         styleOverrides: {
           root: {
             '@media (min-width: 23.438rem)': {
+              padding: '0 2rem',
+            },
+            '@media (max-width: 425px)': {
               padding: '0 15px',
             },
             '@media (min-width: 64rem)': {
