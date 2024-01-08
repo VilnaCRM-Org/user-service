@@ -7,18 +7,13 @@ import { labelProps } from './UiLabelType';
 
 const theme = createTheme({});
 
-function UiLabel({ children, sx, errorText, hasError, title }: labelProps) {
+function UiLabel({ children, sx, title }: labelProps) {
   return (
     <ThemeProvider theme={theme}>
       <UiTypography variant="medium14" sx={sx}>
         {title}
       </UiTypography>
       <InputLabel>{children}</InputLabel>
-      {hasError ? (
-        <UiTypography sx={{ color: 'red', pt: '4px' }} variant="medium14">
-          {errorText}
-        </UiTypography>
-      ) : null}
     </ThemeProvider>
   );
 }

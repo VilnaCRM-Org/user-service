@@ -4,4 +4,5 @@ export interface UIInputProps {
   placeholder: string;
   hasError?: FieldError | undefined;
   type?: string;
+  fullWidth?: boolean;
 }

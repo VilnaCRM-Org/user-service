@@ -8,10 +8,12 @@ import { UiTypography } from '@/components/ui';
 
 import { SocialList } from '../SocialList';
 
+import { signUpTextStyles } from './styles';
+
 function SignUpText() {
   const { t } = useTranslation();
   return (
-    <Box maxWidth="561px" sx={{ mt: '136px' }}>
+    <Box maxWidth="561px" sx={signUpTextStyles.textWrapper}>
       <UiTypography variant="h2" sx={{ whiteSpace: 'pre-line', pb: '40px' }}>
         {t('sign_up.main_heading')}
         <UiTypography variant="h2" component="span" sx={{ color: '#1EAEFF' }}>

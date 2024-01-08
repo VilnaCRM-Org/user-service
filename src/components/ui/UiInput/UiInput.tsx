@@ -1,28 +1,38 @@
-import { createTheme, ThemeProvider, TextField } from '@mui/material';
-import React, { forwardRef } from 'react';
-
-import { UIInputProps } from './UiInputType';
+/* eslint-disable react/jsx-props-no-spreading */
+import {
+  createTheme,
+  ThemeProvider,
+  TextField,
+  TextFieldVariants,
+  TextFieldProps,
+} from '@mui/material';
+import React from 'react';
 
 const theme = createTheme({
   components: {
     MuiTextField: {
       styleOverrides: {
         root: {
-          div: {},
+          '.MuiFormHelperText-root.Mui-error': {
+            color: '#DC3939',
+            paddingTop: '4px',
+            fontSize: '14px',
+            fontStyle: 'normal',
+            fontWeight: '500',
+            lineHeight: '18px',
+            margin: '0',
+          },
           fieldSet: {
             border: 'none',
             maxWidth: '460px',
           },
           input: {
+            border: '1px solid #D0D4D8',
             boxSizing: 'border-box',
             padding: '0 28px',
             height: '64px',
             borderRadius: '8px',
-            border: '1px solid  #D0D4D8',
             background: ' #FFF',
-            '&:hover': {
-              border: '1px solid  #969B9D',
-            },
             '&::placeholder': {
               color: '#969B9D',
               fontFamily: 'Inter',
@@ -31,8 +41,6 @@ const theme = createTheme({
               fontWeight: '400',
               lineHeight: '18px',
             },
-            '&:focus': {},
-            '&:active': {},
           },
         },
       },
@@ -40,23 +48,24 @@ const theme = createTheme({
   },
 });
 
-const UiInput = forwardRef<HTMLInputElement, UIInputProps>(
-  ({ placeholder, hasError, ...rest }, ref) => (
-    <ThemeProvider theme={theme}>
-      <TextField
-        ref={ref}
-        placeholder={placeholder}
-        sx={{
-          width: '100%',
-          border: hasError ? '1px solid red' : 'none',
-          borderRadius: hasError ? '8px' : 'none',
-        }}
-        // eslint-disable-next-line react/jsx-props-no-spreading
-        {...rest}
-      />
-    </ThemeProvider>
-  )
-);
+const UiInput = React.forwardRef<
+  HTMLInputElement,
+  {
+    variant?: TextFieldVariants;
+  } & Omit<TextFieldProps, 'variant'>
+>((props, ref) => (
+  <ThemeProvider theme={theme}>
+    <TextField
+      ref={ref}
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...props}
+    />
+  </ThemeProvider>
+));
 
 UiInput.displayName = 'UiInput';
+UiInput.defaultProps = {
+  variant: 'outlined',
+};
+
 export default UiInput;

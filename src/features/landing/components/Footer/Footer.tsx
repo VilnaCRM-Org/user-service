@@ -6,12 +6,12 @@ import Logo from '../../assets/svg/Logo/Logo.svg';
 
 import { CopyrightNoticeAndLinks } from './CopyrightNoticeAndLinks';
 import { PrivacyPolicy } from './PrivacyPolicy';
-import styles from './Styles.module.scss';
+import { footerStyles } from './styles';
 
 function Footer() {
   return (
-    <Stack className={styles.wrapper}>
-      <Box sx={{ paddingTop: '11px' }}>
+    <Stack sx={footerStyles.footerWrapper}>
+      <Box paddingTop="11px">
         <Container>
           <Stack
             direction="row"
@@ -27,7 +27,7 @@ function Footer() {
       <Stack
         alignItems="center"
         direction="row"
-        className={styles.copyrightAndLinksWrapper}
+        sx={footerStyles.copyrightAndLinksWrapper}
       >
         <Container>
           <Stack
@@ -35,7 +35,7 @@ function Footer() {
             justifyContent="space-between"
             alignItems="center"
             ml="5px"
-            mb="8px"
+            mb="4px"
           >
             <CopyrightNoticeAndLinks />
           </Stack>

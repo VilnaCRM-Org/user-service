@@ -5,18 +5,11 @@ import { CardItem } from '@/components/CardItem';
 
 import { UNLIMITED_INTEGRATIONS_CARD_ITEMS } from '../../../utils/constants/constants';
 
-function CardList() {
-  const styles = {
-    grid: {
-      display: 'grid',
-      gridTemplateColumns: { md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
-      marginTop: '2rem',
-      gap: '0.75rem',
-    },
-  };
+import { cardListStyles } from './styles';
 
+function CardList() {
   return (
-    <Grid sx={{ ...styles.grid }}>
+    <Grid sx={cardListStyles.grid}>
       {UNLIMITED_INTEGRATIONS_CARD_ITEMS.map(item => (
         <CardItem item={item} key={item.id} type="Possibilities" />
       ))}

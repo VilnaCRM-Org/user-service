@@ -3,10 +3,11 @@ import React from 'react';
 
 import CardList from './CardList/CardList';
 import { RegistrationText } from './RegistrationText';
+import { possibilitiesStyles } from './styles';
 
 function Possibilities() {
   return (
-    <Box sx={{ mt: '7rem', pb: '56px' }}>
+    <Box sx={possibilitiesStyles.wrapper}>
       <RegistrationText />
       <CardList />
     </Box>

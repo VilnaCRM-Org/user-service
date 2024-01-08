@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components/ui';
 
+import { privacyPolicyStyles } from './styles';
+
 function PrivacyPolicy() {
   const { t } = useTranslation();
 
@@ -12,30 +14,12 @@ function PrivacyPolicy() {
       direction="row"
       gap="8px"
       alignItems="center"
-      sx={{
-        marginRight: '-3px',
-        marginBottom: '5px',
-        flexDirection: { xs: 'column', md: 'row' },
-      }}
+      sx={privacyPolicyStyles.wrapper}
     >
-      <Box
-        sx={{
-          width: '244px',
-          padding: '8px 16px',
-          borderRadius: '8px',
-          background: '#F4F5F6',
-        }}
-      >
+      <Box sx={privacyPolicyStyles.privacy}>
         <UiTypography variant="medium16">{t('footer.privacy')}</UiTypography>
       </Box>
-      <Box
-        sx={{
-          width: '255px',
-          padding: '8px 16px',
-          borderRadius: '8px',
-          background: '#F4F5F6',
-        }}
-      >
+      <Box sx={privacyPolicyStyles.usagePolicy}>
         <UiTypography variant="medium16">
           {t('footer.usagePolicy')}
         </UiTypography>

@@ -11,6 +11,7 @@ import Logo from '../../../assets/svg/Logo/Logo.svg';
 import { DRAWER_SOCIAL_LINKS } from '../../../utils/constants/constants';
 
 import DrawerList from './DrawerList/DrawerList';
+import { drawerStyles } from './styles';
 
 function UiDrawer() {
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
@@ -33,7 +34,7 @@ function UiDrawer() {
           width="23.4375rem"
           textAlign="center"
           role="presentation"
-          sx={{ px: '15px', py: '6px' }}
+          sx={drawerStyles.drawerContent}
         >
           <Stack
             direction="row"
@@ -64,14 +65,7 @@ function UiDrawer() {
             </UiButton>
           </Stack>
           <DrawerList />
-          <Box
-            sx={{
-              border: '1px solid #E1E7EA',
-              py: '18px',
-              borderRadius: '8px',
-              mt: '6px',
-            }}
-          >
+          <Box sx={drawerStyles.gmailWrapper}>
             <Stack
               justifyContent="center"
               alignItems="center"
@@ -83,11 +77,10 @@ function UiDrawer() {
             </Stack>
           </Box>
           <Stack
-            pr="12px"
             justifyContent="center"
             gap="8px"
             flexDirection="row"
-            mt="16px"
+            sx={drawerStyles.linkWrapper}
           >
             {DRAWER_SOCIAL_LINKS.map(({ icon, title, id }) => (
               <Box key={id} sx={{ margin: '12px' }}>

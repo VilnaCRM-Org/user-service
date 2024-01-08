@@ -6,24 +6,25 @@ import { UiTypography } from '@/components/ui';
 
 import { NavList } from '../NavList';
 
+import { copyrightNoticeAndLinksStyles } from './styles';
+
 function CopyrightNoticeAndLinks() {
   const { t } = useTranslation();
 
   return (
     <>
-      <UiTypography variant="medium15" sx={{ color: '#404142' }}>
+      <UiTypography
+        variant="medium15"
+        sx={copyrightNoticeAndLinksStyles.copyright}
+      >
         {t('footer.copyright')}
       </UiTypography>
       <Stack direction="row" gap="14px" alignItems="center">
-        <Box
-          sx={{
-            padding: '8px 16px',
-            borderRadius: '8px',
-            background: '#fff',
-            border: '1px solid  #D0D4D8',
-          }}
-        >
-          <UiTypography variant="medium15" sx={{ color: '#1B2327' }}>
+        <Box sx={copyrightNoticeAndLinksStyles.gmailWrapper}>
+          <UiTypography
+            variant="medium15"
+            sx={copyrightNoticeAndLinksStyles.gmailText}
+          >
             info@vilnacrm.com
           </UiTypography>
         </Box>

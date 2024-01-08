@@ -4,21 +4,16 @@ import { useTranslation } from 'react-i18next';
 
 import { UiButton, UiTypography } from '@/components/ui';
 
+import { textInfoStyles } from './styles';
+
 function TextInfo() {
   const { t } = useTranslation();
   return (
     <Stack maxWidth="43.813rem" mb="50px">
-      <UiTypography variant="h1" sx={{ textAlign: 'center' }}>
+      <UiTypography variant="h1" sx={textInfoStyles.title}>
         {t('about_vilna.heading_main')}
       </UiTypography>
-      <UiTypography
-        variant="bodyText18"
-        sx={{
-          mt: '1rem',
-          textAlign: 'center',
-          mb: '39px',
-        }}
-      >
+      <UiTypography variant="bodyText18" sx={textInfoStyles.text}>
         {t('about_vilna.text_main')}
       </UiTypography>
       <UiButton variant="contained" size="medium">

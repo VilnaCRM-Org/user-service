@@ -34,6 +34,7 @@ const theme = createTheme({
           bold22: 'p',
           demi18: 'p',
           button: 'p',
+          mobileText: 'p',
         },
       },
     },

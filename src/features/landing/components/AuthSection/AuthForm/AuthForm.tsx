@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import Image from 'next/image';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -9,6 +10,10 @@ import {
   UiLabel,
   UiTypography,
 } from '@/components/ui';
+
+import Images from '../../../assets/svg/auth-section/image.svg';
+
+import { authFormStyles } from './styles';
 
 export interface RegisterItem {
   FullName: string;
@@ -63,91 +68,101 @@ function AuthForm() {
   };
 
   return (
-    <Box
-      sx={{
-        padding: '36px 40px',
-        mt: '65px',
-        maxWidth: '502px',
-        borderRadius: '32px 32px 0px 0px',
-        border: '1px solid  #E1E7EA',
-        background: '#FFF',
-        boxShadow: '1px 1px 41px 0px rgba(59, 68, 80, 0.05)',
-      }}
-    >
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <UiTypography variant="h4" sx={{ mb: '32px' }}>
-          Або зареєструйтеся на сайті:
-        </UiTypography>
-        <UiLabel
-          sx={{ mt: '22px', paddingBottom: '9px' }}
-          title="Ваше ім’я та прізвище"
-          errorText={
-            errors.FullName?.message || 'Виникла помилка. Перевірте ще раз'
-          }
-          hasError={errors.FullName}
-        >
-          <UiInput
+    <Box sx={authFormStyles.formWrapper}>
+      <Image
+        src={Images}
+        alt="back"
+        width={784}
+        height={656}
+        style={{
+          position: 'absolute',
+          left: '-40%',
+          bottom: '0%',
+          zIndex: '1',
+        }}
+      />
+      <Box sx={authFormStyles.formContent}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <UiTypography variant="h4" sx={{ mb: '32px' }}>
+            Або зареєструйтеся на сайті:
+          </UiTypography>
+          <UiLabel
+            sx={{ mt: '22px', paddingBottom: '9px' }}
+            title="Ваше ім’я та прізвище"
+            errorText={
+              errors.FullName?.message || 'Виникла помилка. Перевірте ще раз'
+            }
             hasError={errors.FullName}
-            placeholder="Михайло Светський"
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...register('FullName', {
-              required: true,
-              validate: validateFullName,
-              minLength: 2,
-              maxLength: 50,
-            })}
-          />
-        </UiLabel>
-        <UiLabel
-          sx={{ mt: '22px', paddingBottom: '9px' }}
-          title="E-mail"
-          errorText={
-            errors.Email?.message || 'Виникла помилка. Перевірте ще раз'
-          }
-          hasError={errors.Email}
-        >
-          <UiInput
+          >
+            <UiInput
+              fullWidth
+              error={!!errors.FullName}
+              helperText={errors.FullName?.message}
+              placeholder="Михайло Светський"
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              {...register('FullName', {
+                required: true,
+                validate: validateFullName,
+                minLength: 2,
+                maxLength: 50,
+              })}
+            />
+          </UiLabel>
+          <UiLabel
+            sx={{ mt: '22px', paddingBottom: '9px' }}
+            title="E-mail"
+            errorText={
+              errors.Email?.message || 'Виникла помилка. Перевірте ще раз'
+            }
             hasError={errors.Email}
-            placeholder="vilnaCRM@gmail.com"
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...register('Email', {
-              required: true,
-              validate: validateEmail,
-            })}
-          />
-        </UiLabel>
-        <UiLabel
-          sx={{ mt: '22px', paddingBottom: '9px' }}
-          title="Пароль"
-          errorText={
-            errors.Password?.message || 'Виникла помилка. Перевірте ще раз'
-          }
-          hasError={errors.Password}
-        >
-          <UiInput
+          >
+            <UiInput
+              fullWidth
+              error={!!errors.Email?.message || false}
+              helperText={errors.Email?.message}
+              placeholder="vilnaCRM@gmail.com"
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              {...register('Email', {
+                required: true,
+                validate: validateEmail,
+              })}
+            />
+          </UiLabel>
+          <UiLabel
+            sx={{ mt: '22px', paddingBottom: '9px' }}
+            title="Пароль"
+            errorText={
+              errors.Password?.message || 'Виникла помилка. Перевірте ще раз'
+            }
             hasError={errors.Password}
-            type="password"
-            placeholder="Створіть пароль"
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...register('Password', {
-              required: true,
-              validate: validatePassword,
-            })}
-          />
-        </UiLabel>
+          >
+            <UiInput
+              fullWidth
+              error={!!errors.Password?.message || false}
+              helperText={errors.Password?.message}
+              type="password"
+              placeholder="Створіть пароль"
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              {...register('Password', {
+                required: true,
+                validate: validatePassword,
+              })}
+            />
+          </UiLabel>
 
-        <UiCheckbox
-          label={
-            <UiTypography variant="medium14">
-              Я прочитав та приймаю Політику Конфіденційності та Політику
-              Використання сервісу VilnaCRM
-            </UiTypography>
-          }
-        />
-        <UiButton variant="contained" size="medium" type="submit">
-          Реєєстрація
-        </UiButton>
-      </form>
+          <UiCheckbox
+            label={
+              <UiTypography variant="medium14">
+                Я прочитав та приймаю Політику Конфіденційності та Політику
+                Використання сервісу VilnaCRM
+              </UiTypography>
+            }
+          />
+          <UiButton variant="contained" size="medium" type="submit">
+            Реєєстрація
+          </UiButton>
+        </form>
+      </Box>
     </Box>
   );
 }

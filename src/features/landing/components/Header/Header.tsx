@@ -9,6 +9,7 @@ import Logo from '../../assets/svg/Logo/Logo.svg';
 import { AuthenticationButtons } from './AuthenticationButtons';
 import { Drawer } from './Drawer';
 import { NavLink } from './NavLink';
+import { headerStyles } from './styles';
 
 const links = [
   { id: 1, value: 'Переваги' },
@@ -22,15 +23,7 @@ function Header() {
   const tablet = useMediaQuery(theme.breakpoints.up('lg'));
 
   return (
-    <AppBar
-      position="static"
-      sx={{
-        backgroundColor: 'white',
-        boxShadow: 'none',
-        position: 'fixed',
-        zIndex: 1000,
-      }}
-    >
+    <AppBar position="static" sx={headerStyles.headerWrapper}>
       <UiToolbar>
         <Image src={Logo} alt="Header Image" width={131} height={44} />
         {tablet && (

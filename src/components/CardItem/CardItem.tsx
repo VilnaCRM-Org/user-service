@@ -3,7 +3,7 @@ import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import UITypography from '../ui/UiTypography/UiTypography';
+import UiTypography from '../ui/UiTypography/UiTypography';
 
 interface CardItemInterface {
   item: {
@@ -48,15 +48,17 @@ function CardItem({ item, type }: CardItemInterface) {
             />
           </Box>
           <Stack maxWidth="294px">
-            <UITypography
+            <UiTypography
               variant="h6"
               sx={{ pt: { md: '0', lg: '32px', xl: '32px' } }}
             >
               {t(item.title)}
-            </UITypography>
-            <UITypography variant="bodyText16" sx={{ mt: '10px' }}>
-              {t(item.text)}
-            </UITypography>
+            </UiTypography>
+            <UiTypography variant="bodyText16" sx={{ mt: '10px' }}>
+              {t(item.text, {
+                link: <a style={{ color: 'blue' }}>звичні сервіси</a>,
+              })}
+            </UiTypography>
           </Stack>
         </Stack>
       )}
@@ -80,12 +82,14 @@ function CardItem({ item, type }: CardItemInterface) {
                 width={70}
                 height={70}
               />
-              <UITypography variant="h5" sx={{ pt: '12px' }}>
+              <UiTypography variant="h5" sx={{ pt: '12px' }}>
                 {t(item.title)}
-              </UITypography>
-              <UITypography variant="bodyText18" sx={{ mt: '10px' }}>
-                {t(item.text)}
-              </UITypography>
+              </UiTypography>
+              <UiTypography
+                variant="bodyText18"
+                sx={{ mt: '10px' }}
+                dangerouslySetInnerHTML={{ __html: t(item.text) || '' }}
+              />
             </Grid>
           ) : (
             <Box
@@ -109,10 +113,10 @@ function CardItem({ item, type }: CardItemInterface) {
                   width={50}
                   height={50}
                 />
-                <UITypography variant="demi18" sx={{ pt: '16px', pb: '12px' }}>
+                <UiTypography variant="demi18" sx={{ pt: '16px', pb: '12px' }}>
                   {t(item.title)}
-                </UITypography>
-                <UITypography variant="bodyMobile">{t(item.text)}</UITypography>
+                </UiTypography>
+                <UiTypography variant="bodyMobile">{t(item.text)}</UiTypography>
               </Grid>
             </Box>
           )}
