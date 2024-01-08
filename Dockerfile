@@ -72,7 +72,6 @@ COPY --link infrastructure/supervisor/supervisord.conf /etc/supervisor/superviso
 
 ENTRYPOINT ["docker-entrypoint"]
 CMD ["sh", "-c", "php-fpm & supervisord -c /etc/supervisor/supervisord.conf"]
-# & supervisorctl start messenger-consume:*
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
 ENV COMPOSER_ALLOW_SUPERUSER=1

@@ -7,7 +7,8 @@ namespace App\User\Infrastructure\User;
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\Command\SignUpCommand;
-use App\User\Infrastructure\MutationInputValidator;
+use App\User\Application\MutationInput\CreateUserMutationInput;
+use App\User\Application\MutationInput\MutationInputValidator;
 
 class RegisterUserMutationResolver implements MutationResolverInterface
 {
@@ -19,9 +20,11 @@ class RegisterUserMutationResolver implements MutationResolverInterface
 
     public function __invoke(?object $item, array $context): ?object
     {
-        $this->validator->validate($item);
+        $args = $context['args']['input'];
 
-        $command = new SignUpCommand($item->email, $item->initials, $item->password);
+        $this->validator->validate($args, new CreateUserMutationInput());
+
+        $command = new SignUpCommand($args['email'], $args['initials'], $args['password']);
         $this->commandBus->dispatch($command);
 
         return $command->getResponse()->getCreatedUser();

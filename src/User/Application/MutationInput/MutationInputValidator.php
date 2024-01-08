@@ -1,6 +1,8 @@
 <?php
 
-namespace App\User\Infrastructure;
+declare(strict_types=1);
+
+namespace App\User\Application\MutationInput;
 
 use ApiPlatform\Symfony\Validator\Exception\ValidationException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -8,13 +10,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class MutationInputValidator
 {
     public function __construct(
-        private ValidatorInterface $validator)
-    {
+        private ValidatorInterface $validator
+    ) {
     }
 
-    public function validate(object $item)
+    public function validate(array $contextArgs, MutationInput $input)
     {
-        $errors = $this->validator->validate($item);
+        $errors = $this->validator->validate($contextArgs, $input->getConstraints());
 
         if (count($errors) > 0) {
             throw new ValidationException($errors);

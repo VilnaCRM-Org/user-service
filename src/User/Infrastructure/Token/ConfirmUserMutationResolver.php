@@ -7,7 +7,8 @@ namespace App\User\Infrastructure\Token;
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\Command\ConfirmUserCommand;
-use App\User\Application\DTO\Token\ConfirmUserDto;
+use App\User\Application\MutationInput\ConfirmUserMutationInput;
+use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
 
@@ -16,16 +17,18 @@ class ConfirmUserMutationResolver implements MutationResolverInterface
     public function __construct(
         private TokenRepositoryInterface $tokenRepository,
         private CommandBus $commandBus,
-        private UserRepositoryInterface $userRepository
+        private UserRepositoryInterface $userRepository,
+        private MutationInputValidator $validator
     ) {
     }
 
-    /**
-     * @param ConfirmUserDto $item
-     */
     public function __invoke(?object $item, array $context): ?object
     {
-        $token = $this->tokenRepository->findByTokenValue($item->token);
+        $args = $context['args']['input'];
+
+        $this->validator->validate($args, new ConfirmUserMutationInput());
+
+        $token = $this->tokenRepository->findByTokenValue($args['token']);
         $user = $this->userRepository->find($token->getUserID());
 
         $this->commandBus->dispatch(new ConfirmUserCommand($token));

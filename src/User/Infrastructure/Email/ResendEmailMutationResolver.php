@@ -7,8 +7,8 @@ namespace App\User\Infrastructure\Email;
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\Command\SendConfirmationEmailCommand;
-use App\User\Application\DTO\Email\RetryDto;
 use App\User\Domain\Aggregate\ConfirmationEmail;
+use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
@@ -23,11 +23,11 @@ class ResendEmailMutationResolver implements MutationResolverInterface
     }
 
     /**
-     * @param RetryDto $item
+     * @param User $item
      */
     public function __invoke(?object $item, array $context): ?object
     {
-        $user = $this->userRepository->find($item->userId);
+        $user = $item;
         try {
             $token = $this->tokenRepository->findByUserId((string) $user->getId());
         } catch (TokenNotFoundException) {

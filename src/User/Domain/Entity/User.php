@@ -17,12 +17,9 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\User\Application\DTO\Email\RetryDto;
-use App\User\Application\DTO\Email\RetryMutationDto;
-use App\User\Application\DTO\Token\ConfirmUserDto;
 use App\User\Application\DTO\User\UserInputDto;
 use App\User\Application\DTO\User\UserPatchDto;
 use App\User\Application\DTO\User\UserPutDto;
-use App\User\Application\DTO\User\UserUpdateMutationDto;
 use App\User\Infrastructure\Email\ResendEmailMutationResolver;
 use App\User\Infrastructure\Email\ResendEmailProcessor;
 use App\User\Infrastructure\Event\EmailChangedEvent;
@@ -70,17 +67,37 @@ use Symfony\Component\Uid\Uuid;
 )]
 #[Mutation(
     resolver: ConfirmUserMutationResolver::class,
-    input: ConfirmUserDto::class,
+    extraArgs: ['token' => ['type' => 'String!']],
+    denormalizationContext: ['groups' => []],
+    deserialize: false,
     name: 'confirm'
 )]
-#[Mutation(resolver: RegisterUserMutationResolver::class, input: UserInputDto::class, name: 'create')]
+#[Mutation(
+    resolver: RegisterUserMutationResolver::class,
+    extraArgs: [
+        'email' => ['type' => 'String!'],
+        'initials' => ['type' => 'String!'],
+        'password' => ['type' => 'String!'], ],
+    denormalizationContext: ['groups' => []],
+    deserialize: false,
+    name: 'create'
+)]
 #[Mutation(
     resolver: UserUpdateMutationResolver::class,
-    input: UserUpdateMutationDto::class,
+    extraArgs: ['id' => ['type' => 'ID!'], 'newPassword' => ['type' => 'String'], 'password' => ['type' => 'String!'],
+    'email' => ['type' => 'String'], 'initials' => ['type' => 'String'], ],
+    denormalizationContext: ['groups' => []],
+    deserialize: false,
+    write: false,
     name: 'update'
 )]
 #[DeleteMutation(normalizationContext: ['groups' => ['deleteMutationOutput']], name: 'delete')]
-#[Mutation(resolver: ResendEmailMutationResolver::class, input: RetryMutationDto::class, name: 'resendEmailTo')]
+#[Mutation(
+    resolver: ResendEmailMutationResolver::class,
+    extraArgs: ['id' => ['type' => 'ID!']],
+    denormalizationContext: ['groups' => []],
+    name: 'resendEmailTo'
+)]
 #[Query]
 #[QueryCollection]
 class User implements UserInterface, PasswordAuthenticatedUserInterface

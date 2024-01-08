@@ -31,8 +31,14 @@ You can clone this repository locally or use Github functionality "Use this temp
 
 Install the latest [docker](https://docs.docker.com/engine/install/) and [docker compose](https://docs.docker.com/compose/install/)
 
-Use `make` command to set up project and automatically install all needed dependencies
+Use `make` command to set up project
 > make start
+
+Use `make` command to automatically install all needed dependencies
+> make install
+
+Use `make` command to run migrations
+> make doctrine-migrations-migrate
 
 Go to browser and open the link below
 > https://localhost/api/docs

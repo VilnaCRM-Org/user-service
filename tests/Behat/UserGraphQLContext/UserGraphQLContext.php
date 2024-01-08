@@ -97,6 +97,7 @@ class UserGraphQLContext implements Context
      */
     public function updatingUser(string $id, string $email, string $oldPassword): void
     {
+        $id = $this->GRAPHQL_ID_PREFIX.$id;
         $this->queryName = 'updateUser';
         $this->graphQLInput = new UpdateUserGraphQLMutationInput($id, $email, $oldPassword);
 
@@ -119,6 +120,7 @@ class UserGraphQLContext implements Context
      */
     public function resendEmailToUser(string $id): void
     {
+        $id = $this->GRAPHQL_ID_PREFIX.$id;
         $this->queryName = 'resendEmailToUser';
         $this->graphQLInput = new ResendEmailToUserGraphQLMutationInput($id);
 
@@ -166,6 +168,7 @@ class UserGraphQLContext implements Context
      */
     public function mutationResponseShouldContainRequestedFields(): void
     {
+        error_log($this->response->getContent(), -1);
         $userData = json_decode($this->response->getContent(), true)['data'][$this->queryName]['user'];
 
         foreach ($this->responseContent as $fieldName) {
@@ -181,7 +184,6 @@ class UserGraphQLContext implements Context
      */
     public function queryResponseShouldContainRequestedFields(): void
     {
-        error_log($this->response->getContent());
         $userData = json_decode($this->response->getContent(), true)['data'][$this->queryName];
 
         foreach ($this->responseContent as $item) {

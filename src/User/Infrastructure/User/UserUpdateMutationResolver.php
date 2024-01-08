@@ -7,31 +7,31 @@ namespace App\User\Infrastructure\User;
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\Command\UpdateUserCommand;
-use App\User\Domain\UserRepositoryInterface;
-use App\User\Infrastructure\MutationInputValidator;
+use App\User\Application\MutationInput\MutationInputValidator;
+use App\User\Application\MutationInput\UpdateUserMutationInput;
 
 class UserUpdateMutationResolver implements MutationResolverInterface
 {
     public function __construct(
-        private UserRepositoryInterface $userRepository,
         private CommandBus $commandBus,
-        private MutationInputValidator $validator
+        private MutationInputValidator $validator,
     ) {
     }
 
-    public function __invoke(?object $item, array $context): ?object
+    public function __invoke(?object $item, array $context): object
     {
-        $this->validator->validate($item);
+        $args = $context['args']['input'];
 
-        $userId = $item->userId;
-        $user = $this->userRepository->find($userId);
+        $this->validator->validate($args, new UpdateUserMutationInput($args));
 
-        $newEmail = $item->email ?? $user->getEmail();
-        $newInitials = $item->initials ?? $user->getInitials();
-        $newPassword = $item->newPassword ?? $item->oldPassword;
+        $user = $item;
+
+        $newEmail = $args['email'] ?? $user->getEmail();
+        $newInitials = $args['initials'] ?? $user->getInitials();
+        $newPassword = $args['newPassword'] ?? $args['password'];
 
         $this->commandBus->dispatch(
-            new UpdateUserCommand($user, $newEmail, $newInitials, $newPassword, $item->oldPassword));
+            new UpdateUserCommand($user, $newEmail, $newInitials, $newPassword, $args['password']));
 
         return $user;
     }
