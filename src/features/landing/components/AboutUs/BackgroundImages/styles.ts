@@ -13,5 +13,10 @@ export const backgroundImagesStyles = {
     left: '50%',
     top: { md: '4%', xl: '11%' },
     transform: 'translateX(-50%)',
+    '@media (max-width: 639.98px)': {
+      left: '41%',
+      top: '-5%',
+      width: '530px',
+    },
   },
 };

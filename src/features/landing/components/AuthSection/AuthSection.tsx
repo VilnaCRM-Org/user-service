@@ -1,14 +1,13 @@
 import { Box, Container, Stack } from '@mui/material';
 import React from 'react';
 
-import { aboutUsStyles } from '../AboutUs/styles';
-
 import { AuthForm } from './AuthForm';
 import { SignUpText } from './SignUpText';
+import { authSectionStyles } from './styles';
 
 function AuthSection() {
   return (
-    <Box sx={aboutUsStyles.wrapper}>
+    <Box sx={authSectionStyles.wrapper}>
       <Container>
         <Stack direction="row" justifyContent="space-between">
           <SignUpText />

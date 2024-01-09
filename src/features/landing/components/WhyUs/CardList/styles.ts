@@ -10,7 +10,6 @@ export const cardListStyles = {
       lg: 'repeat(2, minmax(342px, auto))',
       xl: 'repeat(2, minmax(342px, auto))',
     },
-
     marginTop: '2.5rem',
     gap: '0.813rem',
   },

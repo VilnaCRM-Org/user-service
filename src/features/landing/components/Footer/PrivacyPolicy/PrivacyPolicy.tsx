@@ -10,17 +10,14 @@ function PrivacyPolicy() {
   const { t } = useTranslation();
 
   return (
-    <Stack
-      direction="row"
-      gap="8px"
-      alignItems="center"
-      sx={privacyPolicyStyles.wrapper}
-    >
+    <Stack direction="row" alignItems="center" sx={privacyPolicyStyles.wrapper}>
       <Box sx={privacyPolicyStyles.privacy}>
-        <UiTypography variant="medium16">{t('footer.privacy')}</UiTypography>
+        <UiTypography variant="medium16" sx={{ color: '#969B9D' }}>
+          {t('footer.privacy')}
+        </UiTypography>
       </Box>
       <Box sx={privacyPolicyStyles.usagePolicy}>
-        <UiTypography variant="medium16">
+        <UiTypography variant="medium16" sx={{ color: '#969B9D' }}>
           {t('footer.usagePolicy')}
         </UiTypography>
       </Box>

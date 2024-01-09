@@ -1,5 +1,3 @@
-import PhoneMainImage from '../../../assets/img/AboutVilna/iphone_picture.png';
-
 export const deviceImageStyles = {
   wrapper: {
     position: 'relative',
@@ -20,7 +18,7 @@ export const deviceImageStyles = {
     '@media (max-width: 639.98px)': {
       borderRadius: '24px',
       height: '284px',
-      top: '11%',
+      top: '13%',
     },
   },
   screenBorder: {
@@ -30,13 +28,11 @@ export const deviceImageStyles = {
     borderTopRightRadius: '30px',
     borderTopLeftRadius: '30px',
     overflow: 'hidden',
+
     '@media (max-width: 639.98px)': {
-      backgroundImage: `url(${PhoneMainImage.src})`,
-      backgroundSize: 'contain',
-      backgroundRepeat: 'no-repeat',
-      marginBottom: '-140px',
-      width: '226.875px',
-      height: '458.74px',
+      border: 'none',
+      borderBottom: 'none',
+      marginBottom: '-130px',
     },
   },
   screenBackground: {
@@ -46,5 +42,13 @@ export const deviceImageStyles = {
     backgroundColor: '#1A1C1E',
     padding: '12px',
     overflow: 'hidden',
+    '@media (max-width: 639.98px)': {
+      padding: '6px',
+      border: '4px solid #444',
+      borderRadius: '36px',
+      backgroundColor: '#000',
+      margin: '0 auto',
+      overflow: 'hidden',
+    },
   },
 };

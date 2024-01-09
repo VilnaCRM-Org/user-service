@@ -2,6 +2,8 @@ import { Box } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 
+import { navLinkStyles } from './styles';
+
 // interface INavLink {
 //   id: string;
 //   icon: string;
@@ -13,7 +15,7 @@ import React from 'react';
 
 function NavLink({ item }: any) {
   return (
-    <Box margin="10px">
+    <Box sx={navLinkStyles.navLink}>
       <Image src={item.icon} alt={item.title} width={20} height={20} />
     </Box>
   );
