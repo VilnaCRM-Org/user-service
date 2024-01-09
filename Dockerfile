@@ -48,6 +48,7 @@ RUN set -eux; \
         pdo_mysql \
         redis \
         openssl \
+        xsl \
     ;
 
 ###> recipes ###

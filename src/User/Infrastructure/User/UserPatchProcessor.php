@@ -11,6 +11,7 @@ use App\User\Application\Command\UpdateUserCommand;
 use App\User\Application\DTO\User\UserPutDto;
 use App\User\Domain\Entity\User;
 use App\User\Domain\UserRepositoryInterface;
+use App\User\Infrastructure\Exception\UserNotFoundException;
 
 /**
  * @implements ProcessorInterface<User>
@@ -29,7 +30,7 @@ class UserPatchProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         $userId = $uriVariables['id'];
-        $user = $this->userRepository->find((string) $userId);
+        $user = $this->userRepository->find((string) $userId) ?? throw new UserNotFoundException();
 
         $newEmail = $data->email ?? $user->getEmail();
         $newInitials = $data->initials ?? $user->getInitials();

@@ -10,5 +10,5 @@ interface UserRepositoryInterface
 {
     public function save(User $user): void;
 
-    public function find(string $userID): User;
+    public function find(string $userID): ?User;
 }

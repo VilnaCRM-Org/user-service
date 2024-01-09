@@ -7,7 +7,6 @@ namespace App\User\Infrastructure\Repository;
 use App\User\Domain\Entity\User;
 use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\DuplicateEmailException;
-use App\User\Infrastructure\Exception\UserNotFoundException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -27,14 +26,8 @@ final readonly class MariaDBUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function find(string $userID): User
+    public function find(string $userID): ?User
     {
-        $user = $this->entityManager->find(User::class, $userID);
-
-        if (!$user) {
-            throw new UserNotFoundException();
-        }
-
-        return $user;
+        return $this->entityManager->find(User::class, $userID);
     }
 }

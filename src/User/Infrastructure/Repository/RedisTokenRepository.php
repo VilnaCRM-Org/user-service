@@ -6,7 +6,6 @@ namespace App\User\Infrastructure\Repository;
 
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\TokenRepositoryInterface;
-use App\User\Infrastructure\Exception\TokenNotFoundException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 
@@ -35,30 +34,26 @@ class RedisTokenRepository implements TokenRepositoryInterface
         $this->redisAdapter->save($cacheItem);
     }
 
-    public function findByTokenValue(string $tokenValue): ConfirmationToken
+    public function findByTokenValue(string $tokenValue): ?ConfirmationToken
     {
         $key = self::TOKEN_VALUE_PREFIX.$tokenValue;
 
         $cacheItem = $this->redisAdapter->getItem($key);
         $serializedToken = $cacheItem->get();
 
-        if (null !== $serializedToken) {
-            return $this->serializer->deserialize($serializedToken, ConfirmationToken::class, 'json');
-        }
-        throw new TokenNotFoundException();
+        return $serializedToken ? $this->serializer->deserialize(
+            $serializedToken, ConfirmationToken::class, 'json') : null;
     }
 
-    public function findByUserId(string $userId): ConfirmationToken
+    public function findByUserId(string $userId): ?ConfirmationToken
     {
         $key = self::USER_ID_PREFIX.$userId;
 
         $cacheItem = $this->redisAdapter->getItem($key);
         $serializedToken = $cacheItem->get();
 
-        if (null !== $serializedToken) {
-            return $this->serializer->deserialize($serializedToken, ConfirmationToken::class, 'json');
-        }
-        throw new TokenNotFoundException();
+        return $serializedToken ? $this->serializer->deserialize(
+            $serializedToken, ConfirmationToken::class, 'json') : null;
     }
 
     public function delete(ConfirmationToken $token): void

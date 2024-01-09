@@ -1,0 +1,9 @@
+email:
+  password:
+    changed:
+      subject: 'Password Change Notification'
+      text: 'Your account password has been updated. If you made this change, no action is needed. 
+            If not, or if you have concerns, contact our support team '
+  confirm:
+    subject: 'VilnaCRM email confirmation'
+    text: 'Your email confirmation token - { tokenValue }'

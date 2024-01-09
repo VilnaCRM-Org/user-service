@@ -7,7 +7,6 @@ use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\DuplicateEmailException;
-use App\User\Infrastructure\Exception\UserNotFoundException;
 use Behat\Behat\Context\Context;
 use Faker\Factory;
 use Faker\Generator;
@@ -60,12 +59,14 @@ class UserContext implements Context
      */
     public function userWithIdExists(string $id): void
     {
-        try {
-            $this->userRepository->find($id);
-        } catch (UserNotFoundException) {
-            $user = $this->userFactory->create($this->faker->email, $this->faker->name, $this->faker->password, Uuid::fromString($id));
-            $this->userRepository->save($user);
-        }
+        $user = $this->userRepository->find($id) ??
+            $this->userFactory->create(
+                $this->faker->email,
+                $this->faker->name,
+                $this->faker->password,
+                Uuid::fromString($id)
+            );
+        $this->userRepository->save($user);
     }
 
     /**
@@ -73,22 +74,15 @@ class UserContext implements Context
      */
     public function userWithIdAndPasswordExists(string $id, string $password): void
     {
-        try {
-            $user = $this->userRepository->find($id);
-            if (!$this->passwordHasher->isPasswordValid($user, $password)) {
-                throw new UserNotFoundException();
-            }
-        } catch (UserNotFoundException) {
-            $user = $this->userFactory->
-            create($this->faker->email, $this->faker->name, $password, Uuid::fromString($id));
+        $user = $this->userRepository->find($id) ?? $this->userFactory->
+        create($this->faker->email, $this->faker->name, $password, Uuid::fromString($id));
 
-            $hashedPassword = $this->passwordHasher->hashPassword(
-                $user,
-                $password
-            );
-            $user->setPassword($hashedPassword);
+        $hashedPassword = $this->passwordHasher->hashPassword(
+            $user,
+            $password
+        );
+        $user->setPassword($hashedPassword);
 
-            $this->userRepository->save($user);
-        }
+        $this->userRepository->save($user);
     }
 }

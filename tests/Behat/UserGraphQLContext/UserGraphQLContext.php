@@ -168,7 +168,6 @@ class UserGraphQLContext implements Context
      */
     public function mutationResponseShouldContainRequestedFields(): void
     {
-        error_log($this->response->getContent(), -1);
         $userData = json_decode($this->response->getContent(), true)['data'][$this->queryName]['user'];
 
         foreach ($this->responseContent as $fieldName) {

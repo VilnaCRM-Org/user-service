@@ -145,6 +145,6 @@ Feature: User Operations
     Then the response status code should be 200
 
   Scenario: Confirming user with expired token
+    Given confirming user with token "expiredToken"
     When PATCH request is send to "/api/users/confirm"
-    And confirming user with token "expiredToken"
     Then the response status code should be 404

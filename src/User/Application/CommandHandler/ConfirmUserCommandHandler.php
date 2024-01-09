@@ -8,6 +8,7 @@ use App\Shared\Domain\Bus\Command\CommandHandler;
 use App\Shared\Domain\Bus\Event\EventBus;
 use App\User\Application\Command\ConfirmUserCommand;
 use App\User\Domain\UserRepositoryInterface;
+use App\User\Infrastructure\Exception\UserNotFoundException;
 
 class ConfirmUserCommandHandler implements CommandHandler
 {
@@ -21,7 +22,7 @@ class ConfirmUserCommandHandler implements CommandHandler
     {
         $token = $command->getToken();
 
-        $user = $this->userRepository->find($token->getUserID());
+        $user = $this->userRepository->find($token->getUserID()) ?? throw new UserNotFoundException();
         $this->eventBus->publish($user->confirm($token));
 
         $this->userRepository->save($user);

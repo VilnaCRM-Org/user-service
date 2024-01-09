@@ -328,6 +328,9 @@
             "config/packages/validator.yaml"
         ]
     },
+    "twig/extra-bundle": {
+        "version": "v3.8.0"
+    },
     "zenstruck/messenger-test": {
         "version": "1.9",
         "recipe": {

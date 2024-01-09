@@ -12,8 +12,7 @@ use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\TokenRepositoryInterface;
 use App\User\Domain\UserRepositoryInterface;
-use App\User\Infrastructure\Exception\TokenNotFoundException;
-use App\User\Infrastructure\Exception\UserTimedOutException;
+use App\User\Infrastructure\Exception\UserNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -28,32 +27,15 @@ class ResendEmailProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        $user = $this->userRepository->find((string) $uriVariables['id']);
-        try {
-            $token = $this->tokenRepository->findByUserId((string) $user->getId());
-        } catch (TokenNotFoundException) {
-            $token = $this->tokenFactory->create((string) $user->getId());
-        }
-        if ($token->getAllowedToSendAfter() > new \DateTime()) {
-            throw new UserTimedOutException($token->getAllowedToSendAfter());
-        }
-        $datetime = new \DateTime();
-        switch ($token->getTimesSent()) {
-            case 1:
-                $token->setAllowedToSendAfter($datetime->modify('+1 minute'));
-                break;
-            case 2:
-                $token->setAllowedToSendAfter($datetime->modify('+3 minute'));
-                break;
-            case 3:
-                $token->setAllowedToSendAfter($datetime->modify('+4 minute'));
-                break;
-            case 4:
-                $token->setAllowedToSendAfter($datetime->modify('+24 hours'));
-        }
+        $user = $this->userRepository->find((string) $uriVariables['id']) ?? throw new UserNotFoundException();
+
+        $token = $this->tokenRepository->findByUserId($user->getId()) ?? $this->tokenFactory->create($user->getId());
+
+        $token->send();
+
         $this->commandBus->dispatch(
             new SendConfirmationEmailCommand(new ConfirmationEmail($token, $user)));
 
-        return new Response(status: 200);
+        return new Response();
     }
 }

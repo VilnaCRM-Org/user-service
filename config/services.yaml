@@ -46,6 +46,7 @@ services:
         class: 'App\Shared\Infrastructure\ErrorProvider'
 
     App\User\Domain\Factory\UserFactory:
+    App\User\Domain\Factory\EmailFactory:
     App\User\Domain\Factory\ConfirmationTokenFactory:
         arguments:
             $tokenLength: 10

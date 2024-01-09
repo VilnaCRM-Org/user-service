@@ -10,6 +10,7 @@ use App\Shared\Domain\Bus\Command\CommandBus;
 use App\User\Application\Command\ConfirmUserCommand;
 use App\User\Application\DTO\Token\ConfirmUserDto;
 use App\User\Domain\TokenRepositoryInterface;
+use App\User\Infrastructure\Exception\TokenNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -28,10 +29,10 @@ class ConfirmUserProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        $token = $this->tokenRepository->findByTokenValue($data->token);
+        $token = $this->tokenRepository->findByTokenValue($data->token) ?? throw new TokenNotFoundException();
 
         $this->commandBus->dispatch(new ConfirmUserCommand($token));
 
-        return new Response(status: 200);
+        return new Response();
     }
 }

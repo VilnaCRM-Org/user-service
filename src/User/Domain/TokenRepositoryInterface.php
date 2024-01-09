@@ -10,9 +10,9 @@ interface TokenRepositoryInterface
 {
     public function save(ConfirmationToken $token): void;
 
-    public function findByTokenValue(string $tokenValue): ConfirmationToken;
+    public function findByTokenValue(string $tokenValue): ?ConfirmationToken;
 
-    public function findByUserId(string $userId): ConfirmationToken;
+    public function findByUserId(string $userId): ?ConfirmationToken;
 
     public function delete(ConfirmationToken $token): void;
 }
