@@ -37,9 +37,24 @@ const theme = createTheme({
               color: '#969B9D',
               fontFamily: 'Inter',
               fontSize: '16px',
-              fontDtyle: 'normal',
+              fontStyle: 'normal',
               fontWeight: '400',
               lineHeight: '18px',
+            },
+            '@media (max-width: 1439.98px)': {
+              height: '79px',
+              '&::placeholder': {
+                fontSize: '18px',
+              },
+            },
+            '@media (max-width: 639.98px)': {
+              padding: '0 20px',
+              height: '48px',
+              '&::placeholder': {
+                fontSize: '14px',
+                fontWeight: '500',
+                lineHeight: '18px',
+              },
             },
           },
         },

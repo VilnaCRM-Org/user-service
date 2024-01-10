@@ -83,7 +83,7 @@ function UiDrawer() {
             sx={drawerStyles.linkWrapper}
           >
             {DRAWER_SOCIAL_LINKS.map(({ icon, title, id }) => (
-              <Box key={id} sx={{ margin: '12px' }}>
+              <Box key={id} m="12px">
                 <Image src={icon} alt={title} width={25} height={25} key={id} />
               </Box>
             ))}

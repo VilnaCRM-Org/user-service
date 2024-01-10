@@ -1,5 +1,4 @@
 import { Box } from '@mui/material';
-import Image from 'next/image';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -10,8 +9,6 @@ import {
   UiLabel,
   UiTypography,
 } from '@/components/ui';
-
-import Images from '../../../assets/svg/auth-section/image.svg';
 
 import { authFormStyles } from './styles';
 
@@ -69,25 +66,14 @@ function AuthForm() {
 
   return (
     <Box sx={authFormStyles.formWrapper}>
-      <Image
-        src={Images}
-        alt="back"
-        width={784}
-        height={656}
-        style={{
-          position: 'absolute',
-          left: '-40%',
-          bottom: '0%',
-          zIndex: '1',
-        }}
-      />
+      <Box sx={authFormStyles.backgroundImage} />
       <Box sx={authFormStyles.formContent}>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <UiTypography variant="h4" sx={{ mb: '32px' }}>
+          <UiTypography variant="h4" sx={authFormStyles.formTitle}>
             Або зареєструйтеся на сайті:
           </UiTypography>
           <UiLabel
-            sx={{ mt: '22px', paddingBottom: '9px' }}
+            sx={authFormStyles.labelTitle}
             title="Ваше ім’я та прізвище"
             errorText={
               errors.FullName?.message || 'Виникла помилка. Перевірте ще раз'
@@ -109,7 +95,7 @@ function AuthForm() {
             />
           </UiLabel>
           <UiLabel
-            sx={{ mt: '22px', paddingBottom: '9px' }}
+            sx={authFormStyles.labelTitle}
             title="E-mail"
             errorText={
               errors.Email?.message || 'Виникла помилка. Перевірте ще раз'
@@ -129,7 +115,7 @@ function AuthForm() {
             />
           </UiLabel>
           <UiLabel
-            sx={{ mt: '22px', paddingBottom: '9px' }}
+            sx={authFormStyles.labelTitle}
             title="Пароль"
             errorText={
               errors.Password?.message || 'Виникла помилка. Перевірте ще раз'
@@ -152,15 +138,23 @@ function AuthForm() {
 
           <UiCheckbox
             label={
-              <UiTypography variant="medium14">
+              <UiTypography variant="medium14" sx={authFormStyles.privacyText}>
                 Я прочитав та приймаю Політику Конфіденційності та Політику
                 Використання сервісу VilnaCRM
               </UiTypography>
             }
           />
-          <UiButton variant="contained" size="medium" type="submit">
-            Реєєстрація
-          </UiButton>
+          <Box sx={authFormStyles.buttonWrapper}>
+            <UiButton
+              variant="contained"
+              size="medium"
+              type="submit"
+              fullWidth
+              sx={authFormStyles.button}
+            >
+              Реєєстрація
+            </UiButton>
+          </Box>
         </form>
       </Box>
     </Box>

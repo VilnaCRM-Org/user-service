@@ -16,7 +16,7 @@ function TextInfo() {
       <UiTypography variant="bodyText18" sx={textInfoStyles.text}>
         {t('about_vilna.text_main')}
       </UiTypography>
-      <UiButton variant="contained" size="medium">
+      <UiButton variant="contained" size="medium" sx={textInfoStyles.button}>
         {t('about_vilna.button_main')}
       </UiButton>
     </Stack>

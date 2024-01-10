@@ -1,5 +1,6 @@
 export interface UiButtonProps {
   variant: 'outlined' | 'contained';
+  sx?: object;
   size: 'small' | 'medium' | 'large';
   disabled?: boolean;
   disableElevation?: boolean;

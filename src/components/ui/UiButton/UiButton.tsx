@@ -72,7 +72,7 @@ const theme = createTheme({
             alignSelf: 'center',
             fontFamily: 'Golos',
             fontWeight: '600',
-            fontSize: '1.125rem',
+            fontSize: '15px',
             lineHeight: 'normal',
             '&:hover': {
               backgroundColor: ' #00A3FF',
@@ -83,6 +83,12 @@ const theme = createTheme({
             '&:disabled': {
               backgroundColor: '#E1E7EA',
               color: '#fff',
+            },
+            '@media (max-width: 639.98px)': {
+              fontSize: '15px',
+              fontWeight: '400',
+              lineHeight: '18px',
+              padding: '16px 23px',
             },
           },
         },
@@ -129,10 +135,12 @@ function UiButton({
   href,
   fullWidth,
   type,
+  sx,
 }: UiButtonProps) {
   return (
     <ThemeProvider theme={theme}>
       <Button
+        sx={sx}
         variant={variant}
         size={size}
         disabled={disabled}

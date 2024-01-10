@@ -27,4 +27,10 @@ export const textInfoStyles = {
       lineHeight: '25px',
     },
   },
+  button: {
+    '@media (max-width: 419.98px)': {
+      alignSelf: 'baseline',
+      marginBottom: '22px',
+    },
+  },
 };

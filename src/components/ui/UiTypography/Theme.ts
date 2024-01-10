@@ -9,6 +9,8 @@ const hStyles = {
   color: '#1A1C1E',
   fontFamily: fonts.golos,
   fontWeight: '700',
+  lineHeight: 'normal',
+  letterSpacing: '',
 };
 
 const mediumStyles = {

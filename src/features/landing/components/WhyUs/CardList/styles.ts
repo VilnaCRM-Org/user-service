@@ -12,5 +12,16 @@ export const cardListStyles = {
     },
     marginTop: '2.5rem',
     gap: '0.813rem',
+    '@media (max-width: 639.98px)': {
+      display: 'none',
+    },
+  },
+  gridMobile: {
+    display: 'none',
+    '@media (max-width: 639.98px)': {
+      display: 'grid',
+      marginTop: '24px',
+      gap: '0.813rem',
+    },
   },
 };

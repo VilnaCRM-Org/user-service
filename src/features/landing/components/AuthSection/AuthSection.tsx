@@ -9,7 +9,7 @@ function AuthSection() {
   return (
     <Box sx={authSectionStyles.wrapper}>
       <Container>
-        <Stack direction="row" justifyContent="space-between">
+        <Stack justifyContent="space-between" sx={authSectionStyles.content}>
           <SignUpText />
           <AuthForm />
         </Stack>
