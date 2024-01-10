@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\EventHandler;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriber;
+use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\TokenRepositoryInterface;
-use App\User\Infrastructure\Event\UserConfirmedEvent;
 
 class UserConfirmedEventHandler implements DomainEventSubscriber
 {

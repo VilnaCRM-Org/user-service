@@ -7,7 +7,7 @@ namespace App\User\Domain\Aggregate;
 use App\Shared\Domain\Aggregate\AggregateRoot;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Entity\User;
-use App\User\Infrastructure\Event\ConfirmationEmailSendEvent;
+use App\User\Domain\Event\ConfirmationEmailSendEvent;
 
 class ConfirmationEmail extends AggregateRoot
 {

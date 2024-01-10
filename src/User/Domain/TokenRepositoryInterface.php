@@ -6,13 +6,28 @@ namespace App\User\Domain;
 
 use App\User\Domain\Entity\ConfirmationToken;
 
-interface TokenRepositoryInterface
+/**
+ * @extends RepositoryInterface<ConfirmationToken>
+ */
+interface TokenRepositoryInterface extends RepositoryInterface
 {
-    public function save(ConfirmationToken $token): void;
+    /**
+     * @param ConfirmationToken $token
+     */
+    public function save($token): void;
 
-    public function findByTokenValue(string $tokenValue): ?ConfirmationToken;
+    /**
+     * @param string $tokenValue
+     */
+    public function find($tokenValue): ?ConfirmationToken;
 
-    public function findByUserId(string $userId): ?ConfirmationToken;
+    /**
+     * @param string $userId
+     */
+    public function findByUserId($userId): ?ConfirmationToken;
 
-    public function delete(ConfirmationToken $token): void;
+    /**
+     * @param ConfirmationToken $token
+     */
+    public function delete($token): void;
 }

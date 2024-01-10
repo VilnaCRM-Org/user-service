@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\Event;
+namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
+use App\User\Domain\Entity\ConfirmationToken;
 
-class PasswordChangedEvent extends DomainEvent
+class UserConfirmedEvent extends DomainEvent
 {
     public function __construct(
-        public readonly string $email,
+        public readonly ConfirmationToken $token,
         string $eventId = null,
         string $occurredOn = null
     ) {
@@ -18,18 +19,16 @@ class PasswordChangedEvent extends DomainEvent
 
     public static function fromPrimitives(array $body, string $eventId, string $occurredOn): DomainEvent
     {
-        return new self($body['email'], $eventId, $occurredOn);
+        return new self($body['token'], $eventId, $occurredOn);
     }
 
     public static function eventName(): string
     {
-        return 'password.changed';
+        return 'user.confirmed';
     }
 
     public function toPrimitives(): array
     {
-        return [
-            'email' => $this->email,
-        ];
+        return ['token' => $this->token];
     }
 }

@@ -9,12 +9,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 class UserPatchDto
 {
     #[Assert\Email]
-    public string $email = '';
+    public string $email;
 
-    public string $initials = '';
+    public string $initials;
 
     #[Assert\NotBlank]
-    public string $oldPassword = '';
+    public string $oldPassword;
 
-    public string $newPassword = '';
+    public string $newPassword;
 }

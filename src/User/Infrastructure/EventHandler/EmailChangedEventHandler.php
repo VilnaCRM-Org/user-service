@@ -8,8 +8,8 @@ use App\Shared\Domain\Bus\Command\CommandBus;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriber;
 use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Domain\Aggregate\ConfirmationEmail;
+use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
-use App\User\Infrastructure\Event\EmailChangedEvent;
 
 class EmailChangedEventHandler implements DomainEventSubscriber
 {

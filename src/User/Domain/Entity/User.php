@@ -17,33 +17,30 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\User\Application\DTO\Email\RetryDto;
-use App\User\Application\DTO\User\UserInputDto;
 use App\User\Application\DTO\User\UserPatchDto;
 use App\User\Application\DTO\User\UserPutDto;
+use App\User\Application\DTO\User\UserRegisterDto;
+use App\User\Domain\Event\EmailChangedEvent;
+use App\User\Domain\Event\PasswordChangedEvent;
+use App\User\Domain\Event\UserConfirmedEvent;
+use App\User\Domain\Exception\UserTimedOutException;
 use App\User\Infrastructure\Email\ResendEmailMutationResolver;
 use App\User\Infrastructure\Email\ResendEmailProcessor;
-use App\User\Infrastructure\Event\EmailChangedEvent;
-use App\User\Infrastructure\Event\PasswordChangedEvent;
-use App\User\Infrastructure\Event\UserConfirmedEvent;
 use App\User\Infrastructure\Exception\DuplicateEmailException;
 use App\User\Infrastructure\Exception\InvalidPasswordException;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
 use App\User\Infrastructure\Exception\UserNotFoundException;
-use App\User\Infrastructure\Exception\UserTimedOutException;
 use App\User\Infrastructure\Token\ConfirmUserMutationResolver;
 use App\User\Infrastructure\User\RegisterUserMutationResolver;
 use App\User\Infrastructure\User\RegisterUserProcessor;
 use App\User\Infrastructure\User\UserPatchProcessor;
 use App\User\Infrastructure\User\UserPutProcessor;
 use App\User\Infrastructure\User\UserUpdateMutationResolver;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
 #[ApiResource(
     normalizationContext: ['groups' => ['output']],
     exceptionToStatus: [InvalidPasswordException::class => 410, UserNotFoundException::class => 404,
@@ -53,7 +50,7 @@ use Symfony\Component\Uid\Uuid;
 )]
 #[Get]
 #[GetCollection(paginationClientItemsPerPage: true)]
-#[Post(input: UserInputDto::class, processor: RegisterUserProcessor::class)]
+#[Post(input: UserRegisterDto::class, processor: RegisterUserProcessor::class)]
 #[Patch(input: UserPatchDto::class, processor: UserPatchProcessor::class)]
 #[Put(input: UserPutDto::class, processor: UserPutProcessor::class)]
 #[Delete]
@@ -116,27 +113,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->confirmed = false;
     }
 
-    #[ORM\Id]
-    #[ORM\Column(type: UuidType::NAME, unique: true)]
     #[Groups(['output', 'deleteMutationOutput'])]
     private Uuid $id;
 
-    #[ORM\Column(type: 'string', length: 255, unique: true)]
     #[Groups(['output'])]
     private string $email;
 
-    #[ORM\Column(type: 'string', length: 255)]
     #[Groups(['output'])]
     private string $initials;
 
-    #[ORM\Column(type: 'string', length: 255)]
     private string $password;
 
-    #[ORM\Column(type: 'boolean')]
     #[Groups(['output'])]
     private bool $confirmed;
 
-    #[ORM\Column(type: 'json')]
     #[Groups(['output'])]
     private array $roles;
 

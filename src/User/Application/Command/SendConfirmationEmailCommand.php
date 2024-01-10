@@ -7,9 +7,9 @@ namespace App\User\Application\Command;
 use App\Shared\Domain\Bus\Command\Command;
 use App\User\Domain\Aggregate\ConfirmationEmail;
 
-class SendConfirmationEmailCommand implements Command
+readonly class SendConfirmationEmailCommand implements Command
 {
-    public function __construct(public readonly ConfirmationEmail $confirmationEmail)
+    public function __construct(public ConfirmationEmail $confirmationEmail)
     {
     }
 }

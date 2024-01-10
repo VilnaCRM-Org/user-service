@@ -9,8 +9,8 @@ use App\Shared\Domain\Bus\Event\EventBus;
 use App\User\Application\Command\SignUpCommand;
 use App\User\Application\Command\SignUpCommandResponse;
 use App\User\Application\Transformer\SignUpTransformer;
+use App\User\Domain\Event\UserRegisteredEvent;
 use App\User\Domain\UserRepositoryInterface;
-use App\User\Infrastructure\Event\UserRegisteredEvent;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final readonly class SignUpCommandHandler implements CommandHandler

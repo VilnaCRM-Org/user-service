@@ -20,7 +20,7 @@ class ConfirmUserCommandHandler implements CommandHandler
 
     public function __invoke(ConfirmUserCommand $command): void
     {
-        $token = $command->getToken();
+        $token = $command->token;
 
         $user = $this->userRepository->find($token->getUserID()) ?? throw new UserNotFoundException();
         $this->eventBus->publish($user->confirm($token));

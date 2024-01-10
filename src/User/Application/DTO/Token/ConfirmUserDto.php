@@ -9,5 +9,5 @@ use Symfony\Component\Validator\Constraints as Assert;
 class ConfirmUserDto
 {
     #[Assert\NotBlank]
-    public string $token = '';
+    public string $token;
 }

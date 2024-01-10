@@ -6,8 +6,8 @@ namespace App\User\Domain\Entity;
 
 use ApiPlatform\Metadata\Patch;
 use App\User\Application\DTO\Token\ConfirmUserDto;
+use App\User\Domain\Exception\UserTimedOutException;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
-use App\User\Infrastructure\Exception\UserTimedOutException;
 use App\User\Infrastructure\Token\ConfirmUserProcessor;
 
 #[Patch(

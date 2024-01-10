@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\Event;
+namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\User\Domain\Entity\User;

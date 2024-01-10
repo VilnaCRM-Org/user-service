@@ -16,7 +16,7 @@ final readonly class MariaDBUserRepository implements UserRepositoryInterface
     {
     }
 
-    public function save(User $user): void
+    public function save($user): void
     {
         try {
             $this->entityManager->persist($user);
@@ -26,8 +26,14 @@ final readonly class MariaDBUserRepository implements UserRepositoryInterface
         }
     }
 
-    public function find(string $userID): ?User
+    public function find($userID): ?User
     {
         return $this->entityManager->find(User::class, $userID);
+    }
+
+    public function delete($user): void
+    {
+        $this->entityManager->remove($user);
+        $this->entityManager->flush();
     }
 }

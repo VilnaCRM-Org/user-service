@@ -6,9 +6,23 @@ namespace App\User\Domain;
 
 use App\User\Domain\Entity\User;
 
-interface UserRepositoryInterface
+/**
+ * @extends RepositoryInterface<User>
+ */
+interface UserRepositoryInterface extends RepositoryInterface
 {
-    public function save(User $user): void;
+    /**
+     * @param User $user
+     */
+    public function save($user): void;
 
-    public function find(string $userID): ?User;
+    /**
+     * @param string $userID
+     */
+    public function find($userID): ?User;
+
+    /**
+     * @param User $user
+     */
+    public function delete($user): void;
 }

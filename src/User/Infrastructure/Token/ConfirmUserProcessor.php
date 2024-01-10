@@ -29,7 +29,7 @@ class ConfirmUserProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        $token = $this->tokenRepository->findByTokenValue($data->token) ?? throw new TokenNotFoundException();
+        $token = $this->tokenRepository->find($data->token) ?? throw new TokenNotFoundException();
 
         $this->commandBus->dispatch(new ConfirmUserCommand($token));
 
