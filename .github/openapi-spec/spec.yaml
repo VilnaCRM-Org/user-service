@@ -1014,6 +1014,8 @@ components:
       type: object
       description: ''
       deprecated: false
+      required:
+        - token
       properties:
         token:
           type: string
