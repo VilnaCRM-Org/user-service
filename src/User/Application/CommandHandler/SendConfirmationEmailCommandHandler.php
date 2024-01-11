@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\User\Application\CommandHandler;
 
-use App\Shared\Domain\Bus\Command\CommandHandler;
-use App\Shared\Domain\Bus\Event\EventBus;
+use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
+use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\SendConfirmationEmailCommand;
 
-class SendConfirmationEmailCommandHandler implements CommandHandler
+class SendConfirmationEmailCommandHandler implements CommandHandlerInterface
 {
-    public function __construct(private EventBus $eventBus)
+    public function __construct(private EventBusInterface $eventBus)
     {
     }
 
-    public function __invoke(SendConfirmationEmailCommand $command)
+    public function __invoke(SendConfirmationEmailCommand $command): void
     {
         $confirmationEmail = $command->confirmationEmail;
 

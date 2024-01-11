@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\EventHandler;
+namespace App\User\Infrastructure\EventSubscriber;
 
-use App\Shared\Domain\Bus\Event\DomainEventSubscriber;
+use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
-use App\User\Domain\TokenRepositoryInterface;
+use App\User\Domain\Repository\TokenRepositoryInterface;
 
-class UserConfirmedEventHandler implements DomainEventSubscriber
+class UserConfirmedEventSubscriber implements DomainEventSubscriberInterface
 {
     public function __construct(private TokenRepositoryInterface $tokenRepository)
     {

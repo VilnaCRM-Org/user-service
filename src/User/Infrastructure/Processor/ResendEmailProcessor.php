@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\Email;
+namespace App\User\Infrastructure\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Shared\Domain\Bus\Command\CommandBus;
+use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
-use App\User\Domain\TokenRepositoryInterface;
-use App\User\Domain\UserRepositoryInterface;
+use App\User\Domain\Repository\TokenRepositoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\UserNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -20,12 +20,15 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ResendEmailProcessor implements ProcessorInterface
 {
-    public function __construct(private CommandBus $commandBus, private UserRepositoryInterface $userRepository,
-        private TokenRepositoryInterface $tokenRepository, private ConfirmationTokenFactory $tokenFactory)
-    {
+    public function __construct(
+        private CommandBusInterface $commandBus,
+        private UserRepositoryInterface $userRepository,
+        private TokenRepositoryInterface $tokenRepository,
+        private ConfirmationTokenFactory $tokenFactory
+    ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Response
     {
         $user = $this->userRepository->find((string) $uriVariables['id']) ?? throw new UserNotFoundException();
 
@@ -34,7 +37,8 @@ class ResendEmailProcessor implements ProcessorInterface
         $token->send();
 
         $this->commandBus->dispatch(
-            new SendConfirmationEmailCommand(new ConfirmationEmail($token, $user)));
+            new SendConfirmationEmailCommand(new ConfirmationEmail($token, $user))
+        );
 
         return new Response();
     }

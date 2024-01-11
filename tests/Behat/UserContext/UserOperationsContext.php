@@ -70,7 +70,7 @@ class UserOperationsContext implements Context
     public function requestSendTo(string $method, string $path): void
     {
         $contentType = 'application/json';
-        if ('PATCH' === $method) {
+        if ($method === 'PATCH') {
             $contentType = 'application/merge-patch+json';
         }
         $this->response = $this->kernel->handle(Request::create(
@@ -89,7 +89,7 @@ class UserOperationsContext implements Context
      */
     public function theResponseStatusCodeShouldBe(string $statusCode): void
     {
-        if (null === $this->response) {
+        if ($this->response === null) {
             throw new \RuntimeException('No response received');
         }
 

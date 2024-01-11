@@ -8,6 +8,9 @@ use App\Shared\Domain\Bus\Event\DomainEvent;
 
 abstract class AggregateRoot
 {
+    /**
+     * @var array<DomainEvent>
+     */
     private array $domainEvents = [];
 
     final public function pullDomainEvents(): array

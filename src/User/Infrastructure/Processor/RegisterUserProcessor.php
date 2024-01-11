@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\User;
+namespace App\User\Infrastructure\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Shared\Domain\Bus\Command\CommandBus;
+use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\SignUpCommand;
 use App\User\Application\DTO\User\UserRegisterDto;
 use App\User\Domain\Entity\User;
@@ -16,7 +16,7 @@ use App\User\Domain\Entity\User;
  */
 readonly class RegisterUserProcessor implements ProcessorInterface
 {
-    public function __construct(private CommandBus $commandBus)
+    public function __construct(private CommandBusInterface $commandBus)
     {
     }
 

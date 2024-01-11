@@ -12,9 +12,10 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 class UserResolveListener
 {
-    public function __construct(private UserProviderInterface $userProvider,
-        private UserPasswordHasherInterface $userPasswordHasher)
-    {
+    public function __construct(
+        private UserProviderInterface $userProvider,
+        private UserPasswordHasherInterface $userPasswordHasher
+    ) {
     }
 
     public function onUserResolve(UserResolveEvent $event): void
@@ -25,7 +26,7 @@ class UserResolveListener
             return;
         }
 
-        if (null === $user || !($user instanceof PasswordAuthenticatedUserInterface)) {
+        if ($user === null || !($user instanceof PasswordAuthenticatedUserInterface)) {
             return;
         }
 

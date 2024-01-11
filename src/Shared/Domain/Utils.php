@@ -11,7 +11,7 @@ final class Utils
     public static function endsWith(string $needle, string $haystack): bool
     {
         $length = strlen($needle);
-        if (0 === $length) {
+        if ($length === 0) {
             return true;
         }
 
@@ -37,7 +37,7 @@ final class Utils
     {
         $data = json_decode($json, true);
 
-        if (JSON_ERROR_NONE !== json_last_error()) {
+        if (json_last_error() !== JSON_ERROR_NONE) {
             throw new \RuntimeException('Unable to parse response body into JSON: '.json_last_error());
         }
 

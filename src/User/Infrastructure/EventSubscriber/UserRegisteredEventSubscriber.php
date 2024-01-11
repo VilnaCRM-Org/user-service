@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\EventHandler;
+namespace App\User\Infrastructure\EventSubscriber;
 
-use App\Shared\Domain\Bus\Command\CommandBus;
-use App\Shared\Domain\Bus\Event\DomainEventSubscriber;
+use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Event\UserRegisteredEvent;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 
-class UserRegisteredEventHandler implements DomainEventSubscriber
+class UserRegisteredEventSubscriber implements DomainEventSubscriberInterface
 {
     public function __construct(
-        private CommandBus $commandBus,
+        private CommandBusInterface $commandBus,
         private ConfirmationTokenFactory $tokenFactory
     ) {
     }

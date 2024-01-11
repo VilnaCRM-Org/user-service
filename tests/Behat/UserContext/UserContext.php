@@ -4,8 +4,8 @@ namespace App\Tests\Behat\UserContext;
 
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Factory\UserFactory;
-use App\User\Domain\TokenRepositoryInterface;
-use App\User\Domain\UserRepositoryInterface;
+use App\User\Domain\Repository\TokenRepositoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\DuplicateEmailException;
 use Behat\Behat\Context\Context;
 use Faker\Factory;

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
+use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 
 return [
@@ -11,10 +13,12 @@ return [
         'vendor',
     ],
     'add' => [],
-    'remove' => [],
-    'config' => [
-        UnusedParameterSniff::class => ['exclude' => ['src', 'migrations']],
+    'remove' => [
+        UnusedParameterSniff::class,
+        SuperfluousInterfaceNamingSniff::class,
+        SuperfluousExceptionNamingSniff::class,
     ],
+    'config' => [],
     'requirements' => [
         'min-quality' => 100,
         'min-complexity' => 100,

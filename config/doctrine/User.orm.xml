@@ -13,7 +13,6 @@
 
         <field name="confirmed" type="boolean"/>
 
-        <!-- Roles field is an array in the original entity, you might want to use a collection type in the XML -->
         <field name="roles" type="json"/>
     </entity>
 </doctrine-mapping>

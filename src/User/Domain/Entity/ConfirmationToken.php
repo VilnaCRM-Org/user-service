@@ -4,23 +4,16 @@ declare(strict_types=1);
 
 namespace App\User\Domain\Entity;
 
-use ApiPlatform\Metadata\Patch;
-use App\User\Application\DTO\Token\ConfirmUserDto;
 use App\User\Domain\Exception\UserTimedOutException;
-use App\User\Infrastructure\Exception\TokenNotFoundException;
-use App\User\Infrastructure\Token\ConfirmUserProcessor;
 
-#[Patch(
-    uriTemplate: 'users/confirm',
-    exceptionToStatus: [TokenNotFoundException::class => 404],
-    shortName: 'User',
-    input: ConfirmUserDto::class,
-    processor: ConfirmUserProcessor::class
-)]
 class ConfirmationToken
 {
     private int $timesSent;
     private \DateTime $allowedToSendAfter;
+
+    /**
+     * @var array<int, int>
+     */
     private array $sendEmailAttemptsTimeInMinutes;
 
     public function __construct(private string $tokenValue, private string $userID)
@@ -90,6 +83,6 @@ class ConfirmationToken
 
         $nextAllowedPeriodToSendInMinutes = $this->sendEmailAttemptsTimeInMinutes[$this->timesSent] ?? 0;
 
-        $this->allowedToSendAfter = $datetime->modify("+ $nextAllowedPeriodToSendInMinutes minutes");
+        $this->allowedToSendAfter = $datetime->modify("+ {$nextAllowedPeriodToSendInMinutes} minutes");
     }
 }

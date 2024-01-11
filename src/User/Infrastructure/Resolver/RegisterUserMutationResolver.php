@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\User;
+namespace App\User\Infrastructure\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
-use App\Shared\Domain\Bus\Command\CommandBus;
+use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\SignUpCommand;
 use App\User\Application\MutationInput\CreateUserMutationInput;
 use App\User\Application\MutationInput\MutationInputValidator;
@@ -13,7 +13,7 @@ use App\User\Application\MutationInput\MutationInputValidator;
 class RegisterUserMutationResolver implements MutationResolverInterface
 {
     public function __construct(
-        private CommandBus $commandBus,
+        private CommandBusInterface $commandBus,
         private MutationInputValidator $validator
     ) {
     }

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\User;
+namespace App\User\Infrastructure\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
-use App\Shared\Domain\Bus\Command\CommandBus;
+use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\UpdateUserCommand;
 use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\MutationInput\UpdateUserMutationInput;
@@ -13,7 +13,7 @@ use App\User\Application\MutationInput\UpdateUserMutationInput;
 class UserUpdateMutationResolver implements MutationResolverInterface
 {
     public function __construct(
-        private CommandBus $commandBus,
+        private CommandBusInterface $commandBus,
         private MutationInputValidator $validator,
     ) {
     }
@@ -31,7 +31,8 @@ class UserUpdateMutationResolver implements MutationResolverInterface
         $newPassword = $args['newPassword'] ?? $args['password'];
 
         $this->commandBus->dispatch(
-            new UpdateUserCommand($user, $newEmail, $newInitials, $newPassword, $args['password']));
+            new UpdateUserCommand($user, $newEmail, $newInitials, $newPassword, $args['password'])
+        );
 
         return $user;
     }

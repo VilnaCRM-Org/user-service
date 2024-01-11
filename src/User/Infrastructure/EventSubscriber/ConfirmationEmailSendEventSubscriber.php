@@ -2,19 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\EventHandler;
+namespace App\User\Infrastructure\EventSubscriber;
 
-use App\Shared\Domain\Bus\Event\DomainEventSubscriber;
+use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Domain\Event\ConfirmationEmailSendEvent;
 use App\User\Domain\Factory\EmailFactory;
-use App\User\Domain\TokenRepositoryInterface;
+use App\User\Domain\Repository\TokenRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class ConfirmationEmailSendEventHandler implements DomainEventSubscriber
+class ConfirmationEmailSendEventSubscriber implements DomainEventSubscriberInterface
 {
-    public function __construct(private MailerInterface $mailer,
+    public function __construct(
+        private MailerInterface $mailer,
         private TokenRepositoryInterface $tokenRepository,
         private LoggerInterface $logger,
         private TranslatorInterface $translator,

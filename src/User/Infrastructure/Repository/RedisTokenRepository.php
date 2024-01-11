@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Repository;
 
 use App\User\Domain\Entity\ConfirmationToken;
-use App\User\Domain\TokenRepositoryInterface;
+use App\User\Domain\Repository\TokenRepositoryInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -16,7 +16,7 @@ class RedisTokenRepository implements TokenRepositoryInterface
     private const TOKEN_VALUE_PREFIX = 'tokenValue-';
     private const USER_ID_PREFIX = 'userID-';
 
-    private const EXPIRES_AFTER = 86400; // 24 hours
+    private const EXPIRES_AFTER_IN_SECONDS = 86400; // 24 hours
 
     public function __construct(private CacheInterface $redisAdapter, private SerializerInterface $serializer)
     {
@@ -31,12 +31,12 @@ class RedisTokenRepository implements TokenRepositoryInterface
 
         $cacheItem = $this->redisAdapter->getItem(self::getTokenKey($tokenValue));
         $cacheItem->set($serializedToken);
-        $cacheItem->expiresAfter(self::EXPIRES_AFTER);
+        $cacheItem->expiresAfter(self::EXPIRES_AFTER_IN_SECONDS);
         $this->redisAdapter->save($cacheItem);
 
         $cacheItem = $this->redisAdapter->getItem(self::getUserKey($userId));
         $cacheItem->set($serializedToken);
-        $cacheItem->expiresAfter(self::EXPIRES_AFTER);
+        $cacheItem->expiresAfter(self::EXPIRES_AFTER_IN_SECONDS);
         $this->redisAdapter->save($cacheItem);
     }
 
@@ -48,7 +48,11 @@ class RedisTokenRepository implements TokenRepositoryInterface
         $serializedToken = $cacheItem->get();
 
         return $serializedToken ? $this->serializer->deserialize(
-            $serializedToken, ConfirmationToken::class, JsonEncoder::FORMAT) : null;
+            $serializedToken,
+            ConfirmationToken::class,
+            JsonEncoder::FORMAT
+        )
+            : null;
     }
 
     public function findByUserId($userId): ?ConfirmationToken
@@ -59,7 +63,11 @@ class RedisTokenRepository implements TokenRepositoryInterface
         $serializedToken = $cacheItem->get();
 
         return $serializedToken ? $this->serializer->deserialize(
-            $serializedToken, ConfirmationToken::class, JsonEncoder::FORMAT) : null;
+            $serializedToken,
+            ConfirmationToken::class,
+            JsonEncoder::FORMAT
+        )
+            : null;
     }
 
     public function delete($token): void

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Bus;
 
-use App\Shared\Domain\Bus\Event\DomainEventSubscriber;
+use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 
 use function Lambdish\Phunctional\map;
 use function Lambdish\Phunctional\reduce;
@@ -29,7 +29,7 @@ final class CallableFirstParameterExtractor
 
     private static function pipedCallablesReducer(): callable
     {
-        return static function ($subscribers, DomainEventSubscriber $subscriber): array {
+        return static function ($subscribers, DomainEventSubscriberInterface $subscriber): array {
             $subscribedEvents = $subscriber::subscribedTo();
 
             foreach ($subscribedEvents as $subscribedEvent) {
@@ -62,7 +62,7 @@ final class CallableFirstParameterExtractor
         /** @var \ReflectionNamedType $fistParameterType */
         $fistParameterType = $method->getParameters()[0]->getType();
 
-        if (null === $fistParameterType) {
+        if ($fistParameterType === null) {
             throw new \LogicException('Missing type hint for the first parameter of __invoke');
         }
 
@@ -71,6 +71,6 @@ final class CallableFirstParameterExtractor
 
     private function hasOnlyOneParameter(\ReflectionMethod $method): bool
     {
-        return 1 === $method->getNumberOfParameters();
+        return $method->getNumberOfParameters() === 1;
     }
 }

@@ -14,7 +14,7 @@ class MutationInputValidator
     ) {
     }
 
-    public function validate(array $contextArgs, MutationInput $input)
+    public function validate(array $contextArgs, MutationInput $input): void
     {
         $errors = $this->validator->validate($contextArgs, $input->getConstraints());
 

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\User\Application\CommandHandler;
 
-use App\Shared\Domain\Bus\Command\CommandHandler;
-use App\Shared\Domain\Bus\Event\EventBus;
+use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
+use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\ConfirmUserCommand;
-use App\User\Domain\UserRepositoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\UserNotFoundException;
 
-class ConfirmUserCommandHandler implements CommandHandler
+class ConfirmUserCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private EventBus $eventBus
+        private EventBusInterface $eventBus
     ) {
     }
 
