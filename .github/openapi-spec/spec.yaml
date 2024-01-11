@@ -425,13 +425,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User.UserInputDto'
+              $ref: '#/components/schemas/User.UserRegisterDto'
           application/graphql:
             schema:
-              $ref: '#/components/schemas/User.UserInputDto'
+              $ref: '#/components/schemas/User.UserRegisterDto'
           application/ld+json:
             schema:
-              $ref: '#/components/schemas/User.UserInputDto.jsonld'
+              $ref: '#/components/schemas/User.UserRegisterDto.jsonld'
         required: true
       deprecated: false
     parameters: []
@@ -1027,42 +1027,6 @@ components:
       type: object
       description: ''
       deprecated: false
-    User.UserInputDto:
-      type: object
-      description: ''
-      deprecated: false
-      required:
-        - email
-        - initials
-        - password
-      properties:
-        email:
-          format: email
-          externalDocs:
-            url: 'https://schema.org/email'
-          type: string
-        initials:
-          type: string
-        password:
-          type: string
-    User.UserInputDto.jsonld:
-      type: object
-      description: ''
-      deprecated: false
-      required:
-        - email
-        - initials
-        - password
-      properties:
-        email:
-          format: email
-          externalDocs:
-            url: 'https://schema.org/email'
-          type: string
-        initials:
-          type: string
-        password:
-          type: string
     User.UserPatchDto:
       type: object
       description: ''
@@ -1122,6 +1086,42 @@ components:
         oldPassword:
           type: string
         newPassword:
+          type: string
+    User.UserRegisterDto:
+      type: object
+      description: ''
+      deprecated: false
+      required:
+        - email
+        - initials
+        - password
+      properties:
+        email:
+          format: email
+          externalDocs:
+            url: 'https://schema.org/email'
+          type: string
+        initials:
+          type: string
+        password:
+          type: string
+    User.UserRegisterDto.jsonld:
+      type: object
+      description: ''
+      deprecated: false
+      required:
+        - email
+        - initials
+        - password
+      properties:
+        email:
+          format: email
+          externalDocs:
+            url: 'https://schema.org/email'
+          type: string
+        initials:
+          type: string
+        password:
           type: string
     User.jsonld:
       type: object
