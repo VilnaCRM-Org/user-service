@@ -54,7 +54,7 @@ psalm-security: ## Psalm security analysis
 	$(PSALM) --taint-analysis
 
 phpinsights: ## Instant PHP quality checks and static analysis tool
-	$(EXEC_PHP) php -d memory_limit=512M ./vendor/bin/phpinsights --no-interaction
+	$(EXEC_PHP) ./vendor/bin/phpinsights --no-interaction
 
 phpunit: ## The PHP unit testing framework
 	$(EXEC_PHP) ./vendor/bin/phpunit
