@@ -1,10 +1,14 @@
 export const adaptiveStyles = {
   wrapper: {
+    display: 'none',
     marginBottom: '20px',
     borderTop: '1px solid  #E1E7EA',
     background: ' #FFF',
     boxShadow:
       ' 0px -5px 46px 0px rgba(198, 209, 220, 0.25), 0px -5px 46px 0px rgba(198, 209, 220, 0.25)',
+    '@media (max-width: 767.98px)': {
+      display: 'inline-block',
+    },
   },
   gmailText: {
     color: '#1B2327',

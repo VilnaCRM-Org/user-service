@@ -16,14 +16,14 @@ function CardList() {
     <>
       <Grid sx={cardListStyles.grid}>
         {UNLIMITED_INTEGRATIONS_CARD_ITEMS.map(item => (
-          <CardItem key={item.id} item={item} type="Possibilities" />
+          <CardItem key={item.id} item={item} type="small" />
         ))}
       </Grid>
       <Grid sx={cardListStyles.gridMobile}>
         <Swiper pagination modules={[Pagination]} className="swiper-wrapper">
           {UNLIMITED_INTEGRATIONS_CARD_ITEMS.map(item => (
             <SwiperSlide key={item.id}>
-              <CardItem item={item} type="Possibilities" />
+              <CardItem item={item} type="small" />
             </SwiperSlide>
           ))}
         </Swiper>

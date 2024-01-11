@@ -47,10 +47,15 @@ export const notchStyles = {
       backgroundColor: '#0e314c',
     },
 
+    '@media (max-width: 1024.98px)': {
+      display: 'none',
+    },
     '@media (max-width: 639.98px)': {
+      display: 'inline-block',
       position: 'relative',
-      top: '-1px',
-      left: '0',
+      top: '0',
+      left: '22%',
+
       background: '#000',
       height: '17px',
       width: '108px',

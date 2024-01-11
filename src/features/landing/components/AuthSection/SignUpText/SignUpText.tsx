@@ -2,7 +2,7 @@
 
 import { Box } from '@mui/material';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components/ui';
 
@@ -15,7 +15,9 @@ function SignUpText() {
   return (
     <Box sx={signUpTextStyles.textWrapper}>
       <UiTypography variant="h2" sx={signUpTextStyles.title}>
-        {t('sign_up.main_heading')}
+        <Trans i18nKey="sign_up.main_heading">
+          Зареєструйтеся зараз та звільніть час на розвиток бізнесу <br />з
+        </Trans>
         <UiTypography
           variant="h2"
           component="span"

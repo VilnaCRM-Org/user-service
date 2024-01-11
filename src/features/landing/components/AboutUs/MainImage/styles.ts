@@ -9,10 +9,16 @@ export const mainImageStyles = {
     marginTop: '-18px',
     height: '498px',
     width: '766px',
-
+    '@media (max-width: 1024.98px)': {
+      borderRadius: '10px',
+      width: '450px',
+      height: '525px',
+      marginTop: '0',
+    },
     '@media (max-width: 639.98px)': {
       width: '201.927px',
       height: '436.443px',
+      marginTop: '-18px',
     },
   },
   mainImage: {
@@ -21,6 +27,13 @@ export const mainImageStyles = {
     width: '766px',
     height: '498px',
 
+    '@media (max-width: 1024.98px)': {
+      backgroundSize: 'cover',
+      backgroundRepeat: 'no-repeat',
+      width: '100%',
+      borderRadius: '16px',
+      height: '100%',
+    },
     '@media (max-width: 639.98px)': {
       backgroundImage: `url(${PhoneMainImage.src})`,
       backgroundSize: 'contain',

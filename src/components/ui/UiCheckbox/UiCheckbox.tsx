@@ -10,13 +10,7 @@ const theme = createTheme({
   components: {
     MuiCheckbox: {
       styleOverrides: {
-        root: {
-          span: {},
-          svg: {
-            appearance: 'none',
-          },
-          input: {},
-        }, // need a little help
+        root: {},
       },
     },
   },
@@ -26,8 +20,18 @@ function UiCheckbox({ label }: { label: string | React.ReactNode }) {
   return (
     <ThemeProvider theme={theme}>
       <FormControlLabel
-        sx={{ pt: '20px', pb: '26px' }}
-        control={<Checkbox />}
+        sx={{
+          pt: '20px',
+          pb: '26px',
+          mx: '0px',
+        }}
+        control={
+          <Checkbox
+            inputProps={{
+              'aria-label': 'Checkbox A',
+            }}
+          />
+        }
         label={label}
       />
     </ThemeProvider>

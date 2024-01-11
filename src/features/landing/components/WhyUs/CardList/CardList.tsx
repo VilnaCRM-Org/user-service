@@ -17,14 +17,14 @@ function CardList() {
     <>
       <Grid sx={cardListStyles.grid}>
         {WHY_WE_CARD_ITEMS.map(item => (
-          <CardItem item={item} type="WhyUs" key={item.id} />
+          <CardItem item={item} type="large" key={item.id} />
         ))}
       </Grid>
       <Grid sx={cardListStyles.gridMobile}>
         <Swiper pagination modules={[Pagination]} className="swiper-wrapper">
           {WHY_WE_CARD_ITEMS.map(item => (
             <SwiperSlide key={item.id}>
-              <CardItem item={item} type="WhyUs" />
+              <CardItem item={item} type="large" />
             </SwiperSlide>
           ))}
         </Swiper>

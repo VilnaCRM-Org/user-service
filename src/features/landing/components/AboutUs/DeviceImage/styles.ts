@@ -15,6 +15,9 @@ export const deviceImageStyles = {
     top: '9%',
     left: '0',
     borderRadius: '48px',
+    '@media (max-width: 1023.98px)': {
+      top: '11%',
+    },
     '@media (max-width: 639.98px)': {
       borderRadius: '24px',
       height: '284px',
@@ -28,7 +31,11 @@ export const deviceImageStyles = {
     borderTopRightRadius: '30px',
     borderTopLeftRadius: '30px',
     overflow: 'hidden',
-
+    '@media (max-width: 1024.98px)': {
+      borderRadius: '30px',
+      borderBottom: 'none',
+      border: 'none',
+    },
     '@media (max-width: 639.98px)': {
       border: 'none',
       borderBottom: 'none',
@@ -42,6 +49,9 @@ export const deviceImageStyles = {
     backgroundColor: '#1A1C1E',
     padding: '12px',
     overflow: 'hidden',
+    '@media (max-width: 1024.98px)': {
+      borderRadius: '25px',
+    },
     '@media (max-width: 639.98px)': {
       padding: '6px',
       border: '4px solid #444',
