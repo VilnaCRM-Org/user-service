@@ -13,6 +13,9 @@ abstract class AggregateRoot
      */
     private array $domainEvents = [];
 
+    /**
+     * @return array<DomainEvent>
+     */
     final public function pullDomainEvents(): array
     {
         $domainEvents = $this->domainEvents;

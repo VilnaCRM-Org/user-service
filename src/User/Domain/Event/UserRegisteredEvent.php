@@ -27,6 +27,9 @@ class UserRegisteredEvent extends DomainEvent
         return 'user.registered';
     }
 
+    /**
+     * @return array<string, User>
+     */
     public function toPrimitives(): array
     {
         return [

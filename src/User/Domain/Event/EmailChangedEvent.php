@@ -27,6 +27,9 @@ class EmailChangedEvent extends DomainEvent
         return 'email.changed';
     }
 
+    /**
+     * @return array<string, User>
+     */
     public function toPrimitives(): array
     {
         return [

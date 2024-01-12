@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
@@ -17,6 +18,7 @@ return [
         UnusedParameterSniff::class,
         SuperfluousInterfaceNamingSniff::class,
         SuperfluousExceptionNamingSniff::class,
+        SpaceAfterNotSniff::class,
     ],
     'config' => [],
     'requirements' => [

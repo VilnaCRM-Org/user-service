@@ -12,14 +12,32 @@ use function Lambdish\Phunctional\reindex;
 
 final class CallableFirstParameterExtractor
 {
+    /**
+     * @return array<int, string|null>
+     */
     public static function forCallables(iterable $callables): array
     {
         return map(self::unflatten(), reindex(self::classExtractor(new self()), $callables));
     }
 
+    /**
+     * @return array<int, array<DomainEventSubscriberInterface>>
+     */
     public static function forPipedCallables(iterable $callables): array
     {
         return reduce(self::pipedCallablesReducer(), $callables, []);
+    }
+
+    public function extract($class): ?string
+    {
+        $reflector = new \ReflectionClass($class);
+        $method = $reflector->getMethod('__invoke');
+
+        if ($this->hasOnlyOneParameter($method)) {
+            return $this->firstParameterClassFrom($method);
+        }
+
+        return null;
     }
 
     private static function classExtractor(CallableFirstParameterExtractor $parameterExtractor): callable
@@ -43,18 +61,6 @@ final class CallableFirstParameterExtractor
     private static function unflatten(): callable
     {
         return static fn ($value) => [$value];
-    }
-
-    public function extract($class): ?string
-    {
-        $reflector = new \ReflectionClass($class);
-        $method = $reflector->getMethod('__invoke');
-
-        if ($this->hasOnlyOneParameter($method)) {
-            return $this->firstParameterClassFrom($method);
-        }
-
-        return null;
     }
 
     private function firstParameterClassFrom(\ReflectionMethod $method): string

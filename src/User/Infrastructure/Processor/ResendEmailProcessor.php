@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\SendConfirmationEmailCommand;
+use App\User\Application\DTO\RetryDto;
 use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Repository\TokenRepositoryInterface;
@@ -28,6 +29,9 @@ class ResendEmailProcessor implements ProcessorInterface
     ) {
     }
 
+    /**
+     * @param RetryDto $data
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Response
     {
         $user = $this->userRepository->find((string) $uriVariables['id']) ?? throw new UserNotFoundException();

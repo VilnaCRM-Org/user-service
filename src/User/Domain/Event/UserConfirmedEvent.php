@@ -27,6 +27,9 @@ class UserConfirmedEvent extends DomainEvent
         return 'user.confirmed';
     }
 
+    /**
+     * @return array<string, ConfirmationToken>
+     */
     public function toPrimitives(): array
     {
         return ['token' => $this->token];

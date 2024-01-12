@@ -15,20 +15,6 @@ use Symfony\Component\Uid\Uuid;
 
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    public function __construct(
-        string $email,
-        string $initials,
-        string $password,
-        Uuid $id,
-    ) {
-        $this->id = $id;
-        $this->email = $email;
-        $this->initials = $initials;
-        $this->password = $password;
-        $this->roles = ['ROLE_USER'];
-        $this->confirmed = false;
-    }
-
     #[Groups(['output', 'deleteMutationOutput'])]
     private Uuid $id;
 
@@ -48,6 +34,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[Groups(['output'])]
     private array $roles;
+
+    public function __construct(
+        string $email,
+        string $initials,
+        string $password,
+        Uuid $id,
+    ) {
+        $this->id = $id;
+        $this->email = $email;
+        $this->initials = $initials;
+        $this->password = $password;
+        $this->roles = ['ROLE_USER'];
+        $this->confirmed = false;
+    }
 
     public function getId(): string
     {
@@ -89,6 +89,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->password = $password;
     }
 
+    /**
+     * @return array<string>
+     */
     public function getRoles(): array
     {
         $roles = $this->roles;

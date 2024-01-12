@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\EventSubscriber;
 
+use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Domain\Event\PasswordChangedEvent;
 use App\User\Domain\Factory\EmailFactory;
@@ -33,6 +34,9 @@ class PasswordChangedEventSubscriber implements DomainEventSubscriberInterface
         $this->mailer->send($email);
     }
 
+    /**
+     * @return array<DomainEvent>
+     */
     public static function subscribedTo(): array
     {
         return [PasswordChangedEvent::class];

@@ -11,12 +11,19 @@ class CreateUserMutationInput implements MutationInput
     public function getConstraints(): Assert\Collection
     {
         return new Assert\Collection([
-            'initials' => new Assert\NotBlank(),
+            'initials' => [
+                new Assert\NotBlank(),
+                new Assert\Length(max: 255),
+                ],
             'email' => [
                 new Assert\NotBlank(),
                 new Assert\Email(),
+                new Assert\Length(max: 255),
             ],
-            'password' => new Assert\NotBlank(),
+            'password' => [
+                new Assert\NotBlank(),
+                new Assert\Length(max: 255),
+            ],
         ]);
     }
 }

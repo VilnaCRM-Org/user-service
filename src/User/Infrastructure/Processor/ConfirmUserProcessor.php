@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\ConfirmUserCommand;
-use App\User\Application\DTO\Token\ConfirmUserDto;
+use App\User\Application\DTO\ConfirmUserDto;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +27,7 @@ class ConfirmUserProcessor implements ProcessorInterface
     /**
      * @param ConfirmUserDto $data
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Response
     {
         $token = $this->tokenRepository->find($data->token) ?? throw new TokenNotFoundException();
 

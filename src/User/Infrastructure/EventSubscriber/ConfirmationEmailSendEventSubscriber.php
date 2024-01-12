@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\EventSubscriber;
 
+use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Domain\Event\ConfirmationEmailSendEvent;
 use App\User\Domain\Factory\EmailFactory;
@@ -21,11 +22,6 @@ class ConfirmationEmailSendEventSubscriber implements DomainEventSubscriberInter
         private TranslatorInterface $translator,
         private EmailFactory $emailFactory
     ) {
-    }
-
-    public static function subscribedTo(): array
-    {
-        return [ConfirmationEmailSendEvent::class];
     }
 
     public function __invoke(ConfirmationEmailSendEvent $event): void
@@ -46,5 +42,13 @@ class ConfirmationEmailSendEventSubscriber implements DomainEventSubscriberInter
         $this->mailer->send($email);
 
         $this->logger->info('Confirmation token send to '.$emailAddress);
+    }
+
+    /**
+     * @return array<DomainEvent>
+     */
+    public static function subscribedTo(): array
+    {
+        return [ConfirmationEmailSendEvent::class];
     }
 }

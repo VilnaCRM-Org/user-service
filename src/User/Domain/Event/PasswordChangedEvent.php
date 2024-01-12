@@ -26,6 +26,9 @@ class PasswordChangedEvent extends DomainEvent
         return 'password.changed';
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function toPrimitives(): array
     {
         return [

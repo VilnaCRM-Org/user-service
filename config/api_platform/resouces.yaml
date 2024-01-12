@@ -13,25 +13,25 @@ resources:
       ApiPlatform\Metadata\GetCollection:
         paginationClientItemsPerPage: true
       ApiPlatform\Metadata\Get: ~
-      create-http:
+      create_http:
         class: 'ApiPlatform\Metadata\Post'
-        input: 'App\User\Application\DTO\User\UserRegisterDto'
+        input: 'App\User\Application\DTO\UserRegisterDto'
         processor: 'App\User\Infrastructure\Processor\RegisterUserProcessor'
-      confirm-http:
+      confirm_http:
         class: 'ApiPlatform\Metadata\Patch'
-        input: 'App\User\Application\DTO\Token\ConfirmUserDto'
+        input: 'App\User\Application\DTO\ConfirmUserDto'
         processor: 'App\User\Infrastructure\Processor\ConfirmUserProcessor'
         uriTemplate: 'users/confirm'
       ApiPlatform\Metadata\Patch:
-        input: 'App\User\Application\DTO\User\UserPatchDto'
+        input: 'App\User\Application\DTO\UserPatchDto'
         processor: 'App\User\Infrastructure\Processor\UserPatchProcessor'
       ApiPlatform\Metadata\Put:
-        input: 'App\User\Application\DTO\User\UserPutDto'
+        input: 'App\User\Application\DTO\UserPutDto'
         processor: 'App\User\Infrastructure\Processor\UserPutProcessor'
       ApiPlatform\Metadata\Delete: ~
       ApiPlatform\Metadata\Post:
         uriTemplate: '/users/{id}/resend-confirmation-email'
-        input: 'App\User\Application\DTO\Email\RetryDto'
+        input: 'App\User\Application\DTO\RetryDto'
         processor: 'App\User\Infrastructure\Processor\ResendEmailProcessor'
 
     graphQlOperations:

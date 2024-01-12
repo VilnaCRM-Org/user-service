@@ -28,6 +28,9 @@ class ConfirmationEmailSendEvent extends DomainEvent
         return 'confirmation_email.send';
     }
 
+    /**
+     * @return array<string, string|ConfirmationToken>
+     */
     public function toPrimitives(): array
     {
         return [
