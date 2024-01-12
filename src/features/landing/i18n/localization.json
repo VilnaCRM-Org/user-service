@@ -11,13 +11,13 @@
       }
     },
     "about_vilna": {
-      "heading_main": "The first Ukrainian open source CRM",
+      "heading_main": "The first Ukrainian <br/ > open source CRM",
       "text_main": "Our goal is to support Ukrainian entrepreneurs. That's why we created Vilna, a convenient and free CRM system - so you can do business, not spend time on settings",
       "button_main": "Try it out"
     },
     "why_we": {
       "heading": "Why we",
-      "subtitle": "Unlimited customization options or ease of use - we've made it easy for any business to manage sales",
+      "subtitle": "Unlimited customization options or ease of use - <br/ > we've made it easy for any business to manage sales",
       "button": {
         "try_it_out": "Try it out"
       },
@@ -33,8 +33,8 @@
         "text_open_source": "Thanks to the open source code, you can modify and add CRM functions as you need them",
         "text_configure_system": "Configure the system in a few clicks without programming knowledge and receive orders from your website in a few minutes",
         "text_you_have_store": "You have: an online store, courses or a web studio. <br /> <br /> We have: special templates that will save you time",
-        "text_we_know_specific_needs": "We know the specific needs of EdTech, agencies, and service providers — that's why we've created a CRM that's easy to use right away",
-        "text_connect_your_cms": "Connect your CMS and IP telephony in a few clicks. And for specific integrations, use Zapier, APIs, and public libraries",
+        "text_we_know_specific_needs": "We know the specific needs of EdTech, agencies, and service providers <br /> — that's why we've created a CRM that's easy to use right away",
+        "text_connect_your_cms": "Connect your CMS and IP telephony in a few clicks. <br /> And for specific integrations, use Zapier, APIs, and public libraries",
         "text_switch_to_vilna": "Switch to Vilna in a few clicks with ready-made migration scripts from amoCRM and HubSpot"
       }
     },
@@ -53,13 +53,17 @@
         "heading_public_api": "Public API",
         "heading_ready_plugins": "Ready plugins for CMS",
         "heading_system": "Web Hook System",
-        "heading_libraries": "Public Libraries"
+        "heading_libraries": "Public <br /> Libraries"
       },
       "cards_texts": {
-        "text_for_cases": "For cases when you did not find the desired ready-made integration ",
-        "text_integrate": "Integrate familiar services</a> in a few clicks",
-        "text_get_data": "Get data about any event in CRM and automate complex business processes",
-        "text_for_custom": "For custom integrations with specific products"
+        "text_for_cases": "For cases when you did not find <br /> the desired ready-made integration ",
+        "text_integrate": "Integrate familiar <1 href='/'> services </1> in a few clicks",
+        "text_get_data": "Get data about any event in CRM <br /> and automate complex business processes",
+        "text_for_custom": "For custom integrations <br /> with specific products"
+      },
+      "service_text": {
+        "title": "Services",
+        "text": "Integrate in a few clicks"
       },
       "card_image_titles": {
         "title_for_first": "Image of Ruby 1",
@@ -90,6 +94,7 @@
           "message": "Invalid password. Must meet the following requirements: no spaces, at least one upper case, one lower case, one number, one special character, and 8-32 characters long."
         },
         "confidential_text": {
+          "fullText": "I have read and accept the <1>Privacy Policy</1> and the <1>VilnaCRM Service</1> Use Policy",
           "firstText": "I have read and accept",
           "firstLink": "Privacy Policy",
           "secondText": "and",
@@ -123,7 +128,7 @@
     },
     "why_we": {
       "heading": "Чому ми",
-      "subtitle": "Безмежні можливості кастомізації чи простота у використанні — ми подбали, щоб керувати продажами було зручно будь-якому бізнесу",
+      "subtitle": "Безмежні можливості кастомізації чи простота у використанні  — <br/ > ми подбали, щоб керувати продажами було зручно будь-якому бізнесу",
       "button": {
         "try_it_out": "Спробувати"
       },
@@ -139,8 +144,9 @@
         "text_open_source": "Завдяки відкритому вихідному коду ви можете змінити та доповнити функції CRM так, як потрібно саме вам",
         "text_configure_system": "Налаштовуйте систему у декілька кліків без знань у програмуванні та отримуйте замовлення з вашого сайту за кілька хвилин",
         "text_you_have_store": "У вас: онлайн-магазин, курси чи веб-студія <br /> <br /> У нас: спеціальні шаблони, які збережуть ваш час",
-        "text_we_know_specific_needs": "Ми знаємо специфічні запити EdTech, агенств та провайтерів послуг — саме тому створили CRM, з якою зручно одразу ",
-        "text_connect_your_cms": "Підключіть вашу CMS та IP-телефонію у кілька кліків. А для специфічних інтеграцій використовуйте Zapier, API та публічні бібліотеки",
+        "text_you_have_store_q": " У нас: спеціальні шаблони, які збережуть ваш час",
+        "text_we_know_specific_needs": "Ми знаємо специфічні запити EdTech, агенств та провайтерів послуг — <br /> саме тому створили CRM, з якою зручно одразу ",
+        "text_connect_your_cms": "Підключіть вашу CMS та IP-телефонію у кілька кліків. <br /> А для специфічних інтеграцій використовуйте Zapier, API та публічні бібліотеки",
         "text_switch_to_vilna": "Переходьте на Vilna у кілька кліків за допомогою готових сценаріїв міграції з amoCRM та HubSpot"
       }
     },
@@ -159,13 +165,17 @@
         "heading_public_api": "Публічний API",
         "heading_ready_plugins": "Готові плагіни для CMS",
         "heading_system": "Система веб-хуків",
-        "heading_libraries": "Публічні бібліотеки"
+        "heading_libraries": "Публічні <br /> бібліотеки"
       },
       "cards_texts": {
-        "text_1": "Для випадків, коли ви не знайшли потрібну готову інтеграцію ",
-        "text_2": "Інтегруйте <1 href='/'>звичні сервіси </1> у кілька кліків",
-        "text_3": "Отримуйте дані про будь-які івенти у CRM та автоматизуйте складні бізнес-процеси",
-        "text_4": "Для кастомних інтеграцій зі специфічними продуктами"
+        "text_for_cases": "Для випадків, коли ви не знайшли <br /> потрібну готову інтеграцію ",
+        "text_integrate": "Інтегруйте <1 href='/'>звичні сервіси </1> у кілька кліків",
+        "text_get_data": "Отримуйте дані про будь-які івенти у CRM  <br /> та автоматизуйте складні бізнес-процеси",
+        "text_for_custom": "Для кастомних інтеграцій  <br /> зі специфічними продуктами"
+      },
+      "service_text": {
+        "title": "Звичні сервіси",
+        "text": "Інтегруйте у кілька кліків"
       },
       "card_image_titles": {
         "title_for_first": "Зображення діаманту 1",
@@ -196,6 +206,7 @@
           "message": "Недійсний пароль. Має відповідати вимогам: відсутність пробілів, принаймні один верхній регістр, один малий регістр, одна цифра, один спеціальний символ і довжина 8–32 символів."
         },
         "confidential_text": {
+          "fullText": "Я прочитав та приймаю <1>Політику Конфіденційності</1> та <1>Політику Використання</1> сервісу VilnaCRM",
           "firstText": "Я прочитав та приймаю",
           "firstLink": "Політику Конфіденційності",
           "secondText": "та",

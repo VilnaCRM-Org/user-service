@@ -11,7 +11,7 @@ function TextInfo() {
   return (
     <Stack maxWidth="43.813rem" mb="50px">
       <UiTypography variant="h1" sx={textInfoStyles.title}>
-        <Trans i18nKey="about_vilna.title_main">
+        <Trans i18nKey="about_vilna.heading_main">
           Перша українська CRM <br /> з відкритим кодом
         </Trans>
       </UiTypography>

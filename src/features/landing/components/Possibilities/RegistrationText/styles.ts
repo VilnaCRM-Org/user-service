@@ -1,4 +1,10 @@
 export const registrationTextStyles = {
+  textWrapper: {
+    marginLeft: '-16px',
+    '@media (max-width: 639.98px)': {
+      marginLeft: '0',
+    },
+  },
   title: {
     mb: '7px',
     padding: '12px 32px',

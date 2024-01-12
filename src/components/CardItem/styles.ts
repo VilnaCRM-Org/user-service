@@ -23,14 +23,14 @@ export const cardItemWhyUsStyles = {
     },
   },
   title: {
-    pt: '12px',
+    pt: '16px',
     '@media (max-width: 639.98px)': {
       pt: '16px',
       fontSize: '18px',
     },
   },
   text: {
-    mt: '10px',
+    mt: '12px',
     '@media (max-width: 639.98px)': {
       fontSize: '15px',
       lineHeight: '25px',
@@ -80,11 +80,7 @@ export const cardItemPossibilitiesStyles = {
 
   text: {
     mt: '10px',
-    a: {
-      color: '#1EAEFF',
-      textDecoration: 'underline',
-      fontWeight: '700',
-    },
+
     '@media (max-width: 1439.98px)': {
       a: {
         textDecoration: 'none',

@@ -12,10 +12,10 @@ import { NavLink } from './NavLink';
 import { headerStyles } from './styles';
 
 const links = [
-  { id: 1, value: 'Переваги' },
-  { id: 2, value: 'Для кого' },
-  { id: 3, value: 'Інтеграція' },
-  { id: 4, value: 'Контакти' },
+  { id: 1, value: 'header.advantages' },
+  { id: 2, value: 'header.for_who' },
+  { id: 3, value: 'header.integration' },
+  { id: 4, value: 'header.contacts' },
 ];
 
 function Header() {

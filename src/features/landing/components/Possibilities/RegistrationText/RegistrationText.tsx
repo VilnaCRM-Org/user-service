@@ -10,7 +10,11 @@ function RegistrationText() {
   const { t } = useTranslation();
 
   return (
-    <Stack justifyContent="center" width="100%">
+    <Stack
+      justifyContent="center"
+      width="100%"
+      sx={registrationTextStyles.textWrapper}
+    >
       <UiTypography variant="h3" sx={registrationTextStyles.title}>
         {t('unlimited_possibilities.main_heading_text')}
       </UiTypography>

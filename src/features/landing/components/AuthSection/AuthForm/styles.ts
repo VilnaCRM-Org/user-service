@@ -35,7 +35,7 @@ export const authFormStyles = {
   formContent: {
     position: 'relative',
     zIndex: '5',
-    padding: '36px 40px',
+    padding: '36px 40px 40px 40px',
     borderRadius: '32px 32px 0px 0px',
     border: '1px solid  #E1E7EA',
     background: '#FFF',
@@ -80,8 +80,16 @@ export const authFormStyles = {
     },
   },
 
+  labelText: {
+    pt: '20px',
+    pb: '32px',
+    mx: '0px',
+  },
+
   button: { height: '100%' },
   privacyText: {
+    letterSpacing: '0px',
+
     '@media (max-width: 1439.98px)': {
       fontSize: '16px',
     },

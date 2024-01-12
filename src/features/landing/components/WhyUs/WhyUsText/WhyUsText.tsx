@@ -1,6 +1,6 @@
 import { Stack } from '@mui/material';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components/ui';
 
@@ -15,7 +15,7 @@ function WhyUsText() {
         {t('why_we.heading')}
       </UiTypography>
       <UiTypography variant="bodyText18" sx={whyUsTextStyles.text}>
-        {t('why_we.subtitle')}
+        <Trans i18nKey="why_we.subtitle" />
       </UiTypography>
     </Stack>
   );

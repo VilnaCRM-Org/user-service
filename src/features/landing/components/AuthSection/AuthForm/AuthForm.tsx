@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 import React from 'react';
 import { useForm } from 'react-hook-form';
+import { Trans, useTranslation } from 'react-i18next';
 
 import {
   UiButton,
@@ -9,6 +10,7 @@ import {
   UiLabel,
   UiTypography,
 } from '@/components/ui';
+import { UiLink } from '@/components/ui/UiLink';
 
 import { authFormStyles } from './styles';
 
@@ -19,6 +21,8 @@ export interface RegisterItem {
 }
 
 function AuthForm() {
+  const { t } = useTranslation();
+
   const {
     register,
     handleSubmit,
@@ -64,17 +68,26 @@ function AuthForm() {
     return true;
   };
 
+  const fullNameTitle = t('sign_up.form.name_input.label');
+  const fullNamePlaceholder = t('sign_up.form.name_input.placeholder');
+
+  const emailTitle = t('sign_up.form.email_input.label');
+  const emailPlaceholder = t('sign_up.form.email_input.placeholder');
+
+  const passwordTitle = t('sign_up.form.password_input.label');
+  const passwordPlaceholder = t('sign_up.form.password_input.placeholder');
+
   return (
     <Box sx={authFormStyles.formWrapper}>
       <Box sx={authFormStyles.backgroundImage} />
       <Box sx={authFormStyles.formContent}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <UiTypography variant="h4" sx={authFormStyles.formTitle}>
-            Або зареєструйтеся на сайті:
+            {t('sign_up.form.heading_main')}
           </UiTypography>
           <UiLabel
             sx={authFormStyles.labelTitle}
-            title="Ваше ім’я та прізвище"
+            title={fullNameTitle}
             errorText={
               errors.FullName?.message || 'Виникла помилка. Перевірте ще раз'
             }
@@ -84,7 +97,7 @@ function AuthForm() {
               fullWidth
               error={!!errors.FullName}
               helperText={errors.FullName?.message}
-              placeholder="Михайло Светський"
+              placeholder={fullNamePlaceholder}
               // eslint-disable-next-line react/jsx-props-no-spreading
               {...register('FullName', {
                 required: true,
@@ -96,7 +109,7 @@ function AuthForm() {
           </UiLabel>
           <UiLabel
             sx={authFormStyles.labelTitle}
-            title="E-mail"
+            title={emailTitle}
             errorText={
               errors.Email?.message || 'Виникла помилка. Перевірте ще раз'
             }
@@ -106,7 +119,7 @@ function AuthForm() {
               fullWidth
               error={!!errors.Email?.message || false}
               helperText={errors.Email?.message}
-              placeholder="vilnaCRM@gmail.com"
+              placeholder={emailPlaceholder}
               // eslint-disable-next-line react/jsx-props-no-spreading
               {...register('Email', {
                 required: true,
@@ -116,7 +129,7 @@ function AuthForm() {
           </UiLabel>
           <UiLabel
             sx={authFormStyles.labelTitle}
-            title="Пароль"
+            title={passwordTitle}
             errorText={
               errors.Password?.message || 'Виникла помилка. Перевірте ще раз'
             }
@@ -127,7 +140,7 @@ function AuthForm() {
               error={!!errors.Password?.message || false}
               helperText={errors.Password?.message}
               type="password"
-              placeholder="Створіть пароль"
+              placeholder={passwordPlaceholder}
               // eslint-disable-next-line react/jsx-props-no-spreading
               {...register('Password', {
                 required: true,
@@ -137,10 +150,14 @@ function AuthForm() {
           </UiLabel>
 
           <UiCheckbox
+            sx={authFormStyles.labelText}
             label={
               <UiTypography variant="medium14" sx={authFormStyles.privacyText}>
-                Я прочитав та приймаю Політику Конфіденційності та Політику
-                Використання сервісу VilnaCRM
+                <Trans i18nKey="sign_up.form.confidential_text.fullText">
+                  Я прочитав та приймаю
+                  <UiLink>Політику Конфіденційності</UiLink>
+                  та <UiLink>Політику Використання</UiLink> сервісу VilnaCRM
+                </Trans>
               </UiTypography>
             }
           />
@@ -152,7 +169,7 @@ function AuthForm() {
               fullWidth
               sx={authFormStyles.button}
             >
-              Реєєстрація
+              {t('sign_up.form.button-text')}
             </UiButton>
           </Box>
         </form>
