@@ -331,7 +331,7 @@ paths:
           allowReserved: false
       deprecated: false
     post:
-      operationId: api_users_post
+      operationId: create-http
       tags:
         - User
       responses:
@@ -437,7 +437,7 @@ paths:
     parameters: []
   /api/users/confirm:
     patch:
-      operationId: api_usersconfirm_patch
+      operationId: confirm-http
       tags:
         - User
       responses:
@@ -978,20 +978,6 @@ paths:
     parameters: []
 components:
   schemas:
-    User:
-      type: object
-      description: ''
-      deprecated: false
-      properties:
-        timesSent:
-          type: integer
-        allowedToSendAfter:
-          type: string
-          format: date-time
-        tokenValue:
-          type: string
-        userID:
-          type: string
     User-output:
       type: object
       description: ''
@@ -1122,43 +1108,6 @@ components:
         initials:
           type: string
         password:
-          type: string
-    User.jsonld:
-      type: object
-      description: ''
-      deprecated: false
-      properties:
-        '@context':
-          readOnly: true
-          oneOf:
-            -
-              type: string
-            -
-              type: object
-              properties:
-                '@vocab':
-                  type: string
-                hydra:
-                  type: string
-                  enum: ['http://www.w3.org/ns/hydra/core#']
-              required:
-                - '@vocab'
-                - hydra
-              additionalProperties: true
-        '@id':
-          readOnly: true
-          type: string
-        '@type':
-          readOnly: true
-          type: string
-        timesSent:
-          type: integer
-        allowedToSendAfter:
-          type: string
-          format: date-time
-        tokenValue:
-          type: string
-        userID:
           type: string
     User.jsonld-output:
       type: object
