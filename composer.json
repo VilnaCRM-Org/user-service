@@ -23,6 +23,7 @@
         "lambdish/phunctional": "^2.1",
         "league/oauth2-server-bundle": "^0.5.0",
         "lexik/jwt-authentication-bundle": "^2.20.3",
+        "nelmio/cors-bundle": "^2.4",
         "phpmailer/phpmailer": "^6.6",
         "ramsey/uuid": "4.7.5",
         "sebastian/phpcpd": "^6.0",
