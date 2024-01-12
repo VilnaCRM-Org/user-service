@@ -331,7 +331,7 @@ paths:
           allowReserved: false
       deprecated: false
     post:
-      operationId: create-http
+      operationId: create_http
       tags:
         - User
       responses:
@@ -437,7 +437,7 @@ paths:
     parameters: []
   /api/users/confirm:
     patch:
-      operationId: confirm-http
+      operationId: confirm_http
       tags:
         - User
       responses:
@@ -1020,14 +1020,18 @@ components:
       properties:
         email:
           format: email
+          maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
           type: string
         initials:
+          maxLength: 255
           type: string
         oldPassword:
+          maxLength: 255
           type: string
         newPassword:
+          maxLength: 255
           type: string
       required:
         - oldPassword
@@ -1043,14 +1047,18 @@ components:
       properties:
         email:
           format: email
+          maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
           type: string
         initials:
+          maxLength: 255
           type: string
         oldPassword:
+          maxLength: 255
           type: string
         newPassword:
+          maxLength: 255
           type: string
     User.UserPutDto.jsonld:
       type: object
@@ -1064,14 +1072,18 @@ components:
       properties:
         email:
           format: email
+          maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
           type: string
         initials:
+          maxLength: 255
           type: string
         oldPassword:
+          maxLength: 255
           type: string
         newPassword:
+          maxLength: 255
           type: string
     User.UserRegisterDto:
       type: object
@@ -1084,12 +1096,15 @@ components:
       properties:
         email:
           format: email
+          maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
           type: string
         initials:
+          maxLength: 255
           type: string
         password:
+          maxLength: 255
           type: string
     User.UserRegisterDto.jsonld:
       type: object
@@ -1102,12 +1117,15 @@ components:
       properties:
         email:
           format: email
+          maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
           type: string
         initials:
+          maxLength: 255
           type: string
         password:
+          maxLength: 255
           type: string
     User.jsonld-output:
       type: object
