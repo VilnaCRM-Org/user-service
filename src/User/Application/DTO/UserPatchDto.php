@@ -22,7 +22,6 @@ readonly class UserPatchDto
 
         #[Assert\Length(max: 255)]
         public string $newPassword,
-    )
-    {
+    ) {
     }
 }

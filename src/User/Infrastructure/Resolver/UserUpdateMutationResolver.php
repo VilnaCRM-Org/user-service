@@ -8,7 +8,6 @@ use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\UpdateUserCommand;
 use App\User\Application\MutationInput\MutationInputValidator;
-use App\User\Application\MutationInput\UpdateUserMutationInput;
 use App\User\Application\Transformer\UpdateUserMutationInputTransformer;
 
 class UserUpdateMutationResolver implements MutationResolverInterface

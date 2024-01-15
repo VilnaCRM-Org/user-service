@@ -25,7 +25,6 @@ readonly class UserPutDto
         #[Assert\NotBlank]
         #[Assert\Length(max: 255)]
         public string $newPassword
-    )
-    {
+    ) {
     }
 }

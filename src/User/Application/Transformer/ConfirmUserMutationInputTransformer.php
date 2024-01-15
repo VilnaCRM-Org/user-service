@@ -10,6 +10,6 @@ class ConfirmUserMutationInputTransformer
 {
     public function transform(array $args): ConfirmUserMutationInput
     {
-        return new ConfirmUserMutationInput($args['token']?? null);
+        return new ConfirmUserMutationInput($args['token'] ?? null);
     }
 }

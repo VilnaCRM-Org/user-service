@@ -12,9 +12,7 @@ readonly class ConfirmUserMutationInput implements MutationInput
         #[Assert\NotNull]
         #[Assert\NotBlank]
         public ?string $token = null
-    )
-    {
-
+    ) {
     }
 
     public function getValidationGroups(): array

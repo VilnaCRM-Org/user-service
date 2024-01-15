@@ -12,16 +12,15 @@ class UpdateUserMutationInputTransformer
     {
         $validationGroups = [];
 
-        if(isset($args['initials'])){
+        if (isset($args['initials'])) {
             $validationGroups[] = 'initials_not_null';
         }
-        if(isset($args['email'])){
+        if (isset($args['email'])) {
             $validationGroups[] = 'email_not_null';
         }
-        if(isset($args['newPassword'])){
+        if (isset($args['newPassword'])) {
             $validationGroups[] = 'new_password_not_null';
         }
-
 
         return new UpdateUserMutationInput(
             $validationGroups,

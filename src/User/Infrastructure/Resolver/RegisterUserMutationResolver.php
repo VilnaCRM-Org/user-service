@@ -7,7 +7,6 @@ namespace App\User\Infrastructure\Resolver;
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\SignUpCommand;
-use App\User\Application\MutationInput\CreateUserMutationInput;
 use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\Transformer\CreateUserMutationInputTransformer;
 

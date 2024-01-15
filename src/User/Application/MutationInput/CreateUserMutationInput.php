@@ -22,8 +22,7 @@ readonly class CreateUserMutationInput implements MutationInput
         #[Assert\NotBlank]
         #[Assert\Length(max: 255)]
         public ?string $password = null,
-    )
-    {
+    ) {
     }
 
     public function getValidationGroups(): array

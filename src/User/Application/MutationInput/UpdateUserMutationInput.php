@@ -8,7 +8,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 readonly class UpdateUserMutationInput implements MutationInput
 {
-
     public function __construct(
         private array $validationGroups,
         #[Assert\NotBlank]
@@ -24,8 +23,7 @@ readonly class UpdateUserMutationInput implements MutationInput
         #[Assert\NotBlank(groups: ['new_password_not_null'])]
         #[Assert\Length(max: 255, groups: ['new_password_not_null'])]
         public ?string $newPassword = null,
-    )
-    {
+    ) {
     }
 
     public function getValidationGroups(): array

@@ -123,15 +123,13 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'application/json' => [
                         'example' => '{}',
                     ], ])))
-                ->withResponses([HttpResponse::HTTP_OK =>
-                    new Response(description: 'Email was send again', content: new \ArrayObject([
+                ->withResponses([HttpResponse::HTTP_OK => new Response(description: 'Email was send again', content: new \ArrayObject([
                     'application/json' => [
                         'example' => '',
                     ],
                 ]), ),
                     HttpResponse::HTTP_NOT_FOUND => $standardResponse404,
-                    HttpResponse::HTTP_TOO_MANY_REQUESTS =>
-                        new Response(description: 'Too many requests', content: new \ArrayObject([
+                    HttpResponse::HTTP_TOO_MANY_REQUESTS => new Response(description: 'Too many requests', content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
@@ -279,69 +277,69 @@ class OpenApiFactory implements OpenApiFactoryInterface
             new Model\PathItem(summary: 'Requests for authorization code', description: 'Requests for authorization code',
                 get: new Model\Operation(tags: ['OAuth'], responses: [
                     HttpResponse::HTTP_FOUND => new Response(
-                    description: 'Redirect to the provided redirect URI with authorization code.', content: new \ArrayObject([
-                    'application/json' => [
-                        'example' => '',
-                    ], ]), headers: new \ArrayObject(['Location' => new Model\Header(description: 'The URI to redirect to for user authorization',
-                        schema: ['type' => 'string', 'format' => 'uri', 'example' => 'https://example.com/oauth/callback?code=e7f8c62113a47f7a5a9dca1f&state=af0ifjsldkj'])]), ),
+                        description: 'Redirect to the provided redirect URI with authorization code.', content: new \ArrayObject([
+                        'application/json' => [
+                            'example' => '',
+                        ], ]), headers: new \ArrayObject(['Location' => new Model\Header(description: 'The URI to redirect to for user authorization',
+                            schema: ['type' => 'string', 'format' => 'uri', 'example' => 'https://example.com/oauth/callback?code=e7f8c62113a47f7a5a9dca1f&state=af0ifjsldkj'])]), ),
                     HttpResponse::HTTP_BAD_REQUEST => $unsupportedGrantTypeResponse,
                     HttpResponse::HTTP_UNAUTHORIZED => $invalidClientCredentialsResponse], parameters: [
-                        new Model\Parameter(
-                            name: 'response_type',
-                            in: 'query',
-                            description: 'Response type',
-                            required: true,
-                            example: 'code'),
-                        new Model\Parameter(
-                            name: 'client_id',
-                            in: 'query',
-                            description: 'Client ID',
-                            required: true,
-                            example: 'dc0bc6323f16fecd4224a3860ca894c5'),
-                        new Model\Parameter(
-                            name: 'redirect_uri',
-                            in: 'query',
-                            description: 'Redirect uri',
-                            required: true,
-                            example: 'https://example.com/oauth/callback'),
-                        new Model\Parameter(
-                            name: 'scope',
-                            in: 'query',
-                            description: 'Scope',
-                            required: false,
-                            example: 'profile email'),
-                        new Model\Parameter(
-                            name: 'state',
-                            in: 'query',
-                            description: 'State',
-                            required: false,
-                            example: 'af0ifjsldkj'),
+                            new Model\Parameter(
+                                name: 'response_type',
+                                in: 'query',
+                                description: 'Response type',
+                                required: true,
+                                example: 'code'),
+                            new Model\Parameter(
+                                name: 'client_id',
+                                in: 'query',
+                                description: 'Client ID',
+                                required: true,
+                                example: 'dc0bc6323f16fecd4224a3860ca894c5'),
+                            new Model\Parameter(
+                                name: 'redirect_uri',
+                                in: 'query',
+                                description: 'Redirect uri',
+                                required: true,
+                                example: 'https://example.com/oauth/callback'),
+                            new Model\Parameter(
+                                name: 'scope',
+                                in: 'query',
+                                description: 'Scope',
+                                required: false,
+                                example: 'profile email'),
+                            new Model\Parameter(
+                                name: 'state',
+                                in: 'query',
+                                description: 'State',
+                                required: false,
+                                example: 'af0ifjsldkj'),
             ])));
 
         $openApi->getPaths()->addPath('/api/oauth/token',
             new Model\PathItem(summary: 'Requests for access token', description: 'Requests for access token',
                 post: new Model\Operation(tags: ['OAuth'], responses: [
                     HttpResponse::HTTP_OK => new Response(description: 'Access token returned',
-                    content: new \ArrayObject([
-                        'application/json' => [
-                            'schema' => [
-                                'type' => 'object',
-                                'properties' => [
-                                    'token_type' => ['type' => 'string'],
-                                    'expires_in' => ['type' => 'integer'],
-                                    'access_token' => ['type' => 'string'],
-                                    'refresh_token' => ['type' => 'string'],
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'token_type' => ['type' => 'string'],
+                                        'expires_in' => ['type' => 'integer'],
+                                        'access_token' => ['type' => 'string'],
+                                        'refresh_token' => ['type' => 'string'],
+                                    ],
                                 ],
-                            ],
-                            'example' => [
-                                'token_type' => 'Bearer',
-                                'expires_in' => 3600,
-                                'access_token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdW',
-                                'refresh_token' => 'df9b4ae7ce2e1e8f2a3c1b4d',
-                            ],
-                        ], ]), ),
+                                'example' => [
+                                    'token_type' => 'Bearer',
+                                    'expires_in' => 3600,
+                                    'access_token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdW',
+                                    'refresh_token' => 'df9b4ae7ce2e1e8f2a3c1b4d',
+                                ],
+                            ], ]), ),
                     HttpResponse::HTTP_BAD_REQUEST => $unsupportedGrantTypeResponse,
-                    HttpResponse::HTTP_UNAUTHORIZED  => $invalidClientCredentialsResponse,
+                    HttpResponse::HTTP_UNAUTHORIZED => $invalidClientCredentialsResponse,
                 ], requestBody: new Model\RequestBody(
                     content: new \ArrayObject([
                         'application/json' => [

@@ -13,7 +13,6 @@ use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
 use App\User\Infrastructure\Exception\UserNotFoundException;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ConfirmUserMutationResolver implements MutationResolverInterface
 {
