@@ -7,12 +7,13 @@ namespace App\User\Infrastructure\Resolver;
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\ConfirmUserCommand;
-use App\User\Application\MutationInput\ConfirmUserMutationInput;
 use App\User\Application\MutationInput\MutationInputValidator;
+use App\User\Application\Transformer\ConfirmUserMutationInputTransformer;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
 use App\User\Infrastructure\Exception\UserNotFoundException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ConfirmUserMutationResolver implements MutationResolverInterface
 {
@@ -20,7 +21,8 @@ class ConfirmUserMutationResolver implements MutationResolverInterface
         private TokenRepositoryInterface $tokenRepository,
         private CommandBusInterface $commandBus,
         private UserRepositoryInterface $userRepository,
-        private MutationInputValidator $validator
+        private MutationInputValidator $validator,
+        private ConfirmUserMutationInputTransformer $transformer
     ) {
     }
 
@@ -28,7 +30,7 @@ class ConfirmUserMutationResolver implements MutationResolverInterface
     {
         $args = $context['args']['input'];
 
-        $this->validator->validate($args, new ConfirmUserMutationInput());
+        $this->validator->validate($this->transformer->transform($args));
 
         $token = $this->tokenRepository->find($args['token']) ?? throw new TokenNotFoundException();
         $user = $this->userRepository->find($token->getUserID()) ?? throw new UserNotFoundException();

@@ -3,7 +3,7 @@ resources:
     exceptionToStatus:
       'App\User\Domain\Exception\UserTimedOutException': 429
       'App\User\Infrastructure\Exception\UserNotFoundException': 404
-      'App\User\Infrastructure\Exception\InvalidPasswordException': 410
+      'App\User\Infrastructure\Exception\InvalidPasswordException': 400
       'App\User\Infrastructure\Exception\TokenNotFoundException': 404
       'App\User\Infrastructure\Exception\DuplicateEmailException': 409
     normalizationContext:

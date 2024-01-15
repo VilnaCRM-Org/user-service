@@ -10,29 +10,23 @@ use App\User\Domain\Event\PasswordChangedEvent;
 use App\User\Domain\Event\UserConfirmedEvent;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Uid\Uuid;
 
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    #[Groups(['output', 'deleteMutationOutput'])]
     private Uuid $id;
 
-    #[Groups(['output'])]
     private string $email;
 
-    #[Groups(['output'])]
     private string $initials;
 
     private string $password;
 
-    #[Groups(['output'])]
     private bool $confirmed;
 
     /**
      * @var array<string>
      */
-    #[Groups(['output'])]
     private array $roles;
 
     public function __construct(

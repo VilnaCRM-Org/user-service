@@ -6,12 +6,19 @@ namespace App\User\Application\MutationInput;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-class ConfirmUserMutationInput implements MutationInput
+readonly class ConfirmUserMutationInput implements MutationInput
 {
-    public function getConstraints(): Assert\Collection
+    public function __construct(
+        #[Assert\NotNull]
+        #[Assert\NotBlank]
+        public ?string $token = null
+    )
     {
-        return new Assert\Collection([
-            'token' => new Assert\NotBlank(),
-        ]);
+
+    }
+
+    public function getValidationGroups(): array
+    {
+        return [];
     }
 }

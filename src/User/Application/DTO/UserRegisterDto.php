@@ -8,23 +8,21 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 readonly class UserRegisterDto
 {
-    #[Assert\NotBlank]
-    #[Assert\Email]
-    #[Assert\Length(max: 255)]
-    public string $email;
+    public function __construct(
+        #[Assert\NotBlank]
+        #[Assert\Email]
+        #[Assert\Length(max: 255)]
+        public string $email,
 
-    #[Assert\NotBlank]
-    #[Assert\Length(max: 255)]
-    public string $initials;
+        #[Assert\NotBlank]
+        #[Assert\Length(max: 255)]
+        public string $initials,
 
-    #[Assert\NotBlank]
-    #[Assert\Length(max: 255)]
-    public string $password;
-
-    public function __construct(string $email, string $initials, string $password)
+        #[Assert\NotBlank]
+        #[Assert\Length(max: 255)]
+        public string $password,
+    )
     {
-        $this->email = $email;
-        $this->initials = $initials;
-        $this->password = $password;
+
     }
 }

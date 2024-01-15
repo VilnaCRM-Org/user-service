@@ -8,6 +8,7 @@ use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class OpenApiFactory implements OpenApiFactoryInterface
 {
@@ -35,7 +36,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'type' => '/errors/500',
                     'title' => 'An error occurred',
                     'detail' => 'Something went wrong',
-                    'status' => 500,
+                    'status' => HttpResponse::HTTP_INTERNAL_SERVER_ERROR,
                 ],
             ],
         ]), );
@@ -55,7 +56,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
                     'title' => 'An error occurred',
                     'detail' => 'The input data is misformatted.',
-                    'status' => 400,
+                    'status' => HttpResponse::HTTP_BAD_REQUEST,
                 ],
             ],
         ]), );
@@ -75,7 +76,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
                     'title' => 'An error occurred',
                     'detail' => 'User not found',
-                    'status' => 404,
+                    'status' => HttpResponse::HTTP_NOT_FOUND,
                 ],
             ],
         ]), );
@@ -101,7 +102,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                         'message' => 'This value should not be blank.',
                         'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                     ],
-                    'status' => 422,
+                    'status' => HttpResponse::HTTP_UNPROCESSABLE_ENTITY,
                 ],
             ],
         ]), );
@@ -122,13 +123,15 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     'application/json' => [
                         'example' => '{}',
                     ], ])))
-                ->withResponses([200 => new Response(description: 'Email was send again', content: new \ArrayObject([
+                ->withResponses([HttpResponse::HTTP_OK =>
+                    new Response(description: 'Email was send again', content: new \ArrayObject([
                     'application/json' => [
                         'example' => '',
                     ],
                 ]), ),
-                    404 => $standardResponse404,
-                    429 => new Response(description: 'Too many requests', content: new \ArrayObject([
+                    HttpResponse::HTTP_NOT_FOUND => $standardResponse404,
+                    HttpResponse::HTTP_TOO_MANY_REQUESTS =>
+                        new Response(description: 'Too many requests', content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
                                 'type' => 'object',
@@ -143,7 +146,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                                 'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
                                 'title' => 'An error occurred',
                                 'detail' => 'Cannot send new email till 05 Dec 2023 14:55:45',
-                                'status' => 429,
+                                'status' => HttpResponse::HTTP_TOO_MANY_REQUESTS,
                             ],
                         ],
                     ]), ),
@@ -166,7 +169,7 @@ class OpenApiFactory implements OpenApiFactoryInterface
                     ],
                 ],
                 'example' => [
-                    'status' => 409,
+                    'status' => HttpResponse::HTTP_CONFLICT,
                     'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
                     'title' => 'An error occurred',
                     'detail' => 'user@example.com address is already registered. Please use a different email address or try logging in.',
@@ -176,10 +179,10 @@ class OpenApiFactory implements OpenApiFactoryInterface
 
         $openApi->getPaths()->addPath('/api/users', $pathItem->withPost(
             $operationPost
-                ->withResponse(400, $standardResponse400)
-                ->withResponse(409, $duplicateEmailResponse)
-                ->withResponse(422, $standardResponse422))
-            ->withGet($operationGet->withResponse(400, $standardResponse400)));
+                ->withResponse(HttpResponse::HTTP_BAD_REQUEST, $standardResponse400)
+                ->withResponse(HttpResponse::HTTP_CONFLICT, $duplicateEmailResponse)
+                ->withResponse(HttpResponse::HTTP_UNPROCESSABLE_ENTITY, $standardResponse422))
+            ->withGet($operationGet->withResponse(HttpResponse::HTTP_BAD_REQUEST, $standardResponse400)));
 
         $pathItem = $openApi->getPaths()->getPath('/api/users/{id}');
         $operationPut = $pathItem->getPut();
@@ -187,51 +190,30 @@ class OpenApiFactory implements OpenApiFactoryInterface
         $operationDelete = $pathItem->getDelete();
         $operationGet = $pathItem->getGet();
 
-        $oldPasswordErrorResponse = new Response(description: 'Old password mismatch', content: new \ArrayObject([
-            'application/json' => [
-                'schema' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'status' => ['type' => 'integer'],
-                        'type' => ['type' => 'string'],
-                        'title' => ['type' => 'string'],
-                        'detail' => ['type' => 'string'],
-                    ],
-                ],
-                'example' => [
-                    'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
-                    'title' => 'An error occurred',
-                    'detail' => 'Old password is invalid',
-                    'status' => 410,
-                ],
-            ],
-            ]), );
-
         $openApi->getPaths()->addPath('/api/users/{id}', $pathItem->withPut(
             $operationPut->withParameters([$UuidWithExamplePathParam])
-                ->withResponse(400, $standardResponse400)
-                ->withResponse(404, $standardResponse404)
-                ->withResponse(409, $duplicateEmailResponse)
-                ->withResponse(410, $oldPasswordErrorResponse)
-                ->withResponse(422, $standardResponse422)
+                ->withResponse(HttpResponse::HTTP_BAD_REQUEST, $standardResponse400)
+                ->withResponse(HttpResponse::HTTP_NOT_FOUND, $standardResponse404)
+                ->withResponse(HttpResponse::HTTP_CONFLICT, $duplicateEmailResponse)
+                ->withResponse(HttpResponse::HTTP_UNPROCESSABLE_ENTITY, $standardResponse422)
         )->withPatch(
             $operationPatch->withParameters([$UuidWithExamplePathParam])
-                ->withResponse(400, $standardResponse400)
-                ->withResponse(404, $standardResponse404)
-                ->withResponse(409, $duplicateEmailResponse)
-                ->withResponse(410, $oldPasswordErrorResponse)
-                ->withResponse(422, $standardResponse422)
+                ->withResponse(HttpResponse::HTTP_BAD_REQUEST, $standardResponse400)
+                ->withResponse(HttpResponse::HTTP_NOT_FOUND, $standardResponse404)
+                ->withResponse(HttpResponse::HTTP_CONFLICT, $duplicateEmailResponse)
+                ->withResponse(HttpResponse::HTTP_UNPROCESSABLE_ENTITY, $standardResponse422)
         )->withDelete(
             $operationDelete->withParameters([$UuidWithExamplePathParam])
                 ->withResponses([
-                    204 => new Response(description: 'User resource deleted', content: new \ArrayObject([
+                    HttpResponse::HTTP_NO_CONTENT => new Response(
+                        description: 'User resource deleted', content: new \ArrayObject([
                         'application/json' => [
                             'example' => '',
                         ],
                     ]), ),
-                    404 => $standardResponse404])
+                    HttpResponse::HTTP_NOT_FOUND => $standardResponse404])
         )->withGet($operationGet->withParameters([$UuidWithExamplePathParam])
-            ->withResponse(404, $standardResponse404)));
+            ->withResponse(HttpResponse::HTTP_NOT_FOUND, $standardResponse404)));
 
         // Customising confirm endpoint
         $pathItem = $openApi->getPaths()->getPath('/api/users/confirm');
@@ -240,12 +222,12 @@ class OpenApiFactory implements OpenApiFactoryInterface
         $openApi->getPaths()->addPath('/api/users/confirm', $pathItem->withPatch(
             $operationPatch->withDescription('Confirms the User')->withSummary('Confirms the User')
                 ->withResponses([
-                    200 => new Response(description: 'User confirmed', content: new \ArrayObject([
+                    HttpResponse::HTTP_OK => new Response(description: 'User confirmed', content: new \ArrayObject([
                         'application/json' => [
                             'example' => '',
                         ],
                         ]), ),
-                    404 => new Response(description: 'Token not found or expired', content: new \ArrayObject([
+                    HttpResponse::HTTP_NOT_FOUND => new Response(description: 'Token not found or expired', content: new \ArrayObject([
                         'application/json' => [
                             'example' => '',
                         ],
@@ -274,7 +256,8 @@ class OpenApiFactory implements OpenApiFactoryInterface
                 ],
             ],
             ]), );
-        $invalidClientCredentialsResponse = new Response(description: 'Invalid client credentials', content: new \ArrayObject([
+        $invalidClientCredentialsResponse = new Response(
+            description: 'Invalid client credentials', content: new \ArrayObject([
             'application/json' => [
                 'schema' => [
                     'type' => 'object',
@@ -294,14 +277,15 @@ class OpenApiFactory implements OpenApiFactoryInterface
 
         $openApi->getPaths()->addPath('/api/oauth/authorize',
             new Model\PathItem(summary: 'Requests for authorization code', description: 'Requests for authorization code',
-                get: new Model\Operation(tags: ['OAuth'], responses: [302 => new Response(
+                get: new Model\Operation(tags: ['OAuth'], responses: [
+                    HttpResponse::HTTP_FOUND => new Response(
                     description: 'Redirect to the provided redirect URI with authorization code.', content: new \ArrayObject([
                     'application/json' => [
                         'example' => '',
                     ], ]), headers: new \ArrayObject(['Location' => new Model\Header(description: 'The URI to redirect to for user authorization',
                         schema: ['type' => 'string', 'format' => 'uri', 'example' => 'https://example.com/oauth/callback?code=e7f8c62113a47f7a5a9dca1f&state=af0ifjsldkj'])]), ),
-                400 => $unsupportedGrantTypeResponse,
-                401 => $invalidClientCredentialsResponse], parameters: [
+                    HttpResponse::HTTP_BAD_REQUEST => $unsupportedGrantTypeResponse,
+                    HttpResponse::HTTP_UNAUTHORIZED => $invalidClientCredentialsResponse], parameters: [
                         new Model\Parameter(
                             name: 'response_type',
                             in: 'query',
@@ -336,7 +320,8 @@ class OpenApiFactory implements OpenApiFactoryInterface
 
         $openApi->getPaths()->addPath('/api/oauth/token',
             new Model\PathItem(summary: 'Requests for access token', description: 'Requests for access token',
-                post: new Model\Operation(tags: ['OAuth'], responses: [200 => new Response(description: 'Access token returned',
+                post: new Model\Operation(tags: ['OAuth'], responses: [
+                    HttpResponse::HTTP_OK => new Response(description: 'Access token returned',
                     content: new \ArrayObject([
                         'application/json' => [
                             'schema' => [
@@ -355,8 +340,8 @@ class OpenApiFactory implements OpenApiFactoryInterface
                                 'refresh_token' => 'df9b4ae7ce2e1e8f2a3c1b4d',
                             ],
                         ], ]), ),
-                400 => $unsupportedGrantTypeResponse,
-                401 => $invalidClientCredentialsResponse,
+                    HttpResponse::HTTP_BAD_REQUEST => $unsupportedGrantTypeResponse,
+                    HttpResponse::HTTP_UNAUTHORIZED  => $invalidClientCredentialsResponse,
                 ], requestBody: new Model\RequestBody(
                     content: new \ArrayObject([
                         'application/json' => [

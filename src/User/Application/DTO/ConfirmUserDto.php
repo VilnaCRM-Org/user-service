@@ -8,11 +8,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 readonly class ConfirmUserDto
 {
-    #[Assert\NotBlank]
-    public string $token;
-
-    public function __construct(string $token)
+    public function __construct(
+        #[Assert\NotBlank]
+        public string $token
+    )
     {
-        $this->token = $token;
     }
 }

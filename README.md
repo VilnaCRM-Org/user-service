@@ -40,8 +40,11 @@ Use `make` command to automatically install all needed dependencies
 Use `make` command to run migrations
 > make doctrine-migrations-migrate
 
-Go to browser and open the link below
+Go to browser and open the link below to access REST API docs
 > https://localhost/api/docs
+
+And using the link below you can access the GraphQL documentation
+> https://localhost/api/graphql/graphql_playground
 
 That's it. You should now be ready to use PHP service template!
 

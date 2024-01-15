@@ -63,7 +63,7 @@ Feature: User Operations
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "pass" exists
     And updating user with email "testput@mail.com", initials "initials", oldPassword "wrongPass", newPassword "pass"
     When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
-    Then the response status code should be 410
+    Then the response status code should be 400
 
   Scenario: Replacing a non-existing user
     When PUT request is send to "/api/users//8be90127-9840-4235-a6da-39b8debfb221"
@@ -98,7 +98,7 @@ Feature: User Operations
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "pass" exists
     And updating user with email "testpatch@mail.com", initials "initials", oldPassword "wrongPass", newPassword "pass"
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
-    Then the response status code should be 410
+    Then the response status code should be 400
 
   Scenario: Updating a non-existing user
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221"

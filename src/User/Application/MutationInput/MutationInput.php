@@ -8,5 +8,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 interface MutationInput
 {
-    public function getConstraints(): Assert\Collection;
+
+    /**
+     * @return array<string>
+     */
+    public function getValidationGroups(): array;
 }

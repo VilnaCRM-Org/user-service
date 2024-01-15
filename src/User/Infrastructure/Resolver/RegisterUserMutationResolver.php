@@ -9,12 +9,14 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\SignUpCommand;
 use App\User\Application\MutationInput\CreateUserMutationInput;
 use App\User\Application\MutationInput\MutationInputValidator;
+use App\User\Application\Transformer\CreateUserMutationInputTransformer;
 
 class RegisterUserMutationResolver implements MutationResolverInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,
-        private MutationInputValidator $validator
+        private MutationInputValidator $validator,
+        private CreateUserMutationInputTransformer $transformer
     ) {
     }
 
@@ -22,7 +24,7 @@ class RegisterUserMutationResolver implements MutationResolverInterface
     {
         $args = $context['args']['input'];
 
-        $this->validator->validate($args, new CreateUserMutationInput());
+        $this->validator->validate($this->transformer->transform($args));
 
         $command = new SignUpCommand($args['email'], $args['initials'], $args['password']);
         $this->commandBus->dispatch($command);

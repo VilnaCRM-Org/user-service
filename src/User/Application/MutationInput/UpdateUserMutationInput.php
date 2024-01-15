@@ -6,43 +6,30 @@ namespace App\User\Application\MutationInput;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-class UpdateUserMutationInput implements MutationInput
+readonly class UpdateUserMutationInput implements MutationInput
 {
-    private Assert\Collection $constraints;
 
-    public function __construct(array $contextArgs)
+    public function __construct(
+        private array $validationGroups,
+        #[Assert\NotBlank]
+        #[Assert\Length(max: 255)]
+        public ?string $password = null,
+        #[Assert\NotBlank(groups: ['initials_not_null'])]
+        #[Assert\Length(max: 255, groups: ['initials_not_null'])]
+        public ?string $initials = null,
+        #[Assert\Email(groups: ['email_not_null'])]
+        #[Assert\NotBlank(groups: ['email_not_null'])]
+        #[Assert\Length(max: 255, groups: ['email_not_null'])]
+        public ?string $email = null,
+        #[Assert\NotBlank(groups: ['new_password_not_null'])]
+        #[Assert\Length(max: 255, groups: ['new_password_not_null'])]
+        public ?string $newPassword = null,
+    )
     {
-        $fields = [
-            'password' => [
-            new Assert\NotBlank(),
-            new Assert\Length(max: 255), ],
-            'id' => new Assert\NotBlank(),
-        ];
-        if (array_key_exists('initials', $contextArgs)) {
-            $fields['initials'] = [
-                new Assert\NotBlank(),
-                new Assert\Length(max: 255),
-            ];
-        }
-        if (array_key_exists('email', $contextArgs)) {
-            $fields['email'] = [
-                new Assert\NotBlank(),
-                new Assert\Email(),
-                new Assert\Length(max: 255),
-            ];
-        }
-        if (array_key_exists('newPassword', $contextArgs)) {
-            $fields['newPassword'] = [
-                new Assert\NotBlank(),
-                new Assert\Length(max: 255),
-            ];
-        }
-
-        $this->constraints = new Assert\Collection($fields);
     }
 
-    public function getConstraints(): Assert\Collection
+    public function getValidationGroups(): array
     {
-        return $this->constraints;
+        return $this->validationGroups;
     }
 }

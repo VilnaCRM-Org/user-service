@@ -6,24 +6,28 @@ namespace App\User\Application\MutationInput;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-class CreateUserMutationInput implements MutationInput
+readonly class CreateUserMutationInput implements MutationInput
 {
-    public function getConstraints(): Assert\Collection
+    public function __construct(
+        #[Assert\NotNull]
+        #[Assert\NotBlank]
+        #[Assert\Length(max: 255)]
+        public ?string $email = null,
+        #[Assert\NotNull]
+        #[Assert\NotBlank]
+        #[Assert\Length(max: 255)]
+        #[Assert\Email]
+        public ?string $initials = null,
+        #[Assert\NotNull]
+        #[Assert\NotBlank]
+        #[Assert\Length(max: 255)]
+        public ?string $password = null,
+    )
     {
-        return new Assert\Collection([
-            'initials' => [
-                new Assert\NotBlank(),
-                new Assert\Length(max: 255),
-                ],
-            'email' => [
-                new Assert\NotBlank(),
-                new Assert\Email(),
-                new Assert\Length(max: 255),
-            ],
-            'password' => [
-                new Assert\NotBlank(),
-                new Assert\Length(max: 255),
-            ],
-        ]);
+    }
+
+    public function getValidationGroups(): array
+    {
+        return [];
     }
 }
