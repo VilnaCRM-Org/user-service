@@ -9,7 +9,7 @@ export const mainImageStyles = {
     marginTop: '-18px',
     height: '498px',
     width: '766px',
-    '@media (max-width: 1024.98px)': {
+    '@media (max-width: 1023.98px)': {
       borderRadius: '10px',
       width: '450px',
       height: '525px',
@@ -27,7 +27,7 @@ export const mainImageStyles = {
     width: '766px',
     height: '498px',
 
-    '@media (max-width: 1024.98px)': {
+    '@media (max-width: 1023.98px)': {
       backgroundSize: 'cover',
       backgroundRepeat: 'no-repeat',
       width: '100%',
@@ -36,11 +36,14 @@ export const mainImageStyles = {
     },
     '@media (max-width: 639.98px)': {
       backgroundImage: `url(${PhoneMainImage.src})`,
-      backgroundSize: 'contain',
+      backgroundSize: 'cover',
       backgroundRepeat: 'no-repeat',
       width: '201.927px',
-      height: '436.443px',
-      borderRadius: '26px',
+      height: '316px',
+      borderTopRightRadius: '26px',
+      borderTopLeftRadius: '26px',
+      borderBottomLeftRadius: '0',
+      borderBottomRightRadius: '0',
     },
   },
 };

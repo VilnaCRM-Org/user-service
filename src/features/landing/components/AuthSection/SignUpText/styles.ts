@@ -36,15 +36,16 @@ export const signUpTextStyles = {
       },
     },
   },
-  socialListWrapper: {
-    maxWidth: '390px',
-    '@media (max-width: 1439.98px)': {
-      maxWidth: '100%',
-    },
-  },
+  // socialListWrapper: {
+  //   '@media (max-width: 1439.98px)': {
+  //   },
+  // },
   signInText: {
     mb: '24px',
-    textAlign: 'center',
+    textAlign: 'left',
+    '@media (max-width: 1439.98px)': {
+      textAlign: 'center',
+    },
     '@media (max-width: 639.98px)': {
       fontSize: '18px',
       textAlign: 'left',

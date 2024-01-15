@@ -12,10 +12,10 @@ import { NavLink } from './NavLink';
 import { headerStyles } from './styles';
 
 const links = [
-  { id: 1, value: 'header.advantages' },
-  { id: 2, value: 'header.for_who' },
-  { id: 3, value: 'header.integration' },
-  { id: 4, value: 'header.contacts' },
+  { id: 'Advantages', value: 'header.advantages' },
+  { id: 'ServiceHub', value: 'header.for_who' },
+  { id: 'Integration', value: 'header.integration' },
+  { id: 'Contacts', value: 'header.contacts' },
 ];
 
 function Header() {

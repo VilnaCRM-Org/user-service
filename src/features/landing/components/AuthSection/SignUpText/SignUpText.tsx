@@ -15,9 +15,7 @@ function SignUpText() {
   return (
     <Box sx={signUpTextStyles.textWrapper}>
       <UiTypography variant="h2" sx={signUpTextStyles.title}>
-        <Trans i18nKey="sign_up.main_heading">
-          Зареєструйтеся зараз та звільніть час на розвиток бізнесу <br />з
-        </Trans>
+        <Trans i18nKey="sign_up.main_heading" />
         <UiTypography
           variant="h2"
           component="span"
@@ -26,12 +24,10 @@ function SignUpText() {
           {' VilnaCRM'}
         </UiTypography>
       </UiTypography>
-      <Box sx={signUpTextStyles.socialListWrapper}>
-        <UiTypography variant="bold22" sx={signUpTextStyles.signInText}>
-          {t('sign_up.socials_main_heading')}
-        </UiTypography>
-        <SocialList />
-      </Box>
+      <UiTypography variant="bold22" sx={signUpTextStyles.signInText}>
+        {t('sign_up.socials_main_heading')}
+      </UiTypography>
+      <SocialList />
     </Box>
   );
 }

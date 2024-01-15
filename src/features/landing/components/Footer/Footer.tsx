@@ -12,7 +12,7 @@ import { footerStyles } from './styles';
 function Footer() {
   return (
     <>
-      <Stack sx={footerStyles.footerWrapper}>
+      <Stack sx={footerStyles.footerWrapper} id="Contacts">
         <Box paddingTop="11px">
           <Container>
             <Stack

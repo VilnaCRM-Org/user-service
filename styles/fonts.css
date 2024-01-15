@@ -51,6 +51,14 @@
 }
 
 @font-face {
+  font-family: 'Inter';
+  font-display: swap;
+  font-weight: 500;
+  src: url('~/src/features/landing/assets/fonts/Inter/Inter-Medium.ttf')
+    format('TrueType');
+}
+
+@font-face {
   font-family: 'Stolzl';
   font-display: swap;
   font-weight: 400;

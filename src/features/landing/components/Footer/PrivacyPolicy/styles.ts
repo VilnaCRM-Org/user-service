@@ -1,8 +1,5 @@
 export const privacyPolicyStyles = {
   wrapper: {
-    marginRight: '-3px',
-    marginTop: '3px',
-    marginBottom: '5px',
     gap: '8px',
     flexDirection: 'row',
     '@media (max-width: 767.98px)': {
@@ -13,7 +10,6 @@ export const privacyPolicyStyles = {
     },
   },
   privacy: {
-    width: '244px',
     padding: '8px 16px',
     borderRadius: '8px',
     background: '#F4F5F6',
@@ -24,7 +20,6 @@ export const privacyPolicyStyles = {
     },
   },
   usagePolicy: {
-    width: '255px',
     padding: '8px 16px',
     borderRadius: '8px',
     background: '#F4F5F6',

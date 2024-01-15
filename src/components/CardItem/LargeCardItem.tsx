@@ -19,10 +19,7 @@ function LargeCardItem({ item }: any) {
           <Trans i18nKey={item.title} />
         </UiTypography>
         <UiTypography variant="bodyText18" sx={cardItemWhyUsStyles.text}>
-          <Trans i18nKey={item.text}>
-            У вас: онлайн-магазин, курси чи веб-студія <br /> <br /> У нас:
-            спеціальні шаблони, які збережуть ваш час
-          </Trans>
+          <Trans i18nKey={item.text} />
         </UiTypography>
       </Box>
     </Box>

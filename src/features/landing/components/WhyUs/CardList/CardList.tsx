@@ -21,7 +21,12 @@ function CardList() {
         ))}
       </Grid>
       <Grid sx={cardListStyles.gridMobile}>
-        <Swiper pagination modules={[Pagination]} className="swiper-wrapper">
+        <Swiper
+          pagination
+          modules={[Pagination]}
+          spaceBetween={20}
+          className="swiper-wrapper"
+        >
           {WHY_WE_CARD_ITEMS.map(item => (
             <SwiperSlide key={item.id}>
               <CardItem item={item} type="large" />

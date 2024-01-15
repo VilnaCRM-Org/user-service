@@ -18,6 +18,8 @@ const defaultProps: UiButtonProps = {
   disableRipple: false,
   fullWidth: false,
   href: '',
+  sx: {},
+  onClick: () => {},
   children: '',
 };
 
@@ -26,8 +28,9 @@ export const repeatStyles: Interpolation<{ theme: Theme }> = {
   textDecoration: 'none',
   fontSize: '0.938rem',
   fontWeight: '500',
-  padding: '16px 24px',
+  fontFamily: 'Golos',
   lineHeight: '1.125',
+  letterSpacing: '0',
 };
 
 const theme = createTheme({
@@ -42,12 +45,11 @@ const theme = createTheme({
           },
           style: {
             ...repeatStyles,
-            // width: '137px',
-            // height: '50px',
             backgroundColor: '#1EAEFF',
             borderRadius: '3.563rem',
+            padding: '16px 24px',
             '&:hover': {
-              backgroundColor: ' #00A3FF',
+              backgroundColor: '#00A3FF',
             },
             '&:active': {
               backgroundColor: ' #0399ED',
@@ -72,7 +74,8 @@ const theme = createTheme({
             alignSelf: 'center',
             fontFamily: 'Golos',
             fontWeight: '600',
-            fontSize: '15px',
+            fontSize: '18px',
+            letterSpacing: '0',
             lineHeight: 'normal',
             '&:hover': {
               backgroundColor: ' #00A3FF',
@@ -98,10 +101,9 @@ const theme = createTheme({
             size: 'small',
           },
           style: {
-            // width: '93px',
-            // height: '50px',
             ...repeatStyles,
-            color: 'black',
+            color: '#1B2327',
+            padding: '16px 23px',
             backgroundColor: 'white',
             border: '1px solid #969B9D',
             borderRadius: '3.563rem',
@@ -125,6 +127,7 @@ const theme = createTheme({
 });
 
 function UiButton({
+  onClick,
   children,
   variant,
   size,
@@ -141,6 +144,7 @@ function UiButton({
     <ThemeProvider theme={theme}>
       <Button
         sx={sx}
+        onClick={onClick}
         variant={variant}
         size={size}
         disabled={disabled}

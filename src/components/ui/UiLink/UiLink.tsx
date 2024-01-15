@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import { Link, ThemeProvider, createTheme } from '@mui/material';
 import React from 'react';
 
@@ -19,10 +20,18 @@ const theme = createTheme({
   },
 });
 
-function UiLink({ children }: { children: React.ReactNode }) {
+function UiLink({
+  children,
+  props,
+}: {
+  children: React.ReactNode;
+  props: any;
+}) {
   return (
     <ThemeProvider theme={theme}>
-      <Link href="#">{children}</Link>
+      <Link href="#" {...props}>
+        {children}
+      </Link>
     </ThemeProvider>
   );
 }
