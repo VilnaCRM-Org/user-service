@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Domain\Bus\Event;
 
-use App\Shared\Domain\ValueObject\Uuid;
+use Symfony\Component\Uid\Uuid;
 
 abstract class DomainEvent
 {
@@ -13,7 +13,7 @@ abstract class DomainEvent
 
     public function __construct(string $eventId = null, string $occurredOn = null)
     {
-        $this->eventId = $eventId ?? Uuid::random()->value();
+        $this->eventId = $eventId ?? (string) Uuid::v6();
         $this->occurredOn = $occurredOn ?? self::dateToString(new \DateTimeImmutable());
     }
 

@@ -4,39 +4,22 @@ declare(strict_types=1);
 
 namespace App\Shared\Domain\ValueObject;
 
-use Ramsey\Uuid\Uuid as RamseyUuid;
-
-class Uuid implements \Stringable
+class Uuid implements UuidInterface
 {
-    public function __construct(protected string $value)
+    private string $uid;
+
+    public function __construct(string $uid)
     {
-        $this->ensureIsValidUuid($value);
+        $this->uid = $uid;
     }
 
-    public static function random(): self
+    public function toBinary(): string
     {
-        return new static(RamseyUuid::uuid4()->toString());
-    }
-
-    public function value(): string
-    {
-        return $this->value;
-    }
-
-    public function equals(Uuid $other): bool
-    {
-        return $this->value() === $other->value();
+        return hex2bin(str_replace('-', '', $this->uid));
     }
 
     public function __toString(): string
     {
-        return $this->value();
-    }
-
-    private function ensureIsValidUuid(string $id): void
-    {
-        if (!RamseyUuid::isValid($id)) {
-            throw new \InvalidArgumentException(sprintf('<%s> does not allow the value <%s>.', static::class, $id));
-        }
+        return $this->uid;
     }
 }

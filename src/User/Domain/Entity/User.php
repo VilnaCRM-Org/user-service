@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\User\Domain\Entity;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
+use App\Shared\Domain\ValueObject\UuidInterface;
 use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Event\PasswordChangedEvent;
 use App\User\Domain\Event\UserConfirmedEvent;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Uid\Uuid;
 
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    private Uuid $id;
+    private UuidInterface $id;
 
     private string $email;
 
@@ -33,7 +33,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         string $email,
         string $initials,
         string $password,
-        Uuid $id,
+        UuidInterface $id,
     ) {
         $this->id = $id;
         $this->email = $email;
@@ -48,7 +48,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return (string) $this->id;
     }
 
-    public function setId(Uuid $id): void
+    public function setId(UuidInterface $id): void
     {
         $this->id = $id;
     }
