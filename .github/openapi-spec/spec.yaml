@@ -632,22 +632,6 @@ paths:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
-        410:
-          description: 'Old password mismatch'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status: { type: integer }
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-              example:
-                type: 'https://tools.ietf.org/html/rfc2616#section-10'
-                title: 'An error occurred'
-                detail: 'Old password is invalid'
-                status: 410
         500:
           description: 'Internal server error'
           content:
@@ -838,22 +822,6 @@ paths:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
-        410:
-          description: 'Old password mismatch'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status: { type: integer }
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-              example:
-                type: 'https://tools.ietf.org/html/rfc2616#section-10'
-                title: 'An error occurred'
-                detail: 'Old password is invalid'
-                status: 410
         500:
           description: 'Internal server error'
           content:
