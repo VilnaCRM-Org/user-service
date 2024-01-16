@@ -1,37 +1,21 @@
+/* eslint-disable react/require-default-props */
 /* eslint-disable react/jsx-props-no-spreading */
-import { Link, ThemeProvider, createTheme } from '@mui/material';
+import { Link, ThemeProvider } from '@mui/material';
+import { LinkProps } from '@mui/material/Link';
 import React from 'react';
 
-const theme = createTheme({
-  components: {
-    MuiLink: {
-      styleOverrides: {
-        root: {
-          color: '#1EAEFF',
-          fontFamily: 'Inter',
-          fontSize: '14px',
-          fontStyle: 'normal',
-          fontWeight: '700',
-          lineHeight: '18px',
-          textDecoration: 'underline',
-        },
-      },
-    },
-  },
-});
+import { theme } from './theme';
 
 function UiLink({
   children,
   props,
 }: {
   children: React.ReactNode;
-  props: any;
+  props?: LinkProps;
 }) {
   return (
     <ThemeProvider theme={theme}>
-      <Link href="#" {...props}>
-        {children}
-      </Link>
+      <Link {...props}>{children}</Link>
     </ThemeProvider>
   );
 }

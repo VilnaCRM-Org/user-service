@@ -1,7 +1,11 @@
 export const possibilitiesStyles = {
   wrapper: {
-    mt: '70px',
+    pt: '70px',
     pb: '56px',
-    '@media (max-width: 639.98px)': { pb: '33px' },
+    '@media (max-width: 639.98px)': {
+      pb: '30px',
+      pt: '35px',
+      ml: '9px',
+    },
   },
 };

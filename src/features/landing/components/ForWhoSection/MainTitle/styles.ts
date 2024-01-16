@@ -1,32 +1,40 @@
 export const mainTitleStyles = {
   title: {
-    '@media (max-width: 425.98px)': {
+    '@media (max-width: 1023.98px)': {
       color: ' #1A1C1E',
-      fontfamily: 'Golos',
+      fontFamily: 'Golos',
       fontSize: '28px',
       fontStyle: 'normal',
-      fontSeight: '700',
+      fontHeight: '700',
       lineHeight: 'normal',
     },
   },
   description: {
+    pt: '16px',
     pb: '24px',
     '@media (max-width: 1130.98px)': {
       pb: '32px',
       maxWidth: '303px',
     },
-    '@media (max-width: 425.98px)': {
+    '@media (max-width: 1023.98px)': {
+      pt: '13px',
       color: ' #1A1C1E',
       fontfamily: 'Golos',
       fontSize: '15px',
       fontStyle: 'normal',
       fontSeight: '400',
       lineHeight: '25px',
+      pb: '0',
+      maxWidth: '100%',
+      paddingBottom: '174px',
+    },
+    '@media (max-width: 639.98px)': {
+      paddingBottom: '0',
     },
   },
   button: {
     display: 'inline-block',
-    '@media (max-width: 425.98px)': {
+    '@media (max-width: 1023.98px)': {
       display: 'none',
     },
   },

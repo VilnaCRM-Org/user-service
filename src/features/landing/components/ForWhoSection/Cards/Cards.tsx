@@ -1,44 +1,45 @@
-import { Stack } from '@mui/material';
-import Image from 'next/image';
+import { Box, Stack } from '@mui/material';
 import React from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { UiButton, UiTypography } from '@/components/ui';
 
 import Vector from '../../../assets/svg/service-hub/yellowVector.svg';
 
 import { cardsStyles } from './styles';
-import styles from './styles.module.scss';
 
 function Cards() {
+  const { t } = useTranslation();
   return (
     <Stack flexDirection="column" sx={cardsStyles.wrapper}>
       <UiTypography maxWidth="373px" sx={cardsStyles.secondTitle}>
-        Наша CRM ідеально підійде, якщо ви:
+        {t('for_who.heading_secondary')}
       </UiTypography>
-      <Stack gap="16px" sx={cardsStyles.cardWrapper}>
+      <Stack gap="12px" sx={cardsStyles.cardWrapper}>
         <Stack sx={cardsStyles.cardItem}>
-          <Image
-            src={Vector}
+          <Box
+            component="img"
+            loading="lazy"
+            decoding="async"
+            src={Vector.src}
             alt="vector"
-            width={24}
-            height={24}
-            className={styles.img}
+            sx={cardsStyles.img}
           />
           <UiTypography variant="bodyText18" sx={cardsStyles.optionText}>
-            Приватний підприємець — психолог, репетитор чи дропшипер
+            <Trans i18nKey="for_who.card_text_title" />
           </UiTypography>
         </Stack>
         <Stack sx={cardsStyles.cardItem}>
-          <Image
-            src={Vector}
+          <Box
+            component="img"
+            loading="lazy"
+            decoding="async"
+            src={Vector.src}
             alt="vector"
-            width={24}
-            height={24}
-            className={styles.img}
+            sx={cardsStyles.img}
           />
           <UiTypography variant="bodyText18" sx={cardsStyles.optionText}>
-            локальний проект середнього масштабу — онлайн-курси, дизайн-студія
-            чи невеликий аутсорс
+            {t('for_who.card_text_business')}
           </UiTypography>
         </Stack>
       </Stack>

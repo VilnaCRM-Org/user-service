@@ -7,10 +7,11 @@ import { CardItem } from '@/components/CardItem';
 
 import { WHY_WE_CARD_ITEMS } from '../../../utils/constants/constants';
 
-import './styles.module.scss';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import { cardListStyles } from './styles';
+
+import { UiButton } from '@/components/ui';
 
 function CardList() {
   return (
@@ -33,6 +34,9 @@ function CardList() {
             </SwiperSlide>
           ))}
         </Swiper>
+        <UiButton variant="contained" size="small" sx={cardListStyles.button}>
+          Спробувати
+        </UiButton>
       </Grid>
     </>
   );

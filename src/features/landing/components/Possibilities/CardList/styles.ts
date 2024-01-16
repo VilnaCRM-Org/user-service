@@ -18,9 +18,9 @@ export const cardListStyles = {
   gridMobile: {
     display: 'none',
     '@media (max-width: 639.98px)': {
-      minHeight: '282px',
+      minHeight: '296px',
       display: 'grid',
-      marginTop: '2rem',
+      marginTop: '24px',
       gap: '0.75rem',
     },
   },

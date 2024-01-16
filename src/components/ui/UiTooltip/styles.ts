@@ -1,4 +1,4 @@
-export const servicesStyles = {
+export const uiTooltipStyles = {
   hoveredText: {
     color: '#1EAEFF',
     textDecoration: 'underline',

@@ -57,11 +57,3 @@
   src: url('~/src/features/landing/assets/fonts/Inter/Inter-Medium.ttf')
     format('TrueType');
 }
-
-@font-face {
-  font-family: 'Stolzl';
-  font-display: swap;
-  font-weight: 400;
-  src: url('~/src/features/landing/assets/fonts/Stolzl/stolzl_regular.otf')
-    format('OpenType');
-}

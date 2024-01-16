@@ -7,7 +7,7 @@ import { possibilitiesStyles } from './styles';
 
 function Possibilities() {
   return (
-    <Box sx={possibilitiesStyles.wrapper} id="Integration">
+    <Box sx={possibilitiesStyles.wrapper} id="Integration" component="section">
       <RegistrationText />
       <CardList />
     </Box>

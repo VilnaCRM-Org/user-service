@@ -17,7 +17,7 @@ function UiDrawer() {
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
 
   return (
-    <Box>
+    <Box sx={drawerStyles.wrapper}>
       <Image
         src={Bars}
         alt="Header Image"

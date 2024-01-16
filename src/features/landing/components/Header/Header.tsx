@@ -1,5 +1,4 @@
-import { useTheme } from '@emotion/react';
-import { AppBar, useMediaQuery } from '@mui/material';
+import { AppBar } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 
@@ -10,29 +9,33 @@ import { AuthenticationButtons } from './AuthenticationButtons';
 import { Drawer } from './Drawer';
 import { NavLink } from './NavLink';
 import { headerStyles } from './styles';
+import styles from './styles.module.scss';
 
 const links = [
-  { id: 'Advantages', value: 'header.advantages' },
-  { id: 'ServiceHub', value: 'header.for_who' },
-  { id: 'Integration', value: 'header.integration' },
-  { id: 'Contacts', value: 'header.contacts' },
+  { id: 'Advantages', link: '#Advantages', value: 'header.advantages' },
+  {
+    id: 'forWhoSectionStyles',
+    link: '#forWhoSectionStyles',
+    value: 'header.for_who',
+  },
+  { id: 'Integration', link: '#Integration', value: 'header.integration' },
+  { id: 'Contacts', link: '#Contacts', value: 'header.contacts' },
 ];
 
 function Header() {
-  const theme = useTheme();
-  const tablet = useMediaQuery(theme.breakpoints.up('lg'));
-
   return (
     <AppBar position="static" sx={headerStyles.headerWrapper}>
       <UiToolbar>
-        <Image src={Logo} alt="Header Image" width={131} height={44} />
-        {tablet && (
-          <>
-            <NavLink links={links} />
-            <AuthenticationButtons />
-          </>
-        )}
-        {!tablet && <Drawer />}
+        <Image
+          src={Logo}
+          alt="Header Image"
+          width={131}
+          height={44}
+          className={styles.logo}
+        />
+        <NavLink links={links} />
+        <AuthenticationButtons />
+        <Drawer />
       </UiToolbar>
     </AppBar>
   );

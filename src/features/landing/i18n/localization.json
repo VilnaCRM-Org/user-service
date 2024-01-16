@@ -40,10 +40,10 @@
     },
     "for_who": {
       "heading_main": "For who",
-      "text_main": "We created Vilna, focusing on the specifics of the service business, which is not suitable for ordinary e-commerce templates",
+      "text_main": "We created Vilna, focusing on the specifics of the service business, <br /> which is not suitable for ordinary e-commerce templates",
       "button_text": "Try it out",
       "heading_secondary": "Our CRM is ideal if you:",
-      "card_text_title": "A private entrepreneur is a psychologist, tutor or dropshipper",
+      "card_text_title": "A private entrepreneur is a psychologist, <br /> tutor or dropshipper",
       "card_text_business": "medium-scale local project - online courses, design studio or small outsourcing"
     },
     "unlimited_possibilities": {
@@ -152,10 +152,10 @@
     },
     "for_who": {
       "heading_main": "Для кого",
-      "text_main": "Ми створили Vilna, орієнтуючись на специфіку сервісного бізнесу, якому не підходять звичайні e-commerce шаблони",
+      "text_main": "Ми створили Vilna, орієнтуючись на специфіку сервісного бізнесу, <br /> якому не підходять звичайні e-commerce шаблони",
       "button_text": "Спробувати",
       "heading_secondary": "Наша CRM ідеально підійде, якщо ви:",
-      "card_text_title": "Приватний підприємець — психолог, репетитор чи дропшипер",
+      "card_text_title": "Приватний підприємець — психолог, <br /> репетитор чи дропшипер",
       "card_text_business": "локальний проект середнього масштабу — онлайн-курси, дизайн-студія чи невеликий аутсорс"
     },
     "unlimited_possibilities": {

@@ -7,7 +7,7 @@ import { authSectionStyles } from './styles';
 
 function AuthSection() {
   return (
-    <Box sx={authSectionStyles.wrapper} id="signUp">
+    <Box sx={authSectionStyles.wrapper} id="signUp" component="section">
       <Container>
         <Stack justifyContent="space-between" sx={authSectionStyles.content}>
           <SignUpText />

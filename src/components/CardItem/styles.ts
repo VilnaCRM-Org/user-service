@@ -2,8 +2,7 @@ export const cardItemWhyUsStyles = {
   wrapper: {
     height: '100%',
     '@media (max-width: 639.98px)': {
-      height: '297px',
-      mt: '28px',
+      height: '308px',
     },
   },
   content: {
@@ -24,6 +23,9 @@ export const cardItemWhyUsStyles = {
   },
   title: {
     pt: '16px',
+    '@media (max-width: 1439.98px)': {
+      fontSize: '22px',
+    },
     '@media (max-width: 639.98px)': {
       pt: '16px',
       fontSize: '18px',
@@ -66,6 +68,7 @@ export const cardItemPossibilitiesStyles = {
       gap: '16px',
       alignItems: 'start',
       minHeight: '242px',
+      marginRight: '5px',
     },
   },
 

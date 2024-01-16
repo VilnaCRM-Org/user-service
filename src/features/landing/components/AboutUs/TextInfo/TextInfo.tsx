@@ -9,7 +9,7 @@ import { textInfoStyles } from './styles';
 function TextInfo() {
   const { t } = useTranslation();
   return (
-    <Stack maxWidth="43.813rem" mb="50px">
+    <Stack sx={textInfoStyles.textWrapper}>
       <UiTypography variant="h1" sx={textInfoStyles.title}>
         <Trans i18nKey="about_vilna.heading_main">
           Перша українська CRM <br /> з відкритим кодом

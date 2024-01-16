@@ -1,4 +1,17 @@
 export const textInfoStyles = {
+  textWrapper: {
+    maxWidth: '43.813rem',
+    mb: '50px',
+
+    '@media (max-width: 1439.98px)': {
+      mb: '55px',
+      ml: '28px',
+    },
+    '@media (max-width: 639.98px)': {
+      mb: '49px',
+      ml: '0',
+    },
+  },
   title: {
     textAlign: 'center',
     '@media (max-width: 639.98px)': {

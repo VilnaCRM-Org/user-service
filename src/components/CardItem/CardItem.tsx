@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import React from 'react';
 
 import LargeCardItem from './LargeCardItem';
@@ -12,13 +13,17 @@ interface CardItemInterface {
     width?: number;
     height?: number;
   };
+  imageList?: {
+    alt: string;
+    image: string;
+  }[];
   type: 'large' | 'small';
 }
 
-function CardItem({ item, type }: CardItemInterface) {
+function CardItem({ item, type, imageList }: CardItemInterface) {
   return (
     <>
-      {type === 'small' && <SmallCarditem item={item} />}
+      {type === 'small' && <SmallCarditem item={item} imageList={imageList} />}
       {type === 'large' && <LargeCardItem item={item} />}
     </>
   );

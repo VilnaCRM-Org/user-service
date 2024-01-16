@@ -3,6 +3,6 @@ export const headerStyles = {
     backgroundColor: 'white',
     boxShadow: 'none',
     position: 'fixed',
-    zIndex: 1000,
+    zIndex: 100,
   },
 };

@@ -7,7 +7,7 @@ import { WhyUsText } from './WhyUsText';
 
 function WhyUs() {
   return (
-    <Box sx={whyUsStyles.wrapper} id="Advantages" pb="145px">
+    <Box sx={whyUsStyles.wrapper} id="Advantages" component="section">
       <WhyUsText />
       <CardList />
     </Box>

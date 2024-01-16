@@ -128,7 +128,7 @@ const theme = createTheme({
       fontWeight: '600',
       lineHeight: 'normal',
     },
-    bodyMobile: {
+    mobileText: {
       color: '#1A1C1E',
       fontFamily: fonts.golos,
       fontSize: '15px',

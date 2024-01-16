@@ -7,11 +7,15 @@ export const cardListStyles = {
     },
     gridTemplateRows: {
       md: 'repeat(2, 1fr)',
-      lg: 'repeat(2, minmax(342px, auto))',
+      lg: 'repeat(2, minmax(380px, auto))',
       xl: 'repeat(2, minmax(342px, auto))',
     },
     marginTop: '2.5rem',
-    gap: '0.813rem',
+    gap: '13px',
+    '@media (max-width: 1439.98px)': {
+      gap: '12px',
+      marginTop: '2rem',
+    },
     '@media (max-width: 639.98px)': {
       display: 'none',
     },
@@ -21,7 +25,11 @@ export const cardListStyles = {
     '@media (max-width: 639.98px)': {
       display: 'grid',
       marginTop: '24px',
-      gap: '0.813rem',
     },
+  },
+  button: {
+    maxWidth: '137px',
+    margin: '0 auto',
+    marginTop: '14px',
   },
 };

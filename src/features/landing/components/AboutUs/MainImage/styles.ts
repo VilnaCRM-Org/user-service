@@ -16,7 +16,7 @@ export const mainImageStyles = {
       marginTop: '0',
     },
     '@media (max-width: 639.98px)': {
-      width: '201.927px',
+      width: '204px',
       height: '436.443px',
       marginTop: '-18px',
     },
@@ -38,7 +38,7 @@ export const mainImageStyles = {
       backgroundImage: `url(${PhoneMainImage.src})`,
       backgroundSize: 'cover',
       backgroundRepeat: 'no-repeat',
-      width: '201.927px',
+      width: '203px',
       height: '316px',
       borderTopRightRadius: '26px',
       borderTopLeftRadius: '26px',

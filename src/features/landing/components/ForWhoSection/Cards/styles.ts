@@ -1,9 +1,9 @@
 export const cardsStyles = {
   wrapper: {
-    '@media (max-width: 425.98px)': {
+    '@media (max-width: 1023.98px)': {
       position: 'relative',
       zIndex: '5',
-      marginTop: '315px',
+      marginTop: '324px',
       padding: '32px 24px',
       borderRadius: '24px 24px 0px 0px',
       background: '#FFF',
@@ -13,7 +13,9 @@ export const cardsStyles = {
 
   cardWrapper: {
     flexDirection: 'row',
-    '@media (max-width: 425.98px)': { flexDirection: 'column' },
+    '@media (max-width: 1023.98px)': {
+      flexDirection: 'column',
+    },
   },
   cardItem: {
     zIndex: '4',
@@ -29,7 +31,7 @@ export const cardsStyles = {
     '@media (max-width: 1130.98px)': {
       padding: '29px 32px ',
     },
-    '@media (max-width: 425.98px)': {
+    '@media (max-width: 1023.98px)': {
       border: 'none',
       boxShadow: 'none',
       flexDirection: 'row',
@@ -40,7 +42,7 @@ export const cardsStyles = {
   secondTitle: {
     pb: '32px',
     color: '#1A1C1E',
-    fontFamily: 'Stolzl',
+    fontFamily: 'Golos',
     fontSize: '28px',
     fontStyle: 'normal',
     fontWeight: '700',
@@ -49,7 +51,7 @@ export const cardsStyles = {
     '@media (max-width: 1130.98px)': {
       pt: '151px',
     },
-    '@media (max-width: 425.98px)': {
+    '@media (max-width: 1023.98px)': {
       pb: '15px',
       maxWidth: '297px',
       color: ' #1A1C1E',
@@ -63,7 +65,7 @@ export const cardsStyles = {
     },
   },
   optionText: {
-    '@media (max-width: 425.98px)': {
+    '@media (max-width: 1023.98px)': {
       color: ' #1A1C1E',
       fontFamily: 'Golos',
       fontSize: '15px',
@@ -73,12 +75,19 @@ export const cardsStyles = {
     },
   },
   button: {
-    marginLeft: '-9px',
     maxWidth: '137px',
     display: 'none',
     mt: '32px',
-    '@media (max-width: 425.98px)': {
+    '@media (max-width: 1023.98px)': {
       display: 'inline-block',
+    },
+  },
+  img: {
+    width: '24px',
+    height: '24px',
+    '@media (max-width: 1023.98px)': {
+      width: '20px',
+      height: '20px',
     },
   },
 };

@@ -32,7 +32,7 @@ export const signUpTextStyles = {
       width: '100%',
       mt: '56px',
       '@media (max-width: 639.98px)': {
-        mt: '32px',
+        mt: '26px',
       },
     },
   },
@@ -48,7 +48,7 @@ export const signUpTextStyles = {
     },
     '@media (max-width: 639.98px)': {
       fontSize: '18px',
-      textAlign: 'left',
+      alignSelf: 'start',
       mb: '22px',
     },
   },
