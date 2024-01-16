@@ -952,8 +952,7 @@ components:
       deprecated: false
       properties:
         id:
-          type: string
-          format: uuid
+          $ref: '#/components/schemas/UuidInterface-output'
         email:
           type: string
         initials:
@@ -1124,8 +1123,7 @@ components:
           readOnly: true
           type: string
         id:
-          type: string
-          format: uuid
+          $ref: '#/components/schemas/UuidInterface.jsonld-output'
         email:
           type: string
         initials:
@@ -1136,6 +1134,38 @@ components:
           type: array
           items:
             type: string
+    UuidInterface-output:
+      type: object
+      description: ''
+      deprecated: false
+    UuidInterface.jsonld-output:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
   responses: {  }
   parameters: {  }
   examples: {  }
