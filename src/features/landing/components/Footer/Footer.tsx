@@ -1,4 +1,4 @@
-import { Stack, Box, Container } from '@mui/material';
+import { Stack, Container } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 
@@ -13,32 +13,21 @@ function Footer() {
   return (
     <>
       <Stack sx={footerStyles.footerWrapper} id="Contacts">
-        <Box paddingTop="11px">
+        <Stack height="67px" alignItems="center" flexDirection="row">
           <Container>
             <Stack
               direction="row"
               justifyContent="space-between"
               alignItems="center"
-              pb="7px"
             >
               <Image src={Logo} alt="Logo" width={143} height={48} />
               <PrivacyPolicy />
             </Stack>
           </Container>
-        </Box>
-        <Stack
-          alignItems="center"
-          direction="row"
-          sx={footerStyles.copyrightAndLinksWrapper}
-        >
+        </Stack>
+        <Stack sx={footerStyles.copyrightAndLinksWrapper}>
           <Container>
-            <Stack
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
-              ml="5px"
-              mb="4px"
-            >
+            <Stack sx={footerStyles.copyrightAndLinks}>
               <CopyrightNoticeAndLinks />
             </Stack>
           </Container>

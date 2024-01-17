@@ -4,12 +4,9 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { navLinkStyles } from './styles';
+import { NavLinkProps } from './types';
 
-function NavLink({
-  links,
-}: {
-  links: { id: string; value: string; link: string }[];
-}) {
+function NavLink({ links }: NavLinkProps) {
   const { t } = useTranslation();
 
   return (

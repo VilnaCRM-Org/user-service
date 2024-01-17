@@ -28,7 +28,7 @@ export const adaptiveStyles = {
     background: '#fff',
     border: '1px solid  #D0D4D8',
     '@media (max-width: 767.98px)': {
-      padding: '15px 0',
+      padding: '14px 0 15px',
     },
   },
   copyright: {

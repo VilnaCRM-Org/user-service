@@ -8,11 +8,18 @@ import { UiTypography } from '../ui';
 import { UiTooltip } from '../ui/UiTooltip';
 
 import { cardItemPossibilitiesStyles } from './styles';
+import styles from './styles.module.scss';
 
 function SmallCarditem({ item, imageList }: any) {
   return (
     <Stack sx={cardItemPossibilitiesStyles.wrapper}>
-      <Image src={item.imageSrc} alt="Card Image" width={80} height={80} />
+      <Image
+        src={item.imageSrc}
+        alt="Card Image"
+        width={80}
+        height={80}
+        className={styles.img}
+      />
       <Stack flexDirection="column">
         <UiTypography variant="h6" sx={cardItemPossibilitiesStyles.title}>
           <Trans i18nKey={item.title} />

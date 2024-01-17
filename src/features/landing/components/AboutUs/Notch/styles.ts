@@ -2,19 +2,9 @@
 
 export const notchStyles = {
   notch: {
-    // position: 'relative',
-    // margin: '0 auto',
-    // bottom: '4px',
-    // left: '0',
-    // backgroundImage: `url(${NotchCameraImage.src})`,
-    // backgroundRepeat: 'no-repeat',
-    // width: '110.791px',
-    // height: '18.535px',
-    // zIndex: '11',
-
     position: 'relative',
-    top: '0',
-    left: '0',
+    bottom: '3px',
+    left: '1px',
     height: '18px',
     width: '94px',
     margin: '0 auto',

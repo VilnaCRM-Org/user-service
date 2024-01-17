@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import {
   FormControlLabel,
   Checkbox,
@@ -24,9 +25,10 @@ const theme = createTheme({
 function UiCheckbox({
   label,
   sx,
+  onChange,
 }: {
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   label: string | React.ReactNode;
-  // eslint-disable-next-line react/require-default-props
   sx?: object;
 }) {
   return (
@@ -35,6 +37,7 @@ function UiCheckbox({
         sx={sx}
         control={
           <Checkbox
+            onChange={onChange}
             sx={{
               padding: 0,
               marginRight: '13px',

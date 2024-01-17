@@ -75,7 +75,7 @@ export const cardItemPossibilitiesStyles = {
   title: {
     pt: '32px',
     '@media (max-width: 1439.98px)': { pt: '0' },
-    '@media (max-width: 639.98px)': {
+    '@media (max-width: 1023.98px)': {
       fontSize: '18px',
       fontWeight: '600',
     },
@@ -83,7 +83,6 @@ export const cardItemPossibilitiesStyles = {
 
   text: {
     mt: '10px',
-
     '@media (max-width: 1439.98px)': {
       a: {
         textDecoration: 'none',
@@ -91,7 +90,7 @@ export const cardItemPossibilitiesStyles = {
         color: '#1A1C1E',
       },
     },
-    '@media (max-width: 639.98px)': {
+    '@media (max-width: 1023.98px)': {
       fontSize: '15px',
       fontWeight: '400',
       lineHeight: '25px',

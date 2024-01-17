@@ -11,8 +11,15 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import { cardListStyles } from './styles';
 
+// eslint-disable-next-line import/order
 import { UiButton } from '@/components/ui';
 
+const pagination = {
+  renderBullet(index: number, className: string) {
+    return `
+    <span class="${className}" style="margin-right: 17px;"></span>`;
+  },
+}; // i don`t know, should we use that or better without that
 function CardList() {
   return (
     <>
@@ -23,9 +30,10 @@ function CardList() {
       </Grid>
       <Grid sx={cardListStyles.gridMobile}>
         <Swiper
-          pagination
+          slidesPerView={1.04}
+          pagination={pagination}
           modules={[Pagination]}
-          spaceBetween={20}
+          spaceBetween={12}
           className="swiper-wrapper"
         >
           {WHY_WE_CARD_ITEMS.map(item => (
@@ -41,5 +49,4 @@ function CardList() {
     </>
   );
 }
-
 export default CardList;

@@ -2,11 +2,14 @@ export const privacyPolicyStyles = {
   wrapper: {
     gap: '8px',
     flexDirection: 'row',
+    '@media (max-width: 1439.98px)': {
+      marginRight: '-8px',
+    },
     '@media (max-width: 767.98px)': {
+      marginRight: '0',
       flexDirection: 'column',
       gap: '4px',
-      marginRight: '0',
-      marginTop: '4px',
+      pt: '4px',
     },
   },
   privacy: {
@@ -16,7 +19,7 @@ export const privacyPolicyStyles = {
     '@media (max-width: 767.98px)': {
       textAlign: 'center',
       width: '100%',
-      padding: '17px 0',
+      padding: '17px 0 18px',
     },
   },
   usagePolicy: {
@@ -26,7 +29,7 @@ export const privacyPolicyStyles = {
     '@media (max-width: 767.98px)': {
       textAlign: 'center',
       width: '100%',
-      padding: '17px 0',
+      padding: '17px 0 18px',
     },
   },
 };

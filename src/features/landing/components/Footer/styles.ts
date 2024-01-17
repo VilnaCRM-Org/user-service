@@ -10,6 +10,17 @@ export const footerStyles = {
   copyrightAndLinksWrapper: {
     borderRadius: '16px 16px 0px 0px',
     background: '#f4f5f6',
-    height: '61px',
+  },
+  copyrightAndLinks: {
+    height: '59px',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    ml: '5px',
+    pb: '2px',
+    '@media (max-width: 1439.98px)': {
+      pb: '3px',
+      ml: '0',
+    },
   },
 };

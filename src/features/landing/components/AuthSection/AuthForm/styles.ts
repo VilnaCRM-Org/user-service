@@ -14,10 +14,25 @@ export const authFormStyles = {
       mt: '34px',
     },
   },
-
+  backgroundBlock: {
+    position: 'absolute',
+    borderRadius: '12px 12px 0px 0px',
+    top: '16%',
+    right: '5%',
+    width: '499px',
+    height: ' 542px',
+    backgroundColor: '#E1E7EA',
+    '@media (max-width: 1439.98px)': {
+      height: ' 629px',
+      top: '8%',
+      right: '26%',
+    },
+    '@media (max-width: 639.98px)': {
+      display: 'none',
+    },
+  },
   formTitle: {
     marginBottom: '32px',
-
     '@media (max-width: 1439.98px)': {
       maxWidth: '357px',
       marginBottom: '20px',
@@ -29,6 +44,7 @@ export const authFormStyles = {
       fontStyle: 'normal',
       fontWeight: '700',
       lineHeight: 'normal',
+      marginBottom: '19px',
     },
   },
 
@@ -45,11 +61,12 @@ export const authFormStyles = {
 
     '@media (max-width: 1439.98px)': {
       padding: '40px 41px 56px 41px',
-      maxWidth: '636px',
+      minWidth: '636px',
       maxHeight: '686px',
     },
 
     '@media (max-width: 639.98px)': {
+      minWidth: '100%',
       maxWidth: '345px',
       maxHeight: '512px',
       padding: '24px 24px 32px 24px',
@@ -59,7 +76,10 @@ export const authFormStyles = {
   labelTitle: {
     mt: '22px',
     paddingBottom: '9px',
-    '@media (max-width: 1439.98px)': { mt: '16px', fontSize: '16px' },
+    '@media (max-width: 1439.98px)': {
+      mt: '15px',
+      fontSize: '16px',
+    },
     '@media (max-width: 639.98px)': {
       fontSize: '14px',
       paddingBottom: '4px',
@@ -84,14 +104,20 @@ export const authFormStyles = {
     pt: '20px',
     pb: '32px',
     mx: '0px',
+    '@media (max-width: 1439.98px)': {
+      pb: '24px',
+    },
+    '@media (max-width: 639.98px)': {
+      pb: '19px',
+    },
   },
 
   button: { height: '100%' },
   privacyText: {
     letterSpacing: '0px',
-
     '@media (max-width: 1439.98px)': {
       fontSize: '16px',
+      maxWidth: '413px',
     },
     '@media (max-width: 639.98px)': {
       fontSize: '14px',

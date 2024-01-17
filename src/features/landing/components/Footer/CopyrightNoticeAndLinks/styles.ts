@@ -1,6 +1,6 @@
 export const copyrightNoticeAndLinksStyles = {
   gmailWrapper: {
-    padding: '8px 16px',
+    padding: '7px 16px',
     borderRadius: '8px',
     background: '#fff',
     border: '1px solid  #D0D4D8',

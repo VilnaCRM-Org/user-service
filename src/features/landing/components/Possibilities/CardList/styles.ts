@@ -7,7 +7,7 @@ export const cardListStyles = {
     '@media (max-width: 1439.98px)': {
       gridTemplateColumns: 'repeat(2, 1fr)',
     },
-    '@media (max-width: 1023.98px)': {
+    '@media (max-width: 767.98px)': {
       gridTemplateColumns: 'repeat(1, 1fr)',
     },
     '@media (max-width: 639.98px)': {

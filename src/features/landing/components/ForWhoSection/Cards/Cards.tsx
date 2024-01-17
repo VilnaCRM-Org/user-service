@@ -15,7 +15,7 @@ function Cards() {
       <UiTypography maxWidth="373px" sx={cardsStyles.secondTitle}>
         {t('for_who.heading_secondary')}
       </UiTypography>
-      <Stack gap="12px" sx={cardsStyles.cardWrapper}>
+      <Stack sx={cardsStyles.cardWrapper}>
         <Stack sx={cardsStyles.cardItem}>
           <Box
             component="img"

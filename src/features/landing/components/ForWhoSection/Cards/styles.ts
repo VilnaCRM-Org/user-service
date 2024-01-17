@@ -3,7 +3,7 @@ export const cardsStyles = {
     '@media (max-width: 1023.98px)': {
       position: 'relative',
       zIndex: '5',
-      marginTop: '324px',
+      marginTop: '322px',
       padding: '32px 24px',
       borderRadius: '24px 24px 0px 0px',
       background: '#FFF',
@@ -12,9 +12,11 @@ export const cardsStyles = {
   },
 
   cardWrapper: {
+    gap: '12px',
     flexDirection: 'row',
     '@media (max-width: 1023.98px)': {
       flexDirection: 'column',
+      gap: '16px',
     },
   },
   cardItem: {
