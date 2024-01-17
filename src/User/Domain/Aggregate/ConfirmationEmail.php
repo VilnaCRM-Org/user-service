@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\User\Domain\Aggregate;
 
 use App\Shared\Domain\Aggregate\AggregateRoot;
-use App\User\Domain\Entity\ConfirmationToken;
-use App\User\Domain\Entity\User;
+use App\User\Domain\Entity\ConfirmationTokenInterface;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\ConfirmationEmailSendEvent;
 
 class ConfirmationEmail extends AggregateRoot
 {
-    public function __construct(public readonly ConfirmationToken $token, public readonly User $user)
+    public function __construct(public readonly ConfirmationTokenInterface $token, public readonly UserInterface $user)
     {
     }
 

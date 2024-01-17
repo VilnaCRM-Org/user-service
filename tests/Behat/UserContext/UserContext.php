@@ -2,16 +2,17 @@
 
 namespace App\Tests\Behat\UserContext;
 
+use App\Shared\Application\Transformer\UuidTransformer;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Factory\UserFactory;
-use App\User\Domain\Factory\UuidFactory;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\DuplicateEmailException;
 use Behat\Behat\Context\Context;
 use Faker\Factory;
 use Faker\Generator;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
+use Symfony\Component\Uid\Factory\UuidFactory;
 
 class UserContext implements Context
 {
@@ -19,10 +20,11 @@ class UserContext implements Context
 
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private UserPasswordHasherInterface $passwordHasher,
+        private PasswordHasherFactoryInterface $hasherFactory,
         private TokenRepositoryInterface $tokenRepository,
         private UserFactory $userFactory,
-        private UuidFactory $uuidFactory
+        private UuidTransformer $transformer,
+        private UuidFactory $uuidFactory,
     ) {
         $this->faker = Factory::create();
     }
@@ -42,12 +44,15 @@ class UserContext implements Context
     public function userWithEmailAndPasswordExists(string $email, string $password): void
     {
         try {
-            $user = $this->userFactory->create($email, $this->faker->name, $password);
-
-            $hashedPassword = $this->passwordHasher->hashPassword(
-                $user,
-                $password
+            $user = $this->userFactory->create(
+                $email,
+                $this->faker->name,
+                $password,
+                $this->transformer->transformFromSymfonyUuid($this->uuidFactory->create())
             );
+
+            $hasher = $this->hasherFactory->getPasswordHasher(get_class($user));
+            $hashedPassword = $hasher->hash($password, null);
             $user->setPassword($hashedPassword);
 
             $this->userRepository->save($user);
@@ -65,7 +70,7 @@ class UserContext implements Context
                 $this->faker->email,
                 $this->faker->name,
                 $this->faker->password,
-                $this->uuidFactory->createFromString($id)
+                $this->transformer->transformFromString($id)
             );
         $this->userRepository->save($user);
     }
@@ -76,12 +81,15 @@ class UserContext implements Context
     public function userWithIdAndPasswordExists(string $id, string $password): void
     {
         $user = $this->userRepository->find($id) ?? $this->userFactory->
-        create($this->faker->email, $this->faker->name, $password, $this->uuidFactory->createFromString($id));
-
-        $hashedPassword = $this->passwordHasher->hashPassword(
-            $user,
-            $password
+        create(
+            $this->faker->email,
+            $this->faker->name,
+            $password,
+            $this->transformer->transformFromString($id)
         );
+
+        $hasher = $this->hasherFactory->getPasswordHasher(get_class($user));
+        $hashedPassword = $hasher->hash($password, null);
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);

@@ -6,7 +6,7 @@ namespace App\User\Domain\Entity;
 
 use App\User\Domain\Exception\UserTimedOutException;
 
-class ConfirmationToken
+class ConfirmationToken implements ConfirmationTokenInterface
 {
     private int $timesSent;
     private \DateTime $allowedToSendAfter;

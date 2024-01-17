@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Repository;
 
 use App\User\Domain\Entity\ConfirmationToken;
+use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -40,7 +41,7 @@ class RedisTokenRepository implements TokenRepositoryInterface
         $this->redisAdapter->save($cacheItem);
     }
 
-    public function find($tokenValue): ?ConfirmationToken
+    public function find($tokenValue): ?ConfirmationTokenInterface
     {
         $key = self::getTokenKey($tokenValue);
 
@@ -55,7 +56,7 @@ class RedisTokenRepository implements TokenRepositoryInterface
             : null;
     }
 
-    public function findByUserId($userId): ?ConfirmationToken
+    public function findByUserId($userId): ?ConfirmationTokenInterface
     {
         $key = self::getUserKey($userId);
 

@@ -9,13 +9,13 @@ use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\UpdateUserCommand;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\InvalidPasswordException;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
 class UpdateUserCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,
-        private UserPasswordHasherInterface $passwordHasher,
+        private PasswordHasherFactoryInterface $hasherFactory,
         private UserRepositoryInterface $userRepository
     ) {
     }
@@ -23,14 +23,13 @@ class UpdateUserCommandHandler implements CommandHandlerInterface
     public function __invoke(UpdateUserCommand $command): void
     {
         $user = $command->user;
-        if (!$this->passwordHasher->isPasswordValid($user, $command->oldPassword)) {
+        $hasher = $this->hasherFactory->getPasswordHasher(get_class($user));
+
+        if (!$hasher->verify($user->getPassword(), $command->oldPassword, null)) {
             throw new InvalidPasswordException();
         }
 
-        $hashedPassword = $this->passwordHasher->hashPassword(
-            $user,
-            $command->newPassword
-        );
+        $hashedPassword = $hasher->hash($command->newPassword, null);
 
         $events = $user->update(
             $command->newEmail,

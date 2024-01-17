@@ -11,12 +11,12 @@ use App\User\Application\Command\SignUpCommandResponse;
 use App\User\Application\Transformer\SignUpTransformer;
 use App\User\Domain\Event\UserRegisteredEvent;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
 final readonly class SignUpCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
-        private UserPasswordHasherInterface $passwordHasher,
+        private PasswordHasherFactoryInterface $hasherFactory,
         private UserRepositoryInterface $userRepository,
         private SignUpTransformer $transformer,
         private EventBusInterface $eventBus
@@ -26,10 +26,9 @@ final readonly class SignUpCommandHandler implements CommandHandlerInterface
     public function __invoke(SignUpCommand $command): void
     {
         $user = $this->transformer->transformToUser($command);
-        $hashedPassword = $this->passwordHasher->hashPassword(
-            $user,
-            $user->getPassword()
-        );
+
+        $hasher = $this->hasherFactory->getPasswordHasher(get_class($user));
+        $hashedPassword = $hasher->hash($user->getPassword(), null);
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);

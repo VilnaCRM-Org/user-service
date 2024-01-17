@@ -13,13 +13,13 @@ class UpdateUserMutationInputTransformer
         $validationGroups = [];
 
         if (isset($args['initials'])) {
-            $validationGroups[] = 'initials_not_null';
+            $validationGroups[] = UpdateUserMutationInput::INITIALS_NOT_NULL;
         }
         if (isset($args['email'])) {
-            $validationGroups[] = 'email_not_null';
+            $validationGroups[] = UpdateUserMutationInput::EMAIL_NOT_NULL;
         }
         if (isset($args['newPassword'])) {
-            $validationGroups[] = 'new_password_not_null';
+            $validationGroups[] = UpdateUserMutationInput::NEW_PASSWORD_NOT_NULL;
         }
 
         return new UpdateUserMutationInput(

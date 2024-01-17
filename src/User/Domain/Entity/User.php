@@ -9,19 +9,9 @@ use App\Shared\Domain\ValueObject\UuidInterface;
 use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Event\PasswordChangedEvent;
 use App\User\Domain\Event\UserConfirmedEvent;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User implements UserInterface
 {
-    private UuidInterface $id;
-
-    private string $email;
-
-    private string $initials;
-
-    private string $password;
-
     private bool $confirmed;
 
     /**
@@ -30,15 +20,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private array $roles;
 
     public function __construct(
-        string $email,
-        string $initials,
-        string $password,
-        UuidInterface $id,
+        private string $email,
+        private string $initials,
+        private string $password,
+        private UuidInterface $id,
     ) {
-        $this->id = $id;
-        $this->email = $email;
-        $this->initials = $initials;
-        $this->password = $password;
         $this->roles = ['ROLE_USER'];
         $this->confirmed = false;
     }
@@ -98,17 +84,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->roles = $roles;
 
         return $this;
-    }
-
-    public function eraseCredentials(): void
-    {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
-    }
-
-    public function getUserIdentifier(): string
-    {
-        return $this->email;
     }
 
     public function confirm(ConfirmationToken $token): UserConfirmedEvent

@@ -53,8 +53,5 @@ services:
 
     # Event listener for OAuth2 password grant
     App\OAuth\Application\EventListener\UserResolveListener:
-        arguments:
-            - '@security.user_providers'
-            - '@security.password_hasher'
         tags:
             - { name: kernel.event_listener, event: league.oauth2_server.event.user_resolve, method: onUserResolve }

@@ -4,36 +4,30 @@ declare(strict_types=1);
 
 namespace App\OAuth\Application\EventListener;
 
+use App\User\Application\Transformer\UserTransformer;
+use App\User\Domain\Repository\UserRepositoryInterface;
 use League\Bundle\OAuth2ServerBundle\Event\UserResolveEvent;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
 class UserResolveListener
 {
     public function __construct(
-        private UserProviderInterface $userProvider,
-        private UserPasswordHasherInterface $userPasswordHasher
+        private PasswordHasherFactoryInterface $hasherFactory,
+        private UserRepositoryInterface $userRepository,
+        private UserTransformer $userTransformer,
     ) {
     }
 
     public function onUserResolve(UserResolveEvent $event): void
     {
-        try {
-            $user = $this->userProvider->loadUserByIdentifier($event->getUsername());
-        } catch (AuthenticationException $e) {
+        $user = $this->userRepository->findByEmail($event->getUsername());
+        $authUser = $this->userTransformer->transformToAuthorizationUser($user);
+
+        $hasher = $this->hasherFactory->getPasswordHasher(get_class($user));
+        if (!$hasher->verify($user->getPassword(), $event->getPassword(), null)) {
             return;
         }
 
-        if ($user === null || !($user instanceof PasswordAuthenticatedUserInterface)) {
-            return;
-        }
-
-        if (!$this->userPasswordHasher->isPasswordValid($user, $event->getPassword())) {
-            return;
-        }
-
-        $event->setUser($user);
+        $event->setUser($authUser);
     }
 }

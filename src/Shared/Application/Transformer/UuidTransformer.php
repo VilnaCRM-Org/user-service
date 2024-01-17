@@ -13,4 +13,9 @@ class UuidTransformer
     {
         return new Uuid((string) $symfonyUuid);
     }
+
+    public function transformFromString(string $stringUuid): Uuid
+    {
+        return new Uuid($stringUuid);
+    }
 }
