@@ -12,7 +12,6 @@ readonly class UpdateUserMutationInput implements MutationInput
     public const EMAIL_NOT_NULL = 'email_not_null';
     public const NEW_PASSWORD_NOT_NULL = 'new_password_not_null';
 
-
     public function __construct(
         private array $validationGroups,
         #[Assert\NotBlank]
