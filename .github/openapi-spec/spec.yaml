@@ -951,18 +951,18 @@ components:
       description: ''
       deprecated: false
       properties:
-        id:
-          $ref: '#/components/schemas/UuidInterface-output'
-        email:
-          type: string
-        initials:
-          type: string
         confirmed:
           type: boolean
         roles:
           type: array
           items:
             type: string
+        email:
+          type: string
+        initials:
+          type: string
+        id:
+          $ref: '#/components/schemas/UuidInterface-output'
     User.ConfirmUserDto:
       type: object
       description: ''
@@ -1122,18 +1122,18 @@ components:
         '@type':
           readOnly: true
           type: string
-        id:
-          $ref: '#/components/schemas/UuidInterface.jsonld-output'
-        email:
-          type: string
-        initials:
-          type: string
         confirmed:
           type: boolean
         roles:
           type: array
           items:
             type: string
+        email:
+          type: string
+        initials:
+          type: string
+        id:
+          $ref: '#/components/schemas/UuidInterface.jsonld-output'
     UuidInterface-output:
       type: object
       description: ''
