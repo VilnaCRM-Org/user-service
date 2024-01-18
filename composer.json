@@ -27,6 +27,7 @@
         "phpmailer/phpmailer": "^6.6",
         "ramsey/uuid": "4.7.5",
         "sebastian/phpcpd": "^6.0",
+        "symfony/amazon-sqs-messenger": "6.3.*",
         "symfony/asset": "^6.3",
         "symfony/cache": "6.3.*",
         "symfony/console": "6.3.*",

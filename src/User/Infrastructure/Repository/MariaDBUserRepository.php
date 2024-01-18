@@ -38,6 +38,6 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements Use
 
     public function findByEmail($email): ?UserInterface
     {
-        return parent::findOneBy(['email' => $email]);
+        return $this->findOneBy(['email' => $email]);
     }
 }

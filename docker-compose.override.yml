@@ -31,3 +31,17 @@ services:
       - "${MAILCATCHER_SMTP_PORT}:1025"
       - "${MAILCATCHER_HTTP_PORT}:1080"
 ###< symfony/mailer ###
+
+  localstack:
+    image: localstack/localstack:latest
+    environment:
+      - SERVICES=sqs
+      - AWS_DEFAULT_REGION=eu-central-1
+      - SQS_ENDPOINT_STRATEGY=path
+      - LOCALSTACK_HOST=localhost
+    ports:
+      - "127.0.0.1:4566:4566"
+      - "127.0.0.1:4510-4559:4510-4559"
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"

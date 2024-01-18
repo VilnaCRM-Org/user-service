@@ -28,7 +28,7 @@ final readonly class SignUpCommandHandler implements CommandHandlerInterface
         $user = $this->transformer->transformToUser($command);
 
         $hasher = $this->hasherFactory->getPasswordHasher(get_class($user));
-        $hashedPassword = $hasher->hash($user->getPassword(), null);
+        $hashedPassword = $hasher->hash($user->getPassword());
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);

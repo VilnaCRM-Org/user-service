@@ -25,11 +25,11 @@ class UpdateUserCommandHandler implements CommandHandlerInterface
         $user = $command->user;
         $hasher = $this->hasherFactory->getPasswordHasher(get_class($user));
 
-        if (!$hasher->verify($user->getPassword(), $command->oldPassword, null)) {
+        if (!$hasher->verify($user->getPassword(), $command->oldPassword)) {
             throw new InvalidPasswordException();
         }
 
-        $hashedPassword = $hasher->hash($command->newPassword, null);
+        $hashedPassword = $hasher->hash($command->newPassword);
 
         $events = $user->update(
             $command->newEmail,

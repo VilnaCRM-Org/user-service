@@ -24,7 +24,7 @@ class UserResolveListener
         $authUser = $this->userTransformer->transformToAuthorizationUser($user);
 
         $hasher = $this->hasherFactory->getPasswordHasher(get_class($user));
-        if (!$hasher->verify($user->getPassword(), $event->getPassword(), null)) {
+        if (!$hasher->verify($user->getPassword(), $event->getPassword())) {
             return;
         }
 

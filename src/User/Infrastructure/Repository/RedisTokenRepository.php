@@ -56,9 +56,9 @@ class RedisTokenRepository implements TokenRepositoryInterface
             : null;
     }
 
-    public function findByUserId($userId): ?ConfirmationTokenInterface
+    public function findByUserId($userID): ?ConfirmationTokenInterface
     {
-        $key = self::getUserKey($userId);
+        $key = self::getUserKey($userID);
 
         $cacheItem = $this->redisAdapter->getItem($key);
         $serializedToken = $cacheItem->get();
@@ -84,8 +84,8 @@ class RedisTokenRepository implements TokenRepositoryInterface
         return self::REDIS_KEY_PREFIX.self::TOKEN_VALUE_PREFIX.$tokenValue;
     }
 
-    private function getUserKey(string $userId): string
+    private function getUserKey(string $userID): string
     {
-        return self::REDIS_KEY_PREFIX.self::USER_ID_PREFIX.$userId;
+        return self::REDIS_KEY_PREFIX.self::USER_ID_PREFIX.$userID;
     }
 }
