@@ -7,7 +7,7 @@ namespace App\User\Domain\Event;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\User\Domain\Entity\ConfirmationToken;
 
-class UserConfirmedEvent extends DomainEvent
+final class UserConfirmedEvent extends DomainEvent
 {
     public function __construct(
         public readonly ConfirmationToken $token,

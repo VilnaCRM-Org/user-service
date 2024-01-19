@@ -8,7 +8,7 @@ use App\Shared\Domain\Bus\Command\CommandInterface;
 
 final class SignUpCommand implements CommandInterface
 {
-    public SignUpCommandResponse $response;
+    private SignUpCommandResponse $response;
 
     public function __construct(
         public readonly string $email,

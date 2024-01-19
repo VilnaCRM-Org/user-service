@@ -7,7 +7,7 @@ namespace App\User\Application\DTO;
 use App\Shared\Domain\ValueObject\UuidInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class AuthorizationUser implements UserInterface
+final class AuthorizationUser implements UserInterface
 {
     public function __construct(
         private string $email,
@@ -19,6 +19,9 @@ class AuthorizationUser implements UserInterface
     ) {
     }
 
+    /**
+     * @return array<string>
+     */
     public function getRoles(): array
     {
         $roles = $this->roles;
@@ -26,7 +29,7 @@ class AuthorizationUser implements UserInterface
         return array_unique($roles);
     }
 
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
     }
 

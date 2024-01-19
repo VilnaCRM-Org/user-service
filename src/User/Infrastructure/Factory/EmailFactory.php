@@ -7,7 +7,7 @@ namespace App\User\Infrastructure\Factory;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mime\Email;
 
-class EmailFactory
+final class EmailFactory
 {
     public function create(string $sendTo, string $subject, string $content, string $template): Email
     {

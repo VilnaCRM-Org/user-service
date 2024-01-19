@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Domain\ValueObject;
 
-class Uuid implements UuidInterface
+final class Uuid implements UuidInterface
 {
     private string $uid;
 
@@ -13,13 +13,13 @@ class Uuid implements UuidInterface
         $this->uid = $uid;
     }
 
-    public function toBinary(): string
-    {
-        return hex2bin(str_replace('-', '', $this->uid));
-    }
-
     public function __toString(): string
     {
         return $this->uid;
+    }
+
+    public function toBinary(): string
+    {
+        return hex2bin(str_replace('-', '', $this->uid));
     }
 }

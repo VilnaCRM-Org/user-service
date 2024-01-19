@@ -11,7 +11,7 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 
-class DomainUuidType extends Type
+final class DomainUuidType extends Type
 {
     public const NAME = 'domain_uuid';
 

@@ -14,7 +14,7 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
 use App\User\Infrastructure\Exception\UserNotFoundException;
 
-class ConfirmUserMutationResolver implements MutationResolverInterface
+final class ConfirmUserMutationResolver implements MutationResolverInterface
 {
     public function __construct(
         private TokenRepositoryInterface $tokenRepository,
@@ -25,6 +25,9 @@ class ConfirmUserMutationResolver implements MutationResolverInterface
     ) {
     }
 
+    /**
+     * @param array<string,string> $context
+     */
     public function __invoke(?object $item, array $context): ?object
     {
         $args = $context['args']['input'];

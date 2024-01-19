@@ -6,7 +6,7 @@ namespace App\User\Application\Transformer;
 
 use App\User\Application\MutationInput\ConfirmUserMutationInput;
 
-class ConfirmUserMutationInputTransformer
+final class ConfirmUserMutationInputTransformer
 {
     public function transform(array $args): ConfirmUserMutationInput
     {

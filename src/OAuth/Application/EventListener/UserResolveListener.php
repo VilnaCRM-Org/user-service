@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\OAuth\Application\EventListener;
 
 use App\User\Application\Transformer\UserTransformer;
+use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use League\Bundle\OAuth2ServerBundle\Event\UserResolveEvent;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
-class UserResolveListener
+final class UserResolveListener
 {
     public function __construct(
         private PasswordHasherFactoryInterface $hasherFactory,
@@ -23,7 +24,7 @@ class UserResolveListener
         $user = $this->userRepository->findByEmail($event->getUsername());
         $authUser = $this->userTransformer->transformToAuthorizationUser($user);
 
-        $hasher = $this->hasherFactory->getPasswordHasher(get_class($user));
+        $hasher = $this->hasherFactory->getPasswordHasher(User::class);
         if (!$hasher->verify($user->getPassword(), $event->getPassword())) {
             return;
         }

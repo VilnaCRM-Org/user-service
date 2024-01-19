@@ -8,7 +8,7 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\SendConfirmationEmailCommand;
 
-class SendConfirmationEmailCommandHandler implements CommandHandlerInterface
+final class SendConfirmationEmailCommandHandler implements CommandHandlerInterface
 {
     public function __construct(private EventBusInterface $eventBus)
     {

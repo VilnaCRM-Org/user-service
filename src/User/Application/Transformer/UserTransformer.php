@@ -8,7 +8,7 @@ use App\Shared\Application\Transformer\UuidTransformer;
 use App\User\Application\DTO\AuthorizationUser;
 use App\User\Domain\Entity\User;
 
-class UserTransformer
+final class UserTransformer
 {
     public function __construct(private UuidTransformer $transformer)
     {

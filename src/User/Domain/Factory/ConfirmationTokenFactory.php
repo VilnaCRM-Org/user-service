@@ -7,7 +7,7 @@ namespace App\User\Domain\Factory;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 
-class ConfirmationTokenFactory
+final class ConfirmationTokenFactory
 {
     public function __construct(private int $tokenLength)
     {

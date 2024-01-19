@@ -16,7 +16,7 @@ use App\User\Infrastructure\Exception\UserNotFoundException;
 /**
  * @implements ProcessorInterface<User>
  */
-class UserPatchProcessor implements ProcessorInterface
+final class UserPatchProcessor implements ProcessorInterface
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,

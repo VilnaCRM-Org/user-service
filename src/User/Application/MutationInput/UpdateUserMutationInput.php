@@ -6,7 +6,7 @@ namespace App\User\Application\MutationInput;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-readonly class UpdateUserMutationInput implements MutationInput
+final readonly class UpdateUserMutationInput implements MutationInput
 {
     public const INITIALS_NOT_NULL = 'initials_not_null';
     public const EMAIL_NOT_NULL = 'email_not_null';
@@ -30,6 +30,9 @@ readonly class UpdateUserMutationInput implements MutationInput
     ) {
     }
 
+    /**
+     * @return array<string>
+     */
     public function getValidationGroups(): array
     {
         return $this->validationGroups;

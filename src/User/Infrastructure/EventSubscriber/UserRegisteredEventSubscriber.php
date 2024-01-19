@@ -12,7 +12,7 @@ use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Event\UserRegisteredEvent;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 
-class UserRegisteredEventSubscriber implements DomainEventSubscriberInterface
+final class UserRegisteredEventSubscriber implements DomainEventSubscriberInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,

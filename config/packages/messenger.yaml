@@ -14,7 +14,7 @@ framework:
         failure_transport: failed-send-email
 
       failed-send-email:
-        dsn: 'doctrine://default?queue_name=failed_send_email'
+        dsn: '%env(FAILED_EMAIL_TRANSPORT_DSN)%'
 
         retry_strategy:
           service: 'App\Shared\Infrastructure\RetryStrategy\InfiniteRetryStrategy'

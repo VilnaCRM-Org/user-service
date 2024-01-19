@@ -6,7 +6,7 @@ namespace App\User\Application\DTO;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-readonly class ConfirmUserDto
+final readonly class ConfirmUserDto
 {
     public function __construct(
         #[Assert\NotBlank]

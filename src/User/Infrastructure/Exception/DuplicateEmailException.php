@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Exception;
 
-class DuplicateEmailException extends \LogicException
+final class DuplicateEmailException extends \LogicException
 {
     public function __construct(string $email)
     {
-        parent::__construct($email.' address is already registered. Please use a different email address or try logging in.');
+        parent::__construct(
+            $email.' address is already registered. Please use a different email address or try logging in.'
+        );
     }
 }

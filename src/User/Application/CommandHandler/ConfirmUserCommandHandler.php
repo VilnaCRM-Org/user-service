@@ -10,7 +10,7 @@ use App\User\Application\Command\ConfirmUserCommand;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\UserNotFoundException;
 
-class ConfirmUserCommandHandler implements CommandHandlerInterface
+final class ConfirmUserCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,

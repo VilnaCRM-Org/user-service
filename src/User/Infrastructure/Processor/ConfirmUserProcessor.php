@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * @implements ProcessorInterface<Response>
  */
-class ConfirmUserProcessor implements ProcessorInterface
+final class ConfirmUserProcessor implements ProcessorInterface
 {
     public function __construct(
         private TokenRepositoryInterface $tokenRepository,

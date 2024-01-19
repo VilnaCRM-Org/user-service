@@ -11,7 +11,7 @@ use App\User\Infrastructure\Factory\EmailFactory;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class PasswordChangedEventSubscriber implements DomainEventSubscriberInterface
+final class PasswordChangedEventSubscriber implements DomainEventSubscriberInterface
 {
     public function __construct(
         private MailerInterface $mailer,

@@ -8,7 +8,7 @@ use App\Shared\Domain\ValueObject\Uuid;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 
-readonly class UserFactory
+final readonly class UserFactory
 {
     public function create(string $email, string $initials, string $password, Uuid $id): UserInterface
     {

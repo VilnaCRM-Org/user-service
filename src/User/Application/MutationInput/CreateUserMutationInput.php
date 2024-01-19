@@ -6,7 +6,7 @@ namespace App\User\Application\MutationInput;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-readonly class CreateUserMutationInput implements MutationInput
+final readonly class CreateUserMutationInput implements MutationInput
 {
     public function __construct(
         #[Assert\NotNull]
@@ -25,6 +25,9 @@ readonly class CreateUserMutationInput implements MutationInput
     ) {
     }
 
+    /**
+     * @return array<string>
+     */
     public function getValidationGroups(): array
     {
         return [];

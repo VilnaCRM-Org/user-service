@@ -10,7 +10,7 @@ use App\User\Application\Command\SignUpCommand;
 use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\Transformer\CreateUserMutationInputTransformer;
 
-class RegisterUserMutationResolver implements MutationResolverInterface
+final class RegisterUserMutationResolver implements MutationResolverInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,
@@ -19,6 +19,9 @@ class RegisterUserMutationResolver implements MutationResolverInterface
     ) {
     }
 
+    /**
+     * @param array<string,string> $context
+     */
     public function __invoke(?object $item, array $context): ?object
     {
         $args = $context['args']['input'];

@@ -6,7 +6,7 @@ namespace App\Shared\Domain\ValueObject;
 
 interface UuidInterface
 {
-    public function toBinary(): string;
-
     public function __toString(): string;
+
+    public function toBinary(): string;
 }

@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class ConfirmationEmailSendEventSubscriber implements DomainEventSubscriberInterface
+final class ConfirmationEmailSendEventSubscriber implements DomainEventSubscriberInterface
 {
     public function __construct(
         private MailerInterface $mailer,

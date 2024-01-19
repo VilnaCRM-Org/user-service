@@ -6,7 +6,7 @@ namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 
-class PasswordChangedEvent extends DomainEvent
+final class PasswordChangedEvent extends DomainEvent
 {
     public function __construct(
         public readonly string $email,

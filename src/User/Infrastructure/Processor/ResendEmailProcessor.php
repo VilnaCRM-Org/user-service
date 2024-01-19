@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * @implements ProcessorInterface<Response>
  */
-class ResendEmailProcessor implements ProcessorInterface
+final class ResendEmailProcessor implements ProcessorInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,

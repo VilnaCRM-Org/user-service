@@ -10,7 +10,7 @@ use App\User\Application\Command\UpdateUserCommand;
 use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\Transformer\UpdateUserMutationInputTransformer;
 
-class UserUpdateMutationResolver implements MutationResolverInterface
+final class UserUpdateMutationResolver implements MutationResolverInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,
@@ -19,6 +19,9 @@ class UserUpdateMutationResolver implements MutationResolverInterface
     ) {
     }
 
+    /**
+     * @param array<string,string> $context
+     */
     public function __invoke(?object $item, array $context): object
     {
         $args = $context['args']['input'];
@@ -32,7 +35,13 @@ class UserUpdateMutationResolver implements MutationResolverInterface
         $newPassword = $args['newPassword'] ?? $args['password'];
 
         $this->commandBus->dispatch(
-            new UpdateUserCommand($user, $newEmail, $newInitials, $newPassword, $args['password'])
+            new UpdateUserCommand(
+                $user,
+                $newEmail,
+                $newInitials,
+                $newPassword,
+                $args['password']
+            )
         );
 
         return $user;

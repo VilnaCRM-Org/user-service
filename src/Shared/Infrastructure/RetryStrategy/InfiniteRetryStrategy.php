@@ -9,15 +9,21 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Retry\RetryStrategyInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-class InfiniteRetryStrategy implements RetryStrategyInterface
+final class InfiniteRetryStrategy implements RetryStrategyInterface
 {
-    public function shouldRetry(AsyncContext $context, ?string $responseContent, ?TransportExceptionInterface $exception): ?bool
-    {
+    public function shouldRetry(
+        AsyncContext $context,
+        ?string $responseContent,
+        ?TransportExceptionInterface $exception
+    ): ?bool {
         return true;
     }
 
-    public function getDelay(AsyncContext $context, ?string $responseContent, ?TransportExceptionInterface $exception): int
-    {
+    public function getDelay(
+        AsyncContext $context,
+        ?string $responseContent,
+        ?TransportExceptionInterface $exception
+    ): int {
         return 60000;
     }
 

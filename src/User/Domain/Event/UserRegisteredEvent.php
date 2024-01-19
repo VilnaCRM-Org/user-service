@@ -7,7 +7,7 @@ namespace App\User\Domain\Event;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\User\Domain\Entity\User;
 
-class UserRegisteredEvent extends DomainEvent
+final class UserRegisteredEvent extends DomainEvent
 {
     public function __construct(
         public readonly User $user,

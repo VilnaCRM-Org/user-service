@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Domain\Exception;
 
-class UserTimedOutException extends \RuntimeException
+final class UserTimedOutException extends \RuntimeException
 {
     public function __construct(\DateTime $timeOutTill)
     {

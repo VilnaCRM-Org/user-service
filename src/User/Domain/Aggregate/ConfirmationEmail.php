@@ -9,7 +9,7 @@ use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\ConfirmationEmailSendEvent;
 
-class ConfirmationEmail extends AggregateRoot
+final class ConfirmationEmail extends AggregateRoot
 {
     public function __construct(public readonly ConfirmationTokenInterface $token, public readonly UserInterface $user)
     {

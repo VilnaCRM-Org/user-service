@@ -14,7 +14,7 @@ use App\User\Domain\Entity\User;
 /**
  * @implements ProcessorInterface<User>
  */
-readonly class RegisterUserProcessor implements ProcessorInterface
+final readonly class RegisterUserProcessor implements ProcessorInterface
 {
     public function __construct(private CommandBusInterface $commandBus)
     {
