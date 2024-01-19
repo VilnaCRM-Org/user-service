@@ -44,7 +44,7 @@ function Cards() {
         </Stack>
       </Stack>
       <UiButton variant="contained" size="small" sx={cardsStyles.button}>
-        Спробувати
+        {t('for_who.button_text')}
       </UiButton>
     </Stack>
   );

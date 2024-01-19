@@ -7,20 +7,20 @@ import { drawerListStyles } from './styles';
 
 const tabItems = [
   {
-    id: 1,
-    title: 'Переваги',
+    id: 'advantages',
+    title: 'header.advantages',
   },
   {
-    id: 2,
-    title: 'Для кого',
+    id: 'for-who',
+    title: 'header.for_who',
   },
   {
-    id: 3,
-    title: 'Інтеграція',
+    id: 'integration',
+    title: 'header.integration',
   },
   {
-    id: 4,
-    title: 'Контакти',
+    id: 'contacts',
+    title: 'header.contacts',
   },
 ];
 

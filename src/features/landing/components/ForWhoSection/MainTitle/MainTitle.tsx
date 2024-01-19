@@ -21,7 +21,7 @@ function MainTitle() {
         <Trans i18nKey="for_who.text_main" />
       </UiTypography>
       <UiButton variant="contained" size="medium" sx={mainTitleStyles.button}>
-        Спробувати
+        {t('for_who.button_text')}
       </UiButton>
     </Box>
   );

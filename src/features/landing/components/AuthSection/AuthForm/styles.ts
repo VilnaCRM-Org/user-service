@@ -17,14 +17,14 @@ export const authFormStyles = {
   backgroundBlock: {
     position: 'absolute',
     borderRadius: '12px 12px 0px 0px',
-    top: '16%',
+    top: '16.2%',
     right: '5%',
     width: '499px',
     height: ' 542px',
     backgroundColor: '#E1E7EA',
     '@media (max-width: 1439.98px)': {
       height: ' 629px',
-      top: '8%',
+      top: '8.3%',
       right: '26%',
     },
     '@media (max-width: 639.98px)': {
@@ -135,7 +135,7 @@ export const authFormStyles = {
     '@media (max-width: 1439.98px)': {
       backgroundImage: `url(${Imagess.src})`,
       left: '-12%',
-      bottom: '16%',
+      bottom: '16.5%',
       width: '815px',
       height: '552px',
     },

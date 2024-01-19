@@ -7,13 +7,12 @@ import { UiTypography } from '@/components/ui';
 import { socialItemStyles } from './styles';
 
 interface SocialItemProps {
-  // item: {
-  //   id: number;
-  //   icon: string;
-  //   title: string;
-  //   linkHref: string;
-  // };
-  item: any;
+  item: {
+    id: string;
+    icon: string;
+    title: string;
+    linkHref: string;
+  };
 }
 
 function SocialItem({ item }: SocialItemProps) {

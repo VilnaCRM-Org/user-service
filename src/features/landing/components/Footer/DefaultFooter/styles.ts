@@ -1,4 +1,4 @@
-export const footerStyles = {
+export const defaultFooterStyles = {
   footerWrapper: {
     borderTop: '1px solid #e1e7ea',
     background: '#fff',

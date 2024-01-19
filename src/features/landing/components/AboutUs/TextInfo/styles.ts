@@ -29,6 +29,7 @@ export const textInfoStyles = {
     textAlign: 'center',
     mb: '39px',
     '@media (max-width: 639.98px)': {
+      maxWidth: '341px',
       mt: '12px',
       mb: '24px',
       textAlign: 'left',

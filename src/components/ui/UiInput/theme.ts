@@ -2,6 +2,30 @@ import { createTheme } from '@mui/material';
 
 export const theme = createTheme({
   components: {
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          borderRadius: '8px',
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#969B9D',
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            border: '1px solid #969B9D',
+          },
+          '&.Mui-disabled': {
+            backgroundColor: '#E1E7EA',
+            color: '#969B9D',
+          },
+        },
+        notchedOutline: {
+          border: '1px solid #D0D4D8',
+          borderRadius: '8px',
+          '&:hover': {
+            borderColor: '#969B9D',
+          },
+        },
+      },
+    },
     MuiTextField: {
       styleOverrides: {
         root: {
@@ -16,18 +40,11 @@ export const theme = createTheme({
             margin: '0',
             letterSpacing: '0',
           },
-          fieldSet: {
-            borderRadius: '8px',
-            '&:hover': {
-              border: '1px solid #D0D4D8',
-            },
-          },
           input: {
-            boxSizing: 'border-box',
             padding: '0 28px',
             height: '64px',
             borderRadius: '8px',
-            background: ' #FFF',
+            background: '#FFF',
             '&::placeholder': {
               color: '#969B9D',
               fontFamily: 'Inter',
@@ -36,6 +53,7 @@ export const theme = createTheme({
               fontWeight: '400',
               lineHeight: '18px',
             },
+
             '@media (max-width: 1439.98px)': {
               height: '79px',
               '&::placeholder': {

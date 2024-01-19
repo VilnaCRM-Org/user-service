@@ -1,18 +1,17 @@
 import { Grid } from '@mui/material';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
 import { CardItem } from '@/components/CardItem';
+import { UiButton } from '@/components/ui';
 
 import { WHY_WE_CARD_ITEMS } from '../../../utils/constants/constants';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
 import { cardListStyles } from './styles';
-
-// eslint-disable-next-line import/order
-import { UiButton } from '@/components/ui';
 
 const pagination = {
   renderBullet(index: number, className: string) {
@@ -21,6 +20,7 @@ const pagination = {
   },
 }; // i don`t know, should we use that or better without that
 function CardList() {
+  const { t } = useTranslation();
   return (
     <>
       <Grid sx={cardListStyles.grid}>
@@ -43,7 +43,7 @@ function CardList() {
           ))}
         </Swiper>
         <UiButton variant="contained" size="small" sx={cardListStyles.button}>
-          Спробувати
+          {t('why_we.buttonText')}
         </UiButton>
       </Grid>
     </>

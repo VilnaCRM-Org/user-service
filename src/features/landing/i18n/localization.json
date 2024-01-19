@@ -18,9 +18,7 @@
     "why_we": {
       "heading": "Why we",
       "subtitle": "Unlimited customization options or ease of use - <br/ > we've made it easy for any business to manage sales",
-      "button": {
-        "try_it_out": "Try it out"
-      },
+      "buttonText": "Try it out",
       "headers": {
         "header_open_source": "Open source",
         "header_ease_of_setup": "Ease of setup",
@@ -129,9 +127,8 @@
     "why_we": {
       "heading": "Чому ми",
       "subtitle": "Безмежні можливості кастомізації чи простота у використанні  — <br/ > ми подбали, щоб керувати продажами було зручно будь-якому бізнесу",
-      "button": {
-        "try_it_out": "Спробувати"
-      },
+      "buttonText": "Спробувати",
+
       "headers": {
         "header_open_source": "Open source",
         "header_ease_of_setup": "Легкість <br /> у налаштуванні",
@@ -182,6 +179,9 @@
         "title_for_second": "Зображення діаманту 2",
         "title_for_third": "Зображення діаманту 3",
         "title_for_fourth": "Зображення діаманту 4"
+      },
+      "button": {
+        "try_it_out": "Спробувати"
       }
     },
     "sign_up": {

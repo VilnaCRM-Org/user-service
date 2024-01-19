@@ -11,9 +11,7 @@ function TextInfo() {
   return (
     <Stack sx={textInfoStyles.textWrapper}>
       <UiTypography variant="h1" sx={textInfoStyles.title}>
-        <Trans i18nKey="about_vilna.heading_main">
-          Перша українська CRM <br /> з відкритим кодом
-        </Trans>
+        <Trans i18nKey="about_vilna.heading_main" />
       </UiTypography>
       <UiTypography variant="bodyText18" sx={textInfoStyles.text}>
         {t('about_vilna.text_main')}

@@ -1,6 +1,7 @@
 import { Drawer, Box, Stack } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { UiButton, UiTypography } from '@/components/ui';
 
@@ -14,6 +15,7 @@ import DrawerList from './DrawerList/DrawerList';
 import { drawerStyles } from './styles';
 
 function UiDrawer() {
+  const { t } = useTranslation();
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
 
   return (
@@ -58,10 +60,10 @@ function UiDrawer() {
             mt="12px"
           >
             <UiButton variant="outlined" size="small" fullWidth>
-              Войти
+              {t('header.actions.log_in')}
             </UiButton>
             <UiButton variant="contained" size="small" fullWidth>
-              Спробувати
+              {t('header.actions.try_it_out')}
             </UiButton>
           </Stack>
           <DrawerList />

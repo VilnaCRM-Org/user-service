@@ -61,7 +61,11 @@ function AuthForm() {
           <UiTypography variant="h4" sx={authFormStyles.formTitle}>
             {t('sign_up.form.heading_main')}
           </UiTypography>
-          <UiLabel title={fullNameTitle} sx={authFormStyles.labelTitle}>
+          <UiLabel
+            title={fullNameTitle}
+            sx={authFormStyles.labelTitle}
+            hasError={!!errors.Email}
+          >
             <Controller
               control={control}
               name="FullName"
@@ -82,7 +86,11 @@ function AuthForm() {
               )}
             />
           </UiLabel>
-          <UiLabel title={emailTitle} sx={authFormStyles.labelTitle}>
+          <UiLabel
+            title={emailTitle}
+            sx={authFormStyles.labelTitle}
+            hasError={!!errors.Email}
+          >
             <Controller
               control={control}
               name="Email"
@@ -100,7 +108,11 @@ function AuthForm() {
               )}
             />
           </UiLabel>
-          <UiLabel title={passwordTitle} sx={authFormStyles.labelTitle}>
+          <UiLabel
+            title={passwordTitle}
+            sx={authFormStyles.labelTitle}
+            hasError={!!errors.Email}
+          >
             <Controller
               control={control}
               name="Password"

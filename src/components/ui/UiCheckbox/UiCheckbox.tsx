@@ -1,26 +1,12 @@
 /* eslint-disable react/require-default-props */
-import {
-  FormControlLabel,
-  Checkbox,
-  ThemeProvider,
-  createTheme,
-} from '@mui/material';
+import { FormControlLabel, Checkbox, ThemeProvider } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 
 import CheckedCheckBox from '../../../features/landing/assets/svg/auth-section/checkedCheckbox.svg';
 import RestCheckBox from '../../../features/landing/assets/svg/auth-section/restCheckbox.svg';
 
-const theme = createTheme({
-  components: {
-    MuiCheckbox: {
-      defaultProps: {},
-      styleOverrides: {
-        root: {},
-      },
-    },
-  },
-});
+import { theme } from './theme';
 
 function UiCheckbox({
   label,
