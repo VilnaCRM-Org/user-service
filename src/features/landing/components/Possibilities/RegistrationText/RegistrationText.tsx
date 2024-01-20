@@ -2,7 +2,7 @@ import { Stack } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { UiTypography } from '@/components/ui';
+import { UiTypography } from '@/components';
 
 import { registrationTextStyles } from './styles';
 

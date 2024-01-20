@@ -2,7 +2,7 @@ import { Container, Stack } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 
-import Logo from '../../../assets/svg/Logo/Logo.svg';
+import Logo from '../../../assets/svg/logo/Logo.svg';
 import { CopyrightNoticeAndLinks } from '../CopyrightNoticeAndLinks';
 import { PrivacyPolicy } from '../PrivacyPolicy';
 
@@ -10,7 +10,11 @@ import { defaultFooterStyles } from './styles';
 
 function DefaultFooter() {
   return (
-    <Stack sx={defaultFooterStyles.footerWrapper} id="Contacts">
+    <Stack
+      sx={defaultFooterStyles.footerWrapper}
+      id="Contacts"
+      component="footer"
+    >
       <Stack height="67px" alignItems="center" flexDirection="row">
         <Container>
           <Stack

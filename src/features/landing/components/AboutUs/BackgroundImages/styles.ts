@@ -1,4 +1,4 @@
-import VectorIcon from '../../../assets/img/AboutVilna/Vector.svg';
+import VectorIcon from '../../../assets/img/about-vilna/Vector.svg';
 
 export const backgroundImagesStyles = {
   vector: {

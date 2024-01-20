@@ -1,5 +1,5 @@
-import PhoneMainImage from '../../../assets/img/AboutVilna/mobileBackground.png';
-import MainImageSrc from '../../../assets/img/AboutVilna/Screen.png';
+import PhoneMainImage from '../../../assets/img/about-vilna/mobileBackground.png';
+import MainImageSrc from '../../../assets/img/about-vilna/Screen.png';
 
 export const mainImageStyles = {
   mainImageWrapper: {

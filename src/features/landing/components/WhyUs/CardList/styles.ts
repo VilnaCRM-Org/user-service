@@ -21,6 +21,12 @@ export const cardListStyles = {
     },
   },
   gridMobile: {
+    '& .swiper .swiper-pagination .swiper-pagination-bullet': {
+      marginRight: '20px',
+    },
+    '& .swiper .swiper-pagination': {
+      marginLeft: '8px',
+    },
     display: 'none',
     '@media (max-width: 639.98px)': {
       display: 'grid',

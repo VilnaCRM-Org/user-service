@@ -3,7 +3,7 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family: 'Golos', sans-serif;
+  font-family: 'Golos', 'Inter';
   scroll-behavior: smooth;
   max-width: 100dvw;
   overflow-x: hidden;

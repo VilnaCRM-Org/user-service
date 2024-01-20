@@ -1,44 +1,38 @@
 import { Grid } from '@mui/material';
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-import { CardItem } from '@/components/CardItem';
-import { UiButton } from '@/components/ui';
-
-import { WHY_WE_CARD_ITEMS } from '../../../utils/constants/constants';
+import { UiButton, UiCardItem } from '@/components';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
+
+import { LargeCardListProps } from '../../../types/why-we/types';
+
 import { cardListStyles } from './styles';
 
-const pagination = {
-  renderBullet(index: number, className: string) {
-    return `
-    <span class="${className}" style="margin-right: 17px;"></span>`;
-  },
-}; // i don`t know, should we use that or better without that
-function CardList() {
+function CardList({ largeCarditemList }: LargeCardListProps) {
   const { t } = useTranslation();
+
   return (
     <>
       <Grid sx={cardListStyles.grid}>
-        {WHY_WE_CARD_ITEMS.map(item => (
-          <CardItem item={item} type="large" key={item.id} />
+        {largeCarditemList.map(item => (
+          <UiCardItem item={item} type="large" key={item.id} />
         ))}
       </Grid>
       <Grid sx={cardListStyles.gridMobile}>
         <Swiper
-          slidesPerView={1.04}
-          pagination={pagination}
+          pagination
           modules={[Pagination]}
-          spaceBetween={12}
           className="swiper-wrapper"
+          spaceBetween={12}
+          slidesPerView={1.04}
         >
-          {WHY_WE_CARD_ITEMS.map(item => (
+          {largeCarditemList.map(item => (
             <SwiperSlide key={item.id}>
-              <CardItem item={item} type="large" />
+              <UiCardItem item={item} type="large" />
             </SwiperSlide>
           ))}
         </Swiper>
@@ -49,4 +43,5 @@ function CardList() {
     </>
   );
 }
+
 export default CardList;

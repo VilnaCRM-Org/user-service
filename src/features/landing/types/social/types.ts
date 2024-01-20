@@ -1,4 +1,4 @@
-export default interface ISocialLink {
+export interface ISocialLink {
   id: string;
   icon: string;
   title: string;

@@ -16,6 +16,9 @@ export const cardListStyles = {
   },
 
   gridMobile: {
+    '& .swiper .swiper-pagination .swiper-pagination-bullet': {
+      marginRight: '20px',
+    },
     display: 'none',
     '@media (max-width: 639.98px)': {
       minHeight: '296px',

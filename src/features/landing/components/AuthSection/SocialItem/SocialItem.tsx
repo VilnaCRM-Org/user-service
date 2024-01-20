@@ -2,7 +2,7 @@ import { Stack } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 
-import { UiTypography } from '@/components/ui';
+import { UiTypography } from '@/components';
 
 import { socialItemStyles } from './styles';
 

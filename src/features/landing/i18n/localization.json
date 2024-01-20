@@ -64,10 +64,10 @@
         "text": "Integrate in a few clicks"
       },
       "card_image_titles": {
-        "title_for_first": "Image of Ruby 1",
-        "title_for_second": "Image of Ruby 2",
-        "title_for_third": "Image of Ruby 3",
-        "title_for_fourth": "Image of Ruby 4"
+        "title_for_first": "Image of Ruby",
+        "title_for_second": "Image of SmallDiamond",
+        "title_for_third": "Image of SmallRuby",
+        "title_for_fourth": "Image of Diamond"
       }
     },
     "sign_up": {
@@ -175,10 +175,10 @@
         "text": "Інтегруйте у кілька кліків"
       },
       "card_image_titles": {
-        "title_for_first": "Зображення діаманту 1",
-        "title_for_second": "Зображення діаманту 2",
-        "title_for_third": "Зображення діаманту 3",
-        "title_for_fourth": "Зображення діаманту 4"
+        "title_for_first": "Зображення Рубіну",
+        "title_for_second": "Зображення Малого діаманту",
+        "title_for_third": "Зображення Малого рубіну",
+        "title_for_fourth": "Зображення Діаманту"
       },
       "button": {
         "try_it_out": "Спробувати"

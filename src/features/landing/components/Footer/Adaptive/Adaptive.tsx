@@ -3,9 +3,9 @@ import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { UiTypography } from '@/components/ui';
+import { UiTypography } from '@/components';
 
-import Logo from '../../../assets/svg/Logo/Logo.svg';
+import Logo from '../../../assets/svg/logo/Logo.svg';
 import { NavList } from '../NavList';
 import { PrivacyPolicy } from '../PrivacyPolicy';
 
@@ -15,7 +15,7 @@ function Adaptive() {
   const { t } = useTranslation();
 
   return (
-    <Container sx={adaptiveStyles.wrapper}>
+    <Container sx={adaptiveStyles.wrapper} component="footer">
       <Stack direction="row" justifyContent="space-between" mt="18px" pb="16px">
         <Image src={Logo} alt="Logo" width={131} height={44} />
         <NavList />

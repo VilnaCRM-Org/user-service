@@ -3,7 +3,6 @@ import * as Sentry from '@sentry/react';
 import React, { useEffect } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import * as PropTypes from 'prop-types';
-
 import i18n from '../i18n';
 import 'dotenv/config';
 
@@ -23,17 +22,13 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 });
 
-// eslint-disable-next-line react/prop-types
 function MyApp({ Component }) {
   const theme = createTheme({
-    palette: {
-      mode: 'light',
-    },
     breakpoints: {
       values: { xs: 375.98, sm: 640.98, md: 767.98, lg: 1023.98, xl: 1439.98 },
     },
     typography: {
-      fontFamily: 'Golos',
+      fontFamily: 'Golos, Inter',
     },
     components: {
       MuiContainer: {

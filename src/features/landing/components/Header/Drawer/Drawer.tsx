@@ -3,18 +3,67 @@ import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { UiButton, UiTypography } from '@/components/ui';
+import { UiButton, UiTypography } from '@/components';
 
 import AtSignImage from '../../../assets/svg/header-drawer/at-sign.svg';
 import Bars from '../../../assets/svg/header-drawer/menu-04.svg';
+import GoogleDrawerIcon from '../../../assets/svg/header-drawer/socials/facebook.svg';
+import GitHubDrawerIcon from '../../../assets/svg/header-drawer/socials/github.svg';
+import FaceBookDrawerIcon from '../../../assets/svg/header-drawer/socials/instagram.svg';
+import TwitterDrawerIcon from '../../../assets/svg/header-drawer/socials/linked-in.svg';
 import CloseImage from '../../../assets/svg/header-drawer/x-close.svg';
-import Logo from '../../../assets/svg/Logo/Logo.svg';
-import { DRAWER_SOCIAL_LINKS } from '../../../utils/constants/constants';
+import Logo from '../../../assets/svg/logo/Logo.svg';
 
 import DrawerList from './DrawerList/DrawerList';
 import { drawerStyles } from './styles';
 
 function UiDrawer() {
+  const tabItems = [
+    {
+      id: 'advantages',
+      title: 'header.advantages',
+    },
+    {
+      id: 'for-who',
+      title: 'header.for_who',
+    },
+    {
+      id: 'integration',
+      title: 'header.integration',
+    },
+    {
+      id: 'contacts',
+      title: 'header.contacts',
+    },
+  ];
+
+  const socialMedia = [
+    {
+      id: 'google-link',
+      icon: FaceBookDrawerIcon,
+      title: 'Instagram',
+      linkHref: '/',
+    },
+    {
+      id: 'facebook-link',
+      icon: GitHubDrawerIcon,
+      title: 'GitHub',
+      linkHref: '/',
+    },
+    {
+      id: 'github-link',
+      icon: GoogleDrawerIcon,
+      title: 'Facebook',
+      linkHref: '/',
+    },
+    {
+      id: 'twitter-link',
+      icon: TwitterDrawerIcon,
+      title: 'Linkedin',
+      linkHref: '/',
+    },
+  ];
+
   const { t } = useTranslation();
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
 
@@ -66,7 +115,7 @@ function UiDrawer() {
               {t('header.actions.try_it_out')}
             </UiButton>
           </Stack>
-          <DrawerList />
+          <DrawerList tabItems={tabItems} />
           <Box sx={drawerStyles.gmailWrapper}>
             <Stack
               justifyContent="center"
@@ -84,7 +133,7 @@ function UiDrawer() {
             flexDirection="row"
             sx={drawerStyles.linkWrapper}
           >
-            {DRAWER_SOCIAL_LINKS.map(({ icon, title, id }) => (
+            {socialMedia.map(({ icon, title, id }) => (
               <Box key={id} m="12px">
                 <Image src={icon} alt={title} width={25} height={25} key={id} />
               </Box>

@@ -53,7 +53,7 @@ export const authFormStyles = {
     zIndex: '5',
     padding: '36px 40px 40px 40px',
     borderRadius: '32px 32px 0px 0px',
-    border: '1px solid  #E1E7EA',
+    border: '1px solid  primary.main',
     background: '#FFF',
     maxWidth: '502px',
     maxHeight: '647px',

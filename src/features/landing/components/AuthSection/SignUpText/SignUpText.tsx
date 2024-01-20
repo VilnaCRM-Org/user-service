@@ -2,7 +2,7 @@ import { Box } from '@mui/material';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { UiTypography } from '@/components/ui';
+import { UiTypography } from '@/components';
 
 import { SocialList } from '../SocialList';
 

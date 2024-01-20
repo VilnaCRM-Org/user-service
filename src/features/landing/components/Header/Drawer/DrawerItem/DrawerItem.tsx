@@ -3,7 +3,7 @@ import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { UiTypography } from '@/components/ui';
+import { UiTypography } from '@/components';
 
 import AtSignImage from '../../../../assets/svg/header-drawer/chevron-down.svg';
 

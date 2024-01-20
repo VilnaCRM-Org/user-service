@@ -3,7 +3,7 @@ import { Stack, Link } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { UiButton } from '../../../../../components/ui';
+import { UiButton } from '../../../../../components';
 
 import { authenticationButtonsStyles } from './styles';
 

@@ -1,6 +1,6 @@
-import fs from 'fs';
+const fs = require('fs');
 
-const LocalizationGenerator = require('../../localizationGenerator').default;
+const LocalizationGenerator = require('../../localizationGenerator');
 
 const FEATURE_FOLDERS = [
   { name: 'folder1', isDirectory: () => true },
@@ -27,7 +27,7 @@ function mockedWriteFile() {
   return jest.spyOn(fs, 'writeFile');
 }
 
-// jest.mock('fs');
+jest.mock('fs');
 
 describe('LocalizationGenerator', () => {
   afterEach(() => {

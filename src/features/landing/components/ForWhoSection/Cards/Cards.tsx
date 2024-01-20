@@ -2,7 +2,7 @@ import { Box, Stack } from '@mui/material';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { UiButton, UiTypography } from '@/components/ui';
+import { UiButton, UiTypography } from '@/components';
 
 import Vector from '../../../assets/svg/service-hub/yellowVector.svg';
 

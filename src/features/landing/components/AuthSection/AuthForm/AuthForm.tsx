@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import React from 'react';
-import { Controller, useForm, useFormState } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
 
 import {
@@ -9,8 +9,8 @@ import {
   UiInput,
   UiLabel,
   UiTypography,
-} from '@/components/ui';
-import { UiLink } from '@/components/ui/UiLink';
+  UiLink,
+} from '@/components';
 
 import { authFormStyles } from './styles';
 import {
@@ -29,16 +29,17 @@ export interface RegisterItem {
 function AuthForm() {
   const { t } = useTranslation();
 
-  const { handleSubmit, control } = useForm<RegisterItem>({
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<RegisterItem>({
     defaultValues: {
       FullName: '',
       Email: '',
       Password: '',
       Privacy: false,
     },
-  });
-  const { errors } = useFormState({
-    control,
   });
 
   const onSubmit = (data: RegisterItem) => console.log(data);
@@ -151,7 +152,9 @@ function AuthForm() {
                     <Trans i18nKey="sign_up.form.confidential_text.fullText">
                       Я прочитав та приймаю
                       <UiLink>Політику Конфіденційності</UiLink>
-                      та <UiLink>Політику Використання</UiLink> сервісу VilnaCRM
+                      та
+                      <UiLink>Політику Використання</UiLink>
+                      сервісу VilnaCRM
                     </Trans>
                   </UiTypography>
                 }
