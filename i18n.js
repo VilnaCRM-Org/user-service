@@ -14,7 +14,7 @@ i18n.use(initReactI18next).init({
       translation: localization.translation.uk,
     },
   },
-  fallbackLng: process.env.FALLBACK_LANGUAGE,
+  fallbackLng: process.env.FALLBACK_LANGUAGE || 'uk',
   interpolation: {
     escapeValue: false,
   },

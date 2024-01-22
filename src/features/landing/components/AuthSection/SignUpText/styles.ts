@@ -36,10 +36,7 @@ export const signUpTextStyles = {
       },
     },
   },
-  // socialListWrapper: {
-  //   '@media (max-width: 1439.98px)': {
-  //   },
-  // },
+
   signInText: {
     mb: '24px',
     textAlign: 'left',

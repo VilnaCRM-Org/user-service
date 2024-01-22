@@ -4,5 +4,5 @@ export interface UiImageProps {
   src: string;
   alt: string;
   rest?: ImageProps;
-  sx?: object;
+  sx?: Record<string, unknown>;
 }

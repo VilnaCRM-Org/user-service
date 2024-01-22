@@ -1,7 +1,7 @@
 export interface UiButtonProps {
   variant: 'outlined' | 'contained';
   onClick?: () => void;
-  sx?: object;
+  sx?: Record<string, unknown>;
   size: 'small' | 'medium' | 'large';
   disabled?: boolean;
   disableElevation?: boolean;

@@ -4,11 +4,12 @@ import { Trans, useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components';
 
+import { ISocialLink } from '../../../types/authentication/social';
 import { SocialList } from '../SocialList';
 
 import { signUpTextStyles } from './styles';
 
-function SignUpText() {
+function SignUpText({ socialLinks }: { socialLinks: ISocialLink[] }) {
   const { t } = useTranslation();
   return (
     <Box sx={signUpTextStyles.textWrapper}>
@@ -25,7 +26,7 @@ function SignUpText() {
       <UiTypography variant="bold22" sx={signUpTextStyles.signInText}>
         {t('sign_up.socials_main_heading')}
       </UiTypography>
-      <SocialList />
+      <SocialList socialLinks={socialLinks} />
     </Box>
   );
 }

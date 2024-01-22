@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 
 export interface labelProps {
-  sx?: object;
+  sx?: Record<string, unknown>;
   children: ReactNode;
   title?: string;
   errorText?: string;

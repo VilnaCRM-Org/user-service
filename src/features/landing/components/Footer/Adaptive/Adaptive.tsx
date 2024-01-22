@@ -6,19 +6,20 @@ import { useTranslation } from 'react-i18next';
 import { UiTypography } from '@/components';
 
 import Logo from '../../../assets/svg/logo/Logo.svg';
-import { NavList } from '../NavList';
+import { ISocialMedia } from '../../../types/social-media/index';
 import { PrivacyPolicy } from '../PrivacyPolicy';
+import { SocialMediaList } from '../SocialMediaList';
 
 import { adaptiveStyles } from './styles';
 
-function Adaptive() {
+function Adaptive({ socialLinks }: { socialLinks: ISocialMedia[] }) {
   const { t } = useTranslation();
 
   return (
     <Container sx={adaptiveStyles.wrapper} component="footer">
       <Stack direction="row" justifyContent="space-between" mt="18px" pb="16px">
         <Image src={Logo} alt="Logo" width={131} height={44} />
-        <NavList />
+        <SocialMediaList socialLinks={socialLinks} />
       </Stack>
       <Box sx={adaptiveStyles.gmailWrapper}>
         <UiTypography variant="medium15" sx={adaptiveStyles.gmailText}>

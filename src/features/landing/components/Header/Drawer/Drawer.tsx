@@ -1,24 +1,25 @@
-import { Drawer, Box, Stack } from '@mui/material';
+import { Drawer, Box, Stack, Button } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { UiButton, UiTypography } from '@/components';
+import { UiButton } from '@/components';
 
-import AtSignImage from '../../../assets/svg/header-drawer/at-sign.svg';
 import Bars from '../../../assets/svg/header-drawer/menu-04.svg';
-import GoogleDrawerIcon from '../../../assets/svg/header-drawer/socials/facebook.svg';
+import FacebookDrawerIcon from '../../../assets/svg/header-drawer/socials/facebook.svg';
 import GitHubDrawerIcon from '../../../assets/svg/header-drawer/socials/github.svg';
-import FaceBookDrawerIcon from '../../../assets/svg/header-drawer/socials/instagram.svg';
-import TwitterDrawerIcon from '../../../assets/svg/header-drawer/socials/linked-in.svg';
+import InstagramDrawerIcon from '../../../assets/svg/header-drawer/socials/instagram.svg';
+import LinkedinDrawerIcon from '../../../assets/svg/header-drawer/socials/linked-in.svg';
 import CloseImage from '../../../assets/svg/header-drawer/x-close.svg';
 import Logo from '../../../assets/svg/logo/Logo.svg';
 
-import DrawerList from './DrawerList/DrawerList';
+import { NavList } from './NavList';
+import { SocialMedia } from './SocialMedia';
 import { drawerStyles } from './styles';
+import { VilnaGmail } from './VilnaGmail';
 
 function UiDrawer() {
-  const tabItems = [
+  const navList = [
     {
       id: 'advantages',
       title: 'header.advantages',
@@ -39,27 +40,31 @@ function UiDrawer() {
 
   const socialMedia = [
     {
-      id: 'google-link',
-      icon: FaceBookDrawerIcon,
-      title: 'Instagram',
+      id: 'instagram-link',
+      icon: InstagramDrawerIcon,
+      alt: 'header.drawer.alt_social_images.instagram',
+      ariaLabel: 'header.drawer.aria_labels_social_images.instagram',
+      linkHref: '/',
+    },
+    {
+      id: 'gitHub-link',
+      icon: GitHubDrawerIcon,
+      alt: 'header.drawer.alt_social_images.github',
+      ariaLabel: 'header.drawer.aria_labels_social_images.github',
       linkHref: '/',
     },
     {
       id: 'facebook-link',
-      icon: GitHubDrawerIcon,
-      title: 'GitHub',
+      icon: FacebookDrawerIcon,
+      alt: 'header.drawer.alt_social_images.facebook',
+      ariaLabel: 'header.drawer.aria_labels_social_images.facebook',
       linkHref: '/',
     },
     {
-      id: 'github-link',
-      icon: GoogleDrawerIcon,
-      title: 'Facebook',
-      linkHref: '/',
-    },
-    {
-      id: 'twitter-link',
-      icon: TwitterDrawerIcon,
-      title: 'Linkedin',
+      id: 'linkedin-link',
+      icon: LinkedinDrawerIcon,
+      alt: 'header.drawer.alt_social_images.linkedin',
+      ariaLabel: 'header.drawer.aria_labels_social_images.linkedin',
       linkHref: '/',
     },
   ];
@@ -69,13 +74,13 @@ function UiDrawer() {
 
   return (
     <Box sx={drawerStyles.wrapper}>
-      <Image
-        src={Bars}
-        alt="Header Image"
-        width={24}
-        height={24}
+      <Button
+        aria-label={t('header.drawer.button_aria_labels.bars') as string}
+        sx={drawerStyles.button}
         onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-      />
+      >
+        <Image src={Bars} alt="Bars Image" width={24} height={24} />
+      </Button>
       <Drawer
         anchor="right"
         open={isDrawerOpen}
@@ -93,13 +98,13 @@ function UiDrawer() {
             alignItems="center"
           >
             <Image src={Logo} alt="Header Image" width={131} height={44} />
-            <Image
-              src={CloseImage}
-              alt="ExitImage"
-              width={24}
-              height={24}
+            <Button
+              aria-label={t('header.drawer.button_aria_labels.exit') as string}
+              sx={drawerStyles.button}
               onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-            />
+            >
+              <Image src={CloseImage} alt="Exit Image" width={24} height={24} />
+            </Button>
           </Stack>
           <Stack
             direction="row"
@@ -115,30 +120,9 @@ function UiDrawer() {
               {t('header.actions.try_it_out')}
             </UiButton>
           </Stack>
-          <DrawerList tabItems={tabItems} />
-          <Box sx={drawerStyles.gmailWrapper}>
-            <Stack
-              justifyContent="center"
-              alignItems="center"
-              gap="10px"
-              flexDirection="row"
-            >
-              <Image src={AtSignImage} alt="ExitImage" width={24} height={24} />
-              <UiTypography variant="demi18">info@vilnacrm.com</UiTypography>
-            </Stack>
-          </Box>
-          <Stack
-            justifyContent="center"
-            gap="8px"
-            flexDirection="row"
-            sx={drawerStyles.linkWrapper}
-          >
-            {socialMedia.map(({ icon, title, id }) => (
-              <Box key={id} m="12px">
-                <Image src={icon} alt={title} width={25} height={25} key={id} />
-              </Box>
-            ))}
-          </Stack>
+          <NavList navList={navList} />
+          <VilnaGmail />
+          <SocialMedia socialMedia={socialMedia} />
         </Box>
       </Drawer>
     </Box>

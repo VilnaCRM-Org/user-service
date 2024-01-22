@@ -4,11 +4,16 @@ import { useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components';
 
-import { NavList } from '../NavList';
+import { ISocialMedia } from '../../../types/social-media';
+import { SocialMediaList } from '../SocialMediaList';
 
 import { copyrightNoticeAndLinksStyles } from './styles';
 
-function CopyrightNoticeAndLinks() {
+function CopyrightNoticeAndLinks({
+  socialLinks,
+}: {
+  socialLinks: ISocialMedia[];
+}) {
   const { t } = useTranslation();
 
   return (
@@ -28,7 +33,7 @@ function CopyrightNoticeAndLinks() {
             info@vilnacrm.com
           </UiTypography>
         </Box>
-        <NavList />
+        <SocialMediaList socialLinks={socialLinks} />
       </Stack>
     </>
   );

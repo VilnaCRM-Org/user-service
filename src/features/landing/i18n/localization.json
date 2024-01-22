@@ -8,6 +8,25 @@
       "actions": {
         "try_it_out": "Try it out",
         "log_in": "Log in"
+      },
+      "image_alt": "Vilna logo",
+      "drawer": {
+        "button_aria_labels": {
+          "bars": "Button to open the drawer",
+          "exit": "Button to exit the drawer"
+        },
+        "aria_labels_social_images": {
+          "instagram": "Link to Instagram",
+          "github": "Link to GitHub",
+          "facebook": "Link to Facebook",
+          "linkedin": "Link to Linkedin"
+        },
+        "alt_social_images": {
+          "instagram": "Instagram Icon",
+          "github": "GitHub Icon",
+          "facebook": "Facebook Icon",
+          "linkedin": "Linkedin Icon"
+        }
       }
     },
     "about_vilna": {
@@ -34,6 +53,14 @@
         "text_we_know_specific_needs": "We know the specific needs of EdTech, agencies, and service providers <br /> — that's why we've created a CRM that's easy to use right away",
         "text_connect_your_cms": "Connect your CMS and IP telephony in a few clicks. <br /> And for specific integrations, use Zapier, APIs, and public libraries",
         "text_switch_to_vilna": "Switch to Vilna in a few clicks with ready-made migration scripts from amoCRM and HubSpot"
+      },
+      "alt_image": {
+        "alt_open_source": "Image card of open source",
+        "alt_ease_of_setup": "Image card of setup",
+        "alt_ready_templates": "Image card of templates",
+        "alt_ideal_for_services": "Image card of services",
+        "alt_all_required_integrations": "Image card of integrations",
+        "alt_bonus": "Image card of migration"
       }
     },
     "for_who": {
@@ -52,6 +79,12 @@
         "heading_ready_plugins": "Ready plugins for CMS",
         "heading_system": "Web Hook System",
         "heading_libraries": "Public <br /> Libraries"
+      },
+      "image_alt": {
+        "google": "Google",
+        "facebook": "Facebook",
+        "github": "Github",
+        "twitter": "Twitter"
       },
       "cards_texts": {
         "text_for_cases": "For cases when you did not find <br /> the desired ready-made integration ",
@@ -92,12 +125,7 @@
           "message": "Invalid password. Must meet the following requirements: no spaces, at least one upper case, one lower case, one number, one special character, and 8-32 characters long."
         },
         "confidential_text": {
-          "fullText": "I have read and accept the <1>Privacy Policy</1> and the <1>VilnaCRM Service</1> Use Policy",
-          "firstText": "I have read and accept",
-          "firstLink": "Privacy Policy",
-          "secondText": "and",
-          "secondLink": "Policy of use",
-          "thirdText": "VilnaCRM service"
+          "fullText": "I have read and accept the <1>Privacy Policy</1> and the <1>VilnaCRM Service</1> Use Policy"
         },
         "button-text": "Sign-Up"
       }
@@ -105,7 +133,19 @@
     "footer": {
       "copyright": "Copyright © ТОВ “Vilna CRM”, 2022",
       "privacy": "Privacy policy",
-      "usagePolicy": "Usage policy"
+      "usagePolicy": "Usage policy",
+      "aria_labels": {
+        "instagram": "Link to Instagram",
+        "github": "Link to GitHub",
+        "facebook": "Link to Facebook",
+        "linkedin": "Link to Linkedin"
+      },
+      "alt_images": {
+        "instagram": "Instagram Icon",
+        "github": "GitHub Icon",
+        "facebook": "Facebook Icon",
+        "linkedin": "Linkedin Icon"
+      }
     }
   },
   "uk": {
@@ -114,9 +154,28 @@
       "for_who": "Для кого",
       "integration": "Інтеграція",
       "contacts": "Контакти",
+      "image_alt": "Vilna логотип",
       "actions": {
         "try_it_out": "Спробувати",
         "log_in": "Войти"
+      },
+      "drawer": {
+        "button_aria_labels": {
+          "bars": "Кнопка для відкривання drawer",
+          "exit": "Кнопка для закриття drawer"
+        },
+        "aria_labels_social_images": {
+          "instagram": "Посилання на Instagram",
+          "github": "Посилання на GitHub",
+          "facebook": "Посилання на Facebook",
+          "linkedin": "Посилання на Linkedin"
+        },
+        "alt_social_images": {
+          "instagram": "Instagram Іконка",
+          "github": "GitHub Іконка",
+          "facebook": "Facebook Іконка",
+          "linkedin": "Linkedin Іконка"
+        }
       }
     },
     "about_vilna": {
@@ -128,7 +187,6 @@
       "heading": "Чому ми",
       "subtitle": "Безмежні можливості кастомізації чи простота у використанні  — <br/ > ми подбали, щоб керувати продажами було зручно будь-якому бізнесу",
       "buttonText": "Спробувати",
-
       "headers": {
         "header_open_source": "Open source",
         "header_ease_of_setup": "Легкість <br /> у налаштуванні",
@@ -145,6 +203,14 @@
         "text_we_know_specific_needs": "Ми знаємо специфічні запити EdTech, агенств та провайтерів послуг — <br /> саме тому створили CRM, з якою зручно одразу ",
         "text_connect_your_cms": "Підключіть вашу CMS та IP-телефонію у кілька кліків. <br /> А для специфічних інтеграцій використовуйте Zapier, API та публічні бібліотеки",
         "text_switch_to_vilna": "Переходьте на Vilna у кілька кліків за допомогою готових сценаріїв міграції з amoCRM та HubSpot"
+      },
+      "alt_image": {
+        "alt_open_source": "Картка зображення з відкритим кодом",
+        "alt_ease_of_setup": "Зображення картки налаштування",
+        "alt_ready_templates": "Картка зображень шаблонів",
+        "alt_ideal_for_services": "Зображення картки послуг",
+        "alt_all_required_integrations": "Картка з зображенням інтеграцій",
+        "alt_bonus": "Зображення картки міграції"
       }
     },
     "for_who": {
@@ -163,6 +229,12 @@
         "heading_ready_plugins": "Готові плагіни для CMS",
         "heading_system": "Система веб-хуків",
         "heading_libraries": "Публічні <br /> бібліотеки"
+      },
+      "image_alt": {
+        "google": "Google",
+        "facebook": "Facebook",
+        "github": "Github",
+        "twitter": "Twitter"
       },
       "cards_texts": {
         "text_for_cases": "Для випадків, коли ви не знайшли <br /> потрібну готову інтеграцію ",
@@ -206,12 +278,7 @@
           "message": "Недійсний пароль. Має відповідати вимогам: відсутність пробілів, принаймні один верхній регістр, один малий регістр, одна цифра, один спеціальний символ і довжина 8–32 символів."
         },
         "confidential_text": {
-          "fullText": "Я прочитав та приймаю <1>Політику Конфіденційності</1> та <1>Політику Використання</1> сервісу VilnaCRM",
-          "firstText": "Я прочитав та приймаю",
-          "firstLink": "Політику Конфіденційності",
-          "secondText": "та",
-          "secondLink": "Політику Використання",
-          "thirdText": "сервісу VilnaCRM"
+          "fullText": "Я прочитав та приймаю <1>Політику Конфіденційності</1> та <1>Політику Використання</1> сервісу VilnaCRM"
         },
         "button-text": "Реєєстрація"
       }
@@ -219,7 +286,19 @@
     "footer": {
       "copyright": "Copyright © ТОВ “Вільна СРМ”, 2022",
       "privacy": "Політика конфіденційності",
-      "usagePolicy": "Політика використовування"
+      "usagePolicy": "Політика використовування",
+      "aria_labels": {
+        "instagram": "Посилання на Instagram",
+        "github": "Посилання на GitHub",
+        "facebook": "Посилання на Facebook",
+        "linkedin": "Посилання на Linkedin"
+      },
+      "alt_images": {
+        "instagram": "Instagram Іконка",
+        "github": "GitHub Іконка",
+        "facebook": "Facebook Іконка",
+        "linkedin": "Linkedin Іконка"
+      }
     }
   }
 }

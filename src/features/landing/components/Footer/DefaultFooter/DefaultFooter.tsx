@@ -3,12 +3,13 @@ import Image from 'next/image';
 import React from 'react';
 
 import Logo from '../../../assets/svg/logo/Logo.svg';
+import { ISocialMedia } from '../../../types/social-media';
 import { CopyrightNoticeAndLinks } from '../CopyrightNoticeAndLinks';
 import { PrivacyPolicy } from '../PrivacyPolicy';
 
 import { defaultFooterStyles } from './styles';
 
-function DefaultFooter() {
+function DefaultFooter({ socialLinks }: { socialLinks: ISocialMedia[] }) {
   return (
     <Stack
       sx={defaultFooterStyles.footerWrapper}
@@ -30,7 +31,7 @@ function DefaultFooter() {
       <Stack sx={defaultFooterStyles.copyrightAndLinksWrapper}>
         <Container>
           <Stack sx={defaultFooterStyles.copyrightAndLinks}>
-            <CopyrightNoticeAndLinks />
+            <CopyrightNoticeAndLinks socialLinks={socialLinks} />
           </Stack>
         </Container>
       </Stack>

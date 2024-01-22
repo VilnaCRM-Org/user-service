@@ -3,8 +3,9 @@ import { ListItem, Stack, List, Link } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { NavLinkProps } from '../../../types/header/nav-links';
+
 import { navLinkStyles } from './styles';
-import { NavLinkProps } from './types';
 
 function NavLink({ links }: NavLinkProps) {
   const { t } = useTranslation();

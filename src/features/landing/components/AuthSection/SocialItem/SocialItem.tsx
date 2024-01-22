@@ -1,21 +1,16 @@
 import { Stack } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components';
 
+import { ISocialLink } from '../../../types/authentication/social';
+
 import { socialItemStyles } from './styles';
 
-interface SocialItemProps {
-  item: {
-    id: string;
-    icon: string;
-    title: string;
-    linkHref: string;
-  };
-}
-
-function SocialItem({ item }: SocialItemProps) {
+function SocialItem({ item }: { item: ISocialLink }) {
+  const { t } = useTranslation();
   return (
     <Stack
       direction="row"
@@ -24,8 +19,8 @@ function SocialItem({ item }: SocialItemProps) {
       justifyContent="center"
       sx={socialItemStyles.itemWrapper}
     >
-      <Image src={item.icon} alt={item.title} width={22} height={22} />
-      <UiTypography variant="demi18">{item.title}</UiTypography>
+      <Image src={item.icon} alt={t(item.title)} width={22} height={22} />
+      <UiTypography variant="demi18">{t(item.title)}</UiTypography>
     </Stack>
   );
 }

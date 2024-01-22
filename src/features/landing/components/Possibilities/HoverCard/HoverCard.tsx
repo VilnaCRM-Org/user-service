@@ -1,22 +1,24 @@
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-// import { Typography } from '@/components';
+import { UiTypography } from '@/components';
 
-function HoverCard({ imageList }: any) {
+import { IimageList } from '../../../types/possibilities/image-list';
+
+function HoverCard({ imageList }: { imageList: IimageList[] }) {
   const { t } = useTranslation();
   return (
     <Box maxWidth="282px">
-      <Typography variant="demi18">
+      <UiTypography variant="demi18">
         {t('unlimited_possibilities.service_text.title')}
-      </Typography>
-      <Typography variant="medium14" sx={{ pt: '4px', pb: '22px' }}>
+      </UiTypography>
+      <UiTypography variant="medium14" sx={{ pt: '4px', pb: '22px' }}>
         {t('unlimited_possibilities.service_text.text')}
-      </Typography>
+      </UiTypography>
       <Stack flexDirection="row" flexWrap="wrap" gap="30px">
-        {imageList.map((item: { image: string; alt: string }) => (
+        {imageList.map(item => (
           <Image
             src={item.image}
             alt={item.alt}

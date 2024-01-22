@@ -1,5 +1,3 @@
-// import NotchCameraImage from '../../../assets/img/AboutVilna/Notch&Camera.svg';
-
 export const notchStyles = {
   notch: {
     position: 'relative',

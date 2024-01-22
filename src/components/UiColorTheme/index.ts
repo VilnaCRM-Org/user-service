@@ -8,6 +8,9 @@ export const theme = createTheme({
     secondary: {
       main: '#FFC01E',
     },
+    // custom: {
+    //   main: '#000000',
+    // },
     // dark100: {
     //   main: '#1A1C1E',
     // },

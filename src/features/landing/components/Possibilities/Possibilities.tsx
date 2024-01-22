@@ -9,45 +9,45 @@ import Wix from '@/assets/img/TooltipIcons/Wix.png';
 import WooCommerce from '@/assets/img/TooltipIcons/WooCommerce.png';
 import WordPress from '@/assets/img/TooltipIcons/WordPress.png';
 import Zapier from '@/assets/img/TooltipIcons/Zapier.png';
+import UiCardList from '@/components/UiCard/UiCardList';
 
 import Diamond from '../../assets/svg/why-us/diamond.svg';
 import Ruby from '../../assets/svg/why-us/ruby.svg';
 import SmallDiamond from '../../assets/svg/why-us/smallDiamond.svg';
 import SmallRuby from '../../assets/svg/why-us/smallRuby.svg';
 
-import CardList from './CardList/CardList';
 import { RegistrationText } from './RegistrationText';
 import { possibilitiesStyles } from './styles';
 
 function Possibilities() {
-  const smallCardItemList = [
+  const cardList = [
     {
       id: 'item_1',
       imageSrc: Ruby,
       text: 'unlimited_possibilities.cards_texts.text_for_cases',
       title: 'unlimited_possibilities.cards_headings.heading_public_api',
-      imageTitle: 'unlimited_possibilities.card_image_titles.title_for_first',
+      alt: 'unlimited_possibilities.card_image_titles.title_for_first',
     },
     {
       id: 'item_2',
       imageSrc: SmallDiamond,
       text: 'unlimited_possibilities.cards_texts.text_integrate',
       title: 'unlimited_possibilities.cards_headings.heading_ready_plugins',
-      imageTitle: 'unlimited_possibilities.card_image_titles.title_for_second',
+      alt: 'unlimited_possibilities.card_image_titles.title_for_second',
     },
     {
       id: 'item_3',
       imageSrc: SmallRuby,
       text: 'unlimited_possibilities.cards_texts.text_get_data',
       title: 'unlimited_possibilities.cards_headings.heading_system',
-      imageTitle: 'unlimited_possibilities.card_image_titles.title_for_third',
+      alt: 'unlimited_possibilities.card_image_titles.title_for_third',
     },
     {
       id: 'item_4',
       imageSrc: Diamond,
       text: 'unlimited_possibilities.cards_texts.text_for_custom',
       title: 'unlimited_possibilities.cards_headings.heading_libraries',
-      imageTitle: 'unlimited_possibilities.card_image_titles.title_for_fourth',
+      alt: 'unlimited_possibilities.card_image_titles.title_for_fourth',
     },
   ];
 
@@ -64,7 +64,7 @@ function Possibilities() {
   return (
     <Box sx={possibilitiesStyles.wrapper} id="Integration" component="section">
       <RegistrationText />
-      <CardList imageList={imageList} smallCardItemList={smallCardItemList} />
+      <UiCardList imageList={imageList} cardList={cardList} type="small" />
     </Box>
   );
 }

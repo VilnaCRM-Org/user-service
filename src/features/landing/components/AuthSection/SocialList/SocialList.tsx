@@ -1,15 +1,15 @@
 import { Grid } from '@mui/material';
 import React from 'react';
 
-import { SOCIAL_LINKS } from '../../../utils/constants/constants';
+import { ISocialLink } from '../../../types/authentication/social';
 import { SocialItem } from '../SocialItem';
 
 import { socialListStyles } from './styles';
 
-function SocialList() {
+function SocialList({ socialLinks }: { socialLinks: ISocialLink[] }) {
   return (
     <Grid sx={socialListStyles.listWrapper}>
-      {SOCIAL_LINKS.map(item => (
+      {socialLinks.map(item => (
         <SocialItem item={item} key={item.id} />
       ))}
     </Grid>

@@ -151,9 +151,9 @@ function AuthForm() {
                   >
                     <Trans i18nKey="sign_up.form.confidential_text.fullText">
                       Я прочитав та приймаю
-                      <UiLink>Політику Конфіденційності</UiLink>
+                      <UiLink href="/">Політику Конфіденційності</UiLink>
                       та
-                      <UiLink>Політику Використання</UiLink>
+                      <UiLink href="/">Політику Використання</UiLink>
                       сервісу VilnaCRM
                     </Trans>
                   </UiTypography>
