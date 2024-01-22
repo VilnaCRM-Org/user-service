@@ -47,9 +47,15 @@ paths:
                   message: { type: string }
               example:
                 error: unsupported_grant_type
-                error_description: 'The authorization grant type is not supported by the authorization server.'
-                hint: 'Check that all required parameters have been provided'
-                message: 'The authorization grant type is not supported by the authorization server.'
+                error_description: |-
+                  The authorization grant 
+                                          type is not supported by the authorization server.
+                hint: |-
+                  Check that all required 
+                                              parameters have been provided
+                message: |-
+                  The authorization grant type is not 
+                                          supported by the authorization server.
         401:
           description: 'Invalid client credentials'
           content:
@@ -178,9 +184,15 @@ paths:
                   message: { type: string }
               example:
                 error: unsupported_grant_type
-                error_description: 'The authorization grant type is not supported by the authorization server.'
-                hint: 'Check that all required parameters have been provided'
-                message: 'The authorization grant type is not supported by the authorization server.'
+                error_description: |-
+                  The authorization grant type is not 
+                                          supported by the authorization server.
+                hint: |-
+                  Check that all required 
+                                      parameters have been provided
+                message: |-
+                  The authorization grant type is not 
+                                          supported by the authorization server.
         401:
           description: 'Invalid client credentials'
           content:
