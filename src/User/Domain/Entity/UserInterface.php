@@ -9,7 +9,10 @@ use App\User\Domain\Event\UserConfirmedEvent;
 
 interface UserInterface
 {
-    public function confirm(ConfirmationToken $token): UserConfirmedEvent;
+    public function confirm(
+        ConfirmationToken $token,
+        string $eventID
+    ): UserConfirmedEvent;
 
     /**
      * @return array<DomainEvent>
@@ -19,6 +22,7 @@ interface UserInterface
         string $newInitials,
         string $newPassword,
         string $oldPassword,
-        string $hashedNewPassword
+        string $hashedNewPassword,
+        string $eventID
     ): array;
 }

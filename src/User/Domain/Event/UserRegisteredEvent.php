@@ -11,14 +11,17 @@ final class UserRegisteredEvent extends DomainEvent
 {
     public function __construct(
         public readonly User $user,
-        string $eventId = null,
+        string $eventId,
         string $occurredOn = null
     ) {
         parent::__construct($eventId, $occurredOn);
     }
 
-    public static function fromPrimitives(array $body, string $eventId, string $occurredOn): DomainEvent
-    {
+    public static function fromPrimitives(
+        array $body,
+        string $eventId,
+        string $occurredOn
+    ): DomainEvent {
         return new self($body['user'], $eventId, $occurredOn);
     }
 

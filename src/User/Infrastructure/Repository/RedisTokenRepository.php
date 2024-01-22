@@ -19,18 +19,25 @@ final class RedisTokenRepository implements TokenRepositoryInterface
 
     private const EXPIRES_AFTER_IN_SECONDS = 86400; // 24 hours
 
-    public function __construct(private CacheInterface $redisAdapter, private SerializerInterface $serializer)
-    {
+    public function __construct(
+        private CacheInterface $redisAdapter,
+        private SerializerInterface $serializer
+    ) {
     }
 
-    public function save($token): void
+    public function save(object $token): void
     {
         $tokenValue = $token->getTokenValue();
         $userId = $token->getUserID();
 
-        $serializedToken = $this->serializer->serialize($token, JsonEncoder::FORMAT);
+        $serializedToken = $this->serializer->serialize(
+            $token,
+            JsonEncoder::FORMAT
+        );
 
-        $cacheItem = $this->redisAdapter->getItem(self::getTokenKey($tokenValue));
+        $cacheItem = $this->redisAdapter->getItem(
+            self::getTokenKey($tokenValue)
+        );
         $cacheItem->set($serializedToken);
         $cacheItem->expiresAfter(self::EXPIRES_AFTER_IN_SECONDS);
         $this->redisAdapter->save($cacheItem);
@@ -71,7 +78,7 @@ final class RedisTokenRepository implements TokenRepositoryInterface
             : null;
     }
 
-    public function delete($token): void
+    public function delete(object $token): void
     {
         $tokenValue = $token->getTokenValue();
         $userId = $token->getUserID();

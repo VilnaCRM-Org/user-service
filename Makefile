@@ -72,7 +72,6 @@ artillery: ## run Load testing
 
 doctrine-migrations-migrate: ## Executes a migration to a specified version or the latest available version
 	$(SYMFONY) d:m:m
-	$(SYMFONY) doctrine:schema:update --force
 
 doctrine-migrations-generate: ## Generates a blank migration class
 	$(SYMFONY) d:m:g

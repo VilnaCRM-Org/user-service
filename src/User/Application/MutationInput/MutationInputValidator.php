@@ -16,7 +16,11 @@ final class MutationInputValidator
 
     public function validate(MutationInput $input): void
     {
-        $errors = $this->validator->validate($input, null, $input->getValidationGroups());
+        $errors = $this->validator->validate(
+            $input,
+            null,
+            $input->getValidationGroups()
+        );
 
         if (count($errors) > 0) {
             throw new ValidationException($errors);

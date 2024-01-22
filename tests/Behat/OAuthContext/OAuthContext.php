@@ -29,9 +29,12 @@ class OAuthContext implements Context
 
     private string $authCode;
 
-    public function __construct(private readonly KernelInterface $kernel, private SerializerInterface $serializer,
-        private ?Response $response, private EntityManagerInterface $entityManager)
-    {
+    public function __construct(
+        private readonly KernelInterface $kernel,
+        private SerializerInterface $serializer,
+        private ?Response $response,
+        private EntityManagerInterface $entityManager
+    ) {
         $this->faker = Factory::create();
     }
 
@@ -170,11 +173,15 @@ class OAuthContext implements Context
         Assert::assertEquals('unsupported_grant_type', $data['error']);
 
         Assert::assertArrayHasKey('error_description', $data);
-        Assert::assertEquals('The authorization grant type is not supported by the authorization server.',
-            $data['error_description']);
+        Assert::assertEquals(
+            'The authorization grant type is not supported by the authorization server.',
+            $data['error_description']
+        );
 
         Assert::assertArrayHasKey('message', $data);
-        Assert::assertEquals('The authorization grant type is not supported by the authorization server.',
-            $data['message']);
+        Assert::assertEquals(
+            'The authorization grant type is not supported by the authorization server.',
+            $data['message']
+        );
     }
 }

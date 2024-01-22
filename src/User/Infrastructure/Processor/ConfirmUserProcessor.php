@@ -27,9 +27,15 @@ final class ConfirmUserProcessor implements ProcessorInterface
     /**
      * @param ConfirmUserDto $data
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Response
-    {
-        $token = $this->tokenRepository->find($data->token) ?? throw new TokenNotFoundException();
+    public function process(
+        mixed $data,
+        Operation $operation,
+        array $uriVariables = [],
+        array $context = []
+    ): Response {
+        $token = $this->tokenRepository->find(
+            $data->token
+        ) ?? throw new TokenNotFoundException();
 
         $this->commandBus->dispatch(new ConfirmUserCommand($token));
 

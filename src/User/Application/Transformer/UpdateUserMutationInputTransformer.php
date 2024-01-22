@@ -19,7 +19,8 @@ final class UpdateUserMutationInputTransformer
             $validationGroups[] = UpdateUserMutationInput::EMAIL_NOT_NULL;
         }
         if (isset($args['newPassword'])) {
-            $validationGroups[] = UpdateUserMutationInput::NEW_PASSWORD_NOT_NULL;
+            $validationGroups[] =
+                UpdateUserMutationInput::NEW_PASSWORD_NOT_NULL;
         }
 
         return new UpdateUserMutationInput(

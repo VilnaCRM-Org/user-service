@@ -86,11 +86,13 @@ class User implements UserInterface
         return $this;
     }
 
-    public function confirm(ConfirmationToken $token): UserConfirmedEvent
-    {
+    public function confirm(
+        ConfirmationToken $token,
+        string $eventID
+    ): UserConfirmedEvent {
         $this->confirmed = true;
 
-        return new UserConfirmedEvent($token);
+        return new UserConfirmedEvent($token, $eventID);
     }
 
     /**
@@ -101,19 +103,20 @@ class User implements UserInterface
         string $newInitials,
         string $newPassword,
         string $oldPassword,
-        string $hashedNewPassword
+        string $hashedNewPassword,
+        string $eventID,
     ): array {
         $events = [];
 
         if ($newEmail !== $this->email) {
             $this->confirmed = false;
-            $events[] = new EmailChangedEvent($this);
+            $events[] = new EmailChangedEvent($this, $eventID);
         }
 
         $this->email = $newEmail;
 
         if ($newPassword !== $oldPassword) {
-            $events[] = new PasswordChangedEvent($this->email);
+            $events[] = new PasswordChangedEvent($this->email, $eventID);
         }
 
         $this->initials = $newInitials;

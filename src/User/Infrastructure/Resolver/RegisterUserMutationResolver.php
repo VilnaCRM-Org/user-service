@@ -28,7 +28,11 @@ final class RegisterUserMutationResolver implements MutationResolverInterface
 
         $this->validator->validate($this->transformer->transform($args));
 
-        $command = new SignUpCommand($args['email'], $args['initials'], $args['password']);
+        $command = new SignUpCommand(
+            $args['email'],
+            $args['initials'],
+            $args['password']
+        );
         $this->commandBus->dispatch($command);
 
         return $command->getResponse()->createdUser;

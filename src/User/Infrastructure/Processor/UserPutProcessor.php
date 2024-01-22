@@ -27,13 +27,25 @@ final class UserPutProcessor implements ProcessorInterface
     /**
      * @param UserPutDto $data
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): User
-    {
+    public function process(
+        mixed $data,
+        Operation $operation,
+        array $uriVariables = [],
+        array $context = []
+    ): User {
         $userId = $uriVariables['id'];
-        $user = $this->userRepository->find((string) $userId) ?? throw new UserNotFoundException();
+        $user = $this->userRepository->find(
+            (string) $userId
+        ) ?? throw new UserNotFoundException();
 
         $this->commandBus->dispatch(
-            new UpdateUserCommand($user, $data->email, $data->initials, $data->newPassword, $data->oldPassword)
+            new UpdateUserCommand(
+                $user,
+                $data->email,
+                $data->initials,
+                $data->newPassword,
+                $data->oldPassword
+            )
         );
 
         return $user;

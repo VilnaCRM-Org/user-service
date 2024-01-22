@@ -9,17 +9,19 @@ use App\User\Domain\Exception\UserTimedOutException;
 final class ConfirmationToken implements ConfirmationTokenInterface
 {
     private int $timesSent;
-    private \DateTime $allowedToSendAfter;
+    private \DateTimeImmutable $allowedToSendAfter;
 
     /**
      * @var array<int, int>
      */
     private array $sendEmailAttemptsTimeInMinutes;
 
-    public function __construct(private string $tokenValue, private string $userID)
-    {
+    public function __construct(
+        private string $tokenValue,
+        private string $userID
+    ) {
         $this->timesSent = 0;
-        $this->allowedToSendAfter = new \DateTime();
+        $this->allowedToSendAfter = new \DateTimeImmutable();
         $this->sendEmailAttemptsTimeInMinutes = [
             1 => 1,
             2 => 3,
@@ -43,13 +45,14 @@ final class ConfirmationToken implements ConfirmationTokenInterface
         $this->timesSent = $timesSent;
     }
 
-    public function getAllowedToSendAfter(): \DateTime
+    public function getAllowedToSendAfter(): \DateTimeImmutable
     {
         return $this->allowedToSendAfter;
     }
 
-    public function setAllowedToSendAfter(\DateTime $allowedToSendAfter): void
-    {
+    public function setAllowedToSendAfter(
+        \DateTimeImmutable $allowedToSendAfter
+    ): void {
         $this->allowedToSendAfter = $allowedToSendAfter;
     }
 
@@ -75,14 +78,18 @@ final class ConfirmationToken implements ConfirmationTokenInterface
 
     public function send(): void
     {
-        $datetime = new \DateTime();
+        $datetime = new \DateTimeImmutable();
 
         if ($this->allowedToSendAfter > $datetime) {
             throw new UserTimedOutException($this->allowedToSendAfter);
         }
 
-        $nextAllowedPeriodToSendInMinutes = $this->sendEmailAttemptsTimeInMinutes[$this->timesSent] ?? 0;
+        $nextAllowedPeriodToSendInMinutes =
+            $this->sendEmailAttemptsTimeInMinutes[$this->timesSent] ?? 0;
 
-        $this->allowedToSendAfter = $datetime->modify("+ {$nextAllowedPeriodToSendInMinutes} minutes");
+        $this->allowedToSendAfter =
+            $datetime->modify(
+                "+ {$nextAllowedPeriodToSendInMinutes} minutes"
+            );
     }
 }

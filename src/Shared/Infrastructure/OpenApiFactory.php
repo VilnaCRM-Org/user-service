@@ -8,10 +8,17 @@ use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
+use App\Shared\Infrastructure\EndpointFactory\AbstractEndpointFactory;
+use App\Shared\Infrastructure\EndpointFactory\ConfirmUserEndpointFactory;
+use App\Shared\Infrastructure\EndpointFactory\OAuthAuthorizeEndpointFactory;
+use App\Shared\Infrastructure\EndpointFactory\OAuthTokenEndpointFactory;
+use App\Shared\Infrastructure\EndpointFactory\ResendEmailEndpointFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class OpenApiFactory implements OpenApiFactoryInterface
 {
+    private AbstractEndpointFactory $endpointFactory;
+
     public function __construct(private OpenApiFactoryInterface $decorated)
     {
     }
@@ -108,48 +115,16 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         ]), );
 
         // Overriding User endpoints
-        $pathItem = $openApi->getPaths()->getPath('/api/users/{id}/resend-confirmation-email');
-        $operation = $pathItem->getPost();
+        $this->endpointFactory = new ResendEmailEndpointFactory();
+        $this->endpointFactory->createEndpoint($openApi);
 
-        $UuidWithExamplePathParam = new Model\Parameter(name: 'id', in: 'path', description: 'User identifier', required: true,
-            example: '2b10b7a3-67f0-40ea-a367-44263321592a');
-
-        $openApi->getPaths()->addPath('/api/users/{id}/resend-confirmation-email', $pathItem->withPost(
-            $operation
-                ->withParameters([$UuidWithExamplePathParam])
-                ->withDescription('Resends confirmation email')
-                ->withSummary('Resends confirmation email')
-                ->withRequestBody(new Model\RequestBody(content: new \ArrayObject([
-                    'application/json' => [
-                        'example' => '{}',
-                    ], ])))
-                ->withResponses([HttpResponse::HTTP_OK => new Response(description: 'Email was send again', content: new \ArrayObject([
-                    'application/json' => [
-                        'example' => '',
-                    ],
-                ]), ),
-                    HttpResponse::HTTP_NOT_FOUND => $standardResponse404,
-                    HttpResponse::HTTP_TOO_MANY_REQUESTS => new Response(description: 'Too many requests', content: new \ArrayObject([
-                        'application/json' => [
-                            'schema' => [
-                                'type' => 'object',
-                                'properties' => [
-                                    'type' => ['type' => 'string'],
-                                    'title' => ['type' => 'string'],
-                                    'detail' => ['type' => 'string'],
-                                    'status' => ['type' => 'integer'],
-                                ],
-                            ],
-                            'example' => [
-                                'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
-                                'title' => 'An error occurred',
-                                'detail' => 'Cannot send new email till 05 Dec 2023 14:55:45',
-                                'status' => HttpResponse::HTTP_TOO_MANY_REQUESTS,
-                            ],
-                        ],
-                    ]), ),
-                ])
-        ));
+        $UuidWithExamplePathParam = new Model\Parameter(
+            name: 'id',
+            in: 'path',
+            description: 'User identifier',
+            required: true,
+            example: '2b10b7a3-67f0-40ea-a367-44263321592a'
+        );
 
         $pathItem = $openApi->getPaths()->getPath('/api/users');
         $operationPost = $pathItem->getPost();
@@ -179,7 +154,8 @@ final class OpenApiFactory implements OpenApiFactoryInterface
             $operationPost
                 ->withResponse(HttpResponse::HTTP_BAD_REQUEST, $standardResponse400)
                 ->withResponse(HttpResponse::HTTP_CONFLICT, $duplicateEmailResponse)
-                ->withResponse(HttpResponse::HTTP_UNPROCESSABLE_ENTITY, $standardResponse422))
+                ->withResponse(HttpResponse::HTTP_UNPROCESSABLE_ENTITY, $standardResponse422)
+        )
             ->withGet($operationGet->withResponse(HttpResponse::HTTP_BAD_REQUEST, $standardResponse400)));
 
         $pathItem = $openApi->getPaths()->getPath('/api/users/{id}');
@@ -204,165 +180,27 @@ final class OpenApiFactory implements OpenApiFactoryInterface
             $operationDelete->withParameters([$UuidWithExamplePathParam])
                 ->withResponses([
                     HttpResponse::HTTP_NO_CONTENT => new Response(
-                        description: 'User resource deleted', content: new \ArrayObject([
+                        description: 'User resource deleted',
+                        content: new \ArrayObject([
                         'application/json' => [
                             'example' => '',
                         ],
-                    ]), ),
+                    ]),
+                    ),
                     HttpResponse::HTTP_NOT_FOUND => $standardResponse404])
         )->withGet($operationGet->withParameters([$UuidWithExamplePathParam])
             ->withResponse(HttpResponse::HTTP_NOT_FOUND, $standardResponse404)));
 
         // Customising confirm endpoint
-        $pathItem = $openApi->getPaths()->getPath('/api/users/confirm');
-        $operationPatch = $pathItem->getPatch();
-
-        $openApi->getPaths()->addPath('/api/users/confirm', $pathItem->withPatch(
-            $operationPatch->withDescription('Confirms the User')->withSummary('Confirms the User')
-                ->withResponses([
-                    HttpResponse::HTTP_OK => new Response(description: 'User confirmed', content: new \ArrayObject([
-                        'application/json' => [
-                            'example' => '',
-                        ],
-                        ]), ),
-                    HttpResponse::HTTP_NOT_FOUND => new Response(description: 'Token not found or expired', content: new \ArrayObject([
-                        'application/json' => [
-                            'example' => '',
-                        ],
-                        ]), ),
-                ],
-                )
-        ));
+        $this->endpointFactory = new ConfirmUserEndpointFactory();
+        $this->endpointFactory->createEndpoint($openApi);
 
         // Adding OAuthDocs
-        $unsupportedGrantTypeResponse = new Response(description: 'Unsupported grant type', content: new \ArrayObject([
-            'application/json' => [
-                'schema' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'error' => ['type' => 'string'],
-                        'error_description' => ['type' => 'string'],
-                        'hint' => ['type' => 'string'],
-                        'message' => ['type' => 'string'],
-                    ],
-                ],
-                'example' => [
-                    'error' => 'unsupported_grant_type',
-                    'error_description' => 'The authorization grant type is not supported by the authorization server.',
-                    'hint' => 'Check that all required parameters have been provided',
-                    'message' => 'The authorization grant type is not supported by the authorization server.',
-                ],
-            ],
-            ]), );
-        $invalidClientCredentialsResponse = new Response(
-            description: 'Invalid client credentials', content: new \ArrayObject([
-            'application/json' => [
-                'schema' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'error' => ['type' => 'string'],
-                        'error_description' => ['type' => 'string'],
-                        'message' => ['type' => 'string'],
-                    ],
-                ],
-                'example' => [
-                    'error' => 'invalid_client',
-                    'error_description' => 'Client authentication failed',
-                    'message' => 'Client authentication failed',
-                ],
-            ],
-            ]), );
+        $this->endpointFactory = new OAuthAuthorizeEndpointFactory();
+        $this->endpointFactory->createEndpoint($openApi);
 
-        $openApi->getPaths()->addPath('/api/oauth/authorize',
-            new Model\PathItem(summary: 'Requests for authorization code', description: 'Requests for authorization code',
-                get: new Model\Operation(tags: ['OAuth'], responses: [
-                    HttpResponse::HTTP_FOUND => new Response(
-                        description: 'Redirect to the provided redirect URI with authorization code.', content: new \ArrayObject([
-                        'application/json' => [
-                            'example' => '',
-                        ], ]), headers: new \ArrayObject(['Location' => new Model\Header(description: 'The URI to redirect to for user authorization',
-                            schema: ['type' => 'string', 'format' => 'uri', 'example' => 'https://example.com/oauth/callback?code=e7f8c62113a47f7a5a9dca1f&state=af0ifjsldkj'])]), ),
-                    HttpResponse::HTTP_BAD_REQUEST => $unsupportedGrantTypeResponse,
-                    HttpResponse::HTTP_UNAUTHORIZED => $invalidClientCredentialsResponse], parameters: [
-                            new Model\Parameter(
-                                name: 'response_type',
-                                in: 'query',
-                                description: 'Response type',
-                                required: true,
-                                example: 'code'),
-                            new Model\Parameter(
-                                name: 'client_id',
-                                in: 'query',
-                                description: 'Client ID',
-                                required: true,
-                                example: 'dc0bc6323f16fecd4224a3860ca894c5'),
-                            new Model\Parameter(
-                                name: 'redirect_uri',
-                                in: 'query',
-                                description: 'Redirect uri',
-                                required: true,
-                                example: 'https://example.com/oauth/callback'),
-                            new Model\Parameter(
-                                name: 'scope',
-                                in: 'query',
-                                description: 'Scope',
-                                required: false,
-                                example: 'profile email'),
-                            new Model\Parameter(
-                                name: 'state',
-                                in: 'query',
-                                description: 'State',
-                                required: false,
-                                example: 'af0ifjsldkj'),
-            ])));
-
-        $openApi->getPaths()->addPath('/api/oauth/token',
-            new Model\PathItem(summary: 'Requests for access token', description: 'Requests for access token',
-                post: new Model\Operation(tags: ['OAuth'], responses: [
-                    HttpResponse::HTTP_OK => new Response(description: 'Access token returned',
-                        content: new \ArrayObject([
-                            'application/json' => [
-                                'schema' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'token_type' => ['type' => 'string'],
-                                        'expires_in' => ['type' => 'integer'],
-                                        'access_token' => ['type' => 'string'],
-                                        'refresh_token' => ['type' => 'string'],
-                                    ],
-                                ],
-                                'example' => [
-                                    'token_type' => 'Bearer',
-                                    'expires_in' => 3600,
-                                    'access_token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdW',
-                                    'refresh_token' => 'df9b4ae7ce2e1e8f2a3c1b4d',
-                                ],
-                            ], ]), ),
-                    HttpResponse::HTTP_BAD_REQUEST => $unsupportedGrantTypeResponse,
-                    HttpResponse::HTTP_UNAUTHORIZED => $invalidClientCredentialsResponse,
-                ], requestBody: new Model\RequestBody(
-                    content: new \ArrayObject([
-                        'application/json' => [
-                            'schema' => [
-                                'type' => 'object',
-                                'properties' => [
-                                    'grant_type' => ['type' => 'string'],
-                                    'client_id' => ['type' => 'string'],
-                                    'client_secret' => ['type' => 'string'],
-                                    'redirect_uri' => ['type' => 'string'],
-                                    'code' => ['type' => 'string'],
-                                    'refresh_token' => ['type' => 'string'],
-                                ],
-                            ],
-                            'example' => [
-                                'grant_type' => 'authorization_code',
-                                'client_id' => 'dc0bc6323f16fecd4224a3860ca894c5',
-                                'client_secret' => '8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc777ec5',
-                                'redirect_uri' => 'https://example.com/oauth/callback',
-                                'code' => 'e7f8c62113a47f7a5a9dca1f',
-                            ],
-                        ],
-                        ])))));
+        $this->endpointFactory = new OAuthTokenEndpointFactory();
+        $this->endpointFactory->createEndpoint($openApi);
 
         // Adding 500 response to all endpoints
         foreach (array_keys($openApi->getPaths()->getPaths()) as $path) {

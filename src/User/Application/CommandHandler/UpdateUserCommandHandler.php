@@ -11,13 +11,15 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\InvalidPasswordException;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
+use Symfony\Component\Uid\Factory\UuidFactory;
 
 final class UpdateUserCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,
         private PasswordHasherFactoryInterface $hasherFactory,
-        private UserRepositoryInterface $userRepository
+        private UserRepositoryInterface $userRepository,
+        private UuidFactory $uuidFactory,
     ) {
     }
 
@@ -37,7 +39,8 @@ final class UpdateUserCommandHandler implements CommandHandlerInterface
             $command->newInitials,
             $command->newPassword,
             $command->oldPassword,
-            $hashedPassword
+            $hashedPassword,
+            (string) $this->uuidFactory->create()
         );
         $this->userRepository->save($user);
         $this->eventBus->publish(...$events);

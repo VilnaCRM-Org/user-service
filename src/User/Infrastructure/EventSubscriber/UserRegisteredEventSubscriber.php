@@ -12,7 +12,8 @@ use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Event\UserRegisteredEvent;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 
-final class UserRegisteredEventSubscriber implements DomainEventSubscriberInterface
+final class UserRegisteredEventSubscriber implements
+    DomainEventSubscriberInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,
@@ -25,7 +26,11 @@ final class UserRegisteredEventSubscriber implements DomainEventSubscriberInterf
         $user = $event->user;
         $token = $this->tokenFactory->create($user->getId());
 
-        $this->commandBus->dispatch(new SendConfirmationEmailCommand(new ConfirmationEmail($token, $user)));
+        $this->commandBus->dispatch(
+            new SendConfirmationEmailCommand(
+                new ConfirmationEmail($token, $user)
+            )
+        );
     }
 
     /**

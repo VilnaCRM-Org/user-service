@@ -10,8 +10,12 @@ use App\User\Domain\Entity\UserInterface;
 
 final readonly class UserFactory
 {
-    public function create(string $email, string $initials, string $password, Uuid $id): UserInterface
-    {
+    public function create(
+        string $email,
+        string $initials,
+        string $password,
+        Uuid $id
+    ): UserInterface {
         return new User($email, $initials, $password, $id);
     }
 }

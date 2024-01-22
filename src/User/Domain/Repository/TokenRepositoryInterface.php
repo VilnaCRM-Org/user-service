@@ -15,7 +15,7 @@ interface TokenRepositoryInterface extends RepositoryInterface
     /**
      * @param ConfirmationToken $token
      */
-    public function save($token): void;
+    public function save(object $token): void;
 
     /**
      * @param string $tokenValue
@@ -30,5 +30,5 @@ interface TokenRepositoryInterface extends RepositoryInterface
     /**
      * @param ConfirmationToken $token
      */
-    public function delete($token): void;
+    public function delete(object $token): void;
 }

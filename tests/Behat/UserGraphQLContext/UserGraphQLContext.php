@@ -30,7 +30,8 @@ class UserGraphQLContext implements Context
     private GraphQLMutationInput $graphQLInput;
 
     public function __construct(
-        private readonly KernelInterface $kernel, private ?Response $response,
+        private readonly KernelInterface $kernel,
+        private ?Response $response,
     ) {
         $this->responseContent = [];
         $this->graphQLInput = new GraphQLMutationInput();
@@ -159,7 +160,8 @@ class UserGraphQLContext implements Context
             [],
             [],
             ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/graphql'], $this->query
+                'CONTENT_TYPE' => 'application/graphql'],
+            $this->query
         ));
     }
 

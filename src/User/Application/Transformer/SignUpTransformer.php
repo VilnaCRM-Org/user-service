@@ -25,7 +25,9 @@ final class SignUpTransformer
             $command->email,
             $command->initials,
             $command->password,
-            $this->transformer->transformFromSymfonyUuid($this->uuidFactory->create())
+            $this->transformer->transformFromSymfonyUuid(
+                $this->uuidFactory->create()
+            )
         );
     }
 }

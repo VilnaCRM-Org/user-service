@@ -12,15 +12,23 @@ final class ConfirmationEmailSendEvent extends DomainEvent
     public function __construct(
         public readonly ConfirmationToken $token,
         public readonly string $emailAddress,
-        string $eventId = null,
+        string $eventId,
         string $occurredOn = null
     ) {
         parent::__construct($eventId, $occurredOn);
     }
 
-    public static function fromPrimitives(array $body, string $eventId, string $occurredOn): DomainEvent
-    {
-        return new self($body['token'], $body['emailAddress'], $eventId, $occurredOn);
+    public static function fromPrimitives(
+        array $body,
+        string $eventId,
+        string $occurredOn
+    ): DomainEvent {
+        return new self(
+            $body['token'],
+            $body['emailAddress'],
+            $eventId,
+            $occurredOn
+        );
     }
 
     public static function eventName(): string

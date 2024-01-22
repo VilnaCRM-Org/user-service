@@ -9,8 +9,12 @@ use Symfony\Component\Mime\Email;
 
 final class EmailFactory
 {
-    public function create(string $sendTo, string $subject, string $content, string $template): Email
-    {
+    public function create(
+        string $sendTo,
+        string $subject,
+        string $content,
+        string $template
+    ): Email {
         return (new TemplatedEmail())
             ->to($sendTo)
             ->subject($subject)

@@ -20,15 +20,19 @@ final class DomainUuidType extends Type
         return self::NAME;
     }
 
-    public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
-    {
+    public function getSQLDeclaration(
+        array $column,
+        AbstractPlatform $platform
+    ): string {
         $symfonyType = $this->getSymfonyUuidType();
 
         return $symfonyType->getSQLDeclaration($column, $platform);
     }
 
-    public function convertToDatabaseValue($value, AbstractPlatform $platform): ?string
-    {
+    public function convertToDatabaseValue(
+        $value,
+        AbstractPlatform $platform
+    ): ?string {
         if ($value instanceof UuidInterface || $value === null) {
             return $value->toBinary();
         }

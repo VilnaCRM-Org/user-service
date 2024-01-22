@@ -13,7 +13,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-final class ConfirmationEmailSendEventSubscriber implements DomainEventSubscriberInterface
+final class ConfirmationEmailSendEventSubscriber implements
+    DomainEventSubscriberInterface
 {
     public function __construct(
         private MailerInterface $mailer,
@@ -35,7 +36,10 @@ final class ConfirmationEmailSendEventSubscriber implements DomainEventSubscribe
         $email = $this->emailFactory->create(
             $emailAddress,
             $this->translator->trans('email.confirm.subject'),
-            $this->translator->trans('email.confirm.text', ['tokenValue' => $tokenValue]),
+            $this->translator->trans(
+                'email.confirm.text',
+                ['tokenValue' => $tokenValue]
+            ),
             'email/confirm.html.twig'
         );
 

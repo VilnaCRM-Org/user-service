@@ -34,8 +34,10 @@ final class ConfirmUserMutationResolver implements MutationResolverInterface
 
         $this->validator->validate($this->transformer->transform($args));
 
-        $token = $this->tokenRepository->find($args['token']) ?? throw new TokenNotFoundException();
-        $user = $this->userRepository->find($token->getUserID()) ?? throw new UserNotFoundException();
+        $token = $this->tokenRepository->find($args['token'])
+            ?? throw new TokenNotFoundException();
+        $user = $this->userRepository->find($token->getUserID())
+            ?? throw new UserNotFoundException();
 
         $this->commandBus->dispatch(new ConfirmUserCommand($token));
 

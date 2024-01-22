@@ -13,10 +13,13 @@ use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
-final class MariaDBUserRepository extends ServiceEntityRepository implements UserRepositoryInterface
+final class MariaDBUserRepository extends ServiceEntityRepository implements
+    UserRepositoryInterface
 {
-    public function __construct(private EntityManagerInterface $entityManager, private ManagerRegistry $registry)
-    {
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private ManagerRegistry $registry
+    ) {
         parent::__construct($this->registry, User::class);
     }
 

@@ -12,10 +12,13 @@ use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 
-final class EmailChangedEventSubscriber implements DomainEventSubscriberInterface
+final class EmailChangedEventSubscriber implements
+    DomainEventSubscriberInterface
 {
-    public function __construct(private CommandBusInterface $commandBus, private ConfirmationTokenFactory $tokenFactory)
-    {
+    public function __construct(
+        private CommandBusInterface $commandBus,
+        private ConfirmationTokenFactory $tokenFactory
+    ) {
     }
 
     public function __invoke(EmailChangedEvent $event): void
@@ -23,7 +26,11 @@ final class EmailChangedEventSubscriber implements DomainEventSubscriberInterfac
         $user = $event->user;
         $token = $this->tokenFactory->create($user->getId());
 
-        $this->commandBus->dispatch(new SendConfirmationEmailCommand(new ConfirmationEmail($token, $user)));
+        $this->commandBus->dispatch(
+            new SendConfirmationEmailCommand(
+                new ConfirmationEmail($token, $user)
+            )
+        );
     }
 
     /**

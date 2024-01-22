@@ -27,13 +27,17 @@ final class InfiniteRetryStrategy implements RetryStrategyInterface
         return 60000;
     }
 
-    public function isRetryable(Envelope $message, \Throwable $throwable = null): bool
-    {
+    public function isRetryable(
+        Envelope $message,
+        \Throwable $throwable = null
+    ): bool {
         return true;
     }
 
-    public function getWaitingTime(Envelope $message, \Throwable $throwable = null): int
-    {
+    public function getWaitingTime(
+        Envelope $message,
+        \Throwable $throwable = null
+    ): int {
         return 60000;
     }
 }

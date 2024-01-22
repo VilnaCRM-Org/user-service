@@ -32,16 +32,26 @@ final class ResendEmailProcessor implements ProcessorInterface
     /**
      * @param RetryDto $data
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Response
-    {
-        $user = $this->userRepository->find((string) $uriVariables['id']) ?? throw new UserNotFoundException();
+    public function process(
+        mixed $data,
+        Operation $operation,
+        array $uriVariables = [],
+        array $context = []
+    ): Response {
+        $user = $this->userRepository->find(
+            (string) $uriVariables['id']
+        ) ?? throw new UserNotFoundException();
 
-        $token = $this->tokenRepository->findByUserId($user->getId()) ?? $this->tokenFactory->create($user->getId());
+        $token = $this->tokenRepository->findByUserId(
+            $user->getId()
+        ) ?? $this->tokenFactory->create($user->getId());
 
         $token->send();
 
         $this->commandBus->dispatch(
-            new SendConfirmationEmailCommand(new ConfirmationEmail($token, $user))
+            new SendConfirmationEmailCommand(
+                new ConfirmationEmail($token, $user)
+            )
         );
 
         return new Response();

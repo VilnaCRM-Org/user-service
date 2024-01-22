@@ -15,6 +15,9 @@ final class ConfirmationTokenFactory
 
     public function create(string $userID): ConfirmationTokenInterface
     {
-        return new ConfirmationToken(bin2hex(random_bytes($this->tokenLength)), $userID);
+        return new ConfirmationToken(
+            bin2hex(random_bytes($this->tokenLength)),
+            $userID
+        );
     }
 }

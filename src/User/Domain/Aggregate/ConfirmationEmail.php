@@ -11,13 +11,21 @@ use App\User\Domain\Event\ConfirmationEmailSendEvent;
 
 final class ConfirmationEmail extends AggregateRoot
 {
-    public function __construct(public readonly ConfirmationTokenInterface $token, public readonly UserInterface $user)
-    {
+    public function __construct(
+        public readonly ConfirmationTokenInterface $token,
+        public readonly UserInterface $user
+    ) {
     }
 
-    public function send(): void
+    public function send(string $eventID): void
     {
         $this->token->incrementTimesSent();
-        $this->record(new ConfirmationEmailSendEvent($this->token, $this->user->getEmail()));
+        $this->record(
+            new ConfirmationEmailSendEvent(
+                $this->token,
+                $this->user->getEmail(),
+                $eventID
+            )
+        );
     }
 }

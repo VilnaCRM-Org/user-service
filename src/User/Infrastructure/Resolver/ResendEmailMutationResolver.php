@@ -22,7 +22,7 @@ final class ResendEmailMutationResolver implements MutationResolverInterface
     }
 
     /**
-     * @param User $item
+     * @param User                 $item
      * @param array<string,string> $context
      */
     public function __invoke(?object $item, array $context): ?object

@@ -17,7 +17,10 @@ final class CallableFirstParameterExtractor
      */
     public static function forCallables(iterable $callables): array
     {
-        return map(self::unflatten(), reindex(self::classExtractor(new self()), $callables));
+        return map(
+            self::unflatten(),
+            reindex(self::classExtractor(new self()), $callables)
+        );
     }
 
     /**
@@ -40,14 +43,19 @@ final class CallableFirstParameterExtractor
         return null;
     }
 
-    private static function classExtractor(CallableFirstParameterExtractor $parameterExtractor): callable
-    {
-        return static fn (callable $handler): ?string => $parameterExtractor->extract($handler);
+    private static function classExtractor(
+        CallableFirstParameterExtractor $parameterExtractor
+    ): callable {
+        return static fn (callable $handler): ?string => $parameterExtractor->
+        extract($handler);
     }
 
     private static function pipedCallablesReducer(): callable
     {
-        return static function ($subscribers, DomainEventSubscriberInterface $subscriber): array {
+        return static function (
+            $subscribers,
+            DomainEventSubscriberInterface $subscriber
+        ): array {
             $subscribedEvents = $subscriber::subscribedTo();
 
             foreach ($subscribedEvents as $subscribedEvent) {
@@ -69,7 +77,9 @@ final class CallableFirstParameterExtractor
         $fistParameterType = $method->getParameters()[0]->getType();
 
         if ($fistParameterType === null) {
-            throw new \LogicException('Missing type hint for the first parameter of __invoke');
+            throw new \LogicException(
+                'Missing type hint for the first parameter of __invoke'
+            );
         }
 
         return $fistParameterType->getName();

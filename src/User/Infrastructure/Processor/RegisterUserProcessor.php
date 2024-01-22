@@ -23,9 +23,17 @@ final readonly class RegisterUserProcessor implements ProcessorInterface
     /**
      * @param UserRegisterDto $data
      */
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): User
-    {
-        $command = new SignUpCommand($data->email, $data->initials, $data->password);
+    public function process(
+        mixed $data,
+        Operation $operation,
+        array $uriVariables = [],
+        array $context = []
+    ): User {
+        $command = new SignUpCommand(
+            $data->email,
+            $data->initials,
+            $data->password
+        );
         $this->commandBus->dispatch($command);
 
         return $command->getResponse()->createdUser;

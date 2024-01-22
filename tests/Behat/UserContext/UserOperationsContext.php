@@ -18,7 +18,8 @@ class UserOperationsContext implements Context
     private RequestInput $requestBody;
 
     public function __construct(
-        private readonly KernelInterface $kernel, private SerializerInterface $serializer,
+        private readonly KernelInterface $kernel,
+        private SerializerInterface $serializer,
         private ?Response $response
     ) {
         $this->requestBody = new RequestInput();
@@ -80,7 +81,8 @@ class UserOperationsContext implements Context
             [],
             [],
             ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => $contentType, ], $this->serializer->serialize($this->requestBody, 'json')
+                'CONTENT_TYPE' => $contentType, ],
+            $this->serializer->serialize($this->requestBody, 'json')
         ));
     }
 

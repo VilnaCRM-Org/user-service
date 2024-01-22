@@ -12,7 +12,7 @@ interface RepositoryInterface
     /**
      * @param T $entity
      */
-    public function save($entity): void;
+    public function save(object $entity): void;
 
     /**
      * @return T|null
@@ -22,5 +22,5 @@ interface RepositoryInterface
     /**
      * @param T $entity
      */
-    public function delete($entity): void;
+    public function delete(object $entity): void;
 }
