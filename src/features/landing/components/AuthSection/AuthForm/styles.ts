@@ -1,3 +1,5 @@
+import { colorTheme } from '@/components/UiColorTheme';
+
 import Imagess from '../../../assets/svg/auth-section/bg.svg';
 import Images from '../../../assets/svg/auth-section/image.svg';
 
@@ -21,7 +23,7 @@ export const authFormStyles = {
     right: '5%',
     width: '499px',
     height: ' 542px',
-    backgroundColor: '#E1E7EA',
+    backgroundColor: colorTheme.palette.brandGray.main,
     '@media (max-width: 1439.98px)': {
       height: ' 629px',
       top: '8.3%',
@@ -54,7 +56,7 @@ export const authFormStyles = {
     padding: '36px 40px 40px 40px',
     borderRadius: '32px 32px 0px 0px',
     border: '1px solid  primary.main',
-    background: '#FFF',
+    background: colorTheme.palette.white.main,
     maxWidth: '502px',
     maxHeight: '647px',
     boxShadow: '1px 1px 41px 0px rgba(59, 68, 80, 0.05)',
@@ -101,14 +103,14 @@ export const authFormStyles = {
   },
 
   labelText: {
-    pt: '20px',
-    pb: '32px',
+    mt: '20px',
+    mb: '32px',
     mx: '0px',
     '@media (max-width: 1439.98px)': {
-      pb: '24px',
+      mb: '24px',
     },
     '@media (max-width: 639.98px)': {
-      pb: '19px',
+      mb: '19px',
     },
   },
 

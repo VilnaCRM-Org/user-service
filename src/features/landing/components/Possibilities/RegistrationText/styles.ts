@@ -1,3 +1,5 @@
+import { colorTheme } from '@/components/UiColorTheme';
+
 export const registrationTextStyles = {
   textWrapper: {
     marginLeft: '-16px',
@@ -10,7 +12,7 @@ export const registrationTextStyles = {
     padding: '12px 32px',
     alignSelf: 'center',
     borderRadius: '1rem',
-    backgroundColor: '#FFC01E',
+    backgroundColor: colorTheme.palette.secondary.main,
     '@media (max-width: 639.98px)': {
       padding: '12px 24px',
       alignSelf: 'start',

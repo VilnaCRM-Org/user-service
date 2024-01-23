@@ -1,14 +1,16 @@
+import { colorTheme } from '@/components/UiColorTheme';
+
 export const copyrightNoticeAndLinksStyles = {
   gmailWrapper: {
     padding: '7px 16px',
     borderRadius: '8px',
-    background: '#fff',
-    border: '1px solid  #D0D4D8',
+    background: colorTheme.palette.white.main,
+    border: `1px solid ${colorTheme.palette.grey400.main}`,
   },
   gmailText: {
-    color: '#1B2327',
+    color: colorTheme.palette.darkSecondary.main,
   },
   copyright: {
-    color: '#404142',
+    color: colorTheme.palette.grey200.main,
   },
 };

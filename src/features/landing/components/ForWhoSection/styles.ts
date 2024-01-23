@@ -1,9 +1,11 @@
-import VectorIcon from '../../assets/svg/service-hub/bg-lg.svg';
-import VectorIconMd from '../../assets/svg/service-hub/bg-md.svg';
+import { colorTheme } from '@/components/UiColorTheme';
+
+import VectorIcon from '../../assets/svg/for-who/bg-lg.svg';
+import VectorIconMd from '../../assets/svg/for-who/bg-md.svg';
 
 export const forWhoSectionStyles = {
   wrapper: {
-    background: '#FBFBFB',
+    background: colorTheme.palette.backgroundGrey100.main,
     maxWidth: '100dvw',
     overflow: 'hidden',
   },
@@ -64,7 +66,7 @@ export const forWhoSectionStyles = {
   },
   line: {
     position: 'relative',
-    background: '#fff',
+    background: colorTheme.palette.white.main,
     minHeight: '100px',
     zIndex: 1,
     marginTop: '-60px',

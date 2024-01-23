@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material';
 
-export const theme = createTheme({
+export const colorTheme = createTheme({
   palette: {
     primary: {
       main: '#1EAEFF',
@@ -8,26 +8,44 @@ export const theme = createTheme({
     secondary: {
       main: '#FFC01E',
     },
-    // custom: {
-    //   main: '#000000',
-    // },
-    // dark100: {
-    //   main: '#1A1C1E',
-    // },
-    // brandGray: {
-    //   main: '#E1E7EA',
-    // },
-    // white: {
-    //   main: '#FFFFFF',
-    // },
-    // backgroundLight: {
-    //   main: '#FBFBFB',
-    // },
-    // darkPrimary: {
-    //   main: '#1B2327',
-    // },
-    // error: {
-    //   main: '#DC3939',
-    // },
+    error: {
+      main: '#DC3939',
+    },
+    white: {
+      main: '#FFF',
+    },
+    darkPrimary: {
+      main: '#1A1C1E',
+    },
+    darkSecondary: {
+      main: '#1B2327',
+    },
+    brandGray: {
+      main: '#E1E7EA',
+    },
+    grey200: {
+      main: '#404142',
+    },
+    grey250: {
+      main: '#57595B',
+    },
+    grey300: {
+      main: '#969B9D',
+    },
+    grey400: {
+      main: '#D0D4D8',
+    },
+    grey500: {
+      main: '#EAECEE',
+    },
+    backgroundGrey100: {
+      main: '#FBFBFB',
+    },
+    backgroundGrey200: {
+      main: '#f4f5f6',
+    },
+    backgroundGrey300: {
+      main: '#F5F6F7',
+    },
   },
 });

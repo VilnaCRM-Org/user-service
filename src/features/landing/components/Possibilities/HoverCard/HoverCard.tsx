@@ -7,6 +7,8 @@ import { UiTypography } from '@/components';
 
 import { IimageList } from '../../../types/possibilities/image-list';
 
+import { styles } from './styles';
+
 function HoverCard({ imageList }: { imageList: IimageList[] }) {
   const { t } = useTranslation();
   return (
@@ -14,7 +16,7 @@ function HoverCard({ imageList }: { imageList: IimageList[] }) {
       <UiTypography variant="demi18">
         {t('unlimited_possibilities.service_text.title')}
       </UiTypography>
-      <UiTypography variant="medium14" sx={{ pt: '4px', pb: '22px' }}>
+      <UiTypography variant="medium14" sx={styles.text}>
         {t('unlimited_possibilities.service_text.text')}
       </UiTypography>
       <Stack flexDirection="row" flexWrap="wrap" gap="30px">

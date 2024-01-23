@@ -3,6 +3,7 @@ import Image from 'next/image';
 import React from 'react';
 
 import { UiTypography } from '@/components';
+import { colorTheme } from '@/components/UiColorTheme';
 
 import AtSignImage from '../../../../assets/svg/header-drawer/at-sign.svg';
 
@@ -18,7 +19,12 @@ function VilnaGmail() {
         flexDirection="row"
       >
         <Image src={AtSignImage} alt="ExitImage" width={24} height={24} />
-        <UiTypography variant="demi18">info@vilnacrm.com</UiTypography>
+        <UiTypography
+          variant="demi18"
+          color={colorTheme.palette.darkSecondary.main}
+        >
+          info@vilnacrm.com
+        </UiTypography>
       </Stack>
     </Box>
   );

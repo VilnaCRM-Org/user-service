@@ -2,13 +2,13 @@
 
 import LargeCardItem from './LargeCardItem';
 import SmallCardItem from './SmallCardItem';
-import { ICardItem } from './types';
+import { ICardItemProps } from './types';
 
-function UiCardItem({ item, type, imageList }: ICardItem) {
+function UiCardItem({ item, type, imageList }: ICardItemProps) {
   return (
     <>
-      {type === 'small' && imageList !== undefined && (
-        <SmallCardItem item={item} imageList={imageList} />
+      {type === 'small' && (
+        <SmallCardItem item={item} imageList={imageList || []} />
       )}
       {type === 'large' && <LargeCardItem item={item} />}
     </>

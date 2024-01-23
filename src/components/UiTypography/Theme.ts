@@ -1,21 +1,18 @@
 import { createTheme } from '@mui/material';
 
+import { colorTheme } from '../UiColorTheme';
+
 const fonts = {
   golos: 'Golos',
   inter: 'Inter',
 };
 
 const hStyles = {
-  color: '#1A1C1E',
+  color: colorTheme.palette.darkPrimary.main,
   fontFamily: fonts.golos,
   fontWeight: '700',
   lineHeight: 'normal',
   letterSpacing: '',
-};
-
-const mediumStyles = {
-  color: '#484848',
-  lineHeight: '18px',
 };
 
 const theme = createTheme({
@@ -66,71 +63,44 @@ const theme = createTheme({
       fontSize: '22px',
     },
     medium16: {
-      ...mediumStyles,
-      fontFamily: fonts.inter,
-      fontSize: '16px',
-      fontWeight: '500',
+      font: `normal 500 16px/18px ${fonts.inter}`,
+      color: colorTheme.palette.grey300.main,
     },
     medium15: {
-      ...mediumStyles,
-      fontFamily: fonts.golos,
-      fontStyle: 'normal',
-      fontSize: '15px',
-      fontWeight: '500',
-      color: '#57595B',
+      font: `normal 500 15px/18px ${fonts.golos}`,
+      color: colorTheme.palette.grey250.main,
     },
     medium14: {
-      ...mediumStyles,
-      fontFamily: fonts.inter,
-      fontSize: '14px',
-      color: '#404142',
+      font: `normal 500 14px/18px ${fonts.inter}`,
+      color: colorTheme.palette.grey200.main,
     },
     regular16: {
-      ...mediumStyles,
-      fontFamily: fonts.inter,
-      fontWeight: '400',
+      font: `normal 500 16px/18px ${fonts.inter}`,
+      color: colorTheme.palette.grey300.main,
     },
     bodyText18: {
-      fontFamily: fonts.golos,
-      fontSize: '18px',
-      fontWeight: '400',
-      lineHeight: '30px',
+      font: `normal 400 18px/30px ${fonts.golos}`,
+      color: colorTheme.palette.darkPrimary.main,
     },
     bodyText16: {
-      fontFamily: fonts.golos,
-      fontSize: '16px',
-      lineHeight: '26px',
+      font: `normal 400 16px/26px ${fonts.golos}`,
+      color: colorTheme.palette.darkPrimary.main,
     },
     bold22: {
-      lineHeight: 'normal',
-
-      fontFamily: fonts.golos,
-      fontSize: '22px',
-      fontWeight: '700',
-      color: '#57595B',
+      font: `normal 700 22px/normal ${fonts.golos}`,
+      color: colorTheme.palette.grey250.main,
     },
     demi18: {
-      lineHeight: 'normal',
-
-      fontFamily: fonts.golos,
-      fontSize: '18px',
-      fontWeight: '600',
+      font: `normal 600 18px/normal ${fonts.golos}`,
+      color: colorTheme.palette.darkPrimary.main,
     },
     button: {
-      color: '#FFF',
-      fontFamily: fonts.golos,
-      fontSize: '18px',
-      fontStyle: 'normal',
-      fontWeight: '600',
-      lineHeight: 'normal',
+      font: `normal 600 18px/normal ${fonts.golos}`,
+      color: colorTheme.palette.white.main,
     },
     mobileText: {
-      color: '#1A1C1E',
-      fontFamily: fonts.golos,
-      fontSize: '15px',
-      fontStyle: 'normal',
-      fontWeight: '400',
-      lineHeight: '25px',
+      font: `normal 400 15px/25px ${fonts.golos}`,
+      color: colorTheme.palette.darkPrimary.main,
     },
   },
 });

@@ -1,3 +1,5 @@
+import { colorTheme } from '@/components/UiColorTheme';
+
 export const privacyPolicyStyles = {
   wrapper: {
     gap: '8px',
@@ -15,7 +17,7 @@ export const privacyPolicyStyles = {
   privacy: {
     padding: '8px 16px',
     borderRadius: '8px',
-    background: '#F4F5F6',
+    background: colorTheme.palette.backgroundGrey200.main,
     '@media (max-width: 767.98px)': {
       textAlign: 'center',
       width: '100%',
@@ -25,7 +27,7 @@ export const privacyPolicyStyles = {
   usagePolicy: {
     padding: '8px 16px',
     borderRadius: '8px',
-    background: '#F4F5F6',
+    background: colorTheme.palette.backgroundGrey200.main,
     '@media (max-width: 767.98px)': {
       textAlign: 'center',
       width: '100%',

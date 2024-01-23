@@ -7,6 +7,8 @@ import {
   tooltipClasses,
 } from '@mui/material';
 
+import { colorTheme } from '../UiColorTheme';
+
 import { uiTooltipStyles } from './styles';
 import { UiTooltipProps } from './types';
 
@@ -17,7 +19,7 @@ const HtmlTooltip = styled(({ className, ...props }: TooltipProps) => (
     backgroundColor: '#fff',
     color: 'rgba(0, 0, 0, 0.87)',
     maxWidth: '330px',
-    border: '1px solid  #D0D4D8',
+    border: `1px solid  ${colorTheme.palette.grey400.main}`,
     padding: '18px 24px',
     borderRadius: '8px',
     '@media (max-width: 1439.98px)': {

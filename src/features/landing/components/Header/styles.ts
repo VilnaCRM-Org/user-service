@@ -1,6 +1,8 @@
+import { colorTheme } from '@/components/UiColorTheme';
+
 export const headerStyles = {
   headerWrapper: {
-    backgroundColor: 'white',
+    backgroundColor: colorTheme.palette.white.main,
     boxShadow: 'none',
     position: 'fixed',
     zIndex: 100,

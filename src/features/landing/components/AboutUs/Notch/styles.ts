@@ -1,3 +1,5 @@
+import { colorTheme } from '@/components/UiColorTheme';
+
 export const notchStyles = {
   notch: {
     position: 'relative',
@@ -6,7 +8,7 @@ export const notchStyles = {
     height: '18px',
     width: '94px',
     margin: '0 auto',
-    background: '#1A1C1E',
+    background: colorTheme.palette.darkPrimary.main,
     borderBottomLeftRadius: '6px',
     borderBottomRightRadius: '6px',
     zIndex: '11',
@@ -43,8 +45,7 @@ export const notchStyles = {
       position: 'relative',
       top: '0',
       left: '22%',
-
-      background: '#000',
+      background: colorTheme.palette.darkPrimary.main,
       height: '17px',
       width: '108px',
       margin: '0 auto',

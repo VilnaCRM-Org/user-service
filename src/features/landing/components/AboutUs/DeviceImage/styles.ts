@@ -1,3 +1,5 @@
+import { colorTheme } from '@/components/UiColorTheme';
+
 export const deviceImageStyles = {
   wrapper: {
     position: 'relative',
@@ -46,7 +48,7 @@ export const deviceImageStyles = {
     border: '4px solid #232122',
     borderTopRightRadius: '25px',
     borderTopLeftRadius: '25px',
-    backgroundColor: '#1A1C1E',
+    backgroundColor: colorTheme.palette.darkPrimary.main,
     padding: '12px',
     overflow: 'hidden',
     '@media (max-width: 1023.98px)': {
@@ -56,7 +58,7 @@ export const deviceImageStyles = {
       padding: '6px',
       border: '4px solid #444',
       borderRadius: '36px',
-      backgroundColor: '#000',
+      backgroundColor: colorTheme.palette.darkPrimary.main,
       margin: '0 auto',
       overflow: 'hidden',
     },

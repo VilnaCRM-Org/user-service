@@ -1,7 +1,9 @@
+import { colorTheme } from '@/components/UiColorTheme';
+
 export const mainTitleStyles = {
   title: {
     '@media (max-width: 1023.98px)': {
-      color: ' #1A1C1E',
+      color: colorTheme.palette.darkPrimary.main,
       fontFamily: 'Golos',
       fontSize: '28px',
       fontStyle: 'normal',
@@ -18,7 +20,7 @@ export const mainTitleStyles = {
     },
     '@media (max-width: 1023.98px)': {
       pt: '13px',
-      color: ' #1A1C1E',
+      color: colorTheme.palette.darkPrimary.main,
       fontfamily: 'Golos',
       fontSize: '15px',
       fontStyle: 'normal',

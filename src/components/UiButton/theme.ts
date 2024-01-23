@@ -1,5 +1,7 @@
 import { Interpolation, Theme, createTheme } from '@mui/material';
 
+import { colorTheme } from '../UiColorTheme';
+
 import { UiButtonProps } from './types';
 
 const defaultProps: UiButtonProps = {
@@ -38,7 +40,7 @@ export const theme = createTheme({
           },
           style: {
             ...repeatStyles,
-            backgroundColor: '#1EAEFF',
+            backgroundColor: colorTheme.palette.primary.main,
             borderRadius: '3.563rem',
             padding: '16px 24px',
             '&:hover': {
@@ -48,8 +50,8 @@ export const theme = createTheme({
               backgroundColor: ' #0399ED',
             },
             '&:disabled': {
-              backgroundColor: '#E1E7EA',
-              color: '#fff',
+              backgroundColor: colorTheme.palette.brandGray.main,
+              color: colorTheme.palette.white.main,
             },
           },
         },
@@ -62,7 +64,7 @@ export const theme = createTheme({
             textTransform: 'none',
             textDecoration: 'none',
             borderRadius: '3.563rem',
-            backgroundColor: '#1EAEFF',
+            backgroundColor: colorTheme.palette.primary.main,
             padding: '1.25rem 2rem',
             alignSelf: 'center',
             fontFamily: 'Golos',
@@ -77,8 +79,8 @@ export const theme = createTheme({
               backgroundColor: ' #0399ED',
             },
             '&:disabled': {
-              backgroundColor: '#E1E7EA',
-              color: '#fff',
+              backgroundColor: colorTheme.palette.brandGray.main,
+              color: colorTheme.palette.white.main,
             },
             '@media (max-width: 639.98px)': {
               fontSize: '15px',
@@ -95,21 +97,21 @@ export const theme = createTheme({
           },
           style: {
             ...repeatStyles,
-            color: '#1B2327',
+            color: colorTheme.palette.darkSecondary.main,
             padding: '16px 23px',
             backgroundColor: 'white',
-            border: '1px solid #969B9D',
+            border: `1px solid ${colorTheme.palette.grey300.main}`,
             borderRadius: '3.563rem',
             '&:hover': {
-              backgroundColor: '#EAECEE',
+              backgroundColor: colorTheme.palette.grey500.main,
               border: '1px solid rgba(0,0,0,0)',
             },
             '&:active': {
-              border: '1px solid #EAECEE',
+              border: `1px solid ${colorTheme.palette.grey500.main} #EAECEE`,
             },
             '&:disabled': {
-              backgroundColor: '#E1E7EA',
-              color: '#fff',
+              backgroundColor: colorTheme.palette.brandGray.main,
+              color: colorTheme.palette.white.main,
               border: 'none',
             },
           },

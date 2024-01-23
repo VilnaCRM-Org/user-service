@@ -1,14 +1,18 @@
-export interface ICardItem {
+export type CardItem = {
+  id: string;
+  imageSrc: string;
+  title: string;
+  text: string;
+  alt: string;
+};
+
+export type ImageItem = {
+  alt: string;
+  image: string;
+};
+
+export interface ICardItemProps {
   type: 'large' | 'small';
-  item: {
-    id: string;
-    imageSrc: string;
-    title: string;
-    text: string;
-    alt: string;
-  };
-  imageList?: {
-    alt: string;
-    image: string;
-  }[];
+  item: CardItem;
+  imageList?: ImageItem[];
 }

@@ -38,3 +38,35 @@ export declare module '@mui/material/Typography' {
     mobileText: true;
   }
 }
+
+declare module '@mui/material/styles' {
+  interface Palette {
+    darkPrimary: Palette['primary'];
+    darkSecondary: Palette['secondary'];
+    white: Palette['white'];
+    brandGray: Palette['brandGray'];
+    grey200: Palette['grey200'];
+    grey250: Palette['grey250'];
+    grey300: Palette['grey300'];
+    grey400: Palette['grey400'];
+    grey500: Palette['grey500'];
+    backgroundGrey100: Palette['backgroundGrey100'];
+    backgroundGrey200: Palette['backgroundGrey200'];
+    backgroundGrey300: Palette['backgroundGrey300'];
+  }
+
+  interface PaletteOptions {
+    darkPrimary?: PaletteOptions['primary'];
+    darkSecondary?: PaletteOptions['secondary'];
+    white?: PaletteOptions['white'];
+    brandGray?: PaletteOptions['brandGray'];
+    grey200?: PaletteOptions['grey200'];
+    grey250?: PaletteOptions['grey250'];
+    grey300?: PaletteOptions['grey300'];
+    grey400?: PaletteOptions['grey400'];
+    grey500?: PaletteOptions['grey500'];
+    backgroundGrey100?: PaletteOptions['backgroundGrey100'];
+    backgroundGrey200?: PaletteOptions['backgroundGrey200'];
+    backgroundGrey300?: PaletteOptions['backgroundGrey300'];
+  }
+}

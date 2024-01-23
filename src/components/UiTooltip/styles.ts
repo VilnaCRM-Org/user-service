@@ -1,10 +1,12 @@
+import { colorTheme } from '../UiColorTheme';
+
 export const uiTooltipStyles = {
   hoveredText: {
-    color: '#1EAEFF',
+    color: colorTheme.palette.primary.main,
     textDecoration: 'underline',
     fontWeight: '700',
     '@media (max-width: 1439.98px)': {
-      color: '#1A1C1E',
+      color: colorTheme.palette.darkPrimary.main,
       textDecoration: 'none',
       fontWeight: '400',
     },

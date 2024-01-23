@@ -1,3 +1,5 @@
+import { colorTheme } from '@/components/UiColorTheme';
+
 export const signUpTextStyles = {
   title: {
     paddingBottom: '40px',
@@ -14,7 +16,7 @@ export const signUpTextStyles = {
     },
   },
   titleVilnaCRM: {
-    color: '#1EAEFF',
+    color: colorTheme.palette.primary.main,
     '@media (max-width: 639.98px)': {
       fontSize: '28px',
       textAlign: 'left',

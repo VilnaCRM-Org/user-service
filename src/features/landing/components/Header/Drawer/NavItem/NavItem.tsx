@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components';
+import { colorTheme } from '@/components/UiColorTheme';
 
 import AtSignImage from '../../../../assets/svg/header-drawer/chevron-down.svg';
 import { INavItem } from '../../../../types/drawer/navigation';
@@ -19,7 +20,9 @@ function NavItem({ item }: { item: INavItem }) {
       justifyContent="space-between"
       sx={navItemStyles.itemWrapper}
     >
-      <UiTypography variant="demi18">{t(item.title)}</UiTypography>
+      <UiTypography variant="demi18" color={colorTheme.palette.grey250.main}>
+        {t(item.title)}
+      </UiTypography>
       <Image src={AtSignImage} alt="Header Image" width={24} height={24} />
     </Stack>
   );

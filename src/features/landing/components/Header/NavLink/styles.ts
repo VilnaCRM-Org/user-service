@@ -1,3 +1,5 @@
+import { colorTheme } from '@/components/UiColorTheme';
+
 export const navLinkStyles = {
   wrapper: {
     ml: '106px',
@@ -10,14 +12,11 @@ export const navLinkStyles = {
       display: 'none',
     },
   },
+  content: {
+    display: 'flex',
+  },
   navLink: {
     textDecoration: 'none',
-    fontSize: '15px',
-    fontWeight: '500',
-    lineHeight: '18px',
-    fontFamily: 'Golos',
-    textTransform: 'none',
-    letterSpacing: '0',
-    padding: '0',
+    color: colorTheme.palette.grey250.main,
   },
 };

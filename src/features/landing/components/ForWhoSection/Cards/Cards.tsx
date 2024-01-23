@@ -4,7 +4,7 @@ import { Trans, useTranslation } from 'react-i18next';
 
 import { UiButton, UiTypography } from '@/components';
 
-import Vector from '../../../assets/svg/service-hub/yellowVector.svg';
+import Vector from '../../../assets/svg/for-who/yellowVector.svg';
 
 import { cardsStyles } from './styles';
 

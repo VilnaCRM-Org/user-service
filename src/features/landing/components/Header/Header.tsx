@@ -7,20 +7,10 @@ import { UiImage, UiToolbar } from '@/components';
 import Logo from '../../assets/svg/logo/Logo.svg';
 
 import { AuthenticationButtons } from './AuthButtons';
+import { links } from './dataArray';
 import { Drawer } from './Drawer';
 import { NavLink } from './NavLink';
 import { headerStyles } from './styles';
-
-const links = [
-  { id: 'Advantages', link: '#Advantages', value: 'header.advantages' },
-  {
-    id: 'forWhoSectionStyles',
-    link: '#forWhoSectionStyles',
-    value: 'header.for_who',
-  },
-  { id: 'Integration', link: '#Integration', value: 'header.integration' },
-  { id: 'Contacts', link: '#Contacts', value: 'header.contacts' },
-];
 
 function Header() {
   const { t } = useTranslation();

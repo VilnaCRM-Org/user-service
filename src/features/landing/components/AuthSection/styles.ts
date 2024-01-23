@@ -1,6 +1,8 @@
+import { colorTheme } from '@/components/UiColorTheme';
+
 export const authSectionStyles = {
   wrapper: {
-    background: '#FBFBFB',
+    background: colorTheme.palette.backgroundGrey100.main,
     mb: '2px',
     position: 'relative',
     '@media (max-width: 1439.98px)': {

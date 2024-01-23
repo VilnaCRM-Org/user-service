@@ -1,3 +1,5 @@
+import { colorTheme } from '@/components/UiColorTheme';
+
 export const textInfoStyles = {
   textWrapper: {
     maxWidth: '43.813rem',
@@ -15,7 +17,7 @@ export const textInfoStyles = {
   title: {
     textAlign: 'center',
     '@media (max-width: 639.98px)': {
-      color: '#1A1C1E',
+      color: colorTheme.palette.darkPrimary.main,
       fontFamily: 'Golos',
       fontSize: '32px',
       fontStyle: 'normal',
@@ -33,7 +35,7 @@ export const textInfoStyles = {
       mt: '12px',
       mb: '24px',
       textAlign: 'left',
-      color: '#1A1C1E',
+      color: colorTheme.palette.darkPrimary.main,
       fontFamily: 'Golos',
       fontSize: '15px',
       fontStyle: 'normal',

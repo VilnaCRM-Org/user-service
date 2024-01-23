@@ -1,11 +1,13 @@
 import { createTheme } from '@mui/material';
 
+import { colorTheme } from '../UiColorTheme';
+
 export const theme = createTheme({
   components: {
     MuiLink: {
       styleOverrides: {
         root: {
-          color: '#1EAEFF',
+          color: colorTheme.palette.primary.main,
           fontFamily: 'Inter',
           fontSize: '14px',
           fontStyle: 'normal',

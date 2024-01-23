@@ -1,3 +1,5 @@
+import { colorTheme } from '@/components/UiColorTheme';
+
 export const cardsStyles = {
   wrapper: {
     '@media (max-width: 1023.98px)': {
@@ -6,7 +8,7 @@ export const cardsStyles = {
       marginTop: '322px',
       padding: '32px 24px',
       borderRadius: '24px 24px 0px 0px',
-      background: '#FFF',
+      background: colorTheme.palette.white.main,
       boxShadow: '0px -15px 24px 0px rgba(108, 120, 132, 0.25)',
     },
   },
@@ -27,8 +29,8 @@ export const cardsStyles = {
     gap: '12px',
     padding: '27px 32px',
     borderRadius: '12px',
-    border: '1px solid  #EAECEE',
-    background: '#FFF',
+    border: `1px solid ${colorTheme.palette.grey500.main}`,
+    background: colorTheme.palette.white.main,
     boxShadow: '0px 8px 27px 0px rgba(49, 59, 67, 0.14)',
     '@media (max-width: 1130.98px)': {
       padding: '29px 32px ',
@@ -43,7 +45,7 @@ export const cardsStyles = {
   },
   secondTitle: {
     pb: '32px',
-    color: '#1A1C1E',
+    color: colorTheme.palette.darkPrimary.main,
     fontFamily: 'Golos',
     fontSize: '28px',
     fontStyle: 'normal',
@@ -56,7 +58,7 @@ export const cardsStyles = {
     '@media (max-width: 1023.98px)': {
       pb: '15px',
       maxWidth: '297px',
-      color: ' #1A1C1E',
+      color: colorTheme.palette.darkPrimary.main,
       fontFamily: 'Golos',
       fontSize: '22px',
       fontStyle: 'normal',
@@ -68,7 +70,7 @@ export const cardsStyles = {
   },
   optionText: {
     '@media (max-width: 1023.98px)': {
-      color: ' #1A1C1E',
+      color: colorTheme.palette.darkPrimary.main,
       fontFamily: 'Golos',
       fontSize: '15px',
       fontStyle: 'normal',
