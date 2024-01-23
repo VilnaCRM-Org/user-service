@@ -121,7 +121,6 @@ class UserOperationsContext implements Context
         Assert::assertArrayHasKey('initials', $data);
         Assert::assertEquals($initials, $data['initials']);
         Assert::assertArrayHasKey('confirmed', $data);
-        Assert::assertArrayHasKey('roles', $data);
         Assert::assertArrayNotHasKey('password', $data);
     }
 
@@ -136,7 +135,6 @@ class UserOperationsContext implements Context
         Assert::assertArrayHasKey('email', $data);
         Assert::assertArrayHasKey('initials', $data);
         Assert::assertArrayHasKey('confirmed', $data);
-        Assert::assertArrayHasKey('roles', $data);
         Assert::assertArrayNotHasKey('password', $data);
     }
 }

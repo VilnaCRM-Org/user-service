@@ -6,7 +6,5 @@ App\User\Domain\Entity\User:
       groups: ['output']
     initials:
       groups: ['output']
-    roles:
-      groups: ['output']
     confirmed:
       groups: [ 'output' ]

@@ -14,7 +14,7 @@ use App\User\Infrastructure\Exception\TokenNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @implements ProcessorInterface<Response>
+ * @implements ProcessorInterface<ConfirmUserDto, Response>
  */
 final class ConfirmUserProcessor implements ProcessorInterface
 {

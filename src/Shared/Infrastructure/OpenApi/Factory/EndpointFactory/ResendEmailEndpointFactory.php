@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Infrastructure\EndpointFactory;
+namespace App\Shared\Infrastructure\OpenApi\Factory\EndpointFactory;
 
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Response;
@@ -42,7 +42,7 @@ class ResendEmailEndpointFactory implements AbstractEndpointFactory
                     'status' => HttpResponse::HTTP_NOT_FOUND,
                 ],
             ],
-        ]),);
+        ]), );
 
         $openApi->getPaths()->addPath(
             '/api/users/{id}/resend-confirmation-email',
@@ -62,7 +62,8 @@ class ResendEmailEndpointFactory implements AbstractEndpointFactory
                                 'application/json' => [
                                     'example' => '',
                                 ],
-                            ]),),
+                            ]),
+                        ),
                         HttpResponse::HTTP_NOT_FOUND => $standardResponse404,
                         HttpResponse::HTTP_TOO_MANY_REQUESTS => new Response(
                             description: 'Too many requests',
@@ -84,8 +85,10 @@ class ResendEmailEndpointFactory implements AbstractEndpointFactory
                                         'status' => HttpResponse::HTTP_TOO_MANY_REQUESTS,
                                     ],
                                 ],
-                            ]),),
+                            ]),
+                        ),
                     ])
-            ));
+            )
+        );
     }
 }

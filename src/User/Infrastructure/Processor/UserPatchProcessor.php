@@ -14,7 +14,7 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\UserNotFoundException;
 
 /**
- * @implements ProcessorInterface<User>
+ * @implements ProcessorInterface<UserPutDto, User>
  */
 final class UserPatchProcessor implements ProcessorInterface
 {

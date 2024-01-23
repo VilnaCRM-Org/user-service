@@ -2,63 +2,31 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Infrastructure\EndpointFactory;
+namespace App\Shared\Infrastructure\OpenApi\Factory\EndpointFactory;
 
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
+use App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory\InternalServerErrorResponseFactory;
+use App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory\InvalidClientCredentialsResponseFactory;
+use App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory\UnsupportedGrantTypeResponseFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class OAuthAuthorizeEndpointFactory implements AbstractEndpointFactory
 {
+    public function __construct(
+        private UnsupportedGrantTypeResponseFactory $unsupportedFactory,
+        private InvalidClientCredentialsResponseFactory $invalidCredsFactory
+    ) {
+    }
+
     public function createEndpoint(OpenApi $openApi): void
     {
-        $unsupportedGrantTypeResponse = new Response(
-            description: 'Unsupported grant type',
-            content: new \ArrayObject([
-                'application/json' => [
-                    'schema' => [
-                        'type' => 'object',
-                        'properties' => [
-                            'error' => ['type' => 'string'],
-                            'error_description' => ['type' => 'string'],
-                            'hint' => ['type' => 'string'],
-                            'message' => ['type' => 'string'],
-                        ],
-                    ],
-                    'example' => [
-                        'error' => 'unsupported_grant_type',
-                        'error_description' => 'The authorization grant 
-                        type is not supported by the authorization server.',
-                        'hint' => 'Check that all required 
-                            parameters have been provided',
-                        'message' => 'The authorization grant type is not 
-                        supported by the authorization server.',
-                    ],
-                ],
-            ]),
-        );
+        $unsupportedGrantTypeResponse =
+            $this->unsupportedFactory->getResponse();
 
-        $invalidClientCredentialsResponse = new Response(
-            description: 'Invalid client credentials',
-            content: new \ArrayObject([
-                'application/json' => [
-                    'schema' => [
-                        'type' => 'object',
-                        'properties' => [
-                            'error' => ['type' => 'string'],
-                            'error_description' => ['type' => 'string'],
-                            'message' => ['type' => 'string'],
-                        ],
-                    ],
-                    'example' => [
-                        'error' => 'invalid_client',
-                        'error_description' => 'Client authentication failed',
-                        'message' => 'Client authentication failed',
-                    ],
-                ],
-            ]),
-        );
+        $invalidClientCredentialsResponse =
+            $this->invalidCredsFactory->getResponse();
 
         $openApi->getPaths()->addPath(
             '/api/oauth/authorize',

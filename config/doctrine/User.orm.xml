@@ -12,7 +12,5 @@
         <field name="password" type="string" length="255"/>
 
         <field name="confirmed" type="boolean"/>
-
-        <field name="roles" type="json"/>
     </entity>
 </doctrine-mapping>

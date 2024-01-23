@@ -42,7 +42,7 @@ final class RedisTokenRepository implements TokenRepositoryInterface
         $cacheItem->expiresAfter(self::EXPIRES_AFTER_IN_SECONDS);
         $this->redisAdapter->save($cacheItem);
 
-        $cacheItem = $this->redisAdapter->getItem(self::getUserKey($userId));
+        $cacheItem = $this->redisAdapter->getItem($this->getUserKey($userId));
         $cacheItem->set($serializedToken);
         $cacheItem->expiresAfter(self::EXPIRES_AFTER_IN_SECONDS);
         $this->redisAdapter->save($cacheItem);
@@ -50,7 +50,7 @@ final class RedisTokenRepository implements TokenRepositoryInterface
 
     public function find($tokenValue): ?ConfirmationTokenInterface
     {
-        $key = self::getTokenKey($tokenValue);
+        $key = $this->getTokenKey($tokenValue);
 
         $cacheItem = $this->redisAdapter->getItem($key);
         $serializedToken = $cacheItem->get();
@@ -65,7 +65,7 @@ final class RedisTokenRepository implements TokenRepositoryInterface
 
     public function findByUserId($userID): ?ConfirmationTokenInterface
     {
-        $key = self::getUserKey($userID);
+        $key = $this->getUserKey($userID);
 
         $cacheItem = $this->redisAdapter->getItem($key);
         $serializedToken = $cacheItem->get();
@@ -82,8 +82,8 @@ final class RedisTokenRepository implements TokenRepositoryInterface
     {
         $tokenValue = $token->getTokenValue();
         $userId = $token->getUserID();
-        $this->redisAdapter->delete(self::getTokenKey($tokenValue));
-        $this->redisAdapter->delete(self::getUserKey($userId));
+        $this->redisAdapter->delete($this->getTokenKey($tokenValue));
+        $this->redisAdapter->delete($this->getUserKey($userId));
     }
 
     private function getTokenKey(string $tokenValue): string

@@ -10,7 +10,7 @@ final class UserTimedOutException extends \RuntimeException
     {
         parent::__construct(
             'Cannot send new email till '.
-            $timeOutTill->format('Y M d H:i:s')
+            $timeOutTill->format('Y-m-d\TH:i:sP')
         );
     }
 }

@@ -12,7 +12,7 @@ use App\User\Application\DTO\UserRegisterDto;
 use App\User\Domain\Entity\User;
 
 /**
- * @implements ProcessorInterface<User>
+ * @implements ProcessorInterface<UserRegisterDto, User>
  */
 final readonly class RegisterUserProcessor implements ProcessorInterface
 {

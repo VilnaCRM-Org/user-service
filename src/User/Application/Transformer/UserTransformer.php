@@ -22,7 +22,6 @@ final class UserTransformer
             $user->getPassword(),
             $this->transformer->transformFromString($user->getId()),
             $user->isConfirmed(),
-            $user->getRoles(),
         );
     }
 }

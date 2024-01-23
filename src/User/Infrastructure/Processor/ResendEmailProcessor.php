@@ -17,7 +17,7 @@ use App\User\Infrastructure\Exception\UserNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @implements ProcessorInterface<Response>
+ * @implements ProcessorInterface<RetryDto, Response>
  */
 final class ResendEmailProcessor implements ProcessorInterface
 {

@@ -14,8 +14,7 @@ final class AuthorizationUser implements UserInterface
         private string $initials,
         private string $password,
         private UuidInterface $id,
-        private bool $confirmed,
-        private array $roles
+        private bool $confirmed
     ) {
     }
 
@@ -24,9 +23,7 @@ final class AuthorizationUser implements UserInterface
      */
     public function getRoles(): array
     {
-        $roles = $this->roles;
-
-        return array_unique($roles);
+        return [];
     }
 
     public function eraseCredentials(): void

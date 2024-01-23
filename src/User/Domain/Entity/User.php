@@ -14,18 +14,12 @@ class User implements UserInterface
 {
     private bool $confirmed;
 
-    /**
-     * @var array<string>
-     */
-    private array $roles;
-
     public function __construct(
         private string $email,
         private string $initials,
         private string $password,
         private UuidInterface $id,
     ) {
-        $this->roles = ['ROLE_USER'];
         $this->confirmed = false;
     }
 
@@ -67,23 +61,6 @@ class User implements UserInterface
     public function setPassword(string $password): void
     {
         $this->password = $password;
-    }
-
-    /**
-     * @return array<string>
-     */
-    public function getRoles(): array
-    {
-        $roles = $this->roles;
-
-        return array_unique($roles);
-    }
-
-    public function setRoles(array $roles): self
-    {
-        $this->roles = $roles;
-
-        return $this;
     }
 
     public function confirm(
