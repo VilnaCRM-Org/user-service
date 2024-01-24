@@ -14,9 +14,6 @@ interface UserRepositoryInterface
      */
     public function save(object $user): void;
 
-    /**
-     * @param string $email
-     */
     public function findByEmail(string $email): ?UserInterface;
 
     /**

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory;
 
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Infrastructure\OpenApi\Builder\ResponseBuilder;
 
-class EmailSendAgainResponseFactory implements AbstractResponseFactory
+final class EmailSendAgainResponseFactory implements AbstractResponseFactory
 {
     public function __construct(private ResponseBuilder $responseBuilder)
     {

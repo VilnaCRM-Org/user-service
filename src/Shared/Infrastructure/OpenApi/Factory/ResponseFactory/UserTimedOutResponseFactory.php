@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory;
 
 use ApiPlatform\OpenApi\Model\Response;
@@ -7,7 +9,7 @@ use App\Shared\Infrastructure\OpenApi\Builder\Parameter;
 use App\Shared\Infrastructure\OpenApi\Builder\ResponseBuilder;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-class UserTimedOutResponseFactory implements AbstractResponseFactory
+final class UserTimedOutResponseFactory implements AbstractResponseFactory
 {
     public function __construct(private ResponseBuilder $responseBuilder)
     {
@@ -24,6 +26,5 @@ class UserTimedOutResponseFactory implements AbstractResponseFactory
                 new Parameter('status', 'integer', HttpResponse::HTTP_TOO_MANY_REQUESTS),
             ]
         );
-
     }
 }

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\OpenApi\Factory\EndpointFactory;
 
-use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory\TokenNotFoundResponseFactory;
 use App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory\UserConfirmedResponseFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-class ConfirmUserEndpointFactory implements AbstractEndpointFactory
+final class ConfirmUserEndpointFactory implements AbstractEndpointFactory
 {
+    private const ENDPOINT_URI = '/api/users/confirm';
+
     public function __construct(
         private TokenNotFoundResponseFactory $tokenNotFoundResponseFactory,
         private UserConfirmedResponseFactory $userConfirmedResponseFactory
@@ -20,7 +21,7 @@ class ConfirmUserEndpointFactory implements AbstractEndpointFactory
 
     public function createEndpoint(OpenApi $openApi): void
     {
-        $pathItem = $openApi->getPaths()->getPath('/api/users/confirm');
+        $pathItem = $openApi->getPaths()->getPath(self::ENDPOINT_URI);
         $operationPatch = $pathItem->getPatch();
 
         $userConfirmedResponse =
@@ -28,7 +29,7 @@ class ConfirmUserEndpointFactory implements AbstractEndpointFactory
         $tokenNotFoundResponse =
             $this->tokenNotFoundResponseFactory->getResponse();
 
-        $openApi->getPaths()->addPath('/api/users/confirm', $pathItem->withPatch(
+        $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem->withPatch(
             $operationPatch->withDescription('Confirms the User')->withSummary('Confirms the User')
                 ->withResponses(
                     [
@@ -37,6 +38,5 @@ class ConfirmUserEndpointFactory implements AbstractEndpointFactory
                     ],
                 )
         ));
-
     }
 }

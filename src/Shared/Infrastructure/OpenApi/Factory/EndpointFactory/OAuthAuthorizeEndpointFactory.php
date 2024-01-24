@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class OAuthAuthorizeEndpointFactory implements AbstractEndpointFactory
 {
+    private const ENDPOINT_URI = '/api/oauth/authorize';
+
     public function __construct(
         private UnsupportedGrantTypeResponseFactory $unsupportedFactory,
         private InvalidClientCredentialsResponseFactory $invalidCredsFactory,
@@ -29,16 +31,17 @@ final class OAuthAuthorizeEndpointFactory implements AbstractEndpointFactory
         $redirectResponse = $this->redirectResponseFactory->getResponse();
 
         $openApi->getPaths()->addPath(
-            '/api/oauth/authorize',
+            self::ENDPOINT_URI,
             new Model\PathItem(
                 summary: 'Requests for authorization code',
                 description: 'Requests for authorization code',
                 get: new Model\Operation(
                     tags: ['OAuth'],
                     responses: [
-                    HttpResponse::HTTP_FOUND => $redirectResponse,
-                    HttpResponse::HTTP_BAD_REQUEST => $unsupportedGrantTypeResponse,
-                    HttpResponse::HTTP_UNAUTHORIZED => $invalidClientCredentialsResponse],
+                        HttpResponse::HTTP_FOUND => $redirectResponse,
+                        HttpResponse::HTTP_BAD_REQUEST => $unsupportedGrantTypeResponse,
+                        HttpResponse::HTTP_UNAUTHORIZED => $invalidClientCredentialsResponse,
+                    ],
                     parameters: [
                         new Model\Parameter(
                             name: 'response_type',

@@ -12,6 +12,8 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class UserEndpointFactory implements AbstractEndpointFactory
 {
+    private const ENDPOINT_URI = '/api/users';
+
     public function __construct(
         private ValidationErrorResponseFactory $validationErrorResponseFactory,
         private DuplicateEmailResponseFactory $duplicateEmailResponseFactory,
@@ -21,7 +23,7 @@ final class UserEndpointFactory implements AbstractEndpointFactory
 
     public function createEndpoint(OpenApi $openApi): void
     {
-        $pathItem = $openApi->getPaths()->getPath('/api/users');
+        $pathItem = $openApi->getPaths()->getPath(self::ENDPOINT_URI);
         $operationPost = $pathItem->getPost();
         $operationGet = $pathItem->getGet();
 
@@ -33,7 +35,7 @@ final class UserEndpointFactory implements AbstractEndpointFactory
 
         $standardResponse400 = $this->badRequestResponseFactory->getResponse();
 
-        $openApi->getPaths()->addPath('/api/users', $pathItem->withPost(
+        $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem->withPost(
             $operationPost
                 ->withResponse(HttpResponse::HTTP_BAD_REQUEST, $standardResponse400)
                 ->withResponse(HttpResponse::HTTP_CONFLICT, $duplicateEmailResponse)

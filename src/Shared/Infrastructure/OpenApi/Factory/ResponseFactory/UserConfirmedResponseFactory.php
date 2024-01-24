@@ -7,7 +7,7 @@ namespace App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory;
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Infrastructure\OpenApi\Builder\ResponseBuilder;
 
-class UserConfirmedResponseFactory implements AbstractResponseFactory
+final class UserConfirmedResponseFactory implements AbstractResponseFactory
 {
     public function __construct(private ResponseBuilder $responseBuilder)
     {

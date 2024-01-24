@@ -6,6 +6,9 @@ namespace App\Shared\Infrastructure\OpenApi;
 
 use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
 use ApiPlatform\OpenApi\Model;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\PathItem;
+use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Infrastructure\OpenApi\Factory\EndpointFactory\AbstractEndpointFactory;
 use App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory\InternalServerErrorResponseFactory;
@@ -32,57 +35,39 @@ final class OpenApiFactory implements OpenApiFactoryInterface
             $endpointFactory->createEndpoint($openApi);
         }
 
-        $this->add500ResponseToAllEndpoints($openApi);
+        $this->addServerErrorResponseToAllEndpoints($openApi);
 
         return $openApi->withServers([new Model\Server('https://localhost')]);
     }
 
-    private function add500ResponseToAllEndpoints(OpenApi $openApi): void
+    private function addServerErrorResponseToAllEndpoints(OpenApi $openApi): void
     {
-        $standardResponse500 = $this->serverErrorResponseFactory->getResponse();
+        $serverErrorResponse = $this->serverErrorResponseFactory->getResponse();
 
         foreach (array_keys($openApi->getPaths()->getPaths()) as $path) {
-            $pathItem = $openApi->getPaths()->getPath($path);
-            $operationGet = $pathItem->getGet();
-            $operationPost = $pathItem->getPost();
-            $operationPut = $pathItem->getPut();
-            $operationPatch = $pathItem->getPatch();
-            $operationDelete = $pathItem->getDelete();
-
-            if ($operationGet) {
-                $pathItem = $pathItem->withGet($operationGet->withResponse(
-                    HttpResponse::HTTP_INTERNAL_SERVER_ERROR,
-                    $standardResponse500
-                ));
-            }
-            if ($operationPost) {
-                $pathItem = $pathItem->withPost($operationPost->withResponse(
-                    HttpResponse::HTTP_INTERNAL_SERVER_ERROR,
-                    $standardResponse500
-                ));
-            }
-            if ($operationPut) {
-                $pathItem = $pathItem->withPut($operationPut->withResponse(
-                    HttpResponse::HTTP_INTERNAL_SERVER_ERROR,
-                    $standardResponse500
-                ));
-            }
-            if ($operationPatch) {
-                $pathItem = $pathItem->withPatch($operationPatch->withResponse(
-                    HttpResponse::HTTP_INTERNAL_SERVER_ERROR,
-                    $standardResponse500
-                ));
-            }
-            if ($operationDelete) {
-                $pathItem = $pathItem->withDelete(
-                    $operationDelete->withResponse(
-                        HttpResponse::HTTP_INTERNAL_SERVER_ERROR,
-                        $standardResponse500
-                    )
-                );
-            }
-
-            $openApi->getPaths()->addPath($path, $pathItem);
+            $this->addServerErrorResponseToPath($openApi, $path, $serverErrorResponse);
         }
+    }
+
+    private function addServerErrorResponseToPath(OpenApi $openApi, string $path, Response $response): void
+    {
+        $pathItem = $openApi->getPaths()->getPath($path);
+        $pathItem = $this->processPathItemOperations($pathItem, $response);
+        $openApi->getPaths()->addPath($path, $pathItem);
+    }
+
+    private function processPathItemOperations(PathItem $pathItem, Response $standardResponse): PathItem
+    {
+        return $pathItem
+            ->withGet($this->addErrorResponseToOperation($pathItem->getGet(), $standardResponse))
+            ->withPost($this->addErrorResponseToOperation($pathItem->getPost(), $standardResponse))
+            ->withPut($this->addErrorResponseToOperation($pathItem->getPut(), $standardResponse))
+            ->withPatch($this->addErrorResponseToOperation($pathItem->getPatch(), $standardResponse))
+            ->withDelete($this->addErrorResponseToOperation($pathItem->getDelete(), $standardResponse));
+    }
+
+    private function addErrorResponseToOperation(?Operation $operation, Response $standardResponse): ?Operation
+    {
+        return $operation?->withResponse(HttpResponse::HTTP_INTERNAL_SERVER_ERROR, $standardResponse);
     }
 }

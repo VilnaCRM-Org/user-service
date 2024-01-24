@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Shared\Infrastructure\OpenApi\Builder;
 
-class ContextBuilder
+final class ContextBuilder
 {
-    public function build(array $params = null)
+    public function build(array $params = null): \ArrayObject
     {
         $content = new \ArrayObject([
             'application/json' => [
@@ -21,17 +23,22 @@ class ContextBuilder
                 $example[$param->name] = $param->example;
             }
 
-            $content = new \ArrayObject([
-                'application/json' => [
-                    'schema' => [
-                        'type' => 'object',
-                        'properties' => $properties,
-                    ],
-                    'example' => $example,
-                ],
-            ]);
+            $content = $this->buildContent($properties, $example);
         }
 
         return $content;
+    }
+
+    private function buildContent(array $properties, array $example): \ArrayObject
+    {
+        return new \ArrayObject([
+            'application/json' => [
+                'schema' => [
+                    'type' => 'object',
+                    'properties' => $properties,
+                ],
+                'example' => $example,
+            ],
+        ]);
     }
 }

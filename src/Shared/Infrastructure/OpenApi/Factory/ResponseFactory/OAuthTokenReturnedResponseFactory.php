@@ -8,7 +8,7 @@ use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Infrastructure\OpenApi\Builder\Parameter;
 use App\Shared\Infrastructure\OpenApi\Builder\ResponseBuilder;
 
-class OAuthTokenReturnedResponseFactory implements AbstractResponseFactory
+final class OAuthTokenReturnedResponseFactory implements AbstractResponseFactory
 {
     public function __construct(private ResponseBuilder $responseBuilder)
     {

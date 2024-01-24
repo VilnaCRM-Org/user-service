@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\OpenApi\Builder;
 
-use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\Model;
+use ApiPlatform\OpenApi\Model\Response;
 
-class ResponseBuilder
+final class ResponseBuilder
 {
     public function __construct(private ContextBuilder $contextBuilder)
     {
@@ -17,7 +17,6 @@ class ResponseBuilder
      * @param string $description
      * @param array<Parameter> $params
      * @param array<Header> $headers
-     * @return Response
      */
     public function build(
         string $description,
@@ -34,7 +33,7 @@ class ResponseBuilder
                     schema: [
                         'type' => $header->type,
                         'format' => $header->format,
-                        'example' => $header->example
+                        'example' => $header->example,
                     ]
                 );
             }

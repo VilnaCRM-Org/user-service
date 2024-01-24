@@ -17,9 +17,6 @@ interface TokenRepositoryInterface extends RepositoryInterface
      */
     public function save(object $token): void;
 
-    /**
-     * @param string $tokenValue
-     */
     public function find(string $tokenValue): ?ConfirmationTokenInterface;
 
     /**

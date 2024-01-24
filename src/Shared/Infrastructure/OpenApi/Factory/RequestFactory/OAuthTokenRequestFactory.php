@@ -1,13 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Shared\Infrastructure\OpenApi\Factory\RequestFactory;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Shared\Infrastructure\OpenApi\Builder\Parameter;
 use App\Shared\Infrastructure\OpenApi\Builder\RequestBuilder;
-use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-class OAuthTokenRequestFactory implements AbstractRequestFactory
+final class OAuthTokenRequestFactory implements AbstractRequestFactory
 {
     public function __construct(private RequestBuilder $requestBuilder)
     {

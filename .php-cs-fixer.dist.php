@@ -19,5 +19,7 @@ return (new PhpCsFixer\Config())
             'single_line' => false,
             'single_item_single_line' => false
         ],
+        'no_unused_imports' => true,
+        'ordered_imports' => ['sort_algorithm' => 'alpha']
     ])
     ->setFinder($finder);

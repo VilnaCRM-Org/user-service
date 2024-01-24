@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory;
 
-use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Infrastructure\OpenApi\Builder\Header;
 use App\Shared\Infrastructure\OpenApi\Builder\ResponseBuilder;
 
-class OAuthRedirectResponseFactory implements AbstractResponseFactory
+final class OAuthRedirectResponseFactory implements AbstractResponseFactory
 {
     public function __construct(private ResponseBuilder $responseBuilder)
     {

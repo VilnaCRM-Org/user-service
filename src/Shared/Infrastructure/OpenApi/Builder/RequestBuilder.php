@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Shared\Infrastructure\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
 
-class RequestBuilder
+final class RequestBuilder
 {
     public function __construct(private ContextBuilder $contextBuilder)
     {
@@ -12,7 +14,6 @@ class RequestBuilder
 
     /**
      * @param array<Parameter> $params
-     * @return RequestBody
      */
     public function build(array $params = null): RequestBody
     {
@@ -22,5 +23,4 @@ class RequestBuilder
             content: $content
         );
     }
-
 }

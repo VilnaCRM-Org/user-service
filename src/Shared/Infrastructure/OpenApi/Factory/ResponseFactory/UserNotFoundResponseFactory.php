@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\Infrastructure\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Infrastructure\OpenApi\Builder\Parameter;
+use App\Shared\Infrastructure\OpenApi\Builder\ResponseBuilder;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-class UserNotFoundResponseFactory implements AbstractResponseFactory
+final class UserNotFoundResponseFactory implements AbstractResponseFactory
 {
     public function __construct(private ResponseBuilder $responseBuilder)
     {
@@ -26,6 +26,5 @@ class UserNotFoundResponseFactory implements AbstractResponseFactory
                 new Parameter('status', 'integer', HttpResponse::HTTP_NOT_FOUND),
             ]
         );
-
     }
 }
