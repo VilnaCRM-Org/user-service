@@ -185,11 +185,11 @@ paths:
               example:
                 error: unsupported_grant_type
                 error_description: |-
-                  The authorization grant type is not 
-                                          supported by the authorization server.
+                  The authorization grant 
+                                          type is not supported by the authorization server.
                 hint: |-
                   Check that all required 
-                                      parameters have been provided
+                                              parameters have been provided
                 message: |-
                   The authorization grant type is not 
                                           supported by the authorization server.
@@ -409,10 +409,10 @@ paths:
                   detail: { type: string }
                   status: { type: integer }
               example:
-                status: 409
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
+                status: 409
         500:
           description: 'Internal server error'
           content:
@@ -640,10 +640,10 @@ paths:
                   detail: { type: string }
                   status: { type: integer }
               example:
-                status: 409
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
+                status: 409
         500:
           description: 'Internal server error'
           content:
@@ -830,10 +830,10 @@ paths:
                   detail: { type: string }
                   status: { type: integer }
               example:
-                status: 409
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
+                status: 409
         500:
           description: 'Internal server error'
           content:
@@ -965,10 +965,6 @@ components:
       properties:
         confirmed:
           type: boolean
-        roles:
-          type: array
-          items:
-            type: string
         email:
           type: string
         initials:
@@ -1136,10 +1132,6 @@ components:
           type: string
         confirmed:
           type: boolean
-        roles:
-          type: array
-          items:
-            type: string
         email:
           type: string
         initials:
