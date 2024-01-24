@@ -6,7 +6,7 @@ namespace App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory;
 
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Infrastructure\OpenApi\Builder\ResponseBuilder;
-use App\Shared\Infrastructure\OpenApi\Builder\ResponseParameter;
+use App\Shared\Infrastructure\OpenApi\Builder\Parameter;
 
 class InvalidClientCredentialsResponseFactory implements AbstractResponseFactory
 {
@@ -19,9 +19,9 @@ class InvalidClientCredentialsResponseFactory implements AbstractResponseFactory
         return $this->responseBuilder->build(
             'Invalid client credentials',
             [
-                new ResponseParameter('error', 'string', 'invalid_client'),
-                new ResponseParameter('error_description', 'string', 'Client authentication failed'),
-                new ResponseParameter('message', 'string', 'Client authentication failed'),
+                new Parameter('error', 'string', 'invalid_client'),
+                new Parameter('error_description', 'string', 'Client authentication failed'),
+                new Parameter('message', 'string', 'Client authentication failed'),
             ]
         );
     }

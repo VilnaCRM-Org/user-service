@@ -6,7 +6,7 @@ namespace App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory;
 
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Infrastructure\OpenApi\Builder\ResponseBuilder;
-use App\Shared\Infrastructure\OpenApi\Builder\ResponseParameter;
+use App\Shared\Infrastructure\OpenApi\Builder\Parameter;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class ValidationErrorResponseFactory implements AbstractResponseFactory
@@ -20,15 +20,15 @@ class ValidationErrorResponseFactory implements AbstractResponseFactory
         return $this->responseBuilder->build(
             'Validation error',
             [
-                new ResponseParameter('type', 'string', 'https://tools.ietf.org/html/rfc2616#section-10'),
-                new ResponseParameter('title', 'string', 'An error occurred'),
-                new ResponseParameter('detail', 'string', 'some_property: This value should not be blank.'),
-                new ResponseParameter('violations', 'array', [
+                new Parameter('type', 'string', 'https://tools.ietf.org/html/rfc2616#section-10'),
+                new Parameter('title', 'string', 'An error occurred'),
+                new Parameter('detail', 'string', 'some_property: This value should not be blank.'),
+                new Parameter('violations', 'array', [
                     'propertyPath' => 'some_property',
                     'message' => 'This value should not be blank.',
                     'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
                 ]),
-                new ResponseParameter('status', 'integer', HttpResponse::HTTP_UNPROCESSABLE_ENTITY),
+                new Parameter('status', 'integer', HttpResponse::HTTP_UNPROCESSABLE_ENTITY),
             ]
         );
     }

@@ -9,6 +9,7 @@ use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory\BadRequestResponseFactory;
 use App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory\DuplicateEmailResponseFactory;
+use App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory\UserDeletedResponseFactory;
 use App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory\UserNotFoundResponseFactory;
 use App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory\ValidationErrorResponseFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -19,7 +20,8 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
         private ValidationErrorResponseFactory $validationErrorResponseFactory,
         private DuplicateEmailResponseFactory $duplicateEmailResponseFactory,
         private BadRequestResponseFactory $badRequestResponseFactory,
-        private UserNotFoundResponseFactory $userNotFoundResponseFactory
+        private UserNotFoundResponseFactory $userNotFoundResponseFactory,
+        private UserDeletedResponseFactory $deletedResponseFactory
     ) {
     }
 
@@ -50,6 +52,8 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
         $standardResponse422 =
             $this->validationErrorResponseFactory->getResponse();
 
+        $userDeletedResponse = $this->deletedResponseFactory->getResponse();
+
         $openApi->getPaths()->addPath('/api/users/{id}', $pathItem->withPut(
             $operationPut->withParameters([$UuidWithExamplePathParam])
                 ->withResponse(HttpResponse::HTTP_BAD_REQUEST, $standardResponse400)
@@ -65,14 +69,7 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
         )->withDelete(
             $operationDelete->withParameters([$UuidWithExamplePathParam])
                 ->withResponses([
-                    HttpResponse::HTTP_NO_CONTENT => new Response(
-                        description: 'User resource deleted',
-                        content: new \ArrayObject([
-                            'application/json' => [
-                                'example' => '',
-                            ],
-                        ]),
-                    ),
+                    HttpResponse::HTTP_NO_CONTENT => $userDeletedResponse,
                     HttpResponse::HTTP_NOT_FOUND => $standardResponse404])
         )->withGet($operationGet->withParameters([$UuidWithExamplePathParam])
             ->withResponse(HttpResponse::HTTP_NOT_FOUND, $standardResponse404)));

@@ -6,7 +6,7 @@ namespace App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory;
 
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Infrastructure\OpenApi\Builder\ResponseBuilder;
-use App\Shared\Infrastructure\OpenApi\Builder\ResponseParameter;
+use App\Shared\Infrastructure\OpenApi\Builder\Parameter;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class DuplicateEmailResponseFactory implements AbstractResponseFactory
@@ -20,10 +20,10 @@ class DuplicateEmailResponseFactory implements AbstractResponseFactory
         return $this->responseBuilder->build(
             'Duplicate email',
             [
-                new ResponseParameter('type', 'string', 'https://tools.ietf.org/html/rfc2616#section-10'),
-                new ResponseParameter('title', 'string', 'An error occurred'),
-                new ResponseParameter('detail', 'string', 'user@example.com address is already registered. Please use a different email address or try logging in.'),
-                new ResponseParameter('status', 'integer', HttpResponse::HTTP_CONFLICT),
+                new Parameter('type', 'string', 'https://tools.ietf.org/html/rfc2616#section-10'),
+                new Parameter('title', 'string', 'An error occurred'),
+                new Parameter('detail', 'string', 'user@example.com address is already registered. Please use a different email address or try logging in.'),
+                new Parameter('status', 'integer', HttpResponse::HTTP_CONFLICT),
             ]
         );
     }

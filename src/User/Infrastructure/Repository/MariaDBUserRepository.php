@@ -23,7 +23,7 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
         parent::__construct($this->registry, User::class);
     }
 
-    public function save($user): void
+    public function save(object $user): void
     {
         try {
             $this->entityManager->persist($user);
@@ -33,13 +33,13 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
         }
     }
 
-    public function delete($user): void
+    public function delete(object $user): void
     {
         $this->entityManager->remove($user);
         $this->entityManager->flush();
     }
 
-    public function findByEmail($email): ?UserInterface
+    public function findByEmail(string $email): ?UserInterface
     {
         return $this->findOneBy(['email' => $email]);
     }

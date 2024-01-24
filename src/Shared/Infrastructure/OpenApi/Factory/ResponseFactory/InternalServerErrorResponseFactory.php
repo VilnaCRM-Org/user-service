@@ -6,7 +6,7 @@ namespace App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory;
 
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Infrastructure\OpenApi\Builder\ResponseBuilder;
-use App\Shared\Infrastructure\OpenApi\Builder\ResponseParameter;
+use App\Shared\Infrastructure\OpenApi\Builder\Parameter;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class InternalServerErrorResponseFactory implements AbstractResponseFactory
@@ -20,10 +20,10 @@ class InternalServerErrorResponseFactory implements AbstractResponseFactory
         return $this->responseBuilder->build(
             'Internal server error',
             [
-                new ResponseParameter('type', 'string', '/errors/500'),
-                new ResponseParameter('title', 'string', 'An error occurred'),
-                new ResponseParameter('detail', 'string', 'Something went wrong'),
-                new ResponseParameter('status', 'integer', HttpResponse::HTTP_INTERNAL_SERVER_ERROR),
+                new Parameter('type', 'string', '/errors/500'),
+                new Parameter('title', 'string', 'An error occurred'),
+                new Parameter('detail', 'string', 'Something went wrong'),
+                new Parameter('status', 'integer', HttpResponse::HTTP_INTERNAL_SERVER_ERROR),
             ]
         );
     }

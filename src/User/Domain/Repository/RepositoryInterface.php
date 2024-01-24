@@ -17,7 +17,7 @@ interface RepositoryInterface
     /**
      * @return T|null
      */
-    public function find($id);
+    public function find(string $id);
 
     /**
      * @param T $entity
