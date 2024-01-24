@@ -56,6 +56,7 @@ paths:
                 message: |-
                   The authorization grant type is not 
                                           supported by the authorization server.
+          headers: {  }
         401:
           description: 'Invalid client credentials'
           content:
@@ -70,6 +71,7 @@ paths:
                 error: invalid_client
                 error_description: 'Client authentication failed'
                 message: 'Client authentication failed'
+          headers: {  }
         500:
           description: 'Internal server error'
           content:
@@ -86,6 +88,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
+          headers: {  }
       parameters:
         -
           name: response_type
@@ -156,7 +159,7 @@ paths:
         - OAuth
       responses:
         200:
-          description: 'Access token returned'
+          description: 'Unsupported grant type'
           content:
             application/json:
               schema:
@@ -171,6 +174,7 @@ paths:
                 expires_in: 3600
                 access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdW
                 refresh_token: df9b4ae7ce2e1e8f2a3c1b4d
+          headers: {  }
         400:
           description: 'Unsupported grant type'
           content:
@@ -193,6 +197,7 @@ paths:
                 message: |-
                   The authorization grant type is not 
                                           supported by the authorization server.
+          headers: {  }
         401:
           description: 'Invalid client credentials'
           content:
@@ -207,6 +212,7 @@ paths:
                 error: invalid_client
                 error_description: 'Client authentication failed'
                 message: 'Client authentication failed'
+          headers: {  }
         500:
           description: 'Internal server error'
           content:
@@ -223,6 +229,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
+          headers: {  }
       requestBody:
         description: ''
         content:
@@ -248,6 +255,7 @@ paths:
               client_secret: 8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc777ec5
               redirect_uri: 'https://example.com/oauth/callback'
               code: e7f8c62113a47f7a5a9dca1f
+              refresh_token: f7a5a9dca1fe7f8c62113a47
         required: false
     parameters: []
   /api/users:
@@ -295,6 +303,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
+          headers: {  }
         500:
           description: 'Internal server error'
           content:
@@ -311,6 +320,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
+          headers: {  }
       summary: 'Retrieves the collection of User resources.'
       description: 'Retrieves the collection of User resources.'
       parameters:
@@ -376,6 +386,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
+          headers: {  }
         422:
           description: 'Validation error'
           content:
@@ -397,6 +408,7 @@ paths:
                   message: 'This value should not be blank.'
                   code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
                 status: 422
+          headers: {  }
         409:
           description: 'Duplicate email'
           content:
@@ -413,6 +425,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
                 status: 409
+          headers: {  }
         500:
           description: 'Internal server error'
           content:
@@ -429,6 +442,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
+          headers: {  }
       summary: 'Creates a User resource.'
       description: 'Creates a User resource.'
       parameters: []
@@ -458,11 +472,13 @@ paths:
           content:
             application/json:
               example: ''
+          headers: {  }
         404:
           description: 'Token not found or expired'
           content:
             application/json:
               example: ''
+          headers: {  }
         500:
           description: 'Internal server error'
           content:
@@ -479,6 +495,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
+          headers: {  }
       summary: 'Confirms the User'
       description: 'Confirms the User'
       parameters: []
@@ -525,6 +542,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'User not found'
                 status: 404
+          headers: {  }
         500:
           description: 'Internal server error'
           content:
@@ -541,6 +559,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
+          headers: {  }
       summary: 'Retrieves a User resource.'
       description: 'Retrieves a User resource.'
       parameters:
@@ -591,6 +610,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
+          headers: {  }
         422:
           description: 'Validation error'
           content:
@@ -612,6 +632,7 @@ paths:
                   message: 'This value should not be blank.'
                   code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
                 status: 422
+          headers: {  }
         404:
           description: 'User not found'
           content:
@@ -628,6 +649,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'User not found'
                 status: 404
+          headers: {  }
         409:
           description: 'Duplicate email'
           content:
@@ -644,6 +666,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
                 status: 409
+          headers: {  }
         500:
           description: 'Internal server error'
           content:
@@ -660,6 +683,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
+          headers: {  }
       summary: 'Replaces the User resource.'
       description: 'Replaces the User resource.'
       parameters:
@@ -699,6 +723,7 @@ paths:
           content:
             application/json:
               example: ''
+          headers: {  }
         404:
           description: 'User not found'
           content:
@@ -715,6 +740,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'User not found'
                 status: 404
+          headers: {  }
         500:
           description: 'Internal server error'
           content:
@@ -731,6 +757,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
+          headers: {  }
       summary: 'Removes the User resource.'
       description: 'Removes the User resource.'
       parameters:
@@ -781,6 +808,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
+          headers: {  }
         422:
           description: 'Validation error'
           content:
@@ -802,6 +830,7 @@ paths:
                   message: 'This value should not be blank.'
                   code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
                 status: 422
+          headers: {  }
         404:
           description: 'User not found'
           content:
@@ -818,6 +847,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'User not found'
                 status: 404
+          headers: {  }
         409:
           description: 'Duplicate email'
           content:
@@ -834,6 +864,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
                 status: 409
+          headers: {  }
         500:
           description: 'Internal server error'
           content:
@@ -850,6 +881,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
+          headers: {  }
       summary: 'Updates the User resource.'
       description: 'Updates the User resource.'
       parameters:
@@ -885,6 +917,7 @@ paths:
           content:
             application/json:
               example: ''
+          headers: {  }
         404:
           description: 'User not found'
           content:
@@ -901,6 +934,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'User not found'
                 status: 404
+          headers: {  }
         429:
           description: 'Too many requests'
           content:
@@ -915,8 +949,9 @@ paths:
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
-                detail: 'Cannot send new email till 05 Dec 2023 14:55:45'
+                detail: 'Cannot send new email till 2024-01-24T12:43:01+00:00'
                 status: 429
+          headers: {  }
         500:
           description: 'Internal server error'
           content:
@@ -933,6 +968,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
+          headers: {  }
       summary: 'Resends confirmation email'
       description: 'Resends confirmation email'
       parameters:
@@ -952,7 +988,7 @@ paths:
         description: ''
         content:
           application/json:
-            example: '{}'
+            example: ''
         required: false
       deprecated: false
     parameters: []
