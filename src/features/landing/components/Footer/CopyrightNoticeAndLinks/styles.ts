@@ -2,8 +2,8 @@ import { colorTheme } from '@/components/UiColorTheme';
 
 export default {
   gmailWrapper: {
-    padding: '7px 16px',
-    borderRadius: '8px',
+    padding: '0.438rem 1rem',
+    borderRadius: '0.5rem',
     background: colorTheme.palette.white.main,
     border: `1px solid ${colorTheme.palette.grey400.main}`,
   },

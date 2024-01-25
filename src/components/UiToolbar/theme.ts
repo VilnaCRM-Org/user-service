@@ -9,13 +9,13 @@ export const theme = createTheme({
           margin: 0,
           justifyContent: 'space-between',
           '@media (min-width: 23.438rem)': {
-            padding: '0 32px',
+            padding: '0 2rem',
             width: '100%',
             margin: '0 auto',
             maxWidth: '78.375rem',
           },
           '@media (max-width: 425px)': {
-            padding: '0 15px',
+            padding: '0 0.9375rem',
           },
         },
       },

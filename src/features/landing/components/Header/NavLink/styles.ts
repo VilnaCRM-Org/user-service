@@ -2,11 +2,11 @@ import { colorTheme } from '@/components/UiColorTheme';
 
 export default {
   wrapper: {
-    ml: '106px',
+    ml: '6.625rem',
     display: 'inline-block',
     '@media (max-width: 1439.98px)': {
       ml: '0',
-      mr: '96px',
+      mr: '6rem',
     },
     '@media (max-width: 1023.98px)': {
       display: 'none',

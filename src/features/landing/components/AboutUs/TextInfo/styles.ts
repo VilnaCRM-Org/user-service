@@ -3,13 +3,13 @@ import { colorTheme } from '@/components/UiColorTheme';
 export default {
   textWrapper: {
     maxWidth: '43.813rem',
-    mb: '50px',
+    mb: '3.125rem',
     '@media (max-width: 1439.98px)': {
-      mb: '55px',
-      ml: '28px',
+      mb: '3.438rem',
+      ml: '1.75rem',
     },
     '@media (max-width: 639.98px)': {
-      mb: '49px',
+      mb: '3.063rem',
       ml: '0',
     },
   },
@@ -18,7 +18,7 @@ export default {
     '@media (max-width: 639.98px)': {
       color: colorTheme.palette.darkPrimary.main,
       fontFamily: 'Golos',
-      fontSize: '32px',
+      fontSize: '2rem',
       fontStyle: 'normal',
       fontWeight: '700',
       lineHeight: 'normal',
@@ -26,26 +26,26 @@ export default {
     },
   },
   text: {
-    mt: '16px',
+    mt: '1rem',
     textAlign: 'center',
-    mb: '39px',
+    mb: '2.438rem',
     '@media (max-width: 639.98px)': {
-      maxWidth: '341px',
-      mt: '12px',
-      mb: '24px',
+      maxWidth: '21.313rem',
+      mt: '0.75rem',
+      mb: '1.5rem',
       textAlign: 'left',
       color: colorTheme.palette.darkPrimary.main,
       fontFamily: 'Golos',
-      fontSize: '15px',
+      fontSize: '0.9375rem',
       fontStyle: 'normal',
       fontWeight: '400',
-      lineHeight: '25px',
+      lineHeight: '1.563rem',
     },
   },
   button: {
     '@media (max-width: 419.98px)': {
       alignSelf: 'start',
-      marginBottom: '22px',
+      marginBottom: '1.375rem',
     },
   },
 };

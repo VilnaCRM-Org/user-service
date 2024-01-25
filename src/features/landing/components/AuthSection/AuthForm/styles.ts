@@ -6,24 +6,25 @@ import Images from '../../../assets/svg/auth-section/image.svg';
 export default {
   formWrapper: {
     position: 'relative',
-    mt: '65px',
+    mt: '4.063rem',
     '@media (max-width: 1439.98px)': {
-      mt: '62px',
+      mt: '3.875rem',
     },
     '@media (max-width: 639.98px)': {
-      mt: '34px',
+      mt: '2.125rem',
     },
   },
   backgroundBlock: {
     position: 'absolute',
-    borderRadius: '12px 12px 0px 0px',
+    borderRadius: '0.75rem 0.75rem 0 0',
     top: '16.2%',
     right: '5%',
-    width: '499px',
-    height: ' 542px',
+    width: '31.25rem',
+    maxHeight: ' 33.875rem',
+    height: '100dvh',
     backgroundColor: colorTheme.palette.brandGray.main,
     '@media (max-width: 1439.98px)': {
-      height: ' 629px',
+      maxHeight: ' 39.313rem',
       top: '8.3%',
       right: '26%',
     },
@@ -35,109 +36,109 @@ export default {
     },
   },
   formTitle: {
-    paddingBottom: '32px',
+    paddingBottom: '2rem',
     '@media (max-width: 1439.98px)': {
-      maxWidth: '357px',
-      paddingBottom: '20px',
+      maxWidth: '22.313rem',
+      paddingBottom: '1.25rem',
     },
 
     '@media (max-width: 639.98px)': {
-      maxWidth: '245px',
-      fontSize: '22px',
+      maxWidth: '15.313rem',
+      fontSize: '1.375rem',
       fontStyle: 'normal',
       fontWeight: '700',
       lineHeight: 'normal',
-      paddingBottom: '19px',
+      paddingBottom: '1.188rem',
     },
   },
   formContent: {
     position: 'relative',
     zIndex: '5',
-    padding: '36px 40px 40px 40px',
-    borderRadius: '32px 32px 0px 0px',
+    padding: '2.25rem 2.5rem 2.5rem 2.5rem',
+    borderRadius: '2rem 2rem 0 0',
     border: '1px solid  primary.main',
     background: colorTheme.palette.white.main,
-    maxWidth: '502px',
-    maxHeight: '647px',
+    minHeight: ' 40.438rem',
+    maxWidth: '31.375rem',
     boxShadow: '1px 1px 41px 0px rgba(59, 68, 80, 0.05)',
-
     '@media (max-width: 1439.98px)': {
-      padding: '40px 41px 56px 41px',
-      minWidth: '636px',
-      maxHeight: '686px',
+      padding: '2.5rem 2.563rem 3.5rem 2.563rem',
+      minWidth: '39.75rem',
+      maxHeight: '42.875rem',
     },
-
     '@media (max-width: 639.98px)': {
+      minHeight: '100%',
       minWidth: '100%',
-      maxWidth: '345px',
+      maxWidth: '21.563rem',
       maxHeight: '512px',
-      padding: '24px 24px 32px 24px',
+      padding: '1.5rem 1.5rem 2rem 1.5rem',
     },
   },
   inputsWrapper: {
     flexDirection: 'column',
-    gap: '22px',
+    gap: '1.375rem',
     '@media (max-width: 1439.98px)': {
-      gap: '15px',
+      gap: '0.9375rem',
     },
   },
 
   inputWrapper: {
     flexDirection: 'column',
-    gap: '9px',
+    gap: '0.563rem',
     position: 'relative',
     '@media (max-width: 1023.98px)': {
-      gap: '5px',
+      gap: '0.313rem',
     },
   },
   inputTitle: {
     '@media (max-width: 1439.98px)': {
-      fontSize: '16px',
+      fontSize: '1rem',
     },
     '@media (max-width: 1023.98px)': {
-      fontSize: '14px',
+      fontSize: '0.875rem',
     },
   },
   buttonWrapper: {
-    maxWidth: '175px',
+    maxWidth: '10.938rem',
     '@media (max-width: 1439.98px)': {
-      height: '70px',
+      height: '4.375rem',
       maxWidth: '100%',
     },
 
     '@media (max-width: 639.98px)': {
-      height: '50px',
+      height: '3.125rem',
       maxWidth: '100%',
     },
   },
 
   labelText: {
-    mt: '20px',
-    mb: '32px',
-    mx: '0px',
+    mt: '1.25rem',
+    mb: '2rem',
+    mx: '0',
     '@media (max-width: 1439.98px)': {
-      mb: '24px',
+      mb: '1.5rem',
     },
     '@media (max-width: 639.98px)': {
-      mb: '19px',
+      mb: '1.188rem',
     },
   },
 
   button: { height: '100%' },
   privacyText: {
-    letterSpacing: '0px',
+    letterSpacing: '0rem',
     '@media (max-width: 1439.98px)': {
-      fontSize: '16px',
-      maxWidth: '413px',
+      fontSize: '1rem',
+      maxWidth: '25.813rem',
     },
     '@media (max-width: 639.98px)': {
-      fontSize: '14px',
+      fontSize: '0.875rem',
     },
   },
   backgroundImage: {
     backgroundImage: `url(${Images.src})`,
-    width: '784px',
-    height: '656px',
+    width: '100dvw',
+    maxWidth: '49rem',
+    height: '41rem',
     position: 'absolute',
     left: '-40%',
     bottom: '0%',
@@ -147,8 +148,9 @@ export default {
       backgroundImage: `url(${Imagess.src})`,
       left: '-12%',
       bottom: '16.5%',
-      width: '815px',
-      height: '552px',
+      width: '100dvw',
+      maxWidth: '50.938rem',
+      height: '34.5rem',
     },
 
     '@media (max-width: 639.98px)': {
@@ -160,7 +162,7 @@ export default {
     position: 'absolute',
     color: colorTheme.palette.error.main,
     '@media (max-width: 639.98px)': {
-      fontSize: '12px',
+      fontSize: '0.75rem',
     },
   },
 };

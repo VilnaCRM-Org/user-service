@@ -13,12 +13,12 @@ function SocialMedia({ socialMedia }: { socialMedia: ISocialMedia[] }) {
   return (
     <Stack
       justifyContent="center"
-      gap="8px"
+      gap="0.5rem"
       flexDirection="row"
       sx={styles.linkWrapper}
     >
       {socialMedia.map(({ icon, alt, id, linkHref, ariaLabel }) => (
-        <Box key={id} m="12px">
+        <Box key={id} m="0.75rem">
           <Link href={linkHref} aria-label={t(ariaLabel) as string}>
             <Image src={icon} alt={t(alt)} width={24} height={24} key={id} />
           </Link>

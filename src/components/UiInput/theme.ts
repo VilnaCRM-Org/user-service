@@ -7,7 +7,7 @@ export const theme = createTheme({
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          borderRadius: '8px',
+          borderRadius: '0.5rem',
           '&:hover .MuiOutlinedInput-notchedOutline': {
             borderColor: colorTheme.palette.grey300.main,
           },
@@ -21,7 +21,7 @@ export const theme = createTheme({
         },
         notchedOutline: {
           border: `1px solid ${colorTheme.palette.grey400.main}`,
-          borderRadius: '8px',
+          borderRadius: '0.5rem',
           '&:hover': {
             borderColor: colorTheme.palette.grey300.main,
           },
@@ -33,31 +33,31 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           input: {
-            padding: '0 28px',
-            height: '64px',
-            borderRadius: '8px',
+            padding: '0 1.75rem',
+            height: '4rem',
+            borderRadius: '0.5rem',
             background: colorTheme.palette.white.main,
             '&::placeholder': {
               color: colorTheme.palette.grey300.main,
               fontFamily: 'Inter',
-              fontSize: '16px',
+              fontSize: '1rem',
               fontStyle: 'normal',
               fontWeight: '400',
-              lineHeight: '18px',
+              lineHeight: '1.125rem',
             },
             '@media (max-width: 1439.98px)': {
-              height: '79px',
+              height: '4.938rem',
               '&::placeholder': {
-                fontSize: '18px',
+                fontSize: '1.125rem',
               },
             },
             '@media (max-width: 639.98px)': {
-              padding: '0 20px',
-              height: '48px',
+              padding: '0 1.25rem',
+              height: '3rem',
               '&::placeholder': {
-                fontSize: '14px',
+                fontSize: '0.875rem',
                 fontWeight: '500',
-                lineHeight: '18px',
+                lineHeight: '1.125rem',
               },
             },
             '&.Mui-disabled': {

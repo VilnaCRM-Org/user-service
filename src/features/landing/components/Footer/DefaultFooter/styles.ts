@@ -7,18 +7,18 @@ export default {
     boxShadow: '0px -5px 46px 0px rgba(198, 209, 220, 0.25)',
   },
   copyrightAndLinksWrapper: {
-    borderRadius: '16px 16px 0px 0px',
+    borderRadius: '1rem 1rem 0px 0px',
     background: colorTheme.palette.backgroundGrey200.main,
   },
   copyrightAndLinks: {
-    height: '59px',
+    height: '3.688rem',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    ml: '5px',
-    pb: '2px',
+    ml: '0.313rem',
+    pb: '0.125rem',
     '@media (max-width: 1439.98px)': {
-      pb: '3px',
+      pb: '0.188rem',
       ml: '0',
     },
   },

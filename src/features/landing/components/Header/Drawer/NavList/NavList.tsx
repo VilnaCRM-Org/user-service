@@ -14,7 +14,7 @@ function NavList({
   handleClick: () => void;
 }) {
   return (
-    <Stack direction="column" gap="6px" sx={styles.listWrapper}>
+    <Stack direction="column" gap="0.375rem" sx={styles.listWrapper}>
       {navList.map(item => (
         <NavItem item={item} key={item.id} handleClick={handleClick} />
       ))}

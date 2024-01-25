@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material';
+import { Container, Stack } from '@mui/material';
 import React from 'react';
 
 import { BackgroundImages } from './BackgroundImages';
@@ -9,8 +9,10 @@ import { TextInfo } from './TextInfo';
 function AboutUs() {
   return (
     <Stack component="section" alignItems="center" sx={styles.wrapper}>
-      <TextInfo />
-      <DeviceImage />
+      <Container maxWidth="xl" sx={styles.content}>
+        <TextInfo />
+        <DeviceImage />
+      </Container>
       <BackgroundImages />
     </Stack>
   );

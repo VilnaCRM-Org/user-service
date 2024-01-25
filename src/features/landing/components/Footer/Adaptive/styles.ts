@@ -2,7 +2,7 @@ import { colorTheme } from '@/components/UiColorTheme';
 
 export default {
   wrapper: {
-    marginBottom: '20px',
+    marginBottom: '1.25rem',
     borderTop: `1px solid  ${colorTheme.palette.brandGray.main}`,
     background: colorTheme.palette.white.main,
     boxShadow:
@@ -14,26 +14,26 @@ export default {
     width: '100%',
     '@media (max-width: 767.98px)': {
       fontFamily: 'Golos',
-      fontSize: '18px',
+      fontSize: '1.125rem',
       fontStyle: 'normal',
       fontWeight: '600',
       lineHeight: 'normal',
     },
   },
   gmailWrapper: {
-    padding: '8px 16px',
-    borderRadius: '8px',
+    padding: '0.5rem 1rem',
+    borderRadius: '0.5rem',
     background: colorTheme.palette.white.main,
     border: `1px solid ${colorTheme.palette.grey400.main}`,
     '@media (max-width: 767.98px)': {
-      padding: '14px 0 15px',
+      padding: '0.875rem 0 0.9375rem',
     },
   },
   copyright: {
-    paddingBottom: '20px',
+    paddingBottom: '1.25rem',
     color: colorTheme.palette.grey200.main,
     textAlign: 'center',
     width: '100%',
-    mt: '16px',
+    mt: '1rem',
   },
 };

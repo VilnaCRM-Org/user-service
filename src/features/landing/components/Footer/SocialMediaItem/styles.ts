@@ -1,6 +1,6 @@
 export default {
   navLink: {
-    margin: '10px',
-    height: '20px',
+    margin: '0.625rem',
+    height: '1.25rem',
   },
 };

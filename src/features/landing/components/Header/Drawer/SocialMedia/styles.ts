@@ -1,6 +1,6 @@
 export default {
   linkWrapper: {
-    mt: '16px',
-    pr: '12px',
+    mt: '1rem',
+    pr: '0.75rem',
   },
 };

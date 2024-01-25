@@ -4,7 +4,7 @@ export default {
   wrapper: {
     height: '100%',
     '@media (max-width: 639.98px)': {
-      height: '308px',
+      height: '19.25rem',
     },
   },
   content: {
@@ -17,35 +17,35 @@ export default {
       border: `1px solid ${colorTheme.palette.grey400.main}`,
     },
     '@media (max-width: 639.98px)': {
-      p: '16px 18px 72px 16px',
+      p: '1rem 1.125rem 4.5rem 1rem',
       borderRadius: '0.75rem',
       border: `1px solid ${colorTheme.palette.grey500.main}`,
-      maxHeight: '263px',
+      maxHeight: '16.438rem',
     },
   },
   title: {
-    pt: '16px',
+    pt: '1rem',
     '@media (max-width: 1439.98px)': {
-      fontSize: '22px',
+      fontSize: '1.375rem',
     },
     '@media (max-width: 639.98px)': {
-      pt: '16px',
-      fontSize: '18px',
+      pt: '1rem',
+      fontSize: '1.125rem',
     },
   },
   text: {
-    mt: '12px',
+    mt: '0.75rem',
     '@media (max-width: 639.98px)': {
-      fontSize: '15px',
-      lineHeight: '25px',
+      fontSize: '0.9375rem',
+      lineHeight: '1.563rem',
     },
   },
   image: {
-    width: '70px',
-    height: '70px',
+    width: '4.375rem',
+    height: '4.375rem',
     '@media (max-width: 639.98px)': {
-      width: '50px',
-      height: '50px',
+      width: '3.125rem',
+      height: '3.125rem',
     },
   },
 };

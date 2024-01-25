@@ -15,7 +15,7 @@ function VilnaGmail() {
       <Stack
         justifyContent="center"
         alignItems="center"
-        gap="10px"
+        gap="0.625rem"
         flexDirection="row"
       >
         <Image src={AtSignImage} alt="ExitImage" width={24} height={24} />

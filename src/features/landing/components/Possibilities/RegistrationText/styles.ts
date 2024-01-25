@@ -2,21 +2,21 @@ import { colorTheme } from '@/components/UiColorTheme';
 
 export default {
   textWrapper: {
-    marginLeft: '-16px',
+    marginLeft: '-1rem',
     '@media (max-width: 639.98px)': {
       marginLeft: '0',
     },
   },
   title: {
-    mb: '7px',
-    padding: '12px 32px',
+    mb: '0.438rem',
+    padding: '0.75rem 2rem',
     alignSelf: 'center',
     borderRadius: '1rem',
     backgroundColor: colorTheme.palette.secondary.main,
     '@media (max-width: 639.98px)': {
-      padding: '12px 24px',
+      padding: '0.75rem 1.5rem',
       alignSelf: 'start',
-      fontSize: '22px',
+      fontSize: '1.375rem',
       fontWeight: '700',
     },
   },
@@ -24,7 +24,7 @@ export default {
     textAlign: 'center',
     '@media (max-width: 639.98px)': {
       textAlign: 'left',
-      fontSize: '28px',
+      fontSize: '1.75rem',
       fontWeight: '700',
     },
   },

@@ -2,54 +2,54 @@ import { colorTheme } from '@/components/UiColorTheme';
 
 export default {
   title: {
-    paddingBottom: '40px',
+    paddingBottom: '2.5rem',
     whiteSpace: 'pre-line',
     '@media (max-width: 1439.98px)': {
       textAlign: 'center',
-      maxWidth: '683px',
-      paddingBottom: '32px',
+      maxWidth: '42.688rem',
+      paddingBottom: '2rem',
     },
     '@media (max-width: 639.98px)': {
-      fontSize: '28px',
+      fontSize: '1.75rem',
       textAlign: 'left',
-      paddingBottom: '20px',
+      paddingBottom: '1.25rem',
     },
   },
   titleVilnaCRM: {
     color: colorTheme.palette.primary.main,
     '@media (max-width: 639.98px)': {
-      fontSize: '28px',
+      fontSize: '1.75rem',
       textAlign: 'left',
     },
   },
   textWrapper: {
-    pt: '136px',
+    pt: '8.5rem',
     width: '50%',
-    maxWidth: '561px',
+    maxWidth: '35.063rem',
     '@media (max-width: 1439.98px)': {
       maxWidth: '100%',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       width: '100%',
-      pt: '56px',
+      pt: '3.5rem',
 
       '@media (max-width: 639.98px)': {
-        pt: '26px',
+        pt: '1.625rem',
       },
     },
   },
 
   signInText: {
-    mb: '24px',
+    mb: '1.5rem',
     textAlign: 'left',
     '@media (max-width: 1439.98px)': {
       textAlign: 'center',
     },
     '@media (max-width: 639.98px)': {
-      fontSize: '18px',
+      fontSize: '1.125rem',
       alignSelf: 'start',
-      mb: '22px',
+      mb: '1.375rem',
     },
   },
 };

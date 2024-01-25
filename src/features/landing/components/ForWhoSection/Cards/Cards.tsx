@@ -12,7 +12,7 @@ function Cards() {
   const { t } = useTranslation();
   return (
     <Stack flexDirection="column" sx={styles.wrapper}>
-      <UiTypography maxWidth="373px" sx={styles.secondTitle}>
+      <UiTypography maxWidth="23.313rem" sx={styles.secondTitle}>
         {t('for_who.heading_secondary')}
       </UiTypography>
       <Stack sx={styles.cardWrapper}>

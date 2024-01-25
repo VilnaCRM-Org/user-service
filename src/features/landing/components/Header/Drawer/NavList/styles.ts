@@ -1,5 +1,5 @@
 export default {
   listWrapper: {
-    mt: '16px',
+    mt: '1rem',
   },
 };

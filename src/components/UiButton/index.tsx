@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 /* eslint-disable react/jsx-props-no-spreading */
 import { Button, ThemeProvider } from '@mui/material';
 import { ButtonProps } from '@mui/material/Button';

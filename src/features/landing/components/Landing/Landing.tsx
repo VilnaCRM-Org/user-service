@@ -21,8 +21,8 @@ function Landing() {
       </Head>
       <Header />
       <main>
+        <AboutUs />
         <Container maxWidth="xl">
-          <AboutUs />
           <WhyUs />
         </Container>
         <ForWhoSection />

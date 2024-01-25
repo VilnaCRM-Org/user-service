@@ -7,8 +7,8 @@ export default {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderRadius: '8px',
+    borderRadius: '0.5rem',
     background: colorTheme.palette.backgroundGrey300.main,
-    padding: '19px 20px',
+    padding: '1.188rem 1.25rem',
   },
 };

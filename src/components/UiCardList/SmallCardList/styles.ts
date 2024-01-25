@@ -17,13 +17,13 @@ export default {
 
   gridMobile: {
     '& .swiper .swiper-pagination .swiper-pagination-bullet': {
-      marginRight: '20px',
+      marginRight: '1.25rem',
     },
     display: 'none',
     '@media (max-width: 639.98px)': {
-      minHeight: '296px',
+      minHeight: '18.5rem',
       display: 'grid',
-      marginTop: '24px',
+      marginTop: '1.5rem',
       gap: '0.75rem',
     },
   },

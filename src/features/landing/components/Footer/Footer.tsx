@@ -8,14 +8,14 @@ import styles from './styles';
 function Footer() {
   // Can i use useContext for socialLinks?
   return (
-    <>
-      <Box sx={styles.default} component="footer" id="Contacts">
+    <Box component="footer" id="Contacts">
+      <Box sx={styles.default}>
         <DefaultFooter socialLinks={socialLinks} />
       </Box>
-      <Box sx={styles.adaptive} component="footer" id="Contacts">
+      <Box sx={styles.adaptive}>
         <Adaptive socialLinks={socialLinks} />
       </Box>
-    </>
+    </Box>
   );
 }
 

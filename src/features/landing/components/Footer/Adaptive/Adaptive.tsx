@@ -17,7 +17,12 @@ function Adaptive({ socialLinks }: { socialLinks: ISocialMedia[] }) {
 
   return (
     <Container sx={styles.wrapper}>
-      <Stack direction="row" justifyContent="space-between" mt="18px" pb="16px">
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        mt="1.125rem"
+        pb="1rem"
+      >
         <Image src={Logo} alt="Logo" width={131} height={44} />
         <SocialMediaList socialLinks={socialLinks} />
       </Stack>

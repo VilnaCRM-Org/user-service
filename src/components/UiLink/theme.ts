@@ -9,16 +9,16 @@ export const theme = createTheme({
         root: {
           color: colorTheme.palette.primary.main,
           fontFamily: 'Inter',
-          fontSize: '14px',
+          fontSize: '0.875rem',
           fontStyle: 'normal',
           fontWeight: '700',
-          lineHeight: '18px',
+          lineHeight: '1.125rem',
           textDecoration: 'underline',
           '@media (max-width: 1439.98px)': {
-            fontSize: '16px',
+            fontSize: '1rem',
           },
           '@media (max-width: 639.98px)': {
-            fontSize: '14px',
+            fontSize: '0.875rem',
           },
           '&:hover': {
             color: '#297FFF',

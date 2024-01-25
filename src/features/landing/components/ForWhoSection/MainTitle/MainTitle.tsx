@@ -16,7 +16,7 @@ function MainTitle() {
       <UiTypography
         sx={styles.description}
         variant="bodyText18"
-        maxWidth="343px"
+        maxWidth="21.438rem"
       >
         <Trans i18nKey="for_who.text_main" />
       </UiTypography>

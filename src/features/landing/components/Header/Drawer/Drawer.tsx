@@ -62,8 +62,8 @@ function CustomDrawer() {
             direction="row"
             alignItems="center"
             justifyContent="center"
-            gap="9px"
-            mt="12px"
+            gap="0.563rem"
+            mt="0.75rem"
           >
             <UiButton
               variant="outlined"

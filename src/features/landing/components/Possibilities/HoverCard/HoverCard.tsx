@@ -12,14 +12,14 @@ import styles from './styles';
 function HoverCard({ imageList }: { imageList: IimageList[] }) {
   const { t } = useTranslation();
   return (
-    <Box maxWidth="282px">
+    <Box maxWidth="17.625rem">
       <UiTypography variant="demi18">
         {t('unlimited_possibilities.service_text.title')}
       </UiTypography>
       <UiTypography variant="medium14" sx={styles.text}>
         {t('unlimited_possibilities.service_text.text')}
       </UiTypography>
-      <Stack flexDirection="row" flexWrap="wrap" gap="30px">
+      <Stack flexDirection="row" flexWrap="wrap" gap="1.875rem">
         {imageList.map(item => (
           <Image
             src={item.image}

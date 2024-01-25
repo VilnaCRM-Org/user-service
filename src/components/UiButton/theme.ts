@@ -25,7 +25,7 @@ export const theme = createTheme({
             ...repeatStyles,
             backgroundColor: colorTheme.palette.primary.main,
             borderRadius: '3.563rem',
-            padding: '16px 24px',
+            padding: '1rem 1.5rem',
             '&:hover': {
               backgroundColor: '#00A3FF',
             },
@@ -52,7 +52,7 @@ export const theme = createTheme({
             alignSelf: 'center',
             fontFamily: 'Golos',
             fontWeight: '600',
-            fontSize: '18px',
+            fontSize: '1.125rem',
             letterSpacing: '0',
             lineHeight: 'normal',
             '&:hover': {
@@ -66,10 +66,10 @@ export const theme = createTheme({
               color: colorTheme.palette.white.main,
             },
             '@media (max-width: 639.98px)': {
-              fontSize: '15px',
+              fontSize: '0.9375rem',
               fontWeight: '400',
-              lineHeight: '18px',
-              padding: '16px 23px',
+              lineHeight: '1.125rem',
+              padding: '1rem 1.438rem',
             },
           },
         },
@@ -81,7 +81,7 @@ export const theme = createTheme({
           style: {
             ...repeatStyles,
             color: colorTheme.palette.darkSecondary.main,
-            padding: '16px 23px',
+            padding: '1rem 1.438rem',
             backgroundColor: colorTheme.palette.white.main,
             border: `1px solid ${colorTheme.palette.grey300.main}`,
             borderRadius: '3.563rem',
@@ -96,6 +96,48 @@ export const theme = createTheme({
               backgroundColor: colorTheme.palette.brandGray.main,
               color: colorTheme.palette.white.main,
               border: 'none',
+            },
+          },
+        },
+
+        {
+          props: {
+            name: 'socialButton',
+            variant: 'outlined',
+            size: 'medium',
+          },
+          style: {
+            textTransform: 'none',
+            borderRadius: '0.75rem',
+            maxwidth: '11.813rem',
+            padding: '1.063rem',
+            gap: '0.563rem',
+            border: `1px solid ${colorTheme.palette.brandGray.main}`,
+            background: colorTheme.palette.white.main,
+            color: colorTheme.palette.grey200.main,
+            '@media (max-width: 639.98px)': {
+              width: '10.563rem',
+            },
+            '&:hover': {
+              background: colorTheme.palette.white.main,
+              boxShadow: '0px 4px 7px 0px rgba(116, 134, 151, 0.17)',
+              border: `1px solid ${colorTheme.palette.brandGray.main}`,
+            },
+            '&:active': {
+              background: colorTheme.palette.white.main,
+              boxShadow: '0px 4px 7px 0px rgba(71, 85, 99, 0.21)',
+              border: `1px solid ${colorTheme.palette.grey300.main}`,
+            },
+            '&:disabled': {
+              background: ' #E1E7EA',
+              boxShadoiw: 'none',
+              border: 'none',
+              img: {
+                opacity: '0.2',
+              },
+              div: {
+                color: colorTheme.palette.white.main,
+              },
             },
           },
         },

@@ -21,7 +21,7 @@ function CopyrightNoticeAndLinks({
       <UiTypography variant="medium15" sx={styles.copyright}>
         {t('footer.copyright')}
       </UiTypography>
-      <Stack direction="row" gap="14px" alignItems="center">
+      <Stack direction="row" gap="0.875rem" alignItems="center">
         <Box sx={styles.gmailWrapper}>
           <UiTypography variant="medium15" sx={styles.gmailText}>
             info@vilnacrm.com

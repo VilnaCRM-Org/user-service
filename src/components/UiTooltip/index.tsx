@@ -18,10 +18,10 @@ const HtmlTooltip = styled(({ className, ...props }: TooltipProps) => (
   [`& .${tooltipClasses.tooltip}`]: {
     backgroundColor: '#fff',
     color: 'rgba(0, 0, 0, 0.87)',
-    maxWidth: '330px',
+    maxWidth: '20.625rem',
     border: `1px solid  ${colorTheme.palette.grey400.main}`,
-    padding: '18px 24px',
-    borderRadius: '8px',
+    padding: '1.125rem 1.5rem',
+    borderRadius: '0.5rem',
     '@media (max-width: 1439.98px)': {
       display: 'none',
     },

@@ -1,13 +1,18 @@
 export default {
   wrapper: {
-    pt: '144px',
+    pt: '9rem',
     position: 'relative',
     maxWidth: '100dvw',
     '@media (max-width: 1439.98px)': {
-      pt: '146px',
+      pt: '9.125rem',
     },
     '@media (max-width: 640.98px)': {
-      pt: '88px',
+      pt: '5.5rem',
     },
+  },
+  content: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
   },
 };

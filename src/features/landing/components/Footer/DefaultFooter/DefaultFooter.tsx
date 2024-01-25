@@ -12,7 +12,7 @@ import styles from './styles';
 function DefaultFooter({ socialLinks }: { socialLinks: ISocialMedia[] }) {
   return (
     <Stack sx={styles.footerWrapper}>
-      <Stack height="67px" alignItems="center" flexDirection="row">
+      <Stack height="4.188rem" alignItems="center" flexDirection="row">
         <Container>
           <Stack
             direction="row"

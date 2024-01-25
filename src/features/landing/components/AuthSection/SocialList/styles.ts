@@ -1,9 +1,9 @@
 export default {
   listWrapper: {
     display: 'grid',
-    maxWidth: '390px',
+    maxWidth: '24.375rem',
     gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: '12px',
+    gap: '0.75rem',
     '@media (max-width: 1439.98px)': {
       maxWidth: '100%',
       gridTemplateColumns: 'repeat(4,1fr) ',
@@ -12,8 +12,8 @@ export default {
       gridTemplateColumns: 'repeat(2, 1fr)',
     },
     '@media (max-width: 639.98px)': {
-      columnGap: '8px',
-      rowGap: '12px',
+      columnGap: '0.5rem',
+      rowGap: '0.75rem',
     },
   },
 };

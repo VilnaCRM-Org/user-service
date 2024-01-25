@@ -8,15 +8,15 @@ export default {
     zIndex: 100,
   },
   logo: {
-    width: '131px',
-    height: '44px',
+    width: '8.188rem',
+    height: '2.75rem',
     '@media (max-width: 1439.98px)': {
-      width: '149px',
-      height: '50px',
+      width: '9.313rem',
+      height: '3.125rem',
     },
     '@media (max-width: 1023.98px)': {
-      width: '131px',
-      height: '44px',
+      width: '8.188rem',
+      height: '2.75rem',
     },
   },
 };

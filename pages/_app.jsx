@@ -38,7 +38,7 @@ function MyApp({ Component }) {
               padding: '0 2rem',
             },
             '@media (max-width: 425px)': {
-              padding: '0 15px',
+              padding: '0 0.9375rem',
             },
             '@media (min-width: 64rem)': {
               width: '100%',

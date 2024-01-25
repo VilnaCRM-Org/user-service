@@ -7,13 +7,13 @@ export default {
     },
     gridTemplateRows: {
       md: 'repeat(2, 1fr)',
-      lg: 'repeat(2, minmax(380px, auto))',
-      xl: 'repeat(2, minmax(342px, auto))',
+      lg: 'repeat(2, minmax(23.75rem, auto))',
+      xl: 'repeat(2, minmax(21.375rem, auto))',
     },
     marginTop: '2.5rem',
-    gap: '13px',
+    gap: '0.813rem',
     '@media (max-width: 1439.98px)': {
-      gap: '12px',
+      gap: '0.75rem',
       marginTop: '2rem',
     },
     '@media (max-width: 639.98px)': {
@@ -22,20 +22,21 @@ export default {
   },
   gridMobile: {
     '& .swiper .swiper-pagination .swiper-pagination-bullet': {
-      marginRight: '20px',
+      marginRight: '1.25rem',
     },
     '& .swiper .swiper-pagination': {
-      marginLeft: '8px',
+      marginLeft: '0.5rem',
     },
     display: 'none',
     '@media (max-width: 639.98px)': {
       display: 'grid',
-      marginTop: '24px',
+      marginTop: '1.5rem',
+      paddingBottom: '2rem',
     },
   },
   button: {
-    maxWidth: '137px',
+    maxWidth: '8.563rem',
     margin: '0 auto',
-    marginTop: '14px',
+    marginTop: '0.875rem',
   },
 };

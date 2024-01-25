@@ -1,3 +1,6 @@
 export default {
-  text: { pt: '4px', pb: '22px' },
+  text: {
+    pt: '0.25rem',
+    pb: '1.375rem',
+  },
 };

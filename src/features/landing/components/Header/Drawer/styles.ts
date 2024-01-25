@@ -5,7 +5,10 @@ export default {
       display: 'inline-block',
     },
   },
-  drawerContent: { px: '15px', py: '6px' },
+  drawerContent: {
+    px: '0.938rem',
+    py: '0.375rem',
+  },
 
   button: {
     minWidth: '0',

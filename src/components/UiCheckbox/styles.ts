@@ -4,14 +4,14 @@ import { colorTheme } from '../UiColorTheme';
 export default {
   checkboxWrapper: {
     display: 'grid',
-    marginRight: '13px',
+    marginRight: '0.813rem',
     padding: '0',
     input: {
       WebkitAppearance: 'none',
       appearance: 'none',
-      width: '24px',
-      height: '24px',
-      borderRadius: '8px',
+      width: '1.5rem',
+      height: '1.5rem',
+      borderRadius: '0.5rem',
       border: `1px solid ${colorTheme.palette.grey400.main}`,
       background: '#fff',
       '&:hover': {
