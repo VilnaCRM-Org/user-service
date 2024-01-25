@@ -12,11 +12,14 @@ final class UserConfirmedEvent extends DomainEvent
     public function __construct(
         public readonly ConfirmationToken $token,
         string $eventId,
-        string $occurredOn = null
+        ?string $occurredOn = null
     ) {
         parent::__construct($eventId, $occurredOn);
     }
 
+    /**
+     * @param array<string, ConfirmationToken> $body
+     */
     public static function fromPrimitives(
         array $body,
         string $eventId,

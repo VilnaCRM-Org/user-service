@@ -13,11 +13,14 @@ final class ConfirmationEmailSendEvent extends DomainEvent
         public readonly ConfirmationToken $token,
         public readonly string $emailAddress,
         string $eventId,
-        string $occurredOn = null
+        ?string $occurredOn = null
     ) {
         parent::__construct($eventId, $occurredOn);
     }
 
+    /**
+     * @param array<string, string|ConfirmationToken> $body
+     */
     public static function fromPrimitives(
         array $body,
         string $eventId,

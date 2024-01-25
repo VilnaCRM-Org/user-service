@@ -18,6 +18,11 @@ final class ResendEmailEndpointFactory implements AbstractEndpointFactory
 {
     private const ENDPOINT_URI = '/api/users/{id}/resend-confirmation-email';
 
+    private Parameter $uuidWithExamplePathParam;
+    private Response $sendAgainResponse;
+    private Response $userNotFoundResponse;
+    private Response $timedOutResponse;
+
     public function __construct(
         private UserNotFoundResponseFactory $userNotFoundResponseFactory,
         private EmailSendAgainResponseFactory $sendAgainResponseFactory,
@@ -25,16 +30,14 @@ final class ResendEmailEndpointFactory implements AbstractEndpointFactory
         private EmptyRequestFactory $emptyRequestFactory,
         private UuidUriParameterFactory $parameterFactory
     ) {
-        $this->uuidWithExamplePathParam = $this->parameterFactory->getParameter();
-        $this->sendAgainResponse = $this->sendAgainResponseFactory->getResponse();
-        $this->userNotFoundResponse = $this->userNotFoundResponseFactory->getResponse();
+        $this->uuidWithExamplePathParam =
+            $this->parameterFactory->getParameter();
+        $this->sendAgainResponse =
+            $this->sendAgainResponseFactory->getResponse();
+        $this->userNotFoundResponse =
+            $this->userNotFoundResponseFactory->getResponse();
         $this->timedOutResponse = $this->timedOutResponseFactory->getResponse();
     }
-
-    private Parameter $uuidWithExamplePathParam;
-    private Response $sendAgainResponse;
-    private Response $userNotFoundResponse;
-    private Response $timedOutResponse;
 
     public function createEndpoint(OpenApi $openApi): void
     {
@@ -50,12 +53,20 @@ final class ResendEmailEndpointFactory implements AbstractEndpointFactory
                     ->withSummary('Resends confirmation email')
                     ->withRequestBody(requestBody: $this->emptyRequestFactory
                         ->getRequest())
-                    ->withResponses([
-                        HttpResponse::HTTP_OK => $this->sendAgainResponse,
-                        HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
-                        HttpResponse::HTTP_TOO_MANY_REQUESTS => $this->timedOutResponse,
-                    ])
+                    ->withResponses($this->getResponses())
             )
         );
+    }
+
+    /**
+     * @return array<int,Response>
+     */
+    private function getResponses(): array
+    {
+        return [
+            HttpResponse::HTTP_OK => $this->sendAgainResponse,
+            HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
+            HttpResponse::HTTP_TOO_MANY_REQUESTS => $this->timedOutResponse,
+        ];
     }
 }

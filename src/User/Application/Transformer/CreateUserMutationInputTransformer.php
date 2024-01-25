@@ -8,6 +8,9 @@ use App\User\Application\MutationInput\CreateUserMutationInput;
 
 final class CreateUserMutationInputTransformer
 {
+    /**
+     * @param array<string, string> $args
+     */
     public function transform(array $args): CreateUserMutationInput
     {
         return new CreateUserMutationInput(

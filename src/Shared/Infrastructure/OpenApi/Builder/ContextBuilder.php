@@ -6,7 +6,7 @@ namespace App\Shared\Infrastructure\OpenApi\Builder;
 
 final class ContextBuilder
 {
-    public function build(array $params = null): \ArrayObject
+    public function build(?array $params = null): \ArrayObject
     {
         $content = new \ArrayObject([
             'application/json' => [
@@ -29,8 +29,14 @@ final class ContextBuilder
         return $content;
     }
 
-    private function buildContent(array $properties, array $example): \ArrayObject
-    {
+    /**
+     * @param array<string, string> $properties
+     * @param array<string, string|int|array> $example
+     */
+    private function buildContent(
+        array $properties,
+        array $example
+    ): \ArrayObject {
         return new \ArrayObject([
             'application/json' => [
                 'schema' => [

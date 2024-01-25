@@ -12,11 +12,14 @@ final class UserRegisteredEvent extends DomainEvent
     public function __construct(
         public readonly User $user,
         string $eventId,
-        string $occurredOn = null
+        ?string $occurredOn = null
     ) {
         parent::__construct($eventId, $occurredOn);
     }
 
+    /**
+     * @param array<string, User> $body
+     */
     public static function fromPrimitives(
         array $body,
         string $eventId,

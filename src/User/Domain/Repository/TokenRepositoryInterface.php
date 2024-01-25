@@ -19,10 +19,7 @@ interface TokenRepositoryInterface extends RepositoryInterface
 
     public function find(string $tokenValue): ?ConfirmationTokenInterface;
 
-    /**
-     * @param string $userID
-     */
-    public function findByUserId($userID): ?ConfirmationTokenInterface;
+    public function findByUserId(string $userID): ?ConfirmationTokenInterface;
 
     /**
      * @param ConfirmationToken $token

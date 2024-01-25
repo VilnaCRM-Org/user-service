@@ -16,6 +16,25 @@ final class Version20240122085853 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
+        $this->upAuthCodeTable();
+        $this->upClientTable();
+        $this->upRefreshTokenTable();
+        $this->upAccessTokenTable();
+    }
+
+    public function down(Schema $schema): void
+    {
+        $this->addSql('DROP TABLE oauth2_authorization_code');
+
+        $this->addSql('DROP TABLE oauth2_client');
+
+        $this->addSql('DROP TABLE oauth2_refresh_token');
+
+        $this->addSql('DROP TABLE oauth2_access_token');
+    }
+
+    private function upAuthCodeTable(): void
+    {
         $this->addSql('CREATE TABLE oauth2_authorization_code 
         (identifier CHAR(80) CHARACTER SET utf8mb4 NOT NULL COLLATE 
         `utf8mb4_unicode_ci`, client VARCHAR(32) CHARACTER SET utf8mb4 
@@ -28,7 +47,10 @@ final class Version20240122085853 extends AbstractMigration
         INDEX IDX_509FEF5FC7440455 (client), PRIMARY KEY(identifier)) 
         DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` 
         ENGINE = InnoDB COMMENT = \'\' ');
+    }
 
+    private function upClientTable(): void
+    {
         $this->addSql('CREATE TABLE oauth2_client (identifier VARCHAR(32) 
         CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`, 
         name VARCHAR(128) CHARACTER SET utf8mb4 NOT NULL COLLATE 
@@ -44,7 +66,10 @@ final class Version20240122085853 extends AbstractMigration
         DEFAULT 0 NOT NULL, PRIMARY KEY(identifier)) DEFAULT 
         CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` 
         ENGINE = InnoDB COMMENT = \'\' ');
+    }
 
+    private function upRefreshTokenTable(): void
+    {
         $this->addSql('CREATE TABLE oauth2_refresh_token 
         (identifier CHAR(80) CHARACTER SET utf8mb4 NOT NULL 
         COLLATE `utf8mb4_unicode_ci`, access_token CHAR(80) 
@@ -55,7 +80,10 @@ final class Version20240122085853 extends AbstractMigration
         (access_token), PRIMARY KEY(identifier)) DEFAULT 
         CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` 
         ENGINE = InnoDB COMMENT = \'\' ');
+    }
 
+    private function upAccessTokenTable(): void
+    {
         $this->addSql('CREATE TABLE oauth2_access_token 
         (identifier CHAR(80) CHARACTER SET utf8mb4 
         NOT NULL COLLATE `utf8mb4_unicode_ci`, client VARCHAR(32) 
@@ -69,16 +97,5 @@ final class Version20240122085853 extends AbstractMigration
         PRIMARY KEY(identifier)) DEFAULT CHARACTER SET utf8mb4
          COLLATE `utf8mb4_unicode_ci` 
          ENGINE = InnoDB COMMENT = \'\' ');
-    }
-
-    public function down(Schema $schema): void
-    {
-        $this->addSql('DROP TABLE oauth2_authorization_code');
-
-        $this->addSql('DROP TABLE oauth2_client');
-
-        $this->addSql('DROP TABLE oauth2_refresh_token');
-
-        $this->addSql('DROP TABLE oauth2_access_token');
     }
 }

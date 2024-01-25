@@ -15,6 +15,8 @@ final class TokenNotFoundResponseFactory implements AbstractResponseFactory
 
     public function getResponse(): Response
     {
-        return $this->responseBuilder->build('Token not found or expired');
+        return $this->responseBuilder->build(
+            'Token not found or expired'
+        );
     }
 }

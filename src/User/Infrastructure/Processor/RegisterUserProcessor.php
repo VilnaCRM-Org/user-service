@@ -22,6 +22,8 @@ final readonly class RegisterUserProcessor implements ProcessorInterface
 
     /**
      * @param UserRegisterDto $data
+     * @param array<string,string> $context
+     * @param array<string,string> $uriVariables
      */
     public function process(
         mixed $data,

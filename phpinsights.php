@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
+use  SlevomatCodingStandard\Sniffs\Namespaces\UseSpacingSniff;
 
 return [
     'preset' => 'symfony',
@@ -19,13 +21,16 @@ return [
         SuperfluousInterfaceNamingSniff::class,
         SuperfluousExceptionNamingSniff::class,
         SpaceAfterNotSniff::class,
+        NunoMaduro\PhpInsights\Domain\Sniffs\ForbiddenSetterSniff::class,
+        UseSpacingSniff::class,
     ],
     'config' => [
-        NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses::class => ['exclude' => [
-            'src/Shared/Infrastructure/Bus/Command/InMemorySymfonyCommandBus',
-            'src/Shared/Infrastructure/Bus/Event/InMemorySymfonyEventBus',
-            'src/User/Domain/Entity/User',
-        ],
+        ForbiddenNormalClasses::class => [
+            'exclude' => [
+                'src/Shared/Infrastructure/Bus/Command/InMemorySymfonyCommandBus',
+                'src/Shared/Infrastructure/Bus/Event/InMemorySymfonyEventBus',
+                'src/User/Domain/Entity/User',
+            ],
         ],
     ],
     'requirements' => [

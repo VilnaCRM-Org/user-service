@@ -14,14 +14,13 @@ final class ResponseBuilder
     }
 
     /**
-     * @param string $description
      * @param array<Parameter> $params
      * @param array<Header> $headers
      */
     public function build(
         string $description,
-        array $params = null,
-        array $headers = null
+        ?array $params = null,
+        ?array $headers = null
     ): Response {
         $content = $this->contextBuilder->build($params);
         $headersArray = new \ArrayObject();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\OpenApi\Factory\EndpointFactory;
 
+use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory\BadRequestResponseFactory;
 use App\Shared\Infrastructure\OpenApi\Factory\ResponseFactory\DuplicateEmailResponseFactory;
@@ -14,11 +15,21 @@ final class UserEndpointFactory implements AbstractEndpointFactory
 {
     private const ENDPOINT_URI = '/api/users';
 
+    private Response $duplicateEmailResponse;
+    private Response $validationErrorResponse;
+    private Response $badRequestResponse;
+
     public function __construct(
         private ValidationErrorResponseFactory $validationErrorResponseFactory,
         private DuplicateEmailResponseFactory $duplicateEmailResponseFactory,
         private BadRequestResponseFactory $badRequestResponseFactory
     ) {
+        $this->duplicateEmailResponse =
+            $this->duplicateEmailResponseFactory->getResponse();
+        $this->validationErrorResponse =
+            $this->validationErrorResponseFactory->getResponse();
+        $this->badRequestResponse =
+            $this->badRequestResponseFactory->getResponse();
     }
 
     public function createEndpoint(OpenApi $openApi): void
@@ -27,20 +38,26 @@ final class UserEndpointFactory implements AbstractEndpointFactory
         $operationPost = $pathItem->getPost();
         $operationGet = $pathItem->getGet();
 
-        $duplicateEmailResponse =
-            $this->duplicateEmailResponseFactory->getResponse();
+        $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem
+            ->withPost(
+                $operationPost
+                    ->withResponses($this->getPostResponses())
+            )
+            ->withGet($operationGet->withResponse(
+                HttpResponse::HTTP_BAD_REQUEST,
+                $this->badRequestResponse
+            )));
+    }
 
-        $standardResponse422 =
-            $this->validationErrorResponseFactory->getResponse();
-
-        $standardResponse400 = $this->badRequestResponseFactory->getResponse();
-
-        $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem->withPost(
-            $operationPost
-                ->withResponse(HttpResponse::HTTP_BAD_REQUEST, $standardResponse400)
-                ->withResponse(HttpResponse::HTTP_CONFLICT, $duplicateEmailResponse)
-                ->withResponse(HttpResponse::HTTP_UNPROCESSABLE_ENTITY, $standardResponse422)
-        )
-            ->withGet($operationGet->withResponse(HttpResponse::HTTP_BAD_REQUEST, $standardResponse400)));
+    /**
+     * @return array<int,Response>
+     */
+    private function getPostResponses(): array
+    {
+        return [
+            HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
+            HttpResponse::HTTP_CONFLICT => $this->duplicateEmailResponse,
+            HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $this->validationErrorResponse,
+        ];
     }
 }

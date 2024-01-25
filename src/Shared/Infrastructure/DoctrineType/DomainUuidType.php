@@ -20,6 +20,9 @@ final class DomainUuidType extends Type
         return self::NAME;
     }
 
+    /**
+     * @param array<string|object> $column
+     */
     public function getSQLDeclaration(
         array $column,
         AbstractPlatform $platform
@@ -30,7 +33,7 @@ final class DomainUuidType extends Type
     }
 
     public function convertToDatabaseValue(
-        $value,
+        mixed $value,
         AbstractPlatform $platform
     ): ?string {
         if ($value instanceof UuidInterface || $value === null) {
@@ -42,8 +45,10 @@ final class DomainUuidType extends Type
         return $uuid->toBinary();
     }
 
-    public function convertToPHPValue($value, AbstractPlatform $platform): ?Uuid
-    {
+    public function convertToPHPValue(
+        mixed $value,
+        AbstractPlatform $platform
+    ): ?Uuid {
         $symfonyType = $this->getSymfonyUuidType();
         $symfonyUuid = $symfonyType->convertToPHPValue($value, $platform);
         $transformer = new UuidTransformer();

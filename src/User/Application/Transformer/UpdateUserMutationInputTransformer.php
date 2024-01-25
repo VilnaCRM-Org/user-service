@@ -8,6 +8,9 @@ use App\User\Application\MutationInput\UpdateUserMutationInput;
 
 final class UpdateUserMutationInputTransformer
 {
+    /**
+     * @param array<string, string> $args
+     */
     public function transform(array $args): UpdateUserMutationInput
     {
         $validationGroups = [];

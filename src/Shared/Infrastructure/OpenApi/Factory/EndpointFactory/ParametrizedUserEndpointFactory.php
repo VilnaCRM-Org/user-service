@@ -20,6 +20,13 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
 {
     private const ENDPOINT_URI = '/api/users/{id}';
 
+    private Parameter $uuidWithExamplePathParam;
+    private Response $duplicateEmailResponse;
+    private Response $badRequestResponse;
+    private Response $userNotFoundResponse;
+    private Response $validationErrorResponse;
+    private Response $userDeletedResponse;
+
     public function __construct(
         private ValidationErrorResponseFactory $validationErrorResponseFactory,
         private DuplicateEmailResponseFactory $duplicateEmailResponseFactory,
@@ -34,7 +41,8 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
         $this->duplicateEmailResponse =
             $this->duplicateEmailResponseFactory->getResponse();
 
-        $this->badRequestResponse = $this->badRequestResponseFactory->getResponse();
+        $this->badRequestResponse =
+            $this->badRequestResponseFactory->getResponse();
 
         $this->userNotFoundResponse =
             $this->userNotFoundResponseFactory->getResponse();
@@ -42,15 +50,9 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
         $this->validationErrorResponse =
             $this->validationErrorResponseFactory->getResponse();
 
-        $this->userDeletedResponse = $this->deletedResponseFactory->getResponse();
+        $this->userDeletedResponse =
+            $this->deletedResponseFactory->getResponse();
     }
-
-    private Parameter $uuidWithExamplePathParam;
-    private Response $duplicateEmailResponse;
-    private Response $badRequestResponse;
-    private Response $userNotFoundResponse;
-    private Response $validationErrorResponse;
-    private Response $userDeletedResponse;
 
     public function createEndpoint(OpenApi $openApi): void
     {
@@ -66,11 +68,9 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
         $operationPut = $pathItem->getPut();
         $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem
             ->withPut(
-                $operationPut->withParameters([$this->uuidWithExamplePathParam])
-                    ->withResponse(HttpResponse::HTTP_BAD_REQUEST, $this->badRequestResponse)
-                    ->withResponse(HttpResponse::HTTP_NOT_FOUND, $this->userNotFoundResponse)
-                    ->withResponse(HttpResponse::HTTP_CONFLICT, $this->duplicateEmailResponse)
-                    ->withResponse(HttpResponse::HTTP_UNPROCESSABLE_ENTITY, $this->validationErrorResponse)
+                $operationPut
+                    ->withParameters([$this->uuidWithExamplePathParam])
+                    ->withResponses($this->getUpdateResponses())
             ));
     }
 
@@ -78,38 +78,59 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
     {
         $pathItem = $this->getPathItem($openApi);
         $operationPatch = $pathItem->getPatch();
-        $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem->withPatch(
-            $operationPatch->withParameters([$this->uuidWithExamplePathParam])
-                ->withResponse(HttpResponse::HTTP_BAD_REQUEST, $this->badRequestResponse)
-                ->withResponse(HttpResponse::HTTP_NOT_FOUND, $this->userNotFoundResponse)
-                ->withResponse(HttpResponse::HTTP_CONFLICT, $this->duplicateEmailResponse)
-                ->withResponse(HttpResponse::HTTP_UNPROCESSABLE_ENTITY, $this->validationErrorResponse)
-        ));
+        $openApi->getPaths()->addPath(
+            self::ENDPOINT_URI,
+            $pathItem
+                ->withPatch(
+                    $operationPatch
+                        ->withParameters([$this->uuidWithExamplePathParam])
+                        ->withResponses($this->getUpdateResponses())
+                )
+        );
+    }
+
+    /**
+     * @return array<int,Response>
+     */
+    private function getUpdateResponses(): array
+    {
+        return [
+            HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
+            HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
+            HttpResponse::HTTP_CONFLICT => $this->duplicateEmailResponse,
+            HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $this->validationErrorResponse,
+        ];
     }
 
     private function setDeleteOperation(OpenApi $openApi): void
     {
         $pathItem = $this->getPathItem($openApi);
         $operationDelete = $pathItem->getDelete();
-        $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem->withDelete(
-            $operationDelete->withParameters([$this->uuidWithExamplePathParam])
-                ->withResponses(
-                    [
-                        HttpResponse::HTTP_NO_CONTENT => $this->userDeletedResponse,
-                        HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
-                    ]
-                )
-        ));
+        $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem
+            ->withDelete(
+                $operationDelete
+                    ->withParameters([$this->uuidWithExamplePathParam])
+                    ->withResponses(
+                        [
+                            HttpResponse::HTTP_NO_CONTENT => $this->userDeletedResponse,
+                            HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
+                        ]
+                    )
+            ));
     }
 
     private function setGetOperation(OpenApi $openApi): void
     {
         $pathItem = $this->getPathItem($openApi);
         $operationGet = $pathItem->getGet();
-        $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem->withGet(
-            $operationGet->withParameters([$this->uuidWithExamplePathParam])
-                ->withResponse(HttpResponse::HTTP_NOT_FOUND, $this->userNotFoundResponse)
-        ));
+        $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem
+            ->withGet(
+                $operationGet->withParameters([$this->uuidWithExamplePathParam])
+                    ->withResponse(
+                        HttpResponse::HTTP_NOT_FOUND,
+                        $this->userNotFoundResponse
+                    )
+            ));
     }
 
     private function getPathItem(OpenApi $openApi): PathItem

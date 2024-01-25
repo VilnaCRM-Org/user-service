@@ -13,13 +13,13 @@ return (new PhpCsFixer\Config())
             'identical' => false,
             'less_and_greater' => false
         ],
-        'nullable_type_declaration' => true,
+        'nullable_type_declaration' => ['syntax' => 'question_mark'],
         'class_definition' => [
             'multi_line_extends_each_single_line' => true,
             'single_line' => false,
             'single_item_single_line' => false
         ],
         'no_unused_imports' => true,
-        'ordered_imports' => ['sort_algorithm' => 'alpha']
+        'ordered_imports' => ['sort_algorithm' => 'alpha'],
     ])
     ->setFinder($finder);

@@ -19,9 +19,21 @@ final class InvalidClientCredentialsResponseFactory implements AbstractResponseF
         return $this->responseBuilder->build(
             'Invalid client credentials',
             [
-                new Parameter('error', 'string', 'invalid_client'),
-                new Parameter('error_description', 'string', 'Client authentication failed'),
-                new Parameter('message', 'string', 'Client authentication failed'),
+                new Parameter(
+                    'error',
+                    'string',
+                    'invalid_client'
+                ),
+                new Parameter(
+                    'error_description',
+                    'string',
+                    'Client authentication failed'
+                ),
+                new Parameter(
+                    'message',
+                    'string',
+                    'Client authentication failed'
+                ),
             ]
         );
     }

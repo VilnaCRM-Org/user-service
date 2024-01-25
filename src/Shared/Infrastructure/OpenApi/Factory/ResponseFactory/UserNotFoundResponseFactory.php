@@ -20,11 +20,47 @@ final class UserNotFoundResponseFactory implements AbstractResponseFactory
         return $this->responseBuilder->build(
             'User not found',
             [
-                new Parameter('type', 'string', 'https://tools.ietf.org/html/rfc2616#section-10'),
-                new Parameter('title', 'string', 'An error occurred'),
-                new Parameter('detail', 'string', 'User not found'),
-                new Parameter('status', 'integer', HttpResponse::HTTP_NOT_FOUND),
+                $this->getTypeParam(),
+                $this->getTitleParam(),
+                $this->getDetailParam(),
+                $this->getStatusParam(),
             ]
+        );
+    }
+
+    public function getTypeParam(): Parameter
+    {
+        return new Parameter(
+            'type',
+            'string',
+            'https://tools.ietf.org/html/rfc2616#section-10'
+        );
+    }
+
+    public function getTitleParam(): Parameter
+    {
+        return new Parameter(
+            'title',
+            'string',
+            'An error occurred'
+        );
+    }
+
+    public function getDetailParam(): Parameter
+    {
+        return new Parameter(
+            'detail',
+            'string',
+            'User not found'
+        );
+    }
+
+    public function getStatusParam(): Parameter
+    {
+        return new Parameter(
+            'status',
+            'integer',
+            HttpResponse::HTTP_NOT_FOUND
         );
     }
 }

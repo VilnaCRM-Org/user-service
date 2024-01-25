@@ -48,7 +48,7 @@ final class RedisTokenRepository implements TokenRepositoryInterface
         $this->redisAdapter->save($cacheItem);
     }
 
-    public function find($tokenValue): ?ConfirmationTokenInterface
+    public function find(string $tokenValue): ?ConfirmationTokenInterface
     {
         $key = $this->getTokenKey($tokenValue);
 
@@ -63,7 +63,7 @@ final class RedisTokenRepository implements TokenRepositoryInterface
             : null;
     }
 
-    public function findByUserId($userID): ?ConfirmationTokenInterface
+    public function findByUserId(string $userID): ?ConfirmationTokenInterface
     {
         $key = $this->getUserKey($userID);
 

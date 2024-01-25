@@ -13,6 +13,8 @@ use function Lambdish\Phunctional\reindex;
 final class CallableFirstParameterExtractor
 {
     /**
+     * @param iterable<DomainEventSubscriberInterface> $callables
+     *
      * @return array<int, string|null>
      */
     public static function forCallables(iterable $callables): array
@@ -24,6 +26,8 @@ final class CallableFirstParameterExtractor
     }
 
     /**
+     * @param iterable<DomainEventSubscriberInterface> $callables
+     *
      * @return array<int, array<DomainEventSubscriberInterface>>
      */
     public static function forPipedCallables(iterable $callables): array
@@ -31,7 +35,7 @@ final class CallableFirstParameterExtractor
         return reduce(self::pipedCallablesReducer(), $callables, []);
     }
 
-    public function extract($class): ?string
+    public function extract(object|string $class): ?string
     {
         $reflector = new \ReflectionClass($class);
         $method = $reflector->getMethod('__invoke');

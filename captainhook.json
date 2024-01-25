@@ -49,6 +49,11 @@
                 "conditions": []
             },
             {
+                "action": "make phpinsights",
+                "options": [],
+                "conditions": []
+            },
+            {
                 "action": "make phpunit",
                 "options": [],
                 "conditions": []

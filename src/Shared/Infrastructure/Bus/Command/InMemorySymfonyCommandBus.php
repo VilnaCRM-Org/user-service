@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\Bus\Command;
 
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Command\CommandInterface;
 use App\Shared\Infrastructure\Bus\CallableFirstParameterExtractor;
 use Symfony\Component\Messenger\Exception\HandlerFailedException;
@@ -17,6 +18,9 @@ class InMemorySymfonyCommandBus implements CommandBusInterface
 {
     private MessageBus $bus;
 
+    /**
+     * @param iterable<CommandHandlerInterface> $commandHandlers
+     */
     public function __construct(iterable $commandHandlers)
     {
         $this->bus = new MessageBus(

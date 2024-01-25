@@ -11,11 +11,14 @@ final class PasswordChangedEvent extends DomainEvent
     public function __construct(
         public readonly string $email,
         string $eventId,
-        string $occurredOn = null
+        ?string $occurredOn = null
     ) {
         parent::__construct($eventId, $occurredOn);
     }
 
+    /**
+     * @param array<string, string> $body
+     */
     public static function fromPrimitives(
         array $body,
         string $eventId,

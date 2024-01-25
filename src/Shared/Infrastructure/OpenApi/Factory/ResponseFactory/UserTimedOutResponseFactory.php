@@ -20,11 +20,47 @@ final class UserTimedOutResponseFactory implements AbstractResponseFactory
         return $this->responseBuilder->build(
             'Too many requests',
             [
-                new Parameter('type', 'string', 'https://tools.ietf.org/html/rfc2616#section-10'),
-                new Parameter('title', 'string', 'An error occurred'),
-                new Parameter('detail', 'string', 'Cannot send new email till 2024-01-24T12:43:01+00:00'),
-                new Parameter('status', 'integer', HttpResponse::HTTP_TOO_MANY_REQUESTS),
+                $this->getTypeParam(),
+                $this->getTitleParam(),
+                $this->getDetailParam(),
+                $this->getStatusParam(),
             ]
+        );
+    }
+
+    public function getTypeParam(): Parameter
+    {
+        return new Parameter(
+            'type',
+            'string',
+            'https://tools.ietf.org/html/rfc2616#section-10'
+        );
+    }
+
+    public function getTitleParam(): Parameter
+    {
+        return new Parameter(
+            'title',
+            'string',
+            'An error occurred'
+        );
+    }
+
+    public function getDetailParam(): Parameter
+    {
+        return new Parameter(
+            'detail',
+            'string',
+            'Cannot send new email till 2024-01-24T12:43:01+00:00'
+        );
+    }
+
+    public function getStatusParam(): Parameter
+    {
+        return new Parameter(
+            'status',
+            'integer',
+            HttpResponse::HTTP_TOO_MANY_REQUESTS
         );
     }
 }

@@ -17,7 +17,6 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 final class OpenApiFactory implements OpenApiFactoryInterface
 {
     /**
-     * @param OpenApiFactoryInterface $decorated
      * @param iterable<AbstractEndpointFactory> $endpointFactories
      */
     public function __construct(
@@ -27,6 +26,9 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     ) {
     }
 
+    /**
+     * @param array<string, string> $context
+     */
     public function __invoke(array $context = []): OpenApi
     {
         $openApi = $this->decorated->__invoke($context);
@@ -37,37 +39,68 @@ final class OpenApiFactory implements OpenApiFactoryInterface
 
         $this->addServerErrorResponseToAllEndpoints($openApi);
 
-        return $openApi->withServers([new Model\Server('https://localhost')]);
+        return $openApi->withServers([
+            new Model\Server('https://localhost'),
+        ]);
     }
 
-    private function addServerErrorResponseToAllEndpoints(OpenApi $openApi): void
-    {
+    private function addServerErrorResponseToAllEndpoints(
+        OpenApi $openApi
+    ): void {
         $serverErrorResponse = $this->serverErrorResponseFactory->getResponse();
 
         foreach (array_keys($openApi->getPaths()->getPaths()) as $path) {
-            $this->addServerErrorResponseToPath($openApi, $path, $serverErrorResponse);
+            $this->addServerErrorResponseToPath(
+                $openApi,
+                $path,
+                $serverErrorResponse
+            );
         }
     }
 
-    private function addServerErrorResponseToPath(OpenApi $openApi, string $path, Response $response): void
-    {
+    private function addServerErrorResponseToPath(
+        OpenApi $openApi,
+        string $path,
+        Response $response
+    ): void {
         $pathItem = $openApi->getPaths()->getPath($path);
         $pathItem = $this->processPathItemOperations($pathItem, $response);
         $openApi->getPaths()->addPath($path, $pathItem);
     }
 
-    private function processPathItemOperations(PathItem $pathItem, Response $standardResponse): PathItem
-    {
-        return $pathItem
-            ->withGet($this->addErrorResponseToOperation($pathItem->getGet(), $standardResponse))
-            ->withPost($this->addErrorResponseToOperation($pathItem->getPost(), $standardResponse))
-            ->withPut($this->addErrorResponseToOperation($pathItem->getPut(), $standardResponse))
-            ->withPatch($this->addErrorResponseToOperation($pathItem->getPatch(), $standardResponse))
-            ->withDelete($this->addErrorResponseToOperation($pathItem->getDelete(), $standardResponse));
+    private function processPathItemOperations(
+        PathItem $pathItem,
+        Response $standardResponse
+    ): PathItem {
+        return $pathItem->withGet($this->addErrorResponseToOperation(
+            $pathItem->getGet(),
+            $standardResponse
+        ))
+            ->withPost($this->addErrorResponseToOperation(
+                $pathItem->getPost(),
+                $standardResponse
+            ))
+            ->withPut($this->addErrorResponseToOperation(
+                $pathItem->getPut(),
+                $standardResponse
+            ))
+            ->withPatch($this->addErrorResponseToOperation(
+                $pathItem->getPatch(),
+                $standardResponse
+            ))
+            ->withDelete($this->addErrorResponseToOperation(
+                $pathItem->getDelete(),
+                $standardResponse
+            ));
     }
 
-    private function addErrorResponseToOperation(?Operation $operation, Response $standardResponse): ?Operation
-    {
-        return $operation?->withResponse(HttpResponse::HTTP_INTERNAL_SERVER_ERROR, $standardResponse);
+    private function addErrorResponseToOperation(
+        ?Operation $operation,
+        Response $standardResponse
+    ): ?Operation {
+        return $operation?->withResponse(
+            HttpResponse::HTTP_INTERNAL_SERVER_ERROR,
+            $standardResponse
+        );
     }
 }

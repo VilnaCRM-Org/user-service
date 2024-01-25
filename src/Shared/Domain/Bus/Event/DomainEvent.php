@@ -9,13 +9,16 @@ abstract class DomainEvent
     private readonly string $eventId;
     private readonly string $occurredOn;
 
-    public function __construct(string $eventId, string $occurredOn = null)
+    public function __construct(string $eventId, ?string $occurredOn)
     {
         $this->eventId = $eventId;
         $this->occurredOn = $occurredOn ??
             self::dateToString(new \DateTimeImmutable());
     }
 
+    /**
+     * @param array<string, string|object> $body
+     */
     abstract public static function fromPrimitives(
         array $body,
         string $eventId,

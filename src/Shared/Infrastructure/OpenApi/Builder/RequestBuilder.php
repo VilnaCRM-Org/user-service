@@ -15,7 +15,7 @@ final class RequestBuilder
     /**
      * @param array<Parameter> $params
      */
-    public function build(array $params = null): RequestBody
+    public function build(?array $params = null): RequestBody
     {
         $content = $this->contextBuilder->build($params);
 

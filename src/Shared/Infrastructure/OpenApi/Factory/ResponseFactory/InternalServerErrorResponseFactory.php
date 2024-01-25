@@ -20,11 +20,47 @@ final class InternalServerErrorResponseFactory implements AbstractResponseFactor
         return $this->responseBuilder->build(
             'Internal server error',
             [
-                new Parameter('type', 'string', '/errors/500'),
-                new Parameter('title', 'string', 'An error occurred'),
-                new Parameter('detail', 'string', 'Something went wrong'),
-                new Parameter('status', 'integer', HttpResponse::HTTP_INTERNAL_SERVER_ERROR),
+                $this->getTypeParam(),
+                $this->getTitleParam(),
+                $this->getDetailParam(),
+                $this->getStatusParam(),
             ]
+        );
+    }
+
+    public function getTypeParam(): Parameter
+    {
+        return new Parameter(
+            'type',
+            'string',
+            '/errors/500'
+        );
+    }
+
+    public function getTitleParam(): Parameter
+    {
+        return new Parameter(
+            'title',
+            'string',
+            'An error occurred'
+        );
+    }
+
+    public function getDetailParam(): Parameter
+    {
+        return new Parameter(
+            'detail',
+            'string',
+            'Something went wrong'
+        );
+    }
+
+    public function getStatusParam(): Parameter
+    {
+        return new Parameter(
+            'status',
+            'integer',
+            HttpResponse::HTTP_INTERNAL_SERVER_ERROR
         );
     }
 }

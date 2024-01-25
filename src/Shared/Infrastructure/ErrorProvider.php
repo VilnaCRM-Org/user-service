@@ -13,6 +13,10 @@ use ApiPlatform\State\ProviderInterface;
  */
 final class ErrorProvider implements ProviderInterface
 {
+    /**
+     * @param array<string,string> $uriVariables
+     * @param array<string,string> $context
+     */
     public function provide(
         Operation $operation,
         array $uriVariables = [],
