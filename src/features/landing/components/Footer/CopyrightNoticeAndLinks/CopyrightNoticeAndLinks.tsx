@@ -7,7 +7,7 @@ import { UiTypography } from '@/components';
 import { ISocialMedia } from '../../../types/social-media';
 import { SocialMediaList } from '../SocialMediaList';
 
-import { copyrightNoticeAndLinksStyles } from './styles';
+import styles from './styles';
 
 function CopyrightNoticeAndLinks({
   socialLinks,
@@ -18,18 +18,12 @@ function CopyrightNoticeAndLinks({
 
   return (
     <>
-      <UiTypography
-        variant="medium15"
-        sx={copyrightNoticeAndLinksStyles.copyright}
-      >
+      <UiTypography variant="medium15" sx={styles.copyright}>
         {t('footer.copyright')}
       </UiTypography>
       <Stack direction="row" gap="14px" alignItems="center">
-        <Box sx={copyrightNoticeAndLinksStyles.gmailWrapper}>
-          <UiTypography
-            variant="medium15"
-            sx={copyrightNoticeAndLinksStyles.gmailText}
-          >
+        <Box sx={styles.gmailWrapper}>
+          <UiTypography variant="medium15" sx={styles.gmailText}>
             info@vilnacrm.com
           </UiTypography>
         </Box>

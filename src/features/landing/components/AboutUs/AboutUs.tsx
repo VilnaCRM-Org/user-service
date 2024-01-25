@@ -3,12 +3,12 @@ import React from 'react';
 
 import { BackgroundImages } from './BackgroundImages';
 import { DeviceImage } from './DeviceImage';
-import { aboutUsStyles } from './styles';
+import styles from './styles';
 import { TextInfo } from './TextInfo';
 
 function AboutUs() {
   return (
-    <Stack component="section" alignItems="center" sx={aboutUsStyles.wrapper}>
+    <Stack component="section" alignItems="center" sx={styles.wrapper}>
       <TextInfo />
       <DeviceImage />
       <BackgroundImages />

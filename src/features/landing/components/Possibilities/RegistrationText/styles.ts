@@ -1,6 +1,6 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const registrationTextStyles = {
+export default {
   textWrapper: {
     marginLeft: '-16px',
     '@media (max-width: 639.98px)': {

@@ -7,11 +7,11 @@ import { colorTheme } from '@/components/UiColorTheme';
 
 import AtSignImage from '../../../../assets/svg/header-drawer/at-sign.svg';
 
-import { vilnaGmailStyles } from './styles';
+import styles from './styles';
 
 function VilnaGmail() {
   return (
-    <Box sx={vilnaGmailStyles.gmailWrapper}>
+    <Box sx={styles.gmailWrapper}>
       <Stack
         justifyContent="center"
         alignItems="center"

@@ -1,6 +1,6 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const deviceImageStyles = {
+export default {
   wrapper: {
     position: 'relative',
     overflow: 'hidden',

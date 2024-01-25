@@ -1,6 +1,6 @@
-import VectorIcon from '../../../assets/img/about-vilna/Vector.svg';
+import VectorIcon from '../../../assets/svg/about-vilna/Vector.svg';
 
-export const backgroundImagesStyles = {
+export default {
   vector: {
     backgroundImage: `url(${VectorIcon.src})`,
     backgroundSize: 'contain',

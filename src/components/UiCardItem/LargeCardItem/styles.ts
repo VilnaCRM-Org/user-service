@@ -1,6 +1,6 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const styles = {
+export default {
   wrapper: {
     height: '100%',
     '@media (max-width: 639.98px)': {

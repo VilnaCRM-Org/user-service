@@ -1,7 +1,13 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const socialItemStyles = {
+export default {
   itemWrapper: {
+    textTransform: 'none',
+    diplay: 'flex',
+    direction: 'row',
+    gap: '9px',
+    alignItems: 'center',
+    justifyContent: 'center',
     width: '189px',
     py: '17px',
     borderRadius: '12px',

@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ISocialMedia } from '../../../../types/social-media';
 
-import { socialMediaStyles } from './styles';
+import styles from './styles';
 
 function SocialMedia({ socialMedia }: { socialMedia: ISocialMedia[] }) {
   const { t } = useTranslation();
@@ -15,7 +15,7 @@ function SocialMedia({ socialMedia }: { socialMedia: ISocialMedia[] }) {
       justifyContent="center"
       gap="8px"
       flexDirection="row"
-      sx={socialMediaStyles.linkWrapper}
+      sx={styles.linkWrapper}
     >
       {socialMedia.map(({ icon, alt, id, linkHref, ariaLabel }) => (
         <Box key={id} m="12px">

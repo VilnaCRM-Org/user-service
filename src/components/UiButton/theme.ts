@@ -2,22 +2,6 @@ import { Interpolation, Theme, createTheme } from '@mui/material';
 
 import { colorTheme } from '../UiColorTheme';
 
-import { UiButtonProps } from './types';
-
-const defaultProps: UiButtonProps = {
-  variant: 'contained',
-  size: 'small',
-  disabled: false,
-  disableElevation: false,
-  disableFocusRipple: false,
-  disableRipple: false,
-  fullWidth: false,
-  href: '',
-  sx: {},
-  onClick: () => {},
-  children: '',
-};
-
 export const repeatStyles: Interpolation<{ theme: Theme }> = {
   textTransform: 'none',
   textDecoration: 'none',
@@ -31,7 +15,6 @@ export const repeatStyles: Interpolation<{ theme: Theme }> = {
 export const theme = createTheme({
   components: {
     MuiButton: {
-      defaultProps,
       variants: [
         {
           props: {
@@ -99,7 +82,7 @@ export const theme = createTheme({
             ...repeatStyles,
             color: colorTheme.palette.darkSecondary.main,
             padding: '16px 23px',
-            backgroundColor: 'white',
+            backgroundColor: colorTheme.palette.white.main,
             border: `1px solid ${colorTheme.palette.grey300.main}`,
             borderRadius: '3.563rem',
             '&:hover': {
@@ -107,7 +90,7 @@ export const theme = createTheme({
               border: '1px solid rgba(0,0,0,0)',
             },
             '&:active': {
-              border: `1px solid ${colorTheme.palette.grey500.main} #EAECEE`,
+              border: `1px solid ${colorTheme.palette.grey500.main}`,
             },
             '&:disabled': {
               backgroundColor: colorTheme.palette.brandGray.main,

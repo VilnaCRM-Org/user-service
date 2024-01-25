@@ -5,7 +5,6 @@ export const theme = createTheme({
     MuiToolbar: {
       styleOverrides: {
         root: {
-          backgroundColor: 'white',
           padding: 0,
           margin: 0,
           justifyContent: 'space-between',

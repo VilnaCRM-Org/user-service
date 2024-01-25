@@ -2,11 +2,11 @@ import { Box } from '@mui/material';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import UiImage from '../../../UiImage';
-import UiTypography from '../../../UiTypography';
+import { UiImage, UiTypography } from '@/components';
+
 import { CardItem } from '../types';
 
-import { styles } from './styles';
+import styles from './styles';
 
 function LargeCardItem({ item }: { item: CardItem }) {
   const { t } = useTranslation();

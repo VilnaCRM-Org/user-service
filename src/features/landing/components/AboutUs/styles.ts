@@ -1,4 +1,4 @@
-export const aboutUsStyles = {
+export default {
   wrapper: {
     pt: '144px',
     position: 'relative',

@@ -1,6 +1,6 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const privacyPolicyStyles = {
+export default {
   wrapper: {
     gap: '8px',
     flexDirection: 'row',
@@ -15,6 +15,7 @@ export const privacyPolicyStyles = {
     },
   },
   privacy: {
+    textDecoration: 'none',
     padding: '8px 16px',
     borderRadius: '8px',
     background: colorTheme.palette.backgroundGrey200.main,
@@ -25,6 +26,7 @@ export const privacyPolicyStyles = {
     },
   },
   usagePolicy: {
+    textDecoration: 'none',
     padding: '8px 16px',
     borderRadius: '8px',
     background: colorTheme.palette.backgroundGrey200.main,

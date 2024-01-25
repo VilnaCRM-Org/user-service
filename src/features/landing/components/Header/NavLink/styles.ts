@@ -1,6 +1,6 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const navLinkStyles = {
+export default {
   wrapper: {
     ml: '106px',
     display: 'inline-block',

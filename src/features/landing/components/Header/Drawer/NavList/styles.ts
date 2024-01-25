@@ -1,4 +1,4 @@
-export const drawerListStyles = {
+export default {
   listWrapper: {
     mt: '16px',
   },

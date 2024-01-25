@@ -1,4 +1,4 @@
-export const drawerStyles = {
+export default {
   wrapper: {
     display: 'none',
     '@media (max-width: 1023.98px)': {

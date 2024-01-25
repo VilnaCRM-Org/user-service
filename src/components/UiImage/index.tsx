@@ -2,17 +2,13 @@
 import { Box } from '@mui/material';
 import Image from 'next/image';
 
+import styles from './styles';
 import { UiImageProps } from './types';
 
-function UiImage({ src, alt, sx, ...rest }: UiImageProps) {
+function UiImage({ sx, ...rest }: UiImageProps) {
   return (
     <Box sx={sx}>
-      <Image
-        src={src}
-        alt={alt}
-        {...rest}
-        style={{ width: '100%', height: '100%' }}
-      />
+      <Image {...rest} style={styles.image} />
     </Box>
   );
 }

@@ -1,10 +1,10 @@
 import { Box } from '@mui/material';
 import React from 'react';
 
-import { notchStyles } from './styles';
+import styles from './styles';
 
 function Notch() {
-  return <Box sx={notchStyles.notch} />;
+  return <Box sx={styles.notch} />;
 }
 
 export default Notch;

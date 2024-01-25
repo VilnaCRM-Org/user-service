@@ -1,12 +1,12 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const cardsStyles = {
+export default {
   wrapper: {
     '@media (max-width: 1023.98px)': {
       position: 'relative',
       zIndex: '5',
       marginTop: '322px',
-      padding: '32px 24px',
+      padding: '32px 24px 0 24px',
       borderRadius: '24px 24px 0px 0px',
       background: colorTheme.palette.white.main,
       boxShadow: '0px -15px 24px 0px rgba(108, 120, 132, 0.25)',

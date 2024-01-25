@@ -1,4 +1,4 @@
-export const socialListStyles = {
+export default {
   listWrapper: {
     display: 'grid',
     maxWidth: '390px',

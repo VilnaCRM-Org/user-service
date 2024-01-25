@@ -1,16 +1,12 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const adaptiveStyles = {
+export default {
   wrapper: {
-    display: 'none',
     marginBottom: '20px',
     borderTop: `1px solid  ${colorTheme.palette.brandGray.main}`,
     background: colorTheme.palette.white.main,
     boxShadow:
       ' 0px -5px 46px 0px rgba(198, 209, 220, 0.25), 0px -5px 46px 0px rgba(198, 209, 220, 0.25)',
-    '@media (max-width: 767.98px)': {
-      display: 'inline-block',
-    },
   },
   gmailText: {
     color: colorTheme.palette.darkSecondary.main,

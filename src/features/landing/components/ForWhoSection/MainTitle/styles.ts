@@ -1,6 +1,6 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const mainTitleStyles = {
+export default {
   title: {
     '@media (max-width: 1023.98px)': {
       color: colorTheme.palette.darkPrimary.main,

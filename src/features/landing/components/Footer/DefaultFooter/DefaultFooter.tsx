@@ -7,15 +7,11 @@ import { ISocialMedia } from '../../../types/social-media';
 import { CopyrightNoticeAndLinks } from '../CopyrightNoticeAndLinks';
 import { PrivacyPolicy } from '../PrivacyPolicy';
 
-import { defaultFooterStyles } from './styles';
+import styles from './styles';
 
 function DefaultFooter({ socialLinks }: { socialLinks: ISocialMedia[] }) {
   return (
-    <Stack
-      sx={defaultFooterStyles.footerWrapper}
-      id="Contacts"
-      component="footer"
-    >
+    <Stack sx={styles.footerWrapper}>
       <Stack height="67px" alignItems="center" flexDirection="row">
         <Container>
           <Stack
@@ -28,9 +24,9 @@ function DefaultFooter({ socialLinks }: { socialLinks: ISocialMedia[] }) {
           </Stack>
         </Container>
       </Stack>
-      <Stack sx={defaultFooterStyles.copyrightAndLinksWrapper}>
+      <Stack sx={styles.copyrightAndLinksWrapper}>
         <Container>
-          <Stack sx={defaultFooterStyles.copyrightAndLinks}>
+          <Stack sx={styles.copyrightAndLinks}>
             <CopyrightNoticeAndLinks socialLinks={socialLinks} />
           </Stack>
         </Container>

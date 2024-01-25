@@ -1,6 +1,7 @@
 import Check from '../../features/landing/assets/svg/checkbox/check.svg';
+import { colorTheme } from '../UiColorTheme';
 
-export const checkboxStyles = {
+export default {
   checkboxWrapper: {
     display: 'grid',
     marginRight: '13px',
@@ -11,7 +12,7 @@ export const checkboxStyles = {
       width: '24px',
       height: '24px',
       borderRadius: '8px',
-      border: '1px solid #d0d4d8',
+      border: `1px solid ${colorTheme.palette.grey400.main}`,
       background: '#fff',
       '&:hover': {
         cursor: 'pointer',

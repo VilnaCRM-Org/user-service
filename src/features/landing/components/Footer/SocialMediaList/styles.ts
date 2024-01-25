@@ -1,4 +1,4 @@
-export const socialMediaListStyles = {
+export default {
   listWrapper: {
     gap: '8px',
     '@media (max-width: 767.98px)': {

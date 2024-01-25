@@ -1,6 +1,6 @@
 import { colorTheme } from '../UiColorTheme';
 
-export const uiTooltipStyles = {
+export default {
   hoveredText: {
     color: colorTheme.palette.primary.main,
     textDecoration: 'underline',

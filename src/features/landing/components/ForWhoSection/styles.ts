@@ -3,7 +3,7 @@ import { colorTheme } from '@/components/UiColorTheme';
 import VectorIcon from '../../assets/svg/for-who/bg-lg.svg';
 import VectorIconMd from '../../assets/svg/for-who/bg-md.svg';
 
-export const forWhoSectionStyles = {
+export default {
   wrapper: {
     background: colorTheme.palette.backgroundGrey100.main,
     maxWidth: '100dvw',
@@ -30,7 +30,7 @@ export const forWhoSectionStyles = {
       pt: '118px',
     },
     '@media (max-width: 639.98px)': {
-      pt: '32px',
+      pt: '64px',
     },
   },
 

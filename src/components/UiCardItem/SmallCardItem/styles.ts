@@ -1,6 +1,6 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const styles = {
+export default {
   wrapper: {
     padding: '40px 32px 40px 25px',
     borderRadius: '0.75rem',

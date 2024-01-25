@@ -1,4 +1,4 @@
-export const possibilitiesStyles = {
+export default {
   wrapper: {
     pt: '70px',
     pb: '58px',
@@ -7,7 +7,7 @@ export const possibilitiesStyles = {
     },
     '@media (max-width: 639.98px)': {
       pb: '28px',
-      pt: '33px',
+      pt: '65px',
       ml: '9px',
     },
   },

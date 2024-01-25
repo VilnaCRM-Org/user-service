@@ -7,7 +7,7 @@ import { UiTypography } from '@/components';
 
 import { IimageList } from '../../../types/possibilities/image-list';
 
-import { styles } from './styles';
+import styles from './styles';
 
 function HoverCard({ imageList }: { imageList: IimageList[] }) {
   const { t } = useTranslation();

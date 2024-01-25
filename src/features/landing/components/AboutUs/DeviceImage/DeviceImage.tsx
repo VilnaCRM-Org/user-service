@@ -4,22 +4,18 @@ import React from 'react';
 import { MainImage } from '../MainImage';
 import { Notch } from '../Notch';
 
-import { deviceImageStyles } from './styles';
+import styles from './styles';
 
 function DeviceImage() {
   return (
-    <Stack
-      justifyContent="center"
-      alignItems="center"
-      sx={deviceImageStyles.wrapper}
-    >
-      <Box sx={deviceImageStyles.screenBorder}>
-        <Box sx={deviceImageStyles.screenBackground}>
+    <Stack justifyContent="center" alignItems="center" sx={styles.wrapper}>
+      <Box sx={styles.screenBorder}>
+        <Box sx={styles.screenBackground}>
           <Notch />
           <MainImage />
         </Box>
       </Box>
-      <Box sx={deviceImageStyles.backgroundImage} />
+      <Box sx={styles.backgroundImage} />
     </Stack>
   );
 }

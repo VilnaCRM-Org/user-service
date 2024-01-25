@@ -9,7 +9,7 @@ import {
 
 import { colorTheme } from '../UiColorTheme';
 
-import { uiTooltipStyles } from './styles';
+import styles from './styles';
 import { UiTooltipProps } from './types';
 
 const HtmlTooltip = styled(({ className, ...props }: TooltipProps) => (
@@ -31,7 +31,7 @@ const HtmlTooltip = styled(({ className, ...props }: TooltipProps) => (
 function UiTooltip({ children, content, props }: UiTooltipProps) {
   return (
     <HtmlTooltip {...props} arrow title={content}>
-      <Typography component="span" sx={uiTooltipStyles.hoveredText}>
+      <Typography component="span" sx={styles.hoveredText}>
         {children}
       </Typography>
     </HtmlTooltip>

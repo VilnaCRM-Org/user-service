@@ -1,4 +1,4 @@
-export const styles = {
+export default {
   grid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',

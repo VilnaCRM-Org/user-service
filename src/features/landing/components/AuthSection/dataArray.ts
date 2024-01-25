@@ -1,7 +1,7 @@
-import FaceBookIcon from '../../assets/img/social-media/Icons/Facebook.svg';
-import GitHubIcon from '../../assets/img/social-media/Icons/Github.svg';
-import GoogleIcon from '../../assets/img/social-media/Icons/Google.svg';
-import TwitterIcon from '../../assets/img/social-media/Icons/Twitter.svg';
+import FaceBookIcon from '../../assets/svg/auth-section/social-media/Facebook.svg';
+import GitHubIcon from '../../assets/svg/auth-section/social-media/Github.svg';
+import GoogleIcon from '../../assets/svg/auth-section/social-media/Google.svg';
+import TwitterIcon from '../../assets/svg/auth-section/social-media/Twitter.svg';
 
 export const socialLinks = [
   {

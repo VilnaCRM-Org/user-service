@@ -1,4 +1,4 @@
-export const whyUsStyles = {
+export default {
   wrapper: {
     pb: '145px',
     paddingTop: '112px',
@@ -6,9 +6,7 @@ export const whyUsStyles = {
       pb: '0',
     },
     '@media (max-width: 639.98px)': {
-      marginTop: '64px',
-      pb: '32px',
-      paddingTop: '0',
+      paddingTop: '64px',
     },
   },
 };

@@ -3,14 +3,12 @@ import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
 // eslint-disable-next-line no-restricted-imports, import/no-cycle
-import { HoverCard } from '@/features/landing/components/Possibilities/HoverCard';
+import { UiImage, UiTooltip, UiTypography } from '@/components';
 
-import UiImage from '../../../UiImage';
-import UiTooltip from '../../../UiTooltip';
-import UiTypography from '../../../UiTypography';
+import { HoverCard } from '../../../features/landing/components/Possibilities/HoverCard';
 import { CardItem, ImageItem } from '../types';
 
-import { styles } from './styles';
+import styles from './styles';
 
 interface SmallCardItem {
   item: CardItem;
@@ -32,7 +30,7 @@ function SmallCardItem({ item, imageList }: SmallCardItem) {
               placement="bottom"
               content={<HoverCard imageList={imageList} />}
             >
-              звичні сервіси
+              <UiTypography>звичні сервіси</UiTypography>
             </UiTooltip>
             у кілька кліків
           </Trans>

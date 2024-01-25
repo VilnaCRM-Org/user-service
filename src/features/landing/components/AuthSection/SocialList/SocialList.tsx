@@ -4,11 +4,11 @@ import React from 'react';
 import { ISocialLink } from '../../../types/authentication/social';
 import { SocialItem } from '../SocialItem';
 
-import { socialListStyles } from './styles';
+import styles from './styles';
 
 function SocialList({ socialLinks }: { socialLinks: ISocialLink[] }) {
   return (
-    <Grid sx={socialListStyles.listWrapper}>
+    <Grid sx={styles.listWrapper}>
       {socialLinks.map(item => (
         <SocialItem item={item} key={item.id} />
       ))}

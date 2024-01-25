@@ -1,6 +1,6 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const copyrightNoticeAndLinksStyles = {
+export default {
   gmailWrapper: {
     padding: '7px 16px',
     borderRadius: '8px',

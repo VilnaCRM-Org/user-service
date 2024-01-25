@@ -1,10 +1,9 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const textInfoStyles = {
+export default {
   textWrapper: {
     maxWidth: '43.813rem',
     mb: '50px',
-
     '@media (max-width: 1439.98px)': {
       mb: '55px',
       ml: '28px',
@@ -45,7 +44,7 @@ export const textInfoStyles = {
   },
   button: {
     '@media (max-width: 419.98px)': {
-      alignSelf: 'baseline',
+      alignSelf: 'start',
       marginBottom: '22px',
     },
   },

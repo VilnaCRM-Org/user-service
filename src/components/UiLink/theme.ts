@@ -20,6 +20,9 @@ export const theme = createTheme({
           '@media (max-width: 639.98px)': {
             fontSize: '14px',
           },
+          '&:hover': {
+            color: '#297FFF',
+          },
         },
       },
     },

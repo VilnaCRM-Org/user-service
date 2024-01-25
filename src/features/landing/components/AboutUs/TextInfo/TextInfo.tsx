@@ -4,20 +4,24 @@ import { Trans, useTranslation } from 'react-i18next';
 
 import { UiButton, UiTypography } from '@/components';
 
-import { textInfoStyles } from './styles';
+import styles from './styles';
 
 function TextInfo() {
   const { t } = useTranslation();
   return (
-    <Stack sx={textInfoStyles.textWrapper}>
-      <UiTypography variant="h1" sx={textInfoStyles.title}>
+    <Stack sx={styles.textWrapper}>
+      <UiTypography variant="h1" sx={styles.title}>
         <Trans i18nKey="about_vilna.heading_main" />
       </UiTypography>
-      <UiTypography variant="bodyText18" sx={textInfoStyles.text}>
+      <UiTypography variant="bodyText18" sx={styles.text}>
         {t('about_vilna.text_main')}
       </UiTypography>
-
-      <UiButton variant="contained" size="medium" sx={textInfoStyles.button}>
+      <UiButton
+        variant="contained"
+        size="medium"
+        href="#signUp"
+        sx={styles.button}
+      >
         {t('about_vilna.button_main')}
       </UiButton>
     </Stack>

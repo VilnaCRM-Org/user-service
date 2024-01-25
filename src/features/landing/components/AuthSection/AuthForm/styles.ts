@@ -3,15 +3,13 @@ import { colorTheme } from '@/components/UiColorTheme';
 import Imagess from '../../../assets/svg/auth-section/bg.svg';
 import Images from '../../../assets/svg/auth-section/image.svg';
 
-export const authFormStyles = {
+export default {
   formWrapper: {
     position: 'relative',
     mt: '65px',
-
     '@media (max-width: 1439.98px)': {
       mt: '62px',
     },
-
     '@media (max-width: 639.98px)': {
       mt: '34px',
     },
@@ -29,15 +27,18 @@ export const authFormStyles = {
       top: '8.3%',
       right: '26%',
     },
+    '@media (max-width: 1023.98px)': {
+      top: '6.8%',
+    },
     '@media (max-width: 639.98px)': {
       display: 'none',
     },
   },
   formTitle: {
-    marginBottom: '32px',
+    paddingBottom: '32px',
     '@media (max-width: 1439.98px)': {
       maxWidth: '357px',
-      marginBottom: '20px',
+      paddingBottom: '20px',
     },
 
     '@media (max-width: 639.98px)': {
@@ -46,10 +47,9 @@ export const authFormStyles = {
       fontStyle: 'normal',
       fontWeight: '700',
       lineHeight: 'normal',
-      marginBottom: '19px',
+      paddingBottom: '19px',
     },
   },
-
   formContent: {
     position: 'relative',
     zIndex: '5',
@@ -74,23 +74,32 @@ export const authFormStyles = {
       padding: '24px 24px 32px 24px',
     },
   },
-
-  labelTitle: {
-    mt: '22px',
-    paddingBottom: '9px',
+  inputsWrapper: {
+    flexDirection: 'column',
+    gap: '22px',
     '@media (max-width: 1439.98px)': {
-      mt: '15px',
-      fontSize: '16px',
-    },
-    '@media (max-width: 639.98px)': {
-      fontSize: '14px',
-      paddingBottom: '4px',
+      gap: '15px',
     },
   },
 
+  inputWrapper: {
+    flexDirection: 'column',
+    gap: '9px',
+    position: 'relative',
+    '@media (max-width: 1023.98px)': {
+      gap: '5px',
+    },
+  },
+  inputTitle: {
+    '@media (max-width: 1439.98px)': {
+      fontSize: '16px',
+    },
+    '@media (max-width: 1023.98px)': {
+      fontSize: '14px',
+    },
+  },
   buttonWrapper: {
     maxWidth: '175px',
-
     '@media (max-width: 1439.98px)': {
       height: '70px',
       maxWidth: '100%',
@@ -144,6 +153,14 @@ export const authFormStyles = {
 
     '@media (max-width: 639.98px)': {
       display: 'none',
+    },
+  },
+  errorText: {
+    top: '100%',
+    position: 'absolute',
+    color: colorTheme.palette.error.main,
+    '@media (max-width: 639.98px)': {
+      fontSize: '12px',
     },
   },
 };

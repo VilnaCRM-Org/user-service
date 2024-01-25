@@ -11,7 +11,7 @@ import 'swiper/css/pagination';
 import UiCardItem from '../../UiCardItem';
 import { ICardList } from '../types';
 
-import { styles } from './styles';
+import styles from './styles';
 
 function CardList({ cardList }: ICardList) {
   const { t } = useTranslation();
@@ -37,7 +37,12 @@ function CardList({ cardList }: ICardList) {
             </SwiperSlide>
           ))}
         </Swiper>
-        <UiButton variant="contained" size="small" sx={styles.button}>
+        <UiButton
+          variant="contained"
+          size="small"
+          sx={styles.button}
+          href="#signUp"
+        >
           {t('why_we.buttonText')}
         </UiButton>
       </Grid>

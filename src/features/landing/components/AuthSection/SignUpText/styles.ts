@@ -1,6 +1,6 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const signUpTextStyles = {
+export default {
   title: {
     paddingBottom: '40px',
     whiteSpace: 'pre-line',
@@ -23,7 +23,7 @@ export const signUpTextStyles = {
     },
   },
   textWrapper: {
-    mt: '136px',
+    pt: '136px',
     width: '50%',
     maxWidth: '561px',
     '@media (max-width: 1439.98px)': {
@@ -32,9 +32,10 @@ export const signUpTextStyles = {
       flexDirection: 'column',
       alignItems: 'center',
       width: '100%',
-      mt: '56px',
+      pt: '56px',
+
       '@media (max-width: 639.98px)': {
-        mt: '26px',
+        pt: '26px',
       },
     },
   },

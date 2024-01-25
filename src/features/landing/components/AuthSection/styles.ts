@@ -1,6 +1,6 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const authSectionStyles = {
+export default {
   wrapper: {
     background: colorTheme.palette.backgroundGrey100.main,
     mb: '2px',

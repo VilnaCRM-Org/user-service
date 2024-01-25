@@ -1,12 +1,12 @@
 import { Box } from '@mui/material';
 import React from 'react';
 
-import { mainImageStyles } from './styles';
+import styles from './styles';
 
 function MainImage() {
   return (
-    <Box sx={mainImageStyles.mainImageWrapper}>
-      <Box sx={mainImageStyles.mainImage} />
+    <Box sx={styles.mainImageWrapper}>
+      <Box sx={styles.mainImage} />
     </Box>
   );
 }

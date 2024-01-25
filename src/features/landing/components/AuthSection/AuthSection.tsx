@@ -4,13 +4,13 @@ import React from 'react';
 import { AuthForm } from './AuthForm';
 import { socialLinks } from './dataArray';
 import { SignUpText } from './SignUpText';
-import { authSectionStyles } from './styles';
+import styles from './styles';
 
 function AuthSection() {
   return (
-    <Box sx={authSectionStyles.wrapper} id="signUp" component="section">
+    <Box sx={styles.wrapper} id="signUp" component="section">
       <Container>
-        <Stack justifyContent="space-between" sx={authSectionStyles.content}>
+        <Stack justifyContent="space-between" sx={styles.content}>
           <SignUpText socialLinks={socialLinks} />
           <AuthForm />
         </Stack>

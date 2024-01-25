@@ -1,6 +1,6 @@
 import { colorTheme } from '@/components/UiColorTheme';
 
-export const notchStyles = {
+export default {
   notch: {
     position: 'relative',
     bottom: '3px',

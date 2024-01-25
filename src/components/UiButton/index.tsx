@@ -1,40 +1,15 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import { Button, ThemeProvider } from '@mui/material';
+import { ButtonProps } from '@mui/material/Button';
 import React from 'react';
 
 import { theme } from './theme';
-import { UiButtonProps } from './types';
 
-function UiButton({
-  onClick,
-  children,
-  variant,
-  size,
-  disabled,
-  disableFocusRipple,
-  disableRipple,
-  disableElevation,
-  href,
-  fullWidth,
-  type,
-  sx,
-}: UiButtonProps) {
+function UiButton(props: ButtonProps) {
+  const { children } = props;
   return (
     <ThemeProvider theme={theme}>
-      <Button
-        sx={sx}
-        onClick={onClick}
-        variant={variant}
-        size={size}
-        disabled={disabled}
-        disableElevation={disableElevation}
-        disableFocusRipple={disableFocusRipple}
-        disableRipple={disableRipple}
-        fullWidth={fullWidth}
-        type={type}
-        href={href}
-      >
-        {children}
-      </Button>
+      <Button {...props}>{children}</Button>
     </ThemeProvider>
   );
 }

@@ -32,17 +32,6 @@ export const theme = createTheme({
     MuiTextField: {
       styleOverrides: {
         root: {
-          '.MuiFormHelperText-root.Mui-error': {
-            color: colorTheme.palette.error.main,
-            paddingTop: '4px',
-            fontSize: '14px',
-            fontStyle: 'normal',
-            fontWeight: '500',
-            lineHeight: '18px',
-            fontFamily: 'Inter',
-            margin: '0',
-            letterSpacing: '0',
-          },
           input: {
             padding: '0 28px',
             height: '64px',

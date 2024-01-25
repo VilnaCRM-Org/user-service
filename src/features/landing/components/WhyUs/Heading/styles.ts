@@ -1,4 +1,4 @@
-export const headingStyles = {
+export default {
   title: {
     '@media (max-width: 639.98px)': {
       fontFamily: 'Golos',

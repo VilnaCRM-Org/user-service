@@ -6,24 +6,20 @@ import { UiImage, UiToolbar } from '@/components';
 
 import Logo from '../../assets/svg/logo/Logo.svg';
 
-import { AuthenticationButtons } from './AuthButtons';
+import { AuthButtons } from './AuthButtons';
 import { links } from './dataArray';
 import { Drawer } from './Drawer';
 import { NavLink } from './NavLink';
-import { headerStyles } from './styles';
+import styles from './styles';
 
 function Header() {
   const { t } = useTranslation();
   return (
-    <AppBar position="static" sx={headerStyles.headerWrapper}>
+    <AppBar position="static" sx={styles.headerWrapper}>
       <UiToolbar>
-        <UiImage
-          src={Logo}
-          alt={t('header.image_alt')}
-          sx={headerStyles.logo}
-        />
+        <UiImage src={Logo} alt={t('header.image_alt')} sx={styles.logo} />
         <NavLink links={links} />
-        <AuthenticationButtons />
+        <AuthButtons />
         <Drawer />
       </UiToolbar>
     </AppBar>

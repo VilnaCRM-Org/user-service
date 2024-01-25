@@ -1,7 +1,7 @@
 import PhoneMainImage from '../../../assets/img/about-vilna/mobileBackground.png';
 import MainImageSrc from '../../../assets/img/about-vilna/Screen.png';
 
-export const mainImageStyles = {
+export default {
   mainImageWrapper: {
     overflow: 'hidden',
     borderTopRightRadius: '10px',

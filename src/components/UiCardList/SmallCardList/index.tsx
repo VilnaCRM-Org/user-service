@@ -9,7 +9,7 @@ import 'swiper/css/pagination';
 import UiCardItem from '../../UiCardItem';
 import { ICardList } from '../types';
 
-import { styles } from './styles';
+import styles from './styles';
 
 function CardList({ imageList, cardList }: ICardList) {
   return (

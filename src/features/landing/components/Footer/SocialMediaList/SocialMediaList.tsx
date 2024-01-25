@@ -4,15 +4,11 @@ import React from 'react';
 import { ISocialMedia } from '../../../types/social-media';
 import { SocialMediaItem } from '../SocialMediaItem';
 
-import { socialMediaListStyles } from './styles';
+import styles from './styles';
 
 function SocialMediaList({ socialLinks }: { socialLinks: ISocialMedia[] }) {
   return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      sx={socialMediaListStyles.listWrapper}
-    >
+    <Stack direction="row" alignItems="center" sx={styles.listWrapper}>
       {socialLinks.map(item => (
         <SocialMediaItem item={item} key={item.id} />
       ))}

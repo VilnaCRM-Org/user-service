@@ -3,28 +3,24 @@ import React from 'react';
 
 import { Cards } from './Cards';
 import MainTitle from './MainTitle/MainTitle';
-import { forWhoSectionStyles } from './styles';
+import styles from './styles';
 
 function ForWhoSectionStyles() {
   return (
-    <Box
-      id="forWhoSectionStyles"
-      component="section"
-      sx={forWhoSectionStyles.wrapper}
-    >
+    <Box id="forWhoSectionStyles" component="section" sx={styles.wrapper}>
       <Container>
-        <Box sx={forWhoSectionStyles.content}>
+        <Box sx={styles.content}>
           <MainTitle />
-          <Box sx={forWhoSectionStyles.lgCardsWrapper}>
+          <Box sx={styles.lgCardsWrapper}>
             <Cards />
           </Box>
-          <Box sx={forWhoSectionStyles.mainImage} />
+          <Box sx={styles.mainImage} />
         </Box>
       </Container>
-      <Box sx={forWhoSectionStyles.smCardsWrapper}>
+      <Box sx={styles.smCardsWrapper}>
         <Cards />
       </Box>
-      <Box sx={forWhoSectionStyles.line} />
+      <Box sx={styles.line} />
     </Box>
   );
 }

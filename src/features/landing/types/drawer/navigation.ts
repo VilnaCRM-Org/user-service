@@ -1,8 +1,5 @@
 export type INavItem = {
   id: string;
   title: string;
+  link: string;
 };
-
-export interface INavList {
-  navList: INavItem[];
-}

@@ -1,4 +1,4 @@
-export const socialMediaStyles = {
+export default {
   linkWrapper: {
     mt: '16px',
     pr: '12px',
