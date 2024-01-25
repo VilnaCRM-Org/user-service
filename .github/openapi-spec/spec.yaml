@@ -30,7 +30,7 @@ paths:
               schema:
                 type: string
                 format: uri
-                example: 'https://example.com/oauth/callback?code=e7f8c62113a47f7a5a9dca1f&state=af0ifjsldkj'
+                example: 'https://example.com/oauth/callback?code=e7f8c62113a4'
               style: simple
               explode: false
               allowReserved: false
@@ -47,15 +47,9 @@ paths:
                   message: { type: string }
               example:
                 error: unsupported_grant_type
-                error_description: |-
-                  The authorization grant 
-                                          type is not supported by the authorization server.
-                hint: |-
-                  Check that all required 
-                                              parameters have been provided
-                message: |-
-                  The authorization grant type is not 
-                                          supported by the authorization server.
+                error_description: 'The authorization grant type is not supported by the authorization server.'
+                hint: 'Check that all required parameters have been provided'
+                message: 'The authorization grant type is not supported by the authorization server.'
           headers: {  }
         401:
           description: 'Invalid client credentials'
@@ -91,65 +85,66 @@ paths:
           headers: {  }
       parameters:
         -
-          name: response_type
-          in: query
-          description: 'Response type'
-          required: true
-          deprecated: false
-          allowEmptyValue: false
-          schema: []
-          style: form
-          explode: false
-          allowReserved: false
-          example: code
-        -
-          name: client_id
-          in: query
-          description: 'Client ID'
-          required: true
-          deprecated: false
-          allowEmptyValue: false
-          schema: []
-          style: form
-          explode: false
-          allowReserved: false
-          example: dc0bc6323f16fecd4224a3860ca894c5
-        -
-          name: redirect_uri
-          in: query
-          description: 'Redirect uri'
-          required: true
-          deprecated: false
-          allowEmptyValue: false
-          schema: []
-          style: form
-          explode: false
-          allowReserved: false
-          example: 'https://example.com/oauth/callback'
-        -
-          name: scope
-          in: query
-          description: Scope
-          required: false
-          deprecated: false
-          allowEmptyValue: false
-          schema: []
-          style: form
-          explode: false
-          allowReserved: false
-          example: 'profile email'
-        -
-          name: state
-          in: query
-          description: State
-          required: false
-          deprecated: false
-          allowEmptyValue: false
-          schema: []
-          style: form
-          explode: false
-          allowReserved: false
-          example: af0ifjsldkj
+          -
+            name: response_type
+            in: query
+            description: 'Response type'
+            required: true
+            deprecated: false
+            allowEmptyValue: false
+            schema: []
+            style: form
+            explode: false
+            allowReserved: false
+            example: code
+          -
+            name: client_id
+            in: query
+            description: 'Client ID'
+            required: true
+            deprecated: false
+            allowEmptyValue: false
+            schema: []
+            style: form
+            explode: false
+            allowReserved: false
+            example: dc0bc6323f16fecd4224a3860ca894c5
+          -
+            name: redirect_uri
+            in: query
+            description: 'Redirect uri'
+            required: true
+            deprecated: false
+            allowEmptyValue: false
+            schema: []
+            style: form
+            explode: false
+            allowReserved: false
+            example: 'https://example.com/oauth/callback'
+          -
+            name: scope
+            in: query
+            description: Scope
+            required: false
+            deprecated: false
+            allowEmptyValue: false
+            schema: []
+            style: form
+            explode: false
+            allowReserved: false
+            example: 'profile email'
+          -
+            name: state
+            in: query
+            description: State
+            required: false
+            deprecated: false
+            allowEmptyValue: false
+            schema: []
+            style: form
+            explode: false
+            allowReserved: false
+            example: af0ifjsldkj
     parameters: []
   /api/oauth/token:
     summary: 'Requests for access token'
@@ -188,15 +183,9 @@ paths:
                   message: { type: string }
               example:
                 error: unsupported_grant_type
-                error_description: |-
-                  The authorization grant 
-                                          type is not supported by the authorization server.
-                hint: |-
-                  Check that all required 
-                                              parameters have been provided
-                message: |-
-                  The authorization grant type is not 
-                                          supported by the authorization server.
+                error_description: 'The authorization grant type is not supported by the authorization server.'
+                hint: 'Check that all required parameters have been provided'
+                message: 'The authorization grant type is not supported by the authorization server.'
           headers: {  }
         401:
           description: 'Invalid client credentials'
@@ -252,7 +241,7 @@ paths:
             example:
               grant_type: authorization_code
               client_id: dc0bc6323f16fecd4224a3860ca894c5
-              client_secret: 8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc777ec5
+              client_secret: 8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7
               redirect_uri: 'https://example.com/oauth/callback'
               code: e7f8c62113a47f7a5a9dca1f
               refresh_token: f7a5a9dca1fe7f8c62113a47
@@ -357,19 +346,6 @@ paths:
       tags:
         - User
       responses:
-        201:
-          description: 'User resource created'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User-output'
-            application/graphql:
-              schema:
-                $ref: '#/components/schemas/User-output'
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/User.jsonld-output'
-          links: {  }
         400:
           description: 'Bad request'
           content:
@@ -387,28 +363,6 @@ paths:
                 detail: 'The input data is misformatted.'
                 status: 400
           headers: {  }
-        422:
-          description: 'Validation error'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  violations: { type: array }
-                  status: { type: integer }
-              example:
-                type: 'https://tools.ietf.org/html/rfc2616#section-10'
-                title: 'An error occurred'
-                detail: 'some_property: This value should not be blank.'
-                violations:
-                  propertyPath: some_property
-                  message: 'This value should not be blank.'
-                  code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
-                status: 422
-          headers: {  }
         409:
           description: 'Duplicate email'
           content:
@@ -425,6 +379,28 @@ paths:
                 title: 'An error occurred'
                 detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
                 status: 409
+          headers: {  }
+        422:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  violations: { type: array }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'some_property: This value should not be blank.'
+                violations:
+                  propertyPath: some_property
+                  message: 'This value should not be blank.'
+                  code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
+                status: 422
           headers: {  }
         500:
           description: 'Internal server error'
@@ -581,19 +557,6 @@ paths:
       tags:
         - User
       responses:
-        200:
-          description: 'User resource updated'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User-output'
-            application/graphql:
-              schema:
-                $ref: '#/components/schemas/User-output'
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/User.jsonld-output'
-          links: {  }
         400:
           description: 'Bad request'
           content:
@@ -610,28 +573,6 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
-          headers: {  }
-        422:
-          description: 'Validation error'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  violations: { type: array }
-                  status: { type: integer }
-              example:
-                type: 'https://tools.ietf.org/html/rfc2616#section-10'
-                title: 'An error occurred'
-                detail: 'some_property: This value should not be blank.'
-                violations:
-                  propertyPath: some_property
-                  message: 'This value should not be blank.'
-                  code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
-                status: 422
           headers: {  }
         404:
           description: 'User not found'
@@ -666,6 +607,28 @@ paths:
                 title: 'An error occurred'
                 detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
                 status: 409
+          headers: {  }
+        422:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  violations: { type: array }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'some_property: This value should not be blank.'
+                violations:
+                  propertyPath: some_property
+                  message: 'This value should not be blank.'
+                  code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
+                status: 422
           headers: {  }
         500:
           description: 'Internal server error'
@@ -779,19 +742,6 @@ paths:
       tags:
         - User
       responses:
-        200:
-          description: 'User resource updated'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User-output'
-            application/graphql:
-              schema:
-                $ref: '#/components/schemas/User-output'
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/User.jsonld-output'
-          links: {  }
         400:
           description: 'Bad request'
           content:
@@ -808,28 +758,6 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
-          headers: {  }
-        422:
-          description: 'Validation error'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  violations: { type: array }
-                  status: { type: integer }
-              example:
-                type: 'https://tools.ietf.org/html/rfc2616#section-10'
-                title: 'An error occurred'
-                detail: 'some_property: This value should not be blank.'
-                violations:
-                  propertyPath: some_property
-                  message: 'This value should not be blank.'
-                  code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
-                status: 422
           headers: {  }
         404:
           description: 'User not found'
@@ -864,6 +792,28 @@ paths:
                 title: 'An error occurred'
                 detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
                 status: 409
+          headers: {  }
+        422:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  violations: { type: array }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'some_property: This value should not be blank.'
+                violations:
+                  propertyPath: some_property
+                  message: 'This value should not be blank.'
+                  code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
+                status: 422
           headers: {  }
         500:
           description: 'Internal server error'
