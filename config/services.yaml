@@ -29,7 +29,7 @@ services:
         App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface:
             tags: [ 'app.event_subscriber' ]
 
-        App\Shared\Infrastructure\OpenApi\Factory\EndpointFactory\AbstractEndpointFactory:
+        App\Shared\OpenApi\Factory\Endpoint\AbstractEndpointFactory:
             tags: [ 'app.openapi_endpoint_factory' ]
 
     App\Shared\Infrastructure\Bus\Command\InMemorySymfonyCommandBus:
@@ -40,9 +40,9 @@ services:
         arguments: [ !tagged app.event_subscriber ]
         lazy: true
 
-    App\Shared\Infrastructure\OpenApi\OpenApiFactory:
+    App\Shared\OpenApi\OpenApiFactory:
          decorates: 'api_platform.openapi.factory'
-         arguments: [ '@App\Shared\Infrastructure\OpenApi\OpenApiFactory.inner', !tagged app.openapi_endpoint_factory ]
+         arguments: [ '@App\Shared\OpenApi\OpenApiFactory.inner', !tagged app.openapi_endpoint_factory ]
          autoconfigure: false
 
     api_platform.state.error_provider:

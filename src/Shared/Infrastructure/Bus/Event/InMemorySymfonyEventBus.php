@@ -27,7 +27,9 @@ class InMemorySymfonyEventBus implements EventBusInterface
             [
                 new HandleMessageMiddleware(
                     new HandlersLocator(
-                        CallableFirstParameterExtractor::forPipedCallables($subscribers)
+                        CallableFirstParameterExtractor::forPipedCallables(
+                            $subscribers
+                        )
                     )
                 ),
             ]

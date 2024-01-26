@@ -85,16 +85,12 @@ class User implements UserInterface
     ): array {
         $events = [];
 
-        if ($newEmail !== $this->email) {
-            $this->confirmed = false;
-            $events[] = new EmailChangedEvent($this, $eventID);
-        }
-
-        $this->email = $newEmail;
-
-        if ($newPassword !== $oldPassword) {
-            $events[] = new PasswordChangedEvent($this->email, $eventID);
-        }
+        $events = $this->processNewEmail($newEmail, $eventID);
+        $events = $this->processNewPassword(
+            $newPassword,
+            $oldPassword,
+            $eventID
+        );
 
         $this->initials = $newInitials;
         $this->password = $hashedNewPassword;
@@ -110,5 +106,35 @@ class User implements UserInterface
     public function setConfirmed(bool $confirmed): void
     {
         $this->confirmed = $confirmed;
+    }
+
+    /**
+     * @return array<DomainEvent>
+     */
+    private function processNewEmail(string $newEmail, string $eventID): array
+    {
+        $events = [];
+        if ($newEmail !== $this->email) {
+            $this->confirmed = false;
+            $events[] = new EmailChangedEvent($this, $eventID);
+        }
+
+        $this->email = $newEmail;
+        return $events;
+    }
+
+    /**
+     * @return array<DomainEvent>
+     */
+    private function processNewPassword(
+        string $newPassword,
+        string $oldPassword,
+        string $eventID
+    ): array {
+        $events = [];
+        if ($newPassword !== $oldPassword) {
+            $events[] = new PasswordChangedEvent($this->email, $eventID);
+        }
+        return $events;
     }
 }

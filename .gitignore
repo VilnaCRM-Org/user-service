@@ -8,6 +8,7 @@
 /public/bundles/
 /var/
 /vendor/
+/metrics-report
 ###< symfony/framework-bundle ###
 
 ###> symfony/phpunit-bridge ###

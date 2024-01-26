@@ -13,19 +13,7 @@ final class UpdateUserMutationInputTransformer
      */
     public function transform(array $args): UpdateUserMutationInput
     {
-        $validationGroups = [];
-
-        if (isset($args['initials'])) {
-            $validationGroups[] = UpdateUserMutationInput::INITIALS_NOT_NULL;
-        }
-        if (isset($args['email'])) {
-            $validationGroups[] = UpdateUserMutationInput::EMAIL_NOT_NULL;
-        }
-        if (isset($args['newPassword'])) {
-            $validationGroups[] =
-                UpdateUserMutationInput::NEW_PASSWORD_NOT_NULL;
-        }
-
+        $validationGroups = $this->getValidationGroups($args);
         return new UpdateUserMutationInput(
             $validationGroups,
             $args['password'] ?? null,
@@ -33,5 +21,55 @@ final class UpdateUserMutationInputTransformer
             $args['email'] ?? null,
             $args['newPassword'] ?? null
         );
+    }
+
+    /**
+     * @param array<string, string> $args
+     *
+     * @return array<string>
+     */
+    private function getValidationGroups(array $args): array
+    {
+        return array_merge(
+            $this->processInitials($args),
+            $this->processEmail($args),
+            $this->processNewPassword($args)
+        );
+    }
+
+    /**
+     * @param array<string, string> $args
+     *
+     * @return array<string>
+     */
+    private function processInitials(array $args): array
+    {
+        return isset($args['initials']) ? [
+            UpdateUserMutationInput::INITIALS_NOT_NULL,
+        ] : [];
+    }
+
+    /**
+     * @param array<string, string> $args
+     *
+     * @return array<string>
+     */
+    private function processEmail(array $args): array
+    {
+        return isset($args['email']) ? [
+            UpdateUserMutationInput::EMAIL_NOT_NULL,
+        ] : [];
+    }
+
+    /**
+     * @param array<string, string> $args
+     *
+     * @return array<string>
+     */
+    private function processNewPassword(array $args): array
+    {
+        return isset($args['newPassword']) ? [
+            UpdateUserMutationInput::NEW_PASSWORD_NOT_NULL,
+        ] : [];
     }
 }

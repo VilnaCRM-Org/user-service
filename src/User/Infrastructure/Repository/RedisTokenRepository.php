@@ -27,7 +27,44 @@ final class RedisTokenRepository implements TokenRepositoryInterface
 
     public function save(object $token): void
     {
+        $this->saveForTokenValue($token);
+        $this->saveForUserId($token);
+    }
+
+    public function find(string $tokenValue): ?ConfirmationTokenInterface
+    {
+        $key = $this->getTokenKey($tokenValue);
+
+        return $this->getFromCache($key);
+    }
+
+    public function findByUserId(string $userID): ?ConfirmationTokenInterface
+    {
+        $key = $this->getUserKey($userID);
+
+        return $this->getFromCache($key);
+    }
+
+    public function delete(object $token): void
+    {
+        $this->deleteForTokenValue($token);
+        $this->deleteForUserId($token);
+    }
+
+    private function saveForTokenValue(object $token): void
+    {
         $tokenValue = $token->getTokenValue();
+
+        $serializedToken = $this->serializer->serialize(
+            $token,
+            JsonEncoder::FORMAT
+        );
+
+        $this->saveToCache($this->getTokenKey($tokenValue), $serializedToken);
+    }
+
+    private function saveForUserId(object $token): void
+    {
         $userId = $token->getUserID();
 
         $serializedToken = $this->serializer->serialize(
@@ -35,64 +72,49 @@ final class RedisTokenRepository implements TokenRepositoryInterface
             JsonEncoder::FORMAT
         );
 
-        $cacheItem = $this->redisAdapter->getItem(
-            self::getTokenKey($tokenValue)
-        );
-        $cacheItem->set($serializedToken);
+        $this->saveToCache($this->getUserKey($userId), $serializedToken);
+    }
+
+    private function saveToCache(string $key, string $value): void
+    {
+        $cacheItem = $this->redisAdapter->getItem($key);
+        $cacheItem->set($value);
         $cacheItem->expiresAfter(self::EXPIRES_AFTER_IN_SECONDS);
         $this->redisAdapter->save($cacheItem);
-
-        $cacheItem = $this->redisAdapter->getItem($this->getUserKey($userId));
-        $cacheItem->set($serializedToken);
-        $cacheItem->expiresAfter(self::EXPIRES_AFTER_IN_SECONDS);
-        $this->redisAdapter->save($cacheItem);
     }
 
-    public function find(string $tokenValue): ?ConfirmationTokenInterface
-    {
-        $key = $this->getTokenKey($tokenValue);
-
-        $cacheItem = $this->redisAdapter->getItem($key);
-        $serializedToken = $cacheItem->get();
-
-        return $serializedToken ? $this->serializer->deserialize(
-            $serializedToken,
-            ConfirmationToken::class,
-            JsonEncoder::FORMAT
-        )
-            : null;
-    }
-
-    public function findByUserId(string $userID): ?ConfirmationTokenInterface
-    {
-        $key = $this->getUserKey($userID);
-
-        $cacheItem = $this->redisAdapter->getItem($key);
-        $serializedToken = $cacheItem->get();
-
-        return $serializedToken ? $this->serializer->deserialize(
-            $serializedToken,
-            ConfirmationToken::class,
-            JsonEncoder::FORMAT
-        )
-            : null;
-    }
-
-    public function delete(object $token): void
+    private function deleteForTokenValue(object $token): void
     {
         $tokenValue = $token->getTokenValue();
-        $userId = $token->getUserID();
         $this->redisAdapter->delete($this->getTokenKey($tokenValue));
+    }
+
+    private function deleteForUserId(object $token): void
+    {
+        $userId = $token->getUserID();
         $this->redisAdapter->delete($this->getUserKey($userId));
     }
 
     private function getTokenKey(string $tokenValue): string
     {
-        return self::REDIS_KEY_PREFIX.self::TOKEN_VALUE_PREFIX.$tokenValue;
+        return self::REDIS_KEY_PREFIX . self::TOKEN_VALUE_PREFIX . $tokenValue;
     }
 
     private function getUserKey(string $userID): string
     {
-        return self::REDIS_KEY_PREFIX.self::USER_ID_PREFIX.$userID;
+        return self::REDIS_KEY_PREFIX . self::USER_ID_PREFIX . $userID;
+    }
+
+    private function getFromCache(string $key): ?ConfirmationTokenInterface
+    {
+        $cacheItem = $this->redisAdapter->getItem($key);
+        $serializedToken = $cacheItem->get();
+
+        return $serializedToken ? $this->serializer->deserialize(
+            $serializedToken,
+            ConfirmationToken::class,
+            JsonEncoder::FORMAT
+        )
+            : null;
     }
 }

@@ -59,6 +59,9 @@ phpinsights: ## Instant PHP quality checks and static analysis tool
 phpunit: ## The PHP unit testing framework
 	$(EXEC_PHP) ./vendor/bin/phpunit
 
+php-metrics:
+	$(EXEC_PHP) ./vendor/bin/phpmetrics --report-html=metrics-report src
+
 behat: ## A php framework for autotesting business expectations
 	$(SYMFONY_TEST_ENV) c:c
 	$(SYMFONY_TEST_ENV) doctrine:database:drop --force --if-exists
