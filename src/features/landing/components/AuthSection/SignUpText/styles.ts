@@ -2,6 +2,8 @@ import { colorTheme } from '@/components/UiColorTheme';
 
 export default {
   title: {
+    paddingTop: '4rem',
+    marginTop: '-4rem',
     paddingBottom: '2.5rem',
     whiteSpace: 'pre-line',
     '@media (max-width: 1439.98px)': {

@@ -1,32 +1,32 @@
 import { Box, Stack } from '@mui/material';
-import Image from 'next/image';
+import Link from 'next/link';
 import React from 'react';
 
 import { UiTypography } from '@/components';
 import { colorTheme } from '@/components/UiColorTheme';
 
-import AtSignImage from '../../../../assets/svg/header-drawer/at-sign.svg';
-
 import styles from './styles';
 
 function VilnaGmail() {
   return (
-    <Box sx={styles.gmailWrapper}>
-      <Stack
-        justifyContent="center"
-        alignItems="center"
-        gap="0.625rem"
-        flexDirection="row"
-      >
-        <Image src={AtSignImage} alt="ExitImage" width={24} height={24} />
-        <UiTypography
-          variant="demi18"
-          color={colorTheme.palette.darkSecondary.main}
+    <Stack sx={styles.gmailWrapper} justifyContent="center">
+      <Link href="mailto:info@vilnacrm.com">
+        <Stack
+          justifyContent="center"
+          alignItems="center"
+          gap="0.62rem"
+          flexDirection="row"
         >
-          info@vilnacrm.com
-        </UiTypography>
-      </Stack>
-    </Box>
+          <Box sx={styles.at}>@</Box>
+          <UiTypography
+            variant="demi18"
+            color={colorTheme.palette.darkSecondary.main}
+          >
+            info@vilnacrm.com
+          </UiTypography>
+        </Stack>
+      </Link>
+    </Stack>
   );
 }
 

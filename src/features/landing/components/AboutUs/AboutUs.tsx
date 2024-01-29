@@ -1,7 +1,6 @@
 import { Container, Stack } from '@mui/material';
 import React from 'react';
 
-import { BackgroundImages } from './BackgroundImages';
 import { DeviceImage } from './DeviceImage';
 import styles from './styles';
 import { TextInfo } from './TextInfo';
@@ -13,7 +12,6 @@ function AboutUs() {
         <TextInfo />
         <DeviceImage />
       </Container>
-      <BackgroundImages />
     </Stack>
   );
 }

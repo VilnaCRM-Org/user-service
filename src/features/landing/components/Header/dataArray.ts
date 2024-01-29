@@ -1,7 +1,7 @@
-import FacebookDrawerIcon from '../../assets/svg/header-drawer/socials/facebook.svg';
-import GitHubDrawerIcon from '../../assets/svg/header-drawer/socials/github.svg';
-import InstagramDrawerIcon from '../../assets/svg/header-drawer/socials/instagram.svg';
-import LinkedinDrawerIcon from '../../assets/svg/header-drawer/socials/linked-in.svg';
+import FacebookDrawerIcon from '../../assets/svg/social-icons/facebook.svg';
+import GitHubDrawerIcon from '../../assets/svg/social-icons/github.svg';
+import InstagramDrawerIcon from '../../assets/svg/social-icons/instagram.svg';
+import LinkedinDrawerIcon from '../../assets/svg/social-icons/linked-in.svg';
 
 export const links = [
   { id: 'Advantages', link: '#Advantages', value: 'header.advantages' },

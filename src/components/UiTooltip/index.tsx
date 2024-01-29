@@ -10,16 +10,23 @@ import {
 import { colorTheme } from '../UiColorTheme';
 
 import styles from './styles';
-import { UiTooltipProps } from './types';
 
-const HtmlTooltip = styled(({ className, ...props }: TooltipProps) => (
-  <Tooltip {...props} classes={{ popper: className }} />
-))(() => ({
+export const ServicesTooltip = styled(
+  ({ className, ...props }: TooltipProps) => {
+    const { children } = props;
+    return (
+      <Tooltip {...props} classes={{ popper: className }}>
+        <Typography component="span" sx={styles.hoveredCard}>
+          {children}
+        </Typography>
+      </Tooltip>
+    );
+  }
+)(() => ({
   [`& .${tooltipClasses.tooltip}`]: {
     backgroundColor: '#fff',
-    color: 'rgba(0, 0, 0, 0.87)',
     maxWidth: '20.625rem',
-    border: `1px solid  ${colorTheme.palette.grey400.main}`,
+    border: `1px solid ${colorTheme.palette.grey400.main}`,
     padding: '1.125rem 1.5rem',
     borderRadius: '0.5rem',
     '@media (max-width: 1439.98px)': {
@@ -28,14 +35,20 @@ const HtmlTooltip = styled(({ className, ...props }: TooltipProps) => (
   },
 }));
 
-function UiTooltip({ children, content, props }: UiTooltipProps) {
-  return (
-    <HtmlTooltip {...props} arrow title={content}>
-      <Typography component="span" sx={styles.hoveredText}>
-        {children}
-      </Typography>
-    </HtmlTooltip>
-  );
-}
-
-export default UiTooltip;
+export const FormRulesTooltip = styled(
+  ({ className, ...props }: TooltipProps) => (
+    <Tooltip {...props} classes={{ popper: className }}>
+      <Typography component="span">{props.children}</Typography>
+    </Tooltip>
+  )
+)({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: '#fff',
+    boxShadow: '0px 8px 27px 0px rgba(49, 59, 67, 0.14)',
+    padding: '1rem 1.5rem',
+    borderRadius: '0.5rem',
+    '@media (max-width: 1439.98px)': {
+      display: 'none',
+    },
+  },
+});

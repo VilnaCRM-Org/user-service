@@ -32,4 +32,29 @@ export default {
       },
     },
   },
+  checkboxWrapperError: {
+    display: 'grid',
+    marginRight: '0.813rem',
+    padding: '0',
+    input: {
+      WebkitAppearance: 'none',
+      appearance: 'none',
+      width: '1.5rem',
+      height: '1.5rem',
+      borderRadius: '0.5rem',
+      border: `1px solid ${colorTheme.palette.error.main}`,
+      background: '#fff',
+      '&:hover': {
+        cursor: 'pointer',
+        border: '1px solid #1eaeff',
+      },
+      '&:checked': {
+        backgroundColor: '#1eaeff',
+        border: 'none',
+        backgroundImage: `url(${Check.src})`,
+        backgroundPosition: 'center center',
+        backgroundRepeat: 'no-repeat',
+      },
+    },
+  },
 };

@@ -3,7 +3,8 @@ import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
 // eslint-disable-next-line no-restricted-imports, import/no-cycle
-import { UiImage, UiTooltip, UiTypography } from '@/components';
+import { UiImage, UiTypography } from '@/components';
+import { ServicesTooltip } from '@/components/UiTooltip';
 
 import { HoverCard } from '../../../features/landing/components/Possibilities/HoverCard';
 import { CardItem, ImageItem } from '../types';
@@ -26,12 +27,12 @@ function SmallCardItem({ item, imageList }: SmallCardItem) {
         <UiTypography variant="bodyText16" sx={styles.text}>
           <Trans i18nKey={item.text}>
             Інтегруйте
-            <UiTooltip
+            <ServicesTooltip
               placement="bottom"
-              content={<HoverCard imageList={imageList} />}
+              title={<HoverCard imageList={imageList} />}
             >
               <UiTypography>звичні сервіси</UiTypography>
-            </UiTooltip>
+            </ServicesTooltip>
             у кілька кліків
           </Trans>
         </UiTypography>

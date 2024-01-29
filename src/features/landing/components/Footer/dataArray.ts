@@ -1,7 +1,7 @@
-import FacebookFooterIcon from '../../assets/svg/footer/social-icons/facebook.svg';
-import GitHubFooterIcon from '../../assets/svg/footer/social-icons/github.svg';
-import InstagramFooterIcon from '../../assets/svg/footer/social-icons/instagram.svg';
-import LinkedinFooterIcon from '../../assets/svg/footer/social-icons/linked-in.svg';
+import FacebookFooterIcon from '../../assets/svg/social-icons/facebook.svg';
+import GitHubFooterIcon from '../../assets/svg/social-icons/github.svg';
+import InstagramFooterIcon from '../../assets/svg/social-icons/instagram.svg';
+import LinkedinFooterIcon from '../../assets/svg/social-icons/linked-in.svg';
 
 export const socialLinks = [
   {

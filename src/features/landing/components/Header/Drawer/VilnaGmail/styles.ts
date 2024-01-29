@@ -6,5 +6,11 @@ export default {
     py: '1.125rem',
     borderRadius: '0.5rem',
     mt: '0.375rem',
+    maxHeight: '64px',
+  },
+  at: {
+    fontWeight: 600,
+    fontSize: '22px',
+    mb: '2px',
   },
 };

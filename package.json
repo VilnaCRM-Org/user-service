@@ -29,6 +29,7 @@
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.14.19",
     "@mui/system": "^5.14.19",
+    "@next/font": "^14.1.0",
     "@sentry/node": "^7.84.0",
     "@sentry/react": "^7.84.0",
     "@types/material-ui": "^0.21.14",

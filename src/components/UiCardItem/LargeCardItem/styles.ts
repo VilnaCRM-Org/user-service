@@ -43,7 +43,7 @@ export default {
   image: {
     width: '4.375rem',
     height: '4.375rem',
-    '@media (max-width: 639.98px)': {
+    '@media (max-width: 767.98px)': {
       width: '3.125rem',
       height: '3.125rem',
     },

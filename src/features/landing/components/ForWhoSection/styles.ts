@@ -56,12 +56,13 @@ export default {
     },
     '@media (max-width: 1023.98px)': {
       maxWidth: '43.75rem',
-      top: '46.5%',
-      right: '-8%',
+      top: '40%',
+      right: '0%',
     },
     '@media (max-width: 425.98px)': {
       right: '-28%',
       width: '26.5rem',
+      top: '32.5%',
     },
   },
   line: {

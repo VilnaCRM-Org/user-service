@@ -1,7 +1,7 @@
 import { colorTheme } from '../UiColorTheme';
 
 export default {
-  hoveredText: {
+  hoveredCard: {
     color: colorTheme.palette.primary.main,
     textDecoration: 'underline',
     fontWeight: '700',

@@ -9,7 +9,9 @@ import {
   UiInput,
   UiTypography,
   UiLink,
+  FormRulesTooltip,
 } from '@/components';
+import { colorTheme } from '@/components/UiColorTheme';
 
 import { RegisterItem } from '../../../types/authentication/form';
 
@@ -58,14 +60,83 @@ function AuthForm() {
           </UiTypography>
           <Stack sx={styles.inputsWrapper}>
             <Stack sx={styles.inputWrapper}>
-              <UiTypography variant="medium14" sx={styles.inputTitle}>
-                {fullNameTitle}
-              </UiTypography>
+              <Stack direction="row" alignItems="center" gap="0.5rem">
+                <UiTypography variant="medium14" sx={styles.inputTitle}>
+                  {fullNameTitle}
+                </UiTypography>
+                <FormRulesTooltip
+                  placement="right"
+                  arrow
+                  title={
+                    <Stack direction="column" gap="0.5rem">
+                      <UiTypography
+                        variant="medium14"
+                        sx={{
+                          pb: '5px',
+                          borderBottom: `2px solid ${colorTheme.palette.grey400.main}`,
+                        }}
+                      >
+                        Правила реєстрації.
+                      </UiTypography>
+                      <ul
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.5rem',
+                        }}
+                      >
+                        <li
+                          style={{
+                            fontSize: '0.8rem',
+                            color: colorTheme.palette.darkPrimary.main,
+                            fontWeight: 400,
+                          }}
+                        >
+                          напишіть ваше ім&apos;я та прізвище
+                        </li>
+                        <li
+                          style={{
+                            fontSize: '0.8rem',
+                            fontWeight: 400,
+                            color: colorTheme.palette.darkPrimary.main,
+                          }}
+                        >
+                          відсутні пробіли
+                        </li>
+                        <li
+                          style={{
+                            fontSize: '0.8rem',
+                            fontWeight: 400,
+                            color: colorTheme.palette.darkPrimary.main,
+                          }}
+                        >
+                          відсутні спеціальні символи
+                        </li>
+                      </ul>
+                    </Stack>
+                  }
+                >
+                  <Stack
+                    justifyContent="center"
+                    alignItems="center"
+                    sx={{
+                      width: '16px',
+                      height: '16px',
+                      border: '1px solid black',
+                      borderRadius: '50%',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <UiTypography variant="medium14">?</UiTypography>
+                  </Stack>
+                </FormRulesTooltip>
+              </Stack>
+
               <Controller
                 control={control}
                 name="FullName"
                 rules={{
-                  required: 'Full name is required',
+                  required: 'Виникла помилка. Перевірте ще раз',
                   validate: validateFullName,
                 }}
                 render={({ field }) => (
@@ -93,7 +164,7 @@ function AuthForm() {
                 control={control}
                 name="Email"
                 rules={{
-                  required: 'Email is required',
+                  required: 'Виникла помилка. Перевірте ще раз',
                   validate: validateEmail,
                 }}
                 render={({ field }) => (
@@ -121,7 +192,7 @@ function AuthForm() {
                 control={control}
                 name="Password"
                 rules={{
-                  required: 'Password is required',
+                  required: 'Виникла помилка. Перевірте ще раз',
                   validate: validatePassword,
                 }}
                 render={({ field }) => (
@@ -146,12 +217,13 @@ function AuthForm() {
             control={control}
             name="Privacy"
             rules={{
-              required: 'Privacy is required',
+              required: 'Виникла помилка. Перевірте ще раз',
             }}
             render={({ field }) => (
               <UiCheckbox
                 onChange={e => field.onChange(e)}
                 sx={styles.labelText}
+                error={!errors.Privacy?.message}
                 label={
                   <UiTypography variant="medium14" sx={styles.privacyText}>
                     <Trans i18nKey="sign_up.form.confidential_text.fullText">
