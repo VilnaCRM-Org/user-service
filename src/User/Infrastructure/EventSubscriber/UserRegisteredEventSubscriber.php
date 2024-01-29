@@ -8,8 +8,8 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Application\Command\SendConfirmationEmailCommand;
-use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Event\UserRegisteredEvent;
+use App\User\Domain\Factory\ConfirmationEmailFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 
 final class UserRegisteredEventSubscriber implements
@@ -17,7 +17,8 @@ final class UserRegisteredEventSubscriber implements
 {
     public function __construct(
         private CommandBusInterface $commandBus,
-        private ConfirmationTokenFactory $tokenFactory
+        private ConfirmationTokenFactory $tokenFactory,
+        private ConfirmationEmailFactory $confirmationEmailFactory
     ) {
     }
 
@@ -28,7 +29,7 @@ final class UserRegisteredEventSubscriber implements
 
         $this->commandBus->dispatch(
             new SendConfirmationEmailCommand(
-                new ConfirmationEmail($token, $user)
+                $this->confirmationEmailFactory->create($token, $user)
             )
         );
     }

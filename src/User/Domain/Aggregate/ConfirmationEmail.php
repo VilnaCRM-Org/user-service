@@ -7,13 +7,14 @@ namespace App\User\Domain\Aggregate;
 use App\Shared\Domain\Aggregate\AggregateRoot;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
-use App\User\Domain\Event\ConfirmationEmailSendEvent;
+use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactory;
 
 final class ConfirmationEmail extends AggregateRoot
 {
     public function __construct(
         public readonly ConfirmationTokenInterface $token,
-        public readonly UserInterface $user
+        public readonly UserInterface $user,
+        private ConfirmationEmailSendEventFactory $eventFactory,
     ) {
     }
 
@@ -21,9 +22,9 @@ final class ConfirmationEmail extends AggregateRoot
     {
         $this->token->incrementTimesSent();
         $this->record(
-            new ConfirmationEmailSendEvent(
+            $this->eventFactory->create(
                 $this->token,
-                $this->user->getEmail(),
+                $this->user,
                 $eventID
             )
         );

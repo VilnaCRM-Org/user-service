@@ -7,8 +7,8 @@ namespace App\User\Infrastructure\Resolver;
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\SendConfirmationEmailCommand;
-use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Factory\ConfirmationEmailFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 
@@ -17,7 +17,8 @@ final class ResendEmailMutationResolver implements MutationResolverInterface
     public function __construct(
         private CommandBusInterface $commandBus,
         private TokenRepositoryInterface $tokenRepository,
-        private ConfirmationTokenFactory $tokenFactory
+        private ConfirmationTokenFactory $tokenFactory,
+        private ConfirmationEmailFactory $confirmationEmailFactory
     ) {
     }
 
@@ -36,7 +37,7 @@ final class ResendEmailMutationResolver implements MutationResolverInterface
 
         $this->commandBus->dispatch(
             new SendConfirmationEmailCommand(
-                new ConfirmationEmail($token, $user)
+                $this->confirmationEmailFactory->create($token, $user)
             )
         );
 

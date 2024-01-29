@@ -14,8 +14,8 @@ final class CreateUserMutationInputTransformer
     public function transform(array $args): CreateUserMutationInput
     {
         return new CreateUserMutationInput(
-            $args['initials'] ?? null,
             $args['email'] ?? null,
+            $args['initials'] ?? null,
             $args['password'] ?? null
         );
     }

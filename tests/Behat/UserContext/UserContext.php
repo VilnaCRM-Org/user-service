@@ -61,6 +61,29 @@ class UserContext implements Context
     }
 
     /**
+     * @Given user with email :email exists
+     */
+    public function userWithEmailExists(string $email): void
+    {
+        try {
+            $password = $this->faker->password;
+            $user = $this->userFactory->create(
+                $email,
+                $this->faker->name,
+                $password,
+                $this->transformer->transformFromSymfonyUuid($this->uuidFactory->create())
+            );
+
+            $hasher = $this->hasherFactory->getPasswordHasher(get_class($user));
+            $hashedPassword = $hasher->hash($password, null);
+            $user->setPassword($hashedPassword);
+
+            $this->userRepository->save($user);
+        } catch (DuplicateEmailException) {
+        }
+    }
+
+    /**
      * @Given user with id :id exists
      */
     public function userWithIdExists(string $id): void

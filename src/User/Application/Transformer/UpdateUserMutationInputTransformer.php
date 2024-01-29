@@ -30,46 +30,33 @@ final class UpdateUserMutationInputTransformer
      */
     private function getValidationGroups(array $args): array
     {
-        return array_merge(
-            $this->processInitials($args),
-            $this->processEmail($args),
-            $this->processNewPassword($args)
-        );
+        $validationMap = [
+            'initials' => UpdateUserMutationInput::INITIALS_NOT_NULL,
+            'email' => UpdateUserMutationInput::EMAIL_NOT_NULL,
+            'newPassword' => UpdateUserMutationInput::NEW_PASSWORD_NOT_NULL,
+        ];
+
+        return $this->processValidationGroups($args, $validationMap);
     }
 
     /**
      * @param array<string, string> $args
+     * @param array<string, string> $validationMap
      *
      * @return array<string>
      */
-    private function processInitials(array $args): array
-    {
-        return isset($args['initials']) ? [
-            UpdateUserMutationInput::INITIALS_NOT_NULL,
-        ] : [];
-    }
+    private function processValidationGroups(
+        array $args,
+        array $validationMap
+    ): array {
+        $validationGroups = [];
 
-    /**
-     * @param array<string, string> $args
-     *
-     * @return array<string>
-     */
-    private function processEmail(array $args): array
-    {
-        return isset($args['email']) ? [
-            UpdateUserMutationInput::EMAIL_NOT_NULL,
-        ] : [];
-    }
+        foreach ($validationMap as $key => $validation) {
+            if (isset($args[$key])) {
+                $validationGroups[] = $validation;
+            }
+        }
 
-    /**
-     * @param array<string, string> $args
-     *
-     * @return array<string>
-     */
-    private function processNewPassword(array $args): array
-    {
-        return isset($args['newPassword']) ? [
-            UpdateUserMutationInput::NEW_PASSWORD_NOT_NULL,
-        ] : [];
+        return $validationGroups;
     }
 }

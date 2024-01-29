@@ -10,7 +10,7 @@ use App\User\Application\Command\SignUpCommand;
 use App\User\Application\Command\SignUpCommandResponse;
 use App\User\Application\Transformer\SignUpTransformer;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Event\UserRegisteredEvent;
+use App\User\Domain\Factory\Event\UserRegisteredEventFactory;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
@@ -22,7 +22,8 @@ final readonly class SignUpCommandHandler implements CommandHandlerInterface
         private UserRepositoryInterface $userRepository,
         private SignUpTransformer $transformer,
         private EventBusInterface $eventBus,
-        private UuidFactory $uuidFactory
+        private UuidFactory $uuidFactory,
+        private UserRegisteredEventFactory $registeredEventFactory,
     ) {
     }
 
@@ -38,7 +39,7 @@ final readonly class SignUpCommandHandler implements CommandHandlerInterface
         $command->setResponse(new SignUpCommandResponse($user));
 
         $this->eventBus->publish(
-            new UserRegisteredEvent(
+            $this->registeredEventFactory->create(
                 $user,
                 (string) $this->uuidFactory->create()
             )

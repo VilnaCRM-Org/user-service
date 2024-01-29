@@ -5,51 +5,53 @@ Feature: User GraphQL Operations
 
   Scenario: Creating user
     Given requesting to return user's id and email
-    And creating user with email "graphqltest@mail.com" initials "name" password "pass"
+    And creating user with email "graphqltest@mail.com" initials "name surname" password "passWORD1"
     When graphQL request is send
     Then mutation response should return requested fields
 
   Scenario: Creating a user with duplicate email
     Given requesting to return user's id and email
-    And creating user with email "graphqltest@mail.com" initials "name" password "pass"
+    And user with email "graphqltest@mail.com2" exists
+    And creating user with email "graphqltest@mail.com2" initials "name surname" password "passWORD1"
     When graphQL request is send
     Then graphql error response should be returned
 
   Scenario: Creating a user with invalid email
     Given requesting to return user's id and email
-    And creating user with email "graphqlTest" initials "name" password "pass"
+    And creating user with email "graphqlTest" initials "name surname" password "passWORD1"
     When graphQL request is send
     Then graphql error response should be returned
 
   Scenario: Updating user
     Given requesting to return user's id and email
-    And user with id "8be90127-9840-4235-a6da-39b8debfb110" and password "pass" exists
-    And updating user with id "8be90127-9840-4235-a6da-39b8debfb110" and password "pass" to new email "testUpdateGraphQL@mail.com"
+    And user with id "8be90127-9840-4235-a6da-39b8debfb110" and password "passWORD1" exists
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb110" and password "passWORD1" to new email "testUpdateGraphQL@mail.com"
     When graphQL request is send
     Then mutation response should return requested fields
 
   Scenario: Updating user to duplicate email
     Given requesting to return user's id and email
-    And user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "pass" exists
-    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "pass" to new email "testUpdateGraphQL@mail.com"
+    And user with email "testUpdateGraphQL2@mail.com" exists
+    And user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "passWORD1" exists
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "passWORD1" to new email "testUpdateGraphQL2@mail.com"
     When graphQL request is send
     Then graphql error response should be returned
 
   Scenario: Updating user with wrong password
     Given requesting to return user's id and email
-    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "wrongPass" to new email "testUpdateGraphQL@mail.com"
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "wrongpassWORD1" to new email "testUpdateGraphQL@mail.com"
     When graphQL request is send
     Then graphql error response should be returned
 
   Scenario: Updating a non-existing user
     Given requesting to return user's id and email
-    And updating user with id "8be90127-9840-4235-a6da-39b8debfb112" and password "pass" to new email "testUpdateGraphQL@mail.com"
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb112" and password "passWORD1" to new email "testUpdateGraphQL@mail.com"
     When graphQL request is send
     Then graphql error response should be returned
 
   Scenario: Updating user to invalid email
     Given requesting to return user's id and email
-    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "pass" to new email "test"
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "passWORD1" to new email "test"
     When graphQL request is send
     Then graphql error response should be returned
 

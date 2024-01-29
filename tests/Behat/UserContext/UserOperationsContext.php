@@ -91,13 +91,19 @@ class UserOperationsContext implements Context
      */
     public function theResponseStatusCodeShouldBe(string $statusCode): void
     {
-        if ($this->response === null) {
-            throw new \RuntimeException('No response received');
-        }
+        Assert::assertEquals($statusCode, $this->response->getStatusCode());
+    }
 
-        if ($statusCode !== (string) $this->response->getStatusCode()) {
-            throw new \RuntimeException("Response status code is not $statusCode.".' Actual code is '.$this->response->getStatusCode().$this->response->getContent());
-        }
+    /**
+     * @Then violation should be :violation
+     */
+    public function theViolationShouldBe(string $violation): void
+    {
+        $data = json_decode($this->response->getContent(), true);
+        Assert::assertEquals(
+            $violation,
+            $data['violations'][0]['message']
+        );
     }
 
     /**

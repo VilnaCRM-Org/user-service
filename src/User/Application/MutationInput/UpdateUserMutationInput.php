@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\User\Application\MutationInput;
 
+use App\Shared\Application\Validator\Initials;
+use App\Shared\Application\Validator\Password;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class UpdateUserMutationInput implements MutationInput
@@ -19,9 +21,11 @@ final readonly class UpdateUserMutationInput implements MutationInput
         private array $validationGroups,
         #[Assert\NotBlank]
         #[Assert\Length(max: 255)]
+        #[Password]
         public ?string $password = null,
         #[Assert\NotBlank(groups: [self::INITIALS_NOT_NULL])]
         #[Assert\Length(max: 255, groups: [self::INITIALS_NOT_NULL])]
+        #[Initials(groups: [self::NEW_PASSWORD_NOT_NULL])]
         public ?string $initials = null,
         #[Assert\Email(groups: [self::EMAIL_NOT_NULL])]
         #[Assert\NotBlank(groups: [self::EMAIL_NOT_NULL])]
@@ -29,6 +33,7 @@ final readonly class UpdateUserMutationInput implements MutationInput
         public ?string $email = null,
         #[Assert\NotBlank(groups: [self::NEW_PASSWORD_NOT_NULL])]
         #[Assert\Length(max: 255, groups: [self::NEW_PASSWORD_NOT_NULL])]
+        #[Password(groups: [self::NEW_PASSWORD_NOT_NULL])]
         public ?string $newPassword = null,
     ) {
     }

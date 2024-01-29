@@ -9,7 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Application\DTO\RetryDto;
-use App\User\Domain\Aggregate\ConfirmationEmail;
+use App\User\Domain\Factory\ConfirmationEmailFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -25,7 +25,8 @@ final class ResendEmailProcessor implements ProcessorInterface
         private CommandBusInterface $commandBus,
         private UserRepositoryInterface $userRepository,
         private TokenRepositoryInterface $tokenRepository,
-        private ConfirmationTokenFactory $tokenFactory
+        private ConfirmationTokenFactory $tokenFactory,
+        private ConfirmationEmailFactory $confirmationEmailFactory
     ) {
     }
 
@@ -52,7 +53,7 @@ final class ResendEmailProcessor implements ProcessorInterface
 
         $this->commandBus->dispatch(
             new SendConfirmationEmailCommand(
-                new ConfirmationEmail($token, $user)
+                $this->confirmationEmailFactory->create($token, $user)
             )
         );
 

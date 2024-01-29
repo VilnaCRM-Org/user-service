@@ -85,8 +85,8 @@ class User implements UserInterface
     ): array {
         $events = [];
 
-        $events = $this->processNewEmail($newEmail, $eventID);
-        $events = $this->processNewPassword(
+        $events += $this->processNewEmail($newEmail, $eventID);
+        $events += $this->processNewPassword(
             $newPassword,
             $oldPassword,
             $eventID
