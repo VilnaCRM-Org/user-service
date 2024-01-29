@@ -85,66 +85,65 @@ paths:
           headers: {  }
       parameters:
         -
-          -
-            name: response_type
-            in: query
-            description: 'Response type'
-            required: true
-            deprecated: false
-            allowEmptyValue: false
-            schema: []
-            style: form
-            explode: false
-            allowReserved: false
-            example: code
-          -
-            name: client_id
-            in: query
-            description: 'Client ID'
-            required: true
-            deprecated: false
-            allowEmptyValue: false
-            schema: []
-            style: form
-            explode: false
-            allowReserved: false
-            example: dc0bc6323f16fecd4224a3860ca894c5
-          -
-            name: redirect_uri
-            in: query
-            description: 'Redirect uri'
-            required: true
-            deprecated: false
-            allowEmptyValue: false
-            schema: []
-            style: form
-            explode: false
-            allowReserved: false
-            example: 'https://example.com/oauth/callback'
-          -
-            name: scope
-            in: query
-            description: Scope
-            required: false
-            deprecated: false
-            allowEmptyValue: false
-            schema: []
-            style: form
-            explode: false
-            allowReserved: false
-            example: 'profile email'
-          -
-            name: state
-            in: query
-            description: State
-            required: false
-            deprecated: false
-            allowEmptyValue: false
-            schema: []
-            style: form
-            explode: false
-            allowReserved: false
-            example: af0ifjsldkj
+          name: response_type
+          in: query
+          description: 'Response type'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema: []
+          style: form
+          explode: false
+          allowReserved: false
+          example: code
+        -
+          name: client_id
+          in: query
+          description: 'Client ID'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema: []
+          style: form
+          explode: false
+          allowReserved: false
+          example: dc0bc6323f16fecd4224a3860ca894c5
+        -
+          name: redirect_uri
+          in: query
+          description: 'Redirect uri'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema: []
+          style: form
+          explode: false
+          allowReserved: false
+          example: 'https://example.com/oauth/callback'
+        -
+          name: scope
+          in: query
+          description: Scope
+          required: false
+          deprecated: false
+          allowEmptyValue: false
+          schema: []
+          style: form
+          explode: false
+          allowReserved: false
+          example: 'profile email'
+        -
+          name: state
+          in: query
+          description: State
+          required: false
+          deprecated: false
+          allowEmptyValue: false
+          schema: []
+          style: form
+          explode: false
+          allowReserved: false
+          example: af0ifjsldkj
     parameters: []
   /api/oauth/token:
     summary: 'Requests for access token'
