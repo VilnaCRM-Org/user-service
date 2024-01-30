@@ -3,7 +3,7 @@ import React from 'react';
 
 import styles from './styles';
 
-function BackgroundImages() {
+function BackgroundImages(): React.ReactElement {
   return <Box sx={styles.vector} />;
 }
 

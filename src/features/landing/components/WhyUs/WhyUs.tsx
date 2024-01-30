@@ -7,7 +7,7 @@ import { cardList } from './dataArray';
 import { Heading } from './Heading';
 import styles from './styles';
 
-function WhyUs() {
+function WhyUs(): React.ReactElement {
   return (
     <Box sx={styles.wrapper} id="Advantages" component="section">
       <Heading />

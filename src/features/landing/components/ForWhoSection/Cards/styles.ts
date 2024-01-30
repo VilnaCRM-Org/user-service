@@ -1,4 +1,5 @@
 import { colorTheme } from '@/components/UiColorTheme';
+import { golos } from '@/config/Fonts';
 
 export default {
   wrapper: {
@@ -45,8 +46,8 @@ export default {
   },
   secondTitle: {
     pb: '2rem',
+    fontFamily: golos.style.fontFamily,
     color: colorTheme.palette.darkPrimary.main,
-    fontFamily: 'Golos',
     fontSize: '1.75rem',
     fontStyle: 'normal',
     fontWeight: '700',
@@ -59,7 +60,6 @@ export default {
       pb: '0.9375rem',
       maxWidth: '18.563rem',
       color: colorTheme.palette.darkPrimary.main,
-      fontFamily: 'Golos',
       fontSize: '1.375rem',
       fontStyle: 'normal',
       fontWeight: '700',
@@ -71,7 +71,6 @@ export default {
   optionText: {
     '@media (max-width: 1023.98px)': {
       color: colorTheme.palette.darkPrimary.main,
-      fontFamily: 'Golos',
       fontSize: '0.9375rem',
       fontStyle: 'normal',
       fontWeight: '400',

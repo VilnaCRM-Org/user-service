@@ -6,7 +6,7 @@ import { UiButton, UiTypography } from '@/components';
 
 import styles from './styles';
 
-function MainTitle() {
+function MainTitle(): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Box>

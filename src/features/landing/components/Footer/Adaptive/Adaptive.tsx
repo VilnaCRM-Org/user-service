@@ -12,7 +12,11 @@ import { SocialMediaList } from '../SocialMediaList';
 
 import styles from './styles';
 
-function Adaptive({ socialLinks }: { socialLinks: ISocialMedia[] }) {
+function Adaptive({
+  socialLinks,
+}: {
+  socialLinks: ISocialMedia[];
+}): React.ReactElement {
   const { t } = useTranslation();
 
   return (

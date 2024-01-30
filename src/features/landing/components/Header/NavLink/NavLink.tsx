@@ -9,7 +9,7 @@ import { NavLinkProps } from '../../../types/header/nav-links';
 
 import styles from './styles';
 
-function NavLink({ links }: NavLinkProps) {
+function NavLink({ links }: NavLinkProps): React.ReactElement {
   const { t } = useTranslation();
 
   return (

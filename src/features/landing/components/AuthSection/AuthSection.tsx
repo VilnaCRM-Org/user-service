@@ -6,7 +6,7 @@ import { socialLinks } from './dataArray';
 import { SignUpText } from './SignUpText';
 import styles from './styles';
 
-function AuthSection() {
+function AuthSection(): React.ReactElement {
   return (
     <Box sx={styles.wrapper} component="section">
       <Container>

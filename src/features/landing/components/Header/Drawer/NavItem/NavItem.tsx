@@ -17,7 +17,7 @@ function NavItem({
 }: {
   item: INavItem;
   handleClick: () => void;
-}) {
+}): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Stack direction="row" alignItems="center" justifyContent="space-between">

@@ -3,7 +3,7 @@ import React from 'react';
 
 import styles from './styles';
 
-function Notch() {
+function Notch(): React.ReactElement {
   return <Box sx={styles.notch} />;
 }
 

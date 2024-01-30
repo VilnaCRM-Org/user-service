@@ -7,7 +7,7 @@ import { cardList, imageList } from './dataArray';
 import { RegistrationText } from './RegistrationText';
 import styles from './styles';
 
-function Possibilities() {
+function Possibilities(): React.ReactElement {
   return (
     <Box sx={styles.wrapper} id="Integration" component="section">
       <RegistrationText />

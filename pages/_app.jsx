@@ -5,6 +5,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import * as PropTypes from 'prop-types';
 import i18n from '../i18n';
 import 'dotenv/config';
+import { golos } from '@/config/Fonts';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN_KEY,
@@ -27,9 +28,6 @@ function MyApp({ Component }) {
     breakpoints: {
       values: { xs: 375.98, sm: 640.98, md: 767.98, lg: 1023.98, xl: 1439.98 },
     },
-    typography: {
-      fontFamily: 'Golos, Inter',
-    },
     components: {
       MuiContainer: {
         styleOverrides: {
@@ -37,7 +35,7 @@ function MyApp({ Component }) {
             '@media (min-width: 23.438rem)': {
               padding: '0 2rem',
             },
-            '@media (max-width: 425px)': {
+            '@media (max-width: 26.563rem)': {
               padding: '0 0.9375rem',
             },
             '@media (min-width: 64rem)': {
@@ -58,7 +56,9 @@ function MyApp({ Component }) {
 
   return (
     <ThemeProvider theme={theme}>
-      <Component />
+      <main className={golos.className}>
+        <Component />
+      </main>
     </ThemeProvider>
   );
 }

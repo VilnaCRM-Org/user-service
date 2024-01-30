@@ -13,7 +13,7 @@ function CopyrightNoticeAndLinks({
   socialLinks,
 }: {
   socialLinks: ISocialMedia[];
-}) {
+}): React.ReactElement {
   const { t } = useTranslation();
 
   return (

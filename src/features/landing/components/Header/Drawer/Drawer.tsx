@@ -16,11 +16,11 @@ import { SocialMedia } from './SocialMedia';
 import styles from './styles';
 import { VilnaGmail } from './VilnaGmail';
 
-function CustomDrawer() {
+function CustomDrawer(): React.ReactElement {
   const { t } = useTranslation();
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
 
-  function handleClick() {
+  function handleClick(): void {
     setIsDrawerOpen(false);
   }
 

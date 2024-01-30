@@ -9,7 +9,11 @@ import { PrivacyPolicy } from '../PrivacyPolicy';
 
 import styles from './styles';
 
-function DefaultFooter({ socialLinks }: { socialLinks: ISocialMedia[] }) {
+function DefaultFooter({
+  socialLinks,
+}: {
+  socialLinks: ISocialMedia[];
+}): React.ReactElement {
   return (
     <Stack sx={styles.footerWrapper}>
       <Stack height="4.188rem" alignItems="center" flexDirection="row">

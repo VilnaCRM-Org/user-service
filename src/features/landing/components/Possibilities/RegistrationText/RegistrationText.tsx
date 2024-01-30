@@ -6,7 +6,7 @@ import { UiTypography } from '@/components';
 
 import styles from './styles';
 
-function RegistrationText() {
+function RegistrationText(): React.ReactElement {
   const { t } = useTranslation();
 
   return (

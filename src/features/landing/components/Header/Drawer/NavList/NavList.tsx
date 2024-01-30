@@ -12,7 +12,7 @@ function NavList({
 }: {
   navList: INavItem[];
   handleClick: () => void;
-}) {
+}): React.ReactElement {
   return (
     <Stack direction="column" gap="0.375rem" sx={styles.listWrapper}>
       {navList.map(item => (

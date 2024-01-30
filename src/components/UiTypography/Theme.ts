@@ -1,17 +1,14 @@
 import { createTheme } from '@mui/material';
 
-import { colorTheme } from '../UiColorTheme';
+import { golos, inter } from '@/config/Fonts';
 
-const fonts = {
-  golos: 'Golos',
-  inter: 'Inter',
-};
+import { colorTheme } from '../UiColorTheme';
 
 const hStyles = {
   color: colorTheme.palette.darkPrimary.main,
-  fontFamily: fonts.golos,
   fontWeight: '700',
   lineHeight: 'normal',
+  fontFamily: golos.style.fontFamily,
   letterSpacing: '',
 };
 
@@ -63,44 +60,73 @@ const theme = createTheme({
       fontSize: '1.375rem',
     },
     medium16: {
-      font: `normal 500 1rem/1.125rem ${fonts.inter}`,
+      fontFamily: inter.style.fontFamily,
+      fontWeight: '500',
+      fontSize: '1rem',
+      lineHeight: '1.125rem',
       color: colorTheme.palette.grey300.main,
     },
     medium15: {
-      font: `normal 500 0.9375rem/1.125rem ${fonts.golos}`,
+      fontWeight: '500',
+      fontSize: '0.9375rem',
+      lineHeight: '1.125rem',
       color: colorTheme.palette.grey250.main,
     },
     medium14: {
-      font: `normal 500 0.875rem/1.125rem ${fonts.inter}`,
+      fontWeight: '500',
+      fontSize: '0.875rem',
+      lineHeight: '1.125rem',
       color: colorTheme.palette.grey200.main,
+      fontFamily: inter.style.fontFamily,
     },
     regular16: {
-      font: `normal 500 1rem/1.125rem ${fonts.inter}`,
+      fontWeight: '500',
+      fontSize: '1rem',
+      lineHeight: '1.125rem',
       color: colorTheme.palette.grey300.main,
+      fontFamily: golos.style.fontFamily,
     },
     bodyText18: {
-      font: `normal 400 1.125rem/1.875rem ${fonts.golos}`,
+      fontWeight: '400',
+      fontSize: '1.125rem',
+      lineHeight: '1.875rem',
       color: colorTheme.palette.darkPrimary.main,
+      fontFamily: golos.style.fontFamily,
     },
     bodyText16: {
-      font: `normal 400 1rem/1.625rem ${fonts.golos}`,
+      fontWeight: '400',
+      fontSize: '1rem',
+      lineHeight: '1.625rem',
       color: colorTheme.palette.darkPrimary.main,
+      fontFamily: golos.style.fontFamily,
     },
     bold22: {
-      font: `normal 700 1.375rem/normal ${fonts.golos}`,
+      fontWeight: '700',
+      fontSize: '1.375rem',
+      lineHeight: 'normal',
       color: colorTheme.palette.grey250.main,
+      fontFamily: golos.style.fontFamily,
     },
     demi18: {
-      font: `normal 600 1.125rem/normal ${fonts.golos}`,
+      fontWeight: '600',
+      fontSize: '1.125rem',
+      lineHeight: 'normal',
       color: colorTheme.palette.darkPrimary.main,
+      fontFamily: golos.style.fontFamily,
     },
     button: {
-      font: `normal 600 1.125rem/normal ${fonts.golos}`,
+      fontWeight: '600',
+      fontSize: '1.125rem',
+      lineHeight: 'normal',
       color: colorTheme.palette.white.main,
+      fontFamily: golos.style.fontFamily,
     },
     mobileText: {
-      font: `normal 400 0.9375rem/1.563rem ${fonts.golos}`,
+      fontWeight: '400',
+      fontSize: '0.9375rem',
+      lineHeight: '1.563rem',
       color: colorTheme.palette.darkPrimary.main,
+      fontFamily: golos.style.fontFamily,
     },
   },
 });

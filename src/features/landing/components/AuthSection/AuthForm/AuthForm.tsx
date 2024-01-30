@@ -1,4 +1,5 @@
 import { Box, Stack } from '@mui/material';
+import Image from 'next/image';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
@@ -11,9 +12,10 @@ import {
   UiLink,
   FormRulesTooltip,
 } from '@/components';
-import { colorTheme } from '@/components/UiColorTheme';
 
+import Imagess from '../../../assets/svg/auth-section/questionMark.svg';
 import { RegisterItem } from '../../../types/authentication/form';
+import { PasswordTip } from '../PasswordTip';
 
 import styles from './styles';
 import {
@@ -22,7 +24,7 @@ import {
   validatePassword,
 } from './validation';
 
-function AuthForm() {
+function AuthForm(): React.ReactElement {
   const { t } = useTranslation();
 
   const {
@@ -36,18 +38,21 @@ function AuthForm() {
       Password: '',
       Privacy: false,
     },
+    mode: 'onTouched',
   });
 
   const onSubmit = (data: RegisterItem) => console.log(data);
 
-  const fullNameTitle = t('sign_up.form.name_input.label');
-  const fullNamePlaceholder = t('sign_up.form.name_input.placeholder');
+  const fullNameTitle: string = t('sign_up.form.name_input.label');
+  const fullNamePlaceholder: string = t('sign_up.form.name_input.placeholder');
 
-  const emailTitle = t('sign_up.form.email_input.label');
-  const emailPlaceholder = t('sign_up.form.email_input.placeholder');
+  const emailTitle: string = t('sign_up.form.email_input.label');
+  const emailPlaceholder: string = t('sign_up.form.email_input.placeholder');
 
-  const passwordTitle = t('sign_up.form.password_input.label');
-  const passwordPlaceholder = t('sign_up.form.password_input.placeholder');
+  const passwordTitle: string = t('sign_up.form.password_input.label');
+  const passwordPlaceholder: string = t(
+    'sign_up.form.password_input.placeholder'
+  );
 
   return (
     <Box sx={styles.formWrapper}>
@@ -60,78 +65,9 @@ function AuthForm() {
           </UiTypography>
           <Stack sx={styles.inputsWrapper}>
             <Stack sx={styles.inputWrapper}>
-              <Stack direction="row" alignItems="center" gap="0.5rem">
-                <UiTypography variant="medium14" sx={styles.inputTitle}>
-                  {fullNameTitle}
-                </UiTypography>
-                <FormRulesTooltip
-                  placement="right"
-                  arrow
-                  title={
-                    <Stack direction="column" gap="0.5rem">
-                      <UiTypography
-                        variant="medium14"
-                        sx={{
-                          pb: '5px',
-                          borderBottom: `2px solid ${colorTheme.palette.grey400.main}`,
-                        }}
-                      >
-                        Правила реєстрації.
-                      </UiTypography>
-                      <ul
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.5rem',
-                        }}
-                      >
-                        <li
-                          style={{
-                            fontSize: '0.8rem',
-                            color: colorTheme.palette.darkPrimary.main,
-                            fontWeight: 400,
-                          }}
-                        >
-                          напишіть ваше ім&apos;я та прізвище
-                        </li>
-                        <li
-                          style={{
-                            fontSize: '0.8rem',
-                            fontWeight: 400,
-                            color: colorTheme.palette.darkPrimary.main,
-                          }}
-                        >
-                          відсутні пробіли
-                        </li>
-                        <li
-                          style={{
-                            fontSize: '0.8rem',
-                            fontWeight: 400,
-                            color: colorTheme.palette.darkPrimary.main,
-                          }}
-                        >
-                          відсутні спеціальні символи
-                        </li>
-                      </ul>
-                    </Stack>
-                  }
-                >
-                  <Stack
-                    justifyContent="center"
-                    alignItems="center"
-                    sx={{
-                      width: '16px',
-                      height: '16px',
-                      border: '1px solid black',
-                      borderRadius: '50%',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <UiTypography variant="medium14">?</UiTypography>
-                  </Stack>
-                </FormRulesTooltip>
-              </Stack>
-
+              <UiTypography variant="medium14" sx={styles.inputTitle}>
+                {fullNameTitle}
+              </UiTypography>
               <Controller
                 control={control}
                 name="FullName"
@@ -144,6 +80,7 @@ function AuthForm() {
                     type="text"
                     placeholder={fullNamePlaceholder}
                     onChange={e => field.onChange(e)}
+                    onBlur={() => field.onBlur()}
                     value={field.value}
                     fullWidth
                     error={!!errors.FullName?.message}
@@ -171,6 +108,7 @@ function AuthForm() {
                   <UiInput
                     type="text"
                     placeholder={emailPlaceholder}
+                    onBlur={e => field.onBlur(e)}
                     onChange={e => field.onChange(e)}
                     value={field.value}
                     fullWidth
@@ -185,9 +123,18 @@ function AuthForm() {
               )}
             </Stack>
             <Stack sx={styles.inputWrapper}>
-              <UiTypography variant="medium14" sx={styles.inputTitle}>
-                {passwordTitle}
-              </UiTypography>
+              <Stack direction="row" alignItems="center" gap="0.25rem">
+                <UiTypography variant="medium14" sx={styles.inputTitle}>
+                  {passwordTitle}
+                </UiTypography>
+                <FormRulesTooltip
+                  placement="right"
+                  arrow
+                  title={<PasswordTip />}
+                >
+                  <Image src={Imagess} alt="Imagess" width={16} height={16} />
+                </FormRulesTooltip>
+              </Stack>
               <Controller
                 control={control}
                 name="Password"
@@ -200,6 +147,7 @@ function AuthForm() {
                     type="password"
                     placeholder={passwordPlaceholder}
                     onChange={e => field.onChange(e)}
+                    onBlur={e => field.onBlur(e)}
                     value={field.value}
                     error={!!errors.Password?.message}
                     fullWidth

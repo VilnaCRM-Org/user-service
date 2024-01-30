@@ -6,7 +6,7 @@ import { UiButton, UiTypography } from '@/components';
 
 import styles from './styles';
 
-function TextInfo() {
+function TextInfo(): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Stack sx={styles.textWrapper}>

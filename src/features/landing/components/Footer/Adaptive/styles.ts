@@ -13,7 +13,6 @@ export default {
     textAlign: 'center',
     width: '100%',
     '@media (max-width: 767.98px)': {
-      fontFamily: 'Golos',
       fontSize: '1.125rem',
       fontStyle: 'normal',
       fontWeight: '600',

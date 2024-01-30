@@ -1,5 +1,7 @@
 import { createTheme } from '@mui/material';
 
+import { inter } from '@/config/Fonts';
+
 import { colorTheme } from '../UiColorTheme';
 
 export const theme = createTheme({
@@ -39,7 +41,7 @@ export const theme = createTheme({
             background: colorTheme.palette.white.main,
             '&::placeholder': {
               color: colorTheme.palette.grey300.main,
-              fontFamily: 'Inter',
+              fontFamily: inter.style.fontFamily,
               fontSize: '1rem',
               fontStyle: 'normal',
               fontWeight: '400',

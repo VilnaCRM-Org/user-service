@@ -7,7 +7,7 @@ import { UiButton } from '../../../../../components';
 
 import { authButtonsStyles } from './styles';
 
-function AuthButtons() {
+function AuthButtons(): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Stack spacing={1} direction="row" sx={authButtonsStyles.wrapper}>

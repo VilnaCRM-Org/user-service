@@ -5,8 +5,7 @@ import { socialLinks } from './dataArray';
 import { DefaultFooter } from './DefaultFooter';
 import styles from './styles';
 
-function Footer() {
-  // Can i use useContext for socialLinks?
+function Footer(): React.ReactElement {
   return (
     <Box component="footer" id="Contacts">
       <Box sx={styles.default}>

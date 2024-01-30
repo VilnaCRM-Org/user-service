@@ -7,7 +7,7 @@ import { colorTheme } from '@/components/UiColorTheme';
 
 import styles from './styles';
 
-function PrivacyPolicy() {
+function PrivacyPolicy(): React.ReactElement {
   const { t } = useTranslation();
 
   return (

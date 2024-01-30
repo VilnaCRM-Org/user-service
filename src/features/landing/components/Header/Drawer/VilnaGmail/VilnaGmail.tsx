@@ -7,7 +7,7 @@ import { colorTheme } from '@/components/UiColorTheme';
 
 import styles from './styles';
 
-function VilnaGmail() {
+function VilnaGmail(): React.ReactElement {
   return (
     <Stack sx={styles.gmailWrapper} justifyContent="center">
       <Link href="mailto:info@vilnacrm.com">

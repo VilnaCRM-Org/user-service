@@ -5,7 +5,7 @@ import { Cards } from './Cards';
 import MainTitle from './MainTitle/MainTitle';
 import styles from './styles';
 
-function ForWhoSectionStyles() {
+function ForWhoSectionStyles(): React.ReactElement {
   return (
     <Box id="forWhoSectionStyles" component="section" sx={styles.wrapper}>
       <Container>

@@ -8,9 +8,9 @@ import { ISocialMedia } from '../../../types/social-media';
 
 import styles from './styles';
 
-function SocialMediaItem({ item }: { item: ISocialMedia }) {
+function SocialMediaItem({ item }: { item: ISocialMedia }): React.ReactElement {
   const { t } = useTranslation();
-  const ariaLabel = t(item.ariaLabel) as string;
+  const ariaLabel: string = t(item.ariaLabel);
   return (
     <Box sx={styles.navLink}>
       <Link href={item.linkHref} aria-label={ariaLabel}>

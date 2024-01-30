@@ -1,13 +1,15 @@
 import { Interpolation, Theme, createTheme } from '@mui/material';
 
+import { golos } from '@/config/Fonts';
+
 import { colorTheme } from '../UiColorTheme';
 
 export const repeatStyles: Interpolation<{ theme: Theme }> = {
   textTransform: 'none',
   textDecoration: 'none',
   fontSize: '0.938rem',
+  fontFamily: golos.style.fontFamily,
   fontWeight: '500',
-  fontFamily: 'Golos',
   lineHeight: '1.125',
   letterSpacing: '0',
 };
@@ -50,7 +52,6 @@ export const theme = createTheme({
             backgroundColor: colorTheme.palette.primary.main,
             padding: '1.25rem 2rem',
             alignSelf: 'center',
-            fontFamily: 'Golos',
             fontWeight: '600',
             fontSize: '1.125rem',
             letterSpacing: '0',

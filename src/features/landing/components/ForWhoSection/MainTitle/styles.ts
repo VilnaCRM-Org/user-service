@@ -4,7 +4,6 @@ export default {
   title: {
     '@media (max-width: 1023.98px)': {
       color: colorTheme.palette.darkPrimary.main,
-      fontFamily: 'Golos',
       fontSize: '1.75rem',
       fontStyle: 'normal',
       fontHeight: '700',
@@ -21,7 +20,6 @@ export default {
     '@media (max-width: 1023.98px)': {
       pt: '0.813rem',
       color: colorTheme.palette.darkPrimary.main,
-      fontfamily: 'Golos',
       fontSize: '0.9375rem',
       fontStyle: 'normal',
       fontSeight: '400',

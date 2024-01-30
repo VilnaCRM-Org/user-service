@@ -6,7 +6,7 @@ import { Notch } from '../Notch';
 
 import styles from './styles';
 
-function DeviceImage() {
+function DeviceImage(): React.ReactElement {
   return (
     <Stack justifyContent="center" alignItems="center" sx={styles.wrapper}>
       <Box sx={styles.screenBorder}>

@@ -17,7 +17,6 @@ export default {
     textAlign: 'center',
     '@media (max-width: 639.98px)': {
       color: colorTheme.palette.darkPrimary.main,
-      fontFamily: 'Golos',
       fontSize: '2rem',
       fontStyle: 'normal',
       fontWeight: '700',
@@ -35,7 +34,6 @@ export default {
       mb: '1.5rem',
       textAlign: 'left',
       color: colorTheme.palette.darkPrimary.main,
-      fontFamily: 'Golos',
       fontSize: '0.9375rem',
       fontStyle: 'normal',
       fontWeight: '400',

@@ -8,7 +8,11 @@ import { ISocialMedia } from '../../../../types/social-media';
 
 import styles from './styles';
 
-function SocialMedia({ socialMedia }: { socialMedia: ISocialMedia[] }) {
+function SocialMedia({
+  socialMedia,
+}: {
+  socialMedia: ISocialMedia[];
+}): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Stack

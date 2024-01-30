@@ -12,7 +12,7 @@ import { Drawer } from './Drawer';
 import { NavLink } from './NavLink';
 import styles from './styles';
 
-function Header() {
+function Header(): React.ReactElement {
   const { t } = useTranslation();
   return (
     <AppBar position="static" sx={styles.headerWrapper}>

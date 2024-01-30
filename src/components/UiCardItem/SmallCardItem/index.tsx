@@ -2,7 +2,6 @@ import { Stack } from '@mui/material';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-// eslint-disable-next-line no-restricted-imports, import/no-cycle
 import { UiImage, UiTypography } from '@/components';
 import { ServicesTooltip } from '@/components/UiTooltip';
 
@@ -29,6 +28,7 @@ function SmallCardItem({ item, imageList }: SmallCardItem) {
             Інтегруйте
             <ServicesTooltip
               placement="bottom"
+              arrow
               title={<HoverCard imageList={imageList} />}
             >
               <UiTypography>звичні сервіси</UiTypography>

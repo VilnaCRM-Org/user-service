@@ -6,7 +6,7 @@ import { UiTypography } from '@/components';
 
 import styles from './styles';
 
-function Heading() {
+function Heading(): React.ReactElement {
   const { t } = useTranslation();
 
   return (

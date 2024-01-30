@@ -9,7 +9,11 @@ import { IimageList } from '../../../types/possibilities/image-list';
 
 import styles from './styles';
 
-function HoverCard({ imageList }: { imageList: IimageList[] }) {
+function HoverCard({
+  imageList,
+}: {
+  imageList: IimageList[];
+}): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Box maxWidth="17.625rem">
