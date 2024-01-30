@@ -8,6 +8,8 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\UpdateUserCommand;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
+use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\InvalidPasswordException;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
@@ -20,6 +22,8 @@ final class UpdateUserCommandHandler implements CommandHandlerInterface
         private PasswordHasherFactoryInterface $hasherFactory,
         private UserRepositoryInterface $userRepository,
         private UuidFactory $uuidFactory,
+        private EmailChangedEventFactoryInterface $emailChangedEventFactory,
+        private PasswordChangedEventFactoryInterface $passwordChangedFactory,
     ) {
     }
 
@@ -28,19 +32,23 @@ final class UpdateUserCommandHandler implements CommandHandlerInterface
         $user = $command->user;
         $hasher = $this->hasherFactory->getPasswordHasher(User::class);
 
-        if (!$hasher->verify($user->getPassword(), $command->oldPassword)) {
+        if (
+            !$hasher->verify(
+                $user->getPassword(),
+                $command->updateData->oldPassword
+            )
+        ) {
             throw new InvalidPasswordException();
         }
 
-        $hashedPassword = $hasher->hash($command->newPassword);
+        $hashedPassword = $hasher->hash($command->updateData->newPassword);
 
         $events = $user->update(
-            $command->newEmail,
-            $command->newInitials,
-            $command->newPassword,
-            $command->oldPassword,
+            $command->updateData,
             $hashedPassword,
-            (string) $this->uuidFactory->create()
+            (string) $this->uuidFactory->create(),
+            $this->emailChangedEventFactory,
+            $this->passwordChangedFactory
         );
         $this->userRepository->save($user);
         $this->eventBus->publish(...$events);

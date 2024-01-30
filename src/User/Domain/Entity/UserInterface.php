@@ -6,23 +6,27 @@ namespace App\User\Domain\Entity;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\User\Domain\Event\UserConfirmedEvent;
+use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
+use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
+use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
+use App\User\Domain\ValueObject\UserUpdateData;
 
 interface UserInterface
 {
     public function confirm(
         ConfirmationToken $token,
-        string $eventID
+        string $eventID,
+        UserConfirmedEventFactoryInterface $userConfirmedEventFactory
     ): UserConfirmedEvent;
 
     /**
      * @return array<DomainEvent>
      */
     public function update(
-        string $newEmail,
-        string $newInitials,
-        string $newPassword,
-        string $oldPassword,
+        UserUpdateData $updateData,
         string $hashedNewPassword,
-        string $eventID
+        string $eventID,
+        EmailChangedEventFactoryInterface $emailChangedEventFactory,
+        PasswordChangedEventFactoryInterface $passwordChangedEventFactory,
     ): array;
 }

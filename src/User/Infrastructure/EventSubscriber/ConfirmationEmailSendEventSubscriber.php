@@ -8,7 +8,7 @@ use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Domain\Event\ConfirmationEmailSendEvent;
 use App\User\Domain\Repository\TokenRepositoryInterface;
-use App\User\Infrastructure\Factory\EmailFactory;
+use App\User\Infrastructure\Factory\EmailFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -21,7 +21,7 @@ final class ConfirmationEmailSendEventSubscriber implements
         private TokenRepositoryInterface $tokenRepository,
         private LoggerInterface $logger,
         private TranslatorInterface $translator,
-        private EmailFactory $emailFactory
+        private EmailFactoryInterface $emailFactory
     ) {
     }
 

@@ -7,7 +7,7 @@ namespace App\User\Infrastructure\EventSubscriber;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Domain\Event\PasswordChangedEvent;
-use App\User\Infrastructure\Factory\EmailFactory;
+use App\User\Infrastructure\Factory\EmailFactoryInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -16,7 +16,7 @@ final class PasswordChangedEventSubscriber implements
 {
     public function __construct(
         private MailerInterface $mailer,
-        private EmailFactory $emailFactory,
+        private EmailFactoryInterface $emailFactory,
         private TranslatorInterface $translator,
     ) {
     }

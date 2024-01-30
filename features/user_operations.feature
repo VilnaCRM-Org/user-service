@@ -23,6 +23,7 @@ Feature: User Operations
     And creating user with email "test2@mail.com", initials "name surname", password "passWORD1"
     When POST request is send to "/api/users"
     Then the response status code should be 409
+    And the error message should be "test2@mail.com address is already registered. Please use a different email address or try logging in."
 
   Scenario: Creating a user with invalid email
     Given creating user with email "test", initials "name surname", password "passWORD1"
@@ -48,10 +49,17 @@ Feature: User Operations
     Then the response status code should be 422
     And violation should be "Password must be between 8 and 64 characters long"
 
+  Scenario: Creating a user with invalid initials format
+    Given creating user with email "testPass3@mail.com", initials "123", password "pass"
+    When POST request is send to "/api/users"
+    Then the response status code should be 422
+    And violation should be "Invalid full name format"
+
   Scenario: Creating a user with wrong input
     Given creating user with invalid input
     When POST request is send to "/api/users"
     Then the response status code should be 400
+    And the error message should be "The input data is misformatted."
 
   Scenario: Getting a user
     Given user with id "8be90127-9840-4235-a6da-39b8debfb220" exists
@@ -62,6 +70,7 @@ Feature: User Operations
   Scenario: Getting a non-existing user
     When GET request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221"
     Then the response status code should be 404
+    And the error message should be "Not Found"
 
   Scenario: Deleting a user
     Given user with id "8be90127-9840-4235-a6da-39b8debfb220" exists
@@ -71,6 +80,7 @@ Feature: User Operations
   Scenario: Deleting a non-existing user
     When DELETE request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221"
     Then the response status code should be 404
+    And the error message should be "Not Found"
 
   Scenario: Replacing user
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
@@ -84,10 +94,12 @@ Feature: User Operations
     And updating user with email "testput@mail.com", initials "name surname", oldPassword "wrongpassWORD1", newPassword "passWORD12"
     When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 400
+    And the error message should be "Old password is invalid"
 
   Scenario: Replacing a non-existing user
-    When PUT request is send to "/api/users//8be90127-9840-4235-a6da-39b8debfb221"
+    When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221"
     Then the response status code should be 404
+    And the error message should be "Not Found"
 
   Scenario: Replacing user with duplicate email
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
@@ -95,12 +107,14 @@ Feature: User Operations
     And updating user with email "test3@mail.com", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
     When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 409
+    And the error message should be "test3@mail.com address is already registered. Please use a different email address or try logging in."
 
   Scenario: Replacing a user with wrong input
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
     And updating user with invalid input
     When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 400
+    And the error message should be "The input data is misformatted."
 
   Scenario: Replacing user with invalid email
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
@@ -121,10 +135,12 @@ Feature: User Operations
     And updating user with email "testpatch@mail.com", initials "name surname", oldPassword "wrongpassWORD1", newPassword "passWORD1"
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 400
+    And the error message should be "Old password is invalid"
 
   Scenario: Updating a non-existing user
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221"
     Then the response status code should be 404
+    And the error message should be "Not Found"
 
   Scenario: Updating user with duplicate email
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
@@ -132,12 +148,14 @@ Feature: User Operations
     And updating user with email "test4@mail.com", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 409
+    And the error message should be "test4@mail.com address is already registered. Please use a different email address or try logging in."
 
   Scenario: Updating a user with wrong input
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
     And updating user with invalid input
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 400
+    And the error message should be "The input data is misformatted."
 
   Scenario: Updating user with invalid email
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
@@ -156,10 +174,12 @@ Feature: User Operations
     When POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222/resend-confirmation-email"
     And POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222/resend-confirmation-email"
     Then the response status code should be 429
+    And user should be timed out
 
   Scenario: Resending email to non-existing user
     When POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221/resend-confirmation-email"
     Then the response status code should be 404
+    And the error message should be "User not found"
 
   Scenario: Confirming user
     Given user with id "8be90127-9840-4235-a6da-39b8debfb223" exists
@@ -172,3 +192,4 @@ Feature: User Operations
     Given confirming user with token "expiredToken"
     When PATCH request is send to "/api/users/confirm"
     Then the response status code should be 404
+    And the error message should be "Token not found"

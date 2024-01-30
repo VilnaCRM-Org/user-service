@@ -7,10 +7,10 @@ namespace App\User\Infrastructure\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Application\DTO\RetryDto;
-use App\User\Domain\Factory\ConfirmationEmailFactory;
-use App\User\Domain\Factory\ConfirmationTokenFactory;
+use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
+use App\User\Domain\Factory\ConfirmationEmailFactoryInterface;
+use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\UserNotFoundException;
@@ -25,8 +25,9 @@ final class ResendEmailProcessor implements ProcessorInterface
         private CommandBusInterface $commandBus,
         private UserRepositoryInterface $userRepository,
         private TokenRepositoryInterface $tokenRepository,
-        private ConfirmationTokenFactory $tokenFactory,
-        private ConfirmationEmailFactory $confirmationEmailFactory
+        private ConfirmationTokenFactoryInterface $tokenFactory,
+        private ConfirmationEmailFactoryInterface $confirmationEmailFactory,
+        private SendConfirmationEmailCommandFactoryInterface $emailCmdFactory
     ) {
     }
 
@@ -52,7 +53,7 @@ final class ResendEmailProcessor implements ProcessorInterface
         $token->send();
 
         $this->commandBus->dispatch(
-            new SendConfirmationEmailCommand(
+            $this->emailCmdFactory->create(
                 $this->confirmationEmailFactory->create($token, $user)
             )
         );

@@ -6,7 +6,7 @@ namespace App\User\Infrastructure\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\Command\SignUpCommand;
+use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\Transformer\CreateUserMutationInputTransformer;
 
@@ -15,7 +15,8 @@ final class RegisterUserMutationResolver implements MutationResolverInterface
     public function __construct(
         private CommandBusInterface $commandBus,
         private MutationInputValidator $validator,
-        private CreateUserMutationInputTransformer $transformer
+        private CreateUserMutationInputTransformer $transformer,
+        private SignUpCommandFactoryInterface $signUpCommandFactory
     ) {
     }
 
@@ -28,7 +29,7 @@ final class RegisterUserMutationResolver implements MutationResolverInterface
 
         $this->validator->validate($this->transformer->transform($args));
 
-        $command = new SignUpCommand(
+        $command = $this->signUpCommandFactory->create(
             $args['email'],
             $args['initials'],
             $args['password']

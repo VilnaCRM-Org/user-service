@@ -9,8 +9,7 @@ final class DuplicateEmailException extends \LogicException
     public function __construct(string $email)
     {
         parent::__construct(
-            $email.' address is already registered. 
-            Please use a different email address or try logging in.'
+            $email.' address is already registered. Please use a different email address or try logging in.'
         );
     }
 }

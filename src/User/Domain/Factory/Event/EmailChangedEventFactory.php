@@ -7,7 +7,8 @@ namespace App\User\Domain\Factory\Event;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Event\EmailChangedEvent;
 
-final class EmailChangedEventFactory
+final class EmailChangedEventFactory implements
+    EmailChangedEventFactoryInterface
 {
     public function create(User $user, string $eventId): EmailChangedEvent
     {

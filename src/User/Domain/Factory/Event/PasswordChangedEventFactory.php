@@ -6,7 +6,8 @@ namespace App\User\Domain\Factory\Event;
 
 use App\User\Domain\Event\PasswordChangedEvent;
 
-final class PasswordChangedEventFactory
+final class PasswordChangedEventFactory implements
+    PasswordChangedEventFactoryInterface
 {
     public function create(string $email, string $eventId): PasswordChangedEvent
     {

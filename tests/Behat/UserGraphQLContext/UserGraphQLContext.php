@@ -208,6 +208,16 @@ class UserGraphQLContext implements Context
     }
 
     /**
+     * @Then graphql error message should be :errorMessage
+     */
+    public function graphQLErrorShouldBe($errorMessage): void
+    {
+        $data = json_decode($this->response->getContent(), true);
+
+        Assert::assertEquals($errorMessage, $data['errors'][0]['debugMessage']);
+    }
+
+    /**
      * @Then graphql error response should be returned
      */
     public function graphQLErrorResponseShouldBeReturned(): void

@@ -7,13 +7,13 @@ namespace App\User\Application\Transformer;
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\User\Application\Command\SignUpCommand;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Factory\UserFactory;
+use App\User\Domain\Factory\UserFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 final class SignUpTransformer
 {
     public function __construct(
-        private UserFactory $userFactory,
+        private UserFactoryInterface $userFactory,
         private UuidTransformer $transformer,
         private UuidFactory $uuidFactory,
     ) {

@@ -87,6 +87,24 @@ class UserOperationsContext implements Context
     }
 
     /**
+     * @Then user should be timed out
+     */
+    public function userShouldBeTimedOut(): void
+    {
+        $data = json_decode($this->response->getContent(), true);
+        Assert::stringContains('Cannot send new email till', $data['detail']);
+    }
+
+    /**
+     * @Then the error message should be :errorMessage
+     */
+    public function theErrorMessageShouldBe(string $errorMessage): void
+    {
+        $data = json_decode($this->response->getContent(), true);
+        Assert::assertEquals($errorMessage, $data['detail']);
+    }
+
+    /**
      * @Then the response status code should be :statusCode
      */
     public function theResponseStatusCodeShouldBe(string $statusCode): void

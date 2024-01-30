@@ -4,7 +4,7 @@ namespace App\Tests\Behat\UserContext;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\User\Domain\Entity\ConfirmationToken;
-use App\User\Domain\Factory\UserFactory;
+use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\DuplicateEmailException;
@@ -22,7 +22,7 @@ class UserContext implements Context
         private UserRepositoryInterface $userRepository,
         private PasswordHasherFactoryInterface $hasherFactory,
         private TokenRepositoryInterface $tokenRepository,
-        private UserFactory $userFactory,
+        private UserFactoryInterface $userFactory,
         private UuidTransformer $transformer,
         private UuidFactory $uuidFactory,
     ) {

@@ -7,18 +7,19 @@ namespace App\User\Infrastructure\EventSubscriber;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
-use App\User\Application\Command\SendConfirmationEmailCommand;
+use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
 use App\User\Domain\Event\UserRegisteredEvent;
-use App\User\Domain\Factory\ConfirmationEmailFactory;
-use App\User\Domain\Factory\ConfirmationTokenFactory;
+use App\User\Domain\Factory\ConfirmationEmailFactoryInterface;
+use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 
 final class UserRegisteredEventSubscriber implements
     DomainEventSubscriberInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,
-        private ConfirmationTokenFactory $tokenFactory,
-        private ConfirmationEmailFactory $confirmationEmailFactory
+        private ConfirmationTokenFactoryInterface $tokenFactory,
+        private ConfirmationEmailFactoryInterface $confirmationEmailFactory,
+        private SendConfirmationEmailCommandFactoryInterface $emailCmdFactory
     ) {
     }
 
@@ -28,7 +29,7 @@ final class UserRegisteredEventSubscriber implements
         $token = $this->tokenFactory->create($user->getId());
 
         $this->commandBus->dispatch(
-            new SendConfirmationEmailCommand(
+            $this->emailCmdFactory->create(
                 $this->confirmationEmailFactory->create($token, $user)
             )
         );

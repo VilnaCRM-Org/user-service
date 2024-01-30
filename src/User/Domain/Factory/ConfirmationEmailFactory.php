@@ -7,12 +7,13 @@ namespace App\User\Domain\Factory;
 use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
-use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactory;
+use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactoryInterface;
 
-final class ConfirmationEmailFactory
+final class ConfirmationEmailFactory implements
+    ConfirmationEmailFactoryInterface
 {
     public function __construct(
-        private ConfirmationEmailSendEventFactory $factory,
+        private ConfirmationEmailSendEventFactoryInterface $factory,
     ) {
     }
 

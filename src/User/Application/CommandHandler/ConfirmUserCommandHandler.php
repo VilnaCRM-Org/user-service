@@ -7,6 +7,7 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\ConfirmUserCommand;
+use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Exception\UserNotFoundException;
 use Symfony\Component\Uid\Factory\UuidFactory;
@@ -16,7 +17,8 @@ final class ConfirmUserCommandHandler implements CommandHandlerInterface
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private EventBusInterface $eventBus,
-        private UuidFactory $uuidFactory
+        private UuidFactory $uuidFactory,
+        private UserConfirmedEventFactoryInterface $userConfirmedEventFactory
     ) {
     }
 
@@ -28,7 +30,11 @@ final class ConfirmUserCommandHandler implements CommandHandlerInterface
             $token->getUserID()
         ) ?? throw new UserNotFoundException();
         $this->eventBus->publish(
-            $user->confirm($token, (string) $this->uuidFactory->create()),
+            $user->confirm(
+                $token,
+                (string) $this->uuidFactory->create(),
+                $this->userConfirmedEventFactory,
+            ),
         );
 
         $this->userRepository->save($user);

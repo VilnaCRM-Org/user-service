@@ -6,7 +6,7 @@ namespace App\User\Infrastructure\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\Command\ConfirmUserCommand;
+use App\User\Application\Factory\ConfirmUserCommandFactoryInterface;
 use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\Transformer\ConfirmUserMutationInputTransformer;
 use App\User\Domain\Repository\TokenRepositoryInterface;
@@ -21,7 +21,8 @@ final class ConfirmUserMutationResolver implements MutationResolverInterface
         private CommandBusInterface $commandBus,
         private UserRepositoryInterface $userRepository,
         private MutationInputValidator $validator,
-        private ConfirmUserMutationInputTransformer $transformer
+        private ConfirmUserMutationInputTransformer $transformer,
+        private ConfirmUserCommandFactoryInterface $confirmUserCommandFactory
     ) {
     }
 
@@ -39,7 +40,9 @@ final class ConfirmUserMutationResolver implements MutationResolverInterface
         $user = $this->userRepository->find($token->getUserID())
             ?? throw new UserNotFoundException();
 
-        $this->commandBus->dispatch(new ConfirmUserCommand($token));
+        $this->commandBus->dispatch(
+            $this->confirmUserCommandFactory->create($token)
+        );
 
         return $user;
     }

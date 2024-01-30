@@ -7,8 +7,8 @@ namespace App\User\Infrastructure\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\Command\ConfirmUserCommand;
 use App\User\Application\DTO\ConfirmUserDto;
+use App\User\Application\Factory\ConfirmUserCommandFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Infrastructure\Exception\TokenNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,7 +20,8 @@ final class ConfirmUserProcessor implements ProcessorInterface
 {
     public function __construct(
         private TokenRepositoryInterface $tokenRepository,
-        private CommandBusInterface $commandBus
+        private CommandBusInterface $commandBus,
+        private ConfirmUserCommandFactoryInterface $confirmUserCommandFactory
     ) {
     }
 
@@ -39,7 +40,9 @@ final class ConfirmUserProcessor implements ProcessorInterface
             $data->token
         ) ?? throw new TokenNotFoundException();
 
-        $this->commandBus->dispatch(new ConfirmUserCommand($token));
+        $this->commandBus->dispatch(
+            $this->confirmUserCommandFactory->create($token)
+        );
 
         return new Response();
     }

@@ -7,10 +7,11 @@ namespace App\User\Infrastructure\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\Command\UpdateUserCommand;
 use App\User\Application\DTO\UserPutDto;
+use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Domain\ValueObject\UserUpdateData;
 use App\User\Infrastructure\Exception\UserNotFoundException;
 
 /**
@@ -20,7 +21,8 @@ final class UserPatchProcessor implements ProcessorInterface
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private CommandBusInterface $commandBus
+        private CommandBusInterface $commandBus,
+        private UpdateUserCommandFactoryInterface $updateUserCommandFactory
     ) {
     }
 
@@ -45,12 +47,14 @@ final class UserPatchProcessor implements ProcessorInterface
         $newPassword = $data->newPassword ?? $data->oldPassword;
 
         $this->commandBus->dispatch(
-            new UpdateUserCommand(
+            $this->updateUserCommandFactory->create(
                 $user,
-                $newEmail,
-                $newInitials,
-                $newPassword,
-                $data->oldPassword
+                new UserUpdateData(
+                    $newEmail,
+                    $newInitials,
+                    $newPassword,
+                    $data->oldPassword
+                )
             )
         );
 

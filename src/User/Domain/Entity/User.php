@@ -6,9 +6,11 @@ namespace App\User\Domain\Entity;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\ValueObject\UuidInterface;
-use App\User\Domain\Event\EmailChangedEvent;
-use App\User\Domain\Event\PasswordChangedEvent;
 use App\User\Domain\Event\UserConfirmedEvent;
+use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
+use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
+use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
+use App\User\Domain\ValueObject\UserUpdateData;
 
 class User implements UserInterface
 {
@@ -65,34 +67,39 @@ class User implements UserInterface
 
     public function confirm(
         ConfirmationToken $token,
-        string $eventID
+        string $eventID,
+        UserConfirmedEventFactoryInterface $userConfirmedEventFactory
     ): UserConfirmedEvent {
         $this->confirmed = true;
 
-        return new UserConfirmedEvent($token, $eventID);
+        return $userConfirmedEventFactory->create($token, $eventID);
     }
 
     /**
      * @return array<DomainEvent>
      */
     public function update(
-        string $newEmail,
-        string $newInitials,
-        string $newPassword,
-        string $oldPassword,
+        UserUpdateData $updateData,
         string $hashedNewPassword,
         string $eventID,
+        EmailChangedEventFactoryInterface $emailChangedEventFactory,
+        PasswordChangedEventFactoryInterface $passwordChangedEventFactory,
     ): array {
         $events = [];
 
-        $events += $this->processNewEmail($newEmail, $eventID);
+        $events += $this->processNewEmail(
+            $updateData->newEmail,
+            $eventID,
+            $emailChangedEventFactory
+        );
         $events += $this->processNewPassword(
-            $newPassword,
-            $oldPassword,
-            $eventID
+            $updateData->newPassword,
+            $updateData->oldPassword,
+            $eventID,
+            $passwordChangedEventFactory
         );
 
-        $this->initials = $newInitials;
+        $this->initials = $updateData->newInitials;
         $this->password = $hashedNewPassword;
 
         return $events;
@@ -111,12 +118,16 @@ class User implements UserInterface
     /**
      * @return array<DomainEvent>
      */
-    private function processNewEmail(string $newEmail, string $eventID): array
-    {
+    private function processNewEmail(
+        string $newEmail,
+        string $eventID,
+        EmailChangedEventFactoryInterface $emailChangedEventFactory,
+    ): array {
         $events = [];
         if ($newEmail !== $this->email) {
             $this->confirmed = false;
-            $events[] = new EmailChangedEvent($this, $eventID);
+            $events[] =
+                $emailChangedEventFactory->create($this, $eventID);
         }
 
         $this->email = $newEmail;
@@ -129,11 +140,13 @@ class User implements UserInterface
     private function processNewPassword(
         string $newPassword,
         string $oldPassword,
-        string $eventID
+        string $eventID,
+        PasswordChangedEventFactoryInterface $passwordChangedEventFactory
     ): array {
         $events = [];
         if ($newPassword !== $oldPassword) {
-            $events[] = new PasswordChangedEvent($this->email, $eventID);
+            $events[] =
+                $passwordChangedEventFactory->create($this->email, $eventID);
         }
         return $events;
     }
