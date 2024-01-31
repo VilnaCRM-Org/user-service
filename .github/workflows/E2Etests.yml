@@ -15,5 +15,8 @@ jobs:
       - name: Start application
         run: docker-compose up -d
 
+      - name: Install make
+        run: apt-get install -y make
+
       - name: Run Behat tests
-        run: docker-compose exec -T php make behat-ci
+        run: docker-compose exec -T php make behat
