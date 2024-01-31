@@ -42,12 +42,6 @@ jobs:
         with:
           ref: main
           path: base
-      - name: Running OpenAPI Spec diff action
-        uses: doohochang/openapi-diff-action@v0.1.2
-        with:
-          head-spec: head/.github/openapi-spec/spec.yaml
-          base-spec: base/.github/openapi-spec/spec.yaml
-          fail-on-incompatible: true
       - name: Run OpenAPI Diff
         uses: docker://openapitools/openapi-diff:latest
         with:
