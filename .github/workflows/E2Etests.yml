@@ -9,9 +9,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: |
-          sudo /etc/init.d/mysql start
-
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
@@ -26,6 +23,9 @@ jobs:
 
       - name: Start application
         run: docker compose up -d
+
+      - name: Wait for db to be ready
+        run: sleep 120
 
       - name: Run Behat tests
         run: |
