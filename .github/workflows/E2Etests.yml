@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Start application
-        run: docker compose up --build --wait
+        run: docker compose up -d
 
       - name: Run Behat tests
-        run: docker compose exec -T -e APP_ENV=test php ./vendor/bin/behat
+        run: vendor/bin/behat
