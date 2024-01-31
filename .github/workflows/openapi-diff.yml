@@ -48,7 +48,7 @@ jobs:
           head-spec: head/.github/openapi-spec/spec.yaml
           base-spec: base/.github/openapi-spec/spec.yaml
           fail-on-incompatible: true
-      - name: Run OpenAPI Diff (from HEAD rev)
+      - name: Run OpenAPI Diff
         uses: docker://openapitools/openapi-diff:latest
         with:
           args: --fail-on-incompatible base/.github/openapi-spec/spec.yaml head/.github/openapi-spec/spec.yaml
