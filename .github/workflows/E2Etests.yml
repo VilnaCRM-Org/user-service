@@ -25,4 +25,9 @@ jobs:
         run: docker compose up -d
 
       - name: Run Behat tests
-        run: vendor/bin/behat
+        run: |
+          docker compose exec -T -e APP_ENV=test php bin/console c:c
+          docker compose exec -T -e APP_ENV=test php bin/console doctrine:database:drop --force --if-exists
+          docker compose exec -T -e APP_ENV=test php bin/console doctrine:database:create
+          docker compose exec -T -e APP_ENV=test php bin/console doctrine:migrations:migrate --no-interaction
+          docker compose exec -T -e APP_ENV=test php ./vendor/bin/behat
