@@ -16,4 +16,4 @@ jobs:
         run: docker-compose up -d
 
       - name: Run Behat tests
-        run: docker-compose exec php vendor/bin/behat
+        run: docker-compose exec php make behat
