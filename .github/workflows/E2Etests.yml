@@ -24,8 +24,8 @@ jobs:
       - name: Start application
         run: docker compose up -d
 
-      - name: Wait for db to be ready
-        run: sleep 120
+      - name: Run migrations
+        run: docker compose exec php bin/console d:m:m
 
       - name: Run Behat tests
         run: |
