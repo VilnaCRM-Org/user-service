@@ -1,0 +1,19 @@
+name: end-to-end testing
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  end-to-end:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Start application
+        run: docker-compose up -d
+
+      - name: Run Behat tests
+        run: docker-compose exec php vendor/bin/behat

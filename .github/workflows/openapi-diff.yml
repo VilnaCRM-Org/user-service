@@ -34,16 +34,17 @@ jobs:
           add: '.github/openapi-spec/spec.yaml'
           message: 'feat(#${{ toJSON(github.event.number) }}): generate openapi spec'
       - name: Check out head branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: head
       - name: Check out master branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: main
           path: base
       - name: Running OpenAPI Spec diff action
-        uses: oasdiff/oasdiff-action/breaking@main
+        uses: doohochang/openapi-diff-action@v0.1.2
         with:
-          base: base/.github/openapi-spec/spec.yaml
-          revision: head/.github/openapi-spec/spec.yaml
+          head-spec: head/.github/openapi-spec/spec.yaml
+          base-spec: base/.github/openapi-spec/spec.yaml
+          fail-on-incompatible: true
