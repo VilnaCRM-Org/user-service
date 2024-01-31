@@ -9,6 +9,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - run: |
+          sudo /etc/init.d/mysql start
+
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
