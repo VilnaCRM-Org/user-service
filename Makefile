@@ -12,13 +12,11 @@ EXEC_PHP      = $(DOCKER_COMPOSE) exec php
 COMPOSER      = $(EXEC_PHP) composer
 GIT           = git
 EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
-EXEC_PHP_TEST_ENV_CI = $(DOCKER_COMPOSE) exec -T -e APP_ENV=test php
 
 # Alias
 SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_BIN   = $(EXEC_PHP) symfony
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
-SYMFONY_TEST_ENV_CI = $(EXEC_PHP_TEST_ENV) bin/console
 
 # Executables: vendors
 PHPUNIT       = ./vendor/bin/phpunit
@@ -69,16 +67,7 @@ behat: ## A php framework for autotesting business expectations
 	$(SYMFONY_TEST_ENV) doctrine:database:drop --force --if-exists
 	$(SYMFONY_TEST_ENV) doctrine:database:create
 	$(SYMFONY_TEST_ENV) doctrine:migrations:migrate --no-interaction
-	$(SYMFONY_TEST_ENV) doctrine:schema:update --force
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/behat
-
-behat-ci: ## A php framework for autotesting business expectations
-	$(SYMFONY_TEST_ENV_CI) c:c
-	$(SYMFONY_TEST_ENV_CI) doctrine:database:drop --force --if-exists
-	$(SYMFONY_TEST_ENV_CI) doctrine:database:create
-	$(SYMFONY_TEST_ENV_CI) doctrine:migrations:migrate --no-interaction
-	$(SYMFONY_TEST_ENV_CI) doctrine:schema:update --force
-	$(EXEC_PHP_TEST_ENV_CI) ./vendor/bin/behat
 
 artillery: ## run Load testing
 	$(DOCKER) run --rm -v "${PWD}/tests/Load:/tests/Load" artilleryio/artillery:latest run $(addprefix /tests/Load/,$(ARTILLERY_FILES))
