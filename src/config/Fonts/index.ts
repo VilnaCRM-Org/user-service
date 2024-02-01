@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/typedef */
+import { NextFont } from 'next/dist/compiled/@next/font';
 import Golos from 'next/font/local';
 import Inter from 'next/font/local';
 
-export const golos = Golos({
+export const golos: NextFont = Golos({
   src: [
     {
       path: '../../features/landing/assets/fonts/Golos/GolosText-Regular.ttf',
@@ -37,7 +37,7 @@ export const golos = Golos({
   ],
 });
 
-export const inter = Inter({
+export const inter: NextFont = Inter({
   src: [
     {
       path: '../../features/landing/assets/fonts/Inter/Inter-Regular.ttf',

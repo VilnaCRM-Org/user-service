@@ -1,3 +1,4 @@
+import { TypedDocumentNode, gql, useMutation } from '@apollo/client';
 import { Box, Stack } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
@@ -24,7 +25,22 @@ import {
   validatePassword,
 } from './validation';
 
+type SignupMutationVariables = {
+  FullName: string;
+  Email: string;
+  Password: string;
+};
+
+const SIGNUP_MUTATION: TypedDocumentNode<SignupMutationVariables> = gql`
+  mutation signup($FullName: String!, $Email: String!, $Password: String!) {
+    signup(data: { FullName: $FullName, Email: $Email, Password: $Password }) {
+      token
+      userId
+    }
+  }
+`;
 function AuthForm(): React.ReactElement {
+  const [signupMutation] = useMutation(SIGNUP_MUTATION);
   const { t } = useTranslation();
 
   const {
@@ -41,9 +57,22 @@ function AuthForm(): React.ReactElement {
     mode: 'onTouched',
   });
 
-  const onSubmit: (data: RegisterItem) => void = (data: RegisterItem) =>
-    console.log(data);
-
+  const onSubmit: (data: RegisterItem) => Promise<void> = async (
+    data: RegisterItem
+  ) => {
+    try {
+      const { data: signupResponse } = await signupMutation({
+        variables: {
+          FullName: data.FullName,
+          Email: data.Email,
+          Password: data.Password,
+        },
+      });
+      console.log('Signup successful:', signupResponse);
+    } catch (signupError) {
+      console.error('Signup error:', signupError);
+    }
+  };
   const fullNameTitle: string = t('sign_up.form.name_input.label');
   const fullNamePlaceholder: string = t('sign_up.form.name_input.placeholder');
 

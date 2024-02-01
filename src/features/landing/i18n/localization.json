@@ -124,6 +124,15 @@
           "required": "Need to enter password",
           "message": "Invalid password. Must meet the following requirements: no spaces, at least one upper case, one lower case, one number, one special character, and 8-32 characters long."
         },
+        "password_tip": {
+          "title": "At least 8 characters.",
+          "recommendationText": "We recommend using:",
+          "options": {
+            "option_1": "lowercase and uppercase special",
+            "option_2": "special characters (#&*$)",
+            "option_3": "use numbers"
+          }
+        },
         "confidential_text": {
           "fullText": "I have read and accept the <1>Privacy Policy</1> and the <1>VilnaCRM Service</1> Use Policy"
         },
@@ -276,6 +285,15 @@
           "placeholder": "Створіть пароль",
           "required": "Необхідно ввести пароль",
           "message": "Недійсний пароль. Має відповідати вимогам: відсутність пробілів, принаймні один верхній регістр, один малий регістр, одна цифра, один спеціальний символ і довжина 8–32 символів."
+        },
+        "password_tip": {
+          "title": "Не менше 8 символів.",
+          "recommendationText": "Рекомендуємо використовувати:",
+          "options": {
+            "option_1": "малі та великі літери спеціальні",
+            "option_2": "спеціальні символи(#&*$)",
+            "option_3": "використовувати цифри"
+          }
         },
         "confidential_text": {
           "fullText": "Я прочитав та приймаю <1>Політику Конфіденційності</1> та <1>Політику Використання</1> сервісу VilnaCRM"

@@ -53,7 +53,7 @@ module.exports = {
         'plugin:jest-dom/recommended',
       ],
       rules: {
-        'import/prefer-default-export': 'off',
+        'import/prefer-default-export': 'warn',
         'max-len': ['error', { code: 150 }],
         'no-restricted-imports': [
           'error',

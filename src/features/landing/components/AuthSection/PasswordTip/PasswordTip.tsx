@@ -1,9 +1,11 @@
 import { Stack } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components';
 import { colorTheme } from '@/components/UiColorTheme';
 
 function PasswordTip(): React.ReactElement {
+  const { t } = useTranslation();
   return (
     <Stack direction="column" gap="0.25rem">
       <UiTypography
@@ -13,10 +15,10 @@ function PasswordTip(): React.ReactElement {
           borderBottom: `2px solid ${colorTheme.palette.grey400.main}`,
         }}
       >
-        Не менше 8 символів.
+        {t('sign_up.form.password_tip.title')}
       </UiTypography>
       <UiTypography variant="medium14" maxWidth="10rem">
-        Рекомендуємо використовувати:
+        {t('sign_up.form.password_tip.recommendationText')}
       </UiTypography>
       <ul
         style={{
@@ -33,7 +35,7 @@ function PasswordTip(): React.ReactElement {
             fontWeight: 400,
           }}
         >
-          малі та великі літери
+          {t('sign_up.form.password_tip.options.option_1')}
         </li>
         <li
           style={{
@@ -42,7 +44,7 @@ function PasswordTip(): React.ReactElement {
             color: colorTheme.palette.darkPrimary.main,
           }}
         >
-          спеціальні символи(#&*$)
+          {t('sign_up.form.password_tip.options.option_2')}
         </li>
         <li
           style={{
@@ -51,7 +53,7 @@ function PasswordTip(): React.ReactElement {
             color: colorTheme.palette.darkPrimary.main,
           }}
         >
-          використовувати цифри
+          {t('sign_up.form.password_tip.options.option_3')}
         </li>
       </ul>
     </Stack>
