@@ -19,12 +19,9 @@ jobs:
       - name: Install Dependencies
         run: make start
 
-      - name: Run docker compose ps
-        run: docker compose ps
-
       - name: Wait for db
         run: |
-            bash infrastructure/docker/php/wait-for-service.sh user-service-database-1 30 5 
+            bash infrastructure/docker/php/wait-for-service.sh database 30 5 
 
       - name: Composer install
         run: make install
