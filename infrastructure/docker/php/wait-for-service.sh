@@ -20,7 +20,7 @@ echo "Waiting for service '$name' to become healthy, checking every $interval se
 while true; do
   ((i++))
   status=$(docker inspect --format "{{json .State.Health.Status }}" "$name")
-  docker compose ps
+  docker compose logs database
   echo "[$i/$max] $status";
   if echo "$status" | grep -q '"healthy"'; then
    echo "SUCCESS";
