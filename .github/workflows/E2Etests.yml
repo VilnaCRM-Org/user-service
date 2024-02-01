@@ -19,9 +19,15 @@ jobs:
       - name: Install Dependencies
         run: make start
 
+      - name: Inspect
+        run: docker inspect
+
+      - name: Inspect db
+        run: docker inspect  --format "{{json .State.Health.Status }}" user-service-database-1
+
       - name: Wait for db
         run: |
-            bash infrastructure/docker/php/wait-for-service.sh database 30 5 
+            bash infrastructure/docker/php/wait-for-service.sh user-service-database-1 30 5 
 
       - name: Composer install
         run: make install
