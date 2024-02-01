@@ -9,6 +9,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: KengoTODA/actions-setup-docker-compose@v1
+        with:
+          version: '2.23.3'
+
       - name: Checkout Repository
         uses: actions/checkout@v3
 
