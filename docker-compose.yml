@@ -73,7 +73,7 @@ services:
     networks:
       - user_service
     healthcheck:
-      interval: 120s
+      interval: 10s
       retries: 10
       test:
         [

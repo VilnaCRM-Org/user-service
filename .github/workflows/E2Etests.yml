@@ -21,7 +21,7 @@ jobs:
 
       - name: Wait for db
         run: |
-            bash infrastructure/docker/php/wait-for-service.sh user-service-database-1 200 5 
+            bash infrastructure/docker/php/wait-for-service.sh user-service-database-1 30 5 
 
       - name: Composer install
         run: make install
