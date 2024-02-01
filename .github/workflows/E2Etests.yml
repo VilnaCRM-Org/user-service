@@ -19,9 +19,6 @@ jobs:
       - name: Install Dependencies
         run: make start
 
-      - name: Inspect
-        run: docker inspect
-
       - name: Inspect db
         run: docker inspect  --format "{{json .State.Health.Status }}" user-service-database-1
 
