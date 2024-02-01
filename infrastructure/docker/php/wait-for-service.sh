@@ -20,7 +20,8 @@ echo "Waiting for service '$name' to become healthy, checking every $interval se
 while true; do
   ((i++))
   echo "[$i/$max] ...";
-  status=$(docker inspect --format "{{json .State.Health.Status }}" "$(docker ps --filter name="$name" -q)")
+  status=$(docker inspect --format "{{json .State.Health.Status }}" "$(docker ps --filter name="$name")")
+  echo "$status"
   if echo "$status" | grep -q '"healthy"'; then
    echo "SUCCESS";
    break
