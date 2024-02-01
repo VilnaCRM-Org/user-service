@@ -9,29 +9,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
+      - name: Setup docker compose
+        uses: isbang/compose-action@v1.5.1
 
       - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Install Dependencies
-        run: |
-          composer update
-          composer install
-
-      - name: Start application
-        run: docker compose up -d
-
-      - name: Wait
-        run: sleep 300
-
-      - name: Print logs
-        run: docker-compose logs
+        run: make start
 
       - name: Run migrations
-        run: docker compose exec php bin/console d:m:m
+        run: make doctrine-migrations-migrate
 
       - name: Run Behat tests
-        run: docker compose exec -T -e APP_ENV=test php ./vendor/bin/behat
+        run: make behat
