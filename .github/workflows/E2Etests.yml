@@ -9,19 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: KengoTODA/actions-setup-docker-compose@v1
-        with:
-          version: '2.23.3'
-
       - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Install Dependencies
         run: make start
-
-      - name: Wait for db
-        run: |
-            bash infrastructure/docker/php/wait-for-service.sh user-service-database-1 30 5 
 
       - name: Composer install
         run: make install
