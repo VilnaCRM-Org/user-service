@@ -9,7 +9,8 @@ services:
         SYMFONY_VERSION: ${SYMFONY_VERSION:-}
         STABILITY: ${STABILITY:-stable}
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     restart: unless-stopped
     volumes:
       - php_socket:/var/run/php

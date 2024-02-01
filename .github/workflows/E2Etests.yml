@@ -9,9 +9,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Setup docker compose
-        uses: isbang/compose-action@v1.5.1
-
       - name: Checkout Repository
         uses: actions/checkout@v3
 
