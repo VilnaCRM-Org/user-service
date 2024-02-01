@@ -84,7 +84,6 @@ services:
           "--connect",
           "--innodb_initialized"
         ]
-      timeout: 30s
 
   redis:
     image: "redis:latest"
