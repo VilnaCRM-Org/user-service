@@ -25,7 +25,7 @@ jobs:
         run: docker compose up -d
 
       - name: Wait
-        run: sleep 120
+        run: sleep 300
 
       - name: Print logs
         run: docker-compose logs
