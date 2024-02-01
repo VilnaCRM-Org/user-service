@@ -9,7 +9,8 @@ services:
         SYMFONY_VERSION: ${SYMFONY_VERSION:-}
         STABILITY: ${STABILITY:-stable}
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     restart: unless-stopped
     volumes:
       - php_socket:/var/run/php
@@ -72,6 +73,18 @@ services:
       - db_data:/var/lib/mysql
     networks:
       - user_service
+    healthcheck:
+      interval: 30s
+      retries: 3
+      test:
+        [
+          "CMD",
+          "healthcheck.sh",
+          "--su-mysql",
+          "--connect",
+          "--innodb_initialized"
+        ]
+      timeout: 30s
 
   redis:
     image: "redis:latest"
