@@ -1,4 +1,4 @@
-import { Box, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import Link from 'next/link';
 import React from 'react';
 
@@ -17,7 +17,7 @@ function VilnaGmail(): React.ReactElement {
           gap="0.62rem"
           flexDirection="row"
         >
-          <Box sx={styles.at}>@</Box>
+          <UiTypography sx={styles.at}>@</UiTypography>
           <UiTypography
             variant="demi18"
             color={colorTheme.palette.darkSecondary.main}

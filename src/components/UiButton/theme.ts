@@ -14,7 +14,7 @@ export const repeatStyles: Interpolation<{ theme: Theme }> = {
   letterSpacing: '0',
 };
 
-export const theme = createTheme({
+export const theme: Theme = createTheme({
   components: {
     MuiButton: {
       variants: [

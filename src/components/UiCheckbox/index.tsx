@@ -1,11 +1,16 @@
-/* eslint-disable react/jsx-props-no-spreading */
+/* eslint-disable max-len */
 import { Box, FormControlLabel } from '@mui/material';
 import React from 'react';
 
 import styles from './styles';
 import { UiCheckboxProps } from './types';
 
-function UiCheckbox({ label, sx, onChange, error }: UiCheckboxProps) {
+function UiCheckbox({
+  label,
+  sx,
+  onChange,
+  error,
+}: UiCheckboxProps): React.ReactElement {
   return (
     <FormControlLabel
       sx={sx}

@@ -11,8 +11,10 @@ import Diamond from '../../assets/svg/possibilities/diamond.svg';
 import Ruby from '../../assets/svg/possibilities/ruby.svg';
 import SmallDiamond from '../../assets/svg/possibilities/smallDiamond.svg';
 import SmallRuby from '../../assets/svg/possibilities/smallRuby.svg';
+import { ICard } from '../../types/Card/card-item';
+import { IimageList } from '../../types/possibilities/image-list';
 
-export const cardList = [
+export const cardList: ICard[] = [
   {
     id: 'item_1',
     imageSrc: Ruby,
@@ -43,7 +45,7 @@ export const cardList = [
   },
 ];
 
-export const imageList = [
+export const imageList: IimageList[] = [
   { image: Wix, alt: 'Wix' },
   { image: WordPress, alt: 'WordPress' },
   { image: Zapier, alt: 'Zapier' },

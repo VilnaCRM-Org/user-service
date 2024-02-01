@@ -11,7 +11,7 @@ import { colorTheme } from '../UiColorTheme';
 
 import styles from './styles';
 
-export const ServicesTooltip = styled(
+export const ServicesTooltip: React.FC<TooltipProps> = styled(
   ({ className, ...props }: TooltipProps) => {
     const { children } = props;
     return (
@@ -35,7 +35,7 @@ export const ServicesTooltip = styled(
   },
 }));
 
-export const FormRulesTooltip = styled(
+export const FormRulesTooltip: React.FC<TooltipProps> = styled(
   ({ className, ...props }: TooltipProps) => (
     <Tooltip {...props} classes={{ popper: className }}>
       <Typography

@@ -5,7 +5,9 @@ import React from 'react';
 
 import theme from './Theme';
 
-export default function UiTypography(props: TypographyProps) {
+export default function UiTypography(
+  props: TypographyProps
+): React.ReactElement {
   const { children } = props;
   return (
     <ThemeProvider theme={theme}>

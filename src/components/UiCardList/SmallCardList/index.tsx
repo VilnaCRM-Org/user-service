@@ -11,7 +11,7 @@ import { ICardList } from '../types';
 
 import styles from './styles';
 
-function CardList({ imageList, cardList }: ICardList) {
+function CardList({ imageList, cardList }: ICardList): React.ReactElement {
   return (
     <>
       <Grid sx={styles.grid}>

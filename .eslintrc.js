@@ -51,16 +51,9 @@ module.exports = {
         'plugin:jsx-a11y/recommended',
         'plugin:testing-library/react',
         'plugin:jest-dom/recommended',
-        'tslint-no-commented-code-rule',
       ],
       rules: {
-        'no-commented-code': [
-          true,
-          {
-            minLineCount: 2,
-            ignoredCommentRegex: '^(\\w+$|TODO|FIXME)',
-          },
-        ],
+        'import/prefer-default-export': 'off',
         'max-len': ['error', { code: 150 }],
         'no-restricted-imports': [
           'error',

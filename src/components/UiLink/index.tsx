@@ -4,7 +4,7 @@ import React from 'react';
 
 import { theme } from './theme';
 
-function UiLink(props: LinkProps) {
+function UiLink(props: LinkProps): React.ReactElement {
   const { children } = props;
   return (
     <ThemeProvider theme={theme}>

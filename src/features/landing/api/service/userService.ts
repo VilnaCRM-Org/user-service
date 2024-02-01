@@ -1,4 +1,10 @@
-const createUser = async (email: string, initials: string) => {
+const createUser: (
+  email: string,
+  initials: string
+) => Promise<{ id: string; initials: string; email: string }> = async (
+  email,
+  initials
+) => {
   await new Promise<void>(resolve => {
     setTimeout(() => {
       resolve();

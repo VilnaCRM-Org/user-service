@@ -1,11 +1,15 @@
-const isLengthValid = (value: string): boolean =>
+const isLengthValid: (value: string) => boolean = (value: string): boolean =>
   value.length >= 8 && value.length <= 64;
 
-const hasNumber = (value: string): boolean => /[0-9]/.test(value);
+const hasNumber: (value: string) => boolean = (value: string): boolean =>
+  /[0-9]/.test(value);
 
-const hasUppercase = (value: string): boolean => /[A-Z]/.test(value);
+const hasUppercase: (value: string) => boolean = (value: string): boolean =>
+  /[A-Z]/.test(value);
 
-export const validatePassword = (value: string): string | boolean => {
+export const validatePassword: (value: string) => string | boolean = (
+  value: string
+): string | boolean => {
   if (!isLengthValid(value))
     return 'Password must be between 8 and 64 characters long';
   if (!hasNumber(value)) return 'Password must contain at least one number';
@@ -14,21 +18,28 @@ export const validatePassword = (value: string): string | boolean => {
   return true;
 };
 
-const isValidEmailFormat = (email: string): boolean =>
-  /^.+@.+\..+$/.test(email);
+const isValidEmailFormat: (email: string) => boolean = (
+  email: string
+): boolean => /^.+@.+\..+$/.test(email);
 
-export const validateEmail = (email: string): string | boolean => {
+export const validateEmail: (email: string) => string | boolean = (
+  email: string
+): string | boolean => {
   if (!isValidEmailFormat(email)) return 'Invalid email format';
   return true;
 };
 
-const isValidFullNameFormat = (fullName: string): boolean =>
-  /^[^\d\s]+\s[^\d\s]+$/.test(fullName);
+const isValidFullNameFormat: (fullName: string) => boolean = (
+  fullName: string
+): boolean => /^[^\d\s]+\s[^\d\s]+$/.test(fullName);
 
-const hasEmptyParts = (fullName: string): boolean =>
-  fullName.split(' ').some(part => part.length === 0);
+const hasEmptyParts: (fullName: string) => boolean = (
+  fullName: string
+): boolean => fullName.split(' ').some(part => part.length === 0);
 
-export const validateFullName = (fullName: string): string | boolean => {
+export const validateFullName: (fullName: string) => string | boolean = (
+  fullName: string
+): string | boolean => {
   if (!isValidFullNameFormat(fullName)) return 'Invalid full name format';
   if (hasEmptyParts(fullName))
     return 'Name and surname should have at least 1 character';

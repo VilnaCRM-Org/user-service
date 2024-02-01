@@ -2,8 +2,9 @@ import FacebookFooterIcon from '../../assets/svg/social-icons/facebook.svg';
 import GitHubFooterIcon from '../../assets/svg/social-icons/github.svg';
 import InstagramFooterIcon from '../../assets/svg/social-icons/instagram.svg';
 import LinkedinFooterIcon from '../../assets/svg/social-icons/linked-in.svg';
+import { ISocialMedia } from '../../types/social-media';
 
-export const socialLinks = [
+export const socialLinks: ISocialMedia[] = [
   {
     id: 'Instagram-link',
     icon: InstagramFooterIcon,

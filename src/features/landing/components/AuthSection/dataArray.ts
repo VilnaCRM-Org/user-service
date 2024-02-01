@@ -2,8 +2,9 @@ import FaceBookIcon from '../../assets/svg/auth-section/social-media/Facebook.sv
 import GitHubIcon from '../../assets/svg/auth-section/social-media/Github.svg';
 import GoogleIcon from '../../assets/svg/auth-section/social-media/Google.svg';
 import TwitterIcon from '../../assets/svg/auth-section/social-media/Twitter.svg';
+import { ISocialLink } from '../../types/authentication/social';
 
-export const socialLinks = [
+export const socialLinks: ISocialLink[] = [
   {
     id: 'google-link',
     icon: GoogleIcon,

@@ -1,10 +1,12 @@
-/* eslint-disable import/no-cycle */
-
 import LargeCardItem from './LargeCardItem';
 import SmallCardItem from './SmallCardItem';
 import { ICardItemProps } from './types';
 
-function UiCardItem({ item, type, imageList }: ICardItemProps) {
+function UiCardItem({
+  item,
+  type,
+  imageList,
+}: ICardItemProps): React.ReactElement {
   return (
     <>
       {type === 'small' && (

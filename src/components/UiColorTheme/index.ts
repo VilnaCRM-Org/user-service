@@ -1,6 +1,7 @@
-import { createTheme } from '@mui/material';
+/* eslint-disable import/prefer-default-export */
+import { Theme, createTheme } from '@mui/material';
 
-export const colorTheme = createTheme({
+export const colorTheme: Theme = createTheme({
   palette: {
     primary: {
       main: '#1EAEFF',

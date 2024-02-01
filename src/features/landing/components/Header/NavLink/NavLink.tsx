@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-no-bind */
 import { ListItem, Stack, List, Link } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +8,7 @@ import { NavLinkProps } from '../../../types/header/nav-links';
 
 import styles from './styles';
 
-function NavLink({ links }: NavLinkProps): React.ReactElement {
+function NavLink({ links }: { links: NavLinkProps[] }): React.ReactElement {
   const { t } = useTranslation();
 
   return (

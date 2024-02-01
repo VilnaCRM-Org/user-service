@@ -14,7 +14,7 @@ interface SmallCardItem {
   item: CardItem;
   imageList: ImageItem[];
 }
-function SmallCardItem({ item, imageList }: SmallCardItem) {
+function SmallCardItem({ item, imageList }: SmallCardItem): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Stack sx={styles.wrapper}>

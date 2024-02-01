@@ -8,7 +8,7 @@ import { CardItem } from '../types';
 
 import styles from './styles';
 
-function LargeCardItem({ item }: { item: CardItem }) {
+function LargeCardItem({ item }: { item: CardItem }): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Box sx={styles.wrapper}>

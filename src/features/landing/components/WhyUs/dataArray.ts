@@ -4,8 +4,9 @@ import WhyUsMigrationIcon from '../../assets/svg/why-us/migration.svg';
 import WhyUsServicesIcon from '../../assets/svg/why-us/services.svg';
 import WhyUsSettingsIcon from '../../assets/svg/why-us/settings.svg';
 import WhyUsTemplatesIcon from '../../assets/svg/why-us/templates.svg';
+import { ICard } from '../../types/Card/card-item';
 
-export const cardList = [
+export const cardList: ICard[] = [
   {
     id: 'card-item-1',
     imageSrc: WhyUsCodeIcon,

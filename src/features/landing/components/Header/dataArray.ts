@@ -2,8 +2,11 @@ import FacebookDrawerIcon from '../../assets/svg/social-icons/facebook.svg';
 import GitHubDrawerIcon from '../../assets/svg/social-icons/github.svg';
 import InstagramDrawerIcon from '../../assets/svg/social-icons/instagram.svg';
 import LinkedinDrawerIcon from '../../assets/svg/social-icons/linked-in.svg';
+import { INavItem } from '../../types/drawer/navigation';
+import { NavLinkProps } from '../../types/header/nav-links';
+import { ISocialMedia } from '../../types/social-media';
 
-export const links = [
+export const links: NavLinkProps[] = [
   { id: 'Advantages', link: '#Advantages', value: 'header.advantages' },
   {
     id: 'forWhoSectionStyles',
@@ -13,7 +16,8 @@ export const links = [
   { id: 'Integration', link: '#Integration', value: 'header.integration' },
   { id: 'Contacts', link: '#Contacts', value: 'header.contacts' },
 ];
-export const navList = [
+
+export const navList: INavItem[] = [
   {
     id: 'advantages',
     title: 'header.advantages',
@@ -36,7 +40,7 @@ export const navList = [
   },
 ];
 
-export const socialMedia = [
+export const socialMedia: ISocialMedia[] = [
   {
     id: 'instagram-link',
     icon: InstagramDrawerIcon,

@@ -1,10 +1,11 @@
-import { createTheme } from '@mui/material';
+import { Theme, createTheme } from '@mui/material';
+import { CSSProperties } from '@mui/material/styles/createMixins';
 
 import { golos, inter } from '@/config/Fonts';
 
 import { colorTheme } from '../UiColorTheme';
 
-const hStyles = {
+const hStyles: CSSProperties = {
   color: colorTheme.palette.darkPrimary.main,
   fontWeight: '700',
   lineHeight: 'normal',
@@ -12,7 +13,7 @@ const hStyles = {
   letterSpacing: '',
 };
 
-const theme = createTheme({
+const theme: Theme = createTheme({
   components: {
     MuiTypography: {
       defaultProps: {

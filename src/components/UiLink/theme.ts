@@ -1,10 +1,11 @@
-import { createTheme } from '@mui/material';
+/* eslint-disable import/prefer-default-export */
+import { Theme, createTheme } from '@mui/material';
 
 import { inter } from '@/config/Fonts';
 
 import { colorTheme } from '../UiColorTheme';
 
-export const theme = createTheme({
+export const theme: Theme = createTheme({
   components: {
     MuiLink: {
       styleOverrides: {

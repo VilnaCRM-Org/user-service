@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-no-bind */
 import { Drawer, Box, Stack, Button } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
@@ -70,7 +69,7 @@ function CustomDrawer(): React.ReactElement {
               size="small"
               fullWidth
               href="#signUp"
-              onClick={handleClick}
+              onClick={() => handleClick()}
             >
               {t('header.actions.log_in')}
             </UiButton>
@@ -79,12 +78,12 @@ function CustomDrawer(): React.ReactElement {
               size="small"
               fullWidth
               href="#signUp"
-              onClick={handleClick}
+              onClick={() => handleClick()}
             >
               {t('header.actions.try_it_out')}
             </UiButton>
           </Stack>
-          <NavList navList={navList} handleClick={handleClick} />
+          <NavList navList={navList} handleClick={() => handleClick()} />
           <VilnaGmail />
           <SocialMedia socialMedia={socialMedia} />
         </Box>

@@ -1,11 +1,13 @@
+/* eslint-disable import/extensions */
+/* eslint-disable import/no-unresolved */
 import '../styles/global.css';
 import * as Sentry from '@sentry/react';
 import React, { useEffect } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import * as PropTypes from 'prop-types';
+import { golos } from '@/config/Fonts';
 import i18n from '../i18n';
 import 'dotenv/config';
-import { golos } from '@/config/Fonts';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN_KEY,

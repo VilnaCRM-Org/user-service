@@ -41,7 +41,8 @@ function AuthForm(): React.ReactElement {
     mode: 'onTouched',
   });
 
-  const onSubmit = (data: RegisterItem) => console.log(data);
+  const onSubmit: (data: RegisterItem) => void = (data: RegisterItem) =>
+    console.log(data);
 
   const fullNameTitle: string = t('sign_up.form.name_input.label');
   const fullNamePlaceholder: string = t('sign_up.form.name_input.placeholder');
@@ -80,7 +81,7 @@ function AuthForm(): React.ReactElement {
                     type="text"
                     placeholder={fullNamePlaceholder}
                     onChange={e => field.onChange(e)}
-                    onBlur={() => field.onBlur()}
+                    onBlur={field.onBlur}
                     value={field.value}
                     fullWidth
                     error={!!errors.FullName?.message}
@@ -108,7 +109,7 @@ function AuthForm(): React.ReactElement {
                   <UiInput
                     type="text"
                     placeholder={emailPlaceholder}
-                    onBlur={e => field.onBlur(e)}
+                    onBlur={field.onBlur}
                     onChange={e => field.onChange(e)}
                     value={field.value}
                     fullWidth
@@ -147,7 +148,7 @@ function AuthForm(): React.ReactElement {
                     type="password"
                     placeholder={passwordPlaceholder}
                     onChange={e => field.onChange(e)}
-                    onBlur={e => field.onBlur(e)}
+                    onBlur={field.onBlur}
                     value={field.value}
                     error={!!errors.Password?.message}
                     fullWidth

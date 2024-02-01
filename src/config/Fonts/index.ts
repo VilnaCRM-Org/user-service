@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/typedef */
 import Golos from 'next/font/local';
 import Inter from 'next/font/local';
 

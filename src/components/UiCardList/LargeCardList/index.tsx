@@ -13,7 +13,7 @@ import { ICardList } from '../types';
 
 import styles from './styles';
 
-function CardList({ cardList }: ICardList) {
+function CardList({ cardList }: ICardList): React.ReactElement {
   const { t } = useTranslation();
 
   return (

@@ -1,4 +1,4 @@
-export const authButtonsStyles = {
+export default {
   wrapper: {
     display: 'inline-block',
     '@media (max-width: 1023.98px)': {

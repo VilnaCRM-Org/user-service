@@ -54,7 +54,6 @@
     "semver": "^7.5.4",
     "storybook": "^7.6.10",
     "swiper": "^11.0.5",
-    "tslint-no-commented-code-rule": "^0.1.0",
     "tsyringe": "^4.8.0",
     "web-vitals": "^3.5.2",
     "webpack": "^5.90.0"
