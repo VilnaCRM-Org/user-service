@@ -18,6 +18,9 @@ jobs:
       - name: Install Dependencies
         run: make start
 
+      - name: Composer install
+        run: make install
+
       - name: Run migrations
         run: make doctrine-migrations-migrate
 
