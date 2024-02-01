@@ -24,6 +24,12 @@ jobs:
       - name: Start application
         run: docker compose up -d
 
+      - name: Wait
+        run: sleep 120
+
+      - name: Print logs
+        run: docker-compose logs
+
       - name: Run migrations
         run: docker compose exec php bin/console d:m:m
 
