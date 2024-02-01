@@ -73,7 +73,7 @@ artillery: ## run Load testing
 	$(DOCKER) run --rm -v "${PWD}/tests/Load:/tests/Load" artilleryio/artillery:latest run $(addprefix /tests/Load/,$(ARTILLERY_FILES))
 
 doctrine-migrations-migrate: ## Executes a migration to a specified version or the latest available version
-	$(SYMFONY) d:m:m
+	$(SYMFONY) d:m:m -n
 
 doctrine-migrations-generate: ## Generates a blank migration class
 	$(SYMFONY) d:m:g
