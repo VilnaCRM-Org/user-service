@@ -41,7 +41,8 @@ final class UnsupportedGrantTypeResponseFactory implements
         return new Parameter(
             'error_description',
             'string',
-            'The authorization grant type is not supported by the authorization server.'
+            'The authorization grant type is not '.
+            'supported by the authorization server.'
         );
     }
 
@@ -59,7 +60,8 @@ final class UnsupportedGrantTypeResponseFactory implements
         return new Parameter(
             'message',
             'string',
-            'The authorization grant type is not supported by the authorization server.'
+            'The authorization grant type is not '.
+            'supported by the authorization server.'
         );
     }
 }

@@ -51,7 +51,8 @@ final class DuplicateEmailResponseFactory implements AbstractResponseFactory
         return new Parameter(
             'detail',
             'string',
-            'user@example.com address is already registered. Please use a different email address or try logging in.'
+            'user@example.com address is already registered. '.
+            'Please use a different email address or try logging in.'
         );
     }
 
