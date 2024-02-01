@@ -74,8 +74,8 @@ services:
     networks:
       - user_service
     healthcheck:
-      interval: 30s
-      retries: 3
+      interval: 120s
+      retries: 10
       test:
         [
           "CMD",
