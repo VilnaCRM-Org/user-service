@@ -18,7 +18,7 @@
     "baseUrl": ".",
     "incremental": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
   },
   "include": [
     "./src",
@@ -27,8 +27,9 @@
     "next-env.d.ts",
     "/*.ts",
     "/.tsx",
-    ".next/types/**/.ts"
+    ".next/types/**/.ts",
+    "tests",
   ],
   "exclude": ["node_modules"],
-  "extends": "./tsconfig.paths.json"
+  "extends": "./tsconfig.paths.json",
 }

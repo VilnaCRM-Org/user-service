@@ -20,7 +20,8 @@ function SignUpText({
       <UiTypography variant="h2" sx={styles.title} id="signUp">
         <Trans i18nKey="sign_up.main_heading" />
         <UiTypography variant="h2" component="span" sx={styles.titleVilnaCRM}>
-          {' VilnaCRM'}
+          {' '}
+          {t('sign_up.vilna_text')}
         </UiTypography>
       </UiTypography>
       <UiTypography variant="bold22" sx={styles.signInText}>

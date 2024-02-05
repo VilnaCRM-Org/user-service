@@ -3,4 +3,5 @@ export interface UiCheckboxProps {
   label: string | React.ReactNode;
   sx?: Record<string, unknown>;
   error?: boolean;
+  disabled?: boolean;
 }

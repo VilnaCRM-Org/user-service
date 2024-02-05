@@ -14,7 +14,7 @@ import {
   FormRulesTooltip,
 } from '@/components';
 
-import Imagess from '../../../assets/svg/auth-section/questionMark.svg';
+import QuestionMark from '../../../assets/svg/auth-section/questionMark.svg';
 import { RegisterItem } from '../../../types/authentication/form';
 import { PasswordTip } from '../PasswordTip';
 
@@ -83,6 +83,7 @@ function AuthForm(): React.ReactElement {
   const passwordPlaceholder: string = t(
     'sign_up.form.password_input.placeholder'
   );
+  // const errorText: string = t('sign_up.form.errorText');
 
   return (
     <Box sx={styles.formWrapper}>
@@ -162,7 +163,12 @@ function AuthForm(): React.ReactElement {
                   arrow
                   title={<PasswordTip />}
                 >
-                  <Image src={Imagess} alt="Imagess" width={16} height={16} />
+                  <Image
+                    src={QuestionMark}
+                    alt="QuestionMark"
+                    width={16}
+                    height={16}
+                  />
                 </FormRulesTooltip>
               </Stack>
               <Controller

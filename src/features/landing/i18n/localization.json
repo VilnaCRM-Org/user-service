@@ -105,6 +105,7 @@
     },
     "sign_up": {
       "main_heading": "Sign up now and free up your time to grow your business",
+      "vilna_text": "VilnaCRM",
       "socials_main_heading": "Log in with a convenient social network:",
       "form": {
         "heading_main": "Or register on the website:",
@@ -267,6 +268,7 @@
     },
     "sign_up": {
       "main_heading": "Зареєструйтеся зараз та звільніть час на розвиток бізнесу <br /> з",
+      "vilna_text": "VilnaCRM",
       "socials_main_heading": "Увійдіть за зручною соцмережею:",
       "form": {
         "heading_main": "Або зареєструйтеся на сайті:",
@@ -298,7 +300,8 @@
         "confidential_text": {
           "fullText": "Я прочитав та приймаю <1>Політику Конфіденційності</1> та <1>Політику Використання</1> сервісу VilnaCRM"
         },
-        "button-text": "Реєєстрація"
+        "button-text": "Реєєстрація",
+        "errorText": "Виникла помилка. Перевірте ще раз"
       }
     },
     "footer": {
