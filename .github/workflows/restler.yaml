@@ -34,6 +34,9 @@ jobs:
       - name: Run migrations
         run: make doctrine-migrations-migrate
 
+      - name: List containers
+        run: docker compose ps
+
       - name: Run Container
         run: |
           docker run --name restler-container restler sh -c "/RESTler/restler/Restler compile --api_spec spec.yaml \
