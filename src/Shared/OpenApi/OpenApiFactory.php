@@ -40,7 +40,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $this->addServerErrorResponseToAllEndpoints($openApi);
 
         return $openApi->withServers([
-            new Model\Server('https://0.0.0.0'),
+            new Model\Server('https://localhost'),
         ]);
     }
 
