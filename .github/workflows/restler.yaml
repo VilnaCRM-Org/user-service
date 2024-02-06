@@ -12,15 +12,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-#      - name: Start application
-#        run: make start
-#
-#      - name: Install Dependencies
-#        run: make install
-#
-#      - name: Run migrations
-#        run: make doctrine-migrations-migrate
-
       - name: Clone RESTler Repository
         run: git clone https://github.com/microsoft/restler-fuzzer.git
 
@@ -34,8 +25,14 @@ jobs:
           cd restler-fuzzer
           docker build -t restler .
 
-      - name: Run Container
-        run: docker run restler sh -c "ls -d */"
+      - name: Start application
+        run: make start
+
+      - name: Install Dependencies
+        run: make install
+
+      - name: Run migrations
+        run: make doctrine-migrations-migrate
 
       - name: Run Container
         run: |
