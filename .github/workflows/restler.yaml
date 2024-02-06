@@ -38,5 +38,4 @@ jobs:
         run: |
           docker run --network=host restler sh -c "/RESTler/restler/Restler compile --api_spec spec.yaml \
             && /RESTler/restler/Restler test --grammar_file ./Compile/grammar.py --dictionary_file ./Compile/dict.json --settings ./Compile/engine_settings.json --no_ssl \
-            && /RESTler/restler/Restler fuzz-lean --grammar_file ./Compile/grammar.py --dictionary_file ./Compile/dict.json --settings ./Compile/engine_settings.json --no_ssl \
-            && cat ./Test/coverage_failures_to_investigate.txt"
+            && /RESTler/restler/Restler fuzz-lean --grammar_file ./Compile/grammar.py --dictionary_file ./Compile/dict.json --settings ./Compile/engine_settings.json --no_ssl"
