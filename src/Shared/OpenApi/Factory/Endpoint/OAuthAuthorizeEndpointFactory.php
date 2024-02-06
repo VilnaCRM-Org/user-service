@@ -90,7 +90,8 @@ final class OAuthAuthorizeEndpointFactory implements AbstractEndpointFactory
             'state',
             'State',
             false,
-            'af0ifjsldkj'
+            'af0ifjsldkj',
+            'string'
         );
     }
 
@@ -100,7 +101,8 @@ final class OAuthAuthorizeEndpointFactory implements AbstractEndpointFactory
             'scope',
             'Scope',
             false,
-            'profile email'
+            'profile email',
+            'string'
         );
     }
 
@@ -110,7 +112,8 @@ final class OAuthAuthorizeEndpointFactory implements AbstractEndpointFactory
             'redirect_uri',
             'Redirect uri',
             true,
-            'https://example.com/oauth/callback'
+            'https://example.com/oauth/callback',
+            'string'
         );
     }
 
@@ -120,7 +123,8 @@ final class OAuthAuthorizeEndpointFactory implements AbstractEndpointFactory
             'client_id',
             'Client ID',
             true,
-            'dc0bc6323f16fecd4224a3860ca894c5'
+            'dc0bc6323f16fecd4224a3860ca894c5',
+            'string'
         );
     }
 
@@ -130,7 +134,8 @@ final class OAuthAuthorizeEndpointFactory implements AbstractEndpointFactory
             'response_type',
             'Response type',
             true,
-            'code'
+            'code',
+            'string'
         );
     }
 }

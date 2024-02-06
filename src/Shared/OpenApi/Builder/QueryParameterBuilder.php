@@ -13,13 +13,15 @@ final class QueryParameterBuilder
         string $description,
         bool $required,
         string $example,
+        string $type
     ): Parameter {
         return new Parameter(
             name: $name,
             in: 'query',
             description: $description,
             required: $required,
-            example: $example,
+            schema: ['type' => $type],
+            example: $example
         );
     }
 }

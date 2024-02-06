@@ -19,7 +19,8 @@ final class UuidUriParameterFactory implements AbstractUriParameterFactory
             'id',
             'User identifier',
             true,
-            '2b10b7a3-67f0-40ea-a367-44263321592a'
+            '2b10b7a3-67f0-40ea-a367-44263321592a',
+            'string'
         );
     }
 }

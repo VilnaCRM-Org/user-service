@@ -12,10 +12,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install Dependencies
+      - name: Start application
         run: make start
 
-      - name: Composer install
+      - name: Install Dependencies
         run: make install
 
       - name: Run migrations
