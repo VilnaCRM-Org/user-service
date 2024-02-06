@@ -25,8 +25,6 @@ services:
       MERCURE_URL: ${CADDY_MERCURE_URL:-http://caddy/.well-known/mercure}
       MERCURE_PUBLIC_URL: https://${SERVER_NAME:-localhost}/.well-known/mercure
       MERCURE_JWT_SECRET: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
-    networks:
-      - user_service
 
   caddy:
     build:
@@ -56,8 +54,6 @@ services:
       - target: 443
         published: ${HTTP3_PORT:-443}
         protocol: udp
-    networks:
-      - user_service
 
   database:
     image: mariadb:latest
@@ -69,8 +65,6 @@ services:
       - '${DB_PORT}:3306'
     volumes:
       - db_data:/var/lib/mysql
-    networks:
-      - user_service
     healthcheck:
       interval: 10s
       retries: 10
@@ -84,18 +78,12 @@ services:
         ]
 
   redis:
-    image: "redis:latest"
+    image: redis:latest
     ports:
       - "${REDIS_PORT}:6379"
-    networks:
-      - user_service
 
 volumes:
   php_socket:
   caddy_data:
   caddy_config:
   db_data:
-
-networks:
-  user_service:
-    driver: bridge

@@ -45,17 +45,17 @@ services:
       - ls
 
   localstack:
-    image: 'localstack/localstack:3.0.2'
+    image: localstack/localstack:3.0.2
     container_name: localstack
     ports:
       - "4566:4566"
     environment:
-      - 'HOSTNAME_EXTERNAL=localstack'
-      - 'SERVICES=sqs'
-      - 'DEBUG=1'
-      - 'DATA_DIR=/tmp/localstack/data'
+      - HOSTNAME_EXTERNAL=localstack
+      - SERVICES=sqs
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
     volumes:
-      - 'localstack-data:/var/lib/localstack'
+      - localstack-data:/var/lib/localstack
       - ./infrastructure/docker/php/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
     networks:
       - ls
