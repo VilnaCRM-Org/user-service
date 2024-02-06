@@ -35,6 +35,12 @@ jobs:
           docker build -t restler .
 
       - name: Run Container
+        run: docker run restler sh -c "/RESTler/restler/Restler compile --api_spec spec.yaml
+
+      - name: Run Container
+        run: docker run restler sh -c "ls -d */"
+
+      - name: Run Container
         run: |
           docker run --name restler-container restler sh -c "/RESTler/restler/Restler compile --api_spec spec.yaml \
             && /RESTler/restler/Restler test --grammar_file ./Compile/grammar.py --dictionary_file ./Compile/dict.json --settings ./Compile/engine_settings.json --no_ssl \
