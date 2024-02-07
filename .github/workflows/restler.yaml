@@ -34,7 +34,8 @@ jobs:
       - name: Run migrations
         run: make doctrine-migrations-migrate
 
-      - name: Run Container
+        # Last mode takes too much time, so it will be executed in CD pipeline
+      - name: Run Fuzz testing
         run: |
           docker run --network=host restler sh -c "/RESTler/restler/Restler compile --api_spec spec.yaml \
             && /RESTler/restler/Restler test --grammar_file ./Compile/grammar.py --dictionary_file ./Compile/dict.json --settings ./Compile/engine_settings.json --no_ssl \

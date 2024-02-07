@@ -20,4 +20,15 @@ interface UserRepositoryInterface
      * @param User $user
      */
     public function delete(object $user): void;
+
+    /**
+     * @param string $id
+     *
+     * @return User
+     */
+    public function find(
+        mixed $id,
+        mixed $lockMode = null,
+        mixed $lockVersion = null
+    );
 }

@@ -9,7 +9,8 @@ use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactoryInterface;
 
-final class ConfirmationEmail extends AggregateRoot
+final class ConfirmationEmail extends AggregateRoot implements
+    ConfirmationEmailInterface
 {
     public function __construct(
         public readonly ConfirmationTokenInterface $token,
@@ -20,7 +21,7 @@ final class ConfirmationEmail extends AggregateRoot
 
     public function send(string $eventID): void
     {
-        $this->token->incrementTimesSent();
+        $this->token->send();
         $this->record(
             $this->eventFactory->create(
                 $this->token,

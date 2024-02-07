@@ -30,11 +30,6 @@ final class ConfirmationToken implements ConfirmationTokenInterface
         ];
     }
 
-    public function incrementTimesSent(): void
-    {
-        ++$this->timesSent;
-    }
-
     public function getTimesSent(): int
     {
         return $this->timesSent;
@@ -91,5 +86,12 @@ final class ConfirmationToken implements ConfirmationTokenInterface
             $datetime->modify(
                 "+ {$nextAllowedPeriodToSendInMinutes} minutes"
             );
+
+        $this->incrementTimesSent();
+    }
+
+    private function incrementTimesSent(): void
+    {
+        ++$this->timesSent;
     }
 }

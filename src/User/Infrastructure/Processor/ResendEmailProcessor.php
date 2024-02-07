@@ -50,8 +50,6 @@ final class ResendEmailProcessor implements ProcessorInterface
             $user->getId()
         ) ?? $this->tokenFactory->create($user->getId());
 
-        $token->send();
-
         $this->commandBus->dispatch(
             $this->emailCmdFactory->create(
                 $this->confirmationEmailFactory->create($token, $user)

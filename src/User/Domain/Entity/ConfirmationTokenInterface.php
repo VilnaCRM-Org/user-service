@@ -6,7 +6,5 @@ namespace App\User\Domain\Entity;
 
 interface ConfirmationTokenInterface
 {
-    public function incrementTimesSent(): void;
-
     public function send(): void;
 }

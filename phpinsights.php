@@ -10,6 +10,7 @@ use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 use  SlevomatCodingStandard\Sniffs\Namespaces\UseSpacingSniff;
+use SlevomatCodingStandard\Sniffs\TypeHints\ReturnTypeHintSniff;
 
 return [
     'preset' => 'symfony',
@@ -27,6 +28,11 @@ return [
         UseSpacingSniff::class,
     ],
     'config' => [
+        ReturnTypeHintSniff::class => [
+            'exclude' => [
+                'src/User/Domain/Repository/UserRepositoryInterface',
+            ],
+        ],
         LineLengthSniff::class => [
             'exclude' => [
                 'phpinsights',
