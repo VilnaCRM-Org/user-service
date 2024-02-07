@@ -1,8 +1,11 @@
-import { colorTheme } from '@/components/UiColorTheme';
+import breakpointsTheme from '@/components/UiBreakpoints';
+import colorTheme from '@/components/UiColorTheme';
 
 export default {
-  notch: {
+  wrapper: {
     position: 'relative',
+  },
+  notch: {
     bottom: '0.188rem',
     left: '0.063rem',
     height: '1.125rem',
@@ -37,10 +40,10 @@ export default {
       backgroundColor: '#0e314c',
     },
 
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       display: 'none',
     },
-    '@media (max-width: 639.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       display: 'inline-block',
       position: 'relative',
       top: '0',

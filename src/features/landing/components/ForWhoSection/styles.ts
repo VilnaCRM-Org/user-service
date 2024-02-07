@@ -1,4 +1,5 @@
-import { colorTheme } from '@/components/UiColorTheme';
+import breakpointsTheme from '@/components/UiBreakpoints';
+import colorTheme from '@/components/UiColorTheme';
 
 import VectorIcon from '../../assets/svg/for-who/bg-lg.svg';
 import VectorIconMd from '../../assets/svg/for-who/bg-md.svg';
@@ -11,14 +12,14 @@ export default {
   },
   lgCardsWrapper: {
     display: 'flex',
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       display: 'none',
     },
   },
 
   smCardsWrapper: {
     display: 'none',
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       display: 'flex',
       justifyContent: 'center',
     },
@@ -26,10 +27,10 @@ export default {
   content: {
     pt: '8.25rem',
     position: 'relative',
-    '@media (max-width: 1439.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       pt: '7.375rem',
     },
-    '@media (max-width: 639.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       pt: '2rem',
     },
   },
@@ -50,16 +51,27 @@ export default {
       backgroundImage: `url(${VectorIconMd.src})`,
       width: '100dvw',
       maxWidth: '47.5rem',
-      height: '41.438',
+      height: '41.438rem',
       top: '5.8%',
       right: '-9%',
     },
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       maxWidth: '43.75rem',
+      height: '44.688rem',
       top: '40%',
-      right: '0%',
+      right: '8%',
+    },
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
+      right: '-10%',
+    },
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
+      height: '38rem',
+      right: '-6%',
+      width: '29.5rem',
+      top: '38.5%',
     },
     '@media (max-width: 425.98px)': {
+      height: '44.688rem',
       right: '-28%',
       width: '26.5rem',
       top: '32.5%',
@@ -75,7 +87,7 @@ export default {
       minHeight: '11.188rem',
       marginTop: '-8.625rem',
     },
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       display: 'none',
     },
   },

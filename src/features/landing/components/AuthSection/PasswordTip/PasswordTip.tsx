@@ -2,7 +2,7 @@ import { Stack } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components';
-import { colorTheme } from '@/components/UiColorTheme';
+import colorTheme from '@/components/UiColorTheme';
 
 function PasswordTip(): React.ReactElement {
   const { t } = useTranslation();

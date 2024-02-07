@@ -1,3 +1,5 @@
+import breakpointsTheme from '@/components/UiBreakpoints';
+
 export default {
   grid: {
     display: 'grid',
@@ -12,11 +14,11 @@ export default {
     },
     marginTop: '2.5rem',
     gap: '0.813rem',
-    '@media (max-width: 1439.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       gap: '0.75rem',
       marginTop: '2rem',
     },
-    '@media (max-width: 639.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       display: 'none',
     },
   },
@@ -28,7 +30,7 @@ export default {
       marginLeft: '0.5rem',
     },
     display: 'none',
-    '@media (max-width: 639.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       display: 'grid',
       marginTop: '1.5rem',
       paddingBottom: '2rem',

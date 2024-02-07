@@ -1,14 +1,15 @@
-import { colorTheme } from '@/components/UiColorTheme';
+import breakpointsTheme from '@/components/UiBreakpoints';
+import colorTheme from '@/components/UiColorTheme';
 
 export default {
   wrapper: {
     ml: '6.625rem',
     display: 'inline-block',
-    '@media (max-width: 1439.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       ml: '0',
       mr: '6rem',
     },
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       display: 'none',
     },
   },

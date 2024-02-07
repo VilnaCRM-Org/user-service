@@ -1,4 +1,4 @@
-import { colorTheme } from '@/components/UiColorTheme';
+import colorTheme from '@/components/UiColorTheme';
 
 export default {
   gmailWrapper: {

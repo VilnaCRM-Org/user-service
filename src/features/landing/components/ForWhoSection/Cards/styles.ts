@@ -1,9 +1,10 @@
-import { colorTheme } from '@/components/UiColorTheme';
+import breakpointsTheme from '@/components/UiBreakpoints';
+import colorTheme from '@/components/UiColorTheme';
 import { golos } from '@/config/Fonts';
 
 export default {
   wrapper: {
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       position: 'relative',
       zIndex: '5',
       marginTop: '20.125rem',
@@ -17,7 +18,7 @@ export default {
   cardWrapper: {
     gap: '0.75rem',
     flexDirection: 'row',
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       flexDirection: 'column',
       gap: '1rem',
     },
@@ -36,7 +37,7 @@ export default {
     '@media (max-width: 1130.98px)': {
       padding: '1.813rem 2rem ',
     },
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       border: 'none',
       boxShadow: 'none',
       flexDirection: 'row',
@@ -56,7 +57,7 @@ export default {
     '@media (max-width: 1130.98px)': {
       pt: '9.438rem',
     },
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       pb: '0.9375rem',
       maxWidth: '18.563rem',
       color: colorTheme.palette.darkPrimary.main,
@@ -69,7 +70,7 @@ export default {
     },
   },
   optionText: {
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       color: colorTheme.palette.darkPrimary.main,
       fontSize: '0.9375rem',
       fontStyle: 'normal',
@@ -81,14 +82,14 @@ export default {
     maxWidth: '8.563rem',
     display: 'none',
     mt: '2rem',
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       display: 'inline-block',
     },
   },
   img: {
     width: '1.5rem',
     height: '1.5rem',
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       width: '1.25rem',
       height: '1.25rem',
     },

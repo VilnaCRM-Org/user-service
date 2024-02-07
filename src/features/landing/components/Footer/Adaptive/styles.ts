@@ -1,4 +1,5 @@
-import { colorTheme } from '@/components/UiColorTheme';
+import breakpointsTheme from '@/components/UiBreakpoints';
+import colorTheme from '@/components/UiColorTheme';
 
 export default {
   wrapper: {
@@ -12,7 +13,7 @@ export default {
     color: colorTheme.palette.darkSecondary.main,
     textAlign: 'center',
     width: '100%',
-    '@media (max-width: 767.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
       fontSize: '1.125rem',
       fontStyle: 'normal',
       fontWeight: '600',
@@ -24,7 +25,7 @@ export default {
     borderRadius: '0.5rem',
     background: colorTheme.palette.white.main,
     border: `1px solid ${colorTheme.palette.grey400.main}`,
-    '@media (max-width: 767.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
       padding: '0.875rem 0 0.9375rem',
     },
   },

@@ -28,6 +28,11 @@ const meta: Meta<typeof UiInput> = {
       options: ['text', 'password', 'email', 'number'],
       control: { type: 'radio' },
     },
+    error: {
+      type: 'boolean',
+      description: 'Whether the input is in error state',
+      control: { type: 'boolean' },
+    },
   },
 };
 
@@ -38,5 +43,6 @@ type Story = StoryObj<typeof UiInput>;
 export const Input: Story = {
   args: {
     placeholder: 'Input',
+    error: false,
   },
 };

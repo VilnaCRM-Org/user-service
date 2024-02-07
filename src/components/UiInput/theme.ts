@@ -1,9 +1,9 @@
-/* eslint-disable import/prefer-default-export */
 import { Theme, createTheme } from '@mui/material';
 
 import { inter } from '@/config/Fonts';
 
-import { colorTheme } from '../UiColorTheme';
+import breakpointsTheme from '../UiBreakpoints';
+import colorTheme from '../UiColorTheme';
 
 export const theme: Theme = createTheme({
   components: {
@@ -48,21 +48,23 @@ export const theme: Theme = createTheme({
               fontWeight: '400',
               lineHeight: '1.125rem',
             },
-            '@media (max-width: 1439.98px)': {
-              height: '4.938rem',
-              '&::placeholder': {
-                fontSize: '1.125rem',
+            [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]:
+              {
+                height: '4.938rem',
+                '&::placeholder': {
+                  fontSize: '1.125rem',
+                },
               },
-            },
-            '@media (max-width: 639.98px)': {
-              padding: '0 1.25rem',
-              height: '3rem',
-              '&::placeholder': {
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                lineHeight: '1.125rem',
+            [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]:
+              {
+                padding: '0 1.25rem',
+                height: '3rem',
+                '&::placeholder': {
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  lineHeight: '1.125rem',
+                },
               },
-            },
             '&.Mui-disabled': {
               backgroundColor: colorTheme.palette.brandGray.main,
               color: colorTheme.palette.grey300.main,

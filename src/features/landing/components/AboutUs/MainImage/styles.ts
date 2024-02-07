@@ -1,3 +1,5 @@
+import breakpointsTheme from '@/components/UiBreakpoints';
+
 import PhoneMainImage from '../../../assets/img/about-vilna/mobileBackground.webp';
 import MainImageSrc from '../../../assets/img/about-vilna/Screen.webp';
 
@@ -9,13 +11,13 @@ export default {
     marginTop: '-1.125rem',
     height: '31.125rem',
     width: '47.875rem',
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       borderRadius: '0.625rem',
       width: '28.125rem',
       height: '32.813rem',
       marginTop: '0',
     },
-    '@media (max-width: 639.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       width: '12.75rem',
       height: '27.25rem',
       marginTop: '-1.125rem',
@@ -27,14 +29,14 @@ export default {
     width: '47.875rem',
     height: '31.125rem',
 
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       backgroundSize: 'cover',
       backgroundRepeat: 'no-repeat',
       width: '100%',
       borderRadius: '1rem',
       height: '100%',
     },
-    '@media (max-width: 639.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       backgroundImage: `url(${PhoneMainImage.src})`,
       backgroundSize: 'cover',
       backgroundRepeat: 'no-repeat',

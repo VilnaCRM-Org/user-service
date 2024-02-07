@@ -2,7 +2,8 @@ import { Interpolation, Theme, createTheme } from '@mui/material';
 
 import { golos } from '@/config/Fonts';
 
-import { colorTheme } from '../UiColorTheme';
+import breakpointsTheme from '../UiBreakpoints';
+import colorTheme from '../UiColorTheme';
 
 export const containedStyles: Interpolation<{ theme: Theme }> = {
   textTransform: 'none',
@@ -66,12 +67,13 @@ export const theme: Theme = createTheme({
             fontWeight: '600',
             fontSize: '1.125rem',
             padding: '1.25rem 2rem',
-            '@media (max-width: 639.98px)': {
-              fontSize: '0.9375rem',
-              fontWeight: '400',
-              lineHeight: '1.125rem',
-              padding: '1rem 1.438rem',
-            },
+            [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]:
+              {
+                fontSize: '0.9375rem',
+                fontWeight: '400',
+                lineHeight: '1.125rem',
+                padding: '1rem 1.438rem',
+              },
           },
         },
         {
@@ -97,15 +99,17 @@ export const theme: Theme = createTheme({
             fontFamily: golos.style.fontFamily,
             textTransform: 'none',
             borderRadius: '0.75rem',
-            maxwidth: '11.813rem',
+            width: '11.813rem',
             padding: '1.063rem',
             gap: '0.563rem',
             border: `1px solid ${colorTheme.palette.brandGray.main}`,
             background: colorTheme.palette.white.main,
             color: colorTheme.palette.grey200.main,
-            '@media (max-width: 639.98px)': {
-              width: '10.563rem',
-            },
+            [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]:
+              {
+                width: '100%',
+                maxWidth: '10.563rem',
+              },
             '&:hover': {
               background: colorTheme.palette.white.main,
               boxShadow: '0px 4px 7px 0px rgba(116, 134, 151, 0.17)',

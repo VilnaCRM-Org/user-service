@@ -1,4 +1,4 @@
-import { Container, Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 
@@ -17,7 +17,7 @@ function DefaultFooter({
   return (
     <Stack sx={styles.footerWrapper}>
       <Stack height="4.188rem" alignItems="center" flexDirection="row">
-        <Container>
+        <Box sx={styles.topWrapper}>
           <Stack
             direction="row"
             justifyContent="space-between"
@@ -26,14 +26,14 @@ function DefaultFooter({
             <Image src={Logo} alt="Logo" width={143} height={48} />
             <PrivacyPolicy />
           </Stack>
-        </Container>
+        </Box>
       </Stack>
       <Stack sx={styles.copyrightAndLinksWrapper}>
-        <Container>
+        <Box sx={styles.bottomWrapper}>
           <Stack sx={styles.copyrightAndLinks}>
             <CopyrightNoticeAndLinks socialLinks={socialLinks} />
           </Stack>
-        </Container>
+        </Box>
       </Stack>
     </Stack>
   );

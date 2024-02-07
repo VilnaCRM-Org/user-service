@@ -18,7 +18,7 @@ function UiCheckbox({
         <Box
           component="span"
           onChange={onChange}
-          sx={!error ? styles.checkboxWrapper : styles.checkboxWrapperError}
+          sx={error ? styles.checkboxWrapper : styles.checkboxWrapperError}
         >
           <input
             type="checkbox"

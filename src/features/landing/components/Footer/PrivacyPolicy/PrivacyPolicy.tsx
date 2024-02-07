@@ -3,7 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components';
-import { colorTheme } from '@/components/UiColorTheme';
+import colorTheme from '@/components/UiColorTheme';
 
 import styles from './styles';
 

@@ -1,4 +1,5 @@
-import { colorTheme } from '@/components/UiColorTheme';
+import breakpointsTheme from '@/components/UiBreakpoints';
+import colorTheme from '@/components/UiColorTheme';
 
 export default {
   wrapper: {
@@ -17,10 +18,10 @@ export default {
     top: '9%',
     left: '0',
     borderRadius: '3rem',
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       top: '11%',
     },
-    '@media (max-width: 639.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       borderRadius: '1.5rem',
       height: '17.75rem',
       top: '14%',
@@ -33,12 +34,12 @@ export default {
     borderTopRightRadius: '1.875rem',
     borderTopLeftRadius: '1.875rem',
     overflow: 'hidden',
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       borderRadius: '1.875rem',
       borderBottom: 'none',
       border: 'none',
     },
-    '@media (max-width: 639.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       border: 'none',
       borderBottom: 'none',
       marginBottom: '-8.125rem',
@@ -51,10 +52,10 @@ export default {
     backgroundColor: colorTheme.palette.darkPrimary.main,
     padding: '0.75rem',
     overflow: 'hidden',
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       borderRadius: '1.563rem',
     },
-    '@media (max-width: 639.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       padding: '0.375rem',
       border: '4px solid #444',
       borderRadius: '2.25rem',

@@ -1,3 +1,5 @@
+import breakpointsTheme from '@/components/UiBreakpoints';
+
 import VectorIcon from '../../assets/svg/about-vilna/Vector.svg';
 
 export default {
@@ -15,10 +17,10 @@ export default {
     '@media (max-width: 1440.98px)': {
       top: '5.4%',
     },
-    '@media (max-width: 1024.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       top: '9%',
     },
-    '@media (max-width: 639.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       left: '39%',
       top: '16.4%',
       width: '35.125rem',

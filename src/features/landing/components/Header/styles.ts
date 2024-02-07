@@ -1,4 +1,5 @@
-import { colorTheme } from '@/components/UiColorTheme';
+import breakpointsTheme from '@/components/UiBreakpoints';
+import colorTheme from '@/components/UiColorTheme';
 
 export default {
   headerWrapper: {
@@ -10,11 +11,11 @@ export default {
   logo: {
     width: '8.188rem',
     height: '2.75rem',
-    '@media (max-width: 1439.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       width: '9.313rem',
       height: '3.125rem',
     },
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       width: '8.188rem',
       height: '2.75rem',
     },

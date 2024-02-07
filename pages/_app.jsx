@@ -10,6 +10,7 @@ import client from '@/features/landing/api/graphql/apollo';
 import { golos } from '@/config/Fonts';
 import i18n from '../i18n';
 import 'dotenv/config';
+import breakpointsTheme from '@/components/UiBreakpoints';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN_KEY,
@@ -29,9 +30,7 @@ Sentry.init({
 
 function MyApp({ Component }) {
   const theme = createTheme({
-    breakpoints: {
-      values: { xs: 375.98, sm: 640.98, md: 767.98, lg: 1023.98, xl: 1439.98 },
-    },
+    breakpoints: breakpointsTheme.breakpoints,
     components: {
       MuiContainer: {
         styleOverrides: {

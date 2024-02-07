@@ -3,7 +3,7 @@ import { CSSProperties } from '@mui/material/styles/createMixins';
 
 import { golos, inter } from '@/config/Fonts';
 
-import { colorTheme } from '../UiColorTheme';
+import colorTheme from '../UiColorTheme';
 
 const hStyles: CSSProperties = {
   color: colorTheme.palette.darkPrimary.main,

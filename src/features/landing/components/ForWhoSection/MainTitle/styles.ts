@@ -1,8 +1,9 @@
-import { colorTheme } from '@/components/UiColorTheme';
+import breakpointsTheme from '@/components/UiBreakpoints';
+import colorTheme from '@/components/UiColorTheme';
 
 export default {
   title: {
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       color: colorTheme.palette.darkPrimary.main,
       fontSize: '1.75rem',
       fontStyle: 'normal',
@@ -17,7 +18,7 @@ export default {
       pb: '2rem',
       maxWidth: '18.938rem',
     },
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       pt: '0.813rem',
       color: colorTheme.palette.darkPrimary.main,
       fontSize: '0.9375rem',
@@ -28,13 +29,13 @@ export default {
       maxWidth: '100%',
       paddingBottom: '10.875rem',
     },
-    '@media (max-width: 639.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       paddingBottom: '0',
     },
   },
   button: {
     display: 'inline-block',
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       display: 'none',
     },
   },

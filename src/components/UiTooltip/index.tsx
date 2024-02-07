@@ -7,7 +7,8 @@ import {
   tooltipClasses,
 } from '@mui/material';
 
-import { colorTheme } from '../UiColorTheme';
+import breakpointsTheme from '../UiBreakpoints';
+import colorTheme from '../UiColorTheme';
 
 import styles from './styles';
 
@@ -29,7 +30,7 @@ export const ServicesTooltip: React.FC<TooltipProps> = styled(
     border: `1px solid ${colorTheme.palette.grey400.main}`,
     padding: '1.125rem 1.5rem',
     borderRadius: '0.5rem',
-    '@media (max-width: 1439.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       display: 'none',
     },
   },
@@ -53,7 +54,7 @@ export const FormRulesTooltip: React.FC<TooltipProps> = styled(
     boxShadow: '0px 8px 27px 0px rgba(49, 59, 67, 0.14)',
     padding: '0.625rem 0.75rem',
     borderRadius: '0.5rem',
-    '@media (max-width: 1439.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       display: 'none',
     },
   },

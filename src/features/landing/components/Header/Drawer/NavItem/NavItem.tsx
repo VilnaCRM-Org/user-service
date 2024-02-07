@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components';
-import { colorTheme } from '@/components/UiColorTheme';
+import colorTheme from '@/components/UiColorTheme';
 
 import AtSignImage from '../../../../assets/svg/header-drawer/chevron-down.svg';
 import { INavItem } from '../../../../types/drawer/navigation';

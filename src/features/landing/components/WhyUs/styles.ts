@@ -1,11 +1,13 @@
+import breakpointsTheme from '@/components/UiBreakpoints';
+
 export default {
   wrapper: {
     pb: '9.063rem',
-    paddingTop: '7rem',
-    '@media (max-width: 1439.98px)': {
+    paddingTop: '7.125rem',
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       pb: '0',
     },
-    '@media (max-width: 639.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       paddingTop: '4rem',
     },
   },

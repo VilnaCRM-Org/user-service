@@ -1,7 +1,9 @@
+import breakpointsTheme from '@/components/UiBreakpoints';
+
 export default {
   wrapper: {
     display: 'inline-block',
-    '@media (max-width: 1023.98px)': {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       display: 'none',
     },
   },

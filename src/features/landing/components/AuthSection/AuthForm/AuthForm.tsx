@@ -83,7 +83,6 @@ function AuthForm(): React.ReactElement {
   const passwordPlaceholder: string = t(
     'sign_up.form.password_input.placeholder'
   );
-  // const errorText: string = t('sign_up.form.errorText');
 
   return (
     <Box sx={styles.formWrapper}>

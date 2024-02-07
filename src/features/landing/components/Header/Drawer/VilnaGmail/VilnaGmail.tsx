@@ -3,7 +3,7 @@ import Link from 'next/link';
 import React from 'react';
 
 import { UiTypography } from '@/components';
-import { colorTheme } from '@/components/UiColorTheme';
+import colorTheme from '@/components/UiColorTheme';
 
 import styles from './styles';
 
