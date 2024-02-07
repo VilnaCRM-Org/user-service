@@ -5,8 +5,6 @@ import * as Sentry from '@sentry/react';
 import React, { useEffect } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import * as PropTypes from 'prop-types';
-import { ApolloProvider } from '@apollo/client';
-import client from '@/features/landing/api/graphql/apollo';
 import { golos } from '@/config/Fonts';
 import i18n from '../i18n';
 import 'dotenv/config';
@@ -59,11 +57,9 @@ function MyApp({ Component }) {
 
   return (
     <ThemeProvider theme={theme}>
-      <ApolloProvider client={client}>
-        <main className={golos.className}>
-          <Component />
-        </main>
-      </ApolloProvider>
+      <main className={golos.className}>
+        <Component />
+      </main>
     </ThemeProvider>
   );
 }

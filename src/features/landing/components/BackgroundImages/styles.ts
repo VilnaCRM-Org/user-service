@@ -12,11 +12,8 @@ export default {
     zIndex: '-2',
     position: 'absolute',
     left: '50%',
-    top: '8%',
+    top: '5.4%',
     transform: 'translateX(-50%)',
-    '@media (max-width: 1440.98px)': {
-      top: '5.4%',
-    },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       top: '9%',
     },

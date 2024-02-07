@@ -55,13 +55,9 @@ class LocalizationGenerator {
   }
 
   getFeatureFolders() {
-<<<<<<< HEAD
     const featureDirectories = fs.readdirSync(this.featurePath, {
       withFileTypes: true,
     });
-=======
-    const featureDirectories = fs.readdirSync(this.featurePath, { withFileTypes: true });
->>>>>>> main
 
     return featureDirectories
       .filter(directory => directory.isDirectory())
@@ -69,18 +65,12 @@ class LocalizationGenerator {
   }
 
   getLocalizationFromFolder(folder) {
-<<<<<<< HEAD
     const localizationFiles = fs.readdirSync(
       this.pathToI18nFolder.replace('{folder}', folder),
       {
         withFileTypes: true,
       }
     );
-=======
-    const localizationFiles = fs.readdirSync(this.pathToI18nFolder.replace('{folder}', folder), {
-      withFileTypes: true,
-    });
->>>>>>> main
 
     return localizationFiles.reduce((localizations, file) => {
       if (!file.isFile()) return localizations;
@@ -90,13 +80,9 @@ class LocalizationGenerator {
       if (fileType !== this.jsonFileType) return localizations;
 
       const localizationContent = fs.readFileSync(
-<<<<<<< HEAD
         this.pathToI18nFile
           .replace('{folder}', folder)
           .replace('{file.name}', file.name),
-=======
-        this.pathToI18nFile.replace('{folder}', folder).replace('{file.name}', file.name),
->>>>>>> main
         'utf8'
       );
       const parsedLocalization = JSON.parse(localizationContent);

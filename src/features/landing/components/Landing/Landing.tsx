@@ -1,6 +1,7 @@
+import { ApolloProvider } from '@apollo/client';
 import { Box, Container } from '@mui/material';
-import Head from 'next/head';
 
+import client from '../../api/graphql/apollo';
 import { AboutUs } from '../AboutUs';
 import { AuthSection } from '../AuthSection';
 import { BackgroundImages } from '../BackgroundImages';
@@ -12,7 +13,7 @@ import { WhyUs } from '../WhyUs';
 
 function Landing(): React.ReactElement {
   return (
-    <>
+    <ApolloProvider client={client}>
       <Header />
       <Box sx={{ position: 'relative' }}>
         <BackgroundImages />
@@ -27,7 +28,7 @@ function Landing(): React.ReactElement {
       </Container>
       <AuthSection />
       <Footer />
-    </>
+    </ApolloProvider>
   );
 }
 
