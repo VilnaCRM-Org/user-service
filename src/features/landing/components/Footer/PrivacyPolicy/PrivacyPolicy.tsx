@@ -20,12 +20,12 @@ function PrivacyPolicy(): React.ReactElement {
           {t('footer.privacy')}
         </UiTypography>
       </Link>
-      <Link sx={styles.usagePolicy} href="/">
+      <Link sx={styles.usage_policy} href="/">
         <UiTypography
           variant="medium16"
           color={colorTheme.palette.grey300.main}
         >
-          {t('footer.usagePolicy')}
+          {t('footer.usage_policy')}
         </UiTypography>
       </Link>
     </Stack>

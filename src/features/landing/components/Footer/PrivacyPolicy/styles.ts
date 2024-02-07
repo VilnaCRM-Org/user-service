@@ -22,7 +22,7 @@ export default {
       padding: '1.063rem 0 1.125rem',
     },
   },
-  usagePolicy: {
+  usage_policy: {
     textDecoration: 'none',
     padding: '0.5rem 1rem',
     borderRadius: '0.5rem',

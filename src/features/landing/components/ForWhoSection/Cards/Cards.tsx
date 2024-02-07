@@ -22,7 +22,7 @@ function Cards(): React.ReactElement {
             loading="lazy"
             decoding="async"
             src={Vector.src}
-            alt="vector"
+            alt={t('for_who.vector_alt')}
             sx={styles.img}
           />
           <UiTypography variant="bodyText18" sx={styles.optionText}>
@@ -35,7 +35,7 @@ function Cards(): React.ReactElement {
             loading="lazy"
             decoding="async"
             src={Vector.src}
-            alt="vector"
+            alt={t('for_who.vector_alt')}
             sx={styles.img}
           />
           <UiTypography variant="bodyText18" sx={styles.optionText}>

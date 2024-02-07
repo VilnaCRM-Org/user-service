@@ -2,60 +2,30 @@ import { Stack } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components';
-import colorTheme from '@/components/UiColorTheme';
+
+import styles from './styles';
 
 function PasswordTip(): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Stack direction="column" gap="0.25rem">
-      <UiTypography
-        variant="medium14"
-        sx={{
-          pb: '2px',
-          borderBottom: `2px solid ${colorTheme.palette.grey400.main}`,
-        }}
-      >
+      <UiTypography variant="medium14" sx={styles.line}>
         {t('sign_up.form.password_tip.title')}
       </UiTypography>
-      <UiTypography variant="medium14" maxWidth="10rem">
-        {t('sign_up.form.password_tip.recommendationText')}
+      <UiTypography variant="medium14" maxWidth="10rem" fontWeight="bold">
+        {t('sign_up.form.password_tip.recommendation_text')}
       </UiTypography>
-      <ul
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.25rem',
-          marginLeft: '1rem',
-        }}
-      >
-        <li
-          style={{
-            fontSize: '0.8rem',
-            color: colorTheme.palette.darkPrimary.main,
-            fontWeight: 400,
-          }}
-        >
+      <Stack gap="0.25rem">
+        <UiTypography variant="medium14" fontSize="0.775rem">
           {t('sign_up.form.password_tip.options.option_1')}
-        </li>
-        <li
-          style={{
-            fontSize: '0.8rem',
-            fontWeight: 400,
-            color: colorTheme.palette.darkPrimary.main,
-          }}
-        >
+        </UiTypography>
+        <UiTypography variant="medium14" fontSize="0.775rem">
           {t('sign_up.form.password_tip.options.option_2')}
-        </li>
-        <li
-          style={{
-            fontSize: '0.8rem',
-            fontWeight: 400,
-            color: colorTheme.palette.darkPrimary.main,
-          }}
-        >
+        </UiTypography>
+        <UiTypography variant="medium14" fontSize="0.775rem">
           {t('sign_up.form.password_tip.options.option_3')}
-        </li>
-      </ul>
+        </UiTypography>
+      </Stack>
     </Stack>
   );
 }

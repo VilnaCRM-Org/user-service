@@ -43,7 +43,7 @@ function CardList({ cardList }: ICardList): React.ReactElement {
           sx={styles.button}
           href="#signUp"
         >
-          {t('why_we.buttonText')}
+          {t('why_us.button_text')}
         </UiButton>
       </Grid>
     </>

@@ -6,7 +6,6 @@ export default {
     paddingTop: '4rem',
     marginTop: '-4rem',
     paddingBottom: '2.5rem',
-    whiteSpace: 'pre-line',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       textAlign: 'center',
       maxWidth: '42.688rem',
@@ -45,7 +44,6 @@ export default {
 
   signInText: {
     mb: '1.5rem',
-    textAlign: 'left',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       textAlign: 'center',
     },

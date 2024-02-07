@@ -24,7 +24,7 @@ function CopyrightNoticeAndLinks({
       <Stack direction="row" gap="0.875rem" alignItems="center">
         <Box sx={styles.gmailWrapper}>
           <UiTypography variant="medium15" sx={styles.gmailText}>
-            info@vilnacrm.com
+            {t('footer.vilna_email')}
           </UiTypography>
         </Box>
         <SocialMediaList socialLinks={socialLinks} />

@@ -83,6 +83,8 @@ function AuthForm(): React.ReactElement {
   const passwordPlaceholder: string = t(
     'sign_up.form.password_input.placeholder'
   );
+  const imageAlt: string = t('sign_up.form.password_tip.alt');
+  const errorText: string = t('sign_up.form.error_text');
 
   return (
     <Box sx={styles.formWrapper}>
@@ -102,7 +104,7 @@ function AuthForm(): React.ReactElement {
                 control={control}
                 name="FullName"
                 rules={{
-                  required: 'Виникла помилка. Перевірте ще раз',
+                  required: 'There was an error. Please check again',
                   validate: validateFullName,
                 }}
                 render={({ field }) => (
@@ -113,13 +115,13 @@ function AuthForm(): React.ReactElement {
                     onBlur={field.onBlur}
                     value={field.value}
                     fullWidth
-                    error={!!errors.FullName?.message}
+                    error={!!errors.FullName}
                   />
                 )}
               />
               {errors.FullName && (
-                <UiTypography variant="medium14" sx={styles.errorText}>
-                  {errors.FullName.message}
+                <UiTypography variant="medium14" sx={styles.error_text}>
+                  {errorText}
                 </UiTypography>
               )}
             </Stack>
@@ -131,7 +133,7 @@ function AuthForm(): React.ReactElement {
                 control={control}
                 name="Email"
                 rules={{
-                  required: 'Виникла помилка. Перевірте ще раз',
+                  required: 'There was an error. Please check again',
                   validate: validateEmail,
                 }}
                 render={({ field }) => (
@@ -142,13 +144,13 @@ function AuthForm(): React.ReactElement {
                     onChange={e => field.onChange(e)}
                     value={field.value}
                     fullWidth
-                    error={!!errors.Email?.message}
+                    error={!!errors.Email}
                   />
                 )}
               />
               {errors.Email && (
-                <UiTypography variant="medium14" sx={styles.errorText}>
-                  {errors.Email.message}
+                <UiTypography variant="medium14" sx={styles.error_text}>
+                  {errorText}
                 </UiTypography>
               )}
             </Stack>
@@ -164,7 +166,7 @@ function AuthForm(): React.ReactElement {
                 >
                   <Image
                     src={QuestionMark}
-                    alt="QuestionMark"
+                    alt={imageAlt}
                     width={16}
                     height={16}
                   />
@@ -174,7 +176,7 @@ function AuthForm(): React.ReactElement {
                 control={control}
                 name="Password"
                 rules={{
-                  required: 'Виникла помилка. Перевірте ще раз',
+                  required: 'There was an error. Please check again',
                   validate: validatePassword,
                 }}
                 render={({ field }) => (
@@ -184,14 +186,14 @@ function AuthForm(): React.ReactElement {
                     onChange={e => field.onChange(e)}
                     onBlur={field.onBlur}
                     value={field.value}
-                    error={!!errors.Password?.message}
+                    error={!!errors.Password}
                     fullWidth
                   />
                 )}
               />
               {errors.Password && (
-                <UiTypography variant="medium14" sx={styles.errorText}>
-                  {errors.Password.message}
+                <UiTypography variant="medium14" sx={styles.error_text}>
+                  {errorText}
                 </UiTypography>
               )}
             </Stack>
@@ -200,7 +202,7 @@ function AuthForm(): React.ReactElement {
             control={control}
             name="Privacy"
             rules={{
-              required: 'Виникла помилка. Перевірте ще раз',
+              required: 'There was an error. Please check again',
             }}
             render={({ field }) => (
               <UiCheckbox
@@ -229,7 +231,7 @@ function AuthForm(): React.ReactElement {
               fullWidth
               sx={styles.button}
             >
-              {t('sign_up.form.button-text')}
+              {t('sign_up.form.button_text')}
             </UiButton>
           </Box>
         </form>

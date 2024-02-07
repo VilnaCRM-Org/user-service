@@ -158,7 +158,7 @@ export default {
       display: 'none',
     },
   },
-  errorText: {
+  error_text: {
     top: '100%',
     position: 'absolute',
     color: colorTheme.palette.error.main,
