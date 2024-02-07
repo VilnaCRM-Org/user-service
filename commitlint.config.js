@@ -28,10 +28,7 @@ module.exports = {
 
           const correctCommit = data.header.includes(taskNumber) || false;
 
-          return [
-            correctCommit,
-            `your task number incorrect (${this.listOfNames.join('|')}(#1))`,
-          ];
+          return [correctCommit, `your task number incorrect (${this.listOfNames.join('|')}(#1))`];
         },
       },
     },

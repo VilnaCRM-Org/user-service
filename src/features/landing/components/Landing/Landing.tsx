@@ -13,13 +13,6 @@ import { WhyUs } from '../WhyUs';
 function Landing(): React.ReactElement {
   return (
     <>
-      <Head>
-        <title>VilnaCRM</title>
-        <meta
-          name="description"
-          content="The first Ukrainian open source CRM"
-        />
-      </Head>
       <Header />
       <Box sx={{ position: 'relative' }}>
         <BackgroundImages />

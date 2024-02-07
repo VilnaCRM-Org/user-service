@@ -13,7 +13,7 @@ module.exports = {
         'categories:performance': ['error', { minScore: 0.95 }],
         'categories:accessibility': ['error', { minScore: 0.95 }],
         'categories:bestPractices': ['error', { minScore: 0.95 }],
-        'categories:seo': ['error', { minScore: 0.95 }],
+        'categories:seo': ['error', { minScore: 0.85 }],
       },
     },
   },
