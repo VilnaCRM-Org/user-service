@@ -49,7 +49,7 @@ return [
         UnnecessaryStringConcatSniff::class => [
             'exclude' => [
                 'src/Shared/OpenApi/Factory/Response/UnsupportedGrantTypeResponseFactory',
-                'src/User/Infrastructure/Exception/DuplicateEmailException',
+                'src/User/Application/Exception/DuplicateEmailException',
                 'src/Shared/OpenApi/Factory/Response/DuplicateEmailResponseFactory',
             ],
         ],

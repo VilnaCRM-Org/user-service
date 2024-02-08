@@ -3,11 +3,11 @@
 namespace App\Tests\Behat\UserContext;
 
 use App\Shared\Application\Transformer\UuidTransformer;
+use App\User\Application\Exception\DuplicateEmailException;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Infrastructure\Exception\DuplicateEmailException;
 use Behat\Behat\Context\Context;
 use Faker\Factory;
 use Faker\Generator;

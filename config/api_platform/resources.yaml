@@ -2,10 +2,10 @@ resources:
   App\User\Domain\Entity\User:
     exceptionToStatus:
       'App\User\Domain\Exception\UserTimedOutException': 429
-      'App\User\Infrastructure\Exception\UserNotFoundException': 404
-      'App\User\Infrastructure\Exception\InvalidPasswordException': 400
-      'App\User\Infrastructure\Exception\TokenNotFoundException': 404
-      'App\User\Infrastructure\Exception\DuplicateEmailException': 409
+      'App\User\Application\Exception\UserNotFoundException': 404
+      'App\User\Application\Exception\InvalidPasswordException': 400
+      'App\User\Application\Exception\TokenNotFoundException': 404
+      'App\User\Application\Exception\DuplicateEmailException': 409
     normalizationContext:
       groups: [ 'output' ]
 
@@ -16,23 +16,23 @@ resources:
       create_http:
         class: 'ApiPlatform\Metadata\Post'
         input: 'App\User\Application\DTO\UserRegisterDto'
-        processor: 'App\User\Infrastructure\Processor\RegisterUserProcessor'
+        processor: 'App\User\Application\Processor\RegisterUserProcessor'
       confirm_http:
         class: 'ApiPlatform\Metadata\Patch'
         input: 'App\User\Application\DTO\ConfirmUserDto'
-        processor: 'App\User\Infrastructure\Processor\ConfirmUserProcessor'
+        processor: 'App\User\Application\Processor\ConfirmUserProcessor'
         uriTemplate: 'users/confirm'
       ApiPlatform\Metadata\Patch:
         input: 'App\User\Application\DTO\UserPatchDto'
-        processor: 'App\User\Infrastructure\Processor\UserPatchProcessor'
+        processor: 'App\User\Application\Processor\UserPatchProcessor'
       ApiPlatform\Metadata\Put:
         input: 'App\User\Application\DTO\UserPutDto'
-        processor: 'App\User\Infrastructure\Processor\UserPutProcessor'
+        processor: 'App\User\Application\Processor\UserPutProcessor'
       ApiPlatform\Metadata\Delete: ~
       ApiPlatform\Metadata\Post:
         uriTemplate: '/users/{id}/resend-confirmation-email'
         input: 'App\User\Application\DTO\RetryDto'
-        processor: 'App\User\Infrastructure\Processor\ResendEmailProcessor'
+        processor: 'App\User\Application\Processor\ResendEmailProcessor'
 
     graphQlOperations:
       - class: 'ApiPlatform\Metadata\GraphQl\Query'
@@ -43,7 +43,7 @@ resources:
         name: 'delete'
       - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
         name: 'confirm'
-        resolver: 'App\User\Infrastructure\Resolver\ConfirmUserMutationResolver'
+        resolver: 'App\User\Application\Resolver\ConfirmUserMutationResolver'
         deserialize: false
         denormalizationContext:
           groups: [ ]
@@ -51,7 +51,7 @@ resources:
           token:
             type: 'String!'
       - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
-        resolver: 'App\User\Infrastructure\Resolver\RegisterUserMutationResolver'
+        resolver: 'App\User\Application\Resolver\RegisterUserMutationResolver'
         deserialize: false
         name: 'create'
         denormalizationContext:
@@ -64,7 +64,7 @@ resources:
           password:
             type: 'String!'
       - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
-        resolver: 'App\User\Infrastructure\Resolver\UserUpdateMutationResolver'
+        resolver: 'App\User\Application\Resolver\UserUpdateMutationResolver'
         deserialize: false
         write: false
         name: 'update'
@@ -82,7 +82,7 @@ resources:
           initials:
             type: 'String'
       - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
-        resolver: 'App\User\Infrastructure\Resolver\ResendEmailMutationResolver'
+        resolver: 'App\User\Application\Resolver\ResendEmailMutationResolver'
         name: 'resendEmailTo'
         denormalizationContext:
           groups: []

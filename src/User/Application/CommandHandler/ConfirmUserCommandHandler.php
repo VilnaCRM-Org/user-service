@@ -7,9 +7,9 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\ConfirmUserCommand;
+use App\User\Application\Exception\UserNotFoundException;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Infrastructure\Exception\UserNotFoundException;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 final class ConfirmUserCommandHandler implements CommandHandlerInterface
