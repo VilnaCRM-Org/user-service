@@ -36,7 +36,6 @@ type Story = StoryObj<typeof ServicesTooltip>;
 
 export const Services: Story = {
   args: {
-    children: 'Services',
     placement: 'bottom',
     arrow: true,
     title: 'Services',

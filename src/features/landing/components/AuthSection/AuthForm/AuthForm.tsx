@@ -60,7 +60,6 @@ function AuthForm({
     data: RegisterItem
   ) => {
     onSubmit(data);
-    console.log(data);
   };
 
   return (
@@ -185,7 +184,7 @@ function AuthForm({
               <UiCheckbox
                 onChange={e => field.onChange(e)}
                 sx={styles.labelText}
-                error={!errors.Privacy?.message}
+                error={!errors.Privacy}
                 label={
                   <UiTypography variant="medium14" sx={styles.privacyText}>
                     <Trans i18nKey="sign_up.form.confidential_text.fullText">

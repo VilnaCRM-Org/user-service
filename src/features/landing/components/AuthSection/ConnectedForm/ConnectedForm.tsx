@@ -10,19 +10,17 @@ type SignupMutationVariables = {
   Password: string;
 };
 
-function ConnectedLoginForm(): React.ReactElement {
+function ConnectedForm(): React.ReactElement {
   const SIGNUP_MUTATION: TypedDocumentNode<SignupMutationVariables> = gql`
-    mutation signup(
-      $FullName: String!
-      $Email: String!
-      $Password: String!
-      $id: String!
-    ) {
-      data(FullName: $FullName, Email: $Email, Password: $Password, id: $id) {
-        FullName
-        Email
-        Password
-        id
+    mutation AddUser($input: createUserInput!) {
+      createUser(input: $input) {
+        user {
+          email
+          initials
+          id
+          confirmed
+        }
+        clientMutationId
       }
     }
   `;
@@ -34,19 +32,20 @@ function ConnectedLoginForm(): React.ReactElement {
     try {
       await signupMutation({
         variables: {
-          FullName: data.FullName,
-          Email: data.Email,
-          Password: data.Password,
-          id: '1',
+          input: {
+            email: data.Email,
+            initials: data.FullName,
+            clientMutationId: '132',
+            password: data.Password,
+          },
         },
       });
-      console.log('Signup successful:', Response);
     } catch (signupError) {
-      console.error('Signup error:', signupError);
+      alert(signupError);
     }
   };
 
   return <AuthForm onSubmit={onSubmit} />;
 }
 
-export default ConnectedLoginForm;
+export default ConnectedForm;
