@@ -7,7 +7,8 @@ module.exports = {
     {
       rules: {
         'check-task-number-rule': data => {
-          const list = 'build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test';
+          const list =
+            'build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test';
 
           const regexp = new RegExp(`(${list})(.#(\\d+)).:`, 'gm');
 

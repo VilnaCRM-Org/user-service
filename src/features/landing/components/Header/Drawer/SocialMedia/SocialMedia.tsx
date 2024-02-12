@@ -4,14 +4,14 @@ import Link from 'next/link';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ISocialMedia } from '../../../../types/social-media';
+import { SocialMedia } from '../../../../types/social-media';
 
 import styles from './styles';
 
 function SocialMedia({
   socialMedia,
 }: {
-  socialMedia: ISocialMedia[];
+  socialMedia: SocialMedia[];
 }): React.ReactElement {
   const { t } = useTranslation();
   return (

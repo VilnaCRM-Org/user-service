@@ -1,4 +1,4 @@
-export interface ISocialMedia {
+export interface SocialMedia {
   icon: string;
   alt: string;
   id: string;

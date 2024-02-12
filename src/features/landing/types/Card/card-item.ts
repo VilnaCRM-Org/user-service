@@ -1,4 +1,4 @@
-export interface ICard {
+export interface Card {
   imageSrc: string;
   title: string;
   id: string;

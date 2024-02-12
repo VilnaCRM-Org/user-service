@@ -5,8 +5,9 @@ import localizationJSON from './pages/i18n/localization.json';
 const { localization } = localizationJSON;
 
 i18n.use(initReactI18next).init({
-  lng: 'uk',
+  lng: 'en',
   resources: {
+    localization,
     en: {
       translation: localization.translation.en,
     },
@@ -14,7 +15,7 @@ i18n.use(initReactI18next).init({
       translation: localization.translation.uk,
     },
   },
-  fallbackLng: process.env.FALLBACK_LANGUAGE || 'uk',
+  fallbackLng: process.env.FALLBACK_LANGUAGE,
   interpolation: {
     escapeValue: false,
   },

@@ -13,7 +13,7 @@ export default {
       height: '1.5rem',
       borderRadius: '0.5rem',
       border: `1px solid ${colorTheme.palette.grey400.main}`,
-      background: '#fff',
+      background: colorTheme.palette.white.main,
       '&:hover': {
         cursor: 'pointer',
         border: '1px solid #1eaeff',
@@ -27,7 +27,7 @@ export default {
       },
       '&:disabled': {
         cursor: 'default',
-        backgroundColor: '#eaecee',
+        backgroundColor: colorTheme.palette.grey500.main,
         border: 'none',
       },
     },

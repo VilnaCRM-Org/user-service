@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next';
 
 import { UiButton, UiTypography } from '@/components';
 
-import { ISocialLink } from '../../../types/authentication/social';
+import { SocialLink } from '../../../types/authentication/social';
 
-function SocialItem({ item }: { item: ISocialLink }): React.ReactElement {
+function SocialItem({ item }: { item: SocialLink }): React.ReactElement {
   const { t } = useTranslation();
   return (
     <UiButton variant="outlined" size="medium" name="socialButton">

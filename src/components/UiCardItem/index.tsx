@@ -1,12 +1,12 @@
 import LargeCardItem from './LargeCardItem';
 import SmallCardItem from './SmallCardItem';
-import { ICardItemProps } from './types';
+import { CardItemProps } from './types';
 
 function UiCardItem({
   item,
   type,
   imageList,
-}: ICardItemProps): React.ReactElement {
+}: CardItemProps): React.ReactElement {
   return (
     <>
       {type === 'small' && (

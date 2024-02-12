@@ -43,4 +43,8 @@ export default {
       pb: '0.2rem',
     },
   },
+
+  copyright: {
+    color: colorTheme.palette.grey200.main,
+  },
 };

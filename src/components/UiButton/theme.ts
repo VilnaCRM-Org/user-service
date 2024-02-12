@@ -16,10 +16,10 @@ export const containedStyles: Interpolation<{ theme: Theme }> = {
   backgroundColor: colorTheme.palette.primary.main,
   borderRadius: '3.563rem',
   '&:hover': {
-    backgroundColor: '#00A3FF',
+    backgroundColor: colorTheme.palette.containedButtonHover.main,
   },
   '&:active': {
-    backgroundColor: ' #0399ED',
+    backgroundColor: colorTheme.palette.containedButtonActive.main,
   },
   '&:disabled': {
     backgroundColor: colorTheme.palette.brandGray.main,
@@ -121,7 +121,7 @@ export const theme: Theme = createTheme({
               border: `1px solid ${colorTheme.palette.grey300.main}`,
             },
             '&:disabled': {
-              background: ' #E1E7EA',
+              background: colorTheme.palette.brandGray.main,
               boxShadoiw: 'none',
               border: 'none',
               img: {

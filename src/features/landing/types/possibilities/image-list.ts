@@ -1,4 +1,4 @@
-export interface IimageList {
+export interface ImageList {
   image: string;
   alt: string;
 }

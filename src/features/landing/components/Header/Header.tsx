@@ -7,7 +7,7 @@ import { UiImage, UiToolbar } from '@/components';
 import Logo from '../../assets/svg/logo/Logo.svg';
 
 import { AuthButtons } from './AuthButtons';
-import { links } from './dataArray';
+import { links } from './constants';
 import { Drawer } from './Drawer';
 import { NavLink } from './NavLink';
 import styles from './styles';
@@ -17,7 +17,7 @@ function Header(): React.ReactElement {
   return (
     <AppBar position="static" sx={styles.headerWrapper}>
       <UiToolbar>
-        <UiImage src={Logo} alt={t('header.image_alt')} sx={styles.logo} />
+        <UiImage src={Logo} alt={t('header.logo_alt')} sx={styles.logo} />
         <NavLink links={links} />
         <AuthButtons />
         <Drawer />

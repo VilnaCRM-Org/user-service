@@ -8,12 +8,12 @@ import { UiButton } from '@/components';
 import Bars from '../../../assets/svg/header-drawer/menu-04.svg';
 import CloseImage from '../../../assets/svg/header-drawer/x-close.svg';
 import Logo from '../../../assets/svg/logo/Logo.svg';
-import { navList, socialMedia } from '../dataArray';
+import { navList, socialMedia } from '../constants';
 
 import { NavList } from './NavList';
 import { SocialMedia } from './SocialMedia';
 import styles from './styles';
-import { VilnaGmail } from './VilnaGmail';
+import VilnaCRMGmail from './VilnaCRMGmail/VilnaCRMGmail';
 
 function CustomDrawer(): React.ReactElement {
   const { t } = useTranslation();
@@ -30,7 +30,12 @@ function CustomDrawer(): React.ReactElement {
         sx={styles.button}
         onClick={() => setIsDrawerOpen(!isDrawerOpen)}
       >
-        <Image src={Bars} alt="Bars Image" width={24} height={24} />
+        <Image
+          src={Bars}
+          alt={t('header.drawer.image_alt.bars')}
+          width={24}
+          height={24}
+        />
       </Button>
       <Drawer
         anchor="right"
@@ -48,13 +53,23 @@ function CustomDrawer(): React.ReactElement {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Image src={Logo} alt="Header Image" width={131} height={44} />
+            <Image
+              src={Logo}
+              alt={t('header.logo_alt')}
+              width={131}
+              height={44}
+            />
             <Button
               aria-label={t('header.drawer.button_aria_labels.exit') as string}
               sx={styles.button}
               onClick={() => setIsDrawerOpen(!isDrawerOpen)}
             >
-              <Image src={CloseImage} alt="Exit Image" width={24} height={24} />
+              <Image
+                src={CloseImage}
+                alt={t('header.drawer.image_alt.exit')}
+                width={24}
+                height={24}
+              />
             </Button>
           </Stack>
           <Stack
@@ -84,7 +99,7 @@ function CustomDrawer(): React.ReactElement {
             </UiButton>
           </Stack>
           <NavList navList={navList} handleClick={() => handleClick()} />
-          <VilnaGmail />
+          <VilnaCRMGmail />
           <SocialMedia socialMedia={socialMedia} />
         </Box>
       </Drawer>

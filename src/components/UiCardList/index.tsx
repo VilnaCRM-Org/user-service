@@ -1,12 +1,12 @@
 import LargeCardList from './LargeCardList';
 import SmallCardList from './SmallCardList';
-import { ICardList } from './types';
+import { CardList } from './types';
 
-function UiCardList({
+function UCardList({
   type,
   imageList,
   cardList,
-}: ICardList): React.ReactElement {
+}: CardList): React.ReactElement {
   return (
     <>
       {type === 'small' && (
@@ -17,4 +17,4 @@ function UiCardList({
   );
 }
 
-export default UiCardList;
+export default UCardList;

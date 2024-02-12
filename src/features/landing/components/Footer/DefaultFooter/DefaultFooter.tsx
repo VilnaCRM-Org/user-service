@@ -1,19 +1,24 @@
 import { Box, Stack } from '@mui/material';
 import Image from 'next/image';
-import React from 'react';
+import { useTranslation } from 'react-i18next';
+
+import { UiTypography } from '@/components';
 
 import Logo from '../../../assets/svg/logo/Logo.svg';
-import { ISocialMedia } from '../../../types/social-media';
-import { CopyrightNoticeAndLinks } from '../CopyrightNoticeAndLinks';
+import { SocialMedia } from '../../../types/social-media';
 import { PrivacyPolicy } from '../PrivacyPolicy';
+import { SocialMediaList } from '../SocialMediaList';
+import { VilnaCRMGmail } from '../VilnaCRMGmail';
 
 import styles from './styles';
 
 function DefaultFooter({
   socialLinks,
 }: {
-  socialLinks: ISocialMedia[];
+  socialLinks: SocialMedia[];
 }): React.ReactElement {
+  const { t } = useTranslation();
+
   return (
     <Stack sx={styles.footerWrapper}>
       <Stack height="4.188rem" alignItems="center" flexDirection="row">
@@ -23,7 +28,12 @@ function DefaultFooter({
             justifyContent="space-between"
             alignItems="center"
           >
-            <Image src={Logo} alt="Logo" width={143} height={48} />
+            <Image
+              src={Logo}
+              alt={t('footer.logo_alt')}
+              width={143}
+              height={48}
+            />
             <PrivacyPolicy />
           </Stack>
         </Box>
@@ -31,7 +41,13 @@ function DefaultFooter({
       <Stack sx={styles.copyrightAndLinksWrapper}>
         <Box sx={styles.bottomWrapper}>
           <Stack sx={styles.copyrightAndLinks}>
-            <CopyrightNoticeAndLinks socialLinks={socialLinks} />
+            <UiTypography variant="medium15" sx={styles.copyright}>
+              {t('footer.copyright')}
+            </UiTypography>
+            <Stack direction="row" gap="0.875rem" alignItems="center">
+              <VilnaCRMGmail />
+              <SocialMediaList socialLinks={socialLinks} />
+            </Stack>
           </Stack>
         </Box>
       </Stack>

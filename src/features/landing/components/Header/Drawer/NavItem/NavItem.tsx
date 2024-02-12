@@ -7,7 +7,7 @@ import { UiTypography } from '@/components';
 import colorTheme from '@/components/UiColorTheme';
 
 import AtSignImage from '../../../../assets/svg/header-drawer/chevron-down.svg';
-import { INavItem } from '../../../../types/drawer/navigation';
+import { NavItemProps } from '../../../../types/drawer/navigation';
 
 import styles from './styles';
 
@@ -15,7 +15,7 @@ function NavItem({
   item,
   handleClick,
 }: {
-  item: INavItem;
+  item: NavItemProps;
   handleClick: () => void;
 }): React.ReactElement {
   const { t } = useTranslation();
@@ -25,7 +25,7 @@ function NavItem({
         <UiTypography variant="demi18" color={colorTheme.palette.grey250.main}>
           {t(item.title)}
         </UiTypography>
-        <Image src={AtSignImage} alt="Header Image" width={24} height={24} />
+        <Image src={AtSignImage} alt={t('Vector')} width={24} height={24} />
       </Link>
     </Stack>
   );

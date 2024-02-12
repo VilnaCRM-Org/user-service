@@ -7,11 +7,11 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 
 import UiCardItem from '../../UiCardItem';
-import { ICardList } from '../types';
+import { CardList } from '../types';
 
 import styles from './styles';
 
-function CardList({ imageList, cardList }: ICardList): React.ReactElement {
+function CardList({ imageList, cardList }: CardList): React.ReactElement {
   return (
     <>
       <Grid sx={styles.grid}>

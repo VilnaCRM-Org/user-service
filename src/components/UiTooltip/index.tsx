@@ -25,7 +25,7 @@ export const ServicesTooltip: React.FC<TooltipProps> = styled(
   }
 )(() => ({
   [`& .${tooltipClasses.tooltip}`]: {
-    backgroundColor: '#fff',
+    backgroundColor: colorTheme.palette.white.main,
     maxWidth: '20.625rem',
     border: `1px solid ${colorTheme.palette.grey400.main}`,
     padding: '1.125rem 1.5rem',
@@ -50,7 +50,7 @@ export const FormRulesTooltip: React.FC<TooltipProps> = styled(
 )({
   [`& .${tooltipClasses.tooltip}`]: {
     maxWidth: '11.125rem',
-    backgroundColor: '#fff',
+    backgroundColor: colorTheme.palette.white.main,
     boxShadow: '0px 8px 27px 0px rgba(49, 59, 67, 0.14)',
     padding: '0.625rem 0.75rem',
     borderRadius: '0.5rem',

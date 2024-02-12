@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
 import React from 'react';
 
-import { ISocialLink } from '../../../types/authentication/social';
+import { SocialLink } from '../../../types/authentication/social';
 import { SocialItem } from '../SocialItem';
 
 import styles from './styles';
@@ -9,7 +9,7 @@ import styles from './styles';
 function SocialList({
   socialLinks,
 }: {
-  socialLinks: ISocialLink[];
+  socialLinks: SocialLink[];
 }): React.ReactElement {
   return (
     <Grid sx={styles.listWrapper}>

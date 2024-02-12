@@ -11,7 +11,7 @@
 - Modern JavaScript stack for services: [React](https://react.dev/), [Next.js](https://nextjs.org/)
 - A lot of CI checks to ensure the highest code quality that can be
   (Security checks, Code style fixer, static linters, DeepScan, Snyk)
-- Configured testing tools: [Cypress](https://www.cypress.io/), [Jest](https://jestjs.io/)
+- Configured testing tools: [Playwright](https://playwright.dev/), [Jest](https://jestjs.io/)
 - This template is based on [bulletproof-react](https://github.com/alan2207/bulletproof-react/tree/master)
 - Much more!
 

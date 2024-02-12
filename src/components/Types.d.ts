@@ -53,6 +53,8 @@ declare module '@mui/material/styles' {
     backgroundGrey100: Palette['backgroundGrey100'];
     backgroundGrey200: Palette['backgroundGrey200'];
     backgroundGrey300: Palette['backgroundGrey300'];
+    containedButtonHover: Palette['containedButtonHover'];
+    containedButtonActive: Palette['containedButtonActive'];
   }
 
   interface PaletteOptions {
@@ -68,5 +70,7 @@ declare module '@mui/material/styles' {
     backgroundGrey100?: PaletteOptions['backgroundGrey100'];
     backgroundGrey200?: PaletteOptions['backgroundGrey200'];
     backgroundGrey300?: PaletteOptions['backgroundGrey300'];
+    containedButtonHover?: PaletteOptions['containedButtonHover'];
+    containedButtonActive?: PaletteOptions['containedButtonActive'];
   }
 }

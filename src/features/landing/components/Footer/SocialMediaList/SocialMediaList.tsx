@@ -1,7 +1,7 @@
 import { Stack } from '@mui/material';
 import React from 'react';
 
-import { ISocialMedia } from '../../../types/social-media';
+import { SocialMedia } from '../../../types/social-media';
 import { SocialMediaItem } from '../SocialMediaItem';
 
 import styles from './styles';
@@ -9,7 +9,7 @@ import styles from './styles';
 function SocialMediaList({
   socialLinks,
 }: {
-  socialLinks: ISocialMedia[];
+  socialLinks: SocialMedia[];
 }): React.ReactElement {
   return (
     <Stack direction="row" alignItems="center" sx={styles.listWrapper}>

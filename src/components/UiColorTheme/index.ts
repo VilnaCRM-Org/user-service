@@ -47,6 +47,12 @@ const colorTheme: Theme = createTheme({
     backgroundGrey300: {
       main: '#F5F6F7',
     },
+    containedButtonHover: {
+      main: '#00A3FF',
+    },
+    containedButtonActive: {
+      main: '#0399ED',
+    },
   },
 });
 export default colorTheme;

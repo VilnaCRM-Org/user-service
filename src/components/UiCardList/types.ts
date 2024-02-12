@@ -1,14 +1,17 @@
-export interface ICardList {
+export type ImageItem = {
+  alt: string;
+  image: string;
+};
+export type CardItem = {
+  id: string;
+  imageSrc: string;
+  title: string;
+  text: string;
+  alt: string;
+};
+
+export interface CardList {
   type?: 'large' | 'small';
-  cardList: {
-    id: string;
-    imageSrc: string;
-    title: string;
-    text: string;
-    alt: string;
-  }[];
-  imageList?: {
-    alt: string;
-    image: string;
-  }[];
+  cardList: CardItem[];
+  imageList?: ImageItem[];
 }

@@ -4,7 +4,7 @@ import { Trans, useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components';
 
-import { ISocialLink } from '../../../types/authentication/social';
+import { SocialLink } from '../../../types/authentication/social';
 import { SocialList } from '../SocialList';
 
 import styles from './styles';
@@ -12,7 +12,7 @@ import styles from './styles';
 function SignUpText({
   socialLinks,
 }: {
-  socialLinks: ISocialLink[];
+  socialLinks: SocialLink[];
 }): React.ReactElement {
   const { t } = useTranslation();
   return (
@@ -20,7 +20,7 @@ function SignUpText({
       <UiTypography variant="h2" sx={styles.title} id="signUp">
         <Trans i18nKey="sign_up.main_heading" />
         <UiTypography variant="h2" component="span" sx={styles.titleVilnaCRM}>
-          {' '}
+          &nbsp;
           {t('sign_up.vilna_text')}
         </UiTypography>
       </UiTypography>

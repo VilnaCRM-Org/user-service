@@ -1,29 +1,11 @@
-import { TypedDocumentNode, gql, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import React from 'react';
 
+import { SIGNUP_MUTATION } from '../../../api/service/userService';
 import { RegisterItem } from '../../../types/authentication/form';
 import { AuthForm } from '../AuthForm';
 
-type SignupMutationVariables = {
-  FullName: string;
-  Email: string;
-  Password: string;
-};
-
 function ConnectedForm(): React.ReactElement {
-  const SIGNUP_MUTATION: TypedDocumentNode<SignupMutationVariables> = gql`
-    mutation AddUser($input: createUserInput!) {
-      createUser(input: $input) {
-        user {
-          email
-          initials
-          id
-          confirmed
-        }
-        clientMutationId
-      }
-    }
-  `;
   const [signupMutation] = useMutation(SIGNUP_MUTATION);
 
   const onSubmit: (data: RegisterItem) => Promise<void> = async (
@@ -41,7 +23,7 @@ function ConnectedForm(): React.ReactElement {
         },
       });
     } catch (signupError) {
-      alert(signupError);
+      throw new Error('Something went wrong. Please try again later');
     }
   };
 

@@ -9,11 +9,15 @@
         "try_it_out": "Try it out",
         "log_in": "Log in"
       },
-      "image_alt": "Vilna logo",
+      "logo_alt": "Vilna logo",
       "drawer": {
         "button_aria_labels": {
           "bars": "Button to open the drawer",
           "exit": "Button to exit the drawer"
+        },
+        "image_alt": {
+          "bars": "Bars Icon",
+          "exit": "Exit Icon"
         },
         "aria_labels_social_images": {
           "instagram": "Link to Instagram",
@@ -144,6 +148,7 @@
       }
     },
     "footer": {
+      "logo_alt": "Vilna logo",
       "copyright": "Copyright © ТОВ “Vilna CRM”, 2022",
       "privacy": "Privacy policy",
       "usage_policy": "Usage policy",
@@ -168,7 +173,7 @@
       "for_who": "Для кого",
       "integration": "Інтеграція",
       "contacts": "Контакти",
-      "image_alt": "Vilna логотип",
+      "logo_alt": "Vilna логотип",
       "actions": {
         "try_it_out": "Спробувати",
         "log_in": "Войти"
@@ -177,6 +182,10 @@
         "button_aria_labels": {
           "bars": "Кнопка для відкривання drawer",
           "exit": "Кнопка для закриття drawer"
+        },
+        "image_alt": {
+          "bars": "Меню Іконка",
+          "exit": "Значок виходу"
         },
         "aria_labels_social_images": {
           "instagram": "Посилання на Instagram",
@@ -311,6 +320,7 @@
       }
     },
     "footer": {
+      "logo_alt": "Vilna логотип",
       "copyright": "Copyright © ТОВ “Вільна СРМ”, 2022",
       "privacy": "Політика конфіденційності",
       "usage_policy": "Політика використовування",

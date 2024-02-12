@@ -4,32 +4,27 @@ on:
   pull_request:
     branches:
       - main
-
 jobs:
-  e2e:
+  test:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ vars.NODE_VERSION }}
 
       - name: Install pnpm
-        run: npm install -g pnpm
+        run: npm install -g pnpm && pnpm install
 
-      - name: Install dependencies
-        run: pnpm i --frozen-lockfile
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
 
-      - name: Build
-        run: pnpm run build
+      - name: Run Playwright tests
+        run: pnpm exec playwright test
 
-      - name: Cypress run
-        uses: cypress-io/github-action@v5
+      - uses: actions/upload-artifact@v3
+        if: always()
         with:
-          start: pnpm run start
-          wait-on: 'http://localhost:3000'
-          browser: chrome
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

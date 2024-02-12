@@ -11,7 +11,7 @@ export type ImageItem = {
   image: string;
 };
 
-export interface ICardItemProps {
+export interface CardItemProps {
   type: 'large' | 'small';
   item: CardItem;
   imageList?: ImageItem[];

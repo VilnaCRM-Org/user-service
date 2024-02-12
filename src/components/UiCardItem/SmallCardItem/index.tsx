@@ -5,7 +5,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { UiImage, UiTypography } from '@/components';
 import { ServicesTooltip } from '@/components/UiTooltip';
 
-import { HoverCard } from '../../../features/landing/components/Possibilities/HoverCard';
+import { ServicesHoverCard } from '../../../features/landing/components/Possibilities/ServicesHoverCard';
 import { CardItem, ImageItem } from '../types';
 
 import styles from './styles';
@@ -29,7 +29,7 @@ function SmallCardItem({ item, imageList }: SmallCardItem): React.ReactElement {
             <ServicesTooltip
               placement="bottom"
               arrow
-              title={<HoverCard imageList={imageList} />}
+              title={<ServicesHoverCard imageList={imageList} />}
             >
               <UiTypography>звичні сервіси</UiTypography>
             </ServicesTooltip>

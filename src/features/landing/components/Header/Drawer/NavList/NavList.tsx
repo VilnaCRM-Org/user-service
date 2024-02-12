@@ -1,8 +1,8 @@
 import { Stack } from '@mui/material';
 import React from 'react';
 
-import { INavItem } from '../../../../types/drawer/navigation';
-import { NavItem } from '../NavItem';
+import { NavItemProps } from '../../../../types/drawer/navigation';
+import NavItem from '../NavItem/NavItem';
 
 import styles from './styles';
 
@@ -10,7 +10,7 @@ function NavList({
   navList,
   handleClick,
 }: {
-  navList: INavItem[];
+  navList: NavItemProps[];
   handleClick: () => void;
 }): React.ReactElement {
   return (

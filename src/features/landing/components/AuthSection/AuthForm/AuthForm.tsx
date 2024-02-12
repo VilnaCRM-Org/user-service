@@ -43,19 +43,6 @@ function AuthForm({
     },
     mode: 'onTouched',
   });
-  const fullNameTitle: string = t('sign_up.form.name_input.label');
-  const fullNamePlaceholder: string = t('sign_up.form.name_input.placeholder');
-
-  const emailTitle: string = t('sign_up.form.email_input.label');
-  const emailPlaceholder: string = t('sign_up.form.email_input.placeholder');
-
-  const passwordTitle: string = t('sign_up.form.password_input.label');
-  const passwordPlaceholder: string = t(
-    'sign_up.form.password_input.placeholder'
-  );
-  const imageAlt: string = t('sign_up.form.password_tip.alt');
-  const errorText: string = t('sign_up.form.error_text');
-
   const handleFormSubmit: (data: RegisterItem) => void = (
     data: RegisterItem
   ) => {
@@ -74,19 +61,18 @@ function AuthForm({
           <Stack sx={styles.inputsWrapper}>
             <Stack sx={styles.inputWrapper}>
               <UiTypography variant="medium14" sx={styles.inputTitle}>
-                {fullNameTitle}
+                {t('sign_up.form.name_input.label')}
               </UiTypography>
               <Controller
                 control={control}
                 name="FullName"
                 rules={{
-                  required: 'There was an error. Please check again',
                   validate: validateFullName,
                 }}
                 render={({ field }) => (
                   <UiInput
                     type="text"
-                    placeholder={fullNamePlaceholder}
+                    placeholder={t('sign_up.form.name_input.placeholder')}
                     onChange={e => field.onChange(e)}
                     onBlur={field.onBlur}
                     value={field.value}
@@ -97,25 +83,24 @@ function AuthForm({
               />
               {errors.FullName && (
                 <UiTypography variant="medium14" sx={styles.error_text}>
-                  {errorText}
+                  {t('sign_up.form.error_text')}
                 </UiTypography>
               )}
             </Stack>
             <Stack sx={styles.inputWrapper}>
               <UiTypography variant="medium14" sx={styles.inputTitle}>
-                {emailTitle}
+                {t('sign_up.form.email_input.label')}
               </UiTypography>
               <Controller
                 control={control}
                 name="Email"
                 rules={{
-                  required: 'There was an error. Please check again',
                   validate: validateEmail,
                 }}
                 render={({ field }) => (
                   <UiInput
                     type="text"
-                    placeholder={emailPlaceholder}
+                    placeholder={t('sign_up.form.email_input.placeholder')}
                     onBlur={field.onBlur}
                     onChange={e => field.onChange(e)}
                     value={field.value}
@@ -126,14 +111,14 @@ function AuthForm({
               />
               {errors.Email && (
                 <UiTypography variant="medium14" sx={styles.error_text}>
-                  {errorText}
+                  {t('sign_up.form.error_text')}
                 </UiTypography>
               )}
             </Stack>
             <Stack sx={styles.inputWrapper}>
               <Stack direction="row" alignItems="center" gap="0.25rem">
                 <UiTypography variant="medium14" sx={styles.inputTitle}>
-                  {passwordTitle}
+                  {t('sign_up.form.password_input.label')}
                 </UiTypography>
                 <FormRulesTooltip
                   placement="right"
@@ -142,7 +127,7 @@ function AuthForm({
                 >
                   <Image
                     src={QuestionMark}
-                    alt={imageAlt}
+                    alt={t('sign_up.form.password_tip.alt')}
                     width={16}
                     height={16}
                   />
@@ -152,13 +137,12 @@ function AuthForm({
                 control={control}
                 name="Password"
                 rules={{
-                  required: 'There was an error. Please check again',
                   validate: validatePassword,
                 }}
                 render={({ field }) => (
                   <UiInput
                     type="password"
-                    placeholder={passwordPlaceholder}
+                    placeholder={t('sign_up.form.password_input.placeholder')}
                     onChange={e => field.onChange(e)}
                     onBlur={field.onBlur}
                     value={field.value}
@@ -169,7 +153,7 @@ function AuthForm({
               />
               {errors.Password && (
                 <UiTypography variant="medium14" sx={styles.error_text}>
-                  {errorText}
+                  {t('sign_up.form.error_text')}
                 </UiTypography>
               )}
             </Stack>
@@ -177,9 +161,6 @@ function AuthForm({
           <Controller
             control={control}
             name="Privacy"
-            rules={{
-              required: 'There was an error. Please check again',
-            }}
             render={({ field }) => (
               <UiCheckbox
                 onChange={e => field.onChange(e)}

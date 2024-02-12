@@ -3,7 +3,7 @@ import React from 'react';
 
 import UiCardList from '@/components/UiCardList';
 
-import { cardList } from './dataArray';
+import { cardList } from './constants';
 import { Heading } from './Heading';
 import styles from './styles';
 

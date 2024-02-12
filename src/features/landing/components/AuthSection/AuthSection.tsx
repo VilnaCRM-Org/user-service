@@ -2,7 +2,7 @@ import { Box, Container, Stack } from '@mui/material';
 import React from 'react';
 
 import { ConnectedForm } from './ConnectedForm';
-import { socialLinks } from './dataArray';
+import { socialLinks } from './constants';
 import { SignUpText } from './SignUpText';
 import styles from './styles';
 

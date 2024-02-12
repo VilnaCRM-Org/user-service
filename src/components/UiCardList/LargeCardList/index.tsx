@@ -9,11 +9,11 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 
 import UiCardItem from '../../UiCardItem';
-import { ICardList } from '../types';
+import { CardList } from '../types';
 
 import styles from './styles';
 
-function CardList({ cardList }: ICardList): React.ReactElement {
+function CardList({ cardList }: CardList): React.ReactElement {
   const { t } = useTranslation();
 
   return (

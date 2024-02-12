@@ -38,9 +38,6 @@ next-env.d.ts
 /.idea
 .vsco
 
-./cypress/downloads/
-./cypress/screenshots/
-./cypress/videos/
 
 .lighthouseci/
 

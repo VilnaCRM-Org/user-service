@@ -53,6 +53,7 @@ module.exports = {
         'plugin:jest-dom/recommended',
       ],
       rules: {
+        'no-alert': 'error',
         'no-console': 'error',
         'import/prefer-default-export': 'warn',
         'max-len': ['error', { code: 150 }],

@@ -50,6 +50,7 @@ export default {
       mt: '0.75rem',
     },
   },
+
   image: {
     width: '5rem',
     height: '5rem',

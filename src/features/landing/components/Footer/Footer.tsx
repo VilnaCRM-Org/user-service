@@ -1,8 +1,8 @@
 import { Box } from '@mui/material';
 
-import Adaptive from './Adaptive/Adaptive';
-import { socialLinks } from './dataArray';
+import { socialLinks } from './constants';
 import { DefaultFooter } from './DefaultFooter';
+import { Mobile } from './Mobile';
 import styles from './styles';
 
 function Footer(): React.ReactElement {
@@ -12,7 +12,7 @@ function Footer(): React.ReactElement {
         <DefaultFooter socialLinks={socialLinks} />
       </Box>
       <Box sx={styles.adaptive}>
-        <Adaptive socialLinks={socialLinks} />
+        <Mobile socialLinks={socialLinks} />
       </Box>
     </Box>
   );

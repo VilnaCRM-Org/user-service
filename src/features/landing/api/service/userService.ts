@@ -1,17 +1,20 @@
-const createUser: (
-  email: string,
-  initials: string
-) => Promise<{ id: string; initials: string; email: string }> = async (
-  email,
-  initials
-) => {
-  await new Promise<void>(resolve => {
-    setTimeout(() => {
-      resolve();
-    }, 2000);
-  });
+import { TypedDocumentNode, gql } from '@apollo/client';
 
-  return { id: Math.random().toString(), initials, email };
+type SignupMutationVariables = {
+  FullName: string;
+  Email: string;
+  Password: string;
 };
-
-export default createUser;
+export const SIGNUP_MUTATION: TypedDocumentNode<SignupMutationVariables> = gql`
+  mutation AddUser($input: createUserInput!) {
+    createUser(input: $input) {
+      user {
+        email
+        initials
+        id
+        confirmed
+      }
+      clientMutationId
+    }
+  }
+`;
