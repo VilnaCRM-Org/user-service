@@ -3,24 +3,11 @@ module.exports = {
   rules: {
     'check-task-number-rule': [2, 'always'],
   },
-  listOfNames: [
-    'build',
-    'chore',
-    'ci',
-    'docs',
-    'feat',
-    'fix',
-    'perf',
-    'refactor',
-    'revert',
-    'style',
-    'test',
-  ],
   plugins: [
     {
       rules: {
         'check-task-number-rule': data => {
-          const list = this.listOfNames.join('|');
+          const list = 'build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test';
 
           const regexp = new RegExp(`(${list})(.#(\\d+)).:`, 'gm');
 
@@ -30,7 +17,7 @@ module.exports = {
 
           return [
             correctCommit,
-            `your task number incorrect (${this.listOfNames.join('|')}(#1))`,
+            `your task number incorrect (${this.list}(#1))`,
           ];
         },
       },
