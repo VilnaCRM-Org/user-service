@@ -19,25 +19,25 @@ help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
 	@grep -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-15s\033[0m %s\n", $$1, $$2}'
 
-build: 
+build:
 	$(PNPM_RUN) build
 
-lint-next: 
+lint-next:
 	$(PNPM_RUN) lint:next
 
-lint-tsc: 
+lint-tsc:
 	$(PNPM_RUN) lint:tsc
 
 lint-md:
-	$(PNPM_RUN) lint:markdown
+	$(PNPM_RUN) lint:md
 
-git-hooks-install
+git-hooks-install:
 	$(PNPM_RUN) prepare
 
 storybook-start:
 	$(PNPM_RUN) storybook
 
-storybook-build: 
+storybook-build:
 	$(PNPM_RUN) build-storybook
 
 generate-ts-doc:
@@ -49,7 +49,7 @@ test-e2e:
 test-e2e-local:
 	$(PNPM_RUN) test:e2e:local
 
-test-unit: 
+test-unit:
 	$(PNPM_RUN) test:unit
 
 test-memory-leak:
@@ -58,37 +58,37 @@ test-memory-leak:
 lighthouse-desktop:
 	$(PNPM_RUN) lighthouse:desktop
 
-lighthouse-mobile: 
+lighthouse-mobile:
 	$(PNPM_RUN) lighthouse:mobile
 
-install: 
+install:
 	$(PNPM) install
 
-update: 
+update:
 	$(PNPM) update
 
-up: 
+up:
 	$(DOCKER_COMPOSE) up -d
 
-build: 
+build:
 	$(DOCKER_COMPOSE) build --pull --no-cache
 
 down:
 	$(DOCKER_COMPOSE) down --remove-orphans
 
-sh: 
+sh:
 	@$(EXEC_NODEJS) sh
 
-ps: 
+ps:
 	@$(DOCKER_COMPOSE) ps
 
-logs: 
+logs:
 	@$(DOCKER_COMPOSE) logs --follow
 
-new-logs: 
+new-logs:
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
 start: up
 
-stop: 
+stop:
 	$(DOCKER_COMPOSE) stop
