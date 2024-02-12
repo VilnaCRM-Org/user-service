@@ -41,7 +41,7 @@ class UserTest extends UnitTestCase
             PasswordChangedEventFactoryInterface::class
         );
         $this->userFactory = new UserFactory();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory(10);
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
         $this->uuidTransformer = new UuidTransformer();
 
         $this->user = $this->userFactory->create(

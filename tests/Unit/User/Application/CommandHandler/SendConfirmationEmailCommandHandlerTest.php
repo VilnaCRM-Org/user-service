@@ -40,7 +40,7 @@ class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
         $this->uuidFactory = new UuidFactory();
         $this->eventFactory = new ConfirmationEmailSendEventFactory();
         $this->userFactory = new UserFactory();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory(10);
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
         $this->confirmationEmailFactory = new ConfirmationEmailFactory($this->eventFactory);
         $this->uuidTransformer = new UuidTransformer();
         $this->commandFactory = new SendConfirmationEmailCommandFactory();

@@ -34,7 +34,7 @@ class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
         parent::setUp();
 
         $this->userFactory = new UserFactory();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory(10);
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
         $this->uuidTransformer = new UuidTransformer();
         $this->sendEventFactory = new ConfirmationEmailSendEventFactory();
         $this->emailFactory = new EmailFactory();

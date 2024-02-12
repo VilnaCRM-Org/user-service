@@ -22,7 +22,7 @@ class UserConfirmedEventSubscriberTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory(10);
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
         $this->userConfirmedEventFactory = new UserConfirmedEventFactory();
     }
 

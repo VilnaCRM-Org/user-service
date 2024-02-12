@@ -19,7 +19,7 @@ class ConfirmationTokenTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory(10);
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
         $this->confirmationToken =
             $this->confirmationTokenFactory->create($this->faker->uuid());
     }

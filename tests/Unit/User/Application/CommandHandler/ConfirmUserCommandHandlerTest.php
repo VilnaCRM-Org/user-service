@@ -56,7 +56,7 @@ class ConfirmUserCommandHandlerTest extends UnitTestCase
         $this->uuidTransformer = new UuidTransformer();
         $this->userFactory = new UserFactory();
         $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory(10);
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
 
         $this->handler = new ConfirmUserCommandHandler(
             $this->userRepository,

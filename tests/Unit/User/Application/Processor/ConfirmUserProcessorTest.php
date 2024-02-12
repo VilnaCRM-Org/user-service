@@ -27,7 +27,7 @@ class ConfirmUserProcessorTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory(10);
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
         $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
         $this->mockOperation = $this->createMock(Operation::class);
     }
@@ -45,14 +45,13 @@ class ConfirmUserProcessorTest extends UnitTestCase
             $confirmUserCommandFactory
         );
 
-        $confirmUserDto = new ConfirmUserDto('test_token');
+        $confirmUserDto = new ConfirmUserDto($this->faker->uuid());
 
         $token = $this->confirmationTokenFactory->create($this->faker->uuid());
         $tokenRepository->expects($this->once())
             ->method('find')
             ->with($this->equalTo($confirmUserDto->token))
             ->willReturn($token);
-
 
         $confirmUserCommand = $this->confirmUserCommandFactory->create($token);
         $confirmUserCommandFactory->expects($this->once())
@@ -81,7 +80,7 @@ class ConfirmUserProcessorTest extends UnitTestCase
             $confirmUserCommandFactory
         );
 
-        $confirmUserDto = new ConfirmUserDto('non_existing_token');
+        $confirmUserDto = new ConfirmUserDto($this->faker->uuid());
 
         $tokenRepository->expects($this->once())
             ->method('find')
