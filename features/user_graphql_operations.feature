@@ -69,6 +69,7 @@ Feature: User GraphQL Operations
 
   Scenario: Updating user with wrong password
     Given requesting to return user's id and email
+    And user with id "8be90127-9840-4235-a6da-39b8debfb111" exists
     And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "wrongpassWORD1" to new email "testUpdateGraphQL@mail.com"
     When graphQL request is send
     Then graphql error response should be returned
@@ -83,6 +84,7 @@ Feature: User GraphQL Operations
 
   Scenario: Updating user to invalid email
     Given requesting to return user's id and email
+    And user with id "8be90127-9840-4235-a6da-39b8debfb111" exists
     And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "passWORD1" to new email "test"
     When graphQL request is send
     Then graphql error response should be returned
