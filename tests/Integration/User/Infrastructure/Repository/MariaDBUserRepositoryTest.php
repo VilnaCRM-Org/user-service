@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Functional\User\Infrastructure\Repository;
+namespace App\Tests\Integration\User\Infrastructure\Repository;
 
 use App\Shared\Application\Transformer\UuidTransformer;
-use App\Tests\Functional\FunctionalTestCase;
+use App\Tests\Integration\IntegrationTestCase;
 use App\User\Application\Exception\DuplicateEmailException;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
@@ -16,7 +16,7 @@ use App\User\Infrastructure\Repository\MariaDBUserRepository;
 use Doctrine\ORM\EntityManager;
 use Doctrine\Persistence\ManagerRegistry;
 
-class MariaDBUserRepositoryTest extends FunctionalTestCase
+class MariaDBUserRepositoryTest extends IntegrationTestCase
 {
     private EntityManager $entityManager;
     private ManagerRegistry $registry;

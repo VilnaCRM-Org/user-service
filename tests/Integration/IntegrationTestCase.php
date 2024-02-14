@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Tests\Functional;
+namespace App\Tests\Integration;
 
 use Faker\Factory;
 use Faker\Generator;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class FunctionalTestCase extends KernelTestCase
+class IntegrationTestCase extends KernelTestCase
 {
     protected Generator $faker;
     protected ContainerInterface $container;
