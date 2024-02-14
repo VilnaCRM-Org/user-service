@@ -1,8 +1,8 @@
-import { Theme, ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import * as Sentry from '@sentry/react';
 import React, { useEffect } from 'react';
 
-import breakpointsTheme from '@/components/UiBreakpoints';
+import { theme } from '@/components/AppTheme';
 import { golos } from '@/config/Fonts';
 
 import i18n from '../i18n';
@@ -16,7 +16,7 @@ Sentry.init({
     new Sentry.BrowserTracing({
       tracePropagationTargets: [
         process.env.LOCALHOST || '',
-        /^https:\/\/yourserver\.io\/api/,
+        process.env.API_URL || '',
       ],
     }),
     new Sentry.Replay(),
@@ -24,30 +24,6 @@ Sentry.init({
   tracesSampleRate: 1.0,
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
-});
-
-const theme: Theme = createTheme({
-  breakpoints: breakpointsTheme.breakpoints,
-  components: {
-    MuiContainer: {
-      styleOverrides: {
-        root: {
-          '@media (min-width: 23.438rem)': {
-            padding: '0 2rem',
-          },
-          '@media (max-width: 26.563rem)': {
-            padding: '0 0.9375rem',
-          },
-          '@media (min-width: 64rem)': {
-            width: '100%',
-            maxWidth: '78.375rem',
-            paddingLeft: '2rem',
-            paddingRight: '2rem',
-          },
-        },
-      },
-    },
-  },
 });
 
 function MyApp({

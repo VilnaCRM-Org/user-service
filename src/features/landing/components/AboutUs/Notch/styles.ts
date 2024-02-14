@@ -25,7 +25,7 @@ export default {
       border: '1px solid #101417',
       borderRadius: '100%',
       transform: 'translate(-50%,-50%)',
-      backgroundColor: '#080805',
+      backgroundColor: colorTheme.palette.notchDeskBefore.main,
     },
     '&:after': {
       content: '" "',
@@ -37,7 +37,7 @@ export default {
       backdropFilter: 'blur(0.313rem)',
       borderRadius: '100%',
       transform: 'translate(-50%,-50%)',
-      backgroundColor: '#0e314c',
+      backgroundColor: colorTheme.palette.notchDeskAfter.main,
     },
 
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
@@ -63,7 +63,7 @@ export default {
         width: '1.5rem',
         height: '0.25rem',
         borderRadius: '0.313rem',
-        backgroundColor: '#0c0b0e',
+        backgroundColor: colorTheme.palette.notchMobileBefore.main,
         transform: 'translate(-50%,-50%)',
       },
       '&:after': {
@@ -74,7 +74,7 @@ export default {
         width: '0.5rem',
         height: '0.5rem',
         borderRadius: '0.313rem',
-        backgroundColor: '#0f0b25',
+        backgroundColor: colorTheme.palette.notchMobileAfter.main,
       },
     },
   },

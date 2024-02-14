@@ -1,21 +1,21 @@
 import { Box, Stack } from '@mui/material';
-import Image from 'next/image';
+// import Image from 'next/image';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
 
 import {
-  UiButton,
   UiCheckbox,
-  UiInput,
   UiTypography,
   UiLink,
-  FormRulesTooltip,
+  // FormRulesTooltip,
+  UiButton,
+  UiTextFieldForm,
 } from '@/components';
 
-import QuestionMark from '../../../assets/svg/auth-section/questionMark.svg';
+// import QuestionMark from '../../../assets/svg/auth-section/questionMark.svg';
 import { RegisterItem } from '../../../types/authentication/form';
-import { PasswordTip } from '../PasswordTip';
+// import { PasswordTip } from '../PasswordTip';
 
 import styles from './styles';
 import {
@@ -63,64 +63,34 @@ function AuthForm({
               <UiTypography variant="medium14" sx={styles.inputTitle}>
                 {t('sign_up.form.name_input.label')}
               </UiTypography>
-              <Controller
+              <UiTextFieldForm
                 control={control}
                 name="FullName"
-                rules={{
-                  validate: validateFullName,
-                }}
-                render={({ field }) => (
-                  <UiInput
-                    type="text"
-                    placeholder={t('sign_up.form.name_input.placeholder')}
-                    onChange={e => field.onChange(e)}
-                    onBlur={field.onBlur}
-                    value={field.value}
-                    fullWidth
-                    error={!!errors.FullName}
-                  />
-                )}
+                rules={{ validate: validateFullName }}
+                errors={!!errors.FullName}
+                placeholder={t('sign_up.form.name_input.placeholder')}
+                type="text"
               />
-              {errors.FullName && (
-                <UiTypography variant="medium14" sx={styles.error_text}>
-                  {t('sign_up.form.error_text')}
-                </UiTypography>
-              )}
             </Stack>
             <Stack sx={styles.inputWrapper}>
               <UiTypography variant="medium14" sx={styles.inputTitle}>
                 {t('sign_up.form.email_input.label')}
               </UiTypography>
-              <Controller
+              <UiTextFieldForm
                 control={control}
                 name="Email"
-                rules={{
-                  validate: validateEmail,
-                }}
-                render={({ field }) => (
-                  <UiInput
-                    type="text"
-                    placeholder={t('sign_up.form.email_input.placeholder')}
-                    onBlur={field.onBlur}
-                    onChange={e => field.onChange(e)}
-                    value={field.value}
-                    fullWidth
-                    error={!!errors.Email}
-                  />
-                )}
+                rules={{ validate: validateEmail }}
+                errors={!!errors.Email}
+                placeholder={t('sign_up.form.email_input.placeholder')}
+                type="text"
               />
-              {errors.Email && (
-                <UiTypography variant="medium14" sx={styles.error_text}>
-                  {t('sign_up.form.error_text')}
-                </UiTypography>
-              )}
             </Stack>
             <Stack sx={styles.inputWrapper}>
               <Stack direction="row" alignItems="center" gap="0.25rem">
                 <UiTypography variant="medium14" sx={styles.inputTitle}>
                   {t('sign_up.form.password_input.label')}
                 </UiTypography>
-                <FormRulesTooltip
+                {/* <FormRulesTooltip
                   placement="right"
                   arrow
                   title={<PasswordTip />}
@@ -131,31 +101,16 @@ function AuthForm({
                     width={16}
                     height={16}
                   />
-                </FormRulesTooltip>
+                </FormRulesTooltip> */}
               </Stack>
-              <Controller
+              <UiTextFieldForm
                 control={control}
                 name="Password"
-                rules={{
-                  validate: validatePassword,
-                }}
-                render={({ field }) => (
-                  <UiInput
-                    type="password"
-                    placeholder={t('sign_up.form.password_input.placeholder')}
-                    onChange={e => field.onChange(e)}
-                    onBlur={field.onBlur}
-                    value={field.value}
-                    error={!!errors.Password}
-                    fullWidth
-                  />
-                )}
+                rules={{ validate: validatePassword }}
+                errors={!!errors.Password}
+                placeholder={t('sign_up.form.password_input.placeholder')}
+                type="password"
               />
-              {errors.Password && (
-                <UiTypography variant="medium14" sx={styles.error_text}>
-                  {t('sign_up.form.error_text')}
-                </UiTypography>
-              )}
             </Stack>
           </Stack>
           <Controller
@@ -164,8 +119,8 @@ function AuthForm({
             render={({ field }) => (
               <UiCheckbox
                 onChange={e => field.onChange(e)}
-                sx={styles.labelText}
                 error={!errors.Privacy}
+                sx={styles.labelText as React.CSSProperties}
                 label={
                   <UiTypography variant="medium14" sx={styles.privacyText}>
                     <Trans i18nKey="sign_up.form.confidential_text.fullText">

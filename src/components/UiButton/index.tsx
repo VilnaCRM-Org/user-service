@@ -1,17 +1,10 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { Button, ThemeProvider } from '@mui/material';
-import { ButtonProps } from '@mui/material/Button';
-import React from 'react';
+import { Button, ButtonProps } from '@mui/material';
 
-import { theme } from './theme';
+import withThemeProvider from './withThemeProvider';
 
 function UiButton(props: ButtonProps): React.ReactElement {
-  const { children } = props;
-  return (
-    <ThemeProvider theme={theme}>
-      <Button {...props}>{children}</Button>
-    </ThemeProvider>
-  );
+  return <Button {...props} />;
 }
 
-export default UiButton;
+export default withThemeProvider(UiButton);

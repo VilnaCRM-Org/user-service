@@ -55,6 +55,10 @@ declare module '@mui/material/styles' {
     backgroundGrey300: Palette['backgroundGrey300'];
     containedButtonHover: Palette['containedButtonHover'];
     containedButtonActive: Palette['containedButtonActive'];
+    notchDeskBefore: Palette['notchDeskBefore'];
+    notchDeskAfter: Palette['notchDeskAfter'];
+    notchMobileBefore: Palette['notchMobileBefore'];
+    notchMobileAfter: Palette['notchMobileAfter'];
   }
 
   interface PaletteOptions {
@@ -72,5 +76,9 @@ declare module '@mui/material/styles' {
     backgroundGrey300?: PaletteOptions['backgroundGrey300'];
     containedButtonHover?: PaletteOptions['containedButtonHover'];
     containedButtonActive?: PaletteOptions['containedButtonActive'];
+    notchDeskBefore?: PaletteOptions['notchDeskBefore'];
+    notchDeskAfter?: PaletteOptions['notchDeskAfter'];
+    notchMobileBefore?: PaletteOptions['notchMobileBefore'];
+    notchMobileAfter?: PaletteOptions['notchMobileAfter'];
   }
 }

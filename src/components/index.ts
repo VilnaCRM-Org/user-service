@@ -8,3 +8,4 @@ export { default as UiImage } from './UiImage';
 export { default as UiToolbar } from './UiToolbar';
 export { default as UiColorTheme } from './UiColorTheme';
 export { default as UiBreakpoints } from './UiBreakpoints';
+export { default as UiTextFieldForm } from './UiTextFieldForm';

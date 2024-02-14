@@ -5,7 +5,7 @@ import {
 } from '@apollo/client';
 
 const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
-  uri: process.env.GRAPHQL_API_URL,
+  uri: 'https://localhost/api/graphql',
   cache: new InMemoryCache(),
 });
 

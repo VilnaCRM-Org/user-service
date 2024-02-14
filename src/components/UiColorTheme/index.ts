@@ -53,6 +53,18 @@ const colorTheme: Theme = createTheme({
     containedButtonActive: {
       main: '#0399ED',
     },
+    notchDeskBefore: {
+      main: '#080805',
+    },
+    notchDeskAfter: {
+      main: '#0e314c',
+    },
+    notchMobileBefore: {
+      main: '#0c0b0e',
+    },
+    notchMobileAfter: {
+      main: '#0f0b25',
+    },
   },
 });
 export default colorTheme;

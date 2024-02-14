@@ -158,12 +158,4 @@ export default {
       display: 'none',
     },
   },
-  error_text: {
-    top: '100%',
-    position: 'absolute',
-    color: colorTheme.palette.error.main,
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
-      fontSize: '0.75rem',
-    },
-  },
 };

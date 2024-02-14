@@ -1,7 +1,7 @@
 export interface UiCheckboxProps {
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   label: string | React.ReactNode;
-  sx?: Record<string, unknown>;
+  sx?: React.CSSProperties;
   error?: boolean;
   disabled?: boolean;
 }
