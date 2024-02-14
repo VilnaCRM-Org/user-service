@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\DTO;
 
 use App\Shared\Application\Transformer\UuidTransformer;
-use App\Shared\Domain\ValueObject\Uuid;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\AuthorizationUser;
-use Faker\Factory;
-use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 class AuthorizationUserTest extends UnitTestCase
 {
