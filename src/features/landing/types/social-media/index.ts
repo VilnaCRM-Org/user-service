@@ -4,4 +4,5 @@ export interface SocialMedia {
   id: string;
   linkHref: string;
   ariaLabel: string;
+  type?: string;
 }

@@ -17,12 +17,7 @@ function TextInfo(): React.ReactElement {
       <DefaultTypography variant="bodyText18" sx={styles.text}>
         {t('about_vilna.text_main')}
       </DefaultTypography>
-      <MediumContainedBtn
-        variant="contained"
-        size="medium"
-        href="#signUp"
-        sx={styles.button}
-      >
+      <MediumContainedBtn href="#signUp" sx={styles.button}>
         {t('about_vilna.button_main')}
       </MediumContainedBtn>
     </Stack>

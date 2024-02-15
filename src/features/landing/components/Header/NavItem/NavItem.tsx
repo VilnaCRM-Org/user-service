@@ -1,0 +1,42 @@
+/* eslint-disable react/require-default-props */
+import { Link, ListItem } from '@mui/material';
+import Image from 'next/image';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+
+import { DefaultTypography } from '@/components/UiTypography';
+
+import AtSignImage from '../../../assets/svg/header-drawer/chevron-down.svg';
+
+import styles from './styles';
+import { NavProps } from './types';
+
+function NavItem({ item, handleClick }: NavProps): React.ReactElement {
+  const { t } = useTranslation();
+  const isHeader: boolean = item.type === 'header';
+  const isDrawer: boolean = item.type === 'drawer';
+
+  return (
+    <ListItem sx={isHeader ? styles : styles.itemDrawerWrapper}>
+      <Link
+        href={item.link}
+        sx={isHeader ? styles.link : styles.drawerLink}
+        onClick={handleClick}
+      >
+        {isHeader ? (
+          <DefaultTypography variant="medium15">
+            {t(item.title)}
+          </DefaultTypography>
+        ) : (
+          <DefaultTypography variant="demi18" sx={styles.navText}>
+            {t(item.title)}
+          </DefaultTypography>
+        )}
+        {isDrawer && (
+          <Image src={AtSignImage} alt={t('Vector')} width={24} height={24} />
+        )}
+      </Link>
+    </ListItem>
+  );
+}
+export default NavItem;

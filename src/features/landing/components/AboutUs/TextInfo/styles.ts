@@ -4,13 +4,13 @@ import colorTheme from '@/components/UiColorTheme';
 export default {
   textWrapper: {
     maxWidth: '43.813rem',
-    mb: '3.125rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    mb: '3.063rem',
+    [`@media (min-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       mb: '3.438rem',
       ml: '1.75rem',
     },
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
-      mb: '3.063rem',
+    [`@media (min-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+      mb: '3.125rem',
       ml: '0',
     },
   },

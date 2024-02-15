@@ -1,5 +1,6 @@
 import { Theme, createTheme } from '@mui/material';
 
+import breakpointsTheme from '@/components/UiBreakpoints';
 import colorTheme from '@/components/UiColorTheme';
 import { golos } from '@/config/Fonts';
 
@@ -29,6 +30,12 @@ export const theme: Theme = createTheme({
           '&:disabled': {
             backgroundColor: colorTheme.palette.brandGray.main,
             color: colorTheme.palette.white.main,
+          },
+          [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
+            fontSize: '0.9375rem',
+            fontWeight: '400',
+            lineHeight: '1.125rem',
+            padding: '1rem 1.438rem',
           },
         },
       },

@@ -2,9 +2,9 @@ import breakpointsTheme from '@/components/UiBreakpoints';
 
 export default {
   wrapper: {
-    display: 'none',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
-      display: 'inline-block',
+    display: 'inline-block',
+    [`@media (min-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+      display: 'none',
     },
   },
   drawerContent: {

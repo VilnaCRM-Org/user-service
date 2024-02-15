@@ -8,10 +8,10 @@ import { SmallContainedBtn, SmallOutlinedBtn } from '@/components/UiButton';
 import Bars from '../../../assets/svg/header-drawer/menu-04.svg';
 import CloseImage from '../../../assets/svg/header-drawer/x-close.svg';
 import Logo from '../../../assets/svg/logo/Logo.svg';
-import { navList, socialMedia } from '../constants';
+import SocialMediaList from '../../SocialMedia/SocialMediaList/SocialMediaList';
+import { drawerNavList, socialMedia } from '../constants';
+import NavList from '../NavList/NavList';
 
-import { NavList } from './NavList';
-import { SocialMedia } from './SocialMedia';
 import styles from './styles';
 import VilnaCRMGmail from './VilnaCRMGmail/VilnaCRMGmail';
 
@@ -94,9 +94,9 @@ function CustomDrawer(): React.ReactElement {
               {t('header.actions.try_it_out')}
             </SmallContainedBtn>
           </Stack>
-          <NavList navList={navList} handleClick={() => handleClick()} />
+          <NavList navItems={drawerNavList} handleClick={() => handleClick()} />
           <VilnaCRMGmail />
-          <SocialMedia socialMedia={socialMedia} />
+          <SocialMediaList socialLinks={socialMedia} />
         </Box>
       </Drawer>
     </Box>

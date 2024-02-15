@@ -7,6 +7,7 @@ export default {
     borderRadius: '0.5rem',
     mt: '0.375rem',
     maxHeight: '64px',
+    mb: '1rem',
   },
   at: {
     fontWeight: 600,

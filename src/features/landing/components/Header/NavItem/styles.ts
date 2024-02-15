@@ -1,7 +1,11 @@
 import colorTheme from '@/components/UiColorTheme';
 
 export default {
-  itemWrapper: {
+  link: {
+    textDecoration: 'none',
+    color: colorTheme.palette.grey250.main,
+  },
+  drawerLink: {
     width: '100%',
     textDecoration: 'none',
     display: 'flex',
@@ -13,5 +17,8 @@ export default {
   },
   navText: {
     color: colorTheme.palette.grey250.main,
+  },
+  itemDrawerWrapper: {
+    padding: '0',
   },
 };

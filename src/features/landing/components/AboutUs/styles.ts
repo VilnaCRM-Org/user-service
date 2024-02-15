@@ -2,14 +2,14 @@ import breakpointsTheme from '@/components/UiBreakpoints';
 
 export default {
   wrapper: {
-    pt: '9rem',
+    pt: '5.5rem',
     position: 'relative',
     maxWidth: '100dvw',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (min-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
       pt: '9.125rem',
     },
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
-      pt: '5.5rem',
+    [`@media (min-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+      pt: '9rem',
     },
   },
   content: {

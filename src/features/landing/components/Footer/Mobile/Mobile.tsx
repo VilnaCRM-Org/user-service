@@ -7,8 +7,8 @@ import { DefaultTypography } from '@/components/UiTypography';
 
 import Logo from '../../../assets/svg/logo/Logo.svg';
 import { SocialMedia } from '../../../types/social-media/index';
+import SocialMediaList from '../../SocialMedia/SocialMediaList/SocialMediaList';
 import { PrivacyPolicy } from '../PrivacyPolicy';
-import { SocialMediaList } from '../SocialMediaList';
 import { VilnaCRMGmail } from '../VilnaCRMGmail';
 
 import styles from './styles';
@@ -25,8 +25,8 @@ function Mobile({
       <Stack
         direction="row"
         justifyContent="space-between"
-        mt="1.125rem"
-        pb="1rem"
+        marginTop="1.125rem"
+        paddingBottom="1rem"
       >
         <Image src={Logo} alt={t('footer.logo_alt')} width={131} height={44} />
         <SocialMediaList socialLinks={socialLinks} />

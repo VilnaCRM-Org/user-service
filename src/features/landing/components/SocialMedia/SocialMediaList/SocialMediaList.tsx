@@ -2,7 +2,7 @@ import { Stack } from '@mui/material';
 import React from 'react';
 
 import { SocialMedia } from '../../../types/social-media';
-import { SocialMediaItem } from '../SocialMediaItem';
+import SocialMediaItem from '../SocialMediaItem/SocialMediaItem';
 
 import styles from './styles';
 

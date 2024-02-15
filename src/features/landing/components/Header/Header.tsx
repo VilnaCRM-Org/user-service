@@ -8,9 +8,9 @@ import { DefaultImage } from '@/components/UiImage';
 import Logo from '../../assets/svg/logo/Logo.svg';
 
 import { AuthButtons } from './AuthButtons';
-import { links } from './constants';
+import { headerNavList } from './constants';
 import { Drawer } from './Drawer';
-import { NavLink } from './NavLink';
+import NavList from './NavList/NavList';
 import styles from './styles';
 
 function Header(): React.ReactElement {
@@ -19,7 +19,7 @@ function Header(): React.ReactElement {
     <AppBar position="static" sx={styles.headerWrapper}>
       <UiToolbar>
         <DefaultImage src={Logo} alt={t('header.logo_alt')} sx={styles.logo} />
-        <NavLink links={links} />
+        <NavList navItems={headerNavList} />
         <AuthButtons />
         <Drawer />
       </UiToolbar>

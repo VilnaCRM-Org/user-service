@@ -6,8 +6,8 @@ import { DefaultTypography } from '@/components/UiTypography';
 
 import Logo from '../../../assets/svg/logo/Logo.svg';
 import { SocialMedia } from '../../../types/social-media';
+import SocialMediaList from '../../SocialMedia/SocialMediaList/SocialMediaList';
 import { PrivacyPolicy } from '../PrivacyPolicy';
-import { SocialMediaList } from '../SocialMediaList';
 import { VilnaCRMGmail } from '../VilnaCRMGmail';
 
 import styles from './styles';

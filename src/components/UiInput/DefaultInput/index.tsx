@@ -9,7 +9,6 @@ export default function defaultInput(
     const {
       ref,
       sx,
-      children,
       placeholder,
       error,
       onBlur,
@@ -30,9 +29,7 @@ export default function defaultInput(
           onBlur={onBlur}
           value={value}
           fullWidth={fullWidth}
-        >
-          {children}
-        </Component>
+        />
       </ThemeProvider>
     );
   };
