@@ -2,8 +2,8 @@ import { Theme, createTheme } from '@mui/material';
 
 import { inter } from '@/config/Fonts';
 
-import breakpointsTheme from '../UiBreakpoints';
-import colorTheme from '../UiColorTheme';
+import breakpointsTheme from '../../UiBreakpoints';
+import colorTheme from '../../UiColorTheme';
 
 export const theme: Theme = createTheme({
   components: {
@@ -24,7 +24,10 @@ export const theme: Theme = createTheme({
             fontSize: '0.875rem',
           },
           '&:hover': {
-            color: '#297FFF',
+            color: colorTheme.palette.textLinkHover.main,
+          },
+          '&:active': {
+            color: colorTheme.palette.textLinkActive.main,
           },
         },
       },

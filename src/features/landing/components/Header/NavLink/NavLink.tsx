@@ -2,7 +2,7 @@ import { ListItem, Stack, List, Link } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { UiTypography } from '@/components';
+import { DefaultTypography } from '@/components/UiTypography';
 
 import { NavLinkProps } from '../../../types/header/nav-links';
 
@@ -17,7 +17,9 @@ function NavLink({ links }: { links: NavLinkProps[] }): React.ReactElement {
         {links.map(({ id, link, value }) => (
           <ListItem key={id}>
             <Link href={link} sx={styles.navLink}>
-              <UiTypography variant="medium15">{t(value)}</UiTypography>
+              <DefaultTypography variant="medium15">
+                {t(value)}
+              </DefaultTypography>
             </Link>
           </ListItem>
         ))}

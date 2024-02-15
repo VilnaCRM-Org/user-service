@@ -2,7 +2,8 @@ import { Stack } from '@mui/material';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { UiButton, UiTypography } from '@/components';
+import { MediumContainedBtn } from '@/components/UiButton';
+import { DefaultTypography } from '@/components/UiTypography';
 
 import styles from './styles';
 
@@ -10,20 +11,20 @@ function TextInfo(): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Stack sx={styles.textWrapper}>
-      <UiTypography variant="h1" sx={styles.title}>
+      <DefaultTypography variant="h1" sx={styles.title}>
         <Trans i18nKey="about_vilna.heading_main" />
-      </UiTypography>
-      <UiTypography variant="bodyText18" sx={styles.text}>
+      </DefaultTypography>
+      <DefaultTypography variant="bodyText18" sx={styles.text}>
         {t('about_vilna.text_main')}
-      </UiTypography>
-      <UiButton
+      </DefaultTypography>
+      <MediumContainedBtn
         variant="contained"
         size="medium"
         href="#signUp"
         sx={styles.button}
       >
         {t('about_vilna.button_main')}
-      </UiButton>
+      </MediumContainedBtn>
     </Stack>
   );
 }

@@ -46,6 +46,7 @@ export default {
     },
   },
   secondTitle: {
+    maxWidth: '23.313rem',
     pb: '2rem',
     fontFamily: golos.style.fontFamily,
     color: colorTheme.palette.darkPrimary.main,

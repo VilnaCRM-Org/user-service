@@ -2,7 +2,7 @@ import { Box, Stack } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { UiTypography } from '@/components';
+import { DefaultTypography } from '@/components/UiTypography';
 
 import { ImageList } from '../../../types/possibilities/image-list';
 
@@ -16,13 +16,13 @@ function ServicesHoverCard({
 }): React.ReactElement {
   const { t } = useTranslation();
   return (
-    <Box maxWidth="17.625rem">
-      <UiTypography variant="demi18">
+    <Box>
+      <DefaultTypography variant="demi18">
         {t('unlimited_possibilities.service_text.title')}
-      </UiTypography>
-      <UiTypography variant="medium14" sx={styles.text}>
+      </DefaultTypography>
+      <DefaultTypography variant="medium14" sx={styles.text}>
         {t('unlimited_possibilities.service_text.text')}
-      </UiTypography>
+      </DefaultTypography>
       <Stack flexDirection="row" flexWrap="wrap" gap="1.875rem">
         {imageList.map(item => (
           <ImageItem item={item} key={item.alt} />

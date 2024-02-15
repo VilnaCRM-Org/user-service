@@ -2,8 +2,9 @@ import { Stack } from '@mui/material';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { UiImage, UiTypography } from '@/components';
-import { ServicesTooltip } from '@/components/UiTooltip';
+import { DefaultImage } from '@/components/UiImage';
+import UiTooltip from '@/components/UiTooltip';
+import { DefaultTypography } from '@/components/UiTypography';
 
 import { ServicesHoverCard } from '../../../features/landing/components/Possibilities/ServicesHoverCard';
 import { CardItem, ImageItem } from '../types';
@@ -18,24 +19,27 @@ function SmallCardItem({ item, imageList }: SmallCardItem): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Stack sx={styles.wrapper}>
-      <UiImage src={item.imageSrc} alt={t(item.alt)} sx={styles.image} />
+      <DefaultImage src={item.imageSrc} alt={t(item.alt)} sx={styles.image} />
       <Stack flexDirection="column">
-        <UiTypography variant="h6" sx={styles.title}>
+        <DefaultTypography variant="h6" sx={styles.title}>
           <Trans i18nKey={item.title} />
-        </UiTypography>
-        <UiTypography variant="bodyText16" sx={styles.text}>
+        </DefaultTypography>
+        <DefaultTypography variant="bodyText16" sx={styles.text}>
           <Trans i18nKey={item.text}>
             Інтегруйте
-            <ServicesTooltip
+            <UiTooltip
               placement="bottom"
               arrow
+              sx={styles.hoveredCard}
               title={<ServicesHoverCard imageList={imageList} />}
             >
-              <UiTypography>звичні сервіси</UiTypography>
-            </ServicesTooltip>
+              <DefaultTypography variant="bodyText16">
+                звичні сервіси
+              </DefaultTypography>
+            </UiTooltip>
             у кілька кліків
           </Trans>
-        </UiTypography>
+        </DefaultTypography>
       </Stack>
     </Stack>
   );

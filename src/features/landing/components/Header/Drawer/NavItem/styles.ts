@@ -11,4 +11,7 @@ export default {
     background: colorTheme.palette.backgroundGrey300.main,
     padding: '1.188rem 1.25rem',
   },
+  navText: {
+    color: colorTheme.palette.grey250.main,
+  },
 };

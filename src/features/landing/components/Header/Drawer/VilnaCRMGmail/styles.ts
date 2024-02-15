@@ -13,4 +13,7 @@ export default {
     fontSize: '22px',
     mb: '2px',
   },
+  gmailText: {
+    color: colorTheme.palette.darkSecondary.main,
+  },
 };

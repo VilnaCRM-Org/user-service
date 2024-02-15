@@ -2,7 +2,8 @@ import { Box, Stack } from '@mui/material';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { UiButton, UiTypography } from '@/components';
+import { SmallContainedBtn } from '@/components/UiButton';
+import { DefaultTypography } from '@/components/UiTypography';
 
 import Vector from '../../../assets/svg/for-who/yellowVector.svg';
 
@@ -12,9 +13,9 @@ function Cards(): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Stack flexDirection="column" sx={styles.wrapper}>
-      <UiTypography maxWidth="23.313rem" sx={styles.secondTitle}>
+      <DefaultTypography sx={styles.secondTitle}>
         {t('for_who.heading_secondary')}
-      </UiTypography>
+      </DefaultTypography>
       <Stack sx={styles.cardWrapper}>
         <Stack sx={styles.cardItem}>
           <Box
@@ -25,9 +26,9 @@ function Cards(): React.ReactElement {
             alt={t('for_who.vector_alt')}
             sx={styles.img}
           />
-          <UiTypography variant="bodyText18" sx={styles.optionText}>
+          <DefaultTypography variant="bodyText18" sx={styles.optionText}>
             <Trans i18nKey="for_who.card_text_title" />
-          </UiTypography>
+          </DefaultTypography>
         </Stack>
         <Stack sx={styles.cardItem}>
           <Box
@@ -38,19 +39,14 @@ function Cards(): React.ReactElement {
             alt={t('for_who.vector_alt')}
             sx={styles.img}
           />
-          <UiTypography variant="bodyText18" sx={styles.optionText}>
+          <DefaultTypography variant="bodyText18" sx={styles.optionText}>
             {t('for_who.card_text_business')}
-          </UiTypography>
+          </DefaultTypography>
         </Stack>
       </Stack>
-      <UiButton
-        variant="contained"
-        size="small"
-        sx={styles.button}
-        href="#signUp"
-      >
+      <SmallContainedBtn sx={styles.button} href="#signUp">
         {t('for_who.button_text')}
-      </UiButton>
+      </SmallContainedBtn>
     </Stack>
   );
 }

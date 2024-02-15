@@ -2,7 +2,7 @@ import { Stack } from '@mui/material';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { UiTypography } from '@/components';
+import { DefaultTypography } from '@/components/UiTypography';
 
 import styles from './styles';
 
@@ -11,12 +11,12 @@ function Heading(): React.ReactElement {
 
   return (
     <Stack maxWidth="39.5rem">
-      <UiTypography variant="h2" sx={styles.title}>
+      <DefaultTypography variant="h2" sx={styles.title}>
         {t('why_us.heading')}
-      </UiTypography>
-      <UiTypography variant="bodyText18" sx={styles.text}>
+      </DefaultTypography>
+      <DefaultTypography variant="bodyText18" sx={styles.text}>
         <Trans i18nKey="why_us.subtitle" />
-      </UiTypography>
+      </DefaultTypography>
     </Stack>
   );
 }

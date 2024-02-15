@@ -15,6 +15,7 @@ export default {
       mt: '2.125rem',
     },
   },
+
   backgroundBlock: {
     position: 'absolute',
     borderRadius: '0.75rem 0.75rem 0 0',
@@ -36,6 +37,7 @@ export default {
       display: 'none',
     },
   },
+
   formTitle: {
     paddingBottom: '2rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
@@ -52,6 +54,7 @@ export default {
       paddingBottom: '1.188rem',
     },
   },
+
   formContent: {
     position: 'relative',
     zIndex: '5',
@@ -75,6 +78,7 @@ export default {
       padding: '1.5rem 1.5rem 2rem 1.5rem',
     },
   },
+
   inputsWrapper: {
     flexDirection: 'column',
     gap: '1.375rem',
@@ -91,6 +95,7 @@ export default {
       gap: '0.313rem',
     },
   },
+
   inputTitle: {
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
       fontSize: '1rem',
@@ -99,6 +104,7 @@ export default {
       fontSize: '0.875rem',
     },
   },
+
   buttonWrapper: {
     maxWidth: '10.938rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
@@ -124,6 +130,10 @@ export default {
     },
   },
 
+  tip: {
+    lineHeight: '0',
+  },
+
   button: { height: '100%' },
   privacyText: {
     letterSpacing: '0rem',
@@ -135,6 +145,7 @@ export default {
       fontSize: '0.875rem',
     },
   },
+
   backgroundImage: {
     backgroundImage: `url(${Images.src})`,
     width: '100dvw',

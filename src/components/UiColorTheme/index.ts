@@ -65,6 +65,12 @@ const colorTheme: Theme = createTheme({
     notchMobileAfter: {
       main: '#0f0b25',
     },
+    textLinkHover: {
+      main: '#297FFF',
+    },
+    textLinkActive: {
+      main: '#0399ED',
+    },
   },
 });
 export default colorTheme;

@@ -3,7 +3,7 @@ import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { UiTypography } from '@/components';
+import { DefaultTypography } from '@/components/UiTypography';
 
 import Logo from '../../../assets/svg/logo/Logo.svg';
 import { SocialMedia } from '../../../types/social-media/index';
@@ -33,9 +33,9 @@ function Mobile({
       </Stack>
       <VilnaCRMGmail />
       <PrivacyPolicy />
-      <UiTypography variant="medium15" sx={styles.copyright}>
+      <DefaultTypography variant="medium15" sx={styles.copyright}>
         {t('footer.copyright')}
-      </UiTypography>
+      </DefaultTypography>
     </Container>
   );
 }

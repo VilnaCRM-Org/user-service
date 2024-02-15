@@ -1,16 +1,13 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { Link, LinkProps, ThemeProvider } from '@mui/material';
-import React from 'react';
+import { Link, LinkProps } from '@mui/material';
 
-import { theme } from './theme';
+import defaultLink from './DefaultLink';
 
 function UiLink(props: LinkProps): React.ReactElement {
   const { children } = props;
-  return (
-    <ThemeProvider theme={theme}>
-      <Link {...props}>{children}</Link>
-    </ThemeProvider>
-  );
+  return <Link {...props}>{children}</Link>;
 }
+
+export const DefaultLink: React.FC<LinkProps> = defaultLink(UiLink);
 
 export default UiLink;

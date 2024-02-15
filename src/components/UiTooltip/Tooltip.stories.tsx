@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { ServicesTooltip } from './index';
+import UiTooltip from '.';
 
-const meta: Meta<typeof ServicesTooltip> = {
+const meta: Meta<typeof UiTooltip> = {
   title: 'UiComponents/UITooltip',
-  component: ServicesTooltip,
+  component: UiTooltip,
   tags: ['autodocs'],
   argTypes: {
     children: {
       type: 'string',
-      name: 'label',
+      name: 'children',
       description: 'Text of the button',
     },
     placement: {
@@ -32,10 +32,11 @@ const meta: Meta<typeof ServicesTooltip> = {
 
 export default meta;
 
-type Story = StoryObj<typeof ServicesTooltip>;
+type Story = StoryObj<typeof UiTooltip>;
 
 export const Services: Story = {
   args: {
+    children: <>Hello World!</>,
     placement: 'bottom',
     arrow: true,
     title: 'Services',

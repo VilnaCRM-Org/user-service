@@ -3,8 +3,7 @@ import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { UiTypography } from '@/components';
-import colorTheme from '@/components/UiColorTheme';
+import { DefaultTypography } from '@/components/UiTypography';
 
 import AtSignImage from '../../../../assets/svg/header-drawer/chevron-down.svg';
 import { NavItemProps } from '../../../../types/drawer/navigation';
@@ -22,9 +21,9 @@ function NavItem({
   return (
     <Stack direction="row" alignItems="center" justifyContent="space-between">
       <Link onClick={handleClick} href={item.link} sx={styles.itemWrapper}>
-        <UiTypography variant="demi18" color={colorTheme.palette.grey250.main}>
+        <DefaultTypography variant="demi18" sx={styles.navText}>
           {t(item.title)}
-        </UiTypography>
+        </DefaultTypography>
         <Image src={AtSignImage} alt={t('Vector')} width={24} height={24} />
       </Link>
     </Stack>

@@ -2,7 +2,7 @@ import { Box } from '@mui/material';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { UiTypography } from '@/components';
+import { DefaultTypography } from '@/components/UiTypography';
 
 import { SocialLink } from '../../../types/authentication/social';
 import { SocialList } from '../SocialList';
@@ -17,16 +17,20 @@ function SignUpText({
   const { t } = useTranslation();
   return (
     <Box sx={styles.textWrapper}>
-      <UiTypography variant="h2" sx={styles.title} id="signUp">
+      <DefaultTypography variant="h2" sx={styles.title} id="signUp">
         <Trans i18nKey="sign_up.main_heading" />
-        <UiTypography variant="h2" component="span" sx={styles.titleVilnaCRM}>
+        <DefaultTypography
+          variant="h2"
+          component="span"
+          sx={styles.titleVilnaCRM}
+        >
           &nbsp;
           {t('sign_up.vilna_text')}
-        </UiTypography>
-      </UiTypography>
-      <UiTypography variant="bold22" sx={styles.signInText}>
+        </DefaultTypography>
+      </DefaultTypography>
+      <DefaultTypography variant="bold22" sx={styles.signInText}>
         {t('sign_up.socials_main_heading')}
-      </UiTypography>
+      </DefaultTypography>
       <SocialList socialLinks={socialLinks} />
     </Box>
   );

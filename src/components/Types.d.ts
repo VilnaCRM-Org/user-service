@@ -59,6 +59,8 @@ declare module '@mui/material/styles' {
     notchDeskAfter: Palette['notchDeskAfter'];
     notchMobileBefore: Palette['notchMobileBefore'];
     notchMobileAfter: Palette['notchMobileAfter'];
+    textLinkHover?: Palette['textLinkHover'];
+    textLinkActive?: Palette['textLinkActive'];
   }
 
   interface PaletteOptions {
@@ -80,5 +82,7 @@ declare module '@mui/material/styles' {
     notchDeskAfter?: PaletteOptions['notchDeskAfter'];
     notchMobileBefore?: PaletteOptions['notchMobileBefore'];
     notchMobileAfter?: PaletteOptions['notchMobileAfter'];
+    textLinkHover?: PaletteOptions['textLinkHover'];
+    textLinkActive?: PaletteOptions['textLinkActive'];
   }
 }

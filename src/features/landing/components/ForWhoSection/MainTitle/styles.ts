@@ -14,6 +14,7 @@ export default {
   description: {
     pt: '1rem',
     pb: '1.5rem',
+    maxWidth: '21.438rem',
     '@media (max-width: 1130.98px)': {
       pb: '2rem',
       maxWidth: '18.938rem',

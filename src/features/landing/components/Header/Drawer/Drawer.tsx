@@ -3,7 +3,7 @@ import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { UiButton } from '@/components';
+import { SmallContainedBtn, SmallOutlinedBtn } from '@/components/UiButton';
 
 import Bars from '../../../assets/svg/header-drawer/menu-04.svg';
 import CloseImage from '../../../assets/svg/header-drawer/x-close.svg';
@@ -79,24 +79,20 @@ function CustomDrawer(): React.ReactElement {
             gap="0.563rem"
             mt="0.75rem"
           >
-            <UiButton
-              variant="outlined"
-              size="small"
+            <SmallOutlinedBtn
               fullWidth
               href="#signUp"
               onClick={() => handleClick()}
             >
               {t('header.actions.log_in')}
-            </UiButton>
-            <UiButton
-              variant="contained"
-              size="small"
+            </SmallOutlinedBtn>
+            <SmallContainedBtn
               fullWidth
               href="#signUp"
               onClick={() => handleClick()}
             >
               {t('header.actions.try_it_out')}
-            </UiButton>
+            </SmallContainedBtn>
           </Stack>
           <NavList navList={navList} handleClick={() => handleClick()} />
           <VilnaCRMGmail />

@@ -1,17 +1,18 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { ThemeProvider, TextField } from '@mui/material';
+import { TextField } from '@mui/material';
 import { TextFieldProps } from '@mui/material/TextField';
 import React from 'react';
 
-import { theme } from './theme';
+import defaultInput from './DefaultInput';
 
 const UiInput: React.ForwardRefExoticComponent<
   TextFieldProps & React.RefAttributes<HTMLInputElement>
 > = React.forwardRef<HTMLInputElement, TextFieldProps>((props, ref) => (
-  <ThemeProvider theme={theme}>
-    <TextField ref={ref} {...props} />
-  </ThemeProvider>
+  <TextField ref={ref} {...props} />
 ));
 
 UiInput.displayName = 'UiInput';
+
+export const DefaultInput: React.FC<TextFieldProps> = defaultInput(UiInput);
+
 export default UiInput;

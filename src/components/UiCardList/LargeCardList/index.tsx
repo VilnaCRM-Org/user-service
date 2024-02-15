@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-import { UiButton } from '@/components';
+import { SmallContainedBtn } from '@/components/UiButton';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -37,14 +37,9 @@ function CardList({ cardList }: CardList): React.ReactElement {
             </SwiperSlide>
           ))}
         </Swiper>
-        <UiButton
-          variant="contained"
-          size="small"
-          sx={styles.button}
-          href="#signUp"
-        >
+        <SmallContainedBtn sx={styles.button} href="#signUp">
           {t('why_us.button_text')}
-        </UiButton>
+        </SmallContainedBtn>
       </Grid>
     </>
   );

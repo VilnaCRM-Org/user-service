@@ -2,15 +2,18 @@
 import { Box } from '@mui/material';
 import Image from 'next/image';
 
+import defaultImage from './DefaultImage';
 import styles from './styles';
 import { UiImageProps } from './types';
 
-function UiImage({ ...rest }: UiImageProps): React.ReactElement {
+function UiImage({ ...props }: UiImageProps): React.ReactElement {
   return (
-    <Box sx={rest.sx}>
-      <Image {...rest} style={styles.image} />
+    <Box sx={props.sx}>
+      <Image {...props} style={styles.image} />
     </Box>
   );
 }
+
+export const DefaultImage: React.FC<UiImageProps> = defaultImage(UiImage);
 
 export default UiImage;

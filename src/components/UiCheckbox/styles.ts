@@ -16,10 +16,10 @@ export default {
       background: colorTheme.palette.white.main,
       '&:hover': {
         cursor: 'pointer',
-        border: '1px solid #1eaeff',
+        border: `1px solid ${colorTheme.palette.primary.main}`,
       },
       '&:checked': {
-        backgroundColor: '#1eaeff',
+        backgroundColor: colorTheme.palette.primary.main,
         border: 'none',
         backgroundImage: `url(${Check.src})`,
         backgroundPosition: 'center center',
@@ -43,13 +43,13 @@ export default {
       height: '1.5rem',
       borderRadius: '0.5rem',
       border: `1px solid ${colorTheme.palette.error.main}`,
-      background: '#fff',
+      background: colorTheme.palette.white.main,
       '&:hover': {
         cursor: 'pointer',
-        border: '1px solid #1eaeff',
+        border: `1px solid ${colorTheme.palette.grey400.main}`,
       },
       '&:checked': {
-        backgroundColor: '#1eaeff',
+        backgroundColor: colorTheme.palette.primary.main,
         border: 'none',
         backgroundImage: `url(${Check.src})`,
         backgroundPosition: 'center center',

@@ -3,11 +3,11 @@ import { Theme, createTheme } from '@mui/material';
 const breakpointsTheme: Theme = createTheme({
   breakpoints: {
     values: {
-      xs: 374,
-      sm: 639,
-      md: 767,
-      lg: 1023,
-      xl: 1439,
+      xs: 375,
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1440,
     },
   },
 });

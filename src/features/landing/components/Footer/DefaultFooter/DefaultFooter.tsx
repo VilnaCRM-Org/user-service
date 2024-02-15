@@ -2,7 +2,7 @@ import { Box, Stack } from '@mui/material';
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 
-import { UiTypography } from '@/components';
+import { DefaultTypography } from '@/components/UiTypography';
 
 import Logo from '../../../assets/svg/logo/Logo.svg';
 import { SocialMedia } from '../../../types/social-media';
@@ -41,9 +41,9 @@ function DefaultFooter({
       <Stack sx={styles.copyrightAndLinksWrapper}>
         <Box sx={styles.bottomWrapper}>
           <Stack sx={styles.copyrightAndLinks}>
-            <UiTypography variant="medium15" sx={styles.copyright}>
+            <DefaultTypography variant="medium15" sx={styles.copyright}>
               {t('footer.copyright')}
-            </UiTypography>
+            </DefaultTypography>
             <Stack direction="row" gap="0.875rem" alignItems="center">
               <VilnaCRMGmail />
               <SocialMediaList socialLinks={socialLinks} />

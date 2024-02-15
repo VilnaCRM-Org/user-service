@@ -59,4 +59,14 @@ export default {
       height: '3.125rem',
     },
   },
+  hoveredCard: {
+    color: colorTheme.palette.primary.main,
+    textDecoration: 'underline',
+    fontWeight: '700',
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+      color: colorTheme.palette.darkPrimary.main,
+      textDecoration: 'none',
+      fontWeight: '400',
+    },
+  },
 };

@@ -1,21 +1,18 @@
 import { Box, Stack } from '@mui/material';
-// import Image from 'next/image';
+import Image from 'next/image';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
 
-import {
-  UiCheckbox,
-  UiTypography,
-  UiLink,
-  // FormRulesTooltip,
-  UiButton,
-  UiTextFieldForm,
-} from '@/components';
+import { UiCheckbox, UiTextFieldForm } from '@/components';
+import { MediumContainedBtn } from '@/components/UiButton';
+import { DefaultLink } from '@/components/UiLink';
+import UiTooltip from '@/components/UiTooltip';
+import { DefaultTypography } from '@/components/UiTypography';
 
-// import QuestionMark from '../../../assets/svg/auth-section/questionMark.svg';
+import QuestionMark from '../../../assets/svg/auth-section/questionMark.svg';
 import { RegisterItem } from '../../../types/authentication/form';
-// import { PasswordTip } from '../PasswordTip';
+import { PasswordTip } from '../PasswordTip';
 
 import styles from './styles';
 import {
@@ -55,14 +52,14 @@ function AuthForm({
       <Box sx={styles.backgroundBlock} />
       <Box sx={styles.formContent}>
         <form onSubmit={handleSubmit(handleFormSubmit)}>
-          <UiTypography variant="h4" sx={styles.formTitle}>
+          <DefaultTypography variant="h4" sx={styles.formTitle}>
             {t('sign_up.form.heading_main')}
-          </UiTypography>
+          </DefaultTypography>
           <Stack sx={styles.inputsWrapper}>
             <Stack sx={styles.inputWrapper}>
-              <UiTypography variant="medium14" sx={styles.inputTitle}>
+              <DefaultTypography variant="medium14" sx={styles.inputTitle}>
                 {t('sign_up.form.name_input.label')}
-              </UiTypography>
+              </DefaultTypography>
               <UiTextFieldForm
                 control={control}
                 name="FullName"
@@ -73,9 +70,9 @@ function AuthForm({
               />
             </Stack>
             <Stack sx={styles.inputWrapper}>
-              <UiTypography variant="medium14" sx={styles.inputTitle}>
+              <DefaultTypography variant="medium14" sx={styles.inputTitle}>
                 {t('sign_up.form.email_input.label')}
-              </UiTypography>
+              </DefaultTypography>
               <UiTextFieldForm
                 control={control}
                 name="Email"
@@ -87,11 +84,12 @@ function AuthForm({
             </Stack>
             <Stack sx={styles.inputWrapper}>
               <Stack direction="row" alignItems="center" gap="0.25rem">
-                <UiTypography variant="medium14" sx={styles.inputTitle}>
+                <DefaultTypography variant="medium14" sx={styles.inputTitle}>
                   {t('sign_up.form.password_input.label')}
-                </UiTypography>
-                {/* <FormRulesTooltip
+                </DefaultTypography>
+                <UiTooltip
                   placement="right"
+                  sx={styles.tip}
                   arrow
                   title={<PasswordTip />}
                 >
@@ -101,7 +99,7 @@ function AuthForm({
                     width={16}
                     height={16}
                   />
-                </FormRulesTooltip> */}
+                </UiTooltip>
               </Stack>
               <UiTextFieldForm
                 control={control}
@@ -122,29 +120,25 @@ function AuthForm({
                 error={!errors.Privacy}
                 sx={styles.labelText as React.CSSProperties}
                 label={
-                  <UiTypography variant="medium14" sx={styles.privacyText}>
+                  <DefaultTypography variant="medium14" sx={styles.privacyText}>
                     <Trans i18nKey="sign_up.form.confidential_text.fullText">
                       Я прочитав та приймаю
-                      <UiLink href="/">Політику Конфіденційності</UiLink>
+                      <DefaultLink href="/">
+                        Політику Конфіденційності
+                      </DefaultLink>
                       та
-                      <UiLink href="/">Політику Використання</UiLink>
+                      <DefaultLink href="/">Політику Використання</DefaultLink>
                       сервісу VilnaCRM
                     </Trans>
-                  </UiTypography>
+                  </DefaultTypography>
                 }
               />
             )}
           />
           <Box sx={styles.buttonWrapper}>
-            <UiButton
-              variant="contained"
-              size="medium"
-              type="submit"
-              fullWidth
-              sx={styles.button}
-            >
+            <MediumContainedBtn type="submit" fullWidth sx={styles.button}>
               {t('sign_up.form.button_text')}
-            </UiButton>
+            </MediumContainedBtn>
           </Box>
         </form>
       </Box>
