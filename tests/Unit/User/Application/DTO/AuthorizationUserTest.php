@@ -34,6 +34,13 @@ class AuthorizationUserTest extends UnitTestCase
         $this->assertEquals([], $this->authUser->getRoles());
     }
 
+    public function testEraseCredentials(): void
+    {
+        $this->authUser->eraseCredentials();
+
+        $this->addToAssertionCount(1);
+    }
+
     public function testGetUserIdentifier(): void
     {
         $this->assertEquals($this->email, $this->authUser->getUserIdentifier());

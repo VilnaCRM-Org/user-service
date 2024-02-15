@@ -101,4 +101,36 @@ class UserTest extends UnitTestCase
         $this->assertEquals($updateData->newInitials, $this->user->getInitials());
         $this->assertEquals($hashedNewPassword, $this->user->getPassword());
     }
+
+    public function testSetId()
+    {
+        $id = $this->faker->uuid();
+        $this->user->setId($this->uuidTransformer->transformFromString($id));
+
+        $this->assertEquals($id, $this->user->getId());
+    }
+
+    public function testSetEmail()
+    {
+        $email = $this->faker->email();
+        $this->user->setEmail($email);
+
+        $this->assertEquals($email, $this->user->getEmail());
+    }
+
+    public function testSetInitials()
+    {
+        $initials = $this->faker->name();
+        $this->user->setInitials($initials);
+
+        $this->assertEquals($initials, $this->user->getInitials());
+    }
+
+    public function testSetConfirmed()
+    {
+        $confirmed = true;
+        $this->user->setConfirmed(true);
+
+        $this->assertEquals($confirmed, $this->user->isConfirmed());
+    }
 }

@@ -31,4 +31,36 @@ class ConfirmationTokenTest extends UnitTestCase
         $this->expectException(UserTimedOutException::class);
         $this->confirmationToken->send();
     }
+
+    public function testSetTimesSend()
+    {
+        $num = $this->faker->numberBetween(1, 10);
+        $this->confirmationToken->setTimesSent($num);
+
+        $this->assertEquals($num, $this->confirmationToken->getTimesSent());
+    }
+
+    public function testSetTokenValue()
+    {
+        $value = $this->faker->uuid();
+        $this->confirmationToken->setTokenValue($value);
+
+        $this->assertEquals($value, $this->confirmationToken->getTokenValue());
+    }
+
+    public function testSetUserId()
+    {
+        $userId = $this->faker->uuid();
+        $this->confirmationToken->setUserID($userId);
+
+        $this->assertEquals($userId, $this->confirmationToken->getUserID());
+    }
+
+    public function testSetAllowedToSendAfter()
+    {
+        $allowedToSendAfter = new \DateTimeImmutable();
+        $this->confirmationToken->setAllowedToSendAfter($allowedToSendAfter);
+
+        $this->assertEquals($allowedToSendAfter, $this->confirmationToken->getAllowedToSendAfter());
+    }
 }

@@ -9,6 +9,7 @@
 /var/
 /vendor/
 /metrics-report
+/coverage
 ###< symfony/framework-bundle ###
 
 ###> symfony/phpunit-bridge ###

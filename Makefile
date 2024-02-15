@@ -59,6 +59,9 @@ phpinsights: ## Instant PHP quality checks and static analysis tool
 phpunit: ## The PHP unit testing framework
 	$(EXEC_PHP) ./vendor/bin/phpunit
 
+phpunit-codecov: ## The PHP unit testing framework
+	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php ./vendor/bin/phpunit --coverage-html coverage
+
 php-metrics:
 	$(EXEC_PHP) ./vendor/bin/phpmetrics --report-html=metrics-report src
 
