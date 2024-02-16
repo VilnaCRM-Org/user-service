@@ -19,7 +19,7 @@ final class ResponseBuilder
      */
     public function build(
         string $description,
-        ?array $params = null,
+        ?array $params = [],
         ?array $headers = null
     ): Response {
         $content = $this->contextBuilder->build($params);
