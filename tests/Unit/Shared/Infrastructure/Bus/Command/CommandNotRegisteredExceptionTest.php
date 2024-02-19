@@ -7,7 +7,6 @@ namespace App\Tests\Unit\Shared\Infrastructure\Bus\Command;
 use App\Shared\Domain\Bus\Command\CommandInterface;
 use App\Shared\Infrastructure\Bus\Command\CommandNotRegisteredException;
 use App\Tests\Unit\UnitTestCase;
-use PHPUnit\Framework\TestCase;
 
 class CommandNotRegisteredExceptionTest extends UnitTestCase
 {
