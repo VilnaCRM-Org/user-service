@@ -20,22 +20,38 @@ final class InvalidClientCredentialsResponseFactory implements
         return $this->responseBuilder->build(
             'Invalid client credentials',
             [
-                new Parameter(
-                    'error',
-                    'string',
-                    'invalid_client'
-                ),
-                new Parameter(
-                    'error_description',
-                    'string',
-                    'Client authentication failed'
-                ),
-                new Parameter(
-                    'message',
-                    'string',
-                    'Client authentication failed'
-                ),
-            ]
+                $this->getErrorParam(),
+                $this->getErrorDescriptionParam(),
+                $this->getMessageParam(),
+            ],
+            []
+        );
+    }
+
+    private function getErrorParam(): Parameter
+    {
+        return new Parameter(
+            'error',
+            'string',
+            'invalid_client'
+        );
+    }
+
+    private function getErrorDescriptionParam(): Parameter
+    {
+        return new Parameter(
+            'error_description',
+            'string',
+            'Client authentication failed'
+        );
+    }
+
+    private function getMessageParam(): Parameter
+    {
+        return new Parameter(
+            'message',
+            'string',
+            'Client authentication failed'
         );
     }
 }

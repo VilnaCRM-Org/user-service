@@ -17,7 +17,7 @@ final class InitialsValidator extends ConstraintValidator
 
     private function validateFormat(mixed $value): void
     {
-        if (!preg_match('/^[^\d\s]+\s[^\d\s]+$/', $value)) {
+        if (!preg_match('/^\D*$/', $value)) {
             $this->addViolation('Invalid full name format');
         }
     }
@@ -26,7 +26,7 @@ final class InitialsValidator extends ConstraintValidator
     {
         if ($this->hasEmptyParts($value)) {
             $this->addViolation(
-                'Name and surname should have at least 1 character'
+                'Name and surname both should have at least 1 character'
             );
         }
     }

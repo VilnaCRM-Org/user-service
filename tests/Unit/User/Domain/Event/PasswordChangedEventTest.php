@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit\User\Domain\Event;
 
 use App\Tests\Unit\UnitTestCase;
@@ -38,5 +40,27 @@ class PasswordChangedEventTest extends UnitTestCase
     public function testEventName(): void
     {
         $this->assertEquals('password.changed', PasswordChangedEvent::eventName());
+    }
+
+    public function testOccurredOn(): void
+    {
+        $email = $this->faker->email();
+        $eventId = $this->faker->uuid();
+        $occurredOn = $this->faker->date();
+
+        $event = new PasswordChangedEvent($email, $eventId, $occurredOn);
+
+        $this->assertEquals($occurredOn, $event->occurredOn());
+    }
+
+    public function testEventId(): void
+    {
+        $email = $this->faker->email();
+        $eventId = $this->faker->uuid();
+        $occurredOn = $this->faker->date();
+
+        $event = new PasswordChangedEvent($email, $eventId, $occurredOn);
+
+        $this->assertEquals($eventId, $event->eventId());
     }
 }

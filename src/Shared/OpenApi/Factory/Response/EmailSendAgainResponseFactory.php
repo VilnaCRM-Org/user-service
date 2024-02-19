@@ -15,6 +15,10 @@ final class EmailSendAgainResponseFactory implements AbstractResponseFactory
 
     public function getResponse(): Response
     {
-        return $this->responseBuilder->build('Email was send again');
+        return $this->responseBuilder->build(
+            'Email was send again',
+            [],
+            []
+        );
     }
 }

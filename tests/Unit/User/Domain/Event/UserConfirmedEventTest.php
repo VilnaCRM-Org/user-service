@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit\User\Domain\Event;
 
 use App\Tests\Unit\UnitTestCase;
@@ -39,5 +41,27 @@ class UserConfirmedEventTest extends UnitTestCase
     public function testEventName(): void
     {
         $this->assertEquals('user.confirmed', UserConfirmedEvent::eventName());
+    }
+
+    public function testOccurredOn(): void
+    {
+        $token = $this->createMock(ConfirmationToken::class);
+        $eventId = $this->faker->uuid();
+        $occurredOn = $this->faker->date();
+
+        $event = new UserConfirmedEvent($token, $eventId, $occurredOn);
+
+        $this->assertEquals($occurredOn, $event->occurredOn());
+    }
+
+    public function testEventId(): void
+    {
+        $token = $this->createMock(ConfirmationToken::class);
+        $eventId = $this->faker->uuid();
+        $occurredOn = $this->faker->date();
+
+        $event = new UserConfirmedEvent($token, $eventId, $occurredOn);
+
+        $this->assertEquals($eventId, $event->eventId());
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit\Shared\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model\Header as ApiPlatformHeader;
@@ -32,7 +34,7 @@ class ResponseBuilderTest extends UnitTestCase
             ->with([])
             ->willReturn(new \ArrayObject([]));
 
-        $response = $this->builder->build($description);
+        $response = $this->builder->build($description, [], []);
 
         $this->assertInstanceOf(Response::class, $response);
         $this->assertEquals($description, $response->getDescription());

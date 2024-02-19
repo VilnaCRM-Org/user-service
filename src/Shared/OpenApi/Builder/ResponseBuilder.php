@@ -19,13 +19,13 @@ final class ResponseBuilder
      */
     public function build(
         string $description,
-        ?array $params = [],
-        ?array $headers = null
+        array $params,
+        array $headers
     ): Response {
         $content = $this->contextBuilder->build($params);
         $headersArray = new \ArrayObject();
 
-        if ($headers) {
+        if (count($headers) > 0) {
             foreach ($headers as $header) {
                 $headersArray[$header->name] = new Model\Header(
                     description: $header->description,

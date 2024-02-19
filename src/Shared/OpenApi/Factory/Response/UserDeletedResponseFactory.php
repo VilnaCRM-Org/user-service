@@ -15,6 +15,10 @@ final class UserDeletedResponseFactory implements AbstractResponseFactory
 
     public function getResponse(): Response
     {
-        return $this->responseBuilder->build('User resource deleted');
+        return $this->responseBuilder->build(
+            'User resource deleted',
+            [],
+            []
+        );
     }
 }

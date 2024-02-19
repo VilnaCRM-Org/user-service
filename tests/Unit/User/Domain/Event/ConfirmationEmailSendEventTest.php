@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit\User\Domain\Event;
 
 use App\Tests\Unit\UnitTestCase;
@@ -42,5 +44,29 @@ class ConfirmationEmailSendEventTest extends UnitTestCase
     public function testEventName(): void
     {
         $this->assertEquals('confirmation_email.send', ConfirmationEmailSendEvent::eventName());
+    }
+
+    public function testOccurredOn(): void
+    {
+        $token = $this->createMock(ConfirmationToken::class);
+        $emailAddress = $this->faker->email();
+        $eventId = $this->faker->uuid();
+        $occurredOn = $this->faker->date();
+
+        $event = new ConfirmationEmailSendEvent($token, $emailAddress, $eventId, $occurredOn);
+
+        $this->assertEquals($occurredOn, $event->occurredOn());
+    }
+
+    public function testEventId(): void
+    {
+        $token = $this->createMock(ConfirmationToken::class);
+        $emailAddress = $this->faker->email();
+        $eventId = $this->faker->uuid();
+        $occurredOn = $this->faker->date();
+
+        $event = new ConfirmationEmailSendEvent($token, $emailAddress, $eventId, $occurredOn);
+
+        $this->assertEquals($eventId, $event->eventId());
     }
 }

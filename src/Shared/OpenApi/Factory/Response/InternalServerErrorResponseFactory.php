@@ -25,7 +25,8 @@ final class InternalServerErrorResponseFactory implements
                 $this->getTitleParam(),
                 $this->getDetailParam(),
                 $this->getStatusParam(),
-            ]
+            ],
+            []
         );
     }
 

@@ -24,7 +24,8 @@ final class UserTimedOutResponseFactory implements AbstractResponseFactory
                 $this->getTitleParam(),
                 $this->getDetailParam(),
                 $this->getStatusParam(),
-            ]
+            ],
+            []
         );
     }
 

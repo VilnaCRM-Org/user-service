@@ -12,7 +12,7 @@ final class CommandNotRegisteredException extends \RuntimeException
     {
         $commandClass = $command::class;
 
-        parent::__construct("The command <{$commandClass}>
-         hasn't a command handler associated");
+        parent::__construct("The command <{$commandClass}> ".
+            "hasn't a command handler associated");
     }
 }

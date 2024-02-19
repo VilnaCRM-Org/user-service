@@ -24,7 +24,8 @@ final class DuplicateEmailResponseFactory implements AbstractResponseFactory
                 $this->getTitleParam(),
                 $this->getDetailParam(),
                 $this->getStatusParam(),
-            ]
+            ],
+            []
         );
     }
 

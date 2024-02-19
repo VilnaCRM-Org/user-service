@@ -24,7 +24,8 @@ final class UserNotFoundResponseFactory implements AbstractResponseFactory
                 $this->getTitleParam(),
                 $this->getDetailParam(),
                 $this->getStatusParam(),
-            ]
+            ],
+            []
         );
     }
 

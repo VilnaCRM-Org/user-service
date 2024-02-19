@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit\User\Domain\Factory\Event;
 
 use App\Shared\Application\Transformer\UuidTransformer;

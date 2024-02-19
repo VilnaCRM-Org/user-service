@@ -8,9 +8,10 @@ use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Shared\OpenApi\Builder\Parameter;
 use App\Shared\OpenApi\Builder\RequestBuilder;
 use App\Shared\OpenApi\Factory\Request\OAuthTokenRequestFactory;
+use App\Tests\Unit\UnitTestCase;
 use PHPUnit\Framework\TestCase;
 
-class OAuthTokenRequestFactoryTest extends TestCase
+class OAuthTokenRequestFactoryTest extends UnitTestCase
 {
     public function testGetRequest(): void
     {

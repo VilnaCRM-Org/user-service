@@ -6,7 +6,10 @@ namespace App\Shared\OpenApi\Builder;
 
 final class ContextBuilder
 {
-    public function build(?array $params = null): \ArrayObject
+    /**
+     * @param array<Parameter> $params
+     */
+    public function build(array $params): \ArrayObject
     {
         $content = new \ArrayObject([
             'application/json' => [
@@ -14,7 +17,7 @@ final class ContextBuilder
             ],
         ]);
 
-        if ($params) {
+        if (count($params) > 0) {
             $properties = [];
             $example = [];
 

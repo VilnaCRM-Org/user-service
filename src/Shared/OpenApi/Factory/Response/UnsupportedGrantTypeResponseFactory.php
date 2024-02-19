@@ -24,7 +24,8 @@ final class UnsupportedGrantTypeResponseFactory implements
                 $this->getErrorDescriptionParam(),
                 $this->getHintParam(),
                 $this->getMessageParam(),
-            ]
+            ],
+            []
         );
     }
     private function getErrorParam(): Parameter

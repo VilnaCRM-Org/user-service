@@ -26,7 +26,7 @@ final class OAuthRedirectResponseFactory implements AbstractResponseFactory
 
         return $this->responseBuilder->build(
             'Redirect to the provided redirect URI with authorization code.',
-            null,
+            [],
             [$locationHeader]
         );
     }

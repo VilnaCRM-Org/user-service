@@ -51,6 +51,8 @@ return [
                 'src/Shared/OpenApi/Factory/Response/UnsupportedGrantTypeResponseFactory',
                 'src/User/Application/Exception/DuplicateEmailException',
                 'src/Shared/OpenApi/Factory/Response/DuplicateEmailResponseFactory',
+                'src/Shared/Infrastructure/Bus/Command/CommandNotRegisteredException',
+                'src/Shared/Infrastructure/Bus/Event/EventNotRegisteredException.php',
             ],
         ],
     ],

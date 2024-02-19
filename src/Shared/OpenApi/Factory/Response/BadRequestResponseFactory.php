@@ -24,7 +24,8 @@ final class BadRequestResponseFactory implements AbstractResponseFactory
                 $this->getTitleParam(),
                 $this->getDetailParam(),
                 $this->getStatusParam(),
-            ]
+            ],
+            []
         );
     }
 

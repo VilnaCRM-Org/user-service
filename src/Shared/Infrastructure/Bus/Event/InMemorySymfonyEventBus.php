@@ -7,12 +7,10 @@ namespace App\Shared\Infrastructure\Bus\Event;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
-use App\Shared\Infrastructure\Bus\CallableFirstParameterExtractor;
+use App\Shared\Infrastructure\Bus\MessageBusFactory;
 use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Messenger\Exception\NoHandlerForMessageException;
-use Symfony\Component\Messenger\Handler\HandlersLocator;
 use Symfony\Component\Messenger\MessageBus;
-use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 
 class InMemorySymfonyEventBus implements EventBusInterface
 {
@@ -21,19 +19,11 @@ class InMemorySymfonyEventBus implements EventBusInterface
     /**
      * @param iterable<DomainEventSubscriberInterface> $subscribers
      */
-    public function __construct(iterable $subscribers)
-    {
-        $this->bus = new MessageBus(
-            [
-                new HandleMessageMiddleware(
-                    new HandlersLocator(
-                        CallableFirstParameterExtractor::forPipedCallables(
-                            $subscribers
-                        )
-                    )
-                ),
-            ]
-        );
+    public function __construct(
+        MessageBusFactory $busFactory,
+        iterable $subscribers
+    ) {
+        $this->bus = $busFactory->create($subscribers);
     }
 
     public function publish(DomainEvent ...$events): void

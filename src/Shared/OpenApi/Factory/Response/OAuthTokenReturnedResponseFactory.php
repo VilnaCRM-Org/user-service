@@ -23,7 +23,8 @@ final class OAuthTokenReturnedResponseFactory implements AbstractResponseFactory
                 $this->getExpiresInParam(),
                 $this->getAccessTokenParam(),
                 $this->getRefreshTokenParam(),
-            ]
+            ],
+            []
         );
     }
 

@@ -15,6 +15,10 @@ final class UserConfirmedResponseFactory implements AbstractResponseFactory
 
     public function getResponse(): Response
     {
-        return $this->responseBuilder->build('User confirmed');
+        return $this->responseBuilder->build(
+            'User confirmed',
+            [],
+            []
+        );
     }
 }

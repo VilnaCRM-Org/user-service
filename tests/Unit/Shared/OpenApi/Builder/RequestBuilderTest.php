@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit\Shared\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
@@ -29,7 +31,7 @@ class RequestBuilderTest extends UnitTestCase
             ->with([])
             ->willReturn(new ArrayObject([]));
 
-        $requestBody = $this->builder->build();
+        $requestBody = $this->builder->build([]);
 
         $this->assertInstanceOf(RequestBody::class, $requestBody);
     }

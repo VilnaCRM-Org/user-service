@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit\Shared\OpenApi\Builder;
 
 use App\Shared\OpenApi\Builder\ContextBuilder;
@@ -20,7 +22,7 @@ class ContextBuilderTest extends UnitTestCase
 
     public function testBuildWithEmptyParams(): void
     {
-        $content = $this->contextBuilder->build();
+        $content = $this->contextBuilder->build([]);
 
         $this->assertEquals(
             new ArrayObject([

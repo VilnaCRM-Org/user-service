@@ -15,6 +15,6 @@ final class EmptyRequestFactory implements AbstractRequestFactory
 
     public function getRequest(): RequestBody
     {
-        return $this->requestBuilder->build();
+        return $this->requestBuilder->build([]);
     }
 }

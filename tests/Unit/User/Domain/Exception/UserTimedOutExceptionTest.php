@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit\User\Domain\Exception;
 
 use App\Tests\Unit\UnitTestCase;

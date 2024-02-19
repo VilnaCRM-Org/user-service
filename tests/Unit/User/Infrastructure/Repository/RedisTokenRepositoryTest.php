@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
 use App\Tests\Unit\UnitTestCase;

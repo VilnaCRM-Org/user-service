@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit\OAuth\Application\EventListener;
 
 use App\OAuth\Application\EventListener\UserResolveListener;

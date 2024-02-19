@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit\User\Application\MutationInput;
 
 use App\Tests\Unit\UnitTestCase;
