@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { DefaultTypography } from '@/components/UiTypography';
 
 import styles from './styles';
+import 'dotenv/config';
 
 function VilnaCRMGmail(): React.ReactElement {
   const { t } = useTranslation();

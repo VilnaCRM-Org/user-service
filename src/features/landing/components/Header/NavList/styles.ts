@@ -8,7 +8,7 @@ export default {
       marginRight: '6rem',
     },
     [`@media (min-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
-      marginleft: '6.625rem',
+      marginLeft: '6.625rem',
       marginRight: '0',
     },
   },

@@ -11,7 +11,7 @@ export default {
     marginTop: '-1.125rem',
     height: '31.125rem',
     width: '47.875rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       borderRadius: '0.625rem',
       width: '28.125rem',
       height: '32.813rem',
@@ -29,7 +29,7 @@ export default {
     width: '47.875rem',
     height: '31.125rem',
 
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       backgroundSize: 'cover',
       backgroundRepeat: 'no-repeat',
       width: '100%',

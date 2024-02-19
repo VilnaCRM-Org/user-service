@@ -3,7 +3,7 @@ import colorTheme from '@/components/UiColorTheme';
 
 export default {
   title: {
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+    [`@media (max-width: 968px)`]: {
       color: colorTheme.palette.darkPrimary.main,
       fontSize: '1.75rem',
       fontStyle: 'normal',
@@ -19,7 +19,7 @@ export default {
       pb: '2rem',
       maxWidth: '18.938rem',
     },
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+    [`@media (max-width: 968px)`]: {
       pt: '0.813rem',
       color: colorTheme.palette.darkPrimary.main,
       fontSize: '0.9375rem',
@@ -36,7 +36,7 @@ export default {
   },
   button: {
     display: 'inline-block',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+    [`@media (max-width: 968px)`]: {
       display: 'none',
     },
   },

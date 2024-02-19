@@ -17,7 +17,7 @@ export const theme: Theme = createTheme({
           fontWeight: '700',
           lineHeight: '1.125rem',
           textDecoration: 'underline',
-          [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+          [`@media (max-width: 1130px)`]: {
             fontSize: '1rem',
           },
           [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {

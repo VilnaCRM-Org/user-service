@@ -26,7 +26,7 @@ export default {
   },
   title: {
     pt: '1rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       fontSize: '1.375rem',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {

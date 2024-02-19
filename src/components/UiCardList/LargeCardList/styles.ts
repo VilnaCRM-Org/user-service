@@ -14,7 +14,7 @@ export default {
     },
     marginTop: '2.5rem',
     gap: '0.813rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       gap: '0.75rem',
       marginTop: '2rem',
     },

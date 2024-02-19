@@ -13,7 +13,7 @@ export default {
     margin: '0 auto',
     paddingLeft: '1rem',
     paddingRight: '1rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       paddingLeft: '2rem',
       paddingRight: '1.5rem',
     },
@@ -24,7 +24,7 @@ export default {
     margin: '0 auto',
     paddingLeft: '1.3rem',
     paddingRight: '1rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       paddingRight: '2rem',
       paddingLeft: '2rem',
     },
@@ -39,7 +39,7 @@ export default {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       pb: '0.2rem',
     },
   },

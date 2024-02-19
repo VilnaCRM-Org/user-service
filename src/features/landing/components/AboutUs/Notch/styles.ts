@@ -40,7 +40,7 @@ export default {
       backgroundColor: colorTheme.palette.notchDeskAfter.main,
     },
 
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       display: 'none',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {

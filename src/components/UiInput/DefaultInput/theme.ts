@@ -47,13 +47,12 @@ export const theme: Theme = createTheme({
               fontWeight: '400',
               lineHeight: '1.125rem',
             },
-            [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]:
-              {
-                height: '4.938rem',
-                '&::placeholder': {
-                  fontSize: '1.125rem',
-                },
+            [`@media (max-width: 1130px)`]: {
+              height: '4.938rem',
+              '&::placeholder': {
+                fontSize: '1.125rem',
               },
+            },
             [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]:
               {
                 padding: '0 1.25rem',

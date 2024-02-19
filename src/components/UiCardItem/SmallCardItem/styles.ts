@@ -7,7 +7,9 @@ export default {
     borderRadius: '0.75rem',
     border: `1px solid ${colorTheme.palette.grey500.main}`,
     maxHeight: '20.75rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    flexDirection: 'column',
+    alignItems: 'start',
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl - 1}px)`]: {
       padding: '2.125rem 1.875rem 2.125rem 1.563rem',
       flexDirection: 'row',
       alignItems: 'center',
@@ -25,10 +27,10 @@ export default {
 
   title: {
     pt: '2rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       pt: '0',
     },
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
       fontSize: '1.125rem',
       fontWeight: '600',
     },
@@ -36,14 +38,14 @@ export default {
 
   text: {
     mt: '0.625rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       a: {
         textDecoration: 'none',
         fontWeight: '400',
         color: colorTheme.palette.darkPrimary.main,
       },
     },
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
       fontSize: '0.9375rem',
       fontWeight: '400',
       lineHeight: '1.563rem',
@@ -63,7 +65,7 @@ export default {
     color: colorTheme.palette.primary.main,
     textDecoration: 'underline',
     fontWeight: '700',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       color: colorTheme.palette.darkPrimary.main,
       textDecoration: 'none',
       fontWeight: '400',

@@ -12,14 +12,14 @@ export default {
   },
   lgCardsWrapper: {
     display: 'flex',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+    [`@media (max-width: 968px)`]: {
       display: 'none',
     },
   },
 
   smCardsWrapper: {
     display: 'none',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+    [`@media (max-width: 968px)`]: {
       display: 'flex',
       justifyContent: 'center',
     },
@@ -27,7 +27,7 @@ export default {
   content: {
     pt: '8.25rem',
     position: 'relative',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       pt: '7.375rem',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
@@ -55,7 +55,7 @@ export default {
       top: '5.8%',
       right: '-9%',
     },
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+    [`@media (max-width: 968px)`]: {
       maxWidth: '43.75rem',
       height: '44.688rem',
       top: '40%',
@@ -87,7 +87,7 @@ export default {
       minHeight: '11.188rem',
       marginTop: '-8.625rem',
     },
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+    [`@media (max-width: 968px)`]: {
       display: 'none',
     },
   },

@@ -1,5 +1,6 @@
 export type SignupMutationVariables = {
-  FullName: string;
-  Email: string;
-  Password: string;
+  initials: string;
+  email: string;
+  password: string;
+  clientMutationId: string;
 };

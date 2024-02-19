@@ -10,7 +10,6 @@ import { DefaultLink } from '@/components/UiLink';
 import UiTooltip from '@/components/UiTooltip';
 import { DefaultTypography } from '@/components/UiTypography';
 
-import createUser from '../../../api/service/userService';
 import QuestionMark from '../../../assets/svg/auth-section/questionMark.svg';
 import { RegisterItem } from '../../../types/authentication/form';
 import { PasswordTip } from '../PasswordTip';
@@ -22,7 +21,11 @@ import {
 
 import styles from './styles';
 
-function AuthForm(): React.ReactElement {
+function AuthForm({
+  onSubmit,
+}: {
+  onSubmit: (data: RegisterItem) => Promise<void>;
+}): React.ReactElement {
   const { t } = useTranslation();
   const {
     handleSubmit,
@@ -38,12 +41,10 @@ function AuthForm(): React.ReactElement {
     mode: 'onTouched',
   });
 
-  const { onSubmit: createUserSubmit } = createUser();
-
-  const handleFormSubmit: (data: RegisterItem) => Promise<void> = async (
+  const handleFormSubmit: (data: RegisterItem) => void = (
     data: RegisterItem
   ) => {
-    await createUserSubmit(data);
+    onSubmit(data);
   };
 
   return (
@@ -63,7 +64,10 @@ function AuthForm(): React.ReactElement {
               <UiTextFieldForm
                 control={control}
                 name="FullName"
-                rules={{ validate: FullNameValidator.validateFullName }}
+                rules={{
+                  validate: (value: string): boolean =>
+                    new FullNameValidator().validateFullName(value),
+                }}
                 errors={!!errors.FullName}
                 placeholder={t('sign_up.form.name_input.placeholder')}
                 type="text"
@@ -76,7 +80,10 @@ function AuthForm(): React.ReactElement {
               <UiTextFieldForm
                 control={control}
                 name="Email"
-                rules={{ validate: EmailValidator.validateEmail }}
+                rules={{
+                  validate: (value: string): boolean =>
+                    new EmailValidator().isValidEmailFormat(value),
+                }}
                 errors={!!errors.Email}
                 placeholder={t('sign_up.form.email_input.placeholder')}
                 type="text"
@@ -104,7 +111,10 @@ function AuthForm(): React.ReactElement {
               <UiTextFieldForm
                 control={control}
                 name="Password"
-                rules={{ validate: PasswordValidator.validatePassword }}
+                rules={{
+                  validate: (value: string): boolean =>
+                    new PasswordValidator().validatePassword(value),
+                }}
                 errors={!!errors.Password}
                 placeholder={t('sign_up.form.password_input.placeholder')}
                 type="password"

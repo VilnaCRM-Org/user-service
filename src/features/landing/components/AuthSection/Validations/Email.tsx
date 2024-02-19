@@ -1,11 +1,10 @@
 class EmailValidator {
-  public static validateEmail(email: string): boolean {
-    return EmailValidator.isValidEmailFormat(email);
+  public validateEmail(email: string): boolean {
+    return this.isValidEmailFormat(email);
   }
 
-  private static isValidEmailFormat(email: string): boolean {
+  public isValidEmailFormat(email: string): boolean {
     return /^.+@.+\..+$/.test(email);
   }
 }
-
 export default EmailValidator;

@@ -18,7 +18,7 @@ export default {
     top: '9%',
     left: '0',
     borderRadius: '3rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       top: '11%',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
@@ -34,7 +34,7 @@ export default {
     borderTopRightRadius: '1.875rem',
     borderTopLeftRadius: '1.875rem',
     overflow: 'hidden',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       borderRadius: '1.875rem',
       borderBottom: 'none',
       border: 'none',
@@ -52,7 +52,7 @@ export default {
     backgroundColor: colorTheme.palette.darkPrimary.main,
     padding: '0.75rem',
     overflow: 'hidden',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       borderRadius: '1.563rem',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {

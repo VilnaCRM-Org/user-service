@@ -6,7 +6,7 @@ export default {
     paddingTop: '4rem',
     marginTop: '-4rem',
     paddingBottom: '2.5rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: 1130px)`]: {
       textAlign: 'center',
       maxWidth: '42.688rem',
       paddingBottom: '2rem',
@@ -28,7 +28,7 @@ export default {
     pt: '8.5rem',
     width: '50%',
     maxWidth: '35.063rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: 1130px)`]: {
       maxWidth: '100%',
       display: 'flex',
       flexDirection: 'column',
@@ -44,7 +44,7 @@ export default {
 
   signInText: {
     mb: '1.5rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (max-width: 1130px)`]: {
       textAlign: 'center',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
