@@ -1,4 +1,3 @@
-/* eslint-disable react/require-default-props */
 import { Link, ListItem } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';

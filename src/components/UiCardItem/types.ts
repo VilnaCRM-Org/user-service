@@ -1,4 +1,9 @@
+export type ImageItem = {
+  alt: string;
+  image: string;
+};
 export type CardItem = {
+  type: string;
   id: string;
   imageSrc: string;
   title: string;
@@ -6,13 +11,7 @@ export type CardItem = {
   alt: string;
 };
 
-export type ImageItem = {
-  alt: string;
-  image: string;
-};
-
-export interface CardItemProps {
-  type: 'large' | 'small';
+export interface UiCardItemProps {
   item: CardItem;
   imageList?: ImageItem[];
 }

@@ -16,6 +16,7 @@ import { ImageList } from '../../types/possibilities/image-list';
 
 export const cardList: Card[] = [
   {
+    type: 'smallCard',
     id: 'item_1',
     imageSrc: Ruby,
     text: 'unlimited_possibilities.cards_texts.text_for_cases',
@@ -23,6 +24,7 @@ export const cardList: Card[] = [
     alt: 'unlimited_possibilities.card_image_titles.title_for_first',
   },
   {
+    type: 'smallCard',
     id: 'item_2',
     imageSrc: SmallDiamond,
     text: 'unlimited_possibilities.cards_texts.text_integrate',
@@ -30,6 +32,7 @@ export const cardList: Card[] = [
     alt: 'unlimited_possibilities.card_image_titles.title_for_second',
   },
   {
+    type: 'smallCard',
     id: 'item_3',
     imageSrc: SmallRuby,
     text: 'unlimited_possibilities.cards_texts.text_get_data',
@@ -37,6 +40,7 @@ export const cardList: Card[] = [
     alt: 'unlimited_possibilities.card_image_titles.title_for_third',
   },
   {
+    type: 'smallCard',
     id: 'item_4',
     imageSrc: Diamond,
     text: 'unlimited_possibilities.cards_texts.text_for_custom',

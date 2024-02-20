@@ -1,13 +1,15 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import { Toolbar, ThemeProvider, ToolbarProps } from '@mui/material';
+import { Toolbar, ThemeProvider } from '@mui/material';
 
 import { theme } from './theme';
 
-function UiToolbar(props: ToolbarProps): React.ReactElement {
-  const { children } = props;
+function UiToolbar({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.ReactElement {
   return (
     <ThemeProvider theme={theme}>
-      <Toolbar {...props}>{children}</Toolbar>
+      <Toolbar>{children}</Toolbar>
     </ThemeProvider>
   );
 }

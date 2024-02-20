@@ -1,20 +1,47 @@
-import LargeCardList from './LargeCardList';
-import SmallCardList from './SmallCardList';
+import { Grid } from '@mui/material';
+import React, { CSSProperties } from 'react';
+import { Pagination } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
+
+import 'swiper/css';
+import 'swiper/css/pagination';
+import CardItem from '../UiCardItem';
+
+import styles from './styles';
 import { CardList } from './types';
 
-function UCardList({
-  type,
-  imageList,
-  cardList,
-}: CardList): React.ReactElement {
+function UiCardList({ cardList, imageList }: CardList): React.ReactElement {
+  const grid: CSSProperties =
+    cardList[0].type === 'smallCard' ? styles.smallGrid : styles.largeGrid;
+  const gridMobile: CSSProperties =
+    cardList[0].type === 'smallCard'
+      ? styles.gridSmallMobile
+      : styles.gridLargeMobile;
+
   return (
     <>
-      {type === 'small' && (
-        <SmallCardList imageList={imageList} cardList={cardList} />
-      )}
-      {type === 'large' && <LargeCardList cardList={cardList} />}
+      <Grid sx={grid}>
+        {cardList.map(item => (
+          <CardItem key={item.id} item={item} imageList={imageList || []} />
+        ))}
+      </Grid>
+      <Grid sx={gridMobile}>
+        <Swiper
+          pagination
+          modules={[Pagination]}
+          spaceBetween={12}
+          slidesPerView={1.04}
+          className="swiper-wrapper"
+        >
+          {cardList.map(item => (
+            <SwiperSlide key={item.id}>
+              <CardItem item={item} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </Grid>
     </>
   );
 }
 
-export default UCardList;
+export default UiCardList;

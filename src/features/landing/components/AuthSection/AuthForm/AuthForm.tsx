@@ -127,10 +127,11 @@ function AuthForm({
           <Controller
             control={control}
             name="Privacy"
+            rules={{ required: true }}
             render={({ field }) => (
               <UiCheckbox
                 onChange={e => field.onChange(e)}
-                error={!errors.Privacy}
+                error={!!errors.Privacy}
                 sx={styles.labelText as React.CSSProperties}
                 label={
                   <UiTypography variant="medium14" sx={styles.privacyText}>

@@ -4,4 +4,5 @@ export interface Card {
   id: string;
   text: string;
   alt: string;
+  type: string;
 }

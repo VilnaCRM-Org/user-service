@@ -11,4 +11,13 @@ export default {
       paddingTop: '4rem',
     },
   },
+  button: {
+    display: 'none',
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
+      display: 'block',
+      margin: '0 auto',
+      marginTop: '0.9rem',
+      marginBottom: '2rem',
+    },
+  },
 };

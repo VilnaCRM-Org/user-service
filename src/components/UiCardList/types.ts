@@ -3,6 +3,7 @@ export type ImageItem = {
   image: string;
 };
 export type CardItem = {
+  type: string;
   id: string;
   imageSrc: string;
   title: string;
@@ -11,7 +12,6 @@ export type CardItem = {
 };
 
 export interface CardList {
-  type?: 'large' | 'small';
   cardList: CardItem[];
   imageList?: ImageItem[];
 }

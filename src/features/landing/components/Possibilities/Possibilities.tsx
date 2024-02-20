@@ -11,7 +11,7 @@ function Possibilities(): React.ReactElement {
   return (
     <Box sx={styles.wrapper} id="Integration" component="section">
       <RegistrationText />
-      <UiCardList imageList={imageList} cardList={cardList} type="small" />
+      <UiCardList imageList={imageList} cardList={cardList} />
     </Box>
   );
 }

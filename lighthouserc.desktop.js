@@ -3,6 +3,7 @@ module.exports = {
     collect: {
       settings: {
         preset: 'desktop',
+        staticDistDir: 'out',
       },
     },
     upload: {

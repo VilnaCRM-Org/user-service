@@ -2,7 +2,7 @@ import breakpointsTheme from '@/components/UiBreakpoints';
 import colorTheme from '@/components/UiColorTheme';
 
 export default {
-  wrapper: {
+  smallWrapper: {
     padding: '2.5rem 2rem 2.5rem 1.563rem',
     borderRadius: '0.75rem',
     border: `1px solid ${colorTheme.palette.grey500.main}`,
@@ -23,8 +23,7 @@ export default {
       minHeight: '15.125rem',
     },
   },
-
-  title: {
+  smallTitle: {
     pt: '2rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       pt: '0',
@@ -35,7 +34,7 @@ export default {
     },
   },
 
-  text: {
+  smallText: {
     mt: '0.625rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       a: {
@@ -52,7 +51,7 @@ export default {
     },
   },
 
-  image: {
+  smallImage: {
     width: '5rem',
     height: '5rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
@@ -68,6 +67,47 @@ export default {
       color: colorTheme.palette.darkPrimary.main,
       textDecoration: 'none',
       fontWeight: '400',
+    },
+  },
+  largeWrapper: {
+    height: '100%',
+    p: '1.5rem',
+    borderRadius: '0.75rem',
+    border: `1px solid ${colorTheme.palette.grey500.main}`,
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
+      padding: '1rem 1.125rem 4.5rem 1rem',
+      borderRadius: '0.75rem',
+      border: `1px solid ${colorTheme.palette.grey500.main}`,
+      maxHeight: '16.438rem',
+    },
+    ':hover': {
+      boxShadow: '0px 8px 27px 0px rgba(49, 59, 67, 0.14)',
+      border: `1px solid ${colorTheme.palette.grey400.main}`,
+    },
+  },
+  largeTitle: {
+    pt: '1rem',
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+      fontSize: '1.375rem',
+    },
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
+      pt: '1rem',
+      fontSize: '1.125rem',
+    },
+  },
+  largeText: {
+    mt: '0.75rem',
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
+      fontSize: '0.9375rem',
+      lineHeight: '1.563rem',
+    },
+  },
+  largeImage: {
+    width: '4.375rem',
+    height: '4.375rem',
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
+      width: '3.125rem',
+      height: '3.125rem',
     },
   },
 };
