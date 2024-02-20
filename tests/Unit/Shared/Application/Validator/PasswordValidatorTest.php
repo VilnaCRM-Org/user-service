@@ -14,53 +14,66 @@ class PasswordValidatorTest extends UnitTestCase
 {
     private PasswordValidator $validator;
     private ExecutionContextInterface $context;
-    private ConstraintViolationBuilderInterface $violationBuilder;
 
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->context = $this->createMock(ExecutionContextInterface::class);
-        $this->violationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
-
-        $this->context
-            ->expects($this->any())
-            ->method('buildViolation')
-            ->willReturn($this->violationBuilder);
-
-        $this->violationBuilder
-            ->expects($this->any())
-            ->method('addViolation');
-
         $this->validator = new PasswordValidator();
         $this->validator->initialize($this->context);
     }
 
-    public function testValidateValidPassword(): void
+    public function testValidValue(): void
     {
-        $this->validator->validate('Password123', new Password());
-
-        $this->assertTrue(true);
+        $this->context->expects($this->never())->method('buildViolation');
+        $this->validator->validate(
+            'Password123',
+            $this->createMock(Password::class)
+        );
     }
 
     public function testValidateInvalidPasswordLength(): void
     {
-        $this->validator->validate('Pass', new Password());
+        $constraintViolationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
+        $this->context->expects($this->once())
+            ->method('buildViolation')
+            ->with('Password must be between 8 and 64 characters long')
+            ->willReturn($constraintViolationBuilder);
+        $constraintViolationBuilder->expects($this->once())->method('addViolation');
 
-        $this->assertTrue(true);
+        $this->validator->validate(
+            'Pass1',
+            $this->createMock(Password::class)
+        );
     }
 
     public function testValidateInvalidPasswordNoNumber(): void
     {
-        $this->validator->validate('Password', new Password());
+        $constraintViolationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
+        $this->context->expects($this->once())
+            ->method('buildViolation')
+            ->with('Password must contain at least one number')
+            ->willReturn($constraintViolationBuilder);
+        $constraintViolationBuilder->expects($this->once())->method('addViolation');
 
-        $this->assertTrue(true);
+        $this->validator->validate(
+            'Password',
+            $this->createMock(Password::class)
+        );
     }
 
     public function testValidateInvalidPasswordNoUppercase(): void
     {
-        $this->validator->validate('password123', new Password());
+        $constraintViolationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
+        $this->context->expects($this->once())
+            ->method('buildViolation')
+            ->with('Password must contain at least one uppercase letter')
+            ->willReturn($constraintViolationBuilder);
+        $constraintViolationBuilder->expects($this->once())->method('addViolation');
 
-        $this->assertTrue(true);
+        $this->validator->validate(
+            'password123',
+            $this->createMock(Password::class)
+        );
     }
 }

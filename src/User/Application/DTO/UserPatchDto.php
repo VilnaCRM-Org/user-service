@@ -18,10 +18,8 @@ final readonly class UserPatchDto
         #[Initials]
         public string $initials,
         #[Assert\NotBlank]
-        #[Assert\Length(max: 255)]
         #[Password]
         public string $oldPassword,
-        #[Assert\Length(max: 255)]
         #[Password]
         public string $newPassword,
     ) {

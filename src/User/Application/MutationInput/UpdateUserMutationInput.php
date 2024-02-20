@@ -20,7 +20,6 @@ final readonly class UpdateUserMutationInput implements MutationInput
     public function __construct(
         private array $validationGroups,
         #[Assert\NotBlank]
-        #[Assert\Length(max: 255)]
         #[Password]
         public ?string $password = null,
         #[Assert\NotBlank(groups: [self::INITIALS_NOT_NULL])]
@@ -32,7 +31,6 @@ final readonly class UpdateUserMutationInput implements MutationInput
         #[Assert\Length(max: 255, groups: [self::EMAIL_NOT_NULL])]
         public ?string $email = null,
         #[Assert\NotBlank(groups: [self::NEW_PASSWORD_NOT_NULL])]
-        #[Assert\Length(max: 255, groups: [self::NEW_PASSWORD_NOT_NULL])]
         #[Password(groups: [self::NEW_PASSWORD_NOT_NULL])]
         public ?string $newPassword = null,
     ) {

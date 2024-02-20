@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Behat\UserContext;
 
 use App\Tests\Behat\UserContext\Input\ConfirmUserInput;
@@ -92,7 +94,7 @@ class UserOperationsContext implements Context
     public function userShouldBeTimedOut(): void
     {
         $data = json_decode($this->response->getContent(), true);
-        Assert::stringContains('Cannot send new email till', $data['detail']);
+        Assert::assertStringContainsString('Cannot send new email till', $data['detail']);
     }
 
     /**

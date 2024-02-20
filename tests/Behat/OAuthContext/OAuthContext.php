@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Behat\OAuthContext;
 
 use App\Tests\Behat\OAuthContext\Input\AuthorizationCodeGrantInput;

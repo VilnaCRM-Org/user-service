@@ -23,7 +23,6 @@ final readonly class CreateUserMutationInput implements MutationInput
         public ?string $initials = null,
         #[Assert\NotNull]
         #[Assert\NotBlank]
-        #[Assert\Length(max: 255)]
         #[Password]
         public ?string $password = null,
     ) {

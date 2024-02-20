@@ -10,6 +10,7 @@
 /vendor/
 /metrics-report
 /coverage
+infection.json5
 ###< symfony/framework-bundle ###
 
 ###> symfony/phpunit-bridge ###

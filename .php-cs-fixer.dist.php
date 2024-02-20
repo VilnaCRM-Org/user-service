@@ -23,5 +23,6 @@ return (new PhpCsFixer\Config())
         'ordered_imports' => ['sort_algorithm' => 'alpha'],
         'cast_spaces' => true,
         'binary_operator_spaces' => true,
+        'declare_strict_types' => true,
     ])
     ->setFinder($finder);

@@ -80,6 +80,9 @@ class ConfirmUserCommandHandlerTest extends UnitTestCase
             ->method('find')
             ->willReturn($user);
 
+        $this->userRepository->expects($this->once())
+            ->method('save');
+
         $this->eventBus->expects($this->once())
             ->method('publish')
             ->with($this->isInstanceOf(UserConfirmedEvent::class));
@@ -110,7 +113,6 @@ class ConfirmUserCommandHandlerTest extends UnitTestCase
             ->willReturn(null);
 
         $this->expectException(UserNotFoundException::class);
-
 
         $token = $this->confirmationTokenFactory->create(
             $this->faker->uuid(),

@@ -36,7 +36,7 @@ help:
 	@grep -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-15s\033[0m %s\n", $$1, $$2}'
 
 phpcsfixer: ## A tool to automatically fix PHP Coding Standards issues
-	$(DOCKER_COMPOSE) exec -e PHP_CS_FIXER_IGNORE_ENV=1 php ./vendor/bin/php-cs-fixer fix $(git ls-files -om --exclude-standard) --config .php-cs-fixer.dist.php
+	$(DOCKER_COMPOSE) exec -e PHP_CS_FIXER_IGNORE_ENV=1 php ./vendor/bin/php-cs-fixer fix $(git ls-files -om --exclude-standard) --allow-risky=yes --config .php-cs-fixer.dist.php
 
 composer-validate: ## The validate command validates a given composer.json and composer.lock
 	$(COMPOSER) validate
@@ -58,6 +58,9 @@ phpinsights: ## Instant PHP quality checks and static analysis tool
 
 phpunit: ## The PHP unit testing framework
 	$(EXEC_PHP) ./vendor/bin/phpunit
+
+infection:
+	$(EXEC_PHP) sh -c 'php -d memory_limit=-1 ./vendor/bin/infection --show-mutations -j8'
 
 phpunit-codecov: ## The PHP unit testing framework
 	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-html coverage'

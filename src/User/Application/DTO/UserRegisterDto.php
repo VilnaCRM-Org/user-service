@@ -20,7 +20,6 @@ final readonly class UserRegisterDto
         #[Initials]
         public string $initials,
         #[Assert\NotBlank]
-        #[Assert\Length(max: 255)]
         #[Password]
         public string $password,
     ) {

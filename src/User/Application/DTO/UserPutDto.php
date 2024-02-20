@@ -20,11 +20,9 @@ final readonly class UserPutDto
         #[Initials]
         public string $initials,
         #[Assert\NotBlank]
-        #[Assert\Length(max: 255)]
         #[Password]
         public string $oldPassword,
         #[Assert\NotBlank]
-        #[Assert\Length(max: 255)]
         #[Password]
         public string $newPassword
     ) {
