@@ -1,15 +1,28 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import { Typography } from '@mui/material';
-import { TypographyProps } from '@mui/material/Typography';
+import { ThemeProvider, Typography } from '@mui/material';
 import React from 'react';
 
-import defaultTypography from './DefaultTypography';
+import theme from './theme';
+import { UiTypographyProps } from './types';
 
-function UiTypography(props: TypographyProps): React.ReactElement {
-  const { children } = props;
-  return <Typography {...props}>{children}</Typography>;
+function UiTypography({
+  sx,
+  children,
+  component,
+  variant,
+  id,
+}: UiTypographyProps): React.ReactElement {
+  return (
+    <ThemeProvider theme={theme}>
+      <Typography
+        sx={sx}
+        component={component || 'p'}
+        variant={variant}
+        id={id}
+      >
+        {children}
+      </Typography>
+    </ThemeProvider>
+  );
 }
-export const DefaultTypography: React.FC<TypographyProps> =
-  defaultTypography(UiTypography);
 
 export default UiTypography;

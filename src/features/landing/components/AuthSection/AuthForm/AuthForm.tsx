@@ -4,11 +4,14 @@ import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { UiCheckbox, UiTextFieldForm } from '@/components';
-import { MediumContainedBtn } from '@/components/UiButton';
-import { DefaultLink } from '@/components/UiLink';
+import {
+  UiCheckbox,
+  UiTextFieldForm,
+  UiButton,
+  UiLink,
+  UiTypography,
+} from '@/components';
 import UiTooltip from '@/components/UiTooltip';
-import { DefaultTypography } from '@/components/UiTypography';
 
 import QuestionMark from '../../../assets/svg/auth-section/questionMark.svg';
 import { RegisterItem } from '../../../types/authentication/form';
@@ -53,14 +56,14 @@ function AuthForm({
       <Box sx={styles.backgroundBlock} />
       <Box sx={styles.formContent}>
         <form onSubmit={handleSubmit(handleFormSubmit)}>
-          <DefaultTypography variant="h4" sx={styles.formTitle}>
+          <UiTypography variant="h4" sx={styles.formTitle}>
             {t('sign_up.form.heading_main')}
-          </DefaultTypography>
+          </UiTypography>
           <Stack sx={styles.inputsWrapper}>
             <Stack sx={styles.inputWrapper}>
-              <DefaultTypography variant="medium14" sx={styles.inputTitle}>
+              <UiTypography variant="medium14" sx={styles.inputTitle}>
                 {t('sign_up.form.name_input.label')}
-              </DefaultTypography>
+              </UiTypography>
               <UiTextFieldForm
                 control={control}
                 name="FullName"
@@ -74,9 +77,9 @@ function AuthForm({
               />
             </Stack>
             <Stack sx={styles.inputWrapper}>
-              <DefaultTypography variant="medium14" sx={styles.inputTitle}>
+              <UiTypography variant="medium14" sx={styles.inputTitle}>
                 {t('sign_up.form.email_input.label')}
-              </DefaultTypography>
+              </UiTypography>
               <UiTextFieldForm
                 control={control}
                 name="Email"
@@ -91,9 +94,9 @@ function AuthForm({
             </Stack>
             <Stack sx={styles.inputWrapper}>
               <Stack direction="row" alignItems="center" gap="0.25rem">
-                <DefaultTypography variant="medium14" sx={styles.inputTitle}>
+                <UiTypography variant="medium14" sx={styles.inputTitle}>
                   {t('sign_up.form.password_input.label')}
-                </DefaultTypography>
+                </UiTypography>
                 <UiTooltip
                   placement="right"
                   sx={styles.tip}
@@ -130,25 +133,29 @@ function AuthForm({
                 error={!errors.Privacy}
                 sx={styles.labelText as React.CSSProperties}
                 label={
-                  <DefaultTypography variant="medium14" sx={styles.privacyText}>
+                  <UiTypography variant="medium14" sx={styles.privacyText}>
                     <Trans i18nKey="sign_up.form.confidential_text.fullText">
                       Я прочитав та приймаю
-                      <DefaultLink href="/">
-                        Політику Конфіденційності
-                      </DefaultLink>
+                      <UiLink href="/">Політику Конфіденційності</UiLink>
                       та
-                      <DefaultLink href="/">Політику Використання</DefaultLink>
+                      <UiLink href="/">Політику Використання</UiLink>
                       сервісу VilnaCRM
                     </Trans>
-                  </DefaultTypography>
+                  </UiTypography>
                 }
               />
             )}
           />
           <Box sx={styles.buttonWrapper}>
-            <MediumContainedBtn type="submit" fullWidth sx={styles.button}>
+            <UiButton
+              sx={styles.button}
+              variant="contained"
+              size="medium"
+              type="submit"
+              fullWidth
+            >
               {t('sign_up.form.button_text')}
-            </MediumContainedBtn>
+            </UiButton>
           </Box>
         </form>
       </Box>

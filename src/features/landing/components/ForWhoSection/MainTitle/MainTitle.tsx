@@ -1,9 +1,9 @@
 import { Box } from '@mui/material';
+import Link from 'next/link';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { MediumContainedBtn } from '@/components/UiButton';
-import { DefaultTypography } from '@/components/UiTypography';
+import { UiButton, UiTypography } from '@/components';
 
 import styles from './styles';
 
@@ -11,15 +11,17 @@ function MainTitle(): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Box>
-      <DefaultTypography variant="h2" sx={styles.title}>
+      <UiTypography variant="h2" sx={styles.title}>
         {t('for_who.heading_main')}
-      </DefaultTypography>
-      <DefaultTypography sx={styles.description} variant="bodyText18">
+      </UiTypography>
+      <UiTypography sx={styles.description} variant="bodyText18">
         <Trans i18nKey="for_who.text_main" />
-      </DefaultTypography>
-      <MediumContainedBtn sx={styles.button} href="#signUp">
-        {t('for_who.button_text')}
-      </MediumContainedBtn>
+      </UiTypography>
+      <Link href="#signUp" aria-label={t('for_who.aria_label')}>
+        <UiButton sx={styles.button} variant="contained" size="medium">
+          {t('for_who.button_text')}
+        </UiButton>
+      </Link>
     </Box>
   );
 }

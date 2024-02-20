@@ -3,7 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { UiToolbar } from '@/components';
-import { DefaultImage } from '@/components/UiImage';
+import UiImage from '@/components/UiImage';
 
 import Logo from '../../assets/svg/logo/Logo.svg';
 
@@ -18,7 +18,7 @@ function Header(): React.ReactElement {
   return (
     <AppBar position="static" sx={styles.headerWrapper}>
       <UiToolbar>
-        <DefaultImage src={Logo} alt={t('header.logo_alt')} sx={styles.logo} />
+        <UiImage src={Logo} alt={t('header.logo_alt')} sx={styles.logo} />
         <NavList navItems={headerNavList} />
         <AuthButtons />
         <Drawer />

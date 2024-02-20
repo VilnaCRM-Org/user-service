@@ -2,20 +2,19 @@ import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { SocialShareBtn } from '@/components/UiButton';
-import { DefaultTypography } from '@/components/UiTypography';
+import { UiTypography, UiButton } from '@/components/';
 
 import { SocialLink } from '../../../types/authentication/social';
 
 function SocialItem({ item }: { item: SocialLink }): React.ReactElement {
   const { t } = useTranslation();
   return (
-    <SocialShareBtn name="socialButton">
+    <UiButton name="socialButton" size="medium" variant="outlined">
       <Image src={item.icon} alt={t(item.title)} width={22} height={22} />
-      <DefaultTypography variant="demi18" component="div">
+      <UiTypography variant="demi18" component="div">
         {t(item.title)}
-      </DefaultTypography>
-    </SocialShareBtn>
+      </UiTypography>
+    </UiButton>
   );
 }
 

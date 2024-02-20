@@ -1,24 +1,37 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import { Button, ButtonProps } from '@mui/material';
+import { Button, ThemeProvider } from '@mui/material';
 
-import mediumContainedBtn from './MediumContainedBtn';
-import smallContainerBtn from './SmallContainedBtn';
-import smallOutlinedBtn from './SmallOutlinedBtn';
-import socialShareBtn from './SocialShareBtn';
+import { theme } from './theme';
+import { UiButtonProps } from './types';
 
-function UiButton(props: ButtonProps): React.ReactElement {
-  return <Button {...props} />;
+function UiButton({
+  variant,
+  size,
+  disabled,
+  fullWidth,
+  onClick,
+  type,
+  children,
+  sx,
+  name,
+  href,
+}: UiButtonProps): React.ReactElement {
+  return (
+    <ThemeProvider theme={theme}>
+      <Button
+        variant={variant}
+        size={size}
+        disabled={disabled}
+        fullWidth={fullWidth}
+        type={type}
+        onClick={onClick}
+        sx={sx}
+        name={name}
+        href={href}
+      >
+        {children}
+      </Button>
+    </ThemeProvider>
+  );
 }
-
-export const SmallContainedBtn: React.FC<ButtonProps> =
-  smallContainerBtn(UiButton);
-
-export const SmallOutlinedBtn: React.FC<ButtonProps> =
-  smallOutlinedBtn(UiButton);
-
-export const MediumContainedBtn: React.FC<ButtonProps> =
-  mediumContainedBtn(UiButton);
-
-export const SocialShareBtn: React.FC<ButtonProps> = socialShareBtn(UiButton);
 
 export default UiButton;

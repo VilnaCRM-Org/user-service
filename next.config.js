@@ -1,12 +1,8 @@
 const LocalizationGenerator = require('./scripts/localizationGenerator');
 
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-});
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
-  output: 'export',
   reactStrictMode: true,
   swcMinify: true,
   images: {
@@ -19,4 +15,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withBundleAnalyzer(nextConfig);
+module.exports = nextConfig;

@@ -1,5 +1,5 @@
-import { ImageProps } from 'next/image';
-
-export interface UiImageProps extends ImageProps {
+export interface UiImageProps {
   sx?: React.CSSProperties;
+  src: string;
+  alt: string;
 }

@@ -1,8 +1,8 @@
 import { Controller, FieldValues } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { DefaultInput } from '../UiInput';
-import { DefaultTypography } from '../UiTypography';
+import UiInput from '../UiInput';
+import UiTypography from '../UiTypography';
 
 import styles from './styles';
 import { CustomTextField } from './types';
@@ -24,7 +24,7 @@ function UiTextFieldForm<T extends FieldValues>({
         name={name}
         rules={rules}
         render={({ field }) => (
-          <DefaultInput
+          <UiInput
             type={type}
             placeholder={placeholder}
             onChange={e => field.onChange(e)}
@@ -36,9 +36,9 @@ function UiTextFieldForm<T extends FieldValues>({
         )}
       />
       {errors && (
-        <DefaultTypography variant="medium14" sx={styles.errorText}>
+        <UiTypography variant="medium14" sx={styles.errorText}>
           {t('sign_up.form.error_text')}
-        </DefaultTypography>
+        </UiTypography>
       )}
     </>
   );

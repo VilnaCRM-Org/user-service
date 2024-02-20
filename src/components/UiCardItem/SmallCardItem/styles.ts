@@ -7,7 +7,6 @@ export default {
     borderRadius: '0.75rem',
     border: `1px solid ${colorTheme.palette.grey500.main}`,
     maxHeight: '20.75rem',
-    flexDirection: 'column',
     alignItems: 'start',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl - 1}px)`]: {
       padding: '2.125rem 1.875rem 2.125rem 1.563rem',

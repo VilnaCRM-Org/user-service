@@ -75,7 +75,8 @@
       "heading_secondary": "Our CRM is ideal if you:",
       "card_text_title": "A private entrepreneur is a psychologist, <br /> tutor or dropshipper",
       "card_text_business": "medium-scale local project - online courses, design studio or small outsourcing",
-      "vector_alt": "Vector"
+      "vector_alt": "Vector",
+      "aria_label": "Link to registration"
     },
     "unlimited_possibilities": {
       "main_heading_text": "Limitless",
@@ -244,7 +245,8 @@
       "heading_secondary": "Наша CRM ідеально підійде, якщо ви:",
       "card_text_title": "Приватний підприємець — психолог, <br /> репетитор чи дропшипер",
       "card_text_business": "локальний проект середнього масштабу — онлайн-курси, дизайн-студія чи невеликий аутсорс",
-      "vector_alt": "Vector"
+      "vector_alt": "Vector",
+      "aria_label": "Посилання на реєстрацію"
     },
     "unlimited_possibilities": {
       "main_heading_text": "Безмежні",

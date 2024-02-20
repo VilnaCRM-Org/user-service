@@ -2,8 +2,8 @@ import { Box } from '@mui/material';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { DefaultImage } from '@/components/UiImage';
-import { DefaultTypography } from '@/components/UiTypography';
+import { UiTypography } from '@/components/';
+import UiImage from '@/components/UiImage';
 
 import { CardItem } from '../types';
 
@@ -14,13 +14,13 @@ function LargeCardItem({ item }: { item: CardItem }): React.ReactElement {
   return (
     <Box sx={styles.wrapper}>
       <Box key={item.id} sx={styles.content}>
-        <DefaultImage src={item.imageSrc} alt={t(item.alt)} sx={styles.image} />
-        <DefaultTypography variant="h5" sx={styles.title}>
+        <UiImage src={item.imageSrc} alt={t(item.alt)} sx={styles.image} />
+        <UiTypography variant="h5" sx={styles.title}>
           <Trans i18nKey={item.title} />
-        </DefaultTypography>
-        <DefaultTypography variant="bodyText18" sx={styles.text}>
+        </UiTypography>
+        <UiTypography variant="bodyText18" sx={styles.text}>
           <Trans i18nKey={item.text} />
-        </DefaultTypography>
+        </UiTypography>
       </Box>
     </Box>
   );

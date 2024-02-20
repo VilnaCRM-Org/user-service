@@ -1,12 +1,12 @@
 import { Grid } from '@mui/material';
+import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-import { SmallContainedBtn } from '@/components/UiButton';
-
 import 'swiper/css';
 import 'swiper/css/pagination';
+import { UiButton } from '@/components';
 
 import UiCardItem from '../../UiCardItem';
 import { CardList } from '../types';
@@ -37,9 +37,11 @@ function CardList({ cardList }: CardList): React.ReactElement {
             </SwiperSlide>
           ))}
         </Swiper>
-        <SmallContainedBtn sx={styles.button} href="#signUp">
-          {t('why_us.button_text')}
-        </SmallContainedBtn>
+        <Link href="#signUp">
+          <UiButton sx={styles.button} variant="contained" size="small">
+            {t('why_us.button_text')}
+          </UiButton>
+        </Link>
       </Grid>
     </>
   );

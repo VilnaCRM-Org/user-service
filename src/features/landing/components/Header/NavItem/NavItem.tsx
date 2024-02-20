@@ -4,7 +4,7 @@ import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { DefaultTypography } from '@/components/UiTypography';
+import { UiTypography } from '@/components/';
 
 import AtSignImage from '../../../assets/svg/header-drawer/chevron-down.svg';
 
@@ -24,13 +24,11 @@ function NavItem({ item, handleClick }: NavProps): React.ReactElement {
         onClick={handleClick}
       >
         {isHeader ? (
-          <DefaultTypography variant="medium15">
-            {t(item.title)}
-          </DefaultTypography>
+          <UiTypography variant="medium15">{t(item.title)}</UiTypography>
         ) : (
-          <DefaultTypography variant="demi18" sx={styles.navText}>
+          <UiTypography variant="demi18" sx={styles.navText}>
             {t(item.title)}
-          </DefaultTypography>
+          </UiTypography>
         )}
         {isDrawer && (
           <Image src={AtSignImage} alt={t('Vector')} width={24} height={24} />

@@ -1,9 +1,9 @@
 import { Box, Stack } from '@mui/material';
+import Link from 'next/link';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { SmallContainedBtn } from '@/components/UiButton';
-import { DefaultTypography } from '@/components/UiTypography';
+import { UiButton, UiTypography } from '@/components';
 
 import Vector from '../../../assets/svg/for-who/yellowVector.svg';
 
@@ -13,9 +13,9 @@ function Cards(): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Stack flexDirection="column" sx={styles.wrapper}>
-      <DefaultTypography sx={styles.secondTitle}>
+      <UiTypography sx={styles.secondTitle}>
         {t('for_who.heading_secondary')}
-      </DefaultTypography>
+      </UiTypography>
       <Stack sx={styles.cardWrapper}>
         <Stack sx={styles.cardItem}>
           <Box
@@ -26,9 +26,9 @@ function Cards(): React.ReactElement {
             alt={t('for_who.vector_alt')}
             sx={styles.img}
           />
-          <DefaultTypography variant="bodyText18" sx={styles.optionText}>
+          <UiTypography variant="bodyText18" sx={styles.optionText}>
             <Trans i18nKey="for_who.card_text_title" />
-          </DefaultTypography>
+          </UiTypography>
         </Stack>
         <Stack sx={styles.cardItem}>
           <Box
@@ -39,14 +39,16 @@ function Cards(): React.ReactElement {
             alt={t('for_who.vector_alt')}
             sx={styles.img}
           />
-          <DefaultTypography variant="bodyText18" sx={styles.optionText}>
+          <UiTypography variant="bodyText18" sx={styles.optionText}>
             {t('for_who.card_text_business')}
-          </DefaultTypography>
+          </UiTypography>
         </Stack>
       </Stack>
-      <SmallContainedBtn sx={styles.button} href="#signUp">
-        {t('for_who.button_text')}
-      </SmallContainedBtn>
+      <Link href="#signUp" aria-label={t('for_who.aria_label')}>
+        <UiButton sx={styles.button} variant="contained" size="small">
+          {t('for_who.button_text')}
+        </UiButton>
+      </Link>
     </Stack>
   );
 }

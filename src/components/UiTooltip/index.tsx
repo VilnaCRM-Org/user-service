@@ -1,18 +1,18 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import {
-  ThemeProvider,
-  Tooltip,
-  TooltipProps,
-  Typography,
-} from '@mui/material';
+import { ThemeProvider, Tooltip, Typography } from '@mui/material';
 
 import { theme } from './theme';
+import { UiTooltipProps } from './types';
 
-function UiTooltip(props: TooltipProps): React.ReactElement {
-  const { children } = props;
+function UiTooltip({
+  children,
+  title,
+  placement,
+  arrow,
+  sx,
+}: UiTooltipProps): React.ReactElement {
   return (
     <ThemeProvider theme={theme}>
-      <Tooltip {...props}>
+      <Tooltip title={title} placement={placement} arrow={arrow} sx={sx}>
         <Typography component="span">{children}</Typography>
       </Tooltip>
     </ThemeProvider>

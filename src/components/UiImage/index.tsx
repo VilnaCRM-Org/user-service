@@ -1,19 +1,15 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import { Box } from '@mui/material';
 import Image from 'next/image';
 
-import defaultImage from './DefaultImage';
 import styles from './styles';
 import { UiImageProps } from './types';
 
-function UiImage({ ...props }: UiImageProps): React.ReactElement {
+function UiImage({ sx, alt, src }: UiImageProps): React.ReactElement {
   return (
-    <Box sx={props.sx}>
-      <Image {...props} style={styles.image} />
+    <Box sx={{ ...sx, ...styles.wrapper }}>
+      <Image alt={alt} src={src} />
     </Box>
   );
 }
-
-export const DefaultImage: React.FC<UiImageProps> = defaultImage(UiImage);
 
 export default UiImage;

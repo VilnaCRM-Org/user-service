@@ -1,9 +1,10 @@
 import { Drawer, Box, Stack, Button } from '@mui/material';
 import Image from 'next/image';
+import Link from 'next/link';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { SmallContainedBtn, SmallOutlinedBtn } from '@/components/UiButton';
+import { UiButton } from '@/components';
 
 import Bars from '../../../assets/svg/header-drawer/menu-04.svg';
 import CloseImage from '../../../assets/svg/header-drawer/x-close.svg';
@@ -79,20 +80,22 @@ function CustomDrawer(): React.ReactElement {
             gap="0.563rem"
             mt="0.75rem"
           >
-            <SmallOutlinedBtn
+            <UiButton
               fullWidth
-              href="#signUp"
+              variant="outlined"
+              size="small"
               onClick={() => handleClick()}
             >
-              {t('header.actions.log_in')}
-            </SmallOutlinedBtn>
-            <SmallContainedBtn
+              <Link href="#signUp"> {t('header.actions.log_in')}</Link>
+            </UiButton>
+            <UiButton
               fullWidth
-              href="#signUp"
               onClick={() => handleClick()}
+              variant="contained"
+              size="small"
             >
-              {t('header.actions.try_it_out')}
-            </SmallContainedBtn>
+              <Link href="#signUp">{t('header.actions.try_it_out')}</Link>
+            </UiButton>
           </Stack>
           <NavList navItems={drawerNavList} handleClick={() => handleClick()} />
           <VilnaCRMGmail />
