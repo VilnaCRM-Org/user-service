@@ -7,8 +7,6 @@ namespace App\Tests\Unit\User\Application\DTO;
 use App\Tests\Unit\TestValidationUtils;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\UserPutDto;
-use Symfony\Component\Validator\Validation;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserPutDtoTest extends UnitTestCase
 {
