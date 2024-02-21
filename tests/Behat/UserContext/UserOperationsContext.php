@@ -30,9 +30,17 @@ class UserOperationsContext implements Context
     /**
      * @Given updating user with email :email, initials :initials, oldPassword :oldPassword, newPassword :newPassword
      */
-    public function replacingUser(string $email, string $initials, string $oldPassword, string $newPassword): void
+    public function updatingUser(string $email, string $initials, string $oldPassword, string $newPassword): void
     {
         $this->requestBody = new UpdateUserInput($email, $initials, $oldPassword, $newPassword);
+    }
+
+    /**
+     * @Given updating user with oldPassword :oldPassword
+     */
+    public function updatingUserWithNoOptionalFields(string $oldPassword): void
+    {
+        $this->requestBody = new UpdateUserInput('', '', $oldPassword, '');
     }
 
     /**
@@ -83,7 +91,7 @@ class UserOperationsContext implements Context
             [],
             [],
             ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => $contentType, ],
+                'CONTENT_TYPE' => $contentType,],
             $this->serializer->serialize($this->requestBody, 'json')
         ));
     }

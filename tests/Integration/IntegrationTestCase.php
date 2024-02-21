@@ -18,9 +18,7 @@ class IntegrationTestCase extends KernelTestCase
     {
         parent::setUp();
 
-        $kernel = self::bootKernel();
-
-        $this->container = $kernel->getContainer();
+        $this->container = $this->getContainer();
 
         $this->faker = Factory::create();
     }

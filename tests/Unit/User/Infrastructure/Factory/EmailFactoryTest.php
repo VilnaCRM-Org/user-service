@@ -23,5 +23,7 @@ class EmailFactoryTest extends UnitTestCase
         $this->assertInstanceOf(Email::class, $email);
         $this->assertSame($sendTo, $email->getTo()[0]->getAddress());
         $this->assertSame($subject, $email->getSubject());
+        $this->assertSame($template, $email->getHtmlTemplate());
+        $this->assertSame(['content' => $content], $email->getContext());
     }
 }

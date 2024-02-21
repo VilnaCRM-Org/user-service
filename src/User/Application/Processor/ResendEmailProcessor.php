@@ -42,9 +42,8 @@ final class ResendEmailProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): Response {
-        $user = $this->userRepository->find(
-            (string) $uriVariables['id']
-        ) ?? throw new UserNotFoundException();
+        $user = $this->userRepository->find($uriVariables['id'])
+            ?? throw new UserNotFoundException();
 
         $token = $this->tokenRepository->findByUserId(
             $user->getId()

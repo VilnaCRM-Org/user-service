@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\DTO\UserPatchDto;
 use App\User\Application\DTO\UserPutDto;
 use App\User\Application\Exception\UserNotFoundException;
 use App\User\Application\Factory\UpdateUserCommandFactory;
@@ -53,6 +54,60 @@ class UserPatchProcessorTest extends UnitTestCase
         $password = $this->faker->password();
         $userId = $this->faker->uuid();
 
+        $newPassword = $this->faker->password();
+        $newInitials = $this->faker->name();
+        $newEmail = $this->faker->email();
+
+        $updateData = new UserUpdateData($newEmail, $newInitials, $newPassword, $password);
+
+        $user = $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->uuidTransformer->transformFromString($userId)
+        );
+        $command = $this->updateUserCommandFactory->create(
+            $user,
+            $updateData
+        );
+
+        $userRepository->expects($this->once())
+            ->method('find')
+            ->willReturn($user);
+
+        $userPatchDto = new UserPatchDto($newEmail, $newInitials, $password, $newPassword);
+
+        $mockUpdateUserCommandFactory->expects($this->once())
+            ->method('create')
+            ->with($user, $updateData)
+            ->willReturn($command);
+
+        $commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($command);
+
+        $result = $processor->process($userPatchDto, $this->mockOperation, ['id' => $userId]);
+
+        $this->assertInstanceOf(User::class, $result);
+    }
+
+    public function testProcessWithoutFullParams(): void
+    {
+        $userRepository = $this->createMock(UserRepositoryInterface::class);
+        $commandBus = $this->createMock(CommandBusInterface::class);
+        $mockUpdateUserCommandFactory = $this->createMock(UpdateUserCommandFactoryInterface::class);
+
+        $processor = new UserPatchProcessor(
+            $userRepository,
+            $commandBus,
+            $mockUpdateUserCommandFactory
+        );
+
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+        $userId = $this->faker->uuid();
+
         $user = $this->userFactory->create(
             $email,
             $initials,
@@ -69,7 +124,7 @@ class UserPatchProcessorTest extends UnitTestCase
             ->method('find')
             ->willReturn($user);
 
-        $userPutDto = new UserPutDto($email, $initials, $password, $password);
+        $userPatchDto = new UserPatchDto('', '', $password, '');
 
         $mockUpdateUserCommandFactory->expects($this->once())
             ->method('create')
@@ -80,7 +135,7 @@ class UserPatchProcessorTest extends UnitTestCase
             ->method('dispatch')
             ->with($command);
 
-        $result = $processor->process($userPutDto, $this->mockOperation, ['id' => $userId]);
+        $result = $processor->process($userPatchDto, $this->mockOperation, ['id' => $userId]);
 
         $this->assertInstanceOf(User::class, $result);
     }

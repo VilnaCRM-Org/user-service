@@ -7,10 +7,12 @@ namespace App\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\User\Application\DTO\UserPatchDto;
 use App\User\Application\DTO\UserPutDto;
 use App\User\Application\Exception\UserNotFoundException;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Domain\ValueObject\UserUpdateData;
 
@@ -27,7 +29,7 @@ final class UserPatchProcessor implements ProcessorInterface
     }
 
     /**
-     * @param UserPutDto $data
+     * @param UserPatchDto $data
      * @param array<string,string> $context
      * @param array<string,string> $uriVariables
      */
@@ -38,14 +40,42 @@ final class UserPatchProcessor implements ProcessorInterface
         array $context = []
     ): User {
         $userId = $uriVariables['id'];
-        $user = $this->userRepository->find(
-            (string) $userId
-        ) ?? throw new UserNotFoundException();
+        $user = $this->userRepository->find($userId)
+            ?? throw new UserNotFoundException();
 
-        $newEmail = $data->email ?? $user->getEmail();
-        $newInitials = $data->initials ?? $user->getInitials();
-        $newPassword = $data->newPassword ?? $data->oldPassword;
+        $newEmail = $this->getNewValue($data->email, $user->getEmail());
+        $newInitials = $this->getNewValue(
+            $data->initials,
+            $user->getInitials()
+        );
+        $newPassword = $this->getNewValue(
+            $data->newPassword,
+            $data->oldPassword
+        );
 
+        $this->dispatchCommand(
+            $user,
+            $newEmail,
+            $newInitials,
+            $newPassword,
+            $data->oldPassword
+        );
+
+        return $user;
+    }
+
+    private function getNewValue(string $newValue, string $defaultValue): string
+    {
+        return strlen(trim($newValue)) > 0 ? $newValue : $defaultValue;
+    }
+
+    private function dispatchCommand(
+        UserInterface $user,
+        string $newEmail,
+        string $newInitials,
+        string $newPassword,
+        string $oldPassword
+    ): void {
         $this->commandBus->dispatch(
             $this->updateUserCommandFactory->create(
                 $user,
@@ -53,11 +83,9 @@ final class UserPatchProcessor implements ProcessorInterface
                     $newEmail,
                     $newInitials,
                     $newPassword,
-                    $data->oldPassword
+                    $oldPassword
                 )
             )
         );
-
-        return $user;
     }
 }

@@ -38,9 +38,8 @@ final class UserPutProcessor implements ProcessorInterface
         array $context = []
     ): User {
         $userId = $uriVariables['id'];
-        $user = $this->userRepository->find(
-            (string) $userId
-        ) ?? throw new UserNotFoundException();
+        $user = $this->userRepository->find($userId)
+            ?? throw new UserNotFoundException();
 
         $this->commandBus->dispatch(
             $this->updateUserCommandFactory->create(

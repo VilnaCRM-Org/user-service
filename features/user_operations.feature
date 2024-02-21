@@ -130,6 +130,13 @@ Feature: User Operations
     Then the response status code should be 200
     And user with id "8be90127-9840-4235-a6da-39b8debfb222" should be returned
 
+  Scenario: Updating user without optional fields
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
+    And updating user with oldPassword "passWORD1"
+    When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
+    Then the response status code should be 200
+    And user with id "8be90127-9840-4235-a6da-39b8debfb222" should be returned
+
   Scenario: Updating user with wrong password
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
     And updating user with email "testpatch@mail.com", initials "name surname", oldPassword "wrongpassWORD1", newPassword "passWORD1"
