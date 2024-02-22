@@ -4,43 +4,26 @@ declare(strict_types=1);
 
 namespace App\User\Application\MutationInput;
 
-use App\Shared\Application\Validator\Initials;
+use App\Shared\Application\Validator\OptionalEmail;
+use App\Shared\Application\Validator\OptionalInitials;
+use App\Shared\Application\Validator\OptionalPassword;
 use App\Shared\Application\Validator\Password;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class UpdateUserMutationInput implements MutationInput
 {
-    public const INITIALS_NOT_NULL = 'initials_not_null';
-    public const EMAIL_NOT_NULL = 'email_not_null';
-    public const NEW_PASSWORD_NOT_NULL = 'new_password_not_null';
-
-    /**
-     * @param array<string> $validationGroups
-     */
     public function __construct(
-        private array $validationGroups,
         #[Assert\NotBlank]
         #[Password]
         public ?string $password = null,
-        #[Assert\NotBlank(groups: [self::INITIALS_NOT_NULL])]
-        #[Assert\Length(max: 255, groups: [self::INITIALS_NOT_NULL])]
-        #[Initials(groups: [self::NEW_PASSWORD_NOT_NULL])]
+        #[Assert\Length(max: 255)]
+        #[OptionalInitials]
         public ?string $initials = null,
-        #[Assert\Email(groups: [self::EMAIL_NOT_NULL])]
-        #[Assert\NotBlank(groups: [self::EMAIL_NOT_NULL])]
-        #[Assert\Length(max: 255, groups: [self::EMAIL_NOT_NULL])]
+        #[OptionalEmail]
+        #[Assert\Length(max: 255)]
         public ?string $email = null,
-        #[Assert\NotBlank(groups: [self::NEW_PASSWORD_NOT_NULL])]
-        #[Password(groups: [self::NEW_PASSWORD_NOT_NULL])]
+        #[OptionalPassword]
         public ?string $newPassword = null,
     ) {
-    }
-
-    /**
-     * @return array<string>
-     */
-    public function getValidationGroups(): array
-    {
-        return $this->validationGroups;
     }
 }

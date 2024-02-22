@@ -14,12 +14,4 @@ final readonly class ConfirmUserMutationInput implements MutationInput
         public ?string $token = null
     ) {
     }
-
-    /**
-     * @return array<string>
-     */
-    public function getValidationGroups(): array
-    {
-        return [];
-    }
 }

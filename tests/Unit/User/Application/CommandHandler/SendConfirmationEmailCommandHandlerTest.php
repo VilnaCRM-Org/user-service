@@ -25,6 +25,7 @@ class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
     private SendConfirmationEmailCommandHandler $handler;
     private EventBusInterface $eventBus;
     private UuidFactory $uuidFactory;
+    private UuidFactory $mockUuidFactory;
     private ConfirmationEmailSendEventFactoryInterface $eventFactory;
     private UserFactoryInterface $userFactory;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
@@ -38,6 +39,7 @@ class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
 
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->uuidFactory = new UuidFactory();
+        $this->mockUuidFactory = $this->createMock(UuidFactory::class);
         $this->eventFactory = new ConfirmationEmailSendEventFactory();
         $this->userFactory = new UserFactory();
         $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
@@ -47,7 +49,7 @@ class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
 
         $this->handler = new SendConfirmationEmailCommandHandler(
             $this->eventBus,
-            $this->uuidFactory
+            $this->mockUuidFactory
         );
     }
 
@@ -57,6 +59,10 @@ class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
         $name = $this->faker->name();
         $password = $this->faker->password();
         $userId = $this->uuidTransformer->transformFromString($this->faker->uuid());
+
+        $this->mockUuidFactory->expects($this->once())
+            ->method('create')
+            ->willReturn($this->uuidFactory->create());
 
         $user = $this->userFactory->create($email, $name, $password, $userId);
         $token = $this->confirmationTokenFactory->create($user->getId());

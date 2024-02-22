@@ -18,8 +18,6 @@ final class MutationInputValidator
     {
         $errors = $this->validator->validate(
             $input,
-            null,
-            $input->getValidationGroups()
         );
 
         if (count($errors) > 0) {

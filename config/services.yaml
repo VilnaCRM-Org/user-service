@@ -48,11 +48,13 @@ services:
     api_platform.state.error_provider:
         class: 'App\Shared\Infrastructure\ErrorProvider'
 
-    App\User\Domain\Factory\UserFactory:
-    App\User\Domain\Factory\EmailFactory:
     App\User\Domain\Factory\ConfirmationTokenFactory:
         arguments:
             $tokenLength: 10
+
+    App\Shared\Application\Validator\OptionalEmailValidator:
+        arguments:
+            $emailValidator: '@validator.email'
 
     # Event listener for OAuth2 password grant
     App\OAuth\Application\EventListener\UserResolveListener:

@@ -6,8 +6,4 @@ namespace App\User\Application\MutationInput;
 
 interface MutationInput
 {
-    /**
-     * @return array<string>
-     */
-    public function getValidationGroups(): array;
 }

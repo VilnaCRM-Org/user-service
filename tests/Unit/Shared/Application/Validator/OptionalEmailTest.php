@@ -7,7 +7,7 @@ namespace App\Tests\Unit\Shared\Application\Validator;
 use App\Shared\Application\Validator\OptionalInitials;
 use App\Tests\Unit\UnitTestCase;
 
-class OptionalInitialsTest extends UnitTestCase
+class OptionalEmailTest extends UnitTestCase
 {
     public function testConstraintInitialization(): void
     {

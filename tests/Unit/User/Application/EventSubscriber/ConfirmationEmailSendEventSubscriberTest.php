@@ -57,12 +57,14 @@ class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
         );
 
         $emailAddress = $this->faker->email();
-        $token = $this->confirmationTokenFactory->create($this->faker->uuid());
+        $userId = $this->faker->uuid();
+        $token = $this->confirmationTokenFactory->create($userId);
+        $tokenValue = $token->getTokenValue();
         $user = $this->userFactory->create(
             $emailAddress,
             $this->faker->name(),
             $this->faker->password(),
-            $this->uuidTransformer->transformFromString($this->faker->uuid())
+            $this->uuidTransformer->transformFromString($userId)
         );
 
         $event = $this->sendEventFactory->create($token, $user, $this->faker->uuid());
@@ -71,14 +73,27 @@ class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
             ->method('save')
             ->with($this->equalTo($token));
 
+        $subject = $this->faker->title();
+
+        $translator->expects($this->exactly(2))
+            ->method('trans')
+            ->withConsecutive(['email.confirm.subject'], ['email.confirm.text', ['tokenValue' => $tokenValue]])
+            ->willReturnOnConsecutiveCalls($subject, $tokenValue);
+
         $email = $this->emailFactory->create(
             $emailAddress,
-            $this->faker->text(),
-            $this->faker->text(),
-            ''
+            $subject,
+            $tokenValue,
+            'email/confirm.html.twig'
         );
         $mockEmailFactory->expects($this->once())
             ->method('create')
+            ->with(
+                $emailAddress,
+                $subject,
+                $tokenValue,
+                'email/confirm.html.twig'
+            )
             ->willReturn($email);
 
         $mailer->expects($this->once())

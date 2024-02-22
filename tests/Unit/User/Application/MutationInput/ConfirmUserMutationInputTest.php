@@ -24,11 +24,4 @@ class ConfirmUserMutationInputTest extends UnitTestCase
 
         $this->assertNull($input->token);
     }
-
-    public function testGetValidationGroups()
-    {
-        $input = new ConfirmUserMutationInput();
-
-        self::assertEquals([], $input->getValidationGroups());
-    }
 }

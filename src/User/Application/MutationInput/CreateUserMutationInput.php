@@ -27,12 +27,4 @@ final readonly class CreateUserMutationInput implements MutationInput
         public ?string $password = null,
     ) {
     }
-
-    /**
-     * @return array<string>
-     */
-    public function getValidationGroups(): array
-    {
-        return [];
-    }
 }

@@ -41,10 +41,10 @@ class CallableFirstParameterExtractorTest extends UnitTestCase
 
     public function testExtractForPipedCallables(): void
     {
-        $subscriber = new class() implements DomainEventSubscriberInterface {
+        $subscriber1 = new class() implements DomainEventSubscriberInterface {
             public static function subscribedTo(): array
             {
-                return ['MyEvent'];
+                return ['MyEvent1'];
             }
 
             public function __invoke(): void
@@ -52,10 +52,22 @@ class CallableFirstParameterExtractorTest extends UnitTestCase
             }
         };
 
-        $callables = [$subscriber];
+        $subscriber2 = new class() implements DomainEventSubscriberInterface {
+            public static function subscribedTo(): array
+            {
+                return ['MyEvent2'];
+            }
+
+            public function __invoke(): void
+            {
+            }
+        };
+
+        $callables = [$subscriber1, $subscriber2];
 
         $expected = [
-            'MyEvent' => [$subscriber],
+            'MyEvent1' => [$subscriber1],
+            'MyEvent2' => [$subscriber2],
         ];
 
         $extracted = $this->extractor->forPipedCallables($callables);

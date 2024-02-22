@@ -35,14 +35,6 @@ class UpdateUserMutationInputTransformerTest extends UnitTestCase
         $input = $transformer->transform($args);
 
         $this->assertInstanceOf(UpdateUserMutationInput::class, $input);
-        $this->assertEquals(
-            [
-                UpdateUserMutationInput::INITIALS_NOT_NULL,
-                UpdateUserMutationInput::EMAIL_NOT_NULL,
-                UpdateUserMutationInput::NEW_PASSWORD_NOT_NULL,
-            ],
-            $input->getValidationGroups()
-        );
         $this->assertEquals($password, $input->password);
         $this->assertEquals($initials, $input->initials);
         $this->assertEquals($email, $input->email);
@@ -63,13 +55,6 @@ class UpdateUserMutationInputTransformerTest extends UnitTestCase
         $input = $transformer->transform($args);
 
         $this->assertInstanceOf(UpdateUserMutationInput::class, $input);
-        $this->assertEquals(
-            [
-                UpdateUserMutationInput::EMAIL_NOT_NULL,
-                UpdateUserMutationInput::NEW_PASSWORD_NOT_NULL
-            ],
-            $input->getValidationGroups()
-        );
         $this->assertNull($input->password);
         $this->assertNull($input->initials);
         $this->assertEquals($email, $input->email);
@@ -82,7 +67,6 @@ class UpdateUserMutationInputTransformerTest extends UnitTestCase
         $input = $transformer->transform([]);
 
         $this->assertInstanceOf(UpdateUserMutationInput::class, $input);
-        $this->assertEquals([], $input->getValidationGroups());
         $this->assertNull($input->password);
         $this->assertNull($input->initials);
         $this->assertNull($input->email);
