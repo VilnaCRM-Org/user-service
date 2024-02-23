@@ -32,6 +32,13 @@ class ConfirmationTokenTest extends UnitTestCase
         $this->confirmationToken->send();
     }
 
+    public function testSendWithDatetime(): void
+    {
+        $this->expectException(UserTimedOutException::class);
+        $this->confirmationToken->send($this->confirmationToken->getAllowedToSendAfter());
+    }
+
+
     public function testSetTimesSend()
     {
         $num = $this->faker->numberBetween(1, 10);

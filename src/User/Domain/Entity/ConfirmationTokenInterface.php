@@ -6,5 +6,5 @@ namespace App\User\Domain\Entity;
 
 interface ConfirmationTokenInterface
 {
-    public function send(): void;
+    public function send(?\DateTimeImmutable $sendAt = null): void;
 }

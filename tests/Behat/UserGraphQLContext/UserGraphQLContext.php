@@ -195,6 +195,16 @@ class UserGraphQLContext implements Context
     }
 
     /**
+     * @Then graphql response should be null
+     */
+    public function queryResponseShouldBeNull(): void
+    {
+        $userData = json_decode($this->response->getContent(), true)['data'][$this->queryName];
+
+        Assert::assertNull($userData);
+    }
+
+    /**
      * @Then collection of users should be returned
      */
     public function collectionOfUsersShouldBeReturned(): void

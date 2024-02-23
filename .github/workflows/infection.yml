@@ -1,0 +1,22 @@
+name: mutation testing
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  infection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Install Dependencies
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Run infection
+        run: php -d memory_limit=-1 ./vendor/bin/infection --show-mutations -j8

@@ -71,11 +71,11 @@ final class ConfirmationToken implements ConfirmationTokenInterface
         $this->userID = $userID;
     }
 
-    public function send(): void
+    public function send(?\DateTimeImmutable $sendAt = null): void
     {
-        $datetime = new \DateTimeImmutable();
+        $datetime = $sendAt ?? new \DateTimeImmutable();
 
-        if ($this->allowedToSendAfter > $datetime) {
+        if ($this->allowedToSendAfter >= $datetime) {
             throw new UserTimedOutException($this->allowedToSendAfter);
         }
 
