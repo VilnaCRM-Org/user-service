@@ -11,8 +11,14 @@ final class Initials extends Constraint
 {
     public function __construct(
         ?array $groups = null,
-        mixed $payload = null
+        mixed $payload = null,
+        private bool $optional = false,
     ) {
         parent::__construct([], $groups, $payload);
+    }
+
+    public function isOptional(): bool
+    {
+        return $this->optional;
     }
 }

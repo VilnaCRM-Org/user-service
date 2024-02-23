@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit\Shared\Domain\Aggregate;
 
 use App\Shared\Domain\Aggregate\AggregateRoot;
@@ -13,7 +15,7 @@ class AggregateRootTest extends TestCase
         $event1 = $this->createMock(DomainEvent::class);
         $event2 = $this->createMock(DomainEvent::class);
 
-        $aggregateRoot = new class extends AggregateRoot {
+        $aggregateRoot = new class() extends AggregateRoot {
             public function getDomainEvents(): array
             {
                 return $this->pullDomainEvents();

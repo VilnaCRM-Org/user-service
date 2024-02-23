@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Shared\Application\Validator;
 use App\Shared\Application\Validator\Password;
 use App\Shared\Application\Validator\PasswordValidator;
 use App\Tests\Unit\UnitTestCase;
+use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Violation\ConstraintViolationBuilderInterface;
 
@@ -14,6 +15,7 @@ class PasswordValidatorTest extends UnitTestCase
 {
     private PasswordValidator $validator;
     private ExecutionContextInterface $context;
+    private Constraint $constraint;
 
     protected function setUp(): void
     {
@@ -21,6 +23,7 @@ class PasswordValidatorTest extends UnitTestCase
         $this->context = $this->createMock(ExecutionContextInterface::class);
         $this->validator = new PasswordValidator();
         $this->validator->initialize($this->context);
+        $this->constraint = $this->createMock(Password::class);
     }
 
     public function testValidValue(): void
@@ -28,7 +31,28 @@ class PasswordValidatorTest extends UnitTestCase
         $this->context->expects($this->never())->method('buildViolation');
         $this->validator->validate(
             'Password123',
-            $this->createMock(Password::class)
+            $this->constraint
+        );
+    }
+
+    public function testOptional(): void
+    {
+        $this->constraint->expects($this->once())
+            ->method('isOptional')
+            ->willReturn(true);
+        $this->context->expects($this->never())->method('buildViolation');
+        $this->validator->validate(
+            '',
+            $this->constraint
+        );
+    }
+
+    public function testOptionalDefaultValue(): void
+    {
+        $this->context->expects($this->atLeast(1))->method('buildViolation');
+        $this->validator->validate(
+            '',
+            new Password()
         );
     }
 
@@ -43,7 +67,7 @@ class PasswordValidatorTest extends UnitTestCase
 
         $this->validator->validate(
             'Pass1',
-            $this->createMock(Password::class)
+            $this->constraint
         );
     }
 
@@ -58,7 +82,7 @@ class PasswordValidatorTest extends UnitTestCase
 
         $this->validator->validate(
             'Password',
-            $this->createMock(Password::class)
+            $this->constraint
         );
     }
 
@@ -73,7 +97,7 @@ class PasswordValidatorTest extends UnitTestCase
 
         $this->validator->validate(
             'password123',
-            $this->createMock(Password::class)
+            $this->constraint
         );
     }
 }

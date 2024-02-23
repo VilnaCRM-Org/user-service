@@ -52,10 +52,6 @@ services:
         arguments:
             $tokenLength: 10
 
-    App\Shared\Application\Validator\OptionalEmailValidator:
-        arguments:
-            $emailValidator: '@validator.email'
-
     # Event listener for OAuth2 password grant
     App\OAuth\Application\EventListener\UserResolveListener:
         tags:

@@ -11,6 +11,9 @@ final class PasswordValidator extends ConstraintValidator
 {
     public function validate(mixed $value, Constraint $constraint): void
     {
+        if ($constraint->isOptional() && $this->isEmpty($value)) {
+            return;
+        }
         $this->validateLength($value);
         $this->validateUppercase($value);
         $this->validateNumber($value);
@@ -45,5 +48,10 @@ final class PasswordValidator extends ConstraintValidator
     {
         $this->context->buildViolation($message)
             ->addViolation();
+    }
+
+    private function isEmpty(mixed $value): bool
+    {
+        return $value === null || $value === '';
     }
 }

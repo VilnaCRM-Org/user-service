@@ -14,7 +14,12 @@ use Doctrine\DBAL\Driver\Exception;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\DBAL\Query;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Persisters\Entity\EntityPersister;
+use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 
 class MariaDBUserRepositoryTest extends UnitTestCase
@@ -34,6 +39,46 @@ class MariaDBUserRepositoryTest extends UnitTestCase
         $this->userRepository = new MariaDBUserRepository($this->entityManager, $this->registry);
         $this->userFactory = new UserFactory();
         $this->transformer = new UuidTransformer();
+    }
+
+    public function testFindByEmailReturnsUser(): void
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+
+        $expectedUser = $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->transformer->transformFromString($this->faker->uuid())
+        );
+
+
+        $serviceEntityRepository = $this->createMock(ObjectRepository::class);
+        $serviceEntityRepository->method('findOneBy')->willReturn($expectedUser);
+
+        $unitOfWork = $this->createMock(UnitOfWork::class);
+        $persister = $this->createMock(EntityPersister::class);
+
+        $this->entityManager->method('getClassMetadata')
+            ->willReturn($this->createMock(ClassMetadata::class));
+        $this->entityManager->method('getUnitOfWork')
+            ->willReturn($unitOfWork);
+
+        $unitOfWork->method('getEntityPersister')
+            ->willReturn($persister);
+
+        $persister->method('load')
+            ->willReturn($expectedUser);
+
+        $this->registry->method('getRepository')->willReturn($serviceEntityRepository);
+        $this->registry->method('getManagerForClass')
+            ->willReturn($this->entityManager);
+
+        $user = $this->userRepository->findByEmail($email);
+
+        $this->assertSame($expectedUser, $user);
     }
 
     public function testSave(): void

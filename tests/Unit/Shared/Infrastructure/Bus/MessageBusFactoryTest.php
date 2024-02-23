@@ -20,7 +20,8 @@ class MessageBusFactoryTest extends UnitTestCase
         $factory = new MessageBusFactory();
 
         $messageBus = $factory->create($commandHandlers);
-        $expectedMessageBus = new MessageBus([
+        $expectedMessageBus = new MessageBus(
+            [
             new HandleMessageMiddleware(
                 new HandlersLocator(
                     CallableFirstParameterExtractor::forCallables(
