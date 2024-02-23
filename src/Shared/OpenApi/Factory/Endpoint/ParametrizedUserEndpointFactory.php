@@ -12,6 +12,7 @@ use App\Shared\OpenApi\Factory\Response\BadRequestResponseFactory;
 use App\Shared\OpenApi\Factory\Response\DuplicateEmailResponseFactory;
 use App\Shared\OpenApi\Factory\Response\UserDeletedResponseFactory;
 use App\Shared\OpenApi\Factory\Response\UserNotFoundResponseFactory;
+use App\Shared\OpenApi\Factory\Response\UserUpdatedResponseFactory;
 use App\Shared\OpenApi\Factory\Response\ValidationErrorResponseFactory;
 use App\Shared\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -26,6 +27,7 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
     private Response $userNotFoundResponse;
     private Response $validationErrorResponse;
     private Response $userDeletedResponse;
+    private Response $userUpdatedResponse;
 
     public function __construct(
         private ValidationErrorResponseFactory $validationErrorResponseFactory,
@@ -33,7 +35,8 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
         private BadRequestResponseFactory $badRequestResponseFactory,
         private UserNotFoundResponseFactory $userNotFoundResponseFactory,
         private UserDeletedResponseFactory $deletedResponseFactory,
-        private UuidUriParameterFactory $parameterFactory
+        private UuidUriParameterFactory $parameterFactory,
+        private UserUpdatedResponseFactory $userReturnedResponseFactory,
     ) {
         $this->uuidWithExamplePathParam =
             $this->parameterFactory->getParameter();
@@ -52,6 +55,9 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
 
         $this->userDeletedResponse =
             $this->deletedResponseFactory->getResponse();
+
+        $this->userUpdatedResponse =
+            $this->userReturnedResponseFactory->getResponse();
     }
 
     public function createEndpoint(OpenApi $openApi): void
@@ -96,6 +102,7 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
     {
         $valResponse = $this->validationErrorResponse;
         return [
+            HttpResponse::HTTP_OK => $this->userUpdatedResponse,
             HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
             HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
             HttpResponse::HTTP_CONFLICT => $this->duplicateEmailResponse,

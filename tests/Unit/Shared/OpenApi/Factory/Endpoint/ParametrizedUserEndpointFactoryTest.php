@@ -14,6 +14,7 @@ use App\Shared\OpenApi\Factory\Response\BadRequestResponseFactory;
 use App\Shared\OpenApi\Factory\Response\DuplicateEmailResponseFactory;
 use App\Shared\OpenApi\Factory\Response\UserDeletedResponseFactory;
 use App\Shared\OpenApi\Factory\Response\UserNotFoundResponseFactory;
+use App\Shared\OpenApi\Factory\Response\UserUpdatedResponseFactory;
 use App\Shared\OpenApi\Factory\Response\ValidationErrorResponseFactory;
 use App\Shared\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
 use App\Tests\Unit\UnitTestCase;
@@ -28,18 +29,21 @@ class ParametrizedUserEndpointFactoryTest extends UnitTestCase
         $userNotFoundResponseFactory = $this->createMock(UserNotFoundResponseFactory::class);
         $userDeletedResponseFactory = $this->createMock(UserDeletedResponseFactory::class);
         $uuidUriParameterFactory = $this->createMock(UuidUriParameterFactory::class);
+        $userUpdatedResponseFactory = $this->createMock(UserUpdatedResponseFactory::class);
 
         $validationErrorResponse = $this->createMock(Response::class);
         $duplicateEmailResponse = $this->createMock(Response::class);
         $badRequestResponse = $this->createMock(Response::class);
         $userNotFoundResponse = $this->createMock(Response::class);
         $userDeletedResponse = $this->createMock(Response::class);
+        $userUpdatedResponse = $this->createMock(Response::class);
 
         $validationErrorResponseFactory->expects($this->once())->method('getResponse')->willReturn($validationErrorResponse);
         $duplicateEmailResponseFactory->expects($this->once())->method('getResponse')->willReturn($duplicateEmailResponse);
         $badRequestResponseFactory->expects($this->once())->method('getResponse')->willReturn($badRequestResponse);
         $userNotFoundResponseFactory->expects($this->once())->method('getResponse')->willReturn($userNotFoundResponse);
         $userDeletedResponseFactory->expects($this->once())->method('getResponse')->willReturn($userDeletedResponse);
+        $userUpdatedResponseFactory->expects($this->once())->method('getResponse')->willReturn($userUpdatedResponse);
 
         $factory = new ParametrizedUserEndpointFactory(
             $validationErrorResponseFactory,
@@ -47,7 +51,8 @@ class ParametrizedUserEndpointFactoryTest extends UnitTestCase
             $badRequestResponseFactory,
             $userNotFoundResponseFactory,
             $userDeletedResponseFactory,
-            $uuidUriParameterFactory
+            $uuidUriParameterFactory,
+            $userUpdatedResponseFactory,
         );
 
         $openApi = $this->createMock(OpenApi::class);

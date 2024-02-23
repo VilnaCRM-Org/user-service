@@ -8,6 +8,7 @@ use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\OpenApi\Factory\Response\BadRequestResponseFactory;
 use App\Shared\OpenApi\Factory\Response\DuplicateEmailResponseFactory;
+use App\Shared\OpenApi\Factory\Response\UserCreatedResponseFactory;
 use App\Shared\OpenApi\Factory\Response\ValidationErrorResponseFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
@@ -18,11 +19,13 @@ final class UserEndpointFactory implements AbstractEndpointFactory
     private Response $duplicateEmailResponse;
     private Response $validationErrorResponse;
     private Response $badRequestResponse;
+    private Response $userCreatedResponse;
 
     public function __construct(
         private ValidationErrorResponseFactory $validationErrorResponseFactory,
         private DuplicateEmailResponseFactory $duplicateEmailResponseFactory,
-        private BadRequestResponseFactory $badRequestResponseFactory
+        private BadRequestResponseFactory $badRequestResponseFactory,
+        private UserCreatedResponseFactory $userCreatedResponseFactory
     ) {
         $this->duplicateEmailResponse =
             $this->duplicateEmailResponseFactory->getResponse();
@@ -30,6 +33,8 @@ final class UserEndpointFactory implements AbstractEndpointFactory
             $this->validationErrorResponseFactory->getResponse();
         $this->badRequestResponse =
             $this->badRequestResponseFactory->getResponse();
+        $this->userCreatedResponse =
+            $this->userCreatedResponseFactory->getResponse();
     }
 
     public function createEndpoint(OpenApi $openApi): void
@@ -56,6 +61,7 @@ final class UserEndpointFactory implements AbstractEndpointFactory
     {
         $valResponse = $this->validationErrorResponse;
         return [
+            HttpResponse::HTTP_CREATED => $this->userCreatedResponse,
             HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
             HttpResponse::HTTP_CONFLICT => $this->duplicateEmailResponse,
             HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $valResponse,

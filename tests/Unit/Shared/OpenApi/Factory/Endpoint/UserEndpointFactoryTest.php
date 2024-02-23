@@ -12,6 +12,7 @@ use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\OpenApi\Factory\Endpoint\UserEndpointFactory;
 use App\Shared\OpenApi\Factory\Response\BadRequestResponseFactory;
 use App\Shared\OpenApi\Factory\Response\DuplicateEmailResponseFactory;
+use App\Shared\OpenApi\Factory\Response\UserCreatedResponseFactory;
 use App\Shared\OpenApi\Factory\Response\ValidationErrorResponseFactory;
 use App\Tests\Unit\UnitTestCase;
 
@@ -22,19 +23,23 @@ class UserEndpointFactoryTest extends UnitTestCase
         $validationErrorResponseFactory = $this->createMock(ValidationErrorResponseFactory::class);
         $duplicateEmailResponseFactory = $this->createMock(DuplicateEmailResponseFactory::class);
         $badRequestResponseFactory = $this->createMock(BadRequestResponseFactory::class);
+        $userCreatedResponseFactory = $this->createMock(UserCreatedResponseFactory::class);
 
         $validationErrorResponse = $this->createMock(Response::class);
         $duplicateEmailResponse = $this->createMock(Response::class);
         $badRequestResponse = $this->createMock(Response::class);
+        $userCreatedResponse = $this->createMock(Response::class);
 
         $validationErrorResponseFactory->expects($this->once())->method('getResponse')->willReturn($validationErrorResponse);
         $duplicateEmailResponseFactory->expects($this->once())->method('getResponse')->willReturn($duplicateEmailResponse);
         $badRequestResponseFactory->expects($this->once())->method('getResponse')->willReturn($badRequestResponse);
+        $userCreatedResponseFactory->expects($this->once())->method('getResponse')->willReturn($userCreatedResponse);
 
         $factory = new UserEndpointFactory(
             $validationErrorResponseFactory,
             $duplicateEmailResponseFactory,
-            $badRequestResponseFactory
+            $badRequestResponseFactory,
+            $userCreatedResponseFactory
         );
 
         $openApi = $this->createMock(OpenApi::class);
