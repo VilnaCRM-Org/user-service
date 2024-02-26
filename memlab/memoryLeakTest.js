@@ -1,7 +1,14 @@
 require('dotenv').config();
 
 function url() {
-  return process.env.WEBSITE_URL || 'http://localhost:3000';
+  return process.env.WEBSITE_URL;
+}
+async function action() {
+
 }
 
-module.exports = { url };
+async function back() {
+
+}
+
+module.exports = { action, back, url };
