@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Domain\ValueObject;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Domain\ValueObject\UserUpdateData;
+use App\User\Domain\ValueObject\UserUpdate;
 
 class UserUpdateDataTest extends UnitTestCase
 {
@@ -16,7 +16,7 @@ class UserUpdateDataTest extends UnitTestCase
         $oldPassword = $this->faker->password();
         $newPassword = $this->faker->password();
 
-        $updateData = new UserUpdateData(
+        $updateData = new UserUpdate(
             $email,
             $initials,
             $newPassword,

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Domain\ValueObject;
 
-final readonly class UserUpdateData
+final readonly class UserUpdate
 {
     public function __construct(
         public string $newEmail,

@@ -10,7 +10,7 @@ use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactoryInterface;
 
-final class ConfirmationEmailFactory implements
+final readonly class ConfirmationEmailFactory implements
     ConfirmationEmailFactoryInterface
 {
     public function __construct(

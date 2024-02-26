@@ -12,7 +12,7 @@ use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Factory\ConfirmationEmailFactoryInterface;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 
-final class EmailChangedEventSubscriber implements
+final readonly class EmailChangedEventSubscriber implements
     DomainEventSubscriberInterface
 {
     public function __construct(

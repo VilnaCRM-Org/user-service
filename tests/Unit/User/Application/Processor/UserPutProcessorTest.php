@@ -9,15 +9,15 @@ use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\UserPutDto;
-use App\User\Application\Exception\UserNotFoundException;
 use App\User\Application\Factory\UpdateUserCommandFactory;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\Processor\UserPutProcessor;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Domain\ValueObject\UserUpdateData;
+use App\User\Domain\ValueObject\UserUpdate;
 
 class UserPutProcessorTest extends UnitTestCase
 {
@@ -59,7 +59,7 @@ class UserPutProcessorTest extends UnitTestCase
             $password,
             $this->uuidTransformer->transformFromString($userId)
         );
-        $updateData = new UserUpdateData($email, $initials, $password, $password);
+        $updateData = new UserUpdate($email, $initials, $password, $password);
         $command = $this->updateUserCommandFactory->create(
             $user,
             $updateData

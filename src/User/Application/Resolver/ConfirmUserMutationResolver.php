@@ -6,15 +6,16 @@ namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\Exception\TokenNotFoundException;
-use App\User\Application\Exception\UserNotFoundException;
 use App\User\Application\Factory\ConfirmUserCommandFactoryInterface;
 use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\Transformer\ConfirmUserMutationInputTransformer;
+use App\User\Domain\Exception\TokenNotFoundException;
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
-final class ConfirmUserMutationResolver implements MutationResolverInterface
+final readonly class ConfirmUserMutationResolver implements
+    MutationResolverInterface
 {
     public function __construct(
         private TokenRepositoryInterface $tokenRepository,

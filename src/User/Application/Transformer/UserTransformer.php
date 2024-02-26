@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace App\User\Application\Transformer;
 
 use App\Shared\Application\Transformer\UuidTransformer;
-use App\User\Application\DTO\AuthorizationUser;
+use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Domain\Entity\User;
 
-final class UserTransformer
+final readonly class UserTransformer
 {
     public function __construct(private UuidTransformer $transformer)
     {
     }
 
-    public function transformToAuthorizationUser(User $user): AuthorizationUser
-    {
-        return new AuthorizationUser(
+    public function transformToAuthorizationUser(
+        User $user
+    ): AuthorizationUserDto {
+        return new AuthorizationUserDto(
             $user->getEmail(),
             $user->getInitials(),
             $user->getPassword(),

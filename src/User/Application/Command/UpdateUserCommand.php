@@ -6,13 +6,13 @@ namespace App\User\Application\Command;
 
 use App\Shared\Domain\Bus\Command\CommandInterface;
 use App\User\Domain\Entity\User;
-use App\User\Domain\ValueObject\UserUpdateData;
+use App\User\Domain\ValueObject\UserUpdate;
 
 final readonly class UpdateUserCommand implements CommandInterface
 {
     public function __construct(
         public User $user,
-        public UserUpdateData $updateData,
+        public UserUpdate $updateData,
     ) {
     }
 }

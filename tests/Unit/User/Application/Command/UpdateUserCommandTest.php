@@ -9,7 +9,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\UpdateUserCommand;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
-use App\User\Domain\ValueObject\UserUpdateData;
+use App\User\Domain\ValueObject\UserUpdate;
 
 class UpdateUserCommandTest extends UnitTestCase
 {
@@ -36,7 +36,7 @@ class UpdateUserCommandTest extends UnitTestCase
             $password,
             $this->transformer->transformFromString($this->faker->uuid())
         );
-        $updateData = new UserUpdateData(
+        $updateData = new UserUpdate(
             $email,
             $initials,
             $password,

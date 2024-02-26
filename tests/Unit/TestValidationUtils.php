@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use Faker\Factory;
+use Faker\Generator;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class TestValidationUtils
 {
-    public \Faker\Generator $faker;
+    public Generator $faker;
     public ValidatorInterface $validator;
     public function __construct()
     {
@@ -20,8 +21,11 @@ class TestValidationUtils
             ->getValidator();
     }
 
-    public function addCharToBeginning(string $string, int $length, string $char): string
-    {
+    public function addCharToBeginning(
+        string $string,
+        int $length = 256,
+        string $char = 'a'
+    ): string {
         if (strlen($string) >= $length) {
             return $string;
         }

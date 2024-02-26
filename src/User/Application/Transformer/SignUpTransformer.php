@@ -10,7 +10,7 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-final class SignUpTransformer
+final readonly class SignUpTransformer
 {
     public function __construct(
         private UserFactoryInterface $userFactory,

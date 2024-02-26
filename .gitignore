@@ -40,3 +40,7 @@ summary.log
 /config/keys
 supervisord.log
 supervisord.pid
+
+###> qossmic/deptrac-shim ###
+/.deptrac.cache
+###< qossmic/deptrac-shim ###

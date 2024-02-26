@@ -36,7 +36,7 @@ class UpdateUserMutationInputTest extends UnitTestCase
 
     public function testMaxEmailLength(): void
     {
-        $email = $this->validationUtils->addCharToBeginning($this->faker->email(), 256, 'a');
+        $email = $this->validationUtils->addCharToBeginning($this->faker->email());
         $dto = new UpdateUserMutationInput(
             $this->validationUtils->getValidPassword(),
             $this->validationUtils->getValidInitials(),
@@ -55,7 +55,7 @@ class UpdateUserMutationInputTest extends UnitTestCase
     {
         $dto = new UpdateUserMutationInput(
             $this->validationUtils->getValidPassword(),
-            $this->validationUtils->addCharToBeginning($this->validationUtils->getValidInitials(), 256, 'a'),
+            $this->validationUtils->addCharToBeginning($this->validationUtils->getValidInitials()),
             $this->faker->email(),
             $this->validationUtils->getValidPassword(),
         );

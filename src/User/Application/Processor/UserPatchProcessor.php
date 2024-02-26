@@ -9,17 +9,17 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\UserPatchDto;
 use App\User\Application\DTO\UserPutDto;
-use App\User\Application\Exception\UserNotFoundException;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Domain\ValueObject\UserUpdateData;
+use App\User\Domain\ValueObject\UserUpdate;
 
 /**
  * @implements ProcessorInterface<UserPutDto, User>
  */
-final class UserPatchProcessor implements ProcessorInterface
+final readonly class UserPatchProcessor implements ProcessorInterface
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
@@ -79,7 +79,7 @@ final class UserPatchProcessor implements ProcessorInterface
         $this->commandBus->dispatch(
             $this->updateUserCommandFactory->create(
                 $user,
-                new UserUpdateData(
+                new UserUpdate(
                     $newEmail,
                     $newInitials,
                     $newPassword,

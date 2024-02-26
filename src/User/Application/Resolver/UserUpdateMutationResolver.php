@@ -9,9 +9,10 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\Transformer\UpdateUserMutationInputTransformer;
-use App\User\Domain\ValueObject\UserUpdateData;
+use App\User\Domain\ValueObject\UserUpdate;
 
-final class UserUpdateMutationResolver implements MutationResolverInterface
+final readonly class UserUpdateMutationResolver implements
+    MutationResolverInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,
@@ -39,7 +40,7 @@ final class UserUpdateMutationResolver implements MutationResolverInterface
         $this->commandBus->dispatch(
             $this->updateUserCommandFactory->create(
                 $user,
-                new UserUpdateData(
+                new UserUpdate(
                     $newEmail,
                     $newInitials,
                     $newPassword,

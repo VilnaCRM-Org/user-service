@@ -36,7 +36,7 @@ class UserPatchDtoTest extends UnitTestCase
 
     public function testMaxEmailLength(): void
     {
-        $email = $this->validationUtils->addCharToBeginning($this->faker->email(), 256, 'a');
+        $email = $this->validationUtils->addCharToBeginning($this->faker->email());
         $dto = new UserPatchDto(
             $email,
             $this->validationUtils->getValidInitials(),
@@ -55,7 +55,7 @@ class UserPatchDtoTest extends UnitTestCase
     {
         $dto = new UserPatchDto(
             $this->faker->email(),
-            $this->validationUtils->addCharToBeginning($this->validationUtils->getValidInitials(), 256, 'a'),
+            $this->validationUtils->addCharToBeginning($this->validationUtils->getValidInitials()),
             $this->validationUtils->getValidPassword(),
             $this->validationUtils->getValidPassword(),
         );

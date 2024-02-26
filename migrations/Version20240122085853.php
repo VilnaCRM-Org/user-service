@@ -35,7 +35,7 @@ final class Version20240122085853 extends AbstractMigration
 
     private function upAuthCodeTable(): void
     {
-        $this->addSql('CREATE TABLE oauth2_authorization_code 
+        $this->addSql('CREATE TABLE IF NOT EXISTS oauth2_authorization_code 
         (identifier CHAR(80) CHARACTER SET utf8mb4 NOT NULL COLLATE 
         `utf8mb4_unicode_ci`, client VARCHAR(32) CHARACTER SET utf8mb4 
         NOT NULL COLLATE `utf8mb4_unicode_ci`, expiry DATETIME 
@@ -51,10 +51,10 @@ final class Version20240122085853 extends AbstractMigration
 
     private function upClientTable(): void
     {
-        $this->addSql('CREATE TABLE oauth2_client (identifier VARCHAR(32) 
-        CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`, 
-        name VARCHAR(128) CHARACTER SET utf8mb4 NOT NULL COLLATE 
-        `utf8mb4_unicode_ci`, secret VARCHAR(128) CHARACTER SET utf8mb4 
+        $this->addSql('CREATE TABLE IF NOT EXISTS oauth2_client (identifier 
+        VARCHAR(32) CHARACTER SET utf8mb4 NOT NULL COLLATE 
+        `utf8mb4_unicode_ci`, name VARCHAR(128) CHARACTER SET utf8mb4 NOT NULL 
+        COLLATE `utf8mb4_unicode_ci`, secret VARCHAR(128) CHARACTER SET utf8mb4 
         DEFAULT NULL COLLATE `utf8mb4_unicode_ci`, redirect_uris 
         TEXT CHARACTER SET utf8mb4 DEFAULT NULL COLLATE 
         `utf8mb4_unicode_ci` COMMENT \'(DC2Type:oauth2_redirect_uri)\', 
@@ -70,7 +70,7 @@ final class Version20240122085853 extends AbstractMigration
 
     private function upRefreshTokenTable(): void
     {
-        $this->addSql('CREATE TABLE oauth2_refresh_token 
+        $this->addSql('CREATE TABLE IF NOT EXISTS oauth2_refresh_token 
         (identifier CHAR(80) CHARACTER SET utf8mb4 NOT NULL 
         COLLATE `utf8mb4_unicode_ci`, access_token CHAR(80) 
         CHARACTER SET utf8mb4 DEFAULT NULL COLLATE 
@@ -84,7 +84,7 @@ final class Version20240122085853 extends AbstractMigration
 
     private function upAccessTokenTable(): void
     {
-        $this->addSql('CREATE TABLE oauth2_access_token 
+        $this->addSql('CREATE TABLE IF NOT EXISTS oauth2_access_token 
         (identifier CHAR(80) CHARACTER SET utf8mb4 
         NOT NULL COLLATE `utf8mb4_unicode_ci`, client VARCHAR(32) 
         CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`, 

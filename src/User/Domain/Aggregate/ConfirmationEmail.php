@@ -15,7 +15,7 @@ final class ConfirmationEmail extends AggregateRoot implements
     public function __construct(
         public readonly ConfirmationTokenInterface $token,
         public readonly UserInterface $user,
-        private ConfirmationEmailSendEventFactoryInterface $eventFactory,
+        private readonly ConfirmationEmailSendEventFactoryInterface $factory,
     ) {
     }
 
@@ -23,7 +23,7 @@ final class ConfirmationEmail extends AggregateRoot implements
     {
         $this->token->send();
         $this->record(
-            $this->eventFactory->create(
+            $this->factory->create(
                 $this->token,
                 $this->user,
                 $eventID

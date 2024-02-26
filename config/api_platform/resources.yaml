@@ -2,10 +2,10 @@ resources:
   App\User\Domain\Entity\User:
     exceptionToStatus:
       'App\User\Domain\Exception\UserTimedOutException': 429
-      'App\User\Application\Exception\UserNotFoundException': 404
-      'App\User\Application\Exception\InvalidPasswordException': 400
-      'App\User\Application\Exception\TokenNotFoundException': 404
-      'App\User\Application\Exception\DuplicateEmailException': 409
+      'App\User\Domain\Exception\UserNotFoundException': 404
+      'App\User\Domain\Exception\InvalidPasswordException': 400
+      'App\User\Domain\Exception\TokenNotFoundException': 404
+      'App\User\Domain\Exception\DuplicateEmailException': 409
     normalizationContext:
       groups: [ 'output' ]
 

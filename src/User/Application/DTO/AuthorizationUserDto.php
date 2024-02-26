@@ -7,7 +7,7 @@ namespace App\User\Application\DTO;
 use App\Shared\Domain\ValueObject\UuidInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-final class AuthorizationUser implements UserInterface
+final readonly class AuthorizationUserDto implements UserInterface
 {
     public function __construct(
         private string $email,

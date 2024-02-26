@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Infrastructure;
+namespace App\Shared\Application;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ApiResource\Error;

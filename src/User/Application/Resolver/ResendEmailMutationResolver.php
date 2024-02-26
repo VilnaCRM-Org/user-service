@@ -12,7 +12,8 @@ use App\User\Domain\Factory\ConfirmationEmailFactoryInterface;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 
-final class ResendEmailMutationResolver implements MutationResolverInterface
+final readonly class ResendEmailMutationResolver implements
+    MutationResolverInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,

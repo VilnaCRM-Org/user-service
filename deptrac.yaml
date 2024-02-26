@@ -1,0 +1,88 @@
+parameters:
+  paths:
+    - ./src
+  exclude_files:
+    - .*test.*
+  layers:
+    - name: Application
+      collectors:
+        - type: className
+          regex: .*App\\[A-Za-z]+\\Application\\Transformer\\.*Transformer.*
+        - type: className
+          regex: .*App\\User\\Application\\Command\\.*Command.*
+        - type: className
+          regex: .*App\\User\\Application\\CommandHandler\\.*CommandHandler.*
+        - type: className
+          regex: .*App\\User\\Application\\DTO\\.*Dto.*
+        - type: className
+          regex: .*App\\User\\Application\\EventListener\\.*Listener.*
+        - type: className
+          regex: .*App\\User\\Application\\EventSubscriber\\.*EventSubscriber.*
+        - type: className
+          regex: .*App\\User\\Application\\Factory\\.*Factory.*
+        - type: className
+          regex: .*App\\User\\Application\\MutationInput\\.*MutationInput.*
+        - type: className
+          regex: .*App\\User\\Application\\Processor\\.*Processor.*
+        - type: className
+          regex: .*App\\User\\Application\\Resolver\\.*Resolver.*
+        - type: className
+          regex: .*App\\Shared\\Application\\Validator\\.*
+    - name: Domain
+      collectors:
+        - type: className
+          regex: .*App\\[A-Za-z]+\\Domain\\Aggregate\\.*
+        - type: className
+          regex: .*App\\[A-Za-z]+\\Domain\\Entity\\.*
+        - type: className
+          regex: .*App\\[A-Za-z]+\\Domain\\ValueObject\\.*
+        - type: className
+          regex: .*App\\User\\Domain\\Event\\.*Event.*
+        - type: className
+          regex: .*App\\User\\Domain\\Exception\\.*Exception.*
+        - type: className
+          regex: .*App\\User\\Domain\\Factory\\.*Factory.*
+        - type: className
+          regex: .*App\\User\\Domain\\Repository\\.*Repository.*
+        - type: className
+          regex: .*App\\Shared\\Domain\\Bus\\Command\\.*Command.*
+        - type: className
+          regex: .*App\\Shared\\Domain\\Bus\\Event\\.*Event.*
+    - name: Infrastructure
+      collectors:
+        - type: className
+          regex: .*App\\User\\Infrastructure\\Factory\\.*Factory.*
+        - type: className
+          regex: .*App\\User\\Infrastructure\\Repository\\.*Repository.*
+        - type: className
+          regex: .*App\\Shared\\Infrastructure\\Bus\\Command\\.*Command.*
+        - type: className
+          regex: .*App\\Shared\\Infrastructure\\Bus\\Event\\.*Event.*
+        - type: className
+          regex: .*App\\Shared\\Infrastructure\\DoctrineType\\.*Type.*
+        - type: className
+          regex: .*App\\Shared\\Infrastructure\\RetryStrategy\\.*RetryStrategy.*
+    - name: Symfony
+      collectors:
+        - type: className
+          regex: .*Symfony\\.*
+    - name: Doctrine
+      collectors:
+        - type: className
+          regex: .*Doctrine\\.*
+    - name: ApiPlatform
+      collectors:
+        - type: className
+          regex: .*ApiPlatform\\.*
+  ruleset:
+    Application:
+      - Domain
+      - Infrastructure
+      - Symfony
+      - ApiPlatform
+    Infrastructure:
+      - Domain
+      - Application
+      - Symfony
+      - Doctrine
+    Domain: ~

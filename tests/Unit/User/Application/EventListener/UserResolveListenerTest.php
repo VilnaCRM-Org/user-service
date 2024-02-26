@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\OAuth\Application\EventListener;
+namespace App\Tests\Unit\User\Application\EventListener;
 
-use App\OAuth\Application\EventListener\UserResolveListener;
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\EventListener\UserResolveListener;
 use App\User\Application\Transformer\UserTransformer;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactory;

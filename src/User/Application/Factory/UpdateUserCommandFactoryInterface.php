@@ -6,12 +6,12 @@ namespace App\User\Application\Factory;
 
 use App\User\Application\Command\UpdateUserCommand;
 use App\User\Domain\Entity\User;
-use App\User\Domain\ValueObject\UserUpdateData;
+use App\User\Domain\ValueObject\UserUpdate;
 
 interface UpdateUserCommandFactoryInterface
 {
     public function create(
         User $user,
-        UserUpdateData $updateData
+        UserUpdate $updateData
     ): UpdateUserCommand;
 }

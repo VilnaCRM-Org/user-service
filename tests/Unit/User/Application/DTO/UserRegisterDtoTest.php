@@ -34,7 +34,7 @@ class UserRegisterDtoTest extends UnitTestCase
 
     public function testMaxEmailLength(): void
     {
-        $email = $this->validationUtils->addCharToBeginning($this->faker->email(), 256, 'a');
+        $email = $this->validationUtils->addCharToBeginning($this->faker->email());
         $dto = new UserRegisterDto(
             $email,
             $this->validationUtils->getValidInitials(),
@@ -53,9 +53,7 @@ class UserRegisterDtoTest extends UnitTestCase
         $dto = new UserRegisterDto(
             $this->faker->email(),
             $this->validationUtils->addCharToBeginning(
-                $this->validationUtils->getValidInitials(),
-                256,
-                'a'
+                $this->validationUtils->getValidInitials()
             ),
             $this->validationUtils->getValidPassword(),
         );

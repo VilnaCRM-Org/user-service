@@ -8,15 +8,15 @@ use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\CommandHandler\UpdateUserCommandHandler;
-use App\User\Application\Exception\InvalidPasswordException;
 use App\User\Application\Factory\UpdateUserCommandFactory;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
+use App\User\Domain\Exception\InvalidPasswordException;
 use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Domain\ValueObject\UserUpdateData;
+use App\User\Domain\ValueObject\UserUpdate;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
@@ -70,7 +70,7 @@ class UpdateUserCommandHandlerTest extends UnitTestCase
 
         $oldPassword = $this->faker->password();
         $newPassword = $this->faker->password();
-        $updateData = new UserUpdateData(
+        $updateData = new UserUpdate(
             $this->faker->email(),
             $this->faker->firstName(),
             $newPassword,
@@ -118,7 +118,7 @@ class UpdateUserCommandHandlerTest extends UnitTestCase
 
         $oldPassword = $this->faker->password();
         $newPassword = $this->faker->password();
-        $updateData = new UserUpdateData(
+        $updateData = new UserUpdate(
             $this->faker->email(),
             $this->faker->firstName(),
             $newPassword,

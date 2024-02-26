@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Infrastructure;
+namespace App\Tests\Unit\Shared\Application;
 
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\State\ApiResource\Error;
-use App\Shared\Infrastructure\ErrorProvider;
+use App\Shared\Application\ErrorProvider;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

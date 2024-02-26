@@ -14,7 +14,7 @@ use App\User\Application\Resolver\UserUpdateMutationResolver;
 use App\User\Application\Transformer\UpdateUserMutationInputTransformer;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
-use App\User\Domain\ValueObject\UserUpdateData;
+use App\User\Domain\ValueObject\UserUpdate;
 
 class UserUpdateMutationResolverTest extends UnitTestCase
 {
@@ -49,7 +49,7 @@ class UserUpdateMutationResolverTest extends UnitTestCase
             $password,
             $this->uuidTransformer->transformFromString($userID)
         );
-        $updateData = new UserUpdateData($email, $initials, $password, $password);
+        $updateData = new UserUpdate($email, $initials, $password, $password);
         $command = $this->updateUserCommandFactory->create(
             $user,
             $updateData

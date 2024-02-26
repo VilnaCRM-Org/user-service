@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Repository;
 
-use App\User\Application\Exception\DuplicateEmailException;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
@@ -17,8 +17,8 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
     UserRepositoryInterface
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
-        private ManagerRegistry $registry
+        private readonly EntityManagerInterface $entityManager,
+        private readonly ManagerRegistry $registry
     ) {
         parent::__construct($this->registry, User::class);
     }

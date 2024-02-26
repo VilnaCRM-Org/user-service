@@ -9,7 +9,7 @@ use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 
-final class UserConfirmedEventSubscriber implements
+final readonly class UserConfirmedEventSubscriber implements
     DomainEventSubscriberInterface
 {
     public function __construct(

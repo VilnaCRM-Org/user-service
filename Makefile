@@ -22,6 +22,7 @@ SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
 PHPUNIT       = ./vendor/bin/phpunit
 PSALM         = $(EXEC_PHP) ./vendor/bin/psalm
 PHP_CS_FIXER  = ./vendor/bin/php-cs-fixer
+DEPTRAC 	  = ./vendor/bin/deptrac
 
 # Misc
 .DEFAULT_GOAL = help
@@ -74,6 +75,12 @@ behat: ## A php framework for autotesting business expectations
 	$(SYMFONY_TEST_ENV) doctrine:database:create
 	$(SYMFONY_TEST_ENV) doctrine:migrations:migrate --no-interaction
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/behat
+
+deptrac:
+	$(DEPTRAC) analyse --config-file=deptrac.yaml --report-uncovered
+
+deptrac-debug:
+	$(DEPTRAC) debug:unassigned --config-file=deptrac.yaml
 
 artillery: ## run Load testing
 	$(DOCKER) run --rm -v "${PWD}/tests/Load:/tests/Load" artilleryio/artillery:latest run $(addprefix /tests/Load/,$(ARTILLERY_FILES))

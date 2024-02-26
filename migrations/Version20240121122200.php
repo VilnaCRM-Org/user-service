@@ -16,9 +16,9 @@ final class Version20240121122200 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql('CREATE TABLE user (id BINARY(16) NOT NULL, 
-        email VARCHAR(255) CHARACTER SET utf8mb4 NOT NULL COLLATE 
-        `utf8mb4_unicode_ci`, initials VARCHAR(255) CHARACTER SET 
+        $this->addSql('CREATE TABLE IF NOT EXISTS user 
+        (id BINARY(16) NOT NULL, email VARCHAR(255) CHARACTER SET utf8mb4 NOT 
+        NULL COLLATE `utf8mb4_unicode_ci`, initials VARCHAR(255) CHARACTER SET 
         utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`, password VARCHAR(255) 
         CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`, 
         confirmed TINYINT(1) NOT NULL, UNIQUE INDEX 

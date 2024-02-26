@@ -15,7 +15,7 @@ use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
-use App\User\Domain\ValueObject\UserUpdateData;
+use App\User\Domain\ValueObject\UserUpdate;
 
 class UserTest extends UnitTestCase
 {
@@ -78,7 +78,7 @@ class UserTest extends UnitTestCase
 
     public function testUpdate(): void
     {
-        $updateData = new UserUpdateData(
+        $updateData = new UserUpdate(
             $this->faker->email(),
             $this->faker->password(),
             $this->faker->password(),

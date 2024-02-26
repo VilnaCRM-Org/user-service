@@ -10,7 +10,8 @@ use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\Transformer\CreateUserMutationInputTransformer;
 
-final class RegisterUserMutationResolver implements MutationResolverInterface
+final readonly class RegisterUserMutationResolver implements
+    MutationResolverInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,

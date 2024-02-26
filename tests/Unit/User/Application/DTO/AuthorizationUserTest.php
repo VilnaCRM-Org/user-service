@@ -6,11 +6,11 @@ namespace App\Tests\Unit\User\Application\DTO;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\DTO\AuthorizationUser;
+use App\User\Application\DTO\AuthorizationUserDto;
 
 class AuthorizationUserTest extends UnitTestCase
 {
-    private AuthorizationUser $authUser;
+    private AuthorizationUserDto $authUser;
     private UuidTransformer $transformer;
     private string $email;
 
@@ -26,7 +26,7 @@ class AuthorizationUserTest extends UnitTestCase
         $uuid = $this->transformer->transformFromString($this->faker->uuid());
         $confirmed = true;
 
-        $this->authUser = new AuthorizationUser($this->email, $initials, $password, $uuid, $confirmed);
+        $this->authUser = new AuthorizationUserDto($this->email, $initials, $password, $uuid, $confirmed);
     }
 
     public function testGetRoles(): void

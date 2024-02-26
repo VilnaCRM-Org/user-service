@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\User\Application\Exception;
+namespace App\Tests\Unit\User\Domain\Exception;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Exception\UserNotFoundException;
+use App\User\Domain\Exception\UserNotFoundException;
 
 class UserNotFoundExceptionTest extends UnitTestCase
 {

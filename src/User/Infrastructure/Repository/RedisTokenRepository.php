@@ -11,7 +11,7 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 
-final class RedisTokenRepository implements TokenRepositoryInterface
+final readonly class RedisTokenRepository implements TokenRepositoryInterface
 {
     private const REDIS_KEY_PREFIX = 'token-';
     private const TOKEN_VALUE_PREFIX = 'tokenValue-';

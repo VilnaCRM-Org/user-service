@@ -10,7 +10,7 @@ use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
-use App\User\Domain\ValueObject\UserUpdateData;
+use App\User\Domain\ValueObject\UserUpdate;
 
 class User implements UserInterface
 {
@@ -79,7 +79,7 @@ class User implements UserInterface
      * @return array<DomainEvent>
      */
     public function update(
-        UserUpdateData $updateData,
+        UserUpdate $updateData,
         string $hashedNewPassword,
         string $eventID,
         EmailChangedEventFactoryInterface $emailChangedEventFactory,

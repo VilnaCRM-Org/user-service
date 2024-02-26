@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\OAuth\Application\EventListener;
+namespace App\User\Application\EventListener;
 
 use App\User\Application\Transformer\UserTransformer;
 use App\User\Domain\Entity\User;
@@ -10,7 +10,7 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use League\Bundle\OAuth2ServerBundle\Event\UserResolveEvent;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
-final class UserResolveListener
+final readonly class UserResolveListener
 {
     public function __construct(
         private PasswordHasherFactoryInterface $hasherFactory,

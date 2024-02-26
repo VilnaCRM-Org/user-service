@@ -6,7 +6,7 @@ namespace App\Tests\Unit\User\Application\Transformer;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\DTO\AuthorizationUser;
+use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\Transformer\UserTransformer;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -47,6 +47,6 @@ class UserTransformerTest extends UnitTestCase
         $transformer = new UserTransformer($uuidTransformerMock);
         $authorizationUser = $transformer->transformToAuthorizationUser($user);
 
-        $this->assertInstanceOf(AuthorizationUser::class, $authorizationUser);
+        $this->assertInstanceOf(AuthorizationUserDto::class, $authorizationUser);
     }
 }

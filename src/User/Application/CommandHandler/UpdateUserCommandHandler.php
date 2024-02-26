@@ -7,15 +7,15 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\UpdateUserCommand;
-use App\User\Application\Exception\InvalidPasswordException;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Exception\InvalidPasswordException;
 use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-final class UpdateUserCommandHandler implements CommandHandlerInterface
+final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,

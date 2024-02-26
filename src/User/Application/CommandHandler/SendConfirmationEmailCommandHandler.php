@@ -9,12 +9,12 @@ use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\SendConfirmationEmailCommand;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-final class SendConfirmationEmailCommandHandler implements
+final readonly class SendConfirmationEmailCommandHandler implements
     CommandHandlerInterface
 {
     public function __construct(
-        private EventBusInterface $eventBus,
-        private UuidFactory $uuidFactory
+        private readonly EventBusInterface $eventBus,
+        private readonly UuidFactory $uuidFactory
     ) {
     }
 

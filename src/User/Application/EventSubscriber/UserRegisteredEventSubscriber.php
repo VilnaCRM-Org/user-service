@@ -12,7 +12,7 @@ use App\User\Domain\Event\UserRegisteredEvent;
 use App\User\Domain\Factory\ConfirmationEmailFactoryInterface;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 
-final class UserRegisteredEventSubscriber implements
+final readonly class UserRegisteredEventSubscriber implements
     DomainEventSubscriberInterface
 {
     public function __construct(
