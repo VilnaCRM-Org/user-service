@@ -2,7 +2,8 @@ name: memory leak testing
 
 on:
   pull_request:
-    branches: ['main']
+    branches:
+      - main
 
 jobs:
   memory-leak-testing:
@@ -40,6 +41,6 @@ jobs:
 
       - name: Run dev and memory leak testing
         run: |
-          pnpm run dev & memlab run -v --scenario ./memlab/memoryLeakTest.js
+          pnpm memlab run -v --scenario ./memlab/memoryLeakTest.js
         env:
           CI: true
