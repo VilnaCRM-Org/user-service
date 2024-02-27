@@ -42,15 +42,15 @@ return [
             'exclude' => [
                 'src/Shared/Infrastructure/Bus/Command/InMemorySymfonyCommandBus',
                 'src/Shared/Infrastructure/Bus/Event/InMemorySymfonyEventBus',
-                'src/Shared/OpenApi/Factory/Response/DuplicateEmailResponseFactory',
+                'src/Shared/OpenApi/Factory/Response/DuplicateEmailFactory',
                 'src/User/Domain/Entity/User',
             ],
         ],
         UnnecessaryStringConcatSniff::class => [
             'exclude' => [
-                'src/Shared/OpenApi/Factory/Response/UnsupportedGrantTypeResponseFactory',
+                'src/Shared/Application/OpenApi/Factory/Response/UnsupportedTypeFactory',
                 'src/User/Domain/Exception/DuplicateEmailException',
-                'src/Shared/OpenApi/Factory/Response/DuplicateEmailResponseFactory',
+                'src/Shared/Application/OpenApi/Factory/Response/DuplicateEmailFactory',
                 'src/Shared/Infrastructure/Bus/Command/CommandNotRegisteredException',
                 'src/Shared/Infrastructure/Bus/Event/EventNotRegisteredException.php',
             ],

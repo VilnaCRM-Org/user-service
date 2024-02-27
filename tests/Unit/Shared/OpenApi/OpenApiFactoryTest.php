@@ -12,9 +12,9 @@ use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\Model\Server;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\OpenApi\Factory\Endpoint\AbstractEndpointFactory;
-use App\Shared\OpenApi\Factory\Response\InternalServerErrorResponseFactory;
-use App\Shared\OpenApi\OpenApiFactory;
+use App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory;
+use App\Shared\Application\OpenApi\Factory\Response\InternalErrorFactory;
+use App\Shared\Application\OpenApi\OpenApiFactory;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
@@ -25,7 +25,7 @@ class OpenApiFactoryTest extends UnitTestCase
         $decoratedFactory = $this->createMock(OpenApiFactoryInterface::class);
         $endpointFactory1 = $this->createMock(AbstractEndpointFactory::class);
         $endpointFactory2 = $this->createMock(AbstractEndpointFactory::class);
-        $serverErrorResponseFactory = $this->createMock(InternalServerErrorResponseFactory::class);
+        $serverErrorResponseFactory = $this->createMock(InternalErrorFactory::class);
 
         $expectedOpenApi = new OpenApi(
             $this->createMock(Info::class),
@@ -78,7 +78,7 @@ class OpenApiFactoryTest extends UnitTestCase
 
         $serverErrorResponse = new Response();
 
-        $serverErrorResponseFactory = $this->createMock(InternalServerErrorResponseFactory::class);
+        $serverErrorResponseFactory = $this->createMock(InternalErrorFactory::class);
 
         $openApiFactory = new OpenApiFactory(
             $this->createMock(OpenApiFactoryInterface::class),
@@ -110,7 +110,7 @@ class OpenApiFactoryTest extends UnitTestCase
 
         $serverErrorResponse = new Response();
 
-        $serverErrorResponseFactory = $this->createMock(InternalServerErrorResponseFactory::class);
+        $serverErrorResponseFactory = $this->createMock(InternalErrorFactory::class);
         $serverErrorResponseFactory->expects($this->once())
             ->method('getResponse')
             ->willReturn($serverErrorResponse);

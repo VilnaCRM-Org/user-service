@@ -9,19 +9,19 @@ use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\OpenApi\Factory\Endpoint\UserEndpointFactory;
-use App\Shared\OpenApi\Factory\Response\BadRequestResponseFactory;
-use App\Shared\OpenApi\Factory\Response\DuplicateEmailResponseFactory;
-use App\Shared\OpenApi\Factory\Response\UserCreatedResponseFactory;
-use App\Shared\OpenApi\Factory\Response\ValidationErrorResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Endpoint\UserEndpointFactory;
+use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Response\DuplicateEmailFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UserCreatedResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use App\Tests\Unit\UnitTestCase;
 
 class UserEndpointFactoryTest extends UnitTestCase
 {
     public function testCreateEndpoint(): void
     {
-        $validationErrorResponseFactory = $this->createMock(ValidationErrorResponseFactory::class);
-        $duplicateEmailResponseFactory = $this->createMock(DuplicateEmailResponseFactory::class);
+        $validationErrorResponseFactory = $this->createMock(ValidationErrorFactory::class);
+        $duplicateEmailResponseFactory = $this->createMock(DuplicateEmailFactory::class);
         $badRequestResponseFactory = $this->createMock(BadRequestResponseFactory::class);
         $userCreatedResponseFactory = $this->createMock(UserCreatedResponseFactory::class);
 

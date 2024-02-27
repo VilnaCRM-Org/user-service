@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\OpenApi\Builder\Parameter;
-use App\Shared\OpenApi\Builder\ResponseBuilder;
-use App\Shared\OpenApi\Factory\Response\InternalServerErrorResponseFactory;
+use App\Shared\Application\OpenApi\Builder\Parameter;
+use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
+use App\Shared\Application\OpenApi\Factory\Response\InternalErrorFactory;
 use App\Tests\Unit\UnitTestCase;
 
 class InternalServerErrorResponseFactoryTest extends UnitTestCase
@@ -16,7 +16,7 @@ class InternalServerErrorResponseFactoryTest extends UnitTestCase
     {
         $responseBuilder = $this->createMock(ResponseBuilder::class);
 
-        $factory = new InternalServerErrorResponseFactory($responseBuilder);
+        $factory = new InternalErrorFactory($responseBuilder);
 
         $typeParam = new Parameter('type', 'string', '/errors/500');
         $titleParam = new Parameter('title', 'string', 'An error occurred');

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\OpenApi\Builder\Header;
-use App\Shared\OpenApi\Builder\ResponseBuilder;
-use App\Shared\OpenApi\Factory\Response\OAuthRedirectResponseFactory;
+use App\Shared\Application\OpenApi\Builder\Header;
+use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
+use App\Shared\Application\OpenApi\Factory\Response\OAuthRedirectFactory;
 use App\Tests\Unit\UnitTestCase;
 
 class OAuthRedirectResponseFactoryTest extends UnitTestCase
@@ -16,7 +16,7 @@ class OAuthRedirectResponseFactoryTest extends UnitTestCase
     {
         $responseBuilder = $this->createMock(ResponseBuilder::class);
 
-        $factory = new OAuthRedirectResponseFactory($responseBuilder);
+        $factory = new OAuthRedirectFactory($responseBuilder);
 
         $locationHeader = new Header(
             'Location',

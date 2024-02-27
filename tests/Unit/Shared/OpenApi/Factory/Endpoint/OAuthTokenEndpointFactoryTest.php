@@ -8,20 +8,20 @@ use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\OpenApi\Factory\Endpoint\OAuthTokenEndpointFactory;
-use App\Shared\OpenApi\Factory\Request\OAuthTokenRequestFactory;
-use App\Shared\OpenApi\Factory\Response\InvalidClientCredentialsResponseFactory;
-use App\Shared\OpenApi\Factory\Response\OAuthTokenReturnedResponseFactory;
-use App\Shared\OpenApi\Factory\Response\UnsupportedGrantTypeResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Endpoint\OAuthTokenEndpointFactory;
+use App\Shared\Application\OpenApi\Factory\Request\OAuthTokenRequestFactory;
+use App\Shared\Application\OpenApi\Factory\Response\InvalidCredentialsFactory;
+use App\Shared\Application\OpenApi\Factory\Response\OAuthTokenResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UnsupportedTypeFactory;
 use App\Tests\Unit\UnitTestCase;
 
 class OAuthTokenEndpointFactoryTest extends UnitTestCase
 {
     public function testCreateEndpoint(): void
     {
-        $unsupportedFactory = $this->createMock(UnsupportedGrantTypeResponseFactory::class);
-        $invalidCredsFactory = $this->createMock(InvalidClientCredentialsResponseFactory::class);
-        $tokenReturnedResponseFactory = $this->createMock(OAuthTokenReturnedResponseFactory::class);
+        $unsupportedFactory = $this->createMock(UnsupportedTypeFactory::class);
+        $invalidCredsFactory = $this->createMock(InvalidCredentialsFactory::class);
+        $tokenReturnedResponseFactory = $this->createMock(OAuthTokenResponseFactory::class);
         $tokenRequestFactory = $this->createMock(OAuthTokenRequestFactory::class);
 
         $tokenResponse = $this->createMock(Response::class);

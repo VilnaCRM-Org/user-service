@@ -6,10 +6,10 @@ namespace App\Tests\Unit\Shared\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model\Header as ApiPlatformHeader;
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\OpenApi\Builder\ContextBuilder;
-use App\Shared\OpenApi\Builder\Header;
-use App\Shared\OpenApi\Builder\Parameter;
-use App\Shared\OpenApi\Builder\ResponseBuilder;
+use App\Shared\Application\OpenApi\Builder\ContextBuilder;
+use App\Shared\Application\OpenApi\Builder\Header;
+use App\Shared\Application\OpenApi\Builder\Parameter;
+use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Tests\Unit\UnitTestCase;
 
 class ResponseBuilderTest extends UnitTestCase

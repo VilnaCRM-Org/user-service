@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\OpenApi\Builder\ResponseBuilder;
-use App\Shared\OpenApi\Factory\Response\UserDeletedResponseFactory;
+use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
+use App\Shared\Application\OpenApi\Factory\Response\UserDeletedResponseFactory;
 use App\Tests\Unit\UnitTestCase;
 
 class UserDeletedResponseFactoryTest extends UnitTestCase

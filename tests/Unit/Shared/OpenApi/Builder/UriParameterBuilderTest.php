@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model\Parameter;
-use App\Shared\OpenApi\Builder\UriParameterBuilder;
+use App\Shared\Application\OpenApi\Builder\UriParameterBuilder;
 use App\Tests\Unit\UnitTestCase;
 
 class UriParameterBuilderTest extends UnitTestCase

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
-use App\Shared\OpenApi\Builder\ContextBuilder;
-use App\Shared\OpenApi\Builder\Parameter;
-use App\Shared\OpenApi\Builder\RequestBuilder;
+use App\Shared\Application\OpenApi\Builder\ContextBuilder;
+use App\Shared\Application\OpenApi\Builder\Parameter;
+use App\Shared\Application\OpenApi\Builder\RequestBuilder;
 use App\Tests\Unit\UnitTestCase;
 use ArrayObject;
 

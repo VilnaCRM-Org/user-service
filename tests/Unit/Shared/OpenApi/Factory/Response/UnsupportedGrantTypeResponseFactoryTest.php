@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\OpenApi\Builder\Parameter;
-use App\Shared\OpenApi\Builder\ResponseBuilder;
-use App\Shared\OpenApi\Factory\Response\UnsupportedGrantTypeResponseFactory;
+use App\Shared\Application\OpenApi\Builder\Parameter;
+use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
+use App\Shared\Application\OpenApi\Factory\Response\UnsupportedTypeFactory;
 use App\Tests\Unit\UnitTestCase;
 
 class UnsupportedGrantTypeResponseFactoryTest extends UnitTestCase
@@ -16,7 +16,7 @@ class UnsupportedGrantTypeResponseFactoryTest extends UnitTestCase
     {
         $responseBuilder = $this->createMock(ResponseBuilder::class);
 
-        $factory = new UnsupportedGrantTypeResponseFactory($responseBuilder);
+        $factory = new UnsupportedTypeFactory($responseBuilder);
 
         $responseBuilder->expects($this->once())
             ->method('build')

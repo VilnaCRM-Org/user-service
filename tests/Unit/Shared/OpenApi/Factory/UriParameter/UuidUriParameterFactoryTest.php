@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\OpenApi\Factory\UriParameter;
 
 use ApiPlatform\OpenApi\Model\Parameter;
-use App\Shared\OpenApi\Builder\UriParameterBuilder;
-use App\Shared\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
+use App\Shared\Application\OpenApi\Builder\UriParameterBuilder;
+use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
 use App\Tests\Unit\UnitTestCase;
 
 class UuidUriParameterFactoryTest extends UnitTestCase

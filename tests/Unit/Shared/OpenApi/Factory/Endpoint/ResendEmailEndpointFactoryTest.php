@@ -9,12 +9,12 @@ use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\OpenApi\Factory\Endpoint\ResendEmailEndpointFactory;
-use App\Shared\OpenApi\Factory\Request\EmptyRequestFactory;
-use App\Shared\OpenApi\Factory\Response\EmailSendAgainResponseFactory;
-use App\Shared\OpenApi\Factory\Response\UserNotFoundResponseFactory;
-use App\Shared\OpenApi\Factory\Response\UserTimedOutResponseFactory;
-use App\Shared\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
+use App\Shared\Application\OpenApi\Factory\Endpoint\ResendEmailEndpointFactory;
+use App\Shared\Application\OpenApi\Factory\Request\EmptyRequestFactory;
+use App\Shared\Application\OpenApi\Factory\Response\EmailSendFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UserNotFoundResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UserTimedOutResponseFactory;
+use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
 use App\Tests\Unit\UnitTestCase;
 
 class ResendEmailEndpointFactoryTest extends UnitTestCase
@@ -22,7 +22,7 @@ class ResendEmailEndpointFactoryTest extends UnitTestCase
     public function testCreateEndpoint(): void
     {
         $userNotFoundResponseFactory = $this->createMock(UserNotFoundResponseFactory::class);
-        $sendAgainResponseFactory = $this->createMock(EmailSendAgainResponseFactory::class);
+        $sendAgainResponseFactory = $this->createMock(EmailSendFactory::class);
         $timedOutResponseFactory = $this->createMock(UserTimedOutResponseFactory::class);
         $emptyRequestFactory = $this->createMock(EmptyRequestFactory::class);
         $parameterFactory = $this->createMock(UuidUriParameterFactory::class);

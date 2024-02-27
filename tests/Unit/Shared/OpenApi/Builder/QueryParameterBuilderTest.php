@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model\Parameter;
-use App\Shared\OpenApi\Builder\QueryParameterBuilder;
+use App\Shared\Application\OpenApi\Builder\QueryParameterBuilder;
 use App\Tests\Unit\UnitTestCase;
 
 class QueryParameterBuilderTest extends UnitTestCase

@@ -8,20 +8,20 @@ use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\OpenApi\Builder\QueryParameterBuilder;
-use App\Shared\OpenApi\Factory\Endpoint\OAuthAuthorizeEndpointFactory;
-use App\Shared\OpenApi\Factory\Response\InvalidClientCredentialsResponseFactory;
-use App\Shared\OpenApi\Factory\Response\OAuthRedirectResponseFactory;
-use App\Shared\OpenApi\Factory\Response\UnsupportedGrantTypeResponseFactory;
+use App\Shared\Application\OpenApi\Builder\QueryParameterBuilder;
+use App\Shared\Application\OpenApi\Factory\Endpoint\OAuthAuthorizeEndpointFactory;
+use App\Shared\Application\OpenApi\Factory\Response\InvalidCredentialsFactory;
+use App\Shared\Application\OpenApi\Factory\Response\OAuthRedirectFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UnsupportedTypeFactory;
 use App\Tests\Unit\UnitTestCase;
 
 class OAuthAuthorizeEndpointFactoryTest extends UnitTestCase
 {
     public function testCreateEndpoint(): void
     {
-        $unsupportedFactory = $this->createMock(UnsupportedGrantTypeResponseFactory::class);
-        $invalidCredsFactory = $this->createMock(InvalidClientCredentialsResponseFactory::class);
-        $redirectResponseFactory = $this->createMock(OAuthRedirectResponseFactory::class);
+        $unsupportedFactory = $this->createMock(UnsupportedTypeFactory::class);
+        $invalidCredsFactory = $this->createMock(InvalidCredentialsFactory::class);
+        $redirectResponseFactory = $this->createMock(OAuthRedirectFactory::class);
         $queryParameterBuilder = $this->createMock(QueryParameterBuilder::class);
 
         $unsupportedResponse = $this->createMock(Response::class);

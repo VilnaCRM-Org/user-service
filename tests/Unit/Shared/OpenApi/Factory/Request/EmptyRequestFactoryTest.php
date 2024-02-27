@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\OpenApi\Factory\Request;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
-use App\Shared\OpenApi\Builder\RequestBuilder;
-use App\Shared\OpenApi\Factory\Request\EmptyRequestFactory;
+use App\Shared\Application\OpenApi\Builder\RequestBuilder;
+use App\Shared\Application\OpenApi\Factory\Request\EmptyRequestFactory;
 use App\Tests\Unit\UnitTestCase;
 
 class EmptyRequestFactoryTest extends UnitTestCase

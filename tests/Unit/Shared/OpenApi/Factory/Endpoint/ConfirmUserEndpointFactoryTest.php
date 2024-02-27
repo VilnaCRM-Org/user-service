@@ -9,9 +9,9 @@ use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\OpenApi\Factory\Endpoint\ConfirmUserEndpointFactory;
-use App\Shared\OpenApi\Factory\Response\TokenNotFoundResponseFactory;
-use App\Shared\OpenApi\Factory\Response\UserConfirmedResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Endpoint\ConfirmUserEndpointFactory;
+use App\Shared\Application\OpenApi\Factory\Response\TokenNotFoundFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UserConfirmedFactory;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
@@ -22,12 +22,12 @@ class ConfirmUserEndpointFactoryTest extends UnitTestCase
         $userConfirmedResponse = new Response();
         $notFoundResponse = new Response();
 
-        $tokenNotFoundResponseFactory = $this->createMock(TokenNotFoundResponseFactory::class);
+        $tokenNotFoundResponseFactory = $this->createMock(TokenNotFoundFactory::class);
         $tokenNotFoundResponseFactory->expects($this->once())
             ->method('getResponse')
             ->willReturn($notFoundResponse);
 
-        $userConfirmedResponseFactory = $this->createMock(UserConfirmedResponseFactory::class);
+        $userConfirmedResponseFactory = $this->createMock(UserConfirmedFactory::class);
         $userConfirmedResponseFactory->expects($this->once())
             ->method('getResponse')
             ->willReturn($userConfirmedResponse);
