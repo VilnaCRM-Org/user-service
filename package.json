@@ -43,7 +43,7 @@
     "reflect-metadata": "^0.1.14",
     "require-from-string": "^2.0.2",
     "semver": "^7.5.4",
-    "storybook": "^6.5.16",
+    "storybook": "^7.0.0",
     "tsyringe": "^4.8.0",
     "web-vitals": "^3.5.0",
     "webpack": "^5.89.0"
@@ -91,9 +91,8 @@
     "memlab": "^1.1.42",
     "semver": "^7.6.0"
   },
-  
-"engines": {
-  "node": ">=20.0.0"
-},
-"engineStrict": true
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "engineStrict": true
 }
