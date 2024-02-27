@@ -8,10 +8,7 @@ export default function Document(): React.ReactElement {
     <Html lang="en">
       <Head>
         <title>{t('VilnaCRM')}</title>
-        <meta
-          name='description'
-          content='The first Ukrainian open source CRM'
-        />
+        <meta name="description" content="The first Ukrainian open source CRM" />
       </Head>
       <body>
         <NextScript />
