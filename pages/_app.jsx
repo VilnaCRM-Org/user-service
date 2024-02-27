@@ -20,6 +20,7 @@ Sentry.init({
 // eslint-disable-next-line react/prop-types
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
+    // eslint-disable-next-line no-undef
     document.documentElement.dir = i18n.dir();
   }, []);
 
