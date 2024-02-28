@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import Link from 'next/link';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -11,9 +12,11 @@ function VilnaCRMGmail(): React.ReactElement {
 
   return (
     <Box sx={styles.gmailWrapper}>
-      <UiTypography variant="medium15" sx={styles.gmailText}>
-        {t('footer.vilna_email')}
-      </UiTypography>
+      <Link href="mailto:info@vilnacrm.com">
+        <UiTypography variant="medium15" sx={styles.gmailText}>
+          {t('footer.vilna_email')}
+        </UiTypography>
+      </Link>
     </Box>
   );
 }

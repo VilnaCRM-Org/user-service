@@ -136,11 +136,11 @@ function AuthForm({
                 label={
                   <UiTypography variant="medium14" sx={styles.privacyText}>
                     <Trans i18nKey="sign_up.form.confidential_text.fullText">
-                      Я прочитав та приймаю
-                      <UiLink href="/">Політику Конфіденційності</UiLink>
+                      I have read and accept the
+                      <UiLink href="/">Privacy Policy</UiLink>
                       та
-                      <UiLink href="/">Політику Використання</UiLink>
-                      сервісу VilnaCRM
+                      <UiLink href="/">Use Policy</UiLink>
+                      VilnaCRM Service
                     </Trans>
                   </UiTypography>
                 }

@@ -46,7 +46,7 @@ export default {
       background: colorTheme.palette.white.main,
       '&:hover': {
         cursor: 'pointer',
-        border: `1px solid ${colorTheme.palette.grey400.main}`,
+        border: `1px solid ${colorTheme.palette.primary.main}`,
       },
       '&:checked': {
         backgroundColor: colorTheme.palette.primary.main,

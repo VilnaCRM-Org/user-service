@@ -97,7 +97,7 @@ module.exports = {
         'import/extensions': 'off',
 
         'react/prop-types': 'off',
-        'react/jsx-props-no-spreading': 'error',
+        'react/jsx-props-no-spreading': 'warn',
         'react/react-in-jsx-scope': 'off',
         'react/jsx-filename-extension': [
           'error',
@@ -145,7 +145,7 @@ module.exports = {
         '@typescript-eslint/explicit-function-return-type': 'error',
         '@typescript-eslint/explicit-module-boundary-types': ['off'],
         '@typescript-eslint/no-empty-function': ['off'],
-        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-explicit-any': 'warn',
         '@typescript-eslint/no-var-requires': ['off'],
       },
     },

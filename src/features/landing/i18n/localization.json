@@ -95,7 +95,7 @@
       },
       "cards_texts": {
         "text_for_cases": "For cases when you did not find <br /> the desired ready-made integration ",
-        "text_integrate": "Integrate familiar <1 href='/'> services </1> in a few clicks",
+        "text_integrate": "Integrate familiar <1 href='/'> services</1> in a few clicks",
         "text_get_data": "Get data about any event in CRM <br /> and automate complex business processes",
         "text_for_custom": "For custom integrations <br /> with specific products"
       },
@@ -142,7 +142,7 @@
           }
         },
         "confidential_text": {
-          "fullText": "I have read and accept the <1>Privacy Policy</1> and the <1>VilnaCRM Service</1> Use Policy"
+          "fullText": "I have read and accept the <1>Privacy Policy</1> and the <1>Use Policy</1> VilnaCRM Service"
         },
         "button_text": "Sign-Up",
         "error_text": "There was an error. Please check again"
@@ -265,7 +265,7 @@
       },
       "cards_texts": {
         "text_for_cases": "Для випадків, коли ви не знайшли <br /> потрібну готову інтеграцію ",
-        "text_integrate": "Інтегруйте <1 href='/'>звичні сервіси </1> у кілька кліків",
+        "text_integrate": "Інтегруйте <1 href='/'>звичні сервіси</1> у кілька кліків",
         "text_get_data": "Отримуйте дані про будь-які івенти у CRM  <br /> та автоматизуйте складні бізнес-процеси",
         "text_for_custom": "Для кастомних інтеграцій  <br /> зі специфічними продуктами"
       },

@@ -1,4 +1,4 @@
-import { Drawer, Box, Stack, Button } from '@mui/material';
+import { Drawer, Box, Stack, Button, useMediaQuery } from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
@@ -20,6 +20,14 @@ function CustomDrawer(): React.ReactElement {
   const { t } = useTranslation();
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
 
+  const isWideScreen: boolean = useMediaQuery('(min-width: 1024px)');
+
+  React.useEffect(() => {
+    if (isWideScreen) {
+      setIsDrawerOpen(false);
+    }
+  }, [isWideScreen]);
+
   function handleClick(): void {
     setIsDrawerOpen(false);
   }
@@ -29,7 +37,7 @@ function CustomDrawer(): React.ReactElement {
       <Button
         aria-label={t('header.drawer.button_aria_labels.bars') as string}
         sx={styles.button}
-        onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+        onClick={(): void => setIsDrawerOpen(!isDrawerOpen)}
       >
         <Image
           src={Bars}
@@ -41,7 +49,7 @@ function CustomDrawer(): React.ReactElement {
       <Drawer
         anchor="right"
         open={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(!isDrawerOpen)}
+        onClose={(): void => setIsDrawerOpen(!isDrawerOpen)}
       >
         <Box
           width="23.4375rem"
@@ -63,7 +71,7 @@ function CustomDrawer(): React.ReactElement {
             <Button
               aria-label={t('header.drawer.button_aria_labels.exit') as string}
               sx={styles.button}
-              onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+              onClick={(): void => setIsDrawerOpen(!isDrawerOpen)}
             >
               <Image
                 src={CloseImage}
@@ -84,20 +92,23 @@ function CustomDrawer(): React.ReactElement {
               fullWidth
               variant="outlined"
               size="small"
-              onClick={() => handleClick()}
+              onClick={(): void => handleClick()}
             >
               <Link href="#signUp"> {t('header.actions.log_in')}</Link>
             </UiButton>
             <UiButton
               fullWidth
-              onClick={() => handleClick()}
+              onClick={(): void => handleClick()}
               variant="contained"
               size="small"
             >
               <Link href="#signUp">{t('header.actions.try_it_out')}</Link>
             </UiButton>
           </Stack>
-          <NavList navItems={drawerNavList} handleClick={() => handleClick()} />
+          <NavList
+            navItems={drawerNavList}
+            handleClick={(): void => handleClick()}
+          />
           <VilnaCRMGmail />
           <SocialMediaList socialLinks={socialMedia} />
         </Box>

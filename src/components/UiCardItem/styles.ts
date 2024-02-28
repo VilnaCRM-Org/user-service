@@ -60,6 +60,7 @@ export default {
     },
   },
   hoveredCard: {
+    cursor: 'pointer',
     color: colorTheme.palette.primary.main,
     textDecoration: 'underline',
     fontWeight: '700',
