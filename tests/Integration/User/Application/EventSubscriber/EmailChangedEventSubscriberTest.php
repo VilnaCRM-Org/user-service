@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\User\Application\EventSubscriber;
 
+use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Integration\IntegrationTestCase;
 use App\Tests\Integration\TestEmailSendingUtils;
-use App\User\Application\EventSubscriber\ConfirmationEmailSendEventSubscriber;
-use App\User\Domain\Entity\ConfirmationToken;
-use App\User\Domain\Event\ConfirmationEmailSendEvent;
+use App\User\Application\EventSubscriber\EmailChangedEventSubscriber;
+use App\User\Domain\Event\EmailChangedEvent;
+use App\User\Domain\Factory\UserFactoryInterface;
 
-class ConfirmationEmailSendEventSubscriberTest extends IntegrationTestCase
+class EmailChangedEventSubscriberTest extends IntegrationTestCase
 {
-    private ConfirmationEmailSendEventSubscriber $subscriber;
+    private EmailChangedEventSubscriber $subscriber;
     private TestEmailSendingUtils $utils;
 
     protected function setUp(): void
@@ -20,20 +21,23 @@ class ConfirmationEmailSendEventSubscriberTest extends IntegrationTestCase
         parent::setUp();
 
         $this->subscriber = $this->container->get(
-            ConfirmationEmailSendEventSubscriber::class
+            EmailChangedEventSubscriber::class
         );
         $this->utils = new TestEmailSendingUtils();
     }
 
     public function testConfirmationEmailSent(): void
     {
-        $tokenValue = $this->faker->uuid();
         $userId = $this->faker->uuid();
         $emailAddress = $this->faker->email();
-        $token = new ConfirmationToken($tokenValue, $userId);
-        $event = new ConfirmationEmailSendEvent(
-            $token,
+        $user = $this->container->get(UserFactoryInterface::class)->create(
             $emailAddress,
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->container->get(UuidTransformer::class)->transformFromString($userId)
+        );
+        $event = new EmailChangedEvent(
+            $user,
             $this->faker->uuid()
         );
 

@@ -58,10 +58,13 @@ phpinsights: ## Instant PHP quality checks and static analysis tool
 	$(EXEC_PHP) ./vendor/bin/phpinsights --no-interaction
 
 phpunit: ## The PHP unit testing framework
-	$(EXEC_PHP) ./vendor/bin/phpunit
+	$(EXEC_PHP) ./vendor/bin/phpunit --testsuite=Unit
+
+phpunit-integration: ## The PHP unit testing framework
+	$(EXEC_PHP) ./vendor/bin/phpunit --testsuite=Integration
 
 infection:
-	$(EXEC_PHP) sh -c 'php -d memory_limit=-1 ./vendor/bin/infection --show-mutations -j8'
+	$(EXEC_PHP) sh -c 'php -d memory_limit=-1 ./vendor/bin/infection --test-framework-options="--testsuite=Unit" --show-mutations -j8'
 
 phpunit-codecov: ## The PHP unit testing framework
 	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-html coverage'

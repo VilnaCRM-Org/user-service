@@ -1,11 +1,11 @@
-name: testing
+name: unit testing
 
 on:
   pull_request:
     branches: [ "main" ]
 
 jobs:
-  symfony-tests:
+  unit-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: shivammathur/setup-php@v2
@@ -28,5 +28,5 @@ jobs:
       - name: Install Dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-      - name: Execute tests (Unit and Feature tests) via PHPUnit
-        run: vendor/bin/phpunit
+      - name: Execute Unit tests via PHPUnit
+        run: ./vendor/bin/phpunit --testsuite=Unit
