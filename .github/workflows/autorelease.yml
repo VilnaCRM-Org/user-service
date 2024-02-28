@@ -2,7 +2,7 @@ name: generate changelog and create release
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
     paths-ignore:
       - 'package.json'
       - 'CHANGELOG.md'
