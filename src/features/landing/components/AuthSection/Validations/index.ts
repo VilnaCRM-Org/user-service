@@ -1,3 +1,3 @@
-export { default as EmailValidator } from './Email';
-export { default as FullNameValidator } from './Initials';
-export { default as PasswordValidator } from './Password';
+export { default as validateEmail } from './Email';
+export { default as validateFullName } from './Initials';
+export { default as validatePassword } from './Password';

@@ -1,4 +1,10 @@
-import { ThemeProvider, Tooltip, Typography } from '@mui/material';
+import {
+  ClickAwayListener,
+  ThemeProvider,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import React from 'react';
 
 import { theme } from './theme';
 import { UiTooltipProps } from './types';
@@ -10,11 +16,30 @@ function UiTooltip({
   arrow,
   sx,
 }: UiTooltipProps): React.ReactElement {
+  const [open, setOpen] = React.useState(false);
+
+  function handleTooltipClose(): void {
+    setOpen(false);
+  }
+  function handleTooltipToogle(): void {
+    setOpen(!open);
+  }
+
   return (
     <ThemeProvider theme={theme}>
-      <Tooltip title={title} placement={placement} arrow={arrow} sx={sx}>
-        <Typography component="span">{children}</Typography>
-      </Tooltip>
+      <ClickAwayListener onClickAway={() => handleTooltipClose()}>
+        <Tooltip
+          open={open}
+          title={title}
+          placement={placement}
+          arrow={arrow}
+          sx={sx}
+        >
+          <Typography component="span" onClick={() => handleTooltipToogle()}>
+            {children}
+          </Typography>
+        </Tooltip>
+      </ClickAwayListener>
     </ThemeProvider>
   );
 }

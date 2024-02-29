@@ -1,17 +1,15 @@
-class FullNameValidator {
-  public validateFullName(fullName: string): boolean {
-    return (
-      this.isValidFullNameFormat(fullName) && !this.hasEmptyParts(fullName)
-    );
-  }
+import { t } from 'i18next';
 
-  private isValidFullNameFormat(fullName: string): boolean {
-    return /^[^\d\s]+\s[^\d\s]+$/.test(fullName);
-  }
+const isValidFullNameFormat: (fullName: string) => boolean = (
+  fullName: string
+): boolean => /^[^\d\s]+\s[^\d\s]+$/.test(fullName);
 
-  private hasEmptyParts(fullName: string): boolean {
-    return fullName.split(' ').some(part => part.length === 0);
-  }
-}
+const validateFullName: (fullName: string) => string | boolean = (
+  fullName: string
+): string | boolean => {
+  if (!isValidFullNameFormat(fullName))
+    return t('sign_up.form.name_input.error_text');
+  return true;
+};
 
-export default FullNameValidator;
+export default validateFullName;

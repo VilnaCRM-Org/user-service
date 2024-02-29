@@ -119,27 +119,23 @@
         "name_input": {
           "label": "Your name and surname",
           "placeholder": "Mykhailo Svitskyi",
-          "required": "Your firstname and lastname are required"
+          "required": "Your first and last name are required fields",
+          "error_text": "Invalid full name format"
         },
         "email_input": {
           "label": "Email",
           "placeholder": "vilnaCRM@gmail.com",
-          "required": ""
+          "required": "Email address is a required field",
+          "step_error_message": "Email must contain '@' and '.' symbols",
+          "invalid_message": "Invalid email address"
         },
         "password_input": {
           "label": "Password",
           "placeholder": "Create a password",
-          "required": "Need to enter password"
-        },
-        "password_tip": {
-          "alt": "Password tip mark",
-          "title": "At least 8 characters.",
-          "recommendation_text": "We recommend using:",
-          "options": {
-            "option_1": "lowercase and uppercase special",
-            "option_2": "special characters (#&*$)",
-            "option_3": "use numbers"
-          }
+          "required": "Password is a required field",
+          "error_length": "Password must be between 8 and 64 characters long",
+          "error_numbers": "Password must contain at least one number",
+          "error_uppercase": "Password must contain at least one uppercase letter"
         },
         "confidential_text": {
           "fullText": "I have read and accept the <1>Privacy Policy</1> and the <1>Use Policy</1> VilnaCRM Service"
@@ -292,27 +288,23 @@
         "name_input": {
           "label": "Ваше ім’я та прізвище",
           "placeholder": "Михайло Светський",
-          "required": "Ваше ім'я та прізвище є обов'язковими"
+          "required": "Ваше ім'я та прізвище є обов'язковим полем",
+          "error_text": "Неправильний формат повного імені"
         },
         "email_input": {
           "label": "E-mail",
           "placeholder": "vilnaCRM@gmail.com",
-          "required": "Необхідно вказати електронну адресу"
+          "required": "Адреса електронної пошти є обов'язковим полем",
+          "step_error_message": "Електронна пошта повинна містити символи '@' та '.'",
+          "invalid_message": "Неправильний адреса електронної пошти"
         },
         "password_input": {
           "label": "Пароль",
           "placeholder": "Створіть пароль",
-          "required": "Необхідно ввести пароль"
-        },
-        "password_tip": {
-          "alt": "Позначка підказки пароля",
-          "title": "Не менше 8 символів.",
-          "recommendation_text": "Рекомендуємо використовувати:",
-          "options": {
-            "option_1": "малі та великі літери спеціальні",
-            "option_2": "спеціальні символи(#&*$)",
-            "option_3": "використовувати цифри"
-          }
+          "required": "Пароль є обов'язковим полем",
+          "error_length": "Пароль повинен містити від 8 до 64 символів",
+          "error_numbers": "Пароль повинен містити принаймні одну цифру",
+          "error_uppercase": "Пароль повинен містити принаймні одну велику літеру"
         },
         "confidential_text": {
           "fullText": "Я прочитав та приймаю <1>Політику Конфіденційності</1> та <1>Політику Використання</1> сервісу VilnaCRM"

@@ -64,11 +64,6 @@ export default {
     color: colorTheme.palette.primary.main,
     textDecoration: 'underline',
     fontWeight: '700',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
-      color: colorTheme.palette.darkPrimary.main,
-      textDecoration: 'none',
-      fontWeight: '400',
-    },
   },
   largeWrapper: {
     height: '100%',

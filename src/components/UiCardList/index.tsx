@@ -22,7 +22,7 @@ function CardGrid({ cardList, imageList }: CardList): React.ReactElement {
     </Grid>
   );
 }
-function CardSwiper({ cardList }: CardList): React.ReactElement {
+function CardSwiper({ cardList, imageList }: CardList): React.ReactElement {
   const gridMobile: CSSProperties =
     cardList[0].type === 'smallCard'
       ? styles.gridSmallMobile
@@ -40,7 +40,7 @@ function CardSwiper({ cardList }: CardList): React.ReactElement {
       >
         {cardList.map(item => (
           <SwiperSlide key={item.id}>
-            <CardItem item={item} />
+            <CardItem item={item} imageList={imageList} />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -51,7 +51,7 @@ function UiCardList({ cardList, imageList }: CardList): React.ReactElement {
   return (
     <>
       <CardGrid cardList={cardList} imageList={imageList} />
-      <CardSwiper cardList={cardList} />
+      <CardSwiper cardList={cardList} imageList={imageList} />
     </>
   );
 }

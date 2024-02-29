@@ -1,23 +1,23 @@
-class PasswordValidator {
-  public isLengthValid(value: string): boolean {
-    return value.length >= 8 && value.length <= 64;
-  }
+import { t } from 'i18next';
 
-  public hasNumber(value: string): boolean {
-    return /[0-9]/.test(value);
-  }
+const isLengthValid: (value: string) => boolean = (value: string): boolean =>
+  value.length >= 8 && value.length <= 64;
 
-  public hasUppercase(value: string): boolean {
-    return /[A-Z]/.test(value);
-  }
+const hasNumber: (value: string) => boolean = (value: string): boolean =>
+  /[0-9]/.test(value);
 
-  public validatePassword(value: string): boolean {
-    return (
-      this.isLengthValid(value) &&
-      this.hasNumber(value) &&
-      this.hasUppercase(value)
-    );
-  }
-}
+const hasUppercase: (value: string) => boolean = (value: string): boolean =>
+  /[A-Z]/.test(value);
 
-export default PasswordValidator;
+const validatePassword: (value: string) => string | boolean = (
+  value: string
+): string | boolean => {
+  if (!isLengthValid(value))
+    return t('sign_up.form.password_input.error_length');
+  if (!hasNumber(value)) return t('sign_up.form.password_input.error_numbers');
+  if (!hasUppercase(value))
+    return t('sign_up.form.password_input.error_uppercase');
+  return true;
+};
+
+export default validatePassword;
