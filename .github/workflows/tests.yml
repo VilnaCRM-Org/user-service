@@ -1,15 +1,19 @@
-name: integration testing
+name: testing
 
 on:
   pull_request:
     branches: [ "main" ]
 
 jobs:
-  integration-tests:
+  tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
 
       - name: Start application
         run: make start
