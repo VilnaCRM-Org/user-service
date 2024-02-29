@@ -57,11 +57,20 @@ psalm-security: ## Psalm security analysis
 phpinsights: ## Instant PHP quality checks and static analysis tool
 	$(EXEC_PHP) ./vendor/bin/phpinsights --no-interaction
 
-phpunit: ## The PHP unit testing framework
+unit-tests: ## The PHP unit testing framework
 	$(EXEC_PHP) ./vendor/bin/phpunit --testsuite=Unit
 
-phpunit-integration: ## The PHP unit testing framework
+integration-tests: ## The PHP unit testing framework
 	$(EXEC_PHP) ./vendor/bin/phpunit --testsuite=Integration
+
+end-to-end-tests: ## A php framework for autotesting business expectations
+	$(SYMFONY_TEST_ENV) c:c
+	$(SYMFONY_TEST_ENV) doctrine:database:drop --force --if-exists
+	$(SYMFONY_TEST_ENV) doctrine:database:create
+	$(SYMFONY_TEST_ENV) doctrine:migrations:migrate --no-interaction
+	$(EXEC_PHP_TEST_ENV) ./vendor/bin/behat
+
+all-tests: unit-tests integration-tests end-to-end-tests
 
 infection:
 	$(EXEC_PHP) sh -c 'php -d memory_limit=-1 ./vendor/bin/infection --test-framework-options="--testsuite=Unit" --show-mutations -j8'
@@ -72,15 +81,8 @@ phpunit-codecov: ## The PHP unit testing framework
 php-metrics:
 	$(EXEC_PHP) ./vendor/bin/phpmetrics --report-html=metrics-report src
 
-behat: ## A php framework for autotesting business expectations
-	$(SYMFONY_TEST_ENV) c:c
-	$(SYMFONY_TEST_ENV) doctrine:database:drop --force --if-exists
-	$(SYMFONY_TEST_ENV) doctrine:database:create
-	$(SYMFONY_TEST_ENV) doctrine:migrations:migrate --no-interaction
-	$(EXEC_PHP_TEST_ENV) ./vendor/bin/behat
-
 deptrac:
-	$(DEPTRAC) analyse --config-file=deptrac.yaml --report-uncovered
+	$(DEPTRAC) analyse --config-file=deptrac.yaml --report-uncovered --fail-on-uncovered
 
 deptrac-debug:
 	$(DEPTRAC) debug:unassigned --config-file=deptrac.yaml

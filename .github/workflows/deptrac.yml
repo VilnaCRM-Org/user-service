@@ -18,5 +18,5 @@ jobs:
       - name: Install Dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-      - name: Run infection
-        run: ./vendor/bin/deptrac analyse --config-file=deptrac.yaml --fail-on-uncovered --report-uncovered
+      - name: Run Deptrac
+        run: make deptrac

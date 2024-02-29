@@ -1,0 +1,787 @@
+{
+  "id" : 1,
+  "name" : "Name",
+  "description" : "Description",
+  "lastModifiedDate" : "2024-02-29T16:32:29Z",
+  "lastModifiedAgent" : "structurizr-javascript",
+  "properties" : {
+    "structurizr.dsl" : "d29ya3NwYWNlIHsKCiAgICAhaWRlbnRpZmllcnMgaGllcmFyY2hpY2FsCgogICAgbW9kZWwgewogICAgICAgIHVzZXIgPSBwZXJzb24gIkN1c3RvbWVyIgogICAgICAgIHdlYnNpdGUgPSBzb2Z0d2FyZVN5c3RlbSAiV2Vic2l0ZSIgIlB1YmxpYyB3ZWJzaXRlIGZvciB1c2VycyB3aXRoIFNTUiIKICAgICAgICBjcm0gPSBzb2Z0d2FyZVN5c3RlbSAiQ1JNIiAiUHJvdGVjdGVkIHdlYnNpdGUgZm9yIGN1c3RvbWVycyIKICAgICAgICBiZmYgPSBzb2Z0d2FyZVN5c3RlbSAiQkZGIiAiMkZBLCBDb29raWVzLCBPQXV0aCBjbGllbnQgZm9yIHVzZXIgc2VydmljZSBhbmQgYmFja2VuZCBmb3IgZnJvbnRlbmQiCiAgICAgICAgZ2F0ZXdheSA9IHNvZnR3YXJlU3lzdGVtICJBUEkgR2F0ZXdheSIgIlByb3ZpZGVzIGxvYWQgYmFsYW5zZXIsIGxvZ2dpbmcgdHJhY2luZywgcmVxdWVzdCBsaW1pdGluZyIKICAgICAgICBpYW0gPSBzb2Z0d2FyZVN5c3RlbSAiSUFNIiAiUHJvdmlkZXMgYXV0aCBjYWNoZSBhbmQgYXV0aG9yaXphdGlvbiBtYW5hZ2VtZW50LCBzZWN1cml0eSBhbmQgYWNjZXNzIGxvZ3MiCiAgICAgICAgdXNlclNlcnZpY2UgPSBzb2Z0d2FyZVN5c3RlbSAiVXNlciBTZXJ2aWNlIiAiQWxsb3dzIHRvIHN0b3JlIHVzZXJzICh0aGVpciBwcm9maWxlcyBhbmQgc2V0dGluZ3MpLCBhdXRoZW50aWNhdGUsIHJlZ2lzdGVyLCBPQXV0aCIKICAgICAgICBwYXltZW50U2VydmljZSA9IHNvZnR3YXJlU3lzdGVtICJQYXltZW50IFNlcnZpY2UiICJBbGxvd3MgdG8gcGF5IGZvciBwbGFuIGFuZCBjcmVhdGUgaW52b2ljZXMgZm9yIHVzZXIgY3VzdG9tZXJzIgogICAgICAgIGNvcmVTZXJ2aWNlID0gc29mdHdhcmVTeXN0ZW0gIkNvcmUgU2VydmljZSAoQ1JNLCBQcm9qZWN0KSIgIiBTdG9yZXMgYWxsIHByb2R1Y3RzLCBjb250YWN0cywgZW1wbG95ZWVzLCBvcmRlcnMsIGludGVncmF0aW9ucyBzZXR0aW5ncywgSVAgdGVsZXBob255IGludGVncmF0aW9uIHNldHRpbmdzLCBpbnZpdGUgdXNlcnMgdG8gcHJvamVjdHMsIGRhc2hib2FyZHMsIGthbmJhbiBib2FyZHMsIHVzZXJzIHRhc2tzIgogICAgICAgIGFuYWx5dGljc1NlcnZpY2UgPSBzb2Z0d2FyZVN5c3RlbSAiQW5hbHl0aWNzIFNlcnZpY2UiICJTdG9yZXMgYWxsIGFuYWx5dGljcyBkYXRhLCB3aWRnZXRzIGRhdGEiCiAgICAgICAgbm90aWZpY2F0aW9uU2VydmljZSA9IHNvZnR3YXJlU3lzdGVtICJOb3RpZmljYXRpb24gU2VydmljZSIgIkhhbmRsZSBhbGwgbWljcm9zZXJ2aWNlcyBub3RpZmljYXRpb25zIGFuZCBzdG9yZXMgbm90aWZpY2F0aW9ucy4gU2VuZHMgbm90aWZpY2F0aW9ucyBmb3IgbW9iaWxlLCBicm93c2VyIHRocm91Z2ggZW1haWxzIGFuZCBTU0UiCiAgICAgICAgd2ViaG9va1NlcnZpY2UgPSBzb2Z0d2FyZVN5c3RlbSAiV2ViaG9vayBTZXJ2aWNlIiAiSGFuZGxlIGFsbCBtaWNyb3NlcnZpY2VzIHdlYmhvb2tzIGFuZCBzdG9yZXMgd2ViaG9va3Mgc2V0dGluZ3MiCiAgICAgICAKICAgICAgICB1c2VyIC0+IHdlYnNpdGUKICAgICAgICB1c2VyIC0+IGNybQogICAgICAgIGNybSAtPiBiZmYKICAgICAgICB3ZWJzaXRlIC0+IGJmZgogICAgICAgIGJmZiAtPiBnYXRld2F5CiAgICAgICAgY3JtIC0+IGdhdGV3YXkKICAgICAgICBnYXRld2F5IC0+IGlhbQogICAgICAgIGlhbSAtPiB1c2VyU2VydmljZQogICAgICAgIGdhdGV3YXkgLT4gdXNlclNlcnZpY2UKICAgICAgICBnYXRld2F5IC0+IHBheW1lbnRTZXJ2aWNlCiAgICAgICAgZ2F0ZXdheSAtPiBjb3JlU2VydmljZQogICAgICAgIGdhdGV3YXkgLT4gYW5hbHl0aWNzU2VydmljZQogICAgICAgIGdhdGV3YXkgLT4gbm90aWZpY2F0aW9uU2VydmljZQogICAgICAgIGdhdGV3YXkgLT4gd2ViaG9va1NlcnZpY2UKICAgIH0KCiAgICB2aWV3cyB7CiAgICAgICAgc3R5bGVzIHsKICAgICAgICAgICAgZWxlbWVudCAiUGVyc29uIiB7CiAgICAgICAgICAgICAgICBzaGFwZSBQZXJzb24KICAgICAgICAgICAgICAgIGNvbG9yIHdoaXRlCiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICMwNzBjYWIKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJTb2Z0d2FyZSBTeXN0ZW0iIHsKICAgICAgICAgICAgICAgIGNvbG9yIHdoaXRlCiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICMwNzBjYWIKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJEYXRhYmFzZSIgewogICAgICAgICAgICAgICAgc2hhcGUgY3lsaW5kZXIKICAgICAgICAgICAgfQogICAgICAgIH0KCiAgICB9Cgp9Cg=="
+  },
+  "configuration" : { },
+  "model" : {
+    "people" : [ {
+      "id" : "1",
+      "tags" : "Element,Person",
+      "properties" : {
+        "structurizr.dsl.identifier" : "user"
+      },
+      "name" : "Customer",
+      "relationships" : [ {
+        "id" : "14",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "b05bc6d9-5309-4ca3-8c2f-7261c1fd2e7b"
+        },
+        "sourceId" : "1",
+        "destinationId" : "3"
+      }, {
+        "id" : "13",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "60b28ab6-a911-47bc-a205-4e189312759f"
+        },
+        "sourceId" : "1",
+        "destinationId" : "2"
+      } ],
+      "location" : "Unspecified"
+    } ],
+    "softwareSystems" : [ {
+      "id" : "4",
+      "tags" : "Element,Software System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "bff"
+      },
+      "name" : "BFF",
+      "description" : "2FA, Cookies, OAuth client for user service and backend for frontend",
+      "relationships" : [ {
+        "id" : "17",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "becb2464-7153-4253-a186-d490d57da6a7"
+        },
+        "sourceId" : "4",
+        "destinationId" : "5"
+      } ],
+      "location" : "Unspecified",
+      "documentation" : { }
+    }, {
+      "id" : "11",
+      "tags" : "Element,Software System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "notificationservice"
+      },
+      "name" : "Notification Service",
+      "description" : "Handle all microservices notifications and stores notifications. Sends notifications for mobile, browser through emails and SSE",
+      "location" : "Unspecified",
+      "documentation" : { }
+    }, {
+      "id" : "6",
+      "tags" : "Element,Software System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "iam"
+      },
+      "name" : "IAM",
+      "description" : "Provides auth cache and authorization management, security and access logs",
+      "relationships" : [ {
+        "id" : "20",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "1c2c5cc9-7a96-4bc8-8b3a-bb0d7ff1df82"
+        },
+        "sourceId" : "6",
+        "destinationId" : "7"
+      } ],
+      "location" : "Unspecified",
+      "documentation" : { }
+    }, {
+      "id" : "10",
+      "tags" : "Element,Software System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "analyticsservice"
+      },
+      "name" : "Analytics Service",
+      "description" : "Stores all analytics data, widgets data",
+      "location" : "Unspecified",
+      "documentation" : { }
+    }, {
+      "id" : "2",
+      "tags" : "Element,Software System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "website"
+      },
+      "name" : "Website",
+      "description" : "Public website for users with SSR",
+      "relationships" : [ {
+        "id" : "16",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "0a16d866-e39c-41f3-b8c9-6657eb919be6"
+        },
+        "sourceId" : "2",
+        "destinationId" : "4"
+      } ],
+      "location" : "Unspecified",
+      "documentation" : { }
+    }, {
+      "id" : "3",
+      "tags" : "Element,Software System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "crm"
+      },
+      "name" : "CRM",
+      "description" : "Protected website for customers",
+      "relationships" : [ {
+        "id" : "15",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "a6dd024e-b7b4-471f-9827-2cf8fd59349f"
+        },
+        "sourceId" : "3",
+        "destinationId" : "4"
+      }, {
+        "id" : "18",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "9024b95c-043f-427e-abc9-9023867b3cde"
+        },
+        "sourceId" : "3",
+        "destinationId" : "5"
+      } ],
+      "location" : "Unspecified",
+      "documentation" : { }
+    }, {
+      "id" : "12",
+      "tags" : "Element,Software System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "webhookservice"
+      },
+      "name" : "Webhook Service",
+      "description" : "Handle all microservices webhooks and stores webhooks settings",
+      "location" : "Unspecified",
+      "documentation" : { }
+    }, {
+      "id" : "9",
+      "tags" : "Element,Software System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "coreservice"
+      },
+      "name" : "Core Service (CRM, Project)",
+      "description" : "Stores all products, contacts, employees, orders, integrations settings, IP telephony integration settings, invite users to projects, dashboards, kanban boards, users tasks",
+      "location" : "Unspecified",
+      "documentation" : { }
+    }, {
+      "id" : "5",
+      "tags" : "Element,Software System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "gateway"
+      },
+      "name" : "API Gateway",
+      "description" : "Provides load balanser, logging tracing, request limiting",
+      "relationships" : [ {
+        "id" : "26",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "ca80a5ad-2cce-4933-b865-d10905c95d31"
+        },
+        "sourceId" : "5",
+        "destinationId" : "12"
+      }, {
+        "id" : "24",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "7f54a8ba-aa6f-4339-a598-e1500fe5b508"
+        },
+        "sourceId" : "5",
+        "destinationId" : "10"
+      }, {
+        "id" : "21",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "d1c5b17e-9e2a-440f-8f54-681ccb7c106d"
+        },
+        "sourceId" : "5",
+        "destinationId" : "7"
+      }, {
+        "id" : "23",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "76c6d34a-e5d8-4c54-9886-6e701e81f0e1"
+        },
+        "sourceId" : "5",
+        "destinationId" : "9"
+      }, {
+        "id" : "25",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "8f9469d5-14e5-42fe-8276-8f0da4c23121"
+        },
+        "sourceId" : "5",
+        "destinationId" : "11"
+      }, {
+        "id" : "22",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "61dfc723-6c80-4637-bb56-18e8eeac8991"
+        },
+        "sourceId" : "5",
+        "destinationId" : "8"
+      }, {
+        "id" : "19",
+        "tags" : "Relationship",
+        "properties" : {
+          "structurizr.dsl.identifier" : "5a72e9b0-f9b6-4009-a4bf-98a571bd8f8c"
+        },
+        "sourceId" : "5",
+        "destinationId" : "6"
+      } ],
+      "location" : "Unspecified",
+      "documentation" : { }
+    }, {
+      "id" : "7",
+      "tags" : "Element,Software System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "userservice"
+      },
+      "name" : "User Service",
+      "description" : "Allows to store users (their profiles and settings), authenticate, register, OAuth",
+      "location" : "Unspecified",
+      "documentation" : { }
+    }, {
+      "id" : "8",
+      "tags" : "Element,Software System",
+      "properties" : {
+        "structurizr.dsl.identifier" : "paymentservice"
+      },
+      "name" : "Payment Service",
+      "description" : "Allows to pay for plan and create invoices for user customers",
+      "location" : "Unspecified",
+      "documentation" : { }
+    } ]
+  },
+  "documentation" : { },
+  "views" : {
+    "systemLandscapeViews" : [ {
+      "key" : "SystemLandscape-001",
+      "generatedKey" : true,
+      "order" : 1,
+      "dimensions" : {
+        "width" : 5209,
+        "height" : 3800
+      },
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false,
+        "applied" : true
+      },
+      "enterpriseBoundaryVisible" : true,
+      "elements" : [ {
+        "id" : "11",
+        "x" : 949,
+        "y" : 2699
+      }, {
+        "id" : "12",
+        "x" : 1699,
+        "y" : 2699
+      }, {
+        "id" : "1",
+        "x" : 2441,
+        "y" : 199
+      }, {
+        "id" : "2",
+        "x" : 2041,
+        "y" : 899
+      }, {
+        "id" : "3",
+        "x" : 2791,
+        "y" : 899
+      }, {
+        "id" : "4",
+        "x" : 2112,
+        "y" : 1499
+      }, {
+        "id" : "5",
+        "x" : 2449,
+        "y" : 2099
+      }, {
+        "id" : "6",
+        "x" : 2449,
+        "y" : 2699
+      }, {
+        "id" : "7",
+        "x" : 2787,
+        "y" : 3299
+      }, {
+        "id" : "8",
+        "x" : 3808,
+        "y" : 2699
+      }, {
+        "id" : "9",
+        "x" : 4558,
+        "y" : 2699
+      }, {
+        "id" : "10",
+        "x" : 199,
+        "y" : 2699
+      } ],
+      "relationships" : [ {
+        "id" : "21",
+        "vertices" : [ {
+          "x" : 3049,
+          "y" : 2699
+        }, {
+          "x" : 3049,
+          "y" : 2999
+        } ]
+      }, {
+        "id" : "20"
+      }, {
+        "id" : "18"
+      }, {
+        "id" : "17"
+      }, {
+        "id" : "16"
+      }, {
+        "id" : "15"
+      }, {
+        "id" : "26"
+      }, {
+        "id" : "25"
+      }, {
+        "id" : "14"
+      }, {
+        "id" : "24",
+        "vertices" : [ {
+          "x" : 799,
+          "y" : 2699
+        } ]
+      }, {
+        "id" : "13"
+      }, {
+        "id" : "23",
+        "vertices" : [ {
+          "x" : 4408,
+          "y" : 2699
+        } ]
+      }, {
+        "id" : "22"
+      }, {
+        "id" : "19"
+      } ]
+    } ],
+    "systemContextViews" : [ {
+      "key" : "SystemContext-008",
+      "generatedKey" : true,
+      "order" : 9,
+      "softwareSystemId" : "8",
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false,
+        "applied" : false
+      },
+      "enterpriseBoundaryVisible" : true,
+      "elements" : [ {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "8",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "relationships" : [ {
+        "id" : "22"
+      } ]
+    }, {
+      "key" : "SystemContext-010",
+      "generatedKey" : true,
+      "order" : 11,
+      "softwareSystemId" : "12",
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false,
+        "applied" : false
+      },
+      "enterpriseBoundaryVisible" : true,
+      "elements" : [ {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "relationships" : [ {
+        "id" : "26"
+      } ]
+    }, {
+      "key" : "SystemContext-003",
+      "generatedKey" : true,
+      "order" : 4,
+      "softwareSystemId" : "4",
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false,
+        "applied" : false
+      },
+      "enterpriseBoundaryVisible" : true,
+      "elements" : [ {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "relationships" : [ {
+        "id" : "18"
+      }, {
+        "id" : "17"
+      }, {
+        "id" : "16"
+      }, {
+        "id" : "15"
+      } ]
+    }, {
+      "key" : "SystemContext-009",
+      "generatedKey" : true,
+      "order" : 10,
+      "softwareSystemId" : "7",
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false,
+        "applied" : false
+      },
+      "enterpriseBoundaryVisible" : true,
+      "elements" : [ {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "relationships" : [ {
+        "id" : "21"
+      }, {
+        "id" : "20"
+      }, {
+        "id" : "19"
+      } ]
+    }, {
+      "key" : "SystemContext-002",
+      "generatedKey" : true,
+      "order" : 3,
+      "softwareSystemId" : "10",
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false,
+        "applied" : false
+      },
+      "enterpriseBoundaryVisible" : true,
+      "elements" : [ {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "relationships" : [ {
+        "id" : "24"
+      } ]
+    }, {
+      "key" : "SystemContext-011",
+      "generatedKey" : true,
+      "order" : 12,
+      "softwareSystemId" : "2",
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false,
+        "applied" : false
+      },
+      "enterpriseBoundaryVisible" : true,
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "relationships" : [ {
+        "id" : "16"
+      }, {
+        "id" : "13"
+      } ]
+    }, {
+      "key" : "SystemContext-005",
+      "generatedKey" : true,
+      "order" : 6,
+      "softwareSystemId" : "9",
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false,
+        "applied" : false
+      },
+      "enterpriseBoundaryVisible" : true,
+      "elements" : [ {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "relationships" : [ {
+        "id" : "23"
+      } ]
+    }, {
+      "key" : "SystemContext-004",
+      "generatedKey" : true,
+      "order" : 5,
+      "softwareSystemId" : "3",
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false,
+        "applied" : false
+      },
+      "enterpriseBoundaryVisible" : true,
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "relationships" : [ {
+        "id" : "18"
+      }, {
+        "id" : "17"
+      }, {
+        "id" : "15"
+      }, {
+        "id" : "14"
+      } ]
+    }, {
+      "key" : "SystemContext-007",
+      "generatedKey" : true,
+      "order" : 8,
+      "softwareSystemId" : "11",
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false,
+        "applied" : false
+      },
+      "enterpriseBoundaryVisible" : true,
+      "elements" : [ {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "relationships" : [ {
+        "id" : "25"
+      } ]
+    }, {
+      "key" : "SystemContext-001",
+      "generatedKey" : true,
+      "order" : 2,
+      "softwareSystemId" : "5",
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false,
+        "applied" : false
+      },
+      "enterpriseBoundaryVisible" : true,
+      "elements" : [ {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "8",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "relationships" : [ {
+        "id" : "18"
+      }, {
+        "id" : "17"
+      }, {
+        "id" : "26"
+      }, {
+        "id" : "15"
+      }, {
+        "id" : "25"
+      }, {
+        "id" : "24"
+      }, {
+        "id" : "23"
+      }, {
+        "id" : "22"
+      }, {
+        "id" : "21"
+      }, {
+        "id" : "20"
+      }, {
+        "id" : "19"
+      } ]
+    }, {
+      "key" : "SystemContext-006",
+      "generatedKey" : true,
+      "order" : 7,
+      "softwareSystemId" : "6",
+      "automaticLayout" : {
+        "implementation" : "Graphviz",
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "nodeSeparation" : 300,
+        "edgeSeparation" : 0,
+        "vertices" : false,
+        "applied" : false
+      },
+      "enterpriseBoundaryVisible" : true,
+      "elements" : [ {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "relationships" : [ {
+        "id" : "21"
+      }, {
+        "id" : "20"
+      }, {
+        "id" : "19"
+      } ]
+    } ],
+    "configuration" : {
+      "branding" : { },
+      "styles" : {
+        "elements" : [ {
+          "tag" : "Person",
+          "background" : "#070cab",
+          "color" : "#ffffff",
+          "shape" : "Person"
+        }, {
+          "tag" : "Software System",
+          "background" : "#070cab",
+          "color" : "#ffffff"
+        }, {
+          "tag" : "Database",
+          "shape" : "Cylinder"
+        } ]
+      },
+      "terminology" : { },
+      "metadataSymbols" : "SquareBrackets",
+      "lastSavedView" : "SystemLandscape-001"
+    }
+  }
+}

@@ -12,6 +12,7 @@
 /coverage
 infection.log
 summary.log
+.structurizr
 ###< symfony/framework-bundle ###
 
 ###> symfony/phpunit-bridge ###
