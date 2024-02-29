@@ -24,6 +24,9 @@ jobs:
       - name: Run migrations
         run: make doctrine-migrations-migrate
 
+      - name: Fix permissions
+        run: make fix-perms
+
       - name: Execute Unit and Integration tests
         run: ./vendor/bin/phpunit --coverage-clover coverage.xml
 
