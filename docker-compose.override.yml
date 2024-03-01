@@ -18,7 +18,7 @@ services:
       # Ensure that host.docker.internal is correctly defined on Linux
       - host.docker.internal:host-gateway
     networks:
-      - ls
+      - user-service
 
   caddy:
     command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile", "--watch"]
@@ -33,16 +33,16 @@ services:
       - "${MAILCATCHER_SMTP_PORT}:1025"
       - "${MAILCATCHER_HTTP_PORT}:1080"
     networks:
-      - ls
+      - user-service
   ###< symfony/mailer ###
 
   database:
     networks:
-      - ls
+      - user-service
 
   redis:
     networks:
-      - ls
+      - user-service
 
   localstack:
     image: localstack/localstack:3.0.2
@@ -58,7 +58,7 @@ services:
       - localstack-data:/var/lib/localstack
       - ./infrastructure/docker/php/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
     networks:
-      - ls
+      - user-service
 
   structurizr:
     image: structurizr/lite
@@ -67,10 +67,10 @@ services:
     volumes:
       - ./:/usr/local/structurizr
     networks:
-      - ls
+      - user-service
 
 networks:
-  ls:
+  user-service:
 
 volumes:
   localstack-data:

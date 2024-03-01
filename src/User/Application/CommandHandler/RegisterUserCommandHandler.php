@@ -6,8 +6,8 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
-use App\User\Application\Command\SignUpCommand;
-use App\User\Application\Command\SignUpCommandResponse;
+use App\User\Application\Command\RegisterUserCommand;
+use App\User\Application\Command\RegisterUserCommandResponse;
 use App\User\Application\Transformer\SignUpTransformer;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
@@ -15,7 +15,8 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-final readonly class SignUpCommandHandler implements CommandHandlerInterface
+final readonly class RegisterUserCommandHandler implements
+    CommandHandlerInterface
 {
     public function __construct(
         private PasswordHasherFactoryInterface $hasherFactory,
@@ -27,7 +28,7 @@ final readonly class SignUpCommandHandler implements CommandHandlerInterface
     ) {
     }
 
-    public function __invoke(SignUpCommand $command): void
+    public function __invoke(RegisterUserCommand $command): void
     {
         $user = $this->transformer->transformToUser($command);
 
@@ -36,7 +37,7 @@ final readonly class SignUpCommandHandler implements CommandHandlerInterface
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
-        $command->setResponse(new SignUpCommandResponse($user));
+        $command->setResponse(new RegisterUserCommandResponse($user));
 
         $this->eventBus->publish(
             $this->registeredEventFactory->create(

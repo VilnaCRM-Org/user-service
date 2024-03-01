@@ -23,6 +23,7 @@ PHPUNIT       = ./vendor/bin/phpunit
 PSALM         = $(EXEC_PHP) ./vendor/bin/psalm
 PHP_CS_FIXER  = ./vendor/bin/php-cs-fixer
 DEPTRAC 	  = ./vendor/bin/deptrac
+INFECTION 	  = ./vendor/bin/infection
 
 # Misc
 .DEFAULT_GOAL = help
@@ -63,17 +64,19 @@ unit-tests: ## The PHP unit testing framework
 integration-tests: ## The PHP unit testing framework
 	$(EXEC_PHP) ./vendor/bin/phpunit --testsuite=Integration
 
-end-to-end-tests: ## A php framework for autotesting business expectations
-	$(SYMFONY_TEST_ENV) c:c
-	$(SYMFONY_TEST_ENV) doctrine:database:drop --force --if-exists
-	$(SYMFONY_TEST_ENV) doctrine:database:create
-	$(SYMFONY_TEST_ENV) doctrine:migrations:migrate --no-interaction
+e2e-tests: ## A php framework for autotesting business expectations
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/behat
 
-all-tests: unit-tests integration-tests end-to-end-tests
+all-tests: unit-tests integration-tests e2e-tests
 
 infection:
 	$(EXEC_PHP) sh -c 'php -d memory_limit=-1 ./vendor/bin/infection --test-framework-options="--testsuite=Unit" --show-mutations -j8'
+
+ci-infection:
+	$(INFECTION) --min-msi=100 --min-covered-msi=100 --test-framework-options="--testsuite=Unit" --show-mutations -j8
+
+ci-symfony-tests:
+	$(EXEC_PHP) ./vendor/bin/phpunit --coverage-clover /coverage/coverage.xml
 
 phpunit-codecov: ## The PHP unit testing framework
 	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-html coverage'
@@ -130,7 +133,7 @@ cache-warmup: ## Warmup the Symfony cache
 	@$(SYMFONY) cache:warmup
 
 fix-perms: ## Fix permissions of all var files
-	@chmod -R 777 var/*
+	$(EXEC_PHP) chmod -R 777 var/*
 
 purge: ## Purge cache and logs
 	@rm -rf var/cache/* var/logs/*

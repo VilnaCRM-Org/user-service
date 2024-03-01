@@ -6,9 +6,9 @@ namespace App\User\Application\Command;
 
 use App\Shared\Domain\Bus\Command\CommandInterface;
 
-final class SignUpCommand implements CommandInterface
+final class RegisterUserCommand implements CommandInterface
 {
-    private SignUpCommandResponse $response;
+    private RegisterUserCommandResponse $response;
 
     public function __construct(
         public readonly string $email,
@@ -17,12 +17,12 @@ final class SignUpCommand implements CommandInterface
     ) {
     }
 
-    public function getResponse(): SignUpCommandResponse
+    public function getResponse(): RegisterUserCommandResponse
     {
         return $this->response;
     }
 
-    public function setResponse(SignUpCommandResponse $response): void
+    public function setResponse(RegisterUserCommandResponse $response): void
     {
         $this->response = $response;
     }

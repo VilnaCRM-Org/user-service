@@ -6,7 +6,7 @@ namespace App\Tests\Unit\User\Application\Command;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Command\SignUpCommandResponse;
+use App\User\Application\Command\RegisterUserCommandResponse;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 
@@ -36,9 +36,9 @@ class SignUpCommandResponseTest extends UnitTestCase
             $this->transformer->transformFromString($this->faker->uuid())
         );
 
-        $response = new SignUpCommandResponse($user);
+        $response = new RegisterUserCommandResponse($user);
 
-        $this->assertInstanceOf(SignUpCommandResponse::class, $response);
+        $this->assertInstanceOf(RegisterUserCommandResponse::class, $response);
         $this->assertSame($user, $response->createdUser);
     }
 }

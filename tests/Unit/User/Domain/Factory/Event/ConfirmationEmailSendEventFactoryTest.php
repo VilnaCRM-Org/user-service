@@ -6,7 +6,7 @@ namespace App\Tests\Unit\User\Domain\Factory\Event;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Domain\Event\ConfirmationEmailSendEvent;
+use App\User\Domain\Event\ConfirmationEmailSentEvent;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactory;
@@ -49,7 +49,7 @@ class ConfirmationEmailSendEventFactoryTest extends UnitTestCase
 
         $event = $this->factory->create($token, $user, $eventId);
 
-        $this->assertInstanceOf(ConfirmationEmailSendEvent::class, $event);
+        $this->assertInstanceOf(ConfirmationEmailSentEvent::class, $event);
         $this->assertEquals($token, $event->token);
         $this->assertEquals($user->getEmail(), $event->emailAddress);
     }

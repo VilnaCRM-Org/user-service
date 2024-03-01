@@ -6,7 +6,7 @@ namespace App\User\Domain\Factory\Event;
 
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
-use App\User\Domain\Event\ConfirmationEmailSendEvent;
+use App\User\Domain\Event\ConfirmationEmailSentEvent;
 
 final class ConfirmationEmailSendEventFactory implements
     ConfirmationEmailSendEventFactoryInterface
@@ -15,8 +15,8 @@ final class ConfirmationEmailSendEventFactory implements
         ConfirmationTokenInterface $token,
         UserInterface $user,
         string $eventID,
-    ): ConfirmationEmailSendEvent {
-        return new ConfirmationEmailSendEvent(
+    ): ConfirmationEmailSentEvent {
+        return new ConfirmationEmailSentEvent(
             $token,
             $user->getEmail(),
             $eventID,

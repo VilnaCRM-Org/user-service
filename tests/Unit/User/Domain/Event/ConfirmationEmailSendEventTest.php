@@ -6,7 +6,7 @@ namespace App\Tests\Unit\User\Domain\Event;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\ConfirmationToken;
-use App\User\Domain\Event\ConfirmationEmailSendEvent;
+use App\User\Domain\Event\ConfirmationEmailSentEvent;
 
 class ConfirmationEmailSendEventTest extends UnitTestCase
 {
@@ -16,7 +16,7 @@ class ConfirmationEmailSendEventTest extends UnitTestCase
         $emailAddress = $this->faker->email();
         $eventId = $this->faker->uuid();
 
-        $event = new ConfirmationEmailSendEvent($token, $emailAddress, $eventId);
+        $event = new ConfirmationEmailSentEvent($token, $emailAddress, $eventId);
 
         $this->assertEquals($token, $event->token);
         $this->assertEquals($emailAddress, $event->emailAddress);
@@ -29,10 +29,10 @@ class ConfirmationEmailSendEventTest extends UnitTestCase
         $eventId = $this->faker->uuid();
         $occurredOn = $this->faker->date();
 
-        $event = new ConfirmationEmailSendEvent($token, $emailAddress, $eventId, $occurredOn);
+        $event = new ConfirmationEmailSentEvent($token, $emailAddress, $eventId, $occurredOn);
 
         $serializedEvent = $event->toPrimitives();
-        $deserializedEvent = ConfirmationEmailSendEvent::fromPrimitives(
+        $deserializedEvent = ConfirmationEmailSentEvent::fromPrimitives(
             $serializedEvent,
             $eventId,
             $occurredOn
@@ -43,7 +43,7 @@ class ConfirmationEmailSendEventTest extends UnitTestCase
 
     public function testEventName(): void
     {
-        $this->assertEquals('confirmation_email.send', ConfirmationEmailSendEvent::eventName());
+        $this->assertEquals('confirmation_email.send', ConfirmationEmailSentEvent::eventName());
     }
 
     public function testOccurredOn(): void
@@ -53,7 +53,7 @@ class ConfirmationEmailSendEventTest extends UnitTestCase
         $eventId = $this->faker->uuid();
         $occurredOn = $this->faker->date();
 
-        $event = new ConfirmationEmailSendEvent($token, $emailAddress, $eventId, $occurredOn);
+        $event = new ConfirmationEmailSentEvent($token, $emailAddress, $eventId, $occurredOn);
 
         $this->assertEquals($occurredOn, $event->occurredOn());
     }
@@ -65,7 +65,7 @@ class ConfirmationEmailSendEventTest extends UnitTestCase
         $eventId = $this->faker->uuid();
         $occurredOn = $this->faker->date();
 
-        $event = new ConfirmationEmailSendEvent($token, $emailAddress, $eventId, $occurredOn);
+        $event = new ConfirmationEmailSentEvent($token, $emailAddress, $eventId, $occurredOn);
 
         $this->assertEquals($eventId, $event->eventId());
     }

@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Command\SignUpCommandResponse;
+use App\User\Application\Command\RegisterUserCommandResponse;
 use App\User\Application\DTO\UserRegisterDto;
 use App\User\Application\Factory\SignUpCommandFactory;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
@@ -57,7 +57,7 @@ class RegisterUserProcessorTest extends UnitTestCase
             $password,
             $this->uuidTransformer->transformFromString($this->faker->uuid())
         );
-        $signUpCommand->setResponse(new SignUpCommandResponse($createdUser));
+        $signUpCommand->setResponse(new RegisterUserCommandResponse($createdUser));
 
         $mockSignUpCommandFactory->expects($this->once())
             ->method('create')

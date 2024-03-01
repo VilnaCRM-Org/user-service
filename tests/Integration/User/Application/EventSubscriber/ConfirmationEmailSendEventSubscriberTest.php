@@ -6,13 +6,13 @@ namespace App\Tests\Integration\User\Application\EventSubscriber;
 
 use App\Tests\Integration\IntegrationTestCase;
 use App\Tests\Integration\TestEmailSendingUtils;
-use App\User\Application\EventSubscriber\ConfirmationEmailSendEventSubscriber;
+use App\User\Application\EventSubscriber\ConfirmationEmailSentEventSubscriber;
 use App\User\Domain\Entity\ConfirmationToken;
-use App\User\Domain\Event\ConfirmationEmailSendEvent;
+use App\User\Domain\Event\ConfirmationEmailSentEvent;
 
 class ConfirmationEmailSendEventSubscriberTest extends IntegrationTestCase
 {
-    private ConfirmationEmailSendEventSubscriber $subscriber;
+    private ConfirmationEmailSentEventSubscriber $subscriber;
     private TestEmailSendingUtils $utils;
 
     protected function setUp(): void
@@ -20,7 +20,7 @@ class ConfirmationEmailSendEventSubscriberTest extends IntegrationTestCase
         parent::setUp();
 
         $this->subscriber = $this->container->get(
-            ConfirmationEmailSendEventSubscriber::class
+            ConfirmationEmailSentEventSubscriber::class
         );
         $this->utils = new TestEmailSendingUtils();
     }
@@ -31,7 +31,7 @@ class ConfirmationEmailSendEventSubscriberTest extends IntegrationTestCase
         $userId = $this->faker->uuid();
         $emailAddress = $this->faker->email();
         $token = new ConfirmationToken($tokenValue, $userId);
-        $event = new ConfirmationEmailSendEvent(
+        $event = new ConfirmationEmailSentEvent(
             $token,
             $emailAddress,
             $this->faker->uuid()

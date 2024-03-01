@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Application\CommandHandler;
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\CommandHandler\SignUpCommandHandler;
+use App\User\Application\CommandHandler\RegisterUserCommandHandler;
 use App\User\Application\Factory\SignUpCommandFactory;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\Transformer\SignUpTransformer;
@@ -21,7 +21,7 @@ use Symfony\Component\Uid\Factory\UuidFactory;
 
 class SignUpCommandHandlerTest extends UnitTestCase
 {
-    private SignUpCommandHandler $handler;
+    private RegisterUserCommandHandler $handler;
     private PasswordHasherFactoryInterface $hasherFactory;
     private UserRepositoryInterface $userRepository;
     private SignUpTransformer $transformer;
@@ -46,7 +46,7 @@ class SignUpCommandHandlerTest extends UnitTestCase
         $this->signUpCommandFactory = new SignUpCommandFactory();
         $this->registeredEventFactory = $this->createMock(UserRegisteredEventFactoryInterface::class);
 
-        $this->handler = new SignUpCommandHandler(
+        $this->handler = new RegisterUserCommandHandler(
             $this->hasherFactory,
             $this->userRepository,
             $this->transformer,

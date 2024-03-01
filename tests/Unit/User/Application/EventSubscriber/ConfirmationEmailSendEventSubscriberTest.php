@@ -6,8 +6,8 @@ namespace App\Tests\Unit\User\Application\EventSubscriber;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\EventSubscriber\ConfirmationEmailSendEventSubscriber;
-use App\User\Domain\Event\ConfirmationEmailSendEvent;
+use App\User\Application\EventSubscriber\ConfirmationEmailSentEventSubscriber;
+use App\User\Domain\Event\ConfirmationEmailSentEvent;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactory;
@@ -48,7 +48,7 @@ class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
         $translator = $this->createMock(TranslatorInterface::class);
         $mockEmailFactory = $this->createMock(EmailFactoryInterface::class);
 
-        $subscriber = new ConfirmationEmailSendEventSubscriber(
+        $subscriber = new ConfirmationEmailSentEventSubscriber(
             $mailer,
             $tokenRepository,
             $logger,
@@ -110,8 +110,8 @@ class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
     public function testSubscribedTo(): void
     {
         $this->assertSame(
-            [ConfirmationEmailSendEvent::class],
-            ConfirmationEmailSendEventSubscriber::subscribedTo()
+            [ConfirmationEmailSentEvent::class],
+            ConfirmationEmailSentEventSubscriber::subscribedTo()
         );
     }
 }

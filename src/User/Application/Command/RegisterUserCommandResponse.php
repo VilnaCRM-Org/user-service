@@ -7,7 +7,8 @@ namespace App\User\Application\Command;
 use App\Shared\Domain\Bus\Command\CommandResponseInterface;
 use App\User\Domain\Entity\User;
 
-final readonly class SignUpCommandResponse implements CommandResponseInterface
+final readonly class RegisterUserCommandResponse implements
+    CommandResponseInterface
 {
     public function __construct(public User $createdUser)
     {

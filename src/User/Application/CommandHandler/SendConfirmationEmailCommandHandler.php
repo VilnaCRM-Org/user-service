@@ -13,8 +13,8 @@ final readonly class SendConfirmationEmailCommandHandler implements
     CommandHandlerInterface
 {
     public function __construct(
-        private readonly EventBusInterface $eventBus,
-        private readonly UuidFactory $uuidFactory
+        private EventBusInterface $eventBus,
+        private UuidFactory $uuidFactory
     ) {
     }
 

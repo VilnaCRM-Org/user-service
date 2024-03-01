@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Application\Resolver;
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Command\SignUpCommandResponse;
+use App\User\Application\Command\RegisterUserCommandResponse;
 use App\User\Application\Factory\SignUpCommandFactory;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\MutationInput\MutationInputValidator;
@@ -57,7 +57,7 @@ class RegisterUserMutationResolverTest extends UnitTestCase
             $this->uuidTransformer->transformFromString($userID)
         );
         $command = $this->signUpCommandFactory->create($email, $initials, $password);
-        $command->setResponse(new SignUpCommandResponse($user));
+        $command->setResponse(new RegisterUserCommandResponse($user));
 
         $transformer->expects($this->once())
             ->method('transform');

@@ -6,14 +6,14 @@ namespace App\User\Application\EventSubscriber;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
-use App\User\Domain\Event\ConfirmationEmailSendEvent;
+use App\User\Domain\Event\ConfirmationEmailSentEvent;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Infrastructure\Factory\EmailFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-final readonly class ConfirmationEmailSendEventSubscriber implements
+final readonly class ConfirmationEmailSentEventSubscriber implements
     DomainEventSubscriberInterface
 {
     public function __construct(
@@ -25,7 +25,7 @@ final readonly class ConfirmationEmailSendEventSubscriber implements
     ) {
     }
 
-    public function __invoke(ConfirmationEmailSendEvent $event): void
+    public function __invoke(ConfirmationEmailSentEvent $event): void
     {
         $token = $event->token;
         $tokenValue = $token->getTokenValue();
@@ -53,6 +53,6 @@ final readonly class ConfirmationEmailSendEventSubscriber implements
      */
     public static function subscribedTo(): array
     {
-        return [ConfirmationEmailSendEvent::class];
+        return [ConfirmationEmailSentEvent::class];
     }
 }

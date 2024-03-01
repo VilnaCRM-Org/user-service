@@ -6,7 +6,7 @@ namespace App\Tests\Unit\User\Application\Transformer;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Command\SignUpCommand;
+use App\User\Application\Command\RegisterUserCommand;
 use App\User\Application\Transformer\SignUpTransformer;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -63,7 +63,7 @@ class SignUpTransformerTest extends UnitTestCase
             $uuidFactoryMock
         );
 
-        $command = new SignUpCommand($email, $initials, $password);
+        $command = new RegisterUserCommand($email, $initials, $password);
         $user = $transformer->transformToUser($command);
 
         $this->assertEquals($email, $user->getEmail());

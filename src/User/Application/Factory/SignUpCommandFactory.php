@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Application\Factory;
 
-use App\User\Application\Command\SignUpCommand;
+use App\User\Application\Command\RegisterUserCommand;
 
 final class SignUpCommandFactory implements SignUpCommandFactoryInterface
 {
@@ -12,7 +12,7 @@ final class SignUpCommandFactory implements SignUpCommandFactoryInterface
         string $email,
         string $initials,
         string $password
-    ): SignUpCommand {
-        return new SignUpCommand($email, $initials, $password);
+    ): RegisterUserCommand {
+        return new RegisterUserCommand($email, $initials, $password);
     }
 }
