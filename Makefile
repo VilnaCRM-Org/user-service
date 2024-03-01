@@ -75,8 +75,8 @@ infection:
 ci-infection:
 	$(INFECTION) --min-msi=100 --min-covered-msi=100 --test-framework-options="--testsuite=Unit" --show-mutations -j8
 
-ci-symfony-tests:
-	$(EXEC_PHP) ./vendor/bin/phpunit --coverage-clover /coverage/coverage.xml
+ci-symfony-tests: ## The PHP unit testing framework
+	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-clover /coverage/coverage.xml'
 
 phpunit-codecov: ## The PHP unit testing framework
 	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-html coverage'
