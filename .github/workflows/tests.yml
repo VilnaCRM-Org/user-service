@@ -24,8 +24,11 @@ jobs:
       - name: Run migrations
         run: make doctrine-migrations-migrate
 
-      - name: Execute Unit and Integration tests
-        run: make ci-symfony-tests
+      - name: Execute Unit tests
+        run: make ci-unit-tests
+
+      - name: Execute Integration tests
+        run: make ci-integration-tests
 
       - name: Copy coverage report to host
         run: docker cp php:/coverage/coverage.xml coverage/
@@ -34,7 +37,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage/coverage.xml
+          files: coverage/unitCoverage.xml,coverage/integrationCoverage.xml
           name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true
