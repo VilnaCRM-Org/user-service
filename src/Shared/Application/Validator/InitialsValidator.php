@@ -11,16 +11,24 @@ final class InitialsValidator extends ConstraintValidator
 {
     public function validate(mixed $value, Constraint $constraint): void
     {
-        if ($constraint->isOptional() && $this->isEmpty($value)) {
+        if ($this->isNull($value) ||
+            ($constraint->isOptional() && $this->isEmpty($value))
+        ) {
             return;
         }
+
         $this->validateFormat($value);
         $this->validateParts($value);
     }
 
     private function isEmpty(mixed $value): bool
     {
-        return $value === null || $value === '';
+        return $value === '';
+    }
+
+    private function isNull(mixed $value): bool
+    {
+        return $value === null;
     }
 
     private function validateFormat(mixed $value): void

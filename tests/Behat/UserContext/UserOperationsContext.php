@@ -6,6 +6,7 @@ namespace App\Tests\Behat\UserContext;
 
 use App\Tests\Behat\UserContext\Input\ConfirmUserInput;
 use App\Tests\Behat\UserContext\Input\CreateUserInput;
+use App\Tests\Behat\UserContext\Input\EmptyInput;
 use App\Tests\Behat\UserContext\Input\RequestInput;
 use App\Tests\Behat\UserContext\Input\UpdateUserInput;
 use Behat\Behat\Context\Context;
@@ -18,6 +19,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 class UserOperationsContext implements Context
 {
     private RequestInput $requestBody;
+    private int $violationNum;
 
     public function __construct(
         private readonly KernelInterface $kernel,
@@ -25,6 +27,7 @@ class UserOperationsContext implements Context
         private ?Response $response
     ) {
         $this->requestBody = new RequestInput();
+        $this->violationNum = 0;
     }
 
     /**
@@ -60,19 +63,11 @@ class UserOperationsContext implements Context
     }
 
     /**
-     * @Given creating user with invalid input
+     * @Given sending empty body
      */
-    public function creatingUserWithMisformattedData(): void
+    public function sendingEmptyBody(): void
     {
-        $this->requestBody = new CreateUserInput();
-    }
-
-    /**
-     * @Given updating user with invalid input
-     */
-    public function replacingUserWithMisformattedData(): void
-    {
-        $this->requestBody = new UpdateUserInput();
+        $this->requestBody = new EmptyInput();
     }
 
     /**
@@ -94,6 +89,7 @@ class UserOperationsContext implements Context
                 'CONTENT_TYPE' => $contentType,],
             $this->serializer->serialize($this->requestBody, 'json')
         ));
+        error_log($this->serializer->serialize($this->requestBody, 'json'));
     }
 
     /**
@@ -130,8 +126,9 @@ class UserOperationsContext implements Context
         $data = json_decode($this->response->getContent(), true);
         Assert::assertEquals(
             $violation,
-            $data['violations'][0]['message']
+            $data['violations'][$this->violationNum]['message']
         );
+        $this->violationNum++;
     }
 
     /**

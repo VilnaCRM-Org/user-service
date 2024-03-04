@@ -13,15 +13,15 @@ final readonly class UserPatchDto
     public function __construct(
         #[Assert\Email]
         #[Assert\Length(max: 255)]
-        public string $email,
+        public ?string $email = null,
         #[Assert\Length(max: 255)]
         #[Initials(optional: true)]
-        public string $initials,
+        public ?string $initials = null,
         #[Assert\NotBlank]
         #[Password]
-        public string $oldPassword,
+        public ?string $oldPassword = null,
         #[Password(optional: true)]
-        public string $newPassword,
+        public ?string $newPassword = null,
     ) {
     }
 }

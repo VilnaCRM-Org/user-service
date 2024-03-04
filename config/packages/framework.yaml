@@ -1,5 +1,9 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
+    set_locale_from_accept_language: true
+    set_content_language_from_locale: true
+    default_locale: en
+    enabled_locales: [ en, uk ]
     secret: '%env(APP_SECRET)%'
     #csrf_protection: true
     http_method_override: false

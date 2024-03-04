@@ -27,12 +27,12 @@ class DuplicateEmailExceptionTest extends UnitTestCase
         $email = $this->faker->email();
         $exception = new DuplicateEmailException($email);
 
-        $expectedMessage = $email . ' address is already registered. Please use a different email address or try logging in.';
+        $expectedMessage = "$email address is already registered";
         $this->assertStringContainsString($expectedMessage, $exception->getMessage());
     }
 
-    public function testExtendsLogicException(): void
+    public function testExtendsRuntimeException(): void
     {
-        $this->assertTrue((new DuplicateEmailException($this->faker->email())) instanceof \LogicException);
+        $this->assertTrue((new DuplicateEmailException($this->faker->email())) instanceof \RuntimeException);
     }
 }

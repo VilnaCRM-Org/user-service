@@ -14,14 +14,14 @@ final readonly class UserRegisterDto
         #[Assert\NotBlank]
         #[Assert\Email]
         #[Assert\Length(max: 255)]
-        public string $email,
+        public ?string $email = null,
         #[Assert\NotBlank]
         #[Assert\Length(max: 255)]
         #[Initials]
-        public string $initials,
+        public ?string $initials = null,
         #[Assert\NotBlank]
         #[Password]
-        public string $password,
+        public ?string $password = null,
     ) {
     }
 }

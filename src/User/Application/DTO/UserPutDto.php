@@ -14,17 +14,17 @@ final readonly class UserPutDto
         #[Assert\NotBlank]
         #[Assert\Email]
         #[Assert\Length(max: 255)]
-        public string $email,
+        public ?string $email = null,
         #[Assert\NotBlank]
         #[Assert\Length(max: 255)]
         #[Initials]
-        public string $initials,
+        public ?string $initials = null,
         #[Assert\NotBlank]
         #[Password]
-        public string $oldPassword,
+        public ?string $oldPassword = null,
         #[Assert\NotBlank]
         #[Password]
-        public string $newPassword
+        public ?string $newPassword = null,
     ) {
     }
 }

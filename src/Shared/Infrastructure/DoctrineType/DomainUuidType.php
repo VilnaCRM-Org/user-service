@@ -36,10 +36,13 @@ final class DomainUuidType extends Type
         mixed $value,
         AbstractPlatform $platform
     ): ?string {
-        if ($value instanceof UuidInterface || $value === null) {
+        if ($value instanceof UuidInterface) {
             return $value->toBinary();
         }
 
+        if (strlen($value) % 2 !== 0) {
+            return null;
+        }
         $uuid = new Uuid($value);
 
         return $uuid->toBinary();

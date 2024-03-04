@@ -10,7 +10,7 @@ final readonly class ConfirmUserDto
 {
     public function __construct(
         #[Assert\NotBlank]
-        public string $token
+        public ?string $token = null
     ) {
     }
 }

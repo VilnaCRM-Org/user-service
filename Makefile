@@ -59,16 +59,16 @@ phpinsights: ## Instant PHP quality checks and static analysis tool
 	$(EXEC_PHP) ./vendor/bin/phpinsights --no-interaction
 
 unit-tests: ## The PHP unit testing framework
-	$(EXEC_PHP) ./vendor/bin/phpunit --testsuite=Unit
+	$(EXEC_PHP_TEST_ENV) ./vendor/bin/phpunit --testsuite=Unit
 
 integration-tests: ## The PHP unit testing framework
-	$(EXEC_PHP) ./vendor/bin/phpunit --testsuite=Integration
+	$(EXEC_PHP_TEST_ENV) ./vendor/bin/phpunit --testsuite=Integration
 
 ci-unit-tests: ## The PHP unit testing framework
-	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --testsuite=Unit --coverage-clover /coverage/unitCoverage.xml'
+	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage -e APP_ENV=test php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --testsuite=Unit --coverage-clover /coverage/unitCoverage.xml'
 
 ci-integration-tests: ## The PHP unit testing framework
-	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --testsuite=Integration --coverage-clover /coverage/integrationCoverage.xml'
+	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage -e APP_ENV=test php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --testsuite=Integration --coverage-clover /coverage/integrationCoverage.xml'
 
 e2e-tests: ## A php framework for autotesting business expectations
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/behat

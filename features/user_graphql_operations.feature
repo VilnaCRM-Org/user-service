@@ -14,7 +14,7 @@ Feature: User GraphQL Operations
     And user with email "graphqltest@mail.com2" exists
     And creating user with email "graphqltest@mail.com2" initials "name surname" password "passWORD1"
     When graphQL request is send
-    Then graphql error message should be "graphqltest@mail.com2 address is already registered. Please use a different email address or try logging in."
+    Then graphql error message should be "graphqltest@mail.com2 address is already registered"
 
   Scenario: Creating a user with invalid email
     Given requesting to return user's id and email
@@ -65,7 +65,7 @@ Feature: User GraphQL Operations
     And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "passWORD1" to new email "testUpdateGraphQL2@mail.com"
     When graphQL request is send
     Then graphql error response should be returned
-    And graphql error message should be "testUpdateGraphQL2@mail.com address is already registered. Please use a different email address or try logging in."
+    And graphql error message should be "testUpdateGraphQL2@mail.com address is already registered"
 
   Scenario: Updating user with wrong password
     Given requesting to return user's id and email

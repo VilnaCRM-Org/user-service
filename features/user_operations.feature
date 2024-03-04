@@ -23,7 +23,7 @@ Feature: User Operations
     And creating user with email "test2@mail.com", initials "name surname", password "passWORD1"
     When POST request is send to "/api/users"
     Then the response status code should be 409
-    And the error message should be "test2@mail.com address is already registered. Please use a different email address or try logging in."
+    And the error message should be "test2@mail.com address is already registered"
 
   Scenario: Creating a user with invalid email
     Given creating user with email "test", initials "name surname", password "passWORD1"
@@ -55,11 +55,13 @@ Feature: User Operations
     Then the response status code should be 422
     And violation should be "Invalid full name format"
 
-  Scenario: Creating a user with wrong input
-    Given creating user with invalid input
+  Scenario: Creating a user with no input
+    Given sending empty body
     When POST request is send to "/api/users"
-    Then the response status code should be 400
-    And the error message should be "The input data is misformatted."
+    Then the response status code should be 422
+    And violation should be "This value should not be blank."
+    And violation should be "This value should not be blank."
+    And violation should be "This value should not be blank."
 
   Scenario: Getting a user
     Given user with id "8be90127-9840-4235-a6da-39b8debfb220" exists
@@ -107,14 +109,7 @@ Feature: User Operations
     And updating user with email "test3@mail.com", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
     When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 409
-    And the error message should be "test3@mail.com address is already registered. Please use a different email address or try logging in."
-
-  Scenario: Replacing a user with wrong input
-    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
-    And updating user with invalid input
-    When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
-    Then the response status code should be 400
-    And the error message should be "The input data is misformatted."
+    And the error message should be "test3@mail.com address is already registered"
 
   Scenario: Replacing user with invalid email
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
@@ -122,6 +117,16 @@ Feature: User Operations
     When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 422
     And violation should be "This value is not a valid email address."
+
+  Scenario: Replacing a user with no input
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
+    Given sending empty body
+    When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
+    Then the response status code should be 422
+    And violation should be "This value should not be blank."
+    And violation should be "This value should not be blank."
+    And violation should be "This value should not be blank."
+    And violation should be "This value should not be blank."
 
   Scenario: Updating user
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
@@ -155,14 +160,7 @@ Feature: User Operations
     And updating user with email "test4@mail.com", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 409
-    And the error message should be "test4@mail.com address is already registered. Please use a different email address or try logging in."
-
-  Scenario: Updating a user with wrong input
-    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
-    And updating user with invalid input
-    When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
-    Then the response status code should be 400
-    And the error message should be "The input data is misformatted."
+    And the error message should be "test4@mail.com address is already registered"
 
   Scenario: Updating user with invalid email
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
@@ -170,6 +168,13 @@ Feature: User Operations
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 422
     And violation should be "This value is not a valid email address."
+
+  Scenario: Updating user with no input
+    Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
+    Given sending empty body
+    When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
+    Then the response status code should be 422
+    And violation should be "This value should not be blank."
 
   Scenario: Resending email to user
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
@@ -200,3 +205,10 @@ Feature: User Operations
     When PATCH request is send to "/api/users/confirm"
     Then the response status code should be 404
     And the error message should be "Token not found"
+
+  Scenario: Confirming user with no input
+    Given sending empty body
+    When PATCH request is send to "/api/users/confirm"
+    Then the response status code should be 422
+    And violation should be "This value should not be blank."
+

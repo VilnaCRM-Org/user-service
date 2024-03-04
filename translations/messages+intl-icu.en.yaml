@@ -7,3 +7,9 @@ email:
   confirm:
     subject: 'VilnaCRM email confirmation'
     text: 'Your email confirmation token - { tokenValue }'
+error:
+  duplicate-email: '{ email } address is already registered'
+  invalid-password: 'Old password is invalid'
+  token-not-found: 'Token not found'
+  user-not-found: 'User not found'
+  user-timed-out: 'Cannot send new email till { datetime }'
