@@ -1,6 +1,5 @@
-import { Box } from '@mui/material';
+import { Box, Link } from '@mui/material';
 import Image from 'next/image';
-import Link from 'next/link';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 

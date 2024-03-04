@@ -11,6 +11,7 @@ export default {
       lineHeight: 'normal',
     },
   },
+
   description: {
     pt: '1rem',
     pb: '1.5rem',
@@ -34,6 +35,7 @@ export default {
       paddingBottom: '0',
     },
   },
+
   button: {
     display: 'inline-block',
     [`@media (max-width: 968px)`]: {

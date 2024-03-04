@@ -14,6 +14,7 @@ export default {
       ml: '0',
     },
   },
+
   title: {
     textAlign: 'center',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
@@ -25,6 +26,7 @@ export default {
       textAlign: 'left',
     },
   },
+
   text: {
     mt: '1rem',
     textAlign: 'center',
@@ -41,10 +43,13 @@ export default {
       lineHeight: '1.563rem',
     },
   },
-  button: {
+  link: {
+    alignSelf: 'center',
     '@media (max-width: 419.98px)': {
-      alignSelf: 'start',
-      marginBottom: '1.375rem',
+      alignSelf: 'flex-start',
     },
+  },
+  button: {
+    marginBottom: '1.375rem',
   },
 };

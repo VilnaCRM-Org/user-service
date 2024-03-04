@@ -1,5 +1,7 @@
+import { SxProps, Theme } from '@mui/material';
+
 export interface UiTypographyProps {
-  sx?: Record<string, unknown>;
+  sx?: SxProps<Theme>;
   variant?:
     | 'h1'
     | 'h2'

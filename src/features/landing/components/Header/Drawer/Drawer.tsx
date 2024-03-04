@@ -1,6 +1,5 @@
-import { Drawer, Box, Stack, Button, useMediaQuery } from '@mui/material';
+import { Drawer, Box, Stack, Button, useMediaQuery, Link } from '@mui/material';
 import Image from 'next/image';
-import Link from 'next/link';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -47,6 +46,7 @@ function CustomDrawer(): React.ReactElement {
         />
       </Button>
       <Drawer
+        data-testid="drawer"
         anchor="right"
         open={isDrawerOpen}
         onClose={(): void => setIsDrawerOpen(!isDrawerOpen)}
@@ -88,22 +88,26 @@ function CustomDrawer(): React.ReactElement {
             gap="0.563rem"
             mt="0.75rem"
           >
-            <UiButton
-              fullWidth
-              variant="outlined"
-              size="small"
-              onClick={(): void => handleClick()}
-            >
-              <Link href="#signUp"> {t('header.actions.log_in')}</Link>
-            </UiButton>
-            <UiButton
-              fullWidth
-              onClick={(): void => handleClick()}
-              variant="contained"
-              size="small"
-            >
-              <Link href="#signUp">{t('header.actions.try_it_out')}</Link>
-            </UiButton>
+            <Link href="#signUp" sx={styles.link}>
+              <UiButton
+                fullWidth
+                variant="outlined"
+                size="small"
+                onClick={(): void => handleClick()}
+              >
+                {t('header.actions.log_in')}
+              </UiButton>
+            </Link>
+            <Link href="#signUp" sx={styles.link}>
+              <UiButton
+                fullWidth
+                onClick={(): void => handleClick()}
+                variant="contained"
+                size="small"
+              >
+                {t('header.actions.try_it_out')}
+              </UiButton>
+            </Link>
           </Stack>
           <NavList
             navItems={drawerNavList}

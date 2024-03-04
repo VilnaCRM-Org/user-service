@@ -3,6 +3,7 @@ import {
   ThemeProvider,
   Tooltip,
   Typography,
+  useMediaQuery,
 } from '@mui/material';
 import React from 'react';
 
@@ -17,7 +18,15 @@ function UiTooltip({
   sx,
 }: UiTooltipProps): React.ReactElement {
   const [open, setOpen] = React.useState(false);
+  const isWideScreen: boolean = useMediaQuery(
+    '(min-width: 639px) and (max-width: 641px)'
+  );
 
+  React.useEffect(() => {
+    if (isWideScreen) {
+      setOpen(false);
+    }
+  }, [isWideScreen]);
   function handleTooltipClose(): void {
     setOpen(false);
   }

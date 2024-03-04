@@ -18,4 +18,8 @@ export default {
     minWidth: '0',
     padding: '0',
   },
+
+  link: {
+    width: '100%',
+  },
 };

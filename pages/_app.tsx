@@ -7,7 +7,6 @@ import { golos } from '@/config/Fonts';
 
 import i18n from '../i18n';
 
-import 'dotenv/config';
 import '../styles/global.css';
 
 Sentry.init({
@@ -15,8 +14,8 @@ Sentry.init({
   integrations: [
     new Sentry.BrowserTracing({
       tracePropagationTargets: [
-        process.env.LOCALHOST || '',
-        process.env.API_URL || '',
+        process.env.NEXT_PUBLIC_LOCALHOST || '',
+        process.env.NEXT_PUBLIC_API_URL || '',
       ],
     }),
     new Sentry.Replay(),

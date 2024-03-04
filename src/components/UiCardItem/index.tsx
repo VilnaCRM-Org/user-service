@@ -29,16 +29,15 @@ function CardContent({
       >
         {isSmallCard ? (
           <Trans i18nKey={item.text}>
-            Інтегруйте
+            Integrate
             <UiTooltip
               placement="bottom"
               arrow
               sx={styles.hoveredCard}
               title={<ServicesHoverCard imageList={imageList || []} />}
             >
-              <UiTypography variant="bodyText16">звичні сервіси</UiTypography>
+              <UiTypography variant="bodyText16"> services</UiTypography>
             </UiTooltip>
-            у кілька кліків
           </Trans>
         ) : (
           <Trans i18nKey={item.text} />

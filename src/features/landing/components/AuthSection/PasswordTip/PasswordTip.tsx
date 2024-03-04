@@ -8,10 +8,7 @@ import styles from './styles';
 function PasswordTip(): React.ReactElement {
   const { t } = useTranslation();
   return (
-    <Stack direction="column" gap="0.25rem">
-      <UiTypography variant="medium14" sx={styles.line}>
-        {t('sign_up.form.password_tip.title')}
-      </UiTypography>
+    <Stack direction="column" gap="0.25rem" sx={styles.wrapper}>
       <UiTypography variant="medium14" sx={styles.recommendationText}>
         {t('sign_up.form.password_tip.recommendation_text')}
       </UiTypography>

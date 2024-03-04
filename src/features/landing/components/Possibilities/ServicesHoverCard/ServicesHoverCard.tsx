@@ -23,7 +23,7 @@ function ServicesHoverCard({
       <UiTypography variant="medium14" sx={styles.text}>
         {t('unlimited_possibilities.service_text.text')}
       </UiTypography>
-      <Stack flexDirection="row" flexWrap="wrap" gap="1.875rem">
+      <Stack sx={styles.listWrapper}>
         {imageList.map(item => (
           <ImageItem item={item} key={item.alt} />
         ))}

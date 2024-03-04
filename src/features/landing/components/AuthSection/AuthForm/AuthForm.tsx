@@ -1,4 +1,5 @@
 import { Box, Stack } from '@mui/material';
+import Image from 'next/image';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
@@ -9,9 +10,12 @@ import {
   UiButton,
   UiLink,
   UiTypography,
+  UiTooltip,
 } from '@/components';
 
+import QuestionMark from '../../../assets/svg/auth-section/questionMark.svg';
 import { RegisterItem } from '../../../types/authentication/form';
+import { PasswordTip } from '../PasswordTip';
 import {
   validateFullName,
   validatePassword,
@@ -99,9 +103,24 @@ function AuthForm({
               )}
             </Stack>
             <Stack sx={styles.inputWrapper}>
-              <UiTypography variant="medium14" sx={styles.inputTitle}>
-                {t('sign_up.form.password_input.label')}
-              </UiTypography>
+              <Stack direction="row" alignItems="center" gap="0.25rem">
+                <UiTypography variant="medium14" sx={styles.inputTitle}>
+                  {t('sign_up.form.password_input.label')}
+                </UiTypography>
+                <UiTooltip
+                  placement="right"
+                  sx={styles.tip}
+                  arrow
+                  title={<PasswordTip />}
+                >
+                  <Image
+                    src={QuestionMark}
+                    alt={t('sign_up.form.password_tip.alt')}
+                    width={16}
+                    height={16}
+                  />
+                </UiTooltip>
+              </Stack>
               <UiTextFieldForm
                 control={control}
                 name="Password"

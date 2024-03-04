@@ -43,6 +43,7 @@
       "heading": "Why we",
       "subtitle": "Unlimited customization options or ease of use - <br/ > we've made it easy for any business to manage sales",
       "button_text": "Try it out",
+      "aria_label": "Link to registration",
       "headers": {
         "header_open_source": "Open source",
         "header_ease_of_setup": "Ease of setup",
@@ -95,7 +96,7 @@
       },
       "cards_texts": {
         "text_for_cases": "For cases when you did not find <br /> the desired ready-made integration ",
-        "text_integrate": "Integrate familiar <1 href='/'> services</1> in a few clicks",
+        "text_integrate": "Integrate <1 href='/'>familiar  services</1> in a few clicks",
         "text_get_data": "Get data about any event in CRM <br /> and automate complex business processes",
         "text_for_custom": "For custom integrations <br /> with specific products"
       },
@@ -136,6 +137,16 @@
           "error_length": "Password must be between 8 and 64 characters long",
           "error_numbers": "Password must contain at least one number",
           "error_uppercase": "Password must contain at least one uppercase letter"
+        },
+        "password_tip": {
+          "alt": "Password tip mark",
+          "title": "At least 8 characters.",
+          "recommendation_text": "We recommend using:",
+          "options": {
+            "option_1": "lowercase and uppercase special",
+            "option_2": "special characters (#&*$)",
+            "option_3": "use numbers"
+          }
         },
         "confidential_text": {
           "fullText": "I have read and accept the <1>Privacy Policy</1> and the <1>Use Policy</1> VilnaCRM Service"
@@ -208,6 +219,7 @@
       "heading": "Чому ми",
       "subtitle": "Безмежні можливості кастомізації чи простота у використанні  — <br/ > ми подбали, щоб керувати продажами було зручно будь-якому бізнесу",
       "button_text": "Спробувати",
+      "aria_label": "Посилання на реєстрацію",
       "headers": {
         "header_open_source": "Open source",
         "header_ease_of_setup": "Легкість <br /> у налаштуванні",
@@ -305,6 +317,16 @@
           "error_length": "Пароль повинен містити від 8 до 64 символів",
           "error_numbers": "Пароль повинен містити принаймні одну цифру",
           "error_uppercase": "Пароль повинен містити принаймні одну велику літеру"
+        },
+        "password_tip": {
+          "alt": "Позначка підказки пароля",
+          "title": "Не менше 8 символів.",
+          "recommendation_text": "Рекомендуємо використовувати:",
+          "options": {
+            "option_1": "малі та великі літери спеціальні",
+            "option_2": "спеціальні символи(#&*$)",
+            "option_3": "використовувати цифри"
+          }
         },
         "confidential_text": {
           "fullText": "Я прочитав та приймаю <1>Політику Конфіденційності</1> та <1>Політику Використання</1> сервісу VilnaCRM"

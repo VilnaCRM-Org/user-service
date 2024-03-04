@@ -49,7 +49,6 @@ module.exports = {
         'plugin:react/recommended',
         'plugin:react-hooks/recommended',
         'plugin:jsx-a11y/recommended',
-        'plugin:testing-library/react',
         'plugin:jest-dom/recommended',
       ],
       rules: {
