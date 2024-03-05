@@ -24,13 +24,13 @@ jobs:
         run: make ci-tests
 
       - name: Copy coverage report to host
-        run: docker cp user-service-php-1:/coverage/coverage.xml coverage/
+        run: docker cp user-service-php-1:/coverage/coverage.xml /
 
       - name: Upload code coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage/coverage.xml
+          files: /coverage.xml
           name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true
