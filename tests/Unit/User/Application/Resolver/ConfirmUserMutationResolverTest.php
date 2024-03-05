@@ -7,14 +7,14 @@ namespace App\Tests\Unit\User\Application\Resolver;
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Exception\TokenNotFoundException;
+use App\User\Application\Exception\UserNotFoundException;
 use App\User\Application\Factory\ConfirmUserCommandFactory;
 use App\User\Application\Factory\ConfirmUserCommandFactoryInterface;
 use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\Resolver\ConfirmUserMutationResolver;
 use App\User\Application\Transformer\ConfirmUserMutationInputTransformer;
 use App\User\Domain\Entity\UserInterface;
-use App\User\Domain\Exception\TokenNotFoundException;
-use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
@@ -28,6 +28,12 @@ class ConfirmUserMutationResolverTest extends UnitTestCase
     private ConfirmUserCommandFactoryInterface $confirmUserCommandFactory;
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;
+    private TokenRepositoryInterface $tokenRepository;
+    private CommandBusInterface $commandBus;
+    private UserRepositoryInterface $userRepository;
+    private MutationInputValidator $validator;
+    private ConfirmUserMutationInputTransformer $transformer;
+    private ConfirmUserCommandFactoryInterface $mockConfirmUserCommandFactory;
 
     protected function setUp(): void
     {
@@ -37,24 +43,24 @@ class ConfirmUserMutationResolverTest extends UnitTestCase
         $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
+
+        $this->tokenRepository = $this->createMock(TokenRepositoryInterface::class);
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->validator = $this->createMock(MutationInputValidator::class);
+        $this->transformer = $this->createMock(ConfirmUserMutationInputTransformer::class);
+        $this->mockConfirmUserCommandFactory = $this->createMock(ConfirmUserCommandFactoryInterface::class);
     }
 
     public function testInvoke(): void
     {
-        $tokenRepository = $this->createMock(TokenRepositoryInterface::class);
-        $commandBus = $this->createMock(CommandBusInterface::class);
-        $userRepository = $this->createMock(UserRepositoryInterface::class);
-        $validator = $this->createMock(MutationInputValidator::class);
-        $transformer = $this->createMock(ConfirmUserMutationInputTransformer::class);
-        $mockConfirmUserCommandFactory = $this->createMock(ConfirmUserCommandFactoryInterface::class);
-
         $resolver = new ConfirmUserMutationResolver(
-            $tokenRepository,
-            $commandBus,
-            $userRepository,
-            $validator,
-            $transformer,
-            $mockConfirmUserCommandFactory
+            $this->tokenRepository,
+            $this->commandBus,
+            $this->userRepository,
+            $this->validator,
+            $this->transformer,
+            $this->mockConfirmUserCommandFactory,
         );
 
         $userID = $this->faker->uuid();
@@ -76,26 +82,26 @@ class ConfirmUserMutationResolverTest extends UnitTestCase
 
         $command = $this->confirmUserCommandFactory->create($token);
 
-        $transformer->expects($this->once())
+        $this->transformer->expects($this->once())
             ->method('transform');
 
-        $validator->expects($this->once())
+        $this->validator->expects($this->once())
             ->method('validate');
 
-        $tokenRepository->expects($this->once())
+        $this->tokenRepository->expects($this->once())
             ->method('find')
             ->with($tokenValue)
             ->willReturn($token);
 
-        $userRepository->expects($this->once())
+        $this->userRepository->expects($this->once())
             ->method('find')
             ->willReturn($user);
 
-        $mockConfirmUserCommandFactory->expects($this->once())
+        $this->mockConfirmUserCommandFactory->expects($this->once())
             ->method('create')
             ->willReturn($command);
 
-        $commandBus->expects($this->once())
+        $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($command);
 
@@ -105,29 +111,22 @@ class ConfirmUserMutationResolverTest extends UnitTestCase
 
     public function testInvokeTokenNotFound(): void
     {
-        $tokenRepository = $this->createMock(TokenRepositoryInterface::class);
-        $commandBus = $this->createMock(CommandBusInterface::class);
-        $userRepository = $this->createMock(UserRepositoryInterface::class);
-        $validator = $this->createMock(MutationInputValidator::class);
-        $transformer = $this->createMock(ConfirmUserMutationInputTransformer::class);
-        $confirmUserCommandFactory = $this->createMock(ConfirmUserCommandFactoryInterface::class);
-
         $resolver = new ConfirmUserMutationResolver(
-            $tokenRepository,
-            $commandBus,
-            $userRepository,
-            $validator,
-            $transformer,
-            $confirmUserCommandFactory
+            $this->tokenRepository,
+            $this->commandBus,
+            $this->userRepository,
+            $this->validator,
+            $this->transformer,
+            $this->mockConfirmUserCommandFactory,
         );
 
         $tokenValue = $this->faker->uuid();
         $input = ['token' => $tokenValue];
 
-        $transformer->expects($this->once())
+        $this->transformer->expects($this->once())
             ->method('transform');
 
-        $tokenRepository->expects($this->once())
+        $this->tokenRepository->expects($this->once())
             ->method('find')
             ->with($tokenValue)
             ->willReturn(null);
@@ -139,20 +138,13 @@ class ConfirmUserMutationResolverTest extends UnitTestCase
 
     public function testInvokeUserNotFound(): void
     {
-        $tokenRepository = $this->createMock(TokenRepositoryInterface::class);
-        $commandBus = $this->createMock(CommandBusInterface::class);
-        $userRepository = $this->createMock(UserRepositoryInterface::class);
-        $validator = $this->createMock(MutationInputValidator::class);
-        $transformer = $this->createMock(ConfirmUserMutationInputTransformer::class);
-        $confirmUserCommandFactory = $this->createMock(ConfirmUserCommandFactoryInterface::class);
-
         $resolver = new ConfirmUserMutationResolver(
-            $tokenRepository,
-            $commandBus,
-            $userRepository,
-            $validator,
-            $transformer,
-            $confirmUserCommandFactory
+            $this->tokenRepository,
+            $this->commandBus,
+            $this->userRepository,
+            $this->validator,
+            $this->transformer,
+            $this->mockConfirmUserCommandFactory,
         );
 
         $userID = $this->faker->uuid();
@@ -162,15 +154,15 @@ class ConfirmUserMutationResolverTest extends UnitTestCase
         $input = ['token' => $tokenValue];
         $token = $this->confirmationTokenFactory->create($userID);
 
-        $transformer->expects($this->once())
+        $this->transformer->expects($this->once())
             ->method('transform');
 
-        $tokenRepository->expects($this->once())
+        $this->tokenRepository->expects($this->once())
             ->method('find')
             ->with($tokenValue)
             ->willReturn($token);
 
-        $userRepository->expects($this->once())
+        $this->userRepository->expects($this->once())
             ->method('find')
             ->willReturn(null);
 

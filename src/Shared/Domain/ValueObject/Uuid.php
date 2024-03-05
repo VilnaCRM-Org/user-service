@@ -18,8 +18,14 @@ final class Uuid implements UuidInterface
         return $this->uid;
     }
 
-    public function toBinary(): string
+    public function toBinary(): ?string
     {
-        return hex2bin(str_replace('-', '', $this->uid));
+        return $this->isConvertableToBinary($this->uid) ?
+            hex2bin(str_replace('-', '', $this->uid)) : null;
+    }
+
+    private function isConvertableToBinary(string $uid): bool
+    {
+        return strlen($uid) % 2 === 0;
     }
 }

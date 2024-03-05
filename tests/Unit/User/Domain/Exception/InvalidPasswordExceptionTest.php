@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Domain\Exception;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Domain\Exception\InvalidPasswordException;
+use App\User\Application\Exception\InvalidPasswordException;
 
 class InvalidPasswordExceptionTest extends UnitTestCase
 {

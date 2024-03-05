@@ -6,7 +6,7 @@ namespace App\Tests\Unit\User\Infrastructure\Repository;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Domain\Exception\DuplicateEmailException;
+use App\User\Application\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Infrastructure\Repository\MariaDBUserRepository;

@@ -7,6 +7,8 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\SendConfirmationEmailCommand;
+use App\User\Application\Exception\UserTimedOutException;
+use App\User\Domain\Exception\NotAllowedToSendException;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 final readonly class SendConfirmationEmailCommandHandler implements
@@ -22,7 +24,12 @@ final readonly class SendConfirmationEmailCommandHandler implements
     {
         $confirmationEmail = $command->confirmationEmail;
 
-        $confirmationEmail->send((string) $this->uuidFactory->create());
+        try {
+            $confirmationEmail->send((string)$this->uuidFactory->create());
+        }
+        catch (NotAllowedToSendException $exception){
+            throw new UserTimedOutException($exception->datetime);
+        }
 
         $this->eventBus->publish(...$confirmationEmail->pullDomainEvents());
     }

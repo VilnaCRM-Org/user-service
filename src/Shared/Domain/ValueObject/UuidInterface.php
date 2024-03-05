@@ -8,5 +8,5 @@ interface UuidInterface
 {
     public function __toString(): string;
 
-    public function toBinary(): string;
+    public function toBinary(): ?string;
 }

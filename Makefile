@@ -73,6 +73,12 @@ ci-integration-tests: ## The PHP unit testing framework
 e2e-tests: ## A php framework for autotesting business expectations
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/behat
 
+ci-setup-test-db:
+	$(SYMFONY_TEST_ENV) c:c
+	$(SYMFONY_TEST_ENV) doctrine:database:drop --force --if-exists
+	$(SYMFONY_TEST_ENV) doctrine:database:create
+	$(SYMFONY_TEST_ENV) doctrine:migrations:migrate --no-interaction
+
 all-tests: unit-tests integration-tests e2e-tests
 
 infection:

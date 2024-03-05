@@ -8,9 +8,9 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\UserPutDto;
+use App\User\Application\Exception\UserNotFoundException;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 

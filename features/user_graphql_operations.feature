@@ -20,36 +20,31 @@ Feature: User GraphQL Operations
     Given requesting to return user's id and email
     And creating user with email "graphqlTest" initials "name surname" password "passWORD1"
     When graphQL request is send
-    Then graphql error response should be returned
-    And graphql error message should be "email: This value is not a valid email address."
+    Then graphql error message should be "email: This value is not a valid email address."
 
   Scenario: Creating a user with password with no uppercase letters
     Given requesting to return user's id and email
     And creating user with email "graphqlTest@mail.com" initials "name surname" password "password1"
     When graphQL request is send
-    Then graphql error response should be returned
-    And graphql error message should be "password: Password must contain at least one uppercase letter"
+    Then graphql error message should be "password: Password must contain at least one uppercase letter"
 
   Scenario: Creating a user with password with no numbers
     Given requesting to return user's id and email
     And creating user with email "graphqlTest@mail.com" initials "name surname" password "passWORD"
     When graphQL request is send
-    Then graphql error response should be returned
-    And graphql error message should be "password: Password must contain at least one number"
+    Then graphql error message should be "password: Password must contain at least one number"
 
   Scenario: Creating a user with too short password
     Given requesting to return user's id and email
     And creating user with email "graphqlTest@mail.com" initials "name surname" password "WORD1"
     When graphQL request is send
-    Then graphql error response should be returned
-    And graphql error message should be "password: Password must be between 8 and 64 characters long"
+    Then graphql error message should be "password: Password must be between 8 and 64 characters long"
 
   Scenario: Creating a user with invalid initials format
     Given requesting to return user's id and email
     And creating user with email "graphqlTest@mail.com" initials "123" password "passWORD1"
     When graphQL request is send
-    Then graphql error response should be returned
-    And graphql error message should be "initials: Invalid full name format"
+    Then graphql error message should be "initials: Invalid full name format"
 
   Scenario: Updating user
     Given requesting to return user's id and email
@@ -64,31 +59,27 @@ Feature: User GraphQL Operations
     And user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "passWORD1" exists
     And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "passWORD1" to new email "testUpdateGraphQL2@mail.com"
     When graphQL request is send
-    Then graphql error response should be returned
-    And graphql error message should be "testUpdateGraphQL2@mail.com address is already registered"
+    Then graphql error message should be "testUpdateGraphQL2@mail.com address is already registered"
 
   Scenario: Updating user with wrong password
     Given requesting to return user's id and email
     And user with id "8be90127-9840-4235-a6da-39b8debfb111" exists
     And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "wrongpassWORD1" to new email "testUpdateGraphQL@mail.com"
     When graphQL request is send
-    Then graphql error response should be returned
-    And graphql error message should be "Old password is invalid"
+    Then graphql error message should be "Old password is invalid"
 
   Scenario: Updating a non-existing user
     Given requesting to return user's id and email
     And updating user with id "8be90127-9840-4235-a6da-39b8debfb112" and password "passWORD1" to new email "testUpdateGraphQL@mail.com"
     When graphQL request is send
-    Then graphql error response should be returned
-    And graphql error message should be 'Item "/api/users/8be90127-9840-4235-a6da-39b8debfb112" not found.'
+    Then graphql error message should be 'Item "/api/users/8be90127-9840-4235-a6da-39b8debfb112" not found.'
 
   Scenario: Updating user to invalid email
     Given requesting to return user's id and email
     And user with id "8be90127-9840-4235-a6da-39b8debfb111" exists
     And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "passWORD1" to new email "test"
     When graphQL request is send
-    Then graphql error response should be returned
-    And graphql error message should be "email: This value is not a valid email address."
+    Then graphql error message should be "email: This value is not a valid email address."
 
   Scenario: Deleting user
     Given requesting to return user's id
@@ -101,8 +92,7 @@ Feature: User GraphQL Operations
     Given requesting to return user's id
     And deleting user with id "8be90127-9840-4235-a6da-39b8debfb112"
     When graphQL request is send
-    Then graphql error response should be returned
-    And graphql error message should be 'Item "/api/users/8be90127-9840-4235-a6da-39b8debfb112" not found.'
+    Then graphql error message should be 'Item "/api/users/8be90127-9840-4235-a6da-39b8debfb112" not found.'
 
   Scenario: Confirm user
     Given requesting to return user's id and email
@@ -116,7 +106,6 @@ Feature: User GraphQL Operations
     Given requesting to return user's id and email
     And confirming user with token "expiredToken" via graphQl
     When graphQL request is send
-    Then graphql error response should be returned
     Then graphql error message should be "Token not found"
 
   Scenario: Resend email to user
@@ -130,8 +119,7 @@ Feature: User GraphQL Operations
     Given requesting to return user's id and email
     And resending email to user with id "8be90127-9840-4235-a6da-39b8debfb112"
     When graphQL request is send
-    Then graphql error response should be returned
-    And graphql error message should be 'Item "/api/users/8be90127-9840-4235-a6da-39b8debfb112" not found.'
+    Then graphql error message should be 'Item "/api/users/8be90127-9840-4235-a6da-39b8debfb112" not found.'
 
   Scenario: Getting user
     Given requesting to return user's id and email
@@ -143,6 +131,18 @@ Feature: User GraphQL Operations
   Scenario: Getting non-existing user
     Given requesting to return user's id and email
     And getting user with id "8be90127-9840-4235-a6da-39b8debfb112"
+    When graphQL request is send
+    Then graphql response should be null
+
+  Scenario: Getting a user with invalid uuid
+    Given requesting to return user's id and email
+    And getting user with id "8be90127-9840-4235-a6da-39b8debfb221a"
+    When graphQL request is send
+    Then graphql response should be null
+
+  Scenario: Getting a user with invalid id
+    Given requesting to return user's id and email
+    And getting user with id "aaaaaa"
     When graphQL request is send
     Then graphql response should be null
 

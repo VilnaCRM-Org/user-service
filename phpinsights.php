@@ -49,7 +49,7 @@ return [
         UnnecessaryStringConcatSniff::class => [
             'exclude' => [
                 'src/Shared/Application/OpenApi/Factory/Response/UnsupportedTypeFactory',
-                'src/User/Domain/Exception/DuplicateEmailException',
+                'src/User/Application/Exception/DuplicateEmailException',
                 'src/Shared/Application/OpenApi/Factory/Response/DuplicateEmailFactory',
                 'src/Shared/Infrastructure/Bus/Command/CommandNotRegisteredException',
                 'src/Shared/Infrastructure/Bus/Event/EventNotRegisteredException.php',

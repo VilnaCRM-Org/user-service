@@ -28,6 +28,7 @@ class UserGraphQLContext implements Context
     private string $query;
     private string $queryName;
     private array $responseContent;
+    private int $errorNum;
 
     private GraphQLMutationInput $graphQLInput;
 
@@ -37,6 +38,7 @@ class UserGraphQLContext implements Context
     ) {
         $this->responseContent = [];
         $this->graphQLInput = new GraphQLMutationInput();
+        $this->errorNum = 0;
     }
 
     /**
@@ -226,16 +228,7 @@ class UserGraphQLContext implements Context
     {
         $data = json_decode($this->response->getContent(), true);
 
-        Assert::assertEquals($errorMessage, $data['errors'][0]['debugMessage']);
-    }
-
-    /**
-     * @Then graphql error response should be returned
-     */
-    public function graphQLErrorResponseShouldBeReturned(): void
-    {
-        $data = json_decode($this->response->getContent(), true);
-
-        Assert::assertArrayHasKey('message', $data['errors'][0]);
+        Assert::assertEquals($errorMessage, $data['errors'][$this->errorNum]['message']);
+        $this->errorNum++;
     }
 }

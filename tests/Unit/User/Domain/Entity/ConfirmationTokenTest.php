@@ -6,7 +6,7 @@ namespace App\Tests\Unit\User\Domain\Entity;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\ConfirmationToken;
-use App\User\Domain\Exception\UserTimedOutException;
+use App\User\Domain\Exception\NotAllowedToSendException;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 
@@ -28,16 +28,15 @@ class ConfirmationTokenTest extends UnitTestCase
     {
         $this->confirmationToken->send();
         $this->confirmationToken->send();
-        $this->expectException(UserTimedOutException::class);
+        $this->expectException(NotAllowedToSendException::class);
         $this->confirmationToken->send();
     }
 
     public function testSendWithDatetime(): void
     {
-        $this->expectException(UserTimedOutException::class);
+        $this->expectException(NotAllowedToSendException::class);
         $this->confirmationToken->send($this->confirmationToken->getAllowedToSendAfter());
     }
-
 
     public function testSetTimesSend()
     {

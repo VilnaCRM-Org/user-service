@@ -17,8 +17,8 @@ jobs:
       - name: Install Dependencies
         run: make install
 
-      - name: Run migrations
-        run: make doctrine-migrations-migrate
+      - name: Setup test db
+        run: make ci-setup-test-db
 
       - name: Execute Unit tests
         run: make ci-unit-tests

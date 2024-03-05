@@ -40,9 +40,6 @@ final class DomainUuidType extends Type
             return $value->toBinary();
         }
 
-        if (strlen($value) % 2 !== 0) {
-            return null;
-        }
         $uuid = new Uuid($value);
 
         return $uuid->toBinary();

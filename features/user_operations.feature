@@ -74,6 +74,16 @@ Feature: User Operations
     Then the response status code should be 404
     And the error message should be "Not Found"
 
+  Scenario: Getting a user with invalid uuid
+    When GET request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221a"
+    Then the response status code should be 404
+    And the error message should be "Not Found"
+
+  Scenario: Getting a user with invalid id
+    When GET request is send to "/api/users/aaaaaa"
+    Then the response status code should be 404
+    And the error message should be "Not Found"
+
   Scenario: Deleting a user
     Given user with id "8be90127-9840-4235-a6da-39b8debfb220" exists
     When DELETE request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb220"

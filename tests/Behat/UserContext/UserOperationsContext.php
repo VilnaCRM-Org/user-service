@@ -89,7 +89,6 @@ class UserOperationsContext implements Context
                 'CONTENT_TYPE' => $contentType,],
             $this->serializer->serialize($this->requestBody, 'json')
         ));
-        error_log($this->serializer->serialize($this->requestBody, 'json'));
     }
 
     /**

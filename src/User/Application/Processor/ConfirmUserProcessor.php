@@ -8,8 +8,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\ConfirmUserDto;
+use App\User\Application\Exception\TokenNotFoundException;
 use App\User\Application\Factory\ConfirmUserCommandFactoryInterface;
-use App\User\Domain\Exception\TokenNotFoundException;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 
