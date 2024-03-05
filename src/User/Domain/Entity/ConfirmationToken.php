@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\User\Domain\Entity;
 
 use App\User\Domain\Exception\NotAllowedToSendException;
+use App\User\Domain\Exception\UserTimedOutException;
 
 final class ConfirmationToken implements ConfirmationTokenInterface
 {
@@ -70,17 +71,13 @@ final class ConfirmationToken implements ConfirmationTokenInterface
     {
         $this->userID = $userID;
     }
-
-    /**
-     * @throws NotAllowedToSendException
-     */
+    
     public function send(?\DateTimeImmutable $sendAt = null): void
     {
         $datetime = $sendAt ?? new \DateTimeImmutable();
 
         if ($this->allowedToSendAfter >= $datetime) {
-            //throw new UserTimedOutException($this->allowedToSendAfter);
-            throw new NotAllowedToSendException($this->allowedToSendAfter);
+            throw new UserTimedOutException($this->allowedToSendAfter);
         }
 
         $nextAllowedPeriodToSendInMinutes =
