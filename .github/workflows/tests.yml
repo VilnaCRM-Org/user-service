@@ -20,11 +20,8 @@ jobs:
       - name: Setup test db
         run: make ci-setup-test-db
 
-      - name: Execute Unit tests
-        run: make ci-unit-tests
-
-      - name: Execute Integration tests
-        run: make ci-integration-tests
+      - name: Execute Unit and Integration tests
+        run: make ci-tests
 
       - name: Copy coverage report to host
         run: docker cp user-service-php-1:/coverage/coverage.xml coverage/
@@ -33,7 +30,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage/unitCoverage.xml,coverage/integrationCoverage.xml
+          files: coverage/coverage.xml
           name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true
