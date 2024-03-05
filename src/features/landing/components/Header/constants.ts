@@ -15,7 +15,7 @@ export const headerNavList: NavItemProps[] = [
   {
     id: 'for-who',
     title: 'header.for_who',
-    link: '#forWhoSectionStyles',
+    link: '#forWhoSection',
     type: 'header',
   },
   {
@@ -41,7 +41,7 @@ export const drawerNavList: NavItemProps[] = [
   {
     id: 'for-who',
     title: 'header.for_who',
-    link: '#forWhoSectionStyles',
+    link: '#forWhoSection',
     type: 'drawer',
   },
   {
@@ -64,7 +64,7 @@ export const socialMedia: SocialMedia[] = [
     icon: InstagramDrawerIcon,
     alt: 'header.drawer.alt_social_images.instagram',
     ariaLabel: 'header.drawer.aria_labels_social_images.instagram',
-    linkHref: '/',
+    linkHref: 'https://www.instagram.com/',
     type: 'drawer',
   },
   {
@@ -72,7 +72,7 @@ export const socialMedia: SocialMedia[] = [
     icon: GitHubDrawerIcon,
     alt: 'header.drawer.alt_social_images.github',
     ariaLabel: 'header.drawer.aria_labels_social_images.github',
-    linkHref: '/',
+    linkHref: 'https://github.com/',
     type: 'drawer',
   },
   {
@@ -80,7 +80,7 @@ export const socialMedia: SocialMedia[] = [
     icon: FacebookDrawerIcon,
     alt: 'header.drawer.alt_social_images.facebook',
     ariaLabel: 'header.drawer.aria_labels_social_images.facebook',
-    linkHref: '/',
+    linkHref: 'https://uk-ua.facebook.com/',
     type: 'drawer',
   },
   {
@@ -88,7 +88,7 @@ export const socialMedia: SocialMedia[] = [
     icon: LinkedinDrawerIcon,
     alt: 'header.drawer.alt_social_images.linkedin',
     ariaLabel: 'header.drawer.aria_labels_social_images.linkedin',
-    linkHref: '/',
+    linkHref: 'https://www.linkedin.com/',
     type: 'drawer',
   },
 ];

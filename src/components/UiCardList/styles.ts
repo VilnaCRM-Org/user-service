@@ -17,7 +17,6 @@ export default {
   },
 
   gridSmallMobile: {
-    // pointerEvents: 'none',
     display: 'none',
     '& .swiper .swiper-pagination .swiper-pagination-bullet': {
       marginRight: '1.25rem',

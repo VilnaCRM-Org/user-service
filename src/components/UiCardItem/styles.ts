@@ -64,7 +64,6 @@ export default {
     color: colorTheme.palette.primary.main,
     textDecoration: 'underline',
     fontWeight: '700',
-    zIndex: 100501,
   },
   largeWrapper: {
     height: '100%',

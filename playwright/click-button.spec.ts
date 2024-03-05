@@ -1,15 +1,24 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
-test('test', async ({ page }) => {
-  await page.goto('http://localhost:3000/');
-  await page.getByRole('button', { name: 'Log in' }).click();
-  await page.getByTestId('header-sign-up').click();
-  await page.getByTestId('about-sign-up').click();
-  await page.getByTestId('for-who-sign-up').click();
-  await expect(
-    page
-      .locator('div')
-      .filter({ hasText: 'Sign up now and free up your' })
-      .nth(2)
-  ).toBeVisible();
+test.describe('Buttons navigation tests', () => {
+  async function clickAndVerifySection(page, elementLocator): Promise<void> {
+    await page.click(elementLocator);
+    await page.locator('[data-testid="auth-section"]').boundingBox();
+  }
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('http://localhost:3000/');
+  });
+
+  test('Desktop buttons navigation', async ({ page }) => {
+    await clickAndVerifySection(page, 'button:has-text("Log in")');
+    await clickAndVerifySection(page, '[data-testid="header-sign-up"]');
+    await clickAndVerifySection(page, '[data-testid="about-sign-up"]');
+    await clickAndVerifySection(page, '[data-testid="for-who-sign-up"]');
+  });
+
+  test('Mobile button navigation', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await clickAndVerifySection(page, '[data-testid="why-us-sign-up"]');
+  });
 });

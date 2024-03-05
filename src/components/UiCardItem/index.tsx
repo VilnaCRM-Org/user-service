@@ -46,6 +46,7 @@ function CardContent({
     </>
   );
 }
+
 function UiCardItem({ item, imageList }: UiCardItemProps): React.ReactElement {
   const { t } = useTranslation();
   const isSmallCard: boolean = item.type === 'smallCard';

@@ -5,9 +5,9 @@ import { Cards } from './Cards';
 import MainTitle from './MainTitle/MainTitle';
 import styles from './styles';
 
-function ForWhoSectionStyles(): React.ReactElement {
+function ForWhoSection(): React.ReactElement {
   return (
-    <Box id="forWhoSectionStyles" component="section" sx={styles.wrapper}>
+    <Box id="forWhoSection" component="section" sx={styles.wrapper}>
       <Container>
         <Box sx={styles.content}>
           <MainTitle />
@@ -25,4 +25,4 @@ function ForWhoSectionStyles(): React.ReactElement {
   );
 }
 
-export default ForWhoSectionStyles;
+export default ForWhoSection;

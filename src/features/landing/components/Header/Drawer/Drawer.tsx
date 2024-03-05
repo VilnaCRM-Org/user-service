@@ -62,12 +62,14 @@ function CustomDrawer(): React.ReactElement {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Image
-              src={Logo}
-              alt={t('header.logo_alt')}
-              width={131}
-              height={44}
-            />
+            <Link href="/">
+              <Image
+                src={Logo}
+                alt={t('header.logo_alt')}
+                width={131}
+                height={44}
+              />
+            </Link>
             <Button
               aria-label={t('header.drawer.button_aria_labels.exit') as string}
               sx={styles.button}
