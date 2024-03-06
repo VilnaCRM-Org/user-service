@@ -7,11 +7,13 @@ import { AuthForm } from '../AuthForm';
 
 function ConnectedForm(): React.ReactElement {
   const [signupMutation] = useMutation(SIGNUP_MUTATION);
+  const [serverError, setServerError] = React.useState('');
 
   const onSubmit: (data: RegisterItem) => Promise<void> = async (
     data: RegisterItem
   ) => {
     try {
+      setServerError('');
       await signupMutation({
         variables: {
           input: {
@@ -22,12 +24,12 @@ function ConnectedForm(): React.ReactElement {
           },
         },
       });
-    } catch (signupError) {
-      throw new Error('Something went wrong. Please try again later');
+    } catch (errorData: any) {
+      setServerError(errorData?.message);
     }
   };
 
-  return <AuthForm onSubmit={onSubmit} />;
+  return <AuthForm onSubmit={onSubmit} error={serverError} />;
 }
 
 export default ConnectedForm;

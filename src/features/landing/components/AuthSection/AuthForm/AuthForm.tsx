@@ -23,12 +23,9 @@ import {
 } from '../Validations';
 
 import styles from './styles';
+import { AuthFormProps } from './types';
 
-function AuthForm({
-  onSubmit,
-}: {
-  onSubmit: (data: RegisterItem) => Promise<void>;
-}): React.ReactElement {
+function AuthForm({ onSubmit, error }: AuthFormProps): React.ReactElement {
   const { t } = useTranslation();
   const {
     handleSubmit,
@@ -96,11 +93,9 @@ function AuthForm({
                 placeholder={t('sign_up.form.email_input.placeholder')}
                 type="text"
               />
-              {errors.Email && (
-                <UiTypography variant="medium14" sx={styles.errorText}>
-                  {errors.Email.message}
-                </UiTypography>
-              )}
+              <UiTypography variant="medium14" sx={styles.errorText}>
+                {error || errors.Email?.message}
+              </UiTypography>
             </Stack>
             <Stack sx={styles.inputWrapper}>
               <Stack direction="row" alignItems="center" gap="0.25rem">

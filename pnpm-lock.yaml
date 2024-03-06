@@ -49,6 +49,9 @@ devDependencies:
   '@commitlint/config-conventional':
     specifier: ^18.6.0
     version: 18.6.2
+  '@faker-js/faker':
+    specifier: ^8.4.1
+    version: 8.4.1
   '@lhci/cli':
     specifier: ^0.13.0
     version: 0.13.0
@@ -2115,6 +2118,11 @@ packages:
       strip-json-comments: 3.1.1
     transitivePeerDependencies:
       - supports-color
+    dev: true
+
+  /@faker-js/faker@8.4.1:
+    resolution: {integrity: sha512-XQ3cU+Q8Uqmrbf2e0cIC/QN43sTBSC8KF12u29Mb47tWrt2hAgBXSgpZMj4Ao8Uk0iJcU99QsOCaIL8934obCg==}
+    engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0, npm: '>=6.14.13'}
     dev: true
 
   /@fal-works/esbuild-plugin-global-externals@2.1.2:

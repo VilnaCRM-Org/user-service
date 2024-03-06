@@ -1,4 +1,4 @@
-// Todo: correct the url to our social networks
+// TODO: correct the url to our social networks
 
 import { test, expect } from '@playwright/test';
 
