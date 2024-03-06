@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Domain\Exception;
 
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Exception\DomainException;
 use App\User\Domain\Exception\UserTimedOutException;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -21,5 +22,12 @@ class UserTimedOutExceptionTest extends UnitTestCase
             'Cannot send new email till ' . $timeOutTill->format(DateTimeInterface::ATOM),
             $exception->getMessage()
         );
+    }
+
+    public function testExtendsRuntimeException(): void
+    {
+        $this->assertTrue((new UserTimedOutException(
+            new DateTimeImmutable('+1 hour')
+        )) instanceof DomainException);
     }
 }

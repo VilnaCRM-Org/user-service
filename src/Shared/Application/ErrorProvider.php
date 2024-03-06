@@ -7,33 +7,57 @@ namespace App\Shared\Application;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ApiResource\Error;
 use ApiPlatform\State\ProviderInterface;
+use App\User\Domain\Exception\DomainException;
+use GraphQL\Error\FormattedError;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @implements ProviderInterface<Error>
  */
-final class ErrorProvider implements ProviderInterface
+final readonly class ErrorProvider implements ProviderInterface
 {
+    public function __construct(
+        private TranslatorInterface $translator
+    ) {
+    }
+
     /**
      * @param array<string,string> $uriVariables
-     * @param array<string,string> $context
+     * @param array<string,array<string>> $context
      */
     public function provide(
         Operation $operation,
         array $uriVariables = [],
         array $context = []
     ): object|array|null {
+        $internalErrorText = $this->translator->trans('error.internal');
         $request = $context['request'];
         $exception = $request->attributes->get('exception');
 
         $status = $operation->getStatus() ?? 500;
 
-        $error = Error::createFromException($exception, $status);
+        if ($this->isGraphQLRequest($request)) {
+            $error = FormattedError::createFromException($exception);
+            $error['message'] = $internalErrorText;
+        } else {
+            $error = Error::createFromException($exception, $status);
 
-        // care about hiding informations as this can be a security leak
-        if ($status >= 500) {
-            $error->setDetail('Something went wrong');
+            if ($status >= 500) {
+                $error->setDetail($internalErrorText);
+            } elseif ($exception instanceof DomainException) {
+                $error->setDetail($this->translator->trans(
+                    $exception->getTranslationTemplate(),
+                    $exception->getTranslationArgs()
+                ));
+            }
         }
 
         return $error;
+    }
+
+    private function isGraphQLRequest(Request $request): bool
+    {
+        return str_contains($request->getRequestUri(), 'graphql');
     }
 }

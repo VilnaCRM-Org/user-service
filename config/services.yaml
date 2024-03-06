@@ -46,7 +46,13 @@ services:
          autoconfigure: false
 
     api_platform.state.error_provider:
+        arguments: [ '@Symfony\Contracts\Translation\TranslatorInterface']
         class: 'App\Shared\Application\ErrorProvider'
+
+    App\Shared\Application\ExceptionNormalizer:
+        arguments: [ '@Symfony\Contracts\Translation\TranslatorInterface']
+        tags:
+            - { name: 'serializer.normalizer', priority: 12 }
 
     App\User\Domain\Factory\ConfirmationTokenFactory:
         arguments:

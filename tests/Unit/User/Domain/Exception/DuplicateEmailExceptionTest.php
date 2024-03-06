@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Domain\Exception;
 
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Exception\DomainException;
 use App\User\Domain\Exception\DuplicateEmailException;
 
 class DuplicateEmailExceptionTest extends UnitTestCase
@@ -33,6 +34,6 @@ class DuplicateEmailExceptionTest extends UnitTestCase
 
     public function testExtendsRuntimeException(): void
     {
-        $this->assertTrue((new DuplicateEmailException($this->faker->email())) instanceof \RuntimeException);
+        $this->assertTrue((new DuplicateEmailException($this->faker->email())) instanceof DomainException);
     }
 }
