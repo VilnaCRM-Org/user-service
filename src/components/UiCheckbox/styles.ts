@@ -44,10 +44,6 @@ export default {
       borderRadius: '0.5rem',
       border: `1px solid ${colorTheme.palette.error.main}`,
       background: colorTheme.palette.white.main,
-      '&:hover': {
-        cursor: 'pointer',
-        border: `1px solid ${colorTheme.palette.primary.main}`,
-      },
       '&:checked': {
         backgroundColor: colorTheme.palette.primary.main,
         border: 'none',

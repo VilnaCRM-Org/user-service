@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { test, expect, Response, Locator } from '@playwright/test';
+import { test, expect, Locator } from '@playwright/test';
 
 interface User {
   name: string;
@@ -19,7 +19,6 @@ test('Submit the registration form', async ({ page }) => {
   const passwordInput: Locator = page.getByPlaceholder('Create a password');
   const signupButton: Locator = page.getByRole('button', { name: 'Sign-Up' });
   const termsCheckbox: Locator = page.getByLabel('I have read and accept the');
-
   await page.goto('http://localhost:3000/');
 
   await initialsInput.click();
@@ -30,15 +29,11 @@ test('Submit the registration form', async ({ page }) => {
   await passwordInput.fill(user.password);
   await termsCheckbox.check();
   expect(termsCheckbox).toBeChecked();
-  const responsePromise: Promise<Response> = page.waitForResponse(
-    response =>
-      response.url() === 'https://localhost/api/graphql' &&
-      response.status() === 200
-  );
-  await page.getByText('trigger response').click();
-  const response: Response = await responsePromise;
-  expect(response).not.toBeNull();
-  expect(response.status()).toBe(200);
 
-  await signupButton.click();
+  await Promise.all([
+    page.waitForResponse(
+      resp => resp.url().includes('/api/graphql') && resp.status() === 200
+    ),
+    signupButton.click(),
+  ]);
 });

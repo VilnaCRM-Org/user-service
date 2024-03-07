@@ -5,6 +5,10 @@ import { SIGNUP_MUTATION } from '../../../api/service/userService';
 import { RegisterItem } from '../../../types/authentication/form';
 import { AuthForm } from '../AuthForm';
 
+interface ErrorData {
+  message: string;
+}
+
 function ConnectedForm(): React.ReactElement {
   const [signupMutation] = useMutation(SIGNUP_MUTATION);
   const [serverError, setServerError] = React.useState('');
@@ -24,8 +28,8 @@ function ConnectedForm(): React.ReactElement {
           },
         },
       });
-    } catch (errorData: any) {
-      setServerError(errorData?.message);
+    } catch (errorData) {
+      setServerError((errorData as ErrorData)?.message);
     }
   };
 
