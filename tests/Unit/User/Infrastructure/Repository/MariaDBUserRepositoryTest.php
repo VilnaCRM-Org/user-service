@@ -6,13 +6,9 @@ namespace App\Tests\Unit\User\Infrastructure\Repository;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Infrastructure\Repository\MariaDBUserRepository;
-use Doctrine\DBAL\Driver\Exception;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
-use Doctrine\DBAL\Query;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Persisters\Entity\EntityPersister;
@@ -102,36 +98,6 @@ class MariaDBUserRepositoryTest extends UnitTestCase
         $this->userRepository->save($user);
 
         $this->addToAssertionCount(1);
-    }
-
-    public function testSaveDuplicateEmailException(): void
-    {
-        $email = $this->faker->email();
-        $initials = $this->faker->name();
-        $password = $this->faker->password();
-
-        $user = $this->userFactory->create(
-            $email,
-            $initials,
-            $password,
-            $this->transformer->transformFromString($this->faker->uuid())
-        );
-
-        $this->entityManager->expects($this->once())
-            ->method('persist')
-            ->with($user);
-        $this->entityManager->expects($this->once())
-            ->method('flush')
-            ->willThrowException(
-                new UniqueConstraintViolationException(
-                    $this->createMock(Exception::class),
-                    $this->createMock(Query::class)
-                )
-            );
-
-        $this->expectException(DuplicateEmailException::class);
-
-        $this->userRepository->save($user);
     }
 
     public function testDelete(): void

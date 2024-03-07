@@ -17,6 +17,21 @@ class UserNotFoundExceptionTest extends UnitTestCase
         $this->assertEquals('User not found', $exception->getMessage());
     }
 
+    public function testGetTranslationTemplate(): void
+    {
+        $exception = new UserNotFoundException();
+
+        $this->assertEquals('error.user-not-found', $exception->getTranslationTemplate());
+    }
+
+    public function testGetTranslationArgs(): void
+    {
+
+        $exception = new UserNotFoundException();
+
+        $this->assertEquals([], $exception->getTranslationArgs());
+    }
+
     public function testExtendsRuntimeException(): void
     {
         $this->assertTrue((new UserNotFoundException()) instanceof DomainException);

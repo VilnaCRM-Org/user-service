@@ -18,7 +18,7 @@ final class ValidationErrorFactory implements AbstractResponseFactory
     public function getResponse(): Response
     {
         return $this->responseBuilder->build(
-            'Internal server error',
+            'Validation error',
             [
                 $this->getTypeParam(),
                 $this->getTitleParam(),

@@ -15,12 +15,4 @@ final class TokenNotFoundException extends DomainException
     {
         return 'error.token-not-found';
     }
-
-    /**
-     * @return array<string, string>
-     */
-    public function getTranslationArgs(): array
-    {
-        return [];
-    }
 }

@@ -129,4 +129,29 @@ class ErrorProviderTest extends UnitTestCase
 
         $this->assertEquals($errorText, $error->getDetail());
     }
+
+    public function testProvideGraphQLInternalError(): void
+    {
+        $operation = $this->createMock(HttpOperation::class);
+        $errorText = $this->faker->word();
+
+        $exception = new HttpException(Response::HTTP_INTERNAL_SERVER_ERROR, $this->faker->word());
+
+        $request = Request::create('graphql');
+        ;
+        $request->attributes->set('exception', $exception);
+
+        $context = ['request' => $request];
+
+        $this->translator
+            ->method('trans')
+            ->with('error.internal')
+            ->willReturn($errorText);
+
+        $errorProvider = new ErrorProvider($this->translator);
+
+        $error = $errorProvider->provide($operation, [], $context);
+
+        $this->assertEquals($errorText, $error['message']);
+    }
 }

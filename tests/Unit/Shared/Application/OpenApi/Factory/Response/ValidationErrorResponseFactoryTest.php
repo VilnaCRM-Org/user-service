@@ -22,7 +22,7 @@ class ValidationErrorResponseFactoryTest extends UnitTestCase
         $responseBuilder->expects($this->once())
             ->method('build')
             ->with(
-                'Internal server error',
+                'Validation error',
                 [
                     $this->getTypeParam(),
                     $this->getTitleParam(),

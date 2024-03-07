@@ -7,7 +7,6 @@ namespace App\Shared\Application\OpenApi\Factory\Endpoint;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
-use App\Shared\Application\OpenApi\Factory\Response\DuplicateEmailFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserCreatedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -23,12 +22,9 @@ final class UserEndpointFactory implements AbstractEndpointFactory
 
     public function __construct(
         private ValidationErrorFactory $validationErrorResponseFactory,
-        private DuplicateEmailFactory $duplicateEmailResponseFactory,
         private BadRequestResponseFactory $badRequestResponseFactory,
         private UserCreatedResponseFactory $userCreatedResponseFactory
     ) {
-        $this->duplicateEmailResponse =
-            $this->duplicateEmailResponseFactory->getResponse();
         $this->validationErrorResponse =
             $this->validationErrorResponseFactory->getResponse();
         $this->badRequestResponse =
@@ -63,7 +59,6 @@ final class UserEndpointFactory implements AbstractEndpointFactory
         return [
             HttpResponse::HTTP_CREATED => $this->userCreatedResponse,
             HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
-            HttpResponse::HTTP_CONFLICT => $this->duplicateEmailResponse,
             HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $valResponse,
         ];
     }

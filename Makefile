@@ -66,7 +66,6 @@ integration-tests: ## The PHP unit testing framework
 
 ci-tests: ## The PHP unit testing framework
 	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage -e APP_ENV=test php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-clover /coverage/coverage.xml'
-	$(EXEC_PHP_TEST_ENV) chmod 777 /coverage/coverage.xml
 
 e2e-tests: ## A php framework for autotesting business expectations
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/behat

@@ -13,5 +13,8 @@ abstract class DomainException extends \RuntimeException
     /**
      * @return array<string, string|DateTimeInterface>
      */
-    abstract public function getTranslationArgs(): array;
+    public function getTranslationArgs(): array
+    {
+        return [];
+    }
 }

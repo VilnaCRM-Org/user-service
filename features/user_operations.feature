@@ -22,8 +22,8 @@ Feature: User Operations
     Given user with email "test2@mail.com" exists
     And creating user with email "test2@mail.com", initials "name surname", password "passWORD1"
     When POST request is send to "/api/users"
-    Then the response status code should be 409
-    And the error message should be "test2@mail.com address is already registered"
+    Then the response status code should be 422
+    And violation should be "test2@mail.com address is already registered"
 
   Scenario: Creating a user with invalid email
     Given creating user with email "test", initials "name surname", password "passWORD1"
@@ -118,8 +118,8 @@ Feature: User Operations
     And user with email "test3@mail.com" exists
     And updating user with email "test3@mail.com", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
     When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
-    Then the response status code should be 409
-    And the error message should be "test3@mail.com address is already registered"
+    Then the response status code should be 422
+    And violation should be "test3@mail.com address is already registered"
 
   Scenario: Replacing user with invalid email
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
@@ -169,8 +169,8 @@ Feature: User Operations
     And user with email "test4@mail.com" exists
     And updating user with email "test4@mail.com", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
-    Then the response status code should be 409
-    And the error message should be "test4@mail.com address is already registered"
+    Then the response status code should be 422
+    And violation should be "test4@mail.com address is already registered"
 
   Scenario: Updating user with invalid email
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists

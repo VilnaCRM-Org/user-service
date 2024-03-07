@@ -17,6 +17,21 @@ class InvalidPasswordExceptionTest extends UnitTestCase
         $this->assertEquals('Old password is invalid', $exception->getMessage());
     }
 
+    public function testGetTranslationTemplate(): void
+    {
+        $exception = new InvalidPasswordException();
+
+        $this->assertEquals('error.invalid-password', $exception->getTranslationTemplate());
+    }
+
+    public function testGetTranslationArgs(): void
+    {
+
+        $exception = new InvalidPasswordException();
+
+        $this->assertEquals([], $exception->getTranslationArgs());
+    }
+
     public function testExtendsRuntimeException(): void
     {
         $this->assertTrue((new InvalidPasswordException()) instanceof DomainException);

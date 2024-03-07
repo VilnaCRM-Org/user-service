@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application;
 
-use App\User\Domain\Exception\DuplicateEmailException;
+use App\User\Domain\Exception\DomainException;
 use GraphQL\Error\Error;
 use GraphQL\Error\FormattedError;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -49,6 +49,6 @@ final readonly class ExceptionNormalizer implements NormalizerInterface
         mixed $format = null
     ): bool {
         return $data instanceof Error && $data->getPrevious()
-            instanceof DuplicateEmailException;
+            instanceof DomainException;
     }
 }

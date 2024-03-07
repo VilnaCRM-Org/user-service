@@ -15,12 +15,4 @@ final class UserNotFoundException extends DomainException
     {
         return 'error.user-not-found';
     }
-
-    /**
-     * @return array<string, string>
-     */
-    public function getTranslationArgs(): array
-    {
-        return [];
-    }
 }

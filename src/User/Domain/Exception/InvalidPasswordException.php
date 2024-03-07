@@ -15,12 +15,4 @@ final class InvalidPasswordException extends DomainException
     {
         return 'error.invalid-password';
     }
-
-    /**
-     * @return array<string, string>
-     */
-    public function getTranslationArgs(): array
-    {
-        return [];
-    }
 }

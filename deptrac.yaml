@@ -11,7 +11,7 @@ parameters:
         - type: className
           regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|Exception).*'
         - type: className
-          regex: '.*App\\Shared\\Application\\(Validator|Transformer|ErrorProvider).*'
+          regex: '.*App\\Shared\\Application\\(Validator|Transformer|ErrorProvider|ExceptionNormalizer).*'
         - type: className
           regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|OpenApiFactory).*'
     - name: Domain
@@ -45,7 +45,11 @@ parameters:
     - name: League
       collectors:
         - type: className
-          regex: '.*League\\Bundle\\OAuth2ServerBundle\\\.*'
+          regex: '.*League\\Bundle\\OAuth2ServerBundle\\.*'
+    - name: GraphQl
+      collectors:
+        - type: className
+          regex: '.*GraphQL\\.*'
   ruleset:
     Application:
       - Domain
@@ -54,6 +58,7 @@ parameters:
       - ApiPlatform
       - Logging
       - League
+      - GraphQl
     Infrastructure:
       - Domain
       - Application

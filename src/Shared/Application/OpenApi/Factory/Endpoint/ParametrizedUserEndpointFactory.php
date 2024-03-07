@@ -9,7 +9,6 @@ use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
-use App\Shared\Application\OpenApi\Factory\Response\DuplicateEmailFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserDeletedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserNotFoundResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserUpdatedResponseFactory;
@@ -31,7 +30,6 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
 
     public function __construct(
         private ValidationErrorFactory $validationErrorResponseFactory,
-        private DuplicateEmailFactory $duplicateEmailResponseFactory,
         private BadRequestResponseFactory $badRequestResponseFactory,
         private UserNotFoundResponseFactory $userNotFoundResponseFactory,
         private UserDeletedResponseFactory $deletedResponseFactory,
@@ -40,9 +38,6 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
     ) {
         $this->uuidWithExamplePathParam =
             $this->parameterFactory->getParameter();
-
-        $this->duplicateEmailResponse =
-            $this->duplicateEmailResponseFactory->getResponse();
 
         $this->badRequestResponse =
             $this->badRequestResponseFactory->getResponse();
@@ -105,7 +100,6 @@ final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
             HttpResponse::HTTP_OK => $this->userUpdatedResponse,
             HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
             HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
-            HttpResponse::HTTP_CONFLICT => $this->duplicateEmailResponse,
             HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $valResponse,
         ];
     }

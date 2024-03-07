@@ -1,0 +1,105 @@
+App\User\Application\DTO\UserRegisterDto:
+  properties:
+    email:
+      - Email: ~
+      - NotBlank: ~
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\UniqueEmail: ~
+    initials:
+      - NotBlank: ~
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\Initials: ~
+    password:
+      - NotBlank: ~
+      - App\Shared\Application\Validator\Password: ~
+
+App\User\Application\DTO\UserPatchDto:
+  properties:
+    email:
+      - Email: ~
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\UniqueEmail: ~
+    initials:
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\Initials:
+          optional: true
+    oldPassword:
+      - NotBlank: ~
+      - App\Shared\Application\Validator\Password: ~
+    newPassword:
+      - App\Shared\Application\Validator\Password:
+          optional: true
+
+App\User\Application\DTO\UserPutDto:
+  properties:
+    email:
+      - NotBlank: ~
+      - Email: ~
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\UniqueEmail: ~
+    initials:
+      - NotBlank: ~
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\Initials: ~
+    oldPassword:
+      - NotBlank: ~
+      - App\Shared\Application\Validator\Password: ~
+    newPassword:
+      - NotBlank: ~
+      - App\Shared\Application\Validator\Password: ~
+
+App\User\Application\DTO\ConfirmUserDto:
+  properties:
+    token:
+      - NotBlank: ~
+
+App\User\Application\MutationInput\ConfirmUserMutationInput:
+  properties:
+    token:
+      - NotBlank: ~
+      - NotNull: ~
+
+App\User\Application\MutationInput\CreateUserMutationInput:
+  properties:
+    email:
+      - Email: ~
+      - NotBlank: ~
+      - NotNull: ~
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\UniqueEmail: ~
+    initials:
+      - NotBlank: ~
+      - NotNull: ~
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\Initials: ~
+    password:
+      - NotBlank: ~
+      - NotNull: ~
+      - App\Shared\Application\Validator\Password: ~
+
+App\User\Application\MutationInput\UpdateUserMutationInput:
+  properties:
+    email:
+      - Email: ~
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\UniqueEmail: ~
+    initials:
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\Initials:
+          optional: true
+    password:
+      - NotBlank: ~
+      - App\Shared\Application\Validator\Password: ~
+    newPassword:
+      - App\Shared\Application\Validator\Password:
+          optional: true

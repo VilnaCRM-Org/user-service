@@ -11,7 +11,6 @@ use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Endpoint\ParametrizedUserEndpointFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
-use App\Shared\Application\OpenApi\Factory\Response\DuplicateEmailFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserDeletedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserNotFoundResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserUpdatedResponseFactory;
@@ -24,7 +23,6 @@ class ParametrizedUserEndpointFactoryTest extends UnitTestCase
     public function testCreateEndpoint(): void
     {
         $validationErrorResponseFactory = $this->createMock(ValidationErrorFactory::class);
-        $duplicateEmailResponseFactory = $this->createMock(DuplicateEmailFactory::class);
         $badRequestResponseFactory = $this->createMock(BadRequestResponseFactory::class);
         $userNotFoundResponseFactory = $this->createMock(UserNotFoundResponseFactory::class);
         $userDeletedResponseFactory = $this->createMock(UserDeletedResponseFactory::class);
@@ -39,7 +37,6 @@ class ParametrizedUserEndpointFactoryTest extends UnitTestCase
         $userUpdatedResponse = $this->createMock(Response::class);
 
         $validationErrorResponseFactory->expects($this->once())->method('getResponse')->willReturn($validationErrorResponse);
-        $duplicateEmailResponseFactory->expects($this->once())->method('getResponse')->willReturn($duplicateEmailResponse);
         $badRequestResponseFactory->expects($this->once())->method('getResponse')->willReturn($badRequestResponse);
         $userNotFoundResponseFactory->expects($this->once())->method('getResponse')->willReturn($userNotFoundResponse);
         $userDeletedResponseFactory->expects($this->once())->method('getResponse')->willReturn($userDeletedResponse);
@@ -47,7 +44,6 @@ class ParametrizedUserEndpointFactoryTest extends UnitTestCase
 
         $factory = new ParametrizedUserEndpointFactory(
             $validationErrorResponseFactory,
-            $duplicateEmailResponseFactory,
             $badRequestResponseFactory,
             $userNotFoundResponseFactory,
             $userDeletedResponseFactory,
