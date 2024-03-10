@@ -37,6 +37,7 @@ export default {
     marginRight: '0.813rem',
     padding: '0',
     input: {
+      cursor: 'pointer',
       WebkitAppearance: 'none',
       appearance: 'none',
       width: '1.5rem',

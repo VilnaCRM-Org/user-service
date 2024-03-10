@@ -7,7 +7,7 @@ test.describe('Buttons navigation tests', () => {
   }
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000/');
+    await page.goto('/');
   });
 
   test('Desktop buttons navigation', async ({ page }) => {

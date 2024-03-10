@@ -18,6 +18,9 @@ export default {
       top: '9%',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
+      top: '21.4%',
+    },
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xs}px)`]: {
       left: '39%',
       top: '16.4%',
       width: '35.125rem',

@@ -96,7 +96,7 @@
       },
       "cards_texts": {
         "text_for_cases": "For cases when you did not find <br /> the desired ready-made integration ",
-        "text_integrate": "Integrate <1 href='/'>familiar  services</1> in a few clicks",
+        "text_integrate": "Integrate familiar <1 href='/'>services</1> in a few clicks",
         "text_get_data": "Get data about any event in CRM <br /> and automate complex business processes",
         "text_for_custom": "For custom integrations <br /> with specific products"
       },
@@ -157,7 +157,7 @@
     },
     "footer": {
       "logo_alt": "Vilna logo",
-      "copyright": "Copyright © ТОВ “Vilna CRM”, 2022",
+      "copyright": "Copyright © ТОВ “Vilna CRM”",
       "privacy": "Privacy policy",
       "usage_policy": "Usage policy",
       "vilna_email": "info@vilnacrm.com",
@@ -337,7 +337,7 @@
     },
     "footer": {
       "logo_alt": "Vilna логотип",
-      "copyright": "Copyright © ТОВ “Вільна СРМ”, 2022",
+      "copyright": "Copyright © ТОВ “Вільна СРМ”",
       "privacy": "Політика конфіденційності",
       "usage_policy": "Політика використовування",
       "vilna_email": "info@vilnacrm.com",

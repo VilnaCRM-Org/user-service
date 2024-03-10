@@ -1,7 +1,7 @@
 import { Box, Container, Stack } from '@mui/material';
 import React from 'react';
 
-import { ConnectedForm } from './ConnectedForm';
+import { AuthForm } from './AuthForm';
 import { socialLinks } from './constants';
 import { SignUpText } from './SignUpText';
 import styles from './styles';
@@ -12,7 +12,7 @@ function AuthSection(): React.ReactElement {
       <Container>
         <Stack justifyContent="space-between" sx={styles.content}>
           <SignUpText socialLinks={socialLinks} />
-          <ConnectedForm />
+          <AuthForm />
         </Stack>
       </Container>
     </Box>

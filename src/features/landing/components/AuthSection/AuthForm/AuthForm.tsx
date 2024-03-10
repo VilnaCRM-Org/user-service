@@ -1,4 +1,5 @@
-import { Box, Stack } from '@mui/material';
+import { useMutation } from '@apollo/client';
+import { Box, Stack, CircularProgress } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -13,6 +14,7 @@ import {
   UiTooltip,
 } from '@/components';
 
+import { SIGNUP_MUTATION } from '../../../api/service/userService';
 import QuestionMark from '../../../assets/svg/auth-section/questionMark.svg';
 import { RegisterItem } from '../../../types/authentication/form';
 import { PasswordTip } from '../PasswordTip';
@@ -23,9 +25,35 @@ import {
 } from '../Validations';
 
 import styles from './styles';
-import { AuthFormProps } from './types';
 
-function AuthForm({ onSubmit, error }: AuthFormProps): React.ReactElement {
+interface ErrorData {
+  message: string;
+}
+
+function AuthForm(): React.ReactElement {
+  const [signupMutation, { loading }] = useMutation(SIGNUP_MUTATION);
+  const [serverError, setServerError] = React.useState('');
+
+  const onSubmit: (data: RegisterItem) => Promise<void> = async (
+    data: RegisterItem
+  ) => {
+    try {
+      setServerError('');
+      await signupMutation({
+        variables: {
+          input: {
+            email: data.Email,
+            initials: data.FullName,
+            clientMutationId: '132',
+            password: data.Password,
+          },
+        },
+      });
+    } catch (errorData) {
+      setServerError((errorData as ErrorData)?.message);
+    }
+  };
+
   const { t } = useTranslation();
   const {
     handleSubmit,
@@ -49,6 +77,11 @@ function AuthForm({ onSubmit, error }: AuthFormProps): React.ReactElement {
 
   return (
     <Box sx={styles.formWrapper}>
+      {loading && (
+        <Box sx={styles.loader}>
+          <CircularProgress color="primary" size={70} />
+        </Box>
+      )}
       <Box sx={styles.backgroundImage} />
       <Box sx={styles.backgroundBlock} />
       <Box sx={styles.formContent}>
@@ -68,15 +101,9 @@ function AuthForm({ onSubmit, error }: AuthFormProps): React.ReactElement {
                   required: t('sign_up.form.name_input.required'),
                   validate: validateFullName,
                 }}
-                errors={!!errors.FullName}
                 placeholder={t('sign_up.form.name_input.placeholder')}
                 type="text"
               />
-              {errors.FullName && (
-                <UiTypography variant="medium14" sx={styles.errorText}>
-                  {errors.FullName.message}
-                </UiTypography>
-              )}
             </Stack>
             <Stack sx={styles.inputWrapper}>
               <UiTypography variant="medium14" sx={styles.inputTitle}>
@@ -89,13 +116,14 @@ function AuthForm({ onSubmit, error }: AuthFormProps): React.ReactElement {
                   required: t('sign_up.form.email_input.required'),
                   validate: validateEmail,
                 }}
-                errors={!!errors.Email}
                 placeholder={t('sign_up.form.email_input.placeholder')}
                 type="text"
               />
-              <UiTypography variant="medium14" sx={styles.errorText}>
-                {error || errors.Email?.message}
-              </UiTypography>
+              {serverError && (
+                <UiTypography variant="medium14" sx={styles.errorText}>
+                  {serverError}
+                </UiTypography>
+              )}
             </Stack>
             <Stack sx={styles.inputWrapper}>
               <Stack direction="row" alignItems="center" gap="0.25rem">
@@ -123,15 +151,9 @@ function AuthForm({ onSubmit, error }: AuthFormProps): React.ReactElement {
                   required: t('sign_up.form.password_input.required'),
                   validate: validatePassword,
                 }}
-                errors={!!errors.Password}
                 placeholder={t('sign_up.form.password_input.placeholder')}
                 type="password"
               />
-              {errors.Password && (
-                <UiTypography variant="medium14" sx={styles.errorText}>
-                  {errors.Password.message}
-                </UiTypography>
-              )}
             </Stack>
           </Stack>
           <Controller

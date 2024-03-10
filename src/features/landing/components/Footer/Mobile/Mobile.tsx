@@ -1,4 +1,4 @@
-import { Container, Stack } from '@mui/material';
+import { Container, Link, Stack } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,7 +28,14 @@ function Mobile({
         marginTop="1.125rem"
         paddingBottom="1rem"
       >
-        <Image src={Logo} alt={t('footer.logo_alt')} width={131} height={44} />
+        <Link href="/#">
+          <Image
+            src={Logo}
+            alt={t('footer.logo_alt')}
+            width={131}
+            height={44}
+          />
+        </Link>
         <SocialMediaList socialLinks={socialLinks} />
       </Stack>
       <VilnaCRMGmail />

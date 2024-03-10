@@ -7,7 +7,7 @@ async function navigateToPrivacyPolicy(
   linkName,
   expectedURL
 ): Promise<void> {
-  page.goto('http://localhost:3000/');
+  await page.goto('/');
   await page.getByRole('link', { name: linkName, exact: true }).click();
   await page.waitForURL(expectedURL);
   await expect(page).toHaveURL(expectedURL);

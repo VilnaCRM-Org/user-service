@@ -38,6 +38,17 @@ export default {
     },
   },
 
+  loader: {
+    position: 'absolute',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    inset: '0',
+    zIndex: '1000',
+    backgroundColor: 'rgba(255,255, 255, 0.6)',
+    borderRadius: '2rem 2rem 0 0',
+  },
+
   formTitle: {
     paddingBottom: '2rem',
     [`@media (max-width: 1130px)`]: {
@@ -131,6 +142,7 @@ export default {
   },
 
   tip: {
+    cursor: 'pointer',
     lineHeight: '0',
   },
 

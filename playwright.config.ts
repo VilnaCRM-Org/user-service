@@ -10,6 +10,7 @@ export default defineConfig({
   use: {
     trace: 'on-first-retry',
     ignoreHTTPSErrors: true,
+    baseURL: 'http://localhost:3000',
   },
   projects: [
     {

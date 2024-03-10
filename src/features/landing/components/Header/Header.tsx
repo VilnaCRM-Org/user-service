@@ -18,7 +18,7 @@ function Header(): React.ReactElement {
   return (
     <AppBar position="static" sx={styles.headerWrapper}>
       <UiToolbar>
-        <Link href="/">
+        <Link href="/#">
           <UiImage src={Logo} alt={t('header.logo_alt')} sx={styles.logo} />
         </Link>
         <NavList navItems={headerNavList} />

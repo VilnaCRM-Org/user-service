@@ -19,14 +19,17 @@ test('Submit the registration form', async ({ page }) => {
   const passwordInput: Locator = page.getByPlaceholder('Create a password');
   const signupButton: Locator = page.getByRole('button', { name: 'Sign-Up' });
   const termsCheckbox: Locator = page.getByLabel('I have read and accept the');
-  await page.goto('http://localhost:3000/');
+  await page.goto('/');
 
   await initialsInput.click();
   await initialsInput.fill(user.name);
+
   await emailInput.click();
   await emailInput.fill(user.email);
+
   await passwordInput.click();
   await passwordInput.fill(user.password);
+
   await termsCheckbox.check();
   expect(termsCheckbox).toBeChecked();
 

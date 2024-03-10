@@ -1,5 +1,6 @@
-import { Box, Stack } from '@mui/material';
+import { Box, Link, Stack } from '@mui/material';
 import Image from 'next/image';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components/';
@@ -19,6 +20,12 @@ function DefaultFooter({
 }): React.ReactElement {
   const { t } = useTranslation();
 
+  const currentDate: Date = useMemo(() => new Date(), []);
+  const currentYear: number = useMemo(
+    () => currentDate.getFullYear(),
+    [currentDate]
+  );
+
   return (
     <Stack sx={styles.footerWrapper}>
       <Stack height="4.188rem" alignItems="center" flexDirection="row">
@@ -28,12 +35,14 @@ function DefaultFooter({
             justifyContent="space-between"
             alignItems="center"
           >
-            <Image
-              src={Logo}
-              alt={t('footer.logo_alt')}
-              width={143}
-              height={48}
-            />
+            <Link href="/#">
+              <Image
+                src={Logo}
+                alt={t('footer.logo_alt')}
+                width={143}
+                height={48}
+              />
+            </Link>
             <PrivacyPolicy />
           </Stack>
         </Box>
@@ -42,7 +51,7 @@ function DefaultFooter({
         <Box sx={styles.bottomWrapper}>
           <Stack sx={styles.copyrightAndLinks}>
             <UiTypography variant="medium15" sx={styles.copyright}>
-              {t('footer.copyright')}
+              {t('footer.copyright')} {currentYear}
             </UiTypography>
             <Stack direction="row" gap="0.875rem" alignItems="center">
               <VilnaCRMGmail />

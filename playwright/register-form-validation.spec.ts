@@ -50,7 +50,7 @@ async function fillPasswordInput(page: Page, user: User): Promise<void> {
 }
 
 test('Should display error messages for invalid inputs', async ({ page }) => {
-  await page.goto('http://localhost:3000/');
+  await page.goto('/');
 
   await page.getByRole('button', { name: 'Sign-Up' }).click();
 
