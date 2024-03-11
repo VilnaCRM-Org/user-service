@@ -51,7 +51,7 @@ function DefaultFooter({
         <Box sx={styles.bottomWrapper}>
           <Stack sx={styles.copyrightAndLinks}>
             <UiTypography variant="medium15" sx={styles.copyright}>
-              {t('footer.copyright')} {currentYear}
+              {t('footer.copyright')} <Box component="span">{currentYear}</Box>
             </UiTypography>
             <Stack direction="row" gap="0.875rem" alignItems="center">
               <VilnaCRMGmail />

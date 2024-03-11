@@ -7,11 +7,44 @@ interface User {
   password: string;
 }
 
+interface Expectation {
+  errorText: string;
+  email: string;
+}
+
+interface ExpectationsPassword {
+  errorText: string;
+  password: string;
+}
+
 const userData: User = {
   name: faker.person.fullName(),
   email: faker.internet.email(),
   password: faker.internet.password(),
 };
+
+const expectations: Expectation[] = [
+  { errorText: "Email must contain '@' and '.' symbols", email: 'hello@sdf' },
+  { errorText: 'Invalid email address', email: 'hello@sdf.' },
+];
+
+const expectationsPassword: ExpectationsPassword[] = [
+  { errorText: 'Password must be between 8', password: 'tirion' },
+  {
+    errorText: 'Password must contain at least one number',
+    password: 'lanister',
+  },
+  {
+    errorText: 'Password must contain at least one uppercase letter',
+    password: 'lanister1',
+  },
+];
+
+const expectationsRequired: { text: string }[] = [
+  { text: 'Your first and last name are' },
+  { text: 'Email address is a required' },
+  { text: 'Password is a required field' },
+];
 
 async function fillInitialsInput(page: Page, user: User): Promise<void> {
   const initialsInput: Locator = page.getByPlaceholder('Mykhailo Svitskyi');
@@ -22,47 +55,41 @@ async function fillInitialsInput(page: Page, user: User): Promise<void> {
 
 async function fillEmailInput(page: Page, user: User): Promise<void> {
   const emailInput: Locator = page.getByPlaceholder('vilnaCRM@gmail.com');
-  await emailInput.fill('hello@sdf');
-  await expect(
-    page.getByText("Email must contain '@' and '.' symbols")
-  ).toBeVisible();
+  for (const expectation of expectations) {
+    await emailInput.fill(expectation.email);
+    await expect(page.getByText(expectation.errorText)).toBeVisible();
+  }
 
-  await emailInput.fill('hello@sdf.');
-  await expect(page.getByText('Invalid email address')).toBeVisible();
   await emailInput.fill(user.email);
 }
 
 async function fillPasswordInput(page: Page, user: User): Promise<void> {
   const passwordInput: Locator = page.getByPlaceholder('Create a password');
-  await passwordInput.fill('tirion');
-  await expect(page.getByText('Password must be between 8')).toBeVisible();
+  for (const expectation of expectationsPassword) {
+    await passwordInput.fill(expectation.password);
+    await expect(page.getByText(expectation.errorText)).toBeVisible();
+  }
 
-  await passwordInput.fill('lanister');
-  await expect(
-    page.getByText('Password must contain at least one number')
-  ).toBeVisible();
-
-  await passwordInput.fill('lanister1');
-  await expect(
-    page.getByText('Password must contain at least one uppercase letter')
-  ).toBeVisible();
   await passwordInput.fill(user.password);
 }
 
 test('Should display error messages for invalid inputs', async ({ page }) => {
   await page.goto('/');
-
   await page.getByRole('button', { name: 'Sign-Up' }).click();
 
-  await expect(page.getByText('Your first and last name are')).toBeVisible();
-  await expect(page.getByText('Email address is a required')).toBeVisible();
-  await expect(page.getByText('Password is a required field')).toBeVisible();
+  for (const expectation of expectationsRequired) {
+    await expect(page.getByText(expectation.text)).toBeVisible();
+  }
 
   await fillInitialsInput(page, userData);
   await fillEmailInput(page, userData);
   await fillPasswordInput(page, userData);
 
   await page.getByLabel('I have read and accept the').check();
-
   await page.getByRole('button', { name: 'Sign-Up' }).click();
+
+  const loading: Locator = await page
+    .getByTestId('auth-section')
+    .locator('svg');
+  await expect(loading).toBeVisible();
 });

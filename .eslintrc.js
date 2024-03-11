@@ -52,6 +52,8 @@ module.exports = {
         'plugin:jest-dom/recommended',
       ],
       rules: {
+        'no-await-in-loop': 'warn',
+        'no-restricted-syntax': 'warn',
         'no-alert': 'error',
         'no-console': 'error',
         'import/prefer-default-export': 'warn',

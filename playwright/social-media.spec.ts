@@ -3,14 +3,12 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Navigation tests', () => {
-  const baseUrl: string = 'http://localhost:3000/';
-
   async function navigateAndVerifyURL(
     page,
     linkName,
     expectedURL
   ): Promise<void> {
-    await page.goto(baseUrl);
+    await page.goto('/');
     await page.getByRole('link', { name: linkName }).click();
     await page.waitForURL(expectedURL);
     await expect(page).toHaveURL(expectedURL);
@@ -21,7 +19,7 @@ test.describe('Navigation tests', () => {
     linkName,
     expectedURL
   ): Promise<void> {
-    await page.goto(baseUrl);
+    await page.goto('/');
     await page.setViewportSize({ width: 375, height: 812 });
     await page.getByLabel('Button to open the drawer').click();
     await page.getByTestId('drawer').getByLabel(`Link to ${linkName}`).click();
