@@ -12,18 +12,15 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ExceptionNormalizerTest extends UnitTestCase
 {
-    public function testNormalize(): void
+    private DomainException $previousException;
+
+    protected function setUp(): void
     {
+        parent::setUp();
+
         $template = $this->faker->word();
         $args = [];
-        $errorText = $this->faker->word();
-
-        $translator = $this->createMock(TranslatorInterface::class);
-        $translator->expects($this->once())
-            ->method('trans')
-            ->willReturn($errorText);
-
-        $exception = new class($template, $args) extends DomainException {
+        $this->previousException = new class($template, $args) extends DomainException {
             public function __construct(
                 private string $template,
                 private array $args
@@ -42,17 +39,29 @@ class ExceptionNormalizerTest extends UnitTestCase
             }
         };
 
+    }
 
-        $graphqlError = new Error(message: $errorText, previous: $exception);
+
+    public function testNormalize(): void
+    {
+        $errorText = $this->faker->word();
+
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->expects($this->once())
+            ->method('trans')
+            ->willReturn($errorText);
+
+        $graphqlError = new Error(message: $errorText, previous: $this->previousException);
 
         $normalizer = new ExceptionNormalizer($translator);
 
         $normalizedError = $normalizer->normalize($graphqlError);
 
         $this->assertEquals($errorText, $normalizedError['message']);
+        $this->assertEquals('internal', $normalizedError['extensions']['category']);
     }
 
-    public function testSupportsNormalization(): void
+    public function testSupportsNormalizationWithoutPrevious(): void
     {
         $errorText = $this->faker->word();
         $graphqlError = new Error($errorText);
@@ -60,6 +69,36 @@ class ExceptionNormalizerTest extends UnitTestCase
         $normalizer = new ExceptionNormalizer($this->createMock(TranslatorInterface::class));
 
         $supportsNormalization = $normalizer->supportsNormalization($graphqlError);
+
+        $this->assertFalse($supportsNormalization);
+    }
+
+    public function testSupportsNormalizationWithWrongType(): void
+    {
+        $errorText = $this->faker->word();
+
+        $graphqlError = new Error(message: $errorText, previous: $this->previousException);
+
+        $normalizer = new ExceptionNormalizer($this->createMock(TranslatorInterface::class));
+
+        $supportsNormalization = $normalizer->supportsNormalization($graphqlError);
+
+        $this->assertTrue($supportsNormalization);
+    }
+
+
+    public function testSupportsNormalization(): void
+    {
+        $error = new \ApiPlatform\ApiResource\Error(
+            $this->faker->word(),
+            $this->faker->word(),
+            $this->faker->numberBetween(200, 500),
+            previous: $this->previousException,
+        );
+
+        $normalizer = new ExceptionNormalizer($this->createMock(TranslatorInterface::class));
+
+        $supportsNormalization = $normalizer->supportsNormalization($error);
 
         $this->assertFalse($supportsNormalization);
     }

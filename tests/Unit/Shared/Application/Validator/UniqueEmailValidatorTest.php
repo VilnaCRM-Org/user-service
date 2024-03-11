@@ -64,4 +64,24 @@ class UniqueEmailValidatorTest extends UnitTestCase
 
         $validator->validate($email, $constraint);
     }
+
+    public function testNull(): void
+    {
+        $userRepository = $this->createMock(UserRepositoryInterface::class);
+
+        $translator = $this->createMock(TranslatorInterface::class);
+
+        $context = $this->createMock(ExecutionContext::class);
+        $constraint = new UniqueEmail();
+
+        $validator = new UniqueEmailValidator($userRepository, $translator);
+
+        $validator->initialize($context);
+
+        $context->expects($this->never())->method('buildViolation');
+        $validator->validate(
+            null,
+            $constraint
+        );
+    }
 }

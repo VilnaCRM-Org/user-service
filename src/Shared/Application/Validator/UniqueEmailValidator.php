@@ -19,10 +19,10 @@ final class UniqueEmailValidator extends ConstraintValidator
 
     public function validate(mixed $value, Constraint $constraint): void
     {
-        if ($value !== null && $this->userRepository->findByEmail($value)) {
+        if ($value !== null && $this->userRepository->findByEmail($value)
+        ) {
             $this->addViolation($this->translator->trans(
-                'error.duplicate-email',
-                ['email' => $value],
+                'email.notUnique'
             ));
         }
     }

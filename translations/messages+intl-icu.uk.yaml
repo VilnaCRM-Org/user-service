@@ -9,7 +9,6 @@ email:
     text: 'Токен підтвердження вашої електронної пошти - { tokenValue }'
 error:
   internal: 'Щось пішло не так'
-  duplicate-email: 'Email-адреса { email } вже зареєстрована'
   invalid-password: 'Старий пароль невірний'
   token-not-found: 'Токен не знайдено'
   user-not-found: 'Користувача не знайдено'

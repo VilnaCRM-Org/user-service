@@ -153,5 +153,6 @@ class ErrorProviderTest extends UnitTestCase
         $error = $errorProvider->provide($operation, [], $context);
 
         $this->assertEquals($errorText, $error['message']);
+        $this->assertEquals('internal', $error['extensions']['category']);
     }
 }

@@ -14,7 +14,6 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Persisters\Entity\EntityPersister;
 use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\Persistence\ObjectRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 
 class MariaDBUserRepositoryTest extends UnitTestCase
@@ -49,26 +48,27 @@ class MariaDBUserRepositoryTest extends UnitTestCase
             $this->transformer->transformFromString($this->faker->uuid())
         );
 
-
-        $serviceEntityRepository = $this->createMock(ObjectRepository::class);
-        $serviceEntityRepository->method('findOneBy')->willReturn($expectedUser);
-
         $unitOfWork = $this->createMock(UnitOfWork::class);
         $persister = $this->createMock(EntityPersister::class);
 
-        $this->entityManager->method('getClassMetadata')
+        $this->entityManager->expects($this->once())
+            ->method('getClassMetadata')
             ->willReturn($this->createMock(ClassMetadata::class));
-        $this->entityManager->method('getUnitOfWork')
+        $this->entityManager->expects($this->once())
+            ->method('getUnitOfWork')
             ->willReturn($unitOfWork);
 
-        $unitOfWork->method('getEntityPersister')
+        $unitOfWork->expects($this->once())
+            ->method('getEntityPersister')
             ->willReturn($persister);
 
-        $persister->method('load')
+        $persister->expects($this->once())
+            ->method('load')
+            ->with(['email' => $email], null, null, [], null, 1, null)
             ->willReturn($expectedUser);
 
-        $this->registry->method('getRepository')->willReturn($serviceEntityRepository);
-        $this->registry->method('getManagerForClass')
+        $this->registry->expects($this->once())
+            ->method('getManagerForClass')
             ->willReturn($this->entityManager);
 
         $user = $this->userRepository->findByEmail($email);

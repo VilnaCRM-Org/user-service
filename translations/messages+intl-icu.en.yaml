@@ -9,7 +9,6 @@ email:
     text: 'Your email confirmation token - { tokenValue }'
 error:
   internal: 'Something went wrong'
-  duplicate-email: '{ email } address is already registered'
   invalid-password: 'Old password is invalid'
   token-not-found: 'Token not found'
   user-not-found: 'User not found'

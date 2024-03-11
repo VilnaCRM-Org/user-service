@@ -6,9 +6,15 @@ namespace App\Shared\Application\Validator;
 
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class InitialsValidator extends ConstraintValidator
 {
+    public function __construct(
+        private readonly TranslatorInterface $translator
+    ) {
+    }
+
     public function validate(mixed $value, Constraint $constraint): void
     {
         if ($this->isNull($value) ||
@@ -34,7 +40,9 @@ final class InitialsValidator extends ConstraintValidator
     private function validateFormat(mixed $value): void
     {
         if (!preg_match('/^\D*$/', $value)) {
-            $this->addViolation('Invalid full name format');
+            $this->addViolation(
+                $this->translator->trans('initials.invalidFormat')
+            );
         }
     }
 
@@ -42,7 +50,7 @@ final class InitialsValidator extends ConstraintValidator
     {
         if ($this->hasEmptyParts($value)) {
             $this->addViolation(
-                'Name and surname both should have at least 1 character'
+                $this->translator->trans('initials.invalidParts')
             );
         }
     }

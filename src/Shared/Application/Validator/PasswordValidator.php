@@ -6,9 +6,15 @@ namespace App\Shared\Application\Validator;
 
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class PasswordValidator extends ConstraintValidator
 {
+    public function __construct(
+        private readonly TranslatorInterface $translator
+    ) {
+    }
+
     public function validate(mixed $value, Constraint $constraint): void
     {
         if ($this->isNull($value) ||
@@ -26,7 +32,7 @@ final class PasswordValidator extends ConstraintValidator
     {
         if (!(strlen($value) >= 8 && strlen($value) <= 64)) {
             $this->addViolation(
-                'Password must be between 8 and 64 characters long'
+                $this->translator->trans('password.invalidLength')
             );
         }
     }
@@ -34,7 +40,9 @@ final class PasswordValidator extends ConstraintValidator
     private function validateNumber(mixed $value): void
     {
         if (!preg_match('/[0-9]/', $value)) {
-            $this->addViolation('Password must contain at least one number');
+            $this->addViolation(
+                $this->translator->trans('password.noNumber')
+            );
         }
     }
 
@@ -42,7 +50,7 @@ final class PasswordValidator extends ConstraintValidator
     {
         if (!preg_match('/[A-Z]/', $value)) {
             $this->addViolation(
-                'Password must contain at least one uppercase letter'
+                $this->translator->trans('password.noUppercase')
             );
         }
     }

@@ -10,18 +10,21 @@ use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Violation\ConstraintViolationBuilderInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class InitialsValidatorTest extends UnitTestCase
 {
     private InitialsValidator $validator;
     private ExecutionContextInterface $context;
     private Constraint $constraint;
+    private TranslatorInterface $translator;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->context = $this->createMock(ExecutionContextInterface::class);
-        $this->validator = new InitialsValidator();
+        $this->translator = $this->createMock(TranslatorInterface::class);
+        $this->validator = new InitialsValidator($this->translator);
         $this->validator->initialize($this->context);
         $this->constraint = $this->createMock(Initials::class);
     }
@@ -59,9 +62,13 @@ class InitialsValidatorTest extends UnitTestCase
     public function testInvalidFormat(): void
     {
         $constraintViolationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
+        $error = $this->faker->word();
+        $this->translator->method('trans')
+            ->with('initials.invalidFormat')
+            ->willReturn($error);
         $this->context->expects($this->once())
             ->method('buildViolation')
-            ->with('Invalid full name format')
+            ->with($error)
             ->willReturn($constraintViolationBuilder);
         $constraintViolationBuilder->expects($this->once())->method('addViolation');
 
@@ -74,8 +81,12 @@ class InitialsValidatorTest extends UnitTestCase
     public function testEmptyParts(): void
     {
         $constraintViolationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
+        $error = $this->faker->word();
+        $this->translator->method('trans')
+            ->with('initials.invalidParts')
+            ->willReturn($error);
         $this->context->method('buildViolation')
-            ->with('Name and surname both should have at least 1 character')
+            ->with($error)
             ->willReturn($constraintViolationBuilder);
         $constraintViolationBuilder->expects($this->once())->method('addViolation');
 

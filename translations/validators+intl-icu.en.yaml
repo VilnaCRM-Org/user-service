@@ -1,0 +1,11 @@
+notBlank: 'This value should not be blank.'
+email:
+  invalidEmail: 'This value is not a valid email address.'
+  notUnique: 'This email address is already registered'
+initials:
+  invalidFormat: 'Invalid full name format'
+  invalidParts: 'Name and surname both should have at least 1 character'
+password:
+  invalidLength: 'Password must be between 8 and 64 characters long'
+  noUppercase: 'Password must contain at least one uppercase letter'
+  noNumber: 'Password must contain at least one number'

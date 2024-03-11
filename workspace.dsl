@@ -53,6 +53,12 @@ workspace {
                     confirmationEmailSentEventSubscriber = component "ConfirmationEmailSentEventSubscriber" {
                         tags "Item"
                     }
+                    emailChangedEventSubscriber = component "EmailChangedEventSubsctiber" {
+                        tags "Item"
+                    }
+                    passwordChangedEventSubscriber = component "PasswordChangedEventSubscriber" {
+                        tags "Item"
+                    }
                 }
 
                 group "Domain" {
@@ -71,12 +77,18 @@ workspace {
                     tokenRepository = component "RedisTokenRepository" {
                         tags "Item"
                     }
+                    mailer = component "Symfony Mailer" {
+                        tags "Item"
+                    }
                 }
 
                 database = component "Database" "Stores user, information, hashed authentication credentials, access rights, oauth credentials, etc." "MariaDB" {
                     tags "Database"
                 }
                 cache = component "Cache" "Stores confirmation token, doctrine query cache" "Elasticache" {
+                    tags "Database"
+                }
+                sqs = component "AWS SQS" "Message broker for sending emails" "AWS SQA" {
                     tags "Database"
                 }
 
@@ -86,8 +98,14 @@ workspace {
                 confirmUserResolver -> confirmUserCommandHandler
                 confirmUserCommandHandler -> userConfirmedEventSubscriber
                 registerUserCommandHandler -> userRegisteredEventSubscriber
+                registerUserCommandHandler -> user "Create"
+                updateUserCommandHandler -> emailChangedEventSubscriber
+                updateUserCommandHandler -> passwordChangedEventSubscriber
+                emailChangedEventSubscriber -> sendConfirmationEmailCommandHandler
                 userRegisteredEventSubscriber -> sendConfirmationEmailCommandHandler
                 sendConfirmationEmailCommandHandler -> confirmationEmailSentEventSubscriber
+                passwordChangedEventSubscriber -> mailer
+                confirmationEmailSentEventSubscriber -> mailer
                 userPatchProcessor -> updateUserCommandHandler
                 userPutProcessor -> updateUserCommandHandler
                 updateUserResolver -> updateUserCommandHandler
@@ -97,6 +115,7 @@ workspace {
                 tokenRepository -> token
                 userRepository -> database "Save and load"
                 tokenRepository -> cache "Save and load"
+                mailer -> sqs
             }
         }
     }

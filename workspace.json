@@ -2,9 +2,9 @@
   "id" : 1,
   "name" : "Name",
   "description" : "Description",
-  "lastModifiedDate" : "2024-03-03T15:41:46Z",
+  "lastModifiedDate" : "2024-03-11T15:52:36Z",
   "properties" : {
-    "structurizr.dsl" : "d29ya3NwYWNlIHsKCiAgICAhaWRlbnRpZmllcnMgaGllcmFyY2hpY2FsCgogICAgbW9kZWwgewogICAgICAgIHByb3BlcnRpZXMgewogICAgICAgICAgICAic3RydWN0dXJpenIuZ3JvdXBTZXBhcmF0b3IiICIvIgogICAgICAgIH0KCiAgICAgICAgc29mdHdhcmVTeXN0ZW0gPSBzb2Z0d2FyZVN5c3RlbSAiU29mdHdhcmUgU3lzdGVtIiB7CiAgICAgICAgICAgIHVzZXJTZXJ2aWNlID0gY29udGFpbmVyICJTb2Z0d2FyZSBTeXN0ZW0iIHsKCiAgICAgICAgICAgICAgICBncm91cCAiQXBwbGljYXRpb24iIHsKICAgICAgICAgICAgICAgICAgICByZWdpc3RlclVzZXJQcm9jZXNzb3IgPSBjb21wb25lbnQgIlJlZ2lzdGVyVXNlclByb2Nlc3NvciIgewogICAgICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICBjb25maXJtVXNlclByb2Nlc3NvciA9IGNvbXBvbmVudCAiQ29uZmlybVVzZXJQcm9jZXNzb3IiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgdXNlclBhdGNoUHJvY2Vzc29yID0gY29tcG9uZW50ICJVc2VyUGF0Y2hQcm9jZXNzb3IiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgdXNlclB1dFByb2Nlc3NvciA9IGNvbXBvbmVudCAiVXNlclB1dFByb2Nlc3NvciIgewogICAgICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICB1cGRhdGVVc2VyUmVzb2x2ZXIgPSBjb21wb25lbnQgIlVwZGF0ZVVzZXJSZXNvbHZlciIgewogICAgICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICByZWdpc3RlclVzZXJSZXNvbHZlciA9IGNvbXBvbmVudCAiUmVnaXN0ZXJVc2VyUmVzb2x2ZXIiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgY29uZmlybVVzZXJSZXNvbHZlciA9IGNvbXBvbmVudCAiQ29uZmlybVVzZXJSZXNvbHZlciIgewogICAgICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICB1cGRhdGVVc2VyQ29tbWFuZEhhbmRsZXIgPSBjb21wb25lbnQgIlVwZGF0ZVVzZXJDb21tYW5kSGFuZGxlciIgewogICAgICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICBjb25maXJtVXNlckNvbW1hbmRIYW5kbGVyID0gY29tcG9uZW50ICJDb25maXJtVXNlckNvbW1hbmRIYW5kbGVyIiB7CiAgICAgICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIHJlZ2lzdGVyVXNlckNvbW1hbmRIYW5kbGVyID0gY29tcG9uZW50ICJSZWdpc3RlclVzZXJDb21tYW5kSGFuZGxlciIgewogICAgICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICBzZW5kQ29uZmlybWF0aW9uRW1haWxDb21tYW5kSGFuZGxlciA9IGNvbXBvbmVudCAiU2VuZENvbmZpcm1hdGlvbkVtYWlsQ29tbWFuZEhhbmRsZXIiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgdXNlclJlZ2lzdGVyZWRFdmVudFN1YnNjcmliZXIgPSBjb21wb25lbnQgIlVzZXJSZWdpc3RlcmVkRXZlbnRTdWJzY3RpYmVyIiB7CiAgICAgICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIHVzZXJDb25maXJtZWRFdmVudFN1YnNjcmliZXIgPSBjb21wb25lbnQgIlVzZXJDb25maXJtZWRFdmVudFN1YnNjdGliZXIiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgY29uZmlybWF0aW9uRW1haWxTZW50RXZlbnRTdWJzY3JpYmVyID0gY29tcG9uZW50ICJDb25maXJtYXRpb25FbWFpbFNlbnRFdmVudFN1YnNjcmliZXIiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICB9CgogICAgICAgICAgICAgICAgZ3JvdXAgIkRvbWFpbiIgewogICAgICAgICAgICAgICAgICAgIHVzZXIgPSBjb21wb25lbnQgIlVzZXIiICIiICJFbnRpdHkiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgdG9rZW4gPSBjb21wb25lbnQgIkNvbmZpcm1hdGlvblRva2VuIiAiIiAiRW50aXR5IiB7CiAgICAgICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgfQoKICAgICAgICAgICAgICAgIGdyb3VwICJJbmZyYXN0cnVjdHVyZSIgewogICAgICAgICAgICAgICAgICAgIHVzZXJSZXBvc2l0b3J5ID0gY29tcG9uZW50ICJNYXJpYURCVXNlclJlcG9zaXRvcnkiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgdG9rZW5SZXBvc2l0b3J5ID0gY29tcG9uZW50ICJSZWRpc1Rva2VuUmVwb3NpdG9yeSIgewogICAgICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIH0KCiAgICAgICAgICAgICAgICBkYXRhYmFzZSA9IGNvbXBvbmVudCAiRGF0YWJhc2UiICJTdG9yZXMgdXNlciwgaW5mb3JtYXRpb24sIGhhc2hlZCBhdXRoZW50aWNhdGlvbiBjcmVkZW50aWFscywgYWNjZXNzIHJpZ2h0cywgb2F1dGggY3JlZGVudGlhbHMsIGV0Yy4iICJNYXJpYURCIiB7CiAgICAgICAgICAgICAgICAgICAgdGFncyAiRGF0YWJhc2UiCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBjYWNoZSA9IGNvbXBvbmVudCAiQ2FjaGUiICJTdG9yZXMgY29uZmlybWF0aW9uIHRva2VuLCBkb2N0cmluZSBxdWVyeSBjYWNoZSIgIkVsYXN0aWNhY2hlIiB7CiAgICAgICAgICAgICAgICAgICAgdGFncyAiRGF0YWJhc2UiCiAgICAgICAgICAgICAgICB9CgogICAgICAgICAgICAgICAgcmVnaXN0ZXJVc2VyUHJvY2Vzc29yIC0+IHJlZ2lzdGVyVXNlckNvbW1hbmRIYW5kbGVyCiAgICAgICAgICAgICAgICByZWdpc3RlclVzZXJSZXNvbHZlciAtPiByZWdpc3RlclVzZXJDb21tYW5kSGFuZGxlcgogICAgICAgICAgICAgICAgY29uZmlybVVzZXJQcm9jZXNzb3IgLT4gY29uZmlybVVzZXJDb21tYW5kSGFuZGxlcgogICAgICAgICAgICAgICAgY29uZmlybVVzZXJSZXNvbHZlciAtPiBjb25maXJtVXNlckNvbW1hbmRIYW5kbGVyCiAgICAgICAgICAgICAgICBjb25maXJtVXNlckNvbW1hbmRIYW5kbGVyIC0+IHVzZXJDb25maXJtZWRFdmVudFN1YnNjcmliZXIKICAgICAgICAgICAgICAgIHJlZ2lzdGVyVXNlckNvbW1hbmRIYW5kbGVyIC0+IHVzZXJSZWdpc3RlcmVkRXZlbnRTdWJzY3JpYmVyCiAgICAgICAgICAgICAgICB1c2VyUmVnaXN0ZXJlZEV2ZW50U3Vic2NyaWJlciAtPiBzZW5kQ29uZmlybWF0aW9uRW1haWxDb21tYW5kSGFuZGxlcgogICAgICAgICAgICAgICAgc2VuZENvbmZpcm1hdGlvbkVtYWlsQ29tbWFuZEhhbmRsZXIgLT4gY29uZmlybWF0aW9uRW1haWxTZW50RXZlbnRTdWJzY3JpYmVyCiAgICAgICAgICAgICAgICB1c2VyUGF0Y2hQcm9jZXNzb3IgLT4gdXBkYXRlVXNlckNvbW1hbmRIYW5kbGVyCiAgICAgICAgICAgICAgICB1c2VyUHV0UHJvY2Vzc29yIC0+IHVwZGF0ZVVzZXJDb21tYW5kSGFuZGxlcgogICAgICAgICAgICAgICAgdXBkYXRlVXNlclJlc29sdmVyIC0+IHVwZGF0ZVVzZXJDb21tYW5kSGFuZGxlcgogICAgICAgICAgICAgICAgY29uZmlybWF0aW9uRW1haWxTZW50RXZlbnRTdWJzY3JpYmVyIC0+IHRva2VuICJDcmVhdGUiCiAgICAgICAgICAgICAgICB1c2VyQ29uZmlybWVkRXZlbnRTdWJzY3JpYmVyIC0+IHRva2VuICJEZWxldGUiCiAgICAgICAgICAgICAgICB1c2VyUmVwb3NpdG9yeSAtPiB1c2VyCiAgICAgICAgICAgICAgICB0b2tlblJlcG9zaXRvcnkgLT4gdG9rZW4KICAgICAgICAgICAgICAgIHVzZXJSZXBvc2l0b3J5IC0+IGRhdGFiYXNlICJTYXZlIGFuZCBsb2FkIgogICAgICAgICAgICAgICAgdG9rZW5SZXBvc2l0b3J5IC0+IGNhY2hlICJTYXZlIGFuZCBsb2FkIgogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfQoKICAgIHZpZXdzIHsKICAgICAgICBjb21wb25lbnQgc29mdHdhcmVTeXN0ZW0udXNlclNlcnZpY2UgIkNvbXBvbmVudHNfQWxsIiB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgIH0KCiAgICAgICAgc3R5bGVzIHsKICAgICAgICAgICAgZWxlbWVudCAiSXRlbSIgewogICAgICAgICAgICAgICAgY29sb3Igd2hpdGUKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgIzM0YWJlYgogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIkRhdGFiYXNlIiB7CiAgICAgICAgICAgICAgICBjb2xvciB3aGl0ZQogICAgICAgICAgICAgICAgc2hhcGUgY3lsaW5kZXIKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgIzM0YWJlYgogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfQp9Cg=="
+    "structurizr.dsl" : "d29ya3NwYWNlIHsKCiAgICAhaWRlbnRpZmllcnMgaGllcmFyY2hpY2FsCgogICAgbW9kZWwgewogICAgICAgIHByb3BlcnRpZXMgewogICAgICAgICAgICAic3RydWN0dXJpenIuZ3JvdXBTZXBhcmF0b3IiICIvIgogICAgICAgIH0KCiAgICAgICAgc29mdHdhcmVTeXN0ZW0gPSBzb2Z0d2FyZVN5c3RlbSAiU29mdHdhcmUgU3lzdGVtIiB7CiAgICAgICAgICAgIHVzZXJTZXJ2aWNlID0gY29udGFpbmVyICJTb2Z0d2FyZSBTeXN0ZW0iIHsKCiAgICAgICAgICAgICAgICBncm91cCAiQXBwbGljYXRpb24iIHsKICAgICAgICAgICAgICAgICAgICByZWdpc3RlclVzZXJQcm9jZXNzb3IgPSBjb21wb25lbnQgIlJlZ2lzdGVyVXNlclByb2Nlc3NvciIgewogICAgICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICBjb25maXJtVXNlclByb2Nlc3NvciA9IGNvbXBvbmVudCAiQ29uZmlybVVzZXJQcm9jZXNzb3IiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgdXNlclBhdGNoUHJvY2Vzc29yID0gY29tcG9uZW50ICJVc2VyUGF0Y2hQcm9jZXNzb3IiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgdXNlclB1dFByb2Nlc3NvciA9IGNvbXBvbmVudCAiVXNlclB1dFByb2Nlc3NvciIgewogICAgICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICB1cGRhdGVVc2VyUmVzb2x2ZXIgPSBjb21wb25lbnQgIlVwZGF0ZVVzZXJSZXNvbHZlciIgewogICAgICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICByZWdpc3RlclVzZXJSZXNvbHZlciA9IGNvbXBvbmVudCAiUmVnaXN0ZXJVc2VyUmVzb2x2ZXIiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgY29uZmlybVVzZXJSZXNvbHZlciA9IGNvbXBvbmVudCAiQ29uZmlybVVzZXJSZXNvbHZlciIgewogICAgICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICB1cGRhdGVVc2VyQ29tbWFuZEhhbmRsZXIgPSBjb21wb25lbnQgIlVwZGF0ZVVzZXJDb21tYW5kSGFuZGxlciIgewogICAgICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICBjb25maXJtVXNlckNvbW1hbmRIYW5kbGVyID0gY29tcG9uZW50ICJDb25maXJtVXNlckNvbW1hbmRIYW5kbGVyIiB7CiAgICAgICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIHJlZ2lzdGVyVXNlckNvbW1hbmRIYW5kbGVyID0gY29tcG9uZW50ICJSZWdpc3RlclVzZXJDb21tYW5kSGFuZGxlciIgewogICAgICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICBzZW5kQ29uZmlybWF0aW9uRW1haWxDb21tYW5kSGFuZGxlciA9IGNvbXBvbmVudCAiU2VuZENvbmZpcm1hdGlvbkVtYWlsQ29tbWFuZEhhbmRsZXIiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgdXNlclJlZ2lzdGVyZWRFdmVudFN1YnNjcmliZXIgPSBjb21wb25lbnQgIlVzZXJSZWdpc3RlcmVkRXZlbnRTdWJzY3RpYmVyIiB7CiAgICAgICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIHVzZXJDb25maXJtZWRFdmVudFN1YnNjcmliZXIgPSBjb21wb25lbnQgIlVzZXJDb25maXJtZWRFdmVudFN1YnNjdGliZXIiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgY29uZmlybWF0aW9uRW1haWxTZW50RXZlbnRTdWJzY3JpYmVyID0gY29tcG9uZW50ICJDb25maXJtYXRpb25FbWFpbFNlbnRFdmVudFN1YnNjcmliZXIiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgZW1haWxDaGFuZ2VkRXZlbnRTdWJzY3JpYmVyID0gY29tcG9uZW50ICJFbWFpbENoYW5nZWRFdmVudFN1YnNjdGliZXIiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgcGFzc3dvcmRDaGFuZ2VkRXZlbnRTdWJzY3JpYmVyID0gY29tcG9uZW50ICJQYXNzd29yZENoYW5nZWRFdmVudFN1YnNjcmliZXIiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICB9CgogICAgICAgICAgICAgICAgZ3JvdXAgIkRvbWFpbiIgewogICAgICAgICAgICAgICAgICAgIHVzZXIgPSBjb21wb25lbnQgIlVzZXIiICIiICJFbnRpdHkiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgdG9rZW4gPSBjb21wb25lbnQgIkNvbmZpcm1hdGlvblRva2VuIiAiIiAiRW50aXR5IiB7CiAgICAgICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgfQoKICAgICAgICAgICAgICAgIGdyb3VwICJJbmZyYXN0cnVjdHVyZSIgewogICAgICAgICAgICAgICAgICAgIHVzZXJSZXBvc2l0b3J5ID0gY29tcG9uZW50ICJNYXJpYURCVXNlclJlcG9zaXRvcnkiIHsKICAgICAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgdG9rZW5SZXBvc2l0b3J5ID0gY29tcG9uZW50ICJSZWRpc1Rva2VuUmVwb3NpdG9yeSIgewogICAgICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICBtYWlsZXIgPSBjb21wb25lbnQgIlN5bWZvbnkgTWFpbGVyIiB7CiAgICAgICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgfQoKICAgICAgICAgICAgICAgIGRhdGFiYXNlID0gY29tcG9uZW50ICJEYXRhYmFzZSIgIlN0b3JlcyB1c2VyLCBpbmZvcm1hdGlvbiwgaGFzaGVkIGF1dGhlbnRpY2F0aW9uIGNyZWRlbnRpYWxzLCBhY2Nlc3MgcmlnaHRzLCBvYXV0aCBjcmVkZW50aWFscywgZXRjLiIgIk1hcmlhREIiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJEYXRhYmFzZSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIGNhY2hlID0gY29tcG9uZW50ICJDYWNoZSIgIlN0b3JlcyBjb25maXJtYXRpb24gdG9rZW4sIGRvY3RyaW5lIHF1ZXJ5IGNhY2hlIiAiRWxhc3RpY2FjaGUiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJEYXRhYmFzZSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIHNxcyA9IGNvbXBvbmVudCAiQVdTIFNRUyIgIk1lc3NhZ2UgYnJva2VyIGZvciBzZW5kaW5nIGVtYWlscyIgIkFXUyBTUUEiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJEYXRhYmFzZSIKICAgICAgICAgICAgICAgIH0KCiAgICAgICAgICAgICAgICByZWdpc3RlclVzZXJQcm9jZXNzb3IgLT4gcmVnaXN0ZXJVc2VyQ29tbWFuZEhhbmRsZXIKICAgICAgICAgICAgICAgIHJlZ2lzdGVyVXNlclJlc29sdmVyIC0+IHJlZ2lzdGVyVXNlckNvbW1hbmRIYW5kbGVyCiAgICAgICAgICAgICAgICBjb25maXJtVXNlclByb2Nlc3NvciAtPiBjb25maXJtVXNlckNvbW1hbmRIYW5kbGVyCiAgICAgICAgICAgICAgICBjb25maXJtVXNlclJlc29sdmVyIC0+IGNvbmZpcm1Vc2VyQ29tbWFuZEhhbmRsZXIKICAgICAgICAgICAgICAgIGNvbmZpcm1Vc2VyQ29tbWFuZEhhbmRsZXIgLT4gdXNlckNvbmZpcm1lZEV2ZW50U3Vic2NyaWJlcgogICAgICAgICAgICAgICAgcmVnaXN0ZXJVc2VyQ29tbWFuZEhhbmRsZXIgLT4gdXNlclJlZ2lzdGVyZWRFdmVudFN1YnNjcmliZXIKICAgICAgICAgICAgICAgIHJlZ2lzdGVyVXNlckNvbW1hbmRIYW5kbGVyIC0+IHVzZXIgIkNyZWF0ZSIKICAgICAgICAgICAgICAgIHVwZGF0ZVVzZXJDb21tYW5kSGFuZGxlciAtPiBlbWFpbENoYW5nZWRFdmVudFN1YnNjcmliZXIKICAgICAgICAgICAgICAgIHVwZGF0ZVVzZXJDb21tYW5kSGFuZGxlciAtPiBwYXNzd29yZENoYW5nZWRFdmVudFN1YnNjcmliZXIKICAgICAgICAgICAgICAgIGVtYWlsQ2hhbmdlZEV2ZW50U3Vic2NyaWJlciAtPiBzZW5kQ29uZmlybWF0aW9uRW1haWxDb21tYW5kSGFuZGxlcgogICAgICAgICAgICAgICAgdXNlclJlZ2lzdGVyZWRFdmVudFN1YnNjcmliZXIgLT4gc2VuZENvbmZpcm1hdGlvbkVtYWlsQ29tbWFuZEhhbmRsZXIKICAgICAgICAgICAgICAgIHNlbmRDb25maXJtYXRpb25FbWFpbENvbW1hbmRIYW5kbGVyIC0+IGNvbmZpcm1hdGlvbkVtYWlsU2VudEV2ZW50U3Vic2NyaWJlcgogICAgICAgICAgICAgICAgcGFzc3dvcmRDaGFuZ2VkRXZlbnRTdWJzY3JpYmVyIC0+IG1haWxlcgogICAgICAgICAgICAgICAgY29uZmlybWF0aW9uRW1haWxTZW50RXZlbnRTdWJzY3JpYmVyIC0+IG1haWxlcgogICAgICAgICAgICAgICAgdXNlclBhdGNoUHJvY2Vzc29yIC0+IHVwZGF0ZVVzZXJDb21tYW5kSGFuZGxlcgogICAgICAgICAgICAgICAgdXNlclB1dFByb2Nlc3NvciAtPiB1cGRhdGVVc2VyQ29tbWFuZEhhbmRsZXIKICAgICAgICAgICAgICAgIHVwZGF0ZVVzZXJSZXNvbHZlciAtPiB1cGRhdGVVc2VyQ29tbWFuZEhhbmRsZXIKICAgICAgICAgICAgICAgIGNvbmZpcm1hdGlvbkVtYWlsU2VudEV2ZW50U3Vic2NyaWJlciAtPiB0b2tlbiAiQ3JlYXRlIgogICAgICAgICAgICAgICAgdXNlckNvbmZpcm1lZEV2ZW50U3Vic2NyaWJlciAtPiB0b2tlbiAiRGVsZXRlIgogICAgICAgICAgICAgICAgdXNlclJlcG9zaXRvcnkgLT4gdXNlcgogICAgICAgICAgICAgICAgdG9rZW5SZXBvc2l0b3J5IC0+IHRva2VuCiAgICAgICAgICAgICAgICB1c2VyUmVwb3NpdG9yeSAtPiBkYXRhYmFzZSAiU2F2ZSBhbmQgbG9hZCIKICAgICAgICAgICAgICAgIHRva2VuUmVwb3NpdG9yeSAtPiBjYWNoZSAiU2F2ZSBhbmQgbG9hZCIKICAgICAgICAgICAgICAgIG1haWxlciAtPiBzcXMKICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0KCiAgICB2aWV3cyB7CiAgICAgICAgY29tcG9uZW50IHNvZnR3YXJlU3lzdGVtLnVzZXJTZXJ2aWNlICJDb21wb25lbnRzX0FsbCIgewogICAgICAgICAgICBpbmNsdWRlICoKICAgICAgICB9CgogICAgICAgIHN0eWxlcyB7CiAgICAgICAgICAgIGVsZW1lbnQgIkl0ZW0iIHsKICAgICAgICAgICAgICAgIGNvbG9yIHdoaXRlCiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICMzNGFiZWIKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJEYXRhYmFzZSIgewogICAgICAgICAgICAgICAgY29sb3Igd2hpdGUKICAgICAgICAgICAgICAgIHNoYXBlIGN5bGluZGVyCiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICMzNGFiZWIKICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0KfQo="
   },
   "configuration" : { },
   "model" : {
@@ -24,7 +24,53 @@
         },
         "name" : "Software System",
         "components" : [ {
-          "id" : "17",
+          "id" : "20",
+          "tags" : "Element,Component,Item",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.token"
+          },
+          "name" : "ConfirmationToken",
+          "group" : "Domain",
+          "technology" : "Entity",
+          "documentation" : { }
+        }, {
+          "id" : "8",
+          "tags" : "Element,Component,Item",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.registeruserresolver"
+          },
+          "name" : "RegisterUserResolver",
+          "relationships" : [ {
+            "id" : "28",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "3e2e0d17-a63f-4248-a783-f7aec2cb72fb"
+            },
+            "sourceId" : "8",
+            "destinationId" : "12"
+          } ],
+          "group" : "Application",
+          "documentation" : { }
+        }, {
+          "id" : "3",
+          "tags" : "Element,Component,Item",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.registeruserprocessor"
+          },
+          "name" : "RegisterUserProcessor",
+          "relationships" : [ {
+            "id" : "27",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "393aa289-4702-4699-af3c-2ed776f8d8e7"
+            },
+            "sourceId" : "3",
+            "destinationId" : "12"
+          } ],
+          "group" : "Application",
+          "documentation" : { }
+        }, {
+          "id" : "19",
           "tags" : "Element,Component,Item",
           "properties" : {
             "structurizr.dsl.identifier" : "softwaresystem.userservice.user"
@@ -34,21 +80,121 @@
           "technology" : "Entity",
           "documentation" : { }
         }, {
-          "id" : "15",
+          "id" : "17",
           "tags" : "Element,Component,Item",
           "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.userconfirmedeventsubscriber"
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.emailchangedeventsubscriber"
           },
-          "name" : "UserConfirmedEventSubsctiber",
+          "name" : "EmailChangedEventSubsctiber",
           "relationships" : [ {
-            "id" : "35",
+            "id" : "36",
             "tags" : "Relationship",
             "properties" : {
-              "structurizr.dsl.identifier" : "3f1e96e4-d620-4263-abce-df73cf53ecd3"
+              "structurizr.dsl.identifier" : "e36f422b-42cb-4ed3-9621-81638b539b18"
             },
-            "sourceId" : "15",
-            "destinationId" : "18",
-            "description" : "Delete"
+            "sourceId" : "17",
+            "destinationId" : "13"
+          } ],
+          "group" : "Application",
+          "documentation" : { }
+        }, {
+          "id" : "25",
+          "tags" : "Element,Component,Database",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.cache"
+          },
+          "name" : "Cache",
+          "description" : "Stores confirmation token, doctrine query cache",
+          "technology" : "Elasticache",
+          "documentation" : { }
+        }, {
+          "id" : "6",
+          "tags" : "Element,Component,Item",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.userputprocessor"
+          },
+          "name" : "UserPutProcessor",
+          "relationships" : [ {
+            "id" : "42",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "2dce532b-e6d0-470e-899e-81c96adcc03f"
+            },
+            "sourceId" : "6",
+            "destinationId" : "10"
+          } ],
+          "group" : "Application",
+          "documentation" : { }
+        }, {
+          "id" : "22",
+          "tags" : "Element,Component,Item",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.tokenrepository"
+          },
+          "name" : "RedisTokenRepository",
+          "relationships" : [ {
+            "id" : "47",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "65bf0db5-d638-428a-921e-8b4511711a56"
+            },
+            "sourceId" : "22",
+            "destinationId" : "20"
+          }, {
+            "id" : "49",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "905163d1-e037-4ebe-85b6-f62f904b8306"
+            },
+            "sourceId" : "22",
+            "destinationId" : "25",
+            "description" : "Save and load"
+          } ],
+          "group" : "Infrastructure",
+          "documentation" : { }
+        }, {
+          "id" : "23",
+          "tags" : "Element,Component,Item",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.mailer"
+          },
+          "name" : "Symfony Mailer",
+          "relationships" : [ {
+            "id" : "50",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "87fb0fc8-53e4-4712-9c16-eec02f5bcf73"
+            },
+            "sourceId" : "23",
+            "destinationId" : "26"
+          } ],
+          "group" : "Infrastructure",
+          "documentation" : { }
+        }, {
+          "id" : "24",
+          "tags" : "Element,Component,Database",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.database"
+          },
+          "name" : "Database",
+          "description" : "Stores user, information, hashed authentication credentials, access rights, oauth credentials, etc.",
+          "technology" : "MariaDB",
+          "documentation" : { }
+        }, {
+          "id" : "4",
+          "tags" : "Element,Component,Item",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.confirmuserprocessor"
+          },
+          "name" : "ConfirmUserProcessor",
+          "relationships" : [ {
+            "id" : "29",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "b8c72936-4c83-4c0f-bb4a-34cf6dbed338"
+            },
+            "sourceId" : "4",
+            "destinationId" : "11"
           } ],
           "group" : "Application",
           "documentation" : { }
@@ -60,43 +206,14 @@
           },
           "name" : "UserRegisteredEventSubsctiber",
           "relationships" : [ {
-            "id" : "29",
+            "id" : "37",
             "tags" : "Relationship",
             "properties" : {
-              "structurizr.dsl.identifier" : "b4eaa6f9-12c4-4418-8e07-b4a7e3256c1f"
+              "structurizr.dsl.identifier" : "0f19819a-dce0-404a-b660-123b3be2529a"
             },
             "sourceId" : "14",
             "destinationId" : "13"
           } ],
-          "group" : "Application",
-          "documentation" : { }
-        }, {
-          "id" : "18",
-          "tags" : "Element,Component,Item",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.token"
-          },
-          "name" : "ConfirmationToken",
-          "group" : "Domain",
-          "technology" : "Entity",
-          "documentation" : { }
-        }, {
-          "id" : "21",
-          "tags" : "Element,Component,Database",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.database"
-          },
-          "name" : "Database",
-          "description" : "Stores user, information, hashed authentication credentials, access rights, oauth credentials, etc.",
-          "technology" : "MariaDB",
-          "documentation" : { }
-        }, {
-          "id" : "10",
-          "tags" : "Element,Component,Item",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.updateusercommandhandler"
-          },
-          "name" : "UpdateUserCommandHandler",
           "group" : "Application",
           "documentation" : { }
         }, {
@@ -107,130 +224,13 @@
           },
           "name" : "UpdateUserResolver",
           "relationships" : [ {
-            "id" : "33",
+            "id" : "43",
             "tags" : "Relationship",
             "properties" : {
-              "structurizr.dsl.identifier" : "c530e38d-1fa0-49d9-b5a3-1d06a1ea4abf"
+              "structurizr.dsl.identifier" : "6103aec5-32ca-4623-9b38-643f2287a59f"
             },
             "sourceId" : "7",
             "destinationId" : "10"
-          } ],
-          "group" : "Application",
-          "documentation" : { }
-        }, {
-          "id" : "13",
-          "tags" : "Element,Component,Item",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.sendconfirmationemailcommandhandler"
-          },
-          "name" : "SendConfirmationEmailCommandHandler",
-          "relationships" : [ {
-            "id" : "30",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "ce740947-abf1-4067-839b-5a785c347547"
-            },
-            "sourceId" : "13",
-            "destinationId" : "16"
-          } ],
-          "group" : "Application",
-          "documentation" : { }
-        }, {
-          "id" : "8",
-          "tags" : "Element,Component,Item",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.registeruserresolver"
-          },
-          "name" : "RegisterUserResolver",
-          "relationships" : [ {
-            "id" : "24",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "2bc1aeeb-ae48-44a7-8411-0ef7288d9a88"
-            },
-            "sourceId" : "8",
-            "destinationId" : "12"
-          } ],
-          "group" : "Application",
-          "documentation" : { }
-        }, {
-          "id" : "12",
-          "tags" : "Element,Component,Item",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.registerusercommandhandler"
-          },
-          "name" : "RegisterUserCommandHandler",
-          "relationships" : [ {
-            "id" : "28",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "f61573c6-80ed-454e-aab2-44b8f26c49ab"
-            },
-            "sourceId" : "12",
-            "destinationId" : "14"
-          } ],
-          "group" : "Application",
-          "documentation" : { }
-        }, {
-          "id" : "20",
-          "tags" : "Element,Component,Item",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.tokenrepository"
-          },
-          "name" : "RedisTokenRepository",
-          "relationships" : [ {
-            "id" : "37",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "a3e0f3c4-997f-4a55-ace0-bb9ffbf03d14"
-            },
-            "sourceId" : "20",
-            "destinationId" : "18"
-          }, {
-            "id" : "39",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "7c0f5bc5-717d-495c-88e7-e15ae7d6c876"
-            },
-            "sourceId" : "20",
-            "destinationId" : "22",
-            "description" : "Save and load"
-          } ],
-          "group" : "Infrastructure",
-          "documentation" : { }
-        }, {
-          "id" : "3",
-          "tags" : "Element,Component,Item",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.registeruserprocessor"
-          },
-          "name" : "RegisterUserProcessor",
-          "relationships" : [ {
-            "id" : "23",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "5dd7fff9-2116-45c9-9db7-b3da41208e4a"
-            },
-            "sourceId" : "3",
-            "destinationId" : "12"
-          } ],
-          "group" : "Application",
-          "documentation" : { }
-        }, {
-          "id" : "11",
-          "tags" : "Element,Component,Item",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.confirmusercommandhandler"
-          },
-          "name" : "ConfirmUserCommandHandler",
-          "relationships" : [ {
-            "id" : "27",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "28242851-a4f5-4fab-bc4b-0cef17565d26"
-            },
-            "sourceId" : "11",
-            "destinationId" : "15"
           } ],
           "group" : "Application",
           "documentation" : { }
@@ -242,105 +242,40 @@
           },
           "name" : "ConfirmationEmailSentEventSubscriber",
           "relationships" : [ {
-            "id" : "34",
+            "id" : "40",
             "tags" : "Relationship",
             "properties" : {
-              "structurizr.dsl.identifier" : "ccd28532-8c4f-488b-9a35-5396ef267a70"
+              "structurizr.dsl.identifier" : "b1bd4392-03df-4cdf-b717-18458de4fed3"
             },
             "sourceId" : "16",
-            "destinationId" : "18",
+            "destinationId" : "23"
+          }, {
+            "id" : "44",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "dfc5138e-6c9c-413c-95cc-d4c9c47f17e8"
+            },
+            "sourceId" : "16",
+            "destinationId" : "20",
             "description" : "Create"
           } ],
           "group" : "Application",
           "documentation" : { }
         }, {
-          "id" : "22",
-          "tags" : "Element,Component,Database",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.cache"
-          },
-          "name" : "Cache",
-          "description" : "Stores confirmation token, doctrine query cache",
-          "technology" : "Elasticache",
-          "documentation" : { }
-        }, {
-          "id" : "4",
+          "id" : "11",
           "tags" : "Element,Component,Item",
           "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.confirmuserprocessor"
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.confirmusercommandhandler"
           },
-          "name" : "ConfirmUserProcessor",
-          "relationships" : [ {
-            "id" : "25",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "85111f11-87df-43ba-9cf4-829def9fb3e8"
-            },
-            "sourceId" : "4",
-            "destinationId" : "11"
-          } ],
-          "group" : "Application",
-          "documentation" : { }
-        }, {
-          "id" : "6",
-          "tags" : "Element,Component,Item",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.userputprocessor"
-          },
-          "name" : "UserPutProcessor",
-          "relationships" : [ {
-            "id" : "32",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "94b37b65-bde0-4228-a5da-bdf79a543056"
-            },
-            "sourceId" : "6",
-            "destinationId" : "10"
-          } ],
-          "group" : "Application",
-          "documentation" : { }
-        }, {
-          "id" : "19",
-          "tags" : "Element,Component,Item",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.userrepository"
-          },
-          "name" : "MariaDBUserRepository",
-          "relationships" : [ {
-            "id" : "36",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "9a99d2d3-c36f-49c2-91a4-36205606e5d9"
-            },
-            "sourceId" : "19",
-            "destinationId" : "17"
-          }, {
-            "id" : "38",
-            "tags" : "Relationship",
-            "properties" : {
-              "structurizr.dsl.identifier" : "1718aad0-2244-483c-95c1-4bd712fa41c7"
-            },
-            "sourceId" : "19",
-            "destinationId" : "21",
-            "description" : "Save and load"
-          } ],
-          "group" : "Infrastructure",
-          "documentation" : { }
-        }, {
-          "id" : "5",
-          "tags" : "Element,Component,Item",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.userservice.userpatchprocessor"
-          },
-          "name" : "UserPatchProcessor",
+          "name" : "ConfirmUserCommandHandler",
           "relationships" : [ {
             "id" : "31",
             "tags" : "Relationship",
             "properties" : {
-              "structurizr.dsl.identifier" : "1395df17-6e67-4b94-b0bc-40888688943c"
+              "structurizr.dsl.identifier" : "8c988600-1b76-4fab-962e-ba0ec71c5abb"
             },
-            "sourceId" : "5",
-            "destinationId" : "10"
+            "sourceId" : "11",
+            "destinationId" : "15"
           } ],
           "group" : "Application",
           "documentation" : { }
@@ -352,13 +287,176 @@
           },
           "name" : "ConfirmUserResolver",
           "relationships" : [ {
-            "id" : "26",
+            "id" : "30",
             "tags" : "Relationship",
             "properties" : {
-              "structurizr.dsl.identifier" : "f4594785-c72b-4e06-9b27-381b9cd08d21"
+              "structurizr.dsl.identifier" : "a08d6cff-3700-47e4-96a9-69ae6626774a"
             },
             "sourceId" : "9",
             "destinationId" : "11"
+          } ],
+          "group" : "Application",
+          "documentation" : { }
+        }, {
+          "id" : "15",
+          "tags" : "Element,Component,Item",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.userconfirmedeventsubscriber"
+          },
+          "name" : "UserConfirmedEventSubsctiber",
+          "relationships" : [ {
+            "id" : "45",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "26b2fddd-7069-4658-9d3c-85c7e9f2f04b"
+            },
+            "sourceId" : "15",
+            "destinationId" : "20",
+            "description" : "Delete"
+          } ],
+          "group" : "Application",
+          "documentation" : { }
+        }, {
+          "id" : "26",
+          "tags" : "Element,Component,Database",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.sqs"
+          },
+          "name" : "AWS SQS",
+          "description" : "Message broker for sending emails",
+          "technology" : "AWS SQA",
+          "documentation" : { }
+        }, {
+          "id" : "5",
+          "tags" : "Element,Component,Item",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.userpatchprocessor"
+          },
+          "name" : "UserPatchProcessor",
+          "relationships" : [ {
+            "id" : "41",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "4d3dc9a3-75cb-4366-ba6c-9da6b39a7d19"
+            },
+            "sourceId" : "5",
+            "destinationId" : "10"
+          } ],
+          "group" : "Application",
+          "documentation" : { }
+        }, {
+          "id" : "12",
+          "tags" : "Element,Component,Item",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.registerusercommandhandler"
+          },
+          "name" : "RegisterUserCommandHandler",
+          "relationships" : [ {
+            "id" : "32",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "22b6fea7-c34f-4b49-9225-872fe210e447"
+            },
+            "sourceId" : "12",
+            "destinationId" : "14"
+          }, {
+            "id" : "33",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "43691283-fc20-4ef2-ae70-d142ae0ee706"
+            },
+            "sourceId" : "12",
+            "destinationId" : "19",
+            "description" : "Create"
+          } ],
+          "group" : "Application",
+          "documentation" : { }
+        }, {
+          "id" : "21",
+          "tags" : "Element,Component,Item",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.userrepository"
+          },
+          "name" : "MariaDBUserRepository",
+          "relationships" : [ {
+            "id" : "46",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "b519beb0-7b1d-4356-96e4-12dc69b10b79"
+            },
+            "sourceId" : "21",
+            "destinationId" : "19"
+          }, {
+            "id" : "48",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "0a9285a7-15c0-454a-92fa-feca01cfcce3"
+            },
+            "sourceId" : "21",
+            "destinationId" : "24",
+            "description" : "Save and load"
+          } ],
+          "group" : "Infrastructure",
+          "documentation" : { }
+        }, {
+          "id" : "10",
+          "tags" : "Element,Component,Item",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.updateusercommandhandler"
+          },
+          "name" : "UpdateUserCommandHandler",
+          "relationships" : [ {
+            "id" : "34",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "388a1fb8-e0fb-4d33-8d23-561ae7c6dddf"
+            },
+            "sourceId" : "10",
+            "destinationId" : "17"
+          }, {
+            "id" : "35",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "338bb476-f2df-42b3-8adc-9a60b4cab644"
+            },
+            "sourceId" : "10",
+            "destinationId" : "18"
+          } ],
+          "group" : "Application",
+          "documentation" : { }
+        }, {
+          "id" : "18",
+          "tags" : "Element,Component,Item",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.passwordchangedeventsubscriber"
+          },
+          "name" : "PasswordChangedEventSubscriber",
+          "relationships" : [ {
+            "id" : "39",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "1de1e711-de46-4c6b-afcf-8d96f16092c6"
+            },
+            "sourceId" : "18",
+            "destinationId" : "23"
+          } ],
+          "group" : "Application",
+          "documentation" : { }
+        }, {
+          "id" : "13",
+          "tags" : "Element,Component,Item",
+          "properties" : {
+            "structurizr.dsl.identifier" : "softwaresystem.userservice.sendconfirmationemailcommandhandler"
+          },
+          "name" : "SendConfirmationEmailCommandHandler",
+          "relationships" : [ {
+            "id" : "38",
+            "tags" : "Relationship",
+            "properties" : {
+              "structurizr.dsl.identifier" : "e729e155-ed70-401c-a2b0-65440b9b3446"
+            },
+            "sourceId" : "13",
+            "destinationId" : "16"
           } ],
           "group" : "Application",
           "documentation" : { }
@@ -377,93 +475,123 @@
       "key" : "Components_All",
       "order" : 1,
       "dimensions" : {
-        "width" : 6363,
-        "height" : 4591
+        "width" : 5430,
+        "height" : 4505
       },
       "containerId" : "2",
       "externalContainerBoundariesVisible" : false,
       "elements" : [ {
-        "id" : "11",
-        "x" : 4906,
-        "y" : 1222
-      }, {
         "id" : "22",
-        "x" : 2339,
-        "y" : 3472
+        "x" : 3989,
+        "y" : 2519
+      }, {
+        "id" : "11",
+        "x" : 989,
+        "y" : 840
+      }, {
+        "id" : "23",
+        "x" : 3989,
+        "y" : 3119
       }, {
         "id" : "12",
-        "x" : 994,
-        "y" : 1187
+        "x" : 989,
+        "y" : 1557
+      }, {
+        "id" : "24",
+        "x" : 4739,
+        "y" : 1919
       }, {
         "id" : "13",
-        "x" : 1986,
-        "y" : 1197
+        "x" : 2489,
+        "y" : 2140
+      }, {
+        "id" : "25",
+        "x" : 4739,
+        "y" : 2519
       }, {
         "id" : "14",
-        "x" : 996,
-        "y" : 1632
+        "x" : 1739,
+        "y" : 1802
       }, {
         "id" : "15",
-        "x" : 4881,
-        "y" : 1692
+        "x" : 1739,
+        "y" : 1165
+      }, {
+        "id" : "26",
+        "x" : 4739,
+        "y" : 3119
       }, {
         "id" : "16",
-        "x" : 1981,
-        "y" : 1662
+        "x" : 3239,
+        "y" : 2140
       }, {
         "id" : "17",
-        "x" : 3639,
-        "y" : 2267
+        "x" : 1739,
+        "y" : 2473
       }, {
         "id" : "18",
-        "x" : 2329,
-        "y" : 2252
+        "x" : 1739,
+        "y" : 3119
       }, {
         "id" : "19",
-        "x" : 3639,
-        "y" : 2927
+        "x" : 4739,
+        "y" : 719
       }, {
         "id" : "3",
-        "x" : 1250,
-        "y" : 755
+        "x" : 239,
+        "y" : 2040
       }, {
         "id" : "4",
-        "x" : 4651,
-        "y" : 772
+        "x" : 239,
+        "y" : 840
       }, {
         "id" : "5",
-        "x" : 2936,
-        "y" : 787
+        "x" : 239,
+        "y" : 2640
       }, {
         "id" : "6",
-        "x" : 3436,
-        "y" : 787
+        "x" : 239,
+        "y" : 3240
       }, {
         "id" : "7",
-        "x" : 3946,
-        "y" : 792
+        "x" : 239,
+        "y" : 3840
       }, {
         "id" : "8",
-        "x" : 711,
-        "y" : 752
+        "x" : 239,
+        "y" : 1440
       }, {
         "id" : "9",
-        "x" : 5201,
-        "y" : 777
+        "x" : 239,
+        "y" : 240
       }, {
         "id" : "20",
-        "x" : 2339,
-        "y" : 2872
+        "x" : 4739,
+        "y" : 1319
       }, {
         "id" : "21",
-        "x" : 3634,
-        "y" : 3487
+        "x" : 3989,
+        "y" : 1919
       }, {
         "id" : "10",
-        "x" : 3431,
-        "y" : 1222
+        "x" : 989,
+        "y" : 3119
       } ],
       "relationships" : [ {
+        "id" : "50"
+      }, {
+        "id" : "40",
+        "vertices" : [ {
+          "x" : 3885,
+          "y" : 2969
+        } ]
+      }, {
+        "id" : "41"
+      }, {
+        "id" : "42"
+      }, {
+        "id" : "43"
+      }, {
         "id" : "32"
       }, {
         "id" : "31"
@@ -478,21 +606,50 @@
       }, {
         "id" : "37"
       }, {
-        "id" : "26"
-      }, {
-        "id" : "25"
-      }, {
         "id" : "36"
       }, {
         "id" : "35"
       }, {
-        "id" : "24"
-      }, {
-        "id" : "23"
-      }, {
         "id" : "34"
       }, {
-        "id" : "33"
+        "id" : "33",
+        "vertices" : [ {
+          "x" : 1739,
+          "y" : 1015
+        }, {
+          "x" : 2710,
+          "y" : 861
+        }, {
+          "x" : 3468,
+          "y" : 861
+        } ]
+      }, {
+        "id" : "44",
+        "vertices" : [ {
+          "x" : 3885,
+          "y" : 1740
+        } ]
+      }, {
+        "id" : "45"
+      }, {
+        "id" : "46",
+        "vertices" : [ {
+          "x" : 4635,
+          "y" : 1169
+        } ]
+      }, {
+        "id" : "47",
+        "vertices" : [ {
+          "x" : 4543,
+          "y" : 2369
+        }, {
+          "x" : 4635,
+          "y" : 1636
+        } ]
+      }, {
+        "id" : "48"
+      }, {
+        "id" : "49"
       }, {
         "id" : "38"
       }, {
