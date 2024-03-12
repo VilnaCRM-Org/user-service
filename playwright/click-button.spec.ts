@@ -1,4 +1,11 @@
-import { test } from '@playwright/test';
+import { Locator, test } from '@playwright/test';
+
+const authSection: string = 'auth-section';
+const headerLogInButton: string = 'header-log-in';
+const headerSignUnButton: string = 'header-sign-up';
+const aboutSignUnButton: string = 'about-sign-up';
+const forWhoSigUpButton: string = 'for-who-sign-up';
+const whyUsSigUpButton: string = 'for-who-sign-up';
 
 test.describe('Buttons navigation tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -6,26 +13,27 @@ test.describe('Buttons navigation tests', () => {
   });
 
   async function clickAndVerifySection(page, elementLocator): Promise<void> {
-    await page.click(elementLocator);
-    await page.locator('[data-testid="auth-section"]').boundingBox();
+    const signUp: Locator = page.getByTestId(elementLocator);
+    await signUp.click();
+    await page.getByTestId(authSection).boundingBox();
   }
 
   async function clickDrawerButton(page, buttonName): Promise<void> {
     await page.getByLabel('Button to open the drawer').click();
     await page.getByRole('button', { name: buttonName }).click();
-    await page.locator('[data-testid="auth-section"]').boundingBox();
+    await page.getByTestId(authSection).boundingBox();
   }
 
   test('Desktop buttons navigation', async ({ page }) => {
-    await clickAndVerifySection(page, 'button:has-text("Log in")');
-    await clickAndVerifySection(page, '[data-testid="header-sign-up"]');
-    await clickAndVerifySection(page, '[data-testid="about-sign-up"]');
-    await clickAndVerifySection(page, '[data-testid="for-who-sign-up"]');
+    await clickAndVerifySection(page, headerLogInButton);
+    await clickAndVerifySection(page, headerSignUnButton);
+    await clickAndVerifySection(page, aboutSignUnButton);
+    await clickAndVerifySection(page, forWhoSigUpButton);
   });
 
   test('Mobile button navigation', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await clickAndVerifySection(page, '[data-testid="why-us-sign-up"]');
+    await clickAndVerifySection(page, whyUsSigUpButton);
   });
 
   test('Drawer button navigation', async ({ page }) => {

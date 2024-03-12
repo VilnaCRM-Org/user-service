@@ -9,11 +9,11 @@ import React from 'react';
 import { UiTooltipProps } from './types';
 
 export default function WrapperUiTooltip({
-  children,
   title,
   placement,
   arrow,
   sx,
+  children,
 }: UiTooltipProps): React.ReactElement {
   const [open, setOpen] = React.useState(false);
   const isWideScreenMaxWidth: boolean = useMediaQuery('(max-width: 640px)');
@@ -25,14 +25,16 @@ export default function WrapperUiTooltip({
     }
   }, [isWideScreenMaxWidth, isWideScreenMinWidth]);
 
-  function handleTooltipClose(): void {
+  const handleTooltipClose: () => void = () => {
     setOpen(false);
-  }
-  function handleTooltipToogle(): void {
+  };
+
+  const handleTooltipToogle: () => void = () => {
     setOpen(!open);
-  }
+  };
+
   return (
-    <ClickAwayListener onClickAway={() => handleTooltipClose()}>
+    <ClickAwayListener onClickAway={handleTooltipClose}>
       <Tooltip
         open={open}
         title={title}
@@ -40,7 +42,7 @@ export default function WrapperUiTooltip({
         arrow={arrow}
         sx={sx}
       >
-        <Typography component="span" onClick={() => handleTooltipToogle()}>
+        <Typography component="span" onClick={handleTooltipToogle}>
           {children}
         </Typography>
       </Tooltip>

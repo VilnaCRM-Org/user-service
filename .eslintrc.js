@@ -52,6 +52,7 @@ module.exports = {
         'plugin:jest-dom/recommended',
       ],
       rules: {
+        'react/jsx-no-bind': 'warn',
         'no-await-in-loop': 'warn',
         'no-restricted-syntax': 'warn',
         'no-alert': 'error',
@@ -96,10 +97,10 @@ module.exports = {
         'import/no-extraneous-dependencies': 'off',
         'import/no-unresolved': 'off',
         'import/extensions': 'off',
-
         'react/prop-types': 'off',
         'react/jsx-props-no-spreading': 'warn',
         'react/react-in-jsx-scope': 'off',
+
         'react/jsx-filename-extension': [
           'error',
           { extensions: ['.jsx', '.tsx'] },

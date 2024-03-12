@@ -1,6 +1,6 @@
-import { Container, Link, Stack } from '@mui/material';
+import { Box, Container, Link, Stack } from '@mui/material';
 import Image from 'next/image';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components/';
@@ -19,7 +19,11 @@ function Mobile({
   socialLinks: SocialMedia[];
 }): React.ReactElement {
   const { t } = useTranslation();
-
+  const currentDate: Date = useMemo(() => new Date(), []);
+  const currentYear: number = useMemo(
+    () => currentDate.getFullYear(),
+    [currentDate]
+  );
   return (
     <Container sx={styles.wrapper}>
       <Stack
@@ -41,7 +45,7 @@ function Mobile({
       <VilnaCRMGmail />
       <PrivacyPolicy />
       <UiTypography variant="medium15" sx={styles.copyright}>
-        {t('footer.copyright')}
+        {t('footer.copyright')} <Box component="span">{currentYear}</Box>
       </UiTypography>
     </Container>
   );

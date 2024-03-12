@@ -10,7 +10,7 @@ function AuthButtons(): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Stack spacing={1} direction="row" sx={styles.wrapper}>
-      <Link href="#signUp">
+      <Link href="#signUp" data-testid="header-log-in">
         <UiButton variant="outlined" size="small">
           {t('header.actions.log_in')}
         </UiButton>

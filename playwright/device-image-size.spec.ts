@@ -1,21 +1,7 @@
-import { test, expect, Locator, Page } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
-interface ImageSize {
-  width: number;
-  height: number;
-}
-type NullableImgSize = ImageSize | null;
-
-async function setImageAndViewport(
-  page: Page,
-  width: number,
-  height: number
-): Promise<NullableImgSize> {
-  await page.setViewportSize({ width, height });
-  const image: Locator = page.getByRole('img', { name: 'Main image' });
-  await expect(image).toBeVisible();
-  return image.boundingBox();
-}
+import { NullableImgSize } from './types/device-image';
+import { setImageAndViewport } from './utils/setImageAndViewport';
 
 test('Should display the correct image size based on viewport', async ({
   page,
