@@ -129,8 +129,7 @@ class ErrorProviderTest extends UnitTestCase
             public function __construct(
                 private string $template,
                 private array $args
-            )
-            {
+            ) {
                 parent::__construct();
             }
 
@@ -172,7 +171,8 @@ class ErrorProviderTest extends UnitTestCase
 
         $exception = new HttpException(Response::HTTP_INTERNAL_SERVER_ERROR, $this->faker->word());
 
-        $request = Request::create('graphql');;
+        $request = Request::create('graphql');
+        ;
         $request->attributes->set('exception', $exception);
 
         $context = ['request' => $request];
