@@ -22,7 +22,7 @@ final class UniqueEmailValidator extends ConstraintValidator
         if ($value !== null && $this->userRepository->findByEmail($value)
         ) {
             $this->addViolation($this->translator->trans(
-                'email.notUnique'
+                'email.not.unique'
             ));
         }
     }

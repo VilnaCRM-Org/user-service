@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Shared\Application;
 
-use App\User\Domain\Exception\DomainException;
 use GraphQL\Error\Error;
 use GraphQL\Error\FormattedError;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-final readonly class ExceptionNormalizer implements NormalizerInterface
+final class NotFoundExceptionNormalizer implements NormalizerInterface
 {
     public function __construct(
         private TranslatorInterface $translator
@@ -30,13 +30,18 @@ final readonly class ExceptionNormalizer implements NormalizerInterface
         array $context = []
     ): array {
         $exception = $object->getPrevious();
+        $errorMessage = $exception->getMessage();
         $error = FormattedError::createFromException($exception);
 
-        $error['message'] = $this->translator->trans(
-            $exception->getTranslationTemplate(),
-            $exception->getTranslationArgs()
-        );
+        $pattern = '/Item (.*?) not found./';
 
+        preg_match($pattern, $errorMessage, $matches);
+        $id = $matches[1];
+
+        $error['message'] = $this->translator->trans(
+            'error.not.found.graphql',
+            ['id' => $id]
+        );
         return $error;
     }
 
@@ -49,6 +54,6 @@ final readonly class ExceptionNormalizer implements NormalizerInterface
         mixed $format = null
     ): bool {
         return $data instanceof Error && $data->getPrevious()
-            instanceof DomainException;
+            instanceof NotFoundHttpException;
     }
 }

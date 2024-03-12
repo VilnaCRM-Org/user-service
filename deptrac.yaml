@@ -11,7 +11,7 @@ parameters:
         - type: className
           regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|Exception).*'
         - type: className
-          regex: '.*App\\Shared\\Application\\(Validator|Transformer|ErrorProvider|ExceptionNormalizer).*'
+          regex: '.*App\\Shared\\Application\\(Validator|Transformer|ErrorProvider|DomainExceptionNormalizer|NotFoundExceptionNormalizer).*'
         - type: className
           regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|OpenApiFactory).*'
     - name: Domain

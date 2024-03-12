@@ -11,6 +11,7 @@ use App\User\Domain\Exception\DomainException;
 use GraphQL\Error\FormattedError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
@@ -68,7 +69,20 @@ final readonly class ErrorProvider implements ProviderInterface
         } elseif ($exception instanceof DomainException) {
             $error = $this->provideRESTDomainException($exception, $status);
         } else {
-            $error = Error::createFromException($exception, $status);
+            $error = $this->provideHttpException($exception, $status);
+        }
+
+        return $error;
+    }
+
+    private function provideHttpException(
+        Throwable $exception,
+        int $status
+    ): Error {
+        $error = Error::createFromException($exception, $status);
+
+        if ($exception instanceof NotFoundHttpException) {
+            $error->setDetail($this->translator->trans('error.not.found.http'));
         }
 
         return $error;

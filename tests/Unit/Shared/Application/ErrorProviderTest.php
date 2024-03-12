@@ -12,11 +12,13 @@ use App\User\Domain\Exception\DomainException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ErrorProviderTest extends UnitTestCase
 {
     private TranslatorInterface $translator;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -29,7 +31,7 @@ class ErrorProviderTest extends UnitTestCase
         $operation = $this->createMock(HttpOperation::class);
         $status = $this->faker->numberBetween(200, 499);
         $operation->expects($this->once())->
-            method('getStatus')->willReturn($status);
+        method('getStatus')->willReturn($status);
 
         $errorText = $this->faker->word();
 
@@ -60,6 +62,8 @@ class ErrorProviderTest extends UnitTestCase
         $operation->expects($this->once())->
         method('getStatus')->willReturn(null);
 
+        $errorText = $this->faker->word();
+
         $exception = new HttpException(Response::HTTP_INTERNAL_SERVER_ERROR, $this->faker->word());
         $request = new Request();
         $request->attributes->set('exception', $exception);
@@ -68,7 +72,7 @@ class ErrorProviderTest extends UnitTestCase
         $this->translator->expects($this->once())
             ->method('trans')
             ->with('error.internal')
-            ->willReturn('Something went wrong');
+            ->willReturn($errorText);
 
         $errorProvider = new ErrorProvider($this->translator);
 
@@ -78,7 +82,37 @@ class ErrorProviderTest extends UnitTestCase
 
         $this->assertEquals(Response::HTTP_INTERNAL_SERVER_ERROR, $error->getStatusCode());
 
-        $this->assertEquals('Something went wrong', $error->getDetail());
+        $this->assertEquals($errorText, $error->getDetail());
+    }
+
+    public function testProvideNotFoundException(): void
+    {
+        $operation = $this->createMock(HttpOperation::class);
+        $status = Response::HTTP_NOT_FOUND;
+        $operation->expects($this->once())->
+        method('getStatus')->willReturn($status);
+
+        $errorText = $this->faker->word();
+
+        $exception = new NotFoundHttpException();
+        $request = new Request();
+        $request->attributes->set('exception', $exception);
+        $context = ['request' => $request];
+
+        $this->translator
+            ->method('trans')
+            ->withConsecutive(['error.internal'], ['error.not.found.http'])
+            ->willReturnOnConsecutiveCalls('', $errorText);
+
+        $errorProvider = new ErrorProvider($this->translator);
+
+        $error = $errorProvider->provide($operation, [], $context);
+
+        $this->assertInstanceOf(Error::class, $error);
+
+        $this->assertEquals($status, $error->getStatusCode());
+
+        $this->assertEquals($errorText, $error->getDetail());
     }
 
     public function testProvideDomainException(): void
@@ -95,7 +129,8 @@ class ErrorProviderTest extends UnitTestCase
             public function __construct(
                 private string $template,
                 private array $args
-            ) {
+            )
+            {
                 parent::__construct();
             }
 
@@ -137,8 +172,7 @@ class ErrorProviderTest extends UnitTestCase
 
         $exception = new HttpException(Response::HTTP_INTERNAL_SERVER_ERROR, $this->faker->word());
 
-        $request = Request::create('graphql');
-        ;
+        $request = Request::create('graphql');;
         $request->attributes->set('exception', $exception);
 
         $context = ['request' => $request];

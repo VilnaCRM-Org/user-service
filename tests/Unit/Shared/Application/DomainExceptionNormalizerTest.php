@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application;
 
-use App\Shared\Application\ExceptionNormalizer;
+use App\Shared\Application\DomainExceptionNormalizer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Exception\DomainException;
 use GraphQL\Error\Error;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class ExceptionNormalizerTest extends UnitTestCase
+class DomainExceptionNormalizerTest extends UnitTestCase
 {
     private DomainException $previousException;
 
@@ -53,7 +53,7 @@ class ExceptionNormalizerTest extends UnitTestCase
 
         $graphqlError = new Error(message: $errorText, previous: $this->previousException);
 
-        $normalizer = new ExceptionNormalizer($translator);
+        $normalizer = new DomainExceptionNormalizer($translator);
 
         $normalizedError = $normalizer->normalize($graphqlError);
 
@@ -66,7 +66,7 @@ class ExceptionNormalizerTest extends UnitTestCase
         $errorText = $this->faker->word();
         $graphqlError = new Error($errorText);
 
-        $normalizer = new ExceptionNormalizer($this->createMock(TranslatorInterface::class));
+        $normalizer = new DomainExceptionNormalizer($this->createMock(TranslatorInterface::class));
 
         $supportsNormalization = $normalizer->supportsNormalization($graphqlError);
 
@@ -79,7 +79,7 @@ class ExceptionNormalizerTest extends UnitTestCase
 
         $graphqlError = new Error(message: $errorText, previous: $this->previousException);
 
-        $normalizer = new ExceptionNormalizer($this->createMock(TranslatorInterface::class));
+        $normalizer = new DomainExceptionNormalizer($this->createMock(TranslatorInterface::class));
 
         $supportsNormalization = $normalizer->supportsNormalization($graphqlError);
 
@@ -96,7 +96,7 @@ class ExceptionNormalizerTest extends UnitTestCase
             previous: $this->previousException,
         );
 
-        $normalizer = new ExceptionNormalizer($this->createMock(TranslatorInterface::class));
+        $normalizer = new DomainExceptionNormalizer($this->createMock(TranslatorInterface::class));
 
         $supportsNormalization = $normalizer->supportsNormalization($error);
 

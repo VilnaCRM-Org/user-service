@@ -111,10 +111,10 @@ workspace {
                 updateUserResolver -> updateUserCommandHandler
                 confirmationEmailSentEventSubscriber -> token "Create"
                 userConfirmedEventSubscriber -> token "Delete"
-                userRepository -> user
-                tokenRepository -> token
-                userRepository -> database "Save and load"
-                tokenRepository -> cache "Save and load"
+                userRepository -> user "Save and load"
+                tokenRepository -> token "Save and load"
+                userRepository -> database
+                tokenRepository -> cache
                 mailer -> sqs
             }
         }

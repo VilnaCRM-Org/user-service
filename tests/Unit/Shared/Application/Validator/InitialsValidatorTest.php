@@ -64,7 +64,7 @@ class InitialsValidatorTest extends UnitTestCase
         $constraintViolationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
         $error = $this->faker->word();
         $this->translator->method('trans')
-            ->with('initials.invalidFormat')
+            ->with('initials.invalid.format')
             ->willReturn($error);
         $this->context->expects($this->once())
             ->method('buildViolation')
@@ -83,7 +83,7 @@ class InitialsValidatorTest extends UnitTestCase
         $constraintViolationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
         $error = $this->faker->word();
         $this->translator->method('trans')
-            ->with('initials.invalidParts')
+            ->with('initials.invalid.parts')
             ->willReturn($error);
         $this->context->method('buildViolation')
             ->with($error)

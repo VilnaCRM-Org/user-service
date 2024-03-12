@@ -32,7 +32,7 @@ final class PasswordValidator extends ConstraintValidator
     {
         if (!(strlen($value) >= 8 && strlen($value) <= 64)) {
             $this->addViolation(
-                $this->translator->trans('password.invalidLength')
+                $this->translator->trans('password.invalid.length')
             );
         }
     }
@@ -41,7 +41,7 @@ final class PasswordValidator extends ConstraintValidator
     {
         if (!preg_match('/[0-9]/', $value)) {
             $this->addViolation(
-                $this->translator->trans('password.noNumber')
+                $this->translator->trans('password.missing.number')
             );
         }
     }
@@ -50,7 +50,7 @@ final class PasswordValidator extends ConstraintValidator
     {
         if (!preg_match('/[A-Z]/', $value)) {
             $this->addViolation(
-                $this->translator->trans('password.noUppercase')
+                $this->translator->trans('password.missing.uppercase')
             );
         }
     }

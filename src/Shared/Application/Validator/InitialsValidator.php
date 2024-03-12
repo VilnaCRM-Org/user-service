@@ -41,7 +41,7 @@ final class InitialsValidator extends ConstraintValidator
     {
         if (!preg_match('/^\D*$/', $value)) {
             $this->addViolation(
-                $this->translator->trans('initials.invalidFormat')
+                $this->translator->trans('initials.invalid.format')
             );
         }
     }
@@ -50,7 +50,7 @@ final class InitialsValidator extends ConstraintValidator
     {
         if ($this->hasEmptyParts($value)) {
             $this->addViolation(
-                $this->translator->trans('initials.invalidParts')
+                $this->translator->trans('initials.invalid.parts')
             );
         }
     }

@@ -20,6 +20,7 @@ class UserOperationsContext implements Context
 {
     private RequestInput $requestBody;
     private int $violationNum;
+    private string $language;
 
     public function __construct(
         private readonly KernelInterface $kernel,
@@ -28,6 +29,7 @@ class UserOperationsContext implements Context
     ) {
         $this->requestBody = new RequestInput();
         $this->violationNum = 0;
+        $this->language = 'en';
     }
 
     /**
@@ -71,6 +73,14 @@ class UserOperationsContext implements Context
     }
 
     /**
+     * @Given with language :lang
+     */
+    public function setLanguage(string $lang): void
+    {
+        $this->language = $lang;
+    }
+
+    /**
      * @When :method request is send to :path
      */
     public function requestSendTo(string $method, string $path): void
@@ -86,7 +96,9 @@ class UserOperationsContext implements Context
             [],
             [],
             ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => $contentType,],
+                'CONTENT_TYPE' => $contentType,
+                'HTTP_ACCEPT_LANGUAGE' => $this->language
+                ],
             $this->serializer->serialize($this->requestBody, 'json')
         ));
     }

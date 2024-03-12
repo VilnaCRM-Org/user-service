@@ -1,24 +1,24 @@
 App\User\Application\DTO\UserRegisterDto:
   properties:
     email:
-      - Email: { message: 'email.invalidEmail' }
-      - NotBlank: { message: 'notBlank' }
+      - Email: { message: 'email.invalid' }
+      - NotBlank: { message: 'not.blank' }
       - Length:
           max: 255
       - App\Shared\Application\Validator\UniqueEmail: ~
     initials:
-      - NotBlank: { message: 'notBlank' }
+      - NotBlank: { message: 'not.blank' }
       - Length:
           max: 255
       - App\Shared\Application\Validator\Initials: ~
     password:
-      - NotBlank: { message: 'notBlank' }
+      - NotBlank: { message: 'not.blank' }
       - App\Shared\Application\Validator\Password: ~
 
 App\User\Application\DTO\UserPatchDto:
   properties:
     email:
-      - Email: { message: 'email.invalidEmail' }
+      - Email: { message: 'email.invalid' }
       - Length:
           max: 255
       - App\Shared\Application\Validator\UniqueEmail: ~
@@ -28,7 +28,7 @@ App\User\Application\DTO\UserPatchDto:
       - App\Shared\Application\Validator\Initials:
           optional: true
     oldPassword:
-      - NotBlank: { message: 'notBlank' }
+      - NotBlank: { message: 'not.blank' }
       - App\Shared\Application\Validator\Password: ~
     newPassword:
       - App\Shared\Application\Validator\Password:
@@ -37,55 +37,55 @@ App\User\Application\DTO\UserPatchDto:
 App\User\Application\DTO\UserPutDto:
   properties:
     email:
-      - NotBlank: { message: 'notBlank' }
-      - Email: { message: 'email.invalidEmail' }
+      - NotBlank: { message: 'not.blank' }
+      - Email: { message: 'email.invalid' }
       - Length:
           max: 255
       - App\Shared\Application\Validator\UniqueEmail: ~
     initials:
-      - NotBlank: { message: 'notBlank' }
+      - NotBlank: { message: 'not.blank' }
       - Length:
           max: 255
       - App\Shared\Application\Validator\Initials: ~
     oldPassword:
-      - NotBlank: { message: 'notBlank' }
+      - NotBlank: { message: 'not.blank' }
       - App\Shared\Application\Validator\Password: ~
     newPassword:
-      - NotBlank: { message: 'notBlank' }
+      - NotBlank: { message: 'not.blank' }
       - App\Shared\Application\Validator\Password: ~
 
 App\User\Application\DTO\ConfirmUserDto:
   properties:
     token:
-      - NotBlank: { message: 'notBlank' }
+      - NotBlank: { message: 'not.blank' }
 
 App\User\Application\MutationInput\ConfirmUserMutationInput:
   properties:
     token:
-      - NotBlank: { message: 'notBlank' }
+      - NotBlank: { message: 'not.blank' }
       - NotNull: ~
 
 App\User\Application\MutationInput\CreateUserMutationInput:
   properties:
     email:
-      - Email: { message: 'email.invalidEmail' }
-      - NotBlank: { message: 'notBlank' }
+      - Email: { message: 'email.invalid' }
+      - NotBlank: { message: 'not.blank' }
       - Length:
           max: 255
       - App\Shared\Application\Validator\UniqueEmail: ~
     initials:
-      - NotBlank: { message: 'notBlank' }
+      - NotBlank: { message: 'not.blank' }
       - Length:
           max: 255
       - App\Shared\Application\Validator\Initials: ~
     password:
-      - NotBlank: { message: 'notBlank' }
+      - NotBlank: { message: 'not.blank' }
       - App\Shared\Application\Validator\Password: ~
 
 App\User\Application\MutationInput\UpdateUserMutationInput:
   properties:
     email:
-      - Email: { message: 'email.invalidEmail' }
+      - Email: { message: 'email.invalid' }
       - Length:
           max: 255
       - App\Shared\Application\Validator\UniqueEmail: ~
@@ -95,7 +95,7 @@ App\User\Application\MutationInput\UpdateUserMutationInput:
       - App\Shared\Application\Validator\Initials:
           optional: true
     password:
-      - NotBlank: { message: 'notBlank' }
+      - NotBlank: { message: 'not.blank' }
       - App\Shared\Application\Validator\Password: ~
     newPassword:
       - App\Shared\Application\Validator\Password:

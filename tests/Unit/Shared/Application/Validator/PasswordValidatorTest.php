@@ -64,7 +64,7 @@ class PasswordValidatorTest extends UnitTestCase
         $constraintViolationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
         $error = $this->faker->word();
         $this->translator->method('trans')
-            ->with('password.invalidLength')
+            ->with('password.invalid.length')
             ->willReturn($error);
         $this->context->expects($this->once())
             ->method('buildViolation')
@@ -83,7 +83,7 @@ class PasswordValidatorTest extends UnitTestCase
         $constraintViolationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
         $error = $this->faker->word();
         $this->translator->method('trans')
-            ->with('password.noNumber')
+            ->with('password.missing.number')
             ->willReturn($error);
         $this->context->expects($this->once())
             ->method('buildViolation')
@@ -102,7 +102,7 @@ class PasswordValidatorTest extends UnitTestCase
         $constraintViolationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
         $error = $this->faker->word();
         $this->translator->method('trans')
-            ->with('password.noUppercase')
+            ->with('password.missing.uppercase')
             ->willReturn($error);
         $this->context->expects($this->once())
             ->method('buildViolation')

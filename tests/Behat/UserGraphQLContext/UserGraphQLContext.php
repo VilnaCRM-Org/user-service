@@ -25,6 +25,8 @@ class UserGraphQLContext implements Context
     private string $GRAPHQL_ENDPOINT_URI = '/api/graphql';
     private string $GRAPHQL_ID_PREFIX = '/api/users/';
 
+    private string $language;
+
     private string $query;
     private string $queryName;
     private array $responseContent;
@@ -39,6 +41,7 @@ class UserGraphQLContext implements Context
         $this->responseContent = [];
         $this->graphQLInput = new GraphQLMutationInput();
         $this->errorNum = 0;
+        $this->language = 'en';
     }
 
     /**
@@ -153,6 +156,14 @@ class UserGraphQLContext implements Context
     }
 
     /**
+     * @Given with graphql language :lang
+     */
+    public function setLanguage(string $lang): void
+    {
+        $this->language = $lang;
+    }
+
+    /**
      * @When graphQL request is send
      */
     public function sendGraphQlRequest(): void
@@ -164,7 +175,9 @@ class UserGraphQLContext implements Context
             [],
             [],
             ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/graphql'],
+                'CONTENT_TYPE' => 'application/graphql',
+                'HTTP_ACCEPT_LANGUAGE' => $this->language
+            ],
             $this->query
         ));
     }

@@ -130,7 +130,7 @@ Feature: User Operations
 
   Scenario: Replacing a user with no input
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
-    Given sending empty body
+    And sending empty body
     When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 422
     And violation should be "This value should not be blank."
@@ -181,7 +181,7 @@ Feature: User Operations
 
   Scenario: Updating user with no input
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
-    Given sending empty body
+    And sending empty body
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 422
     And violation should be "This value should not be blank."
