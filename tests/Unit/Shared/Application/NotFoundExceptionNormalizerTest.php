@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit\Shared\Application;
 
 use App\Shared\Application\NotFoundExceptionNormalizer;
