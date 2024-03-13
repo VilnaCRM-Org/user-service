@@ -1,4 +1,4 @@
-name: testing
+name: Unit and Integration testing
 
 on:
   pull_request:
@@ -6,6 +6,7 @@ on:
 
 jobs:
   tests:
+    name: PHPUnit
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository

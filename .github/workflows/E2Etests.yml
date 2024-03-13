@@ -1,11 +1,12 @@
-name: end-to-end testing
+name: E2E testing
 
 on:
   pull_request:
     branches: [ "main" ]
 
 jobs:
-  end-to-end:
+  behat:
+    name: Behat
     runs-on: ubuntu-latest
 
     steps:

@@ -1,4 +1,4 @@
-name: deptrac
+name: Architecture static analysis tool
 
 on:
   pull_request:
@@ -6,6 +6,7 @@ on:
 
 jobs:
   deptrac:
+    name: Deptrac
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

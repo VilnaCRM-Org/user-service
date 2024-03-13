@@ -1,4 +1,4 @@
-name: code quality
+name: Code quality
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
 jobs:
   phpinsights:
     runs-on: ubuntu-latest
-    name: PHP Insights checks
+    name: phpinsights checks
     steps:
       - uses: actions/checkout@v3
       - uses: shivammathur/setup-php@v2

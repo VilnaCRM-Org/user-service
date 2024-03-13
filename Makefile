@@ -78,6 +78,10 @@ ci-setup-test-db:
 
 all-tests: unit-tests integration-tests e2e-tests
 
+load-test:
+	$(DOCKER) pull grafana/k6
+	$(DOCKER) run --net=host --rm -i grafana/k6 run -e HOSTNAME=localhost --duration 10s --vus 10 - <infrastructure/k6/script.js
+
 infection:
 	$(EXEC_PHP) sh -c 'php -d memory_limit=-1 ./vendor/bin/infection --test-framework-options="--testsuite=Unit" --show-mutations -j8'
 

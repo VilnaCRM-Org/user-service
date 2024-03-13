@@ -73,7 +73,7 @@ class DomainExceptionNormalizerTest extends UnitTestCase
         $this->assertFalse($supportsNormalization);
     }
 
-    public function testSupportsNormalizationWithWrongType(): void
+    public function testSupportsNormalization(): void
     {
         $errorText = $this->faker->word();
 
@@ -87,7 +87,7 @@ class DomainExceptionNormalizerTest extends UnitTestCase
     }
 
 
-    public function testSupportsNormalization(): void
+    public function testSupportsNormalizationWithWrongType(): void
     {
         $error = new \ApiPlatform\ApiResource\Error(
             $this->faker->word(),

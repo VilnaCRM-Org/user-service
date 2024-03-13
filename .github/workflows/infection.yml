@@ -1,4 +1,4 @@
-name: mutation testing
+name: Mutation testing
 
 on:
   pull_request:
@@ -6,6 +6,7 @@ on:
 
 jobs:
   infection:
+    name: Infection
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
