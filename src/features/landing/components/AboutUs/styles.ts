@@ -12,6 +12,7 @@ export default {
       pt: '9rem',
     },
   },
+
   content: {
     display: 'flex',
     flexDirection: 'column',

@@ -26,6 +26,7 @@ export const containedStyles: Interpolation<{ theme: Theme }> = {
     color: colorTheme.palette.white.main,
   },
 };
+
 export const outlinedStyles: Interpolation<{ theme: Theme }> = {
   textTransform: 'none',
   textDecoration: 'none',
@@ -51,6 +52,7 @@ export const outlinedStyles: Interpolation<{ theme: Theme }> = {
     border: 'none',
   },
 };
+
 export const theme: Theme = createTheme({
   components: {
     MuiButton: {

@@ -22,6 +22,7 @@ export default {
       gap: '1rem',
     },
   },
+
   cardItem: {
     zIndex: '4',
     width: '50%',
@@ -44,6 +45,7 @@ export default {
       width: '100%',
     },
   },
+
   secondTitle: {
     maxWidth: '23.313rem',
     pb: '2rem',
@@ -69,6 +71,7 @@ export default {
       pt: '0',
     },
   },
+
   optionText: {
     [`@media (max-width: 968px)`]: {
       color: colorTheme.palette.darkPrimary.main,
@@ -78,6 +81,7 @@ export default {
       lineHeight: '1.563rem',
     },
   },
+
   button: {
     maxWidth: '8.563rem',
     display: 'none',
@@ -86,6 +90,7 @@ export default {
       display: 'inline-block',
     },
   },
+
   img: {
     width: '1.5rem',
     height: '1.5rem',

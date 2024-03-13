@@ -3,13 +3,13 @@ import Image from 'next/image';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { UiTypography } from '@/components/';
+import UiTypography from '@/components/UiTypography';
 
-import Logo from '../../../assets/svg/logo/Logo.svg';
-import { SocialMedia } from '../../../types/social-media/index';
-import SocialMediaList from '../../SocialMedia/SocialMediaList/SocialMediaList';
+import Logo from '../../../features/landing/assets/svg/logo/Logo.svg';
+import { SocialMediaList } from '../../../features/landing/components/SocialMedia';
+import { SocialMedia } from '../../../features/landing/types/social-media/index';
 import { PrivacyPolicy } from '../PrivacyPolicy';
-import { VilnaCRMGmail } from '../VilnaCRMGmail';
+import { VilnaCRMEmail } from '../VilnaCRMEmail';
 
 import styles from './styles';
 
@@ -42,7 +42,7 @@ function Mobile({
         </Link>
         <SocialMediaList socialLinks={socialLinks} />
       </Stack>
-      <VilnaCRMGmail />
+      <VilnaCRMEmail />
       <PrivacyPolicy />
       <UiTypography variant="medium15" sx={styles.copyright}>
         {t('footer.copyright')} <Box component="span">{currentYear}</Box>

@@ -7,6 +7,7 @@ export default {
     background: colorTheme.palette.white.main,
     boxShadow: '0px -5px 46px 0px rgba(198, 209, 220, 0.25)',
   },
+
   topWrapper: {
     width: '100%',
     maxWidth: '1222px',
@@ -18,6 +19,7 @@ export default {
       paddingRight: '1.5rem',
     },
   },
+
   bottomWrapper: {
     width: '100%',
     maxWidth: '1222px',
@@ -34,6 +36,7 @@ export default {
     borderRadius: '1rem 1rem 0px 0px',
     background: colorTheme.palette.backgroundGrey200.main,
   },
+
   copyrightAndLinks: {
     height: '3.688rem',
     flexDirection: 'row',

@@ -3,7 +3,7 @@ import React from 'react';
 
 import UiCardList from '@/components/UiCardList';
 
-import { cardList, imageList } from './constants';
+import { cardList } from './constants';
 import { RegistrationText } from './RegistrationText';
 import styles from './styles';
 
@@ -11,7 +11,7 @@ function Possibilities(): React.ReactElement {
   return (
     <Box sx={styles.wrapper} id="Integration" component="section">
       <RegistrationText />
-      <UiCardList imageList={imageList} cardList={cardList} />
+      <UiCardList cardList={cardList} />
     </Box>
   );
 }

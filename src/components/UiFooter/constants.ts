@@ -1,8 +1,8 @@
-import FacebookFooterIcon from '../../assets/svg/social-icons/facebook.svg';
-import GitHubFooterIcon from '../../assets/svg/social-icons/github.svg';
-import InstagramFooterIcon from '../../assets/svg/social-icons/instagram.svg';
-import LinkedinFooterIcon from '../../assets/svg/social-icons/linked-in.svg';
-import { SocialMedia } from '../../types/social-media';
+import FacebookFooterIcon from '../../features/landing/assets/svg/social-icons/facebook.svg';
+import GitHubFooterIcon from '../../features/landing/assets/svg/social-icons/github.svg';
+import InstagramFooterIcon from '../../features/landing/assets/svg/social-icons/instagram.svg';
+import LinkedinFooterIcon from '../../features/landing/assets/svg/social-icons/linked-in.svg';
+import { SocialMedia } from '../../features/landing/types/social-media';
 
 export const socialLinks: SocialMedia[] = [
   {

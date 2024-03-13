@@ -12,12 +12,15 @@ export default {
       marginRight: '0',
     },
   },
+
   drawerWrapper: {
     marginTop: '1rem',
   },
+
   content: {
     display: 'flex',
   },
+
   drawerContent: {
     display: 'flex',
     flexDirection: 'column',

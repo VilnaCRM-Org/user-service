@@ -9,5 +9,4 @@ export interface CustomTextField<T extends FieldValues>
   placeholder: string;
   type?: string;
   fullWidth?: boolean;
-  errors?: boolean;
 }

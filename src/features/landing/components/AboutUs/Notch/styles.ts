@@ -5,6 +5,7 @@ export default {
   wrapper: {
     position: 'relative',
   },
+
   notch: {
     bottom: '0.188rem',
     left: '0.063rem',

@@ -146,7 +146,10 @@ export default {
     lineHeight: '0',
   },
 
-  button: { height: '100%' },
+  button: {
+    height: '100%',
+  },
+
   privacyText: {
     letterSpacing: '0rem',
     [`@media (max-width: 1130px)`]: {
@@ -181,6 +184,7 @@ export default {
       display: 'none',
     },
   },
+
   errorText: {
     top: '100%',
     position: 'absolute',

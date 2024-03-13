@@ -13,7 +13,6 @@ function UiButton({
   children,
   sx,
   name,
-  href,
 }: UiButtonProps): React.ReactElement {
   return (
     <ThemeProvider theme={theme}>
@@ -26,7 +25,6 @@ function UiButton({
         onClick={onClick}
         sx={sx}
         name={name}
-        href={href}
       >
         {children}
       </Button>

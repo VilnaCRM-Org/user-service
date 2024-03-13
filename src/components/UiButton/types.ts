@@ -8,5 +8,4 @@ export interface UiButtonProps {
   children?: React.ReactNode | string;
   sx?: React.CSSProperties;
   name?: string;
-  href?: string;
 }

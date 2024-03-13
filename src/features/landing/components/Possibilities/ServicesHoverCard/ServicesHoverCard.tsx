@@ -4,17 +4,14 @@ import { useTranslation } from 'react-i18next';
 
 import { UiTypography } from '@/components/';
 
-import { ImageList } from '../../../types/possibilities/image-list';
+import { imageList } from '../constants';
 
 import { ImageItem } from './ImageItem';
 import styles from './styles';
 
-function ServicesHoverCard({
-  imageList,
-}: {
-  imageList: ImageList[];
-}): React.ReactElement {
+function ServicesHoverCard(): React.ReactElement {
   const { t } = useTranslation();
+
   return (
     <Box>
       <UiTypography variant="demi18">

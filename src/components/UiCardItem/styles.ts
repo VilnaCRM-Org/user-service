@@ -23,6 +23,7 @@ export default {
       minHeight: '15.125rem',
     },
   },
+
   smallTitle: {
     pt: '2rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
@@ -59,12 +60,14 @@ export default {
       height: '3.125rem',
     },
   },
+
   hoveredCard: {
     cursor: 'pointer',
     color: colorTheme.palette.primary.main,
     textDecoration: 'underline',
     fontWeight: '700',
   },
+
   largeWrapper: {
     height: '100%',
     p: '1.5rem',
@@ -81,6 +84,7 @@ export default {
       border: `1px solid ${colorTheme.palette.grey400.main}`,
     },
   },
+
   largeTitle: {
     pt: '1rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
@@ -91,6 +95,7 @@ export default {
       fontSize: '1.125rem',
     },
   },
+
   largeText: {
     mt: '0.75rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
@@ -98,6 +103,7 @@ export default {
       lineHeight: '1.563rem',
     },
   },
+
   largeImage: {
     width: '4.375rem',
     height: '4.375rem',

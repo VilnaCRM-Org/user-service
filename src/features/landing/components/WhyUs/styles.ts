@@ -11,6 +11,7 @@ export default {
       paddingTop: '4rem',
     },
   },
+
   button: {
     display: 'none',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {

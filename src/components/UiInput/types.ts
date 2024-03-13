@@ -1,6 +1,5 @@
 export interface UiInputProps {
   sx?: React.CSSProperties;
-  label?: string;
   placeholder?: string;
   value?: string;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;

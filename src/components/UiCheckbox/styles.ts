@@ -32,6 +32,7 @@ export default {
       },
     },
   },
+
   checkboxWrapperError: {
     display: 'grid',
     marginRight: '0.813rem',

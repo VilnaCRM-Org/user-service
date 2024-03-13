@@ -7,6 +7,7 @@ export default {
     overflow: 'hidden',
     width: '100%',
   },
+
   backgroundImage: {
     position: 'absolute',
     background:
@@ -27,6 +28,7 @@ export default {
       top: '14%',
     },
   },
+
   screenBorder: {
     maxWidth: '50.25rem',
     border: '3px solid #78797D',
@@ -45,6 +47,7 @@ export default {
       marginBottom: '-8.125rem',
     },
   },
+
   screenBackground: {
     border: '4px solid #232122',
     borderTopRightRadius: '1.563rem',

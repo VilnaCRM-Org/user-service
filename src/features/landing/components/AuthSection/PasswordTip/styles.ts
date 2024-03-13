@@ -10,13 +10,16 @@ export default {
       maxWidth: '9rem',
     },
   },
+
   line: {
     pb: '2px',
     borderBottom: `2px solid ${colorTheme.palette.grey300.main}`,
   },
+
   recommendationText: {
     fontWeight: 'bold',
   },
+
   optionText: {
     fontSize: '0.775rem',
   },

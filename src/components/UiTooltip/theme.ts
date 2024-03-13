@@ -8,6 +8,7 @@ export const theme: Theme = createTheme({
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
+          color: colorTheme.palette.darkPrimary.main,
           backgroundColor: colorTheme.palette.white.main,
           borderRadius: '0.5rem',
           border: `1px solid ${colorTheme.palette.grey400.main}`,

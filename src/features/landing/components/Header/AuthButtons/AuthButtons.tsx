@@ -8,6 +8,7 @@ import styles from './styles';
 
 function AuthButtons(): React.ReactElement {
   const { t } = useTranslation();
+
   return (
     <Stack spacing={1} direction="row" sx={styles.wrapper}>
       <Link href="#signUp" data-testid="header-log-in">

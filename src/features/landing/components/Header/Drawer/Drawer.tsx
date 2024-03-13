@@ -8,12 +8,12 @@ import { UiButton } from '@/components';
 import Bars from '../../../assets/svg/header-drawer/menu-04.svg';
 import CloseImage from '../../../assets/svg/header-drawer/x-close.svg';
 import Logo from '../../../assets/svg/logo/Logo.svg';
-import SocialMediaList from '../../SocialMedia/SocialMediaList/SocialMediaList';
+import { SocialMediaList } from '../../SocialMedia';
 import { drawerNavList, socialMedia } from '../constants';
 import NavList from '../NavList/NavList';
 
 import styles from './styles';
-import VilnaCRMGmail from './VilnaCRMGmail/VilnaCRMGmail';
+import { VilnaCRMEmail } from './VilnaCRMEmail';
 
 function CustomDrawer(): React.ReactElement {
   const { t } = useTranslation();
@@ -115,7 +115,7 @@ function CustomDrawer(): React.ReactElement {
             navItems={drawerNavList}
             handleClick={(): void => handleClick()}
           />
-          <VilnaCRMGmail />
+          <VilnaCRMEmail />
           <SocialMediaList socialLinks={socialMedia} />
         </Box>
       </Drawer>

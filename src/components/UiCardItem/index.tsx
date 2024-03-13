@@ -1,55 +1,17 @@
 import { Stack } from '@mui/material';
 import React from 'react';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
-import { UiTooltip, UiTypography } from '@/components/';
 import UiImage from '@/components/UiImage';
 
-import { ServicesHoverCard } from '../../features/landing/components/Possibilities/ServicesHoverCard';
-
+import CardContent from './CardContent';
 import styles from './styles';
-import { UiCardItemProps, CardContentProps } from './types';
+import { UiCardItemProps } from './types';
 
-function CardContent({
-  item,
-  isSmallCard,
-  imageList,
-}: CardContentProps): React.ReactElement {
-  return (
-    <>
-      <UiTypography
-        variant={isSmallCard ? 'h6' : 'h5'}
-        sx={isSmallCard ? styles.smallTitle : styles.largeTitle}
-      >
-        <Trans i18nKey={item.title} />
-      </UiTypography>
-      <UiTypography
-        variant={isSmallCard ? 'bodyText16' : 'bodyText18'}
-        sx={isSmallCard ? styles.smallText : styles.largeText}
-      >
-        {isSmallCard ? (
-          <Trans i18nKey={item.text}>
-            Integrate
-            <UiTooltip
-              placement="bottom"
-              arrow
-              sx={styles.hoveredCard}
-              title={<ServicesHoverCard imageList={imageList || []} />}
-            >
-              <UiTypography variant="bodyText16"> services</UiTypography>
-            </UiTooltip>
-          </Trans>
-        ) : (
-          <Trans i18nKey={item.text} />
-        )}
-      </UiTypography>
-    </>
-  );
-}
-
-function UiCardItem({ item, imageList }: UiCardItemProps): React.ReactElement {
+function UiCardItem({ item }: UiCardItemProps): React.ReactElement {
   const { t } = useTranslation();
   const isSmallCard: boolean = item.type === 'smallCard';
+
   return (
     <Stack sx={isSmallCard ? styles.smallWrapper : styles.largeWrapper}>
       <UiImage
@@ -58,11 +20,7 @@ function UiCardItem({ item, imageList }: UiCardItemProps): React.ReactElement {
         sx={isSmallCard ? styles.smallImage : styles.largeImage}
       />
       <Stack flexDirection="column">
-        <CardContent
-          item={item}
-          isSmallCard={isSmallCard}
-          imageList={imageList}
-        />
+        <CardContent item={item} isSmallCard={isSmallCard} />
       </Stack>
     </Stack>
   );

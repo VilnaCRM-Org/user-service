@@ -11,6 +11,7 @@ import styles from './styles';
 
 function WhyUs(): React.ReactElement {
   const { t } = useTranslation();
+
   return (
     <Box sx={styles.wrapper} id="Advantages" component="section">
       <Heading />

@@ -8,6 +8,7 @@ export default {
     position: 'fixed',
     zIndex: 100,
   },
+
   logo: {
     width: '8.188rem',
     height: '2.75rem',

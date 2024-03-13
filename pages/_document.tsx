@@ -1,19 +1,11 @@
-import { Html, Head, NextScript } from 'next/document';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { Html, Head, Main, NextScript } from 'next/document';
 
 export default function Document(): React.ReactElement {
-  const { t } = useTranslation();
   return (
     <Html lang="en">
-      <Head>
-        <title>{t('VilnaCRM')}</title>
-        <meta
-          name={t('description')}
-          content={t('The first Ukrainian open source CRM')}
-        />
-      </Head>
+      <Head />
       <body>
+        <Main />
         <NextScript />
       </body>
     </Html>

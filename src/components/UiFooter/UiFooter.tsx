@@ -5,7 +5,7 @@ import { DefaultFooter } from './DefaultFooter';
 import { Mobile } from './Mobile';
 import styles from './styles';
 
-function Footer(): React.ReactElement {
+function UiFooter(): React.ReactElement {
   return (
     <Box component="footer" id="Contacts">
       <Box sx={styles.default}>
@@ -18,4 +18,4 @@ function Footer(): React.ReactElement {
   );
 }
 
-export default Footer;
+export default UiFooter;

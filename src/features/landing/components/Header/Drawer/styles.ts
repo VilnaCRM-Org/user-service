@@ -7,6 +7,7 @@ export default {
       display: 'none',
     },
   },
+
   drawerContent: {
     maxWidth: '23.4375rem',
     width: '100dvw',

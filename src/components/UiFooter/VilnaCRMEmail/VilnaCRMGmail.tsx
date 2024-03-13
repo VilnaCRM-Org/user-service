@@ -6,7 +6,7 @@ import { UiTypography } from '@/components/';
 
 import styles from './styles';
 
-function VilnaCRMGmail(): React.ReactElement {
+function VilnaCRMEmail(): React.ReactElement {
   return (
     <Box sx={styles.gmailWrapper}>
       <Link href="mailto:info@vilnacrm.com">
@@ -18,4 +18,4 @@ function VilnaCRMGmail(): React.ReactElement {
   );
 }
 
-export default VilnaCRMGmail;
+export default VilnaCRMEmail;

@@ -43,12 +43,14 @@ export default {
       lineHeight: '1.563rem',
     },
   },
+
   link: {
     alignSelf: 'center',
     '@media (max-width: 419.98px)': {
       alignSelf: 'flex-start',
     },
   },
+
   button: {
     marginBottom: '1.375rem',
   },

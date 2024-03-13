@@ -9,6 +9,7 @@ export default {
       mb: '0',
     },
   },
+
   content: {
     flexDirection: 'row',
     [`@media (max-width: 1130px)`]: {

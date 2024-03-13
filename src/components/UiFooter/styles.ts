@@ -7,6 +7,7 @@ export default {
       display: 'none',
     },
   },
+
   adaptive: {
     display: 'none',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {

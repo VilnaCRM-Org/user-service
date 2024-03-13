@@ -31,6 +31,7 @@ export const headerNavList: NavItemProps[] = [
     type: 'header',
   },
 ];
+
 export const drawerNavList: NavItemProps[] = [
   {
     id: 'advantages',

@@ -7,9 +7,9 @@ import { UiTypography } from '@/components/';
 import styles from './styles';
 import 'dotenv/config';
 
-function VilnaCRMGmail(): React.ReactElement {
+function VilnaCRMEmail(): React.ReactElement {
   return (
-    <Stack sx={styles.gmailWrapper} justifyContent="center">
+    <Stack sx={styles.emailWrapper} justifyContent="center">
       <Link href="mailto:info@vilnacrm.com">
         <Stack
           justifyContent="center"
@@ -18,7 +18,7 @@ function VilnaCRMGmail(): React.ReactElement {
           flexDirection="row"
         >
           <UiTypography sx={styles.at}>@</UiTypography>
-          <UiTypography variant="demi18" sx={styles.gmailText}>
+          <UiTypography variant="demi18" sx={styles.emailText}>
             {process.env.NEXT_PUBLIC_VILNACRM_GMAIL}
           </UiTypography>
         </Stack>
@@ -27,4 +27,4 @@ function VilnaCRMGmail(): React.ReactElement {
   );
 }
 
-export default VilnaCRMGmail;
+export default VilnaCRMEmail;

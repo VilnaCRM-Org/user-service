@@ -9,6 +9,7 @@ import styles from './styles';
 
 function SocialMediaItem({ item }: { item: SocialMedia }): React.ReactElement {
   const { t } = useTranslation();
+
   return (
     <Box sx={styles.navLink}>
       <Link href={item.linkHref} aria-label={t(item.ariaLabel)}>

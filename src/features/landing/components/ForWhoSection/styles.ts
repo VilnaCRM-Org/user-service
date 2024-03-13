@@ -10,6 +10,7 @@ export default {
     maxWidth: '100dvw',
     overflow: 'hidden',
   },
+
   lgCardsWrapper: {
     display: 'flex',
     [`@media (max-width: 968px)`]: {
@@ -24,6 +25,7 @@ export default {
       justifyContent: 'center',
     },
   },
+
   content: {
     pt: '8.25rem',
     position: 'relative',
@@ -77,6 +79,7 @@ export default {
       top: '32.5%',
     },
   },
+
   line: {
     position: 'relative',
     background: colorTheme.palette.white.main,

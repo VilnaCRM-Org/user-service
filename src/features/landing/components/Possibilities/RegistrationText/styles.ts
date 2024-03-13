@@ -8,6 +8,7 @@ export default {
       paddingRight: '0',
     },
   },
+
   title: {
     mb: '0.438rem',
     padding: '0.75rem 2rem',
@@ -21,6 +22,7 @@ export default {
       fontWeight: '700',
     },
   },
+
   text: {
     textAlign: 'center',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {

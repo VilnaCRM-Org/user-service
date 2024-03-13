@@ -1,0 +1,180 @@
+{
+  "header": {
+    "advantages": "Переваги",
+    "for_who": "Для кого",
+    "integration": "Інтеграція",
+    "contacts": "Контакти",
+    "logo_alt": "Vilna логотип",
+    "actions": {
+      "try_it_out": "Спробувати",
+      "log_in": "Войти"
+    },
+    "drawer": {
+      "button_aria_labels": {
+        "bars": "Кнопка для відкривання drawer",
+        "exit": "Кнопка для закриття drawer"
+      },
+      "image_alt": {
+        "bars": "Меню Іконка",
+        "exit": "Значок виходу"
+      },
+      "aria_labels_social_images": {
+        "instagram": "Посилання на Instagram",
+        "github": "Посилання на GitHub",
+        "facebook": "Посилання на Facebook",
+        "linkedin": "Посилання на Linkedin"
+      },
+      "vilna_email": "info@vilnacrm.com",
+      "alt_social_images": {
+        "instagram": "Instagram Іконка",
+        "github": "GitHub Іконка",
+        "facebook": "Facebook Іконка",
+        "linkedin": "Linkedin Іконка"
+      }
+    }
+  },
+  "about_vilna": {
+    "heading_main": "Перша українська CRM <br/ > з відкритим кодом",
+    "text_main": "Наша мета — підтримати українських підприємців. Саме тому ми створили Vilna, зручну та безкоштовну CRM-систему — аби ви могли займатися бізнесом, а не витрачати час на налаштування",
+    "button_main": "Спробувати"
+  },
+  "why_us": {
+    "heading": "Чому ми",
+    "subtitle": "Безмежні можливості кастомізації чи простота у використанні  — <br/ > ми подбали, щоб керувати продажами було зручно будь-якому бізнесу",
+    "button_text": "Спробувати",
+    "aria_label": "Посилання на реєстрацію",
+    "headers": {
+      "header_open_source": "Open source",
+      "header_ease_of_setup": "Легкість <br /> у налаштуванні",
+      "header_ready_templates": "Готові шаблони",
+      "header_ideal_for_services": "Ідеальна для сервісів",
+      "header_all_required_integrations": "Усі потрібні інтеграції",
+      "header_bonus": "Бонус: легка міграція"
+    },
+    "texts": {
+      "text_open_source": "Завдяки відкритому вихідному коду ви можете змінити та доповнити функції CRM так, як потрібно саме вам",
+      "text_configure_system": "Налаштовуйте систему у декілька кліків без знань у програмуванні та отримуйте замовлення з вашого сайту за кілька хвилин",
+      "text_you_have_store": "У вас: онлайн-магазин, курси чи веб-студія <br /> <br /> У нас: спеціальні шаблони, які збережуть ваш час",
+      "text_you_have_store_q": " У нас: спеціальні шаблони, які збережуть ваш час",
+      "text_we_know_specific_needs": "Ми знаємо специфічні запити EdTech, агенств та провайтерів послуг — <br /> саме тому створили CRM, з якою зручно одразу ",
+      "text_connect_your_cms": "Підключіть вашу CMS та IP-телефонію у кілька кліків. <br /> А для специфічних інтеграцій використовуйте Zapier, API та публічні бібліотеки",
+      "text_switch_to_vilna": "Переходьте на Vilna у кілька кліків за допомогою готових сценаріїв міграції з amoCRM та HubSpot"
+    },
+    "alt_image": {
+      "alt_open_source": "Картка зображення з відкритим кодом",
+      "alt_ease_of_setup": "Зображення картки налаштування",
+      "alt_ready_templates": "Картка зображень шаблонів",
+      "alt_ideal_for_services": "Зображення картки послуг",
+      "alt_all_required_integrations": "Картка з зображенням інтеграцій",
+      "alt_bonus": "Зображення картки міграції"
+    }
+  },
+  "for_who": {
+    "heading_main": "Для кого",
+    "text_main": "Ми створили Vilna, орієнтуючись на специфіку сервісного бізнесу, <br /> якому не підходять звичайні e-commerce шаблони",
+    "button_text": "Спробувати",
+    "heading_secondary": "Наша CRM ідеально підійде, якщо ви:",
+    "card_text_title": "Приватний підприємець — психолог, <br /> репетитор чи дропшипер",
+    "card_text_business": "локальний проект середнього масштабу — онлайн-курси, дизайн-студія чи невеликий аутсорс",
+    "vector_alt": "Vector",
+    "aria_label": "Посилання на реєстрацію"
+  },
+  "unlimited_possibilities": {
+    "main_heading_text": "Безмежні",
+    "secondary_heading_text": "можливості інтеграції",
+    "cards_headings": {
+      "heading_public_api": "Публічний API",
+      "heading_ready_plugins": "Готові плагіни для CMS",
+      "heading_system": "Система веб-хуків",
+      "heading_libraries": "Публічні <br /> бібліотеки"
+    },
+    "image_alt": {
+      "google": "Google",
+      "facebook": "Facebook",
+      "github": "GitHub",
+      "twitter": "Twitter"
+    },
+    "cards_texts": {
+      "text_for_cases": "Для випадків, коли ви не знайшли <br /> потрібну готову інтеграцію ",
+      "text_integrate": "Інтегруйте <1 href='/'>звичні сервіси</1> у кілька кліків",
+      "text_get_data": "Отримуйте дані про будь-які івенти у CRM  <br /> та автоматизуйте складні бізнес-процеси",
+      "text_for_custom": "Для кастомних інтеграцій  <br /> зі специфічними продуктами"
+    },
+    "service_text": {
+      "title": "Звичні сервіси",
+      "text": "Інтегруйте у кілька кліків"
+    },
+    "card_image_titles": {
+      "title_for_first": "Зображення Рубіну",
+      "title_for_second": "Зображення Малого діаманту",
+      "title_for_third": "Зображення Малого рубіну",
+      "title_for_fourth": "Зображення Діаманту"
+    },
+    "button": {
+      "try_it_out": "Спробувати"
+    }
+  },
+  "sign_up": {
+    "main_heading": "Зареєструйтеся зараз та звільніть час на розвиток бізнесу <br /> з",
+    "vilna_text": "VilnaCRM",
+    "socials_main_heading": "Увійдіть за зручною соцмережею:",
+    "form": {
+      "heading_main": "Або зареєструйтеся на сайті:",
+      "name_input": {
+        "label": "Ваше ім’я та прізвище",
+        "placeholder": "Михайло Светський",
+        "required": "Ваше ім'я та прізвище є обов'язковим полем",
+        "error_text": "Неправильний формат повного імені"
+      },
+      "email_input": {
+        "label": "E-mail",
+        "placeholder": "vilnaCRM@gmail.com",
+        "required": "Адреса електронної пошти є обов'язковим полем",
+        "step_error_message": "Електронна пошта повинна містити символи '@' та '.'",
+        "invalid_message": "Неправильний адреса електронної пошти"
+      },
+      "password_input": {
+        "label": "Пароль",
+        "placeholder": "Створіть пароль",
+        "required": "Пароль є обов'язковим полем",
+        "error_length": "Пароль повинен містити від 8 до 64 символів",
+        "error_numbers": "Пароль повинен містити принаймні одну цифру",
+        "error_uppercase": "Пароль повинен містити принаймні одну велику літеру"
+      },
+      "password_tip": {
+        "alt": "Позначка підказки пароля",
+        "title": "Не менше 8 символів.",
+        "recommendation_text": "Рекомендуємо використовувати:",
+        "options": {
+          "option_1": "малі та великі літери спеціальні",
+          "option_2": "спеціальні символи(#&*$)",
+          "option_3": "використовувати цифри"
+        }
+      },
+      "confidential_text": {
+        "fullText": "Я прочитав та приймаю <1>Політику Конфіденційності</1> та <1>Політику Використання</1> сервісу VilnaCRM"
+      },
+      "button_text": "Реєєстрація",
+      "error_text": "Виникла помилка. Перевірте ще раз"
+    }
+  },
+  "footer": {
+    "logo_alt": "Vilna логотип",
+    "copyright": "Copyright © ТОВ “Вільна СРМ”",
+    "privacy": "Політика конфіденційності",
+    "usage_policy": "Політика використовування",
+    "vilna_email": "info@vilnacrm.com",
+    "aria_labels": {
+      "instagram": "Посилання на Instagram",
+      "github": "Посилання на GitHub",
+      "facebook": "Посилання на Facebook",
+      "linkedin": "Посилання на Linkedin"
+    },
+    "alt_images": {
+      "instagram": "Instagram Іконка",
+      "github": "GitHub Іконка",
+      "facebook": "Facebook Іконка",
+      "linkedin": "Linkedin Іконка"
+    }
+  }
+}

@@ -1,7 +1,3 @@
-export type ImageItem = {
-  alt: string;
-  image: string;
-};
 export type CardItem = {
   type: string;
   id: string;
@@ -13,5 +9,4 @@ export type CardItem = {
 
 export interface CardList {
   cardList: CardItem[];
-  imageList?: ImageItem[];
 }

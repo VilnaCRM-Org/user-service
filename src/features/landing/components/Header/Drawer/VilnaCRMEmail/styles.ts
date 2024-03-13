@@ -1,7 +1,7 @@
 import colorTheme from '@/components/UiColorTheme';
 
 export default {
-  gmailWrapper: {
+  emailWrapper: {
     border: `1px solid ${colorTheme.palette.brandGray.main}`,
     py: '1.125rem',
     borderRadius: '0.5rem',
@@ -9,12 +9,14 @@ export default {
     maxHeight: '64px',
     mb: '1rem',
   },
+
   at: {
     fontWeight: 600,
     fontSize: '22px',
     mb: '2px',
   },
-  gmailText: {
+
+  emailText: {
     color: colorTheme.palette.darkSecondary.main,
   },
 };

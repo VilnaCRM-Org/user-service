@@ -9,6 +9,7 @@ export default {
       lineHeight: 'normal',
     },
   },
+
   text: {
     marginTop: '1rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {

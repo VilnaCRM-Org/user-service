@@ -10,11 +10,12 @@ import Logo from '../../assets/svg/logo/Logo.svg';
 import { AuthButtons } from './AuthButtons';
 import { headerNavList } from './constants';
 import { Drawer } from './Drawer';
-import NavList from './NavList/NavList';
+import { NavList } from './NavList';
 import styles from './styles';
 
 function Header(): React.ReactElement {
   const { t } = useTranslation();
+
   return (
     <AppBar position="static" sx={styles.headerWrapper}>
       <UiToolbar>

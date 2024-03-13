@@ -10,6 +10,7 @@ import styles from './styles';
 
 function Cards(): React.ReactElement {
   const { t } = useTranslation();
+
   return (
     <Stack flexDirection="column" sx={styles.wrapper}>
       <UiTypography sx={styles.secondTitle}>

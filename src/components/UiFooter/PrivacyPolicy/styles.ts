@@ -11,9 +11,11 @@ export default {
       pt: '0.25rem',
     },
   },
+
   textColor: {
     color: colorTheme.palette.grey300.main,
   },
+
   privacy: {
     textDecoration: 'none',
     padding: '0.5rem 1rem',
@@ -25,6 +27,7 @@ export default {
       padding: '1.063rem 0 1.125rem',
     },
   },
+
   usage_policy: {
     textDecoration: 'none',
     padding: '0.5rem 1rem',

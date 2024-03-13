@@ -1,8 +1,9 @@
-import { Link, LinkProps, ThemeProvider } from '@mui/material';
+import { Link, ThemeProvider } from '@mui/material';
 
 import { theme } from './theme';
+import { UiLinkProps } from './types';
 
-function UiLink({ children, href }: LinkProps): React.ReactElement {
+function UiLink({ children, href }: UiLinkProps): React.ReactElement {
   return (
     <ThemeProvider theme={theme}>
       <Link href={href}>{children}</Link>

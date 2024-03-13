@@ -17,6 +17,7 @@ export default {
       paddingBottom: '1.25rem',
     },
   },
+
   titleVilnaCRM: {
     color: colorTheme.palette.primary.main,
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
@@ -24,6 +25,7 @@ export default {
       textAlign: 'left',
     },
   },
+
   textWrapper: {
     pt: '8.5rem',
     width: '50%',

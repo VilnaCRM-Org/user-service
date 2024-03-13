@@ -8,6 +8,7 @@ import styles from './styles';
 
 function TextInfo(): React.ReactElement {
   const { t } = useTranslation();
+
   return (
     <Stack sx={styles.textWrapper}>
       <UiTypography variant="h1" sx={styles.title}>

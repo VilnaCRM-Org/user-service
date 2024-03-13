@@ -1,7 +1,7 @@
 import { Stack, List } from '@mui/material';
 import React, { CSSProperties } from 'react';
 
-import NavItem from '../NavItem/NavItem';
+import { NavItem } from '../NavItem';
 
 import styles from './styles';
 import { NavListProps } from './types';
