@@ -7,7 +7,7 @@ on:
 jobs:
   phpinsights:
     runs-on: ubuntu-latest
-    name: phpinsights checks
+    name: Phpinsights checks
     steps:
       - uses: actions/checkout@v3
       - uses: shivammathur/setup-php@v2
