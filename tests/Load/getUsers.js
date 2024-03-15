@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import * as utils from "./utils.js";
+import {getRandomNumber} from "./utils.js";
 
 const baseUrl = `https://${__ENV.HOSTNAME}/`;
 
@@ -38,8 +39,8 @@ export const options = {
             timeUnit: '1s',
             preAllocatedVUs: 500,
             stages: [
-                { target: 5000, duration: '30s' },
-                { target: 0, duration: '30s' },
+                {target: 5000, duration: '30s'},
+                {target: 0, duration: '30s'},
             ],
             startTime: '70s',
             tags: {test_type: 'spike'},
@@ -49,10 +50,10 @@ export const options = {
         'http_req_duration{test_type:smoke}': ['p(99)<60'],
         'http_req_failed{test_type:smoke}': ['rate<0.01'],
 
-        'http_req_duration{test_type:average}': ['p(99)<200'],
+        'http_req_duration{test_type:average}': ['p(99)<300'],
         'http_req_failed{test_type:average}': ['rate<0.01'],
 
-        'http_req_duration{test_type:stress}': ['p(99)<2000'],
+        'http_req_duration{test_type:stress}': ['p(99)<3500'],
         'http_req_failed{test_type:stress}': ['rate<0.01'],
 
         'http_req_duration{test_type:spike}': ['p(99)<8000'],
@@ -60,12 +61,15 @@ export const options = {
 };
 
 export default function () {
-    getUser();
+    getUsers();
 }
 
-function getUser() {
-    const user = utils.getRandomUser();
-    const id = user.id;
+function getUsers() {
+    let page = getRandomNumber(1, 5);
+    let itemsPerPage = getRandomNumber(10, 40);
 
-    http.get(baseUrl + `api/users/${id}`, utils.getJsonHeader());
+    http.get(
+        baseUrl + `api/users?page=${page}&itemsPerPage=${itemsPerPage}`,
+        utils.getJsonHeader()
+    );
 }

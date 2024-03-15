@@ -78,9 +78,9 @@ ci-setup-test-db:
 
 all-tests: unit-tests integration-tests e2e-tests
 
-load-test:
+load-test: load-fixtures
 	$(DOCKER) pull grafana/k6
-	$(DOCKER) run --net=host --rm -v "${PWD}/var:/jsonoutput" -i grafana/k6 run -e HOSTNAME=localhost --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out json=/jsonoutput/result.json - <tests/Load/getUser.js
+	$(DOCKER) run --net=host --rm -v "${PWD}/tests/Load:/scripts" -v "${PWD}/var:/jsonoutput" -i grafana/k6 run -e HOSTNAME=localhost --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out json=/jsonoutput/result.json /scripts/getUsers.js
 
 infection:
 	$(EXEC_PHP) sh -c 'php -d memory_limit=-1 ./vendor/bin/infection --test-framework-options="--testsuite=Unit" --show-mutations -j8'
@@ -176,10 +176,7 @@ commands: ## List all Symfony commands
 load-fixtures: ## Build the DB, control the schema validity, load fixtures and check the migration status
 	@$(SYMFONY) doctrine:cache:clear-metadata
 	@$(SYMFONY) doctrine:database:create --if-not-exists
-	@$(SYMFONY) doctrine:schema:drop --force
-	@$(SYMFONY) doctrine:schema:create
-	@$(SYMFONY) doctrine:schema:validate
-	@$(SYMFONY) d:f:l
+	@$(SYMFONY) d:f:l -n
 
 stats: ## Commits by the hour for the main author of this project
 	@$(GIT) log --author="$(GIT_AUTHOR)" --date=iso | perl -nalE 'if (/^Date:\s+[\d-]{10}\s(\d{2})/) { say $$1+0 }' | sort | uniq -c|perl -MList::Util=max -nalE '$$h{$$F[1]} = $$F[0]; }{ $$m = max values %h; foreach (0..23) { $$h{$$_} = 0 if not exists $$h{$$_} } foreach (sort {$$a <=> $$b } keys %h) { say sprintf "%02d - %4d %s", $$_, $$h{$$_}, "*"x ($$h{$$_} / $$m * 50); }'
