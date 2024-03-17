@@ -116,7 +116,7 @@ RUN set -eux; \
 RUN rm -f .env.local.php
 
 # Caddy image
-FROM caddy:2.6-alpine AS app_caddy
+FROM caddy:alpine AS app_caddy
 
 WORKDIR /srv/app
 
