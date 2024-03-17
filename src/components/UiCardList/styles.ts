@@ -1,4 +1,4 @@
-import breakpointsTheme from '@/components/UiBreakpoints';
+import breakpointsTheme from '../UiBreakpoints';
 
 export default {
   smallGrid: {
@@ -12,7 +12,7 @@ export default {
       gridTemplateColumns: 'repeat(2, 1fr)',
     },
     [`@media (min-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
-      gridTemplateColumns: 'repeat(4, 1fr)',
+      gridTemplateColumns: 'repeat(4, 289px)',
     },
   },
 

@@ -73,4 +73,5 @@ const colorTheme: Theme = createTheme({
     },
   },
 });
+
 export default colorTheme;

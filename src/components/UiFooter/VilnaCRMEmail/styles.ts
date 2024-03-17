@@ -1,11 +1,12 @@
-import breakpointsTheme from '@/components/UiBreakpoints';
-import colorTheme from '@/components/UiColorTheme';
+import breakpointsTheme from '../../UiBreakpoints';
+import colorTheme from '../../UiColorTheme';
 
 export default {
-  gmailText: {
+  emailText: {
     color: colorTheme.palette.darkSecondary.main,
     textAlign: 'center',
     width: '100%',
+    textDecoration: 'none',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
       fontSize: '1.125rem',
       fontStyle: 'normal',
@@ -14,7 +15,11 @@ export default {
     },
   },
 
-  gmailWrapper: {
+  emailLink: {
+    textDecoration: 'none',
+  },
+
+  emailWrapper: {
     padding: '0.5rem 1rem',
     borderRadius: '0.5rem',
     background: colorTheme.palette.white.main,

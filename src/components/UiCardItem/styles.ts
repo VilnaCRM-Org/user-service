@@ -1,5 +1,5 @@
-import breakpointsTheme from '@/components/UiBreakpoints';
-import colorTheme from '@/components/UiColorTheme';
+import breakpointsTheme from '../UiBreakpoints';
+import colorTheme from '../UiColorTheme';
 
 export default {
   smallWrapper: {
@@ -69,7 +69,6 @@ export default {
   },
 
   largeWrapper: {
-    height: '100%',
     p: '1.5rem',
     borderRadius: '0.75rem',
     border: `1px solid ${colorTheme.palette.grey500.main}`,

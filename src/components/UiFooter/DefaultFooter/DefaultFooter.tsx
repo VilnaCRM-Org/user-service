@@ -34,6 +34,7 @@ function DefaultFooter({
             direction="row"
             justifyContent="space-between"
             alignItems="center"
+            sx={styles.topContent}
           >
             <Link href="/#">
               <Image
@@ -51,7 +52,7 @@ function DefaultFooter({
         <Box sx={styles.bottomWrapper}>
           <Stack sx={styles.copyrightAndLinks}>
             <UiTypography variant="medium15" sx={styles.copyright}>
-              {t('footer.copyright')} <Box component="span">{currentYear}</Box>
+              {t('footer.copyright')}, <Box component="span">{currentYear}</Box>
             </UiTypography>
             <Stack direction="row" gap="0.875rem" alignItems="center">
               <VilnaCRMEmail />

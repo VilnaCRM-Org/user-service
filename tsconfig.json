@@ -18,7 +18,7 @@
     "baseUrl": ".",
     "incremental": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
+    "emitDecoratorMetadata": true
   },
   "include": [
     "./src",
@@ -29,7 +29,8 @@
     "/.tsx",
     ".next/types/**/.ts",
     "playwrite",
+    "src/components/UiFooter/.stories.tsx"
   ],
   "exclude": ["node_modules"],
-  "extends": "./tsconfig.paths.json",
+  "extends": "./tsconfig.paths.json"
 }

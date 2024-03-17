@@ -11,4 +11,5 @@ const breakpointsTheme: Theme = createTheme({
     },
   },
 });
+
 export default breakpointsTheme;

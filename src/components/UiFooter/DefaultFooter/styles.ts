@@ -1,5 +1,5 @@
-import breakpointsTheme from '@/components/UiBreakpoints';
-import colorTheme from '@/components/UiColorTheme';
+import breakpointsTheme from '../../UiBreakpoints';
+import colorTheme from '../../UiColorTheme';
 
 export default {
   footerWrapper: {
@@ -12,6 +12,9 @@ export default {
     width: '100%',
     maxWidth: '1222px',
     margin: '0 auto',
+  },
+
+  topContent: {
     paddingLeft: '1rem',
     paddingRight: '1rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
@@ -24,12 +27,6 @@ export default {
     width: '100%',
     maxWidth: '1222px',
     margin: '0 auto',
-    paddingLeft: '1.3rem',
-    paddingRight: '1rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
-      paddingRight: '2rem',
-      paddingLeft: '2rem',
-    },
   },
 
   copyrightAndLinksWrapper: {
@@ -38,11 +35,15 @@ export default {
   },
 
   copyrightAndLinks: {
+    paddingLeft: '1.3rem',
+    paddingRight: '1rem',
     height: '3.688rem',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+      paddingRight: '2rem',
+      paddingLeft: '2rem',
       pb: '0.2rem',
     },
   },

@@ -1,4 +1,4 @@
-import breakpointsTheme from '@/components/UiBreakpoints';
+import breakpointsTheme from '../UiBreakpoints';
 
 export default {
   default: {

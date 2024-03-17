@@ -26,7 +26,7 @@
   "dependencies": {
     "@apollo/client": "^3.8.10",
     "@emotion/styled": "^11.11.0",
-    "@mui/material": "^5.15.6",
+    "@mui/material": "^5.15.13",
     "@mui/system": "^5.15.6",
     "graphql": "^16.8.1",
     "i18next": "^23.8.1",
