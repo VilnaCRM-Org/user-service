@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 const links: Record<string, string> = {
   advantages: 'http://localhost:3000/#Advantages',
@@ -7,15 +7,19 @@ const links: Record<string, string> = {
   contacts: 'http://localhost:3000/#Contacts',
 };
 
-async function navigateAndExpect(page, linkName, expectedURL): Promise<void> {
+async function navigateAndExpect(
+  page: Page,
+  linkName: string,
+  expectedURL: string | RegExp
+): Promise<void> {
   await page.getByRole('link', { name: linkName }).click();
   await expect(page).toHaveURL(expectedURL);
 }
 
 async function openDrawerAndNavigate(
-  page,
-  linkName,
-  expectedURL
+  page: Page,
+  linkName: string,
+  expectedURL: string | RegExp
 ): Promise<void> {
   await page.getByLabel('Button to open the drawer').click();
   await page.getByRole('link', { name: linkName }).click();

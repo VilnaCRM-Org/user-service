@@ -1,12 +1,12 @@
 // TODO: correct the url to our social networks
 
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 test.describe('Navigation tests', () => {
   async function navigateAndVerifyURL(
-    page,
-    linkName,
-    expectedURL
+    page: Page,
+    linkName: string,
+    expectedURL: string | RegExp
   ): Promise<void> {
     await page.goto('/');
     await page.getByRole('link', { name: linkName }).click();
@@ -15,9 +15,9 @@ test.describe('Navigation tests', () => {
   }
 
   async function openDrawerAndNavigate(
-    page,
-    linkName,
-    expectedURL
+    page: Page,
+    linkName: string,
+    expectedURL: string | RegExp
   ): Promise<void> {
     await page.goto('/');
     await page.setViewportSize({ width: 375, height: 812 });

@@ -1,11 +1,11 @@
 // TODO: correct the url to our privacy policy
 
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 async function navigateToPrivacyPolicy(
-  page,
-  linkName,
-  expectedURL
+  page: Page,
+  linkName: string | RegExp,
+  expectedURL: string | RegExp
 ): Promise<void> {
   await page.goto('/');
   await page.getByRole('link', { name: linkName, exact: true }).click();

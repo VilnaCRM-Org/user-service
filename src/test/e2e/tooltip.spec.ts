@@ -1,7 +1,10 @@
-import { test, expect, Locator } from '@playwright/test';
+import { test, expect, Locator, Page } from '@playwright/test';
 
-async function handleTooltip(page, { role, name, element }): Promise<void> {
-  const tooltipLocator: Locator = page.getByRole(role, { name });
+async function handleTooltip(
+  page: Page,
+  { name, element }: { name: string; element: Locator }
+): Promise<void> {
+  const tooltipLocator: Locator = page.getByRole('tooltip', { name });
   const elementLocator: Locator = element;
 
   await page.goto('/');
@@ -15,7 +18,6 @@ async function handleTooltip(page, { role, name, element }): Promise<void> {
 test.describe('Checking if the tooltips are working', () => {
   test('Tooltip services test', async ({ page }) => {
     await handleTooltip(page, {
-      role: 'tooltip',
       name: 'Services Integrate in a few',
       element: page.getByText('services').nth(2),
     });
@@ -23,7 +25,6 @@ test.describe('Checking if the tooltips are working', () => {
 
   test('Tooltip password test', async ({ page }) => {
     await handleTooltip(page, {
-      role: 'tooltip',
       name: 'We recommend using: lowercase',
       element: page.getByRole('img', { name: 'Password tip mark' }),
     });

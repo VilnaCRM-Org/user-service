@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
-async function openDrawer(page): Promise<void> {
+async function openDrawer(page: Page): Promise<void> {
   await page.getByLabel('Button to open the drawer').click();
   await expect(page.getByTestId('drawer')).toBeVisible();
 }
 
-async function closeDrawer(page): Promise<void> {
+async function closeDrawer(page: Page): Promise<void> {
   await page.getByLabel('Button to exit the drawer').click();
   await expect(page.getByTestId('drawer')).toBeHidden();
 }

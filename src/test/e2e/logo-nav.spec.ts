@@ -1,8 +1,12 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 const urlWithHashFragmentRegex: RegExp = /\/#/;
 
-async function performLogoNavigation(page, locator, logoName): Promise<void> {
+async function performLogoNavigation(
+  page: Page,
+  locator: string,
+  logoName: string
+): Promise<void> {
   await page.goto('/');
   await page.locator(locator).getByRole('link', { name: logoName }).click();
   await expect(page).toHaveURL(urlWithHashFragmentRegex);

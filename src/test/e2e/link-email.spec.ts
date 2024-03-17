@@ -1,6 +1,6 @@
-import { test, expect, Locator } from '@playwright/test';
+import { test, expect, Locator, Page } from '@playwright/test';
 
-async function verifyEmailLink(page, linkName): Promise<void> {
+async function verifyEmailLink(page: Page, linkName: string): Promise<void> {
   const linkSelector: Locator = page.getByRole('link', { name: linkName });
   await expect(linkSelector).toHaveAttribute('href', `mailto:${linkName}`);
 }
