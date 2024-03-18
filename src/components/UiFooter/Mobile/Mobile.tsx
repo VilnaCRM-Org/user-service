@@ -30,7 +30,7 @@ function Mobile({
         direction="row"
         justifyContent="space-between"
         marginTop="1.125rem"
-        paddingBottom="1rem"
+        paddingBottom="0.75rem"
       >
         <Link href="/#">
           <Image
@@ -45,7 +45,7 @@ function Mobile({
       <VilnaCRMEmail />
       <PrivacyPolicy />
       <UiTypography variant="medium15" sx={styles.copyright}>
-        {t('footer.copyright')} <Box component="span">{currentYear}</Box>
+        {t('footer.copyright')}, <Box component="span">{currentYear}</Box>
       </UiTypography>
     </Container>
   );

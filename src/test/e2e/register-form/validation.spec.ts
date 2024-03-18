@@ -24,6 +24,6 @@ test('Should display error messages for invalid inputs', async ({ page }) => {
   await page.getByLabel(policyText).check();
   await page.getByRole('button', { name: signUpButton }).click();
 
-  const loading: Locator = await page.getByTestId(authSection).locator('svg');
+  const loading: Locator = page.getByTestId(authSection).locator('svg');
   await expect(loading).toBeVisible();
 });

@@ -1,8 +1,8 @@
 import { Theme, createTheme } from '@mui/material';
 
+import { inter } from '@/assets/Fonts/inter';
 import breakpointsTheme from '@/components/UiBreakpoints';
 import colorTheme from '@/components/UiColorTheme';
-import { inter } from '@/config/Fonts';
 
 export const theme: Theme = createTheme({
   components: {

@@ -1,7 +1,8 @@
 import { Theme, createTheme } from '@mui/material';
 import { CSSProperties } from '@mui/material/styles/createMixins';
 
-import { golos, inter } from '@/config/Fonts';
+import { golos } from '@/assets/Fonts/golos';
+import { inter } from '@/assets/Fonts/inter';
 
 import colorTheme from '../UiColorTheme';
 

@@ -34,7 +34,7 @@ export default meta;
 
 type Story = StoryObj<typeof UiTooltip>;
 
-export const Services: Story = {
+export const Tooltip: Story = {
   args: {
     children: 'Hello World!',
     placement: 'bottom',

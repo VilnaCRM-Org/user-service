@@ -7,8 +7,8 @@ export default {
   },
 
   listWrapper: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '1.875rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       gap: '1rem',

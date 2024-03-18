@@ -52,6 +52,8 @@ export default {
   },
 
   button: {
-    marginBottom: '1.375rem',
+    '@media (max-width: 419.98px)': {
+      marginBottom: '1.375rem',
+    },
   },
 };

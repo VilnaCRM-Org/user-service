@@ -1,5 +1,5 @@
+import { golos } from '@/assets/Fonts/golos';
 import colorTheme from '@/components/UiColorTheme';
-import { golos } from '@/config/Fonts';
 
 export default {
   wrapper: {

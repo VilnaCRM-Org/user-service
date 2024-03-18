@@ -2,7 +2,7 @@ import colorTheme from '@/components/UiColorTheme';
 
 export default {
   wrapper: {
-    marginBottom: '1.25rem',
+    marginBottom: '0.75rem',
     borderTop: `1px solid  ${colorTheme.palette.brandGray.main}`,
     background: colorTheme.palette.white.main,
     boxShadow:

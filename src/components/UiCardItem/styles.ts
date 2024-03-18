@@ -17,7 +17,7 @@ export default {
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       flexDirection: 'column',
-      padding: '1rem 1.125rem 2.5rem 1rem ',
+      padding: '1rem 1.125rem 0rem 1rem',
       gap: '1rem',
       alignItems: 'start',
       minHeight: '15.125rem',
@@ -73,10 +73,10 @@ export default {
     borderRadius: '0.75rem',
     border: `1px solid ${colorTheme.palette.grey500.main}`,
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
-      padding: '1rem 1.125rem 4.5rem 1rem',
+      padding: '1rem 1.125rem 0 1rem',
       borderRadius: '0.75rem',
       border: `1px solid ${colorTheme.palette.grey500.main}`,
-      maxHeight: '16.438rem',
+      minHeight: '16.438rem',
     },
     ':hover': {
       boxShadow: '0px 8px 27px 0px rgba(49, 59, 67, 0.14)',

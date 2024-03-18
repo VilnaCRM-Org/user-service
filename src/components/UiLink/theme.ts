@@ -1,6 +1,6 @@
 import { Theme, createTheme } from '@mui/material';
 
-import { inter } from '@/config/Fonts';
+import { inter } from '@/assets/Fonts/inter';
 
 import breakpointsTheme from '../UiBreakpoints';
 import colorTheme from '../UiColorTheme';

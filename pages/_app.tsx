@@ -2,8 +2,8 @@ import { ThemeProvider } from '@mui/material/styles';
 import * as Sentry from '@sentry/react';
 import React, { useEffect } from 'react';
 
+import { golos } from '@/assets/Fonts/golos';
 import { theme } from '@/components/AppTheme';
-import { golos } from '@/config/Fonts';
 
 import i18n from '../i18n';
 

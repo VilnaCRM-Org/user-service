@@ -6,7 +6,6 @@ export default {
     justifyContent: 'center',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
       gap: '0.25rem',
-      mt: '0.188rem',
     },
   },
 };

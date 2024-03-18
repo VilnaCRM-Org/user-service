@@ -1,6 +1,6 @@
 import { Interpolation, Theme, createTheme } from '@mui/material';
 
-import { golos } from '@/config/Fonts';
+import { golos } from '@/assets/Fonts/golos';
 
 import breakpointsTheme from '../UiBreakpoints';
 import colorTheme from '../UiColorTheme';
@@ -108,6 +108,10 @@ export const theme: Theme = createTheme({
             background: colorTheme.palette.white.main,
             color: colorTheme.palette.grey200.main,
             [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]:
+              {
+                maxWidth: '10.563rem',
+              },
+            [`@media (max-width: ${breakpointsTheme.breakpoints.values.xs}px)`]:
               {
                 width: '100%',
                 maxWidth: '10.563rem',

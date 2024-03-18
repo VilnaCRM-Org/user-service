@@ -1,4 +1,4 @@
-import { Box, Stack } from '@mui/material';
+import { Box } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -20,11 +20,11 @@ function ServicesHoverCard(): React.ReactElement {
       <UiTypography variant="medium14" sx={styles.text}>
         {t('unlimited_possibilities.service_text.text')}
       </UiTypography>
-      <Stack sx={styles.listWrapper}>
+      <Box sx={styles.listWrapper}>
         {imageList.map(item => (
           <ImageItem item={item} key={item.alt} />
         ))}
-      </Stack>
+      </Box>
     </Box>
   );
 }

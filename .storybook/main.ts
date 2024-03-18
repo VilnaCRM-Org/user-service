@@ -15,5 +15,43 @@ const config: StorybookConfig = {
   docs: {
     autodocs: 'tag',
   },
+  staticDirs: [
+    {
+      from: '../src/features/landing/assets/fonts/Golos/GolosText-Black.ttf',
+      to: 'src/features/landing/assets/fonts/Golos/GolosText-Black.ttf',
+    },
+    {
+      from: '../src/features/landing/assets/fonts/Golos/GolosText-Bold.ttf',
+      to: 'src/features/landing/assets/fonts/Golos/GolosText-Bold.ttf',
+    },
+    {
+      from: '../src/features/landing/assets/fonts/Golos/GolosText-ExtraBold.ttf',
+      to: 'src/features/landing/assets/fonts/Golos/GolosText-ExtraBold.ttf',
+    },
+    {
+      from: '../src/features/landing/assets/fonts/Golos/GolosText-Medium.ttf',
+      to: 'src/features/landing/assets/fonts/Golos/GolosText-Medium.ttf',
+    },
+    {
+      from: '../src/features/landing/assets/fonts/Golos/GolosText-Regular.ttf',
+      to: 'src/features/landing/assets/fonts/Golos/GolosText-Regular.ttf',
+    },
+    {
+      from: '../src/features/landing/assets/fonts/Golos/GolosText-SemiBold.ttf',
+      to: 'src/features/landing/assets/fonts/Golos/GolosText-SemiBold.ttf',
+    },
+    {
+      from: '../src/features/landing/assets/fonts/Inter/Inter-Bold.ttf',
+      to: 'src/features/landing/assets/fonts/Inter/Inter-Bold.ttf',
+    },
+    {
+      from: '../src/features/landing/assets/fonts/Inter/Inter-Medium.ttf',
+      to: 'src/features/landing/assets/fonts/Inter/Inter-Medium.ttf',
+    },
+    {
+      from: '../src/features/landing/assets/fonts/Inter/Inter-Regular.ttf',
+      to: 'src/features/landing/assets/fonts/Inter/Inter-Regular.ttf',
+    },
+  ],
 };
 export default config;

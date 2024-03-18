@@ -28,7 +28,7 @@ export default meta;
 
 type Story = StoryObj<typeof UiImage>;
 
-export const StoryImage: Story = {
+export const Image: Story = {
   args: {
     src: testImage.src,
     alt: 'Story example image',

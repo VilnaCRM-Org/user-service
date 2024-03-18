@@ -7,6 +7,12 @@ const meta: Meta<typeof UiButton> = {
   component: UiButton,
   tags: ['autodocs'],
   argTypes: {
+    variant: {
+      type: 'string',
+      description: 'Variant of the button',
+      options: ['contained', 'outlined'],
+      control: { type: 'radio' },
+    },
     size: {
       type: 'string',
       description: 'Size of the button',
@@ -38,15 +44,25 @@ type Story = StoryObj<typeof UiButton>;
 
 export const Contained: Story = {
   args: {
-    children: 'Primary Button',
+    children: 'Contained Button',
     variant: 'contained',
     size: 'small',
   },
 };
+
 export const Outlined: Story = {
   args: {
     children: 'Outlined Button',
     variant: 'outlined',
     size: 'small',
+  },
+};
+
+export const SocialButton: Story = {
+  args: {
+    children: 'Outlined Button',
+    variant: 'outlined',
+    size: 'medium',
+    name: 'socialButton',
   },
 };
