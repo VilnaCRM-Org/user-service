@@ -2,10 +2,9 @@ import http from 'k6/http';
 import * as utils from "./utils.js";
 import faker from "k6/x/faker";
 
-let users;
-
 export function setup() {
-    users = utils.insertUsers(5000);
+    const users = utils.insertUsers(5000);
+    return {users: users}
 }
 
 export const options = {
@@ -14,11 +13,11 @@ export const options = {
     thresholds: utils.getThresholds(),
 };
 
-export default function () {
-    updateUser();
+export default function (data) {
+    updateUser(data.users);
 }
 
-function updateUser() {
+function updateUser(users) {
     const user = users[utils.getRandomNumber(0, users.length-1)];
     const id = user.id;
     const email = faker.person.email();

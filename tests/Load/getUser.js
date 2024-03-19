@@ -1,10 +1,9 @@
 import http from 'k6/http';
 import * as utils from "./utils.js";
 
-let users;
-
 export function setup() {
-    users = utils.insertUsers(5000);
+    const users = utils.insertUsers(5000);
+    return {users: users}
 }
 
 export const options = {
@@ -14,11 +13,11 @@ export const options = {
     thresholds: utils.getThresholds(),
 };
 
-export default function () {
-    getUser();
+export default function (data) {
+    getUser(data.users);
 }
 
-function getUser() {
+function getUser(users) {
     const user = users[utils.getRandomNumber(0, users.length-1)];
     const id = user.id;
 
