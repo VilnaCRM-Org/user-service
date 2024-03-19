@@ -1,8 +1,5 @@
-import {SharedArray} from 'k6/data';
-
-const users = new SharedArray('users.json', function () {
-    return JSON.parse(open('./users.json')).users;
-});
+import faker from "k6/x/faker";
+import http from 'k6/http';
 
 const baseUrl = `https://${__ENV.HOSTNAME}/`;
 
@@ -96,10 +93,6 @@ function getSpikeScenario(targetRatePerSecond) {
     }
 }
 
-export function getUsers() {
-    return users;
-}
-
 export function getRandomUser() {
     return users[Math.floor(Math.random() * users.length)];
 }
@@ -124,18 +117,37 @@ export function getRandomNumber(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function getBaseUrl(){
+export function getBaseUrl() {
     return baseUrl;
 }
 
-export function generateRandomEmail() {
-    const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+export function insertUsers(numberOfUsers) {
+    const batchSize = 50;
+    const requests = [];
+    const users = [];
 
-    let localPart = '';
-    const localPartLength = Math.floor(Math.random() * 6) + 5;
-    for (let i = 0; i < localPartLength; i++) {
-        localPart += characters.charAt(Math.floor(Math.random() * characters.length));
+    for (let i = 0; i < numberOfUsers; i++) {
+        const email = faker.person.email();
+        const initials = faker.person.name();
+        const password = faker.internet.password(true, true, true, false, false, 60);
+
+        const payload = JSON.stringify({
+            email: email,
+            password: password,
+            initials: initials,
+        });
+
+        requests.push(
+            ['POST', getBaseUrl() + `api/users`, payload, getJsonHeader()]
+        );
+        if (requests.length === batchSize || i === numberOfUsers - 1) {
+            const batchResponses = http.batch(requests);
+            batchResponses.forEach((response) => {
+                users.push(response.body);
+            });
+            requests.length = 0;
+        }
     }
 
-    return localPart + '@example.com';
+    return users;
 }

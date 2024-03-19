@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import * as utils from "./utils.js";
+import faker from "k6/x/faker";
 
 export const options = {
     insecureSkipTLSVerify: true,
@@ -12,9 +13,9 @@ export default function () {
 }
 
 function createUser() {
-    const email = utils.generateRandomEmail();
-    const initials = "Name Surname";
-    const password = "passWord1";
+    const email = faker.person.email();
+    const initials = faker.person.name();
+    const password = faker.internet.password(true, true, true, false, false, 60);
 
     const payload = JSON.stringify({
         email: email,
