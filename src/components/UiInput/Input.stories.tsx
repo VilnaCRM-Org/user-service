@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { t } from 'i18next';
 
 import UiInput from './index';
 
@@ -42,7 +43,7 @@ type Story = StoryObj<typeof UiInput>;
 
 export const Input: Story = {
   args: {
-    placeholder: 'Input',
+    placeholder: t('Input'),
     error: false,
   },
 };

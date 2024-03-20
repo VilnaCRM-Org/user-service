@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { t } from 'i18next';
 
 import testImage from '../../assets/svg/TooltipIcons/Joomla.svg';
 
@@ -31,7 +32,7 @@ type Story = StoryObj<typeof UiImage>;
 export const Image: Story = {
   args: {
     src: testImage.src,
-    alt: 'Story example image',
+    alt: t('Story example image'),
     sx: {
       width: '200px',
       height: '200px',

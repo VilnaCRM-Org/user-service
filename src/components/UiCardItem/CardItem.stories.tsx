@@ -1,18 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { initReactI18next } from 'react-i18next';
 
-import i18n from 'i18n';
-
-import resources from '../../../pages/i18n/localization.json';
 import UiCardList from '../UiCardList';
 import { CardList } from '../UiCardList/types';
 
 import { LARGE_CARD_ITEM, SMALL_CARD_ITEM } from './constants';
-
-i18n.use(initReactI18next).init({
-  resources,
-  lng: 'en',
-});
 
 const meta: Meta<typeof UiCardList> = {
   title: 'UiComponents/UiCardItem',

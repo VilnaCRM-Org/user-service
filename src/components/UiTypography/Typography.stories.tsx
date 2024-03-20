@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { t } from 'i18next';
 
 import UiTypography from './index';
 
@@ -43,7 +44,7 @@ type Story = StoryObj<typeof UiTypography>;
 
 export const Typography: Story = {
   args: {
-    children: 'Typography',
+    children: t('Typography'),
     variant: 'h5',
   },
 };

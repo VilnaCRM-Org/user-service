@@ -1,5 +1,6 @@
 import { Stack } from '@mui/material';
 import { Meta, StoryObj } from '@storybook/react';
+import { t } from 'i18next';
 import { FieldValues, useForm } from 'react-hook-form';
 
 import UiButton from '../UiButton';
@@ -64,7 +65,7 @@ function TextFieldFormStory<T extends FieldValues>(
           fullWidth={fullWidth}
         />
         <UiButton size="small" variant="contained" type="submit">
-          Submit
+          {t('Submit')}
         </UiButton>
       </Stack>
     </form>
@@ -75,16 +76,16 @@ export const TextFieldForm: Story = {
   render: args => <TextFieldFormStory {...args} />,
   args: {
     rules: {
-      required: 'This field is required',
+      required: t('This field is required'),
       validate: (value: string) => {
         if (value.length < 3) {
-          return 'Name must be at least 3 characters';
+          return t('Name must be at least 3 characters');
         }
         return true;
       },
     },
     type: 'text',
-    placeholder: 'Enter text...',
+    placeholder: t('Enter text...'),
     fullWidth: false,
   },
 };

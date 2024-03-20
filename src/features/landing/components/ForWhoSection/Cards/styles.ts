@@ -1,4 +1,4 @@
-import { golos } from '@/assets/Fonts/golos';
+import { golos } from '@/config/Fonts/golos';
 import colorTheme from '@/components/UiColorTheme';
 
 export default {

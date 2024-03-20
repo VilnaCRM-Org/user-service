@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { t } from 'i18next';
 
 import UiCheckbox from './index';
 
@@ -35,6 +36,6 @@ type Story = StoryObj<typeof UiCheckbox>;
 export const Checkbox: Story = {
   args: {
     error: false,
-    label: 'Checkbox',
+    label: t('Checkbox label text'),
   },
 };

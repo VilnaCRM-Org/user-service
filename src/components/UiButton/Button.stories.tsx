@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { t } from 'i18next';
 
 import UiButton from './index';
 
@@ -44,15 +45,14 @@ type Story = StoryObj<typeof UiButton>;
 
 export const Contained: Story = {
   args: {
-    children: 'Contained Button',
+    children: t('header.actions.try_it_out'),
     variant: 'contained',
     size: 'small',
   },
 };
-
 export const Outlined: Story = {
   args: {
-    children: 'Outlined Button',
+    children: t('header.actions.log_in'),
     variant: 'outlined',
     size: 'small',
   },
@@ -60,7 +60,7 @@ export const Outlined: Story = {
 
 export const SocialButton: Story = {
   args: {
-    children: 'Outlined Button',
+    children: t('Social Button'),
     variant: 'outlined',
     size: 'medium',
     name: 'socialButton',

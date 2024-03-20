@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { t } from 'i18next';
 
 import UiTooltip from '.';
 
@@ -36,7 +37,7 @@ type Story = StoryObj<typeof UiTooltip>;
 
 export const Tooltip: Story = {
   args: {
-    children: 'Hello World!',
+    children: t('Hello World!'),
     placement: 'bottom',
     arrow: true,
     title: 'UiTooltip',

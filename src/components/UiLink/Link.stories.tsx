@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { t } from 'i18next';
 
 import UiLink from './index';
 
@@ -24,7 +25,7 @@ type Story = StoryObj<typeof UiLink>;
 
 export const Link: Story = {
   args: {
-    children: 'Link',
+    children: t('Link'),
     href: '/',
   },
 };

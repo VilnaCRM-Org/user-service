@@ -1,5 +1,6 @@
 import { Box } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react';
+import { t } from 'i18next';
 
 import UiToolbar from './index';
 
@@ -28,7 +29,7 @@ function ToolbarComponent(): React.ReactElement {
         alignItems: 'center',
       }}
     >
-      Hello World
+      {t('Hello World')}
     </Box>
   );
 }

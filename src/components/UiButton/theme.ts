@@ -1,6 +1,6 @@
 import { Interpolation, Theme, createTheme } from '@mui/material';
 
-import { golos } from '@/assets/Fonts/golos';
+import { golos } from '@/config/Fonts/golos';
 
 import breakpointsTheme from '../UiBreakpoints';
 import colorTheme from '../UiColorTheme';
