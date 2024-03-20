@@ -1,6 +1,6 @@
 import { t } from 'i18next';
 
-const isValidEmailFormat: (email: string) => boolean = (
+export const isValidEmailFormat: (email: string) => boolean = (
   email: string
 ): boolean => /^.+@.+\..+$/.test(email);
 

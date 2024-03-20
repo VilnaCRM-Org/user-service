@@ -5,7 +5,7 @@ const headerLogInButton: string = 'header-log-in';
 const headerSignUnButton: string = 'header-sign-up';
 const aboutSignUnButton: string = 'about-sign-up';
 const forWhoSigUpButton: string = 'for-who-sign-up';
-const whyUsSigUpButton: string = 'for-who-sign-up';
+const whyUsSigUpButton: string = 'why-us-sign-up';
 
 test.describe('Buttons navigation tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -40,6 +40,7 @@ test.describe('Buttons navigation tests', () => {
   test('Mobile button navigation', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await clickAndVerifySection(page, whyUsSigUpButton);
+    await clickAndVerifySection(page, aboutSignUnButton);
   });
 
   test('Drawer button navigation', async ({ page }) => {

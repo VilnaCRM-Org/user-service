@@ -29,7 +29,7 @@ export default function WrapperUiTooltip({
     setOpen(false);
   };
 
-  const handleTooltipToogle: () => void = () => {
+  const handleTooltipToggle: () => void = () => {
     setOpen(!open);
   };
 
@@ -42,7 +42,7 @@ export default function WrapperUiTooltip({
         arrow={arrow}
         sx={sx}
       >
-        <Typography component="span" onClick={handleTooltipToogle}>
+        <Typography component="span" onClick={handleTooltipToggle}>
           {children}
         </Typography>
       </Tooltip>

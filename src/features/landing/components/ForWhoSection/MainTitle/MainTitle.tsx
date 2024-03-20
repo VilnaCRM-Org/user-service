@@ -8,6 +8,7 @@ import styles from './styles';
 
 function MainTitle(): React.ReactElement {
   const { t } = useTranslation();
+
   return (
     <Box>
       <UiTypography variant="h2" sx={styles.title}>

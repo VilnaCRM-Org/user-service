@@ -48,7 +48,7 @@ export default {
     zIndex: '1',
     position: 'absolute',
     top: '15.8%',
-    right: '-6.4%',
+    right: '-6.3%',
     '@media (max-width: 1130.98px)': {
       backgroundImage: `url(${VectorIconMd.src})`,
       width: '100dvw',

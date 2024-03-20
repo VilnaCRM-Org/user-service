@@ -1,6 +1,6 @@
 import { t } from 'i18next';
 
-const isValidFullNameFormat: (fullName: string) => boolean = (
+export const isValidFullNameFormat: (fullName: string) => boolean = (
   fullName: string
 ): boolean => /^[^\d\s]+\s[^\d\s]+$/.test(fullName);
 
