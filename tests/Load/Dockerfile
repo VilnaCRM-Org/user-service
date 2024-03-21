@@ -12,6 +12,7 @@ RUN xk6 build \
 FROM alpine
 
 COPY --from=builder /app/k6 /bin/
-COPY . ./scripts
+COPY ./tests/Load ./scripts
+COPY .env.test ./scripts
 
 ENTRYPOINT [ "k6" ]

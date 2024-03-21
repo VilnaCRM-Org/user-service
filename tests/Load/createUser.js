@@ -1,11 +1,16 @@
 import http from 'k6/http';
-import * as utils from "./utils.js";
+import {utils} from "./utils.js";
 import faker from "k6/x/faker";
 
 export const options = {
     insecureSkipTLSVerify: true,
     scenarios: utils.getScenarios(),
-    thresholds: utils.getThresholds(),
+    thresholds: utils.getThresholds(
+        utils.getFromEnv('CREATE_USER_SMOKE_THRESHOLD'),
+        utils.getFromEnv('CREATE_USER_AVERAGE_THRESHOLD'),
+        utils.getFromEnv('CREATE_USER_STRESS_THRESHOLD'),
+        utils.getFromEnv('CREATE_USER_SPIKE_THRESHOLD'),
+    )
 };
 
 export default function () {
@@ -24,7 +29,7 @@ function createUser() {
     });
 
     http.post(
-        utils.getBaseUrl() + `api/users`,
+        utils.getBaseHttpUrl(),
         payload,
         utils.getJsonHeader()
     );

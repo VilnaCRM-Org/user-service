@@ -1,24 +1,27 @@
 import http from 'k6/http';
-import * as utils from "./utils.js";
+import {utils} from "./utils.js";
 import faker from "k6/x/faker";
 
 export function setup() {
-    const users = utils.insertUsers(5000);
-    return {users: users}
+    return {users: utils.insertUsers(10)}
 }
 
 export const options = {
     insecureSkipTLSVerify: true,
     scenarios: utils.getScenarios(),
-    thresholds: utils.getThresholds(),
+    thresholds: utils.getThresholds(
+        utils.getFromEnv('UPDATE_USER_SMOKE_THRESHOLD'),
+        utils.getFromEnv('UPDATE_USER_AVERAGE_THRESHOLD'),
+        utils.getFromEnv('UPDATE_USER_STRESS_THRESHOLD'),
+        utils.getFromEnv('UPDATE_USER_SPIKE_THRESHOLD'),
+    ),
 };
 
 export default function (data) {
-    updateUser(data.users);
+    updateUser(data.users[utils.getRandomNumber(0, data.users.length-1)]);
 }
 
-function updateUser(users) {
-    const user = users[utils.getRandomNumber(0, users.length-1)];
+function updateUser(user) {
     const id = user.id;
     const email = faker.person.email();
     const initials = faker.person.name();
@@ -32,7 +35,7 @@ function updateUser(users) {
     });
 
     http.patch(
-        utils.getBaseUrl() + `api/users/${id}`,
+        utils.getBaseHttpUrl() + `/${id}`,
         payload,
         utils.getMergePatchHeader()
     );

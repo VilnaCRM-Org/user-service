@@ -1,28 +1,30 @@
 import http from 'k6/http';
-import * as utils from "./utils.js";
+import { utils } from "./utils.js";
 
 export function setup() {
-    const users = utils.insertUsers(5000);
-    return {users: users}
+    return {users: utils.insertUsers(10)}
 }
 
 export const options = {
-    setupTimeout: '300s',
     insecureSkipTLSVerify: true,
     scenarios: utils.getScenarios(),
-    thresholds: utils.getThresholds(),
+    thresholds: utils.getThresholds(
+        utils.getFromEnv('GET_USER_SMOKE_THRESHOLD'),
+        utils.getFromEnv('GET_USER_AVERAGE_THRESHOLD'),
+        utils.getFromEnv('GET_USER_STRESS_THRESHOLD'),
+        utils.getFromEnv('GET_USER_SPIKE_THRESHOLD')
+    ),
 };
 
 export default function (data) {
-    getUser(data.users);
+    getUser(data.users[utils.getRandomNumber(0, data.users.length - 1)]);
 }
 
-function getUser(users) {
-    const user = users[utils.getRandomNumber(0, users.length-1)];
+function getUser(user) {
     const id = user.id;
 
     http.get(
-        utils.getBaseUrl() + `api/users/${id}`,
+        utils.getBaseHttpUrl() + `/${id}`,
         utils.getJsonHeader()
     );
 }

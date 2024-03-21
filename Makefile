@@ -80,13 +80,13 @@ ci-setup-test-db:
 all-tests: unit-tests integration-tests e2e-tests
 
 load-tests: build-k6
-	#$(K6) -e HOSTNAME=localhost -e SMOKE_THRESHOLD=60 -e AVERAGE_THRESHOLD=200 -e STRESS_THRESHOLD=2000 -e SPIKE_THRESHOLD=8000 /scripts/getUser.js
-	#$(K6) -e HOSTNAME=localhost -e SMOKE_THRESHOLD=60 -e AVERAGE_THRESHOLD=300 -e STRESS_THRESHOLD=3500 -e SPIKE_THRESHOLD=8000 /scripts/getUsers.js
-	$(K6) -e HOSTNAME=localhost -e SMOKE_THRESHOLD=90 -e AVERAGE_THRESHOLD=350 -e STRESS_THRESHOLD=4000 -e SPIKE_THRESHOLD=6000 /scripts/updateUser.js
-	#$(K6) -e HOSTNAME=localhost -e SMOKE_THRESHOLD=90 -e AVERAGE_THRESHOLD=350 -e STRESS_THRESHOLD=4000 -e SPIKE_THRESHOLD=6000 /scripts/createUser.js
+	$(K6) /scripts/getUser.js
+	$(K6) /scripts/getUsers.js
+	$(K6) /scripts/updateUser.js
+	$(K6) /scripts/createUser.js
 
 build-k6:
-	$(DOCKER) build -t k6 ./tests/Load
+	$(DOCKER) build -t k6 -f ./tests/Load/Dockerfile .
 
 infection:
 	$(EXEC_PHP) sh -c 'php -d memory_limit=-1 ./vendor/bin/infection --test-framework-options="--testsuite=Unit" --show-mutations -j8'
