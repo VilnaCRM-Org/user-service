@@ -4,20 +4,20 @@ import * as dotenv from "k6/x/dotenv";
 
 const env = dotenv.parse(open(".env.test"));
 
-class Utils{
+class Utils {
     constructor() {
-        this.smokeTestDuration = Number(this.getFromEnv('SMOKE_TEST_DURATION'));
-        this.averageTestDuration = Number(this.getFromEnv('AVERAGE_TEST_DURATION'));
-        this.stressTestDuration = Number(this.getFromEnv('STRESS_TEST_DURATION'));
-        this.spikeTestDurationRise = Number(this.getFromEnv('SPIKE_TEST_DURATION_RISE'));
-        this.spikeTestDurationFall = Number(this.getFromEnv('SPIKE_TEST_DURATION_FALL'));
+        this.smokeTestDuration = Number(this.getFromEnv('LOAD_TEST_SMOKE_TEST_DURATION'));
+        this.averageTestDuration = Number(this.getFromEnv('LOAD_TEST_AVERAGE_TEST_DURATION'));
+        this.stressTestDuration = Number(this.getFromEnv('LOAD_TEST_STRESS_TEST_DURATION'));
+        this.spikeTestDurationRise = Number(this.getFromEnv('LOAD_TEST_SPIKE_TEST_DURATION_RISE'));
+        this.spikeTestDurationFall = Number(this.getFromEnv('LOAD_TEST_SPIKE_TEST_DURATION_FALL'));
 
-        this.smokeRatePerSecond = this.getFromEnv('SMOKE_RPS');
-        this.averageRatePerSecond= this.getFromEnv('AVERAGE_RPS');
-        this.stressRatePerSecond= this.getFromEnv('STRESS_RPS');
-        this.spikeTargetRatePerSecond = this.getFromEnv('SPIKE_RPS');
+        this.smokeRatePerSecond = this.getFromEnv('LOAD_TEST_SMOKE_RPS');
+        this.averageRatePerSecond = this.getFromEnv('LOAD_TEST_AVERAGE_RPS');
+        this.stressRatePerSecond = this.getFromEnv('LOAD_TEST_STRESS_RPS');
+        this.spikeTargetRatePerSecond = this.getFromEnv('LOAD_TEST_SPIKE_RPS');
 
-        const host = this.getFromEnv('HOST');
+        const host = this.getFromEnv('LOAD_TEST_API_HOST');
 
         this.baseUrl = `https://${host}`;
         this.baseHttpUrl = this.baseUrl + '/api/users'
@@ -55,7 +55,7 @@ class Utils{
             rate: ratePerSecond,
             timeUnit: '1s',
             duration: this.smokeTestDuration + 's',
-            preAllocatedVUs: 3,
+            preAllocatedVUs: Number(this.getFromEnv('LOAD_TEST_SMOKE_VUS')),
             tags: {test_type: 'smoke'},
         }
     }
@@ -66,7 +66,7 @@ class Utils{
             rate: ratePerSecond,
             timeUnit: '1s',
             duration: this.averageTestDuration + 's',
-            preAllocatedVUs: 20,
+            preAllocatedVUs: Number(this.getFromEnv('LOAD_TEST_AVERAGE_VUS')),
             startTime: this.smokeTestDuration + 's',
             tags: {test_type: 'average'},
         }
@@ -78,7 +78,7 @@ class Utils{
             rate: ratePerSecond,
             timeUnit: '1s',
             duration: this.stressTestDuration + 's',
-            preAllocatedVUs: 200,
+            preAllocatedVUs: Number(this.getFromEnv('LOAD_TEST_STRESS_VUS')),
             startTime: this.smokeTestDuration + this.averageTestDuration + 's',
             tags: {test_type: 'stress'},
         }
@@ -89,7 +89,7 @@ class Utils{
             executor: 'ramping-arrival-rate',
             startRate: 0,
             timeUnit: '1s',
-            preAllocatedVUs: 500,
+            preAllocatedVUs: Number(this.getFromEnv('LOAD_TEST_SPIKE_VUS')),
             stages: [
                 {
                     target: targetRatePerSecond,
@@ -134,29 +134,46 @@ class Utils{
         return env[varName];
     }
 
-    insertUsers(numberOfUsers) {
-        const users = [];
+    generateRequests(numberOfUsers) {
+        const requests = [];
+        const userPasswords = {};
 
         for (let i = 0; i < numberOfUsers; i++) {
             const email = faker.person.email();
             const initials = faker.person.name();
             const password = faker.internet.password(true, true, true, false, false, 60);
 
-            const payload = JSON.stringify({
-                email: email,
-                password: password,
-                initials: initials,
+            requests.push({
+                method: 'POST',
+                url: this.getBaseHttpUrl(),
+                body: JSON.stringify({
+                    email,
+                    password,
+                    initials,
+                }),
+                params: this.getJsonHeader(),
             });
 
-            const response = http.post(
-                this.getBaseHttpUrl(),
-                payload,
-                this.getJsonHeader()
-            )
+            userPasswords[email] = password;
+        }
 
-            const user = JSON.parse(response.body);
-            user.password = password
-            users.push(user);
+        return [requests, userPasswords];
+    }
+
+    insertUsers(numberOfUsers) {
+        const batchSize = this.getFromEnv('LOAD_TEST_BATCH_SIZE');
+        const [requests, userPasswords] = this.generateRequests(numberOfUsers);
+        const users = [];
+
+        for (let i = 0; i < numberOfUsers; i += batchSize) {
+            const batch = requests.slice(i, i + batchSize);
+            const responses = http.batch(batch);
+
+            responses.forEach((response) => {
+                const user = JSON.parse(response.body);
+                user.password = userPasswords[user.email];
+                users.push(user);
+            });
         }
 
         return users;

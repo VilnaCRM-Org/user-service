@@ -40,9 +40,9 @@ function updateUser(user) {
         oldPassword: password,
     });
 
-    http.patch(
+    http.put(
         utils.getBaseHttpUrl() + `/${id}`,
         payload,
-        utils.getMergePatchHeader()
+        utils.getJsonHeader()
     );
 }

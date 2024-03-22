@@ -2,17 +2,21 @@ import http from 'k6/http';
 import {utils} from "./utils.js";
 
 export function setup() {
-    utils.insertUsers(10);
+    utils.insertUsers(
+        Number(
+            utils.getFromEnv('LOAD_TEST_USERS_TO_INSERT')
+        )
+    )
 }
 
 export const options = {
     insecureSkipTLSVerify: true,
     scenarios: utils.getScenarios(),
     thresholds: utils.getThresholds(
-        utils.getFromEnv('GET_USERS_SMOKE_THRESHOLD'),
-        utils.getFromEnv('GET_USERS_AVERAGE_THRESHOLD'),
-        utils.getFromEnv('GET_USERS_STRESS_THRESHOLD'),
-        utils.getFromEnv('GET_USERS_SPIKE_THRESHOLD')
+        utils.getFromEnv('LOAD_TEST_GET_USERS_SMOKE_THRESHOLD'),
+        utils.getFromEnv('LOAD_TEST_GET_USERS_AVERAGE_THRESHOLD'),
+        utils.getFromEnv('LOAD_TEST_GET_USERS_STRESS_THRESHOLD'),
+        utils.getFromEnv('LOAD_TEST_GET_USERS_SPIKE_THRESHOLD')
     ),
 };
 

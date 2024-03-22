@@ -6,10 +6,10 @@ export const options = {
     insecureSkipTLSVerify: true,
     scenarios: utils.getScenarios(),
     thresholds: utils.getThresholds(
-        utils.getFromEnv('CREATE_USER_SMOKE_THRESHOLD'),
-        utils.getFromEnv('CREATE_USER_AVERAGE_THRESHOLD'),
-        utils.getFromEnv('CREATE_USER_STRESS_THRESHOLD'),
-        utils.getFromEnv('CREATE_USER_SPIKE_THRESHOLD'),
+        utils.getFromEnv('LOAD_TEST_CREATE_USER_SMOKE_THRESHOLD'),
+        utils.getFromEnv('LOAD_TEST_CREATE_USER_AVERAGE_THRESHOLD'),
+        utils.getFromEnv('LOAD_TEST_CREATE_USER_STRESS_THRESHOLD'),
+        utils.getFromEnv('LOAD_TEST_CREATE_USER_SPIKE_THRESHOLD'),
     )
 };
 
