@@ -1,6 +1,6 @@
 import { t } from 'i18next';
 
-import { validateFullName } from '../../components/AuthSection/Validations';
+import { validateFullName } from '../../features/landing/components/AuthSection/Validations';
 
 const fullNameRequiredError: string = t('sign_up.form.name_input.required');
 const testFullName: string = 'John Doe';

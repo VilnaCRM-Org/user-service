@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { t } from 'i18next';
 
-import { validateEmail } from '../../components/AuthSection/Validations';
+import { validateEmail } from '../../features/landing/components/AuthSection/Validations';
 
 const emailRequiredError: string = t('sign_up.form.email_input.required');
 const emailStepError: string = t('sign_up.form.email_input.step_error_message');

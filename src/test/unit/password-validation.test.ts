@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { t } from 'i18next';
 
-import { validatePassword } from '../../components/AuthSection/Validations';
+import { validatePassword } from '../../features/landing/components/AuthSection/Validations';
 
 const textShortText: string = 'short';
 const textNoNumbers: string = 'NoNumbers';

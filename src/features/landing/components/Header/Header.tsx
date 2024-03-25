@@ -2,8 +2,7 @@ import { AppBar, Link } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { UiToolbar } from '@/components';
-import UiImage from '@/components/UiImage';
+import { UiToolbar, UiImage } from '@/components';
 
 import Logo from '../../assets/svg/logo/Logo.svg';
 
