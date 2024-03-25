@@ -23,14 +23,12 @@ export default {
     },
 
     img: {
-      borderRadius: '0.625rem',
       width: '47.875rem',
       height: '31.125rem',
       [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         width: '100%',
-        borderRadius: '1rem',
         height: '100%',
       },
       [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {

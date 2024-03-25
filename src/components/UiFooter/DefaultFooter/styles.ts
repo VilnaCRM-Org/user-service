@@ -23,13 +23,13 @@ export default {
     },
   },
 
-  bottomWrapper: {
+  copyrightAndLinksWrapper: {
     width: '100%',
     maxWidth: '1222px',
     margin: '0 auto',
   },
 
-  copyrightAndLinksWrapper: {
+  bottomWrapper: {
     borderRadius: '1rem 1rem 0px 0px',
     background: colorTheme.palette.backgroundGrey200.main,
   },
@@ -41,6 +41,7 @@ export default {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingBottom: '0.3rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       paddingRight: '2rem',
       paddingLeft: '2rem',

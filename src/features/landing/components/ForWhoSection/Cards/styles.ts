@@ -1,5 +1,5 @@
-import { golos } from '@/config/Fonts/golos';
 import colorTheme from '@/components/UiColorTheme';
+import { golos } from '@/config/Fonts/golos';
 
 export default {
   wrapper: {
@@ -37,7 +37,7 @@ export default {
     '@media (max-width: 1130.98px)': {
       padding: '1.813rem 2rem ',
     },
-    [`@media (max-width: 968px)`]: {
+    [`@media (max-width: 960px)`]: {
       border: 'none',
       boxShadow: 'none',
       flexDirection: 'row',
@@ -55,7 +55,7 @@ export default {
     fontStyle: 'normal',
     fontWeight: '700',
     lineHeight: 'normal',
-    pt: '9.563rem',
+    pt: '9.7rem',
     '@media (max-width: 1130.98px)': {
       pt: '9.438rem',
     },

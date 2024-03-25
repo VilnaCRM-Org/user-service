@@ -1,10 +1,12 @@
+import { faker } from '@faker-js/faker';
+
 import { RegisterItem } from '../../types/authentication/form';
 
 const onSubmit: jest.Mock = jest.fn();
 
-const initialsText: string = 'John Doe';
-const emailText: string = 'johndoe@example.com';
-const passwordText: string = 'Password123';
+const initialsText: string = faker.person.fullName();
+const emailText: string = faker.internet.email();
+const passwordText: string = faker.internet.password();
 
 const handleFormSubmit: (data: RegisterItem) => void = (data: RegisterItem) => {
   const { FullName, Email, Password, Privacy } = data;

@@ -1,9 +1,10 @@
 import { ThemeProvider } from '@mui/material/styles';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import * as Sentry from '@sentry/react';
 import React, { useEffect } from 'react';
 
-import { golos } from '@/config/Fonts/golos';
 import { theme } from '@/components/AppTheme';
+import { golos } from '@/config/Fonts/golos';
 
 import i18n from '../i18n';
 
@@ -38,6 +39,7 @@ function MyApp({
     <ThemeProvider theme={theme}>
       <main className={golos.className}>
         <Component />
+        <GoogleAnalytics gaId="G-XYZ" />
       </main>
     </ThemeProvider>
   );

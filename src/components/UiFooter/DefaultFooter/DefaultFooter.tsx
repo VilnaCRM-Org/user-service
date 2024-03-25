@@ -48,8 +48,8 @@ function DefaultFooter({
           </Stack>
         </Box>
       </Stack>
-      <Stack sx={styles.copyrightAndLinksWrapper}>
-        <Box sx={styles.bottomWrapper}>
+      <Box sx={styles.bottomWrapper}>
+        <Stack sx={styles.copyrightAndLinksWrapper}>
           <Stack sx={styles.copyrightAndLinks}>
             <UiTypography variant="medium15" sx={styles.copyright}>
               {t('footer.copyright')}, <Box component="span">{currentYear}</Box>
@@ -59,8 +59,8 @@ function DefaultFooter({
               <SocialMediaList socialLinks={socialLinks} />
             </Stack>
           </Stack>
-        </Box>
-      </Stack>
+        </Stack>
+      </Box>
     </Stack>
   );
 }

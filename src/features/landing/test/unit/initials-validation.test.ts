@@ -8,8 +8,7 @@ const invalidFullName: string = 'John Michael Doe';
 
 describe('validateFullName', () => {
   it('should return true when a valid full name is provided', () => {
-    const fullName: string = testFullName;
-    const result: string | boolean = validateFullName(fullName);
+    const result: string | boolean = validateFullName(testFullName);
     expect(result).toBe(true);
   });
 
@@ -20,8 +19,7 @@ describe('validateFullName', () => {
   });
 
   it('should return true when a valid full name with middle name is provided', () => {
-    const fullName: string = invalidFullName;
-    const result: string | boolean = validateFullName(fullName);
+    const result: string | boolean = validateFullName(invalidFullName);
     expect(result).toBeFalsy();
   });
 });

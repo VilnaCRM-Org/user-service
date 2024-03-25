@@ -32,7 +32,7 @@ function CardContent({
               sx={styles.hoveredCard}
               title={<ServicesHoverCard />}
             >
-              <UiTypography variant="bodyText16"> services</UiTypography>
+              <UiTypography variant="bodyText16">services</UiTypography>
             </UiTooltip>
           </Trans>
         ) : (
