@@ -1,134 +1,156 @@
 {
-  "configuration" : { },
-  "description" : "Description",
-  "documentation" : { },
-  "id" : 1,
-  "lastModifiedDate" : "2024-03-25T10:29:52Z",
-  "model" : {
-    "properties" : {
-      "structurizr.groupSeparator" : "/"
+  "configuration": {},
+  "description": "Description",
+  "documentation": {},
+  "id": 1,
+  "lastModifiedDate": "2024-03-25T10:29:52Z",
+  "model": {
+    "properties": {
+      "structurizr.groupSeparator": "/"
     },
-    "softwareSystems" : [ {
-      "containers" : [ {
-        "components" : [ {
-          "documentation" : { },
-          "id" : "3",
-          "name" : "Header",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.header"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "4",
-          "name" : "AboutUs",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.aboutus"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "5",
-          "name" : "WhyUs",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.whyus"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "6",
-          "name" : "Possibilities",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.possibilities"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "7",
-          "name" : "AuthSection",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.authsection"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "8",
-          "name" : "Footer",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.footer"
-          },
-          "tags" : "Element,Component,Item"
-        } ],
-        "documentation" : { },
-        "id" : "2",
-        "name" : "Layout",
-        "properties" : {
-          "structurizr.dsl.identifier" : "softwaresystem.website"
+    "softwareSystems": [
+      {
+        "containers": [
+          {
+            "components": [
+              {
+                "documentation": {},
+                "id": "3",
+                "name": "Header",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.header"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "4",
+                "name": "AboutUs",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.aboutus"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "5",
+                "name": "WhyUs",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.whyus"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "6",
+                "name": "Possibilities",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.possibilities"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "7",
+                "name": "AuthSection",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.authsection"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "8",
+                "name": "Footer",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.footer"
+                },
+                "tags": "Element,Component,Item"
+              }
+            ],
+            "documentation": {},
+            "id": "2",
+            "name": "Layout",
+            "properties": {
+              "structurizr.dsl.identifier": "softwaresystem.website"
+            },
+            "tags": "Element,Container"
+          }
+        ],
+        "documentation": {},
+        "id": "1",
+        "location": "Unspecified",
+        "name": "Software System",
+        "properties": {
+          "structurizr.dsl.identifier": "softwaresystem"
         },
-        "tags" : "Element,Container"
-      } ],
-      "documentation" : { },
-      "id" : "1",
-      "location" : "Unspecified",
-      "name" : "Software System",
-      "properties" : {
-        "structurizr.dsl.identifier" : "softwaresystem"
-      },
-      "tags" : "Element,Software System"
-    } ]
+        "tags": "Element,Software System"
+      }
+    ]
   },
-  "name" : "Name",
-  "properties" : {
-    "structurizr.dsl" : "d29ya3NwYWNlIHsKICAgIG1vZGVsIHsKICAgICAgICAhaWRlbnRpZmllcnMgaGllcmFyY2hpY2FsCgogICAgICAgIHByb3BlcnRpZXMgewogICAgICAgICAgICAic3RydWN0dXJpenIuZ3JvdXBTZXBhcmF0b3IiICIvIgogICAgICAgIH0KCiAgICAgICAgc29mdHdhcmVTeXN0ZW0gPSBzb2Z0d2FyZVN5c3RlbSAiU29mdHdhcmUgU3lzdGVtIiB7CiAgICAgICAgICAgIHdlYnNpdGUgPSBjb250YWluZXIgIkxheW91dCIgewogICAgICAgICAgICAgICAgaGVhZGVyID0gY29tcG9uZW50ICJIZWFkZXIiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgYWJvdXRVcyA9IGNvbXBvbmVudCAiQWJvdXRVcyIgewogICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICB3aHlVcyA9IGNvbXBvbmVudCAiV2h5VXMiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgcG9zc2liaWxpdGllcyA9IGNvbXBvbmVudCAiUG9zc2liaWxpdGllcyIgewogICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICBhdXRoU2VjdGlvbiA9IGNvbXBvbmVudCAiQXV0aFNlY3Rpb24iIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIGZvb3RlciA9IGNvbXBvbmVudCAiRm9vdGVyIiB7CiAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0KCiAgICB2aWV3cyB7CiAgICAgICAgY29tcG9uZW50IHNvZnR3YXJlU3lzdGVtLndlYnNpdGUgIkNvbXBvbmVudHMiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgfQoKICAgICAgICBzdHlsZXMgewogICAgICAgICAgICBlbGVtZW50ICJJdGVtIiB7CiAgICAgICAgICAgICAgICBjb2xvciB3aGl0ZQogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAiIzM0YWJlYiIKICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0KfQo="
+  "name": "Name",
+  "properties": {
+    "structurizr.dsl": "d29ya3NwYWNlIHsKICAgIG1vZGVsIHsKICAgICAgICAhaWRlbnRpZmllcnMgaGllcmFyY2hpY2FsCgogICAgICAgIHByb3BlcnRpZXMgewogICAgICAgICAgICAic3RydWN0dXJpenIuZ3JvdXBTZXBhcmF0b3IiICIvIgogICAgICAgIH0KCiAgICAgICAgc29mdHdhcmVTeXN0ZW0gPSBzb2Z0d2FyZVN5c3RlbSAiU29mdHdhcmUgU3lzdGVtIiB7CiAgICAgICAgICAgIHdlYnNpdGUgPSBjb250YWluZXIgIkxheW91dCIgewogICAgICAgICAgICAgICAgaGVhZGVyID0gY29tcG9uZW50ICJIZWFkZXIiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgYWJvdXRVcyA9IGNvbXBvbmVudCAiQWJvdXRVcyIgewogICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICB3aHlVcyA9IGNvbXBvbmVudCAiV2h5VXMiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgcG9zc2liaWxpdGllcyA9IGNvbXBvbmVudCAiUG9zc2liaWxpdGllcyIgewogICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICBhdXRoU2VjdGlvbiA9IGNvbXBvbmVudCAiQXV0aFNlY3Rpb24iIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIGZvb3RlciA9IGNvbXBvbmVudCAiRm9vdGVyIiB7CiAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0KCiAgICB2aWV3cyB7CiAgICAgICAgY29tcG9uZW50IHNvZnR3YXJlU3lzdGVtLndlYnNpdGUgIkNvbXBvbmVudHMiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgfQoKICAgICAgICBzdHlsZXMgewogICAgICAgICAgICBlbGVtZW50ICJJdGVtIiB7CiAgICAgICAgICAgICAgICBjb2xvciB3aGl0ZQogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAiIzM0YWJlYiIKICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0KfQo="
   },
-  "views" : {
-    "componentViews" : [ {
-      "containerId" : "2",
-      "dimensions" : {
-        "height" : 1748,
-        "width" : 2480
+  "views": {
+    "componentViews": [
+      {
+        "containerId": "2",
+        "dimensions": {
+          "height": 1748,
+          "width": 2480
+        },
+        "elements": [
+          {
+            "id": "3",
+            "x": 350,
+            "y": 300
+          },
+          {
+            "id": "4",
+            "x": 885,
+            "y": 300
+          },
+          {
+            "id": "5",
+            "x": 1420,
+            "y": 300
+          },
+          {
+            "id": "6",
+            "x": 355,
+            "y": 710
+          },
+          {
+            "id": "7",
+            "x": 880,
+            "y": 710
+          },
+          {
+            "id": "8",
+            "x": 1420,
+            "y": 710
+          }
+        ],
+        "externalContainerBoundariesVisible": false,
+        "key": "Components",
+        "order": 1,
+        "paperSize": "A5_Landscape"
+      }
+    ],
+    "configuration": {
+      "branding": {},
+      "lastSavedView": "Components",
+      "styles": {
+        "elements": [
+          {
+            "background": "#34abeb",
+            "color": "#ffffff",
+            "tag": "Item"
+          }
+        ]
       },
-      "elements" : [ {
-        "id" : "3",
-        "x" : 350,
-        "y" : 300
-      }, {
-        "id" : "4",
-        "x" : 885,
-        "y" : 300
-      }, {
-        "id" : "5",
-        "x" : 1420,
-        "y" : 300
-      }, {
-        "id" : "6",
-        "x" : 355,
-        "y" : 710
-      }, {
-        "id" : "7",
-        "x" : 880,
-        "y" : 710
-      }, {
-        "id" : "8",
-        "x" : 1420,
-        "y" : 710
-      } ],
-      "externalContainerBoundariesVisible" : false,
-      "key" : "Components",
-      "order" : 1,
-      "paperSize" : "A5_Landscape"
-    } ],
-    "configuration" : {
-      "branding" : { },
-      "lastSavedView" : "Components",
-      "styles" : {
-        "elements" : [ {
-          "background" : "#34abeb",
-          "color" : "#ffffff",
-          "tag" : "Item"
-        } ]
-      },
-      "terminology" : { }
+      "terminology": {}
     }
   }
 }
