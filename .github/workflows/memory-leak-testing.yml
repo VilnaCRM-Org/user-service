@@ -41,6 +41,8 @@ jobs:
 
       - name: Run dev and memory leak testing
         run: |
-          pnpm run dev & memlab run -v --scenario ./memlab/memoryLeakTest.js
+        pnpm run dev &
+        npx wait-on http://localhost:3000 --timeout 120000
+        memlab run -v --scenario ./memlab/memoryLeakTest.js
         env:
           CI: true
