@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import {utils} from "./utils.js";
 import faker from "k6/x/faker";
+import { check } from 'k6';
 
 export const options = {
     insecureSkipTLSVerify: true,
@@ -28,9 +29,13 @@ function createUser() {
         initials: initials,
     });
 
-    http.post(
+    const res = http.post(
         utils.getBaseHttpUrl(),
         payload,
         utils.getJsonHeader()
     );
+
+    check(res, {
+        'is status 201': (r) => r.status === 201,
+    });
 }

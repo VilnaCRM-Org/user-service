@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { utils } from "./utils.js";
+import { check } from 'k6';
 
 export function setup() {
     return {
@@ -29,9 +30,13 @@ export default function (data) {
 function deleteUser(user) {
     const id = user.id;
 
-    http.del(
+    const res = http.del(
         utils.getBaseHttpUrl() + `/${id}`,
         null,
         utils.getJsonHeader()
     );
+
+    check(res, {
+        'is status 204': (r) => r.status === 204,
+    });
 }

@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import {utils} from "./utils.js";
+import { check } from 'k6';
 
 export function setup() {
     utils.insertUsers(
@@ -28,8 +29,12 @@ function getUsers() {
     let page = utils.getRandomNumber(1, 5);
     let itemsPerPage = utils.getRandomNumber(10, 40);
 
-    http.get(
+    const res = http.get(
         utils.getBaseHttpUrl() + `?page=${page}&itemsPerPage=${itemsPerPage}`,
         utils.getJsonHeader()
     );
+
+    check(res, {
+        'is status 200': (r) => r.status === 200,
+    });
 }

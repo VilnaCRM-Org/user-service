@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import {utils} from "./utils.js";
 import faker from "k6/x/faker";
+import { check } from 'k6';
 
 export const options = {
     insecureSkipTLSVerify: true,
@@ -19,39 +20,33 @@ export default function () {
 
 async function confirmUser() {
     const email = faker.person.email();
-    await createUser(email)
+    const userResponse = await createUser(email);
 
-    const messages = http.get('http://localhost:1080/messages');
+    let token;
 
-    let messageId;
-    for (const message of JSON.parse(messages.body)) {
-        if (message.recipients.includes(`<${email}>`)) {
-            messageId = message.id;
-            break;
+    if(userResponse.status === 201){
+        for(let i =0; i<utils.getFromEnv('LOAD_TEST_CONFIRM_USER_MAX_GETTING_EMAIL_RETRIES'); i++){
+            const result = await retrieveToken(email);
+            if(result){
+                token = result;
+                break;
+            }
         }
     }
-
-    const message = http.get(`http://localhost:1080/messages/${messageId}.source`);
-    const token = extractConfirmationToken(message.body)
 
     const payload = JSON.stringify({
         token: token,
     });
 
-    const res = http.patch(
+    const res = await http.patch(
         utils.getBaseHttpUrl() + '/confirm',
         payload,
         utils.getMergePatchHeader()
     )
-}
 
-function extractConfirmationToken(emailBody) {
-    const tokenRegex = /confirmation token - ([a-f0-9]+)/i;
-    const match = emailBody.match(tokenRegex);
-    if (match && match[1]) {
-        return match[1];
-    }
-    return null;
+    check(res, {
+        'is status 200': (r) => r.status === 200,
+    });
 }
 
 function createUser(email) {
@@ -69,4 +64,38 @@ function createUser(email) {
         payload,
         utils.getJsonHeader()
     );
+}
+
+async function retrieveToken(email){
+    const messages = await http.get(utils.getMailCatcherUrl());
+    if(messages.status === 200){
+        let messageId;
+        for (const message of JSON.parse(messages.body)) {
+            for(const recipient of message.recipients){
+                if (recipient.includes(`<${email}>`)) {
+                    messageId = message.id;
+                    break;
+                }
+            }
+        }
+
+        const message = await http.get(utils.getMailCatcherUrl() + `/${messageId}.source`);
+
+        return extractConfirmationToken(message.body)
+    }
+
+    else return null;
+}
+
+function extractConfirmationToken(emailBody) {
+    const tokenRegex = /token - ([a-f0-9]+(?:=\r?\n\s*[a-f0-9]+)*)/i;
+    const hexPattern = /[a-f0-9]/gi;
+    const match = emailBody.match(tokenRegex);
+    if (match && match[1]) {
+        const matches = match[1].match(hexPattern);
+        return matches.join('');
+    }
+    else {
+        return null;
+    }
 }

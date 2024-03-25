@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import {utils} from "./utils.js";
 import faker from "k6/x/faker";
+import { check } from 'k6';
 
 export function setup() {
     return {
@@ -40,9 +41,13 @@ function updateUser(user) {
         oldPassword: password,
     });
 
-    http.patch(
+    const res = http.patch(
         utils.getBaseHttpUrl() + `/${id}`,
         payload,
         utils.getMergePatchHeader()
     );
+
+    check(res, {
+        'is status 200': (r) => r.status === 200,
+    });
 }

@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { utils } from "./utils.js";
+import { check } from 'k6';
 
 export function setup() {
     return {
@@ -29,8 +30,12 @@ export default function (data) {
 function getUser(user) {
     const id = user.id;
 
-    http.get(
+    const res = http.get(
         utils.getBaseHttpUrl() + `/${id}`,
         utils.getJsonHeader()
     );
+
+    check(res, {
+        'is status 200': (r) => r.status === 200,
+    });
 }

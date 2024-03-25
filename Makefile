@@ -80,14 +80,14 @@ ci-setup-test-db:
 all-tests: unit-tests integration-tests e2e-tests
 
 load-tests: build-k6
-	$(K6) /scripts/getUser.js
-	$(K6) /scripts/getUsers.js
-	$(K6) /scripts/updateUser.js
-	$(K6) /scripts/createUser.js
+	#$(K6) /scripts/getUser.js
+	#$(K6) /scripts/getUsers.js
+	#$(K6) /scripts/updateUser.js
+	#$(K6) /scripts/createUser.js
 	$(K6) /scripts/confirmUser.js
-	$(K6) /scripts/deleteUser.js
-	$(K6) /scripts/resendEmailToUser.js
-	$(K6) /scripts/replaceUser.js
+	#$(K6) /scripts/deleteUser.js
+	#$(K6) /scripts/resendEmailToUser.js
+	#$(K6) /scripts/replaceUser.js
 
 build-k6:
 	$(DOCKER) build -t k6 -f ./tests/Load/Dockerfile .

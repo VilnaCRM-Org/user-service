@@ -7,8 +7,16 @@ const env = dotenv.parse(open(".env.test"));
 class Utils {
     constructor() {
         this.smokeTestDuration = Number(this.getFromEnv('LOAD_TEST_SMOKE_TEST_DURATION'));
-        this.averageTestDuration = Number(this.getFromEnv('LOAD_TEST_AVERAGE_TEST_DURATION'));
-        this.stressTestDuration = Number(this.getFromEnv('LOAD_TEST_STRESS_TEST_DURATION'));
+        this.averageTestDurationRise = Number(this.getFromEnv('LOAD_TEST_AVERAGE_TEST_DURATION_RISE'));
+        this.averageTestDurationPlateau = Number(this.getFromEnv('LOAD_TEST_AVERAGE_TEST_DURATION_PLATEAU'));
+        this.averageTestDurationFall = Number(this.getFromEnv('LOAD_TEST_AVERAGE_TEST_DURATION_FALL'));
+        this.averageTestDuration = this.averageTestDurationRise +
+            this.averageTestDurationPlateau + this.averageTestDurationFall;
+        this.stressTestDurationRise = Number(this.getFromEnv('LOAD_TEST_STRESS_TEST_DURATION_RISE'));
+        this.stressTestDurationPlateau = Number(this.getFromEnv('LOAD_TEST_STRESS_TEST_DURATION_PLATEAU'));
+        this.stressTestDurationFall = Number(this.getFromEnv('LOAD_TEST_STRESS_TEST_DURATION_FALL'));
+        this.stressTestDuration = this.stressTestDurationRise +
+            this.stressTestDurationPlateau + this.stressTestDurationFall;
         this.spikeTestDurationRise = Number(this.getFromEnv('LOAD_TEST_SPIKE_TEST_DURATION_RISE'));
         this.spikeTestDurationFall = Number(this.getFromEnv('LOAD_TEST_SPIKE_TEST_DURATION_FALL'));
 
@@ -21,6 +29,11 @@ class Utils {
 
         this.baseUrl = `https://${host}`;
         this.baseHttpUrl = this.baseUrl + '/api/users'
+        this.mailCatcherUrl = 'http://localhost:1080/messages';
+    }
+
+    getMailCatcherUrl(){
+        return this.mailCatcherUrl;
     }
 
     getScenarios() {
@@ -43,9 +56,10 @@ class Utils {
             'http_req_duration{test_type:average}': ['p(99)<' + averageThreshold],
             'http_req_duration{test_type:stress}': ['p(99)<' + stressThreshold],
             'http_req_duration{test_type:spike}': ['p(99)<' + spikeThreshold],
-            'http_req_failed{test_type:smoke}': ['rate<0.01'],
-            'http_req_failed{test_type:average}': ['rate<0.01'],
-            'http_req_failed{test_type:stress}': ['rate<0.1'],
+            'checks{scenario:smoke}' : ['rate>0.99'],
+            'checks{scenario:average}' : ['rate>0.99'],
+            'checks{scenario:stress}' : ['rate>0.99'],
+            'checks{scenario:spike}' : ['rate>0.75'],
         }
     }
 
@@ -60,25 +74,45 @@ class Utils {
         }
     }
 
-    getAverageScenario(ratePerSecond) {
+    getAverageScenario(targetRatePerSecond) {
         return {
-            executor: 'constant-arrival-rate',
-            rate: ratePerSecond,
+            executor: 'ramping-arrival-rate',
+            startRate: 0,
             timeUnit: '1s',
-            duration: this.averageTestDuration + 's',
             preAllocatedVUs: Number(this.getFromEnv('LOAD_TEST_AVERAGE_VUS')),
+            stages: [
+                {
+                    target: targetRatePerSecond,
+                    duration: this.averageTestDurationRise + 's'
+                },
+                {
+                    target: targetRatePerSecond,
+                    duration: this.averageTestDurationPlateau + 's'
+                },
+                {target: 0, duration: this.averageTestDurationFall + 's'},
+            ],
             startTime: this.smokeTestDuration + 's',
             tags: {test_type: 'average'},
         }
     }
 
-    getStressScenario(ratePerSecond) {
+    getStressScenario(targetRatePerSecond) {
         return {
-            executor: 'constant-arrival-rate',
-            rate: ratePerSecond,
+            executor: 'ramping-arrival-rate',
+            startRate: 0,
             timeUnit: '1s',
-            duration: this.stressTestDuration + 's',
             preAllocatedVUs: Number(this.getFromEnv('LOAD_TEST_STRESS_VUS')),
+            stages: [
+                {
+                    target: targetRatePerSecond,
+                    duration: this.stressTestDurationRise + 's'
+                },
+                {
+                    target: targetRatePerSecond,
+                    duration: this.stressTestDurationPlateau + 's'
+                },
+                {target: 0, duration: this.stressTestDurationFall + 's'},
+            ],
             startTime: this.smokeTestDuration + this.averageTestDuration + 's',
             tags: {test_type: 'stress'},
         }

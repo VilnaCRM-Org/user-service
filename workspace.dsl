@@ -88,7 +88,7 @@ workspace {
                 cache = component "Cache" "Stores confirmation token, doctrine query cache" "Elasticache" {
                     tags "Database"
                 }
-                sqs = component "AWS SQS" "Message broker for sending emails" "AWS SQA" {
+                sqs = component "AWS SQS" "Message broker for sending emails" "AWS SQS" {
                     tags "Database"
                 }
 
