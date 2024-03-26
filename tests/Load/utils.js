@@ -6,42 +6,74 @@ const env = dotenv.parse(open(".env.test"));
 
 class Utils {
     constructor() {
-        this.smokeTestDuration = Number(this.getFromEnv('LOAD_TEST_SMOKE_TEST_DURATION'));
-        this.averageTestDurationRise = Number(this.getFromEnv('LOAD_TEST_AVERAGE_TEST_DURATION_RISE'));
-        this.averageTestDurationPlateau = Number(this.getFromEnv('LOAD_TEST_AVERAGE_TEST_DURATION_PLATEAU'));
-        this.averageTestDurationFall = Number(this.getFromEnv('LOAD_TEST_AVERAGE_TEST_DURATION_FALL'));
-        this.averageTestDuration = this.averageTestDurationRise +
-            this.averageTestDurationPlateau + this.averageTestDurationFall;
-        this.stressTestDurationRise = Number(this.getFromEnv('LOAD_TEST_STRESS_TEST_DURATION_RISE'));
-        this.stressTestDurationPlateau = Number(this.getFromEnv('LOAD_TEST_STRESS_TEST_DURATION_PLATEAU'));
-        this.stressTestDurationFall = Number(this.getFromEnv('LOAD_TEST_STRESS_TEST_DURATION_FALL'));
-        this.stressTestDuration = this.stressTestDurationRise +
-            this.stressTestDurationPlateau + this.stressTestDurationFall;
-        this.spikeTestDurationRise = Number(this.getFromEnv('LOAD_TEST_SPIKE_TEST_DURATION_RISE'));
-        this.spikeTestDurationFall = Number(this.getFromEnv('LOAD_TEST_SPIKE_TEST_DURATION_FALL'));
-
-        this.smokeRatePerSecond = this.getFromEnv('LOAD_TEST_SMOKE_RPS');
-        this.averageRatePerSecond = this.getFromEnv('LOAD_TEST_AVERAGE_RPS');
-        this.stressRatePerSecond = this.getFromEnv('LOAD_TEST_STRESS_RPS');
-        this.spikeTargetRatePerSecond = this.getFromEnv('LOAD_TEST_SPIKE_RPS');
-
         const host = this.getFromEnv('LOAD_TEST_API_HOST');
 
         this.baseUrl = `https://${host}`;
         this.baseHttpUrl = this.baseUrl + '/api/users'
-        this.mailCatcherUrl = 'http://localhost:1080/messages';
+        this.mailCatcherUrl = `http://${host}:1080/messages`;
     }
 
     getMailCatcherUrl(){
         return this.mailCatcherUrl;
     }
 
-    getScenarios() {
+    getScenarios(
+        smokeRps,
+        smokeVus,
+        smokeDuration,
+        averageRps,
+        averageVus,
+        averageRiseDuration,
+        averagePlateauDuration,
+        averageFallDuration,
+        stressRps,
+        stressVus,
+        stressRiseDuration,
+        stressPlateauDuration,
+        stressFallDuration,
+        spikeRps,
+        spikeVus,
+        spikeRiseDuration,
+        spikeFallDuration,
+    ){
+        const averageTestStartTime = Number(smokeDuration);
+        const stressTestStartTime = averageTestStartTime
+            + Number(averageRiseDuration)
+            + Number(averagePlateauDuration)
+            + Number(averageFallDuration);
+        const spikeTestStartTime = stressTestStartTime
+            + Number(stressRiseDuration)
+            + Number(stressPlateauDuration)
+            + Number(stressFallDuration);
         return {
-            smoke: this.getSmokeScenario(this.smokeRatePerSecond),
-            average: this.getAverageScenario(this.averageRatePerSecond),
-            stress: this.getStressScenario(this.stressRatePerSecond),
-            spike: this.getSpikeScenario(this.spikeTargetRatePerSecond),
+            smoke: utils.getSmokeScenario(
+                smokeRps,
+                smokeVus,
+                smokeDuration,
+            ),
+            average: utils.getAverageScenario(
+                averageRps,
+                averageVus,
+                averageRiseDuration,
+                averagePlateauDuration,
+                averageFallDuration,
+                averageTestStartTime,
+            ),
+            stress: utils.getStressScenario(
+                stressRps,
+                stressVus,
+                stressRiseDuration,
+                stressPlateauDuration,
+                stressFallDuration,
+                stressTestStartTime,
+            ),
+            spike: utils.getSpikeScenario(
+                spikeRps,
+                spikeVus,
+                spikeRiseDuration,
+                spikeFallDuration,
+                spikeTestStartTime,
+            )
         }
     }
 
@@ -63,75 +95,99 @@ class Utils {
         }
     }
 
-    getSmokeScenario(ratePerSecond) {
+    getSmokeScenario(
+        ratePerSecond,
+        vus,
+        duration
+    ) {
         return {
             executor: 'constant-arrival-rate',
             rate: ratePerSecond,
             timeUnit: '1s',
-            duration: this.smokeTestDuration + 's',
-            preAllocatedVUs: Number(this.getFromEnv('LOAD_TEST_SMOKE_VUS')),
+            duration: duration + 's',
+            preAllocatedVUs: vus,
             tags: {test_type: 'smoke'},
         }
     }
 
-    getAverageScenario(targetRatePerSecond) {
+    getAverageScenario(
+        targetRatePerSecond,
+        vus,
+        riseDuration,
+        plateauDuration,
+        fallDuration,
+        startTime
+    ) {
         return {
             executor: 'ramping-arrival-rate',
             startRate: 0,
             timeUnit: '1s',
-            preAllocatedVUs: Number(this.getFromEnv('LOAD_TEST_AVERAGE_VUS')),
+            preAllocatedVUs: vus,
             stages: [
                 {
                     target: targetRatePerSecond,
-                    duration: this.averageTestDurationRise + 's'
+                    duration: riseDuration + 's'
                 },
                 {
                     target: targetRatePerSecond,
-                    duration: this.averageTestDurationPlateau + 's'
+                    duration: plateauDuration + 's'
                 },
-                {target: 0, duration: this.averageTestDurationFall + 's'},
+                {target: 0, duration: fallDuration + 's'},
             ],
-            startTime: this.smokeTestDuration + 's',
+            startTime: startTime + 's',
             tags: {test_type: 'average'},
         }
     }
 
-    getStressScenario(targetRatePerSecond) {
+    getStressScenario(
+        targetRatePerSecond,
+        vus,
+        riseDuration,
+        plateauDuration,
+        fallDuration,
+        startTime
+    ) {
         return {
             executor: 'ramping-arrival-rate',
             startRate: 0,
             timeUnit: '1s',
-            preAllocatedVUs: Number(this.getFromEnv('LOAD_TEST_STRESS_VUS')),
+            preAllocatedVUs: vus,
             stages: [
                 {
                     target: targetRatePerSecond,
-                    duration: this.stressTestDurationRise + 's'
+                    duration: riseDuration + 's'
                 },
                 {
                     target: targetRatePerSecond,
-                    duration: this.stressTestDurationPlateau + 's'
+                    duration: plateauDuration + 's'
                 },
-                {target: 0, duration: this.stressTestDurationFall + 's'},
+                {target: 0, duration: fallDuration + 's'},
             ],
-            startTime: this.smokeTestDuration + this.averageTestDuration + 's',
+            startTime: startTime + 's',
             tags: {test_type: 'stress'},
         }
     }
 
-    getSpikeScenario(targetRatePerSecond) {
+    getSpikeScenario(
+        targetRatePerSecond,
+        vus,
+        riseDuration,
+        fallDuration,
+        startTime
+    ) {
         return {
             executor: 'ramping-arrival-rate',
             startRate: 0,
             timeUnit: '1s',
-            preAllocatedVUs: Number(this.getFromEnv('LOAD_TEST_SPIKE_VUS')),
+            preAllocatedVUs: vus,
             stages: [
                 {
                     target: targetRatePerSecond,
-                    duration: this.spikeTestDurationRise + 's'
+                    duration: riseDuration + 's'
                 },
-                {target: 0, duration: this.spikeTestDurationFall + 's'},
+                {target: 0, duration: fallDuration + 's'},
             ],
-            startTime: this.smokeTestDuration + this.averageTestDuration + this.stressTestDuration + 's',
+            startTime: startTime+ 's',
             tags: {test_type: 'spike'},
         }
     }

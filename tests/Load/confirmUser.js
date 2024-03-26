@@ -1,11 +1,29 @@
 import http from 'k6/http';
 import {utils} from "./utils.js";
 import faker from "k6/x/faker";
-import { check } from 'k6';
+import {check} from 'k6';
 
 export const options = {
     insecureSkipTLSVerify: true,
-    scenarios: utils.getScenarios(),
+    scenarios: utils.getScenarios(
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_SMOKE_RPS'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_SMOKE_VUS'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_SMOKE_DURATION'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_AVERAGE_RPS'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_AVERAGE_VUS'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_AVERAGE_DURATION_RISE'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_STRESS_DURATION_PLATEAU'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_STRESS_DURATION_FALL'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_STRESS_RPS'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_STRESS_VUS'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_STRESS_DURATION_RISE'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_STRESS_DURATION_PLATEAU'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_STRESS_DURATION_FALL'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_SPIKE_RPS'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_SPIKE_VUS'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_SPIKE_DURATION_RISE'),
+        utils.getFromEnv('LOAD_TEST_CONFIRM_USER_SPIKE_DURATION_FALL'),
+    ),
     thresholds: utils.getThresholds(
         utils.getFromEnv('LOAD_TEST_CONFIRM_USER_SMOKE_THRESHOLD'),
         utils.getFromEnv('LOAD_TEST_CONFIRM_USER_AVERAGE_THRESHOLD'),
@@ -22,16 +40,10 @@ async function confirmUser() {
     const email = faker.person.email();
     const userResponse = await createUser(email);
 
-    let token;
+    let token = null;
 
-    if(userResponse.status === 201){
-        for(let i =0; i<utils.getFromEnv('LOAD_TEST_CONFIRM_USER_MAX_GETTING_EMAIL_RETRIES'); i++){
-            const result = await retrieveToken(email);
-            if(result){
-                token = result;
-                break;
-            }
-        }
+    if (userResponse.status === 201) {
+        token = await getToken(email);
     }
 
     const payload = JSON.stringify({
@@ -66,12 +78,24 @@ function createUser(email) {
     );
 }
 
-async function retrieveToken(email){
+async function getToken(email) {
+    let token = null;
+    for (let i = 0; i < utils.getFromEnv('LOAD_TEST_CONFIRM_USER_MAX_GETTING_EMAIL_RETRIES'); i++) {
+        const result = await retrieveTokenFromMailCatcher(email);
+        if (result) {
+            token = result;
+            break;
+        }
+    }
+    return token;
+}
+
+async function retrieveTokenFromMailCatcher(email) {
     const messages = await http.get(utils.getMailCatcherUrl());
-    if(messages.status === 200){
+    if (messages.status === 200) {
         let messageId;
         for (const message of JSON.parse(messages.body)) {
-            for(const recipient of message.recipients){
+            for (const recipient of message.recipients) {
                 if (recipient.includes(`<${email}>`)) {
                     messageId = message.id;
                     break;
@@ -84,7 +108,7 @@ async function retrieveToken(email){
         return extractConfirmationToken(message.body)
     }
 
-    else return null;
+    return null;
 }
 
 function extractConfirmationToken(emailBody) {
@@ -95,7 +119,5 @@ function extractConfirmationToken(emailBody) {
         const matches = match[1].match(hexPattern);
         return matches.join('');
     }
-    else {
-        return null;
-    }
+    return null;
 }

@@ -14,7 +14,25 @@ export function setup() {
 
 export const options = {
     insecureSkipTLSVerify: true,
-    scenarios: utils.getScenarios(),
+    scenarios: utils.getScenarios(
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_SMOKE_RPS'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_SMOKE_VUS'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_SMOKE_DURATION'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_AVERAGE_RPS'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_AVERAGE_VUS'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_AVERAGE_DURATION_RISE'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_STRESS_DURATION_PLATEAU'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_STRESS_DURATION_FALL'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_STRESS_RPS'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_STRESS_VUS'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_STRESS_DURATION_RISE'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_STRESS_DURATION_PLATEAU'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_STRESS_DURATION_FALL'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_SPIKE_RPS'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_SPIKE_VUS'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_SPIKE_DURATION_RISE'),
+        utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_SPIKE_DURATION_FALL'),
+    ),
     thresholds: utils.getThresholds(
         utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_SMOKE_THRESHOLD'),
         utils.getFromEnv('LOAD_TEST_RESEND_EMAIL_AVERAGE_THRESHOLD'),

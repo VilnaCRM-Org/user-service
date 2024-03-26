@@ -1,3 +1,6 @@
+# Load environment variables from .env.test
+include .env.test
+
 # Parameters
 PROJECT       = php-service-template
 GIT_AUTHOR    = Kravalg
@@ -80,14 +83,16 @@ ci-setup-test-db:
 all-tests: unit-tests integration-tests e2e-tests
 
 load-tests: build-k6
-	#$(K6) /scripts/getUser.js
-	#$(K6) /scripts/getUsers.js
-	#$(K6) /scripts/updateUser.js
-	#$(K6) /scripts/createUser.js
+	$(K6) /scripts/getUser.js
+	$(K6) /scripts/getUsers.js
+	$(K6) /scripts/updateUser.js
+	$(K6) /scripts/createUser.js
 	$(K6) /scripts/confirmUser.js
-	#$(K6) /scripts/deleteUser.js
-	#$(K6) /scripts/resendEmailToUser.js
-	#$(K6) /scripts/replaceUser.js
+	$(K6) /scripts/deleteUser.js
+	$(K6) /scripts/resendEmailToUser.js
+	$(K6) /scripts/replaceUser.js
+	$(SYMFONY) league:oauth2-server:create-client $(LOAD_TEST_OAUTH_CLIENT_NAME) $(LOAD_TEST_OAUTH_CLIENT_ID) $(LOAD_TEST_OAUTH_CLIENT_SECRET) --redirect-uri $(LOAD_TEST_OAUTH_CLIENT_REDIRECT_URI)
+	$(K6) /scripts/oauth.js
 
 build-k6:
 	$(DOCKER) build -t k6 -f ./tests/Load/Dockerfile .
