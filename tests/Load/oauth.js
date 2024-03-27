@@ -2,34 +2,7 @@ import http from 'k6/http';
 import {utils} from "./utils.js";
 import { check } from 'k6';
 
-export const options = {
-    insecureSkipTLSVerify: true,
-    scenarios: utils.getScenarios(
-        utils.getFromEnv('LOAD_TEST_OAUTH_SMOKE_RPS'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_SMOKE_VUS'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_SMOKE_DURATION'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_AVERAGE_RPS'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_AVERAGE_VUS'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_AVERAGE_DURATION_RISE'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_STRESS_DURATION_PLATEAU'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_STRESS_DURATION_FALL'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_STRESS_RPS'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_STRESS_VUS'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_STRESS_DURATION_RISE'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_STRESS_DURATION_PLATEAU'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_STRESS_DURATION_FALL'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_SPIKE_RPS'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_SPIKE_VUS'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_SPIKE_DURATION_RISE'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_SPIKE_DURATION_FALL'),
-    ),
-    thresholds: utils.getThresholds(
-        utils.getFromEnv('LOAD_TEST_OAUTH_SMOKE_THRESHOLD'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_AVERAGE_THRESHOLD'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_STRESS_THRESHOLD'),
-        utils.getFromEnv('LOAD_TEST_OAUTH_SPIKE_THRESHOLD'),
-    )
-};
+export const options = utils.getOptions('OAUTH');
 
 export default function () {
     getAccessToken();

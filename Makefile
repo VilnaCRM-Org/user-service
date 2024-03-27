@@ -93,6 +93,10 @@ load-tests: build-k6
 	$(K6) /scripts/replaceUser.js
 	$(SYMFONY) league:oauth2-server:create-client $(LOAD_TEST_OAUTH_CLIENT_NAME) $(LOAD_TEST_OAUTH_CLIENT_ID) $(LOAD_TEST_OAUTH_CLIENT_SECRET) --redirect-uri $(LOAD_TEST_OAUTH_CLIENT_REDIRECT_URI)
 	$(K6) /scripts/oauth.js
+	$(K6) /scripts/graphQLUpdateUser.js
+	$(K6) /scripts/graphQLGetUser.js
+	$(K6) /scripts/graphQLGetUsers.js
+	$(K6) /scripts/graphQLDeleteUser.js
 
 build-k6:
 	$(DOCKER) build -t k6 -f ./tests/Load/Dockerfile .

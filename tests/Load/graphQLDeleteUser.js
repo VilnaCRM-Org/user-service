@@ -12,7 +12,7 @@ export function setup() {
     }
 }
 
-export const options= utils.getOptions('DELETE_USER');
+export const options= utils.getOptions('GRAPHQL_DELETE_USER');
 
 export default function (data) {
     deleteUser(data.users[utils.getRandomNumber(0, data.users.length - 1)]);
@@ -21,13 +21,24 @@ export default function (data) {
 function deleteUser(user) {
     const id = user.id;
 
-    const res = http.del(
-        utils.getBaseHttpUrl() + `/${id}`,
-        null,
-        utils.getJsonHeader()
+    const mutation = `
+     mutation{
+        deleteUser(input:{
+            id: "${id}"
+        }){
+            user{
+                id
+            }
+        }
+    }`;
+
+    const res = http.post(
+        utils.getBaseGraphQLUrl(),
+        JSON.stringify({query: mutation}),
+        utils.getJsonHeader(),
     );
 
     check(res, {
-        'is status 204': (r) => r.status === 204,
+        'is status 200': (r) => r.status === 200,
     });
 }

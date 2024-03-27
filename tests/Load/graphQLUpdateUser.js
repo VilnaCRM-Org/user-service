@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import {utils} from "./utils.js";
 import faker from "k6/x/faker";
-import { check } from 'k6';
+import {check} from 'k6';
 
 export function setup() {
     return {
@@ -13,7 +13,7 @@ export function setup() {
     }
 }
 
-export const options = utils.getOptions('REPLACE_USER');
+export const options = utils.getOptions('GRAPHQL_UPDATE_USER');
 
 export default function (data) {
     updateUser(data.users[utils.getRandomNumber(0, data.users.length - 1)]);
@@ -25,17 +25,27 @@ function updateUser(user) {
     const initials = faker.person.name();
     const password = user.password;
 
-    const payload = JSON.stringify({
-        email: email,
-        newPassword: password,
-        initials: initials,
-        oldPassword: password,
-    });
+    const mutation = `
+     mutation {
+        updateUser(
+            input: {
+            id: "/api/users/${id}"
+            email: "${email}"
+            newPassword: "${password}"
+            initials: "${initials}"
+            password: "${password}"
+        }
+    ) {
+            user {
+                id
+            }
+        }
+    }`;
 
-    const res = http.put(
-        utils.getBaseHttpUrl() + `/${id}`,
-        payload,
-        utils.getJsonHeader()
+    const res = http.post(
+        utils.getBaseGraphQLUrl(),
+        JSON.stringify({query: mutation}),
+        utils.getJsonHeader(),
     );
 
     check(res, {

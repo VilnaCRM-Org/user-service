@@ -1,6 +1,6 @@
 import http from 'k6/http';
-import { utils } from "./utils.js";
-import { check } from 'k6';
+import {utils} from "./utils.js";
+import {check} from 'k6';
 
 export function setup() {
     return {
@@ -12,7 +12,7 @@ export function setup() {
     }
 }
 
-export const options = utils.getOptions('GET_USER');
+export const options = utils.getOptions('GRAPHQL_GET_USER');
 
 export default function (data) {
     getUser(data.users[utils.getRandomNumber(0, data.users.length - 1)]);
@@ -21,9 +21,18 @@ export default function (data) {
 function getUser(user) {
     const id = user.id;
 
-    const res = http.get(
-        utils.getBaseHttpUrl() + `/${id}`,
-        utils.getJsonHeader()
+    const query = `
+      query{
+  user(id: "/api/users/${id}"){
+        id
+        email
+    }
+    }`;
+
+    const res = http.post(
+        utils.getBaseGraphQLUrl(),
+        JSON.stringify({query: query}),
+        utils.getJsonHeader(),
     );
 
     check(res, {
