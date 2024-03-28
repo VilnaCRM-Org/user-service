@@ -4,10 +4,11 @@ import * as dotenv from "k6/x/dotenv";
 
 const env = dotenv.parse(open(".env.test"));
 
-class Utils {
-    constructor() {
+export class Utils {
+    constructor(scenarioName) {
         const host = this.getFromEnv('LOAD_TEST_API_HOST');
         const mailCatcherPort = this.getFromEnv('LOAD_TEST_MAILCATCHER_PORT');
+        const delay = Number(this.getFromEnv('LOAD_TEST_DELAY_BETWEEN_SCENARIOS'));
 
         this.loadTestPrefix = 'LOAD_TEST_';
 
@@ -15,6 +16,42 @@ class Utils {
         this.baseHttpUrl = this.baseUrl + '/users';
         this.baseGraphQLUrl = this.baseUrl + '/graphql';
         this.mailCatcherUrl = `http://${host}:${mailCatcherPort}/messages`;
+
+        this.scenarioName = scenarioName;
+        this.smokeRps = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_SMOKE_RPS'));
+        this.smokeVus = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_SMOKE_VUS'));
+        this.smokeDuration = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_SMOKE_DURATION'));
+        this.averageRps = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_AVERAGE_RPS'));
+        this.averageVus = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_AVERAGE_VUS'));
+        this.averageRiseDuration = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_AVERAGE_DURATION_RISE'));
+        this.averagePlateauDuration = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_AVERAGE_DURATION_PLATEAU'));
+        this.averageFallDuration = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_AVERAGE_DURATION_FALL'));
+        this.stressRps = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_STRESS_RPS'));
+        this.stressVus = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_STRESS_VUS'));
+        this.stressRiseDuration = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_STRESS_DURATION_RISE'));
+        this.stressPlateauDuration = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_STRESS_DURATION_PLATEAU'));
+        this.stressFallDuration = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_STRESS_DURATION_FALL'));
+        this.spikeRps = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_SPIKE_RPS'));
+        this.spikeVus = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_SPIKE_VUS'));
+        this.spikeRiseDuration = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_SPIKE_DURATION_RISE'));
+        this.spikeFallDuration = Number(this.getFromEnv(this.loadTestPrefix + scenarioName + '_SPIKE_DURATION_FALL'));
+        this.averageTestStartTime = this.smokeDuration + delay;
+        this.stressTestStartTime = this.averageTestStartTime
+            + this.averageRiseDuration
+            + this.averagePlateauDuration
+            + this.averageFallDuration + delay;
+        this.spikeTestStartTime = this.stressTestStartTime
+            + this.stressRiseDuration
+            + this.stressPlateauDuration
+            + this.stressFallDuration + delay;
+    }
+
+    getBaseUrl() {
+        return this.baseUrl;
+    }
+
+    getBaseHttpUrl() {
+        return this.baseHttpUrl;
     }
 
     getMailCatcherUrl() {
@@ -25,87 +62,60 @@ class Utils {
         return this.baseGraphQLUrl;
     }
 
-    getOptions(scenarioName) {
+    getFromEnv(varName) {
+        return env[varName];
+    }
+
+    getOptions() {
         return {
             insecureSkipTLSVerify: true,
             scenarios: this.getScenarios(
-                scenarioName
+                this.scenarioName
             ),
             thresholds: this.getThresholds(
-                scenarioName
+                this.scenarioName
             )
         }
     }
 
-    getScenarios(
-        scenarioName
-    ) {
-        const smokeRps = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_SMOKE_RPS');
-        const smokeVus = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_SMOKE_VUS');
-        const smokeDuration = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_SMOKE_DURATION');
-        const averageRps = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_AVERAGE_RPS');
-        const averageVus = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_AVERAGE_VUS');
-        const averageRiseDuration = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_AVERAGE_DURATION_RISE');
-        const averagePlateauDuration = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_AVERAGE_DURATION_PLATEAU');
-        const averageFallDuration = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_AVERAGE_DURATION_FALL');
-        const stressRps = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_STRESS_RPS');
-        const stressVus = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_STRESS_VUS');
-        const stressRiseDuration = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_STRESS_DURATION_RISE');
-        const stressPlateauDuration = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_STRESS_DURATION_PLATEAU');
-        const stressFallDuration = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_STRESS_DURATION_FALL');
-        const spikeRps = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_SPIKE_RPS');
-        const spikeVus = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_SPIKE_VUS');
-        const spikeRiseDuration = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_SPIKE_DURATION_RISE');
-        const spikeFallDuration = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_SPIKE_DURATION_FALL');
-        const delay = Number(utils.getFromEnv('LOAD_TEST_DELAY_BETWEEN_SCENARIOS'));
-        const averageTestStartTime = Number(smokeDuration) + delay;
-        const stressTestStartTime = averageTestStartTime
-            + Number(averageRiseDuration)
-            + Number(averagePlateauDuration)
-            + Number(averageFallDuration) + delay;
-        const spikeTestStartTime = stressTestStartTime
-            + Number(stressRiseDuration)
-            + Number(stressPlateauDuration)
-            + Number(stressFallDuration) + delay;
+    getScenarios() {
         return {
-            smoke: utils.getSmokeScenario(
-                smokeRps,
-                smokeVus,
-                smokeDuration,
+            smoke: this.getSmokeScenario(
+                this.smokeRps,
+                this.smokeVus,
+                this.smokeDuration,
             ),
-            average: utils.getAverageScenario(
-                averageRps,
-                averageVus,
-                averageRiseDuration,
-                averagePlateauDuration,
-                averageFallDuration,
-                averageTestStartTime,
+            average: this.getAverageScenario(
+                this.averageRps,
+                this.averageVus,
+                this.averageRiseDuration,
+                this.averagePlateauDuration,
+                this.averageFallDuration,
+                this.averageTestStartTime,
             ),
-            stress: utils.getStressScenario(
-                stressRps,
-                stressVus,
-                stressRiseDuration,
-                stressPlateauDuration,
-                stressFallDuration,
-                stressTestStartTime,
+            stress: this.getStressScenario(
+                this.stressRps,
+                this.stressVus,
+                this.stressRiseDuration,
+                this.stressPlateauDuration,
+                this.stressFallDuration,
+                this.stressTestStartTime,
             ),
-            spike: utils.getSpikeScenario(
-                spikeRps,
-                spikeVus,
-                spikeRiseDuration,
-                spikeFallDuration,
-                spikeTestStartTime,
+            spike: this.getSpikeScenario(
+                this.spikeRps,
+                this.spikeVus,
+                this.spikeRiseDuration,
+                this.spikeFallDuration,
+                this.spikeTestStartTime,
             )
         }
     }
 
-    getThresholds(
-        scenarioName
-    ) {
-        const smokeThreshold = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_SMOKE_THRESHOLD');
-        const averageThreshold = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_AVERAGE_THRESHOLD');
-        const stressThreshold = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_STRESS_THRESHOLD');
-        const spikeThreshold = utils.getFromEnv(this.loadTestPrefix + scenarioName + '_SPIKE_THRESHOLD');
+    getThresholds() {
+        const smokeThreshold = this.getFromEnv(this.loadTestPrefix + this.scenarioName + '_SMOKE_THRESHOLD');
+        const averageThreshold = this.getFromEnv(this.loadTestPrefix + this.scenarioName + '_AVERAGE_THRESHOLD');
+        const stressThreshold = this.getFromEnv(this.loadTestPrefix + this.scenarioName + '_STRESS_THRESHOLD');
+        const spikeThreshold = this.getFromEnv(this.loadTestPrefix + this.scenarioName + '_SPIKE_THRESHOLD');
         return {
             'http_req_duration{test_type:smoke}': ['p(99)<' + smokeThreshold],
             'http_req_duration{test_type:average}': ['p(99)<' + averageThreshold],
@@ -235,16 +245,48 @@ class Utils {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    getBaseUrl() {
-        return this.baseUrl;
+    async getConfirmationToken(email) {
+        let token = null;
+        for (let attempt = 0; attempt < utils.getFromEnv('LOAD_TEST_MAX_GETTING_EMAIL_RETRIES'); attempt++) {
+            const result = await this.retrieveTokenFromMailCatcher(email);
+            if (result) {
+                token = result;
+                break;
+            }
+        }
+        return token;
     }
 
-    getBaseHttpUrl() {
-        return this.baseHttpUrl;
+    async retrieveTokenFromMailCatcher(email) {
+        const messages = await http.get(utils.getMailCatcherUrl());
+        if (messages.status === 200) {
+            let messageId;
+            for (const message of JSON.parse(messages.body)) {
+                for (const recipient of message.recipients) {
+                    if (recipient.includes(`<${email}>`)) {
+                        messageId = message.id;
+                        break;
+                    }
+                }
+            }
+
+            const message = await http.get(utils.getMailCatcherUrl() + `/${messageId}.source`);
+
+            return this.extractConfirmationToken(message.body)
+        }
+
+        return null;
     }
 
-    getFromEnv(varName) {
-        return env[varName];
+    extractConfirmationToken(emailBody) {
+        const tokenRegex = /token - ([a-f0-9]+(?:=\r?\n\s*[a-f0-9]+)*)/i;
+        const hexPattern = /[a-f0-9]/gi;
+        const match = emailBody.match(tokenRegex);
+        if (match && match[1]) {
+            const matches = match[1].match(hexPattern);
+            return matches.join('');
+        }
+        return null;
     }
 
     * requestGenerator(numberOfUsers) {
@@ -268,20 +310,29 @@ class Utils {
         }
     }
 
+    prepareBatch(batchSize) {
+        const generator = this.requestGenerator(batchSize);
+        const batch = [];
+        const userPasswords = {};
+
+        for (let requestIndex = 0; requestIndex < batchSize; requestIndex++) {
+            const {value, done} = generator.next();
+            if (done) break;
+            const [request, email, password] = value;
+            batch.push(request);
+            userPasswords[email] = password;
+        }
+
+        return [batch, userPasswords];
+    }
+
     insertUsers(numberOfUsers) {
         const batchSize = this.getFromEnv('LOAD_TEST_BATCH_SIZE');
-        const generator = this.requestGenerator(numberOfUsers);
-        const batch = [];
-        const userPasswords = [];
+
         const users = [];
 
-        for (let i = 0; i < numberOfUsers; i += batchSize) {
-            for (let j = 0; j < batchSize; j++) {
-                const {value, done} = generator.next();
-                const [request, email, password] = value;
-                batch.push(request);
-                userPasswords[email] = password;
-            }
+        for (let createdUsers = 0; createdUsers < numberOfUsers; createdUsers += batchSize) {
+            const [batch, userPasswords] = this.prepareBatch(batchSize);
 
             const responses = http.batch(batch);
 
@@ -290,13 +341,41 @@ class Utils {
                 user.password = userPasswords[user.email];
                 users.push(user);
             });
-
-            batch.length = 0;
-            userPasswords.length = 0;
         }
 
         return users;
     }
-}
 
-export const utils = new Utils();
+    countRequestForRampingRate(
+        startRps,
+        targetRps,
+        duration
+    ) {
+        const acceleration = (targetRps - startRps) / duration;
+
+        return startRps * duration + acceleration * duration * duration / 2;
+    }
+
+    prepareUsers() {
+        let totalRequest = Number(this.getFromEnv('LOAD_TEST_USERS_TO_INSERT'));
+
+        if(this.getFromEnv('LOAD_TEST_AUTO_DETERMINE_USERS_TO_INSERT') === 'true'){
+            const smokeRequests = this.smokeRps * this.smokeDuration;
+            const averageRequests =
+                this.countRequestForRampingRate(0, this.averageRps, this.averageRiseDuration)
+                + this.averageRps * this.averagePlateauDuration
+                + this.countRequestForRampingRate(this.averageRps, 0, this.averageFallDuration);
+            const stressRequests =
+                this.countRequestForRampingRate(0, this.stressRps, this.stressRiseDuration)
+                + this.stressRps * this.stressPlateauDuration
+                + this.countRequestForRampingRate(this.stressRps, 0, this.stressFallDuration);
+            const spikeRequests =
+                this.countRequestForRampingRate(0, this.spikeRps, this.spikeRiseDuration)
+                + this.countRequestForRampingRate(this.spikeRps, 0, this.spikeFallDuration);
+
+            totalRequest = smokeRequests + averageRequests + stressRequests + spikeRequests;
+        }
+
+        return this.insertUsers(totalRequest);
+    }
+}

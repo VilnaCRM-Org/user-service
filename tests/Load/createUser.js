@@ -1,9 +1,11 @@
 import http from 'k6/http';
-import {utils} from "./utils.js";
+import {Utils} from "./utils.js";
 import faker from "k6/x/faker";
 import { check } from 'k6';
 
-export const options= utils.getOptions('CREATE_USER');
+const utils = new Utils('CREATE_USER')
+
+export const options= utils.getOptions();
 
 export default function () {
     createUser();

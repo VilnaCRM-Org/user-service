@@ -1,19 +1,17 @@
 import http from 'k6/http';
-import {utils} from "./utils.js";
+import {Utils} from "./utils.js";
 import faker from "k6/x/faker";
 import {check} from 'k6';
 
+const utils = new Utils('GRAPHQL_UPDATE_USER')
+
 export function setup() {
     return {
-        users: utils.insertUsers(
-            Number(
-                utils.getFromEnv('LOAD_TEST_USERS_TO_INSERT')
-            )
-        )
+        users: utils.prepareUsers()
     }
 }
 
-export const options = utils.getOptions('GRAPHQL_UPDATE_USER');
+export const options = utils.getOptions();
 
 export default function (data) {
     updateUser(data.users[utils.getRandomNumber(0, data.users.length - 1)]);

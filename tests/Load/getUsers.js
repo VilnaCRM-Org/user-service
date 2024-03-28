@@ -1,16 +1,16 @@
 import http from 'k6/http';
-import {utils} from "./utils.js";
+import {Utils} from "./utils.js";
 import { check } from 'k6';
 
+const utils = new Utils('GET_USERS')
+
 export function setup() {
-    utils.insertUsers(
-        Number(
-            utils.getFromEnv('LOAD_TEST_USERS_TO_INSERT')
-        )
-    )
+    return {
+        users: utils.prepareUsers()
+    }
 }
 
-export const options = utils.getOptions('GET_USERS');
+export const options = utils.getOptions();
 
 export default function () {
     getUsers();

@@ -1,8 +1,10 @@
 import http from 'k6/http';
-import {utils} from "./utils.js";
+import {Utils} from "./utils.js";
 import { check } from 'k6';
 
-export const options = utils.getOptions('OAUTH');
+const utils = new Utils('OAUTH')
+
+export const options = utils.getOptions();
 
 export default function () {
     getAccessToken();
