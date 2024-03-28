@@ -31,11 +31,20 @@ You can clone this repository locally or use Github functionality "Use this temp
 
 Install the latest [docker](https://docs.docker.com/engine/install/) and [docker compose](https://docs.docker.com/compose/install/)
 
-Use `make` command to set up project and automatically install all needed dependencies
+Use `make` command to set up project
 > make start
 
-Go to browser and open the link below
+Use `make` command to automatically install all needed dependencies
+> make install
+
+Use `make` command to run migrations
+> make doctrine-migrations-migrate
+
+Go to browser and open the link below to access REST API docs
 > https://localhost/api/docs
+
+And using the link below you can access the GraphQL documentation
+> https://localhost/api/graphql/graphql_playground
 
 That's it. You should now be ready to use PHP service template!
 

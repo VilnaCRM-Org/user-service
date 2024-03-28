@@ -5,38 +5,1139 @@ info:
   version: 0.0.0
 servers:
   -
-    url: /
+    url: 'https://localhost'
     description: ''
 paths:
-  /api/example_api_resources:
+  /api/oauth/authorize:
+    summary: 'Requests for authorization code'
+    description: 'Requests for authorization code'
     get:
-      operationId: api_example_api_resources_get
       tags:
-        - ExampleApiResource
+        - OAuth
       responses:
-        200:
-          description: 'ExampleApiResource resource'
+        302:
+          description: 'Redirect to the provided redirect URI with authorization code.'
           content:
-            application/ld+json:
+            application/json:
+              example: ''
+          headers:
+            Location:
+              in: header
+              description: 'The URI to redirect to for user authorization'
+              required: false
+              deprecated: false
+              allowEmptyValue: false
               schema:
-                $ref: '#/components/schemas/ExampleApiResource.jsonld'
+                type: string
+                format: uri
+                example: 'https://example.com/oauth/callback?code=e7f8c62113a4'
+              style: simple
+              explode: false
+              allowReserved: false
+        400:
+          description: 'Unsupported grant type'
+          content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExampleApiResource'
-        404:
-          description: 'Resource not found'
-      summary: 'Retrieves a ExampleApiResource resource.'
-      description: 'Retrieves a ExampleApiResource resource.'
+                type: object
+                properties:
+                  error: { type: string }
+                  error_description: { type: string }
+                  hint: { type: string }
+                  message: { type: string }
+              example:
+                error: unsupported_grant_type
+                error_description: 'The authorization grant type is not supported by the authorization server.'
+                hint: 'Check that all required parameters have been provided'
+                message: 'The authorization grant type is not supported by the authorization server.'
+          headers: {  }
+        401:
+          description: 'Invalid client credentials'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+                  error_description: { type: string }
+                  message: { type: string }
+              example:
+                error: invalid_client
+                error_description: 'Client authentication failed'
+                message: 'Client authentication failed'
+          headers: {  }
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      parameters:
+        -
+          name: response_type
+          in: query
+          description: 'Response type'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+          example: code
+        -
+          name: client_id
+          in: query
+          description: 'Client ID'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+          example: dc0bc6323f16fecd4224a3860ca894c5
+        -
+          name: redirect_uri
+          in: query
+          description: 'Redirect uri'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+          example: 'https://example.com/oauth/callback'
+        -
+          name: scope
+          in: query
+          description: Scope
+          required: false
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+          example: 'profile email'
+        -
+          name: state
+          in: query
+          description: State
+          required: false
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+          example: af0ifjsldkj
+    parameters: []
+  /api/oauth/token:
+    summary: 'Requests for access token'
+    description: 'Requests for access token'
+    post:
+      tags:
+        - OAuth
+      responses:
+        200:
+          description: 'Unsupported grant type'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token_type: { type: string }
+                  expires_in: { type: integer }
+                  access_token: { type: string }
+                  refresh_token: { type: string }
+              example:
+                token_type: Bearer
+                expires_in: 3600
+                access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdW
+                refresh_token: df9b4ae7ce2e1e8f2a3c1b4d
+          headers: {  }
+        400:
+          description: 'Unsupported grant type'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+                  error_description: { type: string }
+                  hint: { type: string }
+                  message: { type: string }
+              example:
+                error: unsupported_grant_type
+                error_description: 'The authorization grant type is not supported by the authorization server.'
+                hint: 'Check that all required parameters have been provided'
+                message: 'The authorization grant type is not supported by the authorization server.'
+          headers: {  }
+        401:
+          description: 'Invalid client credentials'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+                  error_description: { type: string }
+                  message: { type: string }
+              example:
+                error: invalid_client
+                error_description: 'Client authentication failed'
+                message: 'Client authentication failed'
+          headers: {  }
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                client_id:
+                  type: string
+                client_secret:
+                  type: string
+                redirect_uri:
+                  type: string
+                code:
+                  type: string
+                refresh_token:
+                  type: string
+            example:
+              grant_type: authorization_code
+              client_id: dc0bc6323f16fecd4224a3860ca894c5
+              client_secret: 8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7
+              redirect_uri: 'https://example.com/oauth/callback'
+              code: e7f8c62113a47f7a5a9dca1f
+              refresh_token: f7a5a9dca1fe7f8c62113a47
+        required: false
+    parameters: []
+  /api/users:
+    get:
+      operationId: api_users_get_collection
+      tags:
+        - User
+      responses:
+        200:
+          description: 'User collection'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User-output'
+            application/graphql:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User-output'
+            application/ld+json:
+              schema:
+                type: object
+                properties:
+                  'hydra:member': { type: array, items: { $ref: '#/components/schemas/User.jsonld-output' } }
+                  'hydra:totalItems': { type: integer, minimum: 0 }
+                  'hydra:view': { type: object, properties: { '@id': { type: string, format: iri-reference }, '@type': { type: string }, 'hydra:first': { type: string, format: iri-reference }, 'hydra:last': { type: string, format: iri-reference }, 'hydra:previous': { type: string, format: iri-reference }, 'hydra:next': { type: string, format: iri-reference } }, example: { '@id': string, type: string, 'hydra:first': string, 'hydra:last': string, 'hydra:previous': string, 'hydra:next': string } }
+                  'hydra:search': { type: object, properties: { '@type': { type: string }, 'hydra:template': { type: string }, 'hydra:variableRepresentation': { type: string }, 'hydra:mapping': { type: array, items: { type: object, properties: { '@type': { type: string }, variable: { type: string }, property: { type: [string, 'null'] }, required: { type: boolean } } } } } }
+                required:
+                  - 'hydra:member'
+        400:
+          description: 'Bad request'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'The input data is misformatted.'
+                status: 400
+          headers: {  }
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Retrieves the collection of User resources.'
+      description: 'Retrieves the collection of User resources.'
+      parameters:
+        -
+          name: page
+          in: query
+          description: 'The collection page number'
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: integer
+            default: 1
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: itemsPerPage
+          in: query
+          description: 'The number of items per page'
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: integer
+            default: 30
+            minimum: 0
+          style: form
+          explode: false
+          allowReserved: false
+      deprecated: false
+    post:
+      operationId: create_http
+      tags:
+        - User
+      responses:
+        400:
+          description: 'Bad request'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'The input data is misformatted.'
+                status: 400
+          headers: {  }
+        409:
+          description: 'Duplicate email'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
+                status: 409
+          headers: {  }
+        422:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  violations: { type: array }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'some_property: This value should not be blank.'
+                violations:
+                  propertyPath: some_property
+                  message: 'This value should not be blank.'
+                  code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
+                status: 422
+          headers: {  }
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Creates a User resource.'
+      description: 'Creates a User resource.'
       parameters: []
+      requestBody:
+        description: 'The new User resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User.UserRegisterDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/User.UserRegisterDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/User.UserRegisterDto.jsonld'
+        required: true
+      deprecated: false
+    parameters: []
+  /api/users/confirm:
+    patch:
+      operationId: confirm_http
+      tags:
+        - User
+      responses:
+        200:
+          description: 'User confirmed'
+          content:
+            application/json:
+              example: ''
+          headers: {  }
+        404:
+          description: 'Token not found or expired'
+          content:
+            application/json:
+              example: ''
+          headers: {  }
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Confirms the User'
+      description: 'Confirms the User'
+      parameters: []
+      requestBody:
+        description: 'The updated User resource'
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/User.ConfirmUserDto'
+        required: true
+      deprecated: false
+    parameters: []
+  '/api/users/{id}':
+    get:
+      operationId: api_users_id_get
+      tags:
+        - User
+      responses:
+        200:
+          description: 'User resource'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User-output'
+            application/graphql:
+              schema:
+                $ref: '#/components/schemas/User-output'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/User.jsonld-output'
+        404:
+          description: 'User not found'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'User not found'
+                status: 404
+          headers: {  }
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Retrieves a User resource.'
+      description: 'Retrieves a User resource.'
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'User identifier'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: simple
+          explode: false
+          allowReserved: false
+          example: 2b10b7a3-67f0-40ea-a367-44263321592a
+      deprecated: false
+    put:
+      operationId: api_users_id_put
+      tags:
+        - User
+      responses:
+        400:
+          description: 'Bad request'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'The input data is misformatted.'
+                status: 400
+          headers: {  }
+        404:
+          description: 'User not found'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'User not found'
+                status: 404
+          headers: {  }
+        409:
+          description: 'Duplicate email'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
+                status: 409
+          headers: {  }
+        422:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  violations: { type: array }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'some_property: This value should not be blank.'
+                violations:
+                  propertyPath: some_property
+                  message: 'This value should not be blank.'
+                  code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
+                status: 422
+          headers: {  }
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Replaces the User resource.'
+      description: 'Replaces the User resource.'
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'User identifier'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: simple
+          explode: false
+          allowReserved: false
+          example: 2b10b7a3-67f0-40ea-a367-44263321592a
+      requestBody:
+        description: 'The updated User resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User.UserPutDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/User.UserPutDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/User.UserPutDto.jsonld'
+        required: true
+      deprecated: false
+    delete:
+      operationId: api_users_id_delete
+      tags:
+        - User
+      responses:
+        204:
+          description: 'User resource deleted'
+          content:
+            application/json:
+              example: ''
+          headers: {  }
+        404:
+          description: 'User not found'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'User not found'
+                status: 404
+          headers: {  }
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Removes the User resource.'
+      description: 'Removes the User resource.'
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'User identifier'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: simple
+          explode: false
+          allowReserved: false
+          example: 2b10b7a3-67f0-40ea-a367-44263321592a
+      deprecated: false
+    patch:
+      operationId: api_users_id_patch
+      tags:
+        - User
+      responses:
+        400:
+          description: 'Bad request'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'The input data is misformatted.'
+                status: 400
+          headers: {  }
+        404:
+          description: 'User not found'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'User not found'
+                status: 404
+          headers: {  }
+        409:
+          description: 'Duplicate email'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
+                status: 409
+          headers: {  }
+        422:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  violations: { type: array }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'some_property: This value should not be blank.'
+                violations:
+                  propertyPath: some_property
+                  message: 'This value should not be blank.'
+                  code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
+                status: 422
+          headers: {  }
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Updates the User resource.'
+      description: 'Updates the User resource.'
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'User identifier'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: simple
+          explode: false
+          allowReserved: false
+          example: 2b10b7a3-67f0-40ea-a367-44263321592a
+      requestBody:
+        description: 'The updated User resource'
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/User.UserPatchDto'
+        required: true
+      deprecated: false
+    parameters: []
+  '/api/users/{id}/resend-confirmation-email':
+    post:
+      operationId: api_users_idresend-confirmation-email_post
+      tags:
+        - User
+      responses:
+        200:
+          description: 'Email was send again'
+          content:
+            application/json:
+              example: ''
+          headers: {  }
+        404:
+          description: 'User not found'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'User not found'
+                status: 404
+          headers: {  }
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'Cannot send new email till 2024-01-24T12:43:01+00:00'
+                status: 429
+          headers: {  }
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Resends confirmation email'
+      description: 'Resends confirmation email'
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'User identifier'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: simple
+          explode: false
+          allowReserved: false
+          example: 2b10b7a3-67f0-40ea-a367-44263321592a
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            example: ''
+        required: false
       deprecated: false
     parameters: []
 components:
   schemas:
-    ExampleApiResource:
+    User-output:
       type: object
       description: ''
       deprecated: false
-    ExampleApiResource.jsonld:
+      properties:
+        confirmed:
+          type: boolean
+        email:
+          type: string
+        initials:
+          type: string
+        id:
+          $ref: '#/components/schemas/UuidInterface-output'
+    User.ConfirmUserDto:
+      type: object
+      description: ''
+      deprecated: false
+      required:
+        - token
+      properties:
+        token:
+          type: string
+    User.RetryDto:
+      type: object
+      description: ''
+      deprecated: false
+    User.RetryDto.jsonld:
+      type: object
+      description: ''
+      deprecated: false
+    User.UserPatchDto:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        email:
+          format: email
+          maxLength: 255
+          externalDocs:
+            url: 'https://schema.org/email'
+          type: string
+        initials:
+          maxLength: 255
+          type: string
+        oldPassword:
+          maxLength: 255
+          type: string
+        newPassword:
+          maxLength: 255
+          type: string
+      required:
+        - oldPassword
+    User.UserPutDto:
+      type: object
+      description: ''
+      deprecated: false
+      required:
+        - email
+        - initials
+        - oldPassword
+        - newPassword
+      properties:
+        email:
+          format: email
+          maxLength: 255
+          externalDocs:
+            url: 'https://schema.org/email'
+          type: string
+        initials:
+          maxLength: 255
+          type: string
+        oldPassword:
+          maxLength: 255
+          type: string
+        newPassword:
+          maxLength: 255
+          type: string
+    User.UserPutDto.jsonld:
+      type: object
+      description: ''
+      deprecated: false
+      required:
+        - email
+        - initials
+        - oldPassword
+        - newPassword
+      properties:
+        email:
+          format: email
+          maxLength: 255
+          externalDocs:
+            url: 'https://schema.org/email'
+          type: string
+        initials:
+          maxLength: 255
+          type: string
+        oldPassword:
+          maxLength: 255
+          type: string
+        newPassword:
+          maxLength: 255
+          type: string
+    User.UserRegisterDto:
+      type: object
+      description: ''
+      deprecated: false
+      required:
+        - email
+        - initials
+        - password
+      properties:
+        email:
+          format: email
+          maxLength: 255
+          externalDocs:
+            url: 'https://schema.org/email'
+          type: string
+        initials:
+          maxLength: 255
+          type: string
+        password:
+          maxLength: 255
+          type: string
+    User.UserRegisterDto.jsonld:
+      type: object
+      description: ''
+      deprecated: false
+      required:
+        - email
+        - initials
+        - password
+      properties:
+        email:
+          format: email
+          maxLength: 255
+          externalDocs:
+            url: 'https://schema.org/email'
+          type: string
+        initials:
+          maxLength: 255
+          type: string
+        password:
+          maxLength: 255
+          type: string
+    User.jsonld-output:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        confirmed:
+          type: boolean
+        email:
+          type: string
+        initials:
+          type: string
+        id:
+          $ref: '#/components/schemas/UuidInterface.jsonld-output'
+    UuidInterface-output:
+      type: object
+      description: ''
+      deprecated: false
+    UuidInterface.jsonld-output:
       type: object
       description: ''
       deprecated: false

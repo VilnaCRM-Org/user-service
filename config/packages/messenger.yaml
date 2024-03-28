@@ -1,0 +1,32 @@
+framework:
+  messenger:
+    transports:
+      send-email:
+        dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+
+        retry_strategy:
+          max_retries: 3
+          # milliseconds delay
+          delay: 60000
+          multiplier: 2
+          max_delay: 0
+
+        failure_transport: failed-send-email
+
+      failed-send-email:
+        dsn: '%env(FAILED_EMAIL_TRANSPORT_DSN)%'
+
+        retry_strategy:
+          service: 'App\Shared\Infrastructure\RetryStrategy\InfiniteRetryStrategy'
+
+    routing:
+      # Route your messages to the transports
+      'Symfony\Component\Mailer\Messenger\SendEmailMessage': send-email
+
+when@test:
+  framework:
+    messenger:
+      transports:
+          # replace with your transport name here (e.g., my_transport: 'in-memory://')
+          # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
+        send-email: 'in-memory://'

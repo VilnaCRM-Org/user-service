@@ -1,0 +1,6 @@
+# config/packages/mailer.yaml
+framework:
+  mailer:
+    dsn: '%env(MAILER_DSN)%'
+    envelope:
+      sender: '%env(MAIL_SENDER)%'

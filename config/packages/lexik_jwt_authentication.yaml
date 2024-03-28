@@ -1,0 +1,5 @@
+lexik_jwt_authentication:
+  secret_key: '%env(resolve:OAUTH_PRIVATE_KEY)%' # required for token creation
+  public_key: '%env(resolve:OAUTH_PUBLIC_KEY)%' # required for token verification
+  pass_phrase: '%env(OAUTH_PASSPHRASE)%' # required for token creation
+  token_ttl: '%env(resolve:JWT_TOKEN_TTL)%' # in seconds, default is 3600

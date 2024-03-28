@@ -1,4 +1,4 @@
-name: checks
+name: Dependency audit and validation
 
 on:
   pull_request:
@@ -6,6 +6,7 @@ on:
 
 jobs:
   symfony-checks:
+    name: Symfony checks
     runs-on: ubuntu-latest
     steps:
       - uses: shivammathur/setup-php@v2

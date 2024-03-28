@@ -1,0 +1,10 @@
+{% apply inky_to_html %}
+    <container>
+        <row class="header">
+            <columns>
+                <h1 class="text-center">Welcome1 {{ email.getSubject }}!</h1>
+                <h1 class="text-center"> {{ content }}</h1>
+            </columns>
+        </row>
+    </container>
+{% endapply %}

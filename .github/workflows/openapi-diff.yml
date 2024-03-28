@@ -1,4 +1,4 @@
-name: openapi-diff
+name: Spec backward comparability
 
 on:
   pull_request:
@@ -6,6 +6,7 @@ on:
 
 jobs:
   openapi-diff:
+    name: Openapi-diff
     runs-on: ubuntu-latest
     steps:
       - uses: shivammathur/setup-php@v2
@@ -34,22 +35,15 @@ jobs:
           add: '.github/openapi-spec/spec.yaml'
           message: 'feat(#${{ toJSON(github.event.number) }}): generate openapi spec'
       - name: Check out head branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: head
       - name: Check out master branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: main
           path: base
-      - name: Run OpenAPI Diff (from HEAD revision)
-        uses: LimeFlight/openapi-diff-action@master
+      - name: Run OpenAPI Diff
+        uses: docker://openapitools/openapi-diff:latest
         with:
-          head_spec: head/.github/openapi-spec/spec.yaml
-          base_spec: base/.github/openapi-spec/spec.yaml
-          output_path: ./output
-          github_token: ${{ github.token }}
-      - uses: actions/upload-artifact@v2
-        with:
-          name: diff-reports
-          path: ./output
+          args: --fail-on-incompatible base/.github/openapi-spec/spec.yaml head/.github/openapi-spec/spec.yaml

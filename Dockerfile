@@ -4,7 +4,7 @@ FROM composer/composer:2-bin AS composer
 FROM mlocati/php-extension-installer:latest AS php_extension_installer
 
 # Build Caddy with the Mercure and Vulcain modules
-FROM caddy:2.6-builder-alpine AS app_caddy_builder
+FROM caddy:2.7-builder-alpine AS app_caddy_builder
 
 RUN xcaddy build \
 	--with github.com/dunglas/mercure \
@@ -36,6 +36,7 @@ RUN apk add --no-cache \
 		file \
 		gettext \
 		git \
+        supervisor \
 	;
 
 RUN set -eux; \
@@ -44,6 +45,10 @@ RUN set -eux; \
     	zip \
     	apcu \
 		opcache \
+        pdo_mysql \
+        redis \
+        openssl \
+        xsl \
     ;
 
 ###> recipes ###
@@ -64,8 +69,10 @@ HEALTHCHECK --interval=10s --timeout=3s --retries=3 CMD ["docker-healthcheck"]
 COPY --link infrastructure/docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
 RUN chmod +x /usr/local/bin/docker-entrypoint
 
+COPY --link infrastructure/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+
 ENTRYPOINT ["docker-entrypoint"]
-CMD ["php-fpm"]
+CMD ["sh", "-c", "php-fpm & supervisord -c /etc/supervisor/supervisord.conf"]
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -90,7 +97,7 @@ RUN set -eux; \
     if [ -f composer.json ]; then \
 		composer dump-autoload --classmap-authoritative --no-dev; \
 		composer dump-env prod; \
-		composer run-script --no-dev post-install-cmd; \
+		# composer run-script --no-dev post-install-cmd; \
 		chmod +x bin/console; sync; \
     fi
 
@@ -116,7 +123,7 @@ RUN set -eux; \
 RUN rm -f .env.local.php
 
 # Caddy image
-FROM caddy:2.6-alpine AS app_caddy
+FROM caddy:2.7-alpine AS app_caddy
 
 WORKDIR /srv/app
 
