@@ -6,8 +6,9 @@ import styles from './styles';
 function Notch(): React.ReactElement {
   return (
     <Box sx={styles.wrapper}>
-      <Box sx={styles.notch} />
+      <Box sx={styles.notch} data-testid="notch" />
     </Box>
   );
 }
+
 export default Notch;

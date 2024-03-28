@@ -17,6 +17,9 @@ dependencies:
   '@mui/system':
     specifier: ^5.15.13
     version: 5.15.14(@emotion/react@11.11.4)(@emotion/styled@11.11.0)(@types/react@18.2.40)(react@18.2.0)
+  '@next/env':
+    specifier: ^14.1.4
+    version: 14.1.4
   graphql:
     specifier: ^16.8.1
     version: 16.8.1
@@ -2955,7 +2958,6 @@ packages:
 
   /@next/env@14.1.4:
     resolution: {integrity: sha512-e7X7bbn3Z6DWnDi75UWn+REgAbLEqxI8Tq2pkFOFAMpWAWApz/YCUhtWMWn410h8Q2fYiYL7Yg5OlxMOCfFjJQ==}
-    dev: true
 
   /@next/eslint-plugin-next@13.0.5:
     resolution: {integrity: sha512-H9U9B1dFnCDmylDZ6/dYt95Ie1Iu+SLBMcO6rkIGIDcj5UK+DNyMiWm83xWBZ1gREM8cfp5Srv1g6wqf8pM4lw==}

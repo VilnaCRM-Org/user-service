@@ -5,7 +5,6 @@ import React from 'react';
 import { UiTypography } from '@/components/';
 
 import styles from './styles';
-import 'dotenv/config';
 
 function VilnaCRMEmail(): React.ReactElement {
   return (

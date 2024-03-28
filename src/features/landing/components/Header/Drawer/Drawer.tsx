@@ -34,7 +34,7 @@ function CustomDrawer(): React.ReactElement {
   return (
     <Box sx={styles.wrapper}>
       <Button
-        aria-label={t('header.drawer.button_aria_labels.bars') as string}
+        aria-label={t('header.drawer.button_aria_labels.bars')}
         sx={styles.button}
         onClick={(): void => setIsDrawerOpen(!isDrawerOpen)}
       >

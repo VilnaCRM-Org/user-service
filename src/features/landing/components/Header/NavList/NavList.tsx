@@ -7,6 +7,8 @@ import styles from './styles';
 import { NavListProps } from './types';
 
 function NavList({ navItems, handleClick }: NavListProps): React.ReactElement {
+  if (navItems.length === 0) return <>Something went wrong</>;
+
   const wrapperStyle: CSSProperties =
     navItems[0].type === 'header' ? styles.wrapper : styles.drawerWrapper;
 
@@ -14,8 +16,8 @@ function NavList({ navItems, handleClick }: NavListProps): React.ReactElement {
     navItems[0].type === 'header' ? styles.content : styles.drawerContent;
 
   return (
-    <Stack component="nav" sx={wrapperStyle}>
-      <List sx={contentStyle}>
+    <Stack component="nav" sx={wrapperStyle} data-testid="nav-wrapper">
+      <List sx={contentStyle} data-testid="nav-content">
         {navItems.map(item => (
           <NavItem item={item} key={item.id} handleClick={handleClick} />
         ))}
