@@ -1,16 +1,21 @@
 import http from 'k6/http';
-import {Utils} from "./utils.js";
+import {ScenarioUtils} from "./scenarioUtils.js";
 import { check } from 'k6';
+import {InsertUsersUtils} from "./insertUsersUtils.js";
+import {Utils} from "./utils.js";
 
-const utils = new Utils('RESEND_EMAIL')
+const scenarioName = 'RESEND_EMAIL';
+const scenarioUtils = new ScenarioUtils(scenarioName);
+const insertUsersUtils = new InsertUsersUtils(scenarioName);
+const utils = new Utils();
 
 export function setup() {
     return {
-        users: utils.prepareUsers()
+        users: insertUsersUtils.prepareUsers()
     }
 }
 
-export const options = utils.getOptions();
+export const options = scenarioUtils.getOptions();
 
 export default function (data) {
     resendEmail(data.users[utils.getRandomNumber(0, data.users.length - 1)]);
@@ -19,9 +24,9 @@ export default function (data) {
 function resendEmail(user) {
     const id = user.id;
 
-    const res = http.put(
+    const res = http.post(
         utils.getBaseHttpUrl() + `/${id}/resend-confirmation-email`,
-        null,
+        JSON.stringify(null),
         utils.getJsonHeader(),
     );
 

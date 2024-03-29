@@ -1,13 +1,19 @@
 import http from 'k6/http';
-import {Utils} from "./utils.js";
+import {ScenarioUtils} from "./scenarioUtils.js";
 import faker from "k6/x/faker";
 import {check} from 'k6';
+import {Utils} from "./utils.js";
+import {MailCatcherUtils} from "./mailCatcherUtils.js";
 
-const utils = new Utils('GRAPHQL_CONFIRM_USER')
+const scenarioUtils = new ScenarioUtils('GRAPHQL_CONFIRM_USER');
+const mailCatcherUtils = new MailCatcherUtils();
+const utils = new Utils();
 
 export default function () {
     confirmUser();
 }
+
+export const options = scenarioUtils.getOptions();
 
 async function confirmUser() {
     const email = faker.person.email();
@@ -16,7 +22,7 @@ async function confirmUser() {
     let token = null;
 
     if (userResponse.status === 201) {
-        token = await utils.getConfirmationToken(email);
+        token = await mailCatcherUtils.getConfirmationToken(email);
     }
 
     const mutation = `

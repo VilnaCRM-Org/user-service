@@ -1,11 +1,13 @@
 import http from 'k6/http';
-import {Utils} from "./utils.js";
+import {ScenarioUtils} from "./scenarioUtils.js";
 import faker from "k6/x/faker";
 import { check } from 'k6';
+import {Utils} from "./utils.js";
 
-const utils = new Utils('CREATE_USER')
+const scenarioUtils = new ScenarioUtils('CREATE_USER');
+const utils = new Utils();
 
-export const options= utils.getOptions();
+export const options= scenarioUtils.getOptions();
 
 export default function () {
     createUser();

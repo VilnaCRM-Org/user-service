@@ -1,10 +1,14 @@
 import http from 'k6/http';
-import {Utils} from "./utils.js";
+import {ScenarioUtils} from "./scenarioUtils.js";
 import faker from "k6/x/faker";
 import {check} from 'k6';
+import {Utils} from "./utils.js";
+import {MailCatcherUtils} from "./mailCatcherUtils.js";
 
-const utils = new Utils('CONFIRM_USER')
-export const options= utils.getOptions();
+const scenarioUtils = new ScenarioUtils('CONFIRM_USER');
+const utils = new Utils();
+const mailCatcherUtils = new MailCatcherUtils();
+export const options= scenarioUtils.getOptions();
 
 export default function () {
     confirmUser();
@@ -17,7 +21,7 @@ async function confirmUser() {
     let token = null;
 
     if (userResponse.status === 201) {
-        token = await utils.getConfirmationToken(email);
+        token = await mailCatcherUtils.getConfirmationToken(email);
     }
 
     const payload = JSON.stringify({

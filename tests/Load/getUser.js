@@ -1,16 +1,21 @@
 import http from 'k6/http';
+import {ScenarioUtils} from "./scenarioUtils.js";
+import {check} from 'k6';
 import {Utils} from "./utils.js";
-import { check } from 'k6';
+import {InsertUsersUtils} from "./insertUsersUtils.js";
 
-const utils = new Utils('GET_USER');
+const scenarioName = 'GET_USER';
+const utils = new Utils();
+const scenarioUtils = new ScenarioUtils(scenarioName);
+const insertUsersUtils = new InsertUsersUtils(scenarioName);
 
 export function setup() {
     return {
-        users: utils.prepareUsers()
+        users: insertUsersUtils.prepareUsers(),
     }
 }
 
-export const options = utils.getOptions();
+export const options = scenarioUtils.getOptions();
 
 export default function (data) {
     getUser(data.users[utils.getRandomNumber(0, data.users.length - 1)]);

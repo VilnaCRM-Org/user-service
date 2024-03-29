@@ -1,10 +1,13 @@
 import http from 'k6/http';
-import {Utils} from "./utils.js";
+import {ScenarioUtils} from "./scenarioUtils.js";
 import faker from "k6/x/faker";
 import {check} from 'k6';
+import {Utils} from "./utils.js";
 
-const utils = new Utils('GRAPHQL_CREATE_USER')
-export const options = utils.getOptions();
+const scenarioUtils = new ScenarioUtils('GRAPHQL_CREATE_USER');
+const utils = new Utils();
+
+export const options = scenarioUtils.getOptions();
 
 export default function () {
     createUser();
