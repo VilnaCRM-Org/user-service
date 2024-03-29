@@ -1,6 +1,5 @@
 import { render } from '@testing-library/react';
 import React from 'react';
-import '@testing-library/jest-dom';
 
 import Logo from '../../../assets/svg/logo/Logo.svg';
 import { SocialMedia } from '../../../types/social-media/index';
@@ -12,6 +11,7 @@ jest.mock('../SocialMediaItem/SocialMediaItem', () =>
 );
 
 const sociaLMediaTestId: string = 'social-media-item';
+const emptySocialLinks: SocialMedia[] = [];
 const socialLinks: SocialMedia[] = [
   {
     id: '1',
@@ -33,8 +33,6 @@ describe('SocialMediaList', () => {
   });
 
   it('renders no social media items when socialLinks array is empty', () => {
-    const emptySocialLinks: SocialMedia[] = [];
-
     const { queryByTestId } = render(
       <SocialMediaList socialLinks={emptySocialLinks} />
     );

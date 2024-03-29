@@ -1,7 +1,6 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import '@testing-library/jest-dom';
 import Logo from '../../../../assets/svg/logo/Logo.svg';
 import { ImageList } from '../../../../types/possibilities/image-list';
 

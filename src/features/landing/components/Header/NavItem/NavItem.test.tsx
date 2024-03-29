@@ -2,7 +2,6 @@ import { render } from '@testing-library/react';
 import React from 'react';
 
 import { NavItemProps } from '../../../types/header/navigation';
-import '@testing-library/jest-dom';
 
 import NavItem from './NavItem';
 

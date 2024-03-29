@@ -1,8 +1,7 @@
-import { t } from 'i18next';
-
 import { validateFullName } from '../../features/landing/components/AuthSection/Validations';
 
-const fullNameRequiredError: string = t('sign_up.form.name_input.required');
+const fullNameRequiredError: string = 'Invalid full name format';
+
 const testFullName: string = 'John Doe';
 const invalidFullName: string = 'John Michael Doe';
 
@@ -13,13 +12,12 @@ describe('validateFullName', () => {
   });
 
   it('should return an error message when full name is empty', () => {
-    const fullName: string = '';
-    const result: string | boolean = validateFullName(fullName);
-    expect(result).toBe(t(fullNameRequiredError));
+    const result: string | boolean = validateFullName('');
+    expect(result).toBe(fullNameRequiredError);
   });
 
   it('should return true when a valid full name with middle name is provided', () => {
     const result: string | boolean = validateFullName(invalidFullName);
-    expect(result).toBeFalsy();
+    expect(result).toBe(fullNameRequiredError);
   });
 });

@@ -1,12 +1,18 @@
 import { render } from '@testing-library/react';
-import '@testing-library/jest-dom';
 
 import Heading from './Heading';
 
-const headingText: string = 'why_us.heading';
+const subtitleText: RegExp = /Unlimited customization/;
+const headingText: string = 'Why we';
 
-it('renders heading and subtitle correctly', () => {
-  const { getByText } = render(<Heading />);
+describe('Heading component', () => {
+  it('renders heading and subtitle correctly', () => {
+    const { getByText } = render(<Heading />);
+    expect(getByText(subtitleText)).toBeInTheDocument();
+  });
 
-  expect(getByText(headingText)).toBeInTheDocument();
+  it('renders heading and text correctly', () => {
+    const { getByText } = render(<Heading />);
+    expect(getByText(headingText)).toBeInTheDocument();
+  });
 });

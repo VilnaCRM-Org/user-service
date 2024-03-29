@@ -3,7 +3,6 @@ import React from 'react';
 
 import { NavItemProps } from '../../../types/header/navigation';
 
-import '@testing-library/jest-dom';
 import NavList from './NavList';
 
 const navItems: NavItemProps[] = [

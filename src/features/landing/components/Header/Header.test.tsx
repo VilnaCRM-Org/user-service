@@ -1,9 +1,8 @@
 import { render } from '@testing-library/react';
 
-import '@testing-library/jest-dom';
 import Header from './Header';
 
-const logoAlt: string = 'header.logo_alt';
+const logoAlt: string = 'Vilna logo';
 
 describe('Header component', () => {
   it('renders logo', () => {

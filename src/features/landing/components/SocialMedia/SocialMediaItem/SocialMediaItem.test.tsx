@@ -1,6 +1,5 @@
 import { render } from '@testing-library/react';
 import React from 'react';
-import '@testing-library/jest-dom';
 
 import Logo from '../../../assets/svg/logo/Logo.svg';
 import { SocialMedia } from '../../../types/social-media/index';
@@ -18,8 +17,8 @@ const item: SocialMedia = {
 
 const ariaLabel: string = 'Example Link';
 const linkHref: string = 'https://twitter.com/';
-const logoWidth: number = 24;
-const logoHeight: number = 24;
+const logoWidth: string = '24';
+const logoHeight: string = '24';
 const logoAlt: string = 'Example Alt Text';
 
 describe('SocialMediaItem', () => {

@@ -1,12 +1,10 @@
 import { render } from '@testing-library/react';
 import React from 'react';
-import '@testing-library/jest-dom';
 
 import RegistrationText from './RegistrationText';
 
-const mainHeadingText: string = 'unlimited_possibilities.main_heading_text';
-const secondaryHeadingText: string =
-  'unlimited_possibilities.secondary_heading_text';
+const mainHeadingText: string = 'Limitless';
+const secondaryHeadingText: string = 'integration options';
 
 describe('RegistrationText component', () => {
   it('renders main and secondary heading text', () => {
