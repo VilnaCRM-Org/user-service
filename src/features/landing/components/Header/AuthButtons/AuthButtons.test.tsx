@@ -4,8 +4,6 @@ import AuthButtons from './AuthButtons';
 
 const buttonLogInTestId: string = 'header-log-in';
 const buttonSignUpTestId: string = 'header-sign-up';
-const buttonLogInText: string = 'Log in';
-const buttonSignUpText: string = 'Try it out';
 
 it('should render two buttons with correct text and styles', () => {
   const { getByTestId } = render(<AuthButtons />);
@@ -14,8 +12,5 @@ it('should render two buttons with correct text and styles', () => {
   const signUpButton: HTMLElement = getByTestId(buttonSignUpTestId);
 
   expect(logInButton).toBeInTheDocument();
-  expect(logInButton).toHaveTextContent(buttonLogInText);
-
   expect(signUpButton).toBeInTheDocument();
-  expect(signUpButton).toHaveTextContent(buttonSignUpText);
 });

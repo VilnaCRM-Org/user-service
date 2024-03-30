@@ -6,7 +6,7 @@ settings:
 
 dependencies:
   '@apollo/client':
-    specifier: ^3.9.7
+    specifier: ^3.9.9
     version: 3.9.9(@types/react@18.2.40)(graphql@16.8.1)(react-dom@18.2.0)(react@18.2.0)
   '@emotion/styled':
     specifier: ^11.11.0

@@ -1,3 +1,4 @@
+import { ApolloProvider } from '@apollo/client';
 import { ThemeProvider } from '@mui/material/styles';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import * as Sentry from '@sentry/react';
@@ -6,9 +7,10 @@ import React, { useEffect } from 'react';
 import { theme } from '@/components/AppTheme';
 import { golos } from '@/config/Fonts/golos';
 
-import i18n from '../i18n';
-
 import '../styles/global.css';
+
+import i18n from '../i18n';
+import client from '../src/features/landing/api/graphql/apollo';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN_KEY,
@@ -37,10 +39,12 @@ function MyApp({
 
   return (
     <ThemeProvider theme={theme}>
-      <main className={golos.className}>
-        <Component />
-        <GoogleAnalytics gaId="G-XYZ" />
-      </main>
+      <ApolloProvider client={client}>
+        <main className={golos.className}>
+          <Component />
+          <GoogleAnalytics gaId="G-XYZ" />
+        </main>
+      </ApolloProvider>
     </ThemeProvider>
   );
 }

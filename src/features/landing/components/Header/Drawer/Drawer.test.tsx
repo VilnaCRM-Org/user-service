@@ -1,28 +1,57 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import { t } from 'i18next';
+import { render, fireEvent, waitFor } from '@testing-library/react';
+import React from 'react';
 
 import Drawer from './Drawer';
 
+const buttonToOpenDrawer: string = 'Button to open the drawer';
+const buttonToCloseDrawer: string = 'Button to exit the drawer';
+const logoAlt: string = 'Vilna logo';
 const drawerTestId: string = 'drawer';
-const closeButtonAriaLabel: string = 'header.drawer.button_aria_labels.exit';
+const listItem: string = 'listitem';
 
-describe('Drawer Component', () => {
-  it('should not display the drawer when isDrawerOpen is false', () => {
-    render(<Drawer />);
-
-    const drawer: HTMLElement | null = screen.queryByTestId(drawerTestId);
-    expect(drawer).not.toBeInTheDocument();
+describe('Drawer', () => {
+  it('renders drawer button', () => {
+    const { getByLabelText } = render(<Drawer />);
+    const drawerButton: HTMLElement = getByLabelText(buttonToOpenDrawer);
+    expect(drawerButton).toBeInTheDocument();
   });
 
-  it('should close the drawer when the close button is clicked', () => {
-    render(<Drawer />);
-    const closeButton: HTMLElement = screen.getByRole('button', {
-      name: t(closeButtonAriaLabel),
-    });
-    const drawerContent: HTMLElement | null = screen.queryByTestId('drawer');
+  it('opens drawer when button is clicked', () => {
+    const { getByLabelText, getByTestId } = render(<Drawer />);
+    const drawerButton: HTMLElement = getByLabelText(buttonToOpenDrawer);
 
-    fireEvent.click(closeButton);
-    expect(drawerContent).not.toBeInTheDocument();
+    fireEvent.click(drawerButton);
+    const drawer: HTMLElement = getByTestId(drawerTestId);
+    expect(drawer).toBeInTheDocument();
+  });
+
+  it('closes drawer when exit button is clicked', async () => {
+    const { getByLabelText, queryByTestId } = render(<Drawer />);
+    const drawerButton: HTMLElement = getByLabelText(buttonToOpenDrawer);
+    fireEvent.click(drawerButton);
+    const exitButton: HTMLElement = getByLabelText(buttonToCloseDrawer);
+    fireEvent.click(exitButton);
+
+    await waitFor(() => {
+      const drawer: HTMLElement | null = queryByTestId(drawerTestId);
+      expect(drawer).not.toBeInTheDocument();
+    });
+  });
+
+  it('renders logo', () => {
+    const { getByLabelText, getByAltText } = render(<Drawer />);
+    const drawerButton: HTMLElement = getByLabelText(buttonToOpenDrawer);
+
+    fireEvent.click(drawerButton);
+    const logo: HTMLElement = getByAltText(logoAlt);
+    expect(logo).toBeInTheDocument();
+  });
+
+  it('renders nav items', () => {
+    const { getByLabelText, getAllByRole } = render(<Drawer />);
+    const drawerButton: HTMLElement = getByLabelText(buttonToOpenDrawer);
+    fireEvent.click(drawerButton);
+    const navItems: HTMLElement[] = getAllByRole(listItem);
+    expect(navItems.length).toBeGreaterThan(0);
   });
 });

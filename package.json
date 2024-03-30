@@ -24,7 +24,7 @@
     "preinstall": "pnpm run check-node-version"
   },
   "dependencies": {
-    "@apollo/client": "^3.9.7",
+    "@apollo/client": "^3.9.9",
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.15.13",
     "@mui/system": "^5.15.13",

@@ -1,10 +1,6 @@
-import {
-  ApolloClient,
-  InMemoryCache,
-  NormalizedCacheObject,
-} from '@apollo/client';
-
-import i18n from 'i18n';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+import type { NormalizedCacheObject } from '@apollo/client';
+import i18n from 'i18next';
 
 const { language } = i18n;
 
