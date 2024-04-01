@@ -36,6 +36,7 @@ INFECTION 	  = ./vendor/bin/infection
 
 # Variables
 ARTILLERY_FILES := $(notdir $(shell find ${PWD}/tests/Load -type f -name '*.yml'))
+LOAD_TEST_CONFIG = tests/Load/config.json
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -91,7 +92,7 @@ load-tests: build-k6
 	$(K6) /scripts/deleteUser.js
 	$(K6) /scripts/resendEmailToUser.js
 	$(K6) /scripts/replaceUser.js
-	$(SYMFONY) league:oauth2-server:create-client $(LOAD_TEST_OAUTH_CLIENT_NAME) $(LOAD_TEST_OAUTH_CLIENT_ID) $(LOAD_TEST_OAUTH_CLIENT_SECRET) --redirect-uri $(LOAD_TEST_OAUTH_CLIENT_REDIRECT_URI)
+	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauthToken.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauthToken.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	$(K6) /scripts/oauth.js
 	$(K6) /scripts/graphQLUpdateUser.js
 	$(K6) /scripts/graphQLGetUser.js

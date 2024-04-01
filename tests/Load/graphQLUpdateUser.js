@@ -1,14 +1,14 @@
 import http from 'k6/http';
-import {ScenarioUtils} from "./scenarioUtils.js";
+import {ScenarioUtils} from "./utils/scenarioUtils.js";
 import faker from "k6/x/faker";
 import {check} from 'k6';
-import {InsertUsersUtils} from "./insertUsersUtils.js";
-import {Utils} from "./utils.js";
+import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
+import {Utils} from "./utils/utils.js";
 
-const scenarioName = 'GRAPHQL_UPDATE_USER';
-const scenarioUtils = new ScenarioUtils(scenarioName);
-const insertUsersUtils = new InsertUsersUtils(scenarioName);
 const utils = new Utils();
+const scenarioName = 'graphqlUpdateUser';
+const scenarioUtils = new ScenarioUtils(utils, scenarioName);
+const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 
 export function setup() {
     return {

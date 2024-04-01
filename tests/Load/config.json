@@ -1,0 +1,607 @@
+{
+    "apiHost": "localhost",
+    "mailCatcherPort": "1080",
+    "batchSize": 50,
+    "autoDetermineUsersToInsert": false,
+    "usersToInsert": 20,
+    "delayBetweenScenarios": 30,
+    "gettingEmailMaxRetries": 50,
+    "endpoints": {
+        "getUser": {
+            "smoke": {
+                "threshold": 60,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 200,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 2000,
+                "rps": 500,
+                "vus": 500,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 8000,
+                "rps": 5000,
+                "vus": 5000,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "getUsers": {
+            "smoke": {
+                "threshold": 70,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 300,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 3500,
+                "rps": 500,
+                "vus": 500,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 8000,
+                "rps": 5000,
+                "vus": 5000,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "createUser": {
+            "smoke": {
+                "threshold": 3000,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 10000,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 50000,
+                "rps": 300,
+                "vus": 300,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 60000,
+                "rps": 400,
+                "vus": 400,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "updateUser": {
+            "smoke": {
+                "threshold": 90,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 350,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 3500,
+                "rps": 300,
+                "vus": 300,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 8000,
+                "rps": 400,
+                "vus": 400,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "replaceUser": {
+            "smoke": {
+                "threshold": 90,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 350,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 3500,
+                "rps": 300,
+                "vus": 300,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 8000,
+                "rps": 400,
+                "vus": 400,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "confirmUser": {
+            "smoke": {
+                "threshold": 90,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 350,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 3500,
+                "rps": 300,
+                "vus": 300,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 8000,
+                "rps": 400,
+                "vus": 400,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "deleteUser": {
+            "smoke": {
+                "threshold": 90,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 350,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 3500,
+                "rps": 300,
+                "vus": 300,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 8000,
+                "rps": 400,
+                "vus": 400,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "resendEmailToUser": {
+            "smoke": {
+                "threshold": 90,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 350,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 3500,
+                "rps": 300,
+                "vus": 300,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 8000,
+                "rps": 400,
+                "vus": 400,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "oauthToken": {
+            "clientName": "ClientName",
+            "clientSecret": "Secret1",
+            "clientID": "ID123",
+            "clientRedirectUri": "https://example.com/oauth/callback",
+            "smoke": {
+                "threshold": 90,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 350,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 3500,
+                "rps": 300,
+                "vus": 300,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 8000,
+                "rps": 400,
+                "vus": 400,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "graphqlGetUser": {
+            "smoke": {
+                "threshold": 60,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 200,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 2000,
+                "rps": 500,
+                "vus": 500,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 8000,
+                "rps": 5000,
+                "vus": 5000,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "graphqlGetUsers": {
+            "smoke": {
+                "threshold": 70,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 300,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 3500,
+                "rps": 500,
+                "vus": 500,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 8000,
+                "rps": 5000,
+                "vus": 5000,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "graphqlCreateUser": {
+            "smoke": {
+                "threshold": 3000,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 10000,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 50000,
+                "rps": 300,
+                "vus": 300,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 60000,
+                "rps": 400,
+                "vus": 400,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "graphqlUpdateUser": {
+            "smoke": {
+                "threshold": 90,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 350,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 3500,
+                "rps": 300,
+                "vus": 300,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 8000,
+                "rps": 400,
+                "vus": 400,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "graphqlConfirmUser": {
+            "smoke": {
+                "threshold": 90,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 350,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 3500,
+                "rps": 300,
+                "vus": 300,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 8000,
+                "rps": 400,
+                "vus": 400,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "graphqlDeleteUser": {
+            "smoke": {
+                "threshold": 90,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 350,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 3500,
+                "rps": 300,
+                "vus": 300,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 8000,
+                "rps": 400,
+                "vus": 400,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        },
+        "graphqlResendEmailToUser": {
+            "smoke": {
+                "threshold": 90,
+                "rps": 10,
+                "vus": 10,
+                "duration": 10
+            },
+            "average": {
+                "threshold": 350,
+                "rps": 50,
+                "vus": 50,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "stress": {
+                "threshold": 3500,
+                "rps": 300,
+                "vus": 300,
+                "duration": {
+                    "rise": 5,
+                    "plateau": 20,
+                    "fall": 5
+                }
+            },
+            "spike": {
+                "threshold": 8000,
+                "rps": 400,
+                "vus": 400,
+                "duration": {
+                    "rise": 30,
+                    "fall": 10
+                }
+            }
+        }
+    }
+}

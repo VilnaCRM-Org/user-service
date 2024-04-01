@@ -1,12 +1,11 @@
 import http from 'k6/http';
-import {Env} from "./env.js";
 
 export class MailCatcherUtils{
-    constructor() {
-        this.env = new Env();
-
-        const host = this.env.get('LOAD_TEST_API_HOST');
-        const mailCatcherPort = this.env.get('LOAD_TEST_MAILCATCHER_PORT');
+    constructor(utils) {
+        this.utils = utils;
+        this.config = utils.getConfig();
+        const host = this.config.apiHost;
+        const mailCatcherPort = this.config.mailCatcherPort;
         this.mailCatcherUrl = `http://${host}:${mailCatcherPort}/messages`;
     }
 
@@ -16,7 +15,7 @@ export class MailCatcherUtils{
 
     async getConfirmationToken(email) {
         let token = null;
-        for (let attempt = 0; attempt < this.env.get('LOAD_TEST_MAX_GETTING_EMAIL_RETRIES'); attempt++) {
+        for (let attempt = 0; attempt < this.config.gettingEmailMaxRetries; attempt++) {
             const result = await this.retrieveTokenFromMailCatcher(email);
             if (result) {
                 token = result;

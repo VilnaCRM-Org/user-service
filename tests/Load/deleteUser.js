@@ -1,13 +1,13 @@
 import http from 'k6/http';
-import {ScenarioUtils} from "./scenarioUtils.js";
+import {ScenarioUtils} from "./utils/scenarioUtils.js";
 import {check} from 'k6';
-import {Utils} from "./utils.js";
-import {InsertUsersUtils} from "./insertUsersUtils.js";
+import {Utils} from "./utils/utils.js";
+import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
 
-const scenarioName = 'DELETE_USER';
-const scenarioUtils = new ScenarioUtils(scenarioName);
+const scenarioName = 'deleteUser';
 const utils = new Utils();
-const insertUsersUtils = new InsertUsersUtils(scenarioName);
+const scenarioUtils = new ScenarioUtils(utils, scenarioName);
+const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 
 export function setup() {
     return {
@@ -15,7 +15,7 @@ export function setup() {
     }
 }
 
-export const options= scenarioUtils.getOptions();
+export const options = scenarioUtils.getOptions();
 
 export default function (data) {
     deleteUser(data.users[utils.getRandomNumber(0, data.users.length - 1)]);

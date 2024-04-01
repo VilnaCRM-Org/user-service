@@ -1,13 +1,13 @@
 import http from 'k6/http';
-import { ScenarioUtils } from "./scenarioUtils.js";
-import { check } from 'k6';
-import {InsertUsersUtils} from "./insertUsersUtils.js";
-import {Utils} from "./utils.js";
+import {ScenarioUtils} from "./utils/scenarioUtils.js";
+import {check} from 'k6';
+import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
+import {Utils} from "./utils/utils.js";
 
-const scenarioName = 'GRAPHQL_RESEND_EMAIL';
-const scenarioUtils = new ScenarioUtils(scenarioName);
-const insertUsersUtils = new InsertUsersUtils(scenarioName);
 const utils = new Utils();
+const scenarioName = 'graphqlResendEmailToUser';
+const scenarioUtils = new ScenarioUtils(utils, scenarioName);
+const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 
 export function setup() {
     return {

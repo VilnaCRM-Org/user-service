@@ -1,13 +1,13 @@
 import http from 'k6/http';
-import {ScenarioUtils} from "./scenarioUtils.js";
+import {ScenarioUtils} from "./utils/scenarioUtils.js";
 import {check} from 'k6';
-import {Utils} from "./utils.js";
-import {InsertUsersUtils} from "./insertUsersUtils.js";
+import {Utils} from "./utils/utils.js";
+import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
 
-const scenarioName = 'GET_USER';
+const scenarioName = 'getUser';
 const utils = new Utils();
-const scenarioUtils = new ScenarioUtils(scenarioName);
-const insertUsersUtils = new InsertUsersUtils(scenarioName);
+const scenarioUtils = new ScenarioUtils(utils, scenarioName);
+const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 
 export function setup() {
     return {

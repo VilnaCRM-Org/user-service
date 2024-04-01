@@ -1,13 +1,14 @@
 import http from 'k6/http';
-import {ScenarioUtils} from "./scenarioUtils.js";
+import {ScenarioUtils} from "./utils/scenarioUtils.js";
 import faker from "k6/x/faker";
 import {check} from 'k6';
-import {Utils} from "./utils.js";
-import {MailCatcherUtils} from "./mailCatcherUtils.js";
+import {Utils} from "./utils/utils.js";
+import {MailCatcherUtils} from "./utils/mailCatcherUtils.js";
 
-const scenarioUtils = new ScenarioUtils('GRAPHQL_CONFIRM_USER');
-const mailCatcherUtils = new MailCatcherUtils();
 const utils = new Utils();
+const scenarioName = 'graphqlConfirmUser';
+const scenarioUtils = new ScenarioUtils(utils, scenarioName);
+const mailCatcherUtils = new MailCatcherUtils(utils);
 
 export default function () {
     confirmUser();

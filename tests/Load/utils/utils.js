@@ -1,13 +1,14 @@
-import {Env} from "./env.js";
-
 export class Utils{
     constructor() {
-        const env = new Env();
-        const host = env.get('LOAD_TEST_API_HOST');
+        const host = this.getConfig().apiHost;
 
         this.baseUrl = `https://${host}/api`;
         this.baseHttpUrl = this.baseUrl + '/users';
         this.baseGraphQLUrl = this.baseUrl + '/graphql';
+    }
+
+    getConfig(){
+        return JSON.parse(open('config.json'));
     }
 
     getBaseUrl() {

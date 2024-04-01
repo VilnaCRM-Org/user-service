@@ -1,63 +1,69 @@
-import {Env} from "./env.js";
-
 export class ScenarioUtils {
-    constructor(scenarioName) {
-        this.env = new Env();
-        this.scenarioName = scenarioName;
-        this.scenarioConfig = this.env.getScenarioConfig(scenarioName);
+    constructor(utils, scenarioName) {
+        this.config = utils.getConfig();
+        this.smokeConfig = this.config.endpoints[scenarioName].smoke;
+        this.averageConfig = this.config.endpoints[scenarioName].average;
+        this.stressConfig = this.config.endpoints[scenarioName].stress;
+        this.spikeConfig = this.config.endpoints[scenarioName].spike;
     }
 
     getOptions() {
         return {
             insecureSkipTLSVerify: true,
-            scenarios: this.getScenarios(
-                this.scenarioName
-            ),
-            thresholds: this.getThresholds(
-                this.scenarioName
-            )
+            scenarios: this.getScenarios(),
+            thresholds: this.getThresholds()
         }
     }
 
     getScenarios() {
+        const delay = this.config.delayBetweenScenarios;
+        const averageTestStartTime = this.smokeConfig.duration + delay;
+        const stressTestStartTime = averageTestStartTime
+            + this.averageConfig.duration.rise
+            + this.averageConfig.duration.plateau
+            + this.averageConfig.duration.fall + delay;
+        const spikeTestStartTime = stressTestStartTime
+            + this.stressConfig.duration.rise
+            + this.stressConfig.duration.plateau
+            + this.stressConfig.duration.fall + delay;
         return {
             smoke: this.getSmokeScenario(
-                this.scenarioConfig.smokeRps,
-                this.scenarioConfig.smokeVus,
-                this.scenarioConfig.smokeDuration,
+                this.smokeConfig.rps,
+                this.smokeConfig.vus,
+                this.smokeConfig.duration,
             ),
             average: this.getAverageScenario(
-                this.scenarioConfig.averageRps,
-                this.scenarioConfig.averageVus,
-                this.scenarioConfig.averageRiseDuration,
-                this.scenarioConfig.averagePlateauDuration,
-                this.scenarioConfig.averageFallDuration,
-                this.scenarioConfig.averageTestStartTime,
+                this.averageConfig.rps,
+                this.averageConfig.vus,
+                this.averageConfig.duration.rise,
+                this.averageConfig.duration.plateau,
+                this.averageConfig.duration.fall,
+                averageTestStartTime,
             ),
             stress: this.getStressScenario(
-                this.scenarioConfig.stressRps,
-                this.scenarioConfig.stressVus,
-                this.scenarioConfig.stressRiseDuration,
-                this.scenarioConfig.stressPlateauDuration,
-                this.scenarioConfig.stressFallDuration,
-                this.scenarioConfig.stressTestStartTime,
+                this.stressConfig.rps,
+                this.stressConfig.vus,
+                this.stressConfig.duration.rise,
+                this.stressConfig.duration.plateau,
+                this.stressConfig.duration.fall,
+                stressTestStartTime,
             ),
             spike: this.getSpikeScenario(
-                this.scenarioConfig.spikeRps,
-                this.scenarioConfig.spikeVus,
-                this.scenarioConfig.spikeRiseDuration,
-                this.scenarioConfig.spikeFallDuration,
-                this.scenarioConfig.spikeTestStartTime,
+                this.spikeConfig.rps,
+                this.spikeConfig.vus,
+                this.spikeConfig.duration.rise,
+                this.spikeConfig.duration.fall,
+                spikeTestStartTime,
             )
         }
     }
 
     getThresholds() {
         return {
-            'http_req_duration{test_type:smoke}': ['p(99)<' + this.scenarioConfig.smokeThreshold],
-            'http_req_duration{test_type:average}': ['p(99)<' + this.scenarioConfig.averageThreshold],
-            'http_req_duration{test_type:stress}': ['p(99)<' + this.scenarioConfig.stressThreshold],
-            'http_req_duration{test_type:spike}': ['p(99)<' + this.scenarioConfig.spikeThreshold],
+            'http_req_duration{test_type:smoke}': ['p(99)<' + this.smokeConfig.threshold],
+            'http_req_duration{test_type:average}': ['p(99)<' + this.averageConfig.threshold],
+            'http_req_duration{test_type:stress}': ['p(99)<' + this.stressConfig.threshold],
+            'http_req_duration{test_type:spike}': ['p(99)<' + this.spikeConfig.threshold],
             'checks{scenario:smoke}': ['rate>0.99'],
             'checks{scenario:average}': ['rate>0.99'],
             'checks{scenario:stress}': ['rate>0.99'],

@@ -1,13 +1,14 @@
-import {Utils} from "./utils.js";
-import {Env} from "./env.js";
 import http from 'k6/http';
 import faker from "k6/x/faker";
 
-export class InsertUsersUtils{
-    constructor(scenarioName) {
-        this.utils = new Utils();
-        this.env = new Env();
-        this.scenarioConfig = this.env.getScenarioConfig(scenarioName);
+export class InsertUsersUtils {
+    constructor(utils, scenarioName) {
+        this.utils = utils;
+        this.config = utils.getConfig();
+        this.smokeConfig = this.config.endpoints[scenarioName].smoke;
+        this.averageConfig = this.config.endpoints[scenarioName].average;
+        this.stressConfig = this.config.endpoints[scenarioName].stress;
+        this.spikeConfig = this.config.endpoints[scenarioName].spike;
     }
 
     * requestGenerator(numberOfUsers) {
@@ -48,7 +49,7 @@ export class InsertUsersUtils{
     }
 
     insertUsers(numberOfUsers) {
-        const batchSize = this.env.get('LOAD_TEST_BATCH_SIZE');
+        const batchSize = this.config.batchSize;
 
         const users = [];
 
@@ -78,21 +79,21 @@ export class InsertUsersUtils{
     }
 
     prepareUsers() {
-        let totalRequest = Number(this.env.get('LOAD_TEST_USERS_TO_INSERT'));
+        let totalRequest = this.config.usersToInsert;
 
-        if(this.env.get('LOAD_TEST_AUTO_DETERMINE_USERS_TO_INSERT') === 'true'){
-            const smokeRequests = this.scenarioConfig.smokeRps * this.scenarioConfig.smokeDuration;
+        if (this.config.autoDetermineUsersToInsert) {
+            const smokeRequests = this.smokeConfig.rps * this.smokeConfig.duration;
             const averageRequests =
-                this.countRequestForRampingRate(0, this.scenarioConfig.averageRps, this.scenarioConfig.averageRiseDuration)
-                + this.scenarioConfig.averageRps * this.scenarioConfig.averagePlateauDuration
-                + this.countRequestForRampingRate(this.scenarioConfig.averageRps, 0, this.scenarioConfig.averageFallDuration);
+                this.countRequestForRampingRate(0, this.averageConfig.rps, this.averageConfig.duration.rise)
+                + this.averageConfig.rps * this.averageConfig.duration.plateau
+                + this.countRequestForRampingRate(this.averageConfig.rps, 0, this.averageConfig.duration.fall);
             const stressRequests =
-                this.countRequestForRampingRate(0, this.scenarioConfig.stressRps, this.scenarioConfig.stressRiseDuration)
-                + this.scenarioConfig.stressRps * this.scenarioConfig.stressPlateauDuration
-                + this.countRequestForRampingRate(this.scenarioConfig.stressRps, 0, this.scenarioConfig.stressFallDuration);
+                this.countRequestForRampingRate(0, this.stressConfig.rps, this.stressConfig.duration.rise)
+                + this.stressConfig.rps * this.stressConfig.duration.plateau
+                + this.countRequestForRampingRate(this.stressConfig.rps, 0, this.stressConfig.duration.fall);
             const spikeRequests =
-                this.countRequestForRampingRate(0, this.scenarioConfig.spikeRps, this.scenarioConfig.spikeRiseDuration)
-                + this.countRequestForRampingRate(this.scenarioConfig.spikeRps, 0, this.scenarioConfig.spikeFallDuration);
+                this.countRequestForRampingRate(0, this.spikeConfig.rps, this.spikeConfig.duration.rise)
+                + this.countRequestForRampingRate(this.spikeConfig.rps, 0, this.spikeConfig.duration.fall);
 
             totalRequest = smokeRequests + averageRequests + stressRequests + spikeRequests;
         }

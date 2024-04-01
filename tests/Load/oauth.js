@@ -1,13 +1,13 @@
 import http from 'k6/http';
-import {ScenarioUtils} from "./scenarioUtils.js";
-import { check } from 'k6';
-import {Utils} from "./utils.js";
-import {Env} from "./env.js";
+import {ScenarioUtils} from "./utils/scenarioUtils.js";
+import {check} from 'k6';
+import {Utils} from "./utils/utils.js";
 
-const scenarioName = 'OAUTH';
-const scenarioUtils = new ScenarioUtils(scenarioName);
+const scenarioName = 'oauthToken';
 const utils = new Utils();
-const env = new Env();
+const config = utils.getConfig();
+const scenarioUtils = new ScenarioUtils(utils, scenarioName);
+
 
 export const options = scenarioUtils.getOptions();
 
@@ -17,8 +17,8 @@ export default function () {
 
 function getAccessToken() {
     const grantType = 'client_credentials';
-    const clientId = env.get('LOAD_TEST_OAUTH_CLIENT_ID');
-    const clientSecret = env.get('LOAD_TEST_OAUTH_CLIENT_SECRET');
+    const clientId = config.clientID;
+    const clientSecret = config.clientSecret;
 
     const payload = JSON.stringify({
         grant_type: grantType,
