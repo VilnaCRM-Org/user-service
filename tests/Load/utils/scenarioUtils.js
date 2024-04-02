@@ -1,3 +1,5 @@
+import {ScenarioBuilder} from './scenarioBuilder.js'
+
 export class ScenarioUtils {
     constructor(utils, scenarioName) {
         this.config = utils.getConfig();
@@ -16,155 +18,124 @@ export class ScenarioUtils {
     }
 
     getScenarios() {
+        const scenarios = {};
+
         const delay = this.config.delayBetweenScenarios;
-        const averageTestStartTime = this.smokeConfig.duration + delay;
-        const stressTestStartTime = averageTestStartTime
-            + this.averageConfig.duration.rise
-            + this.averageConfig.duration.plateau
-            + this.averageConfig.duration.fall + delay;
-        const spikeTestStartTime = stressTestStartTime
-            + this.stressConfig.duration.rise
-            + this.stressConfig.duration.plateau
-            + this.stressConfig.duration.fall + delay;
-        return {
-            smoke: this.getSmokeScenario(
-                this.smokeConfig.rps,
-                this.smokeConfig.vus,
-                this.smokeConfig.duration,
-            ),
-            average: this.getAverageScenario(
-                this.averageConfig.rps,
-                this.averageConfig.vus,
-                this.averageConfig.duration.rise,
-                this.averageConfig.duration.plateau,
-                this.averageConfig.duration.fall,
-                averageTestStartTime,
-            ),
-            stress: this.getStressScenario(
-                this.stressConfig.rps,
-                this.stressConfig.vus,
-                this.stressConfig.duration.rise,
-                this.stressConfig.duration.plateau,
-                this.stressConfig.duration.fall,
-                stressTestStartTime,
-            ),
-            spike: this.getSpikeScenario(
-                this.spikeConfig.rps,
-                this.spikeConfig.vus,
-                this.spikeConfig.duration.rise,
-                this.spikeConfig.duration.fall,
-                spikeTestStartTime,
-            )
+        let averageTestStartTime = 0;
+        let stressTestStartTime = 0;
+        let spikeTestStartTime = 0;
+
+        if (`${__ENV.run_smoke}` !== 'false') {
+            scenarios.smoke = new ScenarioBuilder()
+                .withExecutor('constant-arrival-rate')
+                .withPreAllocatedVUs(this.smokeConfig.vus)
+                .withDuration(this.smokeConfig.duration + 's')
+                .withRate(this.smokeConfig.rps)
+                .withName('smoke')
+                .build();
+            averageTestStartTime = this.smokeConfig.duration + delay;
         }
+        if (`${__ENV.run_average}` !== 'false') {
+            scenarios.average = new ScenarioBuilder()
+                .withExecutor('ramping-arrival-rate')
+                .withPreAllocatedVUs(this.averageConfig.vus)
+                .withStages(
+                    [
+                        {
+                            target: this.averageConfig.rps,
+                            duration: this.averageConfig.duration.rise + 's'
+                        },
+                        {
+                            target: this.averageConfig.rps,
+                            duration: this.averageConfig.duration.plateau + 's'
+                        },
+                        {
+                            target: 0,
+                            duration: this.averageConfig.duration.fall + 's'
+                        },
+                    ]
+                )
+                .withName('average')
+                .withStartTime(averageTestStartTime)
+                .withStartRate(0)
+                .build();
+            stressTestStartTime = averageTestStartTime
+                + this.averageConfig.duration.rise
+                + this.averageConfig.duration.plateau
+                + this.averageConfig.duration.fall + delay;
+        }
+        if (`${__ENV.run_stress}` !== 'false') {
+            scenarios.stress = new ScenarioBuilder()
+                .withExecutor('ramping-arrival-rate')
+                .withPreAllocatedVUs(this.stressConfig.vus)
+                .withStages(
+                    [
+                        {
+                            target: this.stressConfig.rps,
+                            duration: this.stressConfig.duration.rise + 's'
+                        },
+                        {
+                            target: this.stressConfig.rps,
+                            duration: this.stressConfig.duration.plateau + 's'
+                        },
+                        {
+                            target: 0,
+                            duration: this.stressConfig.duration.fall + 's'
+                        },
+                    ]
+                )
+                .withName('stress')
+                .withStartTime(averageTestStartTime)
+                .withStartRate(0)
+                .build();
+            spikeTestStartTime = stressTestStartTime
+                + this.stressConfig.duration.rise
+                + this.stressConfig.duration.plateau
+                + this.stressConfig.duration.fall + delay
+        }
+        if (`${__ENV.run_spike}` !== 'false') {
+            scenarios.spike = new ScenarioBuilder()
+                .withExecutor('ramping-arrival-rate')
+                .withPreAllocatedVUs(this.spikeConfig.vus)
+                .withStages(
+                    [
+                        {
+                            target: this.spikeConfig.rps,
+                            duration: this.spikeConfig.duration.rise + 's'
+                        },
+                        {
+                            target: 0,
+                            duration: this.spikeConfig.duration.fall + 's'
+                        },
+                    ]
+                )
+                .withName('spike')
+                .withStartTime(spikeTestStartTime)
+                .withStartRate(0)
+                .build();
+        }
+
+        return scenarios;
     }
 
     getThresholds() {
-        return {
-            'http_req_duration{test_type:smoke}': ['p(99)<' + this.smokeConfig.threshold],
-            'http_req_duration{test_type:average}': ['p(99)<' + this.averageConfig.threshold],
-            'http_req_duration{test_type:stress}': ['p(99)<' + this.stressConfig.threshold],
-            'http_req_duration{test_type:spike}': ['p(99)<' + this.spikeConfig.threshold],
-            'checks{scenario:smoke}': ['rate>0.99'],
-            'checks{scenario:average}': ['rate>0.99'],
-            'checks{scenario:stress}': ['rate>0.99'],
-            'checks{scenario:spike}': ['rate>0.70'],
-        }
-    }
+        const thresholds = {};
 
-    getSmokeScenario(
-        ratePerSecond,
-        vus,
-        duration
-    ) {
-        return {
-            executor: 'constant-arrival-rate',
-            rate: ratePerSecond,
-            timeUnit: '1s',
-            duration: duration + 's',
-            preAllocatedVUs: vus,
-            tags: {test_type: 'smoke'},
+        if (`${__ENV.run_smoke}` !== 'false') {
+            thresholds['http_req_duration{test_type:smoke}'] = ['p(99)<' + this.smokeConfig.threshold];
+            thresholds['checks{scenario:smoke}'] = ['rate>0.99'];
         }
-    }
-
-    getAverageScenario(
-        targetRatePerSecond,
-        vus,
-        riseDuration,
-        plateauDuration,
-        fallDuration,
-        startTime
-    ) {
-        return {
-            executor: 'ramping-arrival-rate',
-            startRate: 0,
-            timeUnit: '1s',
-            preAllocatedVUs: vus,
-            stages: [
-                {
-                    target: targetRatePerSecond,
-                    duration: riseDuration + 's'
-                },
-                {
-                    target: targetRatePerSecond,
-                    duration: plateauDuration + 's'
-                },
-                {target: 0, duration: fallDuration + 's'},
-            ],
-            startTime: startTime + 's',
-            tags: {test_type: 'average'},
+        if (`${__ENV.run_average}` !== 'false') {
+            thresholds['http_req_duration{test_type:average}'] = ['p(99)<' + this.averageConfig.threshold];
+            thresholds['checks{scenario:average}'] = ['rate>0.99'];
         }
-    }
-
-    getStressScenario(
-        targetRatePerSecond,
-        vus,
-        riseDuration,
-        plateauDuration,
-        fallDuration,
-        startTime
-    ) {
-        return {
-            executor: 'ramping-arrival-rate',
-            startRate: 0,
-            timeUnit: '1s',
-            preAllocatedVUs: vus,
-            stages: [
-                {
-                    target: targetRatePerSecond,
-                    duration: riseDuration + 's'
-                },
-                {
-                    target: targetRatePerSecond,
-                    duration: plateauDuration + 's'
-                },
-                {target: 0, duration: fallDuration + 's'},
-            ],
-            startTime: startTime + 's',
-            tags: {test_type: 'stress'},
+        if (`${__ENV.run_stress}` !== 'false') {
+            thresholds['http_req_duration{test_type:stress}'] = ['p(99)<' + this.stressConfig.threshold];
+            thresholds['checks{scenario:stress}'] = ['rate>0.99'];
         }
-    }
-
-    getSpikeScenario(
-        targetRatePerSecond,
-        vus,
-        riseDuration,
-        fallDuration,
-        startTime
-    ) {
-        return {
-            executor: 'ramping-arrival-rate',
-            startRate: 0,
-            timeUnit: '1s',
-            preAllocatedVUs: vus,
-            stages: [
-                {
-                    target: targetRatePerSecond,
-                    duration: riseDuration + 's'
-                },
-                {target: 0, duration: fallDuration + 's'},
-            ],
-            startTime: startTime + 's',
-            tags: {test_type: 'spike'},
+        if (`${__ENV.run_spike}` !== 'false') {
+            thresholds['http_req_duration{test_type:spike}'] = ['p(99)<' + this.spikeConfig.threshold];
+            thresholds['checks{scenario:spike}'] = ['rate>0.70'];
         }
     }
 }

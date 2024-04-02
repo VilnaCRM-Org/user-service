@@ -2,7 +2,7 @@ import http from 'k6/http';
 import faker from "k6/x/faker";
 
 export class InsertUsersUtils {
-    constructor(utils, scenarioName) {
+    constructor(utils,scenarioName) {
         this.utils = utils;
         this.config = utils.getConfig();
         this.smokeConfig = this.config.endpoints[scenarioName].smoke;
@@ -75,25 +75,37 @@ export class InsertUsersUtils {
     ) {
         const acceleration = (targetRps - startRps) / duration;
 
-        return startRps * duration + acceleration * duration * duration / 2;
+        return Math.round((startRps * duration + acceleration * duration * duration / 2) * 1.1);
     }
 
     prepareUsers() {
         let totalRequest = this.config.usersToInsert;
+        let smokeRequests = 0;
+        let averageRequests = 0;
+        let stressRequests = 0;
+        let spikeRequests = 0;
 
         if (this.config.autoDetermineUsersToInsert) {
-            const smokeRequests = this.smokeConfig.rps * this.smokeConfig.duration;
-            const averageRequests =
-                this.countRequestForRampingRate(0, this.averageConfig.rps, this.averageConfig.duration.rise)
-                + this.averageConfig.rps * this.averageConfig.duration.plateau
-                + this.countRequestForRampingRate(this.averageConfig.rps, 0, this.averageConfig.duration.fall);
-            const stressRequests =
-                this.countRequestForRampingRate(0, this.stressConfig.rps, this.stressConfig.duration.rise)
-                + this.stressConfig.rps * this.stressConfig.duration.plateau
-                + this.countRequestForRampingRate(this.stressConfig.rps, 0, this.stressConfig.duration.fall);
-            const spikeRequests =
-                this.countRequestForRampingRate(0, this.spikeConfig.rps, this.spikeConfig.duration.rise)
-                + this.countRequestForRampingRate(this.spikeConfig.rps, 0, this.spikeConfig.duration.fall);
+            if (`${__ENV.run_smoke}` !== 'false') {
+                smokeRequests = this.smokeConfig.rps * this.smokeConfig.duration;
+            }
+            if (`${__ENV.run_average}` !== 'false') {
+                averageRequests =
+                    this.countRequestForRampingRate(0, this.averageConfig.rps, this.averageConfig.duration.rise)
+                    + this.averageConfig.rps * this.averageConfig.duration.plateau
+                    + this.countRequestForRampingRate(this.averageConfig.rps, 0, this.averageConfig.duration.fall);
+            }
+            if (`${__ENV.run_stress}` !== 'false') {
+                stressRequests =
+                    this.countRequestForRampingRate(0, this.stressConfig.rps, this.stressConfig.duration.rise)
+                    + this.stressConfig.rps * this.stressConfig.duration.plateau
+                    + this.countRequestForRampingRate(this.stressConfig.rps, 0, this.stressConfig.duration.fall);
+            }
+            if (`${__ENV.run_spike}` !== 'false') {
+                spikeRequests =
+                    this.countRequestForRampingRate(0, this.spikeConfig.rps, this.spikeConfig.duration.rise)
+                    + this.countRequestForRampingRate(this.spikeConfig.rps, 0, this.spikeConfig.duration.fall);
+            }
 
             totalRequest = smokeRequests + averageRequests + stressRequests + spikeRequests;
         }

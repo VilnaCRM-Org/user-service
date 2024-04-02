@@ -1,0 +1,26 @@
+name: Load testing
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  loadTests:
+    name: K6
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Start application
+        run: make start
+
+      - name: Install Dependencies
+        run: make install
+
+      - name: Run migrations
+        run: make doctrine-migrations-migrate
+
+      - name: Setup test db
+        run: make load-tests

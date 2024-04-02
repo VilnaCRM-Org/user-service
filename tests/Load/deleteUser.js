@@ -3,6 +3,7 @@ import {ScenarioUtils} from "./utils/scenarioUtils.js";
 import {check} from 'k6';
 import {Utils} from "./utils/utils.js";
 import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
+import exec from 'k6/execution';
 
 const scenarioName = 'deleteUser';
 const utils = new Utils();
@@ -18,7 +19,7 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default function (data) {
-    deleteUser(data.users[utils.getRandomNumber(0, data.users.length - 1)]);
+    deleteUser(data.users[exec.instance.iterationsInterrupted + exec.instance.iterationsCompleted]);
 }
 
 function deleteUser(user) {

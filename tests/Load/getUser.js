@@ -3,6 +3,7 @@ import {ScenarioUtils} from "./utils/scenarioUtils.js";
 import {check} from 'k6';
 import {Utils} from "./utils/utils.js";
 import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
+import exec from 'k6/execution';
 
 const scenarioName = 'getUser';
 const utils = new Utils();
@@ -18,7 +19,7 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default function (data) {
-    getUser(data.users[utils.getRandomNumber(0, data.users.length - 1)]);
+    getUser(data.users[exec.instance.iterationsInterrupted + exec.instance.iterationsCompleted]);
 }
 
 function getUser(user) {

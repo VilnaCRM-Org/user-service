@@ -4,6 +4,7 @@ import faker from "k6/x/faker";
 import {check} from 'k6';
 import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
 import {Utils} from "./utils/utils.js";
+import exec from 'k6/execution';
 
 const utils = new Utils();
 const scenarioName = 'graphqlUpdateUser';
@@ -19,7 +20,7 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default function (data) {
-    updateUser(data.users[utils.getRandomNumber(0, data.users.length - 1)]);
+    updateUser(data.users[exec.instance.iterationsInterrupted + exec.instance.iterationsCompleted]);
 }
 
 function updateUser(user) {

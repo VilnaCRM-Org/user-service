@@ -3,6 +3,7 @@ import {ScenarioUtils} from "./utils/scenarioUtils.js";
 import {check} from 'k6';
 import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
 import {Utils} from "./utils/utils.js";
+import exec from 'k6/execution';
 
 const utils = new Utils();
 const scenarioName = 'graphqlResendEmailToUser';
@@ -18,7 +19,7 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default function (data) {
-    resendEmail(data.users[utils.getRandomNumber(0, data.users.length - 1)]);
+    resendEmail(data.users[exec.instance.iterationsInterrupted + exec.instance.iterationsCompleted]);
 }
 
 function resendEmail(user) {
