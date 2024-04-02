@@ -2,19 +2,14 @@ import { render } from '@testing-library/react';
 import React from 'react';
 
 import { SocialLink } from '../../../types/authentication/social';
+import { testSocialLink } from '../constants';
 
 import SocialList from './SocialList';
 
 const socialLinksTestId: string = 'social-item';
 const emptySocialLinks: SocialLink[] = [];
-const socialLinks: SocialLink[] = [
-  {
-    id: '1',
-    linkHref: 'http://example.com',
-    title: 'Example Link',
-    icon: '',
-  },
-];
+
+const socialLinks: SocialLink[] = [testSocialLink];
 
 jest.mock('../SocialItem/SocialItem', () =>
   jest.fn(() => <div data-testid="social-item" />)

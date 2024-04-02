@@ -2,7 +2,7 @@ import { t } from 'i18next';
 
 export const isValidFullNameFormat: (fullName: string) => boolean = (
   fullName: string
-): boolean => /^[^\d\s]+\s[^\d\s]+$/.test(fullName);
+): boolean => /^[^\d\s]+(\s[^\d\s]+)+$/.test(fullName);
 
 const validateFullName: (fullName: string) => string | boolean = (
   fullName: string

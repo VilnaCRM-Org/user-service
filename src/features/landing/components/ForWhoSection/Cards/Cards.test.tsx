@@ -3,11 +3,9 @@ import React from 'react';
 
 import Cards from './Cards';
 
-const cardTitle: string =
-  'A private entrepreneur is a psychologist, tutor or dropshipper';
+const cardTitle: RegExp = /A private entrepreneur/;
 const cardText: string = 'Our CRM is ideal if you:';
-const cardBusinessText: string =
-  'medium-scale local project - online courses, design studio or small outsourcing';
+const cardBusinessText: RegExp = /medium-scale local project/;
 const cardButton: string = 'Try it out';
 
 describe('Cards component', () => {

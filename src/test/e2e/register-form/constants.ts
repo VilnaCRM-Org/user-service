@@ -12,23 +12,43 @@ export const policyText: string = 'I have read and accept the';
 export const userData: User = {
   fullName: faker.person.fullName(),
   email: faker.internet.email(),
-  password: faker.internet.password(),
+  password: faker.internet.password({ length: 16, prefix: 'Q9' }),
 };
 
+const textShortText: string = faker.internet.password({
+  length: 7,
+});
+
+const textNoNumbers: string = faker.internet.password({
+  length: 10,
+  pattern: /[A-Z]/,
+});
+const textNoUppercaseLetter: string = faker.internet.password({
+  length: 10,
+  pattern: /[a-z]/,
+  prefix: '1',
+});
+
+const emailWithoutDot: string = faker.internet.email().replace(/\./g, '');
+const InvalidEmail: string = 'test@test.';
+
 export const expectationsEmail: ExpectationEmail[] = [
-  { errorText: "Email must contain '@' and '.' symbols", email: 'hello@sdf' },
-  { errorText: 'Invalid email address', email: 'hello@sdf.' },
+  {
+    errorText: "Email must contain '@' and '.' symbols",
+    email: emailWithoutDot,
+  },
+  { errorText: 'Invalid email address', email: InvalidEmail },
 ];
 
 export const expectationsPassword: ExpectationsPassword[] = [
-  { errorText: 'Password must be between 8', password: 'tirion' },
+  { errorText: 'Password must be between 8', password: textShortText },
   {
     errorText: 'Password must contain at least one number',
-    password: 'lanister',
+    password: textNoNumbers,
   },
   {
     errorText: 'Password must contain at least one uppercase letter',
-    password: 'lanister1',
+    password: textNoUppercaseLetter,
   },
 ];
 

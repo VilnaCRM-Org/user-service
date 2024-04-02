@@ -1,8 +1,8 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import Logo from '../../../assets/svg/logo/Logo.svg';
 import { SocialMedia } from '../../../types/social-media/index';
+import { testSocialItem } from '../constants';
 
 import SocialMediaList from './SocialMediaList';
 
@@ -12,15 +12,7 @@ jest.mock('../SocialMediaItem/SocialMediaItem', () =>
 
 const sociaLMediaTestId: string = 'social-media-item';
 const emptySocialLinks: SocialMedia[] = [];
-const socialLinks: SocialMedia[] = [
-  {
-    id: '1',
-    alt: 'Twitter',
-    linkHref: 'https://twitter.com/',
-    ariaLabel: 'Twitter',
-    icon: Logo,
-  },
-];
+const socialLinks: SocialMedia[] = [testSocialItem];
 
 describe('SocialMediaList', () => {
   it('renders social media items correctly', () => {

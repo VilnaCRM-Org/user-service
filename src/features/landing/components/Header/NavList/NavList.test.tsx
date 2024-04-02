@@ -2,20 +2,12 @@ import { render } from '@testing-library/react';
 import React from 'react';
 
 import { NavItemProps } from '../../../types/header/navigation';
+import { testDrawerItem, testHeaderItem } from '../constants';
 
 import NavList from './NavList';
 
-const navItems: NavItemProps[] = [
-  { id: '1', title: 'Item 1', type: 'header', link: '/' },
-  { id: '2', title: 'Item 2', type: 'header', link: '/' },
-  { id: '3', title: 'Item 3', type: 'header', link: '/' },
-];
-
-const drawerNavItems: NavItemProps[] = [
-  { id: '1', title: 'Item 1', type: 'drawer', link: '/' },
-  { id: '2', title: 'Item 2', type: 'drawer', link: '/' },
-  { id: '3', title: 'Item 3', type: 'drawer', link: '/' },
-];
+const navItems: NavItemProps[] = [testHeaderItem];
+const drawerNavItems: NavItemProps[] = [testDrawerItem];
 
 const navWrapperTestId: string = 'nav-wrapper';
 const navContentTestId: string = 'nav-content';

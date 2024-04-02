@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 
@@ -16,13 +17,15 @@ describe('Drawer', () => {
     expect(drawerButton).toBeInTheDocument();
   });
 
-  it('opens drawer when button is clicked', () => {
+  it('opens drawer when button is clicked', async () => {
     const { getByLabelText, getByTestId } = render(<Drawer />);
     const drawerButton: HTMLElement = getByLabelText(buttonToOpenDrawer);
 
     fireEvent.click(drawerButton);
-    const drawer: HTMLElement = getByTestId(drawerTestId);
-    expect(drawer).toBeInTheDocument();
+    await waitFor(() => {
+      const drawer: HTMLElement = getByTestId(drawerTestId);
+      expect(drawer).toBeInTheDocument();
+    });
   });
 
   it('closes drawer when exit button is clicked', async () => {
@@ -53,5 +56,39 @@ describe('Drawer', () => {
     fireEvent.click(drawerButton);
     const navItems: HTMLElement[] = getAllByRole(listItem);
     expect(navItems.length).toBeGreaterThan(0);
+  });
+
+  it('closes the drawer when handleCloseDrawer is called', async () => {
+    const handleCloseDrawer: () => void = jest.fn();
+    const { getByRole, getByLabelText, queryByTestId } = render(
+      <Drawer handleCloseDrawer={handleCloseDrawer} />
+    );
+
+    const drawerButton: HTMLElement = getByLabelText(buttonToOpenDrawer);
+    fireEvent.click(drawerButton);
+    const tryItOutButton: HTMLElement = getByRole('button', {
+      name: /Try it out/,
+    });
+
+    fireEvent.click(tryItOutButton);
+
+    await waitFor(() => {
+      expect(queryByTestId(drawerTestId)).not.toBeInTheDocument();
+    });
+  });
+
+  it('should close drawer on wide screens', () => {
+    const mockUseMediaQuery: jest.MockedFunction<() => boolean> = jest.fn(
+      () => true
+    );
+    mockUseMediaQuery.mockReturnValue(true);
+    jest.mock('@mui/material', () => ({
+      ...jest.requireActual('@mui/material'),
+      useMediaQuery: mockUseMediaQuery,
+    }));
+
+    const { queryByTestId } = render(<Drawer />);
+
+    expect(queryByTestId(drawerTestId)).not.toBeInTheDocument();
   });
 });

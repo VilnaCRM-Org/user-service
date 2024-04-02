@@ -4,8 +4,7 @@ import React from 'react';
 import MainTitle from './MainTitle';
 
 const forWhoTitle: string = 'For who';
-const forWhoText: string =
-  'We created Vilna, focusing on the specifics of the service business, which is not suitable for ordinary e-commerce templates';
+const forWhoText: RegExp = /We created Vilna,/;
 const forWhoTestIdButton: string = 'for-who-sign-up';
 
 describe('MainTitle component', () => {

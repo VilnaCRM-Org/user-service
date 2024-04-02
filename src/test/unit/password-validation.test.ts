@@ -2,10 +2,24 @@ import { faker } from '@faker-js/faker';
 
 import { validatePassword } from '../../features/landing/components/AuthSection/Validations';
 
-const textShortText: string = 'short';
-const textNoNumbers: string = 'NoNumbers';
-const textNoUppercaseLetter: string = 'shortshort1';
-const correctPassword: string = faker.internet.password();
+const textShortText: string = faker.internet.password({
+  length: 7,
+});
+
+const textNoNumbers: string = faker.internet.password({
+  length: 10,
+  pattern: /[A-Z]/,
+});
+const textNoUppercaseLetter: string = faker.internet.password({
+  length: 10,
+  pattern: /[a-z]/,
+  prefix: '1',
+});
+
+const correctPassword: string = faker.internet.password({
+  length: 16,
+  prefix: 'Q9',
+});
 
 const passwordLengthError: string =
   'Password must be between 8 and 64 characters long';

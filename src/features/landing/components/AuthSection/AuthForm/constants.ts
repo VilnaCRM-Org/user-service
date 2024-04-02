@@ -8,9 +8,13 @@ export const passwordPlaceholder: string = 'Create a password';
 export const submitButton: string = 'Sign-Up';
 export const authFormTestId: string = 'auth-form';
 
+export const fullName: string = faker.person.fullName();
 export const email: string = faker.internet.email();
-export const password: string = faker.internet.password();
-export const fullName: string = faker.internet.userName();
+export const password: string = faker.internet.password({
+  length: 16,
+  prefix: 'Q9',
+});
+export const randomClientId: string = faker.string.uuid();
 
 export const mocks: Mock[] = [
   {
@@ -19,7 +23,7 @@ export const mocks: Mock[] = [
         input: {
           email,
           initials: fullName,
-          clientMutationId: '132',
+          clientMutationId: randomClientId,
           password,
         },
       },
@@ -32,5 +36,21 @@ export const mocks: Mock[] = [
       },
       status: 200,
     }),
+  },
+];
+
+export const mockErrors: Mock[] = [
+  {
+    request: {
+      variables: {
+        input: {
+          email,
+          initials: fullName,
+          clientMutationId: randomClientId,
+          password,
+        },
+      },
+    },
+    erorr: new Error('Server error occurred'),
   },
 ];

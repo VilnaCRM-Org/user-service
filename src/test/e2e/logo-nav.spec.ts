@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 
 const urlWithHashFragmentRegex: RegExp = /\/#/;
+const logoAlt: string = 'Vilna logo';
 
 async function performLogoNavigation(
   page: Page,
@@ -14,10 +15,10 @@ async function performLogoNavigation(
 
 test.describe('Navigation tests', () => {
   test('Header logo navigation', async ({ page }) => {
-    await performLogoNavigation(page, 'header', 'Vilna logo');
+    await performLogoNavigation(page, 'header', logoAlt);
   });
 
   test('Footer logo navigation', async ({ page }) => {
-    await performLogoNavigation(page, '#Contacts', 'Vilna logo');
+    await performLogoNavigation(page, '#Contacts', logoAlt);
   });
 });

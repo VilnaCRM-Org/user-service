@@ -95,7 +95,7 @@ function CustomDrawer(): React.ReactElement {
                 fullWidth
                 variant="outlined"
                 size="small"
-                onClick={(): void => handleCloseDrawer()}
+                onClick={handleCloseDrawer}
               >
                 {t('header.actions.log_in')}
               </UiButton>
@@ -103,7 +103,7 @@ function CustomDrawer(): React.ReactElement {
             <Link href="#signUp" sx={styles.link}>
               <UiButton
                 fullWidth
-                onClick={(): void => handleCloseDrawer()}
+                onClick={handleCloseDrawer}
                 variant="contained"
                 size="small"
               >
@@ -111,10 +111,7 @@ function CustomDrawer(): React.ReactElement {
               </UiButton>
             </Link>
           </Stack>
-          <NavList
-            navItems={drawerNavList}
-            handleClick={(): void => handleCloseDrawer()}
-          />
+          <NavList navItems={drawerNavList} handleClick={handleCloseDrawer} />
           <VilnaCRMEmail />
           <SocialMediaList socialLinks={socialMedia} />
         </Box>
