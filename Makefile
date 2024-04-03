@@ -82,7 +82,7 @@ ci-setup-test-db:
 
 all-tests: unit-tests integration-tests e2e-tests
 
-load-tests: build-k6
+smoke-load-tests: build-k6
 	$(K6) /scripts/getUser.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/getUsers.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/updateUser.js -e run_average=false -e run_stress=false -e run_spike=false
@@ -100,6 +100,25 @@ load-tests: build-k6
 	$(K6) /scripts/graphQLResendEmailToUser.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/graphQLCreateUser.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/graphQLConfirmUser.js -e run_average=false -e run_stress=false -e run_spike=false
+
+load-tests: build-k6
+	$(K6) /scripts/getUser.js
+	$(K6) /scripts/getUsers.js
+	$(K6) /scripts/updateUser.js
+	$(K6) /scripts/createUser.js
+	$(K6) /scripts/confirmUser.js
+	$(K6) /scripts/deleteUser.js
+	$(K6) /scripts/resendEmailToUser.js
+	$(K6) /scripts/replaceUser.js
+	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauthToken.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauthToken.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	$(K6) /scripts/oauth.js
+	$(K6) /scripts/graphQLUpdateUser.js
+	$(K6) /scripts/graphQLGetUser.js
+	$(K6) /scripts/graphQLGetUsers.js
+	$(K6) /scripts/graphQLDeleteUser.js
+	$(K6) /scripts/graphQLResendEmailToUser.js
+	$(K6) /scripts/graphQLCreateUser.js
+	$(K6) /scripts/graphQLConfirmUser.js
 
 build-k6:
 	$(DOCKER) build -t k6 -f ./tests/Load/Dockerfile .

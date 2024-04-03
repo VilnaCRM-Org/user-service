@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  loadTests:
+  load-tests:
     name: K6
     runs-on: ubuntu-latest
 
@@ -22,5 +22,5 @@ jobs:
       - name: Run migrations
         run: make doctrine-migrations-migrate
 
-      - name: Setup test db
-        run: make load-tests
+      - name: Run load tests
+        run: make smoke-load-tests

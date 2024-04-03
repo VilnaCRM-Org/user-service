@@ -3,7 +3,7 @@ import {ScenarioUtils} from "./utils/scenarioUtils.js";
 import {check} from 'k6';
 import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
 import {Utils} from "./utils/utils.js";
-import exec from 'k6/execution';
+import counter from "k6/x/counter"
 
 const utils = new Utils();
 const scenarioName = 'graphqlResendEmailToUser';
@@ -19,15 +19,18 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default function (data) {
-    resendEmail(data.users[exec.instance.iterationsInterrupted + exec.instance.iterationsCompleted]);
+    resendEmail(data.users[counter.up()]);
 }
 
 function resendEmail(user) {
-    const id = user.id;
+    utils.checkUserIsDefined(user);
+
+    const id = utils.getGraphQLIdPrefix() + user.id;
+    const mutationName = 'resendEmailToUser';
 
     const mutation = `
      mutation{
-  resendEmailToUser(input:{id:"/api/users/${id}"}){
+  ${mutationName}(input:{id:"${id}"}){
     user{
       id
     }
@@ -41,6 +44,7 @@ function resendEmail(user) {
     );
 
     check(res, {
-        'is status 200': (r) => r.status === 200,
+        'user returned': (r) =>
+            JSON.parse(r.body).data[mutationName].user.id === `${id}`,
     });
 }

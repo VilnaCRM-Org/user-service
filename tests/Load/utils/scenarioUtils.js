@@ -1,12 +1,18 @@
-import {ScenarioBuilder} from './scenarioBuilder.js'
+import {ScenariosBuilder} from './scenariosBuilder.js'
+import {ThresholdsBuilder} from "./thesholdsBuilder.js";
 
 export class ScenarioUtils {
     constructor(utils, scenarioName) {
+        this.utils = utils;
         this.config = utils.getConfig();
         this.smokeConfig = this.config.endpoints[scenarioName].smoke;
         this.averageConfig = this.config.endpoints[scenarioName].average;
         this.stressConfig = this.config.endpoints[scenarioName].stress;
         this.spikeConfig = this.config.endpoints[scenarioName].spike;
+        this.delay = this.config.delayBetweenScenarios;
+        this.averageTestStartTime = 0;
+        this.stressTestStartTime = 0;
+        this.spikeTestStartTime = 0;
     }
 
     getOptions() {
@@ -18,124 +24,74 @@ export class ScenarioUtils {
     }
 
     getScenarios() {
-        const scenarios = {};
+        const scenariosBuilder = new ScenariosBuilder();
 
-        const delay = this.config.delayBetweenScenarios;
-        let averageTestStartTime = 0;
-        let stressTestStartTime = 0;
-        let spikeTestStartTime = 0;
-
-        if (`${__ENV.run_smoke}` !== 'false') {
-            scenarios.smoke = new ScenarioBuilder()
-                .withExecutor('constant-arrival-rate')
-                .withPreAllocatedVUs(this.smokeConfig.vus)
-                .withDuration(this.smokeConfig.duration + 's')
-                .withRate(this.smokeConfig.rps)
-                .withName('smoke')
-                .build();
-            averageTestStartTime = this.smokeConfig.duration + delay;
+        if (this.utils.getCLIVariable('run_smoke') !== 'false') {
+            this.addSmokeScenario(scenariosBuilder);
         }
-        if (`${__ENV.run_average}` !== 'false') {
-            scenarios.average = new ScenarioBuilder()
-                .withExecutor('ramping-arrival-rate')
-                .withPreAllocatedVUs(this.averageConfig.vus)
-                .withStages(
-                    [
-                        {
-                            target: this.averageConfig.rps,
-                            duration: this.averageConfig.duration.rise + 's'
-                        },
-                        {
-                            target: this.averageConfig.rps,
-                            duration: this.averageConfig.duration.plateau + 's'
-                        },
-                        {
-                            target: 0,
-                            duration: this.averageConfig.duration.fall + 's'
-                        },
-                    ]
-                )
-                .withName('average')
-                .withStartTime(averageTestStartTime)
-                .withStartRate(0)
-                .build();
-            stressTestStartTime = averageTestStartTime
-                + this.averageConfig.duration.rise
-                + this.averageConfig.duration.plateau
-                + this.averageConfig.duration.fall + delay;
+        if (this.utils.getCLIVariable('run_average') !== 'false') {
+            this.addAverageScenario(scenariosBuilder);
         }
-        if (`${__ENV.run_stress}` !== 'false') {
-            scenarios.stress = new ScenarioBuilder()
-                .withExecutor('ramping-arrival-rate')
-                .withPreAllocatedVUs(this.stressConfig.vus)
-                .withStages(
-                    [
-                        {
-                            target: this.stressConfig.rps,
-                            duration: this.stressConfig.duration.rise + 's'
-                        },
-                        {
-                            target: this.stressConfig.rps,
-                            duration: this.stressConfig.duration.plateau + 's'
-                        },
-                        {
-                            target: 0,
-                            duration: this.stressConfig.duration.fall + 's'
-                        },
-                    ]
-                )
-                .withName('stress')
-                .withStartTime(averageTestStartTime)
-                .withStartRate(0)
-                .build();
-            spikeTestStartTime = stressTestStartTime
-                + this.stressConfig.duration.rise
-                + this.stressConfig.duration.plateau
-                + this.stressConfig.duration.fall + delay
+        if (this.utils.getCLIVariable('run_stress') !== 'false') {
+            this.addStressScenario(scenariosBuilder);
         }
-        if (`${__ENV.run_spike}` !== 'false') {
-            scenarios.spike = new ScenarioBuilder()
-                .withExecutor('ramping-arrival-rate')
-                .withPreAllocatedVUs(this.spikeConfig.vus)
-                .withStages(
-                    [
-                        {
-                            target: this.spikeConfig.rps,
-                            duration: this.spikeConfig.duration.rise + 's'
-                        },
-                        {
-                            target: 0,
-                            duration: this.spikeConfig.duration.fall + 's'
-                        },
-                    ]
-                )
-                .withName('spike')
-                .withStartTime(spikeTestStartTime)
-                .withStartRate(0)
-                .build();
+        if (this.utils.getCLIVariable('run_spike') !== 'false') {
+            this.addSpikeScenario(scenariosBuilder);
         }
 
-        return scenarios;
+        return scenariosBuilder.build();
+    }
+
+    addSmokeScenario(scenariosBuilder){
+        scenariosBuilder.addSmokeScenario(this.smokeConfig);
+        this.averageTestStartTime = this.smokeConfig.duration + this.delay;
+    }
+
+    addAverageScenario(scenariosBuilder){
+        scenariosBuilder.addAverageScenario(
+            this.averageConfig,
+            this.averageTestStartTime
+        );
+        this.stressTestStartTime = this.averageTestStartTime
+            + this.averageConfig.duration.rise
+            + this.averageConfig.duration.plateau
+            + this.averageConfig.duration.fall + this.delay;
+    }
+
+    addStressScenario(scenariosBuilder){
+        scenariosBuilder.addStressScenario(
+            this.stressConfig,
+            this.stressTestStartTime
+        );
+        this.spikeTestStartTime = this.stressTestStartTime
+            + this.stressConfig.duration.rise
+            + this.stressConfig.duration.plateau
+            + this.stressConfig.duration.fall + this.delay;
+    }
+
+    addSpikeScenario(scenariosBuilder){
+        scenariosBuilder.addSpikeScenario(
+            this.spikeConfig,
+            this.spikeTestStartTime
+        );
     }
 
     getThresholds() {
-        const thresholds = {};
+        const thresholdsBuilder = new ThresholdsBuilder();
 
-        if (`${__ENV.run_smoke}` !== 'false') {
-            thresholds['http_req_duration{test_type:smoke}'] = ['p(99)<' + this.smokeConfig.threshold];
-            thresholds['checks{scenario:smoke}'] = ['rate>0.99'];
+        if (this.utils.getCLIVariable('run_smoke') !== 'false') {
+            thresholdsBuilder.addSmokeThreshold(this.smokeConfig);
         }
-        if (`${__ENV.run_average}` !== 'false') {
-            thresholds['http_req_duration{test_type:average}'] = ['p(99)<' + this.averageConfig.threshold];
-            thresholds['checks{scenario:average}'] = ['rate>0.99'];
+        if (this.utils.getCLIVariable('run_average') !== 'false') {
+            thresholdsBuilder.addAverageThreshold(this.averageConfig);
         }
-        if (`${__ENV.run_stress}` !== 'false') {
-            thresholds['http_req_duration{test_type:stress}'] = ['p(99)<' + this.stressConfig.threshold];
-            thresholds['checks{scenario:stress}'] = ['rate>0.99'];
+        if (this.utils.getCLIVariable('run_stress') !== 'false') {
+            thresholdsBuilder.addStressThreshold(this.stressConfig);
         }
-        if (`${__ENV.run_spike}` !== 'false') {
-            thresholds['http_req_duration{test_type:spike}'] = ['p(99)<' + this.spikeConfig.threshold];
-            thresholds['checks{scenario:spike}'] = ['rate>0.70'];
+        if (this.utils.getCLIVariable('run_spike') !== 'false') {
+            thresholdsBuilder.addSpikeThreshold(this.spikeConfig);
         }
+
+        return thresholdsBuilder.build();
     }
 }

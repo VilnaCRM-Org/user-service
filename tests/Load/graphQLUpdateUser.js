@@ -4,7 +4,7 @@ import faker from "k6/x/faker";
 import {check} from 'k6';
 import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
 import {Utils} from "./utils/utils.js";
-import exec from 'k6/execution';
+import counter from "k6/x/counter"
 
 const utils = new Utils();
 const scenarioName = 'graphqlUpdateUser';
@@ -20,20 +20,23 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default function (data) {
-    updateUser(data.users[exec.instance.iterationsInterrupted + exec.instance.iterationsCompleted]);
+    updateUser(data.users[counter.up()]);
 }
 
 function updateUser(user) {
-    const id = user.id;
+    utils.checkUserIsDefined(user);
+
+    const id = utils.getGraphQLIdPrefix() + user.id;
+    const mutationName = 'updateUser';
     const email = faker.person.email();
     const initials = faker.person.name();
     const password = user.password;
 
     const mutation = `
      mutation {
-        updateUser(
+        ${mutationName}(
             input: {
-            id: "/api/users/${id}"
+            id: "${id}"
             email: "${email}"
             newPassword: "${password}"
             initials: "${initials}"
@@ -53,6 +56,7 @@ function updateUser(user) {
     );
 
     check(res, {
-        'is status 200': (r) => r.status === 200,
+        'updated user returned': (r) =>
+            JSON.parse(r.body).data[mutationName].user.id === `${id}`,
     });
 }

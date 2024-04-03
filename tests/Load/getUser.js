@@ -3,7 +3,7 @@ import {ScenarioUtils} from "./utils/scenarioUtils.js";
 import {check} from 'k6';
 import {Utils} from "./utils/utils.js";
 import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
-import exec from 'k6/execution';
+import counter from "k6/x/counter"
 
 const scenarioName = 'getUser';
 const utils = new Utils();
@@ -19,10 +19,12 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default function (data) {
-    getUser(data.users[exec.instance.iterationsInterrupted + exec.instance.iterationsCompleted]);
+    getUser(data.users[counter.up()]);
 }
 
 function getUser(user) {
+    utils.checkUserIsDefined(user);
+
     const id = user.id;
 
     const res = http.get(

@@ -2,9 +2,10 @@ import http from 'k6/http';
 import faker from "k6/x/faker";
 
 export class InsertUsersUtils {
-    constructor(utils,scenarioName) {
+    constructor(utils, scenarioName) {
         this.utils = utils;
         this.config = utils.getConfig();
+        this.additionalUsersRatio = 1.1;
         this.smokeConfig = this.config.endpoints[scenarioName].smoke;
         this.averageConfig = this.config.endpoints[scenarioName].average;
         this.stressConfig = this.config.endpoints[scenarioName].stress;
@@ -75,41 +76,109 @@ export class InsertUsersUtils {
     ) {
         const acceleration = (targetRps - startRps) / duration;
 
-        return Math.round((startRps * duration + acceleration * duration * duration / 2) * 1.1);
+        return Math.round((startRps * duration + acceleration * duration * duration / 2));
     }
 
     prepareUsers() {
         let totalRequest = this.config.usersToInsert;
+
+        if (this.config.autoDetermineUsersToInsert) {
+            totalRequest = this.countTotalRequest();
+        }
+
+        return this.insertUsers(totalRequest);
+    }
+
+    countTotalRequest() {
         let smokeRequests = 0;
         let averageRequests = 0;
         let stressRequests = 0;
         let spikeRequests = 0;
 
-        if (this.config.autoDetermineUsersToInsert) {
-            if (`${__ENV.run_smoke}` !== 'false') {
-                smokeRequests = this.smokeConfig.rps * this.smokeConfig.duration;
-            }
-            if (`${__ENV.run_average}` !== 'false') {
-                averageRequests =
-                    this.countRequestForRampingRate(0, this.averageConfig.rps, this.averageConfig.duration.rise)
-                    + this.averageConfig.rps * this.averageConfig.duration.plateau
-                    + this.countRequestForRampingRate(this.averageConfig.rps, 0, this.averageConfig.duration.fall);
-            }
-            if (`${__ENV.run_stress}` !== 'false') {
-                stressRequests =
-                    this.countRequestForRampingRate(0, this.stressConfig.rps, this.stressConfig.duration.rise)
-                    + this.stressConfig.rps * this.stressConfig.duration.plateau
-                    + this.countRequestForRampingRate(this.stressConfig.rps, 0, this.stressConfig.duration.fall);
-            }
-            if (`${__ENV.run_spike}` !== 'false') {
-                spikeRequests =
-                    this.countRequestForRampingRate(0, this.spikeConfig.rps, this.spikeConfig.duration.rise)
-                    + this.countRequestForRampingRate(this.spikeConfig.rps, 0, this.spikeConfig.duration.fall);
-            }
-
-            totalRequest = smokeRequests + averageRequests + stressRequests + spikeRequests;
+        if (this.utils.getCLIVariable('run_smoke') !== 'false') {
+            smokeRequests = this.countSmokeRequest();
+        }
+        if (this.utils.getCLIVariable('run_average') !== 'false') {
+            averageRequests = this.countAverageRequest();
+        }
+        if (this.utils.getCLIVariable('run_stress') !== 'false') {
+            stressRequests = this.countStressRequest();
+        }
+        if (this.utils.getCLIVariable('run_spike') !== 'false') {
+            spikeRequests = this.countSpikeRequest();
         }
 
-        return this.insertUsers(totalRequest);
+        return Math.round(
+            (smokeRequests +
+                averageRequests +
+                stressRequests +
+                spikeRequests
+            ) * this.additionalUsersRatio
+        );
+    }
+
+    countSmokeRequest() {
+        return this.smokeConfig.rps * this.smokeConfig.duration
+    }
+
+    countAverageRequest() {
+        const averageRiseRequests =
+            this.countRequestForRampingRate(
+                0,
+                this.averageConfig.rps,
+                this.averageConfig.duration.rise
+            );
+
+        const averagePlateauRequests =
+            this.averageConfig.rps * this.averageConfig.duration.plateau;
+
+        const averageFallRequests =
+            this.countRequestForRampingRate(
+                this.averageConfig.rps,
+                0, this.averageConfig.duration.fall
+            );
+
+        return averageRiseRequests
+            + averagePlateauRequests
+            + averageFallRequests;
+    }
+
+    countStressRequest() {
+        const stressRiseRequests =
+            this.countRequestForRampingRate(
+                0,
+                this.stressConfig.rps,
+                this.stressConfig.duration.rise
+            );
+
+        const stressPlateauRequests =
+            this.stressConfig.rps * this.stressConfig.duration.plateau;
+
+        const stressFallRequests =
+            this.countRequestForRampingRate(
+                this.stressConfig.rps,
+                0, this.stressConfig.duration.fall
+            );
+
+        return stressRiseRequests
+            + stressPlateauRequests
+            + stressFallRequests;
+    }
+
+    countSpikeRequest() {
+        const spikeRiseRequests =
+            this.countRequestForRampingRate(
+                0,
+                this.spikeConfig.rps,
+                this.spikeConfig.duration.rise
+            );
+
+        const spikeFallRequests =
+            this.countRequestForRampingRate(
+                this.spikeConfig.rps,
+                0, this.spikeConfig.duration.fall
+            );
+
+        return spikeRiseRequests + spikeFallRequests;
     }
 }

@@ -18,10 +18,11 @@ function createUser() {
     const email = faker.person.email();
     const initials = faker.person.name();
     const password = faker.internet.password(true, true, true, false, false, 60);
+    const mutationName = 'createUser';
 
     const mutation = `
      mutation {
-  createUser(
+  ${mutationName}(
     input: {
       email: "${email}"
       initials: "${initials}"
@@ -29,7 +30,7 @@ function createUser() {
     }
   ) {
     user {
-      id
+      email
     }
   }
 }`;
@@ -41,6 +42,7 @@ function createUser() {
     );
 
     check(res, {
-        'is status 200': (r) => r.status === 200,
+        'created user returned': (r) =>
+            JSON.parse(r.body).data[mutationName].user.email === `${email}`,
     });
 }

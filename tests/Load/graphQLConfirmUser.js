@@ -19,6 +19,9 @@ export const options = scenarioUtils.getOptions();
 async function confirmUser() {
     const email = faker.person.email();
     const userResponse = await createUser(email);
+    const user = JSON.parse(userResponse.body);
+    const id = utils.getGraphQLIdPrefix() + user.id;
+    const mutationName = 'confirmUser';
 
     let token = null;
 
@@ -28,7 +31,7 @@ async function confirmUser() {
 
     const mutation = `
      mutation {
-  confirmUser(input: { token: "${token}" }) {
+  ${mutationName}(input: { token: "${token}" }) {
     user {
       id
     }
@@ -42,7 +45,8 @@ async function confirmUser() {
     );
 
     check(res, {
-        'is status 200': (r) => r.status === 200,
+        'confirmed user returned': (r) =>
+            JSON.parse(r.body).data[mutationName].user.id === `${id}`,
     });
 }
 

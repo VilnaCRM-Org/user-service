@@ -3,7 +3,7 @@ import {ScenarioUtils} from "./utils/scenarioUtils.js";
 import {check} from 'k6';
 import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
 import {Utils} from "./utils/utils.js";
-import exec from 'k6/execution';
+import counter from "k6/x/counter"
 
 const scenarioName = 'graphqlGetUser';
 const utils = new Utils();
@@ -19,17 +19,18 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default function (data) {
-    getUser(data.users[exec.instance.iterationsInterrupted + exec.instance.iterationsCompleted]);
+    getUser(data.users[counter.up()]);
 }
 
 function getUser(user) {
-    const id = user.id;
+    utils.checkUserIsDefined(user);
+
+    const id = utils.getGraphQLIdPrefix() + user.id;
 
     const query = `
       query{
-  user(id: "/api/users/${id}"){
+  user(id: "${id}"){
         id
-        email
     }
     }`;
 
@@ -40,6 +41,7 @@ function getUser(user) {
     );
 
     check(res, {
-        'is status 200': (r) => r.status === 200,
+        'user returned': (r) =>
+            JSON.parse(r.body).data.user.id === `${id}`,
     });
 }

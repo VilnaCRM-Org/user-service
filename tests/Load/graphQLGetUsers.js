@@ -17,12 +17,12 @@ export function setup() {
 
 export const options = scenarioUtils.getOptions();
 
-export default function () {
-    getUsers();
+export default function (data) {
+    getUsers(data.users.length);
 }
 
-function getUsers() {
-    let num = utils.getRandomNumber(1, 10000);
+function getUsers(usersAmount) {
+    let num = utils.getRandomNumber(1, usersAmount);
 
     const query = `
         query{
@@ -42,6 +42,7 @@ function getUsers() {
     );
 
     check(res, {
-        'is status 200': (r) => r.status === 200,
+        'users returned': (r) =>
+            JSON.parse(r.body).data.users.edges.length === num,
     });
 }

@@ -3,7 +3,7 @@ import {ScenarioUtils} from "./utils/scenarioUtils.js";
 import {check} from 'k6';
 import {Utils} from "./utils/utils.js";
 import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
-import exec from 'k6/execution';
+import counter from "k6/x/counter"
 
 const scenarioName = 'deleteUser';
 const utils = new Utils();
@@ -19,10 +19,12 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default function (data) {
-    deleteUser(data.users[exec.instance.iterationsInterrupted + exec.instance.iterationsCompleted]);
+    deleteUser(data.users[counter.up()]);
 }
 
 function deleteUser(user) {
+    utils.checkUserIsDefined(user);
+
     const id = user.id;
 
     const res = http.del(

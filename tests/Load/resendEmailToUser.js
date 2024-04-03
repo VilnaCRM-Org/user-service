@@ -3,7 +3,7 @@ import {ScenarioUtils} from "./utils/scenarioUtils.js";
 import {check} from 'k6';
 import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
 import {Utils} from "./utils/utils.js";
-import exec from 'k6/execution';
+import counter from "k6/x/counter"
 
 const utils = new Utils();
 const scenarioName = 'resendEmailToUser';
@@ -19,10 +19,12 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default function (data) {
-    resendEmail(data.users[exec.instance.iterationsInterrupted + exec.instance.iterationsCompleted]);
+    resendEmail(data.users[counter.up()]);
 }
 
 function resendEmail(user) {
+    utils.checkUserIsDefined(user);
+
     const id = user.id;
 
     const res = http.post(
