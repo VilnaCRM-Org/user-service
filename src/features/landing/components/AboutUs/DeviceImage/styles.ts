@@ -6,6 +6,7 @@ export default {
     position: 'relative',
     overflow: 'hidden',
     width: '100%',
+    zIndex: 2,
   },
 
   backgroundImage: {

@@ -21,7 +21,8 @@
     "lighthouse:desktop": "next build && lhci autorun --config=lighthouserc.desktop.js",
     "lighthouse:mobile": "next build && lhci autorun --config=lighthouserc.mobile.js",
     "check-node-version": "node checkNodeVersion.js",
-    "preinstall": "pnpm run check-node-version"
+    "preinstall": "pnpm run check-node-version",
+    "test": "jest"
   },
   "dependencies": {
     "@apollo/client": "^3.9.9",
@@ -58,6 +59,9 @@
     "@storybook/react": "^8.0.0",
     "@storybook/test": "^8.0.0",
     "@storybook/testing-library": "0.0.13",
+    "@stryker-mutator/core": "^8.2.6",
+    "@stryker-mutator/jest-runner": "^8.2.6",
+    "@stryker-mutator/typescript": "^4.0.0",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.2",
     "@types/jest": "^29.5.12",

@@ -20,9 +20,7 @@ export default function WrapperUiTooltip({
   const isWideScreenMinWidth: boolean = useMediaQuery('(min-width: 640px)');
 
   React.useEffect(() => {
-    if (isWideScreenMaxWidth || isWideScreenMinWidth) {
-      setOpen(false);
-    }
+    setOpen(false);
   }, [isWideScreenMaxWidth, isWideScreenMinWidth]);
 
   const handleTooltipClose: () => void = () => {

@@ -9,21 +9,20 @@ export default {
     backgroundRepeat: 'no-repeat',
     width: '100dvw',
     height: '100%',
-    zIndex: '-2',
+    zIndex: '1',
     position: 'absolute',
     left: '50%',
     top: '5.4%',
     transform: 'translateX(-50%)',
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl}px)`]: {
+      top: '5.4%',
+    },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
-      top: '9%',
+      top: '22%',
     },
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
-      top: '21.4%',
-    },
+
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.xs}px)`]: {
-      left: '39%',
-      top: '16.4%',
-      width: '35.125rem',
+      top: '30.4%',
     },
   },
 };

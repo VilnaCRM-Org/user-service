@@ -22,9 +22,7 @@ function CustomDrawer(): React.ReactElement {
   const isWideScreen: boolean = useMediaQuery('(min-width: 1024px)');
 
   React.useEffect(() => {
-    if (isWideScreen) {
-      setIsDrawerOpen(false);
-    }
+    setIsDrawerOpen(false);
   }, [isWideScreen]);
 
   function handleCloseDrawer(): void {

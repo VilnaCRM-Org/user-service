@@ -1,8 +1,9 @@
 import { AppBar, Link } from '@mui/material';
+import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { UiToolbar, UiImage } from '@/components';
+import { UiToolbar } from '@/components';
 
 import Logo from '../../assets/svg/logo/Logo.svg';
 
@@ -19,7 +20,12 @@ function Header(): React.ReactElement {
     <AppBar position="static" sx={styles.headerWrapper}>
       <UiToolbar>
         <Link href="/#">
-          <UiImage src={Logo} alt={t('header.logo_alt')} sx={styles.logo} />
+          <Image
+            src={Logo}
+            alt={t('header.logo_alt')}
+            width={131}
+            height={44}
+          />
         </Link>
         <NavList navItems={headerNavList} />
         <AuthButtons />

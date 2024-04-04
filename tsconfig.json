@@ -29,7 +29,8 @@
     "/.tsx",
     ".next/types/**/.ts",
     "playwrite",
-    "src/components/UiFooter/.stories.tsx"
+    "src/components/UiFooter/.stories.tsx",
+    "memoryLeak"
   ],
   "exclude": ["node_modules"],
   "extends": "./tsconfig.paths.json"
