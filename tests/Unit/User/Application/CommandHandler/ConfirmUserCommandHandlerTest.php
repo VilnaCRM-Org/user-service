@@ -21,7 +21,7 @@ use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-class ConfirmUserCommandHandlerTest extends UnitTestCase
+final class ConfirmUserCommandHandlerTest extends UnitTestCase
 {
     private ConfirmUserCommandHandler $handler;
     private UserRepositoryInterface $userRepository;

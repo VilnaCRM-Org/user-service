@@ -13,9 +13,13 @@ use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Messenger\Exception\NoHandlerForMessageException;
 use Symfony\Component\Messenger\MessageBus;
 
-class InMemorySymfonyEventBusTest extends UnitTestCase
+final class InMemorySymfonyEventBusTest extends UnitTestCase
 {
     private MessageBusFactory $messageBusFactory;
+
+    /**
+     * @var array<DomainEvent>
+     */
     private array $eventSubscribers;
 
     protected function setUp(): void

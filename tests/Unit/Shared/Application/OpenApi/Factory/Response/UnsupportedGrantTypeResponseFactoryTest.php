@@ -10,7 +10,7 @@ use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\UnsupportedTypeFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class UnsupportedGrantTypeResponseFactoryTest extends UnitTestCase
+final class UnsupportedGrantTypeResponseFactoryTest extends UnitTestCase
 {
     public function testGetResponse(): void
     {

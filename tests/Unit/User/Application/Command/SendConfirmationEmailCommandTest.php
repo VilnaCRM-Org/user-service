@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Domain\Aggregate\ConfirmationEmailInterface;
 
-class SendConfirmationEmailCommandTest extends UnitTestCase
+final class SendConfirmationEmailCommandTest extends UnitTestCase
 {
     public function testConstructor(): void
     {

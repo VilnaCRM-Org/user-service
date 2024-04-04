@@ -9,7 +9,7 @@ use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\UserDeletedResponseFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class UserDeletedResponseFactoryTest extends UnitTestCase
+final class UserDeletedResponseFactoryTest extends UnitTestCase
 {
     public function testGetResponse(): void
     {

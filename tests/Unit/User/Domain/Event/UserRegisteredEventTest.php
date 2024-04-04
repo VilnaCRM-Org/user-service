@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Event\UserRegisteredEvent;
 
-class UserRegisteredEventTest extends UnitTestCase
+final class UserRegisteredEventTest extends UnitTestCase
 {
     public function testCreateEvent(): void
     {

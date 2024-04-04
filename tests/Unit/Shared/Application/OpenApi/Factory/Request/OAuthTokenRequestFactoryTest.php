@@ -10,7 +10,7 @@ use App\Shared\Application\OpenApi\Builder\RequestBuilder;
 use App\Shared\Application\OpenApi\Factory\Request\OAuthTokenRequestFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class OAuthTokenRequestFactoryTest extends UnitTestCase
+final class OAuthTokenRequestFactoryTest extends UnitTestCase
 {
     public function testGetRequest(): void
     {

@@ -12,7 +12,7 @@ use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
-class MariaDBUserRepositoryTest extends IntegrationTestCase
+final class MariaDBUserRepositoryTest extends IntegrationTestCase
 {
     private UserRepositoryInterface $repository;
     private UserFactoryInterface $userFactory;
@@ -22,7 +22,9 @@ class MariaDBUserRepositoryTest extends IntegrationTestCase
     {
         parent::setUp();
 
-        $this->repository = $this->container->get(UserRepositoryInterface::class);
+        $this->repository = $this->container->get(
+            UserRepositoryInterface::class
+        );
         $this->userFactory = new UserFactory();
         $this->transformer = new UuidTransformer();
     }

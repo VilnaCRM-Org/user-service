@@ -17,7 +17,7 @@ use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 
-class UserTest extends UnitTestCase
+final class UserTest extends UnitTestCase
 {
     private User $user;
     private UserConfirmedEventFactoryInterface $userConfirmedEventFactory;
@@ -102,7 +102,7 @@ class UserTest extends UnitTestCase
         $this->assertEquals($hashedNewPassword, $this->user->getPassword());
     }
 
-    public function testSetId()
+    public function testSetId(): void
     {
         $id = $this->faker->uuid();
         $this->user->setId($this->uuidTransformer->transformFromString($id));
@@ -110,7 +110,7 @@ class UserTest extends UnitTestCase
         $this->assertEquals($id, $this->user->getId());
     }
 
-    public function testSetEmail()
+    public function testSetEmail(): void
     {
         $email = $this->faker->email();
         $this->user->setEmail($email);
@@ -118,7 +118,7 @@ class UserTest extends UnitTestCase
         $this->assertEquals($email, $this->user->getEmail());
     }
 
-    public function testSetInitials()
+    public function testSetInitials(): void
     {
         $initials = $this->faker->name();
         $this->user->setInitials($initials);
@@ -126,7 +126,7 @@ class UserTest extends UnitTestCase
         $this->assertEquals($initials, $this->user->getInitials());
     }
 
-    public function testSetConfirmed()
+    public function testSetConfirmed(): void
     {
         $confirmed = true;
         $this->user->setConfirmed(true);

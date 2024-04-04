@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 
-class UserGraphQLContext implements Context
+final class UserGraphQLContext implements Context
 {
     private string $GRAPHQL_ENDPOINT_URI = '/api/graphql';
     private string $GRAPHQL_ID_PREFIX = '/api/users/';
@@ -29,6 +29,10 @@ class UserGraphQLContext implements Context
 
     private string $query;
     private string $queryName;
+
+    /**
+     * @var array<string>
+     */
     private array $responseContent;
     private int $errorNum;
 
@@ -39,7 +43,6 @@ class UserGraphQLContext implements Context
         private ?Response $response,
     ) {
         $this->responseContent = [];
-        $this->graphQLInput = new GraphQLMutationInput();
         $this->errorNum = 0;
         $this->language = 'en';
     }
@@ -67,12 +70,15 @@ class UserGraphQLContext implements Context
     public function gettingUser(string $id): void
     {
         $this->queryName = 'user';
-        $id = $this->GRAPHQL_ID_PREFIX.$id;
+        $id = $this->GRAPHQL_ID_PREFIX . $id;
 
-        $query = (string) (new RootType($this->queryName))->addArgument(new Argument('id', $id))
-            ->addSubTypes($this->responseContent);
+        $query = (string) (
+        new RootType($this->queryName)
+        )->addArgument(new Argument('id', $id))->addSubTypes(
+            $this->responseContent
+        );
 
-        $this->query = 'query'.$query;
+        $this->query = 'query' . $query;
     }
 
     /**
@@ -82,34 +88,60 @@ class UserGraphQLContext implements Context
     {
         $this->queryName = 'users';
 
-        $query = (string) (new RootType($this->queryName))->addArgument(new Argument('first', 1))
-            ->addSubType((new Type('edges'))->addSubType((new Type('node'))
-                ->addSubTypes($this->responseContent)));
+        $query = (string) (
+        new RootType($this->queryName)
+        )->addArgument(new Argument('first', 1))
+            ->addSubType((new Type('edges'))->addSubType(
+                (new Type('node')
+                )->addSubTypes($this->responseContent)
+            ));
 
-        $this->query = 'query'.$query;
+        $this->query = 'query' . $query;
     }
 
     /**
      * @Given creating user with email :email initials :initials password :password
      */
-    public function creatingUser(string $email, string $initials, string $password): void
-    {
+    public function creatingUser(
+        string $email,
+        string $initials,
+        string $password
+    ): void {
         $this->queryName = 'createUser';
-        $this->graphQLInput = new CreateUserGraphQLMutationInput($email, $initials, $password);
+        $this->graphQLInput = new CreateUserGraphQLMutationInput(
+            $email,
+            $initials,
+            $password
+        );
 
-        $this->query = $this->createMutation($this->queryName, $this->graphQLInput, $this->responseContent);
+        $this->query = $this->createMutation(
+            $this->queryName,
+            $this->graphQLInput,
+            $this->responseContent
+        );
     }
 
     /**
      * @Given updating user with id :id and password :oldPassword to new email :email
      */
-    public function updatingUser(string $id, string $email, string $oldPassword): void
-    {
-        $id = $this->GRAPHQL_ID_PREFIX.$id;
+    public function updatingUser(
+        string $id,
+        string $email,
+        string $oldPassword
+    ): void {
+        $id = $this->GRAPHQL_ID_PREFIX . $id;
         $this->queryName = 'updateUser';
-        $this->graphQLInput = new UpdateUserGraphQLMutationInput($id, $email, $oldPassword);
+        $this->graphQLInput = new UpdateUserGraphQLMutationInput(
+            $id,
+            $email,
+            $oldPassword
+        );
 
-        $this->query = $this->createMutation($this->queryName, $this->graphQLInput, $this->responseContent);
+        $this->query = $this->createMutation(
+            $this->queryName,
+            $this->graphQLInput,
+            $this->responseContent
+        );
     }
 
     /**
@@ -120,7 +152,11 @@ class UserGraphQLContext implements Context
         $this->queryName = 'confirmUser';
         $this->graphQLInput = new ConfirmUserGraphQLMutationInput($token);
 
-        $this->query = $this->createMutation($this->queryName, $this->graphQLInput, $this->responseContent);
+        $this->query = $this->createMutation(
+            $this->queryName,
+            $this->graphQLInput,
+            $this->responseContent
+        );
     }
 
     /**
@@ -128,11 +164,15 @@ class UserGraphQLContext implements Context
      */
     public function resendEmailToUser(string $id): void
     {
-        $id = $this->GRAPHQL_ID_PREFIX.$id;
+        $id = $this->GRAPHQL_ID_PREFIX . $id;
         $this->queryName = 'resendEmailToUser';
         $this->graphQLInput = new ResendEmailToUserGraphQLMutationInput($id);
 
-        $this->query = $this->createMutation($this->queryName, $this->graphQLInput, $this->responseContent);
+        $this->query = $this->createMutation(
+            $this->queryName,
+            $this->graphQLInput,
+            $this->responseContent
+        );
     }
 
     /**
@@ -141,18 +181,30 @@ class UserGraphQLContext implements Context
     public function deleteUser(string $id): void
     {
         $this->queryName = 'deleteUser';
-        $id = $this->GRAPHQL_ID_PREFIX.$id;
+        $id = $this->GRAPHQL_ID_PREFIX . $id;
         $this->graphQLInput = new DeleteUserGraphQLMutationInput($id);
 
-        $this->query = $this->createMutation($this->queryName, $this->graphQLInput, $this->responseContent);
+        $this->query = $this->createMutation(
+            $this->queryName,
+            $this->graphQLInput,
+            $this->responseContent
+        );
     }
 
-    private function createMutation(string $name, GraphQLMutationInput $input, array $responseFields): string
-    {
-        $mutation = (string) (new RootType($name))->addArgument(new Argument('input', $input->toGraphQLArguments()))
+    /**
+     * @param array<string> $responseFields
+     */
+    private function createMutation(
+        string $name,
+        GraphQLMutationInput $input,
+        array $responseFields
+    ): string {
+        $mutation = (string) (
+            new RootType($name)
+        )->addArgument(new Argument('input', $input->toGraphQLArguments()))
             ->addSubType((new Type('user'))->addSubTypes($responseFields));
 
-        return 'mutation'.$mutation;
+        return 'mutation' . $mutation;
     }
 
     /**
@@ -187,12 +239,18 @@ class UserGraphQLContext implements Context
      */
     public function mutationResponseShouldContainRequestedFields(): void
     {
-        $userData = json_decode($this->response->getContent(), true)['data'][$this->queryName]['user'];
+        $userData = json_decode(
+            $this->response->getContent(),
+            true
+        )['data'][$this->queryName]['user'];
 
         foreach ($this->responseContent as $fieldName) {
             Assert::assertArrayHasKey($fieldName, $userData);
             if (property_exists($this->graphQLInput, $fieldName)) {
-                Assert::assertEquals($this->graphQLInput->$fieldName, $userData[$fieldName]);
+                Assert::assertEquals(
+                    $this->graphQLInput->$fieldName,
+                    $userData[$fieldName]
+                );
             }
         }
     }
@@ -202,7 +260,10 @@ class UserGraphQLContext implements Context
      */
     public function queryResponseShouldContainRequestedFields(): void
     {
-        $userData = json_decode($this->response->getContent(), true)['data'][$this->queryName];
+        $userData = json_decode(
+            $this->response->getContent(),
+            true
+        )['data'][$this->queryName];
 
         foreach ($this->responseContent as $item) {
             Assert::assertArrayHasKey($item, $userData);
@@ -214,7 +275,10 @@ class UserGraphQLContext implements Context
      */
     public function queryResponseShouldBeNull(): void
     {
-        $userData = json_decode($this->response->getContent(), true)['data'][$this->queryName];
+        $userData = json_decode(
+            $this->response->getContent(),
+            true
+        )['data'][$this->queryName];
 
         Assert::assertNull($userData);
     }
@@ -224,7 +288,10 @@ class UserGraphQLContext implements Context
      */
     public function collectionOfUsersShouldBeReturned(): void
     {
-        $userData = json_decode($this->response->getContent(), true)['data'][$this->queryName]['edges'];
+        $userData = json_decode(
+            $this->response->getContent(),
+            true
+        )['data'][$this->queryName]['edges'];
 
         Assert::assertIsArray($userData);
         foreach ($userData as $user) {
@@ -237,11 +304,14 @@ class UserGraphQLContext implements Context
     /**
      * @Then graphql error message should be :errorMessage
      */
-    public function graphQLErrorShouldBe($errorMessage): void
+    public function graphQLErrorShouldBe(string $errorMessage): void
     {
         $data = json_decode($this->response->getContent(), true);
 
-        Assert::assertEquals($errorMessage, $data['errors'][$this->errorNum]['message']);
+        Assert::assertEquals(
+            $errorMessage,
+            $data['errors'][$this->errorNum]['message']
+        );
         $this->errorNum++;
     }
 }

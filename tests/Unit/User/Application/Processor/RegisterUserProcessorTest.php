@@ -17,7 +17,7 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 
-class RegisterUserProcessorTest extends UnitTestCase
+final class RegisterUserProcessorTest extends UnitTestCase
 {
     private Operation $mockOperation;
     private SignUpCommandFactoryInterface $signUpCommandFactory;

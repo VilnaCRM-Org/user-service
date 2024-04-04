@@ -16,9 +16,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class UserOperationsContext implements Context
+final class UserOperationsContext implements Context
 {
-    private RequestInput $requestBody;
+    private ?RequestInput $requestBody;
     private int $violationNum;
     private string $language;
 
@@ -27,7 +27,7 @@ class UserOperationsContext implements Context
         private SerializerInterface $serializer,
         private ?Response $response
     ) {
-        $this->requestBody = new RequestInput();
+        $this->requestBody = null;
         $this->violationNum = 0;
         $this->language = 'en';
     }
@@ -35,9 +35,18 @@ class UserOperationsContext implements Context
     /**
      * @Given updating user with email :email, initials :initials, oldPassword :oldPassword, newPassword :newPassword
      */
-    public function updatingUser(string $email, string $initials, string $oldPassword, string $newPassword): void
-    {
-        $this->requestBody = new UpdateUserInput($email, $initials, $oldPassword, $newPassword);
+    public function updatingUser(
+        string $email,
+        string $initials,
+        string $oldPassword,
+        string $newPassword
+    ): void {
+        $this->requestBody = new UpdateUserInput(
+            $email,
+            $initials,
+            $oldPassword,
+            $newPassword
+        );
     }
 
     /**
@@ -45,14 +54,22 @@ class UserOperationsContext implements Context
      */
     public function updatingUserWithNoOptionalFields(string $oldPassword): void
     {
-        $this->requestBody = new UpdateUserInput('', '', $oldPassword, '');
+        $this->requestBody = new UpdateUserInput(
+            '',
+            '',
+            $oldPassword,
+            ''
+        );
     }
 
     /**
      * @Given creating user with email :email, initials :initials, password :password
      */
-    public function creatingUser(string $email, string $initials, string $password): void
-    {
+    public function creatingUser(
+        string $email,
+        string $initials,
+        string $password
+    ): void {
         $this->requestBody = new CreateUserInput($email, $initials, $password);
     }
 
@@ -98,7 +115,7 @@ class UserOperationsContext implements Context
             ['HTTP_ACCEPT' => 'application/json',
                 'CONTENT_TYPE' => $contentType,
                 'HTTP_ACCEPT_LANGUAGE' => $this->language
-                ],
+            ],
             $this->serializer->serialize($this->requestBody, 'json')
         ));
     }
@@ -109,7 +126,10 @@ class UserOperationsContext implements Context
     public function userShouldBeTimedOut(): void
     {
         $data = json_decode($this->response->getContent(), true);
-        Assert::assertStringContainsString('Cannot send new email till', $data['detail']);
+        Assert::assertStringContainsString(
+            'Cannot send new email till',
+            $data['detail']
+        );
     }
 
     /**
@@ -154,8 +174,10 @@ class UserOperationsContext implements Context
     /**
      * @Then user with email :email and initials :initials should be returned
      */
-    public function userWithEmailAndInitialsShouldBeReturned(string $email, string $initials): void
-    {
+    public function userWithEmailAndInitialsShouldBeReturned(
+        string $email,
+        string $initials
+    ): void {
         $data = json_decode($this->response->getContent(), true);
         Assert::assertArrayHasKey('id', $data);
         Assert::assertArrayHasKey('email', $data);

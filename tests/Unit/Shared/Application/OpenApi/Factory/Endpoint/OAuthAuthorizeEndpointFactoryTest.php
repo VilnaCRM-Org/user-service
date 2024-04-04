@@ -15,22 +15,38 @@ use App\Shared\Application\OpenApi\Factory\Response\OAuthRedirectFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UnsupportedTypeFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class OAuthAuthorizeEndpointFactoryTest extends UnitTestCase
+final class OAuthAuthorizeEndpointFactoryTest extends UnitTestCase
 {
     public function testCreateEndpoint(): void
     {
-        $unsupportedFactory = $this->createMock(UnsupportedTypeFactory::class);
-        $invalidCredsFactory = $this->createMock(InvalidCredentialsFactory::class);
-        $redirectResponseFactory = $this->createMock(OAuthRedirectFactory::class);
-        $queryParameterBuilder = $this->createMock(QueryParameterBuilder::class);
+        $unsupportedFactory = $this->createMock(
+            UnsupportedTypeFactory::class
+        );
+        $invalidCredsFactory = $this->createMock(
+            InvalidCredentialsFactory::class
+        );
+        $redirectResponseFactory = $this->createMock(
+            OAuthRedirectFactory::class
+        );
+        $queryParameterBuilder = $this->createMock(
+            QueryParameterBuilder::class
+        );
 
-        $unsupportedResponse = $this->createMock(Response::class);
+        $unsupportedResponse = $this->createMock(
+            Response::class
+        );
         $invalidResponse = $this->createMock(Response::class);
         $redirectResponse = $this->createMock(Response::class);
 
-        $unsupportedFactory->expects($this->once())->method('getResponse')->willReturn($unsupportedResponse);
-        $invalidCredsFactory->expects($this->once())->method('getResponse')->willReturn($invalidResponse);
-        $redirectResponseFactory->expects($this->once())->method('getResponse')->willReturn($redirectResponse);
+        $unsupportedFactory->expects($this->once())->method(
+            'getResponse'
+        )->willReturn($unsupportedResponse);
+        $invalidCredsFactory->expects($this->once())->method(
+            'getResponse'
+        )->willReturn($invalidResponse);
+        $redirectResponseFactory->expects($this->once())->method(
+            'getResponse'
+        )->willReturn($redirectResponse);
 
         $factory = new OAuthAuthorizeEndpointFactory(
             $unsupportedFactory,
@@ -45,7 +61,10 @@ class OAuthAuthorizeEndpointFactoryTest extends UnitTestCase
 
         $paths->expects($this->once())
             ->method('addPath')
-            ->with('/api/oauth/authorize', $this->isInstanceOf(PathItem::class));
+            ->with(
+                '/api/oauth/authorize',
+                $this->isInstanceOf(PathItem::class)
+            );
 
         $factory->createEndpoint($openApi);
     }

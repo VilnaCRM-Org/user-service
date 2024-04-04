@@ -9,7 +9,7 @@ use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\EmailSendFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class EmailSendAgainResponseFactoryTest extends UnitTestCase
+final class EmailSendAgainResponseFactoryTest extends UnitTestCase
 {
     public function testGetResponse(): void
     {

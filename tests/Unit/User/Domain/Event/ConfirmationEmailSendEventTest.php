@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Event\ConfirmationEmailSentEvent;
 
-class ConfirmationEmailSendEventTest extends UnitTestCase
+final class ConfirmationEmailSendEventTest extends UnitTestCase
 {
     public function testCreateEvent(): void
     {

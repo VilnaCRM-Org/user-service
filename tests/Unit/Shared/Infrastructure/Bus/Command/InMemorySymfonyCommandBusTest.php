@@ -13,10 +13,14 @@ use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Messenger\Exception\NoHandlerForMessageException;
 use Symfony\Component\Messenger\MessageBus;
 
-class InMemorySymfonyCommandBusTest extends UnitTestCase
+final class InMemorySymfonyCommandBusTest extends UnitTestCase
 {
-    private $messageBusFactory;
-    private $commandHandlers;
+    private MessageBusFactory $messageBusFactory;
+
+    /**
+     * @var array<CommandInterface>
+     */
+    private array $commandHandlers;
 
     protected function setUp(): void
     {

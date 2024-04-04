@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Application\DTO;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\UserRegisterDto;
 
-class UserRegisterDtoTest extends UnitTestCase
+final class UserRegisterDtoTest extends UnitTestCase
 {
     public function testConstructWithValidData(): void
     {

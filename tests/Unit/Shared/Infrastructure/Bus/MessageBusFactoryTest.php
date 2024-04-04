@@ -11,7 +11,7 @@ use Symfony\Component\Messenger\Handler\HandlersLocator;
 use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 
-class MessageBusFactoryTest extends UnitTestCase
+final class MessageBusFactoryTest extends UnitTestCase
 {
     public function testCreate(): void
     {
@@ -22,13 +22,14 @@ class MessageBusFactoryTest extends UnitTestCase
         $messageBus = $factory->create($commandHandlers);
         $expectedMessageBus = new MessageBus(
             [
-            new HandleMessageMiddleware(
-                new HandlersLocator(
-                    CallableFirstParameterExtractor::forCallables(
-                        $commandHandlers
+                new HandleMessageMiddleware(
+                    new HandlersLocator(
+                        CallableFirstParameterExtractor::forCallables(
+                            $commandHandlers
+                        )
                     )
                 )
-            )]
+            ]
         );
 
         $this->assertInstanceOf(MessageBus::class, $messageBus);

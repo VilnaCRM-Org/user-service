@@ -11,7 +11,7 @@ use App\User\Application\EventSubscriber\EmailChangedEventSubscriber;
 use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Factory\UserFactoryInterface;
 
-class EmailChangedEventSubscriberTest extends IntegrationTestCase
+final class EmailChangedEventSubscriberTest extends IntegrationTestCase
 {
     private EmailChangedEventSubscriber $subscriber;
     private TestEmailSendingUtils $utils;
@@ -34,7 +34,9 @@ class EmailChangedEventSubscriberTest extends IntegrationTestCase
             $emailAddress,
             $this->faker->name(),
             $this->faker->password(),
-            $this->container->get(UuidTransformer::class)->transformFromString($userId)
+            $this->container->get(
+                UuidTransformer::class
+            )->transformFromString($userId)
         );
         $event = new EmailChangedEvent(
             $user,

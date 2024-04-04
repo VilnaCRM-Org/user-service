@@ -8,7 +8,7 @@ use App\Tests\Integration\IntegrationTestCase;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 
-class RedisTokenRepositoryTest extends IntegrationTestCase
+final class RedisTokenRepositoryTest extends IntegrationTestCase
 {
     private TokenRepositoryInterface $tokenRepository;
 
@@ -16,7 +16,9 @@ class RedisTokenRepositoryTest extends IntegrationTestCase
     {
         parent::setUp();
 
-        $this->tokenRepository = $this->container->get(TokenRepositoryInterface::class);
+        $this->tokenRepository = $this->container->get(
+            TokenRepositoryInterface::class
+        );
     }
 
     public function testSaveAndFind(): void

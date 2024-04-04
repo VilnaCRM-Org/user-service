@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Application\MutationInput;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\MutationInput\UpdateUserMutationInput;
 
-class UpdateUserMutationInputTest extends UnitTestCase
+final class UpdateUserMutationInputTest extends UnitTestCase
 {
     public function testConstructWithAllDataAndNoValidationGroups(): void
     {

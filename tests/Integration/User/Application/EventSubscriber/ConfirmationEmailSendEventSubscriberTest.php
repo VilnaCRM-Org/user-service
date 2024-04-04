@@ -10,7 +10,7 @@ use App\User\Application\EventSubscriber\ConfirmationEmailSentEventSubscriber;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Event\ConfirmationEmailSentEvent;
 
-class ConfirmationEmailSendEventSubscriberTest extends IntegrationTestCase
+final class ConfirmationEmailSendEventSubscriberTest extends IntegrationTestCase
 {
     private ConfirmationEmailSentEventSubscriber $subscriber;
     private TestEmailSendingUtils $utils;

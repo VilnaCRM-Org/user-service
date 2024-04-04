@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Event\EmailChangedEvent;
 
-class EmailChangedEventTest extends UnitTestCase
+final class EmailChangedEventTest extends UnitTestCase
 {
     public function testCreateEvent(): void
     {

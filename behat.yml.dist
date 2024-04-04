@@ -2,7 +2,6 @@ default:
     suites:
         default:
             contexts:
-                - App\Tests\Behat\DemoContext
                 - App\Tests\Behat\UserGraphQLContext\UserGraphQLContext
                 - App\Tests\Behat\UserContext\UserContext
                 - App\Tests\Behat\UserContext\UserOperationsContext

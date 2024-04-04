@@ -7,7 +7,7 @@ namespace App\Tests\Unit\Shared\Application\OpenApi\Builder;
 use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Tests\Unit\UnitTestCase;
 
-class ParameterTest extends UnitTestCase
+final class ParameterTest extends UnitTestCase
 {
     public function testCreateWithValidData(): void
     {

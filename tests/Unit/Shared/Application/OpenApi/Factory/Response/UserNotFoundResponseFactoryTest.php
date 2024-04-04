@@ -11,7 +11,7 @@ use App\Shared\Application\OpenApi\Factory\Response\UserNotFoundResponseFactory;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-class UserNotFoundResponseFactoryTest extends UnitTestCase
+final class UserNotFoundResponseFactoryTest extends UnitTestCase
 {
     public function testGetResponse(): void
     {

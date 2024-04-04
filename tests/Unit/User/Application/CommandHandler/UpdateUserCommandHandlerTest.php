@@ -22,7 +22,7 @@ use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 use Symfony\Component\Uid\Uuid as SymfonyUuid;
 
-class UpdateUserCommandHandlerTest extends UnitTestCase
+final class UpdateUserCommandHandlerTest extends UnitTestCase
 {
     private UpdateUserCommandHandler $handler;
     private EventBusInterface $eventBus;

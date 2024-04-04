@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Infrastructure\Factory\EmailFactory;
 use Symfony\Component\Mime\Email;
 
-class EmailFactoryTest extends UnitTestCase
+final class EmailFactoryTest extends UnitTestCase
 {
     public function testCreate(): void
     {

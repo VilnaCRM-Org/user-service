@@ -12,7 +12,7 @@ use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 
-class EmailChangedEventFactoryTest extends UnitTestCase
+final class EmailChangedEventFactoryTest extends UnitTestCase
 {
     private EmailChangedEventFactoryInterface $factory;
     private UserFactoryInterface $userFactory;

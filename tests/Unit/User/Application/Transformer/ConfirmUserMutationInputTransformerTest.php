@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\MutationInput\ConfirmUserMutationInput;
 use App\User\Application\Transformer\ConfirmUserMutationInputTransformer;
 
-class ConfirmUserMutationInputTransformerTest extends UnitTestCase
+final class ConfirmUserMutationInputTransformerTest extends UnitTestCase
 {
     public function testTransform(): void
     {

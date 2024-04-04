@@ -10,7 +10,7 @@ use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\InvalidCredentialsFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class InvalidClientCredentialsResponseFactoryTest extends UnitTestCase
+final class InvalidClientCredentialsResponseFactoryTest extends UnitTestCase
 {
     public function testGetResponse(): void
     {

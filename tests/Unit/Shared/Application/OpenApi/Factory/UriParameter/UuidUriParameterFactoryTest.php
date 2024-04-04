@@ -9,7 +9,7 @@ use App\Shared\Application\OpenApi\Builder\UriParameterBuilder;
 use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class UuidUriParameterFactoryTest extends UnitTestCase
+final class UuidUriParameterFactoryTest extends UnitTestCase
 {
     private UuidUriParameterFactory $factory;
     private UriParameterBuilder $builderMock;

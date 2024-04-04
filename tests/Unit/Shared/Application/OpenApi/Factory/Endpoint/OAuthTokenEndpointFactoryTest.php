@@ -15,23 +15,41 @@ use App\Shared\Application\OpenApi\Factory\Response\OAuthTokenResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UnsupportedTypeFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class OAuthTokenEndpointFactoryTest extends UnitTestCase
+final class OAuthTokenEndpointFactoryTest extends UnitTestCase
 {
     public function testCreateEndpoint(): void
     {
-        $unsupportedFactory = $this->createMock(UnsupportedTypeFactory::class);
-        $invalidCredsFactory = $this->createMock(InvalidCredentialsFactory::class);
-        $tokenReturnedResponseFactory = $this->createMock(OAuthTokenResponseFactory::class);
-        $tokenRequestFactory = $this->createMock(OAuthTokenRequestFactory::class);
+        $unsupportedFactory = $this->createMock(
+            UnsupportedTypeFactory::class
+        );
+        $invalidCredsFactory = $this->createMock(
+            InvalidCredentialsFactory::class
+        );
+        $tokenReturnedResponseFactory = $this->createMock(
+            OAuthTokenResponseFactory::class
+        );
+        $tokenRequestFactory = $this->createMock(
+            OAuthTokenRequestFactory::class
+        );
 
         $tokenResponse = $this->createMock(Response::class);
         $invalidResponse = $this->createMock(Response::class);
-        $unsupportedResponse = $this->createMock(Response::class);
+        $unsupportedResponse = $this->createMock(
+            Response::class
+        );
 
-        $tokenReturnedResponseFactory->expects($this->once())->method('getResponse')->willReturn($tokenResponse);
-        $invalidCredsFactory->expects($this->once())->method('getResponse')->willReturn($invalidResponse);
-        $unsupportedFactory->expects($this->once())->method('getResponse')->willReturn($unsupportedResponse);
-        $tokenRequestFactory->expects($this->once())->method('getRequest');
+        $tokenReturnedResponseFactory->expects($this->once())->method(
+            'getResponse'
+        )->willReturn($tokenResponse);
+        $invalidCredsFactory->expects($this->once())->method(
+            'getResponse'
+        )->willReturn($invalidResponse);
+        $unsupportedFactory->expects($this->once())->method(
+            'getResponse'
+        )->willReturn($unsupportedResponse);
+        $tokenRequestFactory->expects(
+            $this->once()
+        )->method('getRequest');
 
         $factory = new OAuthTokenEndpointFactory(
             $unsupportedFactory,
@@ -46,7 +64,10 @@ class OAuthTokenEndpointFactoryTest extends UnitTestCase
 
         $paths->expects($this->once())
             ->method('addPath')
-            ->with('/api/oauth/token', $this->isInstanceOf(PathItem::class));
+            ->with(
+                '/api/oauth/token',
+                $this->isInstanceOf(PathItem::class)
+            );
 
         $factory->createEndpoint($openApi);
     }

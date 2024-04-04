@@ -11,7 +11,7 @@ use App\User\Application\EventSubscriber\UserRegisteredEventSubscriber;
 use App\User\Domain\Event\UserRegisteredEvent;
 use App\User\Domain\Factory\UserFactoryInterface;
 
-class UserRegisteredEventSubscriberTest extends IntegrationTestCase
+final class UserRegisteredEventSubscriberTest extends IntegrationTestCase
 {
     private UserRegisteredEventSubscriber $subscriber;
     private TestEmailSendingUtils $utils;
@@ -34,7 +34,9 @@ class UserRegisteredEventSubscriberTest extends IntegrationTestCase
             $emailAddress,
             $this->faker->name(),
             $this->faker->password(),
-            $this->container->get(UuidTransformer::class)->transformFromString($userId)
+            $this->container->get(
+                UuidTransformer::class
+            )->transformFromString($userId)
         );
         $event = new UserRegisteredEvent(
             $user,

@@ -8,7 +8,7 @@ use ApiPlatform\OpenApi\Model\Parameter;
 use App\Shared\Application\OpenApi\Builder\UriParameterBuilder;
 use App\Tests\Unit\UnitTestCase;
 
-class UriParameterBuilderTest extends UnitTestCase
+final class UriParameterBuilderTest extends UnitTestCase
 {
     private UriParameterBuilder $builder;
 
@@ -27,7 +27,13 @@ class UriParameterBuilderTest extends UnitTestCase
         $example = $this->faker->word();
         $type = $this->faker->word();
 
-        $parameter = $this->builder->build($name, $description, $required, $example, $type);
+        $parameter = $this->builder->build(
+            $name,
+            $description,
+            $required,
+            $example,
+            $type
+        );
 
         $this->assertInstanceOf(Parameter::class, $parameter);
         $this->assertEquals($name, $parameter->getName());
@@ -46,7 +52,13 @@ class UriParameterBuilderTest extends UnitTestCase
         $example = $this->faker->word();
         $type = $this->faker->word();
 
-        $parameter = $this->builder->build($name, $description, $required, $example, $type);
+        $parameter = $this->builder->build(
+            $name,
+            $description,
+            $required,
+            $example,
+            $type
+        );
 
         $this->assertInstanceOf(Parameter::class, $parameter);
         $this->assertEquals($name, $parameter->getName());

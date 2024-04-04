@@ -10,7 +10,7 @@ use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\InternalErrorFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class InternalServerErrorResponseFactoryTest extends UnitTestCase
+final class InternalServerErrorResponseFactoryTest extends UnitTestCase
 {
     public function testGetResponse(): void
     {

@@ -6,7 +6,7 @@ namespace App\Tests\Behat\UserGraphQLContext\Input;
 
 use GraphQL\RequestBuilder\Argument;
 
-readonly class GraphQLMutationInput
+abstract readonly class GraphQLMutationInput
 {
     public function toGraphQLArguments(): array
     {

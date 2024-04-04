@@ -16,7 +16,7 @@ use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 
-class RedisTokenRepositoryTest extends UnitTestCase
+final class RedisTokenRepositoryTest extends UnitTestCase
 {
     private TokenRepositoryInterface $repository;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
@@ -65,8 +65,7 @@ class RedisTokenRepositoryTest extends UnitTestCase
     public function testFindByUserId(): void
     {
         $userId = $this->faker->uuid();
-        $token = $this->confirmationTokenFactory->create($userId);
-        $serializedToken = $this->serializer->serialize($token, JsonEncoder::FORMAT);
+        $this->confirmationTokenFactory->create($userId);
 
         $this->cache->expects($this->once())
             ->method('getItem');

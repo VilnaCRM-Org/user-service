@@ -22,7 +22,7 @@ use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
-class ConfirmUserMutationResolverTest extends UnitTestCase
+final class ConfirmUserMutationResolverTest extends UnitTestCase
 {
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
     private ConfirmUserCommandFactoryInterface $confirmUserCommandFactory;

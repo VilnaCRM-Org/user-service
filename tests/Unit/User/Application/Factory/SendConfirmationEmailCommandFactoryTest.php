@@ -10,7 +10,7 @@ use App\User\Application\Factory\SendConfirmationEmailCommandFactory;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
 use App\User\Domain\Aggregate\ConfirmationEmailInterface;
 
-class SendConfirmationEmailCommandFactoryTest extends UnitTestCase
+final class SendConfirmationEmailCommandFactoryTest extends UnitTestCase
 {
     private SendConfirmationEmailCommandFactoryInterface $factory;
 

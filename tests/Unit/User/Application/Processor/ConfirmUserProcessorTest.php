@@ -17,7 +17,7 @@ use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 
-class ConfirmUserProcessorTest extends UnitTestCase
+final class ConfirmUserProcessorTest extends UnitTestCase
 {
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
     private ConfirmUserCommandFactoryInterface $confirmUserCommandFactory;

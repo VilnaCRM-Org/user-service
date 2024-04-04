@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmUserCommand;
 use App\User\Domain\Entity\ConfirmationToken;
 
-class ConfirmUserCommandTest extends UnitTestCase
+final class ConfirmUserCommandTest extends UnitTestCase
 {
     public function testConstructor(): void
     {

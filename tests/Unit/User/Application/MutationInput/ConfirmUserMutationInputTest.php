@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Application\MutationInput;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\MutationInput\ConfirmUserMutationInput;
 
-class ConfirmUserMutationInputTest extends UnitTestCase
+final class ConfirmUserMutationInputTest extends UnitTestCase
 {
     public function testConstructWithToken(): void
     {

@@ -16,7 +16,7 @@ use Doctrine\ORM\UnitOfWork;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
 
-class MariaDBUserRepositoryTest extends UnitTestCase
+final class MariaDBUserRepositoryTest extends UnitTestCase
 {
     private EntityManagerInterface|MockObject $entityManager;
     private ManagerRegistry|MockObject $registry;

@@ -11,7 +11,7 @@ use App\User\Application\Command\RegisterUserCommandResponse;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 
-class SignUpCommandTest extends UnitTestCase
+final class SignUpCommandTest extends UnitTestCase
 {
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserContext\Input;
 
-readonly class UpdateUserInput extends RequestInput
+final readonly class UpdateUserInput extends RequestInput
 {
     public function __construct(
         public ?string $email = null,

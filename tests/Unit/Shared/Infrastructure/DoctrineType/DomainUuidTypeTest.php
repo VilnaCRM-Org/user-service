@@ -8,10 +8,9 @@ use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Infrastructure\DoctrineType\DomainUuidType;
 use App\Tests\Unit\UnitTestCase;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-class DomainUuidTypeTest extends UnitTestCase
+final class DomainUuidTypeTest extends UnitTestCase
 {
     private DomainUuidType $domainUuidType;
     private UuidFactory $symfonyUuidFactory;
@@ -34,7 +33,6 @@ class DomainUuidTypeTest extends UnitTestCase
     public function testGetSQLDeclaration(): void
     {
         $platform = $this->createMock(AbstractPlatform::class);
-        $symfonyUuidType = $this->createMock(UuidType::class);
         $expectedSqlDeclaration = $this->faker->word();
 
         $platform->method('getGuidTypeDeclarationSQL')->willReturn($expectedSqlDeclaration);

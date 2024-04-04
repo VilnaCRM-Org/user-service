@@ -8,7 +8,7 @@ use App\Shared\Domain\Aggregate\AggregateRoot;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use PHPUnit\Framework\TestCase;
 
-class AggregateRootTest extends TestCase
+final class AggregateRootTest extends TestCase
 {
     public function testPullDomainEvents(): void
     {

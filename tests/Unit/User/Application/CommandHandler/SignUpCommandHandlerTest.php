@@ -19,7 +19,7 @@ use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-class SignUpCommandHandlerTest extends UnitTestCase
+final class SignUpCommandHandlerTest extends UnitTestCase
 {
     private RegisterUserCommandHandler $handler;
     private PasswordHasherFactoryInterface $hasherFactory;

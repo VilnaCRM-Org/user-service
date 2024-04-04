@@ -17,7 +17,7 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 
-class RegisterUserMutationResolverTest extends UnitTestCase
+final class RegisterUserMutationResolverTest extends UnitTestCase
 {
     private SignUpCommandFactoryInterface $signUpCommandFactory;
     private UserFactoryInterface $userFactory;

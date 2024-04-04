@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 
-class ConfirmationTokenFactoryTest extends UnitTestCase
+final class ConfirmationTokenFactoryTest extends UnitTestCase
 {
     public function testCreate(): void
     {

@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Exception\DomainException;
 use App\User\Domain\Exception\InvalidPasswordException;
 
-class InvalidPasswordExceptionTest extends UnitTestCase
+final class InvalidPasswordExceptionTest extends UnitTestCase
 {
     public function testMessage(): void
     {

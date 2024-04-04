@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegisterUserCommand;
 use App\User\Application\Factory\SignUpCommandFactory;
 
-class SignUpCommandFactoryTest extends UnitTestCase
+final class SignUpCommandFactoryTest extends UnitTestCase
 {
     public function testCreate(): void
     {

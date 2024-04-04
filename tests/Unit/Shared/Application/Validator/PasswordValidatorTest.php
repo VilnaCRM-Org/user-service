@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Violation\ConstraintViolationBuilderInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class PasswordValidatorTest extends UnitTestCase
+final class PasswordValidatorTest extends UnitTestCase
 {
     private PasswordValidator $validator;
     private ExecutionContextInterface $context;

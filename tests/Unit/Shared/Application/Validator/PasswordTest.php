@@ -8,7 +8,7 @@ use App\Shared\Application\Validator\Password;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\Validator\Constraint;
 
-class PasswordTest extends UnitTestCase
+final class PasswordTest extends UnitTestCase
 {
     public function testConstructor(): void
     {

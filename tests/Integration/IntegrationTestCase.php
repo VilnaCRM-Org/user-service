@@ -9,7 +9,7 @@ use Faker\Generator;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class IntegrationTestCase extends KernelTestCase
+abstract class IntegrationTestCase extends KernelTestCase
 {
     protected Generator $faker;
     protected ContainerInterface $container;

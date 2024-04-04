@@ -8,7 +8,7 @@ use App\Shared\Application\Validator\UniqueEmail;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\Validator\Constraint;
 
-class UniqueEmailTest extends UnitTestCase
+final class UniqueEmailTest extends UnitTestCase
 {
     public function testConstructor(): void
     {

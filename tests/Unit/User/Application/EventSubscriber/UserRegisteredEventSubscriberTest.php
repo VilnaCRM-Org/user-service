@@ -21,7 +21,7 @@ use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 
-class UserRegisteredEventSubscriberTest extends UnitTestCase
+final class UserRegisteredEventSubscriberTest extends UnitTestCase
 {
     private UserFactoryInterface $userFactory;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;

@@ -11,7 +11,7 @@ use App\Shared\Application\OpenApi\Builder\RequestBuilder;
 use App\Tests\Unit\UnitTestCase;
 use ArrayObject;
 
-class RequestBuilderTest extends UnitTestCase
+final class RequestBuilderTest extends UnitTestCase
 {
     private RequestBuilder $builder;
     private ContextBuilder $contextBuilderMock;
@@ -20,7 +20,9 @@ class RequestBuilderTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->contextBuilderMock = $this->createMock(ContextBuilder::class);
+        $this->contextBuilderMock = $this->createMock(
+            ContextBuilder::class
+        );
         $this->builder = new RequestBuilder($this->contextBuilderMock);
     }
 

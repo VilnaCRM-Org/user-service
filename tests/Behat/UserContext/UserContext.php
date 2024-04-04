@@ -6,7 +6,7 @@ namespace App\Tests\Behat\UserContext;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\User\Domain\Entity\ConfirmationToken;
-use App\User\Domain\Exception\DuplicateEmailException;
+use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -16,7 +16,7 @@ use Faker\Generator;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-class UserContext implements Context
+final class UserContext implements Context
 {
     private Generator $faker;
 
@@ -43,23 +43,24 @@ class UserContext implements Context
     /**
      * @Given user with email :email and password :password exists
      */
-    public function userWithEmailAndPasswordExists(string $email, string $password): void
-    {
-        try {
-            $user = $this->userFactory->create(
-                $email,
-                $this->faker->name,
-                $password,
-                $this->transformer->transformFromSymfonyUuid($this->uuidFactory->create())
-            );
+    public function userWithEmailAndPasswordExists(
+        string $email,
+        string $password
+    ): void {
+        $user = $this->userFactory->create(
+            $email,
+            $this->faker->name,
+            $password,
+            $this->transformer->transformFromSymfonyUuid(
+                $this->uuidFactory->create()
+            )
+        );
 
-            $hasher = $this->hasherFactory->getPasswordHasher(get_class($user));
-            $hashedPassword = $hasher->hash($password, null);
-            $user->setPassword($hashedPassword);
+        $hasher = $this->hasherFactory->getPasswordHasher($user::class);
+        $hashedPassword = $hasher->hash($password, null);
+        $user->setPassword($hashedPassword);
 
-            $this->userRepository->save($user);
-        } catch (DuplicateEmailException) {
-        }
+        $this->userRepository->save($user);
     }
 
     /**
@@ -67,22 +68,21 @@ class UserContext implements Context
      */
     public function userWithEmailExists(string $email): void
     {
-        try {
-            $password = $this->faker->password;
-            $user = $this->userFactory->create(
-                $email,
-                $this->faker->name,
-                $password,
-                $this->transformer->transformFromSymfonyUuid($this->uuidFactory->create())
-            );
+        $password = $this->faker->password;
+        $user = $this->userFactory->create(
+            $email,
+            $this->faker->name,
+            $password,
+            $this->transformer->transformFromSymfonyUuid(
+                $this->uuidFactory->create()
+            )
+        );
 
-            $hasher = $this->hasherFactory->getPasswordHasher(get_class($user));
-            $hashedPassword = $hasher->hash($password, null);
-            $user->setPassword($hashedPassword);
+        $hasher = $this->hasherFactory->getPasswordHasher($user::class);
+        $hashedPassword = $hasher->hash($password, null);
+        $user->setPassword($hashedPassword);
 
-            $this->userRepository->save($user);
-        } catch (DuplicateEmailException) {
-        }
+        $this->userRepository->save($user);
     }
 
     /**
@@ -103,8 +103,10 @@ class UserContext implements Context
     /**
      * @Given user with id :id and password :password exists
      */
-    public function userWithIdAndPasswordExists(string $id, string $password): void
-    {
+    public function userWithIdAndPasswordExists(
+        string $id,
+        string $password
+    ): void {
         $user = $this->userRepository->find($id) ?? $this->userFactory->
         create(
             $this->faker->email,
@@ -113,7 +115,7 @@ class UserContext implements Context
             $this->transformer->transformFromString($id)
         );
 
-        $hasher = $this->hasherFactory->getPasswordHasher(get_class($user));
+        $hasher = $this->hasherFactory->getPasswordHasher($user::class);
         $hashedPassword = $hasher->hash($password, null);
         $user->setPassword($hashedPassword);
 

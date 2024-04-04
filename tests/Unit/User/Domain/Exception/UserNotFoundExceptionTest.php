@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Exception\DomainException;
 use App\User\Domain\Exception\UserNotFoundException;
 
-class UserNotFoundExceptionTest extends UnitTestCase
+final class UserNotFoundExceptionTest extends UnitTestCase
 {
     public function testMessage(): void
     {

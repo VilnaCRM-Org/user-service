@@ -8,12 +8,12 @@ use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Infrastructure\Bus\Event\EventNotRegisteredException;
 use App\Tests\Unit\UnitTestCase;
 
-class EventNotRegisteredExceptionTest extends UnitTestCase
+final class EventNotRegisteredExceptionTest extends UnitTestCase
 {
     public function testConstruct(): void
     {
         $event = $this->createMock(DomainEvent::class);
-        $eventClass = get_class($event);
+        $eventClass = $event::class;
 
         $exception = new EventNotRegisteredException($event);
 

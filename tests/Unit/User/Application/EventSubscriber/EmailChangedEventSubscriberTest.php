@@ -22,7 +22,7 @@ use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 
-class EmailChangedEventSubscriberTest extends UnitTestCase
+final class EmailChangedEventSubscriberTest extends UnitTestCase
 {
     private UserFactoryInterface $userFactory;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;

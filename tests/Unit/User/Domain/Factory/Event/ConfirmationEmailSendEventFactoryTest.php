@@ -14,7 +14,7 @@ use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 
-class ConfirmationEmailSendEventFactoryTest extends UnitTestCase
+final class ConfirmationEmailSendEventFactoryTest extends UnitTestCase
 {
     private ConfirmationEmailSendEventFactoryInterface $factory;
     private UserFactoryInterface $userFactory;

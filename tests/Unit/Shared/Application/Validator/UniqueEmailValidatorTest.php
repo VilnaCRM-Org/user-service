@@ -14,7 +14,7 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\Validator\Context\ExecutionContext;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class UniqueEmailValidatorTest extends UnitTestCase
+final class UniqueEmailValidatorTest extends UnitTestCase
 {
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;

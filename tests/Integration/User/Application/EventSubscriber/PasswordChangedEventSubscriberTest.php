@@ -9,7 +9,7 @@ use App\Tests\Integration\TestEmailSendingUtils;
 use App\User\Application\EventSubscriber\PasswordChangedEventSubscriber;
 use App\User\Domain\Event\PasswordChangedEvent;
 
-class PasswordChangedEventSubscriberTest extends IntegrationTestCase
+final class PasswordChangedEventSubscriberTest extends IntegrationTestCase
 {
     private PasswordChangedEventSubscriber $subscriber;
     private TestEmailSendingUtils $utils;

@@ -10,7 +10,7 @@ use App\User\Domain\Exception\DomainException;
 use GraphQL\Error\Error;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class DomainExceptionNormalizerTest extends UnitTestCase
+final class DomainExceptionNormalizerTest extends UnitTestCase
 {
     private DomainException $previousException;
 
@@ -21,6 +21,9 @@ class DomainExceptionNormalizerTest extends UnitTestCase
         $template = $this->faker->word();
         $args = [];
         $this->previousException = new class($template, $args) extends DomainException {
+            /**
+             * @param array<string> $args
+             */
             public function __construct(
                 private string $template,
                 private array $args
@@ -38,7 +41,6 @@ class DomainExceptionNormalizerTest extends UnitTestCase
                 return $this->args;
             }
         };
-
     }
 
 

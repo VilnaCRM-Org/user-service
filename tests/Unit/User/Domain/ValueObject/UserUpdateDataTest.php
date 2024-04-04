@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Domain\ValueObject;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\ValueObject\UserUpdate;
 
-class UserUpdateDataTest extends UnitTestCase
+final class UserUpdateDataTest extends UnitTestCase
 {
     public function testCreate(): void
     {

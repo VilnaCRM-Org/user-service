@@ -19,7 +19,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 
-class UserResolveListenerTest extends UnitTestCase
+final class UserResolveListenerTest extends UnitTestCase
 {
     private MockObject $hasherFactory;
     private MockObject $userRepository;

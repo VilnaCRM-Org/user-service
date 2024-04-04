@@ -10,7 +10,7 @@ use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\UserCreatedResponseFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class UserCreatedResponseFactoryTest extends UnitTestCase
+final class UserCreatedResponseFactoryTest extends UnitTestCase
 {
     public function testGetResponse(): void
     {

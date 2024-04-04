@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Application\DTO;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\ConfirmUserDto;
 
-class ConfirmUserDtoTest extends UnitTestCase
+final class ConfirmUserDtoTest extends UnitTestCase
 {
     public function testConstruct(): void
     {

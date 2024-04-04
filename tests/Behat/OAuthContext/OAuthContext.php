@@ -23,7 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class OAuthContext implements Context
+final class OAuthContext implements Context
 {
     private Generator $faker;
     private ObtainAccessTokenInput $obtainAccessTokenInput;
@@ -45,15 +45,24 @@ class OAuthContext implements Context
      */
     public function passingIdAndSecret(string $id, string $secret): void
     {
-        $this->obtainAccessTokenInput = new ClientCredentialsGrantInput($id, $secret);
+        $this->obtainAccessTokenInput =
+            new ClientCredentialsGrantInput($id, $secret);
     }
 
     /**
      * @Given passing client id :id, client secret :secret, redirect_uri :uri and auth code
      */
-    public function passingIdSecretUriAndAuthCode(string $id, string $secret, string $uri): void
-    {
-        $this->obtainAccessTokenInput = new AuthorizationCodeGrantInput($id, $secret, $uri, $this->authCode);
+    public function passingIdSecretUriAndAuthCode(
+        string $id,
+        string $secret,
+        string $uri
+    ): void {
+        $this->obtainAccessTokenInput = new AuthorizationCodeGrantInput(
+            $id,
+            $secret,
+            $uri,
+            $this->authCode
+        );
     }
 
     /**
@@ -61,15 +70,27 @@ class OAuthContext implements Context
      */
     public function passingIdAndRedirectURI(string $id, string $uri): void
     {
-        $this->obtainAuthorizeCodeInput = new ObtainAuthorizeCodeInput($id, $uri);
+        $this->obtainAuthorizeCodeInput = new ObtainAuthorizeCodeInput(
+            $id,
+            $uri
+        );
     }
 
     /**
      * @Given passing client id :id, client secret :secret, email :email and password :password
      */
-    public function passingIdSecretEmailAndPassword(string $id, string $secret, string $email, string $password): void
-    {
-        $this->obtainAccessTokenInput = new PasswordGrantInput($id, $secret, $email, $password);
+    public function passingIdSecretEmailAndPassword(
+        string $id,
+        string $secret,
+        string $email,
+        string $password
+    ): void {
+        $this->obtainAccessTokenInput = new PasswordGrantInput(
+            $id,
+            $secret,
+            $email,
+            $password
+        );
     }
 
     /**
@@ -89,21 +110,31 @@ class OAuthContext implements Context
     public function obtainAuthCode(): void
     {
         $this->kernel->getContainer()->get('event_dispatcher')
-            ->addListener(OAuth2Events::AUTHORIZATION_REQUEST_RESOLVE, static function (AuthorizationRequestResolveEvent $event): void {
-                $event->resolveAuthorization(AuthorizationRequestResolveEvent::AUTHORIZATION_APPROVED);
-            });
+            ->addListener(
+                OAuth2Events::AUTHORIZATION_REQUEST_RESOLVE,
+                static function (
+                    AuthorizationRequestResolveEvent $event
+                ): void {
+                    $event->resolveAuthorization(
+                        AuthorizationRequestResolveEvent::AUTHORIZATION_APPROVED
+                    );
+                }
+            );
 
         $this->response = $this->kernel->handle(Request::create(
-            '/api/oauth/authorize?'.$this->obtainAuthorizeCodeInput->toUriParams(),
+            '/api/oauth/authorize?' . $this->obtainAuthorizeCodeInput->toUriParams(),
             'GET',
             [],
             [],
             [],
             ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json', ]
+                'CONTENT_TYPE' => 'application/json',
+            ]
         ));
 
-        $this->authCode = Request::create($this->response->headers->get('location'))->query->get('code');
+        $this->authCode = Request::create(
+            $this->response->headers->get('location')
+        )->query->get('code');
     }
 
     /**
@@ -119,8 +150,12 @@ class OAuthContext implements Context
             [],
             [],
             ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json', ],
-            $this->serializer->serialize($this->obtainAccessTokenInput, 'json')
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            $this->serializer->serialize(
+                $this->obtainAccessTokenInput,
+                'json'
+            )
         ));
     }
 
@@ -150,16 +185,25 @@ class OAuthContext implements Context
     {
         $data = json_decode($this->response->getContent(), true);
 
-        Assert::assertSame(Response::HTTP_UNAUTHORIZED, $this->response->getStatusCode());
+        Assert::assertSame(
+            Response::HTTP_UNAUTHORIZED,
+            $this->response->getStatusCode()
+        );
 
         Assert::assertArrayHasKey('error', $data);
         Assert::assertEquals('invalid_client', $data['error']);
 
         Assert::assertArrayHasKey('error_description', $data);
-        Assert::assertEquals('Client authentication failed', $data['error_description']);
+        Assert::assertEquals(
+            'Client authentication failed',
+            $data['error_description']
+        );
 
         Assert::assertArrayHasKey('message', $data);
-        Assert::assertEquals('Client authentication failed', $data['message']);
+        Assert::assertEquals(
+            'Client authentication failed',
+            $data['message']
+        );
     }
 
     /**
@@ -169,7 +213,10 @@ class OAuthContext implements Context
     {
         $data = json_decode($this->response->getContent(), true);
 
-        Assert::assertSame(Response::HTTP_BAD_REQUEST, $this->response->getStatusCode());
+        Assert::assertSame(
+            Response::HTTP_BAD_REQUEST,
+            $this->response->getStatusCode()
+        );
 
         Assert::assertArrayHasKey('error', $data);
         Assert::assertEquals('unsupported_grant_type', $data['error']);

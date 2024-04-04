@@ -9,7 +9,7 @@ use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\TokenNotFoundFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class TokenNotFoundResponseFactoryTest extends UnitTestCase
+final class TokenNotFoundResponseFactoryTest extends UnitTestCase
 {
     public function testGetResponse(): void
     {

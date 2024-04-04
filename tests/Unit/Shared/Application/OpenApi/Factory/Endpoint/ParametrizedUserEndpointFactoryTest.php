@@ -18,29 +18,58 @@ use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class ParametrizedUserEndpointFactoryTest extends UnitTestCase
+final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
 {
     public function testCreateEndpoint(): void
     {
-        $validationErrorResponseFactory = $this->createMock(ValidationErrorFactory::class);
-        $badRequestResponseFactory = $this->createMock(BadRequestResponseFactory::class);
-        $userNotFoundResponseFactory = $this->createMock(UserNotFoundResponseFactory::class);
-        $userDeletedResponseFactory = $this->createMock(UserDeletedResponseFactory::class);
-        $uuidUriParameterFactory = $this->createMock(UuidUriParameterFactory::class);
-        $userUpdatedResponseFactory = $this->createMock(UserUpdatedResponseFactory::class);
+        $validationErrorResponseFactory = $this->createMock(
+            ValidationErrorFactory::class
+        );
+        $badRequestResponseFactory = $this->createMock(
+            BadRequestResponseFactory::class
+        );
+        $userNotFoundResponseFactory = $this->createMock(
+            UserNotFoundResponseFactory::class
+        );
+        $userDeletedResponseFactory = $this->createMock(
+            UserDeletedResponseFactory::class
+        );
+        $uuidUriParameterFactory = $this->createMock(
+            UuidUriParameterFactory::class
+        );
+        $userUpdatedResponseFactory = $this->createMock(
+            UserUpdatedResponseFactory::class
+        );
 
-        $validationErrorResponse = $this->createMock(Response::class);
-        $duplicateEmailResponse = $this->createMock(Response::class);
+        $validationErrorResponse = $this->createMock(
+            Response::class
+        );
         $badRequestResponse = $this->createMock(Response::class);
-        $userNotFoundResponse = $this->createMock(Response::class);
-        $userDeletedResponse = $this->createMock(Response::class);
-        $userUpdatedResponse = $this->createMock(Response::class);
+        $userNotFoundResponse = $this->createMock(
+            Response::class
+        );
+        $userDeletedResponse = $this->createMock(
+            Response::class
+        );
+        $userUpdatedResponse = $this->createMock(
+            Response::class
+        );
 
-        $validationErrorResponseFactory->expects($this->once())->method('getResponse')->willReturn($validationErrorResponse);
-        $badRequestResponseFactory->expects($this->once())->method('getResponse')->willReturn($badRequestResponse);
-        $userNotFoundResponseFactory->expects($this->once())->method('getResponse')->willReturn($userNotFoundResponse);
-        $userDeletedResponseFactory->expects($this->once())->method('getResponse')->willReturn($userDeletedResponse);
-        $userUpdatedResponseFactory->expects($this->once())->method('getResponse')->willReturn($userUpdatedResponse);
+        $validationErrorResponseFactory->expects($this->once())->method(
+            'getResponse'
+        )->willReturn($validationErrorResponse);
+        $badRequestResponseFactory->expects($this->once())->method(
+            'getResponse'
+        )->willReturn($badRequestResponse);
+        $userNotFoundResponseFactory->expects($this->once())->method(
+            'getResponse'
+        )->willReturn($userNotFoundResponse);
+        $userDeletedResponseFactory->expects($this->once())->method(
+            'getResponse'
+        )->willReturn($userDeletedResponse);
+        $userUpdatedResponseFactory->expects($this->once())->method(
+            'getResponse'
+        )->willReturn($userUpdatedResponse);
 
         $factory = new ParametrizedUserEndpointFactory(
             $validationErrorResponseFactory,
@@ -87,10 +116,22 @@ class ParametrizedUserEndpointFactoryTest extends UnitTestCase
         $paths->expects($this->exactly(4))
             ->method('addPath')
             ->withConsecutive(
-                ['/api/users/{id}', $this->isInstanceOf(PathItem::class)],
-                ['/api/users/{id}', $this->isInstanceOf(PathItem::class)],
-                ['/api/users/{id}', $this->isInstanceOf(PathItem::class)],
-                ['/api/users/{id}', $this->isInstanceOf(PathItem::class)]
+                [
+                    '/api/users/{id}',
+                    $this->isInstanceOf(PathItem::class)
+                ],
+                [
+                    '/api/users/{id}',
+                    $this->isInstanceOf(PathItem::class)
+                ],
+                [
+                    '/api/users/{id}',
+                    $this->isInstanceOf(PathItem::class)
+                ],
+                [
+                    '/api/users/{id}',
+                    $this->isInstanceOf(PathItem::class)
+                ]
             );
 
         $factory->createEndpoint($openApi);

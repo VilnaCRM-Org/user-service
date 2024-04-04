@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
+final class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
 {
     private UserFactoryInterface $userFactory;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;

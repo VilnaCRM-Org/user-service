@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Domain\Event;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Event\PasswordChangedEvent;
 
-class PasswordChangedEventTest extends UnitTestCase
+final class PasswordChangedEventTest extends UnitTestCase
 {
     public function testCreateEvent(): void
     {

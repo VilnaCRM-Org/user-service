@@ -11,73 +11,77 @@ workspace {
             userService = container "Software System" {
 
                 group "Application" {
-                    registerUserProcessor = component "RegisterUserProcessor" {
+                    registerUserProcessor = component "RegisterUserProcessor" "Processes HTTP requests for user registration" "RequestProcessor" {
                         tags "Item"
                     }
-                    confirmUserProcessor = component "ConfirmUserProcessor" {
+                    confirmUserProcessor = component "ConfirmUserProcessor" "Processes HTTP requests for user confirmation" "RequestProcessor" {
                         tags "Item"
                     }
-                    userPatchProcessor = component "UserPatchProcessor" {
+                    userPatchProcessor = component "UserPatchProcessor" "Processes HTTP requests for updating user" "RequestProcessor" {
                         tags "Item"
                     }
-                    userPutProcessor = component "UserPutProcessor" {
+                    userPutProcessor = component "UserPutProcessor" "Processes HTTP requests for replacing user" "RequestProcessor" {
                         tags "Item"
                     }
-                    updateUserResolver = component "UpdateUserResolver" {
+                    updateUserResolver = component "UpdateUserResolver" "Processes GraphQL requests for updating user" "MutationResolver" {
                         tags "Item"
                     }
-                    registerUserResolver = component "RegisterUserResolver" {
+                    registerUserResolver = component "RegisterUserResolver" "Processes GraphQL requests for user registration" "MutationResolver" {
                         tags "Item"
                     }
-                    confirmUserResolver = component "ConfirmUserResolver" {
+                    confirmUserResolver = component "ConfirmUserResolver" "Processes GraphQL requests for user confirmation" "MutationResolver" {
                         tags "Item"
                     }
-                    updateUserCommandHandler = component "UpdateUserCommandHandler" {
+                    updateUserCommandHandler = component "UpdateUserCommandHandler" "Handles UpdateUserCommand" "CommandHandler" {
                         tags "Item"
                     }
-                    confirmUserCommandHandler = component "ConfirmUserCommandHandler" {
+                    confirmUserCommandHandler = component "ConfirmUserCommandHandler" "Handles ConfirmUserCommand" "CommandHandler" {
                         tags "Item"
                     }
-                    registerUserCommandHandler = component "RegisterUserCommandHandler" {
+                    registerUserCommandHandler = component "RegisterUserCommandHandler" "Handles RegisterUserCommand" "CommandHandler" {
                         tags "Item"
                     }
-                    sendConfirmationEmailCommandHandler = component "SendConfirmationEmailCommandHandler" {
+                    sendConfirmationEmailCommandHandler = component "SendConfirmationEmailCommandHandler" "Handles " "CommandHandler" {
                         tags "Item"
                     }
-                    userRegisteredEventSubscriber = component "UserRegisteredEventSubsctiber" {
+                    userRegisteredEventSubscriber = component "UserRegisteredEventSubscriber" "Handles UserRegisteredEvent" "EventSubscriber" {
                         tags "Item"
                     }
-                    userConfirmedEventSubscriber = component "UserConfirmedEventSubsctiber" {
+                    userConfirmedEventSubscriber = component "UserConfirmedEventSubscriber" "Handles UserConfirmedEvent" "EventSubscriber" {
                         tags "Item"
                     }
-                    confirmationEmailSentEventSubscriber = component "ConfirmationEmailSentEventSubscriber" {
+                    confirmationEmailSentEventSubscriber = component "ConfirmationEmailSentEventSubscriber" "Handles ConfirmationEmailSentEvent" "EventSubscriber" {
+                        tags "Item"
+
+                    }
+                    emailChangedEventSubscriber = component "EmailChangedEventSubscriber" "Handles EmailChangedEvent" "EventSubscriber" {
                         tags "Item"
                     }
-                    emailChangedEventSubscriber = component "EmailChangedEventSubsctiber" {
-                        tags "Item"
-                    }
-                    passwordChangedEventSubscriber = component "PasswordChangedEventSubscriber" {
+                    passwordChangedEventSubscriber = component "PasswordChangedEventSubscriber" "Handles PasswordChangedEvent" "EventSubscriber" {
                         tags "Item"
                     }
                 }
 
                 group "Domain" {
-                    user = component "User" "" "Entity" {
+                    user = component "User" "Represents user" "Entity" {
                         tags "Item"
                     }
-                    token = component "ConfirmationToken" "" "Entity" {
+                    token = component "ConfirmationToken" "Represents confirmation token" "Entity" {
                         tags "Item"
                     }
                 }
 
                 group "Infrastructure" {
-                    userRepository = component "MariaDBUserRepository" {
+                    userRepository = component "MariaDBUserRepository" "Manages access to users" "Repository" {
                         tags "Item"
                     }
-                    tokenRepository = component "RedisTokenRepository" {
+                    tokenRepository = component "RedisTokenRepository" "Manages access to confirmation tokens" "Repository" {
                         tags "Item"
                     }
-                    mailer = component "Symfony Mailer" {
+                    mailer = component "Symfony Mailer" "Manages sending of emails" {
+                        tags "Item"
+                    }
+                    messenger = component "Symfony Messenger" "Manages background tasks" {
                         tags "Item"
                     }
                 }
@@ -92,30 +96,31 @@ workspace {
                     tags "Database"
                 }
 
-                registerUserProcessor -> registerUserCommandHandler
-                registerUserResolver -> registerUserCommandHandler
-                confirmUserProcessor -> confirmUserCommandHandler
-                confirmUserResolver -> confirmUserCommandHandler
-                confirmUserCommandHandler -> userConfirmedEventSubscriber
-                registerUserCommandHandler -> userRegisteredEventSubscriber
-                registerUserCommandHandler -> user "Create"
-                updateUserCommandHandler -> emailChangedEventSubscriber
-                updateUserCommandHandler -> passwordChangedEventSubscriber
-                emailChangedEventSubscriber -> sendConfirmationEmailCommandHandler
-                userRegisteredEventSubscriber -> sendConfirmationEmailCommandHandler
-                sendConfirmationEmailCommandHandler -> confirmationEmailSentEventSubscriber
-                passwordChangedEventSubscriber -> mailer
-                confirmationEmailSentEventSubscriber -> mailer
-                userPatchProcessor -> updateUserCommandHandler
-                userPutProcessor -> updateUserCommandHandler
-                updateUserResolver -> updateUserCommandHandler
-                confirmationEmailSentEventSubscriber -> token "Create"
-                userConfirmedEventSubscriber -> token "Delete"
-                userRepository -> user "Save and load"
-                tokenRepository -> token "Save and load"
-                userRepository -> database
-                tokenRepository -> cache
-                mailer -> sqs
+                registerUserProcessor -> registerUserCommandHandler "dispatches RegisterUserCommand"
+                registerUserResolver -> registerUserCommandHandler "dispatches RegisterUserCommand"
+                confirmUserProcessor -> confirmUserCommandHandler "dispatches ConfirmUserCommand"
+                confirmUserResolver -> confirmUserCommandHandler "dispatches ConfirmUserCommand"
+                confirmUserCommandHandler -> userConfirmedEventSubscriber "publishes UserConfirmedEvent"
+                registerUserCommandHandler -> userRegisteredEventSubscriber "publishes UserRegisteredEvent"
+                registerUserCommandHandler -> user "creates"
+                updateUserCommandHandler -> emailChangedEventSubscriber "publishes EmailChangedEvent"
+                updateUserCommandHandler -> passwordChangedEventSubscriber "publishes PasswordChangedEvent"
+                emailChangedEventSubscriber -> sendConfirmationEmailCommandHandler "dispatches SendConfirmationEmailCommand"
+                userRegisteredEventSubscriber -> sendConfirmationEmailCommandHandler "dispatches SendConfirmationEmailCommand"
+                sendConfirmationEmailCommandHandler -> confirmationEmailSentEventSubscriber "publishes ConfirmationEmailSentEvent"
+                passwordChangedEventSubscriber -> messenger "adds email to queue"
+                confirmationEmailSentEventSubscriber -> messenger "adds email to queue"
+                mailer -> messenger "consumes emails"
+                userPatchProcessor -> updateUserCommandHandler "dispatches UpdateUserCommand"
+                userPutProcessor -> updateUserCommandHandler "dispatches UpdateUserCommand"
+                updateUserResolver -> updateUserCommandHandler "dispatches UpdateUserCommand"
+                confirmationEmailSentEventSubscriber -> token "creates"
+                userConfirmedEventSubscriber -> token "deletes"
+                userRepository -> user "save and load"
+                tokenRepository -> token "save and load"
+                userRepository -> database "accesses data"
+                tokenRepository -> cache "accesses data"
+                mailer -> sqs "sends emails"
             }
         }
     }

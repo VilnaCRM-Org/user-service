@@ -9,7 +9,7 @@ use App\Shared\Domain\ValueObject\Uuid;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\Uid\AbstractUid;
 
-class UuidTransformerTest extends UnitTestCase
+final class UuidTransformerTest extends UnitTestCase
 {
     public function testTransformFromSymfonyUuid(): void
     {

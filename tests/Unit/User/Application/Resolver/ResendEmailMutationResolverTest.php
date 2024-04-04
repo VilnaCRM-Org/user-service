@@ -20,7 +20,7 @@ use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 
-class ResendEmailMutationResolverTest extends UnitTestCase
+final class ResendEmailMutationResolverTest extends UnitTestCase
 {
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;

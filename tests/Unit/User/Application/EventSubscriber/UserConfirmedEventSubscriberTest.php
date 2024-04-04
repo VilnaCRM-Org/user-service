@@ -13,7 +13,7 @@ use App\User\Domain\Factory\Event\UserConfirmedEventFactory;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 
-class UserConfirmedEventSubscriberTest extends UnitTestCase
+final class UserConfirmedEventSubscriberTest extends UnitTestCase
 {
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
     private UserConfirmedEventFactoryInterface $userConfirmedEventFactory;

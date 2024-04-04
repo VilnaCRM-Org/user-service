@@ -9,7 +9,7 @@ use App\User\Domain\Event\PasswordChangedEvent;
 use App\User\Domain\Factory\Event\PasswordChangedEventFactory;
 use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 
-class PasswordChangedEventFactoryTest extends UnitTestCase
+final class PasswordChangedEventFactoryTest extends UnitTestCase
 {
     private PasswordChangedEventFactoryInterface $factory;
 

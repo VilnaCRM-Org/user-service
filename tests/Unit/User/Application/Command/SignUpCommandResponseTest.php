@@ -10,7 +10,7 @@ use App\User\Application\Command\RegisterUserCommandResponse;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 
-class SignUpCommandResponseTest extends UnitTestCase
+final class SignUpCommandResponseTest extends UnitTestCase
 {
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;

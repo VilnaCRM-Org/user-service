@@ -7,9 +7,9 @@ namespace App\Tests\Unit\Shared\Application\OpenApi\Builder;
 use App\Shared\Application\OpenApi\Builder\Header;
 use App\Tests\Unit\UnitTestCase;
 
-class HeaderTest extends UnitTestCase
+final class HeaderTest extends UnitTestCase
 {
-    public function testCreateWithValidData()
+    public function testCreateWithValidData(): void
     {
         $headerValue = $this->faker->word();
         $description = $this->faker->word();

@@ -25,7 +25,7 @@ use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 
-class ResendEmailProcessorTest extends UnitTestCase
+final class ResendEmailProcessorTest extends UnitTestCase
 {
     private Operation $mockOperation;
     private UserFactoryInterface $userFactory;

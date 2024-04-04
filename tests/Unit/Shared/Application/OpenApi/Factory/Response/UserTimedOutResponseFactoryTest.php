@@ -11,7 +11,7 @@ use App\Shared\Application\OpenApi\Factory\Response\UserTimedOutResponseFactory;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-class UserTimedOutResponseFactoryTest extends UnitTestCase
+final class UserTimedOutResponseFactoryTest extends UnitTestCase
 {
     public function testGetResponse(): void
     {

@@ -11,9 +11,9 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class NotFoundExceptionNormalizerTest extends UnitTestCase
+final class NotFoundExceptionNormalizerTest extends UnitTestCase
 {
-    public function testNormalize()
+    public function testNormalize(): void
     {
         $id = $this->faker->uuid();
         $errorText = $this->faker->word();
@@ -38,7 +38,7 @@ class NotFoundExceptionNormalizerTest extends UnitTestCase
         $this->assertEquals('internal', $normalizedError['extensions']['category']);
     }
 
-    public function testSupportsNormalization()
+    public function testSupportsNormalization(): void
     {
         $translatorMock = $this->createMock(TranslatorInterface::class);
         $normalizer = new NotFoundExceptionNormalizer($translatorMock);
@@ -49,7 +49,7 @@ class NotFoundExceptionNormalizerTest extends UnitTestCase
         $this->assertTrue($normalizer->supportsNormalization($error));
     }
 
-    public function testSupportsNormalizationWithWrongPreviousType()
+    public function testSupportsNormalizationWithWrongPreviousType(): void
     {
         $translatorMock = $this->createMock(TranslatorInterface::class);
         $normalizer = new NotFoundExceptionNormalizer($translatorMock);
@@ -60,7 +60,7 @@ class NotFoundExceptionNormalizerTest extends UnitTestCase
         $this->assertFalse($normalizer->supportsNormalization($error));
     }
 
-    public function testSupportsNormalizationWithWrongType()
+    public function testSupportsNormalizationWithWrongType(): void
     {
         $translatorMock = $this->createMock(TranslatorInterface::class);
         $normalizer = new NotFoundExceptionNormalizer($translatorMock);

@@ -12,7 +12,7 @@ use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 
-class UpdateUserCommandFactoryTest extends UnitTestCase
+final class UpdateUserCommandFactoryTest extends UnitTestCase
 {
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;

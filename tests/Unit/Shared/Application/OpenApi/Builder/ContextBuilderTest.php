@@ -9,7 +9,7 @@ use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Tests\Unit\UnitTestCase;
 use ArrayObject;
 
-class ContextBuilderTest extends UnitTestCase
+final class ContextBuilderTest extends UnitTestCase
 {
     private ContextBuilder $contextBuilder;
 
@@ -37,8 +37,16 @@ class ContextBuilderTest extends UnitTestCase
     public function testBuildWithSimpleParams(): void
     {
         $params = [
-            new Parameter('name', 'string', $this->faker->name()),
-            new Parameter('age', 'integer', $this->faker->numberBetween(1, 10)),
+            new Parameter(
+                'name',
+                'string',
+                $this->faker->name()
+            ),
+            new Parameter(
+                'age',
+                'integer',
+                $this->faker->numberBetween(1, 10)
+            ),
         ];
 
         $content = $this->contextBuilder->build($params);

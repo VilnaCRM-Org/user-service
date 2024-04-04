@@ -10,7 +10,7 @@ use App\User\Domain\Exception\UserTimedOutException;
 use DateTimeImmutable;
 use DateTimeInterface;
 
-class UserTimedOutExceptionTest extends UnitTestCase
+final class UserTimedOutExceptionTest extends UnitTestCase
 {
     public function testCreateException(): void
     {

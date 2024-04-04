@@ -11,7 +11,7 @@ use App\User\Application\Transformer\UserTransformer;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 
-class UserTransformerTest extends UnitTestCase
+final class UserTransformerTest extends UnitTestCase
 {
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;

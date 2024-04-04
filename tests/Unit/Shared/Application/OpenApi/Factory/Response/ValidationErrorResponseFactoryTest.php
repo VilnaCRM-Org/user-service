@@ -11,7 +11,7 @@ use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-class ValidationErrorResponseFactoryTest extends UnitTestCase
+final class ValidationErrorResponseFactoryTest extends UnitTestCase
 {
     public function testGetResponse(): void
     {

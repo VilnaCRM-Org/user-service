@@ -15,7 +15,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class ErrorProviderTest extends UnitTestCase
+final class ErrorProviderTest extends UnitTestCase
 {
     private TranslatorInterface $translator;
 
@@ -59,8 +59,9 @@ class ErrorProviderTest extends UnitTestCase
     public function testProvideWithoutErrorCode(): void
     {
         $operation = $this->createMock(HttpOperation::class);
-        $operation->expects($this->once())->
-        method('getStatus')->willReturn(null);
+        $operation->expects(
+            $this->once()
+        )->method('getStatus')->willReturn(null);
 
         $errorText = $this->faker->word();
 
@@ -89,8 +90,9 @@ class ErrorProviderTest extends UnitTestCase
     {
         $operation = $this->createMock(HttpOperation::class);
         $status = Response::HTTP_NOT_FOUND;
-        $operation->expects($this->once())->
-        method('getStatus')->willReturn($status);
+        $operation->expects(
+            $this->once()
+        )->method('getStatus')->willReturn($status);
 
         $errorText = $this->faker->word();
 
@@ -119,13 +121,17 @@ class ErrorProviderTest extends UnitTestCase
     {
         $operation = $this->createMock(HttpOperation::class);
         $status = $this->faker->numberBetween(200, 500);
-        $operation->expects($this->once())->
-        method('getStatus')->willReturn($status);
+        $operation->expects(
+            $this->once()
+        )->method('getStatus')->willReturn($status);
         $template = $this->faker->word();
         $args = [];
         $errorText = $this->faker->word();
 
         $exception = new class($template, $args) extends DomainException {
+            /**
+             * @param array<string> $args
+             */
             public function __construct(
                 private string $template,
                 private array $args
@@ -172,7 +178,7 @@ class ErrorProviderTest extends UnitTestCase
         $exception = new HttpException(Response::HTTP_INTERNAL_SERVER_ERROR, $this->faker->word());
 
         $request = Request::create('graphql');
-        ;
+
         $request->attributes->set('exception', $exception);
 
         $context = ['request' => $request];

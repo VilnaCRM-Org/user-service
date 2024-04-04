@@ -2,7 +2,7 @@
     "apiHost": "localhost",
     "mailCatcherPort": "1080",
     "batchSize": 50,
-    "autoDetermineUsersToInsert": true,
+    "autoDetermineUsersToInsert": false,
     "usersToInsert": 20,
     "delayBetweenScenarios": 30,
     "gettingEmailMaxRetries": 50,
@@ -26,8 +26,8 @@
             },
             "stress": {
                 "threshold": 2000,
-                "rps": 500,
-                "vus": 500,
+                "rps": 300,
+                "vus": 300,
                 "duration": {
                     "rise": 5,
                     "plateau": 20,
@@ -36,8 +36,8 @@
             },
             "spike": {
                 "threshold": 8000,
-                "rps": 5000,
-                "vus": 5000,
+                "rps": 400,
+                "vus": 400,
                 "duration": {
                     "rise": 30,
                     "fall": 10
@@ -120,13 +120,13 @@
         },
         "updateUser": {
             "smoke": {
-                "threshold": 90,
+                "threshold": 3000,
                 "rps": 10,
                 "vus": 10,
                 "duration": 10
             },
             "average": {
-                "threshold": 350,
+                "threshold": 10000,
                 "rps": 50,
                 "vus": 50,
                 "duration": {
@@ -136,7 +136,7 @@
                 }
             },
             "stress": {
-                "threshold": 3500,
+                "threshold": 50000,
                 "rps": 300,
                 "vus": 300,
                 "duration": {
@@ -146,7 +146,7 @@
                 }
             },
             "spike": {
-                "threshold": 8000,
+                "threshold": 60000,
                 "rps": 400,
                 "vus": 400,
                 "duration": {
@@ -157,13 +157,13 @@
         },
         "replaceUser": {
             "smoke": {
-                "threshold": 90,
+                "threshold": 3000,
                 "rps": 10,
                 "vus": 10,
                 "duration": 10
             },
             "average": {
-                "threshold": 350,
+                "threshold": 10000,
                 "rps": 50,
                 "vus": 50,
                 "duration": {
@@ -173,7 +173,7 @@
                 }
             },
             "stress": {
-                "threshold": 3500,
+                "threshold": 50000,
                 "rps": 300,
                 "vus": 300,
                 "duration": {
@@ -183,7 +183,7 @@
                 }
             },
             "spike": {
-                "threshold": 8000,
+                "threshold": 60000,
                 "rps": 400,
                 "vus": 400,
                 "duration": {
@@ -194,13 +194,13 @@
         },
         "confirmUser": {
             "smoke": {
-                "threshold": 90,
+                "threshold": 3500,
                 "rps": 10,
                 "vus": 10,
                 "duration": 10
             },
             "average": {
-                "threshold": 350,
+                "threshold": 12000,
                 "rps": 50,
                 "vus": 50,
                 "duration": {
@@ -210,7 +210,7 @@
                 }
             },
             "stress": {
-                "threshold": 3500,
+                "threshold": 55000,
                 "rps": 300,
                 "vus": 300,
                 "duration": {
@@ -220,7 +220,7 @@
                 }
             },
             "spike": {
-                "threshold": 8000,
+                "threshold": 60000,
                 "rps": 400,
                 "vus": 400,
                 "duration": {

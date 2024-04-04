@@ -18,7 +18,7 @@ use App\Shared\Application\OpenApi\OpenApiFactory;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-class OpenApiFactoryTest extends UnitTestCase
+final class OpenApiFactoryTest extends UnitTestCase
 {
     public function testInvoke(): void
     {

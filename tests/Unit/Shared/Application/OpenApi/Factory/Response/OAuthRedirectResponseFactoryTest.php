@@ -10,7 +10,7 @@ use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\OAuthRedirectFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class OAuthRedirectResponseFactoryTest extends UnitTestCase
+final class OAuthRedirectResponseFactoryTest extends UnitTestCase
 {
     public function testGetResponse(): void
     {

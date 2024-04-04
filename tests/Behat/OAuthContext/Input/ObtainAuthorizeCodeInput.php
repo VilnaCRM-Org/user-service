@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\OAuthContext\Input;
 
-readonly class ObtainAuthorizeCodeInput
+final readonly class ObtainAuthorizeCodeInput
 {
-    public string $response_type;
+    private string $response_type;
 
-    public function __construct(public string $client_id, public string $redirect_uri)
-    {
+    public function __construct(
+        private string $client_id,
+        private string $redirect_uri
+    ) {
         $this->response_type = 'code';
     }
 

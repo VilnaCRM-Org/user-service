@@ -62,6 +62,9 @@ psalm-security: ## Psalm security analysis
 phpinsights: ## Instant PHP quality checks and static analysis tool
 	$(EXEC_PHP) ./vendor/bin/phpinsights --no-interaction
 
+phpinsights-for-tests: ## Instant PHP quality checks and static analysis tool
+	$(EXEC_PHP) ./vendor/bin/phpinsights analyse tests --no-interaction
+
 unit-tests: ## The PHP unit testing framework
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/phpunit --testsuite=Unit
 

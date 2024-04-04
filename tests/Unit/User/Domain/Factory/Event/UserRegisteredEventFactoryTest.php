@@ -12,7 +12,7 @@ use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 
-class UserRegisteredEventFactoryTest extends UnitTestCase
+final class UserRegisteredEventFactoryTest extends UnitTestCase
 {
     private UserRegisteredEventFactoryInterface $factory;
     private UserFactoryInterface $userFactory;

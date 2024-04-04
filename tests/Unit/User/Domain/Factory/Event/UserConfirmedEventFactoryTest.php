@@ -11,7 +11,7 @@ use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactory;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
 
-class UserConfirmedEventFactoryTest extends UnitTestCase
+final class UserConfirmedEventFactoryTest extends UnitTestCase
 {
     private UserConfirmedEventFactoryInterface $factory;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;

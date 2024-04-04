@@ -8,7 +8,7 @@ use ApiPlatform\OpenApi\Model\Parameter;
 use App\Shared\Application\OpenApi\Builder\QueryParameterBuilder;
 use App\Tests\Unit\UnitTestCase;
 
-class QueryParameterBuilderTest extends UnitTestCase
+final class QueryParameterBuilderTest extends UnitTestCase
 {
     private QueryParameterBuilder $builder;
 
@@ -27,7 +27,13 @@ class QueryParameterBuilderTest extends UnitTestCase
         $example = $this->faker->word();
         $type = $this->faker->word();
 
-        $parameter = $this->builder->build($name, $description, $required, $example, $type);
+        $parameter = $this->builder->build(
+            $name,
+            $description,
+            $required,
+            $example,
+            $type
+        );
 
         $this->assertInstanceOf(Parameter::class, $parameter);
         $this->assertEquals($name, $parameter->getName());

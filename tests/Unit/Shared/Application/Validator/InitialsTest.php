@@ -7,7 +7,7 @@ namespace App\Tests\Unit\Shared\Application\Validator;
 use App\Shared\Application\Validator\Initials;
 use App\Tests\Unit\UnitTestCase;
 
-class InitialsTest extends UnitTestCase
+final class InitialsTest extends UnitTestCase
 {
     public function testConstraintInitialization(): void
     {

@@ -8,7 +8,7 @@ use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\Shared\Infrastructure\Bus\CallableFirstParameterExtractor;
 use App\Tests\Unit\UnitTestCase;
 
-class CallableFirstParameterExtractorTest extends UnitTestCase
+final class CallableFirstParameterExtractorTest extends UnitTestCase
 {
     private CallableFirstParameterExtractor $extractor;
 
@@ -108,6 +108,6 @@ class CallableFirstParameterExtractorTest extends UnitTestCase
 
         $this->expectException(\LogicException::class);
 
-        $extracted = $this->extractor->extract($subscriberClass);
+        $this->extractor->extract($subscriberClass);
     }
 }

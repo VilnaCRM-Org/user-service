@@ -9,7 +9,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 
-class UserFactoryTest extends UnitTestCase
+final class UserFactoryTest extends UnitTestCase
 {
     private UuidTransformer $transformer;
 

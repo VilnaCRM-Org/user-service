@@ -10,7 +10,7 @@ use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactoryInterface;
 
-class ConfirmationEmailTest extends UnitTestCase
+final class ConfirmationEmailTest extends UnitTestCase
 {
     public function testSend(): void
     {

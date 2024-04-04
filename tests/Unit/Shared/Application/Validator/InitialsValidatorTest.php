@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Violation\ConstraintViolationBuilderInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class InitialsValidatorTest extends UnitTestCase
+final class InitialsValidatorTest extends UnitTestCase
 {
     private InitialsValidator $validator;
     private ExecutionContextInterface $context;

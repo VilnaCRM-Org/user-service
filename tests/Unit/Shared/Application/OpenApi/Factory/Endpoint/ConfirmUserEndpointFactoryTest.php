@@ -15,24 +15,31 @@ use App\Shared\Application\OpenApi\Factory\Response\UserConfirmedFactory;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-class ConfirmUserEndpointFactoryTest extends UnitTestCase
+final class ConfirmUserEndpointFactoryTest extends UnitTestCase
 {
     public function testCreateEndpoint(): void
     {
         $userConfirmedResponse = new Response();
         $notFoundResponse = new Response();
 
-        $tokenNotFoundResponseFactory = $this->createMock(TokenNotFoundFactory::class);
+        $tokenNotFoundResponseFactory = $this->createMock(
+            TokenNotFoundFactory::class
+        );
         $tokenNotFoundResponseFactory->expects($this->once())
             ->method('getResponse')
             ->willReturn($notFoundResponse);
 
-        $userConfirmedResponseFactory = $this->createMock(UserConfirmedFactory::class);
+        $userConfirmedResponseFactory = $this->createMock(
+            UserConfirmedFactory::class
+        );
         $userConfirmedResponseFactory->expects($this->once())
             ->method('getResponse')
             ->willReturn($userConfirmedResponse);
 
-        $factory = new ConfirmUserEndpointFactory($tokenNotFoundResponseFactory, $userConfirmedResponseFactory);
+        $factory = new ConfirmUserEndpointFactory(
+            $tokenNotFoundResponseFactory,
+            $userConfirmedResponseFactory
+        );
 
         $openApi = $this->createMock(OpenApi::class);
         $paths = $this->createMock(Paths::class);

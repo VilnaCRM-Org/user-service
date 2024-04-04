@@ -15,7 +15,7 @@ use App\Shared\Application\OpenApi\Factory\Response\UserCreatedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class UserEndpointFactoryTest extends UnitTestCase
+final class UserEndpointFactoryTest extends UnitTestCase
 {
     public function testCreateEndpoint(): void
     {
@@ -24,7 +24,6 @@ class UserEndpointFactoryTest extends UnitTestCase
         $userCreatedResponseFactory = $this->createMock(UserCreatedResponseFactory::class);
 
         $validationErrorResponse = $this->createMock(Response::class);
-        $duplicateEmailResponse = $this->createMock(Response::class);
         $badRequestResponse = $this->createMock(Response::class);
         $userCreatedResponse = $this->createMock(Response::class);
 

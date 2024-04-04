@@ -17,7 +17,7 @@ use App\Shared\Application\OpenApi\Factory\Response\UserTimedOutResponseFactory;
 use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class ResendEmailEndpointFactoryTest extends UnitTestCase
+final class ResendEmailEndpointFactoryTest extends UnitTestCase
 {
     public function testCreateEndpoint(): void
     {

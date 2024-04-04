@@ -12,7 +12,7 @@ use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Tests\Unit\UnitTestCase;
 
-class ResponseBuilderTest extends UnitTestCase
+final class ResponseBuilderTest extends UnitTestCase
 {
     private ResponseBuilder $builder;
     private ContextBuilder $contextBuilderMock;
@@ -21,7 +21,9 @@ class ResponseBuilderTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->contextBuilderMock = $this->createMock(ContextBuilder::class);
+        $this->contextBuilderMock = $this->createMock(
+            ContextBuilder::class
+        );
         $this->builder = new ResponseBuilder($this->contextBuilderMock);
     }
 
@@ -57,7 +59,13 @@ class ResponseBuilderTest extends UnitTestCase
         $headerFormat = $this->faker->word();
         $headerExample = $this->faker->word();
         $headers = [
-            new Header($headerName, $headerDescription, $headerType, $headerFormat, $headerExample),
+            new Header(
+                $headerName,
+                $headerDescription,
+                $headerType,
+                $headerFormat,
+                $headerExample
+            ),
         ];
 
         $expectedContent = new \ArrayObject([
@@ -85,7 +93,9 @@ class ResponseBuilderTest extends UnitTestCase
             ),
         ]);
 
-        $contextBuilderMock = $this->createMock(ContextBuilder::class);
+        $contextBuilderMock = $this->createMock(
+            ContextBuilder::class
+        );
         $contextBuilderMock->expects($this->once())
             ->method('build')
             ->with($params)

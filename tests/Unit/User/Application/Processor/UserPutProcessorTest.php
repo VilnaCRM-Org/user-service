@@ -19,7 +19,7 @@ use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 
-class UserPutProcessorTest extends UnitTestCase
+final class UserPutProcessorTest extends UnitTestCase
 {
     private Operation $mockOperation;
     private UserFactoryInterface $userFactory;

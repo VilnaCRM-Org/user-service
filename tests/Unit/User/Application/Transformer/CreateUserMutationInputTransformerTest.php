@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\MutationInput\CreateUserMutationInput;
 use App\User\Application\Transformer\CreateUserMutationInputTransformer;
 
-class CreateUserMutationInputTransformerTest extends UnitTestCase
+final class CreateUserMutationInputTransformerTest extends UnitTestCase
 {
     public function testTransform(): void
     {

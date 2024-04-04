@@ -8,16 +8,16 @@ use App\Shared\Domain\Bus\Command\CommandInterface;
 use App\Shared\Infrastructure\Bus\Command\CommandNotRegisteredException;
 use App\Tests\Unit\UnitTestCase;
 
-class CommandNotRegisteredExceptionTest extends UnitTestCase
+final class CommandNotRegisteredExceptionTest extends UnitTestCase
 {
     public function testConstruct(): void
     {
         $command = $this->createMock(CommandInterface::class);
-        $commandClass = get_class($command);
+        $commandClass = $command::class;
 
         $exception = new CommandNotRegisteredException($command);
 
-        $expectedMessage = "The command <$commandClass> hasn't a command handler associated";
+        $expectedMessage = "The command <{$commandClass}> hasn't a command handler associated";
         $this->assertEquals($expectedMessage, $exception->getMessage());
     }
 }

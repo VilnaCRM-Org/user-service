@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Event\UserConfirmedEvent;
 
-class UserConfirmedEventTest extends UnitTestCase
+final class UserConfirmedEventTest extends UnitTestCase
 {
     public function testCreateEvent(): void
     {

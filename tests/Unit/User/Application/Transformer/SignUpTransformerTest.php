@@ -12,7 +12,7 @@ use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-class SignUpTransformerTest extends UnitTestCase
+final class SignUpTransformerTest extends UnitTestCase
 {
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;

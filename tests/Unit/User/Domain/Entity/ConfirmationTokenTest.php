@@ -10,7 +10,7 @@ use App\User\Domain\Exception\UserTimedOutException;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 
-class ConfirmationTokenTest extends UnitTestCase
+final class ConfirmationTokenTest extends UnitTestCase
 {
     private ConfirmationToken $confirmationToken;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
@@ -38,7 +38,7 @@ class ConfirmationTokenTest extends UnitTestCase
         $this->confirmationToken->send($this->confirmationToken->getAllowedToSendAfter());
     }
 
-    public function testSetTimesSend()
+    public function testSetTimesSend(): void
     {
         $num = $this->faker->numberBetween(1, 10);
         $this->confirmationToken->setTimesSent($num);
@@ -46,7 +46,7 @@ class ConfirmationTokenTest extends UnitTestCase
         $this->assertEquals($num, $this->confirmationToken->getTimesSent());
     }
 
-    public function testSetTokenValue()
+    public function testSetTokenValue(): void
     {
         $value = $this->faker->uuid();
         $this->confirmationToken->setTokenValue($value);
@@ -54,7 +54,7 @@ class ConfirmationTokenTest extends UnitTestCase
         $this->assertEquals($value, $this->confirmationToken->getTokenValue());
     }
 
-    public function testSetUserId()
+    public function testSetUserId(): void
     {
         $userId = $this->faker->uuid();
         $this->confirmationToken->setUserID($userId);
@@ -62,7 +62,7 @@ class ConfirmationTokenTest extends UnitTestCase
         $this->assertEquals($userId, $this->confirmationToken->getUserID());
     }
 
-    public function testSetAllowedToSendAfter()
+    public function testSetAllowedToSendAfter(): void
     {
         $allowedToSendAfter = new \DateTimeImmutable();
         $this->confirmationToken->setAllowedToSendAfter($allowedToSendAfter);

@@ -9,7 +9,7 @@ use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\UserConfirmedFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class UserConfirmedResponseFactoryTest extends UnitTestCase
+final class UserConfirmedResponseFactoryTest extends UnitTestCase
 {
     public function testGetResponse(): void
     {

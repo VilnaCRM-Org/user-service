@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Exception\DomainException;
 use App\User\Domain\Exception\TokenNotFoundException;
 
-class TokenNotFoundExceptionTest extends UnitTestCase
+final class TokenNotFoundExceptionTest extends UnitTestCase
 {
     public function testMessage(): void
     {

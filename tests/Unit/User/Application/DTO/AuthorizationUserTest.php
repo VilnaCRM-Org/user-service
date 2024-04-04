@@ -8,7 +8,7 @@ use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\AuthorizationUserDto;
 
-class AuthorizationUserTest extends UnitTestCase
+final class AuthorizationUserTest extends UnitTestCase
 {
     private AuthorizationUserDto $authUser;
     private UuidTransformer $transformer;

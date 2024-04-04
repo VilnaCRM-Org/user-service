@@ -9,7 +9,7 @@ use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpClient\Response\AsyncContext;
 use Symfony\Component\Messenger\Envelope;
 
-class InfiniteRetryStrategyTest extends UnitTestCase
+final class InfiniteRetryStrategyTest extends UnitTestCase
 {
     private InfiniteRetryStrategy $retryStrategy;
 

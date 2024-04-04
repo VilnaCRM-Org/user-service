@@ -10,7 +10,7 @@ use App\User\Application\Factory\ConfirmUserCommandFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 
-class ConfirmUserCommandFactoryTest extends UnitTestCase
+final class ConfirmUserCommandFactoryTest extends UnitTestCase
 {
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
 

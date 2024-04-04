@@ -14,7 +14,7 @@ use App\User\Infrastructure\Factory\EmailFactoryInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class PasswordChangedEventSubscriberTest extends UnitTestCase
+final class PasswordChangedEventSubscriberTest extends UnitTestCase
 {
     private PasswordChangedEventFactoryInterface $passwordChangedEventFactory;
     private EmailFactoryInterface $emailFactory;

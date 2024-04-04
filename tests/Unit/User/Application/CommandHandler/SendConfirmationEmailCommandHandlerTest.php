@@ -20,7 +20,7 @@ use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
+final class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
 {
     private SendConfirmationEmailCommandHandler $handler;
     private EventBusInterface $eventBus;

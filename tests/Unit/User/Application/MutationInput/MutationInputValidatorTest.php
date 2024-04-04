@@ -12,7 +12,7 @@ use Symfony\Component\Validator\ConstraintViolationInterface;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class MutationInputValidatorTest extends UnitTestCase
+final class MutationInputValidatorTest extends UnitTestCase
 {
     private ValidatorInterface $validatorMock;
 

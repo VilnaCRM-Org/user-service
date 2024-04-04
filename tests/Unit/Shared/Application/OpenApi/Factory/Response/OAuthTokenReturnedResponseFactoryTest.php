@@ -10,7 +10,7 @@ use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\OAuthTokenResponseFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class OAuthTokenReturnedResponseFactoryTest extends UnitTestCase
+final class OAuthTokenReturnedResponseFactoryTest extends UnitTestCase
 {
     public function testGetResponse(): void
     {

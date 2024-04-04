@@ -9,7 +9,7 @@ use App\Shared\Application\OpenApi\Builder\RequestBuilder;
 use App\Shared\Application\OpenApi\Factory\Request\EmptyRequestFactory;
 use App\Tests\Unit\UnitTestCase;
 
-class EmptyRequestFactoryTest extends UnitTestCase
+final class EmptyRequestFactoryTest extends UnitTestCase
 {
     private EmptyRequestFactory $factory;
     private RequestBuilder $builderMock;

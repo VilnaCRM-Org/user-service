@@ -9,7 +9,7 @@ use App\User\Application\MutationInput\UpdateUserMutationInput;
 use App\User\Application\Transformer\UpdateUserMutationInputTransformer;
 use Faker\Factory;
 
-class UpdateUserMutationInputTransformerTest extends UnitTestCase
+final class UpdateUserMutationInputTransformerTest extends UnitTestCase
 {
     protected function setUp(): void
     {
