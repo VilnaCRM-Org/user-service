@@ -181,5 +181,5 @@ final class ResendEmailMutationResolverTest extends UnitTestCase
             $this->mockConfirmationEmailFactory,
             $this->mockEmailCommandFactory
         );
-}
+    }
 }
