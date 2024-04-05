@@ -88,7 +88,7 @@ final class ResponseBuilderTest extends UnitTestCase
                 schema: [
                     'type' => $headerType,
                     'format' => $headerFormat,
-                    'example' => $headerExample
+                    'example' => $headerExample,
                 ],
             ),
         ]);

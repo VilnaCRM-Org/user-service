@@ -18,9 +18,21 @@ final class InvalidClientCredentialsResponseFactoryTest extends UnitTestCase
 
         $factory = new InvalidCredentialsFactory($responseBuilder);
 
-        $errorParam = new Parameter('error', 'string', 'invalid_client');
-        $errorDescriptionParam = new Parameter('error_description', 'string', 'Client authentication failed');
-        $messageParam = new Parameter('message', 'string', 'Client authentication failed');
+        $errorParam = new Parameter(
+            'error',
+            'string',
+            'invalid_client'
+        );
+        $errorDescriptionParam = new Parameter(
+            'error_description',
+            'string',
+            'Client authentication failed'
+        );
+        $messageParam = new Parameter(
+            'message',
+            'string',
+            'Client authentication failed'
+        );
 
         $responseBuilder->expects($this->once())
             ->method('build')

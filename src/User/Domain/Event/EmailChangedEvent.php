@@ -6,11 +6,12 @@ namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Entity\UserInterface;
 
 final class EmailChangedEvent extends DomainEvent
 {
     public function __construct(
-        public readonly User $user,
+        public readonly UserInterface $user,
         string $eventId,
         ?string $occurredOn = null
     ) {

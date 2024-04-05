@@ -27,7 +27,10 @@ final class DomainUuidTypeTest extends UnitTestCase
 
     public function testGetName(): void
     {
-        $this->assertSame('domain_uuid', $this->domainUuidType->getName());
+        $this->assertSame(
+            'domain_uuid',
+            $this->domainUuidType->getName()
+        );
     }
 
     public function testGetSQLDeclaration(): void
@@ -35,9 +38,11 @@ final class DomainUuidTypeTest extends UnitTestCase
         $platform = $this->createMock(AbstractPlatform::class);
         $expectedSqlDeclaration = $this->faker->word();
 
-        $platform->method('getGuidTypeDeclarationSQL')->willReturn($expectedSqlDeclaration);
+        $platform->method('getGuidTypeDeclarationSQL')
+            ->willReturn($expectedSqlDeclaration);
 
-        $sqlDeclaration = $this->domainUuidType->getSQLDeclaration([], $platform);
+        $sqlDeclaration =
+            $this->domainUuidType->getSQLDeclaration([], $platform);
 
         $this->assertSame($expectedSqlDeclaration, $sqlDeclaration);
     }
@@ -50,7 +55,8 @@ final class DomainUuidTypeTest extends UnitTestCase
         );
         $expectedBinaryValue = $value->toBinary();
 
-        $binaryValue = $this->domainUuidType->convertToDatabaseValue($value, $platform);
+        $binaryValue =
+            $this->domainUuidType->convertToDatabaseValue($value, $platform);
 
         $this->assertSame($expectedBinaryValue, $binaryValue);
     }
@@ -64,7 +70,8 @@ final class DomainUuidTypeTest extends UnitTestCase
         $expectedBinaryValue = $uuid->toBinary();
         $value = (string) $uuid;
 
-        $binaryValue = $this->domainUuidType->convertToDatabaseValue($value, $platform);
+        $binaryValue =
+            $this->domainUuidType->convertToDatabaseValue($value, $platform);
 
         $this->assertSame($expectedBinaryValue, $binaryValue);
     }
@@ -77,7 +84,8 @@ final class DomainUuidTypeTest extends UnitTestCase
         );
         $binaryValue = $uuid->toBinary();
 
-        $transformedUuid = $this->domainUuidType->convertToPHPValue($binaryValue, $platform);
+        $transformedUuid =
+            $this->domainUuidType->convertToPHPValue($binaryValue, $platform);
 
         $this->assertEquals($uuid, $transformedUuid);
     }

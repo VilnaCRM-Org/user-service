@@ -19,17 +19,26 @@ final class UserEndpointFactoryTest extends UnitTestCase
 {
     public function testCreateEndpoint(): void
     {
-        $validationErrorResponseFactory = $this->createMock(ValidationErrorFactory::class);
-        $badRequestResponseFactory = $this->createMock(BadRequestResponseFactory::class);
-        $userCreatedResponseFactory = $this->createMock(UserCreatedResponseFactory::class);
+        $validationErrorResponseFactory =
+            $this->createMock(ValidationErrorFactory::class);
+        $badRequestResponseFactory =
+            $this->createMock(BadRequestResponseFactory::class);
+        $userCreatedResponseFactory =
+            $this->createMock(UserCreatedResponseFactory::class);
 
         $validationErrorResponse = $this->createMock(Response::class);
         $badRequestResponse = $this->createMock(Response::class);
         $userCreatedResponse = $this->createMock(Response::class);
 
-        $validationErrorResponseFactory->expects($this->once())->method('getResponse')->willReturn($validationErrorResponse);
-        $badRequestResponseFactory->expects($this->once())->method('getResponse')->willReturn($badRequestResponse);
-        $userCreatedResponseFactory->expects($this->once())->method('getResponse')->willReturn($userCreatedResponse);
+        $validationErrorResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($validationErrorResponse);
+        $badRequestResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($badRequestResponse);
+        $userCreatedResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($userCreatedResponse);
 
         $factory = new UserEndpointFactory(
             $validationErrorResponseFactory,

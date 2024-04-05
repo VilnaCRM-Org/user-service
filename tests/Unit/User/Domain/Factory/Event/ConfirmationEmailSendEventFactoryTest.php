@@ -28,7 +28,9 @@ final class ConfirmationEmailSendEventFactoryTest extends UnitTestCase
         $this->factory = new ConfirmationEmailSendEventFactory();
         $this->userFactory = new UserFactory();
         $this->transformer = new UuidTransformer();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
     }
 
     public function testCreateEvent(): void
@@ -49,7 +51,10 @@ final class ConfirmationEmailSendEventFactoryTest extends UnitTestCase
 
         $event = $this->factory->create($token, $user, $eventId);
 
-        $this->assertInstanceOf(ConfirmationEmailSentEvent::class, $event);
+        $this->assertInstanceOf(
+            ConfirmationEmailSentEvent::class,
+            $event
+        );
         $this->assertEquals($token, $event->token);
         $this->assertEquals($user->getEmail(), $event->emailAddress);
     }

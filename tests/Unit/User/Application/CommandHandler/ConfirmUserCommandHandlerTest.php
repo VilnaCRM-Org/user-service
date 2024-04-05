@@ -56,7 +56,9 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
         $this->uuidTransformer = new UuidTransformer();
         $this->userFactory = new UserFactory();
         $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
 
         $this->handler = new ConfirmUserCommandHandler(
             $this->userRepository,
@@ -71,7 +73,8 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
         $email = $this->faker->email();
         $name = $this->faker->name();
         $password = $this->faker->password();
-        $userId = $this->uuidTransformer->transformFromString($this->faker->uuid());
+        $userId =
+            $this->uuidTransformer->transformFromString($this->faker->uuid());
 
         $user = $this->userFactory->create($email, $name, $password, $userId);
         $token = $this->confirmationTokenFactory->create($user->getId());

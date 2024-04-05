@@ -29,17 +29,23 @@ final class RedisTokenRepositoryTest extends UnitTestCase
         parent::setUp();
 
         $this->cache = $this->createMock(RedisAdapter::class);
-        $this->serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
-        $this->mockSerializer = $this->createMock(SerializerInterface::class);
-        $this->repository = new RedisTokenRepository($this->cache, $this->mockSerializer);
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
+        $this->serializer =
+            new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
+        $this->mockSerializer =
+            $this->createMock(SerializerInterface::class);
+        $this->repository =
+            new RedisTokenRepository($this->cache, $this->mockSerializer);
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
     }
 
     public function testSave(): void
     {
         $userId = $this->faker->uuid();
         $token = $this->confirmationTokenFactory->create($userId);
-        $serializedToken = $this->serializer->serialize($token, JsonEncoder::FORMAT);
+        $serializedToken =
+            $this->serializer->serialize($token, JsonEncoder::FORMAT);
 
         $this->cache->expects($this->exactly(2))
             ->method('getItem');

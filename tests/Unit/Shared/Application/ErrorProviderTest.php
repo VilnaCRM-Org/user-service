@@ -30,12 +30,16 @@ final class ErrorProviderTest extends UnitTestCase
     {
         $operation = $this->createMock(HttpOperation::class);
         $status = $this->faker->numberBetween(200, 499);
-        $operation->expects($this->once())->
-        method('getStatus')->willReturn($status);
+        $operation->expects($this->once())->method(
+            'getStatus'
+        )->willReturn($status);
 
         $errorText = $this->faker->word();
 
-        $exception = new HttpException(Response::HTTP_INTERNAL_SERVER_ERROR, $errorText);
+        $exception = new HttpException(
+            Response::HTTP_INTERNAL_SERVER_ERROR,
+            $errorText
+        );
         $request = new Request();
         $request->attributes->set('exception', $exception);
         $context = ['request' => $request];
@@ -65,7 +69,10 @@ final class ErrorProviderTest extends UnitTestCase
 
         $errorText = $this->faker->word();
 
-        $exception = new HttpException(Response::HTTP_INTERNAL_SERVER_ERROR, $this->faker->word());
+        $exception = new HttpException(
+            Response::HTTP_INTERNAL_SERVER_ERROR,
+            $this->faker->word()
+        );
         $request = new Request();
         $request->attributes->set('exception', $exception);
         $context = ['request' => $request];
@@ -81,7 +88,10 @@ final class ErrorProviderTest extends UnitTestCase
 
         $this->assertInstanceOf(Error::class, $error);
 
-        $this->assertEquals(Response::HTTP_INTERNAL_SERVER_ERROR, $error->getStatusCode());
+        $this->assertEquals(
+            Response::HTTP_INTERNAL_SERVER_ERROR,
+            $error->getStatusCode()
+        );
 
         $this->assertEquals($errorText, $error->getDetail());
     }
@@ -175,7 +185,10 @@ final class ErrorProviderTest extends UnitTestCase
         $operation = $this->createMock(HttpOperation::class);
         $errorText = $this->faker->word();
 
-        $exception = new HttpException(Response::HTTP_INTERNAL_SERVER_ERROR, $this->faker->word());
+        $exception = new HttpException(
+            Response::HTTP_INTERNAL_SERVER_ERROR,
+            $this->faker->word()
+        );
 
         $request = Request::create('graphql');
 

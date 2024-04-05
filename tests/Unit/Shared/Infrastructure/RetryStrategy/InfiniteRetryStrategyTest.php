@@ -27,7 +27,13 @@ final class InfiniteRetryStrategyTest extends UnitTestCase
         $responseContent = null;
         $exception = null;
 
-        $this->assertTrue($this->retryStrategy->shouldRetry($context, $responseContent, $exception));
+        $this->assertTrue(
+            $this->retryStrategy->shouldRetry(
+                $context,
+                $responseContent,
+                $exception
+            )
+        );
     }
 
     public function testGetDelay(): void
@@ -37,7 +43,14 @@ final class InfiniteRetryStrategyTest extends UnitTestCase
         $responseContent = null;
         $exception = null;
 
-        $this->assertSame(60000, $this->retryStrategy->getDelay($context, $responseContent, $exception));
+        $this->assertSame(
+            60000,
+            $this->retryStrategy->getDelay(
+                $context,
+                $responseContent,
+                $exception
+            )
+        );
     }
 
     public function testIsRetryable(): void
@@ -51,6 +64,9 @@ final class InfiniteRetryStrategyTest extends UnitTestCase
     {
         $message = $this->createMock(Envelope::class);
 
-        $this->assertSame(60000, $this->retryStrategy->getWaitingTime($message));
+        $this->assertSame(
+            60000,
+            $this->retryStrategy->getWaitingTime($message)
+        );
     }
 }

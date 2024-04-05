@@ -28,9 +28,12 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->registry = $this->createMock(ManagerRegistry::class);
-        $this->userRepository = new MariaDBUserRepository($this->entityManager, $this->registry);
+        $this->entityManager =
+            $this->createMock(EntityManagerInterface::class);
+        $this->registry =
+            $this->createMock(ManagerRegistry::class);
+        $this->userRepository =
+            new MariaDBUserRepository($this->entityManager, $this->registry);
         $this->userFactory = new UserFactory();
         $this->transformer = new UuidTransformer();
     }
@@ -53,7 +56,9 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
 
         $this->entityManager->expects($this->once())
             ->method('getClassMetadata')
-            ->willReturn($this->createMock(ClassMetadata::class));
+            ->willReturn(
+                $this->createMock(ClassMetadata::class)
+            );
         $this->entityManager->expects($this->once())
             ->method('getUnitOfWork')
             ->willReturn($unitOfWork);

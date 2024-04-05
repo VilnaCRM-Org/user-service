@@ -25,8 +25,10 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->messageBusFactory = $this->createMock(MessageBusFactory::class);
-        $this->commandHandlers = [$this->createMock(CommandInterface::class)];
+        $this->messageBusFactory =
+            $this->createMock(MessageBusFactory::class);
+        $this->commandHandlers =
+            [$this->createMock(CommandInterface::class)];
     }
 
     public function testDispatchWithNoHandlerForMessageException(): void
@@ -36,8 +38,12 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
         $messageBus->expects($this->once())
             ->method('dispatch')
             ->willThrowException(new NoHandlerForMessageException());
-        $this->messageBusFactory->method('create')->willReturn($messageBus);
-        $commandBus = new InMemorySymfonyCommandBus($this->messageBusFactory, $this->commandHandlers);
+        $this->messageBusFactory->method('create')
+            ->willReturn($messageBus);
+        $commandBus = new InMemorySymfonyCommandBus(
+            $this->messageBusFactory,
+            $this->commandHandlers
+        );
 
         $this->expectException(CommandNotRegisteredException::class);
 
@@ -50,9 +56,15 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
         $messageBus = $this->createMock(MessageBus::class);
         $messageBus->expects($this->once())
             ->method('dispatch')
-            ->willThrowException($this->createMock(HandlerFailedException::class));
-        $this->messageBusFactory->method('create')->willReturn($messageBus);
-        $commandBus = new InMemorySymfonyCommandBus($this->messageBusFactory, $this->commandHandlers);
+            ->willThrowException(
+                $this->createMock(HandlerFailedException::class)
+            );
+        $this->messageBusFactory->method('create')
+            ->willReturn($messageBus);
+        $commandBus = new InMemorySymfonyCommandBus(
+            $this->messageBusFactory,
+            $this->commandHandlers
+        );
 
         $this->expectException(HandlerFailedException::class);
 
@@ -66,8 +78,12 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
         $messageBus->expects($this->once())
             ->method('dispatch')
             ->willThrowException(new \RuntimeException());
-        $this->messageBusFactory->method('create')->willReturn($messageBus);
-        $commandBus = new InMemorySymfonyCommandBus($this->messageBusFactory, $this->commandHandlers);
+        $this->messageBusFactory->method('create')
+            ->willReturn($messageBus);
+        $commandBus = new InMemorySymfonyCommandBus(
+            $this->messageBusFactory,
+            $this->commandHandlers
+        );
 
         $this->expectException(\RuntimeException::class);
 

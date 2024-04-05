@@ -29,7 +29,8 @@ final class RegisterUserProcessorTest extends UnitTestCase
         parent::setUp();
 
         $this->signUpCommandFactory = new SignUpCommandFactory();
-        $this->mockOperation = $this->createMock(Operation::class);
+        $this->mockOperation =
+            $this->createMock(Operation::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
     }
@@ -37,7 +38,9 @@ final class RegisterUserProcessorTest extends UnitTestCase
     public function testProcess(): void
     {
         $commandBus = $this->createMock(CommandBusInterface::class);
-        $mockSignUpCommandFactory = $this->createMock(SignUpCommandFactoryInterface::class);
+        $mockSignUpCommandFactory = $this->createMock(
+            SignUpCommandFactoryInterface::class
+        );
 
         $processor = new RegisterUserProcessor(
             $commandBus,
@@ -50,14 +53,17 @@ final class RegisterUserProcessorTest extends UnitTestCase
 
         $userRegisterDto = new UserRegisterDto($email, $initials, $password);
 
-        $signUpCommand = $this->signUpCommandFactory->create($email, $initials, $password);
+        $signUpCommand =
+            $this->signUpCommandFactory->create($email, $initials, $password);
         $createdUser = $this->userFactory->create(
             $email,
             $initials,
             $password,
             $this->uuidTransformer->transformFromString($this->faker->uuid())
         );
-        $signUpCommand->setResponse(new RegisterUserCommandResponse($createdUser));
+        $signUpCommand->setResponse(
+            new RegisterUserCommandResponse($createdUser)
+        );
 
         $mockSignUpCommandFactory->expects($this->once())
             ->method('create')
@@ -72,7 +78,8 @@ final class RegisterUserProcessorTest extends UnitTestCase
             ->method('dispatch')
             ->with($signUpCommand);
 
-        $returnedUser = $processor->process($userRegisterDto, $this->mockOperation);
+        $returnedUser =
+            $processor->process($userRegisterDto, $this->mockOperation);
 
         $this->assertInstanceOf(User::class, $returnedUser);
         $this->assertEquals($email, $returnedUser->getEmail());

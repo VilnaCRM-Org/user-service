@@ -18,10 +18,26 @@ final class BadRequestResponseFactoryTest extends UnitTestCase
 
         $factory = new BadRequestResponseFactory($responseBuilder);
 
-        $typeParam = new Parameter('type', 'string', 'https://tools.ietf.org/html/rfc2616#section-10');
-        $titleParam = new Parameter('title', 'string', 'An error occurred');
-        $detailParam = new Parameter('detail', 'string', 'The input data is misformatted.');
-        $statusParam = new Parameter('status', 'integer', 400);
+        $typeParam = new Parameter(
+            'type',
+            'string',
+            'https://tools.ietf.org/html/rfc2616#section-10'
+        );
+        $titleParam = new Parameter(
+            'title',
+            'string',
+            'An error occurred'
+        );
+        $detailParam = new Parameter(
+            'detail',
+            'string',
+            'The input data is misformatted.'
+        );
+        $statusParam = new Parameter(
+            'status',
+            'integer',
+            400
+        );
 
         $responseBuilder->expects($this->once())
             ->method('build')

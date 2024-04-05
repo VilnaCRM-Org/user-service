@@ -40,7 +40,10 @@ final class UserRegisteredEventTest extends UnitTestCase
 
     public function testEventName(): void
     {
-        $this->assertEquals('user.registered', UserRegisteredEvent::eventName());
+        $this->assertEquals(
+            'user.registered',
+            UserRegisteredEvent::eventName()
+        );
     }
 
     public function testOccurredOn(): void

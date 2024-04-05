@@ -20,29 +20,29 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
 
         $template = $this->faker->word();
         $args = [];
-        $this->previousException = new class($template, $args) extends DomainException {
-            /**
-             * @param array<string> $args
-             */
-            public function __construct(
-                private string $template,
-                private array $args
-            ) {
-                parent::__construct();
-            }
+        $this->previousException =
+            new class($template, $args) extends DomainException {
+                /**
+                 * @param array<string> $args
+                 */
+                public function __construct(
+                    private string $template,
+                    private array $args
+                ) {
+                    parent::__construct();
+                }
 
-            public function getTranslationTemplate(): string
-            {
-                return $this->template;
-            }
+                public function getTranslationTemplate(): string
+                {
+                    return $this->template;
+                }
 
-            public function getTranslationArgs(): array
-            {
-                return $this->args;
-            }
-        };
+                public function getTranslationArgs(): array
+                {
+                    return $this->args;
+                }
+            };
     }
-
 
     public function testNormalize(): void
     {
@@ -53,14 +53,20 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
             ->method('trans')
             ->willReturn($errorText);
 
-        $graphqlError = new Error(message: $errorText, previous: $this->previousException);
+        $graphqlError = new Error(
+            message: $errorText,
+            previous: $this->previousException
+        );
 
         $normalizer = new DomainExceptionNormalizer($translator);
 
         $normalizedError = $normalizer->normalize($graphqlError);
 
         $this->assertEquals($errorText, $normalizedError['message']);
-        $this->assertEquals('internal', $normalizedError['extensions']['category']);
+        $this->assertEquals(
+            'internal',
+            $normalizedError['extensions']['category']
+        );
     }
 
     public function testSupportsNormalizationWithoutPrevious(): void
@@ -68,9 +74,12 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
         $errorText = $this->faker->word();
         $graphqlError = new Error($errorText);
 
-        $normalizer = new DomainExceptionNormalizer($this->createMock(TranslatorInterface::class));
+        $normalizer = new DomainExceptionNormalizer(
+            $this->createMock(TranslatorInterface::class)
+        );
 
-        $supportsNormalization = $normalizer->supportsNormalization($graphqlError);
+        $supportsNormalization =
+            $normalizer->supportsNormalization($graphqlError);
 
         $this->assertFalse($supportsNormalization);
     }
@@ -79,15 +88,20 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
     {
         $errorText = $this->faker->word();
 
-        $graphqlError = new Error(message: $errorText, previous: $this->previousException);
+        $graphqlError = new Error(
+            message: $errorText,
+            previous: $this->previousException
+        );
 
-        $normalizer = new DomainExceptionNormalizer($this->createMock(TranslatorInterface::class));
+        $normalizer = new DomainExceptionNormalizer(
+            $this->createMock(TranslatorInterface::class)
+        );
 
-        $supportsNormalization = $normalizer->supportsNormalization($graphqlError);
+        $supportsNormalization =
+            $normalizer->supportsNormalization($graphqlError);
 
         $this->assertTrue($supportsNormalization);
     }
-
 
     public function testSupportsNormalizationWithWrongType(): void
     {
@@ -98,7 +112,9 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
             previous: $this->previousException,
         );
 
-        $normalizer = new DomainExceptionNormalizer($this->createMock(TranslatorInterface::class));
+        $normalizer = new DomainExceptionNormalizer(
+            $this->createMock(TranslatorInterface::class)
+        );
 
         $supportsNormalization = $normalizer->supportsNormalization($error);
 

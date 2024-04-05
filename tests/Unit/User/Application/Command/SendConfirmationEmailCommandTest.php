@@ -12,11 +12,15 @@ final class SendConfirmationEmailCommandTest extends UnitTestCase
 {
     public function testConstructor(): void
     {
-        $confirmationEmail = $this->createMock(ConfirmationEmailInterface::class);
+        $confirmationEmail =
+            $this->createMock(ConfirmationEmailInterface::class);
 
         $command = new SendConfirmationEmailCommand($confirmationEmail);
 
-        $this->assertInstanceOf(SendConfirmationEmailCommand::class, $command);
+        $this->assertInstanceOf(
+            SendConfirmationEmailCommand::class,
+            $command
+        );
         $this->assertSame($confirmationEmail, $command->confirmationEmail);
     }
 }

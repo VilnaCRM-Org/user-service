@@ -1,6 +1,6 @@
 import {check} from 'k6';
 
-export class Utils{
+export class Utils {
     constructor() {
         const host = this.getConfig().apiHost;
 
@@ -10,8 +10,12 @@ export class Utils{
         this.graphQLIdPrefix = '/api/users/';
     }
 
-    getConfig(){
-        return JSON.parse(open('config.json'));
+    getConfig() {
+        try {
+            return JSON.parse(open('config.json'));
+        } catch (error) {
+            return JSON.parse(open('config.json.dist'));
+        }
     }
 
     getBaseUrl() {
@@ -26,7 +30,7 @@ export class Utils{
         return this.baseGraphQLUrl;
     }
 
-    getGraphQLIdPrefix(){
+    getGraphQLIdPrefix() {
         return this.graphQLIdPrefix;
     }
 
@@ -50,11 +54,11 @@ export class Utils{
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    getCLIVariable(variable){
+    getCLIVariable(variable) {
         return `${__ENV[variable]}`
     }
 
-    checkUserIsDefined(user){
+    checkUserIsDefined(user) {
         check(user, {
             'user is defined': (u) =>
                 u !== undefined,

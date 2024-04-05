@@ -14,19 +14,24 @@ final class InvalidPasswordExceptionTest extends UnitTestCase
     {
         $exception = new InvalidPasswordException();
 
-        $this->assertEquals('Old password is invalid', $exception->getMessage());
+        $this->assertEquals(
+            'Old password is invalid',
+            $exception->getMessage()
+        );
     }
 
     public function testGetTranslationTemplate(): void
     {
         $exception = new InvalidPasswordException();
 
-        $this->assertEquals('error.invalid-password', $exception->getTranslationTemplate());
+        $this->assertEquals(
+            'error.invalid-password',
+            $exception->getTranslationTemplate()
+        );
     }
 
     public function testGetTranslationArgs(): void
     {
-
         $exception = new InvalidPasswordException();
 
         $this->assertEquals([], $exception->getTranslationArgs());
@@ -34,6 +39,8 @@ final class InvalidPasswordExceptionTest extends UnitTestCase
 
     public function testExtendsRuntimeException(): void
     {
-        $this->assertTrue((new InvalidPasswordException()) instanceof DomainException);
+        $this->assertTrue(
+            (new InvalidPasswordException()) instanceof DomainException
+        );
     }
 }

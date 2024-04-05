@@ -19,13 +19,16 @@ final class MutationInputValidatorTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->validatorMock = $this->createMock(ValidatorInterface::class);
+        $this->validatorMock =
+            $this->createMock(ValidatorInterface::class);
     }
 
     public function testValidateWithNoErrors(): void
     {
         $input = $this->createMock(MutationInput::class);
-        $this->validatorMock->expects($this->once())->method('validate')->willReturn(new ConstraintViolationList());
+        $this->validatorMock->expects($this->once())
+            ->method('validate')
+            ->willReturn(new ConstraintViolationList());
 
         $validator = new MutationInputValidator($this->validatorMock);
 
@@ -41,7 +44,9 @@ final class MutationInputValidatorTest extends UnitTestCase
         $errors = new ConstraintViolationList([
             $this->createMock(ConstraintViolationInterface::class),
         ]);
-        $this->validatorMock->expects($this->once())->method('validate')->willReturn($errors);
+        $this->validatorMock->expects($this->once())
+            ->method('validate')
+            ->willReturn($errors);
 
         $validator = new MutationInputValidator($this->validatorMock);
 

@@ -18,10 +18,26 @@ final class InternalServerErrorResponseFactoryTest extends UnitTestCase
 
         $factory = new InternalErrorFactory($responseBuilder);
 
-        $typeParam = new Parameter('type', 'string', '/errors/500');
-        $titleParam = new Parameter('title', 'string', 'An error occurred');
-        $detailParam = new Parameter('detail', 'string', 'Something went wrong');
-        $statusParam = new Parameter('status', 'integer', 500);
+        $typeParam = new Parameter(
+            'type',
+            'string',
+            '/errors/500'
+        );
+        $titleParam = new Parameter(
+            'title',
+            'string',
+            'An error occurred'
+        );
+        $detailParam = new Parameter(
+            'detail',
+            'string',
+            'Something went wrong'
+        );
+        $statusParam = new Parameter(
+            'status',
+            'integer',
+            500
+        );
 
         $responseBuilder->expects($this->once())
             ->method('build')

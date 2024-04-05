@@ -21,12 +21,14 @@ final class UserNotFoundExceptionTest extends UnitTestCase
     {
         $exception = new UserNotFoundException();
 
-        $this->assertEquals('error.user-not-found', $exception->getTranslationTemplate());
+        $this->assertEquals(
+            'error.user-not-found',
+            $exception->getTranslationTemplate()
+        );
     }
 
     public function testGetTranslationArgs(): void
     {
-
         $exception = new UserNotFoundException();
 
         $this->assertEquals([], $exception->getTranslationArgs());
@@ -34,6 +36,8 @@ final class UserNotFoundExceptionTest extends UnitTestCase
 
     public function testExtendsRuntimeException(): void
     {
-        $this->assertTrue((new UserNotFoundException()) instanceof DomainException);
+        $this->assertTrue(
+            (new UserNotFoundException()) instanceof DomainException
+        );
     }
 }

@@ -2,7 +2,7 @@
     "apiHost": "localhost",
     "mailCatcherPort": "1080",
     "batchSize": 50,
-    "autoDetermineUsersToInsert": false,
+    "autoDetermineUsersToInsert": true,
     "usersToInsert": 20,
     "delayBetweenScenarios": 30,
     "gettingEmailMaxRetries": 50,

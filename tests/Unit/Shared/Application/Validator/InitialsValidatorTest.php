@@ -31,7 +31,8 @@ final class InitialsValidatorTest extends UnitTestCase
 
     public function testValidValue(): void
     {
-        $this->context->expects($this->never())->method('buildViolation');
+        $this->context->expects($this->never())
+            ->method('buildViolation');
         $this->validator->validate(
             $this->faker->firstName() . ' ' . $this->faker->lastName(),
             $this->constraint
@@ -43,7 +44,8 @@ final class InitialsValidatorTest extends UnitTestCase
         $this->constraint->expects($this->once())
             ->method('isOptional')
             ->willReturn(true);
-        $this->context->expects($this->never())->method('buildViolation');
+        $this->context->expects($this->never())
+            ->method('buildViolation');
         $this->validator->validate(
             '',
             $this->constraint
@@ -52,7 +54,8 @@ final class InitialsValidatorTest extends UnitTestCase
 
     public function testOptionalDefaultValue(): void
     {
-        $this->context->expects($this->atLeast(1))->method('buildViolation');
+        $this->context->expects($this->atLeast(1))
+            ->method('buildViolation');
         $this->validator->validate(
             '',
             new Initials()
@@ -61,7 +64,9 @@ final class InitialsValidatorTest extends UnitTestCase
 
     public function testInvalidFormat(): void
     {
-        $constraintViolationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
+        $constraintViolationBuilder = $this->createMock(
+            ConstraintViolationBuilderInterface::class
+        );
         $error = $this->faker->word();
         $this->translator->method('trans')
             ->with('initials.invalid.format')
@@ -70,26 +75,33 @@ final class InitialsValidatorTest extends UnitTestCase
             ->method('buildViolation')
             ->with($error)
             ->willReturn($constraintViolationBuilder);
-        $constraintViolationBuilder->expects($this->once())->method('addViolation');
+        $constraintViolationBuilder->expects($this->once())
+            ->method('addViolation');
 
         $this->validator->validate(
-            $this->faker->firstName() . ' ' . $this->faker->numberBetween(1, 100),
+            (string) $this->faker->numberBetween(1, 100),
             $this->constraint
         );
     }
 
-    public function testEmptyParts(): void
+    public function testSpecialCharacters(): void
     {
-        $constraintViolationBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
+        $constraintViolationBuilder = $this->createMock(
+            ConstraintViolationBuilderInterface::class
+        );
         $error = $this->faker->word();
         $this->translator->method('trans')
-            ->with('initials.invalid.parts')
+            ->with('initials.invalid.characters')
             ->willReturn($error);
         $this->context->method('buildViolation')
             ->with($error)
             ->willReturn($constraintViolationBuilder);
-        $constraintViolationBuilder->expects($this->once())->method('addViolation');
+        $constraintViolationBuilder->expects($this->once())
+            ->method('addViolation');
 
-        $this->validator->validate($this->faker->firstName() . ' ', $this->constraint);
+        $this->validator->validate(
+            $this->faker->firstName() . ' ' . $this->faker->lastName . '?',
+            $this->constraint
+        );
     }
 }

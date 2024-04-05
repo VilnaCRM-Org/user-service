@@ -38,7 +38,8 @@ final class UserTransformerTest extends UnitTestCase
             $this->transformer->transformFromString($uuid)
         );
 
-        $uuidTransformerMock = $this->createMock(UuidTransformer::class);
+        $uuidTransformerMock =
+            $this->createMock(UuidTransformer::class);
         $uuidTransformerMock->expects($this->once())
             ->method('transformFromString')
             ->with($uuid)
@@ -47,6 +48,9 @@ final class UserTransformerTest extends UnitTestCase
         $transformer = new UserTransformer($uuidTransformerMock);
         $authorizationUser = $transformer->transformToAuthorizationUser($user);
 
-        $this->assertInstanceOf(AuthorizationUserDto::class, $authorizationUser);
+        $this->assertInstanceOf(
+            AuthorizationUserDto::class,
+            $authorizationUser
+        );
     }
 }

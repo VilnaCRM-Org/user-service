@@ -20,6 +20,9 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
     public function testExtractForCallables(): void
     {
         $subscriber = new class() implements DomainEventSubscriberInterface {
+            /**
+             * @return array<string>
+             */
             public static function subscribedTo(): array
             {
                 return ['MyEvent'];
@@ -42,6 +45,9 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
     public function testExtractForPipedCallables(): void
     {
         $subscriber1 = new class() implements DomainEventSubscriberInterface {
+            /**
+             * @return array<string>
+             */
             public static function subscribedTo(): array
             {
                 return ['MyEvent1'];
@@ -53,6 +59,9 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
         };
 
         $subscriber2 = new class() implements DomainEventSubscriberInterface {
+            /**
+             * @return array<string>
+             */
             public static function subscribedTo(): array
             {
                 return ['MyEvent2'];
@@ -77,34 +86,42 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
 
     public function testExtract(): void
     {
-        $subscriberClass = new class() implements DomainEventSubscriberInterface {
-            public static function subscribedTo(): array
-            {
-                return ['ClassAbstract'];
-            }
+        $subscriberClass =
+            new class() implements DomainEventSubscriberInterface {
+                /**
+                 * @return array<string>
+                 */
+                public static function subscribedTo(): array
+                {
+                    return [\AbstractClass::class];
+                }
 
-            public function __invoke(\ClassAbstract $someClass): void
-            {
-            }
-        };
+                public function __invoke(\AbstractClass $someClass): void
+                {
+                }
+            };
 
         $extracted = $this->extractor->extract($subscriberClass);
 
-        $this->assertEquals('ClassAbstract', $extracted);
+        $this->assertEquals(\AbstractClass::class, $extracted);
     }
 
     public function testExtractWithError(): void
     {
-        $subscriberClass = new class() implements DomainEventSubscriberInterface {
-            public static function subscribedTo(): array
-            {
-                return ['MyEvent'];
-            }
+        $subscriberClass =
+            new class() implements DomainEventSubscriberInterface {
+                /**
+                 * @return array<string>
+                 */
+                public static function subscribedTo(): array
+                {
+                    return ['MyEvent'];
+                }
 
-            public function __invoke($someClass): void
-            {
-            }
-        };
+                public function __invoke($someClass): void
+                {
+                }
+            };
 
         $this->expectException(\LogicException::class);
 

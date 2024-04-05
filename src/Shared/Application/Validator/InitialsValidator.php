@@ -23,8 +23,8 @@ final class InitialsValidator extends ConstraintValidator
             return;
         }
 
+        $this->validateSpecialCharacters($value);
         $this->validateFormat($value);
-        $this->validateParts($value);
     }
 
     private function isEmpty(mixed $value): bool
@@ -39,32 +39,20 @@ final class InitialsValidator extends ConstraintValidator
 
     private function validateFormat(mixed $value): void
     {
-        if (!preg_match('/^\D*$/', $value)) {
+        if (!preg_match('/^[^\d\s]+(\s[^\d\s]+)+$/', $value)) {
             $this->addViolation(
                 $this->translator->trans('initials.invalid.format')
             );
         }
     }
 
-    private function validateParts(mixed $value): void
+    private function validateSpecialCharacters(mixed $value): void
     {
-        if ($this->hasEmptyParts($value)) {
+        if (preg_match('/[!@#$%^&*(),.?":{}|<>]/', $value)) {
             $this->addViolation(
-                $this->translator->trans('initials.invalid.parts')
+                $this->translator->trans('initials.invalid.characters')
             );
         }
-    }
-
-    private function hasEmptyParts(mixed $value): bool
-    {
-        $nameParts = explode(' ', $value);
-        foreach ($nameParts as $part) {
-            if (strlen($part) === 0) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private function addViolation(string $message): void

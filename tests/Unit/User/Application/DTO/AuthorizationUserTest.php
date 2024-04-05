@@ -26,7 +26,13 @@ final class AuthorizationUserTest extends UnitTestCase
         $uuid = $this->transformer->transformFromString($this->faker->uuid());
         $confirmed = true;
 
-        $this->authUser = new AuthorizationUserDto($this->email, $initials, $password, $uuid, $confirmed);
+        $this->authUser = new AuthorizationUserDto(
+            $this->email,
+            $initials,
+            $password,
+            $uuid,
+            $confirmed
+        );
     }
 
     public function testGetRoles(): void

@@ -17,7 +17,8 @@ final class CommandNotRegisteredExceptionTest extends UnitTestCase
 
         $exception = new CommandNotRegisteredException($command);
 
-        $expectedMessage = "The command <{$commandClass}> hasn't a command handler associated";
+        $expectedMessage =
+            "The command <{$commandClass}> hasn't a command handler associated";
         $this->assertEquals($expectedMessage, $exception->getMessage());
     }
 }

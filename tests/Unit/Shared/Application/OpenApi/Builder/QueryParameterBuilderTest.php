@@ -52,7 +52,13 @@ final class QueryParameterBuilderTest extends UnitTestCase
         $example = $this->faker->word();
         $type = $this->faker->word();
 
-        $parameter = $this->builder->build($name, $description, $required, $example, $type);
+        $parameter = $this->builder->build(
+            $name,
+            $description,
+            $required,
+            $example,
+            $type
+        );
 
         $this->assertFalse($parameter->getRequired());
     }

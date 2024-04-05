@@ -40,11 +40,17 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         parent::setUp();
 
         $this->eventBus = $this->createMock(EventBusInterface::class);
-        $this->hasherFactory = $this->createMock(PasswordHasherFactoryInterface::class);
-        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->hasherFactory =
+            $this->createMock(PasswordHasherFactoryInterface::class);
+        $this->userRepository =
+            $this->createMock(UserRepositoryInterface::class);
         $this->uuidFactory = $this->createMock(UuidFactory::class);
-        $this->emailChangedEventFactory = $this->createMock(EmailChangedEventFactoryInterface::class);
-        $this->passwordChangedFactory = $this->createMock(PasswordChangedEventFactoryInterface::class);
+        $this->emailChangedEventFactory = $this->createMock(
+            EmailChangedEventFactoryInterface::class
+        );
+        $this->passwordChangedFactory = $this->createMock(
+            PasswordChangedEventFactoryInterface::class
+        );
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
         $this->updateUserCommandFactory = new UpdateUserCommandFactory();
@@ -64,9 +70,11 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         $email = $this->faker->email();
         $initials = $this->faker->firstName() . ' ' . $this->faker->lastName();
         $password = $this->faker->password();
-        $userId = $this->uuidTransformer->transformFromString($this->faker->uuid());
+        $userId =
+            $this->uuidTransformer->transformFromString($this->faker->uuid());
 
-        $user = $this->userFactory->create($email, $initials, $password, $userId);
+        $user =
+            $this->userFactory->create($email, $initials, $password, $userId);
 
         $oldPassword = $this->faker->password();
         $newPassword = $this->faker->password();
@@ -83,7 +91,8 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
             ->method('create')
             ->willReturn(new SymfonyUuid($this->faker->uuid()));
 
-        $hasher = $this->createMock(PasswordHasherInterface::class);
+        $hasher =
+            $this->createMock(PasswordHasherInterface::class);
         $hasher->expects($this->once())
             ->method('verify')
             ->willReturn(true);
@@ -112,9 +121,11 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         $email = $this->faker->email();
         $initials = $this->faker->firstName() . ' ' . $this->faker->lastName();
         $password = $this->faker->password();
-        $userId = $this->uuidTransformer->transformFromString($this->faker->uuid());
+        $userId =
+            $this->uuidTransformer->transformFromString($this->faker->uuid());
 
-        $user = $this->userFactory->create($email, $initials, $password, $userId);
+        $user =
+            $this->userFactory->create($email, $initials, $password, $userId);
 
         $oldPassword = $this->faker->password();
         $newPassword = $this->faker->password();
@@ -127,7 +138,8 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
 
         $command = $this->updateUserCommandFactory->create($user, $updateData);
 
-        $hasher = $this->createMock(PasswordHasherInterface::class);
+        $hasher =
+            $this->createMock(PasswordHasherInterface::class);
         $hasher->expects($this->once())
             ->method('verify')
             ->willReturn(false);

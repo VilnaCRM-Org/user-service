@@ -36,15 +36,18 @@ final class SignUpCommandHandlerTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->hasherFactory = $this->createMock(PasswordHasherFactoryInterface::class);
-        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->hasherFactory =
+            $this->createMock(PasswordHasherFactoryInterface::class);
+        $this->userRepository =
+            $this->createMock(UserRepositoryInterface::class);
         $this->transformer = $this->createMock(SignUpTransformer::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->uuidFactory = new UuidFactory();
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
         $this->signUpCommandFactory = new SignUpCommandFactory();
-        $this->registeredEventFactory = $this->createMock(UserRegisteredEventFactoryInterface::class);
+        $this->registeredEventFactory =
+            $this->createMock(UserRegisteredEventFactoryInterface::class);
 
         $this->handler = new RegisterUserCommandHandler(
             $this->hasherFactory,
@@ -59,19 +62,24 @@ final class SignUpCommandHandlerTest extends UnitTestCase
     public function testInvoke(): void
     {
         $email = $this->faker->email();
-        $initials = $this->faker->firstName() . ' ' . $this->faker->lastName();
+        $initials =
+            $this->faker->firstName() . ' ' . $this->faker->lastName();
         $password = $this->faker->password();
-        $userId = $this->uuidTransformer->transformFromString($this->faker->uuid());
+        $userId =
+            $this->uuidTransformer->transformFromString($this->faker->uuid());
 
-        $user = $this->userFactory->create($email, $initials, $password, $userId);
+        $user =
+            $this->userFactory->create($email, $initials, $password, $userId);
 
-        $command = $this->signUpCommandFactory->create($email, $initials, $password);
+        $command =
+            $this->signUpCommandFactory->create($email, $initials, $password);
 
         $this->transformer->expects($this->once())
             ->method('transformToUser')
             ->willReturn($user);
 
-        $hasher = $this->createMock(PasswordHasherInterface::class);
+        $hasher =
+            $this->createMock(PasswordHasherInterface::class);
         $hasher->expects($this->once())
             ->method('hash')
             ->willReturn($this->faker->password());

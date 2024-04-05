@@ -18,7 +18,6 @@ final class EmailChangedEventFactoryTest extends UnitTestCase
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;
 
-
     protected function setUp(): void
     {
         parent::setUp();

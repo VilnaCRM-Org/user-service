@@ -27,17 +27,21 @@ final class ConfirmUserProcessorTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
         $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
-        $this->mockOperation = $this->createMock(Operation::class);
+        $this->mockOperation =
+            $this->createMock(Operation::class);
     }
 
     public function testProcess(): void
     {
-
         $tokenRepository = $this->createMock(TokenRepositoryInterface::class);
         $commandBus = $this->createMock(CommandBusInterface::class);
-        $confirmUserCommandFactory = $this->createMock(ConfirmUserCommandFactoryInterface::class);
+        $confirmUserCommandFactory = $this->createMock(
+            ConfirmUserCommandFactoryInterface::class
+        );
 
         $processor = new ConfirmUserProcessor(
             $tokenRepository,
@@ -72,7 +76,9 @@ final class ConfirmUserProcessorTest extends UnitTestCase
     {
         $tokenRepository = $this->createMock(TokenRepositoryInterface::class);
         $commandBus = $this->createMock(CommandBusInterface::class);
-        $confirmUserCommandFactory = $this->createMock(ConfirmUserCommandFactoryInterface::class);
+        $confirmUserCommandFactory = $this->createMock(
+            ConfirmUserCommandFactoryInterface::class
+        );
 
         $processor = new ConfirmUserProcessor(
             $tokenRepository,

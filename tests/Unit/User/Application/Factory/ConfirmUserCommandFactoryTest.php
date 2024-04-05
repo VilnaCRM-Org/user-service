@@ -18,7 +18,9 @@ final class ConfirmUserCommandFactoryTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
     }
 
     public function testCreate(): void

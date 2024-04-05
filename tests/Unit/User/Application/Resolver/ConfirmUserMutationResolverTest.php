@@ -39,17 +39,25 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
         $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
 
-        $this->tokenRepository = $this->createMock(TokenRepositoryInterface::class);
+        $this->tokenRepository =
+            $this->createMock(TokenRepositoryInterface::class);
         $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->userRepository =
+            $this->createMock(UserRepositoryInterface::class);
         $this->validator = $this->createMock(MutationInputValidator::class);
-        $this->transformer = $this->createMock(ConfirmUserMutationInputTransformer::class);
-        $this->mockConfirmUserCommandFactory = $this->createMock(ConfirmUserCommandFactoryInterface::class);
+        $this->transformer = $this->createMock(
+            ConfirmUserMutationInputTransformer::class
+        );
+        $this->mockConfirmUserCommandFactory = $this->createMock(
+            ConfirmUserCommandFactoryInterface::class
+        );
     }
 
     public function testInvoke(): void
@@ -105,7 +113,8 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
             ->method('dispatch')
             ->with($command);
 
-        $result = $resolver->__invoke(null, ['args' => ['input' => $input]]);
+        $result =
+            $resolver->__invoke(null, ['args' => ['input' => $input]]);
         $this->assertInstanceOf(UserInterface::class, $result);
     }
 

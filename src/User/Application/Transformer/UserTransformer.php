@@ -6,7 +6,7 @@ namespace App\User\Application\Transformer;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\User\Application\DTO\AuthorizationUserDto;
-use App\User\Domain\Entity\User;
+use App\User\Domain\Entity\UserInterface;
 
 final readonly class UserTransformer
 {
@@ -15,7 +15,7 @@ final readonly class UserTransformer
     }
 
     public function transformToAuthorizationUser(
-        User $user
+        UserInterface $user
     ): AuthorizationUserDto {
         return new AuthorizationUserDto(
             $user->getEmail(),

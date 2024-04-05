@@ -34,10 +34,12 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
 
     public function testInvoke(): void
     {
-        $mockSignUpCommandFactory = $this->createMock(SignUpCommandFactoryInterface::class);
+        $mockSignUpCommandFactory =
+            $this->createMock(SignUpCommandFactoryInterface::class);
         $commandBus = $this->createMock(CommandBusInterface::class);
         $validator = $this->createMock(MutationInputValidator::class);
-        $transformer = $this->createMock(CreateUserMutationInputTransformer::class);
+        $transformer =
+            $this->createMock(CreateUserMutationInputTransformer::class);
 
         $email = $this->faker->email();
         $initials = $this->faker->name();
@@ -56,7 +58,8 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
             $password,
             $this->uuidTransformer->transformFromString($userID)
         );
-        $command = $this->signUpCommandFactory->create($email, $initials, $password);
+        $command =
+            $this->signUpCommandFactory->create($email, $initials, $password);
         $command->setResponse(new RegisterUserCommandResponse($user));
 
         $transformer->expects($this->once())
@@ -81,7 +84,8 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
             $mockSignUpCommandFactory
         );
 
-        $result = $resolver->__invoke(null, ['args' => ['input' => $input]]);
+        $result =
+            $resolver->__invoke(null, ['args' => ['input' => $input]]);
 
         $this->assertInstanceOf(UserInterface::class, $result);
     }

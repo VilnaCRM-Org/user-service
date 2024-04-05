@@ -6,7 +6,7 @@ namespace App\Tests\Unit\User\Domain\Entity;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Domain\Entity\User;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
@@ -19,7 +19,7 @@ use App\User\Domain\ValueObject\UserUpdate;
 
 final class UserTest extends UnitTestCase
 {
-    private User $user;
+    private UserInterface $user;
     private UserConfirmedEventFactoryInterface $userConfirmedEventFactory;
     private EmailChangedEventFactoryInterface $emailChangedEventFactory;
     private PasswordChangedEventFactoryInterface $passwordChangedEventFactory;
@@ -31,17 +31,16 @@ final class UserTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->userConfirmedEventFactory = $this->createMock(
-            UserConfirmedEventFactoryInterface::class
-        );
-        $this->emailChangedEventFactory = $this->createMock(
-            EmailChangedEventFactoryInterface::class
-        );
-        $this->passwordChangedEventFactory = $this->createMock(
-            PasswordChangedEventFactoryInterface::class
-        );
+        $this->userConfirmedEventFactory =
+            $this->createMock(UserConfirmedEventFactoryInterface::class);
+        $this->emailChangedEventFactory =
+            $this->createMock(EmailChangedEventFactoryInterface::class);
+        $this->passwordChangedEventFactory =
+            $this->createMock(PasswordChangedEventFactoryInterface::class);
         $this->userFactory = new UserFactory();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
         $this->uuidTransformer = new UuidTransformer();
 
         $this->user = $this->userFactory->create(
@@ -95,11 +94,7 @@ final class UserTest extends UnitTestCase
             $this->passwordChangedEventFactory
         );
 
-        $this->assertIsArray($events);
-        $this->assertNotEmpty($events);
-        $this->assertEquals($updateData->newEmail, $this->user->getEmail());
-        $this->assertEquals($updateData->newInitials, $this->user->getInitials());
-        $this->assertEquals($hashedNewPassword, $this->user->getPassword());
+        $this->testUpdateMakeAssertions($events, $updateData, $hashedNewPassword);
     }
 
     public function testSetId(): void
@@ -132,5 +127,20 @@ final class UserTest extends UnitTestCase
         $this->user->setConfirmed(true);
 
         $this->assertEquals($confirmed, $this->user->isConfirmed());
+    }
+
+    private function testUpdateMakeAssertions(
+        array $events,
+        UserUpdate $updateData,
+        string $hashedNewPassword
+    ): void {
+        $this->assertIsArray($events);
+        $this->assertNotEmpty($events);
+        $this->assertEquals($updateData->newEmail, $this->user->getEmail());
+        $this->assertEquals(
+            $updateData->newInitials,
+            $this->user->getInitials()
+        );
+        $this->assertEquals($hashedNewPassword, $this->user->getPassword());
     }
 }

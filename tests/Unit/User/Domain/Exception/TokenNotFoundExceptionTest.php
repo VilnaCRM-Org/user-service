@@ -14,19 +14,24 @@ final class TokenNotFoundExceptionTest extends UnitTestCase
     {
         $exception = new TokenNotFoundException();
 
-        $this->assertEquals('Token not found', $exception->getMessage());
+        $this->assertEquals(
+            'Token not found',
+            $exception->getMessage()
+        );
     }
 
     public function testGetTranslationTemplate(): void
     {
         $exception = new TokenNotFoundException();
 
-        $this->assertEquals('error.token-not-found', $exception->getTranslationTemplate());
+        $this->assertEquals(
+            'error.token-not-found',
+            $exception->getTranslationTemplate()
+        );
     }
 
     public function testGetTranslationArgs(): void
     {
-
         $exception = new TokenNotFoundException();
 
         $this->assertEquals([], $exception->getTranslationArgs());
@@ -34,6 +39,8 @@ final class TokenNotFoundExceptionTest extends UnitTestCase
 
     public function testExtendsRuntimeException(): void
     {
-        $this->assertTrue((new TokenNotFoundException()) instanceof DomainException);
+        $this->assertTrue(
+            (new TokenNotFoundException()) instanceof DomainException
+        );
     }
 }

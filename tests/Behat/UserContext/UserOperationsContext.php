@@ -114,7 +114,7 @@ final class UserOperationsContext implements Context
             [],
             ['HTTP_ACCEPT' => 'application/json',
                 'CONTENT_TYPE' => $contentType,
-                'HTTP_ACCEPT_LANGUAGE' => $this->language
+                'HTTP_ACCEPT_LANGUAGE' => $this->language,
             ],
             $this->serializer->serialize($this->requestBody, 'json')
         ));

@@ -39,7 +39,10 @@ final class PasswordChangedEventTest extends UnitTestCase
 
     public function testEventName(): void
     {
-        $this->assertEquals('password.changed', PasswordChangedEvent::eventName());
+        $this->assertEquals(
+            'password.changed',
+            PasswordChangedEvent::eventName()
+        );
     }
 
     public function testOccurredOn(): void

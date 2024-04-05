@@ -12,6 +12,7 @@ use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\Resolver\UserUpdateMutationResolver;
 use App\User\Application\Transformer\UpdateUserMutationInputTransformer;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
@@ -29,38 +30,35 @@ final class UserUpdateMutationResolverTest extends UnitTestCase
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
         $this->updateUserCommandFactory = new UpdateUserCommandFactory();
+        $this->commandBus =
+            $this->createMock(CommandBusInterface::class);
+        $this->validator =
+            $this->createMock(MutationInputValidator::class);
+        $this->transformer =
+            $this->createMock(UpdateUserMutationInputTransformer::class);
+        $this->mockUpdateUserCommandFactory =
+            $this->createMock(UpdateUserCommandFactoryInterface::class);
+        $this->resolver = new UserUpdateMutationResolver(
+            $this->commandBus,
+            $this->validator,
+            $this->transformer,
+            $this->mockUpdateUserCommandFactory
+        );
     }
 
     public function testInvoke(): void
     {
-        $commandBus = $this->createMock(CommandBusInterface::class);
-        $validator = $this->createMock(MutationInputValidator::class);
-        $transformer = $this->createMock(UpdateUserMutationInputTransformer::class);
-        $mockUpdateUserCommandFactory = $this->createMock(UpdateUserCommandFactoryInterface::class);
-
         $email = $this->faker->email();
         $initials = $this->faker->name();
         $password = $this->faker->password();
-        $userID = $this->faker->uuid();
 
         $user = $this->userFactory->create(
             $email,
             $initials,
             $password,
-            $this->uuidTransformer->transformFromString($userID)
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
         );
-        $updateData = new UserUpdate($email, $initials, $password, $password);
-        $command = $this->updateUserCommandFactory->create(
-            $user,
-            $updateData
-        );
-
-        $resolver = new UserUpdateMutationResolver(
-            $commandBus,
-            $validator,
-            $transformer,
-            $mockUpdateUserCommandFactory
-        );
+        $this->prepareExpectations($user, $email, $initials, $password);
 
         $input = [
             'email' => $email,
@@ -69,23 +67,37 @@ final class UserUpdateMutationResolverTest extends UnitTestCase
             'password' => $password,
         ];
 
-        $transformer->expects($this->once())
+        $this->assertSame(
+            $user,
+            $this->resolver->__invoke($user, ['args' => ['input' => $input]]),
+        );
+    }
+
+    private function prepareExpectations(
+        UserInterface $user,
+        string $email,
+        string $initials,
+        string $password
+    ): void {
+        $updateData = new UserUpdate($email, $initials, $password, $password);
+        $command = $this->updateUserCommandFactory->create(
+            $user,
+            $updateData
+        );
+
+        $this->transformer->expects($this->once())
             ->method('transform');
 
-        $validator->expects($this->once())
+        $this->validator->expects($this->once())
             ->method('validate');
 
-        $mockUpdateUserCommandFactory->expects($this->once())
+        $this->mockUpdateUserCommandFactory->expects($this->once())
             ->method('create')
             ->with($user, $updateData)
             ->willReturn($command);
 
-        $commandBus->expects($this->once())
+        $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($command);
-
-        $result = $resolver->__invoke($user, ['args' => ['input' => $input]]);
-
-        $this->assertSame($user, $result);
     }
 }

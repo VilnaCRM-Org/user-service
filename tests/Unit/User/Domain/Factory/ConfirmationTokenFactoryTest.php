@@ -18,6 +18,9 @@ final class ConfirmationTokenFactoryTest extends UnitTestCase
         $userID = $this->faker->uuid();
         $confirmationToken = $factory->create($userID);
 
-        $this->assertInstanceOf(ConfirmationTokenInterface::class, $confirmationToken);
+        $this->assertInstanceOf(
+            ConfirmationTokenInterface::class,
+            $confirmationToken
+        );
     }
 }

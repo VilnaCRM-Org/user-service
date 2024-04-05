@@ -34,8 +34,10 @@ final class UserResolveListenerTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->hasherFactory = $this->createMock(PasswordHasherFactoryInterface::class);
-        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->hasherFactory =
+            $this->createMock(PasswordHasherFactoryInterface::class);
+        $this->userRepository =
+            $this->createMock(UserRepositoryInterface::class);
         $this->mockUserTransformer = $this->createMock(UserTransformer::class);
         $this->userTransformer = new UserTransformer(new UuidTransformer());
         $this->userFactory = new UserFactory();
@@ -66,7 +68,8 @@ final class UserResolveListenerTest extends UnitTestCase
             ->with($user)
             ->willReturn($authUser);
 
-        $hasher = $this->createMock(PasswordHasherInterface::class);
+        $hasher =
+            $this->createMock(PasswordHasherInterface::class);
         $hasher->expects($this->once())
             ->method('verify')
             ->with($password, $password)
@@ -84,7 +87,11 @@ final class UserResolveListenerTest extends UnitTestCase
             $this->createMock(AbstractClient::class)
         );
 
-        $listener = new UserResolveListener($this->hasherFactory, $this->userRepository, $this->mockUserTransformer);
+        $listener = new UserResolveListener(
+            $this->hasherFactory,
+            $this->userRepository,
+            $this->mockUserTransformer
+        );
         $listener->onUserResolve($event);
 
         $this->assertSame($authUser, $event->getUser());
@@ -114,7 +121,8 @@ final class UserResolveListenerTest extends UnitTestCase
             ->with($user)
             ->willReturn($authUser);
 
-        $hasher = $this->createMock(PasswordHasherInterface::class);
+        $hasher =
+            $this->createMock(PasswordHasherInterface::class);
         $hasher->expects($this->once())
             ->method('verify')
             ->with($password, $password)
@@ -132,7 +140,11 @@ final class UserResolveListenerTest extends UnitTestCase
             $this->createMock(AbstractClient::class)
         );
 
-        $listener = new UserResolveListener($this->hasherFactory, $this->userRepository, $this->mockUserTransformer);
+        $listener = new UserResolveListener(
+            $this->hasherFactory,
+            $this->userRepository,
+            $this->mockUserTransformer
+        );
 
         $listener->onUserResolve($event);
 

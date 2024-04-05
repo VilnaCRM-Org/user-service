@@ -72,11 +72,9 @@ final class UserGraphQLContext implements Context
         $this->queryName = 'user';
         $id = $this->GRAPHQL_ID_PREFIX . $id;
 
-        $query = (string) (
-        new RootType($this->queryName)
-        )->addArgument(new Argument('id', $id))->addSubTypes(
-            $this->responseContent
-        );
+        $query = (string) (new RootType($this->queryName))->addArgument(
+            new Argument('id', $id)
+        )->addSubTypes($this->responseContent);
 
         $this->query = 'query' . $query;
     }
@@ -88,13 +86,11 @@ final class UserGraphQLContext implements Context
     {
         $this->queryName = 'users';
 
-        $query = (string) (
-        new RootType($this->queryName)
-        )->addArgument(new Argument('first', 1))
-            ->addSubType((new Type('edges'))->addSubType(
-                (new Type('node')
-                )->addSubTypes($this->responseContent)
-            ));
+        $query = (string) (new RootType($this->queryName))->addArgument(
+            new Argument('first', 1)
+        )->addSubType((new Type('edges'))->addSubType(
+            (new Type('node'))->addSubTypes($this->responseContent)
+        ));
 
         $this->query = 'query' . $query;
     }
@@ -192,22 +188,6 @@ final class UserGraphQLContext implements Context
     }
 
     /**
-     * @param array<string> $responseFields
-     */
-    private function createMutation(
-        string $name,
-        GraphQLMutationInput $input,
-        array $responseFields
-    ): string {
-        $mutation = (string) (
-            new RootType($name)
-        )->addArgument(new Argument('input', $input->toGraphQLArguments()))
-            ->addSubType((new Type('user'))->addSubTypes($responseFields));
-
-        return 'mutation' . $mutation;
-    }
-
-    /**
      * @Given with graphql language :lang
      */
     public function setLanguage(string $lang): void
@@ -228,7 +208,7 @@ final class UserGraphQLContext implements Context
             [],
             ['HTTP_ACCEPT' => 'application/json',
                 'CONTENT_TYPE' => 'application/graphql',
-                'HTTP_ACCEPT_LANGUAGE' => $this->language
+                'HTTP_ACCEPT_LANGUAGE' => $this->language,
             ],
             $this->query
         ));
@@ -313,5 +293,20 @@ final class UserGraphQLContext implements Context
             $data['errors'][$this->errorNum]['message']
         );
         $this->errorNum++;
+    }
+
+    /**
+     * @param array<string> $responseFields
+     */
+    private function createMutation(
+        string $name,
+        GraphQLMutationInput $input,
+        array $responseFields
+    ): string {
+        $mutation = (string) (new RootType($name))->addArgument(
+            new Argument('input', $input->toGraphQLArguments())
+        )->addSubType((new Type('user'))->addSubTypes($responseFields));
+
+        return 'mutation' . $mutation;
     }
 }

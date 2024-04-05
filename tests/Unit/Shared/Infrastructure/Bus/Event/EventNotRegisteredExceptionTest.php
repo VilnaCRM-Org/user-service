@@ -17,7 +17,8 @@ final class EventNotRegisteredExceptionTest extends UnitTestCase
 
         $exception = new EventNotRegisteredException($event);
 
-        $expectedMessage = "The event <{$eventClass}> hasn't an event handler associated";
+        $expectedMessage =
+            "The event <{$eventClass}> hasn't an event handler associated";
         $this->assertEquals($expectedMessage, $exception->getMessage());
     }
 }

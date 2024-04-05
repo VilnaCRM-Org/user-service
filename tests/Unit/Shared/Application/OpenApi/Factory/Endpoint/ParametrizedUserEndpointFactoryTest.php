@@ -118,19 +118,19 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
             ->withConsecutive(
                 [
                     '/api/users/{id}',
-                    $this->isInstanceOf(PathItem::class)
+                    $this->isInstanceOf(PathItem::class),
                 ],
                 [
                     '/api/users/{id}',
-                    $this->isInstanceOf(PathItem::class)
+                    $this->isInstanceOf(PathItem::class),
                 ],
                 [
                     '/api/users/{id}',
-                    $this->isInstanceOf(PathItem::class)
+                    $this->isInstanceOf(PathItem::class),
                 ],
                 [
                     '/api/users/{id}',
-                    $this->isInstanceOf(PathItem::class)
+                    $this->isInstanceOf(PathItem::class),
                 ]
             );
 

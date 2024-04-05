@@ -42,9 +42,12 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $this->mockOperation = $this->createMock(Operation::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
         $this->eventFactory = new ConfirmationEmailSendEventFactory();
-        $this->confirmationEmailFactory = new ConfirmationEmailFactory($this->eventFactory);
+        $this->confirmationEmailFactory =
+            new ConfirmationEmailFactory($this->eventFactory);
         $this->emailCommandFactory = new SendConfirmationEmailCommandFactory();
     }
 
@@ -53,9 +56,14 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $commandBus = $this->createMock(CommandBusInterface::class);
         $userRepository = $this->createMock(UserRepositoryInterface::class);
         $tokenRepository = $this->createMock(TokenRepositoryInterface::class);
-        $tokenFactory = $this->createMock(ConfirmationTokenFactoryInterface::class);
-        $mockConfirmationEmailFactory = $this->createMock(ConfirmationEmailFactoryInterface::class);
-        $mockEmailCommandFactory = $this->createMock(SendConfirmationEmailCommandFactoryInterface::class);
+        $tokenFactory =
+            $this->createMock(ConfirmationTokenFactoryInterface::class);
+        $mockConfirmationEmailFactory = $this->createMock(
+            ConfirmationEmailFactoryInterface::class
+        );
+        $mockEmailCommandFactory = $this->createMock(
+            SendConfirmationEmailCommandFactoryInterface::class
+        );
 
         $processor = new ResendEmailProcessor(
             $commandBus,
@@ -109,7 +117,11 @@ final class ResendEmailProcessorTest extends UnitTestCase
             ->method('dispatch')
             ->with($command);
 
-        $response = $processor->process($retryDto, $this->mockOperation, ['id' => $userId]);
+        $response = $processor->process(
+            $retryDto,
+            $this->mockOperation,
+            ['id' => $userId]
+        );
 
         $this->assertInstanceOf(Response::class, $response);
     }
@@ -119,9 +131,14 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $commandBus = $this->createMock(CommandBusInterface::class);
         $userRepository = $this->createMock(UserRepositoryInterface::class);
         $tokenRepository = $this->createMock(TokenRepositoryInterface::class);
-        $tokenFactory = $this->createMock(ConfirmationTokenFactoryInterface::class);
-        $confirmationEmailFactory = $this->createMock(ConfirmationEmailFactoryInterface::class);
-        $emailCmdFactory = $this->createMock(SendConfirmationEmailCommandFactoryInterface::class);
+        $tokenFactory =
+            $this->createMock(ConfirmationTokenFactoryInterface::class);
+        $confirmationEmailFactory = $this->createMock(
+            ConfirmationEmailFactoryInterface::class
+        );
+        $emailCmdFactory = $this->createMock(
+            SendConfirmationEmailCommandFactoryInterface::class
+        );
 
         $processor = new ResendEmailProcessor(
             $commandBus,

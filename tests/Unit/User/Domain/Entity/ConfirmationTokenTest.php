@@ -19,7 +19,9 @@ final class ConfirmationTokenTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
         $this->confirmationToken =
             $this->confirmationTokenFactory->create($this->faker->uuid());
     }
@@ -35,7 +37,9 @@ final class ConfirmationTokenTest extends UnitTestCase
     public function testSendWithDatetime(): void
     {
         $this->expectException(UserTimedOutException::class);
-        $this->confirmationToken->send($this->confirmationToken->getAllowedToSendAfter());
+        $this->confirmationToken->send(
+            $this->confirmationToken->getAllowedToSendAfter()
+        );
     }
 
     public function testSetTimesSend(): void
@@ -67,6 +71,9 @@ final class ConfirmationTokenTest extends UnitTestCase
         $allowedToSendAfter = new \DateTimeImmutable();
         $this->confirmationToken->setAllowedToSendAfter($allowedToSendAfter);
 
-        $this->assertEquals($allowedToSendAfter, $this->confirmationToken->getAllowedToSendAfter());
+        $this->assertEquals(
+            $allowedToSendAfter,
+            $this->confirmationToken->getAllowedToSendAfter()
+        );
     }
 }

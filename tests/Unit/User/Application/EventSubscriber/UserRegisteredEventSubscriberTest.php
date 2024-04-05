@@ -35,7 +35,9 @@ final class UserRegisteredEventSubscriberTest extends UnitTestCase
         parent::setUp();
 
         $this->userFactory = new UserFactory();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
         $this->uuidTransformer = new UuidTransformer();
         $this->userRegisteredEventFactory = new UserRegisteredEventFactory();
         $this->confirmationEmailFactory = new ConfirmationEmailFactory(
@@ -47,9 +49,13 @@ final class UserRegisteredEventSubscriberTest extends UnitTestCase
     public function testInvoke(): void
     {
         $commandBus = $this->createMock(CommandBusInterface::class);
-        $tokenFactory = $this->createMock(ConfirmationTokenFactoryInterface::class);
-        $confirmationEmailFactory = $this->createMock(ConfirmationEmailFactoryInterface::class);
-        $emailCmdFactory = $this->createMock(SendConfirmationEmailCommandFactoryInterface::class);
+        $tokenFactory =
+            $this->createMock(ConfirmationTokenFactoryInterface::class);
+        $confirmationEmailFactory =
+            $this->createMock(ConfirmationEmailFactoryInterface::class);
+        $emailCmdFactory = $this->createMock(
+            SendConfirmationEmailCommandFactoryInterface::class
+        );
 
         $subscriber = new UserRegisteredEventSubscriber(
             $commandBus,
@@ -67,20 +73,25 @@ final class UserRegisteredEventSubscriberTest extends UnitTestCase
         );
         $token = $this->confirmationTokenFactory->create($user->getId());
 
-        $event = $this->userRegisteredEventFactory->create($user, $this->faker->uuid());
+        $event = $this->userRegisteredEventFactory->create(
+            $user,
+            $this->faker->uuid()
+        );
 
         $tokenFactory->expects($this->once())
             ->method('create')
             ->with($this->equalTo($user->getId()))
             ->willReturn($token);
 
-        $confirmationEmail = $this->confirmationEmailFactory->create($token, $user);
+        $confirmationEmail =
+            $this->confirmationEmailFactory->create($token, $user);
         $confirmationEmailFactory->expects($this->once())
             ->method('create')
             ->with($this->equalTo($token), $this->equalTo($user))
             ->willReturn($confirmationEmail);
 
-        $sendConfirmationEmailCommand = $this->commandFactory->create($confirmationEmail);
+        $sendConfirmationEmailCommand =
+            $this->commandFactory->create($confirmationEmail);
         $emailCmdFactory->expects($this->once())
             ->method('create')
             ->with($this->equalTo($confirmationEmail))

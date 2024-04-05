@@ -12,7 +12,8 @@ final class ConfirmUserCommandTest extends UnitTestCase
 {
     public function testConstructor(): void
     {
-        $token = new ConfirmationToken($this->faker->uuid(), $this->faker->uuid());
+        $token =
+            new ConfirmationToken($this->faker->uuid(), $this->faker->uuid());
 
         $command = new ConfirmUserCommand($token);
 

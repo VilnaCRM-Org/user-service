@@ -28,7 +28,7 @@ final class MessageBusFactoryTest extends UnitTestCase
                             $commandHandlers
                         )
                     )
-                )
+                ),
             ]
         );
 

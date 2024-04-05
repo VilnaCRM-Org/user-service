@@ -30,7 +30,8 @@ final class UserPutProcessorTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->mockOperation = $this->createMock(Operation::class);
+        $this->mockOperation =
+            $this->createMock(Operation::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
         $this->updateUserCommandFactory = new UpdateUserCommandFactory();
@@ -40,7 +41,8 @@ final class UserPutProcessorTest extends UnitTestCase
     {
         $userRepository = $this->createMock(UserRepositoryInterface::class);
         $commandBus = $this->createMock(CommandBusInterface::class);
-        $mockUpdateUserCommandFactory = $this->createMock(UpdateUserCommandFactoryInterface::class);
+        $mockUpdateUserCommandFactory =
+            $this->createMock(UpdateUserCommandFactoryInterface::class);
 
         $processor = new UserPutProcessor(
             $userRepository,
@@ -80,7 +82,11 @@ final class UserPutProcessorTest extends UnitTestCase
             ->method('dispatch')
             ->with($command);
 
-        $result = $processor->process($userPutDto, $this->mockOperation, ['id' => $userId]);
+        $result = $processor->process(
+            $userPutDto,
+            $this->mockOperation,
+            ['id' => $userId]
+        );
 
         $this->assertInstanceOf(User::class, $result);
     }
@@ -89,7 +95,9 @@ final class UserPutProcessorTest extends UnitTestCase
     {
         $userRepository = $this->createMock(UserRepositoryInterface::class);
         $commandBus = $this->createMock(CommandBusInterface::class);
-        $updateUserCommandFactory = $this->createMock(UpdateUserCommandFactoryInterface::class);
+        $updateUserCommandFactory = $this->createMock(
+            UpdateUserCommandFactoryInterface::class
+        );
 
         $processor = new UserPutProcessor(
             $userRepository,
@@ -110,6 +118,10 @@ final class UserPutProcessorTest extends UnitTestCase
 
         $this->expectException(UserNotFoundException::class);
 
-        $processor->process($userPutDto, $this->mockOperation, ['id' => $userId]);
+        $processor->process(
+            $userPutDto,
+            $this->mockOperation,
+            ['id' => $userId]
+        );
     }
 }

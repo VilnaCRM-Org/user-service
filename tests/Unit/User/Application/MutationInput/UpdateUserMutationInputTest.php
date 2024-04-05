@@ -16,7 +16,12 @@ final class UpdateUserMutationInputTest extends UnitTestCase
         $email = $this->faker->email();
         $newPassword = $this->faker->password();
 
-        $input = new UpdateUserMutationInput($password, $initials, $email, $newPassword);
+        $input = new UpdateUserMutationInput(
+            $password,
+            $initials,
+            $email,
+            $newPassword
+        );
 
         $this->assertEquals($password, $input->password);
         $this->assertEquals($initials, $input->initials);

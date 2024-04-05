@@ -34,7 +34,9 @@ final class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
         parent::setUp();
 
         $this->userFactory = new UserFactory();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
         $this->uuidTransformer = new UuidTransformer();
         $this->sendEventFactory = new ConfirmationEmailSendEventFactory();
         $this->emailFactory = new EmailFactory();
@@ -67,7 +69,11 @@ final class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
             $this->uuidTransformer->transformFromString($userId)
         );
 
-        $event = $this->sendEventFactory->create($token, $user, $this->faker->uuid());
+        $event = $this->sendEventFactory->create(
+            $token,
+            $user,
+            $this->faker->uuid()
+        );
 
         $tokenRepository->expects($this->once())
             ->method('save')
@@ -77,7 +83,10 @@ final class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
 
         $translator->expects($this->exactly(2))
             ->method('trans')
-            ->withConsecutive(['email.confirm.subject'], ['email.confirm.text', ['tokenValue' => $tokenValue]])
+            ->withConsecutive(
+                ['email.confirm.subject'],
+                ['email.confirm.text', ['tokenValue' => $tokenValue]]
+            )
             ->willReturnOnConsecutiveCalls($subject, $tokenValue);
 
         $email = $this->emailFactory->create(
@@ -102,7 +111,11 @@ final class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
 
         $logger->expects($this->once())
             ->method('info')
-            ->with($this->equalTo('Confirmation token send to ' . $emailAddress));
+            ->with(
+                $this->equalTo(
+                    'Confirmation token send to ' . $emailAddress
+                )
+            );
 
         $subscriber->__invoke($event);
     }

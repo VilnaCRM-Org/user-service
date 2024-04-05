@@ -23,10 +23,14 @@ final class SendConfirmationEmailCommandFactoryTest extends UnitTestCase
 
     public function testCreate(): void
     {
-        $confirmationEmail = $this->createMock(ConfirmationEmailInterface::class);
+        $confirmationEmail =
+            $this->createMock(ConfirmationEmailInterface::class);
 
         $command = $this->factory->create($confirmationEmail);
 
-        $this->assertInstanceOf(SendConfirmationEmailCommand::class, $command);
+        $this->assertInstanceOf(
+            SendConfirmationEmailCommand::class,
+            $command
+        );
     }
 }

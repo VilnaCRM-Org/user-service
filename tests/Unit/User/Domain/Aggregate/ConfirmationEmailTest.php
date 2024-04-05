@@ -14,17 +14,21 @@ final class ConfirmationEmailTest extends UnitTestCase
 {
     public function testSend(): void
     {
-        $token = $this->createMock(ConfirmationTokenInterface::class);
+        $token =
+            $this->createMock(ConfirmationTokenInterface::class);
         $token->expects($this->once())
             ->method('send');
 
         $user = $this->createMock(UserInterface::class);
 
-        $eventFactory = $this->createMock(ConfirmationEmailSendEventFactoryInterface::class);
+        $eventFactory = $this->createMock(
+            ConfirmationEmailSendEventFactoryInterface::class
+        );
         $eventFactory->expects($this->once())
             ->method('create');
 
-        $confirmationEmail = new ConfirmationEmail($token, $user, $eventFactory);
+        $confirmationEmail =
+            new ConfirmationEmail($token, $user, $eventFactory);
 
         $confirmationEmail->send($this->faker->uuid());
     }

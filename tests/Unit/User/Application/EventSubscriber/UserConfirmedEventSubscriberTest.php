@@ -22,7 +22,9 @@ final class UserConfirmedEventSubscriberTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
         $this->userConfirmedEventFactory = new UserConfirmedEventFactory();
     }
 
@@ -33,7 +35,10 @@ final class UserConfirmedEventSubscriberTest extends UnitTestCase
         $subscriber = new UserConfirmedEventSubscriber($tokenRepository);
 
         $token = $this->confirmationTokenFactory->create($this->faker->uuid());
-        $event = $this->userConfirmedEventFactory->create($token, $this->faker->uuid());
+        $event = $this->userConfirmedEventFactory->create(
+            $token,
+            $this->faker->uuid()
+        );
 
         $tokenRepository->expects($this->once())
             ->method('delete')

@@ -25,8 +25,10 @@ final class InMemorySymfonyEventBusTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->messageBusFactory = $this->createMock(MessageBusFactory::class);
-        $this->eventSubscribers = [$this->createMock(DomainEvent::class)];
+        $this->messageBusFactory =
+            $this->createMock(MessageBusFactory::class);
+        $this->eventSubscribers =
+            [$this->createMock(DomainEvent::class)];
     }
 
     public function testDispatchWithNoHandlerForMessageException(): void
@@ -36,8 +38,12 @@ final class InMemorySymfonyEventBusTest extends UnitTestCase
         $messageBus->expects($this->once())
             ->method('dispatch')
             ->willThrowException(new NoHandlerForMessageException());
-        $this->messageBusFactory->method('create')->willReturn($messageBus);
-        $eventBus = new InMemorySymfonyEventBus($this->messageBusFactory, $this->eventSubscribers);
+        $this->messageBusFactory->method('create')
+            ->willReturn($messageBus);
+        $eventBus = new InMemorySymfonyEventBus(
+            $this->messageBusFactory,
+            $this->eventSubscribers
+        );
 
         $this->expectException(EventNotRegisteredException::class);
 
@@ -50,9 +56,15 @@ final class InMemorySymfonyEventBusTest extends UnitTestCase
         $messageBus = $this->createMock(MessageBus::class);
         $messageBus->expects($this->once())
             ->method('dispatch')
-            ->willThrowException($this->createMock(HandlerFailedException::class));
-        $this->messageBusFactory->method('create')->willReturn($messageBus);
-        $eventBus = new InMemorySymfonyEventBus($this->messageBusFactory, $this->eventSubscribers);
+            ->willThrowException(
+                $this->createMock(HandlerFailedException::class)
+            );
+        $this->messageBusFactory->method('create')
+            ->willReturn($messageBus);
+        $eventBus = new InMemorySymfonyEventBus(
+            $this->messageBusFactory,
+            $this->eventSubscribers
+        );
 
         $this->expectException(HandlerFailedException::class);
 
@@ -66,8 +78,12 @@ final class InMemorySymfonyEventBusTest extends UnitTestCase
         $messageBus->expects($this->once())
             ->method('dispatch')
             ->willThrowException(new \RuntimeException());
-        $this->messageBusFactory->method('create')->willReturn($messageBus);
-        $eventBus = new InMemorySymfonyEventBus($this->messageBusFactory, $this->eventSubscribers);
+        $this->messageBusFactory->method('create')
+            ->willReturn($messageBus);
+        $eventBus = new InMemorySymfonyEventBus(
+            $this->messageBusFactory,
+            $this->eventSubscribers
+        );
 
         $this->expectException(\RuntimeException::class);
 

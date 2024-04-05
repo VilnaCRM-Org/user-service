@@ -7,15 +7,18 @@ namespace App\Tests\Unit\User\Application\Resolver;
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactory;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
 use App\User\Application\Resolver\ResendEmailMutationResolver;
+use App\User\Domain\Aggregate\ConfirmationEmailInterface;
+use App\User\Domain\Entity\ConfirmationTokenInterface;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\ConfirmationEmailFactory;
 use App\User\Domain\Factory\ConfirmationEmailFactoryInterface;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactory;
-use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
@@ -25,7 +28,6 @@ final class ResendEmailMutationResolverTest extends UnitTestCase
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
-    private ConfirmationEmailSendEventFactoryInterface $eventFactory;
     private ConfirmationEmailFactoryInterface $confirmationEmailFactory;
     private SendConfirmationEmailCommandFactoryInterface $emailCommandFactory;
 
@@ -35,127 +37,149 @@ final class ResendEmailMutationResolverTest extends UnitTestCase
 
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
-        $this->eventFactory = new ConfirmationEmailSendEventFactory();
-        $this->confirmationEmailFactory = new ConfirmationEmailFactory($this->eventFactory);
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
+        $this->confirmationEmailFactory = new ConfirmationEmailFactory(
+            new ConfirmationEmailSendEventFactory()
+        );
         $this->emailCommandFactory = new SendConfirmationEmailCommandFactory();
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->tokenRepository =
+            $this->createMock(TokenRepositoryInterface::class);
+        $this->tokenFactory =
+            $this->createMock(ConfirmationTokenFactoryInterface::class);
+        $this->mockConfirmationEmailFactory =
+            $this->createMock(ConfirmationEmailFactoryInterface::class);
+        $this->mockEmailCommandFactory = $this->createMock(
+            SendConfirmationEmailCommandFactoryInterface::class
+        );
     }
 
     public function testInvoke(): void
     {
-        $commandBus = $this->createMock(CommandBusInterface::class);
-        $tokenRepository = $this->createMock(TokenRepositoryInterface::class);
-        $tokenFactory = $this->createMock(ConfirmationTokenFactoryInterface::class);
-        $mockConfirmationEmailFactory = $this->createMock(ConfirmationEmailFactoryInterface::class);
-        $mockEmailCommandFactory = $this->createMock(SendConfirmationEmailCommandFactoryInterface::class);
-
-        $email = $this->faker->email();
-        $initials = $this->faker->name();
-        $password = $this->faker->password();
-        $userId = $this->faker->uuid();
-
-        $user = $this->userFactory->create(
-            $email,
-            $initials,
-            $password,
-            $this->uuidTransformer->transformFromString($userId)
-        );
-        $token = $this->confirmationTokenFactory->create($userId);
+        $user = $this->getUser();
+        $token = $this->confirmationTokenFactory->create($user->getID());
         $confirmationEmail = $this->confirmationEmailFactory->create(
             $token,
             $user
         );
         $command = $this->emailCommandFactory->create($confirmationEmail);
 
-        $resolver = new ResendEmailMutationResolver(
-            $commandBus,
-            $tokenRepository,
-            $tokenFactory,
-            $mockConfirmationEmailFactory,
-            $mockEmailCommandFactory
+        $this->setInvokeExpectations(
+            $user,
+            $token,
+            $confirmationEmail,
+            $command
         );
 
-        $tokenRepository->expects($this->once())
-            ->method('findByUserId')
-            ->with($this->equalTo($userId))
-            ->willReturn($token);
-
-        $mockConfirmationEmailFactory->expects($this->once())
-            ->method('create')
-            ->willReturn($confirmationEmail);
-
-        $mockEmailCommandFactory->expects($this->once())
-            ->method('create')
-            ->with($confirmationEmail)
-            ->willReturn($command);
-
-        $commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($command);
-
-        $result = $resolver->__invoke($user, []);
+        $result = $this->getResolver()->__invoke($user, []);
 
         $this->assertSame($user, $result);
     }
 
     public function testInvokeWithNonExistingToken(): void
     {
-        $commandBus = $this->createMock(CommandBusInterface::class);
-        $tokenRepository = $this->createMock(TokenRepositoryInterface::class);
-        $tokenFactory = $this->createMock(ConfirmationTokenFactoryInterface::class);
-        $mockConfirmationEmailFactory = $this->createMock(ConfirmationEmailFactoryInterface::class);
-        $mockEmailCommandFactory = $this->createMock(SendConfirmationEmailCommandFactoryInterface::class);
-
-        $email = $this->faker->email();
-        $initials = $this->faker->name();
-        $password = $this->faker->password();
-        $userId = $this->faker->uuid();
-
-        $user = $this->userFactory->create(
-            $email,
-            $initials,
-            $password,
-            $this->uuidTransformer->transformFromString($userId)
-        );
-        $token = $this->confirmationTokenFactory->create($userId);
+        $user = $this->getUser();
+        $token = $this->confirmationTokenFactory->create($user->getID());
         $confirmationEmail = $this->confirmationEmailFactory->create(
             $token,
             $user
         );
         $command = $this->emailCommandFactory->create($confirmationEmail);
 
-        $resolver = new ResendEmailMutationResolver(
-            $commandBus,
-            $tokenRepository,
-            $tokenFactory,
-            $mockConfirmationEmailFactory,
-            $mockEmailCommandFactory
+        $this->setInvokeWithNonExistingTokenExpectations(
+            $user,
+            $token,
+            $confirmationEmail,
+            $command
         );
 
-        $tokenRepository->expects($this->once())
+        $result = $this->getResolver()->__invoke($user, []);
+
+        $this->assertSame($user, $result);
+    }
+
+    private function setInvokeExpectations(
+        UserInterface $user,
+        ConfirmationTokenInterface $token,
+        ConfirmationEmailInterface $confirmationEmail,
+        SendConfirmationEmailCommand $command
+    ): void {
+        $userId = $user->getID();
+        $this->tokenRepository->expects($this->once())
             ->method('findByUserId')
             ->with($this->equalTo($userId))
-            ->willReturn(null);
-
-        $tokenFactory->expects($this->once())
-            ->method('create')
             ->willReturn($token);
 
-        $mockConfirmationEmailFactory->expects($this->once())
+        $this->mockConfirmationEmailFactory->expects($this->once())
             ->method('create')
             ->willReturn($confirmationEmail);
 
-        $mockEmailCommandFactory->expects($this->once())
+        $this->mockEmailCommandFactory->expects($this->once())
             ->method('create')
             ->with($confirmationEmail)
             ->willReturn($command);
 
-        $commandBus->expects($this->once())
+        $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($command);
-
-        $result = $resolver->__invoke($user, []);
-
-        $this->assertSame($user, $result);
     }
+
+    private function setInvokeWithNonExistingTokenExpectations(
+        UserInterface $user,
+        ConfirmationTokenInterface $token,
+        ConfirmationEmailInterface $confirmationEmail,
+        SendConfirmationEmailCommand $command
+    ): void {
+        $userId = $user->getID();
+
+        $this->tokenRepository->expects($this->once())
+            ->method('findByUserId')
+            ->with($this->equalTo($userId))
+            ->willReturn(null);
+
+        $this->tokenFactory->expects($this->once())
+            ->method('create')
+            ->willReturn($token);
+
+        $this->mockConfirmationEmailFactory->expects($this->once())
+            ->method('create')
+            ->willReturn($confirmationEmail);
+
+        $this->mockEmailCommandFactory->expects($this->once())
+            ->method('create')
+            ->with($confirmationEmail)
+            ->willReturn($command);
+
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($command);
+    }
+
+    private function getUser(): UserInterface
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+        $userId = $this->faker->uuid();
+
+        return $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->uuidTransformer->transformFromString($userId)
+        );
+    }
+
+    private function getResolver(): ResendEmailMutationResolver
+    {
+        return new ResendEmailMutationResolver(
+            $this->commandBus,
+            $this->tokenRepository,
+            $this->tokenFactory,
+            $this->mockConfirmationEmailFactory,
+            $this->mockEmailCommandFactory
+        );
+}
 }

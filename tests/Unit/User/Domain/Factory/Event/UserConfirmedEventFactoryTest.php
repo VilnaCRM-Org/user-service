@@ -21,7 +21,9 @@ final class UserConfirmedEventFactoryTest extends UnitTestCase
         parent::setUp();
 
         $this->factory = new UserConfirmedEventFactory();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
     }
 
     public function testCreateEvent(): void

@@ -29,7 +29,8 @@ final class OAuthRedirectResponseFactoryTest extends UnitTestCase
         $responseBuilder->expects($this->once())
             ->method('build')
             ->with(
-                'Redirect to the provided redirect URI with authorization code.',
+                'Redirect to the provided '.
+                'redirect URI with authorization code.',
                 [],
                 [$locationHeader]
             )

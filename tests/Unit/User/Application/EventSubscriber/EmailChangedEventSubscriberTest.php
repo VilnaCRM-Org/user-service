@@ -37,20 +37,28 @@ final class EmailChangedEventSubscriberTest extends UnitTestCase
         parent::setUp();
 
         $this->userFactory = new UserFactory();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory($this->faker->numberBetween(1, 10));
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
         $this->uuidTransformer = new UuidTransformer();
         $this->emailChangedEventFactory = new EmailChangedEventFactory();
         $this->sendEventFactory = new ConfirmationEmailSendEventFactory();
-        $this->confirmationEmailFactory = new ConfirmationEmailFactory($this->sendEventFactory);
+        $this->confirmationEmailFactory =
+            new ConfirmationEmailFactory($this->sendEventFactory);
         $this->commandFactory = new SendConfirmationEmailCommandFactory();
     }
 
     public function testInvoke(): void
     {
         $commandBus = $this->createMock(CommandBusInterface::class);
-        $tokenFactory = $this->createMock(ConfirmationTokenFactoryInterface::class);
-        $mockConfirmationEmailFactory = $this->createMock(ConfirmationEmailFactoryInterface::class);
-        $emailCmdFactory = $this->createMock(SendConfirmationEmailCommandFactoryInterface::class);
+        $tokenFactory =
+            $this->createMock(ConfirmationTokenFactoryInterface::class);
+        $mockConfirmationEmailFactory = $this->createMock(
+            ConfirmationEmailFactoryInterface::class
+        );
+        $emailCmdFactory = $this->createMock(
+            SendConfirmationEmailCommandFactoryInterface::class
+        );
 
         $subscriber = new EmailChangedEventSubscriber(
             $commandBus,
@@ -67,7 +75,10 @@ final class EmailChangedEventSubscriberTest extends UnitTestCase
             $this->uuidTransformer->transformFromString($this->faker->uuid())
         );
 
-        $event = $this->emailChangedEventFactory->create($user, $this->faker->uuid());
+        $event = $this->emailChangedEventFactory->create(
+            $user,
+            $this->faker->uuid()
+        );
 
         $token = $this->confirmationTokenFactory->create($this->faker->uuid());
         $tokenFactory->expects($this->once())
@@ -75,14 +86,15 @@ final class EmailChangedEventSubscriberTest extends UnitTestCase
             ->with($this->equalTo($user->getId()))
             ->willReturn($token);
 
-        $confirmationEmail = $this->confirmationEmailFactory->create($token, $user);
+        $confirmationEmail =
+            $this->confirmationEmailFactory->create($token, $user);
         $mockConfirmationEmailFactory->expects($this->once())
             ->method('create')
             ->with($this->equalTo($token), $this->equalTo($user))
             ->willReturn($confirmationEmail);
 
-
-        $sendConfirmationEmailCommand = $this->commandFactory->create($confirmationEmail);
+        $sendConfirmationEmailCommand =
+            $this->commandFactory->create($confirmationEmail);
         $emailCmdFactory->expects($this->once())
             ->method('create')
             ->with($this->equalTo($confirmationEmail))

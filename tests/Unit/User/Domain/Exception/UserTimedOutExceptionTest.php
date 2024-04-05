@@ -18,7 +18,8 @@ final class UserTimedOutExceptionTest extends UnitTestCase
         $exception = new UserTimedOutException($timeOutTill);
 
         $this->assertEquals(
-            'Cannot send new email till ' . $timeOutTill->format(DateTimeInterface::ATOM),
+            'Cannot send new email till ' .
+            $timeOutTill->format(DateTimeInterface::ATOM),
             $exception->getMessage()
         );
     }
@@ -28,7 +29,10 @@ final class UserTimedOutExceptionTest extends UnitTestCase
         $timeOutTill = new DateTimeImmutable('+1 hour');
         $exception = new UserTimedOutException($timeOutTill);
 
-        $this->assertEquals('error.user-timed-out', $exception->getTranslationTemplate());
+        $this->assertEquals(
+            'error.user-timed-out',
+            $exception->getTranslationTemplate()
+        );
     }
 
     public function testGetTranslationArgs(): void

@@ -107,8 +107,7 @@ final class UserContext implements Context
         string $id,
         string $password
     ): void {
-        $user = $this->userRepository->find($id) ?? $this->userFactory->
-        create(
+        $user = $this->userRepository->find($id) ?? $this->userFactory->create(
             $this->faker->email,
             $this->faker->name,
             $password,

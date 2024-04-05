@@ -7,7 +7,7 @@ email:
 initials:
   invalid:
     format: 'Invalid full name format'
-    parts: 'Name and surname both should have at least 1 character'
+    characters: 'Initials should not contain special characters'
 password:
   invalid:
     length: 'Password must be between 8 and 64 characters long'

@@ -21,9 +21,11 @@ final class ResendEmailEndpointFactoryTest extends UnitTestCase
 {
     public function testCreateEndpoint(): void
     {
-        $userNotFoundResponseFactory = $this->createMock(UserNotFoundResponseFactory::class);
+        $userNotFoundResponseFactory =
+            $this->createMock(UserNotFoundResponseFactory::class);
         $sendAgainResponseFactory = $this->createMock(EmailSendFactory::class);
-        $timedOutResponseFactory = $this->createMock(UserTimedOutResponseFactory::class);
+        $timedOutResponseFactory =
+            $this->createMock(UserTimedOutResponseFactory::class);
         $emptyRequestFactory = $this->createMock(EmptyRequestFactory::class);
         $parameterFactory = $this->createMock(UuidUriParameterFactory::class);
 
@@ -31,11 +33,19 @@ final class ResendEmailEndpointFactoryTest extends UnitTestCase
         $sendAgainResponse = $this->createMock(Response::class);
         $timedOutResponse = $this->createMock(Response::class);
 
-        $userNotFoundResponseFactory->expects($this->once())->method('getResponse')->willReturn($userNotFoundResponse);
-        $sendAgainResponseFactory->expects($this->once())->method('getResponse')->willReturn($sendAgainResponse);
-        $timedOutResponseFactory->expects($this->once())->method('getResponse')->willReturn($timedOutResponse);
-        $emptyRequestFactory->expects($this->once())->method('getRequest');
-        $parameterFactory->expects($this->once())->method('getParameter');
+        $userNotFoundResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($userNotFoundResponse);
+        $sendAgainResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($sendAgainResponse);
+        $timedOutResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($timedOutResponse);
+        $emptyRequestFactory->expects($this->once())
+            ->method('getRequest');
+        $parameterFactory->expects($this->once())
+            ->method('getParameter');
 
         $factory = new ResendEmailEndpointFactory(
             $userNotFoundResponseFactory,
