@@ -16,7 +16,8 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly ManagerRegistry $registry
+        private readonly ManagerRegistry $registry,
+        private readonly int $batchSize,
     ) {
         parent::__construct($this->registry, User::class);
     }
@@ -43,9 +44,15 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
      */
     public function saveBatch(array $users): void
     {
-        foreach ($users as $user) {
-            $this->entityManager->persist($user);
+        $userCount = count($users);
+        for ($i = 1; $i <= $userCount; ++$i) {
+            $this->entityManager->persist($users[$i - 1]);
+            if ($i % $this->batchSize === 0) {
+                $this->entityManager->flush();
+                $this->entityManager->clear();
+            }
         }
         $this->entityManager->flush();
+        $this->entityManager->clear();
     }
 }

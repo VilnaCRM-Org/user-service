@@ -9,6 +9,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Repository\MariaDBUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -19,6 +20,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 final class MariaDBUserRepositoryTest extends UnitTestCase
 {
+    private const BATCH_SIZE = 3;
     private EntityManagerInterface|MockObject $entityManager;
     private ManagerRegistry|MockObject $registry;
     private MariaDBUserRepository $userRepository;
@@ -34,7 +36,7 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
         $this->registry =
             $this->createMock(ManagerRegistry::class);
         $this->userRepository =
-            new MariaDBUserRepository($this->entityManager, $this->registry);
+            $this->getRepository($this->faker->numberBetween(1, 20));
         $this->userFactory = new UserFactory();
         $this->transformer = new UuidTransformer();
     }
@@ -79,8 +81,59 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
             ->method('flush');
 
         $this->userRepository->save($user);
+    }
 
-        $this->addToAssertionCount(1);
+    public function testSaveBatch(): void
+    {
+        $users = [];
+        for ($i = 0; $i < self::BATCH_SIZE; $i++) {
+            $email = $this->faker->email();
+            $initials = $this->faker->name();
+            $password = $this->faker->password();
+
+            $users[] = $this->userFactory->create(
+                $email,
+                $initials,
+                $password,
+                $this->transformer->transformFromString($this->faker->uuid())
+            );
+        }
+
+        $this->testSaveBatchSetEntityManagerExpectations($users);
+
+        $this->entityManager->expects($this->atLeast(1))
+            ->method('flush');
+        $this->entityManager->expects($this->atLeast(1))
+            ->method('clear');
+
+        $this->userRepository->saveBatch($users);
+    }
+
+    public function testSaveBatchExactBatchSize(): void
+    {
+        $repository = $this->getRepository();
+        $users = [];
+        for ($i = 0; $i < self::BATCH_SIZE; $i++) {
+            $email = $this->faker->email();
+            $initials = $this->faker->name();
+            $password = $this->faker->password();
+
+            $users[] = $this->userFactory->create(
+                $email,
+                $initials,
+                $password,
+                $this->transformer->transformFromString($this->faker->uuid())
+            );
+        }
+
+        $this->testSaveBatchSetEntityManagerExpectations($users);
+
+        $this->entityManager->expects($this->exactly(2))
+            ->method('flush');
+        $this->entityManager->expects($this->exactly(2))
+            ->method('clear');
+
+        $repository->saveBatch($users);
     }
 
     public function testDelete(): void
@@ -103,8 +156,6 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
             ->method('flush');
 
         $this->userRepository->delete($user);
-
-        $this->addToAssertionCount(1);
     }
 
     private function testFindByEmailReturnsUserSetExpectations(
@@ -135,5 +186,33 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
         $this->registry->expects($this->once())
             ->method('getManagerForClass')
             ->willReturn($this->entityManager);
+    }
+
+    private function getRepository(
+        int $batchSize = self::BATCH_SIZE
+    ): UserRepositoryInterface {
+        return new MariaDBUserRepository(
+            $this->entityManager,
+            $this->registry,
+            $batchSize
+        );
+    }
+
+    /**
+     * @param array<UserInterface> $users
+     */
+    private function testSaveBatchSetEntityManagerExpectations(
+        array $users
+    ): void {
+        $this->entityManager->expects($this->exactly(self::BATCH_SIZE))
+            ->method('persist')
+            ->withConsecutive(
+                ...array_map(
+                    static function ($user) {
+                        return [$user];
+                    },
+                    $users
+                )
+            );
     }
 }

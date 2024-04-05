@@ -53,6 +53,10 @@ services:
         arguments:
             $tokenLength: '%env(int:CONFIRMATION_TOKEN_LENGTH)%'
 
+    App\User\Infrastructure\Repository\MariaDBUserRepository:
+        arguments:
+            $batchSize: '%env(int:BATCH_SIZE)%'
+
     # Event listener for OAuth2 password grant
     App\User\Application\EventListener\UserResolveListener:
         tags:

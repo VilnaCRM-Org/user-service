@@ -30,7 +30,7 @@ export default class InsertUsersUtils {
             ]);
     }
 
-    getInsertedUsers(){
+    loadInsertedUsers(){
         return JSON.parse(open(`../${this.utils.getConfig()['usersFileName']}`));
     }
 

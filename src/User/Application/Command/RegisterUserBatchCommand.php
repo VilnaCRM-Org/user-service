@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\User\Application\Command;
 
 use App\Shared\Domain\Bus\Command\CommandInterface;
-use Doctrine\Common\Collections\ArrayCollection;
+use App\User\Domain\Collection\UserCollection;
 
 final class RegisterUserBatchCommand implements CommandInterface
 {
     private RegisterUserBatchCommandResponse $response;
 
     public function __construct(
-        public readonly ArrayCollection $users,
+        public readonly UserCollection $users,
     ) {
     }
 

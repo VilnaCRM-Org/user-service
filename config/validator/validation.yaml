@@ -98,6 +98,29 @@ App\User\Application\MutationInput\ConfirmUserMutationInput:
       - NotBlank: { message: 'not.blank' }
       - NotNull: ~
 
+App\User\Application\MutationInput\CreateUserBatchMutationInput:
+  properties:
+    users:
+      - App\Shared\Application\Validator\CreateUserBatch: ~
+      - All:
+          - Collection:
+              email:
+                - Email: { message: 'email.invalid' }
+                - NotBlank: { message: 'not.blank' }
+                - Length:
+                    max: 255
+                - App\Shared\Application\Validator\UniqueEmail: ~
+              initials:
+                - NotBlank: { message: 'not.blank' }
+                - Length:
+                    max: 255
+                - App\Shared\Application\Validator\Initials: ~
+              password:
+                - NotBlank: { message: 'not.blank' }
+                - Length:
+                    max: 255
+                - App\Shared\Application\Validator\Password: ~
+
 App\User\Application\MutationInput\CreateUserMutationInput:
   properties:
     email:

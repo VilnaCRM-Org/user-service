@@ -10,7 +10,7 @@ const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 
-const users = insertUsersUtils.getInsertedUsers()
+const users = insertUsersUtils.loadInsertedUsers()
 
 export function setup() {
     return {

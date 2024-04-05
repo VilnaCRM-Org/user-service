@@ -10,12 +10,12 @@ use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\RegisterUserBatchCommand;
 use App\User\Application\Command\RegisterUserBatchCommandResponse;
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
@@ -45,7 +45,7 @@ final readonly class RegisterUserBatchCommandHandler implements
         $this->userRepository->saveBatch($users);
 
         $command->setResponse(new RegisterUserBatchCommandResponse(
-            new ArrayCollection($users)
+            new UserCollection($users)
         ));
 
         $this->eventBus->publish(...$events);

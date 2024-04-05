@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\User\Application\Command;
 
 use App\Shared\Domain\Bus\Command\CommandResponseInterface;
-use Doctrine\Common\Collections\ArrayCollection;
+use App\User\Domain\Collection\UserCollection;
 
 final readonly class RegisterUserBatchCommandResponse implements
     CommandResponseInterface
 {
-    public function __construct(public ArrayCollection $users)
+    public function __construct(public UserCollection $users)
     {
     }
 }

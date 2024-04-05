@@ -115,7 +115,7 @@ load-tests: build-k6-docker ## Run load tests
 	tests/Load/run-load-tests.sh
 
 load-tests-prepare-users:
-	$(K6) /loadTests/scripts/prepareUsers.js -e scenarioName=$(SCENARIO_NAME) -e run_smoke=$(RUN_SMOKE) -e run_average=$(RUN_AVERAGE) -e run_stress=$(RUN_STRESS) -e run_spike=$(RUN_SPIKE)
+	$(K6) /loadTests/utils/prepareUsers.js -e scenarioName=$(SCENARIO_NAME) -e run_smoke=$(RUN_SMOKE) -e run_average=$(RUN_AVERAGE) -e run_stress=$(RUN_STRESS) -e run_spike=$(RUN_SPIKE)
 
 execute-smoke-script:
 	$(K6) /loadTests/scripts/$(SCENARIO_NAME).js $(SMOKE_CLI_OPTIONS)
