@@ -17,6 +17,7 @@ export default {
   },
 
   privacy: {
+    color: 'inherit',
     textDecoration: 'none',
     padding: '0.5rem 1rem',
     borderRadius: '0.5rem',
@@ -29,6 +30,7 @@ export default {
   },
 
   usage_policy: {
+    color: 'inherit',
     textDecoration: 'none',
     padding: '0.5rem 1rem',
     borderRadius: '0.5rem',

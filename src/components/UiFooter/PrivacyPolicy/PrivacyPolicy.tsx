@@ -11,22 +11,22 @@ function PrivacyPolicy(): React.ReactElement {
 
   return (
     <Stack direction="row" alignItems="center" sx={styles.wrapper}>
-      <Link
-        sx={styles.privacy}
-        href="https://github.com/VilnaCRM-Org/website/blob/main/README.md"
-      >
-        <UiTypography variant="medium16" sx={styles.textColor}>
+      <UiTypography variant="medium16" sx={styles.textColor}>
+        <Link
+          sx={styles.privacy}
+          href="https://github.com/VilnaCRM-Org/website/blob/main/README.md"
+        >
           {t('footer.privacy')}
-        </UiTypography>
-      </Link>
-      <Link
-        sx={styles.usage_policy}
-        href="https://github.com/VilnaCRM-Org/website/blob/main/README.md"
-      >
-        <UiTypography variant="medium16" sx={styles.textColor}>
+        </Link>
+      </UiTypography>
+      <UiTypography variant="medium16" sx={styles.textColor}>
+        <Link
+          sx={styles.usage_policy}
+          href="https://github.com/VilnaCRM-Org/website/blob/main/README.md"
+        >
           {t('footer.usage_policy')}
-        </UiTypography>
-      </Link>
+        </Link>
+      </UiTypography>
     </Stack>
   );
 }

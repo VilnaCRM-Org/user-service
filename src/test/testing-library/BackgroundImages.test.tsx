@@ -10,7 +10,7 @@ width: 100px;
 height: 100px;
 `;
 
-jest.mock('./styles', () => ({
+jest.mock('../../features/landing/components/BackgroundImages/styles', () => ({
   vector: {
     backgroundColor: 'red',
     width: '100px',

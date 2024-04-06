@@ -10,8 +10,9 @@ const emptySocialLinks: SocialLink[] = [];
 
 const socialLinks: SocialLink[] = [testSocialLink];
 
-jest.mock('../SocialItem/SocialItem', () =>
-  jest.fn(() => <div data-testid="social-item" />)
+jest.mock(
+  '../../features/landing/components/AuthSection/SocialItem/SocialItem',
+  () => jest.fn(() => <div data-testid="social-item" />)
 );
 
 describe('SocialList component', () => {

@@ -5,8 +5,9 @@ import { testSocialItem } from '../../features/landing/components/SocialMedia/co
 import SocialMediaList from '../../features/landing/components/SocialMedia/SocialMediaList/SocialMediaList';
 import { SocialMedia } from '../../features/landing/types/social-media/index';
 
-jest.mock('../SocialMediaItem/SocialMediaItem', () =>
-  jest.fn(() => <div data-testid="social-media-item" />)
+jest.mock(
+  '../../features/landing/components/SocialMedia/SocialMediaItem/SocialMediaItem',
+  () => jest.fn(() => <div data-testid="social-media-item" />)
 );
 
 const sociaLMediaTestId: string = 'social-media-item';

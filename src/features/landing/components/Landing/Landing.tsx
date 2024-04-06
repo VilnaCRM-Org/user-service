@@ -1,4 +1,4 @@
-import { Container } from '@mui/material';
+import { Box, Container } from '@mui/material';
 import Head from 'next/head';
 import { useTranslation } from 'react-i18next';
 
@@ -24,15 +24,17 @@ function Landing(): React.ReactElement {
         />
       </Head>
       <Header />
-      <BackgroundImages />
-      <AboutUs />
-      <Container maxWidth="xl">
-        <WhyUs />
-      </Container>
-      <ForWhoSection />
-      <Container maxWidth="xl">
-        <Possibilities />
-      </Container>
+      <Box sx={{ position: 'relative' }}>
+        <BackgroundImages />
+        <AboutUs />
+        <Container maxWidth="xl">
+          <WhyUs />
+        </Container>
+        <ForWhoSection />
+        <Container maxWidth="xl">
+          <Possibilities />
+        </Container>
+      </Box>
       <AuthSection />
       <UiFooter />
     </>

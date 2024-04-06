@@ -12,6 +12,7 @@ const validateFullName: (fullName: string) => string | boolean = (
   if (!isValidFullNameFormat(trimmedFullName)) {
     return t('sign_up.form.name_input.error_text');
   }
+
   return true;
 };
 

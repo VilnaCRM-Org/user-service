@@ -8,11 +8,11 @@ import styles from './styles';
 function VilnaCRMEmail(): React.ReactElement {
   return (
     <Box sx={styles.emailWrapper}>
-      <Link href="mailto:info@vilnacrm.com" sx={styles.emailLink}>
-        <UiTypography variant="medium15" sx={styles.emailText}>
+      <UiTypography variant="medium15" sx={styles.emailText}>
+        <Link href="mailto:info@vilnacrm.com" sx={styles.emailLink}>
           {process.env.NEXT_PUBLIC_VILNACRM_GMAIL}
-        </UiTypography>
-      </Link>
+        </Link>
+      </UiTypography>
     </Box>
   );
 }

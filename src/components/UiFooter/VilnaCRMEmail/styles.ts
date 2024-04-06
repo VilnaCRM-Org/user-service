@@ -16,6 +16,7 @@ export default {
   },
 
   emailLink: {
+    color: 'inherit',
     textDecoration: 'none',
   },
 

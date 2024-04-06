@@ -5,7 +5,7 @@ import Cards from '../../features/landing/components/ForWhoSection/Cards/Cards';
 
 const cardTitle: RegExp = /A private entrepreneur/;
 const cardText: string = 'Our CRM is ideal if you:';
-const cardBusinessText: RegExp = /medium-scale local project/;
+const cardBusinessText: RegExp = /Medium-scale local project/;
 const cardButton: string = 'Try it out';
 
 describe('Cards component', () => {

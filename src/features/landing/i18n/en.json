@@ -74,7 +74,7 @@
     "button_text": "Try it out",
     "heading_secondary": "Our CRM is ideal if you:",
     "card_text_title": "A private entrepreneur is a psychologist, <br /> tutor or dropshipper",
-    "card_text_business": "medium-scale local project - online courses, design studio or small outsourcing",
+    "card_text_business": "Medium-scale local project - online courses, design studio or small outsourcing",
     "vector_alt": "Vector",
     "aria_label": "Link to registration"
   },
@@ -94,10 +94,10 @@
       "twitter": "Twitter"
     },
     "cards_texts": {
-      "text_for_cases": "For cases when you did not find <br /> the desired ready-made integration ",
+      "text_for_cases": "For cases when you did not find  the desired ready-made integration ",
       "text_integrate": "Integrate familiar <1 href='/'>services</1> in a few clicks",
-      "text_get_data": "Get data about any event in CRM <br /> and automate complex business processes",
-      "text_for_custom": "For custom integrations <br /> with specific products"
+      "text_get_data": "Get data about any event in CRM and automate complex business processes",
+      "text_for_custom": "For custom integrations  with specific products"
     },
     "service_text": {
       "title": "Services",
@@ -119,6 +119,7 @@
       "name_input": {
         "label": "Your name and surname",
         "placeholder": "Mykhailo Svitskyi",
+        "special_characters_error": "Your name must not contain special characters",
         "required": "Your first and last name are required fields",
         "error_text": "Invalid full name format"
       },

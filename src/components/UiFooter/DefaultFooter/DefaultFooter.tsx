@@ -27,7 +27,7 @@ function DefaultFooter({
   );
 
   return (
-    <Stack sx={styles.footerWrapper}>
+    <Stack sx={styles.footerWrapper} data-testid="default-footer">
       <Stack height="4.188rem" alignItems="center" flexDirection="row">
         <Box sx={styles.topWrapper}>
           <Stack

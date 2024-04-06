@@ -31,6 +31,7 @@ function Mobile({
         justifyContent="space-between"
         marginTop="1.125rem"
         paddingBottom="0.75rem"
+        data-testid="mobile-component"
       >
         <Link href="/#">
           <Image

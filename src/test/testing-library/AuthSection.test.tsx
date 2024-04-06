@@ -15,13 +15,13 @@ jest.mock('@apollo/client', () => ({
   }): JSX.Element => <div>{children}</div>,
 }));
 
-jest.mock('./AuthForm', () => ({
+jest.mock('../../features/landing/components/AuthSection/AuthForm', () => ({
   AuthForm: (): React.ReactNode => (
     <div data-testid={mockAuthForm}>Mock AuthForm</div>
   ),
 }));
 
-jest.mock('./SignUpText', () => ({
+jest.mock('../../features/landing/components/AuthSection/SignUpText', () => ({
   SignUpText: (): React.ReactNode => (
     <div data-testid={mockAuthText}>Mock SignUpText</div>
   ),

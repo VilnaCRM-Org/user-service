@@ -11,7 +11,7 @@ const config: Config = {
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
   testMatch: [
-    '<rootDir>/src/features/landing/components/**/*.test.tsx',
+    '<rootDir>/src/test/testing-library**/*.test.tsx',
     '<rootDir>/src/test/unit/**/*.test.ts',
   ],
   preset: 'ts-jest',
