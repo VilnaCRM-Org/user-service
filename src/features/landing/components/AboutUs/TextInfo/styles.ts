@@ -52,6 +52,7 @@ export default {
   },
 
   button: {
+    zIndex: 2,
     '@media (max-width: 419.98px)': {
       marginBottom: '1.375rem',
     },

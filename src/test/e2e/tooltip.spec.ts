@@ -18,14 +18,14 @@ async function handleTooltip(
 test.describe('Checking if the tooltips are working', () => {
   test('Tooltip services test', async ({ page }) => {
     await handleTooltip(page, {
-      name: 'Services Integrate in a few',
+      name: 'Integrate in a few',
       element: page.getByText('services').nth(2),
     });
   });
 
   test('Tooltip password test', async ({ page }) => {
     await handleTooltip(page, {
-      name: 'We recommend using: lowercase',
+      name: 'We recommend using:',
       element: page.getByRole('img', { name: 'Password tip mark' }),
     });
   });

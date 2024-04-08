@@ -31,7 +31,11 @@ function UiTextFieldForm<T extends FieldValues>({
             fullWidth={fullWidth}
           />
           {error && (
-            <UiTypography variant="medium14" sx={styles.errorText}>
+            <UiTypography
+              variant="medium14"
+              sx={styles.errorText}
+              data-testid="error-text"
+            >
               {error.message}
             </UiTypography>
           )}

@@ -13,6 +13,7 @@ export default {
   },
 
   button: {
+    zIndex: 2,
     display: 'none',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       display: 'block',

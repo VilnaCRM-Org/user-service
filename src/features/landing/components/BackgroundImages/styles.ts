@@ -9,7 +9,7 @@ export default {
     backgroundRepeat: 'no-repeat',
     width: '100dvw',
     height: '100%',
-    zIndex: '-2',
+    zIndex: '1',
     position: 'absolute',
     left: '50%',
     top: '2.6%',

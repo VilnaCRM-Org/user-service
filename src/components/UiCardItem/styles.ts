@@ -37,6 +37,7 @@ export default {
 
   smallText: {
     mt: '0.625rem',
+    zIndex: 2,
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       a: {
         textDecoration: 'none',

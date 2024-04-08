@@ -37,6 +37,7 @@ export default {
   },
 
   button: {
+    zIndex: 2,
     display: 'inline-block',
     [`@media (max-width: 968px)`]: {
       display: 'none',
