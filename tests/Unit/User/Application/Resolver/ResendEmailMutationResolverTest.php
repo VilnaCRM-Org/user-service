@@ -30,6 +30,11 @@ final class ResendEmailMutationResolverTest extends UnitTestCase
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
     private ConfirmationEmailFactoryInterface $confirmationEmailFactory;
     private SendConfirmationEmailCommandFactoryInterface $emailCommandFactory;
+    private CommandBusInterface $commandBus;
+    private TokenRepositoryInterface $tokenRepository;
+    private ConfirmationTokenFactoryInterface $tokenFactory;
+    private ConfirmationEmailFactoryInterface $mockConfirmationEmailFactory;
+    private SendConfirmationEmailCommandFactoryInterface $mockEmailCommandFactory;
 
     protected function setUp(): void
     {

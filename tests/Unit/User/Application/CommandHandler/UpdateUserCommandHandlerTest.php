@@ -10,6 +10,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\CommandHandler\UpdateUserCommandHandler;
 use App\User\Application\Factory\UpdateUserCommandFactory;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\InvalidPasswordException;
 use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
@@ -24,7 +25,6 @@ use Symfony\Component\Uid\Uuid as SymfonyUuid;
 
 final class UpdateUserCommandHandlerTest extends UnitTestCase
 {
-    private UpdateUserCommandHandler $handler;
     private EventBusInterface $eventBus;
     private PasswordHasherFactoryInterface $hasherFactory;
     private UserRepositoryInterface $userRepository;
@@ -54,15 +54,6 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
         $this->updateUserCommandFactory = new UpdateUserCommandFactory();
-
-        $this->handler = new UpdateUserCommandHandler(
-            $this->eventBus,
-            $this->hasherFactory,
-            $this->userRepository,
-            $this->uuidFactory,
-            $this->emailChangedEventFactory,
-            $this->passwordChangedFactory
-        );
     }
 
     public function testInvoke(): void
@@ -87,6 +78,55 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
 
         $command = $this->updateUserCommandFactory->create($user, $updateData);
 
+        $this->testInvokeSetExpectations($user);
+
+        $this->getHandler()->__invoke($command);
+    }
+
+    public function testInvokeInvalidPassword(): void
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->firstName() . ' ' . $this->faker->lastName();
+        $password = $this->faker->password();
+        $userId =
+            $this->uuidTransformer->transformFromString($this->faker->uuid());
+
+        $user =
+            $this->userFactory->create($email, $initials, $password, $userId);
+
+        $oldPassword = $this->faker->password();
+        $newPassword = $this->faker->password();
+        $updateData = new UserUpdate(
+            $this->faker->email(),
+            $this->faker->firstName(),
+            $newPassword,
+            $oldPassword,
+        );
+
+        $command = $this->updateUserCommandFactory->create($user, $updateData);
+
+        $this->testInvokeInvalidPasswordSetExpectations();
+
+        $this->expectException(InvalidPasswordException::class);
+
+        $this->getHandler()->__invoke($command);
+    }
+
+    private function testInvokeInvalidPasswordSetExpectations(): void
+    {
+        $hasher =
+            $this->createMock(PasswordHasherInterface::class);
+        $hasher->expects($this->once())
+            ->method('verify')
+            ->willReturn(false);
+        $this->hasherFactory->expects($this->once())
+            ->method('getPasswordHasher')
+            ->willReturn($hasher);
+    }
+
+    private function testInvokeSetExpectations(
+        UserInterface $user
+    ): void {
         $this->uuidFactory->expects($this->once())
             ->method('create')
             ->willReturn(new SymfonyUuid($this->faker->uuid()));
@@ -112,43 +152,17 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
 
         $this->eventBus->expects($this->once())
             ->method('publish');
-
-        $this->handler->__invoke($command);
     }
 
-    public function testInvokeInvalidPassword(): void
+    private function getHandler(): UpdateUserCommandHandler
     {
-        $email = $this->faker->email();
-        $initials = $this->faker->firstName() . ' ' . $this->faker->lastName();
-        $password = $this->faker->password();
-        $userId =
-            $this->uuidTransformer->transformFromString($this->faker->uuid());
-
-        $user =
-            $this->userFactory->create($email, $initials, $password, $userId);
-
-        $oldPassword = $this->faker->password();
-        $newPassword = $this->faker->password();
-        $updateData = new UserUpdate(
-            $this->faker->email(),
-            $this->faker->firstName(),
-            $newPassword,
-            $oldPassword,
+        return new UpdateUserCommandHandler(
+            $this->eventBus,
+            $this->hasherFactory,
+            $this->userRepository,
+            $this->uuidFactory,
+            $this->emailChangedEventFactory,
+            $this->passwordChangedFactory
         );
-
-        $command = $this->updateUserCommandFactory->create($user, $updateData);
-
-        $hasher =
-            $this->createMock(PasswordHasherInterface::class);
-        $hasher->expects($this->once())
-            ->method('verify')
-            ->willReturn(false);
-        $this->hasherFactory->expects($this->once())
-            ->method('getPasswordHasher')
-            ->willReturn($hasher);
-
-        $this->expectException(InvalidPasswordException::class);
-
-        $this->handler->__invoke($command);
     }
 }

@@ -22,6 +22,11 @@ final class UserUpdateMutationResolverTest extends UnitTestCase
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;
     private UpdateUserCommandFactoryInterface $updateUserCommandFactory;
+    private CommandBusInterface $commandBus;
+    private MutationInputValidator $validator;
+    private UpdateUserMutationInputTransformer $transformer;
+    private UpdateUserCommandFactoryInterface $mockUpdateUserCommandFactory;
+    private UserUpdateMutationResolver $resolver;
 
     protected function setUp(): void
     {

@@ -6,6 +6,7 @@ namespace App\Tests\Unit\User\Infrastructure\Repository;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Infrastructure\Repository\MariaDBUserRepository;
@@ -51,30 +52,7 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
             $this->transformer->transformFromString($this->faker->uuid())
         );
 
-        $unitOfWork = $this->createMock(UnitOfWork::class);
-        $persister = $this->createMock(EntityPersister::class);
-
-        $this->entityManager->expects($this->once())
-            ->method('getClassMetadata')
-            ->willReturn(
-                $this->createMock(ClassMetadata::class)
-            );
-        $this->entityManager->expects($this->once())
-            ->method('getUnitOfWork')
-            ->willReturn($unitOfWork);
-
-        $unitOfWork->expects($this->once())
-            ->method('getEntityPersister')
-            ->willReturn($persister);
-
-        $persister->expects($this->once())
-            ->method('load')
-            ->with(['email' => $email], null, null, [], null, 1, null)
-            ->willReturn($expectedUser);
-
-        $this->registry->expects($this->once())
-            ->method('getManagerForClass')
-            ->willReturn($this->entityManager);
+        $this->testFindByEmailReturnsUserSetExpectations($expectedUser, $email);
 
         $user = $this->userRepository->findByEmail($email);
 
@@ -127,5 +105,35 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
         $this->userRepository->delete($user);
 
         $this->addToAssertionCount(1);
+    }
+
+    private function testFindByEmailReturnsUserSetExpectations(
+        UserInterface $expectedUser,
+        string $email
+    ): void {
+        $unitOfWork = $this->createMock(UnitOfWork::class);
+        $persister = $this->createMock(EntityPersister::class);
+
+        $this->entityManager->expects($this->once())
+            ->method('getClassMetadata')
+            ->willReturn(
+                $this->createMock(ClassMetadata::class)
+            );
+        $this->entityManager->expects($this->once())
+            ->method('getUnitOfWork')
+            ->willReturn($unitOfWork);
+
+        $unitOfWork->expects($this->once())
+            ->method('getEntityPersister')
+            ->willReturn($persister);
+
+        $persister->expects($this->once())
+            ->method('load')
+            ->with(['email' => $email], null, null, [], null, 1, null)
+            ->willReturn($expectedUser);
+
+        $this->registry->expects($this->once())
+            ->method('getManagerForClass')
+            ->willReturn($this->entityManager);
     }
 }

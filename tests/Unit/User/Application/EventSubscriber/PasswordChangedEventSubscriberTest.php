@@ -18,6 +18,10 @@ final class PasswordChangedEventSubscriberTest extends UnitTestCase
 {
     private PasswordChangedEventFactoryInterface $passwordChangedEventFactory;
     private EmailFactoryInterface $emailFactory;
+    private MailerInterface $mailer;
+    private EmailFactoryInterface $mockEmailFactory;
+    private TranslatorInterface $translator;
+    private PasswordChangedEventSubscriber $subscriber;
 
     protected function setUp(): void
     {
@@ -25,20 +29,18 @@ final class PasswordChangedEventSubscriberTest extends UnitTestCase
 
         $this->passwordChangedEventFactory = new PasswordChangedEventFactory();
         $this->emailFactory = new EmailFactory();
+        $this->mailer = $this->createMock(MailerInterface::class);
+        $this->mockEmailFactory = $this->createMock(EmailFactoryInterface::class);
+        $this->translator = $this->createMock(TranslatorInterface::class);
+        $this->subscriber = new PasswordChangedEventSubscriber(
+            $this->mailer,
+            $this->mockEmailFactory,
+            $this->translator
+        );
     }
 
     public function testInvoke(): void
     {
-        $mailer = $this->createMock(MailerInterface::class);
-        $emailFactory = $this->createMock(EmailFactoryInterface::class);
-        $translator = $this->createMock(TranslatorInterface::class);
-
-        $subscriber = new PasswordChangedEventSubscriber(
-            $mailer,
-            $emailFactory,
-            $translator
-        );
-
         $emailAddress = $this->faker->email();
         $event = $this->passwordChangedEventFactory->create(
             $emailAddress,
@@ -51,15 +53,15 @@ final class PasswordChangedEventSubscriberTest extends UnitTestCase
             $this->faker->text(),
             ''
         );
-        $emailFactory->expects($this->once())
+        $this->mockEmailFactory->expects($this->once())
             ->method('create')
             ->willReturn($email);
 
-        $mailer->expects($this->once())
+        $this->mailer->expects($this->once())
             ->method('send')
             ->with($this->equalTo($email));
 
-        $subscriber->__invoke($event);
+        $this->subscriber->__invoke($event);
     }
 
     public function testSubscribedTo(): void

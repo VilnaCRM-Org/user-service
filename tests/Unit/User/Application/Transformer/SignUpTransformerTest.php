@@ -18,6 +18,10 @@ final class SignUpTransformerTest extends UnitTestCase
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;
     private UuidFactory $symfonyUuidFactory;
+    private UuidTransformer $uuidTransformerMock;
+    private UuidFactory $uuidFactoryMock;
+    private UserFactoryInterface $userFactoryMock;
+    private SignUpTransformer $signUpTransformer;
 
     protected function setUp(): void
     {

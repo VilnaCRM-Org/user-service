@@ -120,7 +120,7 @@ workspace {
                 tokenRepository -> token "save and load"
                 userRepository -> database "accesses data"
                 tokenRepository -> cache "accesses data"
-                mailer -> sqs "sends emails"
+                mailer -> sqs "publish message"
             }
         }
     }

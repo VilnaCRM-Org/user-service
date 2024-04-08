@@ -11,6 +11,7 @@ use App\User\Application\CommandHandler\RegisterUserCommandHandler;
 use App\User\Application\Factory\SignUpCommandFactory;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\Transformer\SignUpTransformer;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -26,7 +27,6 @@ final class SignUpCommandHandlerTest extends UnitTestCase
     private UserRepositoryInterface $userRepository;
     private SignUpTransformer $transformer;
     private EventBusInterface $eventBus;
-    private UuidFactory $uuidFactory;
     private UserRegisteredEventFactoryInterface $registeredEventFactory;
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;
@@ -42,7 +42,6 @@ final class SignUpCommandHandlerTest extends UnitTestCase
             $this->createMock(UserRepositoryInterface::class);
         $this->transformer = $this->createMock(SignUpTransformer::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
-        $this->uuidFactory = new UuidFactory();
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
         $this->signUpCommandFactory = new SignUpCommandFactory();
@@ -54,7 +53,7 @@ final class SignUpCommandHandlerTest extends UnitTestCase
             $this->userRepository,
             $this->transformer,
             $this->eventBus,
-            $this->uuidFactory,
+            new UuidFactory(),
             $this->registeredEventFactory
         );
     }
@@ -67,13 +66,19 @@ final class SignUpCommandHandlerTest extends UnitTestCase
         $password = $this->faker->password();
         $userId =
             $this->uuidTransformer->transformFromString($this->faker->uuid());
-
         $user =
             $this->userFactory->create($email, $initials, $password, $userId);
-
         $command =
             $this->signUpCommandFactory->create($email, $initials, $password);
 
+        $this->setExpectations($user);
+
+        $this->handler->__invoke($command);
+    }
+
+    private function setExpectations(
+        UserInterface $user
+    ): void {
         $this->transformer->expects($this->once())
             ->method('transformToUser')
             ->willReturn($user);
@@ -96,7 +101,5 @@ final class SignUpCommandHandlerTest extends UnitTestCase
 
         $this->eventBus->expects($this->once())
             ->method('publish');
-
-        $this->handler->__invoke($command);
     }
 }

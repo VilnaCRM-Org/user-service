@@ -10,6 +10,8 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\CommandHandler\ConfirmUserCommandHandler;
 use App\User\Application\Factory\ConfirmUserCommandFactory;
 use App\User\Application\Factory\ConfirmUserCommandFactoryInterface;
+use App\User\Domain\Entity\ConfirmationTokenInterface;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
@@ -23,7 +25,6 @@ use Symfony\Component\Uid\Factory\UuidFactory;
 
 final class ConfirmUserCommandHandlerTest extends UnitTestCase
 {
-    private ConfirmUserCommandHandler $handler;
     private UserRepositoryInterface $userRepository;
     private EventBusInterface $eventBus;
     private UuidFactory $mockUuidFactory;
@@ -39,15 +40,9 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->userRepository = $this->createMock(
-            UserRepositoryInterface::class
-        );
-        $this->eventBus = $this->createMock(
-            EventBusInterface::class
-        );
-        $this->mockUuidFactory = $this->createMock(
-            UuidFactory::class
-        );
+        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->eventBus = $this->createMock(EventBusInterface::class);
+        $this->mockUuidFactory = $this->createMock(UuidFactory::class);
         $this->mockUserConfirmedEventFactory = $this->createMock(
             UserConfirmedEventFactoryInterface::class
         );
@@ -58,13 +53,6 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
         $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
         $this->confirmationTokenFactory = new ConfirmationTokenFactory(
             $this->faker->numberBetween(1, 10)
-        );
-
-        $this->handler = new ConfirmUserCommandHandler(
-            $this->userRepository,
-            $this->eventBus,
-            $this->mockUuidFactory,
-            $this->mockUserConfirmedEventFactory
         );
     }
 
@@ -79,6 +67,43 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
         $user = $this->userFactory->create($email, $name, $password, $userId);
         $token = $this->confirmationTokenFactory->create($user->getId());
 
+        $this->testInvokeSetExpectations($user, $token);
+
+        $command = $this->confirmUserCommandFactory->create($token);
+        $this->getHandler()->__invoke($command);
+
+        $this->assertTrue($user->isConfirmed());
+    }
+
+    public function testInvokeUserNotFound(): void
+    {
+        $this->userRepository->expects($this->once())
+            ->method('find')
+            ->willReturn(null);
+
+        $this->expectException(UserNotFoundException::class);
+
+        $token = $this->confirmationTokenFactory->create(
+            $this->faker->uuid(),
+        );
+        $command = $this->confirmUserCommandFactory->create($token);
+        $this->getHandler()->__invoke($command);
+    }
+
+    private function getHandler(): ConfirmUserCommandHandler
+    {
+        return new ConfirmUserCommandHandler(
+            $this->userRepository,
+            $this->eventBus,
+            $this->mockUuidFactory,
+            $this->mockUserConfirmedEventFactory
+        );
+    }
+
+    private function testInvokeSetExpectations(
+        UserInterface $user,
+        ConfirmationTokenInterface $token
+    ): void {
         $this->userRepository->expects($this->once())
             ->method('find')
             ->willReturn($user);
@@ -102,25 +127,5 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
                     $this->faker->uuid()
                 )
             );
-
-        $command = $this->confirmUserCommandFactory->create($token);
-        $this->handler->__invoke($command);
-
-        $this->assertTrue($user->isConfirmed());
-    }
-
-    public function testInvokeUserNotFound(): void
-    {
-        $this->userRepository->expects($this->once())
-            ->method('find')
-            ->willReturn(null);
-
-        $this->expectException(UserNotFoundException::class);
-
-        $token = $this->confirmationTokenFactory->create(
-            $this->faker->uuid(),
-        );
-        $command = $this->confirmUserCommandFactory->create($token);
-        $this->handler->__invoke($command);
     }
 }

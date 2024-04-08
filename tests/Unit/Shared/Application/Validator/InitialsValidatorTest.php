@@ -100,7 +100,8 @@ final class InitialsValidatorTest extends UnitTestCase
             ->method('addViolation');
 
         $this->validator->validate(
-            $this->faker->firstName() . ' ' . $this->faker->lastName . '?',
+            $this->faker->firstName() . ' ' .
+            $this->faker->lastName() . '?',
             $this->constraint
         );
     }

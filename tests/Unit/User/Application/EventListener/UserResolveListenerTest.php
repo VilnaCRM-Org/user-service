@@ -6,9 +6,11 @@ namespace App\Tests\Unit\User\Application\EventListener;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\EventListener\UserResolveListener;
 use App\User\Application\Transformer\UserTransformer;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -29,6 +31,8 @@ final class UserResolveListenerTest extends UnitTestCase
 
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;
+    private Grant $mockGrant;
+    private AbstractClient $mockAbstractClient;
 
     protected function setUp(): void
     {
@@ -42,6 +46,8 @@ final class UserResolveListenerTest extends UnitTestCase
         $this->userTransformer = new UserTransformer(new UuidTransformer());
         $this->userFactory = new UserFactory();
         $this->transformer = new UuidTransformer();
+        $this->mockGrant = $this->createMock(Grant::class);
+        $this->mockAbstractClient = $this->createMock(AbstractClient::class);
     }
 
     public function testSuccessfulUserResolution(): void
@@ -49,42 +55,17 @@ final class UserResolveListenerTest extends UnitTestCase
         $email = $this->faker->email();
         $initials = $this->faker->name();
         $password = $this->faker->password();
-        $userId = $this->faker->uuid();
-        $user = $this->userFactory->create(
-            $email,
-            $initials,
-            $password,
-            $this->transformer->transformFromString($userId)
-        );
+        $uuid = $this->transformer->transformFromString($this->faker->uuid());
+        $user = $this->userFactory->create($email, $initials, $password, $uuid);
         $authUser = $this->userTransformer->transformToAuthorizationUser($user);
 
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
-
-        $this->mockUserTransformer->expects($this->once())
-            ->method('transformToAuthorizationUser')
-            ->with($user)
-            ->willReturn($authUser);
-
-        $hasher =
-            $this->createMock(PasswordHasherInterface::class);
-        $hasher->expects($this->once())
-            ->method('verify')
-            ->with($password, $password)
-            ->willReturn(true);
-
-        $this->hasherFactory->expects($this->once())
-            ->method('getPasswordHasher')
-            ->with(User::class)
-            ->willReturn($hasher);
+        $this->testSuccessfulUserResolutionSetExpectations($user, $authUser);
 
         $event = new UserResolveEvent(
             $email,
             $password,
-            $this->createMock(Grant::class),
-            $this->createMock(AbstractClient::class)
+            $this->mockGrant,
+            $this->mockAbstractClient
         );
 
         $listener = new UserResolveListener(
@@ -102,14 +83,36 @@ final class UserResolveListenerTest extends UnitTestCase
         $email = $this->faker->email();
         $initials = $this->faker->name();
         $password = $this->faker->password();
-        $userId = $this->faker->uuid();
-        $user = $this->userFactory->create(
-            $email,
-            $initials,
-            $password,
-            $this->transformer->transformFromString($userId)
-        );
+        $uuid = $this->transformer->transformFromString($this->faker->uuid());
+        $user = $this->userFactory->create($email, $initials, $password, $uuid);
         $authUser = $this->userTransformer->transformToAuthorizationUser($user);
+
+        $this->testInvalidPasswordSetExpectations($user, $authUser);
+
+        $event = new UserResolveEvent(
+            $email,
+            $password,
+            $this->mockGrant,
+            $this->mockAbstractClient
+        );
+
+        $listener = new UserResolveListener(
+            $this->hasherFactory,
+            $this->userRepository,
+            $this->mockUserTransformer
+        );
+
+        $listener->onUserResolve($event);
+
+        $this->assertNull($event->getUser());
+    }
+
+    private function testInvalidPasswordSetExpectations(
+        UserInterface $user,
+        AuthorizationUserDto $authUser,
+    ): void {
+        $email = $user->getEmail();
+        $password = $user->getPassword();
 
         $this->userRepository->expects($this->once())
             ->method('findByEmail')
@@ -132,22 +135,35 @@ final class UserResolveListenerTest extends UnitTestCase
             ->method('getPasswordHasher')
             ->with(User::class)
             ->willReturn($hasher);
+    }
 
-        $event = new UserResolveEvent(
-            $email,
-            $password,
-            $this->createMock(Grant::class),
-            $this->createMock(AbstractClient::class)
-        );
+    private function testSuccessfulUserResolutionSetExpectations(
+        UserInterface $user,
+        AuthorizationUserDto $authUser,
+    ): void {
+        $email = $user->getEmail();
+        $password = $user->getPassword();
 
-        $listener = new UserResolveListener(
-            $this->hasherFactory,
-            $this->userRepository,
-            $this->mockUserTransformer
-        );
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
 
-        $listener->onUserResolve($event);
+        $this->mockUserTransformer->expects($this->once())
+            ->method('transformToAuthorizationUser')
+            ->with($user)
+            ->willReturn($authUser);
 
-        $this->assertNull($event->getUser());
+        $hasher =
+            $this->createMock(PasswordHasherInterface::class);
+        $hasher->expects($this->once())
+            ->method('verify')
+            ->with($password, $password)
+            ->willReturn(true);
+
+        $this->hasherFactory->expects($this->once())
+            ->method('getPasswordHasher')
+            ->with(User::class)
+            ->willReturn($hasher);
     }
 }

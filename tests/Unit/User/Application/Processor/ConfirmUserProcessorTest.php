@@ -22,6 +22,10 @@ final class ConfirmUserProcessorTest extends UnitTestCase
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
     private ConfirmUserCommandFactoryInterface $confirmUserCommandFactory;
     private Operation $mockOperation;
+    private TokenRepositoryInterface $tokenRepository;
+    private CommandBusInterface $commandBus;
+    private ConfirmUserCommandFactoryInterface $mockConfirmUserCommandFactory;
+    private ConfirmUserProcessor $processor;
 
     protected function setUp(): void
     {
@@ -33,67 +37,53 @@ final class ConfirmUserProcessorTest extends UnitTestCase
         $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
         $this->mockOperation =
             $this->createMock(Operation::class);
+        $this->tokenRepository = $this->createMock(TokenRepositoryInterface::class);
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->mockConfirmUserCommandFactory = $this->createMock(
+            ConfirmUserCommandFactoryInterface::class
+        );
+        $this->processor = new ConfirmUserProcessor(
+            $this->tokenRepository,
+            $this->commandBus,
+            $this->mockConfirmUserCommandFactory
+        );
     }
 
     public function testProcess(): void
     {
-        $tokenRepository = $this->createMock(TokenRepositoryInterface::class);
-        $commandBus = $this->createMock(CommandBusInterface::class);
-        $confirmUserCommandFactory = $this->createMock(
-            ConfirmUserCommandFactoryInterface::class
-        );
-
-        $processor = new ConfirmUserProcessor(
-            $tokenRepository,
-            $commandBus,
-            $confirmUserCommandFactory
-        );
-
         $confirmUserDto = new ConfirmUserDto($this->faker->uuid());
 
         $token = $this->confirmationTokenFactory->create($this->faker->uuid());
-        $tokenRepository->expects($this->once())
+        $this->tokenRepository->expects($this->once())
             ->method('find')
             ->with($this->equalTo($confirmUserDto->token))
             ->willReturn($token);
 
         $confirmUserCommand = $this->confirmUserCommandFactory->create($token);
-        $confirmUserCommandFactory->expects($this->once())
+        $this->mockConfirmUserCommandFactory->expects($this->once())
             ->method('create')
             ->with($this->equalTo($token))
             ->willReturn($confirmUserCommand);
 
-        $commandBus->expects($this->once())
+        $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->equalTo($confirmUserCommand));
 
-        $response = $processor->process($confirmUserDto, $this->mockOperation);
+        $response = $this->processor->process($confirmUserDto, $this->mockOperation);
 
         $this->assertInstanceOf(Response::class, $response);
     }
 
     public function testProcessTokenNotFoundException(): void
     {
-        $tokenRepository = $this->createMock(TokenRepositoryInterface::class);
-        $commandBus = $this->createMock(CommandBusInterface::class);
-        $confirmUserCommandFactory = $this->createMock(
-            ConfirmUserCommandFactoryInterface::class
-        );
-
-        $processor = new ConfirmUserProcessor(
-            $tokenRepository,
-            $commandBus,
-            $confirmUserCommandFactory
-        );
-
         $confirmUserDto = new ConfirmUserDto($this->faker->uuid());
 
-        $tokenRepository->expects($this->once())
+        $this->tokenRepository->expects($this->once())
             ->method('find')
             ->willReturn(null);
 
         $this->expectException(TokenNotFoundException::class);
 
-        $processor->process($confirmUserDto, $this->mockOperation);
+        $this->processor->process($confirmUserDto, $this->mockOperation);
     }
 }

@@ -13,6 +13,7 @@ use App\User\Application\Factory\UpdateUserCommandFactory;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\Processor\UserPutProcessor;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -25,6 +26,10 @@ final class UserPutProcessorTest extends UnitTestCase
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;
     private UpdateUserCommandFactoryInterface $updateUserCommandFactory;
+    private UserRepositoryInterface $userRepository;
+    private CommandBusInterface $commandBus;
+    private UpdateUserCommandFactoryInterface $mockUpdateUserCommandFactory;
+    private UserPutProcessor $processor;
 
     protected function setUp(): void
     {
@@ -35,21 +40,19 @@ final class UserPutProcessorTest extends UnitTestCase
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
         $this->updateUserCommandFactory = new UpdateUserCommandFactory();
+        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->mockUpdateUserCommandFactory =
+            $this->createMock(UpdateUserCommandFactoryInterface::class);
+        $this->processor = new UserPutProcessor(
+            $this->userRepository,
+            $this->commandBus,
+            $this->mockUpdateUserCommandFactory
+        );
     }
 
     public function testProcess(): void
     {
-        $userRepository = $this->createMock(UserRepositoryInterface::class);
-        $commandBus = $this->createMock(CommandBusInterface::class);
-        $mockUpdateUserCommandFactory =
-            $this->createMock(UpdateUserCommandFactoryInterface::class);
-
-        $processor = new UserPutProcessor(
-            $userRepository,
-            $commandBus,
-            $mockUpdateUserCommandFactory
-        );
-
         $email = $this->faker->email();
         $initials = $this->faker->name();
         $password = $this->faker->password();
@@ -62,27 +65,11 @@ final class UserPutProcessorTest extends UnitTestCase
             $this->uuidTransformer->transformFromString($userId)
         );
         $updateData = new UserUpdate($email, $initials, $password, $password);
-        $command = $this->updateUserCommandFactory->create(
-            $user,
-            $updateData
-        );
-
-        $userRepository->expects($this->once())
-            ->method('find')
-            ->willReturn($user);
+        $this->testProcessSetExpectations($user, $updateData);
 
         $userPutDto = new UserPutDto($email, $initials, $password, $password);
 
-        $mockUpdateUserCommandFactory->expects($this->once())
-            ->method('create')
-            ->with($user, $updateData)
-            ->willReturn($command);
-
-        $commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($command);
-
-        $result = $processor->process(
+        $result = $this->processor->process(
             $userPutDto,
             $this->mockOperation,
             ['id' => $userId]
@@ -93,19 +80,7 @@ final class UserPutProcessorTest extends UnitTestCase
 
     public function testProcessUserNotFound(): void
     {
-        $userRepository = $this->createMock(UserRepositoryInterface::class);
-        $commandBus = $this->createMock(CommandBusInterface::class);
-        $updateUserCommandFactory = $this->createMock(
-            UpdateUserCommandFactoryInterface::class
-        );
-
-        $processor = new UserPutProcessor(
-            $userRepository,
-            $commandBus,
-            $updateUserCommandFactory
-        );
-
-        $userRepository->expects($this->once())
+        $this->userRepository->expects($this->once())
             ->method('find')
             ->willReturn(null);
 
@@ -118,10 +93,33 @@ final class UserPutProcessorTest extends UnitTestCase
 
         $this->expectException(UserNotFoundException::class);
 
-        $processor->process(
+        $this->processor->process(
             $userPutDto,
             $this->mockOperation,
             ['id' => $userId]
         );
+    }
+
+    private function testProcessSetExpectations(
+        UserInterface $user,
+        UserUpdate $updateData
+    ): void {
+        $command = $this->updateUserCommandFactory->create(
+            $user,
+            $updateData
+        );
+
+        $this->userRepository->expects($this->once())
+            ->method('find')
+            ->willReturn($user);
+
+        $this->mockUpdateUserCommandFactory->expects($this->once())
+            ->method('create')
+            ->with($user, $updateData)
+            ->willReturn($command);
+
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($command);
     }
 }

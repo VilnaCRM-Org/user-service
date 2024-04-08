@@ -12,6 +12,7 @@ use App\User\Application\Factory\ConfirmUserCommandFactoryInterface;
 use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\Resolver\ConfirmUserMutationResolver;
 use App\User\Application\Transformer\ConfirmUserMutationInputTransformer;
+use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\TokenNotFoundException;
 use App\User\Domain\Exception\UserNotFoundException;
@@ -62,16 +63,6 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
 
     public function testInvoke(): void
     {
-        $resolver = new ConfirmUserMutationResolver(
-            $this->tokenRepository,
-            $this->commandBus,
-            $this->userRepository,
-            $this->validator,
-            $this->transformer,
-            $this->mockConfirmUserCommandFactory,
-        );
-
-        $userID = $this->faker->uuid();
         $email = $this->faker->email();
         $initials = $this->faker->name();
         $password = $this->faker->password();
@@ -80,55 +71,25 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
             $email,
             $initials,
             $password,
-            $this->uuidTransformer->transformFromString($userID)
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
         );
 
-        $tokenValue = $this->faker->uuid();
+        $token = $this->confirmationTokenFactory->create($user->getID());
+        $tokenValue = $token->getTokenValue();
+
+        $this->testInvokeSetExpectations($user, $token);
 
         $input = ['token' => $tokenValue];
-        $token = $this->confirmationTokenFactory->create($userID);
 
-        $command = $this->confirmUserCommandFactory->create($token);
-
-        $this->transformer->expects($this->once())
-            ->method('transform');
-
-        $this->validator->expects($this->once())
-            ->method('validate');
-
-        $this->tokenRepository->expects($this->once())
-            ->method('find')
-            ->with($tokenValue)
-            ->willReturn($token);
-
-        $this->userRepository->expects($this->once())
-            ->method('find')
-            ->willReturn($user);
-
-        $this->mockConfirmUserCommandFactory->expects($this->once())
-            ->method('create')
-            ->willReturn($command);
-
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($command);
-
-        $result =
-            $resolver->__invoke(null, ['args' => ['input' => $input]]);
+        $result = $this->getResolver()->__invoke(
+            null,
+            ['args' => ['input' => $input]]
+        );
         $this->assertInstanceOf(UserInterface::class, $result);
     }
 
     public function testInvokeTokenNotFound(): void
     {
-        $resolver = new ConfirmUserMutationResolver(
-            $this->tokenRepository,
-            $this->commandBus,
-            $this->userRepository,
-            $this->validator,
-            $this->transformer,
-            $this->mockConfirmUserCommandFactory,
-        );
-
         $tokenValue = $this->faker->uuid();
         $input = ['token' => $tokenValue];
 
@@ -142,20 +103,14 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
 
         $this->expectException(TokenNotFoundException::class);
 
-        $resolver->__invoke(null, ['args' => ['input' => $input]]);
+        $this->getResolver()->__invoke(
+            null,
+            ['args' => ['input' => $input]]
+        );
     }
 
     public function testInvokeUserNotFound(): void
     {
-        $resolver = new ConfirmUserMutationResolver(
-            $this->tokenRepository,
-            $this->commandBus,
-            $this->userRepository,
-            $this->validator,
-            $this->transformer,
-            $this->mockConfirmUserCommandFactory,
-        );
-
         $userID = $this->faker->uuid();
 
         $tokenValue = $this->faker->uuid();
@@ -177,6 +132,51 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
 
         $this->expectException(UserNotFoundException::class);
 
-        $resolver->__invoke(null, ['args' => ['input' => $input]]);
+        $this->getResolver()->__invoke(
+            null,
+            ['args' => ['input' => $input]]
+        );
+    }
+
+    private function getResolver(): ConfirmUserMutationResolver
+    {
+        return new ConfirmUserMutationResolver(
+            $this->tokenRepository,
+            $this->commandBus,
+            $this->userRepository,
+            $this->validator,
+            $this->transformer,
+            $this->mockConfirmUserCommandFactory,
+        );
+    }
+
+    private function testInvokeSetExpectations(
+        UserInterface $user,
+        ConfirmationTokenInterface $token
+    ): void {
+        $command = $this->confirmUserCommandFactory->create($token);
+
+        $this->transformer->expects($this->once())
+            ->method('transform');
+
+        $this->validator->expects($this->once())
+            ->method('validate');
+
+        $this->tokenRepository->expects($this->once())
+            ->method('find')
+            ->with($token->getTokenValue())
+            ->willReturn($token);
+
+        $this->userRepository->expects($this->once())
+            ->method('find')
+            ->willReturn($user);
+
+        $this->mockConfirmUserCommandFactory->expects($this->once())
+            ->method('create')
+            ->willReturn($command);
+
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($command);
     }
 }

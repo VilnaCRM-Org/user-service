@@ -18,6 +18,10 @@ final class UniqueEmailValidatorTest extends UnitTestCase
 {
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;
+    private UserRepositoryInterface $userRepository;
+    private ExecutionContext $context;
+    private TranslatorInterface $translator;
+    private UniqueEmailValidator $validator;
 
     protected function setUp(): void
     {
@@ -25,6 +29,14 @@ final class UniqueEmailValidatorTest extends UnitTestCase
 
         $this->userFactory = new UserFactory();
         $this->transformer = new UuidTransformer();
+        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->context = $this->createMock(ExecutionContext::class);
+        $this->translator = $this->createMock(TranslatorInterface::class);
+        $this->validator = new UniqueEmailValidator(
+            $this->userRepository,
+            $this->translator
+        );
+        $this->validator->initialize($this->context);
     }
 
     public function testValidate(): void
@@ -35,53 +47,28 @@ final class UniqueEmailValidatorTest extends UnitTestCase
             $this->faker->email(),
             $this->faker->name(),
             $this->faker->password(),
-            $this->transformer->transformFromString($this->faker->uuid),
+            $this->transformer->transformFromString($this->faker->uuid()),
         );
 
-        $userRepository = $this->createMock(UserRepositoryInterface::class);
-        $userRepository->expects($this->once())
+        $this->userRepository->expects($this->once())
             ->method('findByEmail')
             ->with($email)
             ->willReturn($user);
 
-        $translator = $this->createMock(TranslatorInterface::class);
-
-        $translator->expects($this->once())
+        $this->translator->expects($this->once())
             ->method('trans')
             ->willReturn($errorMessage);
 
-        $context = $this->createMock(ExecutionContext::class);
-
-        $context->expects($this->once())
+        $this->context->expects($this->once())
             ->method('buildViolation')
             ->with($errorMessage);
 
-        $validator = new UniqueEmailValidator($userRepository, $translator);
-
-        $validator->initialize($context);
-
-        $constraint = new UniqueEmail();
-
-        $validator->validate($email, $constraint);
+        $this->validator->validate($email, new UniqueEmail());
     }
 
     public function testNull(): void
     {
-        $userRepository = $this->createMock(UserRepositoryInterface::class);
-
-        $translator = $this->createMock(TranslatorInterface::class);
-
-        $context = $this->createMock(ExecutionContext::class);
-        $constraint = new UniqueEmail();
-
-        $validator = new UniqueEmailValidator($userRepository, $translator);
-
-        $validator->initialize($context);
-
-        $context->expects($this->never())->method('buildViolation');
-        $validator->validate(
-            null,
-            $constraint
-        );
+        $this->context->expects($this->never())->method('buildViolation');
+        $this->validator->validate(null, new UniqueEmail());
     }
 }

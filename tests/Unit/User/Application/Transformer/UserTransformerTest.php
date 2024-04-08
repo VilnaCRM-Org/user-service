@@ -29,21 +29,17 @@ final class UserTransformerTest extends UnitTestCase
         $email = $this->faker->email();
         $initials = $this->faker->name();
         $password = $this->faker->password();
-        $uuid = $this->faker->uuid();
+        $userId = $this->faker->uuid();
+        $uuid = $this->transformer->transformFromString($userId);
 
-        $user = $this->userFactory->create(
-            $email,
-            $initials,
-            $password,
-            $this->transformer->transformFromString($uuid)
-        );
+        $user = $this->userFactory->create($email, $initials, $password, $uuid);
 
         $uuidTransformerMock =
             $this->createMock(UuidTransformer::class);
         $uuidTransformerMock->expects($this->once())
             ->method('transformFromString')
-            ->with($uuid)
-            ->willReturn($this->transformer->transformFromString($uuid));
+            ->with($userId)
+            ->willReturn($uuid);
 
         $transformer = new UserTransformer($uuidTransformerMock);
         $authorizationUser = $transformer->transformToAuthorizationUser($user);

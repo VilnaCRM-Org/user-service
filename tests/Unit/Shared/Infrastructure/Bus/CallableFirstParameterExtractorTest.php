@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Infrastructure\Bus;
 
+use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\Shared\Infrastructure\Bus\CallableFirstParameterExtractor;
 use App\Tests\Unit\UnitTestCase;
@@ -93,17 +94,17 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
                  */
                 public static function subscribedTo(): array
                 {
-                    return [\AbstractClass::class];
+                    return [DomainEvent::class];
                 }
 
-                public function __invoke(\AbstractClass $someClass): void
+                public function __invoke(DomainEvent $someClass): void
                 {
                 }
             };
 
         $extracted = $this->extractor->extract($subscriberClass);
 
-        $this->assertEquals(\AbstractClass::class, $extracted);
+        $this->assertEquals(DomainEvent::class, $extracted);
     }
 
     public function testExtractWithError(): void

@@ -22,6 +22,11 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
     private SignUpCommandFactoryInterface $signUpCommandFactory;
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;
+    private SignUpCommandFactoryInterface $mockSignUpCommandFactory;
+    private CommandBusInterface $commandBus;
+    private MutationInputValidator $validator;
+    private CreateUserMutationInputTransformer $transformer;
+    private RegisterUserMutationResolver $resolver;
 
     protected function setUp(): void
     {
@@ -30,17 +35,22 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
         $this->signUpCommandFactory = new SignUpCommandFactory();
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
+        $this->mockSignUpCommandFactory =
+            $this->createMock(SignUpCommandFactoryInterface::class);
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->validator = $this->createMock(MutationInputValidator::class);
+        $this->transformer =
+            $this->createMock(CreateUserMutationInputTransformer::class);
+        $this->resolver = new RegisterUserMutationResolver(
+            $this->commandBus,
+            $this->validator,
+            $this->transformer,
+            $this->mockSignUpCommandFactory
+        );
     }
 
     public function testInvoke(): void
     {
-        $mockSignUpCommandFactory =
-            $this->createMock(SignUpCommandFactoryInterface::class);
-        $commandBus = $this->createMock(CommandBusInterface::class);
-        $validator = $this->createMock(MutationInputValidator::class);
-        $transformer =
-            $this->createMock(CreateUserMutationInputTransformer::class);
-
         $email = $this->faker->email();
         $initials = $this->faker->name();
         $password = $this->faker->password();
@@ -50,43 +60,44 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
             'password' => $password,
         ];
 
-        $userID = $this->faker->uuid();
+        $this->setExpectations($email, $initials, $password);
 
+        $result = $this->resolver->__invoke(
+            null,
+            ['args' => ['input' => $input]]
+        );
+
+        $this->assertInstanceOf(UserInterface::class, $result);
+    }
+
+    private function setExpectations(
+        string $email,
+        string $initials,
+        string $password,
+    ): void {
         $user = $this->userFactory->create(
             $email,
             $initials,
             $password,
-            $this->uuidTransformer->transformFromString($userID)
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
         );
         $command =
             $this->signUpCommandFactory->create($email, $initials, $password);
         $command->setResponse(new RegisterUserCommandResponse($user));
 
-        $transformer->expects($this->once())
+        $this->transformer->expects($this->once())
             ->method('transform');
 
-        $validator->expects($this->once())
+        $this->validator->expects($this->once())
             ->method('validate');
 
-        $mockSignUpCommandFactory->expects($this->once())
+        $this->mockSignUpCommandFactory->expects($this->once())
             ->method('create')
             ->with($email, $initials, $password)
             ->willReturn($command);
 
-        $commandBus->expects($this->once())
+        $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($command);
-
-        $resolver = new RegisterUserMutationResolver(
-            $commandBus,
-            $validator,
-            $transformer,
-            $mockSignUpCommandFactory
-        );
-
-        $result =
-            $resolver->__invoke(null, ['args' => ['input' => $input]]);
-
-        $this->assertInstanceOf(UserInterface::class, $result);
     }
 }

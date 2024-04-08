@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Command\RegisterUserCommand;
 use App\User\Application\Command\RegisterUserCommandResponse;
 use App\User\Application\DTO\UserRegisterDto;
 use App\User\Application\Factory\SignUpCommandFactory;
@@ -23,6 +24,9 @@ final class RegisterUserProcessorTest extends UnitTestCase
     private SignUpCommandFactoryInterface $signUpCommandFactory;
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;
+    private CommandBusInterface $commandBus;
+    private SignUpCommandFactoryInterface $mockSignUpCommandFactory;
+    private RegisterUserProcessor $processor;
 
     protected function setUp(): void
     {
@@ -33,39 +37,49 @@ final class RegisterUserProcessorTest extends UnitTestCase
             $this->createMock(Operation::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->mockSignUpCommandFactory = $this->createMock(
+            SignUpCommandFactoryInterface::class
+        );
+        $this->processor = new RegisterUserProcessor(
+            $this->commandBus,
+            $this->mockSignUpCommandFactory
+        );
     }
 
     public function testProcess(): void
     {
-        $commandBus = $this->createMock(CommandBusInterface::class);
-        $mockSignUpCommandFactory = $this->createMock(
-            SignUpCommandFactoryInterface::class
-        );
-
-        $processor = new RegisterUserProcessor(
-            $commandBus,
-            $mockSignUpCommandFactory
-        );
-
         $email = $this->faker->email();
         $initials = $this->faker->name();
         $password = $this->faker->password();
+        $uuid =
+            $this->uuidTransformer->transformFromString($this->faker->uuid());
 
         $userRegisterDto = new UserRegisterDto($email, $initials, $password);
 
         $signUpCommand =
             $this->signUpCommandFactory->create($email, $initials, $password);
-        $createdUser = $this->userFactory->create(
-            $email,
-            $initials,
-            $password,
-            $this->uuidTransformer->transformFromString($this->faker->uuid())
-        );
+        $user = $this->userFactory->create($email, $initials, $password, $uuid);
         $signUpCommand->setResponse(
-            new RegisterUserCommandResponse($createdUser)
+            new RegisterUserCommandResponse($user)
         );
 
-        $mockSignUpCommandFactory->expects($this->once())
+        $this->setExpectations($userRegisterDto, $signUpCommand);
+
+        $returnedUser =
+            $this->processor->process($userRegisterDto, $this->mockOperation);
+
+        $this->assertInstanceOf(User::class, $returnedUser);
+        $this->assertEquals($email, $returnedUser->getEmail());
+        $this->assertEquals($initials, $returnedUser->getInitials());
+        $this->assertEquals($password, $returnedUser->getPassword());
+    }
+
+    private function setExpectations(
+        UserRegisterDto $userRegisterDto,
+        RegisterUserCommand $signUpCommand,
+    ): void {
+        $this->mockSignUpCommandFactory->expects($this->once())
             ->method('create')
             ->with(
                 $userRegisterDto->email,
@@ -74,16 +88,8 @@ final class RegisterUserProcessorTest extends UnitTestCase
             )
             ->willReturn($signUpCommand);
 
-        $commandBus->expects($this->once())
+        $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($signUpCommand);
-
-        $returnedUser =
-            $processor->process($userRegisterDto, $this->mockOperation);
-
-        $this->assertInstanceOf(User::class, $returnedUser);
-        $this->assertEquals($email, $returnedUser->getEmail());
-        $this->assertEquals($initials, $returnedUser->getInitials());
-        $this->assertEquals($password, $returnedUser->getPassword());
     }
 }
