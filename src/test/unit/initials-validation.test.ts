@@ -1,10 +1,9 @@
 import { faker } from '@faker-js/faker';
-import { t } from 'i18next';
 
 import { validateFullName } from '../../features/landing/components/AuthSection/Validations';
 import { isValidFullNameFormat } from '../../features/landing/components/AuthSection/Validations/initials';
 
-const fullNameRequiredError: string = 'Invalid full name format';
+const erorrText: string = 'Invalid full name format';
 const testFullName: string = faker.person.fullName();
 const testFirstName: string = faker.person.firstName();
 const testSecondName: string = faker.person.lastName();
@@ -17,7 +16,7 @@ describe('validateFullName', () => {
 
   it('should return an error message when full name is empty', () => {
     const result: string | boolean = validateFullName('');
-    expect(result).toBe(fullNameRequiredError);
+    expect(result).toBe(erorrText);
   });
   it('should return true for a valid full name format', () => {
     expect(isValidFullNameFormat(testFullName)).toBe(true);
@@ -36,18 +35,12 @@ describe('validateFullName', () => {
   });
 
   it('should return the error message for an invalid full name', () => {
-    expect(validateFullName(testFirstName)).toEqual(
-      t('sign_up.form.name_input.error_text')
-    );
-    expect(validateFullName(`${testFullName}123`)).toEqual(
-      t('sign_up.form.name_input.error_text')
-    );
+    expect(validateFullName(testFirstName)).toEqual(erorrText);
+    expect(validateFullName(`${testFullName}123`)).toEqual(erorrText);
     expect(validateFullName(`${testFirstName}  ${testSecondName}`)).toEqual(
-      t('sign_up.form.name_input.error_text')
+      erorrText
     );
-    expect(validateFullName('')).toEqual(
-      t('sign_up.form.name_input.error_text')
-    );
+    expect(validateFullName('')).toEqual(erorrText);
   });
 
   it('should trim the input before validation', () => {

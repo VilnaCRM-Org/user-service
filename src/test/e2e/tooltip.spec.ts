@@ -4,7 +4,7 @@ async function handleTooltip(
   page: Page,
   { name, element }: { name: string; element: Locator }
 ): Promise<void> {
-  const tooltipLocator: Locator = page.getByRole('tooltip', { name });
+  const tooltipLocator: Locator = page.getByRole('tooltip', { name }).nth(1);
   const elementLocator: Locator = element;
 
   await page.goto('/');

@@ -57,9 +57,11 @@ test.describe('Slider tests', () => {
 
     await page.getByText('services').nth(3).click();
 
-    const tooltipContent: Locator = page.getByRole('tooltip', {
-      name: TOOLTIP_CONTENT_TEXT,
-    });
+    const tooltipContent: Locator = page
+      .getByRole('tooltip', {
+        name: TOOLTIP_CONTENT_TEXT,
+      })
+      .nth(1);
 
     await expect(tooltipContent).toBeVisible();
 
