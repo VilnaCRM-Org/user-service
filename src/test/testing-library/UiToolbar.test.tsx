@@ -3,11 +3,12 @@ import React from 'react';
 
 import { UiToolbar } from '@/components';
 
+import { testText } from './constants';
+
 describe('UiToolbar', () => {
   it('renders the Toolbar with the children', () => {
-    const testContent: string = 'This is a test content';
-    const { getByText } = render(<UiToolbar>{testContent}</UiToolbar>);
-    const toolbarElement: HTMLElement = getByText(testContent);
+    const { getByText } = render(<UiToolbar>{testText}</UiToolbar>);
+    const toolbarElement: HTMLElement = getByText(testText);
     expect(toolbarElement).toBeInTheDocument();
   });
 });

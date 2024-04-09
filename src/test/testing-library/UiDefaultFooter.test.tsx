@@ -3,17 +3,8 @@ import React from 'react';
 
 import { DefaultFooter } from '@/components/UiFooter/DefaultFooter';
 
-import { SocialMedia } from '../../features/landing/types/social-media';
+import { mockedSocialLinks } from './constants';
 
-const mockedSocialLinks: SocialMedia[] = [
-  {
-    id: 'Instagram-link',
-    icon: '',
-    alt: 'Alt',
-    linkHref: 'https://www.instagram.com/',
-    ariaLabel: 'AriaLabel',
-  },
-];
 const mockedDate: number = new Date().getFullYear();
 const defaultFooterTestId: string = 'default-footer';
 const logoAlt: string = 'Vilna logo';

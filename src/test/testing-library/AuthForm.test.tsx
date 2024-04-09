@@ -16,6 +16,8 @@ import {
   mockErrors,
 } from '../../features/landing/components/AuthSection/AuthForm/constants';
 
+import { testInitials, testEmail, testPassword } from './constants';
+
 describe('AuthForm', () => {
   it('renders AuthForm component', () => {
     const { getByTestId } = render(
@@ -89,9 +91,9 @@ describe('AuthForm', () => {
       name: submitButton,
     });
 
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    fireEvent.change(fullNameInput, { target: { value: 'John Doe' } });
+    fireEvent.change(emailInput, { target: { value: testEmail } });
+    fireEvent.change(passwordInput, { target: { value: testPassword } });
+    fireEvent.change(fullNameInput, { target: { value: testInitials } });
     fireEvent.click(privacyCheckbox);
     fireEvent.click(signUpButton);
 

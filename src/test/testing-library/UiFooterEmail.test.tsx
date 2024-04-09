@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 
 import { VilnaCRMEmail } from '@/components/UiFooter/VilnaCRMEmail';
 
-const mockEmail: string = 'info@vilnacrm.com';
+import { mockEmail } from './constants';
 
 describe('VilnaCRMEmail component', () => {
   it('renders email address correctly', () => {

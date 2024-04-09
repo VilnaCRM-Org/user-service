@@ -4,6 +4,8 @@ import { useForm } from 'react-hook-form';
 
 import { UiTextFieldForm } from '@/components';
 
+import { testPlaceholder, testText } from './constants';
+
 describe('UiTextFieldForm', () => {
   function TestWrapper(): React.ReactElement {
     const { control, handleSubmit } = useForm();
@@ -15,7 +17,7 @@ describe('UiTextFieldForm', () => {
           control={control}
           name="testField"
           rules={{ required: true, minLength: 5 }}
-          placeholder="Enter text"
+          placeholder={testPlaceholder}
           type="text"
           fullWidth
         />
@@ -28,7 +30,7 @@ describe('UiTextFieldForm', () => {
     render(<TestWrapper />);
     const uiInput: HTMLElement = screen.getByRole('textbox');
     expect(uiInput).toHaveAttribute('type', 'text');
-    expect(uiInput).toHaveAttribute('placeholder', 'Enter text');
+    expect(uiInput).toHaveAttribute('placeholder', testPlaceholder);
     expect(uiInput).toHaveValue('');
     expect(uiInput).not.toHaveAttribute('error');
   });
@@ -36,14 +38,14 @@ describe('UiTextFieldForm', () => {
   it('updates the form field value on input change', () => {
     render(<TestWrapper />);
     const uiInput: HTMLElement = screen.getByRole('textbox');
-    fireEvent.change(uiInput, { target: { value: 'test value' } });
-    expect(uiInput).toHaveValue('test value');
+    fireEvent.change(uiInput, { target: { value: testText } });
+    expect(uiInput).toHaveValue(testText);
   });
 
   it('displays error message for minLength validation', () => {
     render(<TestWrapper />);
     const uiInput: HTMLElement = screen.getByRole('textbox');
-    fireEvent.change(uiInput, { target: { value: 'test' } });
-    expect(uiInput).toHaveValue('test');
+    fireEvent.change(uiInput, { target: { value: testText } });
+    expect(uiInput).toHaveValue(testText);
   });
 });

@@ -1,12 +1,10 @@
-import { faker } from '@faker-js/faker';
 import { render, fireEvent } from '@testing-library/react';
 import React from 'react';
 
 import { UiInput } from '@/components';
 
-const randomText: string = faker.lorem.word(6);
-const testEmail: string = faker.internet.email();
-const testPlaceholder: string = faker.lorem.word(8);
+import { testText, testEmail, testPlaceholder } from './constants';
+
 const testType: string = 'email';
 
 describe('UiInput', () => {
@@ -28,7 +26,7 @@ describe('UiInput', () => {
     const mockOnChange: () => void = jest.fn();
     const { getByRole } = render(<UiInput onChange={mockOnChange} />);
     const inputElement: HTMLElement = getByRole('textbox');
-    fireEvent.change(inputElement, { target: { value: randomText } });
+    fireEvent.change(inputElement, { target: { value: testText } });
     expect(mockOnChange).toHaveBeenCalled();
   });
 

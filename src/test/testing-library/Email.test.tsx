@@ -2,7 +2,8 @@ import { render } from '@testing-library/react';
 
 import VilnaCRMEmail from '../../features/landing/components/Header/Drawer/VilnaCRMEmail/VilnaCRMEmail';
 
-const mockEmail: string = 'info@vilnacrm.com';
+import { mockEmail } from './constants';
+
 const atSymbol: string = '@';
 
 describe('VilnaCRMEmail component', () => {

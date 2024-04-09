@@ -1,11 +1,10 @@
-import { faker } from '@faker-js/faker';
 import { ThemeProvider } from '@mui/material';
 import { render, fireEvent } from '@testing-library/react';
 
 import { UiButton } from '@/components';
 import { theme } from '@/components/UiButton/theme';
 
-const randomText: string = faker.lorem.word(8);
+import { testText } from './constants';
 
 describe('UiButton', () => {
   it('renders the button with the correct props', () => {
@@ -22,12 +21,12 @@ describe('UiButton', () => {
           sx={{ color: 'red' }}
           name="my-button"
         >
-          {randomText}
+          {testText}
         </UiButton>
       </ThemeProvider>
     );
 
-    const button: HTMLElement = getByRole('button', { name: randomText });
+    const button: HTMLElement = getByRole('button', { name: testText });
     expect(button).toBeEnabled();
     expect(button).toBeInTheDocument();
   });
@@ -36,11 +35,11 @@ describe('UiButton', () => {
     const onClick: () => void = jest.fn();
     const { getByRole } = render(
       <ThemeProvider theme={theme}>
-        <UiButton onClick={onClick}>{randomText}</UiButton>
+        <UiButton onClick={onClick}>{testText}</UiButton>
       </ThemeProvider>
     );
 
-    const button: HTMLElement = getByRole('button', { name: randomText });
+    const button: HTMLElement = getByRole('button', { name: testText });
     fireEvent.click(button);
     expect(onClick).toHaveBeenCalledTimes(1);
   });

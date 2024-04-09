@@ -3,17 +3,8 @@ import React from 'react';
 
 import { Mobile } from '@/components/UiFooter/Mobile';
 
-import { SocialMedia } from '../../features/landing/types/social-media';
+import { mockedSocialLinks } from './constants';
 
-const mockedSocialLinks: SocialMedia[] = [
-  {
-    id: 'Instagram-link',
-    icon: '',
-    alt: 'Alt',
-    linkHref: 'https://www.instagram.com/',
-    ariaLabel: 'AriaLabel',
-  },
-];
 const mockedDate: number = new Date().getFullYear();
 const defaultFooterTestId: string = 'mobile-component';
 const logoAlt: string = 'Vilna logo';
