@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import { screenSizes } from '../constants';
+import { screenSizes } from './constants';
 
 test('Visual Test', async ({ page }) => {
   await page.goto('/');

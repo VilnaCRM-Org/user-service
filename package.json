@@ -16,6 +16,8 @@
     "lint:md": "markdownlint -i CHANGELOG.md **/*.md",
     "test:e2e": "playwright run --headless --browser chrome",
     "test:e2e-local": "playwright open",
+    "test:mutation": "npx stryker run",
+    "test:visual": "playwright test ./src/test/visual",
     "test:unit": "jest --verbose",
     "test:memory-leak": "memlab run -v --scenario ./memlab/memoryLeakTest.js",
     "lighthouse:desktop": "next build && lhci autorun --config=lighthouserc.desktop.js",

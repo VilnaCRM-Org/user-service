@@ -41,11 +41,4 @@ describe('UiTextFieldForm', () => {
     fireEvent.change(uiInput, { target: { value: testText } });
     expect(uiInput).toHaveValue(testText);
   });
-
-  it('displays error message for minLength validation', () => {
-    render(<TestWrapper />);
-    const uiInput: HTMLElement = screen.getByRole('textbox');
-    fireEvent.change(uiInput, { target: { value: testText } });
-    expect(uiInput).toHaveValue(testText);
-  });
 });
