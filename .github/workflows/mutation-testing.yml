@@ -36,6 +36,6 @@ jobs:
           steps.cache-pnpm-dependencies.outputs.cache-hit != 'true'
 
       - name: Run mutation testing
-        run: pnpm run test:mutation
+        run: pnpm run dev & pnpm run npx stryker run
         env:
           STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
