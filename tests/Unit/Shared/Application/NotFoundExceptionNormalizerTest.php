@@ -13,25 +13,33 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class NotFoundExceptionNormalizerTest extends UnitTestCase
 {
+    private TranslatorInterface $translatorMock;
+    private NotFoundExceptionNormalizer $normalizer;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->translatorMock =
+            $this->createMock(TranslatorInterface::class);
+        $this->normalizer =
+            new NotFoundExceptionNormalizer($this->translatorMock);
+    }
     public function testNormalize(): void
     {
         $id = $this->faker->uuid();
         $errorText = $this->faker->word();
-        $translatorMock = $this->createMock(TranslatorInterface::class);
-        $translatorMock->expects($this->once())
+        $this->translatorMock->expects($this->once())
             ->method('trans')
             ->with(
                 'error.not.found.graphql',
                 ['id' => $id]
-            )
-            ->willReturn('Item ' . $id . ' not found.');
+            )->willReturn('Item ' . $id . ' not found.');
 
         $exception = new NotFoundHttpException('Item ' . $id . ' not found.');
         $error = new Error(message: $errorText, previous: $exception);
 
-        $normalizer = new NotFoundExceptionNormalizer($translatorMock);
-
-        $normalizedError = $normalizer->normalize($error);
+        $normalizedError = $this->normalizer->normalize($error);
 
         $this->assertArrayHasKey('message', $normalizedError);
         $this->assertEquals(
@@ -46,31 +54,22 @@ final class NotFoundExceptionNormalizerTest extends UnitTestCase
 
     public function testSupportsNormalization(): void
     {
-        $translatorMock = $this->createMock(TranslatorInterface::class);
-        $normalizer = new NotFoundExceptionNormalizer($translatorMock);
-
         $exception = new NotFoundHttpException();
         $error = new Error(message: $this->faker->word(), previous: $exception);
 
-        $this->assertTrue($normalizer->supportsNormalization($error));
+        $this->assertTrue($this->normalizer->supportsNormalization($error));
     }
 
     public function testSupportsNormalizationWithWrongPreviousType(): void
     {
-        $translatorMock = $this->createMock(TranslatorInterface::class);
-        $normalizer = new NotFoundExceptionNormalizer($translatorMock);
-
         $exception = new HttpException($this->faker->numberBetween(200, 500));
         $error = new Error(message: $this->faker->word(), previous: $exception);
 
-        $this->assertFalse($normalizer->supportsNormalization($error));
+        $this->assertFalse($this->normalizer->supportsNormalization($error));
     }
 
     public function testSupportsNormalizationWithWrongType(): void
     {
-        $translatorMock = $this->createMock(TranslatorInterface::class);
-        $normalizer = new NotFoundExceptionNormalizer($translatorMock);
-
         $exception = new NotFoundHttpException();
         $error = new \ApiPlatform\ApiResource\Error(
             $this->faker->word(),
@@ -79,6 +78,6 @@ final class NotFoundExceptionNormalizerTest extends UnitTestCase
             previous: $exception,
         );
 
-        $this->assertFalse($normalizer->supportsNormalization($error));
+        $this->assertFalse($this->normalizer->supportsNormalization($error));
     }
 }

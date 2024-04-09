@@ -36,18 +36,7 @@ final class ContextBuilderTest extends UnitTestCase
 
     public function testBuildWithSimpleParams(): void
     {
-        $params = [
-            new Parameter(
-                'name',
-                'string',
-                $this->faker->name()
-            ),
-            new Parameter(
-                'age',
-                'integer',
-                $this->faker->numberBetween(1, 10)
-            ),
-        ];
+        $params = $this->testBuildWithSimpleParamsGetParams();
 
         $content = $this->contextBuilder->build($params);
 
@@ -65,12 +54,7 @@ final class ContextBuilderTest extends UnitTestCase
         ];
 
         $this->assertEquals(
-            new ArrayObject([
-                'application/json' => [
-                    'schema' => $expectedSchema,
-                    'example' => $expectedExample,
-                ],
-            ]),
+            $this->getExpectedResult($expectedSchema, $expectedExample),
             $content
         );
     }
@@ -82,9 +66,7 @@ final class ContextBuilderTest extends UnitTestCase
             'city' => $this->faker->city(),
         ];
 
-        $params = [
-            new Parameter('address', 'object', $address),
-        ];
+        $params = [new Parameter('address', 'object', $address)];
 
         $content = $this->contextBuilder->build($params);
 
@@ -97,18 +79,39 @@ final class ContextBuilderTest extends UnitTestCase
             ],
         ];
 
-        $expectedExample = [
-            'address' => $address,
-        ];
+        $expectedExample = ['address' => $address];
 
         $this->assertEquals(
-            new ArrayObject([
-                'application/json' => [
-                    'schema' => $expectedSchema,
-                    'example' => $expectedExample,
-                ],
-            ]),
+            $this->getExpectedResult($expectedSchema, $expectedExample),
             $content
         );
+    }
+
+    private function getExpectedResult(
+        array $expectedSchema,
+        array $expectedExample
+    ): ArrayObject {
+        return new ArrayObject([
+            'application/json' => [
+                'schema' => $expectedSchema,
+                'example' => $expectedExample,
+            ],
+        ]);
+    }
+
+    private function testBuildWithSimpleParamsGetParams(): array
+    {
+        return [
+            new Parameter(
+                'name',
+                'string',
+                $this->faker->name()
+            ),
+            new Parameter(
+                'age',
+                'integer',
+                $this->faker->numberBetween(1, 10)
+            ),
+        ];
     }
 }

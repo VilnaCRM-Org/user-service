@@ -18,6 +18,24 @@ final class InvalidClientCredentialsResponseFactoryTest extends UnitTestCase
 
         $factory = new InvalidCredentialsFactory($responseBuilder);
 
+        $responseBuilder->expects($this->once())
+            ->method('build')
+            ->with(
+                'Invalid client credentials',
+                $this->getParams(),
+                []
+            )
+            ->willReturn(new Response());
+
+        $response = $factory->getResponse();
+        $this->assertInstanceOf(Response::class, $response);
+    }
+
+    /**
+     * @return array<Parameter>
+     */
+    private function getParams(): array
+    {
         $errorParam = new Parameter(
             'error',
             'string',
@@ -34,16 +52,6 @@ final class InvalidClientCredentialsResponseFactoryTest extends UnitTestCase
             'Client authentication failed'
         );
 
-        $responseBuilder->expects($this->once())
-            ->method('build')
-            ->with(
-                'Invalid client credentials',
-                [$errorParam, $errorDescriptionParam, $messageParam],
-                []
-            )
-            ->willReturn(new Response());
-
-        $response = $factory->getResponse();
-        $this->assertInstanceOf(Response::class, $response);
+        return [$errorParam, $errorDescriptionParam, $messageParam];
     }
 }

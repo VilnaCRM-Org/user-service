@@ -94,7 +94,11 @@ final class UserTest extends UnitTestCase
             $this->passwordChangedEventFactory
         );
 
-        $this->testUpdateMakeAssertions($events, $updateData, $hashedNewPassword);
+        $this->testUpdateMakeAssertions(
+            $events,
+            $updateData,
+            $hashedNewPassword
+        );
     }
 
     public function testSetId(): void

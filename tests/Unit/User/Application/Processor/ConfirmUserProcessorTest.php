@@ -37,7 +37,8 @@ final class ConfirmUserProcessorTest extends UnitTestCase
         $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
         $this->mockOperation =
             $this->createMock(Operation::class);
-        $this->tokenRepository = $this->createMock(TokenRepositoryInterface::class);
+        $this->tokenRepository =
+            $this->createMock(TokenRepositoryInterface::class);
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->mockConfirmUserCommandFactory = $this->createMock(
             ConfirmUserCommandFactoryInterface::class
@@ -69,7 +70,10 @@ final class ConfirmUserProcessorTest extends UnitTestCase
             ->method('dispatch')
             ->with($this->equalTo($confirmUserCommand));
 
-        $response = $this->processor->process($confirmUserDto, $this->mockOperation);
+        $response = $this->processor->process(
+            $confirmUserDto,
+            $this->mockOperation
+        );
 
         $this->assertInstanceOf(Response::class, $response);
     }

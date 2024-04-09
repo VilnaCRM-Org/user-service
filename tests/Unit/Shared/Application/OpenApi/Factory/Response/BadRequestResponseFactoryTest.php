@@ -18,36 +18,64 @@ final class BadRequestResponseFactoryTest extends UnitTestCase
 
         $factory = new BadRequestResponseFactory($responseBuilder);
 
-        $typeParam = new Parameter(
-            'type',
-            'string',
-            'https://tools.ietf.org/html/rfc2616#section-10'
-        );
-        $titleParam = new Parameter(
-            'title',
-            'string',
-            'An error occurred'
-        );
-        $detailParam = new Parameter(
-            'detail',
-            'string',
-            'The input data is misformatted.'
-        );
-        $statusParam = new Parameter(
-            'status',
-            'integer',
-            400
-        );
-
         $responseBuilder->expects($this->once())
             ->method('build')
             ->with(
                 'Bad request',
-                [$typeParam, $titleParam, $detailParam, $statusParam]
+                $this->getParams()
             )
             ->willReturn(new Response());
 
         $response = $factory->getResponse();
         $this->assertInstanceOf(Response::class, $response);
+    }
+
+    /**
+     * @return array<Parameter>
+     */
+    private function getParams(): array
+    {
+        $typeParam = $this->getTypeParam();
+        $titleParam = $this->getTitleParam();
+        $detailParam = $this->getDetailParam();
+        $statusParam = $this->getStatusParam();
+
+        return [$typeParam, $titleParam, $detailParam, $statusParam];
+    }
+
+    private function getTypeParam(): Parameter
+    {
+        return new Parameter(
+            'type',
+            'string',
+            'https://tools.ietf.org/html/rfc2616#section-10'
+        );
+    }
+
+    private function getTitleParam(): Parameter
+    {
+        return new Parameter(
+            'title',
+            'string',
+            'An error occurred'
+        );
+    }
+
+    private function getDetailParam(): Parameter
+    {
+        return new Parameter(
+            'detail',
+            'string',
+            'The input data is misformatted.'
+        );
+    }
+
+    private function getStatusParam(): Parameter
+    {
+        return new Parameter(
+            'status',
+            'integer',
+            400
+        );
     }
 }

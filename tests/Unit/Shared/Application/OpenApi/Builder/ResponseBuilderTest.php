@@ -16,96 +16,128 @@ final class ResponseBuilderTest extends UnitTestCase
 {
     private ResponseBuilder $builder;
     private ContextBuilder $contextBuilderMock;
+    private string $description;
+    private string $paramName;
+    private string $paramType;
+    private string $paramExample;
+    private string $headerName;
+    private string $headerDescription;
+    private string $headerType;
+    private string $headerFormat;
+    private string $headerExample;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->contextBuilderMock = $this->createMock(
-            ContextBuilder::class
-        );
+        $this->contextBuilderMock =
+            $this->createMock(ContextBuilder::class);
         $this->builder = new ResponseBuilder($this->contextBuilderMock);
+        $this->description = $this->faker->sentence();
+        $this->paramName = $this->faker->word();
+        $this->paramType = $this->faker->word();
+        $this->paramExample = $this->faker->word();
+        $this->headerName = $this->faker->word();
+        $this->headerDescription = $this->faker->sentence();
+        $this->headerType = $this->faker->word();
+        $this->headerFormat = $this->faker->word();
+        $this->headerExample = $this->faker->word();
     }
 
     public function testBuildWithMinimalData(): void
     {
-        $description = $this->faker->sentence();
-
         $this->contextBuilderMock->expects($this->once())
             ->method('build')
             ->with([])
             ->willReturn(new \ArrayObject([]));
 
-        $response = $this->builder->build($description, [], []);
+        $response = $this->builder->build($this->description, [], []);
 
         $this->assertInstanceOf(Response::class, $response);
-        $this->assertEquals($description, $response->getDescription());
+        $this->assertEquals($this->description, $response->getDescription());
         $this->assertEquals(new \ArrayObject([]), $response->getHeaders());
     }
 
     public function testBuildWithParamsAndHeaders(): void
     {
-        $description = $this->faker->sentence();
-        $paramName = $this->faker->word();
-        $paramType = $this->faker->word();
-        $paramExample = $this->faker->word();
-        $params = [
-            new Parameter($paramName, $paramType, $paramExample),
-        ];
+        $params = $this->getParams();
 
-        $headerName = $this->faker->word();
-        $headerDescription = $this->faker->sentence();
-        $headerType = $this->faker->word();
-        $headerFormat = $this->faker->word();
-        $headerExample = $this->faker->word();
-        $headers = [
-            new Header(
-                $headerName,
-                $headerDescription,
-                $headerType,
-                $headerFormat,
-                $headerExample
-            ),
-        ];
+        $headers = $this->getHeaders();
 
-        $expectedContent = new \ArrayObject([
-            'application/json' => [
-                'schema' => [
-                    'type' => 'object',
-                    'properties' => [
-                        $paramName => ['type' => $paramExample],
-                    ],
-                ],
-                'example' => [
-                    $paramName => $paramExample,
-                ],
-            ],
-        ]);
+        $expectedContent = $this->getExpectedContent();
 
-        $expectedHeaders = new \ArrayObject([
-            $headerName => new ApiPlatformHeader(
-                description: $headerDescription,
-                schema: [
-                    'type' => $headerType,
-                    'format' => $headerFormat,
-                    'example' => $headerExample,
-                ],
-            ),
-        ]);
+        $expectedHeaders = $this->getExpectedHeaders();
 
-        $contextBuilderMock = $this->createMock(
-            ContextBuilder::class
-        );
-        $contextBuilderMock->expects($this->once())
+        $this->contextBuilderMock->expects($this->once())
             ->method('build')
             ->with($params)
             ->willReturn($expectedContent);
 
-        $builder = new ResponseBuilder($contextBuilderMock);
-
-        $response = $builder->build($description, $params, $headers);
-        $this->assertEquals($description, $response->getDescription());
+        $response =
+            $this->builder->build($this->description, $params, $headers);
+        $this->assertEquals($this->description, $response->getDescription());
         $this->assertEquals($expectedContent, $response->getContent());
         $this->assertEquals($expectedHeaders, $response->getHeaders());
+    }
+
+    private function getExpectedContent(): \ArrayObject
+    {
+        return new \ArrayObject([
+            'application/json' => [
+                'schema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        $this->paramName => ['type' => $this->paramExample],
+                    ],
+                ],
+                'example' => [
+                    $this->paramName => $this->paramExample,
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * @return array<Parameter>
+     */
+    private function getParams(): array
+    {
+        return [
+            new Parameter(
+                $this->paramName,
+                $this->paramType,
+                $this->paramExample
+            ),
+        ];
+    }
+
+    /**
+     * @return array<Header>
+     */
+    private function getHeaders(): array
+    {
+        return [
+            new Header(
+                $this->headerName,
+                $this->headerDescription,
+                $this->headerType,
+                $this->headerFormat,
+                $this->headerExample
+            ),
+        ];
+    }
+
+    private function getExpectedHeaders(): \ArrayObject
+    {
+        return new \ArrayObject([
+            $this->headerName => new ApiPlatformHeader(
+                description: $this->headerDescription,
+                schema: [
+                    'type' => $this->headerType,
+                    'format' => $this->headerFormat,
+                    'example' => $this->headerExample,
+                ],
+            ),
+        ]);
     }
 }

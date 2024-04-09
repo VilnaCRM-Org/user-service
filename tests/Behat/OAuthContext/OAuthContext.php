@@ -109,17 +109,7 @@ final class OAuthContext implements Context
      */
     public function obtainAuthCode(): void
     {
-        $this->kernel->getContainer()->get('event_dispatcher')
-            ->addListener(
-                OAuth2Events::AUTHORIZATION_REQUEST_RESOLVE,
-                static function (
-                    AuthorizationRequestResolveEvent $event
-                ): void {
-                    $event->resolveAuthorization(
-                        AuthorizationRequestResolveEvent::AUTHORIZATION_APPROVED
-                    );
-                }
-            );
+        $this->approveAuthorization();
 
         $this->response = $this->kernel->handle(Request::create(
             '/api/oauth/authorize?' . $this->obtainAuthorizeCodeInput->toUriParams(),
@@ -232,5 +222,20 @@ final class OAuthContext implements Context
             'The authorization grant type is not supported by the authorization server.',
             $data['message']
         );
+    }
+
+    private function approveAuthorization(): void
+    {
+        $this->kernel->getContainer()->get('event_dispatcher')
+            ->addListener(
+                OAuth2Events::AUTHORIZATION_REQUEST_RESOLVE,
+                static function (
+                    AuthorizationRequestResolveEvent $event
+                ): void {
+                    $event->resolveAuthorization(
+                        AuthorizationRequestResolveEvent::AUTHORIZATION_APPROVED
+                    );
+                }
+            );
     }
 }

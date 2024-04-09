@@ -20,14 +20,26 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class OpenApiFactoryTest extends UnitTestCase
 {
+    private InternalErrorFactory $serverErrorResponseFactory;
+    private OpenApiFactoryInterface $decoratedFactory;
+    private AbstractEndpointFactory $endpointFactory1;
+    private AbstractEndpointFactory $endpointFactory2;
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->serverErrorResponseFactory =
+            $this->createMock(InternalErrorFactory::class);
+        $this->decoratedFactory =
+            $this->createMock(OpenApiFactoryInterface::class);
+        $this->endpointFactory1 =
+            $this->createMock(AbstractEndpointFactory::class);
+        $this->endpointFactory2 =
+            $this->createMock(AbstractEndpointFactory::class);
+    }
+
     public function testInvoke(): void
     {
-        $decoratedFactory = $this->createMock(OpenApiFactoryInterface::class);
-        $endpointFactory1 = $this->createMock(AbstractEndpointFactory::class);
-        $endpointFactory2 = $this->createMock(AbstractEndpointFactory::class);
-        $serverErrorResponseFactory =
-            $this->createMock(InternalErrorFactory::class);
-
         $expectedOpenApi = new OpenApi(
             $this->createMock(Info::class),
             [],
@@ -36,26 +48,14 @@ final class OpenApiFactoryTest extends UnitTestCase
         $expectedOpenApi =
             $expectedOpenApi->withServers([new Server('https://localhost')]);
 
-        $decoratedFactory->expects($this->once())
-            ->method('__invoke')
-            ->willReturn($expectedOpenApi);
-
-        $endpointFactory1->expects($this->once())
-            ->method('createEndpoint')
-            ->with($expectedOpenApi);
-        $endpointFactory2->expects($this->once())
-            ->method('createEndpoint')
-            ->with($expectedOpenApi);
-
-        $serverErrorResponse = new Response();
-        $serverErrorResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($serverErrorResponse);
+        $this->testInvokeSetExpectations(
+            $expectedOpenApi
+        );
 
         $openApiFactory = new OpenApiFactory(
-            $decoratedFactory,
-            [$endpointFactory1, $endpointFactory2],
-            $serverErrorResponseFactory
+            $this->decoratedFactory,
+            [$this->endpointFactory1, $this->endpointFactory2],
+            $this->serverErrorResponseFactory
         );
 
         $result = $openApiFactory->__invoke();
@@ -78,25 +78,14 @@ final class OpenApiFactoryTest extends UnitTestCase
             ->with($url)
             ->willReturn($pathItem);
 
-        $serverErrorResponse = new Response();
-
-        $serverErrorResponseFactory =
-            $this->createMock(InternalErrorFactory::class);
-
         $openApiFactory = new OpenApiFactory(
             $this->createMock(OpenApiFactoryInterface::class),
             [],
-            $serverErrorResponseFactory
+            $this->serverErrorResponseFactory
         );
 
-        $reflectionMethod = new \ReflectionMethod(
-            OpenApiFactory::class,
-            'addServerErrorResponseToPath'
-        );
-        $reflectionMethod->invokeArgs(
-            $openApiFactory,
-            [$openApi, $url, $serverErrorResponse]
-        );
+        $this->getReflectionMethod('addServerErrorResponseToPath')
+            ->invokeArgs($openApiFactory, [$openApi, $url, new Response()]);
 
         $addedPathItem = $openApi->getPaths()->getPath($url);
         $this->assertEquals($pathItem, $addedPathItem);
@@ -111,54 +100,95 @@ final class OpenApiFactoryTest extends UnitTestCase
 
         $url = $this->faker->url();
         $pathItem = new PathItem();
-        $paths->method('getPaths')
-            ->willReturn([$url => $url]);
+        $paths->method('getPaths')->willReturn([$url => $url]);
 
-        $paths->method('getPath')
-            ->willReturn($pathItem);
+        $paths->method('getPath')->willReturn($pathItem);
 
         $serverErrorResponse = new Response();
 
-        $serverErrorResponseFactory =
-            $this->createMock(InternalErrorFactory::class);
-        $serverErrorResponseFactory->expects($this->once())
+        $this->serverErrorResponseFactory->expects($this->once())
             ->method('getResponse')
             ->willReturn($serverErrorResponse);
 
         $openApiFactory = new OpenApiFactory(
             $this->createMock(OpenApiFactoryInterface::class),
             [],
-            $serverErrorResponseFactory
+            $this->serverErrorResponseFactory
         );
 
-        $reflectionMethod = new \ReflectionMethod(
+        $this->getReflectionMethod('addServerErrorResponseToAllEndpoints')
+            ->invokeArgs($openApiFactory, [$openApi]);
+
+        $this->testAddErrorResponseMakeAssertions($paths, $serverErrorResponse);
+    }
+
+    private function getReflectionMethod(string $method): \ReflectionMethod
+    {
+        return new \ReflectionMethod(
             OpenApiFactory::class,
-            'addServerErrorResponseToAllEndpoints'
+            $method
         );
-        $reflectionMethod->invokeArgs($openApiFactory, [$openApi]);
+    }
 
+    private function testAddErrorResponseMakeAssertions(
+        Paths $paths,
+        Response $serverErrorResponse
+    ): void {
         foreach ($paths as $pathItem) {
-            $operations = [
-                $pathItem->getGet(),
-                $pathItem->getPost(),
-                $pathItem->getPut(),
-                $pathItem->getPatch(),
-                $pathItem->getDelete(),
-            ];
-            foreach ($operations as $operation) {
-                if ($operation instanceof Operation) {
-                    $responses = $operation->getResponses();
-                    $this->assertArrayHasKey(
-                        HttpResponse::HTTP_INTERNAL_SERVER_ERROR,
-                        $responses
-                    )
-                    ;
-                    $this->assertEquals(
-                        $serverErrorResponse,
-                        $responses[HttpResponse::HTTP_INTERNAL_SERVER_ERROR]
-                    );
-                }
+            $this->processPathItem($pathItem, $serverErrorResponse);
+        }
+    }
+
+    private function processPathItem(
+        PathItem $pathItem,
+        Response $serverErrorResponse
+    ): void {
+        $operations = [
+            $pathItem->getGet(),
+            $pathItem->getPost(),
+            $pathItem->getPut(),
+            $pathItem->getPatch(),
+            $pathItem->getDelete(),
+        ];
+        foreach ($operations as $operation) {
+            if ($operation instanceof Operation) {
+                $this->processOperation($operation, $serverErrorResponse);
             }
         }
+    }
+
+    private function processOperation(
+        Operation $operation,
+        Response $serverErrorResponse
+    ): void {
+        $responses = $operation->getResponses();
+        $this->assertArrayHasKey(
+            HttpResponse::HTTP_INTERNAL_SERVER_ERROR,
+            $responses
+        );
+        $this->assertEquals(
+            $serverErrorResponse,
+            $responses[HttpResponse::HTTP_INTERNAL_SERVER_ERROR]
+        );
+    }
+
+    private function testInvokeSetExpectations(
+        OpenApi $expectedOpenApi
+    ): void {
+        $this->decoratedFactory->expects($this->once())
+            ->method('__invoke')
+            ->willReturn($expectedOpenApi);
+
+        $this->endpointFactory1->expects($this->once())
+            ->method('createEndpoint')
+            ->with($expectedOpenApi);
+        $this->endpointFactory2->expects($this->once())
+            ->method('createEndpoint')
+            ->with($expectedOpenApi);
+
+        $serverErrorResponse = new Response();
+        $this->serverErrorResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($serverErrorResponse);
     }
 }

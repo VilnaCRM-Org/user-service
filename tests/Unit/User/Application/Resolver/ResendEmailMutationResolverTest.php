@@ -34,7 +34,7 @@ final class ResendEmailMutationResolverTest extends UnitTestCase
     private TokenRepositoryInterface $tokenRepository;
     private ConfirmationTokenFactoryInterface $tokenFactory;
     private ConfirmationEmailFactoryInterface $mockConfirmationEmailFactory;
-    private SendConfirmationEmailCommandFactoryInterface $mockEmailCommandFactory;
+    private SendConfirmationEmailCommandFactoryInterface $mockEmailCmdFactory;
 
     protected function setUp(): void
     {
@@ -56,7 +56,7 @@ final class ResendEmailMutationResolverTest extends UnitTestCase
             $this->createMock(ConfirmationTokenFactoryInterface::class);
         $this->mockConfirmationEmailFactory =
             $this->createMock(ConfirmationEmailFactoryInterface::class);
-        $this->mockEmailCommandFactory = $this->createMock(
+        $this->mockEmailCmdFactory = $this->createMock(
             SendConfirmationEmailCommandFactoryInterface::class
         );
     }
@@ -69,7 +69,7 @@ final class ResendEmailMutationResolverTest extends UnitTestCase
             $token,
             $user
         );
-        $command = $this->emailCommandFactory->create($confirmationEmail);
+        $command = $this->mockEmailCmdFactory->create($confirmationEmail);
 
         $this->setInvokeExpectations(
             $user,
@@ -91,7 +91,7 @@ final class ResendEmailMutationResolverTest extends UnitTestCase
             $token,
             $user
         );
-        $command = $this->emailCommandFactory->create($confirmationEmail);
+        $command = $this->mockEmailCmdFactory->create($confirmationEmail);
 
         $this->setInvokeWithNonExistingTokenExpectations(
             $user,
@@ -121,7 +121,7 @@ final class ResendEmailMutationResolverTest extends UnitTestCase
             ->method('create')
             ->willReturn($confirmationEmail);
 
-        $this->mockEmailCommandFactory->expects($this->once())
+        $this->mockEmailCmdFactory->expects($this->once())
             ->method('create')
             ->with($confirmationEmail)
             ->willReturn($command);
@@ -152,7 +152,7 @@ final class ResendEmailMutationResolverTest extends UnitTestCase
             ->method('create')
             ->willReturn($confirmationEmail);
 
-        $this->mockEmailCommandFactory->expects($this->once())
+        $this->mockEmailCmdFactory->expects($this->once())
             ->method('create')
             ->with($confirmationEmail)
             ->willReturn($command);
@@ -184,7 +184,7 @@ final class ResendEmailMutationResolverTest extends UnitTestCase
             $this->tokenRepository,
             $this->tokenFactory,
             $this->mockConfirmationEmailFactory,
-            $this->mockEmailCommandFactory
+            $this->mockEmailCmdFactory
         );
     }
 }

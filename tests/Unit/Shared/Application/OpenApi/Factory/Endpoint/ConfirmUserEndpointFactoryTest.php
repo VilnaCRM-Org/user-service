@@ -17,52 +17,68 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class ConfirmUserEndpointFactoryTest extends UnitTestCase
 {
+    private Response $userConfirmedResponse;
+    private Response $notFoundResponse;
+    private PathItem $pathItem;
+    private Operation $patchOperation;
+    private TokenNotFoundFactory $tokenNotFoundResponseFactory;
+    private UserConfirmedFactory $userConfirmedResponseFactory;
+    private OpenApi $openApi;
+    private Paths $paths;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->userConfirmedResponse = new Response();
+        $this->notFoundResponse = new Response();
+        $this->patchOperation = $this->createMock(Operation::class);
+
+        $this->pathItem = new PathItem();
+        $this->pathItem = $this->pathItem->withPatch($this->patchOperation);
+
+        $this->tokenNotFoundResponseFactory =
+            $this->createMock(TokenNotFoundFactory::class);
+        $this->userConfirmedResponseFactory =
+            $this->createMock(UserConfirmedFactory::class);
+        $this->openApi = $this->createMock(OpenApi::class);
+        $this->paths = $this->createMock(Paths::class);
+    }
+
     public function testCreateEndpoint(): void
     {
-        $userConfirmedResponse = new Response();
-        $notFoundResponse = new Response();
-
-        $tokenNotFoundResponseFactory = $this->createMock(
-            TokenNotFoundFactory::class
-        );
-        $tokenNotFoundResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($notFoundResponse);
-
-        $userConfirmedResponseFactory = $this->createMock(
-            UserConfirmedFactory::class
-        );
-        $userConfirmedResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($userConfirmedResponse);
+        $this->setExpectations();
 
         $factory = new ConfirmUserEndpointFactory(
-            $tokenNotFoundResponseFactory,
-            $userConfirmedResponseFactory
+            $this->tokenNotFoundResponseFactory,
+            $this->userConfirmedResponseFactory
         );
 
-        $openApi = $this->createMock(OpenApi::class);
-        $paths = $this->createMock(Paths::class);
-        $pathItem = new PathItem();
-        $patchOperation = $this->createMock(Operation::class);
-        $patchOperation->method('getResponses')->willReturn([
-            HttpResponse::HTTP_OK => $userConfirmedResponse,
-            HttpResponse::HTTP_NOT_FOUND => $notFoundResponse,
-        ]);
-        $pathItem = $pathItem->withPatch($patchOperation);
-        $paths->method('getPath')->willReturn($pathItem);
-        $openApi->method('getPaths')->willReturn($paths);
-
-        $factory->createEndpoint($openApi);
-
-        $patchOperation = $pathItem->getPatch();
-        $responses = $patchOperation->getResponses() ?? [];
+        $factory->createEndpoint($this->openApi);
+        $this->patchOperation = $this->pathItem->getPatch();
+        $responses = $this->patchOperation->getResponses() ?? [];
         $this->assertEquals(
             [
-                HttpResponse::HTTP_OK => $userConfirmedResponse,
-                HttpResponse::HTTP_NOT_FOUND => $notFoundResponse,
+                HttpResponse::HTTP_OK => $this->userConfirmedResponse,
+                HttpResponse::HTTP_NOT_FOUND => $this->notFoundResponse,
             ],
             $responses
         );
+    }
+
+    private function setExpectations(): void
+    {
+        $this->tokenNotFoundResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($this->notFoundResponse);
+        $this->userConfirmedResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($this->userConfirmedResponse);
+        $this->patchOperation->method('getResponses')->willReturn([
+            HttpResponse::HTTP_OK => $this->userConfirmedResponse,
+            HttpResponse::HTTP_NOT_FOUND => $this->notFoundResponse,
+        ]);
+        $this->paths->method('getPath')->willReturn($this->pathItem);
+        $this->openApi->method('getPaths')->willReturn($this->paths);
     }
 }

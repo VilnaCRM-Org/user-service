@@ -48,10 +48,12 @@ final class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
         $this->sendEventFactory = new ConfirmationEmailSendEventFactory();
         $this->emailFactory = new EmailFactory();
         $this->mailer = $this->createMock(MailerInterface::class);
-        $this->tokenRepository = $this->createMock(TokenRepositoryInterface::class);
+        $this->tokenRepository =
+            $this->createMock(TokenRepositoryInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->translator = $this->createMock(TranslatorInterface::class);
-        $this->mockEmailFactory = $this->createMock(EmailFactoryInterface::class);
+        $this->mockEmailFactory =
+            $this->createMock(EmailFactoryInterface::class);
     }
 
     public function testInvoke(): void

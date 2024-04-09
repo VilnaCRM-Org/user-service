@@ -15,7 +15,6 @@ final class UserEndpointFactory implements AbstractEndpointFactory
 {
     private const ENDPOINT_URI = '/api/users';
 
-    private Response $duplicateEmailResponse;
     private Response $validationErrorResponse;
     private Response $badRequestResponse;
     private Response $userCreatedResponse;

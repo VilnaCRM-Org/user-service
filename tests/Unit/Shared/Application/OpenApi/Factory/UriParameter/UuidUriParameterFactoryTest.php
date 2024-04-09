@@ -26,9 +26,30 @@ final class UuidUriParameterFactoryTest extends UnitTestCase
     {
         $name = 'id';
         $description = 'User identifier';
+        $example = '2b10b7a3-67f0-40ea-a367-44263321592a';
         $required = true;
         $type = 'string';
-        $example = '2b10b7a3-67f0-40ea-a367-44263321592a';
+
+        $this->setExpectations($name, $description, $example, $required, $type);
+
+        $parameter = $this->factory->getParameter();
+
+        $this->assertInstanceOf(Parameter::class, $parameter);
+        $this->assertEquals($name, $parameter->getName());
+        $this->assertEquals('path', $parameter->getIn());
+        $this->assertEquals($description, $parameter->getDescription());
+        $this->assertTrue($parameter->getRequired());
+        $this->assertEquals(['type' => $type], $parameter->getSchema());
+        $this->assertEquals($example, $parameter->getExample());
+    }
+
+    private function setExpectations(
+        string $name,
+        string $description,
+        string $example,
+        bool $required,
+        string $type
+    ): void {
         $this->builderMock->expects($this->once())
             ->method('build')
             ->with(
@@ -48,15 +69,5 @@ final class UuidUriParameterFactoryTest extends UnitTestCase
                     example: $example
                 )
             );
-
-        $parameter = $this->factory->getParameter();
-
-        $this->assertInstanceOf(Parameter::class, $parameter);
-        $this->assertEquals($name, $parameter->getName());
-        $this->assertEquals('path', $parameter->getIn());
-        $this->assertEquals($description, $parameter->getDescription());
-        $this->assertTrue($parameter->getRequired());
-        $this->assertEquals(['type' => $type], $parameter->getSchema());
-        $this->assertEquals($example, $parameter->getExample());
     }
 }

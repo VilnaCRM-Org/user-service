@@ -48,7 +48,24 @@ final class RequestBuilderTest extends UnitTestCase
             new Parameter('age', 'integer', $age),
         ];
 
-        $expectedContent = new ArrayObject([
+        $expectedContent = $this->getExpectedContent($name, $age);
+
+        $this->contextBuilderMock->expects($this->once())
+            ->method('build')
+            ->with($params)
+            ->willReturn($expectedContent);
+
+        $requestBody = $this->builder->build($params);
+
+        $this->assertInstanceOf(RequestBody::class, $requestBody);
+        $this->assertEquals($expectedContent, $requestBody->getContent());
+    }
+
+    private function getExpectedContent(
+        string $name,
+        int $age
+    ): ArrayObject {
+        return new ArrayObject([
             'application/json' => [
                 'schema' => [
                     'type' => 'object',
@@ -63,15 +80,5 @@ final class RequestBuilderTest extends UnitTestCase
                 ],
             ],
         ]);
-
-        $this->contextBuilderMock->expects($this->once())
-            ->method('build')
-            ->with($params)
-            ->willReturn($expectedContent);
-
-        $requestBody = $this->builder->build($params);
-
-        $this->assertInstanceOf(RequestBody::class, $requestBody);
-        $this->assertEquals($expectedContent, $requestBody->getContent());
     }
 }

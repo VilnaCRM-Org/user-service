@@ -40,7 +40,8 @@ final class UserPutProcessorTest extends UnitTestCase
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer();
         $this->updateUserCommandFactory = new UpdateUserCommandFactory();
-        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->userRepository =
+            $this->createMock(UserRepositoryInterface::class);
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->mockUpdateUserCommandFactory =
             $this->createMock(UpdateUserCommandFactoryInterface::class);

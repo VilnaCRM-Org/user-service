@@ -40,7 +40,8 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->userRepository =
+            $this->createMock(UserRepositoryInterface::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->mockUuidFactory = $this->createMock(UuidFactory::class);
         $this->mockUserConfirmedEventFactory = $this->createMock(

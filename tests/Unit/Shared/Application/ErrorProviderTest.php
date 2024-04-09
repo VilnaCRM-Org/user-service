@@ -18,21 +18,21 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class ErrorProviderTest extends UnitTestCase
 {
     private TranslatorInterface $translator;
+    private HttpOperation $operation;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->translator = $this->createMock(TranslatorInterface::class);
+        $this->operation = $this->createMock(HttpOperation::class);
     }
 
     public function testProvide(): void
     {
-        $operation = $this->createMock(HttpOperation::class);
         $status = $this->faker->numberBetween(200, 499);
-        $operation->expects($this->once())->method(
-            'getStatus'
-        )->willReturn($status);
+        $this->operation->expects($this->once())
+            ->method('getStatus')->willReturn($status);
 
         $errorText = $this->faker->word();
 
@@ -40,8 +40,7 @@ final class ErrorProviderTest extends UnitTestCase
             Response::HTTP_INTERNAL_SERVER_ERROR,
             $errorText
         );
-        $request = new Request();
-        $request->attributes->set('exception', $exception);
+        $request = new Request(attributes: ['exception' => $exception]);
         $context = ['request' => $request];
 
         $this->translator->expects($this->once())
@@ -51,7 +50,7 @@ final class ErrorProviderTest extends UnitTestCase
 
         $errorProvider = new ErrorProvider($this->translator);
 
-        $error = $errorProvider->provide($operation, [], $context);
+        $error = $errorProvider->provide($this->operation, [], $context);
 
         $this->assertInstanceOf(Error::class, $error);
 
@@ -62,10 +61,8 @@ final class ErrorProviderTest extends UnitTestCase
 
     public function testProvideWithoutErrorCode(): void
     {
-        $operation = $this->createMock(HttpOperation::class);
-        $operation->expects(
-            $this->once()
-        )->method('getStatus')->willReturn(null);
+        $this->operation->expects($this->once())
+            ->method('getStatus')->willReturn(null);
 
         $errorText = $this->faker->word();
 
@@ -73,18 +70,15 @@ final class ErrorProviderTest extends UnitTestCase
             Response::HTTP_INTERNAL_SERVER_ERROR,
             $this->faker->word()
         );
-        $request = new Request();
-        $request->attributes->set('exception', $exception);
+        $request = new Request(attributes: ['exception' => $exception]);
         $context = ['request' => $request];
 
         $this->translator->expects($this->once())
             ->method('trans')
-            ->with('error.internal')
-            ->willReturn($errorText);
+            ->with('error.internal')->willReturn($errorText);
 
         $errorProvider = new ErrorProvider($this->translator);
-
-        $error = $errorProvider->provide($operation, [], $context);
+        $error = $errorProvider->provide($this->operation, [], $context);
 
         $this->assertInstanceOf(Error::class, $error);
 
@@ -98,17 +92,14 @@ final class ErrorProviderTest extends UnitTestCase
 
     public function testProvideNotFoundException(): void
     {
-        $operation = $this->createMock(HttpOperation::class);
         $status = Response::HTTP_NOT_FOUND;
-        $operation->expects(
-            $this->once()
-        )->method('getStatus')->willReturn($status);
+        $this->operation->expects($this->once())
+            ->method('getStatus')->willReturn($status);
 
         $errorText = $this->faker->word();
 
         $exception = new NotFoundHttpException();
-        $request = new Request();
-        $request->attributes->set('exception', $exception);
+        $request = new Request(attributes: ['exception' => $exception]);
         $context = ['request' => $request];
 
         $this->translator
@@ -118,7 +109,7 @@ final class ErrorProviderTest extends UnitTestCase
 
         $errorProvider = new ErrorProvider($this->translator);
 
-        $error = $errorProvider->provide($operation, [], $context);
+        $error = $errorProvider->provide($this->operation, [], $context);
 
         $this->assertInstanceOf(Error::class, $error);
 
@@ -129,36 +120,14 @@ final class ErrorProviderTest extends UnitTestCase
 
     public function testProvideDomainException(): void
     {
-        $operation = $this->createMock(HttpOperation::class);
         $status = $this->faker->numberBetween(200, 500);
-        $operation->expects(
-            $this->once()
-        )->method('getStatus')->willReturn($status);
+        $this->operation->expects($this->once())
+            ->method('getStatus')->willReturn($status);
         $template = $this->faker->word();
         $args = [];
         $errorText = $this->faker->word();
 
-        $exception = new class($template, $args) extends DomainException {
-            /**
-             * @param array<string> $args
-             */
-            public function __construct(
-                private string $template,
-                private array $args
-            ) {
-                parent::__construct();
-            }
-
-            public function getTranslationTemplate(): string
-            {
-                return $this->template;
-            }
-
-            public function getTranslationArgs(): array
-            {
-                return $this->args;
-            }
-        };
+        $exception = $this->getDomainException($template, $args);
 
         $this->translator
             ->method('trans')
@@ -171,7 +140,7 @@ final class ErrorProviderTest extends UnitTestCase
 
         $errorProvider = new ErrorProvider($this->translator);
 
-        $error = $errorProvider->provide($operation, [], $context);
+        $error = $errorProvider->provide($this->operation, [], $context);
 
         $this->assertInstanceOf(Error::class, $error);
 
@@ -182,7 +151,6 @@ final class ErrorProviderTest extends UnitTestCase
 
     public function testProvideGraphQLInternalError(): void
     {
-        $operation = $this->createMock(HttpOperation::class);
         $errorText = $this->faker->word();
 
         $exception = new HttpException(
@@ -203,9 +171,36 @@ final class ErrorProviderTest extends UnitTestCase
 
         $errorProvider = new ErrorProvider($this->translator);
 
-        $error = $errorProvider->provide($operation, [], $context);
+        $error = $errorProvider->provide($this->operation, [], $context);
 
         $this->assertEquals($errorText, $error['message']);
         $this->assertEquals('internal', $error['extensions']['category']);
+    }
+
+    private function getDomainException(
+        string $template,
+        array $args
+    ): DomainException {
+        return new class($template, $args) extends DomainException {
+            /**
+             * @param array<string> $args
+             */
+            public function __construct(
+                private string $template,
+                private array $args
+            ) {
+                parent::__construct();
+            }
+
+            public function getTranslationTemplate(): string
+            {
+                return $this->template;
+            }
+
+            public function getTranslationArgs(): array
+            {
+                return $this->args;
+            }
+        };
     }
 }

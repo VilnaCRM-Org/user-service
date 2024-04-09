@@ -18,36 +18,64 @@ final class InternalServerErrorResponseFactoryTest extends UnitTestCase
 
         $factory = new InternalErrorFactory($responseBuilder);
 
-        $typeParam = new Parameter(
-            'type',
-            'string',
-            '/errors/500'
-        );
-        $titleParam = new Parameter(
-            'title',
-            'string',
-            'An error occurred'
-        );
-        $detailParam = new Parameter(
-            'detail',
-            'string',
-            'Something went wrong'
-        );
-        $statusParam = new Parameter(
-            'status',
-            'integer',
-            500
-        );
-
         $responseBuilder->expects($this->once())
             ->method('build')
             ->with(
                 'Internal server error',
-                [$typeParam, $titleParam, $detailParam, $statusParam]
+                $this->getParams()
             )
             ->willReturn(new Response());
 
         $response = $factory->getResponse();
         $this->assertInstanceOf(Response::class, $response);
+    }
+
+    /**
+     * @return array<Parameter>
+     */
+    private function getParams(): array
+    {
+        $typeParam = $this->getTypeParam();
+        $titleParam = $this->getTitleParam();
+        $detailParam = $this->getDetailParam();
+        $statusParam = $this->getStatusParam();
+
+        return [$typeParam, $titleParam, $detailParam, $statusParam];
+    }
+
+    private function getTypeParam(): Parameter
+    {
+        return new Parameter(
+            'type',
+            'string',
+            '/errors/500'
+        );
+    }
+
+    private function getTitleParam(): Parameter
+    {
+        return new Parameter(
+            'title',
+            'string',
+            'An error occurred'
+        );
+    }
+
+    private function getDetailParam(): Parameter
+    {
+        return new Parameter(
+            'detail',
+            'string',
+            'Something went wrong'
+        );
+    }
+
+    private function getStatusParam(): Parameter
+    {
+        return new Parameter(
+            'status',
+            'integer',
+            500
+        );
     }
 }

@@ -19,71 +19,102 @@ use App\Tests\Unit\UnitTestCase;
 
 final class ResendEmailEndpointFactoryTest extends UnitTestCase
 {
+    private UserNotFoundResponseFactory $userNotFoundResponseFactory;
+    private EmailSendFactory $sendAgainResponseFactory;
+    private UserTimedOutResponseFactory $timedOutResponseFactory;
+    private EmptyRequestFactory $emptyRequestFactory;
+    private UuidUriParameterFactory $parameterFactory;
+    private Response $userNotFoundResponse;
+    private Response $sendAgainResponse;
+    private Response $timedOutResponse;
+    private OpenApi $openApi;
+    private Paths $paths;
+    private PathItem $pathItem;
+    private Operation $operation;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->userNotFoundResponseFactory =
+            $this->createMock(UserNotFoundResponseFactory::class);
+        $this->sendAgainResponseFactory =
+            $this->createMock(EmailSendFactory::class);
+        $this->timedOutResponseFactory =
+            $this->createMock(UserTimedOutResponseFactory::class);
+        $this->emptyRequestFactory =
+            $this->createMock(EmptyRequestFactory::class);
+        $this->parameterFactory =
+            $this->createMock(UuidUriParameterFactory::class);
+        $this->userNotFoundResponse = $this->createMock(Response::class);
+        $this->sendAgainResponse = $this->createMock(Response::class);
+        $this->timedOutResponse = $this->createMock(Response::class);
+        $this->openApi = $this->createMock(OpenApi::class);
+        $this->paths = $this->createMock(Paths::class);
+        $this->pathItem = $this->createMock(PathItem::class);
+        $this->operation = $this->createMock(Operation::class);
+    }
+
     public function testCreateEndpoint(): void
     {
-        $userNotFoundResponseFactory =
-            $this->createMock(UserNotFoundResponseFactory::class);
-        $sendAgainResponseFactory = $this->createMock(EmailSendFactory::class);
-        $timedOutResponseFactory =
-            $this->createMock(UserTimedOutResponseFactory::class);
-        $emptyRequestFactory = $this->createMock(EmptyRequestFactory::class);
-        $parameterFactory = $this->createMock(UuidUriParameterFactory::class);
-
-        $userNotFoundResponse = $this->createMock(Response::class);
-        $sendAgainResponse = $this->createMock(Response::class);
-        $timedOutResponse = $this->createMock(Response::class);
-
-        $userNotFoundResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($userNotFoundResponse);
-        $sendAgainResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($sendAgainResponse);
-        $timedOutResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($timedOutResponse);
-        $emptyRequestFactory->expects($this->once())
-            ->method('getRequest');
-        $parameterFactory->expects($this->once())
-            ->method('getParameter');
+        $this->setExpectations();
 
         $factory = new ResendEmailEndpointFactory(
-            $userNotFoundResponseFactory,
-            $sendAgainResponseFactory,
-            $timedOutResponseFactory,
-            $emptyRequestFactory,
-            $parameterFactory
+            $this->userNotFoundResponseFactory,
+            $this->sendAgainResponseFactory,
+            $this->timedOutResponseFactory,
+            $this->emptyRequestFactory,
+            $this->parameterFactory
         );
 
-        $openApi = $this->createMock(OpenApi::class);
-        $paths = $this->createMock(Paths::class);
-        $pathItem = $this->createMock(PathItem::class);
-        $operation = $this->createMock(Operation::class);
+        $factory->createEndpoint($this->openApi);
+    }
 
-        $openApi->expects($this->exactly(2))
+    private function setExpectations(): void
+    {
+        $this->userNotFoundResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($this->userNotFoundResponse);
+        $this->sendAgainResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($this->sendAgainResponse);
+        $this->timedOutResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($this->timedOutResponse);
+        $this->emptyRequestFactory->expects($this->once())
+            ->method('getRequest');
+        $this->parameterFactory->expects($this->once())
+            ->method('getParameter');
+        $this->openApi->expects($this->exactly(2))
             ->method('getPaths')
-            ->willReturn($paths);
+            ->willReturn($this->paths);
 
-        $paths->expects($this->once())
+        $this->setExpectationsForPaths();
+        $this->setExpectationsForPathItem();
+    }
+
+    private function setExpectationsForPaths(): void
+    {
+        $endpointUri = '/api/users/{id}/resend-confirmation-email';
+        $this->paths->expects($this->once())
             ->method('getPath')
-            ->with('/api/users/{id}/resend-confirmation-email')
-            ->willReturn($pathItem);
-
-        $pathItem->expects($this->once())
-            ->method('getPost')
-            ->willReturn($operation);
-
-        $pathItem->expects($this->once())
-            ->method('withPost')
-            ->willReturn($pathItem);
-
-        $paths->expects($this->once())
+            ->with($endpointUri)
+            ->willReturn($this->pathItem);
+        $this->paths->expects($this->once())
             ->method('addPath')
             ->with(
-                '/api/users/{id}/resend-confirmation-email',
-                $pathItem
+                $endpointUri,
+                $this->pathItem
             );
+    }
 
-        $factory->createEndpoint($openApi);
+    private function setExpectationsForPathItem(): void
+    {
+        $this->pathItem->expects($this->once())
+            ->method('getPost')
+            ->willReturn($this->operation);
+        $this->pathItem->expects($this->once())
+            ->method('withPost')
+            ->willReturn($this->pathItem);
     }
 }

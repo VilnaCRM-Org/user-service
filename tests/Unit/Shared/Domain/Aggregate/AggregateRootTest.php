@@ -16,6 +16,9 @@ final class AggregateRootTest extends TestCase
         $event2 = $this->createMock(DomainEvent::class);
 
         $aggregateRoot = new class() extends AggregateRoot {
+            /**
+             * @return array<DomainEvent>
+             */
             public function getDomainEvents(): array
             {
                 return $this->pullDomainEvents();

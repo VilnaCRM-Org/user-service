@@ -20,120 +20,117 @@ use App\Tests\Unit\UnitTestCase;
 
 final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
 {
+    private ValidationErrorFactory $validationErrorResponseFactory;
+    private BadRequestResponseFactory $badRequestResponseFactory;
+    private UserNotFoundResponseFactory $userNotFoundResponseFactory;
+    private UserDeletedResponseFactory $userDeletedResponseFactory;
+    private UuidUriParameterFactory $uuidUriParameterFactory;
+    private UserUpdatedResponseFactory $userUpdatedResponseFactory;
+    private OpenApi $openApi;
+    private Paths $paths;
+    private PathItem $pathItem;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->validationErrorResponseFactory =
+            $this->createMock(ValidationErrorFactory::class);
+        $this->badRequestResponseFactory =
+            $this->createMock(BadRequestResponseFactory::class);
+        $this->userNotFoundResponseFactory =
+            $this->createMock(UserNotFoundResponseFactory::class);
+        $this->userDeletedResponseFactory =
+            $this->createMock(UserDeletedResponseFactory::class);
+        $this->uuidUriParameterFactory =
+            $this->createMock(UuidUriParameterFactory::class);
+        $this->userUpdatedResponseFactory =
+            $this->createMock(UserUpdatedResponseFactory::class);
+        $this->openApi = $this->createMock(OpenApi::class);
+        $this->paths = $this->createMock(Paths::class);
+        $this->pathItem = $this->createMock(PathItem::class);
+    }
+
     public function testCreateEndpoint(): void
     {
-        $validationErrorResponseFactory = $this->createMock(
-            ValidationErrorFactory::class
-        );
-        $badRequestResponseFactory = $this->createMock(
-            BadRequestResponseFactory::class
-        );
-        $userNotFoundResponseFactory = $this->createMock(
-            UserNotFoundResponseFactory::class
-        );
-        $userDeletedResponseFactory = $this->createMock(
-            UserDeletedResponseFactory::class
-        );
-        $uuidUriParameterFactory = $this->createMock(
-            UuidUriParameterFactory::class
-        );
-        $userUpdatedResponseFactory = $this->createMock(
-            UserUpdatedResponseFactory::class
-        );
-
-        $validationErrorResponse = $this->createMock(
-            Response::class
-        );
-        $badRequestResponse = $this->createMock(Response::class);
-        $userNotFoundResponse = $this->createMock(
-            Response::class
-        );
-        $userDeletedResponse = $this->createMock(
-            Response::class
-        );
-        $userUpdatedResponse = $this->createMock(
-            Response::class
-        );
-
-        $validationErrorResponseFactory->expects($this->once())->method(
-            'getResponse'
-        )->willReturn($validationErrorResponse);
-        $badRequestResponseFactory->expects($this->once())->method(
-            'getResponse'
-        )->willReturn($badRequestResponse);
-        $userNotFoundResponseFactory->expects($this->once())->method(
-            'getResponse'
-        )->willReturn($userNotFoundResponse);
-        $userDeletedResponseFactory->expects($this->once())->method(
-            'getResponse'
-        )->willReturn($userDeletedResponse);
-        $userUpdatedResponseFactory->expects($this->once())->method(
-            'getResponse'
-        )->willReturn($userUpdatedResponse);
+        $this->setExpectations();
 
         $factory = new ParametrizedUserEndpointFactory(
-            $validationErrorResponseFactory,
-            $badRequestResponseFactory,
-            $userNotFoundResponseFactory,
-            $userDeletedResponseFactory,
-            $uuidUriParameterFactory,
-            $userUpdatedResponseFactory,
+            $this->validationErrorResponseFactory,
+            $this->badRequestResponseFactory,
+            $this->userNotFoundResponseFactory,
+            $this->userDeletedResponseFactory,
+            $this->uuidUriParameterFactory,
+            $this->userUpdatedResponseFactory,
         );
 
-        $openApi = $this->createMock(OpenApi::class);
-        $paths = $this->createMock(Paths::class);
-        $pathItem = $this->createMock(PathItem::class);
-        $operationPut = $this->createMock(Operation::class);
-        $operationPatch = $this->createMock(Operation::class);
-        $operationGet = $this->createMock(Operation::class);
-        $operationDelete = $this->createMock(Operation::class);
+        $factory->createEndpoint($this->openApi);
+    }
 
-        $openApi->expects($this->exactly(8))
+    private function setExpectations(): void
+    {
+        $this->validationErrorResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($this->createMock(Response::class));
+
+        $this->badRequestResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($this->createMock(Response::class));
+
+        $this->userNotFoundResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($this->createMock(Response::class));
+
+        $this->userDeletedResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($this->createMock(Response::class));
+
+        $this->userUpdatedResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($this->createMock(Response::class));
+
+        $this->openApi->expects($this->exactly(8))
             ->method('getPaths')
-            ->willReturn($paths);
+            ->willReturn($this->paths);
 
-        $paths->expects($this->exactly(4))
+        $this->setExpectationsFotPaths();
+        $this->setExpectationsFotPathItem();
+    }
+
+    private function setExpectationsFotPaths(): void
+    {
+        $endpointUri = '/api/users/{id}';
+        $this->paths->expects($this->exactly(4))
             ->method('getPath')
-            ->with('/api/users/{id}')
-            ->willReturn($pathItem);
+            ->with($endpointUri)
+            ->willReturn($this->pathItem);
 
-        $pathItem->expects($this->exactly(1))
-            ->method('getPut')
-            ->willReturn($operationPut);
-
-        $pathItem->expects($this->exactly(1))
-            ->method('getPatch')
-            ->willReturn($operationPatch);
-
-        $pathItem->expects($this->exactly(1))
-            ->method('getGet')
-            ->willReturn($operationGet);
-
-        $pathItem->expects($this->exactly(1))
-            ->method('getDelete')
-            ->willReturn($operationDelete);
-
-        $paths->expects($this->exactly(4))
+        $this->paths->expects($this->exactly(4))
             ->method('addPath')
             ->withConsecutive(
-                [
-                    '/api/users/{id}',
-                    $this->isInstanceOf(PathItem::class),
-                ],
-                [
-                    '/api/users/{id}',
-                    $this->isInstanceOf(PathItem::class),
-                ],
-                [
-                    '/api/users/{id}',
-                    $this->isInstanceOf(PathItem::class),
-                ],
-                [
-                    '/api/users/{id}',
-                    $this->isInstanceOf(PathItem::class),
-                ]
+                [$endpointUri, $this->isInstanceOf(PathItem::class)],
+                [$endpointUri, $this->isInstanceOf(PathItem::class)],
+                [$endpointUri, $this->isInstanceOf(PathItem::class)],
+                [$endpointUri, $this->isInstanceOf(PathItem::class)],
             );
+    }
 
-        $factory->createEndpoint($openApi);
+    private function setExpectationsFotPathItem(): void
+    {
+        $this->pathItem->expects($this->exactly(1))
+            ->method('getPut')
+            ->willReturn($this->createMock(Operation::class));
+
+        $this->pathItem->expects($this->exactly(1))
+            ->method('getPatch')
+            ->willReturn($this->createMock(Operation::class));
+
+        $this->pathItem->expects($this->exactly(1))
+            ->method('getGet')
+            ->willReturn($this->createMock(Operation::class));
+
+        $this->pathItem->expects($this->exactly(1))
+            ->method('getDelete')
+            ->willReturn($this->createMock(Operation::class));
     }
 }

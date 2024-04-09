@@ -30,7 +30,8 @@ final class PasswordChangedEventSubscriberTest extends UnitTestCase
         $this->passwordChangedEventFactory = new PasswordChangedEventFactory();
         $this->emailFactory = new EmailFactory();
         $this->mailer = $this->createMock(MailerInterface::class);
-        $this->mockEmailFactory = $this->createMock(EmailFactoryInterface::class);
+        $this->mockEmailFactory =
+            $this->createMock(EmailFactoryInterface::class);
         $this->translator = $this->createMock(TranslatorInterface::class);
         $this->subscriber = new PasswordChangedEventSubscriber(
             $this->mailer,
