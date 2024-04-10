@@ -112,7 +112,8 @@ final class OAuthContext implements Context
         $this->approveAuthorization();
 
         $this->response = $this->kernel->handle(Request::create(
-            '/api/oauth/authorize?' . $this->obtainAuthorizeCodeInput->toUriParams(),
+            '/api/oauth/authorize?' .
+            $this->obtainAuthorizeCodeInput->toUriParams(),
             'GET',
             [],
             [],
@@ -213,13 +214,15 @@ final class OAuthContext implements Context
 
         Assert::assertArrayHasKey('error_description', $data);
         Assert::assertEquals(
-            'The authorization grant type is not supported by the authorization server.',
+            'The authorization grant type is '.
+            'not supported by the authorization server.',
             $data['error_description']
         );
 
         Assert::assertArrayHasKey('message', $data);
         Assert::assertEquals(
-            'The authorization grant type is not supported by the authorization server.',
+            'The authorization grant type is not'.
+            ' supported by the authorization server.',
             $data['message']
         );
     }

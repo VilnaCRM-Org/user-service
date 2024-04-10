@@ -86,7 +86,7 @@ final class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
     {
         $this->assertSame(
             [ConfirmationEmailSentEvent::class],
-            ConfirmationEmailSentEventSubscriber::subscribedTo()
+            $this->getSubscriber()->subscribedTo()
         );
     }
 

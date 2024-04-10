@@ -38,7 +38,7 @@ final readonly class UserRegisteredEventSubscriber implements
     /**
      * @return array<DomainEvent>
      */
-    public static function subscribedTo(): array
+    public function subscribedTo(): array
     {
         return [UserRegisteredEvent::class];
     }

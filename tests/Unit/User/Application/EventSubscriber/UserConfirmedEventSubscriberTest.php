@@ -17,6 +17,8 @@ final class UserConfirmedEventSubscriberTest extends UnitTestCase
 {
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
     private UserConfirmedEventFactoryInterface $userConfirmedEventFactory;
+    private TokenRepositoryInterface $tokenRepository;
+    private UserConfirmedEventSubscriber $subscriber;
 
     protected function setUp(): void
     {
@@ -26,32 +28,32 @@ final class UserConfirmedEventSubscriberTest extends UnitTestCase
             $this->faker->numberBetween(1, 10)
         );
         $this->userConfirmedEventFactory = new UserConfirmedEventFactory();
+        $this->tokenRepository =
+            $this->createMock(TokenRepositoryInterface::class);
+        $this->subscriber =
+            new UserConfirmedEventSubscriber($this->tokenRepository);
     }
 
     public function testInvoke(): void
     {
-        $tokenRepository = $this->createMock(TokenRepositoryInterface::class);
-
-        $subscriber = new UserConfirmedEventSubscriber($tokenRepository);
-
         $token = $this->confirmationTokenFactory->create($this->faker->uuid());
         $event = $this->userConfirmedEventFactory->create(
             $token,
             $this->faker->uuid()
         );
 
-        $tokenRepository->expects($this->once())
+        $this->tokenRepository->expects($this->once())
             ->method('delete')
             ->with($this->equalTo($token));
 
-        $subscriber->__invoke($event);
+        $this->subscriber->__invoke($event);
     }
 
     public function testSubscribedTo(): void
     {
         $this->assertSame(
             [UserConfirmedEvent::class],
-            UserConfirmedEventSubscriber::subscribedTo()
+            $this->subscriber->subscribedTo()
         );
     }
 }

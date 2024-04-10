@@ -84,7 +84,7 @@ final class UserRegisteredEventSubscriberTest extends UnitTestCase
     {
         $this->assertSame(
             [UserRegisteredEvent::class],
-            UserRegisteredEventSubscriber::subscribedTo()
+            $this->getSubscriber()->subscribedTo()
         );
     }
 

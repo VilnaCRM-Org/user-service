@@ -13,7 +13,7 @@ use App\Shared\Application\OpenApi\Factory\Response\OAuthRedirectFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UnsupportedTypeFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-final class OAuthAuthorizeEndpointFactory implements AbstractEndpointFactory
+final class OAuthAuthEndpointFactory implements AbstractEndpointFactory
 {
     private const ENDPOINT_URI = '/api/oauth/authorize';
 

@@ -16,12 +16,11 @@ use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-final class ParametrizedUserEndpointFactory implements AbstractEndpointFactory
+final class ParamUserEndpointFactory implements AbstractEndpointFactory
 {
     private const ENDPOINT_URI = '/api/users/{id}';
 
     private Parameter $uuidWithExamplePathParam;
-    private Response $duplicateEmailResponse;
     private Response $badRequestResponse;
     private Response $userNotFoundResponse;
     private Response $validationErrorResponse;

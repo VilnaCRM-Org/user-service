@@ -9,7 +9,7 @@ use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\Application\OpenApi\Factory\Endpoint\ParametrizedUserEndpointFactory;
+use App\Shared\Application\OpenApi\Factory\Endpoint\ParamUserEndpointFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserDeletedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserNotFoundResponseFactory;
@@ -55,7 +55,7 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
     {
         $this->setExpectations();
 
-        $factory = new ParametrizedUserEndpointFactory(
+        $factory = new ParamUserEndpointFactory(
             $this->validationErrorResponseFactory,
             $this->badRequestResponseFactory,
             $this->userNotFoundResponseFactory,

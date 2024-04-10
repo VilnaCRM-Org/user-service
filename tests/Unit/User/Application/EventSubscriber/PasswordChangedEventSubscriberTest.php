@@ -69,7 +69,7 @@ final class PasswordChangedEventSubscriberTest extends UnitTestCase
     {
         $this->assertSame(
             [PasswordChangedEvent::class],
-            PasswordChangedEventSubscriber::subscribedTo()
+            $this->subscriber->subscribedTo()
         );
     }
 }

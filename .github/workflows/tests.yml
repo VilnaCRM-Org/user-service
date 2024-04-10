@@ -19,13 +19,13 @@ jobs:
         run: make install
 
       - name: Setup test db
-        run: make ci-setup-test-db
+        run: make setup-test-db
 
       - name: Execute Unit and Integration tests
         run: make ci-tests
 
       - name: Copy coverage report to host
-        run: docker cp user-service-php-1:/coverage/coverage.xml /
+        run: docker cp user-service-php-1:/var/coverage.xml /
 
       - name: Upload code coverage to Codecov
         uses: codecov/codecov-action@v3

@@ -8,10 +8,9 @@ use App\Tests\Behat\UserGraphQLContext\Input\ConfirmUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\CreateUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\DeleteUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\GraphQLMutationInput;
-use App\Tests\Behat\UserGraphQLContext\Input\ResendEmailToUserGraphQLMutationInput;
+use App\Tests\Behat\UserGraphQLContext\Input\ResendEmailGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\UpdateUserGraphQLMutationInput;
 use Behat\Behat\Context\Context;
-use GraphQL\Actions\Mutation;
 use GraphQL\RequestBuilder\Argument;
 use GraphQL\RequestBuilder\RootType;
 use GraphQL\RequestBuilder\Type;
@@ -162,7 +161,7 @@ final class UserGraphQLContext implements Context
     {
         $id = $this->GRAPHQL_ID_PREFIX . $id;
         $this->queryName = 'resendEmailToUser';
-        $this->graphQLInput = new ResendEmailToUserGraphQLMutationInput($id);
+        $this->graphQLInput = new ResendEmailGraphQLMutationInput($id);
 
         $this->query = $this->createMutation(
             $this->queryName,

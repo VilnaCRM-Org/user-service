@@ -87,6 +87,10 @@ final class ContextBuilderTest extends UnitTestCase
         );
     }
 
+    /**
+     * @param array<string,string|array<string>> $expectedSchema
+     * @param array<string,string|array<string>> $expectedExample
+     */
     private function getExpectedResult(
         array $expectedSchema,
         array $expectedExample
@@ -99,6 +103,9 @@ final class ContextBuilderTest extends UnitTestCase
         ]);
     }
 
+    /**
+     * @return array<Parameter>
+     */
     private function testBuildWithSimpleParamsGetParams(): array
     {
         return [

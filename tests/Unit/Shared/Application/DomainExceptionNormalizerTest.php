@@ -37,6 +37,9 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
                     return $this->template;
                 }
 
+                /**
+                 * @return array<string>
+                 */
                 public function getTranslationArgs(): array
                 {
                     return $this->args;

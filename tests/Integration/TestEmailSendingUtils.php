@@ -25,7 +25,7 @@ final class TestEmailSendingUtils extends KernelTestCase
         $httpClient = HttpClient::create();
         $response = $httpClient->request(
             'GET',
-            'http://mailer:'.$_ENV['MAILCATCHER_HTTP_PORT'].'/messages'
+            'http://mailer:'.getenv('MAILCATCHER_HTTP_PORT').'/messages'
         )->toArray();
         $message = $response[sizeof($response) - 1];
 
@@ -34,7 +34,7 @@ final class TestEmailSendingUtils extends KernelTestCase
             $message['recipients'][0]
         );
         $this->assertEquals(
-            '<'.$_ENV['MAIL_SENDER'].'>',
+            '<'.getenv('MAIL_SENDER').'>',
             $message['sender']
         );
     }

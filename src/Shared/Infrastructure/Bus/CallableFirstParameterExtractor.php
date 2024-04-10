@@ -60,7 +60,7 @@ final class CallableFirstParameterExtractor
             $subscribers,
             DomainEventSubscriberInterface $subscriber
         ): array {
-            $subscribedEvents = $subscriber::subscribedTo();
+            $subscribedEvents = $subscriber->subscribedTo();
 
             foreach ($subscribedEvents as $subscribedEvent) {
                 $subscribers[$subscribedEvent][] = $subscriber;

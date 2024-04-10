@@ -177,6 +177,9 @@ final class ErrorProviderTest extends UnitTestCase
         $this->assertEquals('internal', $error['extensions']['category']);
     }
 
+    /**
+     * @param array<string> $args
+     */
     private function getDomainException(
         string $template,
         array $args
@@ -197,6 +200,9 @@ final class ErrorProviderTest extends UnitTestCase
                 return $this->template;
             }
 
+            /**
+             * @return array<string>
+             */
             public function getTranslationArgs(): array
             {
                 return $this->args;

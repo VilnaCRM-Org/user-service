@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Domain\Entity;
 
 use App\Shared\Application\Transformer\UuidTransformer;
+use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
@@ -133,6 +134,9 @@ final class UserTest extends UnitTestCase
         $this->assertEquals($confirmed, $this->user->isConfirmed());
     }
 
+    /**
+     * @param array<DomainEvent> $events
+     */
     private function testUpdateMakeAssertions(
         array $events,
         UserUpdate $updateData,

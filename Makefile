@@ -61,9 +61,11 @@ psalm-security: ## Psalm security analysis
 
 phpinsights: ## Instant PHP quality checks and static analysis tool
 	$(EXEC_PHP) ./vendor/bin/phpinsights --no-interaction
-
-phpinsights-for-tests: ## Instant PHP quality checks and static analysis tool
 	$(EXEC_PHP) ./vendor/bin/phpinsights analyse tests --no-interaction
+
+ci-phpinsights: ## Instant PHP quality checks and static analysis tool
+	.vendor/bin/phpinsights -n --ansi --format=github-action
+	.vendor/bin/phpinsights analyse tests -n --ansi --format=github-action
 
 unit-tests: ## The PHP unit testing framework
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/phpunit --testsuite=Unit
@@ -72,12 +74,12 @@ integration-tests: ## The PHP unit testing framework
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/phpunit --testsuite=Integration
 
 ci-tests: ## The PHP unit testing framework
-	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage -e APP_ENV=test php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-clover /coverage/coverage.xml'
+	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage -e APP_ENV=test php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-clover /var/coverage.xml'
 
 e2e-tests: ## A php framework for autotesting business expectations
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/behat
 
-ci-setup-test-db:
+setup-test-db:
 	$(SYMFONY_TEST_ENV) c:c
 	$(SYMFONY_TEST_ENV) doctrine:database:drop --force --if-exists
 	$(SYMFONY_TEST_ENV) doctrine:database:create
@@ -86,6 +88,8 @@ ci-setup-test-db:
 all-tests: unit-tests integration-tests e2e-tests
 
 smoke-load-tests: build-k6
+	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauthToken.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauthToken.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	$(K6) /scripts/oauth.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/getUser.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/getUsers.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/updateUser.js -e run_average=false -e run_stress=false -e run_spike=false
@@ -94,8 +98,6 @@ smoke-load-tests: build-k6
 	$(K6) /scripts/deleteUser.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/resendEmailToUser.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/replaceUser.js -e run_average=false -e run_stress=false -e run_spike=false
-	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauthToken.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauthToken.clientRedirectUri' $(LOAD_TEST_CONFIG))
-	$(K6) /scripts/oauth.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/graphQLUpdateUser.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/graphQLGetUser.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/graphQLGetUsers.js -e run_average=false -e run_stress=false -e run_spike=false

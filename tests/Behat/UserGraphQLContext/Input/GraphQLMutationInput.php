@@ -8,6 +8,9 @@ use GraphQL\RequestBuilder\Argument;
 
 abstract readonly class GraphQLMutationInput
 {
+    /**
+     * @return array<Argument>
+     */
     public function toGraphQLArguments(): array
     {
         $fields = get_object_vars($this);

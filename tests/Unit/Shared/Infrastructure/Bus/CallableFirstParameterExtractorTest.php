@@ -24,7 +24,7 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
             /**
              * @return array<string>
              */
-            public static function subscribedTo(): array
+            public function subscribedTo(): array
             {
                 return ['MyEvent'];
             }
@@ -45,39 +45,16 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
 
     public function testExtractForPipedCallables(): void
     {
-        $subscriber1 = new class() implements DomainEventSubscriberInterface {
-            /**
-             * @return array<string>
-             */
-            public static function subscribedTo(): array
-            {
-                return ['MyEvent1'];
-            }
-
-            public function __invoke(): void
-            {
-            }
-        };
-
-        $subscriber2 = new class() implements DomainEventSubscriberInterface {
-            /**
-             * @return array<string>
-             */
-            public static function subscribedTo(): array
-            {
-                return ['MyEvent2'];
-            }
-
-            public function __invoke(): void
-            {
-            }
-        };
+        $className1 = 'MyEvent1';
+        $className2 = 'MyEvent2';
+        $subscriber1 = $this->getSubscriberWithEmptyInvoke($className1);
+        $subscriber2 = $this->getSubscriberWithEmptyInvoke($className2);
 
         $callables = [$subscriber1, $subscriber2];
 
         $expected = [
-            'MyEvent1' => [$subscriber1],
-            'MyEvent2' => [$subscriber2],
+            $className1 => [$subscriber1],
+            $className2 => [$subscriber2],
         ];
 
         $extracted = $this->extractor->forPipedCallables($callables);
@@ -92,7 +69,7 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
                 /**
                  * @return array<string>
                  */
-                public static function subscribedTo(): array
+                public function subscribedTo(): array
                 {
                     return [DomainEvent::class];
                 }
@@ -114,7 +91,7 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
                 /**
                  * @return array<string>
                  */
-                public static function subscribedTo(): array
+                public function subscribedTo(): array
                 {
                     return ['MyEvent'];
                 }
@@ -127,5 +104,27 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
         $this->expectException(\LogicException::class);
 
         $this->extractor->extract($subscriberClass);
+    }
+
+    private function getSubscriberWithEmptyInvoke(
+        string $class
+    ): callable|DomainEventSubscriberInterface {
+        return new class($class) implements DomainEventSubscriberInterface {
+            public function __construct(private string $subscribedTo)
+            {
+            }
+
+            /**
+             * @return array<string>
+             */
+            public function subscribedTo(): array
+            {
+                return [$this->subscribedTo];
+            }
+
+            public function __invoke(): void
+            {
+            }
+        };
     }
 }

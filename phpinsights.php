@@ -9,7 +9,8 @@ use PHP_CodeSniffer\Standards\Generic\Sniffs\Strings\UnnecessaryStringConcatSnif
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
-use  SlevomatCodingStandard\Sniffs\Namespaces\UseSpacingSniff;
+use SlevomatCodingStandard\Sniffs\Namespaces\UseSpacingSniff;
+use SlevomatCodingStandard\Sniffs\TypeHints\ParameterTypeHintSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\ReturnTypeHintSniff;
 
 return [
@@ -33,10 +34,16 @@ return [
                 'src/User/Domain/Repository/UserRepositoryInterface',
             ],
         ],
+        ParameterTypeHintSniff::class => [
+            'exclude' => [
+                'tests/Unit/Shared/Infrastructure/Bus/CallableFirstParameterExtractorTest',
+            ],
+        ],
         LineLengthSniff::class => [
             'exclude' => [
                 'phpinsights',
             ],
+            'ignoreComments' => true,
         ],
         ForbiddenNormalClasses::class => [
             'exclude' => [
@@ -53,6 +60,9 @@ return [
                 'src/Shared/Application/OpenApi/Factory/Response/DuplicateEmailFactory',
                 'src/Shared/Infrastructure/Bus/Command/CommandNotRegisteredException',
                 'src/Shared/Infrastructure/Bus/Event/EventNotRegisteredException.php',
+                'tests/Unit/Shared/Application/OpenApi/Factory/Response/OAuthRedirectResponseFactoryTest',
+                'tests/Unit/Shared/Application/OpenApi/Factory/Response/UnsupportedGrantTypeResponseFactoryTest',
+                'tests/Behat/OAuthContext/OAuthContext',
             ],
         ],
     ],

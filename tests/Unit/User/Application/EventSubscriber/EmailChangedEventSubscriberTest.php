@@ -86,7 +86,7 @@ final class EmailChangedEventSubscriberTest extends UnitTestCase
     {
         $this->assertSame(
             [EmailChangedEvent::class],
-            EmailChangedEventSubscriber::subscribedTo()
+            $this->getSubscriber()->subscribedTo()
         );
     }
 
