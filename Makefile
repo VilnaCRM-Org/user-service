@@ -74,7 +74,7 @@ integration-tests: ## The PHP unit testing framework
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/phpunit --testsuite=Integration
 
 ci-tests: ## The PHP unit testing framework
-	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage -e APP_ENV=test php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-clover /var/coverage.xml'
+	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage -e APP_ENV=test php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-clover /coverage/coverage.xml'
 
 e2e-tests: ## A php framework for autotesting business expectations
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/behat
@@ -88,8 +88,6 @@ setup-test-db:
 all-tests: unit-tests integration-tests e2e-tests
 
 smoke-load-tests: build-k6
-	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauthToken.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauthToken.clientRedirectUri' $(LOAD_TEST_CONFIG))
-	$(K6) /scripts/oauth.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/getUser.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/getUsers.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/updateUser.js -e run_average=false -e run_stress=false -e run_spike=false
@@ -105,6 +103,8 @@ smoke-load-tests: build-k6
 	$(K6) /scripts/graphQLResendEmailToUser.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/graphQLCreateUser.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/graphQLConfirmUser.js -e run_average=false -e run_stress=false -e run_spike=false
+	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauthToken.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauthToken.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	$(K6) /scripts/oauth.js -e run_average=false -e run_stress=false -e run_spike=false
 
 load-tests: build-k6
 	$(K6) /scripts/getUser.js

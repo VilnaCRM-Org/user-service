@@ -9,6 +9,8 @@ export class ScenarioUtils {
         this.averageConfig = this.config.endpoints[scenarioName].average;
         this.stressConfig = this.config.endpoints[scenarioName].stress;
         this.spikeConfig = this.config.endpoints[scenarioName].spike;
+        this.setupTimeout =
+            this.config.endpoints[scenarioName].setupTimeoutInMinutes + 'm';
         this.delay = this.config.delayBetweenScenarios;
         this.averageTestStartTime = 0;
         this.stressTestStartTime = 0;
@@ -17,6 +19,7 @@ export class ScenarioUtils {
 
     getOptions() {
         return {
+            setupTimeout: this.setupTimeout,
             insecureSkipTLSVerify: true,
             scenarios: this.getScenarios(),
             thresholds: this.getThresholds()

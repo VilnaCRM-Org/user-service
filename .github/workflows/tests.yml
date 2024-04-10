@@ -25,7 +25,7 @@ jobs:
         run: make ci-tests
 
       - name: Copy coverage report to host
-        run: docker cp user-service-php-1:/var/coverage.xml /
+        run: docker cp user-service-php-1:/coverage/coverage.xml /
 
       - name: Upload code coverage to Codecov
         uses: codecov/codecov-action@v3

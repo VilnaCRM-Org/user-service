@@ -8,6 +8,7 @@
     "gettingEmailMaxRetries": 50,
     "endpoints": {
         "getUser": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 60,
                 "rps": 10,
@@ -45,6 +46,7 @@
             }
         },
         "getUsers": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 70,
                 "rps": 10,
@@ -82,6 +84,7 @@
             }
         },
         "createUser": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 3000,
                 "rps": 10,
@@ -119,6 +122,7 @@
             }
         },
         "updateUser": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 3000,
                 "rps": 10,
@@ -156,6 +160,7 @@
             }
         },
         "replaceUser": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 3000,
                 "rps": 10,
@@ -193,6 +198,7 @@
             }
         },
         "confirmUser": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 3500,
                 "rps": 10,
@@ -230,6 +236,7 @@
             }
         },
         "deleteUser": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 90,
                 "rps": 10,
@@ -267,6 +274,7 @@
             }
         },
         "resendEmailToUser": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 90,
                 "rps": 10,
@@ -304,6 +312,7 @@
             }
         },
         "oauthToken": {
+            "setupTimeoutInMinutes": 10,
             "clientName": "ClientName",
             "clientSecret": "Secret1",
             "clientID": "ID123",
@@ -345,6 +354,7 @@
             }
         },
         "graphqlGetUser": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 60,
                 "rps": 10,
@@ -382,6 +392,7 @@
             }
         },
         "graphqlGetUsers": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 70,
                 "rps": 10,
@@ -419,6 +430,7 @@
             }
         },
         "graphqlCreateUser": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 3000,
                 "rps": 10,
@@ -456,6 +468,7 @@
             }
         },
         "graphqlUpdateUser": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 90,
                 "rps": 10,
@@ -493,6 +506,7 @@
             }
         },
         "graphqlConfirmUser": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 90,
                 "rps": 10,
@@ -530,6 +544,7 @@
             }
         },
         "graphqlDeleteUser": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 90,
                 "rps": 10,
@@ -567,6 +582,7 @@
             }
         },
         "graphqlResendEmailToUser": {
+            "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 90,
                 "rps": 10,

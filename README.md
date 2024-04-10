@@ -46,6 +46,9 @@ Go to browser and open the link below to access REST API docs
 And using the link below you can access the GraphQL documentation
 > https://localhost/api/graphql/graphql_playground
 
+Also, you can see architecture diagram using link below
+> http://localhost:8080/workspace/diagrams
+
 That's it. You should now be ready to use PHP service template!
 
 ## Using
