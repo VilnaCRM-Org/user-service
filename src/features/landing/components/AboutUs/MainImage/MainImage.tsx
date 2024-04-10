@@ -3,7 +3,7 @@ import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import MainImageSrc from '../../../assets/img/about-vilna/Screen.webp';
+import MainImageSrc from '../../../assets/img/about-vilna/desktop.jpg';
 
 import styles from './styles';
 

@@ -1,8 +1,9 @@
 import breakpointsTheme from '@/components/UiBreakpoints';
 import colorTheme from '@/components/UiColorTheme';
 
-import VectorIcon from '../../assets/svg/for-who/bg-lg.svg';
-import VectorIconMd from '../../assets/svg/for-who/bg-md.svg';
+import DesktopImageSrc from '../../assets/img/about-vilna/desktop.jpg';
+import PhoneImageSrc from '../../assets/img/about-vilna/mobile.jpg';
+import TabletImageSrc from '../../assets/img/about-vilna/tablet.jpg';
 
 export default {
   wrapper: {
@@ -38,45 +39,44 @@ export default {
   },
 
   mainImage: {
-    backgroundImage: `url(${VectorIcon.src})`,
+    backgroundImage: `url(${DesktopImageSrc.src})`,
     backgroundSize: 'contain',
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'center',
     width: '100dvw',
     maxWidth: '51.875rem',
-    height: '44.688rem',
+    height: '35rem',
     zIndex: '1',
     position: 'absolute',
-    top: '15.8%',
-    right: '-6.3%',
-    '@media (max-width: 1130.98px)': {
-      backgroundImage: `url(${VectorIconMd.src})`,
+    top: '12%',
+    right: '-4%',
+    '@media (max-width: 1160.98px)': {
+      backgroundImage: `url(${TabletImageSrc.src})`,
       width: '100dvw',
       maxWidth: '47.5rem',
       height: '41.438rem',
-      top: '5.8%',
+      top: '6%',
       right: '-9%',
     },
     [`@media (max-width: 968px)`]: {
       maxWidth: '43.75rem',
-      height: '44.688rem',
-      top: '40%',
+      height: '39rem',
+      top: '60%',
       right: '8%',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
       right: '-10%',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
-      height: '38rem',
+      height: '35rem',
       right: '-6%',
-      width: '29.5rem',
-      top: '38.5%',
+      top: '110%',
     },
     '@media (max-width: 425.98px)': {
-      height: '44.688rem',
-      right: '-28%',
-      width: '26.5rem',
-      top: '32.5%',
+      backgroundImage: `url(${PhoneImageSrc.src})`,
+      height: '21rem',
+      right: '-8%',
+      top: '106.5%',
     },
   },
 

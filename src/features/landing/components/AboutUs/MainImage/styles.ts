@@ -1,6 +1,7 @@
 import breakpointsTheme from '@/components/UiBreakpoints';
 
-import PhoneMainImage from '../../../assets/img/about-vilna/mobileBackground.webp';
+import PhoneMainImage from '../../../assets/img/about-vilna/mobile.jpg';
+import TabletMainImage from '../../../assets/img/about-vilna/tablet.jpg';
 
 export default {
   mainImageWrapper: {
@@ -30,6 +31,9 @@ export default {
         backgroundRepeat: 'no-repeat',
         width: '100%',
         height: '100%',
+      },
+      [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+        content: `url(${TabletMainImage.src})`,
       },
       [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
         content: `url(${PhoneMainImage.src})`,
