@@ -95,7 +95,8 @@
         },
         "post-install-cmd": [
             "@auto-scripts",
-            "php bin/console lexik:jwt:generate-keypair --skip-if-exists"
+            "php bin/console lexik:jwt:generate-keypair --skip-if-exists",
+            "vendor/bin/generate-defuse-key > ./config/keys/encryption.key"
         ],
         "post-update-cmd": [
             "@auto-scripts"

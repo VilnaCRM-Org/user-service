@@ -64,8 +64,8 @@ phpinsights: ## Instant PHP quality checks and static analysis tool
 	$(EXEC_PHP) ./vendor/bin/phpinsights analyse tests --no-interaction
 
 ci-phpinsights: ## Instant PHP quality checks and static analysis tool
-	.vendor/bin/phpinsights -n --ansi --format=github-action
-	.vendor/bin/phpinsights analyse tests -n --ansi --format=github-action
+	vendor/bin/phpinsights -n --ansi --format=github-action
+	vendor/bin/phpinsights analyse tests -n --ansi --format=github-action
 
 unit-tests: ## The PHP unit testing framework
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/phpunit --testsuite=Unit

@@ -32,8 +32,6 @@ function getAccessToken() {
         utils.getJsonHeader()
     );
 
-    console.log(res.body);
-
     check(res, {
         'is status 200': (r) => r.status === 200,
     });
