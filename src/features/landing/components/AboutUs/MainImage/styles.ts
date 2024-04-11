@@ -13,8 +13,8 @@ export default {
     width: '47.875rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       borderRadius: '0.625rem',
-      width: '28.125rem',
-      height: '32.813rem',
+      width: '34.125rem',
+      height: '40.813rem',
       marginTop: '0',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {

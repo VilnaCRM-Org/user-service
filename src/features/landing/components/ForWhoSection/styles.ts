@@ -1,9 +1,8 @@
 import breakpointsTheme from '@/components/UiBreakpoints';
 import colorTheme from '@/components/UiColorTheme';
 
-import DesktopImageSrc from '../../assets/img/about-vilna/desktop.jpg';
-import PhoneImageSrc from '../../assets/img/about-vilna/mobile.jpg';
-import TabletImageSrc from '../../assets/img/about-vilna/tablet.jpg';
+import VectorIcon from '../../assets/img/about-vilna/FrameDesktop.png';
+import VectorIconMd from '../../assets/img/about-vilna/FrameTablet.png';
 
 export default {
   wrapper: {
@@ -39,44 +38,54 @@ export default {
   },
 
   mainImage: {
-    backgroundImage: `url(${DesktopImageSrc.src})`,
+    backgroundImage: `url(${VectorIcon.src})`,
     backgroundSize: 'contain',
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'center',
     width: '100dvw',
-    maxWidth: '51.875rem',
-    height: '35rem',
+    maxWidth: '50.4rem',
+    height: '44.688rem',
     zIndex: '1',
     position: 'absolute',
-    top: '12%',
-    right: '-4%',
-    '@media (max-width: 1160.98px)': {
-      backgroundImage: `url(${TabletImageSrc.src})`,
+    top: '3.8%',
+    right: '-4.8%',
+    '@media (max-width: 1130.98px)': {
+      backgroundImage: `url(${VectorIconMd.src})`,
       width: '100dvw',
-      maxWidth: '47.5rem',
-      height: '41.438rem',
-      top: '6%',
-      right: '-9%',
+      maxWidth: '43rem',
+      height: '42rem',
+      top: '2%',
+      right: '-2.9%',
     },
     [`@media (max-width: 968px)`]: {
       maxWidth: '43.75rem',
-      height: '39rem',
-      top: '60%',
+      height: '44.688rem',
+      top: '47%',
       right: '8%',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
       right: '-10%',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
-      height: '35rem',
-      right: '-6%',
-      top: '110%',
+      height: '38rem',
+      width: '29.5rem',
+      top: '38.5%',
+    },
+    '@media (max-width: 475.98px)': {
+      height: '44.688rem',
+      right: '-14%',
+      width: '26.5rem',
+      top: '20%',
     },
     '@media (max-width: 425.98px)': {
-      backgroundImage: `url(${PhoneImageSrc.src})`,
-      height: '21rem',
-      right: '-8%',
-      top: '106.5%',
+      height: '44.688rem',
+      right: '-14%',
+      width: '26.5rem',
+      top: '10%',
+    },
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xs}px)`]: {
+      right: '-28%',
+      top: '30%',
     },
   },
 

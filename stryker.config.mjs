@@ -8,12 +8,7 @@ const config = {
   tsconfigFile: 'tsconfig.json',
   mutator: 'typescript',
   transpilers: ['typescript'],
-  mutate: [
-    './src/test/unit/**/*.ts',
-    './src/test/unit/**/*.tsx',
-    './src/test/testing-library/**/*.ts',
-    './src/test/testing-library/**/*.tsx',
-  ],
+  mutate: ['./src/features/landing/components/**/*.tsx'],
 };
 
 export default config;

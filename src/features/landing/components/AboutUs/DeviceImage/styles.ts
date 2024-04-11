@@ -21,7 +21,7 @@ export default {
     left: '0',
     borderRadius: '3rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
-      top: '11%',
+      top: '28%',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       borderRadius: '1.5rem',
