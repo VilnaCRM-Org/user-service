@@ -7,8 +7,8 @@ workspace {
             "structurizr.groupSeparator" "/"
         }
 
-        softwareSystem = softwareSystem "Software System" {
-            userService = container "Software System" {
+        softwareSystem = softwareSystem "VilnaCRM" {
+            userService = container "User Service" {
 
                 group "Application" {
                     registerUserProcessor = component "RegisterUserProcessor" "Processes HTTP requests for user registration" "RequestProcessor" {
