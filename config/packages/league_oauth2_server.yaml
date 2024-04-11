@@ -13,7 +13,7 @@ league_oauth2_server:
     encryption_key: '%env(resolve:OAUTH_ENCRYPTION_KEY)%' # Required
 
     # The type of value of 'encryption_key'
-    encryption_key_type: defuse # One of "plain"; "defuse"
+    encryption_key_type: '%env(resolve:OAUTH_ENCRYPTION_KEY_TYPE)%' # One of "plain"; "defuse"
 
     # How long the issued access token should be valid for.
     # The value should be a valid interval: http://php.net/manual/en/dateinterval.construct.php#refsect1-dateinterval.construct-parameters
