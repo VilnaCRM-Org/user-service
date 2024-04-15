@@ -1,4 +1,6 @@
 import {check} from 'k6';
+import faker from "k6/x/faker";
+import http from 'k6/http';
 
 export class Utils {
     constructor() {
@@ -63,5 +65,33 @@ export class Utils {
             'user is defined': (u) =>
                 u !== undefined,
         });
+    }
+
+    generateUser(){
+        const email = faker.person.email();
+        const initials = faker.person.name();
+        const password = faker.internet.password(true, true, true, false, false, 60);
+
+        return {
+            email,
+            password,
+            initials,
+        }
+    }
+
+   checkResponse(response, checkName, checkFunction) {
+        check(response, {
+            [checkName]: (res) => checkFunction(res),
+        });
+    }
+
+    registerUser(user){
+        const payload = JSON.stringify(user);
+
+        return http.post(
+            this.getBaseHttpUrl(),
+            payload,
+            this.getJsonHeader()
+        );
     }
 }

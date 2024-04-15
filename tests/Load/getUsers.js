@@ -1,10 +1,10 @@
 import http from 'k6/http';
 import {ScenarioUtils} from "./utils/scenarioUtils.js";
-import {check} from 'k6';
 import {Utils} from "./utils/utils.js";
 import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
 
 const scenarioName = 'getUsers';
+
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
@@ -17,20 +17,18 @@ export function setup() {
 
 export const options = scenarioUtils.getOptions();
 
-export default function () {
-    getUsers();
-}
-
-function getUsers() {
+export default function getUsers() {
     let page = utils.getRandomNumber(1, 5);
     let itemsPerPage = utils.getRandomNumber(10, 40);
 
-    const res = http.get(
-        utils.getBaseHttpUrl() + `?page=${page}&itemsPerPage=${itemsPerPage}`,
+    const response = http.get(
+       `${utils.getBaseHttpUrl()}?page=${page}&itemsPerPage=${itemsPerPage}`,
         utils.getJsonHeader()
     );
 
-    check(res, {
-        'is status 200': (r) => r.status === 200,
-    });
+    utils.checkResponse(
+        response,
+        'is status 200',
+        (res) => res.status === 200
+    );
 }

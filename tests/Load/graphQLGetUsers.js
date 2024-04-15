@@ -1,10 +1,10 @@
 import http from 'k6/http';
 import {ScenarioUtils} from "./utils/scenarioUtils.js";
-import {check} from 'k6';
 import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
 import {Utils} from "./utils/utils.js";
 
 const scenarioName = 'graphqlGetUsers';
+
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
@@ -17,32 +17,29 @@ export function setup() {
 
 export const options = scenarioUtils.getOptions();
 
-export default function (data) {
-    getUsers(data.users.length);
-}
-
-function getUsers(usersAmount) {
-    let num = utils.getRandomNumber(1, usersAmount);
+export default function getUsers(data) {
+    let num = utils.getRandomNumber(1, data.users.length);
 
     const query = `
         query{
-        users(first: ${num}){
-            edges{
-                node{
-                    id
+            users(first: ${num}){
+                edges{
+                    node{
+                        id
+                    }
                 }
             }
-        }
-    }`;
+        }`;
 
-    const res = http.post(
+    const response = http.post(
         utils.getBaseGraphQLUrl(),
         JSON.stringify({query: query}),
         utils.getJsonHeader(),
     );
 
-    check(res, {
-        'users returned': (r) =>
-            JSON.parse(r.body).data.users.edges.length === num,
-    });
+    utils.checkResponse(
+        response,
+        'users returned',
+        (res) => JSON.parse(res.body).data.users.edges.length === num
+    );
 }

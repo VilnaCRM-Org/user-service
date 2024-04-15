@@ -28,18 +28,17 @@ export class ScenarioUtils {
 
     getScenarios() {
         const scenariosBuilder = new ScenariosBuilder();
+        const scenarioFunctions = {
+            'run_smoke': this.addSmokeScenario.bind(this, scenariosBuilder),
+            'run_average': this.addAverageScenario.bind(this, scenariosBuilder),
+            'run_stress': this.addStressScenario.bind(this, scenariosBuilder),
+            'run_spike': this.addSpikeScenario.bind(this, scenariosBuilder)
+        };
 
-        if (this.utils.getCLIVariable('run_smoke') !== 'false') {
-            this.addSmokeScenario(scenariosBuilder);
-        }
-        if (this.utils.getCLIVariable('run_average') !== 'false') {
-            this.addAverageScenario(scenariosBuilder);
-        }
-        if (this.utils.getCLIVariable('run_stress') !== 'false') {
-            this.addStressScenario(scenariosBuilder);
-        }
-        if (this.utils.getCLIVariable('run_spike') !== 'false') {
-            this.addSpikeScenario(scenariosBuilder);
+        for (const key in scenarioFunctions) {
+            if (this.utils.getCLIVariable(key) !== 'false') {
+                scenarioFunctions[key]();
+            }
         }
 
         return scenariosBuilder.build();
@@ -81,18 +80,18 @@ export class ScenarioUtils {
 
     getThresholds() {
         const thresholdsBuilder = new ThresholdsBuilder();
+        const thresholdConfigs = {
+            'run_smoke': { name: 'smoke', config: this.smokeConfig },
+            'run_average': { name: 'average', config: this.averageConfig },
+            'run_stress': { name: 'stress', config: this.stressConfig },
+            'run_spike': { name: 'spike', config: this.spikeConfig }
+        };
 
-        if (this.utils.getCLIVariable('run_smoke') !== 'false') {
-            thresholdsBuilder.addSmokeThreshold(this.smokeConfig);
-        }
-        if (this.utils.getCLIVariable('run_average') !== 'false') {
-            thresholdsBuilder.addAverageThreshold(this.averageConfig);
-        }
-        if (this.utils.getCLIVariable('run_stress') !== 'false') {
-            thresholdsBuilder.addStressThreshold(this.stressConfig);
-        }
-        if (this.utils.getCLIVariable('run_spike') !== 'false') {
-            thresholdsBuilder.addSpikeThreshold(this.spikeConfig);
+        for (const key in thresholdConfigs) {
+            if (this.utils.getCLIVariable(key) !== 'false') {
+                const { name, config } = thresholdConfigs[key];
+                thresholdsBuilder.addThreshold(name, config);
+            }
         }
 
         return thresholdsBuilder.build();

@@ -1,37 +1,19 @@
-import http from 'k6/http';
 import {ScenarioUtils} from "./utils/scenarioUtils.js";
-import faker from "k6/x/faker";
-import {check} from 'k6';
 import {Utils} from "./utils/utils.js";
 
-const utils = new Utils();
 const scenarioName = 'createUser';
+
+const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 
 export const options = scenarioUtils.getOptions();
 
-export default function () {
-    createUser();
-}
+export default function createUser() {
+    const response = utils.registerUser(utils.generateUser());
 
-function createUser() {
-    const email = faker.person.email();
-    const initials = faker.person.name();
-    const password = faker.internet.password(true, true, true, false, false, 60);
-
-    const payload = JSON.stringify({
-        email: email,
-        password: password,
-        initials: initials,
-    });
-
-    const res = http.post(
-        utils.getBaseHttpUrl(),
-        payload,
-        utils.getJsonHeader()
+    utils.checkResponse(
+        response,
+        'is status 201',
+        (res) => res.status === 201
     );
-
-    check(res, {
-        'is status 201': (r) => r.status === 201,
-    });
 }

@@ -14,22 +14,15 @@ export class InsertUsersUtils {
 
     * requestGenerator(numberOfUsers) {
         for (let i = 0; i < numberOfUsers; i++) {
-            const email = faker.person.email();
-            const initials = faker.person.name();
-            const password = faker.internet.password(true, true, true, false, false, 60);
-
+            const user = this.utils.generateUser()
             const request = {
                 method: 'POST',
                 url: this.utils.getBaseHttpUrl(),
-                body: JSON.stringify({
-                    email,
-                    password,
-                    initials,
-                }),
+                body: JSON.stringify(user),
                 params: this.utils.getJsonHeader(),
             };
 
-            yield [request, email, password];
+            yield [request, user.email, user.password];
         }
     }
 
@@ -90,31 +83,22 @@ export class InsertUsersUtils {
     }
 
     countTotalRequest() {
-        let smokeRequests = 0;
-        let averageRequests = 0;
-        let stressRequests = 0;
-        let spikeRequests = 0;
+        const requestsMap = {
+            'run_smoke': this.countSmokeRequest.bind(this),
+            'run_average': this.countAverageRequest.bind(this),
+            'run_stress': this.countStressRequest.bind(this),
+            'run_spike': this.countSpikeRequest.bind(this)
+        };
 
-        if (this.utils.getCLIVariable('run_smoke') !== 'false') {
-            smokeRequests = this.countSmokeRequest();
-        }
-        if (this.utils.getCLIVariable('run_average') !== 'false') {
-            averageRequests = this.countAverageRequest();
-        }
-        if (this.utils.getCLIVariable('run_stress') !== 'false') {
-            stressRequests = this.countStressRequest();
-        }
-        if (this.utils.getCLIVariable('run_spike') !== 'false') {
-            spikeRequests = this.countSpikeRequest();
+        let totalRequests = 0;
+
+        for (const key in requestsMap) {
+            if (this.utils.getCLIVariable(key) !== 'false') {
+                totalRequests += requestsMap[key]();
+            }
         }
 
-        return Math.round(
-            (smokeRequests +
-                averageRequests +
-                stressRequests +
-                spikeRequests
-            ) * this.additionalUsersRatio
-        );
+        return Math.round(totalRequests * this.additionalUsersRatio);
     }
 
     countSmokeRequest() {
@@ -122,47 +106,33 @@ export class InsertUsersUtils {
     }
 
     countAverageRequest() {
-        const averageRiseRequests =
-            this.countRequestForRampingRate(
-                0,
-                this.averageConfig.rps,
-                this.averageConfig.duration.rise
-            );
-
-        const averagePlateauRequests =
-            this.averageConfig.rps * this.averageConfig.duration.plateau;
-
-        const averageFallRequests =
-            this.countRequestForRampingRate(
-                this.averageConfig.rps,
-                0, this.averageConfig.duration.fall
-            );
-
-        return averageRiseRequests
-            + averagePlateauRequests
-            + averageFallRequests;
+        return this.countDefaultRequests(this.averageConfig)
     }
 
     countStressRequest() {
-        const stressRiseRequests =
+        return this.countDefaultRequests(this.stressConfig)
+    }
+
+    countDefaultRequests(config){
+        const riseRequests =
             this.countRequestForRampingRate(
                 0,
-                this.stressConfig.rps,
-                this.stressConfig.duration.rise
+                config.rps,
+                config.duration.rise
             );
 
-        const stressPlateauRequests =
-            this.stressConfig.rps * this.stressConfig.duration.plateau;
+        const plateauRequests =
+            config.rps * config.duration.plateau;
 
-        const stressFallRequests =
+        const fallRequests =
             this.countRequestForRampingRate(
-                this.stressConfig.rps,
-                0, this.stressConfig.duration.fall
+                config.rps,
+                0, config.duration.fall
             );
 
-        return stressRiseRequests
-            + stressPlateauRequests
-            + stressFallRequests;
+        return riseRequests
+            + plateauRequests
+            + fallRequests;
     }
 
     countSpikeRequest() {

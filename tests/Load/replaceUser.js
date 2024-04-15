@@ -1,12 +1,11 @@
 import http from 'k6/http';
 import {ScenarioUtils} from "./utils/scenarioUtils.js";
-import faker from "k6/x/faker";
-import {check} from 'k6';
 import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
 import {Utils} from "./utils/utils.js";
 import counter from "k6/x/counter"
 
 const scenarioName = 'replaceUser';
+
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
@@ -19,32 +18,30 @@ export function setup() {
 
 export const options = scenarioUtils.getOptions();
 
-export default function (data) {
-    updateUser(data.users[counter.up()]);
-}
-
-function updateUser(user) {
+export default function updateUser(data) {
+    const user = data.users[counter.up()];
     utils.checkUserIsDefined(user);
 
     const id = user.id;
-    const email = faker.person.email();
-    const initials = faker.person.name();
+    const generatedUser = utils.generateUser();
     const password = user.password;
 
     const payload = JSON.stringify({
-        email: email,
+        email: generatedUser.email,
         newPassword: password,
-        initials: initials,
+        initials: generatedUser.initials,
         oldPassword: password,
     });
 
-    const res = http.put(
-        utils.getBaseHttpUrl() + `/${id}`,
+    const response = http.put(
+        `${utils.getBaseHttpUrl()}/${id}`,
         payload,
         utils.getJsonHeader()
     );
 
-    check(res, {
-        'is status 200': (r) => r.status === 200,
-    });
+    utils.checkResponse(
+        response,
+        'is status 200',
+        (res) => res.status === 200
+    );
 }

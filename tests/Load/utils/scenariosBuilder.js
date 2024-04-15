@@ -17,51 +17,19 @@ export class ScenariosBuilder {
     }
 
     addAverageScenario(averageConfig, startTime) {
-        this.scenarios.average = {
-            executor: 'ramping-arrival-rate',
-            startRate: 0,
-            timeUnit: '1s',
-            preAllocatedVUs: averageConfig.vus,
-            stages: [
-                {
-                    target: averageConfig.rps,
-                    duration: averageConfig.duration.rise + 's'
-                },
-                {
-                    target: averageConfig.rps,
-                    duration: averageConfig.duration.plateau + 's'
-                },
-                {target: 0, duration: averageConfig.duration.fall + 's'},
-            ],
-            startTime: startTime + 's',
-            tags: {test_type: 'average'},
-        }
-
-        return this;
+        return this.addDefaultScenario(
+            'average',
+            averageConfig,
+            startTime
+        );
     }
 
     addStressScenario(stressConfig, startTime) {
-        this.scenarios.stress = {
-            executor: 'ramping-arrival-rate',
-            startRate: 0,
-            timeUnit: '1s',
-            preAllocatedVUs: stressConfig.vus,
-            stages: [
-                {
-                    target: stressConfig.rps,
-                    duration: stressConfig.duration.rise + 's'
-                },
-                {
-                    target: stressConfig.rps,
-                    duration: stressConfig.duration.plateau + 's'
-                },
-                {target: 0, duration: stressConfig.duration.fall + 's'},
-            ],
-            startTime: startTime + 's',
-            tags: {test_type: 'stress'},
-        }
-
-        return this;
+        return this.addDefaultScenario(
+            'stress',
+            stressConfig,
+            startTime
+        );
     }
 
     addSpikeScenario(spikeConfig, startTime) {
@@ -79,6 +47,30 @@ export class ScenariosBuilder {
             ],
             startTime: startTime + 's',
             tags: {test_type: 'spike'},
+        }
+
+        return this;
+    }
+
+    addDefaultScenario(scenarioName, config, startTime){
+        this.scenarios[scenarioName] = {
+            executor: 'ramping-arrival-rate',
+            startRate: 0,
+            timeUnit: '1s',
+            preAllocatedVUs: config.vus,
+            stages: [
+                {
+                    target: config.rps,
+                    duration: config.duration.rise + 's'
+                },
+                {
+                    target: config.rps,
+                    duration: config.duration.plateau + 's'
+                },
+                {target: 0, duration: config.duration.fall + 's'},
+            ],
+            startTime: startTime + 's',
+            tags: {test_type: scenarioName},
         }
 
         return this;
