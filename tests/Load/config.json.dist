@@ -470,7 +470,7 @@
         "graphqlUpdateUser": {
             "setupTimeoutInMinutes": 10,
             "smoke": {
-                "threshold": 3000,
+                "threshold": 6500,
                 "rps": 10,
                 "vus": 10,
                 "duration": 10

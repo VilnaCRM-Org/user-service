@@ -32,9 +32,9 @@ export default function updateUser(data) {
             input: {
                 id: "${id}"
                 email: "${generatedUser.email}"
-                newPassword: "${generatedUser.password}"
+                newPassword: "${user.password}"
                 initials: "${generatedUser.initials}"
-                password: "${generatedUser.password}"
+                password: "${user.password}"
             }
         ) {
             user {
