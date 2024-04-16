@@ -11,7 +11,7 @@ function TextInfo(): React.ReactElement {
 
   return (
     <Stack sx={styles.textWrapper}>
-      <UiTypography variant="h1" sx={styles.title}>
+      <UiTypography component="h1" variant="h1" sx={styles.title}>
         <Trans i18nKey="about_vilna.heading_main" />
       </UiTypography>
       <UiTypography variant="bodyText18" sx={styles.text}>

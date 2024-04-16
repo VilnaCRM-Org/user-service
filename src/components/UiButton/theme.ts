@@ -101,7 +101,7 @@ export const theme: Theme = createTheme({
             fontFamily: golos.style.fontFamily,
             textTransform: 'none',
             borderRadius: '0.75rem',
-            padding: '1.063rem',
+            padding: '1.125rem',
             gap: '0.563rem',
             border: `1px solid ${colorTheme.palette.brandGray.main}`,
             background: colorTheme.palette.white.main,

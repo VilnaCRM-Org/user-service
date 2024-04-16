@@ -15,6 +15,7 @@ function CardContent({
     <>
       <UiTypography
         variant={isSmallCard ? 'h6' : 'h5'}
+        component={isSmallCard ? 'h6' : 'h5'}
         sx={isSmallCard ? styles.smallTitle : styles.largeTitle}
       >
         <Trans i18nKey={item.title} />

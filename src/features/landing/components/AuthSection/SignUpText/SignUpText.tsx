@@ -17,7 +17,7 @@ function SignUpText({
   const { t } = useTranslation();
   return (
     <Box sx={styles.textWrapper}>
-      <UiTypography variant="h2" sx={styles.title} id="signUp">
+      <UiTypography variant="h2" component="h2" sx={styles.title} id="signUp">
         <Trans i18nKey="sign_up.main_heading" />
         <UiTypography variant="h2" component="span" sx={styles.titleVilnaCRM}>
           &nbsp;

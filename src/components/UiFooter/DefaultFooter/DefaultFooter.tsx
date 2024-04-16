@@ -1,4 +1,4 @@
-import { Box, Link, Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import Image from 'next/image';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -36,14 +36,12 @@ function DefaultFooter({
             alignItems="center"
             sx={styles.topContent}
           >
-            <Link href="/#">
-              <Image
-                src={Logo}
-                alt={t('footer.logo_alt')}
-                width={143}
-                height={48}
-              />
-            </Link>
+            <Image
+              src={Logo}
+              alt={t('footer.logo_alt')}
+              width={143}
+              height={48}
+            />
             <PrivacyPolicy />
           </Stack>
         </Box>

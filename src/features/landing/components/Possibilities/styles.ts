@@ -9,7 +9,7 @@ export default {
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       pb: '1.75rem',
-      pt: '4.063rem',
+      pt: '3.8rem',
       ml: '0.563rem',
     },
   },

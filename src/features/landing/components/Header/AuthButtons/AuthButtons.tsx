@@ -11,16 +11,16 @@ function AuthButtons(): React.ReactElement {
 
   return (
     <Stack spacing={1} direction="row" sx={styles.wrapper}>
-      <Link href="#signUp" data-testid="header-log-in">
-        <UiButton variant="outlined" size="small">
+      <UiButton variant="outlined" size="small" disabled>
+        <Link href="#signUp" data-testid="header-log-in" sx={styles.link}>
           {t('header.actions.log_in')}
-        </UiButton>
-      </Link>
-      <Link href="#signUp" data-testid="header-sign-up">
-        <UiButton variant="contained" size="small">
+        </Link>
+      </UiButton>
+      <UiButton variant="contained" size="small">
+        <Link href="#signUp" data-testid="header-sign-up" sx={styles.link}>
           {t('header.actions.try_it_out')}
-        </UiButton>
-      </Link>
+        </Link>
+      </UiButton>
     </Stack>
   );
 }

@@ -7,5 +7,8 @@ export default {
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
       gap: '0.25rem',
     },
+    '@media (max-width: 350px)': {
+      gap: '0',
+    },
   },
 };

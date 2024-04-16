@@ -11,7 +11,7 @@ function MainTitle(): React.ReactElement {
 
   return (
     <Box>
-      <UiTypography variant="h2" sx={styles.title}>
+      <UiTypography variant="h2" component="h2" sx={styles.title}>
         {t('for_who.heading_main')}
       </UiTypography>
       <UiTypography sx={styles.description} variant="bodyText18">

@@ -15,7 +15,7 @@
     "lint:tsc": "tsc --newLine LF",
     "lint:md": "markdownlint -i CHANGELOG.md **/*.md",
     "test:e2e": "playwright run --headless --browser chrome",
-    "test:e2e-local": "playwright open",
+    "test:e2e-local": "pnpm exec playwright test",
     "test:mutation": "npx stryker run",
     "test:visual": "playwright test ./src/test/visual",
     "test:unit": "jest --verbose",
@@ -23,8 +23,7 @@
     "lighthouse:desktop": "next build && lhci autorun --config=lighthouserc.desktop.js",
     "lighthouse:mobile": "next build && lhci autorun --config=lighthouserc.mobile.js",
     "check-node-version": "node checkNodeVersion.js",
-    "preinstall": "pnpm run check-node-version",
-    "test": "jest"
+    "preinstall": "pnpm run check-node-version"
   },
   "dependencies": {
     "@apollo/client": "^3.9.9",

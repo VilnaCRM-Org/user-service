@@ -7,4 +7,9 @@ export default {
       display: 'inline-block',
     },
   },
+
+  link: {
+    color: 'inherit',
+    textDecoration: 'none',
+  },
 };

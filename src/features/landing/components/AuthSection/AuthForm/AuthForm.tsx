@@ -86,7 +86,7 @@ function AuthForm(): React.ReactElement {
       <Box sx={styles.backgroundBlock} />
       <Box sx={styles.formContent}>
         <form onSubmit={handleSubmit(handleFormSubmit)}>
-          <UiTypography variant="h4" sx={styles.formTitle}>
+          <UiTypography variant="h4" component="h4" sx={styles.formTitle}>
             {t('sign_up.form.heading_main')}
           </UiTypography>
           <Stack sx={styles.inputsWrapper}>

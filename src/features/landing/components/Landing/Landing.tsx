@@ -22,9 +22,9 @@ function Landing(): React.ReactElement {
           name={t('description')}
           content={t('The first Ukrainian open source CRM')}
         />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+        <link
+          rel="apple-touch-icon"
+          href="../../assets/img/about-vilna/touch.png"
         />
       </Head>
       <Header />

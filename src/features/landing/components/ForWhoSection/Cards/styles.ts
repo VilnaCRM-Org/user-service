@@ -7,7 +7,7 @@ export default {
       position: 'relative',
       zIndex: '5',
       marginTop: '20.125rem',
-      padding: '2rem 1.5rem 0 1.5rem',
+      padding: '2rem 1.5rem 0.263rem 1.5rem',
       borderRadius: '1.5rem 1.5rem 0 0',
       background: colorTheme.palette.white.main,
       boxShadow: '0px -15px 1.5rem 0px rgba(108, 120, 132, 0.25)',

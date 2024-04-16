@@ -11,10 +11,10 @@ function RegistrationText(): React.ReactElement {
 
   return (
     <Stack justifyContent="center" width="100%" sx={styles.textWrapper}>
-      <UiTypography variant="h3" sx={styles.title}>
+      <UiTypography variant="h3" component="h3" sx={styles.title}>
         {t('unlimited_possibilities.main_heading_text')}
       </UiTypography>
-      <UiTypography variant="h2" sx={styles.text}>
+      <UiTypography variant="h2" component="h2" sx={styles.text}>
         {t('unlimited_possibilities.secondary_heading_text')}
       </UiTypography>
     </Stack>

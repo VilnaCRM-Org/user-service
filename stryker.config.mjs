@@ -9,6 +9,11 @@ const config = {
   mutator: 'typescript',
   transpilers: ['typescript'],
   mutate: ['./src/features/landing/components/**/*.tsx'],
+  jest: {
+    config: {
+      testScript: 'test:unit',
+    },
+  },
 };
 
 export default config;

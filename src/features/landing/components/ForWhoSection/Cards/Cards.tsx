@@ -1,6 +1,6 @@
 import { Box, Stack, Link } from '@mui/material';
 import React from 'react';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 import { UiButton, UiTypography } from '@/components';
 
@@ -27,7 +27,7 @@ function Cards(): React.ReactElement {
             sx={styles.img}
           />
           <UiTypography variant="bodyText18" sx={styles.optionText}>
-            <Trans i18nKey="for_who.card_text_title" />
+            {t('for_who.card_text_title')}
           </UiTypography>
         </Stack>
         <Stack sx={styles.cardItem}>

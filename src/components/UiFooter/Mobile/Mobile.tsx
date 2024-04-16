@@ -1,4 +1,4 @@
-import { Box, Container, Link, Stack } from '@mui/material';
+import { Box, Container, Stack } from '@mui/material';
 import Image from 'next/image';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -26,21 +26,8 @@ function Mobile({
   );
   return (
     <Container sx={styles.wrapper}>
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        marginTop="1.125rem"
-        paddingBottom="0.75rem"
-        data-testid="mobile-component"
-      >
-        <Link href="/#">
-          <Image
-            src={Logo}
-            alt={t('footer.logo_alt')}
-            width={131}
-            height={44}
-          />
-        </Link>
+      <Stack data-testid="mobile-component" sx={styles.content}>
+        <Image src={Logo} alt={t('footer.logo_alt')} width={131} height={44} />
         <SocialMediaList socialLinks={socialLinks} />
       </Stack>
       <VilnaCRMEmail />

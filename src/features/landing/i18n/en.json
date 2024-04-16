@@ -73,7 +73,7 @@
     "text_main": "We created Vilna, focusing on the specifics of the service business, <br /> which is not suitable for ordinary e-commerce templates",
     "button_text": "Try it out",
     "heading_secondary": "Our CRM is ideal if you:",
-    "card_text_title": "A private entrepreneur is a psychologist, <br /> tutor or dropshipper",
+    "card_text_title": "A private entrepreneur is a psychologist, tutor or dropshipper",
     "card_text_business": "Medium-scale local project - online courses, design studio or small outsourcing",
     "vector_alt": "Vector",
     "aria_label": "Link to registration"
@@ -143,9 +143,9 @@
         "title": "At least 8 characters.",
         "recommendation_text": "We recommend using:",
         "options": {
-          "option_1": "lowercase and uppercase special",
+          "option_1": "lowercase and uppercase letters",
           "option_2": "special characters (#&*$)",
-          "option_3": "use numbers"
+          "option_3": "numbers"
         }
       },
       "confidential_text": {

@@ -13,8 +13,10 @@ export default {
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       fontSize: '1.75rem',
-      textAlign: 'left',
       paddingBottom: '1.25rem',
+    },
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xs}px)`]: {
+      textAlign: 'left',
     },
   },
 
@@ -22,7 +24,6 @@ export default {
     color: colorTheme.palette.primary.main,
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       fontSize: '1.75rem',
-      textAlign: 'left',
     },
   },
 
@@ -47,12 +48,14 @@ export default {
   signInText: {
     mb: '1.5rem',
     [`@media (max-width: 1130px)`]: {
-      textAlign: 'center',
+      alignSelf: 'center',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       fontSize: '1.125rem',
-      alignSelf: 'start',
       mb: '1.375rem',
+    },
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xs}px)`]: {
+      alignSelf: 'start',
     },
   },
 };

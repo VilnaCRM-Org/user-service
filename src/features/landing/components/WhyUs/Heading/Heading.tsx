@@ -11,7 +11,7 @@ function Heading(): React.ReactElement {
 
   return (
     <Stack maxWidth="39.5rem">
-      <UiTypography variant="h2" sx={styles.title}>
+      <UiTypography variant="h2" component="h2" sx={styles.title}>
         {t('why_us.heading')}
       </UiTypography>
       <UiTypography variant="bodyText18" sx={styles.text}>

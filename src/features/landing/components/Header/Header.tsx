@@ -1,4 +1,4 @@
-import { AppBar, Link } from '@mui/material';
+import { AppBar } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,14 +19,7 @@ function Header(): React.ReactElement {
   return (
     <AppBar position="static" sx={styles.headerWrapper}>
       <UiToolbar>
-        <Link href="/#">
-          <Image
-            src={Logo}
-            alt={t('header.logo_alt')}
-            width={131}
-            height={44}
-          />
-        </Link>
+        <Image src={Logo} alt={t('header.logo_alt')} width={131} height={44} />
         <NavList navItems={headerNavList} />
         <AuthButtons />
         <Drawer />

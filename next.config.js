@@ -3,12 +3,21 @@ const LocalizationGenerator = require('./scripts/localizationGenerator');
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
-  output: 'export',
+  async headers() {
+    return [
+      {
+        source: '/robots.txt',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'text/plain',
+          },
+        ],
+      },
+    ];
+  },
   reactStrictMode: true,
   swcMinify: true,
-  images: {
-    unoptimized: true,
-  },
 
   webpack: config => {
     const localizationGenerator = new LocalizationGenerator();

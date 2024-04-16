@@ -8,6 +8,15 @@ export default {
     boxShadow:
       ' 0px -5px 46px 0px rgba(198, 209, 220, 0.25), 0px -5px 46px 0px rgba(198, 209, 220, 0.25)',
   },
+  content: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: '1.125rem',
+    paddingBottom: '0.75rem',
+    '@media (max-width: 350px)': {
+      gap: '0.5rem',
+    },
+  },
 
   copyright: {
     paddingBottom: '1.25rem',
