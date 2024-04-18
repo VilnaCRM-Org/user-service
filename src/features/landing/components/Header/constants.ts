@@ -83,7 +83,7 @@ export const socialMedia: SocialMedia[] = [
     icon: FacebookDrawerIcon,
     alt: 'header.drawer.alt_social_images.facebook',
     ariaLabel: 'header.drawer.aria_labels_social_images.facebook',
-    linkHref: 'https://uk-ua.facebook.com/',
+    linkHref: 'https://www.facebook.com/',
     type: 'drawer',
   },
   {

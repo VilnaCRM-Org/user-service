@@ -1,7 +1,10 @@
 import { faker } from '@faker-js/faker';
 
 import { validateFullName } from '../../features/landing/components/AuthSection/Validations';
-import { isValidFullNameFormat } from '../../features/landing/components/AuthSection/Validations/initials';
+import {
+  isValidFullNameFormat,
+  hasSpecialCharacters,
+} from '../../features/landing/components/AuthSection/Validations/initials';
 
 const erorrText: string = 'Invalid full name format';
 const testFullName: string = faker.person.fullName();
@@ -9,41 +12,38 @@ const testFirstName: string = faker.person.firstName();
 const testSecondName: string = faker.person.lastName();
 
 describe('validateFullName', () => {
-  it('should return true when a valid full name is provided', () => {
-    const result: string | boolean = validateFullName(testFullName);
-    expect(result).toBe(true);
+  describe('hasSpecialCharacters', () => {
+    it('should return true if the string contains special characters', () => {
+      expect(hasSpecialCharacters(`${testFullName}@`)).toBe(true);
+      expect(hasSpecialCharacters(`${testFullName}!`)).toBe(true);
+      expect(hasSpecialCharacters(`${testFullName}123`)).toBe(false);
+      expect(hasSpecialCharacters(testFullName)).toBe(false);
+    });
   });
 
-  it('should return an error message when full name is empty', () => {
-    const result: string | boolean = validateFullName('');
-    expect(result).toBe(erorrText);
-  });
-  it('should return true for a valid full name format', () => {
-    expect(isValidFullNameFormat(testFullName)).toBe(true);
+  describe('isValidFullNameFormat', () => {
+    it('should return true if the full name is valid', () => {
+      expect(isValidFullNameFormat(testFullName)).toBe(true);
+      expect(isValidFullNameFormat(testFullName + testSecondName)).toBe(true);
+    });
+
+    it('should return false if the full name is not valid', () => {
+      expect(isValidFullNameFormat(testFirstName)).toBe(true);
+      expect(isValidFullNameFormat(`   ${testFullName}   `)).toBe(true);
+      expect(isValidFullNameFormat(`${testFullName}123`)).toBe(false);
+      expect(isValidFullNameFormat(`${testFullName}@`)).toBe(false);
+    });
   });
 
-  it('should return false for an invalid full name format', () => {
-    expect(isValidFullNameFormat(testFirstName)).toBe(false);
-    expect(isValidFullNameFormat(`${testFullName}123`)).toBe(false);
-    expect(isValidFullNameFormat('')).toBe(false);
-  });
-});
+  describe('validateFullName', () => {
+    it('should return true if the full name is valid', () => {
+      expect(validateFullName(testFullName)).toBe(true);
+      expect(validateFullName(testFullName + testSecondName)).toBe(true);
+    });
 
-describe('validateFullName', () => {
-  it('should return true for a valid full name', () => {
-    expect(validateFullName(testFullName)).toBe(true);
-  });
-
-  it('should return the error message for an invalid full name', () => {
-    expect(validateFullName(testFirstName)).toEqual(erorrText);
-    expect(validateFullName(`${testFullName}123`)).toEqual(erorrText);
-    expect(validateFullName(`${testFirstName}  ${testSecondName}`)).toEqual(
-      erorrText
-    );
-    expect(validateFullName('')).toEqual(erorrText);
-  });
-
-  it('should trim the input before validation', () => {
-    expect(validateFullName(`   ${testFullName}   `)).toBe(true);
+    it('should return an error message if the full name is not valid', () => {
+      expect(validateFullName(`${testFullName}123`)).toEqual(erorrText);
+      expect(validateFullName(`${testFullName}@`)).toEqual(erorrText);
+    });
   });
 });

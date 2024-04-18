@@ -1,6 +1,6 @@
 import { t } from 'i18next';
 
-const hasSpecialCharacters: (str: string) => boolean = (
+export const hasSpecialCharacters: (str: string) => boolean = (
   str: string
 ): boolean => {
   const specialCharactersRegex: RegExp = /[!@#$%^&*(),.?":{}|<>~[\]\\/]/;
@@ -10,11 +10,13 @@ const hasSpecialCharacters: (str: string) => boolean = (
 export const isValidFullNameFormat: (fullName: string) => boolean = (
   fullName: string
 ): boolean => {
-  const trimmedFullName: string = fullName.trim();
-  return (
-    /^[^\d\s]{2,}$/.test(trimmedFullName) &&
-    !hasSpecialCharacters(trimmedFullName)
-  );
+  const words: string[] = fullName.trim().split(/\s+/);
+  for (const word of words) {
+    if (!/^[^\d\s]{2,}$/.test(word) || hasSpecialCharacters(word)) {
+      return false;
+    }
+  }
+  return true;
 };
 
 const validateFullName: (fullName: string) => string | boolean = (

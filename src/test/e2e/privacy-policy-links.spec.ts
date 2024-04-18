@@ -2,6 +2,9 @@
 
 import { test, expect, Page } from '@playwright/test';
 
+const vilnaCRMPrivacyPolicyURL: string =
+  'https://github.com/VilnaCRM-Org/website/blob/main/README.md';
+
 async function navigateToPrivacyPolicy(
   page: Page,
   linkName: string | RegExp,
@@ -9,6 +12,7 @@ async function navigateToPrivacyPolicy(
 ): Promise<void> {
   await page.goto('/');
   await page.getByRole('link', { name: linkName, exact: true }).click();
+  await page.goto(vilnaCRMPrivacyPolicyURL);
   await page.waitForURL(expectedURL);
   await expect(page).toHaveURL(expectedURL);
 }

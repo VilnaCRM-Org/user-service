@@ -29,31 +29,29 @@ const textNoUppercaseLetter: string = faker.internet.password({
   prefix: '1',
 });
 
-const emailWithoutDot: string = faker.internet.email().replace(/\./g, '');
+const emailWithoutDot: string = 'test@test';
 const InvalidEmail: string = 'test@test.';
 
 export const expectationsEmail: ExpectationEmail[] = [
   {
-    errorText: "Email must contain '@' and '.' symbols",
+    errorText: "Must contain the characters '@' and '.'",
     email: emailWithoutDot,
   },
   { errorText: 'Invalid email address', email: InvalidEmail },
 ];
 
 export const expectationsPassword: ExpectationsPassword[] = [
-  { errorText: 'Password must be between 8', password: textShortText },
+  { errorText: 'Requires 8 to 64 characters', password: textShortText },
   {
-    errorText: 'Password must contain at least one number',
+    errorText: 'At least one number is required',
     password: textNoNumbers,
   },
   {
-    errorText: 'Password must contain at least one uppercase letter',
+    errorText: 'At least one uppercase letter',
     password: textNoUppercaseLetter,
   },
 ];
 
 export const expectationsRequired: { text: string }[] = [
-  { text: 'Your first and last name are' },
-  { text: 'Email address is a required' },
-  { text: 'Password is a required field' },
+  { text: 'This field is required' },
 ];

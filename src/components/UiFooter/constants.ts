@@ -23,7 +23,7 @@ export const socialLinks: SocialMedia[] = [
     id: 'Facebook-link',
     icon: FacebookFooterIcon,
     alt: 'footer.alt_images.facebook',
-    linkHref: 'https://uk-ua.facebook.com/',
+    linkHref: 'https://www.facebook.com/',
     ariaLabel: 'footer.aria_labels.facebook',
   },
   {

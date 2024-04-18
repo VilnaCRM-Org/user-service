@@ -3,9 +3,9 @@ import { render } from '@testing-library/react';
 import PasswordTip from '../../features/landing/components/AuthSection/PasswordTip/PasswordTip';
 
 const recommendationText: string = 'We recommend using:';
-const firstOptionText: string = 'lowercase and uppercase special';
+const firstOptionText: string = 'lowercase and uppercase letters';
 const secondOptionText: string = 'special characters (#&*$)';
-const thirdOptionText: string = 'use numbers';
+const thirdOptionText: string = 'numbers';
 
 describe('PasswordTip component', () => {
   it('renders recommendation text', () => {

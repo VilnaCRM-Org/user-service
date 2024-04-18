@@ -2,31 +2,42 @@ import { test, expect, Locator, Page } from '@playwright/test';
 
 async function handleTooltip(
   page: Page,
-  { name, element }: { name: string; element: Locator }
+  {
+    name,
+    element,
+    tooltip,
+  }: { name: string; element: Locator; tooltip: Locator }
 ): Promise<void> {
-  const tooltipLocator: Locator = page.getByRole('tooltip', { name }).nth(1);
+  const closeLocator: Locator = page.getByRole('heading', { name });
   const elementLocator: Locator = element;
 
   await page.goto('/');
   await elementLocator.click();
-  await expect(tooltipLocator).toBeVisible();
+  await expect(tooltip).toBeVisible();
 
-  await elementLocator.click();
-  await expect(tooltipLocator).toBeHidden();
+  await closeLocator.click();
+  await expect(tooltip).toBeHidden();
 }
 
 test.describe('Checking if the tooltips are working', () => {
   test('Tooltip services test', async ({ page }) => {
     await handleTooltip(page, {
-      name: 'Integrate in a few',
-      element: page.getByText('services').nth(2),
+      name: 'Ready plugins for CMS',
+      element: page.getByRole('tooltip', { name: 'services' }),
+      tooltip: page
+        .getByRole('tooltip', { name: 'Services Integrate in a few' })
+        .nth(1),
     });
   });
 
   test('Tooltip password test', async ({ page }) => {
     await handleTooltip(page, {
-      name: 'We recommend using:',
+      name: 'Or register on the website:',
       element: page.getByRole('img', { name: 'Password tip mark' }),
+      tooltip: page
+        .locator('div')
+        .filter({ hasText: 'We recommend using:lowercase' })
+        .nth(1),
     });
   });
 });

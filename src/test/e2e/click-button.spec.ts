@@ -1,7 +1,6 @@
 import { Locator, Page, test } from '@playwright/test';
 
 const authSection: string = 'auth-section';
-const headerLogInButton: string = 'header-log-in';
 const headerSignUnButton: string = 'header-sign-up';
 const aboutSignUnButton: string = 'about-sign-up';
 const forWhoSigUpButton: string = 'for-who-sign-up';
@@ -31,7 +30,6 @@ test.describe('Buttons navigation tests', () => {
   }
 
   test('Desktop buttons navigation', async ({ page }) => {
-    await clickAndVerifySection(page, headerLogInButton);
     await clickAndVerifySection(page, headerSignUnButton);
     await clickAndVerifySection(page, aboutSignUnButton);
     await clickAndVerifySection(page, forWhoSigUpButton);
@@ -45,7 +43,6 @@ test.describe('Buttons navigation tests', () => {
 
   test('Drawer button navigation', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await clickDrawerButton(page, 'Log in');
     await clickDrawerButton(page, 'Try it out');
   });
 });

@@ -127,16 +127,16 @@
         "label": "Email",
         "placeholder": "vilnaCRM@gmail.com",
         "required": "This field is required",
-        "step_error_message": "Email must contain '@' and '.' symbols",
+        "step_error_message": "Must contain the characters '@' and '.'",
         "invalid_message": "Invalid email address"
       },
       "password_input": {
         "label": "Password",
         "placeholder": "Create a password",
         "required": "This field is required",
-        "error_length": "Password must be between 8 and 64 characters long",
-        "error_numbers": "Password must contain at least one number",
-        "error_uppercase": "Password must contain at least one uppercase letter"
+        "error_length": "Requires 8 to 64 characters",
+        "error_numbers": "At least one number is required",
+        "error_uppercase": "At least one uppercase letter"
       },
       "password_tip": {
         "alt": "Password tip mark",
