@@ -21,14 +21,11 @@ const correctPassword: string = faker.internet.password({
   prefix: 'Q9',
 });
 
-const passwordLengthError: string =
-  'Password must be between 8 and 64 characters long';
+const passwordLengthError: string = 'Requires 8 to 64 characters';
 
-const passwordNumbersError: string =
-  'Password must contain at least one number';
+const passwordNumbersError: string = 'At least one number is required';
 
-const passwordUppercaseError: string =
-  'Password must contain at least one uppercase letter';
+const passwordUppercaseError: string = 'At least one uppercase letter';
 
 describe('code snippet', () => {
   it('should return true when password is valid', () => {

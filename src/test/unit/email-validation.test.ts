@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 
 import { validateEmail } from '../../features/landing/components/AuthSection/Validations';
 
-const emailStepError: string = "Email must contain '@' and '.' symbols";
+const emailStepError: string = "Must contain the characters '@' and '.'";
 const emailInvalidError: string = 'Invalid email address';
 const invalidTestEmailWithoutDot: string = 'test@example';
 const invalidTestEmailWithDot: string = 'test@example.';
