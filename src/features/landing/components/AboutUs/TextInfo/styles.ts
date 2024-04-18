@@ -46,9 +46,6 @@ export default {
 
   link: {
     alignSelf: 'center',
-    '@media (max-width: 419.98px)': {
-      alignSelf: 'flex-start',
-    },
   },
 
   button: {

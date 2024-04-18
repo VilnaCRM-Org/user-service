@@ -1,3 +1,12 @@
 User-agent: *
-Disallow: /api/
+Disallow: /cgi-bin/
+Disallow: /tmp/
+Disallow: /junk/
+Disallow: /private/
+Disallow: /hidden/
+
+# Allow all agents to access the public content
 Allow: /
+
+# Sitemap location
+Sitemap: https://uk-deploy.vercel.app/

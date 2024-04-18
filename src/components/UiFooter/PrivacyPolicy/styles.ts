@@ -27,6 +27,9 @@ export default {
       width: '100%',
       padding: '1.063rem 0 1.125rem',
     },
+    '&:hover': {
+      background: colorTheme.palette.grey500.main,
+    },
   },
 
   usage_policy: {
@@ -39,6 +42,9 @@ export default {
       textAlign: 'center',
       width: '100%',
       padding: '1.063rem 0 1.125rem',
+    },
+    '&:hover': {
+      background: colorTheme.palette.grey500.main,
     },
   },
 };

@@ -37,7 +37,7 @@ export default {
     '@media (max-width: 1130.98px)': {
       padding: '1.813rem 2rem ',
     },
-    [`@media (max-width: 960px)`]: {
+    [`@media (max-width: 968px)`]: {
       border: 'none',
       boxShadow: 'none',
       flexDirection: 'row',

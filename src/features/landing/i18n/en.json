@@ -70,7 +70,7 @@
   },
   "for_who": {
     "heading_main": "For who",
-    "text_main": "We created Vilna, focusing on the specifics of the service business, <br /> which is not suitable for ordinary e-commerce templates",
+    "text_main": "We created Vilna, focusing on the specifics of the service business, which is not suitable for ordinary e-commerce templates",
     "button_text": "Try it out",
     "heading_secondary": "Our CRM is ideal if you:",
     "card_text_title": "A private entrepreneur is a psychologist, tutor or dropshipper",
@@ -120,20 +120,20 @@
         "label": "Your name and surname",
         "placeholder": "Mykhailo Svitskyi",
         "special_characters_error": "Your name must not contain special characters",
-        "required": "Your first and last name are required fields",
+        "required": "This field is required",
         "error_text": "Invalid full name format"
       },
       "email_input": {
         "label": "Email",
         "placeholder": "vilnaCRM@gmail.com",
-        "required": "Email address is a required field",
+        "required": "This field is required",
         "step_error_message": "Email must contain '@' and '.' symbols",
         "invalid_message": "Invalid email address"
       },
       "password_input": {
         "label": "Password",
         "placeholder": "Create a password",
-        "required": "Password is a required field",
+        "required": "This field is required",
         "error_length": "Password must be between 8 and 64 characters long",
         "error_numbers": "Password must contain at least one number",
         "error_uppercase": "Password must contain at least one uppercase letter"

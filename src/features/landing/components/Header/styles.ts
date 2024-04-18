@@ -6,7 +6,7 @@ export default {
     backgroundColor: colorTheme.palette.white.main,
     boxShadow: 'none',
     position: 'fixed',
-    zIndex: 100,
+    zIndex: 3000,
   },
 
   logo: {

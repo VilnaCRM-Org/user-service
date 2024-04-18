@@ -7,6 +7,9 @@ export default {
       display: 'none',
     },
   },
+  drawer: {
+    zIndex: 3200,
+  },
 
   drawerContent: {
     maxWidth: '23.4375rem',

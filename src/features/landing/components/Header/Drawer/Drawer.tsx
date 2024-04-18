@@ -44,6 +44,7 @@ function CustomDrawer(): React.ReactElement {
         />
       </Button>
       <Drawer
+        sx={styles.drawer}
         data-testid="drawer"
         anchor="right"
         open={isDrawerOpen}

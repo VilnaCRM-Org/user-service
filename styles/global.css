@@ -4,7 +4,6 @@ body {
   margin: 0;
   scroll-behavior: smooth;
   max-width: 100dvw;
-  overflow-x: hidden;
 }
 
 * {
