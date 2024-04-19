@@ -2,8 +2,7 @@
 
 import { test, expect, Page } from '@playwright/test';
 
-const vilnaCRMPrivacyPolicyURL: string =
-  'https://github.com/VilnaCRM-Org/website/blob/main/README.md';
+const vilnaCRMPrivacyPolicyURL: string = ' https://github.com/VilnaCRM-Org';
 
 async function navigateToPrivacyPolicy(
   page: Page,

@@ -15,10 +15,16 @@ export default {
     borderRadius: '0.5rem',
     background: colorTheme.palette.backgroundGrey300.main,
     padding: '1.188rem 1.25rem',
+    '&:hover': {
+      background: colorTheme.palette.grey500.main,
+    },
   },
 
   navText: {
     color: colorTheme.palette.grey250.main,
+    '&:hover': {
+      color: colorTheme.palette.grey200.main,
+    },
   },
 
   itemDrawerWrapper: {

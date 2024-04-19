@@ -31,7 +31,7 @@ test('Submit the registration form', async ({ page }) => {
   await checkCheckbox(policyTextCheckbox);
 
   await Promise.all([
-    page.waitForResponse(responseFilter),
     signupButton.click(),
+    page.waitForResponse(responseFilter),
   ]);
 });

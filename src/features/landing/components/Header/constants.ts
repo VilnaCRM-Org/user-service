@@ -75,7 +75,7 @@ export const socialMedia: SocialMedia[] = [
     icon: GitHubDrawerIcon,
     alt: 'header.drawer.alt_social_images.github',
     ariaLabel: 'header.drawer.aria_labels_social_images.github',
-    linkHref: 'https://github.com/',
+    linkHref: ' https://github.com/VilnaCRM-Org',
     type: 'drawer',
   },
   {

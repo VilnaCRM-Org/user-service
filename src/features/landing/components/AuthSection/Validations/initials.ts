@@ -12,7 +12,7 @@ export const isValidFullNameFormat: (fullName: string) => boolean = (
 ): boolean => {
   const words: string[] = fullName.trim().split(/\s+/);
   for (const word of words) {
-    if (!/^[^\d\s]{2,}$/.test(word) || hasSpecialCharacters(word)) {
+    if (!/^[^\d\s]{1,}$/.test(word) || hasSpecialCharacters(word)) {
       return false;
     }
   }

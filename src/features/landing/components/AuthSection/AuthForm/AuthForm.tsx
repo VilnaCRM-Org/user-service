@@ -169,11 +169,17 @@ function AuthForm(): React.ReactElement {
                   <UiTypography variant="medium14" sx={styles.privacyText}>
                     <Trans i18nKey="sign_up.form.confidential_text.fullText">
                       I have read and accept the
-                      <UiLink href="https://github.com/VilnaCRM-Org/website/blob/main/README.md">
+                      <UiLink
+                        href="https://github.com/VilnaCRM-Org"
+                        target="_blank"
+                      >
                         Privacy Policy
                       </UiLink>
                       та
-                      <UiLink href="https://github.com/VilnaCRM-Org/website/blob/main/README.md">
+                      <UiLink
+                        href="https://github.com/VilnaCRM-Org"
+                        target="_blank"
+                      >
                         Use Policy
                       </UiLink>
                       VilnaCRM Service

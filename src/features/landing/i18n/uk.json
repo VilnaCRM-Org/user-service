@@ -131,7 +131,7 @@
         "label": "E-mail",
         "placeholder": "vilnaCRM@gmail.com",
         "required": "Це поле обов'язкове",
-        "step_error_message": "Має містити символи '@' та '.'",
+        "step_error_message": "Email має містити символи '@' та '.'",
         "invalid_message": "Неправильна електронна адреса"
       },
       "password_input": {
@@ -147,7 +147,7 @@
         "title": "Не менше 8 символів.",
         "recommendation_text": "Рекомендуємо використовувати:",
         "options": {
-          "option_1": "малі та великі літери літери",
+          "option_1": "малі та великі літери",
           "option_2": "спеціальні символи(#&*$)",
           "option_3": "цифри"
         }

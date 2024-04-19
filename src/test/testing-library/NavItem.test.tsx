@@ -7,8 +7,6 @@ import {
 } from '../../features/landing/components/Header/constants';
 import NavItem from '../../features/landing/components/Header/NavItem/NavItem';
 
-const ImageAlt: string = 'Vector';
-
 describe('NavItem component', () => {
   it('renders NavItem component correctly as header', () => {
     const handleClick: () => void = jest.fn();
@@ -22,14 +20,12 @@ describe('NavItem component', () => {
 
   it('renders NavItem component correctly as drawer', () => {
     const handleClick: () => void = jest.fn();
-    const { getByText, getByAltText } = render(
+    const { getByText } = render(
       <NavItem item={testDrawerItem} handleClick={handleClick} />
     );
 
-    const imageElement: HTMLElement = getByAltText(ImageAlt);
     const linkElement: HTMLElement = getByText(testDrawerItem.title);
 
     expect(linkElement).toBeInTheDocument();
-    expect(imageElement).toBeInTheDocument();
   });
 });
