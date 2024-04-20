@@ -3,19 +3,22 @@ import { Locator, Page, Response, expect } from '@playwright/test';
 import {
   expectationsEmail,
   expectationsPassword,
+  placeholderInitials,
+  placeholderEmail,
+  placeholderPassword,
   signUpButton,
 } from './constants';
 import { User } from './types';
 
 export async function fillInitialsInput(page: Page, user: User): Promise<void> {
-  const initialsInput: Locator = page.getByPlaceholder('Mykhailo Svitskyi');
+  const initialsInput: Locator = page.getByPlaceholder(placeholderInitials);
   await page.getByRole('button', { name: signUpButton }).click();
   await initialsInput.fill('Hello2');
   await expect(page.getByText('Invalid full name format')).toBeVisible();
   await initialsInput.fill(user.fullName);
 }
 export async function fillEmailInput(page: Page, user: User): Promise<void> {
-  const emailInput: Locator = page.getByPlaceholder('vilnaCRM@gmail.com');
+  const emailInput: Locator = page.getByPlaceholder(placeholderEmail);
   await page.getByRole('button', { name: signUpButton }).click();
   for (const expectation of expectationsEmail) {
     await emailInput.fill(expectation.email);
@@ -26,7 +29,7 @@ export async function fillEmailInput(page: Page, user: User): Promise<void> {
 }
 
 export async function fillPasswordInput(page: Page, user: User): Promise<void> {
-  const passwordInput: Locator = page.getByPlaceholder('Create a password');
+  const passwordInput: Locator = page.getByPlaceholder(placeholderPassword);
   await page.getByRole('button', { name: signUpButton }).click();
   for (const expectation of expectationsPassword) {
     await passwordInput.fill(expectation.password);

@@ -1,7 +1,6 @@
 import breakpointsTheme from '@/components/UiBreakpoints';
 import colorTheme from '@/components/UiColorTheme';
 
-import VectorIcon from '../../assets/img/about-vilna/FrameDesktop.png';
 import VectorIconMd from '../../assets/img/about-vilna/FrameTablet.png';
 
 export default {
@@ -38,54 +37,52 @@ export default {
   },
 
   mainImage: {
-    backgroundImage: `url(${VectorIcon.src})`,
-    backgroundSize: 'contain',
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center',
-    width: '100dvw',
-    maxWidth: '50.4rem',
-    height: '44.688rem',
-    zIndex: '1',
-    position: 'absolute',
-    top: '3.8%',
-    right: '-4.8%',
-    '@media (max-width: 1130.98px)': {
-      backgroundImage: `url(${VectorIconMd.src})`,
+    img: {
       width: '100dvw',
-      maxWidth: '43rem',
-      height: '42rem',
-      top: '2%',
-      right: '-2.9%',
-    },
-    [`@media (max-width: 968px)`]: {
-      maxWidth: '43.75rem',
-      height: '44.688rem',
-      top: '47%',
-      right: '8%',
-    },
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
-      right: '-10%',
-    },
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
-      height: '38rem',
-      width: '29.5rem',
-      top: '38.5%',
-    },
-    '@media (max-width: 475.98px)': {
-      height: '44.688rem',
-      right: '-14%',
-      width: '26.5rem',
-      top: '20%',
-    },
-    '@media (max-width: 425.98px)': {
-      height: '44.688rem',
-      right: '-14%',
-      width: '26.5rem',
-      top: '10%',
-    },
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xs}px)`]: {
-      right: '-28%',
-      top: '30%',
+      maxWidth: '51.4rem',
+      height: '42.5rem',
+      zIndex: '1',
+      position: 'absolute',
+      top: '7%',
+      right: '-6%',
+      '@media (max-width: 1130.98px)': {
+        content: `url(${VectorIconMd.src})`,
+        width: '100dvw',
+        maxWidth: '43rem',
+        height: '39.8rem',
+        top: '5%',
+        right: '-2.9%',
+      },
+      [`@media (max-width: 968px)`]: {
+        maxWidth: '43.75rem',
+        height: '39rem',
+        top: '47%',
+        right: '8%',
+      },
+      [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
+        right: '-10%',
+      },
+      [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
+        height: '28rem',
+        top: '86.5%',
+        width: '29.5rem',
+      },
+      '@media (max-width: 475.98px)': {
+        height: '24.688rem',
+        right: '-18%',
+        width: '26.5rem',
+        top: '110%',
+      },
+      '@media (max-width: 425.98px)': {
+        height: '24.688rem',
+        right: '-14%',
+        width: '27.5rem',
+        top: '100%',
+      },
+      [`@media (max-width: ${breakpointsTheme.breakpoints.values.xs}px)`]: {
+        right: '-32.5%',
+        top: '110%',
+      },
     },
   },
 
