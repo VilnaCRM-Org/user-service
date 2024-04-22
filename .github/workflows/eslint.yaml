@@ -29,8 +29,8 @@ jobs:
         run: npm install -g pnpm
 
       - name: Install dependencies
-        run: cd /tests/Load |
-          pnpm i --frozen-lockfile
+        working-directory: /tests/Load
+        run: pnpm i --frozen-lockfile
         if: |
           steps.cache-pnpm-dependencies.outputs.cache-hit != 'true' ||
           steps.cache-pnpm-packages.outputs.cache-hit != 'true'
