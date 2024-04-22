@@ -39,7 +39,7 @@ ARTILLERY_FILES := $(notdir $(shell find ${PWD}/tests/Load -type f -name '*.yml'
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
-	@grep -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-15s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-15s\033[0m %s\n", $$1, $$2}'
 
 phpcsfixer: ## A tool to automatically fix PHP Coding Standards issues
 	$(DOCKER_COMPOSE) exec -e PHP_CS_FIXER_IGNORE_ENV=1 php ./vendor/bin/php-cs-fixer fix $(git ls-files -om --exclude-standard) --allow-risky=yes --config .php-cs-fixer.dist.php
@@ -63,31 +63,31 @@ phpinsights: ## Instant PHP quality checks and static analysis tool
 	$(EXEC_PHP) ./vendor/bin/phpinsights --no-interaction
 	$(EXEC_PHP) ./vendor/bin/phpinsights analyse tests --no-interaction
 
-ci-phpinsights: ## Instant PHP quality checks and static analysis tool
+ci-phpinsights:
 	vendor/bin/phpinsights -n --ansi --format=github-action
 	vendor/bin/phpinsights analyse tests -n --ansi --format=github-action
 
-unit-tests: ## The PHP unit testing framework
+unit-tests: ## Run unit tests
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/phpunit --testsuite=Unit
 
-integration-tests: ## The PHP unit testing framework
+integration-tests: ## Run integration tests
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/phpunit --testsuite=Integration
 
-ci-tests: ## The PHP unit testing framework
+ci-tests:
 	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage -e APP_ENV=test php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-clover /coverage/coverage.xml'
 
-e2e-tests: ## A php framework for autotesting business expectations
+e2e-tests: ## Run end-to-end tests
 	$(EXEC_PHP_TEST_ENV) ./vendor/bin/behat
 
-setup-test-db:
+setup-test-db: ## Create database for testing purposes
 	$(SYMFONY_TEST_ENV) c:c
 	$(SYMFONY_TEST_ENV) doctrine:database:drop --force --if-exists
 	$(SYMFONY_TEST_ENV) doctrine:database:create
 	$(SYMFONY_TEST_ENV) doctrine:migrations:migrate --no-interaction
 
-all-tests: unit-tests integration-tests e2e-tests
+all-tests: unit-tests integration-tests e2e-tests ## Run unit, integration and e2e tests
 
-smoke-load-tests: build-k6
+smoke-load-tests: build-k6 ## Run load tests with minimal load
 	$(K6) /scripts/getUser.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/getUsers.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) /scripts/updateUser.js -e run_average=false -e run_stress=false -e run_spike=false
@@ -106,7 +106,7 @@ smoke-load-tests: build-k6
 	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauthToken.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauthToken.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	$(K6) /scripts/oauth.js -e run_average=false -e run_stress=false -e run_spike=false
 
-load-tests: build-k6
+load-tests: build-k6 ## Run load tests
 	$(K6) /scripts/getUser.js
 	$(K6) /scripts/getUsers.js
 	$(K6) /scripts/updateUser.js
@@ -128,26 +128,23 @@ load-tests: build-k6
 build-k6:
 	$(DOCKER) build -t k6 -f ./tests/Load/Dockerfile .
 
-infection:
+infection: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'php -d memory_limit=-1 ./vendor/bin/infection --test-framework-options="--testsuite=Unit" --show-mutations -j8'
 
 ci-infection:
 	$(INFECTION) --min-msi=100 --min-covered-msi=100 --test-framework-options="--testsuite=Unit" --show-mutations -j8
 
-phpunit-codecov: ## The PHP unit testing framework
+phpunit-codecov: ## Get code coverage report
 	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-html coverage'
 
-phpmetrics:
+phpmetrics: ## Get mathematical metrics
 	$(EXEC_PHP) ./vendor/bin/phpmetrics --report-html=metrics-report src
 
-deptrac:
+deptrac: ## Check directory structure
 	$(DEPTRAC) analyse --config-file=deptrac.yaml --report-uncovered --fail-on-uncovered
 
-deptrac-debug:
+deptrac-debug: ## Find files unassigned for Deptrac
 	$(DEPTRAC) debug:unassigned --config-file=deptrac.yaml
-
-artillery: ## run Load testing
-	$(DOCKER) run --rm -v "${PWD}/tests/Load:/tests/Load" artilleryio/artillery:latest run $(addprefix /tests/Load/,$(ARTILLERY_FILES))
 
 doctrine-migrations-migrate: ## Executes a migration to a specified version or the latest available version
 	$(SYMFONY) d:m:m -n
