@@ -20,8 +20,8 @@ jobs:
         id: cache-pnpm-dependencies
         uses: actions/cache@v3
         with:
-          path: node_modules
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/tests/Load/pnpm-lock.yaml') }}
+          path: /tests/Load/node_modules
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('tests/Load/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-dependencies-
 
@@ -35,4 +35,5 @@ jobs:
           steps.cache-pnpm-packages.outputs.cache-hit != 'true'
 
       - name: Run linter
-        run: pnpm eslint /tests/Load
+        working-directory: /tests/Load
+        run: pnpm eslint
