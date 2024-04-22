@@ -11,10 +11,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Navigate to load tests folder
+        run: cd /tests/Load
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          path: /tests/Load/
           node-version: 21
 
       - name: Cache pnpm dependencies
@@ -30,12 +32,10 @@ jobs:
         run: npm install -g pnpm
 
       - name: Install dependencies
-        working-directory: /tests/Load
         run: pnpm i --frozen-lockfile
         if: |
           steps.cache-pnpm-dependencies.outputs.cache-hit != 'true' ||
           steps.cache-pnpm-packages.outputs.cache-hit != 'true'
 
       - name: Run linter
-        working-directory: /tests/Load
         run: pnpm eslint
