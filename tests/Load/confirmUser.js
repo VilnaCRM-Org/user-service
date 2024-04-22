@@ -1,7 +1,8 @@
 import http from 'k6/http';
-import {ScenarioUtils} from "./utils/scenarioUtils.js";
-import {Utils} from "./utils/utils.js";
-import {MailCatcherUtils} from "./utils/mailCatcherUtils.js";
+
+import MailCatcherUtils from './utils/mailCatcherUtils.js';
+import ScenarioUtils from './utils/scenarioUtils.js';
+import Utils from './utils/utils.js';
 
 const scenarioName = 'confirmUser';
 
@@ -29,7 +30,7 @@ export default async function confirmUser() {
         `${utils.getBaseHttpUrl()}/confirm`,
         payload,
         utils.getMergePatchHeader()
-    )
+    );
 
     utils.checkResponse(
         response,

@@ -1,6 +1,6 @@
 import http from 'k6/http';
 
-export class MailCatcherUtils {
+export default class MailCatcherUtils {
     constructor(utils) {
         this.utils = utils;
         this.config = utils.getConfig();
@@ -15,15 +15,24 @@ export class MailCatcherUtils {
 
     async getConfirmationToken(email) {
         let token = null;
+        const promises = [];
+
         for (let attempt = 0; attempt < this.config.gettingEmailMaxRetries; attempt++) {
-            const result = await this.retrieveTokenFromMailCatcher(email);
+            promises.push(this.retrieveTokenFromMailCatcher(email));
+        }
+
+        const results = await Promise.all(promises);
+
+        for (const result of results) {
             if (result) {
                 token = result;
                 break;
             }
         }
+
         return token;
     }
+
 
     async retrieveTokenFromMailCatcher(email) {
         const messages = await http.get(this.mailCatcherUrl);
@@ -32,7 +41,7 @@ export class MailCatcherUtils {
 
             const message = await http.get(`${this.mailCatcherUrl}/${messageId}.source`);
 
-            return this.extractConfirmationToken(message.body)
+            return this.extractConfirmationToken(message.body);
         }
 
         return null;

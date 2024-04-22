@@ -1,8 +1,8 @@
 import {check} from 'k6';
-import faker from "k6/x/faker";
 import http from 'k6/http';
+import faker from 'k6/x/faker';
 
-export class Utils {
+export default class Utils {
     constructor() {
         const host = this.getConfig().apiHost;
 
@@ -57,7 +57,7 @@ export class Utils {
     }
 
     getCLIVariable(variable) {
-        return `${__ENV[variable]}`
+        return `${__ENV[variable]}`;
     }
 
     checkUserIsDefined(user) {
@@ -76,7 +76,7 @@ export class Utils {
             email,
             password,
             initials,
-        }
+        };
     }
 
    checkResponse(response, checkName, checkFunction) {

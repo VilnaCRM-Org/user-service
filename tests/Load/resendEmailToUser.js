@@ -1,8 +1,10 @@
 import http from 'k6/http';
-import {ScenarioUtils} from "./utils/scenarioUtils.js";
-import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
-import {Utils} from "./utils/utils.js";
-import counter from "k6/x/counter"
+import counter from 'k6/x/counter';
+
+import InsertUsersUtils from './utils/insertUsersUtils.js';
+import ScenarioUtils from './utils/scenarioUtils.js';
+import Utils from './utils/utils.js';
+
 
 const scenarioName = 'resendEmailToUser';
 
@@ -13,7 +15,7 @@ const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 export function setup() {
     return {
         users: insertUsersUtils.prepareUsers()
-    }
+    };
 }
 
 export const options = scenarioUtils.getOptions();

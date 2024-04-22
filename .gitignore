@@ -13,6 +13,7 @@
 infection.log
 summary.log
 .structurizr
+/tests/Load/node_modules
 ###< symfony/framework-bundle ###
 
 ###> symfony/phpunit-bridge ###

@@ -1,7 +1,7 @@
-import {ScenariosBuilder} from './scenariosBuilder.js'
-import {ThresholdsBuilder} from "./thesholdsBuilder.js";
+import ScenariosBuilder from './scenariosBuilder.js';
+import ThresholdsBuilder from './thesholdsBuilder.js';
 
-export class ScenarioUtils {
+export default class ScenarioUtils {
     constructor(utils, scenarioName) {
         this.utils = utils;
         this.config = utils.getConfig();
@@ -23,7 +23,7 @@ export class ScenarioUtils {
             insecureSkipTLSVerify: true,
             scenarios: this.getScenarios(),
             thresholds: this.getThresholds()
-        }
+        };
     }
 
     getScenarios() {

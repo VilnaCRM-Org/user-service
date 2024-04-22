@@ -1,0 +1,38 @@
+name: Static analysis for load tests
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  eslint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 21
+
+      - name: Cache pnpm dependencies
+        id: cache-pnpm-dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/tests/Load/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-dependencies-
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm i --frozen-lockfile
+        if: |
+          steps.cache-pnpm-dependencies.outputs.cache-hit != 'true' ||
+          steps.cache-pnpm-packages.outputs.cache-hit != 'true'
+
+      - name: Run linter
+        run: pnpm eslint /tests/Load

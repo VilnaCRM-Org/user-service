@@ -1,4 +1,4 @@
-export class ThresholdsBuilder {
+export default class ThresholdsBuilder {
     constructor() {
         this.thresholds = {};
     }

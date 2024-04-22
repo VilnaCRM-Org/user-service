@@ -1,7 +1,8 @@
 import http from 'k6/http';
-import {ScenarioUtils} from "./utils/scenarioUtils.js";
-import {Utils} from "./utils/utils.js";
-import {InsertUsersUtils} from "./utils/insertUsersUtils.js";
+
+import InsertUsersUtils from './utils/insertUsersUtils.js';
+import ScenarioUtils from './utils/scenarioUtils.js';
+import Utils from './utils/utils.js';
 
 const scenarioName = 'getUsers';
 
@@ -12,7 +13,7 @@ const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 export function setup() {
     return {
         users: insertUsersUtils.prepareUsers()
-    }
+    };
 }
 
 export const options = scenarioUtils.getOptions();

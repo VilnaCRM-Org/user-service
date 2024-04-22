@@ -1,4 +1,4 @@
-export class ScenariosBuilder {
+export default class ScenariosBuilder {
     constructor() {
         this.scenarios = {};
     }
@@ -11,7 +11,7 @@ export class ScenariosBuilder {
             duration: smokeConfig.duration + 's',
             preAllocatedVUs: smokeConfig.vus,
             tags: {test_type: 'smoke'},
-        }
+        };
 
         return this;
     }
@@ -47,7 +47,7 @@ export class ScenariosBuilder {
             ],
             startTime: startTime + 's',
             tags: {test_type: 'spike'},
-        }
+        };
 
         return this;
     }
@@ -71,7 +71,7 @@ export class ScenariosBuilder {
             ],
             startTime: startTime + 's',
             tags: {test_type: scenarioName},
-        }
+        };
 
         return this;
     }

@@ -1,7 +1,6 @@
 import http from 'k6/http';
-import faker from "k6/x/faker";
 
-export class InsertUsersUtils {
+export default class InsertUsersUtils {
     constructor(utils, scenarioName) {
         this.utils = utils;
         this.config = utils.getConfig();
@@ -14,7 +13,7 @@ export class InsertUsersUtils {
 
     * requestGenerator(numberOfUsers) {
         for (let i = 0; i < numberOfUsers; i++) {
-            const user = this.utils.generateUser()
+            const user = this.utils.generateUser();
             const request = {
                 method: 'POST',
                 url: this.utils.getBaseHttpUrl(),
@@ -102,15 +101,15 @@ export class InsertUsersUtils {
     }
 
     countSmokeRequest() {
-        return this.smokeConfig.rps * this.smokeConfig.duration
+        return this.smokeConfig.rps * this.smokeConfig.duration;
     }
 
     countAverageRequest() {
-        return this.countDefaultRequests(this.averageConfig)
+        return this.countDefaultRequests(this.averageConfig);
     }
 
     countStressRequest() {
-        return this.countDefaultRequests(this.stressConfig)
+        return this.countDefaultRequests(this.stressConfig);
     }
 
     countDefaultRequests(config){
