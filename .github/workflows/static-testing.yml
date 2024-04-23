@@ -41,3 +41,6 @@ jobs:
 
       - name: Run markdown linter
         run: pnpm run lint:md
+
+      - name: Run code formatter
+        run: pnpm run format
