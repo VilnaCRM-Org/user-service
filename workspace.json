@@ -1,540 +1,657 @@
 {
-  "configuration" : { },
-  "description" : "Description",
-  "documentation" : { },
-  "id" : 1,
-  "lastModifiedDate" : "2024-03-26T13:07:59Z",
-  "model" : {
-    "properties" : {
-      "structurizr.groupSeparator" : "/"
+  "configuration": {},
+  "description": "Description",
+  "documentation": {},
+  "id": 1,
+  "lastModifiedDate": "2024-03-26T13:07:59Z",
+  "model": {
+    "properties": {
+      "structurizr.groupSeparator": "/"
     },
-    "softwareSystems" : [ {
-      "containers" : [ {
-        "components" : [ {
-          "documentation" : { },
-          "id" : "3",
-          "name" : "Header",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.header"
-          },
-          "relationships" : [ {
-            "destinationId" : "4",
-            "id" : "25",
-            "properties" : {
-              "structurizr.dsl.identifier" : "3cd7e282-c0d3-4415-a11a-28e01910955e"
+    "softwareSystems": [
+      {
+        "containers": [
+          {
+            "components": [
+              {
+                "documentation": {},
+                "id": "3",
+                "name": "Header",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.header"
+                },
+                "relationships": [
+                  {
+                    "destinationId": "4",
+                    "id": "25",
+                    "properties": {
+                      "structurizr.dsl.identifier": "3cd7e282-c0d3-4415-a11a-28e01910955e"
+                    },
+                    "sourceId": "3",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "destinationId": "5",
+                    "id": "26",
+                    "properties": {
+                      "structurizr.dsl.identifier": "bf9dddb4-299a-4cd8-a69f-70d706e376a9"
+                    },
+                    "sourceId": "3",
+                    "tags": "Relationship"
+                  }
+                ],
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "4",
+                "name": "Drawer",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.drawer"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "5",
+                "name": "NavigationMenu",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.navigation"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "6",
+                "name": "AboutUsSection",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.aboutus"
+                },
+                "relationships": [
+                  {
+                    "destinationId": "8",
+                    "id": "27",
+                    "properties": {
+                      "structurizr.dsl.identifier": "d8f1db78-669f-401c-b75e-921dd90485bc"
+                    },
+                    "sourceId": "6",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "destinationId": "7",
+                    "id": "28",
+                    "properties": {
+                      "structurizr.dsl.identifier": "87102d61-0814-484b-9f5a-66b97326fd4b"
+                    },
+                    "sourceId": "6",
+                    "tags": "Relationship"
+                  }
+                ],
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "7",
+                "name": "AboutUsContent",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.aboutusdescription"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "8",
+                "name": "DevicePreview",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.devicemock"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "9",
+                "name": "WhyUsSection",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.whyus"
+                },
+                "relationships": [
+                  {
+                    "destinationId": "10",
+                    "id": "29",
+                    "properties": {
+                      "structurizr.dsl.identifier": "7102a047-bb02-4913-b620-44ceab5e71db"
+                    },
+                    "sourceId": "9",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "destinationId": "12",
+                    "id": "30",
+                    "properties": {
+                      "structurizr.dsl.identifier": "a2a43b4e-005e-4308-a9ee-2ad90ac3e207"
+                    },
+                    "sourceId": "9",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "destinationId": "11",
+                    "id": "31",
+                    "properties": {
+                      "structurizr.dsl.identifier": "cc4e7a88-2763-420e-bf26-4c9b57a053d6"
+                    },
+                    "sourceId": "9",
+                    "tags": "Relationship"
+                  }
+                ],
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "10",
+                "name": "MobileSlider",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.slider"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "11",
+                "name": "DesktopCardList",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.cardlist"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "12",
+                "name": "WhyUsContent",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.whyusdescription"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "13",
+                "name": "PossibilitiesSection",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.possibilities"
+                },
+                "relationships": [
+                  {
+                    "destinationId": "14",
+                    "id": "32",
+                    "properties": {
+                      "structurizr.dsl.identifier": "647b2391-7ab4-47a0-aa87-91ecde0e8fa7"
+                    },
+                    "sourceId": "13",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "destinationId": "15",
+                    "id": "33",
+                    "properties": {
+                      "structurizr.dsl.identifier": "4f45da62-c96b-4287-949f-af211c5e1dad"
+                    },
+                    "sourceId": "13",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "destinationId": "16",
+                    "id": "34",
+                    "properties": {
+                      "structurizr.dsl.identifier": "f661782a-cf31-4d92-8221-f7938ee59ddf"
+                    },
+                    "sourceId": "13",
+                    "tags": "Relationship"
+                  }
+                ],
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "14",
+                "name": "MobileSliderSecond",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.slider2"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "15",
+                "name": "DesktopCardListSecond",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.cardlist2"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "16",
+                "name": "PossibilitiesContent",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.possibilitiesdescription"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "17",
+                "name": "AuthenticationSection",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.authsection"
+                },
+                "relationships": [
+                  {
+                    "destinationId": "18",
+                    "id": "35",
+                    "properties": {
+                      "structurizr.dsl.identifier": "ccad2ce2-302a-4b3c-8708-ceaa4ee36fa9"
+                    },
+                    "sourceId": "17",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "destinationId": "19",
+                    "id": "36",
+                    "properties": {
+                      "structurizr.dsl.identifier": "5a634314-9bed-4013-b6f1-d2b4b09d3a7a"
+                    },
+                    "sourceId": "17",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "destinationId": "20",
+                    "id": "37",
+                    "properties": {
+                      "structurizr.dsl.identifier": "20eb1d49-54cc-49fd-a98e-e0c47f9fc474"
+                    },
+                    "sourceId": "17",
+                    "tags": "Relationship"
+                  }
+                ],
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "18",
+                "name": "RegistrationForm",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.registrationform"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "19",
+                "name": "SocialRegistration",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.registrationbysocial"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "20",
+                "name": "RegistrationContent",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.registrationdescription"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "21",
+                "name": "Footer",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.footer"
+                },
+                "relationships": [
+                  {
+                    "destinationId": "22",
+                    "id": "38",
+                    "properties": {
+                      "structurizr.dsl.identifier": "584796b7-e8d3-4cd2-8b5f-9c0d7ecabedd"
+                    },
+                    "sourceId": "21",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "destinationId": "23",
+                    "id": "39",
+                    "properties": {
+                      "structurizr.dsl.identifier": "d07b17fb-798a-40e6-bd92-5e02e3d2f1e5"
+                    },
+                    "sourceId": "21",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "destinationId": "24",
+                    "id": "40",
+                    "properties": {
+                      "structurizr.dsl.identifier": "97e82122-663a-47e5-8d71-a010edf6ef4e"
+                    },
+                    "sourceId": "21",
+                    "tags": "Relationship"
+                  }
+                ],
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "22",
+                "name": "PrivacyPolicyLink",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.privacypolicy"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "23",
+                "name": "EmailLink",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.email"
+                },
+                "tags": "Element,Component,Item"
+              },
+              {
+                "documentation": {},
+                "id": "24",
+                "name": "SocialMediaLinks",
+                "properties": {
+                  "structurizr.dsl.identifier": "softwaresystem.website.navigationsosiallinks"
+                },
+                "tags": "Element,Component,Item"
+              }
+            ],
+            "documentation": {},
+            "id": "2",
+            "name": "Layout",
+            "properties": {
+              "structurizr.dsl.identifier": "softwaresystem.website"
             },
-            "sourceId" : "3",
-            "tags" : "Relationship"
-          }, {
-            "destinationId" : "5",
-            "id" : "26",
-            "properties" : {
-              "structurizr.dsl.identifier" : "bf9dddb4-299a-4cd8-a69f-70d706e376a9"
-            },
-            "sourceId" : "3",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "4",
-          "name" : "Drawer",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.drawer"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "5",
-          "name" : "NavigationMenu",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.navigation"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "6",
-          "name" : "AboutUsSection",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.aboutus"
-          },
-          "relationships" : [ {
-            "destinationId" : "8",
-            "id" : "27",
-            "properties" : {
-              "structurizr.dsl.identifier" : "d8f1db78-669f-401c-b75e-921dd90485bc"
-            },
-            "sourceId" : "6",
-            "tags" : "Relationship"
-          }, {
-            "destinationId" : "7",
-            "id" : "28",
-            "properties" : {
-              "structurizr.dsl.identifier" : "87102d61-0814-484b-9f5a-66b97326fd4b"
-            },
-            "sourceId" : "6",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "7",
-          "name" : "AboutUsContent",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.aboutusdescription"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "8",
-          "name" : "DevicePreview",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.devicemock"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "9",
-          "name" : "WhyUsSection",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.whyus"
-          },
-          "relationships" : [ {
-            "destinationId" : "10",
-            "id" : "29",
-            "properties" : {
-              "structurizr.dsl.identifier" : "7102a047-bb02-4913-b620-44ceab5e71db"
-            },
-            "sourceId" : "9",
-            "tags" : "Relationship"
-          }, {
-            "destinationId" : "12",
-            "id" : "30",
-            "properties" : {
-              "structurizr.dsl.identifier" : "a2a43b4e-005e-4308-a9ee-2ad90ac3e207"
-            },
-            "sourceId" : "9",
-            "tags" : "Relationship"
-          }, {
-            "destinationId" : "11",
-            "id" : "31",
-            "properties" : {
-              "structurizr.dsl.identifier" : "cc4e7a88-2763-420e-bf26-4c9b57a053d6"
-            },
-            "sourceId" : "9",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "10",
-          "name" : "MobileSlider",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.slider"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "11",
-          "name" : "DesktopCardList",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.cardlist"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "12",
-          "name" : "WhyUsContent",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.whyusdescription"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "13",
-          "name" : "PossibilitiesSection",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.possibilities"
-          },
-          "relationships" : [ {
-            "destinationId" : "14",
-            "id" : "32",
-            "properties" : {
-              "structurizr.dsl.identifier" : "647b2391-7ab4-47a0-aa87-91ecde0e8fa7"
-            },
-            "sourceId" : "13",
-            "tags" : "Relationship"
-          }, {
-            "destinationId" : "15",
-            "id" : "33",
-            "properties" : {
-              "structurizr.dsl.identifier" : "4f45da62-c96b-4287-949f-af211c5e1dad"
-            },
-            "sourceId" : "13",
-            "tags" : "Relationship"
-          }, {
-            "destinationId" : "16",
-            "id" : "34",
-            "properties" : {
-              "structurizr.dsl.identifier" : "f661782a-cf31-4d92-8221-f7938ee59ddf"
-            },
-            "sourceId" : "13",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "14",
-          "name" : "MobileSliderSecond",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.slider2"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "15",
-          "name" : "DesktopCardListSecond",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.cardlist2"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "16",
-          "name" : "PossibilitiesContent",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.possibilitiesdescription"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "17",
-          "name" : "AuthenticationSection",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.authsection"
-          },
-          "relationships" : [ {
-            "destinationId" : "18",
-            "id" : "35",
-            "properties" : {
-              "structurizr.dsl.identifier" : "ccad2ce2-302a-4b3c-8708-ceaa4ee36fa9"
-            },
-            "sourceId" : "17",
-            "tags" : "Relationship"
-          }, {
-            "destinationId" : "19",
-            "id" : "36",
-            "properties" : {
-              "structurizr.dsl.identifier" : "5a634314-9bed-4013-b6f1-d2b4b09d3a7a"
-            },
-            "sourceId" : "17",
-            "tags" : "Relationship"
-          }, {
-            "destinationId" : "20",
-            "id" : "37",
-            "properties" : {
-              "structurizr.dsl.identifier" : "20eb1d49-54cc-49fd-a98e-e0c47f9fc474"
-            },
-            "sourceId" : "17",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "18",
-          "name" : "RegistrationForm",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.registrationform"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "19",
-          "name" : "SocialRegistration",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.registrationbysocial"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "20",
-          "name" : "RegistrationContent",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.registrationdescription"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "21",
-          "name" : "Footer",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.footer"
-          },
-          "relationships" : [ {
-            "destinationId" : "22",
-            "id" : "38",
-            "properties" : {
-              "structurizr.dsl.identifier" : "584796b7-e8d3-4cd2-8b5f-9c0d7ecabedd"
-            },
-            "sourceId" : "21",
-            "tags" : "Relationship"
-          }, {
-            "destinationId" : "23",
-            "id" : "39",
-            "properties" : {
-              "structurizr.dsl.identifier" : "d07b17fb-798a-40e6-bd92-5e02e3d2f1e5"
-            },
-            "sourceId" : "21",
-            "tags" : "Relationship"
-          }, {
-            "destinationId" : "24",
-            "id" : "40",
-            "properties" : {
-              "structurizr.dsl.identifier" : "97e82122-663a-47e5-8d71-a010edf6ef4e"
-            },
-            "sourceId" : "21",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "22",
-          "name" : "PrivacyPolicyLink",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.privacypolicy"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "23",
-          "name" : "EmailLink",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.email"
-          },
-          "tags" : "Element,Component,Item"
-        }, {
-          "documentation" : { },
-          "id" : "24",
-          "name" : "SocialMediaLinks",
-          "properties" : {
-            "structurizr.dsl.identifier" : "softwaresystem.website.navigationsosiallinks"
-          },
-          "tags" : "Element,Component,Item"
-        } ],
-        "documentation" : { },
-        "id" : "2",
-        "name" : "Layout",
-        "properties" : {
-          "structurizr.dsl.identifier" : "softwaresystem.website"
+            "tags": "Element,Container"
+          }
+        ],
+        "documentation": {},
+        "id": "1",
+        "location": "Unspecified",
+        "name": "Software System",
+        "properties": {
+          "structurizr.dsl.identifier": "softwaresystem"
         },
-        "tags" : "Element,Container"
-      } ],
-      "documentation" : { },
-      "id" : "1",
-      "location" : "Unspecified",
-      "name" : "Software System",
-      "properties" : {
-        "structurizr.dsl.identifier" : "softwaresystem"
-      },
-      "tags" : "Element,Software System"
-    } ]
+        "tags": "Element,Software System"
+      }
+    ]
   },
-  "name" : "Name",
-  "properties" : {
-    "structurizr.dsl" : "d29ya3NwYWNlIHsKICAgIG1vZGVsIHsKICAgICAgICAhaWRlbnRpZmllcnMgaGllcmFyY2hpY2FsCgogICAgICAgIHByb3BlcnRpZXMgewogICAgICAgICAgICAic3RydWN0dXJpenIuZ3JvdXBTZXBhcmF0b3IiICIvIgogICAgICAgIH0KCiAgICAgICAgc29mdHdhcmVTeXN0ZW0gPSBzb2Z0d2FyZVN5c3RlbSAiU29mdHdhcmUgU3lzdGVtIiB7CiAgICAgICAgICAgIHdlYnNpdGUgPSBjb250YWluZXIgIkxheW91dCIgewogICAgICAgICAgICAgICAgaGVhZGVyID0gY29tcG9uZW50ICJIZWFkZXIiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgZHJhd2VyID0gY29tcG9uZW50ICJEcmF3ZXIiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgbmF2aWdhdGlvbiA9IGNvbXBvbmVudCAiTmF2aWdhdGlvbk1lbnUiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgYWJvdXRVcyA9IGNvbXBvbmVudCAiQWJvdXRVc1NlY3Rpb24iIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgYWJvdXRVc0Rlc2NyaXB0aW9uID0gY29tcG9uZW50ICJBYm91dFVzQ29udGVudCIgewogICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBkZXZpY2VNb2NrID0gY29tcG9uZW50ICJEZXZpY2VQcmV2aWV3IiB7CiAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIHdoeVVzID0gY29tcG9uZW50ICJXaHlVc1NlY3Rpb24iIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgc2xpZGVyID0gY29tcG9uZW50ICJNb2JpbGVTbGlkZXIiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgY2FyZExpc3QgPSBjb21wb25lbnQgIkRlc2t0b3BDYXJkTGlzdCIgewogICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICB3aHlVc0Rlc2NyaXB0aW9uID0gY29tcG9uZW50ICJXaHlVc0NvbnRlbnQiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgcG9zc2liaWxpdGllcyA9IGNvbXBvbmVudCAiUG9zc2liaWxpdGllc1NlY3Rpb24iIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgc2xpZGVyMiA9IGNvbXBvbmVudCAiTW9iaWxlU2xpZGVyU2Vjb25kIiB7CiAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIGNhcmRMaXN0MiA9IGNvbXBvbmVudCAiRGVza3RvcENhcmRMaXN0U2Vjb25kIiB7CiAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIHBvc3NpYmlsaXRpZXNEZXNjcmlwdGlvbiA9IGNvbXBvbmVudCAiUG9zc2liaWxpdGllc0NvbnRlbnQiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgYXV0aFNlY3Rpb24gPSBjb21wb25lbnQgIkF1dGhlbnRpY2F0aW9uU2VjdGlvbiIgewogICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICByZWdpc3RyYXRpb25Gb3JtID0gY29tcG9uZW50ICJSZWdpc3RyYXRpb25Gb3JtIiB7CiAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIHJlZ2lzdHJhdGlvbkJ5U29jaWFsID0gY29tcG9uZW50ICJTb2NpYWxSZWdpc3RyYXRpb24iIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgcmVnaXN0cmF0aW9uRGVzY3JpcHRpb24gPSBjb21wb25lbnQgIlJlZ2lzdHJhdGlvbkNvbnRlbnQiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgZm9vdGVyID0gY29tcG9uZW50ICJGb290ZXIiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgcHJpdmFjeVBvbGljeSA9IGNvbXBvbmVudCAiUHJpdmFjeVBvbGljeUxpbmsiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgZW1haWwgPSBjb21wb25lbnQgIkVtYWlsTGluayIgewogICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBuYXZpZ2F0aW9uU29zaWFsTGlua3MgPSBjb21wb25lbnQgIlNvY2lhbE1lZGlhTGlua3MiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgSGVhZGVyIC0+IGRyYXdlcgogICAgICAgICAgICAgICAgSGVhZGVyIC0+IG5hdmlnYXRpb24KICAgICAgICAgICAgICAgIGFib3V0VXMgLT4gZGV2aWNlTW9jawogICAgICAgICAgICAgICAgYWJvdXRVcyAtPiBhYm91dFVzRGVzY3JpcHRpb24KICAgICAgICAgICAgICAgIHdoeVVzIC0+IHNsaWRlcgogICAgICAgICAgICAgICAgd2h5VXMgLT4gd2h5VXNEZXNjcmlwdGlvbgogICAgICAgICAgICAgICAgd2h5VXMgLT4gY2FyZExpc3QKICAgICAgICAgICAgICAgIHBvc3NpYmlsaXRpZXMgLT4gc2xpZGVyMgogICAgICAgICAgICAgICAgcG9zc2liaWxpdGllcyAtPiBjYXJkTGlzdDIKICAgICAgICAgICAgICAgIHBvc3NpYmlsaXRpZXMgLT4gcG9zc2liaWxpdGllc0Rlc2NyaXB0aW9uCiAgICAgICAgICAgICAgICBhdXRoU2VjdGlvbiAtPiByZWdpc3RyYXRpb25Gb3JtCiAgICAgICAgICAgICAgICBhdXRoU2VjdGlvbiAtPiByZWdpc3RyYXRpb25CeVNvY2lhbAogICAgICAgICAgICAgICAgYXV0aFNlY3Rpb24gLT4gcmVnaXN0cmF0aW9uRGVzY3JpcHRpb24KICAgICAgICAgICAgICAgIGZvb3RlciAtPiBwcml2YWN5UG9saWN5CiAgICAgICAgICAgICAgICBmb290ZXIgLT4gZW1haWwKICAgICAgICAgICAgICAgIGZvb3RlciAtPiBuYXZpZ2F0aW9uU29zaWFsTGlua3MKICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0KCiAgICB2aWV3cyB7CiAgICAgICAgY29tcG9uZW50IHNvZnR3YXJlU3lzdGVtLndlYnNpdGUgIkNvbXBvbmVudHMiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgfQogICAgICAgIAogICAgICAgIHN0eWxlcyB7CiAgICAgICAgICAgIGVsZW1lbnQgIkl0ZW0iIHsKICAgICAgICAgICAgICAgIGNvbG9yIHdoaXRlCiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICIjMzRhYmViIgogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfQp9Cg=="
+  "name": "Name",
+  "properties": {
+    "structurizr.dsl": "d29ya3NwYWNlIHsKICAgIG1vZGVsIHsKICAgICAgICAhaWRlbnRpZmllcnMgaGllcmFyY2hpY2FsCgogICAgICAgIHByb3BlcnRpZXMgewogICAgICAgICAgICAic3RydWN0dXJpenIuZ3JvdXBTZXBhcmF0b3IiICIvIgogICAgICAgIH0KCiAgICAgICAgc29mdHdhcmVTeXN0ZW0gPSBzb2Z0d2FyZVN5c3RlbSAiU29mdHdhcmUgU3lzdGVtIiB7CiAgICAgICAgICAgIHdlYnNpdGUgPSBjb250YWluZXIgIkxheW91dCIgewogICAgICAgICAgICAgICAgaGVhZGVyID0gY29tcG9uZW50ICJIZWFkZXIiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgZHJhd2VyID0gY29tcG9uZW50ICJEcmF3ZXIiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgbmF2aWdhdGlvbiA9IGNvbXBvbmVudCAiTmF2aWdhdGlvbk1lbnUiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgYWJvdXRVcyA9IGNvbXBvbmVudCAiQWJvdXRVc1NlY3Rpb24iIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgYWJvdXRVc0Rlc2NyaXB0aW9uID0gY29tcG9uZW50ICJBYm91dFVzQ29udGVudCIgewogICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBkZXZpY2VNb2NrID0gY29tcG9uZW50ICJEZXZpY2VQcmV2aWV3IiB7CiAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIHdoeVVzID0gY29tcG9uZW50ICJXaHlVc1NlY3Rpb24iIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgc2xpZGVyID0gY29tcG9uZW50ICJNb2JpbGVTbGlkZXIiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgY2FyZExpc3QgPSBjb21wb25lbnQgIkRlc2t0b3BDYXJkTGlzdCIgewogICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICB3aHlVc0Rlc2NyaXB0aW9uID0gY29tcG9uZW50ICJXaHlVc0NvbnRlbnQiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgcG9zc2liaWxpdGllcyA9IGNvbXBvbmVudCAiUG9zc2liaWxpdGllc1NlY3Rpb24iIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgc2xpZGVyMiA9IGNvbXBvbmVudCAiTW9iaWxlU2xpZGVyU2Vjb25kIiB7CiAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIGNhcmRMaXN0MiA9IGNvbXBvbmVudCAiRGVza3RvcENhcmRMaXN0U2Vjb25kIiB7CiAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIHBvc3NpYmlsaXRpZXNEZXNjcmlwdGlvbiA9IGNvbXBvbmVudCAiUG9zc2liaWxpdGllc0NvbnRlbnQiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgYXV0aFNlY3Rpb24gPSBjb21wb25lbnQgIkF1dGhlbnRpY2F0aW9uU2VjdGlvbiIgewogICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICByZWdpc3RyYXRpb25Gb3JtID0gY29tcG9uZW50ICJSZWdpc3RyYXRpb25Gb3JtIiB7CiAgICAgICAgICAgICAgICAgICAgdGFncyAiSXRlbSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIHJlZ2lzdHJhdGlvbkJ5U29jaWFsID0gY29tcG9uZW50ICJTb2NpYWxSZWdpc3RyYXRpb24iIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgcmVnaXN0cmF0aW9uRGVzY3JpcHRpb24gPSBjb21wb25lbnQgIlJlZ2lzdHJhdGlvbkNvbnRlbnQiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgZm9vdGVyID0gY29tcG9uZW50ICJGb290ZXIiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgcHJpdmFjeVBvbGljeSA9IGNvbXBvbmVudCAiUHJpdmFjeVBvbGljeUxpbmsiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgZW1haWwgPSBjb21wb25lbnQgIkVtYWlsTGluayIgewogICAgICAgICAgICAgICAgICAgIHRhZ3MgIkl0ZW0iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBuYXZpZ2F0aW9uU29zaWFsTGlua3MgPSBjb21wb25lbnQgIlNvY2lhbE1lZGlhTGlua3MiIHsKICAgICAgICAgICAgICAgICAgICB0YWdzICJJdGVtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgSGVhZGVyIC0+IGRyYXdlcgogICAgICAgICAgICAgICAgSGVhZGVyIC0+IG5hdmlnYXRpb24KICAgICAgICAgICAgICAgIGFib3V0VXMgLT4gZGV2aWNlTW9jawogICAgICAgICAgICAgICAgYWJvdXRVcyAtPiBhYm91dFVzRGVzY3JpcHRpb24KICAgICAgICAgICAgICAgIHdoeVVzIC0+IHNsaWRlcgogICAgICAgICAgICAgICAgd2h5VXMgLT4gd2h5VXNEZXNjcmlwdGlvbgogICAgICAgICAgICAgICAgd2h5VXMgLT4gY2FyZExpc3QKICAgICAgICAgICAgICAgIHBvc3NpYmlsaXRpZXMgLT4gc2xpZGVyMgogICAgICAgICAgICAgICAgcG9zc2liaWxpdGllcyAtPiBjYXJkTGlzdDIKICAgICAgICAgICAgICAgIHBvc3NpYmlsaXRpZXMgLT4gcG9zc2liaWxpdGllc0Rlc2NyaXB0aW9uCiAgICAgICAgICAgICAgICBhdXRoU2VjdGlvbiAtPiByZWdpc3RyYXRpb25Gb3JtCiAgICAgICAgICAgICAgICBhdXRoU2VjdGlvbiAtPiByZWdpc3RyYXRpb25CeVNvY2lhbAogICAgICAgICAgICAgICAgYXV0aFNlY3Rpb24gLT4gcmVnaXN0cmF0aW9uRGVzY3JpcHRpb24KICAgICAgICAgICAgICAgIGZvb3RlciAtPiBwcml2YWN5UG9saWN5CiAgICAgICAgICAgICAgICBmb290ZXIgLT4gZW1haWwKICAgICAgICAgICAgICAgIGZvb3RlciAtPiBuYXZpZ2F0aW9uU29zaWFsTGlua3MKICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0KCiAgICB2aWV3cyB7CiAgICAgICAgY29tcG9uZW50IHNvZnR3YXJlU3lzdGVtLndlYnNpdGUgIkNvbXBvbmVudHMiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgfQogICAgICAgIAogICAgICAgIHN0eWxlcyB7CiAgICAgICAgICAgIGVsZW1lbnQgIkl0ZW0iIHsKICAgICAgICAgICAgICAgIGNvbG9yIHdoaXRlCiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICIjMzRhYmViIgogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfQp9Cg=="
   },
-  "views" : {
-    "componentViews" : [ {
-      "containerId" : "2",
-      "dimensions" : {
-        "height" : 2548,
-        "width" : 3280
+  "views": {
+    "componentViews": [
+      {
+        "containerId": "2",
+        "dimensions": {
+          "height": 2548,
+          "width": 3280
+        },
+        "elements": [
+          {
+            "id": "3",
+            "x": 615,
+            "y": 70
+          },
+          {
+            "id": "4",
+            "x": 200,
+            "y": 420
+          },
+          {
+            "id": "5",
+            "x": 1025,
+            "y": 415
+          },
+          {
+            "id": "6",
+            "x": 2170,
+            "y": 85
+          },
+          {
+            "id": "7",
+            "x": 2585,
+            "y": 430
+          },
+          {
+            "id": "8",
+            "x": 1765,
+            "y": 435
+          },
+          {
+            "id": "9",
+            "x": 590,
+            "y": 755
+          },
+          {
+            "id": "10",
+            "x": 1090,
+            "y": 1145
+          },
+          {
+            "id": "11",
+            "x": 595,
+            "y": 1145
+          },
+          {
+            "id": "12",
+            "x": 100,
+            "y": 1145
+          },
+          {
+            "id": "13",
+            "x": 2160,
+            "y": 770
+          },
+          {
+            "id": "14",
+            "x": 2160,
+            "y": 1145
+          },
+          {
+            "id": "15",
+            "x": 1665,
+            "y": 1145
+          },
+          {
+            "id": "16",
+            "x": 2650,
+            "y": 1155
+          },
+          {
+            "id": "17",
+            "x": 590,
+            "y": 1500
+          },
+          {
+            "id": "18",
+            "x": 1085,
+            "y": 1860
+          },
+          {
+            "id": "19",
+            "x": 585,
+            "y": 1860
+          },
+          {
+            "id": "20",
+            "x": 90,
+            "y": 1860
+          },
+          {
+            "id": "21",
+            "x": 2160,
+            "y": 1495
+          },
+          {
+            "id": "22",
+            "x": 2645,
+            "y": 1860
+          },
+          {
+            "id": "23",
+            "x": 1665,
+            "y": 1860
+          },
+          {
+            "id": "24",
+            "x": 2155,
+            "y": 1860
+          }
+        ],
+        "externalContainerBoundariesVisible": false,
+        "key": "Components",
+        "order": 1,
+        "relationships": [
+          {
+            "id": "25",
+            "vertices": [
+              {
+                "x": 430,
+                "y": 225
+              }
+            ]
+          },
+          {
+            "id": "26",
+            "vertices": [
+              {
+                "x": 1250,
+                "y": 220
+              }
+            ]
+          },
+          {
+            "id": "27",
+            "vertices": [
+              {
+                "x": 1985,
+                "y": 235
+              }
+            ]
+          },
+          {
+            "id": "28",
+            "vertices": [
+              {
+                "x": 2810,
+                "y": 235
+              }
+            ]
+          },
+          {
+            "id": "29",
+            "vertices": [
+              {
+                "x": 1310,
+                "y": 905
+              }
+            ]
+          },
+          {
+            "id": "30",
+            "vertices": [
+              {
+                "x": 325,
+                "y": 905
+              }
+            ]
+          },
+          {
+            "id": "31"
+          },
+          {
+            "id": "32"
+          },
+          {
+            "id": "33",
+            "vertices": [
+              {
+                "x": 1890,
+                "y": 920
+              }
+            ]
+          },
+          {
+            "id": "34",
+            "vertices": [
+              {
+                "x": 2875,
+                "y": 920
+              }
+            ]
+          },
+          {
+            "id": "35",
+            "vertices": [
+              {
+                "x": 1310,
+                "y": 1640
+              }
+            ]
+          },
+          {
+            "id": "36"
+          },
+          {
+            "id": "37",
+            "vertices": [
+              {
+                "x": 320,
+                "y": 1645
+              }
+            ]
+          },
+          {
+            "id": "38",
+            "vertices": [
+              {
+                "x": 2870,
+                "y": 1645
+              }
+            ]
+          },
+          {
+            "id": "39",
+            "vertices": [
+              {
+                "x": 1890,
+                "y": 1645
+              }
+            ]
+          },
+          {
+            "id": "40"
+          }
+        ]
+      }
+    ],
+    "configuration": {
+      "branding": {},
+      "lastSavedView": "Components",
+      "styles": {
+        "elements": [
+          {
+            "background": "#34abeb",
+            "color": "#ffffff",
+            "tag": "Item"
+          }
+        ]
       },
-      "elements" : [ {
-        "id" : "3",
-        "x" : 615,
-        "y" : 70
-      }, {
-        "id" : "4",
-        "x" : 200,
-        "y" : 420
-      }, {
-        "id" : "5",
-        "x" : 1025,
-        "y" : 415
-      }, {
-        "id" : "6",
-        "x" : 2170,
-        "y" : 85
-      }, {
-        "id" : "7",
-        "x" : 2585,
-        "y" : 430
-      }, {
-        "id" : "8",
-        "x" : 1765,
-        "y" : 435
-      }, {
-        "id" : "9",
-        "x" : 590,
-        "y" : 755
-      }, {
-        "id" : "10",
-        "x" : 1090,
-        "y" : 1145
-      }, {
-        "id" : "11",
-        "x" : 595,
-        "y" : 1145
-      }, {
-        "id" : "12",
-        "x" : 100,
-        "y" : 1145
-      }, {
-        "id" : "13",
-        "x" : 2160,
-        "y" : 770
-      }, {
-        "id" : "14",
-        "x" : 2160,
-        "y" : 1145
-      }, {
-        "id" : "15",
-        "x" : 1665,
-        "y" : 1145
-      }, {
-        "id" : "16",
-        "x" : 2650,
-        "y" : 1155
-      }, {
-        "id" : "17",
-        "x" : 590,
-        "y" : 1500
-      }, {
-        "id" : "18",
-        "x" : 1085,
-        "y" : 1860
-      }, {
-        "id" : "19",
-        "x" : 585,
-        "y" : 1860
-      }, {
-        "id" : "20",
-        "x" : 90,
-        "y" : 1860
-      }, {
-        "id" : "21",
-        "x" : 2160,
-        "y" : 1495
-      }, {
-        "id" : "22",
-        "x" : 2645,
-        "y" : 1860
-      }, {
-        "id" : "23",
-        "x" : 1665,
-        "y" : 1860
-      }, {
-        "id" : "24",
-        "x" : 2155,
-        "y" : 1860
-      } ],
-      "externalContainerBoundariesVisible" : false,
-      "key" : "Components",
-      "order" : 1,
-      "relationships" : [ {
-        "id" : "25",
-        "vertices" : [ {
-          "x" : 430,
-          "y" : 225
-        } ]
-      }, {
-        "id" : "26",
-        "vertices" : [ {
-          "x" : 1250,
-          "y" : 220
-        } ]
-      }, {
-        "id" : "27",
-        "vertices" : [ {
-          "x" : 1985,
-          "y" : 235
-        } ]
-      }, {
-        "id" : "28",
-        "vertices" : [ {
-          "x" : 2810,
-          "y" : 235
-        } ]
-      }, {
-        "id" : "29",
-        "vertices" : [ {
-          "x" : 1310,
-          "y" : 905
-        } ]
-      }, {
-        "id" : "30",
-        "vertices" : [ {
-          "x" : 325,
-          "y" : 905
-        } ]
-      }, {
-        "id" : "31"
-      }, {
-        "id" : "32"
-      }, {
-        "id" : "33",
-        "vertices" : [ {
-          "x" : 1890,
-          "y" : 920
-        } ]
-      }, {
-        "id" : "34",
-        "vertices" : [ {
-          "x" : 2875,
-          "y" : 920
-        } ]
-      }, {
-        "id" : "35",
-        "vertices" : [ {
-          "x" : 1310,
-          "y" : 1640
-        } ]
-      }, {
-        "id" : "36"
-      }, {
-        "id" : "37",
-        "vertices" : [ {
-          "x" : 320,
-          "y" : 1645
-        } ]
-      }, {
-        "id" : "38",
-        "vertices" : [ {
-          "x" : 2870,
-          "y" : 1645
-        } ]
-      }, {
-        "id" : "39",
-        "vertices" : [ {
-          "x" : 1890,
-          "y" : 1645
-        } ]
-      }, {
-        "id" : "40"
-      } ]
-    } ],
-    "configuration" : {
-      "branding" : { },
-      "lastSavedView" : "Components",
-      "styles" : {
-        "elements" : [ {
-          "background" : "#34abeb",
-          "color" : "#ffffff",
-          "tag" : "Item"
-        } ]
-      },
-      "terminology" : { }
+      "terminology": {}
     }
   }
 }
