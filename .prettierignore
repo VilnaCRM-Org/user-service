@@ -5,3 +5,4 @@ coverage
 .lighthouseci
 out
 storybook-static
+.github
