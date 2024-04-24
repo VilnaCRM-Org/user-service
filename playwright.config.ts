@@ -10,7 +10,7 @@ export default defineConfig({
   use: {
     trace: 'on-first-retry',
     ignoreHTTPSErrors: true,
-    baseURL: process.env.NEXT_PUBLIC_WEBSITE_URL || 'http://localhost:3000',
+    baseURL: process.env.NEXT_PUBLIC_WEBSITE_URL,
   },
   projects: [
     {
