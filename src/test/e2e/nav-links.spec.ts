@@ -1,10 +1,10 @@
 import { test, expect, Page } from '@playwright/test';
 
 const links: Record<string, string> = {
-  advantages: 'http://localhost:3000/#Advantages',
-  forWho: 'http://localhost:3000/#forWhoSection',
-  integration: 'http://localhost:3000/#Integration',
-  contacts: 'http://localhost:3000/#Contacts',
+  advantages: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/#Advantages`,
+  forWho: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/#forWhoSection`,
+  integration: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/#Integration`,
+  contacts: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/#Contacts`,
 };
 
 const drawerTestId: string = 'drawer';
