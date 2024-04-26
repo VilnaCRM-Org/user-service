@@ -23,12 +23,6 @@ jobs:
       - name: Setup test db
         run: make setup-test-db
 
-      - name: Prepare cache
-        run: docker compose exec php mkdir var
-
-      - name: Fix permissions
-        run: make fix-perms
-
       - name: Generate openapi spec
         run: php bin/console --env=test api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml
 
