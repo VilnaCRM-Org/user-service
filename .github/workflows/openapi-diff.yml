@@ -24,7 +24,7 @@ jobs:
         run: make setup-test-db
 
       - name: Prepare cache
-        run: make cache-warmup
+        run: docker compose exec php mkdir var
 
       - name: Fix permissions
         run: make fix-perms
