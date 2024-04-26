@@ -23,6 +23,9 @@ jobs:
       - name: Setup test db
         run: make setup-test-db
 
+      - name: Add var directory
+        run: mkdir var
+
       - name: Fix permissions
         run: make fix-perms
 
