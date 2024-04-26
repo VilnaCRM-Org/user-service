@@ -23,6 +23,9 @@ jobs:
       - name: Setup test db
         run: make setup-test-db
 
+      - name: Fix permissions
+        run: make fix-perms
+
       - name: Generate GraphQL spec
         run: php bin/console --env=test api:graphql:export --output=.github/graphql-spec/spec
 
