@@ -51,7 +51,7 @@ services:
 
     App\User\Domain\Factory\ConfirmationTokenFactory:
         arguments:
-            $tokenLength: 10
+            $tokenLength: '%env(int:CONFIRMATION_TOKEN_LENGTH)%'
 
     # Event listener for OAuth2 password grant
     App\User\Application\EventListener\UserResolveListener:
