@@ -1,13 +1,16 @@
 module.exports = {
   ci: {
     collect: {
+      url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}`,
+      psiStrategy: 'desktop',
       settings: {
         preset: 'desktop',
-        staticDistDir: 'out',
+        chromeFlags: '--no-sandbox',
       },
     },
     upload: {
-      target: 'temporary-public-storage',
+      target: 'filesystem',
+      outputDir: 'lhci-reports-desktop',
     },
     assert: {
       assertions: {

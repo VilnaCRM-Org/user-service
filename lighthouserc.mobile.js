@@ -1,7 +1,15 @@
 module.exports = {
   ci: {
+    collect: {
+      url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}`,
+      psiStrategy: 'mobile',
+      settings: {
+        chromeFlags: '--no-sandbox',
+      },
+    },
     upload: {
-      target: 'temporary-public-storage',
+      target: 'filesystem',
+      outputDir: 'lhci-reports-mobile',
     },
     assert: {
       assertions: {
