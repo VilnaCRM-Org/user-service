@@ -31,8 +31,22 @@ interface ErrorData {
 }
 
 function AuthForm(): React.ReactElement {
-  const [signupMutation, { loading }] = useMutation(SIGNUP_MUTATION);
   const [serverError, setServerError] = React.useState('');
+  const [signupMutation, { loading }] = useMutation(SIGNUP_MUTATION);
+  const { t } = useTranslation();
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<RegisterItem>({
+    defaultValues: {
+      FullName: '',
+      Email: '',
+      Password: '',
+      Privacy: false,
+    },
+    mode: 'onTouched',
+  });
 
   const onSubmit: (data: RegisterItem) => Promise<void> = async (
     data: RegisterItem
@@ -53,21 +67,6 @@ function AuthForm(): React.ReactElement {
       setServerError((errorData as ErrorData)?.message);
     }
   };
-
-  const { t } = useTranslation();
-  const {
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<RegisterItem>({
-    defaultValues: {
-      FullName: '',
-      Email: '',
-      Password: '',
-      Privacy: false,
-    },
-    mode: 'onTouched',
-  });
 
   const handleFormSubmit: (data: RegisterItem) => void = (
     data: RegisterItem
