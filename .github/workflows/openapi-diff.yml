@@ -24,7 +24,7 @@ jobs:
         run: make setup-test-db
 
       - name: Generate openapi spec
-        run: php bin/console --env=test api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml
+        run: php bin/console api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v9

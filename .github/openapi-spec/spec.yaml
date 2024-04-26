@@ -350,6 +350,23 @@ paths:
       tags:
         - User
       responses:
+        201:
+          description: 'User created'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  confirmed: { type: boolean }
+                  email: { type: string }
+                  initials: { type: string }
+                  id: { type: string }
+              example:
+                confirmed: false
+                email: user@example.com
+                initials: 'Name Surname'
+                id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
+          headers: {  }
         400:
           description: 'Bad request'
           content:
@@ -367,25 +384,8 @@ paths:
                 detail: 'The input data is misformatted.'
                 status: 400
           headers: {  }
-        409:
-          description: 'Duplicate email'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
-              example:
-                type: 'https://tools.ietf.org/html/rfc2616#section-10'
-                title: 'An error occurred'
-                detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
-                status: 409
-          headers: {  }
         422:
-          description: 'Internal server error'
+          description: 'Validation error'
           content:
             application/json:
               schema:
@@ -562,6 +562,23 @@ paths:
       tags:
         - User
       responses:
+        200:
+          description: 'User updated'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  confirmed: { type: boolean }
+                  email: { type: string }
+                  initials: { type: string }
+                  id: { type: string }
+              example:
+                confirmed: false
+                email: user@example.com
+                initials: 'Name Surname'
+                id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
+          headers: {  }
         400:
           description: 'Bad request'
           content:
@@ -596,25 +613,8 @@ paths:
                 detail: 'User not found'
                 status: 404
           headers: {  }
-        409:
-          description: 'Duplicate email'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
-              example:
-                type: 'https://tools.ietf.org/html/rfc2616#section-10'
-                title: 'An error occurred'
-                detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
-                status: 409
-          headers: {  }
         422:
-          description: 'Internal server error'
+          description: 'Validation error'
           content:
             application/json:
               schema:
@@ -749,6 +749,23 @@ paths:
       tags:
         - User
       responses:
+        200:
+          description: 'User updated'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  confirmed: { type: boolean }
+                  email: { type: string }
+                  initials: { type: string }
+                  id: { type: string }
+              example:
+                confirmed: false
+                email: user@example.com
+                initials: 'Name Surname'
+                id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
+          headers: {  }
         400:
           description: 'Bad request'
           content:
@@ -783,25 +800,8 @@ paths:
                 detail: 'User not found'
                 status: 404
           headers: {  }
-        409:
-          description: 'Duplicate email'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
-              example:
-                type: 'https://tools.ietf.org/html/rfc2616#section-10'
-                title: 'An error occurred'
-                detail: 'user@example.com address is already registered. Please use a different email address or try logging in.'
-                status: 409
-          headers: {  }
         422:
-          description: 'Internal server error'
+          description: 'Validation error'
           content:
             application/json:
               schema:
@@ -974,7 +974,9 @@ components:
         - token
       properties:
         token:
-          type: string
+          type:
+            - string
+            - 'null'
     User.RetryDto:
       type: object
       description: ''
@@ -993,16 +995,22 @@ components:
           maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
-          type: string
+          type:
+            - string
+            - 'null'
         initials:
           maxLength: 255
-          type: string
+          type:
+            - string
+            - 'null'
         oldPassword:
-          maxLength: 255
-          type: string
+          type:
+            - string
+            - 'null'
         newPassword:
-          maxLength: 255
-          type: string
+          type:
+            - string
+            - 'null'
       required:
         - oldPassword
     User.UserPutDto:
@@ -1020,16 +1028,22 @@ components:
           maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
-          type: string
+          type:
+            - string
+            - 'null'
         initials:
           maxLength: 255
-          type: string
+          type:
+            - string
+            - 'null'
         oldPassword:
-          maxLength: 255
-          type: string
+          type:
+            - string
+            - 'null'
         newPassword:
-          maxLength: 255
-          type: string
+          type:
+            - string
+            - 'null'
     User.UserPutDto.jsonld:
       type: object
       description: ''
@@ -1045,16 +1059,22 @@ components:
           maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
-          type: string
+          type:
+            - string
+            - 'null'
         initials:
           maxLength: 255
-          type: string
+          type:
+            - string
+            - 'null'
         oldPassword:
-          maxLength: 255
-          type: string
+          type:
+            - string
+            - 'null'
         newPassword:
-          maxLength: 255
-          type: string
+          type:
+            - string
+            - 'null'
     User.UserRegisterDto:
       type: object
       description: ''
@@ -1069,13 +1089,18 @@ components:
           maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
-          type: string
+          type:
+            - string
+            - 'null'
         initials:
           maxLength: 255
-          type: string
+          type:
+            - string
+            - 'null'
         password:
-          maxLength: 255
-          type: string
+          type:
+            - string
+            - 'null'
     User.UserRegisterDto.jsonld:
       type: object
       description: ''
@@ -1090,13 +1115,18 @@ components:
           maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
-          type: string
+          type:
+            - string
+            - 'null'
         initials:
           maxLength: 255
-          type: string
+          type:
+            - string
+            - 'null'
         password:
-          maxLength: 255
-          type: string
+          type:
+            - string
+            - 'null'
     User.jsonld-output:
       type: object
       description: ''
@@ -1170,6 +1200,18 @@ components:
   examples: {  }
   requestBodies: {  }
   headers: {  }
-  securitySchemes: {  }
-security: []
+  securitySchemes:
+    oauth:
+      type: oauth2
+      description: 'OAuth 2.0 application Grant'
+      flows:
+        clientCredentials:
+          authorizationUrl: /api/oauth/authorize
+          tokenUrl: /api/oauth/token
+          scopes:
+            email: 'This scope value requests access to the email'
+            profile: 'This scope value requests access to the user profile'
+security:
+  -
+    oauth: []
 tags: []

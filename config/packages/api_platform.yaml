@@ -16,7 +16,7 @@ api_platform:
 
     oauth:
         # To enable or disable OAuth.
-        enabled: false
+        enabled: true
 
         # The OAuth client ID.
         clientId: ''

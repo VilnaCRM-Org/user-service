@@ -10,10 +10,7 @@ security:
 
   firewalls:
     main:
-      stateless: true
-      pattern: ^/api/
-      http_basic:
-        realm: Secured Area
+      security: false
 
       # activate different ways to authenticate
       # https://symfony.com/doc/current/security.html#firewalls-authentication
