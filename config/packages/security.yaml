@@ -21,3 +21,4 @@ security:
   password_hashers:
     App\User\Domain\Entity\User:
       algorithm: auto
+      cost: 4

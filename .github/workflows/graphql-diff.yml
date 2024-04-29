@@ -35,9 +35,7 @@ jobs:
           add: '.github/graphql-spec/spec'
           message: 'feat(#${{ toJSON(github.event.number) }}): generate graphql spec'
 
-      - name: Checkout
-        uses: actions/checkout@master
-
-      - uses: kamilkisiela/graphql-inspector@master
+      - name: GraphQL Inspector
+        uses: kamilkisiela/graphql-inspector@release-1701263349990
         with:
           schema: 'master:.github/graphql-spec/spec'
