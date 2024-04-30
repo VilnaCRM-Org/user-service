@@ -7,7 +7,7 @@ export default {
     backgroundImage: `url(${VectorIcon.src})`,
     backgroundSize: 'contain',
     backgroundRepeat: 'no-repeat',
-    width: '100dvw',
+    width: '100%',
     height: '100%',
     zIndex: '-1',
     position: 'absolute',
