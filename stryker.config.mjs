@@ -6,9 +6,8 @@ const config = {
   coverageAnalysis: 'perTest',
   plugins: ['@stryker-mutator/jest-runner'],
   tsconfigFile: 'tsconfig.json',
-  mutator: 'typescript',
-  transpilers: ['typescript'],
   mutate: ['./src/features/landing/components/**/*.tsx'],
+  tempDirName: 'stryker-tmp',
   jest: {
     config: {
       testScript: 'test:unit',
