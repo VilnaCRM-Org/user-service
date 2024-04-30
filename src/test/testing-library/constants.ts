@@ -17,6 +17,31 @@ export const mockEmail: string = 'info@vilnacrm.com';
 
 export const typeOfCard: string = 'smallCard';
 
+export const cardItem: CardItem = {
+  id: testId,
+  title: testTitle,
+  text: testText,
+  type: typeOfCard,
+  alt: testText,
+  imageSrc: testImg,
+};
+export const smallCard: CardItem = {
+  id: testId,
+  title: testTitle,
+  text: testText,
+  type: 'smallCard',
+  alt: testText,
+  imageSrc: testImg,
+};
+export const largeCard: CardItem = {
+  id: testId,
+  title: testTitle,
+  text: testText,
+  type: 'largeCard',
+  alt: testText,
+  imageSrc: testImg,
+};
+
 export const cardList: CardItem[] = [
   {
     id: testId,

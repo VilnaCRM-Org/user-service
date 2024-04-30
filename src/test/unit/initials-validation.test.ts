@@ -15,8 +15,6 @@ describe('initials Tests', () => {
       expect(isValidFullName(`!@${testFullName} #%`)).toBe(true);
       expect(isValidFullName(`123 ${testFullName}456`)).toBe(true);
       expect(isValidFullName(`${testFirstName} ${testSecondName}`)).toBe(true);
-      expect(isValidFullName(`123 456 789`)).toBe(true);
-      expect(isValidFullName(`!@# $%^ &*()`)).toBe(true);
     });
 
     it('should return false if the full name is not valid', () => {

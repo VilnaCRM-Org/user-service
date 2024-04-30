@@ -10,16 +10,20 @@ import { UiCardItemProps } from './types';
 
 function UiCardItem({ item }: UiCardItemProps): React.ReactElement {
   const { t } = useTranslation();
+
   const isSmallCard: boolean = item.type === 'smallCard';
 
   return (
-    <Stack sx={isSmallCard ? styles.smallWrapper : styles.largeWrapper}>
+    <Stack
+      sx={isSmallCard ? styles.smallWrapper : styles.largeWrapper}
+      data-testid="cardWrapper"
+    >
       <UiImage
         src={item.imageSrc}
         alt={t(item.alt)}
         sx={isSmallCard ? styles.smallImage : styles.largeImage}
       />
-      <Stack flexDirection="column">
+      <Stack flexDirection="column" data-testid="cardContent">
         <CardContent item={item} isSmallCard={isSmallCard} />
       </Stack>
     </Stack>
