@@ -37,6 +37,9 @@ INFECTION 	  = ./vendor/bin/infection
 # Variables
 ARTILLERY_FILES := $(notdir $(shell find ${PWD}/tests/Load -type f -name '*.yml'))
 
+#Input
+CLIENT_NAME ?= default_value
+
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
 	@grep -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-15s\033[0m %s\n", $$1, $$2}'
@@ -136,6 +139,9 @@ ci-infection:
 
 phpunit-codecov: ## Get code coverage report
 	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php sh -c 'php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-html coverage'
+
+create-oauth-client: ## Run mutation testing
+	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(CLIENT_NAME)'
 
 phpmetrics: ## Get mathematical metrics
 	$(EXEC_PHP) ./vendor/bin/phpmetrics --report-html=metrics-report src
