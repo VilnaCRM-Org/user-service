@@ -6,11 +6,15 @@ namespace App\Shared\Application\OpenApi\Factory\Endpoint;
 
 use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\PathItem;
+use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
+use App\Shared\Application\OpenApi\Factory\Request\ReplaceUserRequestFactory;
+use App\Shared\Application\OpenApi\Factory\Request\UpdateUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserDeletedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserNotFoundResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UserReturnedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserUpdatedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
@@ -26,6 +30,11 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
     private Response $validationErrorResponse;
     private Response $userDeletedResponse;
     private Response $userUpdatedResponse;
+    private Response $userReturnedResponse;
+
+    private RequestBody $replaceUserRequest;
+
+    private RequestBody $updateUserRequest;
 
     public function __construct(
         private ValidationErrorFactory $validationErrorResponseFactory,
@@ -33,7 +42,10 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
         private UserNotFoundResponseFactory $userNotFoundResponseFactory,
         private UserDeletedResponseFactory $deletedResponseFactory,
         private UuidUriParameterFactory $parameterFactory,
-        private UserUpdatedResponseFactory $userReturnedResponseFactory,
+        private UserUpdatedResponseFactory $userUpdatedResponseFactory,
+        private UserReturnedResponseFactory $userReturnedResponseFactory,
+        private ReplaceUserRequestFactory $replaceUserRequestFactory,
+        private UpdateUserRequestFactory $updateUserRequestFactory
     ) {
         $this->uuidWithExamplePathParam =
             $this->parameterFactory->getParameter();
@@ -51,7 +63,16 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
             $this->deletedResponseFactory->getResponse();
 
         $this->userUpdatedResponse =
+            $this->userUpdatedResponseFactory->getResponse();
+
+        $this->userReturnedResponse =
             $this->userReturnedResponseFactory->getResponse();
+
+        $this->replaceUserRequest =
+            $this->replaceUserRequestFactory->getRequest();
+
+        $this->updateUserRequest =
+            $this->updateUserRequestFactory->getRequest();
     }
 
     public function createEndpoint(OpenApi $openApi): void
@@ -71,6 +92,7 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
                 $operationPut
                     ->withParameters([$this->uuidWithExamplePathParam])
                     ->withResponses($this->getUpdateResponses())
+                    ->withRequestBody($this->replaceUserRequest)
             ));
     }
 
@@ -85,6 +107,7 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
                     $operationPatch
                         ->withParameters([$this->uuidWithExamplePathParam])
                         ->withResponses($this->getUpdateResponses())
+                        ->withRequestBody($this->updateUserRequest)
                 )
         );
     }
@@ -133,11 +156,21 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
         $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem
             ->withGet(
                 $operationGet->withParameters([$this->uuidWithExamplePathParam])
-                    ->withResponse(
-                        HttpResponse::HTTP_NOT_FOUND,
-                        $this->userNotFoundResponse
+                    ->withResponses(
+                        $this->getGetResponses()
                     )
             ));
+    }
+
+    /**
+     * @return array<int,Response>
+     */
+    private function getGetResponses(): array
+    {
+        return [
+            HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
+            HttpResponse::HTTP_OK => $this->userReturnedResponse,
+        ];
     }
 
     private function getPathItem(OpenApi $openApi): PathItem

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\OpenApi\Factory\Endpoint;
 
+use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
+use App\Shared\Application\OpenApi\Factory\Request\CreateUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserCreatedResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UsersReturnedFactory;
 use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
@@ -18,11 +21,15 @@ final class UserEndpointFactory implements AbstractEndpointFactory
     private Response $validationErrorResponse;
     private Response $badRequestResponse;
     private Response $userCreatedResponse;
+    private RequestBody $createUserRequest;
+    private Response $usersReturnedResponse;
 
     public function __construct(
         private ValidationErrorFactory $validationErrorResponseFactory,
         private BadRequestResponseFactory $badRequestResponseFactory,
-        private UserCreatedResponseFactory $userCreatedResponseFactory
+        private UserCreatedResponseFactory $userCreatedResponseFactory,
+        private CreateUserRequestFactory $createUserRequestFactory,
+        private UsersReturnedFactory $usersReturnedResponseFactory
     ) {
         $this->validationErrorResponse =
             $this->validationErrorResponseFactory->getResponse();
@@ -30,6 +37,10 @@ final class UserEndpointFactory implements AbstractEndpointFactory
             $this->badRequestResponseFactory->getResponse();
         $this->userCreatedResponse =
             $this->userCreatedResponseFactory->getResponse();
+        $this->createUserRequest =
+            $this->createUserRequestFactory->getRequest();
+        $this->usersReturnedResponse =
+            $this->usersReturnedResponseFactory->getResponse();
     }
 
     public function createEndpoint(OpenApi $openApi): void
@@ -42,10 +53,10 @@ final class UserEndpointFactory implements AbstractEndpointFactory
             ->withPost(
                 $operationPost
                     ->withResponses($this->getPostResponses())
+                    ->withRequestBody($this->createUserRequest)
             )
-            ->withGet($operationGet->withResponse(
-                HttpResponse::HTTP_BAD_REQUEST,
-                $this->badRequestResponse
+            ->withGet($operationGet->withResponses(
+                $this->getGetResponses()
             )));
     }
 
@@ -59,6 +70,17 @@ final class UserEndpointFactory implements AbstractEndpointFactory
             HttpResponse::HTTP_CREATED => $this->userCreatedResponse,
             HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
             HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $valResponse,
+        ];
+    }
+
+    /**
+     * @return array<int,Response>
+     */
+    private function getGetResponses(): array
+    {
+        return [
+            HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
+            HttpResponse::HTTP_OK => $this->usersReturnedResponse,
         ];
     }
 }

@@ -1,4 +1,8 @@
 api_platform:
+    title: 'User Service API'
+    description: 'This API provides endpoints to manage user data within a VilnaCRM.'
+    version: '1.0.0'
+
     defaults:
         extra_properties:
             rfc_7807_compliant_errors: true

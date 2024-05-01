@@ -100,7 +100,7 @@
         "post-update-cmd": [
             "@auto-scripts"
         ],
-        "post-autoload-dump": "@./vendor/bin/captainhook install -f -s"
+        "post-autoload-dump": "@./vendor/bin/captainhook install -f -s -n"
     },
     "conflict": {
         "symfony/symfony": "*"

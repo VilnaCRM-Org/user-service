@@ -13,6 +13,8 @@ App\User\Application\DTO\UserRegisterDto:
       - App\Shared\Application\Validator\Initials: ~
     password:
       - NotBlank: { message: 'not.blank' }
+      - Length:
+          max: 255
       - App\Shared\Application\Validator\Password: ~
 
 App\User\Application\DTO\UserPatchDto:
@@ -29,8 +31,12 @@ App\User\Application\DTO\UserPatchDto:
           optional: true
     oldPassword:
       - NotBlank: { message: 'not.blank' }
+      - Length:
+          max: 255
       - App\Shared\Application\Validator\Password: ~
     newPassword:
+      - Length:
+          max: 255
       - App\Shared\Application\Validator\Password:
           optional: true
 
@@ -48,9 +54,13 @@ App\User\Application\DTO\UserPutDto:
           max: 255
       - App\Shared\Application\Validator\Initials: ~
     oldPassword:
+      - Length:
+          max: 255
       - NotBlank: { message: 'not.blank' }
       - App\Shared\Application\Validator\Password: ~
     newPassword:
+      - Length:
+          max: 255
       - NotBlank: { message: 'not.blank' }
       - App\Shared\Application\Validator\Password: ~
 
@@ -79,6 +89,8 @@ App\User\Application\MutationInput\CreateUserMutationInput:
           max: 255
       - App\Shared\Application\Validator\Initials: ~
     password:
+      - Length:
+          max: 255
       - NotBlank: { message: 'not.blank' }
       - App\Shared\Application\Validator\Password: ~
 
@@ -95,8 +107,12 @@ App\User\Application\MutationInput\UpdateUserMutationInput:
       - App\Shared\Application\Validator\Initials:
           optional: true
     password:
+      - Length:
+          max: 255
       - NotBlank: { message: 'not.blank' }
       - App\Shared\Application\Validator\Password: ~
     newPassword:
+      - Length:
+          max: 255
       - App\Shared\Application\Validator\Password:
           optional: true

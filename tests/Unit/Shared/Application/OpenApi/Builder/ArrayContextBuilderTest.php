@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\OpenApi\Builder;
 
-use App\Shared\Application\OpenApi\Builder\ContextBuilder;
+use App\Shared\Application\OpenApi\Builder\ArrayContextBuilder;
 use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Tests\Unit\UnitTestCase;
 use ArrayObject;
 
-final class ContextBuilderTest extends UnitTestCase
+final class ArrayContextBuilderTest extends UnitTestCase
 {
-    private ContextBuilder $contextBuilder;
+    private ArrayContextBuilder $contextBuilder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->contextBuilder = new ContextBuilder();
+        $this->contextBuilder = new ArrayContextBuilder();
     }
 
     public function testBuildWithEmptyParams(): void
@@ -27,7 +27,7 @@ final class ContextBuilderTest extends UnitTestCase
         $this->assertEquals(
             new ArrayObject([
                 'application/json' => [
-                    'example' => '',
+                    'example' => [''],
                 ],
             ]),
             $content
@@ -43,8 +43,10 @@ final class ContextBuilderTest extends UnitTestCase
         $expectedSchema = $this->buildWithSimpleParamsGetExpectedSchema();
 
         $expectedExample = [
-            'name' => $params[0]->example,
-            'age' => $params[1]->example,
+            [
+                'name' => $params[0]->example,
+                'age' => $params[1]->example,
+            ],
         ];
 
         $this->assertEquals(
@@ -66,7 +68,9 @@ final class ContextBuilderTest extends UnitTestCase
 
         $expectedSchema = $this->buildWithNestedArraysGetExpectedSchema();
 
-        $expectedExample = ['address' => $address];
+        $expectedExample = [
+            ['address' => $address],
+        ];
 
         $this->assertEquals(
             $this->getExpectedResult($expectedSchema, $expectedExample),
@@ -80,17 +84,19 @@ final class ContextBuilderTest extends UnitTestCase
     private function buildWithSimpleParamsGetExpectedSchema(): array
     {
         return [
-            'type' => 'object',
-            'properties' => [
-                'name' => [
-                    'type' => 'string',
-                    'maxLength' => null,
-                    'format' => null,
-                ],
-                'age' => [
-                    'type' => 'integer',
-                    'maxLength' => null,
-                    'format' => null,
+            'type' => 'array',
+            'items' => [
+                'properties' => [
+                    'name' => [
+                        'type' => 'string',
+                        'maxLength' => null,
+                        'format' => null,
+                    ],
+                    'age' => [
+                        'type' => 'integer',
+                        'maxLength' => null,
+                        'format' => null,
+                    ],
                 ],
             ],
             'required' => ['name', 'age'],
@@ -103,12 +109,14 @@ final class ContextBuilderTest extends UnitTestCase
     private function buildWithNestedArraysGetExpectedSchema(): array
     {
         return [
-            'type' => 'object',
-            'properties' => [
-                'address' => [
-                    'type' => 'object',
-                    'maxLength' => null,
-                    'format' => null,
+            'type' => 'array',
+            'items' => [
+                'properties' => [
+                    'address' => [
+                        'type' => 'object',
+                        'maxLength' => null,
+                        'format' => null,
+                    ],
                 ],
             ],
             'required' => ['address'],

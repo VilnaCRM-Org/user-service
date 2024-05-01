@@ -32,6 +32,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     public function __invoke(array $context = []): OpenApi
     {
         $openApi = $this->decorated->__invoke($context);
+        $openApi = $openApi->withComponents(new Model\Components());
 
         foreach ($this->endpointFactories as $endpointFactory) {
             $endpointFactory->createEndpoint($openApi);

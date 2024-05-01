@@ -15,12 +15,13 @@ final class RequestBuilder
     /**
      * @param array<Parameter> $params
      */
-    public function build(array $params): RequestBody
+    public function build(array $params, bool $required = true): RequestBody
     {
         $content = $this->contextBuilder->build($params);
 
         return new RequestBody(
-            content: $content
+            content: $content,
+            required: $required
         );
     }
 }

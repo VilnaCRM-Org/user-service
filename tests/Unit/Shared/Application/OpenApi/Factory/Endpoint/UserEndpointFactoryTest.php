@@ -10,8 +10,10 @@ use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Endpoint\UserEndpointFactory;
+use App\Shared\Application\OpenApi\Factory\Request\CreateUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserCreatedResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UsersReturnedFactory;
 use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use App\Tests\Unit\UnitTestCase;
 
@@ -28,6 +30,9 @@ final class UserEndpointFactoryTest extends UnitTestCase
     private PathItem $pathItem;
     private Operation $operationPost;
     private Operation $operationGet;
+
+    private CreateUserRequestFactory $createUserRequestFactory;
+    private UsersReturnedFactory $usersReturnedResponseFactory;
 
     protected function setUp(): void
     {
@@ -47,6 +52,10 @@ final class UserEndpointFactoryTest extends UnitTestCase
         $this->pathItem = $this->createMock(PathItem::class);
         $this->operationPost = $this->createMock(Operation::class);
         $this->operationGet = $this->createMock(Operation::class);
+        $this->createUserRequestFactory =
+            $this->createMock(CreateUserRequestFactory::class);
+        $this->usersReturnedResponseFactory =
+            $this->createMock(UsersReturnedFactory::class);
     }
 
     public function testCreateEndpoint(): void
@@ -56,7 +65,9 @@ final class UserEndpointFactoryTest extends UnitTestCase
         $factory = new UserEndpointFactory(
             $this->validationErrorResponseFactory,
             $this->badRequestResponseFactory,
-            $this->userCreatedResponseFactory
+            $this->userCreatedResponseFactory,
+            $this->createUserRequestFactory,
+            $this->usersReturnedResponseFactory
         );
 
         $factory->createEndpoint($this->openApi);

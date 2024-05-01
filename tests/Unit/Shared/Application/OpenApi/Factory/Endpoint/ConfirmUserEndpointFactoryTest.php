@@ -10,6 +10,7 @@ use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Endpoint\ConfirmUserEndpointFactory;
+use App\Shared\Application\OpenApi\Factory\Request\ConfirmUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Response\TokenNotFoundFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserConfirmedFactory;
 use App\Tests\Unit\UnitTestCase;
@@ -23,6 +24,7 @@ final class ConfirmUserEndpointFactoryTest extends UnitTestCase
     private Operation $patchOperation;
     private TokenNotFoundFactory $tokenNotFoundResponseFactory;
     private UserConfirmedFactory $userConfirmedResponseFactory;
+    private ConfirmUserRequestFactory $confirmUserRequestFactory;
     private OpenApi $openApi;
     private Paths $paths;
 
@@ -43,6 +45,8 @@ final class ConfirmUserEndpointFactoryTest extends UnitTestCase
             $this->createMock(UserConfirmedFactory::class);
         $this->openApi = $this->createMock(OpenApi::class);
         $this->paths = $this->createMock(Paths::class);
+        $this->confirmUserRequestFactory =
+            $this->createMock(ConfirmUserRequestFactory::class);
     }
 
     public function testCreateEndpoint(): void
@@ -51,7 +55,8 @@ final class ConfirmUserEndpointFactoryTest extends UnitTestCase
 
         $factory = new ConfirmUserEndpointFactory(
             $this->tokenNotFoundResponseFactory,
-            $this->userConfirmedResponseFactory
+            $this->userConfirmedResponseFactory,
+            $this->confirmUserRequestFactory
         );
 
         $factory->createEndpoint($this->openApi);
