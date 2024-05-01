@@ -52,6 +52,26 @@ export const cardList: CardItem[] = [
     imageSrc: testImg,
   },
 ];
+export const smallCardList: CardItem[] = [
+  {
+    id: testId,
+    title: testTitle,
+    text: testText,
+    type: 'smallCard',
+    alt: testText,
+    imageSrc: testImg,
+  },
+];
+export const largeCardList: CardItem[] = [
+  {
+    id: testId,
+    title: testTitle,
+    text: testText,
+    type: 'largeCard',
+    alt: testText,
+    imageSrc: testImg,
+  },
+];
 
 export const mockedSocialLinks: SocialMedia[] = [
   {
