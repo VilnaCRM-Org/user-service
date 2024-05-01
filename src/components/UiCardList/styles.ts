@@ -67,4 +67,18 @@ export default {
       minHeight: '19.313rem',
     },
   },
+
+  gridContainerLargeScreen: {
+    display: 'none',
+    [`@media (min-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
+      display: 'block',
+    },
+  },
+
+  swiperContainerSmallScreen: {
+    display: 'none',
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
+      display: 'block',
+    },
+  },
 };

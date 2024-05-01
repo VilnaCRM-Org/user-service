@@ -1,15 +1,20 @@
-import { useMediaQuery } from '@mui/system';
+import { Box } from '@mui/material';
 
 import CardGrid from './CardGrid';
 import CardSwiper from './CardSwiper';
+import styles from './styles';
 import { CardList } from './types';
 
 function UiCardList({ cardList }: CardList): React.ReactElement {
-  const isLarge: boolean = useMediaQuery('(min-width:640px)');
-  return isLarge ? (
-    <CardGrid cardList={cardList} />
-  ) : (
-    <CardSwiper cardList={cardList} />
+  return (
+    <>
+      <Box sx={styles.gridContainerLargeScreen}>
+        <CardGrid cardList={cardList} />
+      </Box>
+      <Box sx={styles.swiperContainerSmallScreen}>
+        <CardSwiper cardList={cardList} />
+      </Box>
+    </>
   );
 }
 

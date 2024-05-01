@@ -33,4 +33,13 @@ describe('UiCheckbox', () => {
     const checkboxInput: HTMLElement = getByRole('checkbox');
     expect(checkboxInput).toBeDisabled();
   });
+
+  it('renders the checkbox with the provided error', () => {
+    const mockOnChange: () => void = jest.fn();
+    const { getByLabelText } = render(
+      <UiCheckbox error onChange={mockOnChange} label={testText} />
+    );
+    const checkboxLabel: HTMLElement = getByLabelText(testText);
+    expect(checkboxLabel).toBeInTheDocument();
+  });
 });
