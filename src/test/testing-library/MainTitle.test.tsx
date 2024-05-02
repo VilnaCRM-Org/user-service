@@ -5,7 +5,7 @@ import MainTitle from '../../features/landing/components/ForWhoSection/MainTitle
 
 const forWhoTitle: string = 'For who';
 const forWhoText: RegExp = /We created Vilna,/;
-const forWhoTestIdButton: string = 'for-who-sign-up';
+const forWhoLabel: string = 'Link to registration';
 
 describe('MainTitle component', () => {
   it('renders main title correctly', () => {
@@ -19,8 +19,8 @@ describe('MainTitle component', () => {
   });
 
   it('renders button correctly', () => {
-    const { getByTestId } = render(<MainTitle />);
-    expect(getByTestId(forWhoTestIdButton)).toBeInTheDocument();
-    expect(getByTestId(forWhoTestIdButton)).toHaveAttribute('href', '#signUp');
+    const { getByLabelText } = render(<MainTitle />);
+    expect(getByLabelText(forWhoLabel)).toBeInTheDocument();
+    expect(getByLabelText(forWhoLabel)).toHaveAttribute('href', '#signUp');
   });
 });

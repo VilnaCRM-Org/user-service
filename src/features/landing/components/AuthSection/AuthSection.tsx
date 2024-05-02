@@ -8,7 +8,7 @@ import styles from './styles';
 
 function AuthSection(): React.ReactElement {
   return (
-    <Box sx={styles.wrapper} component="section" data-testid="auth-section">
+    <Box sx={styles.wrapper} component="section">
       <Container>
         <Stack justifyContent="space-between" sx={styles.content}>
           <SignUpText socialLinks={socialLinks} />

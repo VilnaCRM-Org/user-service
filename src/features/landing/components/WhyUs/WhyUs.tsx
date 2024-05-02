@@ -16,11 +16,7 @@ function WhyUs(): React.ReactElement {
     <Box sx={styles.wrapper} id="Advantages" component="section">
       <Heading />
       <UiCardList cardList={cardList} />
-      <Link
-        href="#signUp"
-        aria-label={t('why_us.aria_label')}
-        data-testid="why-us-sign-up"
-      >
+      <Link href="#signUp" aria-label={t('why_us.aria_label')}>
         <UiButton variant="contained" size="small" sx={styles.button}>
           {t('why_us.button_text')}
         </UiButton>

@@ -3,7 +3,7 @@ import React from 'react';
 
 import AuthSection from '../../features/landing/components/AuthSection/AuthSection';
 
-const authSectionTestId: string = 'auth-section';
+const authSectionSelector: string = 'section';
 const mockAuthText: string = 'mock-sign-up-text';
 const mockAuthForm: string = 'mock-auth-form';
 
@@ -29,8 +29,9 @@ jest.mock('../../features/landing/components/AuthSection/SignUpText', () => ({
 
 describe('AuthSection', () => {
   test('renders without crashing', () => {
-    const { getByTestId } = render(<AuthSection />);
-    const authSection: HTMLElement = getByTestId(authSectionTestId);
+    const { container } = render(<AuthSection />);
+    const authSection: HTMLElement | null =
+      container.querySelector(authSectionSelector);
     expect(authSection).toBeInTheDocument();
   });
 

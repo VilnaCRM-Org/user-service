@@ -16,8 +16,8 @@ function NavList({ navItems, handleClick }: NavListProps): React.ReactElement {
     navItems[0].type === 'header' ? styles.content : styles.drawerContent;
 
   return (
-    <Stack component="nav" sx={wrapperStyle} data-testid="nav-wrapper">
-      <List sx={contentStyle} data-testid="nav-content">
+    <Stack component="nav" sx={wrapperStyle}>
+      <List sx={contentStyle}>
         {navItems.map(item => (
           <NavItem item={item} key={item.id} handleClick={handleClick} />
         ))}

@@ -75,7 +75,7 @@ function AuthForm(): React.ReactElement {
   };
 
   return (
-    <Box sx={styles.formWrapper} data-testid="auth-form">
+    <Box sx={styles.formWrapper}>
       {loading && (
         <Box sx={styles.loader}>
           <CircularProgress color="primary" size={70} />

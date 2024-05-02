@@ -6,10 +6,10 @@ import CardContent from '../../components/UiCardItem/CardContent';
 import { cardItem, largeCard, smallCard } from './constants';
 
 describe('UiCardItem Component', () => {
-  const integrateText: string = 'Integrate';
-  const servicesText: string = 'services';
-
   describe('CardComponent', () => {
+    const integrateText: string = 'Integrate';
+    const servicesText: string = 'services';
+
     it('renders correctly with large card', () => {
       const { getByText } = render(
         <CardContent item={cardItem} isSmallCard={false} />
@@ -36,34 +36,30 @@ describe('UiCardItem Component', () => {
   });
 
   describe('UiCardItem', () => {
-    const cardWrapperTestId: string = 'cardWrapper';
-    const cardContentTestId: string = 'cardContent';
-    const cardImageTestId: string = 'cardImage';
+    const stackElementClass: string = '.MuiStack-root';
 
     it('renders UiCardItem with small card style', () => {
-      const { getByTestId } = render(<UiCardItem item={smallCard} />);
+      const { container } = render(<UiCardItem item={smallCard} />);
 
-      const cardWrapper: HTMLElement = getByTestId(cardWrapperTestId);
-      const cardContent: HTMLElement = getByTestId(cardContentTestId);
+      const element: HTMLElement | null =
+        container.querySelector(stackElementClass);
 
-      expect(cardWrapper).toBeInTheDocument();
-      expect(cardContent).toBeInTheDocument();
+      expect(element).toBeInTheDocument();
     });
 
     it('renders UiCardItem with large card style', () => {
-      const { getByTestId } = render(<UiCardItem item={largeCard} />);
+      const { container } = render(<UiCardItem item={largeCard} />);
 
-      const cardWrapper: HTMLElement = getByTestId(cardWrapperTestId);
-      const cardContent: HTMLElement = getByTestId(cardContentTestId);
+      const element: HTMLElement | null =
+        container.querySelector(stackElementClass);
 
-      expect(cardWrapper).toBeInTheDocument();
-      expect(cardContent).toBeInTheDocument();
+      expect(element).toBeInTheDocument();
     });
 
     it('renders correct UiImage', () => {
-      const { getByTestId } = render(<UiCardItem item={cardItem} />);
+      const { getByRole } = render(<UiCardItem item={cardItem} />);
 
-      const cardImage: HTMLElement = getByTestId(cardImageTestId);
+      const cardImage: HTMLElement = getByRole('img');
 
       expect(cardImage).toBeInTheDocument();
       expect(cardImage).toHaveAttribute('alt', cardItem.alt);

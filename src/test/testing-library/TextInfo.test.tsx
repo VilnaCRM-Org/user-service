@@ -5,11 +5,12 @@ import TextInfo from '../../features/landing/components/AboutUs/TextInfo/TextInf
 const aboutTitle: string = 'The first Ukrainian open source CRM';
 const aboutUsText: RegExp = /Our goal/;
 const aboutUsButtonText: string = 'Try it out';
-const buttonTestId: string = 'about-sign-up';
+const buttonSelector: string = 'a[href="#signUp"]';
 
 describe('code snippet', () => {
   it('should display correct title from translation file', () => {
     const { getByText } = render(<TextInfo />);
+
     expect(getByText(aboutTitle)).toBeInTheDocument();
   });
 
@@ -25,11 +26,13 @@ describe('code snippet', () => {
     const buttonElement: HTMLElement = getByRole('button', {
       name: aboutUsButtonText,
     });
+
     expect(buttonElement).toBeInTheDocument();
   });
 
   it('should display a link to sign up', () => {
-    const { getByTestId } = render(<TextInfo />);
-    expect(getByTestId(buttonTestId)).toBeInTheDocument();
+    const { container } = render(<TextInfo />);
+
+    expect(container.querySelector(buttonSelector)).toBeInTheDocument();
   });
 });

@@ -3,21 +3,30 @@ import React from 'react';
 
 import { UiFooter } from '@/components/UiFooter';
 
-const defaultTestId: string = 'default-footer';
-const mobileTestId: string = 'mobile-component';
+const stackElementClass: string = '.MuiStack-root';
+const containerElementClass: string = '.MuiContainer-root';
 
 describe('UiFooter Component', () => {
   it('renders DefaultFooter component with provided social links', () => {
-    const { getByTestId } = render(<UiFooter />);
+    const { container } = render(<UiFooter />);
 
-    const defaultFooter: HTMLElement = getByTestId(defaultTestId);
-    expect(defaultFooter).toBeInTheDocument();
+    const footerElement: HTMLElement | null = container.querySelector('footer');
+    const defaultFooterWrapper: HTMLElement | null =
+      container.querySelector(stackElementClass);
+
+    expect(footerElement).toBeInTheDocument();
+    expect(defaultFooterWrapper).toBeInTheDocument();
   });
 
   it('renders Mobile component with provided social links', () => {
-    const { getByTestId } = render(<UiFooter />);
+    const { container } = render(<UiFooter />);
 
-    const mobileComponent: HTMLElement = getByTestId(mobileTestId);
-    expect(mobileComponent).toBeInTheDocument();
+    const footerElement: HTMLElement | null = container.querySelector('footer');
+    const mobileWrapper: HTMLElement | null = container.querySelector(
+      containerElementClass
+    );
+
+    expect(footerElement).toBeInTheDocument();
+    expect(mobileWrapper).toBeInTheDocument();
   });
 });

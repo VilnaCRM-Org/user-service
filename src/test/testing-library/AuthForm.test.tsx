@@ -12,7 +12,7 @@ import {
   passwordPlaceholder,
   submitButton,
   mocks,
-  authFormTestId,
+  authFormSelector,
   mockErrors,
 } from '../../features/landing/components/AuthSection/AuthForm/constants';
 
@@ -20,12 +20,14 @@ import { testInitials, testEmail, testPassword } from './constants';
 
 describe('AuthForm', () => {
   it('renders AuthForm component', () => {
-    const { getByTestId } = render(
+    const { container } = render(
       <MockedProvider>
         <AuthForm />
       </MockedProvider>
     );
-    const authForm: HTMLElement = getByTestId(authFormTestId);
+
+    const authForm: HTMLElement | null =
+      container.querySelector(authFormSelector);
     expect(authForm).toBeInTheDocument();
   });
 

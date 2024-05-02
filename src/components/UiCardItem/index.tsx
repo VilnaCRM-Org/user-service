@@ -14,16 +14,13 @@ function UiCardItem({ item }: UiCardItemProps): React.ReactElement {
   const isSmallCard: boolean = item.type === 'smallCard';
 
   return (
-    <Stack
-      sx={isSmallCard ? styles.smallWrapper : styles.largeWrapper}
-      data-testid="cardWrapper"
-    >
+    <Stack sx={isSmallCard ? styles.smallWrapper : styles.largeWrapper}>
       <UiImage
         src={item.imageSrc}
         alt={t(item.alt)}
         sx={isSmallCard ? styles.smallImage : styles.largeImage}
       />
-      <Stack flexDirection="column" data-testid="cardContent">
+      <Stack flexDirection="column">
         <CardContent item={item} isSmallCard={isSmallCard} />
       </Stack>
     </Stack>

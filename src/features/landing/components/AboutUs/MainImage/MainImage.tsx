@@ -11,7 +11,7 @@ function MainImage(): React.ReactElement {
   const { t } = useTranslation();
 
   return (
-    <Box sx={styles.mainImageWrapper} data-testid="main-image">
+    <Box sx={styles.mainImageWrapper}>
       <Image
         src={MainImageSrc}
         alt={t('Main image')}

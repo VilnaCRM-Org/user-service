@@ -2,14 +2,14 @@ import { render } from '@testing-library/react';
 
 import AuthButtons from '../../features/landing/components/Header/AuthButtons/AuthButtons';
 
-const buttonLogInTestId: string = 'header-log-in';
-const buttonSignUpTestId: string = 'header-sign-up';
+const buttonLogInTestId: string = 'Log in';
+const buttonSignUpTestId: string = 'Try it out';
 
 it('should render two buttons with correct text and styles', () => {
-  const { getByTestId } = render(<AuthButtons />);
+  const { getByText } = render(<AuthButtons />);
 
-  const logInButton: HTMLElement = getByTestId(buttonLogInTestId);
-  const signUpButton: HTMLElement = getByTestId(buttonSignUpTestId);
+  const logInButton: HTMLElement = getByText(buttonLogInTestId);
+  const signUpButton: HTMLElement = getByText(buttonSignUpTestId);
 
   expect(logInButton).toBeInTheDocument();
   expect(signUpButton).toBeInTheDocument();

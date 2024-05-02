@@ -6,7 +6,7 @@ export const fullNamePlaceholder: RegExp = /Mykhailo Svitskyi/;
 export const emailPlaceholder: string = 'vilnaCRM@gmail.com';
 export const passwordPlaceholder: string = 'Create a password';
 export const submitButton: string = 'Sign-Up';
-export const authFormTestId: string = 'auth-form';
+export const authFormSelector: string = '.MuiBox-root';
 
 export const fullName: string = faker.person.fullName();
 export const email: string = faker.internet.email();

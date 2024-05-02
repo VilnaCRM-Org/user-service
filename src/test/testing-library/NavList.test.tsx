@@ -11,38 +11,38 @@ import { NavItemProps } from '../../features/landing/types/header/navigation';
 const navItems: NavItemProps[] = [testHeaderItem];
 const drawerNavItems: NavItemProps[] = [testDrawerItem];
 
-const navWrapperTestId: string = 'nav-wrapper';
-const navContentTestId: string = 'nav-content';
+const navWrapperClass: string = '.MuiStack-root';
+const navContentClass: string = '.MuiList-root';
 
 describe('NavList component', () => {
   it('renders NavList component correctly with header wrapper', () => {
     const handleClick: () => void = jest.fn();
-    const { getByTestId } = render(
+    const { container } = render(
       <NavList navItems={navItems} handleClick={handleClick} />
     );
 
-    expect(getByTestId(navWrapperTestId)).toBeInTheDocument();
-    expect(getByTestId(navContentTestId)).toBeInTheDocument();
+    expect(container.querySelector(navWrapperClass)).toBeInTheDocument();
+    expect(container.querySelector(navContentClass)).toBeInTheDocument();
   });
 
   it('renders NavList component correctly with drawer wrapper', () => {
     const handleClick: () => void = jest.fn();
 
-    const { getByTestId } = render(
+    const { container } = render(
       <NavList navItems={drawerNavItems} handleClick={handleClick} />
     );
 
-    expect(getByTestId(navWrapperTestId)).toBeInTheDocument();
-    expect(getByTestId(navContentTestId)).toBeInTheDocument();
+    expect(container.querySelector(navWrapperClass)).toBeInTheDocument();
+    expect(container.querySelector(navContentClass)).toBeInTheDocument();
   });
 
   it('renders NavList component correctly with empty array', () => {
     const handleClick: () => void = jest.fn();
-    const { queryByTestId } = render(
+    const { container } = render(
       <NavList navItems={[]} handleClick={handleClick} />
     );
 
-    expect(queryByTestId(navWrapperTestId)).not.toBeInTheDocument();
-    expect(queryByTestId(navContentTestId)).not.toBeInTheDocument();
+    expect(container.querySelector(navWrapperClass)).not.toBeInTheDocument();
+    expect(container.querySelector(navContentClass)).not.toBeInTheDocument();
   });
 });

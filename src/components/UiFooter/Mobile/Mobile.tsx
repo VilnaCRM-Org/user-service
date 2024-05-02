@@ -26,7 +26,7 @@ function Mobile({
   );
   return (
     <Container sx={styles.wrapper}>
-      <Stack data-testid="mobile-component" sx={styles.content}>
+      <Stack sx={styles.content}>
         <Image src={Logo} alt={t('footer.logo_alt')} width={131} height={44} />
         <SocialMediaList socialLinks={socialLinks} />
       </Stack>

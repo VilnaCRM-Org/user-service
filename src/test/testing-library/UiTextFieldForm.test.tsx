@@ -28,7 +28,9 @@ describe('UiTextFieldForm', () => {
 
   it('renders the UiInput component with the correct props', () => {
     render(<TestWrapper />);
+
     const uiInput: HTMLElement = screen.getByRole('textbox');
+
     expect(uiInput).toHaveAttribute('type', 'text');
     expect(uiInput).toHaveAttribute('placeholder', testPlaceholder);
     expect(uiInput).toHaveValue('');
@@ -37,8 +39,11 @@ describe('UiTextFieldForm', () => {
 
   it('updates the form field value on input change', () => {
     render(<TestWrapper />);
+
     const uiInput: HTMLElement = screen.getByRole('textbox');
+
     fireEvent.change(uiInput, { target: { value: testText } });
+
     expect(uiInput).toHaveValue(testText);
   });
 });
