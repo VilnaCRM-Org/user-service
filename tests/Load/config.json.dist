@@ -26,9 +26,9 @@
                 }
             },
             "stress": {
-                "threshold": 2000,
-                "rps": 300,
-                "vus": 300,
+                "threshold": 500,
+                "rps": 150,
+                "vus": 150,
                 "duration": {
                     "rise": 5,
                     "plateau": 20,

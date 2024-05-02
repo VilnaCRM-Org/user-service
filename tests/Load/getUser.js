@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import counter from 'k6/x/counter';
+import exec from 'k6/x/exec';
 
-import InsertUsersUtils from './utils/insertUsersUtils.js';
 import ScenarioUtils from './utils/scenarioUtils.js';
 import Utils from './utils/utils.js';
 
@@ -9,11 +9,26 @@ const scenarioName = 'getUser';
 
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
-const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
+
+const runSmoke = utils.getCLIVariable('run_smoke') || 'true';
+const runAverage = utils.getCLIVariable('run_average') || 'true';
+const runStress = utils.getCLIVariable('run_stress') || 'true';
+const runSpike = utils.getCLIVariable('run_spike') || 'true';
+exec.command(
+    "make",
+    [
+        `SCENARIO_NAME=${scenarioName}`,
+        `RUN_SMOKE=${runSmoke}`,
+        `RUN_AVERAGE=${runAverage}`,
+        `RUN_STRESS=${runStress}`,
+        `RUN_SPIKE=${runSpike}`,
+        `load-tests-prepare-users`,
+    ]);
+const users = JSON.parse(open('users.json'));
 
 export function setup() {
     return {
-        users: insertUsersUtils.prepareUsers(),
+        users: users,
     };
 }
 
