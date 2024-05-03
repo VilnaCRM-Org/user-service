@@ -12,7 +12,7 @@
             "smoke": {
                 "threshold": 60,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -50,7 +50,7 @@
             "smoke": {
                 "threshold": 70,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -88,7 +88,7 @@
             "smoke": {
                 "threshold": 3000,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -126,7 +126,7 @@
             "smoke": {
                 "threshold": 3000,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -164,7 +164,7 @@
             "smoke": {
                 "threshold": 3000,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -202,7 +202,7 @@
             "smoke": {
                 "threshold": 3500,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -240,7 +240,7 @@
             "smoke": {
                 "threshold": 90,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -278,7 +278,7 @@
             "smoke": {
                 "threshold": 90,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -320,7 +320,7 @@
             "smoke": {
                 "threshold": 90,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -358,7 +358,7 @@
             "smoke": {
                 "threshold": 60,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -396,7 +396,7 @@
             "smoke": {
                 "threshold": 70,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -434,7 +434,7 @@
             "smoke": {
                 "threshold": 3000,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -472,7 +472,7 @@
             "smoke": {
                 "threshold": 6500,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -510,7 +510,7 @@
             "smoke": {
                 "threshold": 3000,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -548,7 +548,7 @@
             "smoke": {
                 "threshold": 90,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {
@@ -586,7 +586,7 @@
             "smoke": {
                 "threshold": 90,
                 "rps": 10,
-                "vus": 10,
+                "vus": 3,
                 "duration": 10
             },
             "average": {

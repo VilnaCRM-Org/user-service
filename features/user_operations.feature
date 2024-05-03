@@ -49,17 +49,11 @@ Feature: User Operations
     Then the response status code should be 422
     And violation should be "Password must be between 8 and 64 characters long"
 
-  Scenario: Creating a user with invalid initials format
-    Given creating user with email "testPass3@mail.com", initials "123", password "passWORD1"
+  Scenario: Creating a user with initials that contains only spaces
+    Given creating user with email "testPass3@mail.com", initials " ", password "passWORD1"
     When POST request is send to "/api/users"
     Then the response status code should be 422
-    And violation should be "Invalid full name format"
-
-  Scenario: Creating a user with initials that contain special characters
-    Given creating user with email "testPass3@mail.com", initials "name?", password "passWORD1"
-    When POST request is send to "/api/users"
-    Then the response status code should be 422
-    And violation should be "Initials should not contain special characters"
+    And violation should be "Initials can not consist only of spaces"
 
   Scenario: Creating a user with no input
     Given sending empty body

@@ -39,12 +39,12 @@ Feature: User GraphQL Operations Localization
     When graphQL request is send
     Then graphql error message should be "password: Пароль має містити від 8 до 64 символів"
 
-  Scenario: Creating a user with invalid initials format and Ukrainian language
+  Scenario: Creating a user with initials that contains only spaces and Ukrainian language
     Given requesting to return user's id and email
     And with graphql language "uk"
-    And creating user with email "graphqlTest@mail.com" initials "123" password "passWORD1"
+    And creating user with email "graphqlTest@mail.com" initials " " password "passWORD1"
     When graphQL request is send
-    Then graphql error message should be "initials: Невірний формат повного імені"
+    Then graphql error message should be "initials: Ім'я та прізвище не можуть складатися лише з пробілів"
 
   Scenario: Updating user to duplicate email and Ukrainian language
     Given requesting to return user's id and email

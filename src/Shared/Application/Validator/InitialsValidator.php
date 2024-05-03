@@ -10,6 +10,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class InitialsValidator extends ConstraintValidator
 {
+    private const MAX_INITIALS_LENGTH = 255;
+
     public function __construct(
         private readonly TranslatorInterface $translator
     ) {
@@ -23,8 +25,13 @@ final class InitialsValidator extends ConstraintValidator
             return;
         }
 
-        $this->validateSpecialCharacters($value);
-        $this->validateFormat($value);
+        $trimmedValue = trim($value);
+
+        if ($this->isEmpty($trimmedValue) && strlen($value) > 0) {
+            $this->addViolation(
+                $this->translator->trans('initials.spaces')
+            );
+        }
     }
 
     private function isEmpty(mixed $value): bool
@@ -35,24 +42,6 @@ final class InitialsValidator extends ConstraintValidator
     private function isNull(mixed $value): bool
     {
         return $value === null;
-    }
-
-    private function validateFormat(mixed $value): void
-    {
-        if (!preg_match('/^[^\d\s]+(\s[^\d\s]+)+$/', $value)) {
-            $this->addViolation(
-                $this->translator->trans('initials.invalid.format')
-            );
-        }
-    }
-
-    private function validateSpecialCharacters(mixed $value): void
-    {
-        if (preg_match('/[!@#$%^&*(),.?":{}|<>]/', $value)) {
-            $this->addViolation(
-                $this->translator->trans('initials.invalid.characters')
-            );
-        }
     }
 
     private function addViolation(string $message): void

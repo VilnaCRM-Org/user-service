@@ -40,11 +40,11 @@ Feature: User GraphQL Operations
     When graphQL request is send
     Then graphql error message should be "password: Password must be between 8 and 64 characters long"
 
-  Scenario: Creating a user with invalid initials format
+  Scenario: Creating a user with initials that contains only spaces
     Given requesting to return user's id and email
-    And creating user with email "graphqlTest@mail.com" initials "123" password "passWORD1"
+    And creating user with email "graphqlTest@mail.com" initials " " password "passWORD1"
     When graphQL request is send
-    Then graphql error message should be "initials: Invalid full name format"
+    Then graphql error message should be "initials: Initials can not consist only of spaces"
 
   Scenario: Updating user
     Given requesting to return user's id and email

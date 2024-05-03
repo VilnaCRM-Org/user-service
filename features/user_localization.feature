@@ -39,19 +39,12 @@ Feature: User Operations Localization
     Then the response status code should be 422
     And violation should be "Пароль має містити від 8 до 64 символів"
 
-  Scenario: Creating a user with invalid initials format and Ukrainian language
-    Given creating user with email "testPass3@mail.com", initials "123", password "pass"
+  Scenario: Creating a user with initials that contains only spaces and Ukrainian language
+    Given creating user with email "testPass3@mail.com", initials " ", password "pass"
     And with language "uk"
     When POST request is send to "/api/users"
     Then the response status code should be 422
-    And violation should be "Невірний формат повного імені"
-
-  Scenario: Creating a user with initials that contain special characters and Ukrainian language
-    Given creating user with email "testPass3@mail.com", initials "name?", password "passWORD1"
-    And with language "uk"
-    When POST request is send to "/api/users"
-    Then the response status code should be 422
-    And violation should be "Ім'я та прізвище не повинні містити спеціальних символів"
+    And violation should be "Ім'я та прізвище не можуть складатися лише з пробілів"
 
   Scenario: Creating a user with no input and Ukrainian language
     Given sending empty body

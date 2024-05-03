@@ -95,7 +95,7 @@ setup-test-db: ## Create database for testing purposes
 
 all-tests: unit-tests integration-tests e2e-tests ## Run unit, integration and e2e tests
 
-smoke-load-tests: build-k6 ## Run load tests with minimal load
+smoke-load-tests: ## Run load tests with minimal load
 	$(K6) --out 'web-dashboard=period=1s&export=loadTestsResults/getUser.html' ./tests/Load/getUser.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) --out 'web-dashboard=period=1s&export=loadTestsResults/getUsers.html' ./tests/Load/getUsers.js -e run_average=false -e run_stress=false -e run_spike=false
 	$(K6) --out 'web-dashboard=period=1s&export=loadTestsResults/updateUser.html' ./tests/Load/updateUser.js -e run_average=false -e run_stress=false -e run_spike=false
@@ -114,7 +114,7 @@ smoke-load-tests: build-k6 ## Run load tests with minimal load
 	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauthToken.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauthToken.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	$(K6) --out 'web-dashboard=period=1s&export=loadTestsResults/oauth.html' ./tests/Load/oauth.js -e run_average=false -e run_stress=false -e run_spike=false
 
-load-tests: build-k6 ## Run load tests
+load-tests: ## Run load tests
 	$(K6) --out 'web-dashboard=period=1s&export=loadTestsResults/getUser.html' ./tests/Load/getUser.js
 	$(K6) --out 'web-dashboard=period=1s&export=loadTestsResults/getUsers.html' ./tests/Load/getUsers.js
 	$(K6) --out 'web-dashboard=period=1s&export=loadTestsResults/updateUser.html' ./tests/Load/updateUser.js

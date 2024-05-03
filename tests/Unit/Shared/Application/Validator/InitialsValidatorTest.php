@@ -54,7 +54,7 @@ final class InitialsValidatorTest extends UnitTestCase
 
     public function testOptionalDefaultValue(): void
     {
-        $this->context->expects($this->atLeast(1))
+        $this->context->expects($this->exactly(0))
             ->method('buildViolation');
         $this->validator->validate(
             '',
@@ -62,36 +62,14 @@ final class InitialsValidatorTest extends UnitTestCase
         );
     }
 
-    public function testInvalidFormat(): void
+    public function testPassedSpaces(): void
     {
         $constraintViolationBuilder = $this->createMock(
             ConstraintViolationBuilderInterface::class
         );
         $error = $this->faker->word();
         $this->translator->method('trans')
-            ->with('initials.invalid.format')
-            ->willReturn($error);
-        $this->context->expects($this->once())
-            ->method('buildViolation')
-            ->with($error)
-            ->willReturn($constraintViolationBuilder);
-        $constraintViolationBuilder->expects($this->once())
-            ->method('addViolation');
-
-        $this->validator->validate(
-            (string) $this->faker->numberBetween(1, 100),
-            $this->constraint
-        );
-    }
-
-    public function testSpecialCharacters(): void
-    {
-        $constraintViolationBuilder = $this->createMock(
-            ConstraintViolationBuilderInterface::class
-        );
-        $error = $this->faker->word();
-        $this->translator->method('trans')
-            ->with('initials.invalid.characters')
+            ->with('initials.spaces')
             ->willReturn($error);
         $this->context->method('buildViolation')
             ->with($error)
@@ -100,8 +78,7 @@ final class InitialsValidatorTest extends UnitTestCase
             ->method('addViolation');
 
         $this->validator->validate(
-            $this->faker->firstName() . ' ' .
-            $this->faker->lastName() . '?',
+            ' ',
             $this->constraint
         );
     }
