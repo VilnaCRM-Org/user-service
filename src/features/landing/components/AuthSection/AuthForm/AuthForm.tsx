@@ -77,7 +77,7 @@ function AuthForm(): React.ReactElement {
   return (
     <Box sx={styles.formWrapper}>
       {loading && (
-        <Box sx={styles.loader}>
+        <Box sx={styles.loader} role="status">
           <CircularProgress color="primary" size={70} />
         </Box>
       )}
@@ -119,7 +119,11 @@ function AuthForm(): React.ReactElement {
                 type="text"
               />
               {serverError && (
-                <UiTypography variant="medium14" sx={styles.errorText}>
+                <UiTypography
+                  variant="medium14"
+                  sx={styles.errorText}
+                  role="alert"
+                >
                   {serverError}
                 </UiTypography>
               )}

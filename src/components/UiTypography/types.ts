@@ -33,4 +33,5 @@ export interface UiTypographyProps {
     | 'h5'
     | 'h6';
   id?: string;
+  role?: React.AriaRole;
 }

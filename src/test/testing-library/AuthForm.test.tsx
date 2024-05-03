@@ -20,15 +20,43 @@ import { testInitials, testEmail, testPassword } from './constants';
 
 describe('AuthForm', () => {
   it('renders AuthForm component', () => {
-    const { container } = render(
-      <MockedProvider>
-        <AuthForm />
-      </MockedProvider>
-    );
+    const { container, queryByRole, getByPlaceholderText, getByLabelText } =
+      render(
+        <MockedProvider>
+          <AuthForm />
+        </MockedProvider>
+      );
 
     const authForm: HTMLElement | null =
       container.querySelector(authFormSelector);
+    const serverErrorMessage: HTMLElement | null = queryByRole('alert');
+    const loader: HTMLElement | null = queryByRole('status');
+    const fullNameInput: HTMLInputElement = getByPlaceholderText(
+      fullNamePlaceholder
+    ) as HTMLInputElement;
+    const emailInput: HTMLInputElement = getByPlaceholderText(
+      emailPlaceholder
+    ) as HTMLInputElement;
+    const passwordInput: HTMLInputElement = getByPlaceholderText(
+      passwordPlaceholder
+    ) as HTMLInputElement;
+
+    const privacyCheckbox: HTMLInputElement = getByLabelText(
+      /Privacy Policy/
+    ) as HTMLInputElement;
+
+    expect(fullNameInput.value).toBe('');
+    expect(emailInput.value).toBe('');
+    expect(passwordInput.value).toBe('');
+    expect(privacyCheckbox).not.toBeChecked();
+
     expect(authForm).toBeInTheDocument();
+    expect(loader).not.toBeInTheDocument();
+    expect(serverErrorMessage).not.toBeInTheDocument();
+
+    fireEvent.click(privacyCheckbox);
+
+    expect(privacyCheckbox).toBeChecked();
   });
 
   it('renders input fields', () => {

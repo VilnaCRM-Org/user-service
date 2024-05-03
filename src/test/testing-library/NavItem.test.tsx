@@ -7,25 +7,32 @@ import {
 } from '../../features/landing/components/Header/constants';
 import NavItem from '../../features/landing/components/Header/NavItem/NavItem';
 
+const handleClick: () => void = jest.fn();
+
+const checkingStyle: string = 'width: 100%';
+
 describe('NavItem component', () => {
   it('renders NavItem component correctly as header', () => {
-    const handleClick: () => void = jest.fn();
-    const { getByText } = render(
+    const { getByText, getByRole } = render(
       <NavItem item={testHeaderItem} handleClick={handleClick} />
     );
 
-    const linkElement: HTMLElement = getByText(testHeaderItem.title);
-    expect(linkElement).toBeInTheDocument();
+    const linkText: HTMLElement = getByText(testHeaderItem.title);
+    const linkElement: HTMLElement = getByRole('link');
+
+    expect(linkText).toBeInTheDocument();
+    expect(linkElement).not.toHaveStyle(checkingStyle);
   });
 
   it('renders NavItem component correctly as drawer', () => {
-    const handleClick: () => void = jest.fn();
-    const { getByText } = render(
+    const { getByText, getByRole } = render(
       <NavItem item={testDrawerItem} handleClick={handleClick} />
     );
 
-    const linkElement: HTMLElement = getByText(testDrawerItem.title);
+    const linkText: HTMLElement = getByText(testDrawerItem.title);
+    const linkElement: HTMLElement = getByRole('link');
 
-    expect(linkElement).toBeInTheDocument();
+    expect(linkText).toBeInTheDocument();
+    expect(linkElement).toHaveStyle(checkingStyle);
   });
 });
