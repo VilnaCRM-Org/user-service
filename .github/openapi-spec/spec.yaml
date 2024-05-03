@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
-  title: ''
-  description: ''
-  version: 0.0.0
+  title: 'User Service API'
+  description: 'This API provides endpoints to manage user data within a VilnaCRM.'
+  version: 1.0.0
 servers:
   -
     url: 'https://localhost'
@@ -41,10 +41,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  error: { type: string }
-                  error_description: { type: string }
-                  hint: { type: string }
-                  message: { type: string }
+                  error: { type: string, maxLength: null, format: null }
+                  error_description: { type: string, maxLength: null, format: null }
+                  hint: { type: string, maxLength: null, format: null }
+                  message: { type: string, maxLength: null, format: null }
+                required:
+                  - error
+                  - error_description
+                  - hint
+                  - message
               example:
                 error: unsupported_grant_type
                 error_description: 'The authorization grant type is not supported by the authorization server.'
@@ -58,9 +63,13 @@ paths:
               schema:
                 type: object
                 properties:
-                  error: { type: string }
-                  error_description: { type: string }
-                  message: { type: string }
+                  error: { type: string, maxLength: null, format: null }
+                  error_description: { type: string, maxLength: null, format: null }
+                  message: { type: string, maxLength: null, format: null }
+                required:
+                  - error
+                  - error_description
+                  - message
               example:
                 error: invalid_client
                 error_description: 'Client authentication failed'
@@ -73,10 +82,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: /errors/500
                 title: 'An error occurred'
@@ -164,10 +178,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  token_type: { type: string }
-                  expires_in: { type: integer }
-                  access_token: { type: string }
-                  refresh_token: { type: string }
+                  token_type: { type: string, maxLength: null, format: null }
+                  expires_in: { type: integer, maxLength: null, format: null }
+                  access_token: { type: string, maxLength: null, format: null }
+                  refresh_token: { type: string, maxLength: null, format: null }
+                required:
+                  - token_type
+                  - expires_in
+                  - access_token
+                  - refresh_token
               example:
                 token_type: Bearer
                 expires_in: 3600
@@ -181,10 +200,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  error: { type: string }
-                  error_description: { type: string }
-                  hint: { type: string }
-                  message: { type: string }
+                  error: { type: string, maxLength: null, format: null }
+                  error_description: { type: string, maxLength: null, format: null }
+                  hint: { type: string, maxLength: null, format: null }
+                  message: { type: string, maxLength: null, format: null }
+                required:
+                  - error
+                  - error_description
+                  - hint
+                  - message
               example:
                 error: unsupported_grant_type
                 error_description: 'The authorization grant type is not supported by the authorization server.'
@@ -198,9 +222,13 @@ paths:
               schema:
                 type: object
                 properties:
-                  error: { type: string }
-                  error_description: { type: string }
-                  message: { type: string }
+                  error: { type: string, maxLength: null, format: null }
+                  error_description: { type: string, maxLength: null, format: null }
+                  message: { type: string, maxLength: null, format: null }
+                required:
+                  - error
+                  - error_description
+                  - message
               example:
                 error: invalid_client
                 error_description: 'Client authentication failed'
@@ -213,10 +241,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: /errors/500
                 title: 'An error occurred'
@@ -232,16 +265,35 @@ paths:
               properties:
                 grant_type:
                   type: string
+                  maxLength: null
+                  format: null
                 client_id:
                   type: string
+                  maxLength: null
+                  format: null
                 client_secret:
                   type: string
+                  maxLength: null
+                  format: null
                 redirect_uri:
                   type: string
+                  maxLength: null
+                  format: null
                 code:
                   type: string
+                  maxLength: null
+                  format: null
                 refresh_token:
                   type: string
+                  maxLength: null
+                  format: null
+              required:
+                - grant_type
+                - client_id
+                - client_secret
+                - redirect_uri
+                - code
+                - refresh_token
             example:
               grant_type: authorization_code
               client_id: dc0bc6323f16fecd4224a3860ca894c5
@@ -249,7 +301,7 @@ paths:
               redirect_uri: 'https://example.com/oauth/callback'
               code: e7f8c62113a47f7a5a9dca1f
               refresh_token: f7a5a9dca1fe7f8c62113a47
-        required: false
+        required: true
     parameters: []
   /api/users:
     get:
@@ -257,29 +309,6 @@ paths:
       tags:
         - User
       responses:
-        200:
-          description: 'User collection'
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User-output'
-            application/graphql:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User-output'
-            application/ld+json:
-              schema:
-                type: object
-                properties:
-                  'hydra:member': { type: array, items: { $ref: '#/components/schemas/User.jsonld-output' } }
-                  'hydra:totalItems': { type: integer, minimum: 0 }
-                  'hydra:view': { type: object, properties: { '@id': { type: string, format: iri-reference }, '@type': { type: string }, 'hydra:first': { type: string, format: iri-reference }, 'hydra:last': { type: string, format: iri-reference }, 'hydra:previous': { type: string, format: iri-reference }, 'hydra:next': { type: string, format: iri-reference } }, example: { '@id': string, type: string, 'hydra:first': string, 'hydra:last': string, 'hydra:previous': string, 'hydra:next': string } }
-                  'hydra:search': { type: object, properties: { '@type': { type: string }, 'hydra:template': { type: string }, 'hydra:variableRepresentation': { type: string }, 'hydra:mapping': { type: array, items: { type: object, properties: { '@type': { type: string }, variable: { type: string }, property: { type: [string, 'null'] }, required: { type: boolean } } } } } }
-                required:
-                  - 'hydra:member'
         400:
           description: 'Bad request'
           content:
@@ -287,15 +316,40 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
+          headers: {  }
+        200:
+          description: 'Users returned'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties: { confirmed: { type: boolean, maxLength: null, format: null }, email: { type: string, maxLength: null, format: null }, initials: { type: string, maxLength: null, format: null }, id: { type: string, maxLength: null, format: null } }
+                required:
+                  - confirmed
+                  - email
+                  - initials
+                  - id
+              example:
+                -
+                  confirmed: false
+                  email: user@example.com
+                  initials: 'Name Surname'
+                  id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
           headers: {  }
         500:
           description: 'Internal server error'
@@ -304,10 +358,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: /errors/500
                 title: 'An error occurred'
@@ -357,10 +416,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  confirmed: { type: boolean }
-                  email: { type: string }
-                  initials: { type: string }
-                  id: { type: string }
+                  confirmed: { type: boolean, maxLength: null, format: null }
+                  email: { type: string, maxLength: null, format: null }
+                  initials: { type: string, maxLength: null, format: null }
+                  id: { type: string, maxLength: null, format: null }
+                required:
+                  - confirmed
+                  - email
+                  - initials
+                  - id
               example:
                 confirmed: false
                 email: user@example.com
@@ -374,10 +438,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
@@ -391,11 +460,17 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  violations: { type: array }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  violations: { type: array, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - violations
+                  - status
               example:
                 type: /errors/500
                 title: 'An error occurred'
@@ -413,10 +488,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: /errors/500
                 title: 'An error occurred'
@@ -427,17 +507,32 @@ paths:
       description: 'Creates a User resource.'
       parameters: []
       requestBody:
-        description: 'The new User resource'
+        description: ''
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User.UserRegisterDto'
-          application/graphql:
-            schema:
-              $ref: '#/components/schemas/User.UserRegisterDto'
-          application/ld+json:
-            schema:
-              $ref: '#/components/schemas/User.UserRegisterDto.jsonld'
+              type: object
+              properties:
+                email:
+                  type: string
+                  maxLength: 255
+                  format: email
+                initials:
+                  type: string
+                  maxLength: 255
+                  format: null
+                password:
+                  type: string
+                  maxLength: 255
+                  format: null
+              required:
+                - email
+                - initials
+                - password
+            example:
+              email: user@example.com
+              initials: 'Name Surname'
+              password: passWORD1
         required: true
       deprecated: false
     parameters: []
@@ -466,10 +561,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: /errors/500
                 title: 'An error occurred'
@@ -480,11 +580,20 @@ paths:
       description: 'Confirms the User'
       parameters: []
       requestBody:
-        description: 'The updated User resource'
+        description: ''
         content:
-          application/merge-patch+json:
+          application/json:
             schema:
-              $ref: '#/components/schemas/User.ConfirmUserDto'
+              type: object
+              properties:
+                token:
+                  type: string
+                  maxLength: null
+                  format: null
+              required:
+                - token
+            example:
+              token: token
         required: true
       deprecated: false
     parameters: []
@@ -494,18 +603,6 @@ paths:
       tags:
         - User
       responses:
-        200:
-          description: 'User resource'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User-output'
-            application/graphql:
-              schema:
-                $ref: '#/components/schemas/User-output'
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/User.jsonld-output'
         404:
           description: 'User not found'
           content:
@@ -513,15 +610,42 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
                 detail: 'User not found'
                 status: 404
+          headers: {  }
+        200:
+          description: 'User returned'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  confirmed: { type: boolean, maxLength: null, format: null }
+                  email: { type: string, maxLength: null, format: null }
+                  initials: { type: string, maxLength: null, format: null }
+                  id: { type: string, maxLength: null, format: null }
+                required:
+                  - confirmed
+                  - email
+                  - initials
+                  - id
+              example:
+                confirmed: false
+                email: user@example.com
+                initials: 'Name Surname'
+                id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
           headers: {  }
         500:
           description: 'Internal server error'
@@ -530,10 +654,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: /errors/500
                 title: 'An error occurred'
@@ -569,10 +698,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  confirmed: { type: boolean }
-                  email: { type: string }
-                  initials: { type: string }
-                  id: { type: string }
+                  confirmed: { type: boolean, maxLength: null, format: null }
+                  email: { type: string, maxLength: null, format: null }
+                  initials: { type: string, maxLength: null, format: null }
+                  id: { type: string, maxLength: null, format: null }
+                required:
+                  - confirmed
+                  - email
+                  - initials
+                  - id
               example:
                 confirmed: false
                 email: user@example.com
@@ -586,10 +720,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
@@ -603,10 +742,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
@@ -620,11 +764,17 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  violations: { type: array }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  violations: { type: array, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - violations
+                  - status
               example:
                 type: /errors/500
                 title: 'An error occurred'
@@ -642,10 +792,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: /errors/500
                 title: 'An error occurred'
@@ -669,17 +824,38 @@ paths:
           allowReserved: false
           example: 2b10b7a3-67f0-40ea-a367-44263321592a
       requestBody:
-        description: 'The updated User resource'
+        description: ''
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User.UserPutDto'
-          application/graphql:
-            schema:
-              $ref: '#/components/schemas/User.UserPutDto'
-          application/ld+json:
-            schema:
-              $ref: '#/components/schemas/User.UserPutDto.jsonld'
+              type: object
+              properties:
+                email:
+                  type: string
+                  maxLength: 255
+                  format: email
+                initials:
+                  type: string
+                  maxLength: 255
+                  format: null
+                oldPassword:
+                  type: string
+                  maxLength: 255
+                  format: null
+                newPassword:
+                  type: string
+                  maxLength: 255
+                  format: null
+              required:
+                - email
+                - initials
+                - oldPassword
+                - newPassword
+            example:
+              email: user@example.com
+              initials: 'Name Surname'
+              oldPassword: passWORD1
+              newPassword: PASSword2
         required: true
       deprecated: false
     delete:
@@ -700,10 +876,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
@@ -717,10 +898,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: /errors/500
                 title: 'An error occurred'
@@ -756,10 +942,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  confirmed: { type: boolean }
-                  email: { type: string }
-                  initials: { type: string }
-                  id: { type: string }
+                  confirmed: { type: boolean, maxLength: null, format: null }
+                  email: { type: string, maxLength: null, format: null }
+                  initials: { type: string, maxLength: null, format: null }
+                  id: { type: string, maxLength: null, format: null }
+                required:
+                  - confirmed
+                  - email
+                  - initials
+                  - id
               example:
                 confirmed: false
                 email: user@example.com
@@ -773,10 +964,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
@@ -790,10 +986,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
@@ -807,11 +1008,17 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  violations: { type: array }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  violations: { type: array, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - violations
+                  - status
               example:
                 type: /errors/500
                 title: 'An error occurred'
@@ -829,10 +1036,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: /errors/500
                 title: 'An error occurred'
@@ -856,11 +1068,35 @@ paths:
           allowReserved: false
           example: 2b10b7a3-67f0-40ea-a367-44263321592a
       requestBody:
-        description: 'The updated User resource'
+        description: ''
         content:
-          application/merge-patch+json:
+          application/json:
             schema:
-              $ref: '#/components/schemas/User.UserPatchDto'
+              type: object
+              properties:
+                email:
+                  type: string
+                  maxLength: 255
+                  format: email
+                initials:
+                  type: string
+                  maxLength: 255
+                  format: null
+                oldPassword:
+                  type: string
+                  maxLength: 255
+                  format: null
+                newPassword:
+                  type: string
+                  maxLength: 255
+                  format: null
+              required:
+                - oldPassword
+            example:
+              email: user@example.com
+              initials: 'Name Surname'
+              oldPassword: passWORD1
+              newPassword: PASSword2
         required: true
       deprecated: false
     parameters: []
@@ -883,10 +1119,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
@@ -900,10 +1141,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: 'https://tools.ietf.org/html/rfc2616#section-10'
                 title: 'An error occurred'
@@ -917,10 +1163,15 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
               example:
                 type: /errors/500
                 title: 'An error occurred'
@@ -948,269 +1199,10 @@ paths:
         content:
           application/json:
             example: ''
-        required: false
+        required: true
       deprecated: false
     parameters: []
-components:
-  schemas:
-    User-output:
-      type: object
-      description: ''
-      deprecated: false
-      properties:
-        confirmed:
-          type: boolean
-        email:
-          type: string
-        initials:
-          type: string
-        id:
-          $ref: '#/components/schemas/UuidInterface-output'
-    User.ConfirmUserDto:
-      type: object
-      description: ''
-      deprecated: false
-      required:
-        - token
-      properties:
-        token:
-          type:
-            - string
-            - 'null'
-    User.RetryDto:
-      type: object
-      description: ''
-      deprecated: false
-    User.RetryDto.jsonld:
-      type: object
-      description: ''
-      deprecated: false
-    User.UserPatchDto:
-      type: object
-      description: ''
-      deprecated: false
-      properties:
-        email:
-          format: email
-          maxLength: 255
-          externalDocs:
-            url: 'https://schema.org/email'
-          type:
-            - string
-            - 'null'
-        initials:
-          maxLength: 255
-          type:
-            - string
-            - 'null'
-        oldPassword:
-          type:
-            - string
-            - 'null'
-        newPassword:
-          type:
-            - string
-            - 'null'
-      required:
-        - oldPassword
-    User.UserPutDto:
-      type: object
-      description: ''
-      deprecated: false
-      required:
-        - email
-        - initials
-        - oldPassword
-        - newPassword
-      properties:
-        email:
-          format: email
-          maxLength: 255
-          externalDocs:
-            url: 'https://schema.org/email'
-          type:
-            - string
-            - 'null'
-        initials:
-          maxLength: 255
-          type:
-            - string
-            - 'null'
-        oldPassword:
-          type:
-            - string
-            - 'null'
-        newPassword:
-          type:
-            - string
-            - 'null'
-    User.UserPutDto.jsonld:
-      type: object
-      description: ''
-      deprecated: false
-      required:
-        - email
-        - initials
-        - oldPassword
-        - newPassword
-      properties:
-        email:
-          format: email
-          maxLength: 255
-          externalDocs:
-            url: 'https://schema.org/email'
-          type:
-            - string
-            - 'null'
-        initials:
-          maxLength: 255
-          type:
-            - string
-            - 'null'
-        oldPassword:
-          type:
-            - string
-            - 'null'
-        newPassword:
-          type:
-            - string
-            - 'null'
-    User.UserRegisterDto:
-      type: object
-      description: ''
-      deprecated: false
-      required:
-        - email
-        - initials
-        - password
-      properties:
-        email:
-          format: email
-          maxLength: 255
-          externalDocs:
-            url: 'https://schema.org/email'
-          type:
-            - string
-            - 'null'
-        initials:
-          maxLength: 255
-          type:
-            - string
-            - 'null'
-        password:
-          type:
-            - string
-            - 'null'
-    User.UserRegisterDto.jsonld:
-      type: object
-      description: ''
-      deprecated: false
-      required:
-        - email
-        - initials
-        - password
-      properties:
-        email:
-          format: email
-          maxLength: 255
-          externalDocs:
-            url: 'https://schema.org/email'
-          type:
-            - string
-            - 'null'
-        initials:
-          maxLength: 255
-          type:
-            - string
-            - 'null'
-        password:
-          type:
-            - string
-            - 'null'
-    User.jsonld-output:
-      type: object
-      description: ''
-      deprecated: false
-      properties:
-        '@context':
-          readOnly: true
-          oneOf:
-            -
-              type: string
-            -
-              type: object
-              properties:
-                '@vocab':
-                  type: string
-                hydra:
-                  type: string
-                  enum: ['http://www.w3.org/ns/hydra/core#']
-              required:
-                - '@vocab'
-                - hydra
-              additionalProperties: true
-        '@id':
-          readOnly: true
-          type: string
-        '@type':
-          readOnly: true
-          type: string
-        confirmed:
-          type: boolean
-        email:
-          type: string
-        initials:
-          type: string
-        id:
-          $ref: '#/components/schemas/UuidInterface.jsonld-output'
-    UuidInterface-output:
-      type: object
-      description: ''
-      deprecated: false
-    UuidInterface.jsonld-output:
-      type: object
-      description: ''
-      deprecated: false
-      properties:
-        '@context':
-          readOnly: true
-          oneOf:
-            -
-              type: string
-            -
-              type: object
-              properties:
-                '@vocab':
-                  type: string
-                hydra:
-                  type: string
-                  enum: ['http://www.w3.org/ns/hydra/core#']
-              required:
-                - '@vocab'
-                - hydra
-              additionalProperties: true
-        '@id':
-          readOnly: true
-          type: string
-        '@type':
-          readOnly: true
-          type: string
-  responses: {  }
-  parameters: {  }
-  examples: {  }
-  requestBodies: {  }
-  headers: {  }
-  securitySchemes:
-    oauth:
-      type: oauth2
-      description: 'OAuth 2.0 application Grant'
-      flows:
-        clientCredentials:
-          authorizationUrl: /api/oauth/authorize
-          tokenUrl: /api/oauth/token
-          scopes:
-            email: 'This scope value requests access to the email'
-            profile: 'This scope value requests access to the user profile'
+components: []
 security:
   -
     oauth: []
