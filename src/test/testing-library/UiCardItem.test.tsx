@@ -5,6 +5,8 @@ import CardContent from '../../components/UiCardItem/CardContent';
 
 import { cardItem, largeCard, smallCard } from './constants';
 
+const cardTitleRole: string = 'heading';
+
 describe('UiCardItem Component', () => {
   describe('CardComponent', () => {
     const integrateText: string = 'Integrate';
@@ -15,7 +17,7 @@ describe('UiCardItem Component', () => {
         <CardContent item={cardItem} isSmallCard={false} />
       );
 
-      const titleElement: HTMLElement = getByRole('heading');
+      const titleElement: HTMLElement = getByRole(cardTitleRole);
       const textElement: HTMLElement = getByText(cardItem.text);
 
       expect(titleElement).toBeInTheDocument();
@@ -28,7 +30,7 @@ describe('UiCardItem Component', () => {
         <CardContent item={cardItem} isSmallCard />
       );
 
-      const titleElement: HTMLElement = getByRole('heading');
+      const titleElement: HTMLElement = getByRole(cardTitleRole);
       const integrateElement: HTMLElement = getByText(integrateText);
       const servicesElement: HTMLElement = getByText(servicesText);
 
