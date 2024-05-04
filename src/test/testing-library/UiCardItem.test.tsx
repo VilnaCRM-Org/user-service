@@ -11,25 +11,29 @@ describe('UiCardItem Component', () => {
     const servicesText: string = 'services';
 
     it('renders correctly with large card', () => {
-      const { getByText } = render(
+      const { getByText, getByRole } = render(
         <CardContent item={cardItem} isSmallCard={false} />
       );
 
-      const titleElement: HTMLElement = getByText(cardItem.title);
+      const titleElement: HTMLElement = getByRole('heading');
       const textElement: HTMLElement = getByText(cardItem.text);
 
       expect(titleElement).toBeInTheDocument();
+      expect(titleElement).toHaveTextContent(cardItem.title);
       expect(textElement).toBeInTheDocument();
     });
 
     it('renders correctly with small card', () => {
-      const { getByText } = render(<CardContent item={cardItem} isSmallCard />);
+      const { getByText, getByRole } = render(
+        <CardContent item={cardItem} isSmallCard />
+      );
 
-      const titleElement: HTMLElement = getByText(cardItem.title);
+      const titleElement: HTMLElement = getByRole('heading');
       const integrateElement: HTMLElement = getByText(integrateText);
       const servicesElement: HTMLElement = getByText(servicesText);
 
       expect(titleElement).toBeInTheDocument();
+      expect(titleElement).toHaveTextContent(cardItem.title);
       expect(integrateElement).toBeInTheDocument();
       expect(servicesElement).toBeInTheDocument();
     });
