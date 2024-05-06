@@ -9,6 +9,9 @@ export default {
   },
   drawer: {
     zIndex: 3200,
+    [`@media (min-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+      display: 'none',
+    },
   },
 
   drawerContent: {

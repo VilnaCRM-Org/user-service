@@ -6,44 +6,52 @@ import Drawer from '../../features/landing/components/Header/Drawer/Drawer';
 
 const buttonToOpenDrawer: string = 'Button to open the drawer';
 const buttonToCloseDrawer: string = 'Button to exit the drawer';
+const logInButtonText: string = 'Log in';
+const drawerImageAlt: string = 'Bars Icon';
+const exitImageAlt: string = 'Exit Icon';
 const logoAlt: string = 'Vilna logo';
-const drawerContentRole: string = 'presentation';
+const drawerContentRole: string = 'menu';
 const listItem: string = 'listitem';
-
-jest.mock('react', () => ({
-  ...jest.requireActual('react'),
-  useMediaQuery: jest.fn(),
-}));
 
 describe('Drawer', () => {
   it('renders drawer button', () => {
-    const { getByLabelText } = render(<Drawer />);
+    const { getByLabelText, getByAltText } = render(<Drawer />);
+
     const drawerButton: HTMLElement = getByLabelText(buttonToOpenDrawer);
+    const drawerImage: HTMLElement = getByAltText(drawerImageAlt);
+
     expect(drawerButton).toBeInTheDocument();
+    expect(drawerImage).toBeInTheDocument();
   });
 
   it('opens drawer when button is clicked', async () => {
-    const { getByLabelText, getAllByRole } = render(<Drawer />);
-    const drawerButton: HTMLElement = getByLabelText(buttonToOpenDrawer);
+    const { getByLabelText, getByRole, getByAltText, getByText } = render(
+      <Drawer />
+    );
 
+    const drawerButton: HTMLElement = getByLabelText(buttonToOpenDrawer);
     fireEvent.click(drawerButton);
-    await waitFor(() => {
-      const drawer: HTMLElement[] = getAllByRole(drawerContentRole);
-      expect(drawer[0]).toBeInTheDocument();
-    });
+
+    const drawer: HTMLElement = getByRole(drawerContentRole);
+    const exitImage: HTMLElement = getByAltText(exitImageAlt);
+    const logInButton: HTMLElement = getByText(logInButtonText);
+
+    expect(drawer).toBeInTheDocument();
+    expect(exitImage).toBeInTheDocument();
+    expect(logInButton).toBeInTheDocument();
   });
 
   it('closes drawer when exit button is clicked', async () => {
     const { getByLabelText, queryByRole } = render(<Drawer />);
+
     const drawerButton: HTMLElement = getByLabelText(buttonToOpenDrawer);
     fireEvent.click(drawerButton);
+
     const exitButton: HTMLElement = getByLabelText(buttonToCloseDrawer);
     fireEvent.click(exitButton);
 
-    await waitFor(() => {
-      const drawer: HTMLElement | null = queryByRole(drawerContentRole);
-      expect(drawer).not.toBeInTheDocument();
-    });
+    const drawer: HTMLElement | null = queryByRole(drawerContentRole);
+    expect(drawer).not.toBeInTheDocument();
   });
 
   it('renders logo', () => {

@@ -1,4 +1,4 @@
-import { Drawer, Box, Stack, Button, useMediaQuery, Link } from '@mui/material';
+import { Drawer, Box, Stack, Button, Link } from '@mui/material';
 import Image from 'next/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,22 +19,15 @@ function CustomDrawer(): React.ReactElement {
   const { t } = useTranslation();
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
 
-  const isWideScreen: boolean = useMediaQuery('(min-width: 1024px)');
-
-  React.useEffect(() => {
-    setIsDrawerOpen(false);
-  }, [isWideScreen]);
-
-  function handleCloseDrawer(): void {
-    setIsDrawerOpen(false);
-  }
+  const handleCloseDrawer: () => void = () => setIsDrawerOpen(false);
+  const handleOpenDrawer: () => void = () => setIsDrawerOpen(true);
 
   return (
     <Box sx={styles.wrapper}>
       <Button
         aria-label={t('header.drawer.button_aria_labels.bars')}
         sx={styles.button}
-        onClick={(): void => setIsDrawerOpen(!isDrawerOpen)}
+        onClick={handleOpenDrawer}
       >
         <Image
           src={Bars}
@@ -47,7 +40,8 @@ function CustomDrawer(): React.ReactElement {
         sx={styles.drawer}
         anchor="right"
         open={isDrawerOpen}
-        onClose={(): void => setIsDrawerOpen(!isDrawerOpen)}
+        onClose={handleCloseDrawer}
+        role="menu"
       >
         <Box
           width="23.4375rem"
@@ -71,7 +65,7 @@ function CustomDrawer(): React.ReactElement {
             <Button
               aria-label={t('header.drawer.button_aria_labels.exit') as string}
               sx={styles.button}
-              onClick={(): void => setIsDrawerOpen(!isDrawerOpen)}
+              onClick={handleCloseDrawer}
             >
               <Image
                 src={CloseImage}

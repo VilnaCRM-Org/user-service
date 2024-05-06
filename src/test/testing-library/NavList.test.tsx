@@ -14,15 +14,25 @@ const drawerNavItems: NavItemProps[] = [testDrawerItem];
 const navWrapperClass: string = '.MuiStack-root';
 const navContentClass: string = '.MuiList-root';
 
+const displayNoneStyle: string = 'display: none';
+const flexColumnStyle: string = 'flex-direction: column';
+
 describe('NavList component', () => {
   it('renders NavList component correctly with header wrapper', () => {
     const handleClick: () => void = jest.fn();
+
     const { container } = render(
       <NavList navItems={navItems} handleClick={handleClick} />
     );
 
+    expect(container.querySelector(navWrapperClass)).toHaveStyle(
+      displayNoneStyle
+    );
     expect(container.querySelector(navWrapperClass)).toBeInTheDocument();
     expect(container.querySelector(navContentClass)).toBeInTheDocument();
+    expect(container.querySelector(navContentClass)).not.toHaveStyle(
+      flexColumnStyle
+    );
   });
 
   it('renders NavList component correctly with drawer wrapper', () => {
@@ -33,7 +43,13 @@ describe('NavList component', () => {
     );
 
     expect(container.querySelector(navWrapperClass)).toBeInTheDocument();
+    expect(container.querySelector(navWrapperClass)).not.toHaveStyle(
+      displayNoneStyle
+    );
     expect(container.querySelector(navContentClass)).toBeInTheDocument();
+    expect(container.querySelector(navContentClass)).toHaveStyle(
+      flexColumnStyle
+    );
   });
 
   it('renders NavList component correctly with empty array', () => {
