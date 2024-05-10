@@ -29,16 +29,6 @@
                 "conditions": []
             },
             {
-                "action": "make check-requirements",
-                "options": [],
-                "conditions": []
-            },
-            {
-                "action": "make check-security",
-                "options": [],
-                "conditions": []
-            },
-            {
                 "action": "make psalm",
                 "options": [],
                 "conditions": []

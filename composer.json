@@ -59,7 +59,7 @@
             "composer/package-versions-deprecated": true,
             "symfony/flex": true,
             "symfony/runtime": true,
-            "captainhook/plugin-composer": true,
+            "captainhook/plugin-composer": false,
             "dealerdirect/phpcodesniffer-composer-installer": true,
             "infection/extension-installer": true
         },
@@ -100,7 +100,7 @@
         "post-update-cmd": [
             "@auto-scripts"
         ],
-        "post-autoload-dump": "@./vendor/bin/captainhook install -f -s -n"
+        "post-autoload-dump": "vendor/bin/captainhook install -f -s -n"
     },
     "conflict": {
         "symfony/symfony": "*"

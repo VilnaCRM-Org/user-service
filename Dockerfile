@@ -1,132 +1,102 @@
-# Builder images
-FROM composer/composer:2-bin AS composer
+#syntax=docker/dockerfile:1.4
 
-FROM mlocati/php-extension-installer:latest AS php_extension_installer
+# Adapted from https://github.com/dunglas/symfony-docker
 
-# Build Caddy with the Mercure and Vulcain modules
-FROM caddy:2.7-builder-alpine AS app_caddy_builder
 
-RUN xcaddy build \
-	--with github.com/dunglas/mercure \
-	--with github.com/dunglas/mercure/caddy \
-	--with github.com/dunglas/vulcain \
-	--with github.com/dunglas/vulcain/caddy
+# Versions
+FROM dunglas/frankenphp:1-php8.3 AS frankenphp_upstream
 
-# Prod image
-FROM php:8.2-fpm-alpine AS app_php
 
-# Allow to use development versions of Symfony
-ARG STABILITY="stable"
-ENV STABILITY ${STABILITY}
+# The different stages of this Dockerfile are meant to be built into separate images
+# https://docs.docker.com/develop/develop-images/multistage-build/#stop-at-a-specific-build-stage
+# https://docs.docker.com/compose/compose-file/#target
 
-# Allow to select Symfony version
-ARG SYMFONY_VERSION=""
-ENV SYMFONY_VERSION ${SYMFONY_VERSION}
 
-ENV APP_ENV=prod
+# Base FrankenPHP image
+FROM frankenphp_upstream AS frankenphp_base
 
-WORKDIR /srv/app
-
-COPY --from=php_extension_installer --link /usr/bin/install-php-extensions /usr/local/bin/
+WORKDIR /app
 
 # persistent / runtime deps
-RUN apk add --no-cache \
-		acl \
-		fcgi \
-		file \
-		gettext \
-		git \
-        supervisor \
-	;
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install --no-install-recommends -y \
+	acl \
+	file \
+	gettext \
+	git \
+    supervisor \
+	&& rm -rf /var/lib/apt/lists/*
+
+# https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN set -eux; \
-    install-php-extensions \
-    	intl \
-    	zip \
-    	apcu \
+	install-php-extensions \
+		@composer \
+		apcu \
+		intl \
 		opcache \
+		zip \
         pdo_mysql \
         redis \
         openssl \
         xsl \
-    ;
+	;
 
 ###> recipes ###
 ###< recipes ###
 
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY --link infrastructure/docker/php/conf.d/app.ini $PHP_INI_DIR/conf.d/
-COPY --link infrastructure/docker/php/conf.d/app.prod.ini $PHP_INI_DIR/conf.d/
-
-COPY --link infrastructure/docker/php/php-fpm.d/zz-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf
-RUN mkdir -p /var/run/php
-
-COPY --link infrastructure/docker/php/docker-healthcheck.sh /usr/local/bin/docker-healthcheck
-RUN chmod +x /usr/local/bin/docker-healthcheck
-
-HEALTHCHECK --interval=10s --timeout=3s --retries=3 CMD ["docker-healthcheck"]
-
-COPY --link infrastructure/docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
-RUN chmod +x /usr/local/bin/docker-entrypoint
-
+COPY --link --chmod=755 infrastructure/docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
+COPY --link infrastructure/docker/caddy/Caddyfile /etc/caddy/Caddyfile
 COPY --link infrastructure/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 
 ENTRYPOINT ["docker-entrypoint"]
-CMD ["sh", "-c", "php-fpm & supervisord -c /etc/supervisor/supervisord.conf"]
 
-# https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
-ENV COMPOSER_ALLOW_SUPERUSER=1
-ENV PATH="${PATH}:/root/.composer/vendor/bin"
+HEALTHCHECK --start-period=60s CMD curl -f http://localhost:2019/metrics || exit 1
 
-COPY --from=composer --link /composer /usr/bin/composer
+CMD [ "frankenphp", "run", "--config", "/etc/caddy/Caddyfile" ]
+
+# Dev FrankenPHP image
+FROM frankenphp_base AS frankenphp_dev
+
+ENV APP_ENV=dev XDEBUG_MODE=off
+VOLUME /app/var/
+
+RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
+
+RUN set -eux; \
+	install-php-extensions \
+		xdebug \
+	;
+
+COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
+
+CMD [ "frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--watch" ]
+
+# Prod FrankenPHP image
+FROM frankenphp_base AS frankenphp_prod
+
+ENV APP_ENV=prod
+ENV FRANKENPHP_CONFIG="import worker.Caddyfile"
+
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+COPY --link infrastructure/docker/php/conf.d/app.prod.ini $PHP_INI_DIR/conf.d/
+COPY --link infrastructure/docker/php/worker.Caddyfile /etc/caddy/worker.Caddyfile
 
 # prevent the reinstallation of vendors at every changes in the source code
 COPY --link composer.* symfony.* ./
 RUN set -eux; \
-    if [ -f composer.json ]; then \
-		composer install --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress; \
-		composer clear-cache; \
-    fi
+	composer install --no-cache --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress
 
 # copy sources
-COPY --link  . ./
+COPY --link . ./
 RUN rm -Rf infrastructure/docker/
 
 RUN set -eux; \
 	mkdir -p var/cache var/log; \
-    if [ -f composer.json ]; then \
-		composer dump-autoload --classmap-authoritative --no-dev; \
-		composer dump-env prod; \
-		# composer run-script --no-dev post-install-cmd; \
-		chmod +x bin/console; sync; \
-    fi
-
-# Dev image
-FROM app_php AS app_php_dev
-
-RUN apk add --no-cache bash
-RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.alpine.sh' | bash
-RUN apk add symfony-cli
-
-ENV APP_ENV=dev XDEBUG_MODE=off
-VOLUME /srv/app/var/
-
-RUN rm "$PHP_INI_DIR/conf.d/app.prod.ini"; \
-	mv "$PHP_INI_DIR/php.ini" "$PHP_INI_DIR/php.ini-production"; \
-	mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
-
-COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
-
-RUN set -eux; \
-	install-php-extensions xdebug
-
-RUN rm -f .env.local.php
-
-# Caddy image
-FROM caddy:2.7-alpine AS app_caddy
-
-WORKDIR /srv/app
-
-COPY --from=app_caddy_builder --link /usr/bin/caddy /usr/bin/caddy
-COPY --from=app_php --link /srv/app/public public/
-COPY --link infrastructure/docker/caddy/Caddyfile /etc/caddy/Caddyfile
+	composer dump-autoload --classmap-authoritative --no-dev; \
+	composer dump-env prod; \
+	composer run-script --no-dev post-install-cmd; \
+	chmod +x bin/console; sync;
