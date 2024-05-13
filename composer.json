@@ -59,7 +59,7 @@
             "composer/package-versions-deprecated": true,
             "symfony/flex": true,
             "symfony/runtime": true,
-            "captainhook/plugin-composer": false,
+            "captainhook/plugin-composer": true,
             "dealerdirect/phpcodesniffer-composer-installer": true,
             "infection/extension-installer": true
         },
@@ -99,8 +99,7 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
-        ],
-        "post-autoload-dump": "vendor/bin/captainhook install -f -s -n"
+        ]
     },
     "conflict": {
         "symfony/symfony": "*"
@@ -110,6 +109,11 @@
             "allow-contrib": true,
             "require": "6.3.*",
             "docker": true
+        },
+        "captainhook": {
+            "no-interaction": true,
+            "force-install": true,
+            "skip-existing": true
         }
     },
     "require-dev": {

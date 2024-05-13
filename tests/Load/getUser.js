@@ -1,6 +1,5 @@
 import http from 'k6/http';
 import counter from 'k6/x/counter';
-
 import ScenarioUtils from './utils/scenarioUtils.js';
 import Utils from './utils/utils.js';
 import InsertUsersUtils from "./utils/insertUsersUtils.js";
@@ -11,8 +10,7 @@ const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 
-insertUsersUtils.execInsertUsersCommand();
-const users = insertUsersUtils.getInsertedUsers();
+const users = insertUsersUtils.getInsertedUsers()
 
 export function setup() {
     return {

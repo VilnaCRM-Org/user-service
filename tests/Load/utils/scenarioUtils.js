@@ -22,7 +22,8 @@ export default class ScenarioUtils {
             setupTimeout: this.setupTimeout,
             insecureSkipTLSVerify: true,
             scenarios: this.getScenarios(),
-            thresholds: this.getThresholds()
+            thresholds: this.getThresholds(),
+            batchPerHost: this.config.batchSize,
         };
     }
 
