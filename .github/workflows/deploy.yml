@@ -1,0 +1,25 @@
+name: Connect to an AWS role from a GitHub repository
+
+on:
+  push:
+    branches: [5-make-website-layout]
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+jobs:
+  AssumeRoleAndStartExecution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: ${{ secrets.AWS_CODEPIPELINE_ROLE_ARN }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Start Pipeline Execution
+        run: |
+          aws codepipeline start-pipeline-execution --name ${{ secrets.AWS_CODEPIPELINE_NAME }}
