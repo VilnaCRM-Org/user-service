@@ -1,5 +1,6 @@
 # Parameters
 PROJECT	= frontend-ssr-template
+K6 = $(DOCKER) run -v ./src/tests/load:/scripts --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out 'web-dashboard=period=1s&export=/scripts/loadTestsResults/${REPORT_FILENAME}'
 
 # Executables: local only
 PNPM_BIN		= pnpm
@@ -19,6 +20,7 @@ GIT         = git
 
 # Variables
 ARTILLERY_FILES := $(notdir $(shell find ${PWD}/tests/Load -type f -name '*.yml'))
+REPORT_FILENAME ?= default_value
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -97,3 +99,9 @@ start: up ## Start docker
 
 stop: ## Stop docker
 	$(DOCKER_COMPOSE) stop
+
+build-k6-docker:
+	$(DOCKER) build -t k6 -f ./src/tests/load/Dockerfile .
+
+smoke-load-tests: build-k6-docker ## Run load tests with minimal load
+    @REPORT_FILENAME=test.html $(K6) /scripts/homepage.js

@@ -1,0 +1,50 @@
+{
+  "host": "localhost",
+  "port": "3001",
+  "mailCatcherPort": "1080",
+  "batchSize": 50,
+  "autoDetermineUsersToInsert": true,
+  "usersToInsert": 20,
+  "delayBetweenScenarios": 30,
+  "gettingEmailMaxRetries": 50,
+  "endpoints": {
+    "homepage": {
+      "setupTimeoutInMinutes": 10,
+      "smoke": {
+        "threshold": 60,
+        "rps": 10,
+        "vus": 3,
+        "duration": 10
+      },
+      "average": {
+        "threshold": 200,
+        "rps": 50,
+        "vus": 50,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "stress": {
+        "threshold": 500,
+        "rps": 150,
+        "vus": 150,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "spike": {
+        "threshold": 8000,
+        "rps": 400,
+        "vus": 400,
+        "duration": {
+          "rise": 30,
+          "fall": 10
+        }
+      }
+    }
+  }
+}

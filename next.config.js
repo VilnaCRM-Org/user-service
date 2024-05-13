@@ -5,7 +5,7 @@ const LocalizationGenerator = require('./scripts/localizationGenerator');
 const nextConfig = {
   output: 'export',
   images: {
-    unoptimized: true, // HACK: Is necessary to prevent an error from Next.js.
+    unoptimized: true, // Is necessary to prevent an error from Next.js. https://nextjs.org/docs/messages/export-image-api
   },
   reactStrictMode: true,
   swcMinify: true,
