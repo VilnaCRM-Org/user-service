@@ -1,6 +1,6 @@
 # Parameters
 PROJECT	= frontend-ssr-template
-K6 = $(DOCKER) run -v ./src/tests/load:/scripts --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out 'web-dashboard=period=1s&export=/scripts/loadTestsResults/${REPORT_FILENAME}'
+K6 = $(DOCKER) run -v ./src/test/load:/scripts --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out 'web-dashboard=period=1s&export=/scripts/loadTestsResults/${REPORT_FILENAME}'
 
 # Executables: local only
 PNPM_BIN		= pnpm
@@ -19,7 +19,6 @@ GIT         = git
 .PHONY: $(filter-out node_modules,$(MAKECMDGOALS))
 
 # Variables
-ARTILLERY_FILES := $(notdir $(shell find ${PWD}/tests/Load -type f -name '*.yml'))
 REPORT_FILENAME ?= default_value
 
 help:
@@ -77,9 +76,6 @@ update: ## Update node modules according to the current package.json file
 up: ## Start the docker hub (Nodejs)
 	$(DOCKER_COMPOSE) up -d
 
-build: ## Builds the images (Nodejs)
-	$(DOCKER_COMPOSE) build --pull --no-cache
-
 down: ## Stop the docker hub
 	$(DOCKER_COMPOSE) down --remove-orphans
 
@@ -101,7 +97,7 @@ stop: ## Stop docker
 	$(DOCKER_COMPOSE) stop
 
 build-k6-docker:
-	$(DOCKER) build -t k6 -f ./src/tests/load/Dockerfile .
+	$(DOCKER) build -t k6 -f ./src/test/load/Dockerfile .
 
 smoke-load-tests: build-k6-docker ## Run load tests with minimal load
-    @REPORT_FILENAME=test.html $(K6) /scripts/homepage.js
+	REPORT_FILENAME=test.html $(K6) /scripts/homepage.js
