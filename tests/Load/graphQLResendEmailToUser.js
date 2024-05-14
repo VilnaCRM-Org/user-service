@@ -1,12 +1,10 @@
 import http from 'k6/http';
 import counter from 'k6/x/counter';
-
 import InsertUsersUtils from './utils/insertUsersUtils.js';
 import ScenarioUtils from './utils/scenarioUtils.js';
 import Utils from './utils/utils.js';
 
-
-const scenarioName = 'graphqlResendEmailToUser';
+const scenarioName = 'graphQLResendEmailToUser';
 
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);

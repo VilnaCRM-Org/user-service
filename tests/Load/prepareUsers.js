@@ -1,11 +1,9 @@
 import InsertUsersUtils from './utils/insertUsersUtils.js';
-import ScenarioUtils from './utils/scenarioUtils.js';
 import Utils from './utils/utils.js';
 import file from 'k6/x/file';
 
-const filepath = '/scripts/users.json';
-
 const utils = new Utils();
+const filepath = utils.getConfig()['usersFileLocation'] + utils.getConfig()['usersFileName']
 const scenarioName = utils.getCLIVariable('scenarioName');
 const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 
@@ -14,6 +12,7 @@ export function setup() {
 }
 
 export const options = {
+    setupTimeout: utils.getConfig().endpoints[scenarioName].setupTimeoutInMinutes + 'm',
     stages: [
         { duration: '1s', target: 1},
     ],

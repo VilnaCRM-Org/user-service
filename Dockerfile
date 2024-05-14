@@ -24,7 +24,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 	file \
 	gettext \
 	git \
-    supervisor \
 	&& rm -rf /var/lib/apt/lists/*
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
@@ -49,7 +48,6 @@ RUN set -eux; \
 COPY --link infrastructure/docker/php/conf.d/app.ini $PHP_INI_DIR/conf.d/
 COPY --link --chmod=755 infrastructure/docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
 COPY --link infrastructure/docker/caddy/Caddyfile /etc/caddy/Caddyfile
-COPY --link infrastructure/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 
 ENTRYPOINT ["docker-entrypoint"]
 

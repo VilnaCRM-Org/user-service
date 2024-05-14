@@ -1,9 +1,8 @@
 import http from 'k6/http';
-
 import ScenarioUtils from './utils/scenarioUtils.js';
 import Utils from './utils/utils.js';
 
-const scenarioName = 'oauthToken';
+const scenarioName = 'oauth';
 
 const utils = new Utils();
 const config = utils.getConfig();

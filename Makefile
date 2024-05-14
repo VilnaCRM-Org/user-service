@@ -20,9 +20,13 @@ EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
 SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_BIN   = $(EXEC_PHP) symfony
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
-K6 = $(DOCKER) run -v ./tests/Load:/scripts --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out 'web-dashboard=period=1s&export=/scripts/loadTestsResults/${REPORT_FILENAME}'
-PREPARE_USERS = RUN_SMOKE=true RUN_AVERAGE=true RUN_STRESS=true RUN_SPIKE=true $(MAKE) load-tests-prepare-users
-SMOKE_PREPARE_USERS = RUN_SMOKE=true RUN_AVERAGE=false RUN_STRESS=false RUN_SPIKE=false $(MAKE) load-tests-prepare-users
+LOAD_TEST_SCENARIOS = getUser getUsers updateUser createUser confirmUser deleteUser resendEmailToUser replaceUser oauth graphQLUpdateUser graphQLGetUser graphQLGetUsers graphQLDeleteUser graphQLResendEmailToUser graphQLCreateUser graphQLConfirmUser
+K6 = $(DOCKER) run -v ./tests/Load:/scripts --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out 'web-dashboard=period=1s&export=/scripts/loadTestsResults/$(REPORT_FILENAME)'
+BASH_PREPARE_USERS = RUN_SMOKE=true RUN_AVERAGE=true RUN_STRESS=true RUN_SPIKE=true $(MAKE) load-tests-prepare-users
+BASH_SMOKE_PREPARE_USERS = RUN_SMOKE=true RUN_AVERAGE=false RUN_STRESS=false RUN_SPIKE=false $(MAKE) load-tests-prepare-users
+BASH_EXECUTE_SMOKE_SCRIPT = $(MAKE) execute-smoke-script
+BASH_EXECUTE_SCRIPT = $(MAKE) execute-script
+SMOKE_CLI_OPTIONS = -e run_average=false -e run_stress=false -e run_spike=false
 
 # Executables: vendors
 PHPUNIT       = ./vendor/bin/phpunit
@@ -47,6 +51,11 @@ RUN_AVERAGE ?= default_value
 RUN_STRESS ?= default_value
 RUN_SPIKE ?= default_value
 REPORT_FILENAME ?= default_value
+
+export BASH_PREPARE_USERS
+export BASH_SMOKE_PREPARE_USERS
+export BASH_EXECUTE_SMOKE_SCRIPT
+export LOAD_TEST_SCENARIOS
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -99,45 +108,21 @@ setup-test-db: ## Create database for testing purposes
 all-tests: unit-tests integration-tests e2e-tests ## Run unit, integration and e2e tests
 
 smoke-load-tests: build-k6-docker ## Run load tests with minimal load
-	SCENARIO_NAME=getUser $(SMOKE_PREPARE_USERS) && REPORT_FILENAME=getUser.html $(K6) /scripts/getUser.js -e run_average=false -e run_stress=false -e run_spike=false
-	SCENARIO_NAME=getUsers $(SMOKE_PREPARE_USERS) && REPORT_FILENAME=getUsers.html $(K6) /scripts/getUsers.js -e run_average=false -e run_stress=false -e run_spike=false
-	SCENARIO_NAME=updateUser $(SMOKE_PREPARE_USERS) && REPORT_FILENAME=updateUser.html $(K6) /scripts/updateUser.js -e run_average=false -e run_stress=false -e run_spike=false
-	REPORT_FILENAME=createUser.html $(K6) /scripts/createUser.js -e run_average=false -e run_stress=false -e run_spike=false
-	REPORT_FILENAME=confirmUser.html $(K6) /scripts/confirmUser.js -e run_average=false -e run_stress=false -e run_spike=false
-	SCENARIO_NAME=deleteUser $(SMOKE_PREPARE_USERS) && REPORT_FILENAME=deleteUser.html $(K6) /scripts/deleteUser.js -e run_average=false -e run_stress=false -e run_spike=false
-	SCENARIO_NAME=resendEmailToUser $(SMOKE_PREPARE_USERS) && REPORT_FILENAME=resendEmailToUser.html $(K6) /scripts/resendEmailToUser.js -e run_average=false -e run_stress=false -e run_spike=false
-	SCENARIO_NAME=replaceUser $(SMOKE_PREPARE_USERS) && REPORT_FILENAME=replaceUser.html $(K6) /scripts/replaceUser.js -e run_average=false -e run_stress=false -e run_spike=false
-	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauthToken.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauthToken.clientRedirectUri' $(LOAD_TEST_CONFIG))
-	SCENARIO_NAME=oauth $(SMOKE_PREPARE_USERS) && REPORT_FILENAME=oauth.html $(K6) /scripts/oauth.js -e run_average=false -e run_stress=false -e run_spike=false
-	SCENARIO_NAME=graphQLUpdateUser $(SMOKE_PREPARE_USERS) && REPORT_FILENAME=graphQLUpdateUser.html $(K6) /scripts/graphQLUpdateUser.js -e run_average=false -e run_stress=false -e run_spike=false
-	SCENARIO_NAME=graphQLGetUser $(SMOKE_PREPARE_USERS) && REPORT_FILENAME=graphQLGetUser.html $(K6) /scripts/graphQLGetUser.js -e run_average=false -e run_stress=false -e run_spike=false
-	SCENARIO_NAME=graphQLGetUsers $(SMOKE_PREPARE_USERS) && REPORT_FILENAME=graphQLGetUsers.html $(K6) /scripts/graphQLGetUsers.js -e run_average=false -e run_stress=false -e run_spike=false
-	SCENARIO_NAME=graphQLDeleteUser $(SMOKE_PREPARE_USERS) && REPORT_FILENAME=graphQLDeleteUser.html $(K6) /scripts/graphQLDeleteUser.js -e run_average=false -e run_stress=false -e run_spike=false
-	SCENARIO_NAME=graphQLResendEmailToUser $(SMOKE_PREPARE_USERS) && REPORT_FILENAME=graphQLResendEmailToUser.html $(K6) /scripts/graphQLResendEmailToUser.js -e run_average=false -e run_stress=false -e run_spike=false
-	REPORT_FILENAME=graphQLCreateUser.html $(K6) /scripts/graphQLCreateUser.js -e run_average=false -e run_stress=false -e run_spike=false
-	REPORT_FILENAME=graphQLConfirmUser.html $(K6) /scripts/graphQLConfirmUser.js -e run_average=false -e run_stress=false -e run_spike=false
+	#$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	tests/Load/run-smoke-load-tests.sh
 
 load-tests: build-k6-docker ## Run load tests
-	SCENARIO_NAME=getUser $(PREPARE_USERS) REPORT_FILENAME=getUser.html $(K6) /scripts/getUser.js
-	SCENARIO_NAME=getUsers $(PREPARE_USERS) REPORT_FILENAME=getUsers.html $(K6) /scripts/getUsers.js
-	SCENARIO_NAME=updateUser $(PREPARE_USERS) REPORT_FILENAME=updateUser.html $(K6) /scripts/updateUser.js
-	REPORT_FILENAME=createUser.html $(K6) /scripts/createUser.js
-	REPORT_FILENAME=confirmUser.html $(K6) /scripts/confirmUser.js
-	SCENARIO_NAME=deleteUser $(PREPARE_USERS) REPORT_FILENAME=deleteUser.html $(K6) /scripts/deleteUser.js
-	SCENARIO_NAME=resendEmailToUser $(PREPARE_USERS) REPORT_FILENAME=resendEmailToUser.html $(K6) /scripts/resendEmailToUser.js
-	SCENARIO_NAME=replaceUser $(PREPARE_USERS) REPORT_FILENAME=replaceUser.html $(K6) /scripts/replaceUser.js
-	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauthToken.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauthToken.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauthToken.clientRedirectUri' $(LOAD_TEST_CONFIG))
-	SCENARIO_NAME=oauth $(PREPARE_USERS) REPORT_FILENAME=oauth.html $(K6) /scripts/oauth.js
-	SCENARIO_NAME=graphQLUpdateUser $(PREPARE_USERS) REPORT_FILENAME=graphQLUpdateUser.html $(K6) /scripts/graphQLUpdateUser.js
-	SCENARIO_NAME=graphQLGetUser $(PREPARE_USERS) REPORT_FILENAME=graphQLGetUser.html $(K6) /scripts/graphQLGetUser.js
-	SCENARIO_NAME=graphQLGetUsers $(PREPARE_USERS) REPORT_FILENAME=graphQLGetUsers.html $(K6) /scripts/graphQLGetUsers.js
-	SCENARIO_NAME=graphQLDeleteUser $(PREPARE_USERS) REPORT_FILENAME=graphQLDeleteUser.html $(K6) /scripts/graphQLDeleteUser.js
-	SCENARIO_NAME=graphQLResendEmailToUser $(PREPARE_USERS) REPORT_FILENAME=graphQLResendEmailToUser.html $(K6) /scripts/graphQLResendEmailToUser.js
-	REPORT_FILENAME=graphQLCreateUser.html $(K6) /scripts/graphQLCreateUser.js
-	REPORT_FILENAME=graphQLConfirmUser.html $(K6) /scripts/graphQLConfirmUser.js
+	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	tests/Load/run-load-tests.sh
 
 load-tests-prepare-users:
 	$(K6) /scripts/prepareUsers.js -e scenarioName=$(SCENARIO_NAME) -e run_smoke=$(RUN_SMOKE) -e run_average=$(RUN_AVERAGE) -e run_stress=$(RUN_STRESS) -e run_spike=$(RUN_SPIKE)
+
+execute-smoke-script:
+	$(K6) /scripts/$(SCENARIO_NAME).js $(SMOKE_CLI_OPTIONS)
+
+execute-script:
+	$(K6) /scripts/$(SCENARIO_NAME).js
 
 build-k6-docker:
 	$(DOCKER) build -t k6 -f ./tests/Load/Dockerfile .

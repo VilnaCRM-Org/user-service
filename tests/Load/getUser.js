@@ -24,7 +24,7 @@ export default function getUser(data) {
     const user = data.users[counter.up()];
     utils.checkUserIsDefined(user);
 
-    const {id} = user;
+    const { id } = user;
 
     const response = http.get(
         `${utils.getBaseHttpUrl()}/${id}`,

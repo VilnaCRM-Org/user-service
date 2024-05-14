@@ -6,6 +6,8 @@
     "usersToInsert": 20,
     "delayBetweenScenarios": 30,
     "gettingEmailMaxRetries": 50,
+    "usersFileLocation": "/scripts/",
+    "usersFileName": "users.json",
     "endpoints": {
         "getUser": {
             "setupTimeoutInMinutes": 10,
@@ -311,7 +313,7 @@
                 }
             }
         },
-        "oauthToken": {
+        "oauth": {
             "setupTimeoutInMinutes": 10,
             "clientName": "ClientName",
             "clientSecret": "Secret1",
@@ -353,7 +355,7 @@
                 }
             }
         },
-        "graphqlGetUser": {
+        "graphQLGetUser": {
             "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 60,
@@ -391,7 +393,7 @@
                 }
             }
         },
-        "graphqlGetUsers": {
+        "graphQLGetUsers": {
             "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 70,
@@ -429,7 +431,7 @@
                 }
             }
         },
-        "graphqlCreateUser": {
+        "graphQLCreateUser": {
             "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 3000,
@@ -467,7 +469,7 @@
                 }
             }
         },
-        "graphqlUpdateUser": {
+        "graphQLUpdateUser": {
             "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 6500,
@@ -505,7 +507,7 @@
                 }
             }
         },
-        "graphqlConfirmUser": {
+        "graphQLConfirmUser": {
             "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 3000,
@@ -543,7 +545,7 @@
                 }
             }
         },
-        "graphqlDeleteUser": {
+        "graphQLDeleteUser": {
             "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 90,
@@ -581,7 +583,7 @@
                 }
             }
         },
-        "graphqlResendEmailToUser": {
+        "graphQLResendEmailToUser": {
             "setupTimeoutInMinutes": 10,
             "smoke": {
                 "threshold": 90,

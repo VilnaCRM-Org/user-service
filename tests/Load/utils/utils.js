@@ -1,4 +1,4 @@
-import {check} from 'k6';
+import { check } from 'k6';
 import http from 'k6/http';
 import faker from 'k6/x/faker';
 

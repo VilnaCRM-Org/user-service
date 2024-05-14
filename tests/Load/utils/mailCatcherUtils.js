@@ -17,9 +17,9 @@ export default class MailCatcherUtils {
         let token = null;
         const promises = [];
 
-        for (let attempt = 0; attempt < this.config.gettingEmailMaxRetries; attempt++) {
+        Array.from({ length: this.config.gettingEmailMaxRetries }).forEach(() => {
             promises.push(this.retrieveTokenFromMailCatcher(email));
-        }
+        });
 
         const results = await Promise.all(promises);
 
@@ -32,7 +32,6 @@ export default class MailCatcherUtils {
 
         return token;
     }
-
 
     async retrieveTokenFromMailCatcher(email) {
         const messages = await http.get(this.mailCatcherUrl);

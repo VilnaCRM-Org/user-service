@@ -1,6 +1,5 @@
 import http from 'k6/http';
 import counter from 'k6/x/counter';
-
 import InsertUsersUtils from './utils/insertUsersUtils.js';
 import ScenarioUtils from './utils/scenarioUtils.js';
 import Utils from './utils/utils.js';
@@ -25,7 +24,7 @@ export default function deleteUser(data) {
     const user = data.users[counter.up()];
     utils.checkUserIsDefined(user);
 
-    const {id} = user;
+    const { id } = user;
 
     const response = http.del(
         `${utils.getBaseHttpUrl()}/${id}`,

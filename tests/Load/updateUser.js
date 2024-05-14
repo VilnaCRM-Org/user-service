@@ -1,10 +1,8 @@
 import http from 'k6/http';
 import counter from 'k6/x/counter';
-
 import InsertUsersUtils from './utils/insertUsersUtils.js';
 import ScenarioUtils from './utils/scenarioUtils.js';
 import Utils from './utils/utils.js';
-
 
 const scenarioName = 'updateUser';
 
@@ -26,7 +24,7 @@ export default function updateUser(data) {
     const user = data.users[counter.up()];
     utils.checkUserIsDefined(user);
 
-    const {id} = user;
+    const { id } = user;
     const generatedUser = utils.generateUser();
     const password = user.password;
 

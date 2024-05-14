@@ -1,10 +1,9 @@
 import http from 'k6/http';
-
 import MailCatcherUtils from './utils/mailCatcherUtils.js';
 import ScenarioUtils from './utils/scenarioUtils.js';
 import Utils from './utils/utils.js';
 
-const scenarioName = 'graphqlConfirmUser';
+const scenarioName = 'graphQLConfirmUser';
 
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
@@ -14,7 +13,7 @@ export const options = scenarioUtils.getOptions();
 
 export default async function confirmUser() {
     const generatedUser = utils.generateUser();
-    const {email} = generatedUser;
+    const { email } = generatedUser;
     const userResponse = await utils.registerUser(generatedUser);
     const user = JSON.parse(userResponse.body);
     const id = utils.getGraphQLIdPrefix() + user.id;
@@ -40,6 +39,8 @@ export default async function confirmUser() {
         JSON.stringify({query: mutation}),
         utils.getJsonHeader(),
     );
+
+    console.log(response.body);
 
     utils.checkResponse(
         response,

@@ -31,7 +31,7 @@ export default class InsertUsersUtils {
     }
 
     getInsertedUsers(){
-        return JSON.parse(open('users.json'));
+        return JSON.parse(open(this.utils.getConfig()['usersFileName']));
     }
 
     * requestGenerator(numberOfUsers) {

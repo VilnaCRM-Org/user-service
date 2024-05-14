@@ -1,9 +1,8 @@
 import http from 'k6/http';
-
 import ScenarioUtils from './utils/scenarioUtils.js';
 import Utils from './utils/utils.js';
 
-const scenarioName = 'graphqlCreateUser';
+const scenarioName = 'graphQLCreateUser';
 
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
