@@ -54,3 +54,6 @@ next-env.d.ts
 
 # stryker temp files
 .stryker-tmp
+
+# k6 config
+/src/test/load/config.json

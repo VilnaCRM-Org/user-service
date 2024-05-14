@@ -1,0 +1,15 @@
+{
+  "apiHost": "localhost",
+  "delayBetweenScenarios": 30,
+  "endpoints": {
+    "homepage": {
+      "setupTimeoutInMinutes": 10,
+      "smoke": {
+        "threshold": 60,
+        "rps": 10,
+        "vus": 10,
+        "duration": 10
+      }
+    }
+  }
+}
