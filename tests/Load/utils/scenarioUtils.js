@@ -36,11 +36,11 @@ export default class ScenarioUtils {
             'run_spike': this.addSpikeScenario.bind(this, scenariosBuilder)
         };
 
-        for (const key in scenarioFunctions) {
+        Object.keys(scenarioFunctions).forEach((key) => {
             if (this.utils.getCLIVariable(key) !== 'false') {
                 scenarioFunctions[key]();
             }
-        }
+        });
 
         return scenariosBuilder.build();
     }
@@ -88,12 +88,12 @@ export default class ScenarioUtils {
             'run_spike': { name: 'spike', config: this.spikeConfig }
         };
 
-        for (const key in thresholdConfigs) {
+        Object.keys(thresholdConfigs).forEach((key) => {
             if (this.utils.getCLIVariable(key) !== 'false') {
                 const { name, config } = thresholdConfigs[key];
                 thresholdsBuilder.addThreshold(name, config);
             }
-        }
+        });
 
         return thresholdsBuilder.build();
     }

@@ -24,6 +24,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 	file \
 	gettext \
 	git \
+    systemd \
+    systemd-sysv \
 	&& rm -rf /var/lib/apt/lists/*
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
@@ -71,6 +73,27 @@ RUN set -eux; \
 COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
 
 CMD [ "frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--watch" ]
+
+# Worker FrankenPHP image
+FROM frankenphp_base AS frankenphp_worker
+
+VOLUME /app/var/
+
+RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
+
+COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
+
+RUN mkdir -p /run/systemd && \
+    echo 'docker' > /run/systemd/container && \
+    ln -sf /lib/systemd/systemd /sbin/init
+
+# Copy the systemd service file
+COPY infrastructure/systemd/worker.service /etc/systemd/system/worker.service
+
+# Enable the service
+RUN systemctl enable worker.service
+
+CMD ["/sbin/init", "systemctl start worker.service"]
 
 # Prod FrankenPHP image
 FROM frankenphp_base AS frankenphp_prod

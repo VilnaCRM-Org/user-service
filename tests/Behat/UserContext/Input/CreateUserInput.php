@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserContext\Input;
 
-final readonly class CreateUserInput extends RequestInput
+final class CreateUserInput extends RequestInput
 {
     public function __construct(
-        public ?string $email = null,
-        public ?string $initials = null,
-        public ?string $password = null
+        public readonly ?string $email = null,
+        public readonly ?string $initials = null,
+        public readonly ?string $password = null
     ) {
     }
 }

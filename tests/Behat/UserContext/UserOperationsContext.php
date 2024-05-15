@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Behat\UserContext;
 
 use App\Tests\Behat\UserContext\Input\ConfirmUserInput;
+use App\Tests\Behat\UserContext\Input\CreateUserBatchInput;
 use App\Tests\Behat\UserContext\Input\CreateUserInput;
 use App\Tests\Behat\UserContext\Input\EmptyInput;
 use App\Tests\Behat\UserContext\Input\RequestInput;
@@ -71,6 +72,31 @@ final class UserOperationsContext implements Context
         string $password
     ): void {
         $this->requestBody = new CreateUserInput($email, $initials, $password);
+    }
+
+    /**
+     * @Given sending a batch of users
+     */
+    public function sendingUserBatch(): void
+    {
+        $this->requestBody = new CreateUserBatchInput();
+    }
+
+    /**
+     * @Given with user with email :email, initials :initials, password :password
+     */
+    public function addUserToBatch(
+        string $email,
+        string $initials,
+        string $password
+    ): void {
+        $this->requestBody->addUser(
+            [
+                'email' => $email,
+                'initials' => $initials,
+                'password' => $password,
+            ]
+        );
     }
 
     /**

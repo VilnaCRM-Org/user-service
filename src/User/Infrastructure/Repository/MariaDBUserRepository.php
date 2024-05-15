@@ -37,4 +37,15 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
     {
         return $this->findOneBy(['email' => $email]);
     }
+
+    /**
+     * @param array<User> $users
+     */
+    public function saveBatch(array $users): void
+    {
+        foreach ($users as $user) {
+            $this->entityManager->persist($user);
+        }
+        $this->entityManager->flush();
+    }
 }

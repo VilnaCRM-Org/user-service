@@ -14,7 +14,6 @@ export default class MailCatcherUtils {
     }
 
     async getConfirmationToken(email) {
-        let token = null;
         const promises = [];
 
         Array.from({ length: this.config.gettingEmailMaxRetries }).forEach(() => {
@@ -23,14 +22,7 @@ export default class MailCatcherUtils {
 
         const results = await Promise.all(promises);
 
-        for (const result of results) {
-            if (result) {
-                token = result;
-                break;
-            }
-        }
-
-        return token;
+        return results.find(result => result);
     }
 
     async retrieveTokenFromMailCatcher(email) {
@@ -46,16 +38,10 @@ export default class MailCatcherUtils {
         return null;
     }
 
-    getMessageId(messages, email){
-        let messageId;
-        for (const message of JSON.parse(messages.body)) {
-            if (message.recipients[0].includes(`<${email}>`)) {
-                messageId = message.id;
-                break;
-            }
-        }
-
-        return messageId;
+    getMessageId(messages, email) {
+        const parsedMessages = JSON.parse(messages.body);
+        const foundMessage = parsedMessages.find(message => message.recipients[0].includes(`<${email}>`));
+        return foundMessage ? foundMessage.id : null;
     }
 
     extractConfirmationToken(emailBody) {

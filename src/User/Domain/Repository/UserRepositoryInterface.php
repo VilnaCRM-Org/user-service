@@ -22,6 +22,11 @@ interface UserRepositoryInterface
     public function delete(object $user): void;
 
     /**
+     * @param array<User> $users
+     */
+    public function saveBatch(array $users): void;
+
+    /**
      * @param string $id
      *
      * @return User

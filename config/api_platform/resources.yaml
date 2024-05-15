@@ -17,6 +17,11 @@ resources:
         class: 'ApiPlatform\Metadata\Post'
         input: 'App\User\Application\DTO\UserRegisterDto'
         processor: 'App\User\Application\Processor\RegisterUserProcessor'
+      create_batch_http:
+        class: 'ApiPlatform\Metadata\Post'
+        input: 'App\User\Application\DTO\UserRegisterBatchDto'
+        processor: 'App\User\Application\Processor\RegisterUserBatchProcessor'
+        uriTemplate: 'users/batch'
       confirm_http:
         class: 'ApiPlatform\Metadata\Patch'
         input: 'App\User\Application\DTO\ConfirmUserDto'

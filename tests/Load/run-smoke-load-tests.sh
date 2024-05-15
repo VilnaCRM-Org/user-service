@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 for scenario in $LOAD_TEST_SCENARIOS; do
   if [[ $scenario != "createUser" && $scenario != "confirmUser" && $scenario != "graphQLCreateUser" && $scenario != "graphQLConfirmUser" ]]; then

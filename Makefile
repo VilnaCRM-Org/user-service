@@ -20,7 +20,7 @@ EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
 SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_BIN   = $(EXEC_PHP) symfony
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
-LOAD_TEST_SCENARIOS = getUser getUsers updateUser createUser confirmUser deleteUser resendEmailToUser replaceUser oauth graphQLUpdateUser graphQLGetUser graphQLGetUsers graphQLDeleteUser graphQLResendEmailToUser graphQLCreateUser graphQLConfirmUser
+LOAD_TEST_SCENARIOS = graphQLConfirmUser
 K6 = $(DOCKER) run -v ./tests/Load:/scripts --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out 'web-dashboard=period=1s&export=/scripts/loadTestsResults/$(REPORT_FILENAME)'
 BASH_PREPARE_USERS = RUN_SMOKE=true RUN_AVERAGE=true RUN_STRESS=true RUN_SPIKE=true $(MAKE) load-tests-prepare-users
 BASH_SMOKE_PREPARE_USERS = RUN_SMOKE=true RUN_AVERAGE=false RUN_STRESS=false RUN_SPIKE=false $(MAKE) load-tests-prepare-users
@@ -108,7 +108,7 @@ setup-test-db: ## Create database for testing purposes
 all-tests: unit-tests integration-tests e2e-tests ## Run unit, integration and e2e tests
 
 smoke-load-tests: build-k6-docker ## Run load tests with minimal load
-	#$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-smoke-load-tests.sh
 
 load-tests: build-k6-docker ## Run load tests

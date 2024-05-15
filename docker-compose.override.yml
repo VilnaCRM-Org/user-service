@@ -37,6 +37,10 @@ services:
     networks:
       - user-service
 
+  worker:
+    networks:
+      - user-service
+
   redis:
     networks:
       - user-service

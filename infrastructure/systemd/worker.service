@@ -1,0 +1,13 @@
+[Unit]
+Description=Run Symfony Messenger Consume Command
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/app/bin/console messenger:consume send-email --time-limit=3600
+Restart=on-failure
+WorkingDirectory=/app
+User=root
+
+[Install]
+WantedBy=multi-user.target

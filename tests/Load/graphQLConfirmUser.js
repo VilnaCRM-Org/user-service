@@ -40,8 +40,6 @@ export default async function confirmUser() {
         utils.getJsonHeader(),
     );
 
-    console.log(response.body);
-
     utils.checkResponse(
         response,
         'confirmed user returned',

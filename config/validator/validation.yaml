@@ -17,6 +17,28 @@ App\User\Application\DTO\UserRegisterDto:
           max: 255
       - App\Shared\Application\Validator\Password: ~
 
+App\User\Application\DTO\UserRegisterBatchDto:
+  properties:
+    users:
+      - All:
+          - Collection:
+              email:
+                - Email: { message: 'email.invalid' }
+                - NotBlank: { message: 'not.blank' }
+                - Length:
+                    max: 255
+                - App\Shared\Application\Validator\UniqueEmail: ~
+              initials:
+                - NotBlank: { message: 'not.blank' }
+                - Length:
+                    max: 255
+                - App\Shared\Application\Validator\Initials: ~
+              password:
+                - NotBlank: { message: 'not.blank' }
+                - Length:
+                    max: 255
+                - App\Shared\Application\Validator\Password: ~
+
 App\User\Application\DTO\UserPatchDto:
   properties:
     email:

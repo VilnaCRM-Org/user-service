@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserContext\Input;
 
-final readonly class ConfirmUserInput extends RequestInput
+final class ConfirmUserInput extends RequestInput
 {
-    public function __construct(public string $token)
+    public function __construct(public readonly string $token)
     {
     }
 }

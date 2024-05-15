@@ -43,7 +43,10 @@ export default class ScenariosBuilder {
                     target: spikeConfig.rps,
                     duration: spikeConfig.duration.rise + 's'
                 },
-                {target: 0, duration: spikeConfig.duration.fall + 's'},
+                {
+                    target: 0,
+                    duration: spikeConfig.duration.fall + 's'
+                },
             ],
             startTime: startTime + 's',
             tags: {test_type: 'spike'},
@@ -67,7 +70,10 @@ export default class ScenariosBuilder {
                     target: config.rps,
                     duration: config.duration.plateau + 's'
                 },
-                {target: 0, duration: config.duration.fall + 's'},
+                {
+                    target: 0,
+                    duration: config.duration.fall + 's'
+                },
             ],
             startTime: startTime + 's',
             tags: {test_type: scenarioName},
