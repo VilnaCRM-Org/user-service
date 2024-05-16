@@ -173,3 +173,9 @@ Feature: User Operations Localization
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221"
     Then the response status code should be 404
     And the error message should be "Не знайдено"
+
+  Scenario: Resending email to non-existing user and Ukrainian language
+    Given with language "uk"
+    When POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221/resend-confirmation-email"
+    Then the response status code should be 404
+    And the error message should be "Користувача не знайдено"

@@ -20,6 +20,7 @@ App\User\Application\DTO\UserRegisterDto:
 App\User\Application\DTO\UserRegisterBatchDto:
   properties:
     users:
+      - App\Shared\Application\Validator\CreateUserBatch: ~
       - All:
           - Collection:
               email:

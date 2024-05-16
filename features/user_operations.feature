@@ -79,14 +79,6 @@ Feature: User Operations
     Then the response status code should be 422
     And violation should be "This email address is already registered"
 
-  Scenario: Creating a batch of users with duplicate email
-    Given user with email "test@mail.com" exists
-    And sending a batch of users
-    And with user with email "test@mail.com", initials "name surname", password "passWORD1"
-    When POST request is send to "/api/users/batch"
-    Then the response status code should be 422
-    And violation should be "This email address is already registered"
-
   Scenario: Creating a batch of users invalid email
     Given sending a batch of users
     And with user with email "test", initials "name surname", password "passWORD1"

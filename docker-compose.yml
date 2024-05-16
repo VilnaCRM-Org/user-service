@@ -30,18 +30,18 @@ services:
         published: ${HTTP3_PORT:-443}
         protocol: udp
 
-  worker:
+  workers:
+    depends_on:
+      - php
     build:
       context: .
-      target: frankenphp_worker
+      target: app_workers
     privileged: true
     environment:
       - container=docker
     volumes:
       - ./:/app
       - /app/var
-      - ./infrastructure/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./infrastructure/docker/php/conf.d/app.dev.ini:/usr/local/etc/php/conf.d/app.dev.ini:ro
 
   database:
     image: mariadb:latest

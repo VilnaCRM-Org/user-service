@@ -12,6 +12,7 @@ DOCKER_COMPOSE   = docker compose
 
 # Executables
 EXEC_PHP      = $(DOCKER_COMPOSE) exec php
+EXEC_WORKERS  = $(DOCKER_COMPOSE) exec workers
 COMPOSER      = $(EXEC_PHP) composer
 GIT           = git
 EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
@@ -20,7 +21,7 @@ EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
 SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_BIN   = $(EXEC_PHP) symfony
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
-LOAD_TEST_SCENARIOS = graphQLConfirmUser
+LOAD_TEST_SCENARIOS = getUser getUsers updateUser createUser confirmUser deleteUser resendEmailToUser replaceUser oauth graphQLUpdateUser graphQLGetUser graphQLGetUsers graphQLDeleteUser graphQLResendEmailToUser graphQLCreateUser graphQLConfirmUser
 K6 = $(DOCKER) run -v ./tests/Load:/scripts --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out 'web-dashboard=period=1s&export=/scripts/loadTestsResults/$(REPORT_FILENAME)'
 BASH_PREPARE_USERS = RUN_SMOKE=true RUN_AVERAGE=true RUN_STRESS=true RUN_SPIKE=true $(MAKE) load-tests-prepare-users
 BASH_SMOKE_PREPARE_USERS = RUN_SMOKE=true RUN_AVERAGE=false RUN_STRESS=false RUN_SPIKE=false $(MAKE) load-tests-prepare-users
@@ -204,6 +205,12 @@ down: ## Stop the docker hub
 
 sh: ## Log to the docker container
 	@$(EXEC_PHP) sh
+
+workers-status:
+	$(EXEC_WORKERS) sh -c 'systemctl status worker'
+
+workers-logs:
+	$(EXEC_WORKERS) sh -c 'journalctl -u worker.service'
 
 logs: ## Show all logs
 	@$(DOCKER_COMPOSE) logs --follow

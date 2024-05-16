@@ -19,14 +19,18 @@ framework:
         retry_strategy:
           service: 'App\Shared\Infrastructure\RetryStrategy\InfiniteRetryStrategy'
 
+      process-user-batch:
+        dsn: '%env(PROCESS_USER_BATCH_TRANSPORT_DSN)%'
+
     routing:
       # Route your messages to the transports
       'Symfony\Component\Mailer\Messenger\SendEmailMessage': send-email
+      'App\User\Application\Message\UserRegisteredMessage': process-user-batch
 
 when@test:
   framework:
     messenger:
       transports:
-          # replace with your transport name here (e.g., my_transport: 'in-memory://')
-          # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
+        # replace with your transport name here (e.g., my_transport: 'in-memory://')
+        # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
         send-email: 'in-memory://'
