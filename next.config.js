@@ -1,3 +1,4 @@
+const withBundleAnalyzer = require('@next/bundle-analyzer')();
 const LocalizationGenerator = require('./scripts/localizationGenerator');
 
 /** @type {import('next').NextConfig} */
@@ -17,4 +18,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = process.env.ANALYZE === 'true' ? withBundleAnalyzer(nextConfig) : nextConfig;

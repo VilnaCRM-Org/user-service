@@ -61,7 +61,7 @@ importers:
         specifier: ^7.39.4
         version: 7.43.7(@types/node@18.11.9)
       '@next/bundle-analyzer':
-        specifier: ^14.1.0
+        specifier: ^14.2.3
         version: 14.2.3
       '@next/eslint-plugin-next':
         specifier: ^14.1.0

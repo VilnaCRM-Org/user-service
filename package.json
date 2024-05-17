@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:analyze": "ANALYZE=true pnpm run build",
     "start": "next build && npx serve@latest out",
     "git-hooks-install": "husky install",
     "storybook-start": "storybook dev -p 6006",
@@ -45,7 +46,7 @@
     "@faker-js/faker": "^8.4.1",
     "@lhci/cli": "^0.13.0",
     "@microsoft/api-extractor": "^7.39.4",
-    "@next/bundle-analyzer": "^14.1.0",
+    "@next/bundle-analyzer": "^14.2.3",
     "@next/eslint-plugin-next": "^14.1.0",
     "@next/third-parties": "^14.1.4",
     "@playwright/test": "^1.41.2",
