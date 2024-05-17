@@ -34,17 +34,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+./tsconfig.tsbuildinfo
 
 /.idea
 .vsco
 
-
+#lighthouse
 .lighthouseci/
-
-./tsconfig.tsbuildinfo
+/lhci-reports-desktop
+/lhci-reports-mobile
 
 .vscode
-
 
 ./storybook-static
 /test-results/

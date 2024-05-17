@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next build && npx serve@latest out",
     "git-hooks-install": "husky install",
     "storybook-start": "storybook dev -p 6006",
     "storybook-build": "storybook build",
@@ -20,8 +20,8 @@
     "test:visual": "playwright test ./src/test/visual",
     "test:unit": "jest --verbose",
     "test:memory-leak": "memlab run -v --scenario ./memlab/memoryLeakTest.js",
-    "lighthouse:desktop": "next build && lhci autorun --config=lighthouserc.desktop.js",
-    "lighthouse:mobile": "next build && lhci autorun --config=lighthouserc.mobile.js",
+    "lighthouse:desktop": "next build && lhci autorun --config=lighthouserc.desktop.js --collect.startServerCommand=\"npx serve@latest out\"",
+    "lighthouse:mobile": "next build && lhci autorun --config=lighthouserc.mobile.js --collect.startServerCommand=\"npx serve@latest out\"",
     "check-node-version": "node checkNodeVersion.js",
     "preinstall": "pnpm run check-node-version"
   },
@@ -31,6 +31,7 @@
     "@mui/material": "^5.15.13",
     "@mui/system": "^5.15.13",
     "@next/env": "^14.1.4",
+    "dotenv": "^16.4.5",
     "graphql": "^16.8.1",
     "i18next": "^23.10.1",
     "react": "18.2.0",
