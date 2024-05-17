@@ -1,6 +1,6 @@
 # Parameters
 PROJECT	= frontend-ssr-template
-K6 = $(DOCKER) run -v ./src/test/load:/scripts --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out 'web-dashboard=period=1s&export=/scripts/loadTestsResults/${REPORT_FILENAME}'
+K6 = $(DOCKER) run -v ./src/test/load:/loadTests --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
 
 # Executables: local only
 PNPM_BIN		= pnpm
@@ -99,5 +99,5 @@ stop: ## Stop docker
 build-k6-docker:
 	$(DOCKER) build -t k6 -f ./src/test/load/Dockerfile .
 
-smoke-load-tests: build-k6-docker ## Run load tests with minimal load
-	REPORT_FILENAME=test.html $(K6) /scripts/homepage.js
+load-tests: build-k6-docker ## Run load tests with minimal load
+	$(K6) --out 'web-dashboard=period=1s&export=/loadTests/results/homepage.html' /loadTests/homepage.js

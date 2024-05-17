@@ -1,5 +1,6 @@
 {
-  "apiHost": "localhost",
+  "host": "localhost",
+  "port": "3000",
   "delayBetweenScenarios": 30,
   "endpoints": {
     "homepage": {
