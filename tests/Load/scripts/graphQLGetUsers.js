@@ -1,7 +1,7 @@
 import http from 'k6/http';
-import InsertUsersUtils from './utils/insertUsersUtils.js';
-import ScenarioUtils from './utils/scenarioUtils.js';
-import Utils from './utils/utils.js';
+import InsertUsersUtils from '../utils/insertUsersUtils.js';
+import ScenarioUtils from '../utils/scenarioUtils.js';
+import Utils from '../utils/utils.js';
 
 const scenarioName = 'graphQLGetUsers';
 

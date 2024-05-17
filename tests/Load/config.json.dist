@@ -6,7 +6,7 @@
     "usersToInsert": 20,
     "delayBetweenScenarios": 30,
     "gettingEmailMaxRetries": 50,
-    "usersFileLocation": "/scripts/",
+    "usersFileLocation": "/loadTests/",
     "usersFileName": "users.json",
     "endpoints": {
         "getUser": {

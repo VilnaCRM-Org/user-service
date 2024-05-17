@@ -17,4 +17,4 @@ batch:
     'Batch should have at least one user'
   email:
     duplicate:
-      'Duplicate email %email%'
+      'Duplicate email in a batch'

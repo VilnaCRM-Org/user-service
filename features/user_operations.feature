@@ -114,6 +114,20 @@ Feature: User Operations
     Then the response status code should be 422
     And violation should be "Initials can not consist only of spaces"
 
+  Scenario: Creating a batch of users with an empty batch
+    Given sending a batch of users
+    When POST request is send to "/api/users/batch"
+    Then the response status code should be 422
+    And violation should be "Batch should have at least one user"
+
+  Scenario: Creating a batch of users with a duplicate emails in a batch
+    Given sending a batch of users
+    And with user with email "test@mail.com", initials "name surname", password "passWORD1"
+    And with user with email "test@mail.com", initials "name surname", password "passWORD1"
+    When POST request is send to "/api/users/batch"
+    Then the response status code should be 422
+    And violation should be "Duplicate email in a batch"
+
   Scenario: Getting a user
     Given user with id "8be90127-9840-4235-a6da-39b8debfb220" exists
     When GET request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb220"

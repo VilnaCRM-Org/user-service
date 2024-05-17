@@ -14,9 +14,9 @@ export default class Utils {
 
     getConfig() {
         try {
-            return JSON.parse(open('config.json'));
+            return JSON.parse(open('../config.json'));
         } catch (error) {
-            return JSON.parse(open('config.json.dist'));
+            return JSON.parse(open('../config.json.dist'));
         }
     }
 

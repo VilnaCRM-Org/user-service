@@ -48,7 +48,7 @@ RUN set -eux; \
 ###< recipes ###
 
 COPY --link infrastructure/docker/php/conf.d/app.ini $PHP_INI_DIR/conf.d/
-COPY --link --chmod=755 infrastructure/docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
+COPY --link --chmod=700 infrastructure/docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
 COPY --link infrastructure/docker/caddy/Caddyfile /etc/caddy/Caddyfile
 
 ENTRYPOINT ["docker-entrypoint"]
@@ -82,7 +82,7 @@ VOLUME /app/var/
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
-COPY --link --chmod=755 infrastructure/systemd/add-user.sh /usr/local/bin/add-user
+COPY --link --chmod=700 infrastructure/systemd/insert-user.sh /usr/local/bin/insert-user
 
 RUN mkdir -p /run/systemd && \
     echo 'docker' > /run/systemd/container && \
@@ -94,7 +94,7 @@ COPY infrastructure/systemd/worker.service /etc/systemd/system/worker.service
 # Enable the service
 RUN systemctl enable worker.service
 
-RUN /usr/local/bin/add-user
+RUN /usr/local/bin/insert-user
 
 CMD ["/sbin/init", "systemctl start worker.service"]
 

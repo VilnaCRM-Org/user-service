@@ -30,8 +30,7 @@ final class CreateUserBatchValidator extends ConstraintValidator
             if (in_array($email, $emails)) {
                 $this->addViolation(
                     $this->translator->trans(
-                        'batch.email.duplicate',
-                        ['%email%' => $email]
+                        'batch.email.duplicate'
                     )
                 );
             } else {

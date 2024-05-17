@@ -1,10 +1,10 @@
 import http from 'k6/http';
 import counter from 'k6/x/counter';
-import InsertUsersUtils from './utils/insertUsersUtils.js';
-import ScenarioUtils from './utils/scenarioUtils.js';
-import Utils from './utils/utils.js';
+import ScenarioUtils from '../utils/scenarioUtils.js';
+import Utils from '../utils/utils.js';
+import InsertUsersUtils from "../utils/insertUsersUtils.js";
 
-const scenarioName = 'replaceUser';
+const scenarioName = 'getUser';
 
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
@@ -14,30 +14,20 @@ const users = insertUsersUtils.getInsertedUsers()
 
 export function setup() {
     return {
-        users: users
+        users: users,
     };
 }
 
 export const options = scenarioUtils.getOptions();
 
-export default function updateUser(data) {
+export default function getUser(data) {
     const user = data.users[counter.up()];
     utils.checkUserIsDefined(user);
 
-    const id = user.id;
-    const generatedUser = utils.generateUser();
-    const password = user.password;
+    const { id } = user;
 
-    const payload = JSON.stringify({
-        email: generatedUser.email,
-        newPassword: password,
-        initials: generatedUser.initials,
-        oldPassword: password,
-    });
-
-    const response = http.put(
+    const response = http.get(
         `${utils.getBaseHttpUrl()}/${id}`,
-        payload,
         utils.getJsonHeader()
     );
 

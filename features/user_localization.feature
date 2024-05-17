@@ -55,6 +55,80 @@ Feature: User Operations Localization
     And violation should be "Це значення не має бути пустим."
     And violation should be "Це значення не має бути пустим."
 
+  Scenario: Creating a batch of users and Ukrainian language
+    Given sending a batch of users
+    And with language "uk"
+    And with user with email "test1@mail.com", initials "name surname", password "passWORD1"
+    And with user with email "test2@mail.com", initials "name surname", password "passWORD1"
+    When POST request is send to "/api/users/batch"
+    Then the response status code should be 201
+    And the response should contain a list of users
+
+  Scenario: Creating a batch of users with duplicate email and Ukrainian language
+    Given user with email "test@mail.com" exists
+    And with language "uk"
+    And sending a batch of users
+    And with user with email "test@mail.com", initials "name surname", password "passWORD1"
+    When POST request is send to "/api/users/batch"
+    Then the response status code should be 422
+    And violation should be "Ця email-адреса вже зареєстрована"
+
+  Scenario: Creating a batch of users invalid email and Ukrainian language
+    Given sending a batch of users
+    And with language "uk"
+    And with user with email "test", initials "name surname", password "passWORD1"
+    When POST request is send to "/api/users/batch"
+    Then the response status code should be 422
+    And violation should be "Це значення не є дійсною електронною адресою."
+
+  Scenario: Creating a batch of users with password with no uppercase letters and Ukrainian language
+    Given sending a batch of users
+    And with language "uk"
+    And with user with email "test@mail.com", initials "name surname", password "password1"
+    When POST request is send to "/api/users/batch"
+    Then the response status code should be 422
+    And violation should be "Пароль має містити принаймні одну велику літеру"
+
+  Scenario: Creating a batch of users with password with no numbers and Ukrainian language
+    Given sending a batch of users
+    And with language "uk"
+    And with user with email "test@mail.com", initials "name surname", password "passWORD"
+    When POST request is send to "/api/users/batch"
+    Then the response status code should be 422
+    And violation should be "Пароль повинен містити хоча б одне число"
+
+  Scenario: Creating a batch of users with too short password and Ukrainian language
+    Given sending a batch of users
+    And with language "uk"
+    And with user with email "test@mail.com", initials "name surname", password "pAss1"
+    When POST request is send to "/api/users/batch"
+    Then the response status code should be 422
+    And violation should be "Пароль має містити від 8 до 64 символів"
+
+  Scenario: Creating a batch of users with initials that contains only spaces and Ukrainian language
+    Given sending a batch of users
+    And with language "uk"
+    And with user with email "test@mail.com", initials " ", password "pAss1"
+    When POST request is send to "/api/users/batch"
+    Then the response status code should be 422
+    And violation should be "Ім'я та прізвище не можуть складатися лише з пробілів"
+
+  Scenario: Creating a batch of users with an empty batch and Ukrainian language
+    Given sending a batch of users
+    And with language "uk"
+    When POST request is send to "/api/users/batch"
+    Then the response status code should be 422
+    And violation should be "Група повинна мати принаймні одного користувача"
+
+  Scenario: Creating a batch of users with a duplicate emails in a batch and Ukrainian language
+    Given sending a batch of users
+    And with language "uk"
+    And with user with email "test@mail.com", initials "name surname", password "passWORD1"
+    And with user with email "test@mail.com", initials "name surname", password "passWORD1"
+    When POST request is send to "/api/users/batch"
+    Then the response status code should be 422
+    And violation should be "Дублікат електронної пошти в групі"
+
   Scenario: Replacing user with wrong password and Ukrainian language
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
     And with language "uk"

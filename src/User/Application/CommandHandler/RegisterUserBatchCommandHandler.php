@@ -15,7 +15,6 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Domain\ValueObject\UserBatch;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
@@ -39,14 +38,14 @@ final readonly class RegisterUserBatchCommandHandler implements
         $users = [];
         $events = [];
 
-        foreach ($command->userBatch->users as $user) {
+        foreach ($command->users as $user) {
             $this->processUser($user, $events, $users);
         }
 
         $this->userRepository->saveBatch($users);
 
         $command->setResponse(new RegisterUserBatchCommandResponse(
-            new UserBatch(new ArrayCollection($users))
+            new ArrayCollection($users)
         ));
 
         $this->eventBus->publish(...$events);

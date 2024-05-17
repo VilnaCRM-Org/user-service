@@ -21,8 +21,7 @@ EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
 SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_BIN   = $(EXEC_PHP) symfony
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
-LOAD_TEST_SCENARIOS = getUser getUsers updateUser createUser confirmUser deleteUser resendEmailToUser replaceUser oauth graphQLUpdateUser graphQLGetUser graphQLGetUsers graphQLDeleteUser graphQLResendEmailToUser graphQLCreateUser graphQLConfirmUser
-K6 = $(DOCKER) run -v ./tests/Load:/scripts --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out 'web-dashboard=period=1s&export=/scripts/loadTestsResults/$(REPORT_FILENAME)'
+K6 = $(DOCKER) run -v ./tests/Load:/loadTests --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out 'web-dashboard=period=1s&export=/loadTests/loadTestsResults/$(REPORT_FILENAME)'
 BASH_PREPARE_USERS = RUN_SMOKE=true RUN_AVERAGE=true RUN_STRESS=true RUN_SPIKE=true $(MAKE) load-tests-prepare-users
 BASH_SMOKE_PREPARE_USERS = RUN_SMOKE=true RUN_AVERAGE=false RUN_STRESS=false RUN_SPIKE=false $(MAKE) load-tests-prepare-users
 BASH_EXECUTE_SMOKE_SCRIPT = $(MAKE) execute-smoke-script
@@ -56,7 +55,6 @@ REPORT_FILENAME ?= default_value
 export BASH_PREPARE_USERS
 export BASH_SMOKE_PREPARE_USERS
 export BASH_EXECUTE_SMOKE_SCRIPT
-export LOAD_TEST_SCENARIOS
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -117,13 +115,13 @@ load-tests: build-k6-docker ## Run load tests
 	tests/Load/run-load-tests.sh
 
 load-tests-prepare-users:
-	$(K6) /scripts/prepareUsers.js -e scenarioName=$(SCENARIO_NAME) -e run_smoke=$(RUN_SMOKE) -e run_average=$(RUN_AVERAGE) -e run_stress=$(RUN_STRESS) -e run_spike=$(RUN_SPIKE)
+	$(K6) /loadTests/scripts/prepareUsers.js -e scenarioName=$(SCENARIO_NAME) -e run_smoke=$(RUN_SMOKE) -e run_average=$(RUN_AVERAGE) -e run_stress=$(RUN_STRESS) -e run_spike=$(RUN_SPIKE)
 
 execute-smoke-script:
-	$(K6) /scripts/$(SCENARIO_NAME).js $(SMOKE_CLI_OPTIONS)
+	$(K6) /loadTests/scripts/$(SCENARIO_NAME).js $(SMOKE_CLI_OPTIONS)
 
 execute-script:
-	$(K6) /scripts/$(SCENARIO_NAME).js
+	$(K6) /loadTests/scripts/$(SCENARIO_NAME).js
 
 build-k6-docker:
 	$(DOCKER) build -t k6 -f ./tests/Load/Dockerfile .

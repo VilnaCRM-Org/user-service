@@ -1,5 +1,5 @@
-import InsertUsersUtils from './utils/insertUsersUtils.js';
-import Utils from './utils/utils.js';
+import InsertUsersUtils from '../utils/insertUsersUtils.js';
+import Utils from '../utils/utils.js';
 import file from 'k6/x/file';
 
 const utils = new Utils();

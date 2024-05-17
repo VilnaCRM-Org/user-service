@@ -9,7 +9,6 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\UserRegisterBatchDto;
 use App\User\Application\Factory\RegisterUserBatchCommandFactoryInterface;
-use App\User\Domain\ValueObject\UserBatch;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -42,13 +41,13 @@ final readonly class RegisterUserBatchProcessor implements ProcessorInterface
         $normalizationGroups =
             $context['operation']->getNormalizationContext()['groups'];
         $command = $this->commandFactory->create(
-            new UserBatch(new ArrayCollection($data->users))
+            new ArrayCollection($data->users)
         );
         $this->commandBus->dispatch($command);
 
         return new Response(
             content: $this->serializer->serialize(
-                $command->getResponse()->userBatch->users,
+                $command->getResponse()->users,
                 JsonEncoder::FORMAT,
                 ['groups' => $normalizationGroups]
             ),

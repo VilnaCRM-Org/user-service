@@ -4,10 +4,10 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/app/bin/console messenger:consume send-email process-user-batch --time-limit=3600
+ExecStart=/app/bin/console messenger:consume send-email insert-user-batch --time-limit=3600
 Restart=on-failure
 WorkingDirectory=/app
-User=user
+User=workeruser
 
 [Install]
 WantedBy=multi-user.target

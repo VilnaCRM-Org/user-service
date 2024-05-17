@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Factory\Request;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
-use App\Shared\Application\OpenApi\Builder\ArrayRequestBuilder;
 use App\Shared\Application\OpenApi\Builder\Parameter;
+use App\Shared\Application\OpenApi\Builder\RequestBuilder;
 
 final class CreateBatchRequestFactory implements AbstractRequestFactory
 {
-    public function __construct(private ArrayRequestBuilder $requestBuilder)
+    public function __construct(private RequestBuilder $requestBuilder)
     {
     }
 
@@ -18,41 +18,18 @@ final class CreateBatchRequestFactory implements AbstractRequestFactory
     {
         return $this->requestBuilder->build(
             [
-                $this->getEmailParam(),
-                $this->getInitialsParam(),
-                $this->getPasswordParam(),
+                new Parameter(
+                    'users',
+                    'array',
+                    [
+                        [
+                            'email' => 'user@example.com',
+                            'initials' => 'Name Surname',
+                            'password' => 'passWORD1',
+                        ],
+                    ],
+                ),
             ]
-        );
-    }
-
-    private function getEmailParam(): Parameter
-    {
-        return new Parameter(
-            'email',
-            'string',
-            'user@example.com',
-            255,
-            'email'
-        );
-    }
-
-    private function getInitialsParam(): Parameter
-    {
-        return new Parameter(
-            'initials',
-            'string',
-            'Name Surname',
-            255
-        );
-    }
-
-    private function getPasswordParam(): Parameter
-    {
-        return new Parameter(
-            'password',
-            'string',
-            'passWORD1',
-            255
         );
     }
 }
