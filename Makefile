@@ -99,5 +99,5 @@ stop: ## Stop docker
 build-k6-docker:
 	$(DOCKER) build -t k6 -f ./src/test/load/Dockerfile .
 
-load-tests: build-k6-docker ## Run load tests with minimal load
+load-tests: build-k6-docker
 	$(K6) --out 'web-dashboard=period=1s&export=/loadTests/results/homepage.html' /loadTests/homepage.js

@@ -3,11 +3,11 @@ export default class ThresholdsBuilder {
     this.thresholds = {};
   }
 
-  addThreshold(scenarioName, config) {
-    this.thresholds[`http_req_duration{test_type:${scenarioName}}`] = [
+  addThreshold(testType, config) {
+    this.thresholds[`http_req_duration{test_type:${testType}}`] = [
       'p(99)<' + config.threshold,
     ];
-    this.thresholds[`checks{scenario:${scenarioName}}`] = ['rate>0.99'];
+    this.thresholds[`checks{scenario:${testType}}`] = ['rate>0.99'];
     return this;
   }
 

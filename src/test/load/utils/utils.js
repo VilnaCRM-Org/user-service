@@ -2,9 +2,9 @@ import { check } from 'k6';
 
 export default class Utils {
   constructor() {
-    const { host, port } = this.getConfig();
+    const { protocol, host, port } = this.getConfig();
 
-    this.baseUrl = `https://${host}:${port}`;
+    this.baseUrl = `${protocol}://${host}:${port}`;
   }
 
   getConfig() {
@@ -19,8 +19,8 @@ export default class Utils {
     return this.baseUrl;
   }
 
-  getCLIVariable(variable) {
-    return `${__ENV[variable]}`;
+  shouldExecuteScenario(variable) {
+    return __ENV[variable];
   }
 
   checkResponse(response, checkName, checkFunction) {

@@ -36,11 +36,8 @@ export default class ScenarioUtils {
     };
 
     for (const key in scenarioFunctions) {
-      if (this.utils.getCLIVariable(key) !== 'false') {
-        scenarioFunctions[key]();
-      }
+      if (!this.utils.shouldExecuteScenario(key)) scenarioFunctions[key]();
     }
-
     return scenariosBuilder.build();
   }
 
@@ -92,7 +89,7 @@ export default class ScenarioUtils {
     };
 
     for (const key in thresholdConfigs) {
-      if (this.utils.getCLIVariable(key) !== 'false') {
+      if (!this.utils.shouldExecuteScenario(key)) {
         const { name, config } = thresholdConfigs[key];
         thresholdsBuilder.addThreshold(name, config);
       }

@@ -1,4 +1,5 @@
 {
+  "protocol": "http",
   "host": "localhost",
   "port": "3000",
   "delayBetweenScenarios": 30,
@@ -6,10 +7,39 @@
     "homepage": {
       "setupTimeoutInMinutes": 10,
       "smoke": {
-        "threshold": 60,
-        "rps": 10,
-        "vus": 10,
+        "threshold": 3000,
+        "rps": 5,
+        "vus": 5,
         "duration": 10
+      },
+      "average": {
+        "threshold": 7000,
+        "rps": 15,
+        "vus": 15,
+        "duration": {
+          "rise": 5,
+          "plateau": 30,
+          "fall": 5
+        }
+      },
+      "stress": {
+        "threshold": 25000,
+        "rps": 75,
+        "vus": 75,
+        "duration": {
+          "rise": 5,
+          "plateau": 30,
+          "fall": 5
+        }
+      },
+      "spike": {
+        "threshold": 50000,
+        "rps": 150,
+        "vus": 150,
+        "duration": {
+          "rise": 30,
+          "fall": 10
+        }
       }
     }
   }
