@@ -7,12 +7,6 @@ const config = {
   plugins: ['@stryker-mutator/jest-runner'],
   tsconfigFile: 'tsconfig.json',
   mutate: ['./src/features/landing/components/**/*.tsx'],
-  // tempDirName: 'stryker-tmp',
-  // jest: {
-  //   config: {
-  //     testScript: 'test:unit',
-  //   },
-  // },
 };
 
 export default config;
