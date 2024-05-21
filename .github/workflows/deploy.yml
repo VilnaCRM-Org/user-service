@@ -14,12 +14,22 @@ jobs:
   AssumeRoleAndStartExecution:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Get latest commit SHA on branch
+        id: get_latest_commit
+        run: |
+          echo "::set-output name=latest_commit::$(git rev-parse origin/5-make-website-layout)"
+
       - name: configure aws credentials
+        if: steps.get_latest_commit.outputs.latest_commit == github.sha
         uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
           role-to-assume: ${{ secrets.AWS_CODEPIPELINE_ROLE_ARN }}
           role-session-name: GitHub_to_AWS_via_FederatedOIDC
           aws-region: ${{ env.AWS_REGION }}
       - name: Start Pipeline Execution
+        if: steps.get_latest_commit.outputs.latest_commit == github.sha
         run: |
           aws codepipeline start-pipeline-execution --name ${{ secrets.AWS_CODEPIPELINE_NAME }}
