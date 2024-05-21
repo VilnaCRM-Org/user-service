@@ -6,7 +6,6 @@ module.exports = {
       url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}`,
       psiStrategy: 'mobile',
       settings: {
-        preset: 'mobile',
         chromeFlags: '--no-sandbox',
       },
     },
