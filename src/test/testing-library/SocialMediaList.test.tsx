@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { testSocialItem } from '../../features/landing/components/SocialMedia/constants';
+import { testSocialDrawerItem } from '../../features/landing/components/SocialMedia/constants';
 import SocialMediaList from '../../features/landing/components/SocialMedia/SocialMediaList/SocialMediaList';
 import { SocialMedia } from '../../features/landing/types/social-media/index';
 
@@ -12,7 +12,7 @@ jest.mock(
 
 const sociaLMediaTestId: string = 'social-media-item';
 const emptySocialLinks: SocialMedia[] = [];
-const socialLinks: SocialMedia[] = [testSocialItem];
+const socialLinks: SocialMedia[] = [testSocialDrawerItem];
 
 describe('SocialMediaList', () => {
   it('renders social media items correctly', () => {

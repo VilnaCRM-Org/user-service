@@ -4,6 +4,15 @@ import '@testing-library/jest-dom';
 
 import Landing from '../../features/landing/components/Landing/Landing';
 
+jest.mock('next/head', () => ({
+  __esModule: true,
+  default: ({
+    children,
+  }: {
+    children: Array<React.ReactElement>;
+  }): React.JSX.Element => <div>{children}</div>,
+}));
+
 jest.mock('../../features/landing/components/Header/Header', () =>
   jest.fn(() => <div data-testid="header">Header</div>)
 );
@@ -31,6 +40,12 @@ jest.mock('../../components/UiFooter/UiFooter', () =>
   jest.fn(() => <div data-testid="ui-footer">UiFooter</div>)
 );
 
+const metaAttributesSelector: string =
+  'meta[name="description"][content="The first Ukrainian open source CRM"]';
+const boxElementClass: string = '.MuiBox-root';
+const logoName: string = 'VilnaCRM';
+const positionRelativeStyle: string = 'position: relative';
+
 describe('Landing', () => {
   it('render all components', () => {
     const { getByTestId } = render(<Landing />);
@@ -43,5 +58,26 @@ describe('Landing', () => {
     expect(getByTestId('possibilities')).toBeInTheDocument();
     expect(getByTestId('auth-section')).toBeInTheDocument();
     expect(getByTestId('ui-footer')).toBeInTheDocument();
+  });
+
+  it('render container correctly', () => {
+    const { container } = render(<Landing />);
+
+    const mainContainer: HTMLElement | null =
+      container.querySelector(boxElementClass);
+
+    expect(mainContainer).toHaveStyle(positionRelativeStyle);
+  });
+
+  it('render right title and metadata', async () => {
+    const { getByText, container } = render(<Landing />);
+
+    const titleElement: HTMLElement = getByText(logoName);
+    const metaElement: HTMLElement | null = container.querySelector(
+      metaAttributesSelector
+    );
+
+    expect(titleElement).toHaveTextContent(logoName);
+    expect(metaElement).toBeInTheDocument();
   });
 });

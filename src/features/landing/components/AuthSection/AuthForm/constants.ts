@@ -51,6 +51,6 @@ export const mockErrors: Mock[] = [
         },
       },
     },
-    erorr: new Error('Server error occurred'),
+    error: new Error('Server error occurred'),
   },
 ];

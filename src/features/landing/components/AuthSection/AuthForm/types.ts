@@ -27,5 +27,5 @@ export interface Mock {
     variables: SignUpVariables;
   };
   result?: Promise<SignUpResult>;
-  erorr?: Error;
+  error?: Error;
 }
