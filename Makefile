@@ -24,9 +24,12 @@ SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
 K6 = $(DOCKER) run -v ./tests/Load:/loadTests --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out 'web-dashboard=period=1s&export=/loadTests/loadTestsResults/$(REPORT_FILENAME)'
 BASH_PREPARE_USERS = RUN_SMOKE=true RUN_AVERAGE=true RUN_STRESS=true RUN_SPIKE=true $(MAKE) load-tests-prepare-users
 BASH_SMOKE_PREPARE_USERS = RUN_SMOKE=true RUN_AVERAGE=false RUN_STRESS=false RUN_SPIKE=false $(MAKE) load-tests-prepare-users
+BASH_STRESS_PREPARE_USERS = RUN_SMOKE=false RUN_AVERAGE=false RUN_STRESS=true RUN_SPIKE=false $(MAKE) load-tests-prepare-users
 BASH_EXECUTE_SMOKE_SCRIPT = $(MAKE) execute-smoke-script
+BASH_EXECUTE_STRESS_SCRIPT = $(MAKE) execute-stress-script
 BASH_EXECUTE_SCRIPT = $(MAKE) execute-script
 SMOKE_CLI_OPTIONS = -e run_average=false -e run_stress=false -e run_spike=false
+STRESS_CLI_OPTIONS = -e run_smoke=false -e run_average=false -e run_spike=false
 
 # Executables: vendors
 PHPUNIT       = ./vendor/bin/phpunit
@@ -55,6 +58,8 @@ REPORT_FILENAME ?= default_value
 export BASH_PREPARE_USERS
 export BASH_SMOKE_PREPARE_USERS
 export BASH_EXECUTE_SMOKE_SCRIPT
+export BASH_STRESS_PREPARE_USERS
+export BASH_EXECUTE_STRESS_SCRIPT
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -110,6 +115,10 @@ smoke-load-tests: build-k6-docker ## Run load tests with minimal load
 	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-smoke-load-tests.sh
 
+stress-load-tests: build-k6-docker ## Run load tests with high load
+	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	tests/Load/run-stress-load-tests.sh
+
 load-tests: build-k6-docker ## Run load tests
 	$(SYMFONY) league:oauth2-server:create-client $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-load-tests.sh
@@ -119,6 +128,9 @@ load-tests-prepare-users:
 
 execute-smoke-script:
 	$(K6) /loadTests/scripts/$(SCENARIO_NAME).js $(SMOKE_CLI_OPTIONS)
+
+execute-stress-script:
+	$(K6) /loadTests/scripts/$(SCENARIO_NAME).js $(STRESS_CLI_OPTIONS)
 
 execute-script:
 	$(K6) /loadTests/scripts/$(SCENARIO_NAME).js

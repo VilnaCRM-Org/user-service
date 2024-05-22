@@ -34,48 +34,47 @@ export default class InsertUsersUtils {
         return JSON.parse(open(`../${this.utils.getConfig()['usersFileName']}`));
     }
 
-    * requestGenerator(numberOfUsers) {
+    * usersGenerator(numberOfUsers) {
         for (let i = 0; i < numberOfUsers; i++) {
             const user = this.utils.generateUser();
-            const request = {
-                method: 'POST',
-                url: this.utils.getBaseHttpUrl(),
-                body: JSON.stringify(user),
-                params: this.utils.getJsonHeader(),
-            };
 
-            yield [request, user.email, user.password];
+            yield user;
         }
     }
 
-    prepareBatch(batchSize) {
-        const generator = this.requestGenerator(batchSize);
+    prepareUserBatch(batchSize){
+        const generator = this.usersGenerator(batchSize);
         const batch = [];
         const userPasswords = {};
 
         for (let requestIndex = 0; requestIndex < batchSize; requestIndex++) {
-            const {value, done} = generator.next();
-            if (done) break;
-            const [request, email, password] = value;
-            batch.push(request);
-            userPasswords[email] = password;
+            const user = generator.next().value;
+            batch.push(user);
+            userPasswords[user.email] = user.password;
         }
 
         return [batch, userPasswords];
     }
 
-    insertUsers(numberOfUsers) {
+    insertUsers(numberOfUsers){
         const batchSize = this.config.batchSize;
 
         const users = [];
 
         for (let createdUsers = 0; createdUsers < numberOfUsers; createdUsers += batchSize) {
-            const [batch, userPasswords] = this.prepareBatch(batchSize);
+            const [batch, userPasswords] = this.prepareUserBatch(batchSize);
 
-            const responses = http.batch(batch);
+            const payload = JSON.stringify({
+                'users': batch
+            });
 
-            responses.forEach((response) => {
-                const user = JSON.parse(response.body);
+            const response = http.post(
+                `${this.utils.getBaseHttpUrl()}/batch`,
+                payload,
+                this.utils.getJsonHeader()
+            );
+
+            JSON.parse(response.body).forEach((user) => {
                 user.password = userPasswords[user.email];
                 users.push(user);
             });

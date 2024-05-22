@@ -44,6 +44,9 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
      */
     public function saveBatch(array $users): void
     {
+        $this->entityManager->getConnection()
+            ->getConfiguration()->setSQLLogger();
+
         $userCount = count($users);
         for ($i = 1; $i <= $userCount; ++$i) {
             $this->entityManager->persist($users[$i - 1]);

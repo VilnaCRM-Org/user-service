@@ -11,6 +11,8 @@ use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Repository\MariaDBUserRepository;
+use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Persisters\Entity\EntityPersister;
@@ -26,6 +28,7 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
     private MariaDBUserRepository $userRepository;
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;
+    private Connection $connection;
 
     protected function setUp(): void
     {
@@ -39,6 +42,7 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
             $this->getRepository($this->faker->numberBetween(1, 20));
         $this->userFactory = new UserFactory();
         $this->transformer = new UuidTransformer();
+        $this->connection = $this->createMock(Connection::class);
     }
 
     public function testFindByEmailReturnsUser(): void
@@ -204,6 +208,12 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
     private function testSaveBatchSetEntityManagerExpectations(
         array $users
     ): void {
+        $this->entityManager->expects($this->once())
+            ->method('getConnection')
+            ->willReturn($this->connection);
+        $this->connection->expects($this->once())
+            ->method('getConfiguration')
+            ->willReturn($this->createMock(Configuration::class));
         $this->entityManager->expects($this->exactly(self::BATCH_SIZE))
             ->method('persist')
             ->withConsecutive(
