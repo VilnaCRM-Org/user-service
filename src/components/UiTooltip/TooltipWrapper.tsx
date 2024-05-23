@@ -23,17 +23,19 @@ export default function WrapperUiTooltip({
     setOpen(false);
   }, [isWideScreenMaxWidth, isWideScreenMinWidth]);
 
+  const closeTooltip: () => void = () => setOpen(false);
+  const toggleTooltip: () => void = () => setOpen(!open);
+
   return (
-    <ClickAwayListener onClickAway={() => setOpen(false)}>
+    <ClickAwayListener onClickAway={closeTooltip}>
       <Tooltip
         open={open}
         title={title}
         placement={placement}
         arrow={arrow}
         sx={sx}
-        role="tooltip"
       >
-        <Typography component="span" onClick={() => setOpen(!open)}>
+        <Typography component="span" onClick={toggleTooltip}>
           {children}
         </Typography>
       </Tooltip>

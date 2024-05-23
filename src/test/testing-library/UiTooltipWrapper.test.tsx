@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent, { UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
 import WrapperUiTooltip from '@/components/UiTooltip/TooltipWrapper';
@@ -6,6 +7,7 @@ import { UiTooltipProps } from '@/components/UiTooltip/types';
 
 const triggerText: string = 'Trigger';
 const tooltipContent: string = 'Tooltip Text';
+const tooltipRole: string = 'tooltip';
 
 jest.mock('@mui/material', () => ({
   ...jest.requireActual('@mui/material'),
@@ -44,11 +46,21 @@ describe('WrapperUiTooltip', () => {
     expect(tooltip).toBeInTheDocument();
   });
 
-  it('closes the tooltip on width change', () => {
+  it('open and clone tooltip', async () => {
+    const user: UserEvent = userEvent.setup();
     setup();
+
     const trigger: HTMLElement = screen.getByText(triggerText);
-    fireEvent.click(trigger);
-    const tooltip: HTMLElement = screen.getByText(tooltipContent);
+    await user.click(trigger);
+
+    let tooltip: HTMLElement | null = screen.getByRole(tooltipRole);
     expect(tooltip).toBeInTheDocument();
+
+    await user.click(document.body);
+
+    await waitFor(() => {
+      tooltip = screen.queryByRole(tooltipRole);
+      expect(tooltip).not.toBeInTheDocument();
+    });
   });
 });

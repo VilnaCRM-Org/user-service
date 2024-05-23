@@ -14,7 +14,7 @@ const children: React.ReactNode = <div>{testText}</div>;
 
 describe('UiTooltip', () => {
   it('renders the tooltip with the correct props', () => {
-    const { getByRole, getByText } = render(
+    const { getByText } = render(
       <ThemeProvider theme={theme}>
         <UiTooltip title={title} placement={placement} arrow sx={sx}>
           {children}
@@ -22,8 +22,8 @@ describe('UiTooltip', () => {
       </ThemeProvider>
     );
 
-    const tooltipElement: HTMLElement = getByRole('tooltip');
-    expect(tooltipElement).toBeInTheDocument();
-    expect(getByText(testText)).toBeInTheDocument();
+    const trigger: HTMLElement = getByText(testText);
+
+    expect(trigger).toBeInTheDocument();
   });
 });
