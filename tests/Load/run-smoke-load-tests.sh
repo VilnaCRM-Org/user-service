@@ -8,5 +8,5 @@ for scenario in $LOAD_TEST_SCENARIOS; do
     SCENARIO_NAME=$scenario eval $BASH_SMOKE_PREPARE_USERS
   fi
 
-  REPORT_FILENAME="${scenario}.html" SCENARIO_NAME=$scenario eval $BASH_EXECUTE_SMOKE_SCRIPT
+  REPORT_FILENAME="smoke-${scenario}.html" SCENARIO_NAME=$scenario eval $BASH_EXECUTE_SMOKE_SCRIPT
 done

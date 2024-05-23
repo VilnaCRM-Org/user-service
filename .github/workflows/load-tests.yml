@@ -16,8 +16,5 @@ jobs:
       - name: Start application
         run: make start
 
-      - name: Build K6
-        run: make build-k6
-
       - name: Run load tests
         run: make smoke-load-tests

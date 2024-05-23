@@ -8,5 +8,5 @@ for scenario in $LOAD_TEST_SCENARIOS; do
     SCENARIO_NAME=$scenario eval $BASH_STRESS_PREPARE_USERS
   fi
 
-  REPORT_FILENAME="${scenario}.html" SCENARIO_NAME=$scenario eval $BASH_EXECUTE_STRESS_SCRIPT
+  REPORT_FILENAME="stress-${scenario}.html" SCENARIO_NAME=$scenario eval $BASH_EXECUTE_STRESS_SCRIPT
 done

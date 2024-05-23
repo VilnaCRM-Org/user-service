@@ -9,7 +9,7 @@ parameters:
     - name: Application
       collectors:
         - type: className
-          regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|Exception).*'
+          regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message).*'
         - type: className
           regex: '.*App\\Shared\\Application\\(Validator|Transformer|ErrorProvider|DomainExceptionNormalizer|NotFoundExceptionNormalizer).*'
         - type: className
@@ -17,7 +17,7 @@ parameters:
     - name: Domain
       collectors:
         - type: className
-          regex: '.*App\\[A-Za-z]+\\Domain\\(Aggregate|Entity|ValueObject|Event|Exception|Factory|Repository).*'
+          regex: '.*App\\[A-Za-z]+\\Domain\\(Aggregate|Entity|ValueObject|Event|Exception|Factory|Repository|Collection).*'
         - type: className
           regex: '.*App\\Shared\\Domain\\Bus\\(Command|Event).*'
     - name: Infrastructure

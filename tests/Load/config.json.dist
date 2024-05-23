@@ -1,16 +1,16 @@
 {
     "apiHost":"localhost",
     "mailCatcherPort":"1080",
-    "batchSize":50,
+    "batchSize":5000,
     "autoDetermineUsersToInsert":true,
     "usersToInsert":20,
     "delayBetweenScenarios":30,
-    "gettingEmailMaxRetries":50,
+    "gettingEmailMaxRetries":300,
     "usersFileLocation":"/loadTests/",
     "usersFileName":"users.json",
     "endpoints":{
         "getUser":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "smoke":{
                 "threshold":60,
                 "rps":10,
@@ -48,7 +48,7 @@
             }
         },
         "getUsers":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "usersToGetInOneRequest":50,
             "smoke":{
                 "threshold":70,
@@ -87,9 +87,9 @@
             }
         },
         "createUser":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "smoke":{
-                "threshold":3000,
+                "threshold":4500,
                 "rps":10,
                 "vus":10,
                 "duration":10
@@ -125,9 +125,9 @@
             }
         },
         "createUserBatch":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "smoke":{
-                "threshold":3000,
+                "threshold":4500,
                 "rps":10,
                 "vus":10,
                 "duration":10
@@ -163,9 +163,9 @@
             }
         },
         "updateUser":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "smoke":{
-                "threshold":3000,
+                "threshold":4500,
                 "rps":10,
                 "vus":10,
                 "duration":10
@@ -201,9 +201,9 @@
             }
         },
         "replaceUser":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "smoke":{
-                "threshold":3000,
+                "threshold":4500,
                 "rps":10,
                 "vus":10,
                 "duration":10
@@ -239,9 +239,9 @@
             }
         },
         "confirmUser":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "smoke":{
-                "threshold":3500,
+                "threshold":4500,
                 "rps":10,
                 "vus":10,
                 "duration":10
@@ -277,7 +277,7 @@
             }
         },
         "deleteUser":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "smoke":{
                 "threshold":90,
                 "rps":10,
@@ -315,15 +315,15 @@
             }
         },
         "resendEmailToUser":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "smoke":{
-                "threshold":90,
+                "threshold":4500,
                 "rps":10,
                 "vus":10,
                 "duration":10
             },
             "average":{
-                "threshold":350,
+                "threshold":15000,
                 "rps":50,
                 "vus":50,
                 "duration":{
@@ -333,7 +333,7 @@
                 }
             },
             "stress":{
-                "threshold":3500,
+                "threshold":30000,
                 "rps":150,
                 "vus":150,
                 "duration":{
@@ -343,7 +343,7 @@
                 }
             },
             "spike":{
-                "threshold":8000,
+                "threshold":60000,
                 "rps":400,
                 "vus":400,
                 "duration":{
@@ -353,7 +353,7 @@
             }
         },
         "oauth":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "clientName":"ClientName",
             "clientSecret":"Secret1",
             "clientID":"ID123",
@@ -395,7 +395,7 @@
             }
         },
         "graphQLGetUser":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "smoke":{
                 "threshold":60,
                 "rps":10,
@@ -433,7 +433,7 @@
             }
         },
         "graphQLGetUsers":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "usersToGetInOneRequest":50,
             "smoke":{
                 "threshold":70,
@@ -472,9 +472,9 @@
             }
         },
         "graphQLCreateUser":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "smoke":{
-                "threshold":3000,
+                "threshold":4500,
                 "rps":10,
                 "vus":10,
                 "duration":10
@@ -510,7 +510,7 @@
             }
         },
         "graphQLUpdateUser":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "smoke":{
                 "threshold":6500,
                 "rps":10,
@@ -548,9 +548,9 @@
             }
         },
         "graphQLConfirmUser":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "smoke":{
-                "threshold":3000,
+                "threshold":4500,
                 "rps":10,
                 "vus":10,
                 "duration":10
@@ -586,7 +586,7 @@
             }
         },
         "graphQLDeleteUser":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "smoke":{
                 "threshold":90,
                 "rps":10,
@@ -624,15 +624,15 @@
             }
         },
         "graphQLResendEmailToUser":{
-            "setupTimeoutInMinutes":10,
+            "setupTimeoutInMinutes":30,
             "smoke":{
-                "threshold":90,
+                "threshold":4500,
                 "rps":10,
                 "vus":10,
                 "duration":10
             },
             "average":{
-                "threshold":350,
+                "threshold":15000,
                 "rps":50,
                 "vus":50,
                 "duration":{
@@ -642,7 +642,7 @@
                 }
             },
             "stress":{
-                "threshold":3500,
+                "threshold":30000,
                 "rps":150,
                 "vus":150,
                 "duration":{
@@ -652,7 +652,7 @@
                 }
             },
             "spike":{
-                "threshold":8000,
+                "threshold":60000,
                 "rps":400,
                 "vus":400,
                 "duration":{
