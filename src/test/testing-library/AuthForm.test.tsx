@@ -25,6 +25,7 @@ import {
   emptyValue,
   passwordTipAltText,
   buttonRole,
+  borderStyle,
 } from '../../features/landing/components/AuthSection/AuthForm/constants';
 
 import { testInitials, testEmail, testPassword } from './constants';
@@ -217,7 +218,7 @@ describe('AuthForm', () => {
     const passwordInput: HTMLInputElement = getByPlaceholderText(
       passwordPlaceholder
     ) as HTMLInputElement;
-    const privacyCheckbox: HTMLInputElement = getByRole(
+    let privacyCheckbox: HTMLInputElement = getByRole(
       checkboxRole
     ) as HTMLInputElement;
     const signUpButton: HTMLElement = getByRole(buttonRole, {
@@ -232,11 +233,13 @@ describe('AuthForm', () => {
     await waitFor(() => {
       const requiredError: HTMLElement[] = getAllByText(requiredText);
       const serverErrorMessage: HTMLElement | null = queryByRole(alertRole);
+      privacyCheckbox = getByRole(checkboxRole) as HTMLInputElement;
 
       expect(emailInput.value).toBe(emptyValue);
       expect(passwordInput.value).toBe(emptyValue);
       expect(fullNameInput.value).toBe(emptyValue);
       expect(privacyCheckbox).not.toBeChecked();
+      expect(privacyCheckbox).toHaveStyle(borderStyle);
 
       expect(requiredError.length).toBe(3);
       expect(serverErrorMessage).not.toBeInTheDocument();

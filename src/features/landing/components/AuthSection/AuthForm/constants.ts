@@ -31,6 +31,8 @@ export const password: string = faker.internet.password({
 });
 export const randomClientId: string = faker.string.uuid();
 
+export const borderStyle: string = 'border: 1px solid #DC3939';
+
 export const mocks: Mock[] = [
   {
     request: {
