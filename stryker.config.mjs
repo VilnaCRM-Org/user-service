@@ -7,6 +7,7 @@ const config = {
   plugins: ['@stryker-mutator/jest-runner'],
   tsconfigFile: 'tsconfig.json',
   mutate: ['./src/features/landing/components/**/*.tsx'],
+  thresholds: { high: 100, break: 99 },
 };
 
 export default config;
