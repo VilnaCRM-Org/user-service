@@ -20,7 +20,7 @@
     "test:mutation": "npx stryker run",
     "test:visual": "playwright test ./src/test/visual",
     "test:unit": "jest --verbose",
-    "test:memory-leak": "memlab run -v --scenario ./memlab/memoryLeakTest.js",
+    "test:memory-leak": "memlab run -v --scenario ./src/test/memory-leak/tests/sliderScroll.js",
     "lighthouse:desktop": "next build && lhci autorun --config=lighthouserc.desktop.js --collect.startServerCommand=\"npx serve@latest out\"",
     "lighthouse:mobile": "next build && lhci autorun --config=lighthouserc.mobile.js --collect.startServerCommand=\"npx serve@latest out\"",
     "check-node-version": "node checkNodeVersion.js",
