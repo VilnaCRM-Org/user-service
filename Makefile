@@ -10,7 +10,7 @@ DOCKER_COMPOSE	= docker compose
 # Executables
 EXEC_NODEJS	= $(DOCKER_COMPOSE) exec nodejs
 PNPM      	= $(EXEC_NODEJS) pnpm
-PNPM_RUN    = $(PNPM_RUN) run
+PNPM_RUN    = $(PNPM) run
 GIT         = git
 
 # Misc
