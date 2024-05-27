@@ -13,8 +13,7 @@ describe('SocialMediaItem', () => {
   it('render WhyUs component correctly', () => {
     const { container, getByLabelText, getByText } = render(<WhyUs />);
 
-    const wrapperElement: HTMLElement | null =
-      container.querySelector(WrapperId);
+    const wrapperElement: HTMLElement | null = container.querySelector(WrapperId);
     const signUpLink: HTMLElement = getByLabelText(signUpLinkLabelText);
     const signUpButton: HTMLElement = getByText(signUpButtonText);
 

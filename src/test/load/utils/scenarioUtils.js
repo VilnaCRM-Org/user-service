@@ -9,8 +9,7 @@ export default class ScenarioUtils {
     this.averageConfig = this.config.endpoints[scenarioName].average;
     this.stressConfig = this.config.endpoints[scenarioName].stress;
     this.spikeConfig = this.config.endpoints[scenarioName].spike;
-    this.setupTimeout =
-      this.config.endpoints[scenarioName].setupTimeoutInMinutes + 'm';
+    this.setupTimeout = this.config.endpoints[scenarioName].setupTimeoutInMinutes + 'm';
     this.delay = this.config.delayBetweenScenarios;
     this.averageTestStartTime = 0;
     this.stressTestStartTime = 0;
@@ -47,10 +46,7 @@ export default class ScenarioUtils {
   }
 
   addAverageScenario(scenariosBuilder) {
-    scenariosBuilder.addAverageScenario(
-      this.averageConfig,
-      this.averageTestStartTime
-    );
+    scenariosBuilder.addAverageScenario(this.averageConfig, this.averageTestStartTime);
     this.stressTestStartTime =
       this.averageTestStartTime +
       this.averageConfig.duration.rise +
@@ -60,10 +56,7 @@ export default class ScenarioUtils {
   }
 
   addStressScenario(scenariosBuilder) {
-    scenariosBuilder.addStressScenario(
-      this.stressConfig,
-      this.stressTestStartTime
-    );
+    scenariosBuilder.addStressScenario(this.stressConfig, this.stressTestStartTime);
     this.spikeTestStartTime =
       this.stressTestStartTime +
       this.stressConfig.duration.rise +
@@ -73,10 +66,7 @@ export default class ScenarioUtils {
   }
 
   addSpikeScenario(scenariosBuilder) {
-    scenariosBuilder.addSpikeScenario(
-      this.spikeConfig,
-      this.spikeTestStartTime
-    );
+    scenariosBuilder.addSpikeScenario(this.spikeConfig, this.spikeTestStartTime);
   }
 
   getThresholds() {

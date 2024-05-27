@@ -2,8 +2,7 @@ import { render } from '@testing-library/react';
 
 import SignUpText from '../../features/landing/components/AuthSection/SignUpText/SignUpText';
 
-const socialTitle: string =
-  'Sign up now and free up your time to grow your business';
+const socialTitle: string = 'Sign up now and free up your time to grow your business';
 const vilnaText: string = 'VilnaCRM';
 const socialsText: string = 'Log in with a convenient social network:';
 

@@ -8,8 +8,7 @@ describe('Header component', () => {
   it('renders logo', () => {
     const { container } = render(<Possibilities />);
 
-    const possibilitiesWrapper: HTMLElement | null =
-      container.querySelector('#Integration');
+    const possibilitiesWrapper: HTMLElement | null = container.querySelector('#Integration');
 
     expect(possibilitiesWrapper).toBeInTheDocument();
   });

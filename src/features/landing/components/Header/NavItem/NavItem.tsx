@@ -13,11 +13,7 @@ function NavItem({ item, handleClick }: NavProps): React.ReactElement {
 
   return (
     <ListItem sx={isHeader ? styles : styles.itemDrawerWrapper}>
-      <Link
-        href={item.link}
-        sx={isHeader ? styles.link : styles.drawerLink}
-        onClick={handleClick}
-      >
+      <Link href={item.link} sx={isHeader ? styles.link : styles.drawerLink} onClick={handleClick}>
         {isHeader ? (
           <UiTypography variant="medium15" sx={styles.navText}>
             {t(item.title)}

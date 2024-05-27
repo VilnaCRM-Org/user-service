@@ -6,11 +6,7 @@ import SocialMediaItem from '../SocialMediaItem/SocialMediaItem';
 
 import styles from './styles';
 
-function SocialMediaList({
-  socialLinks,
-}: {
-  socialLinks: SocialMedia[];
-}): React.ReactElement {
+function SocialMediaList({ socialLinks }: { socialLinks: SocialMedia[] }): React.ReactElement {
   return (
     <Stack direction="row" alignItems="center" sx={styles.listWrapper}>
       {socialLinks.map(item => (

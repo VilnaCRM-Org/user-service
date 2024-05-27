@@ -18,14 +18,8 @@ function Landing(): React.ReactElement {
     <>
       <Head>
         <title>{t('VilnaCRM')}</title>
-        <meta
-          name={t('description')}
-          content={t('The first Ukrainian open source CRM')}
-        />
-        <link
-          rel="apple-touch-icon"
-          href="../../assets/img/about-vilna/touch.png"
-        />
+        <meta name={t('description')} content={t('The first Ukrainian open source CRM')} />
+        <link rel="apple-touch-icon" href="../../assets/img/about-vilna/touch.png" />
       </Head>
       <Header />
       <Box sx={{ position: 'relative' }}>

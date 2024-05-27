@@ -6,11 +6,7 @@ import { SocialItem } from '../SocialItem';
 
 import styles from './styles';
 
-function SocialList({
-  socialLinks,
-}: {
-  socialLinks: SocialLink[];
-}): React.ReactElement {
+function SocialList({ socialLinks }: { socialLinks: SocialLink[] }): React.ReactElement {
   return (
     <Grid sx={styles.listWrapper}>
       {socialLinks.map(item => (

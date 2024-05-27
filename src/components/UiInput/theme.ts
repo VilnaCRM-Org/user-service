@@ -53,16 +53,15 @@ export const theme: Theme = createTheme({
                 fontSize: '1.125rem',
               },
             },
-            [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]:
-              {
-                padding: '0 1.25rem',
-                height: '3rem',
-                '&::placeholder': {
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  lineHeight: '1.125rem',
-                },
+            [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
+              padding: '0 1.25rem',
+              height: '3rem',
+              '&::placeholder': {
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                lineHeight: '1.125rem',
               },
+            },
             '&.Mui-disabled': {
               backgroundColor: colorTheme.palette.brandGray.main,
               color: colorTheme.palette.grey300.main,

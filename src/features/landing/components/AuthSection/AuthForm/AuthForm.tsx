@@ -18,11 +18,7 @@ import { SIGNUP_MUTATION } from '../../../api/service/userService';
 import QuestionMark from '../../../assets/svg/auth-section/questionMark.svg';
 import { RegisterItem } from '../../../types/authentication/form';
 import { PasswordTip } from '../PasswordTip';
-import {
-  validateFullName,
-  validatePassword,
-  validateEmail,
-} from '../Validations';
+import { validateFullName, validatePassword, validateEmail } from '../Validations';
 
 import styles from './styles';
 
@@ -48,9 +44,7 @@ function AuthForm(): React.ReactElement {
     mode: 'onTouched',
   });
 
-  const onSubmit: (data: RegisterItem) => Promise<void> = async (
-    data: RegisterItem
-  ) => {
+  const onSubmit: (data: RegisterItem) => Promise<void> = async (data: RegisterItem) => {
     try {
       setServerError('');
       await signupMutation({
@@ -68,9 +62,7 @@ function AuthForm(): React.ReactElement {
     }
   };
 
-  const handleFormSubmit: (data: RegisterItem) => void = (
-    data: RegisterItem
-  ) => {
+  const handleFormSubmit: (data: RegisterItem) => void = (data: RegisterItem) => {
     onSubmit(data);
   };
 
@@ -119,11 +111,7 @@ function AuthForm(): React.ReactElement {
                 type="text"
               />
               {serverError && (
-                <UiTypography
-                  variant="medium14"
-                  sx={styles.errorText}
-                  role="alert"
-                >
+                <UiTypography variant="medium14" sx={styles.errorText} role="alert">
                   {serverError}
                 </UiTypography>
               )}
@@ -133,12 +121,7 @@ function AuthForm(): React.ReactElement {
                 <UiTypography variant="medium14" sx={styles.inputTitle}>
                   {t('sign_up.form.password_input.label')}
                 </UiTypography>
-                <UiTooltip
-                  placement="right"
-                  sx={styles.tip}
-                  arrow
-                  title={<PasswordTip />}
-                >
+                <UiTooltip placement="right" sx={styles.tip} arrow title={<PasswordTip />}>
                   <Image
                     src={QuestionMark}
                     alt={t('sign_up.form.password_tip.alt')}
@@ -172,17 +155,11 @@ function AuthForm(): React.ReactElement {
                   <UiTypography variant="medium14" sx={styles.privacyText}>
                     <Trans i18nKey="sign_up.form.confidential_text.fullText">
                       I have read and accept the
-                      <UiLink
-                        href="https://github.com/VilnaCRM-Org"
-                        target="_blank"
-                      >
+                      <UiLink href="https://github.com/VilnaCRM-Org" target="_blank">
                         Privacy Policy
                       </UiLink>
                       та
-                      <UiLink
-                        href="https://github.com/VilnaCRM-Org"
-                        target="_blank"
-                      >
+                      <UiLink href="https://github.com/VilnaCRM-Org" target="_blank">
                         Use Policy
                       </UiLink>
                       VilnaCRM Service
@@ -193,13 +170,7 @@ function AuthForm(): React.ReactElement {
             )}
           />
           <Box sx={styles.buttonWrapper}>
-            <UiButton
-              sx={styles.button}
-              variant="contained"
-              size="medium"
-              type="submit"
-              fullWidth
-            >
+            <UiButton sx={styles.button} variant="contained" size="medium" type="submit" fullWidth>
               {t('sign_up.form.button_text')}
             </UiButton>
           </Box>

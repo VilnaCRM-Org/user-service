@@ -12,13 +12,7 @@ function MainImage(): React.ReactElement {
 
   return (
     <Box sx={styles.mainImageWrapper}>
-      <Image
-        src={MainImageSrc}
-        priority
-        alt={t('Main image')}
-        width={766}
-        height={498}
-      />
+      <Image src={MainImageSrc} priority alt={t('Main image')} width={766} height={498} />
     </Box>
   );
 }

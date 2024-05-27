@@ -2,9 +2,8 @@ import { t } from 'i18next';
 
 const MAX_INITIALS_LENGTH: number = 255;
 
-export const isValidFullName: (fullName: string) => boolean = (
-  fullName: string
-): boolean => Boolean(fullName) && fullName.length <= MAX_INITIALS_LENGTH;
+export const isValidFullName: (fullName: string) => boolean = (fullName: string): boolean =>
+  Boolean(fullName) && fullName.length <= MAX_INITIALS_LENGTH;
 
 const validateFullName: (fullName: string) => string | boolean = (
   fullName: string

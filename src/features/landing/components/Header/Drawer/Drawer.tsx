@@ -29,12 +29,7 @@ function CustomDrawer(): React.ReactElement {
         sx={styles.button}
         onClick={handleOpenDrawer}
       >
-        <Image
-          src={Bars}
-          alt={t('header.drawer.image_alt.bars')}
-          width={24}
-          height={24}
-        />
+        <Image src={Bars} alt={t('header.drawer.image_alt.bars')} width={24} height={24} />
       </Button>
       <Drawer
         sx={styles.drawer}
@@ -43,24 +38,10 @@ function CustomDrawer(): React.ReactElement {
         onClose={handleCloseDrawer}
         role="menu"
       >
-        <Box
-          width="23.4375rem"
-          textAlign="center"
-          role="presentation"
-          sx={styles.drawerContent}
-        >
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-          >
+        <Box width="23.4375rem" textAlign="center" role="presentation" sx={styles.drawerContent}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Link href="/">
-              <Image
-                src={Logo}
-                alt={t('header.logo_alt')}
-                width={131}
-                height={44}
-              />
+              <Image src={Logo} alt={t('header.logo_alt')} width={131} height={44} />
             </Link>
             <Button
               aria-label={t('header.drawer.button_aria_labels.exit') as string}
@@ -94,12 +75,7 @@ function CustomDrawer(): React.ReactElement {
               </UiButton>
             </Link>
             <Link href="#signUp" sx={styles.link}>
-              <UiButton
-                fullWidth
-                onClick={handleCloseDrawer}
-                variant="contained"
-                size="small"
-              >
+              <UiButton fullWidth onClick={handleCloseDrawer} variant="contained" size="small">
                 {t('header.actions.try_it_out')}
               </UiButton>
             </Link>

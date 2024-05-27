@@ -2,7 +2,7 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 pnpm format
-pnpm lint:next && git diff --name-only main | grep -E "(.js$|.ts$|.tsx$)"
-pnpm lint:tsc --noEmit $(git diff --cached --name-only | grep '\.ts$')
-pnpm lint:md && git diff --name-only main | grep -E "(.md$)"
-pnpm test:unit $(git diff --cached --name-only | grep '.ts$')
+pnpm lint:next
+pnpm lint:tsc --noEmit
+pnpm lint:md
+pnpm test:unit

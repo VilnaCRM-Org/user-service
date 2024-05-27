@@ -11,19 +11,13 @@ test.describe('Buttons navigation tests', () => {
     await page.goto('/');
   });
 
-  async function clickAndVerifySection(
-    page: Page,
-    elementLocator: string
-  ): Promise<void> {
+  async function clickAndVerifySection(page: Page, elementLocator: string): Promise<void> {
     const signUp: Locator = page.getByTestId(elementLocator);
     await signUp.click();
     await page.getByTestId(authSection).boundingBox();
   }
 
-  async function clickDrawerButton(
-    page: Page,
-    buttonName: string
-  ): Promise<void> {
+  async function clickDrawerButton(page: Page, buttonName: string): Promise<void> {
     await page.getByLabel('Button to open the drawer').click();
     await page.getByRole('button', { name: buttonName }).click();
     await page.getByTestId(authSection).boundingBox();

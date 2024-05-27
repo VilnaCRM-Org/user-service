@@ -10,9 +10,8 @@ const emptySocialLinks: SocialLink[] = [];
 
 const socialLinks: SocialLink[] = [testSocialLink];
 
-jest.mock(
-  '../../features/landing/components/AuthSection/SocialItem/SocialItem',
-  () => jest.fn(() => <div data-testid="social-item" />)
+jest.mock('../../features/landing/components/AuthSection/SocialItem/SocialItem', () =>
+  jest.fn(() => <div data-testid="social-item" />)
 );
 
 describe('SocialList component', () => {
@@ -24,9 +23,7 @@ describe('SocialList component', () => {
   });
 
   it('renders no social links when socialLinks array is empty', () => {
-    const { queryByTestId } = render(
-      <SocialList socialLinks={emptySocialLinks} />
-    );
+    const { queryByTestId } = render(<SocialList socialLinks={emptySocialLinks} />);
 
     expect(queryByTestId(socialLinksTestId)).not.toBeInTheDocument();
   });

@@ -6,20 +6,16 @@ import Landing from '../../features/landing/components/Landing/Landing';
 
 jest.mock('next/head', () => ({
   __esModule: true,
-  default: ({
-    children,
-  }: {
-    children: Array<React.ReactElement>;
-  }): React.JSX.Element => <div>{children}</div>,
+  default: ({ children }: { children: Array<React.ReactElement> }): React.JSX.Element => (
+    <div>{children}</div>
+  ),
 }));
 
 jest.mock('../../features/landing/components/Header/Header', () =>
   jest.fn(() => <div data-testid="header">Header</div>)
 );
-jest.mock(
-  '../../features/landing/components/BackgroundImages/BackgroundImages',
-  () =>
-    jest.fn(() => <div data-testid="background-images">BackgroundImages</div>)
+jest.mock('../../features/landing/components/BackgroundImages/BackgroundImages', () =>
+  jest.fn(() => <div data-testid="background-images">BackgroundImages</div>)
 );
 jest.mock('../../features/landing/components/AboutUs/AboutUs', () =>
   jest.fn(() => <div data-testid="about-us">AboutUs</div>)
@@ -63,8 +59,7 @@ describe('Landing', () => {
   it('render container correctly', () => {
     const { container } = render(<Landing />);
 
-    const mainContainer: HTMLElement | null =
-      container.querySelector(boxElementClass);
+    const mainContainer: HTMLElement | null = container.querySelector(boxElementClass);
 
     expect(mainContainer).toHaveStyle(positionRelativeStyle);
   });
@@ -73,9 +68,7 @@ describe('Landing', () => {
     const { getByText, container } = render(<Landing />);
 
     const titleElement: HTMLElement = getByText(logoName);
-    const metaElement: HTMLElement | null = container.querySelector(
-      metaAttributesSelector
-    );
+    const metaElement: HTMLElement | null = container.querySelector(metaAttributesSelector);
 
     expect(titleElement).toHaveTextContent(logoName);
     expect(metaElement).toBeInTheDocument();

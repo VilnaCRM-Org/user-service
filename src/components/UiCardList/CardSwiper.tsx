@@ -17,33 +17,29 @@ function CardSwiper({ cardList }: CardList): React.ReactElement {
     const target: HTMLElement | null = document.querySelector('body');
 
     function isToolTip(node: Element): boolean {
-      return (
-        node.role === 'tooltip' && node.classList.contains('base-Popper-root')
-      );
+      return node.role === 'tooltip' && node.classList.contains('base-Popper-root');
     }
 
     const config: MutationObserverInit = {
       childList: true,
     };
 
-    const observer: MutationObserver = new MutationObserver(
-      (mutationsList: MutationRecord[]) => {
-        mutationsList.forEach((mutation: MutationRecord) => {
-          if (mutation.type === 'childList') {
-            mutation.addedNodes.forEach((node: Node): void => {
-              if (node instanceof Element && isToolTip(node)) {
-                swiperRef.current!.style.pointerEvents = 'none';
-              }
-            });
-            mutation.removedNodes.forEach((node: Node): void => {
-              if (node instanceof Element && isToolTip(node)) {
-                swiperRef.current!.style.pointerEvents = 'auto';
-              }
-            });
-          }
-        });
-      }
-    );
+    const observer: MutationObserver = new MutationObserver((mutationsList: MutationRecord[]) => {
+      mutationsList.forEach((mutation: MutationRecord) => {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach((node: Node): void => {
+            if (node instanceof Element && isToolTip(node)) {
+              swiperRef.current!.style.pointerEvents = 'none';
+            }
+          });
+          mutation.removedNodes.forEach((node: Node): void => {
+            if (node instanceof Element && isToolTip(node)) {
+              swiperRef.current!.style.pointerEvents = 'auto';
+            }
+          });
+        }
+      });
+    });
 
     if (target) {
       observer.observe(target, config);
@@ -53,9 +49,7 @@ function CardSwiper({ cardList }: CardList): React.ReactElement {
   }, []);
 
   const gridMobile: CSSProperties =
-    cardList[0].type === 'smallCard'
-      ? styles.gridSmallMobile
-      : styles.gridLargeMobile;
+    cardList[0].type === 'smallCard' ? styles.gridSmallMobile : styles.gridLargeMobile;
 
   return (
     <Grid sx={gridMobile} ref={swiperRef as React.RefObject<HTMLDivElement>}>

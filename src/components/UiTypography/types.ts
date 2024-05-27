@@ -20,18 +20,7 @@ export interface UiTypographyProps {
     | 'button'
     | 'mobileText';
   children: React.ReactNode;
-  component?:
-    | 'section'
-    | 'p'
-    | 'div'
-    | 'span'
-    | 'a'
-    | 'h1'
-    | 'h2'
-    | 'h3'
-    | 'h4'
-    | 'h5'
-    | 'h6';
+  component?: 'section' | 'p' | 'div' | 'span' | 'a' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   id?: string;
   role?: React.AriaRole;
 }

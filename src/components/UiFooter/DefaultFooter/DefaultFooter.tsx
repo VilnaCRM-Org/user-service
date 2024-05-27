@@ -13,18 +13,11 @@ import { VilnaCRMEmail } from '../VilnaCRMEmail';
 
 import styles from './styles';
 
-function DefaultFooter({
-  socialLinks,
-}: {
-  socialLinks: SocialMedia[];
-}): React.ReactElement {
+function DefaultFooter({ socialLinks }: { socialLinks: SocialMedia[] }): React.ReactElement {
   const { t } = useTranslation();
 
   const currentDate: Date = useMemo(() => new Date(), []);
-  const currentYear: number = useMemo(
-    () => currentDate.getFullYear(),
-    [currentDate]
-  );
+  const currentYear: number = useMemo(() => currentDate.getFullYear(), [currentDate]);
 
   return (
     <Stack sx={styles.footerWrapper}>
@@ -36,12 +29,7 @@ function DefaultFooter({
             alignItems="center"
             sx={styles.topContent}
           >
-            <Image
-              src={Logo}
-              alt={t('footer.logo_alt')}
-              width={143}
-              height={48}
-            />
+            <Image src={Logo} alt={t('footer.logo_alt')} width={143} height={48} />
             <PrivacyPolicy />
           </Stack>
         </Box>

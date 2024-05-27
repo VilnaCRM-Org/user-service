@@ -69,13 +69,12 @@ export const theme: Theme = createTheme({
             fontWeight: '600',
             fontSize: '1.125rem',
             padding: '1.25rem 2rem',
-            [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]:
-              {
-                fontSize: '0.9375rem',
-                fontWeight: '400',
-                lineHeight: '1.125rem',
-                padding: '1rem 1.438rem',
-              },
+            [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
+              fontSize: '0.9375rem',
+              fontWeight: '400',
+              lineHeight: '1.125rem',
+              padding: '1rem 1.438rem',
+            },
           },
         },
         {

@@ -73,11 +73,7 @@ describe('LocalizationGenerator', () => {
       const generator = new LocalizationGenerator();
       generator.writeLocalizationFile(fileContent, filePath);
 
-      expect(mockWriteFile).toHaveBeenCalledWith(
-        filePath,
-        fileContent,
-        expect.any(Function)
-      );
+      expect(mockWriteFile).toHaveBeenCalledWith(filePath, fileContent, expect.any(Function));
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       fs.unlink(filePath, _ => {});

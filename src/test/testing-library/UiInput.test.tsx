@@ -10,11 +10,7 @@ const testType: string = 'email';
 describe('UiInput', () => {
   it('renders the input with the provided props', () => {
     const { getByPlaceholderText } = render(
-      <UiInput
-        placeholder={testPlaceholder}
-        type={testType}
-        value={testEmail}
-      />
+      <UiInput placeholder={testPlaceholder} type={testType} value={testEmail} />
     );
     const inputElement: HTMLElement = getByPlaceholderText(testPlaceholder);
     expect(inputElement).toBeInTheDocument();

@@ -14,9 +14,7 @@ const linkRole: string = 'link';
 
 describe('SocialMediaItem', () => {
   it('renders social media drawer icon with correct attributes', () => {
-    const { getByRole } = render(
-      <SocialMediaItem item={testSocialDrawerItem} />
-    );
+    const { getByRole } = render(<SocialMediaItem item={testSocialDrawerItem} />);
 
     const linkElement: HTMLElement = getByRole(linkRole, {
       name: testSocialDrawerItem.ariaLabel,
@@ -31,9 +29,7 @@ describe('SocialMediaItem', () => {
   });
 
   it('renders social media no drawer icon with correct attributes', () => {
-    const { getByRole, debug } = render(
-      <SocialMediaItem item={testSocialNoDrawerItem} />
-    );
+    const { getByRole, debug } = render(<SocialMediaItem item={testSocialNoDrawerItem} />);
 
     debug();
 
@@ -43,10 +39,7 @@ describe('SocialMediaItem', () => {
     const imageElement: HTMLElement = getByRole(imageRole);
 
     expect(linkElement).toBeInTheDocument();
-    expect(linkElement).toHaveAttribute(
-      'href',
-      testSocialNoDrawerItem.linkHref
-    );
+    expect(linkElement).toHaveAttribute('href', testSocialNoDrawerItem.linkHref);
     expect(imageElement).toBeInTheDocument();
     expect(imageElement).toHaveAttribute(widthStyle, '20');
     expect(imageElement).toHaveAttribute(heightStyle, '20');

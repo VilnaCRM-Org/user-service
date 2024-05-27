@@ -28,11 +28,7 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 });
 
-function MyApp({
-  Component,
-}: {
-  Component: React.ComponentType;
-}): React.ReactElement {
+function MyApp({ Component }: { Component: React.ComponentType }): React.ReactElement {
   useEffect(() => {
     document.documentElement.dir = i18n.dir();
   }, []);

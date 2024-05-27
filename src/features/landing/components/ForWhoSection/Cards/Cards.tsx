@@ -13,9 +13,7 @@ function Cards(): React.ReactElement {
 
   return (
     <Stack flexDirection="column" sx={styles.wrapper}>
-      <UiTypography sx={styles.secondTitle}>
-        {t('for_who.heading_secondary')}
-      </UiTypography>
+      <UiTypography sx={styles.secondTitle}>{t('for_who.heading_secondary')}</UiTypography>
       <Stack sx={styles.cardWrapper}>
         <Stack sx={styles.cardItem}>
           <Box

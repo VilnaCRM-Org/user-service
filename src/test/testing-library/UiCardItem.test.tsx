@@ -13,9 +13,7 @@ describe('UiCardItem Component', () => {
     const servicesText: string = 'services';
 
     it('renders correctly with large card', () => {
-      const { getByText, getByRole } = render(
-        <CardContent item={cardItem} isSmallCard={false} />
-      );
+      const { getByText, getByRole } = render(<CardContent item={cardItem} isSmallCard={false} />);
 
       const titleElement: HTMLElement = getByRole(cardTitleRole);
       const textElement: HTMLElement = getByText(cardItem.text);
@@ -26,9 +24,7 @@ describe('UiCardItem Component', () => {
     });
 
     it('renders correctly with small card', () => {
-      const { getByText, getByRole } = render(
-        <CardContent item={cardItem} isSmallCard />
-      );
+      const { getByText, getByRole } = render(<CardContent item={cardItem} isSmallCard />);
 
       const titleElement: HTMLElement = getByRole(cardTitleRole);
       const integrateElement: HTMLElement = getByText(integrateText);
@@ -47,8 +43,7 @@ describe('UiCardItem Component', () => {
     it('renders UiCardItem with small card style', () => {
       const { container } = render(<UiCardItem item={smallCard} />);
 
-      const element: HTMLElement | null =
-        container.querySelector(stackElementClass);
+      const element: HTMLElement | null = container.querySelector(stackElementClass);
 
       expect(element).toBeInTheDocument();
     });
@@ -56,8 +51,7 @@ describe('UiCardItem Component', () => {
     it('renders UiCardItem with large card style', () => {
       const { container } = render(<UiCardItem item={largeCard} />);
 
-      const element: HTMLElement | null =
-        container.querySelector(stackElementClass);
+      const element: HTMLElement | null = container.querySelector(stackElementClass);
 
       expect(element).toBeInTheDocument();
     });

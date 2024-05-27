@@ -7,10 +7,7 @@ import UiTypography from '../UiTypography';
 import styles from './styles';
 import { CardContentProps } from './types';
 
-function CardContent({
-  item,
-  isSmallCard,
-}: CardContentProps): React.ReactElement {
+function CardContent({ item, isSmallCard }: CardContentProps): React.ReactElement {
   return (
     <>
       <UiTypography

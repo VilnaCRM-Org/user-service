@@ -9,11 +9,7 @@ import { SocialList } from '../SocialList';
 
 import styles from './styles';
 
-function SignUpText({
-  socialLinks,
-}: {
-  socialLinks: SocialLink[];
-}): React.ReactElement {
+function SignUpText({ socialLinks }: { socialLinks: SocialLink[] }): React.ReactElement {
   const { t } = useTranslation();
   return (
     <Box sx={styles.textWrapper}>

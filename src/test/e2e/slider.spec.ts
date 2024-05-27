@@ -50,11 +50,7 @@ test.describe('Slider tests', () => {
       name: SECOND_SLIDE_TITLE_POSSIBILITIES,
     });
 
-    await performSliderTest(
-      page,
-      firstSlidePossibilities,
-      secondSlidePossibilities
-    );
+    await performSliderTest(page, firstSlidePossibilities, secondSlidePossibilities);
 
     const tooltipContent: Locator = page
       .getByRole('tooltip', { name: TOOLTIP_CONTENT_TEXT })

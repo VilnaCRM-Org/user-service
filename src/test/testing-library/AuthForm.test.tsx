@@ -25,27 +25,21 @@ import {
   emptyValue,
   passwordTipAltText,
   buttonRole,
+  borderStyle,
 } from '../../features/landing/components/AuthSection/AuthForm/constants';
 
 import { testInitials, testEmail, testPassword } from './constants';
 
 describe('AuthForm', () => {
   it('renders AuthForm component', () => {
-    const {
-      container,
-      queryByRole,
-      getByPlaceholderText,
-      getByAltText,
-      getByText,
-      getByRole,
-    } = render(
-      <MockedProvider>
-        <AuthForm />
-      </MockedProvider>
-    );
+    const { container, queryByRole, getByPlaceholderText, getByAltText, getByText, getByRole } =
+      render(
+        <MockedProvider>
+          <AuthForm />
+        </MockedProvider>
+      );
 
-    const authForm: HTMLElement | null =
-      container.querySelector(authFormSelector);
+    const authForm: HTMLElement | null = container.querySelector(authFormSelector);
     const formTitle: HTMLElement = getByText(formTitleText);
     const nameInputLabel: HTMLElement = getByText(nameInputText);
     const emailInputLabel: HTMLElement = getByText(emailInputText);
@@ -55,15 +49,11 @@ describe('AuthForm', () => {
     const fullNameInput: HTMLInputElement = getByPlaceholderText(
       fullNamePlaceholder
     ) as HTMLInputElement;
-    const emailInput: HTMLInputElement = getByPlaceholderText(
-      emailPlaceholder
-    ) as HTMLInputElement;
+    const emailInput: HTMLInputElement = getByPlaceholderText(emailPlaceholder) as HTMLInputElement;
     const passwordInput: HTMLInputElement = getByPlaceholderText(
       passwordPlaceholder
     ) as HTMLInputElement;
-    const privacyCheckbox: HTMLInputElement = getByRole(
-      checkboxRole
-    ) as HTMLInputElement;
+    const privacyCheckbox: HTMLInputElement = getByRole(checkboxRole) as HTMLInputElement;
 
     const serverErrorMessage: HTMLElement | null = queryByRole(alertRole);
     const loader: HTMLElement | null = queryByRole(statusRole);
@@ -94,11 +84,9 @@ describe('AuthForm', () => {
       </MockedProvider>
     );
 
-    const fullNameInput: HTMLElement =
-      getByPlaceholderText(fullNamePlaceholder);
+    const fullNameInput: HTMLElement = getByPlaceholderText(fullNamePlaceholder);
     const emailInput: HTMLElement = getByPlaceholderText(emailPlaceholder);
-    const passwordInput: HTMLElement =
-      getByPlaceholderText(passwordPlaceholder);
+    const passwordInput: HTMLElement = getByPlaceholderText(passwordPlaceholder);
 
     expect(fullNameInput).toBeInTheDocument();
     expect(emailInput).toBeInTheDocument();
@@ -112,11 +100,9 @@ describe('AuthForm', () => {
       </MockedProvider>
     );
 
-    const fullNameInput: HTMLElement =
-      getByPlaceholderText(fullNamePlaceholder);
+    const fullNameInput: HTMLElement = getByPlaceholderText(fullNamePlaceholder);
     const emailInput: HTMLElement = getByPlaceholderText(emailPlaceholder);
-    const passwordInput: HTMLElement =
-      getByPlaceholderText(passwordPlaceholder);
+    const passwordInput: HTMLElement = getByPlaceholderText(passwordPlaceholder);
     const privacyCheckbox: HTMLElement = getByRole(checkboxRole);
     const signUpButton: HTMLElement = getByRole(buttonRole, {
       name: submitButtonText,
@@ -143,11 +129,9 @@ describe('AuthForm', () => {
       </MockedProvider>
     );
 
-    const fullNameInput: HTMLElement =
-      getByPlaceholderText(fullNamePlaceholder);
+    const fullNameInput: HTMLElement = getByPlaceholderText(fullNamePlaceholder);
     const emailInput: HTMLElement = getByPlaceholderText(emailPlaceholder);
-    const passwordInput: HTMLElement =
-      getByPlaceholderText(passwordPlaceholder);
+    const passwordInput: HTMLElement = getByPlaceholderText(passwordPlaceholder);
     const privacyCheckbox: HTMLElement = getByRole(checkboxRole);
     const signUpButton: HTMLElement = getByRole(buttonRole, {
       name: submitButtonText,
@@ -177,15 +161,11 @@ describe('AuthForm', () => {
     const fullNameInput: HTMLInputElement = getByPlaceholderText(
       fullNamePlaceholder
     ) as HTMLInputElement;
-    const emailInput: HTMLInputElement = getByPlaceholderText(
-      emailPlaceholder
-    ) as HTMLInputElement;
+    const emailInput: HTMLInputElement = getByPlaceholderText(emailPlaceholder) as HTMLInputElement;
     const passwordInput: HTMLInputElement = getByPlaceholderText(
       passwordPlaceholder
     ) as HTMLInputElement;
-    const privacyCheckbox: HTMLInputElement = getByRole(
-      checkboxRole
-    ) as HTMLInputElement;
+    const privacyCheckbox: HTMLInputElement = getByRole(checkboxRole) as HTMLInputElement;
 
     fireEvent.change(emailInput, { target: { value: email } });
     fireEvent.change(passwordInput, { target: { value: password } });
@@ -201,25 +181,20 @@ describe('AuthForm', () => {
   });
 
   it('correct linkage between inputs and values with no data', async () => {
-    const { getByPlaceholderText, getByRole, getAllByText, queryByRole } =
-      render(
-        <MockedProvider addTypename={false}>
-          <AuthForm />
-        </MockedProvider>
-      );
+    const { getByPlaceholderText, getByRole, getAllByText, queryByRole } = render(
+      <MockedProvider addTypename={false}>
+        <AuthForm />
+      </MockedProvider>
+    );
 
     const fullNameInput: HTMLInputElement = getByPlaceholderText(
       fullNamePlaceholder
     ) as HTMLInputElement;
-    const emailInput: HTMLInputElement = getByPlaceholderText(
-      emailPlaceholder
-    ) as HTMLInputElement;
+    const emailInput: HTMLInputElement = getByPlaceholderText(emailPlaceholder) as HTMLInputElement;
     const passwordInput: HTMLInputElement = getByPlaceholderText(
       passwordPlaceholder
     ) as HTMLInputElement;
-    const privacyCheckbox: HTMLInputElement = getByRole(
-      checkboxRole
-    ) as HTMLInputElement;
+    let privacyCheckbox: HTMLInputElement = getByRole(checkboxRole) as HTMLInputElement;
     const signUpButton: HTMLElement = getByRole(buttonRole, {
       name: submitButtonText,
     });
@@ -232,11 +207,13 @@ describe('AuthForm', () => {
     await waitFor(() => {
       const requiredError: HTMLElement[] = getAllByText(requiredText);
       const serverErrorMessage: HTMLElement | null = queryByRole(alertRole);
+      privacyCheckbox = getByRole(checkboxRole) as HTMLInputElement;
 
       expect(emailInput.value).toBe(emptyValue);
       expect(passwordInput.value).toBe(emptyValue);
       expect(fullNameInput.value).toBe(emptyValue);
       expect(privacyCheckbox).not.toBeChecked();
+      expect(privacyCheckbox).toHaveStyle(borderStyle);
 
       expect(requiredError.length).toBe(3);
       expect(serverErrorMessage).not.toBeInTheDocument();

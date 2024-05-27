@@ -14,13 +14,7 @@ function UiTypography({
 }: UiTypographyProps): React.ReactElement {
   return (
     <ThemeProvider theme={theme}>
-      <Typography
-        sx={sx}
-        component={component || 'p'}
-        variant={variant}
-        id={id}
-        role={role}
-      >
+      <Typography sx={sx} component={component || 'p'} variant={variant} id={id} role={role}>
         {children}
       </Typography>
     </ThemeProvider>

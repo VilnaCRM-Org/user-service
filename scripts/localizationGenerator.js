@@ -38,8 +38,7 @@ class LocalizationGenerator {
     if (!featureFolders.length) return;
 
     const localizationObj = featureFolders.reduce((acc, folder) => {
-      const parsedLocalizationFromFolder =
-        this.getLocalizationFromFolder(folder);
+      const parsedLocalizationFromFolder = this.getLocalizationFromFolder(folder);
 
       return { ...acc, ...parsedLocalizationFromFolder };
     }, {});
@@ -65,12 +64,9 @@ class LocalizationGenerator {
   }
 
   getLocalizationFromFolder(folder) {
-    const localizationFiles = fs.readdirSync(
-      this.pathToI18nFolder.replace('{folder}', folder),
-      {
-        withFileTypes: true,
-      }
-    );
+    const localizationFiles = fs.readdirSync(this.pathToI18nFolder.replace('{folder}', folder), {
+      withFileTypes: true,
+    });
 
     return localizationFiles.reduce((localizations, file) => {
       if (!file.isFile()) return localizations;
@@ -80,9 +76,7 @@ class LocalizationGenerator {
       if (fileType !== this.jsonFileType) return localizations;
 
       const localizationContent = fs.readFileSync(
-        this.pathToI18nFile
-          .replace('{folder}', folder)
-          .replace('{file.name}', file.name),
+        this.pathToI18nFile.replace('{folder}', folder).replace('{file.name}', file.name),
         'utf8'
       );
       const parsedLocalization = JSON.parse(localizationContent);

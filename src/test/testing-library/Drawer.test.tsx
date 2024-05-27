@@ -25,9 +25,7 @@ describe('Drawer', () => {
   });
 
   it('opens drawer when button is clicked', async () => {
-    const { getByLabelText, getByRole, getByAltText, getByText } = render(
-      <Drawer />
-    );
+    const { getByLabelText, getByRole, getByAltText, getByText } = render(<Drawer />);
 
     const drawerButton: HTMLElement = getByLabelText(buttonToOpenDrawer);
     fireEvent.click(drawerButton);

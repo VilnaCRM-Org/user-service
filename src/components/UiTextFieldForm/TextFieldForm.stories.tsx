@@ -44,9 +44,7 @@ export default meta;
 
 type Story = StoryObj<typeof UiTextFieldForm>;
 
-function TextFieldFormStory<T extends FieldValues>(
-  args: CustomTextField<T>
-): React.ReactElement {
+function TextFieldFormStory<T extends FieldValues>(args: CustomTextField<T>): React.ReactElement {
   const { handleSubmit, control } = useForm<{ FullName: string }>({
     mode: 'onTouched',
   });

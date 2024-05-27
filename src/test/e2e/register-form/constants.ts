@@ -52,6 +52,4 @@ export const expectationsPassword: ExpectationsPassword[] = [
   },
 ];
 
-export const expectationsRequired: { text: string }[] = [
-  { text: 'This field is required' },
-];
+export const expectationsRequired: { text: string }[] = [{ text: 'This field is required' }];

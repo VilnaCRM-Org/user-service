@@ -23,30 +23,32 @@ describe('Email Tests', () => {
       expect(isValidEmailFormat(invalidTestEmailWithDot)).toBe(false);
       expect(isValidEmailFormat('user@.com')).toBe(false);
       expect(isValidEmailFormat('user@domain')).toBe(false);
+      expect(isValidEmailFormat('@example-domain.com')).toBe(false);
     });
   });
 
   describe('validateEmail', () => {
     it('should return localized error message when email is an empty string', () => {
-      const result: string | boolean = validateEmail('');
-      expect(result).toBe(emailStepError);
+      expect(validateEmail('')).toBe(emailStepError);
     });
 
     it('should return true when email is valid', () => {
-      const result: string | boolean = validateEmail(correctEmail);
-      expect(result).toBe(true);
+      expect(validateEmail(correctEmail)).toBe(true);
+      expect(validateEmail('user.name@example.com')).toBe(true);
+      expect(validateEmail('user123@example.co.uk')).toBe(true);
+      expect(validateEmail('user@example-domain.com')).toBe(true);
     });
 
     it("should return localized error message when email does not contain '@' or '.'", () => {
-      const result: string | boolean = validateEmail(
-        invalidTestEmailWithoutDot
-      );
-      expect(result).toBe(emailStepError);
+      expect(validateEmail(invalidTestEmailWithoutDot)).toBe(emailStepError);
+      expect(validateEmail('test.example')).toBe(emailStepError);
     });
 
-    it("should return localized error message when email does not contain '@' or '.'", () => {
-      const result: string | boolean = validateEmail(invalidTestEmailWithDot);
-      expect(result).toBe(emailInvalidError);
+    it("should return localized error message when email does not contain '@' and '.'", () => {
+      expect(validateEmail(invalidTestEmailWithDot)).toBe(emailInvalidError);
+      expect(validateEmail('example@.com')).toBe(emailInvalidError);
+      expect(validateEmail('@domain.com')).toBe(emailInvalidError);
+      expect(validateEmail('example@domain.')).toBe(emailInvalidError);
     });
   });
 });

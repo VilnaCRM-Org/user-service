@@ -8,30 +8,23 @@ const mockAuthText: string = 'mock-sign-up-text';
 const mockAuthForm: string = 'mock-auth-form';
 
 jest.mock('@apollo/client', () => ({
-  ApolloProvider: ({
-    children,
-  }: {
-    children: React.ReactNode;
-  }): JSX.Element => <div>{children}</div>,
+  ApolloProvider: ({ children }: { children: React.ReactNode }): JSX.Element => (
+    <div>{children}</div>
+  ),
 }));
 
 jest.mock('../../features/landing/components/AuthSection/AuthForm', () => ({
-  AuthForm: (): React.ReactNode => (
-    <div data-testid={mockAuthForm}>Mock AuthForm</div>
-  ),
+  AuthForm: (): React.ReactNode => <div data-testid={mockAuthForm}>Mock AuthForm</div>,
 }));
 
 jest.mock('../../features/landing/components/AuthSection/SignUpText', () => ({
-  SignUpText: (): React.ReactNode => (
-    <div data-testid={mockAuthText}>Mock SignUpText</div>
-  ),
+  SignUpText: (): React.ReactNode => <div data-testid={mockAuthText}>Mock SignUpText</div>,
 }));
 
 describe('AuthSection', () => {
   test('renders without crashing', () => {
     const { container } = render(<AuthSection />);
-    const authSection: HTMLElement | null =
-      container.querySelector(authSectionSelector);
+    const authSection: HTMLElement | null = container.querySelector(authSectionSelector);
     expect(authSection).toBeInTheDocument();
   });
 

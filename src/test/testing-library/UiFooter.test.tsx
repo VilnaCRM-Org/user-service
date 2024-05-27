@@ -11,8 +11,7 @@ describe('UiFooter Component', () => {
     const { container } = render(<UiFooter />);
 
     const footerElement: HTMLElement | null = container.querySelector('footer');
-    const defaultFooterWrapper: HTMLElement | null =
-      container.querySelector(stackElementClass);
+    const defaultFooterWrapper: HTMLElement | null = container.querySelector(stackElementClass);
 
     expect(footerElement).toBeInTheDocument();
     expect(defaultFooterWrapper).toBeInTheDocument();
@@ -22,9 +21,7 @@ describe('UiFooter Component', () => {
     const { container } = render(<UiFooter />);
 
     const footerElement: HTMLElement | null = container.querySelector('footer');
-    const mobileWrapper: HTMLElement | null = container.querySelector(
-      containerElementClass
-    );
+    const mobileWrapper: HTMLElement | null = container.querySelector(containerElementClass);
 
     expect(footerElement).toBeInTheDocument();
     expect(mobileWrapper).toBeInTheDocument();

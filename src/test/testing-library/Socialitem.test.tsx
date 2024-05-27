@@ -6,9 +6,7 @@ import SocialItem from '../../features/landing/components/AuthSection/SocialItem
 
 describe('SocialItem', () => {
   test('renders social item with correct title and icon', () => {
-    const { getByAltText, getByText } = render(
-      <SocialItem item={testSocialLink} />
-    );
+    const { getByAltText, getByText } = render(<SocialItem item={testSocialLink} />);
 
     const titleElement: HTMLElement = getByText(testSocialLink.title);
     expect(titleElement).toBeInTheDocument();

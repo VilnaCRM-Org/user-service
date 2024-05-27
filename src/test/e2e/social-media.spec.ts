@@ -39,53 +39,23 @@ test.describe('Navigation tests', () => {
   }
 
   test('Instagram link', async ({ page }) => {
-    await openDrawerAndNavigate(
-      page,
-      'Instagram',
-      /instagram/,
-      socialLinks[0].url
-    );
-    await navigateAndVerifyURL(
-      page,
-      'Link to Instagram',
-      /instagram/,
-      socialLinks[0].url
-    );
+    await openDrawerAndNavigate(page, 'Instagram', /instagram/, socialLinks[0].url);
+    await navigateAndVerifyURL(page, 'Link to Instagram', /instagram/, socialLinks[0].url);
   });
 
   test('GitHub link', async ({ page }) => {
     await openDrawerAndNavigate(page, 'GitHub', /github/, socialLinks[1].url);
-    await navigateAndVerifyURL(
-      page,
-      'Link to GitHub',
-      /github/,
-      socialLinks[1].url
-    );
+    await navigateAndVerifyURL(page, 'Link to GitHub', /github/, socialLinks[1].url);
   });
 
   test('Facebook link', async ({ page }) => {
-    await openDrawerAndNavigate(
-      page,
-      'Facebook',
-      /facebook/,
-      socialLinks[2].url
-    );
+    await openDrawerAndNavigate(page, 'Facebook', /facebook/, socialLinks[2].url);
 
-    await navigateAndVerifyURL(
-      page,
-      'Link to Facebook',
-      /facebook/,
-      socialLinks[2].url
-    );
+    await navigateAndVerifyURL(page, 'Link to Facebook', /facebook/, socialLinks[2].url);
   });
 
   test('Linkedin link', async ({ page }) => {
     await openDrawerAndNavigate(page, 'Linkedin', /link/, socialLinks[3].url);
-    await navigateAndVerifyURL(
-      page,
-      'Link to Linkedin',
-      /link/,
-      socialLinks[3].url
-    );
+    await navigateAndVerifyURL(page, 'Link to Linkedin', /link/, socialLinks[3].url);
   });
 });

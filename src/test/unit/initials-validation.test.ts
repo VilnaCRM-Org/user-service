@@ -19,7 +19,7 @@ describe('initials Tests', () => {
 
     it('should return false if the full name is not valid', () => {
       expect(validateFullName(``)).toBe(errorText);
-      expect(validateFullName(testFullName.repeat(100))).toBe(errorText);
+      expect(validateFullName(testFullName.repeat(150))).toBe(errorText);
     });
   });
 
@@ -39,7 +39,7 @@ describe('initials Tests', () => {
       expect(validateFullName(`  `)).toBe(errorText);
       expect(validateFullName(`\n`)).toBe(errorText);
       expect(validateFullName(` \n `)).toBe(errorText);
-      expect(validateFullName(testFullName.repeat(100))).toBe(errorText);
+      expect(validateFullName(testFullName.repeat(150))).toBe(errorText);
     });
   });
 });

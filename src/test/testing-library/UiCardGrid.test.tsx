@@ -22,9 +22,7 @@ describe('CardGrid component', () => {
     const { container } = render(<CardGrid cardList={smallCardList} />);
 
     const gridElement: ChildNode | null = container.firstChild;
-    const computedStyles: CSSStyleDeclaration = window.getComputedStyle(
-      gridElement as Element
-    );
+    const computedStyles: CSSStyleDeclaration = window.getComputedStyle(gridElement as Element);
 
     expect(computedStyles).toHaveProperty('gridTemplateColumns');
   });
@@ -33,9 +31,7 @@ describe('CardGrid component', () => {
     const { container } = render(<CardGrid cardList={largeCardList} />);
 
     const gridElement: ChildNode | null = container.firstChild;
-    const computedStyles: CSSStyleDeclaration = window.getComputedStyle(
-      gridElement as Element
-    );
+    const computedStyles: CSSStyleDeclaration = window.getComputedStyle(gridElement as Element);
 
     expect(computedStyles).toHaveProperty('gridTemplateColumns');
   });
