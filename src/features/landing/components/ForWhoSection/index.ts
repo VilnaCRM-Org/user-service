@@ -1,1 +1,3 @@
-export { default as ForWhoSection } from './ForWhoSection';
+import ForWhoSection from './ForWhoSection';
+
+export default ForWhoSection;

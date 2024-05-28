@@ -1,1 +1,3 @@
-export { default as Possibilities } from './Possibilities';
+import Possibilities from './Possibilities';
+
+export default Possibilities;

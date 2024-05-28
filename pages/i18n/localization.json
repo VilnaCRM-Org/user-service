@@ -95,10 +95,7 @@
           "text_get_data": "Get data about any event in CRM and automate complex business processes",
           "text_for_custom": "For custom integrations  with specific products"
         },
-        "service_text": {
-          "title": "Services",
-          "text": "Integrate in a few clicks"
-        },
+        "service_text": { "title": "Services", "text": "Integrate in a few clicks" },
         "card_image_titles": {
           "title_for_first": "Image of Ruby",
           "title_for_second": "Image of SmallDiamond",
@@ -269,10 +266,7 @@
           "text_get_data": "Отримуйте дані про будь-які івенти у CRM та автоматизуйте складні бізнес-процеси",
           "text_for_custom": "Для кастомних інтеграцій зі специфічними продуктами"
         },
-        "service_text": {
-          "title": "Звичні сервіси",
-          "text": "Інтегруйте у кілька кліків"
-        },
+        "service_text": { "title": "Звичні сервіси", "text": "Інтегруйте у кілька кліків" },
         "card_image_titles": {
           "title_for_first": "Зображення Рубіну",
           "title_for_second": "Зображення Малого діаманту",

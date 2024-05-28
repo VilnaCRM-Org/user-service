@@ -1,1 +1,3 @@
-export { default as UiFooter } from './UiFooter';
+import UiFooter from './UiFooter';
+
+export default UiFooter;

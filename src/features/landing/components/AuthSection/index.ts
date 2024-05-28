@@ -1,1 +1,3 @@
-export { default as AuthSection } from './AuthSection';
+import AuthSection from './AuthSection';
+
+export default AuthSection;

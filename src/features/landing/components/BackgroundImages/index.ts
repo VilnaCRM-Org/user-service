@@ -1,1 +1,3 @@
-export { default as BackgroundImages } from './BackgroundImages';
+import BackgroundImages from './BackgroundImages';
+
+export default BackgroundImages;

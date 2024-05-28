@@ -1,1 +1,3 @@
-export { default as WhyUs } from './WhyUs';
+import WhyUs from './WhyUs';
+
+export default WhyUs;
