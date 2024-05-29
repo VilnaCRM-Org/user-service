@@ -1,20 +1,24 @@
-const { loadEnvConfig } = require('@next/env');
+const Utils = require('../utils/utils');
 
-const projectDir = process.cwd();
-loadEnvConfig(projectDir);
+const menuIconSelector = 'img[alt="Bars Icon"]';
+const closeIconSelector = 'img[alt="Exit Icon"]';
 
-function url() {
-  return process.env.MEMLAB_WEBSITE_URL;
+async function setup(page) {
+  await page.setViewport(Utils.mobileViewport);
 }
 
 async function action(page) {
-  await page.setViewport({ width: 375, height: 812 });
+  await page.setViewport(Utils.mobileViewport);
 
-  await page.click('img[alt="Bars Icon"]');
+  await page.click(menuIconSelector);
+
+  await page.waitForSelector(closeIconSelector, { visible: true });
 }
 
 async function back(page) {
-  await page.click('img[alt="Exit Icon"]');
+  await page.click(closeIconSelector);
+
+  await page.waitForSelector(closeIconSelector, { hidden: true });
 }
 
-module.exports = { url, action, back };
+module.exports = Utils.createScenario({ setup, action, back });

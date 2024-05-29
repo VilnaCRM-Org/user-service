@@ -59,3 +59,6 @@ next-env.d.ts
 # k6 config
 /src/test/load/config.json
 /src/test/load/results
+
+# memlab
+/src/test/memory-leak/results
