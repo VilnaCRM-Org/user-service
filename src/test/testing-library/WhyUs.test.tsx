@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { WhyUs } from '../../features/landing/components/WhyUs';
+import WhyUs from '../../features/landing/components/WhyUs';
 
 jest.mock('../../components/UiCardList/CardSwiper', () => jest.fn());
 

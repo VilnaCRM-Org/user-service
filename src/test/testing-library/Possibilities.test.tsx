@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 
-import { Possibilities } from '../../features/landing/components/Possibilities';
+import Possibilities from '../../features/landing/components/Possibilities';
 
 jest.mock('../../components/UiCardList/CardSwiper', () => jest.fn());
 

@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { UiFooter } from '@/components/UiFooter';
+import UiFooter from '@/components/UiFooter';
 
 const stackElementClass: string = '.MuiStack-root';
 const containerElementClass: string = '.MuiContainer-root';
