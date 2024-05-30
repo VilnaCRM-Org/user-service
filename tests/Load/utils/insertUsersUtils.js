@@ -13,7 +13,7 @@ export default class InsertUsersUtils {
         this.spikeConfig = this.config.endpoints[scenarioName].spike;
     }
 
-    execInsertUsersCommand(){
+    execInsertUsersCommand() {
         const runSmoke = this.utils.getCLIVariable('run_smoke') || 'true';
         const runAverage = this.utils.getCLIVariable('run_average') || 'true';
         const runStress = this.utils.getCLIVariable('run_stress') || 'true';
@@ -30,7 +30,7 @@ export default class InsertUsersUtils {
             ]);
     }
 
-    loadInsertedUsers(){
+    loadInsertedUsers() {
         return JSON.parse(open(`../${this.utils.getConfig()['usersFileName']}`));
     }
 
@@ -42,7 +42,7 @@ export default class InsertUsersUtils {
         }
     }
 
-    prepareUserBatch(batchSize){
+    prepareUserBatch(batchSize) {
         const generator = this.usersGenerator(batchSize);
         const batch = [];
         const userPasswords = {};
@@ -56,28 +56,58 @@ export default class InsertUsersUtils {
         return [batch, userPasswords];
     }
 
-    insertUsers(numberOfUsers){
-        const batchSize = this.config.batchSize;
-
-        const users = [];
-
-        for (let createdUsers = 0; createdUsers < numberOfUsers; createdUsers += batchSize) {
+    * requestGenerator(numberOfRequest, batchSize) {
+        for (let i = 0; i < numberOfRequest; i++) {
             const [batch, userPasswords] = this.prepareUserBatch(batchSize);
 
             const payload = JSON.stringify({
                 'users': batch
             });
 
-            const response = http.post(
-                `${this.utils.getBaseHttpUrl()}/batch`,
-                payload,
-                this.utils.getJsonHeader()
-            );
+            const request = {
+                method: 'POST',
+                url: `${this.utils.getBaseHttpUrl()}/batch`,
+                body: payload,
+                params: this.utils.getJsonHeader(),
+            };
 
-            JSON.parse(response.body).forEach((user) => {
-                user.password = userPasswords[user.email];
-                users.push(user);
-            });
+            yield [request, userPasswords];
+        }
+    }
+
+    prepareRequestBatch(numberOfUsers, batchSize) {
+        const numberOfRequests = Math.ceil(numberOfUsers / batchSize);
+        const generator = this.requestGenerator(numberOfRequests, batchSize);
+        const requestBatch = [];
+        const userPasswords = {};
+
+        for (let requestIndex = 0; requestIndex < batchSize; requestIndex++) {
+            const {value, done} = generator.next();
+            if (done) break;
+            const [request, passwords] = value;
+            requestBatch.push(request);
+            Object.assign(userPasswords, passwords);
+        }
+
+        return [requestBatch, userPasswords];
+    }
+
+    insertUsers(numberOfUsers) {
+        const batchSize = Math.min(this.config.batchSize, numberOfUsers);
+        const users = [];
+
+        for (let createdUsers = 0; createdUsers < numberOfUsers; createdUsers += batchSize) {
+            const [requestBatch, userPasswords] = this.prepareRequestBatch(numberOfUsers, batchSize);
+
+            const responses = http.batch(requestBatch);
+
+            responses.forEach((response) => {
+                    JSON.parse(response.body).forEach((user) => {
+                        user.password = userPasswords[user.email];
+                        users.push(user);
+                    });
+                }
+            );
         }
 
         return users;
@@ -134,7 +164,7 @@ export default class InsertUsersUtils {
         return this.countDefaultRequests(this.stressConfig);
     }
 
-    countDefaultRequests(config){
+    countDefaultRequests(config) {
         const riseRequests =
             this.countRequestForRampingRate(
                 0,
