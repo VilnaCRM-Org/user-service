@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react';
+import { DynamicOptions, Loader } from 'next/dynamic';
 import React from 'react';
 import '@testing-library/jest-dom';
 
@@ -9,6 +10,28 @@ jest.mock('next/head', () => ({
   default: ({ children }: { children: Array<React.ReactElement> }): React.JSX.Element => (
     <div>{children}</div>
   ),
+}));
+
+jest.mock('next/dynamic', () => ({
+  __esModule: true,
+  default: (...props: never): never => {
+    const dynamicModule: typeof import('next/dynamic') = jest.requireActual('next/dynamic');
+    const dynamicActualComp: <P = object>(
+      dynamicOptions: DynamicOptions<P> | Loader<P>,
+      options?: DynamicOptions<P>
+    ) => React.ComponentType<P> = dynamicModule.default;
+    const RequiredComponent: React.ComponentType<object> = dynamicActualComp(props[0]);
+    const requiredMock: (mock: never) => never = mock => mock;
+    // @ts-expect-error no jest types
+    const test: never = RequiredComponent.preload
+      ? // @ts-expect-error no jest types
+        RequiredComponent.preload()
+      : // @ts-expect-error no jest types
+        RequiredComponent.render.preload();
+    requiredMock(test);
+    // @ts-expect-error no jest types
+    return RequiredComponent;
+  },
 }));
 
 jest.mock('../../features/landing/components/Header/Header', () =>
