@@ -1,5 +1,5 @@
 const ScenarioBuilder = require('../utils/ScenarioBuilder');
-const Utils = require('../utils/utils');
+const swipeSlider = require('../utils/swipeSlider');
 
 const scenarioBuilder = new ScenarioBuilder();
 
@@ -14,11 +14,11 @@ async function setup(page) {
 }
 
 async function action(page) {
-  await Utils.swipeSlider(page, sliderSelector, iterations, 'left');
+  await swipeSlider(page, sliderSelector, iterations, 'left');
 }
 
 async function back(page) {
-  await Utils.swipeSlider(page, sliderSelector, iterations, 'right');
+  await swipeSlider(page, sliderSelector, iterations, 'right');
 }
 
 module.exports = scenarioBuilder.createScenario({ setup, action, back });

@@ -1,4 +1,6 @@
-const Utils = require('../utils/utils');
+const ScenarioBuilder = require('../utils/ScenarioBuilder');
+
+const scenarioBuilder = new ScenarioBuilder();
 
 const signUpButtonSelector = 'a[href="#signUp"]';
 
@@ -23,4 +25,4 @@ async function back(page) {
   await page.waitForTimeout(2000);
 }
 
-module.exports = Utils.createScenario({ action, back });
+module.exports = scenarioBuilder.createScenario({ action, back });

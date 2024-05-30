@@ -1,4 +1,6 @@
-const Utils = require('../utils/utils');
+const ScenarioBuilder = require('../utils/ScenarioBuilder');
+
+const scenarioBuilder = new ScenarioBuilder();
 
 const servicesButtonSelector = 'span.css-1rp615p-MuiTypography-root';
 const tooltipSelector = '.MuiTooltip-popper';
@@ -18,4 +20,4 @@ async function back(page) {
   await page.waitForSelector(tooltipSelector, { hidden: true });
 }
 
-module.exports = Utils.createScenario({ action, back });
+module.exports = scenarioBuilder.createScenario({ action, back });

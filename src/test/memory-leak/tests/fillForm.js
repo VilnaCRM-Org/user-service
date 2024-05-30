@@ -1,6 +1,8 @@
 const { faker } = require('@faker-js/faker');
 
-const Utils = require('../utils/utils');
+const ScenarioBuilder = require('../utils/ScenarioBuilder');
+
+const scenarioBuilder = new ScenarioBuilder();
 
 const fullNameInputSelector = 'input[id=":R6j59al2m:"]';
 const emailInputSelector = 'input[id=":R6l59al2m:"]';
@@ -9,7 +11,7 @@ const privacyCheckboxSelector = 'input[type="checkbox"]';
 
 const fakeFullName = faker.person.fullName();
 const fakeEmail = faker.internet.email();
-const fakePassword = faker.internet.password(passwordInputSelector);
+const fakePassword = faker.internet.password();
 
 const clickSettings = { clickCount: 3 };
 
@@ -39,4 +41,4 @@ async function back(page) {
   await page.click(privacyCheckboxSelector);
 }
 
-module.exports = Utils.createScenario(action, back);
+module.exports = scenarioBuilder.createScenario({ action, back });

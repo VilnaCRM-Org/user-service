@@ -4,15 +4,6 @@ import Head from 'next/head';
 import { ComponentClass } from 'react';
 import { useTranslation } from 'react-i18next';
 
-// import { UiFooter } from '../../../../components/UiFooter';
-// import { AboutUs } from '../AboutUs';
-// import { AuthSection } from '../AuthSection';
-// import { BackgroundImages } from '../BackgroundImages';
-// import { ForWhoSection } from '../ForWhoSection';
-// import { Header } from '../Header';
-// import { Possibilities } from '../Possibilities';
-// import { WhyUs } from '../WhyUs';
-
 // @ts-expect-error asdf  af sf asfa
 const DynamicBackgroundImages: ComponentClass = dynamic(() => import('../BackgroundImages'));
 // @ts-expect-error asdf  af sf asfa

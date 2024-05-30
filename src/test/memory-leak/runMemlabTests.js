@@ -1,24 +1,31 @@
-const { run, analyze, StringAnalysis, BrowserInteractionResultReader } = require('@memlab/api');
+const fs = require('node:fs');
+
+const { run, analyze } = require('@memlab/api');
+const { StringAnalysis } = require('@memlab/heap-analysis');
+
+const memoryLeakDir = './src/test/memory-leak';
+const testsDir = './tests';
+
+const workDir = './src/test/memory-leak/results';
+const consoleMode = 'VERBOSE';
 
 (async function () {
-  // TODO: in progress, its not final solution
-  const scenarioOne = require('./tests/toggleMobileMenu');
-  const scenarioTwo = require('./tests/sliderScroll');
-  //
-  // await run({
-  //   scenario: scenarioTwo,
-  //   consoleMode: 'VERBOSE',
-  //   workDir: './src/test/memory-leak/results',
-  // });
-  await run({
-    scenario: scenarioOne,
-    consoleMode: 'VERBOSE',
-    workDir: './src/test/memory-leak/results',
-  });
+  const testFilePaths = fs
+    .readdirSync(`${memoryLeakDir}/${testsDir}`)
+    .map(test => `${testsDir}/${test}`);
 
-  // const dataDir = '/src/test/memory-leak/results/data';
-  // const results = BrowserInteractionResultReader.from(dataDir);
-  //
-  // const analysis = new StringAnalysis();
-  // await analyze(results, analysis);
+  for (const testFilePath of testFilePaths) {
+    const scenario = require(testFilePath);
+
+    const { runResult } = await run({
+      scenario,
+      consoleMode,
+      workDir,
+    });
+
+    const analyzer = new StringAnalysis();
+    await analyze(runResult, analyzer);
+
+    runResult.cleanup();
+  }
 })();
