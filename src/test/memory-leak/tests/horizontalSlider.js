@@ -1,11 +1,16 @@
+const ScenarioBuilder = require('../utils/ScenarioBuilder');
 const Utils = require('../utils/utils');
+
+const scenarioBuilder = new ScenarioBuilder();
+
+const mobileViewport = { width: 400, height: 812 };
 
 const sliderSelector = '.swiper-wrapper';
 
 const iterations = 6;
 
 async function setup(page) {
-  await page.setViewport(Utils.mobileViewport);
+  await page.setViewport(mobileViewport);
 }
 
 async function action(page) {
@@ -16,4 +21,4 @@ async function back(page) {
   await Utils.swipeSlider(page, sliderSelector, iterations, 'right');
 }
 
-module.exports = Utils.createScenario({ setup, action, back });
+module.exports = scenarioBuilder.createScenario({ setup, action, back });
