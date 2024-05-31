@@ -16,7 +16,7 @@
     "lint:tsc": "tsc --newLine LF",
     "lint:md": "markdownlint -i CHANGELOG.md **/*.md",
     "test:e2e": "playwright run --headless --browser chrome",
-    "test:e2e-local": "pnpm exec playwright test",
+    "test:e2e-local": "pnpm exec playwright test ./src/test/e2e",
     "test:mutation": "npx stryker run",
     "test:visual": "playwright test ./src/test/visual",
     "test:unit": "jest --verbose",

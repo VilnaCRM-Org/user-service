@@ -20,7 +20,7 @@ jobs:
         run: pnpm exec playwright install --with-deps
 
       - name: Run Playwright tests
-        run: pnpm run dev & pnpm exec playwright test
+        run: pnpm run dev & pnpm exec playwright test ./src/test/e2e
 
       - uses: actions/upload-artifact@v3
         if: always()
