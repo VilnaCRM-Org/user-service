@@ -81,7 +81,7 @@ export default class InsertUsersUtils {
         const requestBatch = [];
         const userPasswords = {};
 
-        for (let requestIndex = 0; requestIndex < batchSize; requestIndex++) {
+        for (let requestIndex = 0; requestIndex < numberOfRequests; requestIndex++) {
             const {value, done} = generator.next();
             if (done) break;
             const [request, passwords] = value;
@@ -96,19 +96,17 @@ export default class InsertUsersUtils {
         const batchSize = Math.min(this.config.batchSize, numberOfUsers);
         const users = [];
 
-        for (let createdUsers = 0; createdUsers < numberOfUsers; createdUsers += batchSize) {
-            const [requestBatch, userPasswords] = this.prepareRequestBatch(numberOfUsers, batchSize);
+        const [requestBatch, userPasswords] = this.prepareRequestBatch(numberOfUsers, batchSize);
 
-            const responses = http.batch(requestBatch);
+        const responses = http.batch(requestBatch);
 
-            responses.forEach((response) => {
-                    JSON.parse(response.body).forEach((user) => {
-                        user.password = userPasswords[user.email];
-                        users.push(user);
-                    });
-                }
-            );
-        }
+        responses.forEach((response) => {
+                JSON.parse(response.body).forEach((user) => {
+                    user.password = userPasswords[user.email];
+                    users.push(user);
+                });
+            }
+        );
 
         return users;
     }
@@ -124,13 +122,7 @@ export default class InsertUsersUtils {
     }
 
     prepareUsers() {
-        let totalRequest = this.config.usersToInsert;
-
-        if (this.config.autoDetermineUsersToInsert) {
-            totalRequest = this.countTotalRequest();
-        }
-
-        return this.insertUsers(totalRequest);
+        return this.insertUsers(this.countTotalRequest());
     }
 
     countTotalRequest() {

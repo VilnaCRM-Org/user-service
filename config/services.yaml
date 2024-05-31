@@ -55,7 +55,7 @@ services:
 
     App\User\Infrastructure\Repository\MariaDBUserRepository:
         arguments:
-            $batchSize: '%env(int:BATCH_SIZE)%'
+            $batchSize: '%env(int:USER_INSERT_BATCH_SIZE)%'
 
     # Event listener for OAuth2 password grant
     App\User\Application\EventListener\UserResolveListener:

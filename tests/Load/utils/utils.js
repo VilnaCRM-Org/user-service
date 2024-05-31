@@ -68,7 +68,7 @@ export default class Utils {
     }
 
     generateUser(){
-        const email = faker.person.email();
+        const email = `${faker.number.int32()}${faker.person.email()}`;
         const initials = faker.person.name();
         const password = faker.internet.password(true, true, true, false, false, 60);
 

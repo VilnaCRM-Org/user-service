@@ -2,8 +2,6 @@
     "apiHost":"localhost",
     "mailCatcherPort":"1080",
     "batchSize":5000,
-    "autoDetermineUsersToInsert":true,
-    "usersToInsert":20,
     "delayBetweenScenarios":30,
     "gettingEmailMaxRetries":300,
     "usersFileLocation":"/loadTests/",
@@ -126,6 +124,7 @@
         },
         "createUserBatch":{
             "setupTimeoutInMinutes":30,
+            "batchSize":10,
             "smoke":{
                 "threshold":4500,
                 "rps":10,

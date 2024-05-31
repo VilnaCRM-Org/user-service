@@ -1,21 +1,24 @@
 import ScenarioUtils from '../utils/scenarioUtils.js';
 import Utils from '../utils/utils.js';
+import InsertUsersUtils from "../utils/insertUsersUtils.js";
 import http from 'k6/http';
 
-const scenarioName = 'createUser';
+const scenarioName = 'createUserBatch';
 
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
-const batchSize = utils.getConfig().batchSize;
+const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
+const batchSize = utils.getConfig().endpoints[scenarioName].batchSize;
 
 export const options = scenarioUtils.getOptions();
 
 export default function createUser() {
+    const generator = insertUsersUtils.usersGenerator(batchSize);
     const batch = [];
 
-    Array.from({ length: batchSize }).forEach(() => {
-        batch.push(utils.generateUser());
-    });
+    for (let userIndex = 0; userIndex < batchSize; userIndex++) {
+        batch.push(generator.next().value);
+    }
 
     const payload = JSON.stringify({
         'users': batch
