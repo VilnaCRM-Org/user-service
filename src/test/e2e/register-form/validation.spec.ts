@@ -9,11 +9,11 @@ test('Should display error messages for invalid inputs', async ({ page }) => {
   await fillInitialsInput(page, userData);
   await fillEmailInput(page, userData);
   await fillPasswordInput(page, userData);
-
   await page.getByLabel(policyText).check();
+
   await page.getByRole('button', { name: signUpButton }).click();
 
-  const loading: Locator = page.locator('svg');
+  const loading: Locator = page.locator('svg').nth(0);
   await loading.waitFor({ state: 'attached' });
 
   await expect(loading).toBeAttached();
