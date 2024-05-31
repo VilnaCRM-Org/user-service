@@ -1,5 +1,7 @@
 import { test, expect, Locator, Page } from '@playwright/test';
 
+const servicesOpenButtonSelector: string = 'span[data-mui-internal-clone-element="true"]';
+
 async function handleTooltip(
   page: Page,
   { name, element, tooltip }: { name: string; element: Locator; tooltip: Locator }
@@ -19,8 +21,12 @@ test.describe('Checking if the tooltips are working', () => {
   test('Tooltip services test', async ({ page }) => {
     await handleTooltip(page, {
       name: 'Ready plugins for CMS',
-      element: page.getByRole('tooltip', { name: 'services' }),
-      tooltip: page.getByRole('tooltip', { name: 'Services Integrate in a few' }).nth(1),
+      element: page
+        .locator(servicesOpenButtonSelector, {
+          hasText: 'services',
+        })
+        .nth(0),
+      tooltip: page.getByRole('tooltip', { name: 'Services Integrate in a few' }),
     });
   });
 

@@ -6,6 +6,8 @@ const FIRST_SLIDE_TITLE_POSSIBILITIES: string = 'Public API';
 const SECOND_SLIDE_TITLE_POSSIBILITIES: string = 'Ready plugins for CMS';
 const TOOLTIP_CONTENT_TEXT: string = 'Services Integrate in a few';
 
+const servicesOpenButtonSelector: string = 'span[data-mui-internal-clone-element="true"]';
+
 async function performSliderTest(
   page: Page,
   firstSlideLocator: Locator,
@@ -55,8 +57,13 @@ test.describe('Slider tests', () => {
     const tooltipContent: Locator = page
       .getByRole('tooltip', { name: TOOLTIP_CONTENT_TEXT })
       .nth(1);
+    const servicesButton: Locator = page
+      .locator(servicesOpenButtonSelector, {
+        hasText: 'services',
+      })
+      .nth(0);
 
-    await page.getByRole('tooltip', { name: 'services' }).click();
+    await servicesButton.click();
     await expect(tooltipContent).toBeVisible();
   });
 });

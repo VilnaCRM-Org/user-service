@@ -5,9 +5,10 @@ import { ExpectationEmail, ExpectationsPassword, User } from './types';
 export const placeholderInitials: string = 'Mykhailo Svitskyi';
 export const placeholderEmail: string = 'vilnaCRM@gmail.com';
 export const placeholderPassword: string = 'Create a password';
-export const signUpButton: string = 'Sign-Up';
-export const authSection: string = 'auth-section';
 export const policyText: string = 'I have read and accept the';
+export const signUpButton: string = 'Sign-Up';
+
+export const graphqlEndpoint: string = 'https://localhost/api/graphql';
 
 export const userData: User = {
   fullName: faker.person.fullName(),

@@ -32,7 +32,7 @@ test.describe('Navigation tests', () => {
     await page.goto('/');
     await page.setViewportSize({ width: 375, height: 812 });
     await page.getByLabel('Button to open the drawer').click();
-    await page.getByTestId('drawer').getByLabel(`Link to ${linkName}`).click();
+    await page.getByRole('presentation').getByLabel(`Link to ${linkName}`).click();
     await page.goto(url);
     await page.waitForURL(expectedURL);
     await expect(page).toHaveURL(expectedURL);

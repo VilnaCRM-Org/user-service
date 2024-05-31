@@ -7,13 +7,14 @@ import {
   placeholderEmail,
   placeholderPassword,
   signUpButton,
+  graphqlEndpoint,
 } from './constants';
 import { User } from './types';
 
 export async function fillInitialsInput(page: Page, user: User): Promise<void> {
   const initialsInput: Locator = page.getByPlaceholder(placeholderInitials);
   await page.getByRole('button', { name: signUpButton }).click();
-  await initialsInput.fill('Hello2');
+  await initialsInput.fill(' ');
   await expect(page.getByText('Invalid full name format')).toBeVisible();
   await initialsInput.fill(user.fullName);
 }
@@ -39,5 +40,5 @@ export async function fillPasswordInput(page: Page, user: User): Promise<void> {
   await passwordInput.fill(user.password);
 }
 export function responseFilter(resp: Response): boolean {
-  return resp.url().includes('/api/graphql') && resp.status() === 200;
+  return resp.url().includes(graphqlEndpoint) && resp.status() === 200;
 }
