@@ -29,7 +29,6 @@ interface ErrorData {
 function AuthForm(): React.ReactElement {
   const [serverError, setServerError] = React.useState('');
   const [signupMutation, { loading }] = useMutation(SIGNUP_MUTATION);
-  const { t } = useTranslation();
   const {
     handleSubmit,
     control,
@@ -43,6 +42,7 @@ function AuthForm(): React.ReactElement {
     },
     mode: 'onTouched',
   });
+  const { t } = useTranslation();
 
   const onSubmit: (data: RegisterItem) => Promise<void> = async (data: RegisterItem) => {
     try {
