@@ -6,7 +6,6 @@ const LocalizationGenerator = require('./scripts/localizationGenerator');
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-
   webpack: config => {
     const localizationGenerator = new LocalizationGenerator();
     localizationGenerator.generateLocalizationFile();
