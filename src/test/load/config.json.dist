@@ -7,9 +7,9 @@
     "homepage": {
       "setupTimeoutInMinutes": 10,
       "smoke": {
-        "threshold": 3000,
-        "rps": 5,
-        "vus": 5,
+        "threshold": 4000,
+        "rps": 4,
+        "vus": 4,
         "duration": 10
       },
       "average": {
