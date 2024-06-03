@@ -1,4 +1,4 @@
-name: load testing
+name: load-tests
 
 on:
   pull_request:
@@ -10,16 +10,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Setup Node
         uses: actions/setup-node@v3
-        with:
-          node-version: ${{ vars.NODE_VERSION }}
 
-      - name: Install Artillery
-        run: npm install -g artillery@latest
+      - name: Install pnpm
+        run: npm install -g pnpm
 
-      - name: Execute load tests
-        run: TARGET_URL=${{ vars.WEBSITE_URL }} artillery run artillery/*.yml
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Start application
+        run: make start
+
+      - name: Run load tests
+        run: make load-tests
