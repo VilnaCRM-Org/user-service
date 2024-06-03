@@ -7,13 +7,13 @@
     "homepage": {
       "setupTimeoutInMinutes": 10,
       "smoke": {
-        "threshold": 6000,
-        "rps": 2,
-        "vus": 2,
-        "duration": 8
+        "threshold": 15000,
+        "rps": 5,
+        "vus": 5,
+        "duration": 10
       },
       "average": {
-        "threshold": 8000,
+        "threshold": 5000,
         "rps": 15,
         "vus": 15,
         "duration": {
@@ -23,7 +23,7 @@
         }
       },
       "stress": {
-        "threshold": 25000,
+        "threshold": 17000,
         "rps": 75,
         "vus": 75,
         "duration": {
@@ -33,7 +33,7 @@
         }
       },
       "spike": {
-        "threshold": 50000,
+        "threshold": 44000,
         "rps": 150,
         "vus": 150,
         "duration": {
