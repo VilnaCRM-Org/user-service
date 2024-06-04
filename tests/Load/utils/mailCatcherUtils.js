@@ -16,6 +16,7 @@ export default class MailCatcherUtils {
     async getConfirmationToken(email) {
         let messageId = null;
         for (let i = 0; i < this.config.gettingEmailMaxRetries; i++) {
+            console.log(this.getMessages().length);
             messageId = this.getMessageId(this.getMessages(), email);
             if (messageId) {
                 break;

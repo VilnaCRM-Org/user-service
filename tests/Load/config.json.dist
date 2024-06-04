@@ -240,13 +240,13 @@
         "confirmUser":{
             "setupTimeoutInMinutes":30,
             "smoke":{
-                "threshold":4500,
+                "threshold":60000,
                 "rps":10,
                 "vus":10,
                 "duration":10
             },
             "average":{
-                "threshold":15000,
+                "threshold":60000,
                 "rps":50,
                 "vus":50,
                 "duration":{
@@ -256,7 +256,7 @@
                 }
             },
             "stress":{
-                "threshold":60000,
+                "threshold":80000,
                 "rps":150,
                 "vus":150,
                 "duration":{
@@ -266,7 +266,7 @@
                 }
             },
             "spike":{
-                "threshold":65000,
+                "threshold":80000,
                 "rps":400,
                 "vus":400,
                 "duration":{
@@ -555,7 +555,7 @@
                 "duration":10
             },
             "average":{
-                "threshold":15000,
+                "threshold":60000,
                 "rps":50,
                 "vus":50,
                 "duration":{
@@ -565,7 +565,7 @@
                 }
             },
             "stress":{
-                "threshold":60000,
+                "threshold":80000,
                 "rps":150,
                 "vus":150,
                 "duration":{
@@ -575,7 +575,7 @@
                 }
             },
             "spike":{
-                "threshold":65000,
+                "threshold":80000,
                 "rps":400,
                 "vus":400,
                 "duration":{
