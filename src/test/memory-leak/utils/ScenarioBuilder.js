@@ -5,13 +5,11 @@ loadEnvConfig(projectDir);
 
 class ScenarioBuilder {
   constructor() {
-    this.url = () => process.env.MEMLAB_WEBSITE_URL;
+    this.url = () => process.env.NEXT_PUBLIC_WEBSITE_URL;
   }
 
   createScenario(scenarioOptions) {
-    const scenario = { url: this.url, ...scenarioOptions };
-
-    return scenario;
+    return { url: this.url, ...scenarioOptions };
   }
 }
 

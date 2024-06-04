@@ -1,7 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 
-// TODO: correct the url to our privacy policy
-const vilnaCRMPrivacyPolicyURL: string = 'https://github.com/VilnaCRM-Org';
+const vilnaCRMPrivacyPolicyURL: string = process.env
+  .NEXT_PUBLIC_VILNACRM_PRIVACY_POLICY_URL as string;
 
 async function navigateToPrivacyPolicy(
   page: Page,
