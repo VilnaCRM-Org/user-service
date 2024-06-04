@@ -1,4 +1,4 @@
-name: load-tests
+name: load testing
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  load:
+  load-testing:
     runs-on: ubuntu-latest
 
     steps:
