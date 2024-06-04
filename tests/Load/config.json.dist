@@ -246,7 +246,7 @@
                 "duration":10
             },
             "average":{
-                "threshold":12000,
+                "threshold":15000,
                 "rps":50,
                 "vus":50,
                 "duration":{
@@ -256,7 +256,7 @@
                 }
             },
             "stress":{
-                "threshold":55000,
+                "threshold":60000,
                 "rps":150,
                 "vus":150,
                 "duration":{
@@ -266,7 +266,7 @@
                 }
             },
             "spike":{
-                "threshold":60000,
+                "threshold":65000,
                 "rps":400,
                 "vus":400,
                 "duration":{
@@ -555,7 +555,7 @@
                 "duration":10
             },
             "average":{
-                "threshold":10000,
+                "threshold":15000,
                 "rps":50,
                 "vus":50,
                 "duration":{
@@ -565,7 +565,7 @@
                 }
             },
             "stress":{
-                "threshold":50000,
+                "threshold":60000,
                 "rps":150,
                 "vus":150,
                 "duration":{
@@ -575,7 +575,7 @@
                 }
             },
             "spike":{
-                "threshold":60000,
+                "threshold":65000,
                 "rps":400,
                 "vus":400,
                 "duration":{

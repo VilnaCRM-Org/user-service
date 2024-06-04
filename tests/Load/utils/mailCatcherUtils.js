@@ -9,38 +9,26 @@ export default class MailCatcherUtils {
         this.mailCatcherUrl = `http://${host}:${mailCatcherPort}/messages`;
     }
 
-    getMailCatcherUrl() {
-        return this.mailCatcherUrl;
+    getMessages() {
+        return JSON.parse(http.get(this.mailCatcherUrl).body);
     }
 
     async getConfirmationToken(email) {
-        const promises = [];
-
-        Array.from({ length: this.config.gettingEmailMaxRetries }).forEach(() => {
-            promises.push(this.retrieveTokenFromMailCatcher(email));
-        });
-
-        const results = await Promise.all(promises);
-
-        return results.find(result => result);
-    }
-
-    async retrieveTokenFromMailCatcher(email) {
-        const messages = await http.get(this.mailCatcherUrl);
-        if (messages.status === 200) {
-            const messageId = this.getMessageId(messages, email);
-
-            const message = await http.get(`${this.mailCatcherUrl}/${messageId}.source`);
-
-            return this.extractConfirmationToken(message.body);
+        let messageId = null;
+        for (let i = 0; i < this.config.gettingEmailMaxRetries; i++) {
+            messageId = this.getMessageId(this.getMessages(), email);
+            if (messageId) {
+                break;
+            }
         }
+        const message = await http.get(`${this.mailCatcherUrl}/${messageId}.source`);
 
-        return null;
+        return this.extractConfirmationToken(message.body);
     }
 
     getMessageId(messages, email) {
-        const parsedMessages = JSON.parse(messages.body);
-        const foundMessage = parsedMessages.find(message => message.recipients[0].includes(`<${email}>`));
+        const foundMessage = messages.find(message => message.recipients[0].includes(`<${email}>`));
+
         return foundMessage ? foundMessage.id : null;
     }
 

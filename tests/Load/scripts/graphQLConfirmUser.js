@@ -1,29 +1,33 @@
 import http from 'k6/http';
+import counter from 'k6/x/counter';
 import MailCatcherUtils from '../utils/mailCatcherUtils.js';
 import ScenarioUtils from '../utils/scenarioUtils.js';
 import Utils from '../utils/utils.js';
+import InsertUsersUtils from "../utils/insertUsersUtils.js";
 
 const scenarioName = 'graphQLConfirmUser';
 
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 const mailCatcherUtils = new MailCatcherUtils(utils);
+const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
+
+const users = insertUsersUtils.loadInsertedUsers();
+
+export function setup() {
+    return {
+        users: users,
+    };
+}
 
 export const options = scenarioUtils.getOptions();
 
-export default async function confirmUser() {
-    const generatedUser = utils.generateUser();
-    const { email } = generatedUser;
-    const userResponse = await utils.registerUser(generatedUser);
-    const user = JSON.parse(userResponse.body);
+export default async function confirmUser(data) {
+    const user = data.users[counter.up()];
     const id = utils.getGraphQLIdPrefix() + user.id;
     const mutationName = 'confirmUser';
 
-    let token = null;
-
-    if (userResponse.status === 201) {
-        token = await mailCatcherUtils.getConfirmationToken(email);
-    }
+    const token = await mailCatcherUtils.getConfirmationToken(user.email);
 
     const mutation = `
      mutation {
