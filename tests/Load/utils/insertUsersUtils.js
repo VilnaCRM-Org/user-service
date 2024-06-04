@@ -95,33 +95,22 @@ export default class InsertUsersUtils {
     insertUsers(numberOfUsers) {
         const batchSize = Math.min(this.config.batchSize, numberOfUsers);
 
-        const maxRetries = 3;
+        const users = [];
 
         const [requestBatch, userPasswords] = this.prepareRequestBatch(numberOfUsers, batchSize);
 
-        return this.sendBatchRequest(requestBatch, userPasswords, maxRetries);
-    }
-
-    sendBatchRequest(requests, userPasswords, retries) {
-        const users = [];
-        try {
-            const responses = http.batch(requests);
-            responses.forEach((response) => {
-                    JSON.parse(response.body).forEach((user) => {
-                        user.password = userPasswords[user.email];
-                        users.push(user);
-                    });
-
+        const responses = http.batch(requestBatch);
+        console.log(responses.length)
+        responses.forEach((response) => {
+            JSON.parse(response.body).forEach((user) => {
+                user.password = userPasswords[user.email];
+                users.push(user);
             });
-        } catch (error) {
-            if (retries > 0) {
-                this.sendBatchRequest(requests, retries - 1);
-            } else {
-            }
-        }
+
+        });
 
         return users;
-    };
+    }
 
     countRequestForRampingRate(
         startRps,

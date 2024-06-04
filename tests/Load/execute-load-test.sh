@@ -1,31 +1,26 @@
 #!/bin/bash
 set -e
 
-# Check if scenario is provided
 if [ -z "$1" ]; then
     echo "Error: scenario not provided."
     exit 1
 fi
 
-# Check if runSmoke is provided
 if [ -z "$2" ]; then
     echo "Error: runSmoke not provided."
     exit 1
 fi
 
-# Check if runAverage is provided
 if [ -z "$3" ]; then
     echo "Error: runAverage not provided."
     exit 1
 fi
 
-# Check if runStress is provided
 if [ -z "$4" ]; then
     echo "Error: runStress not provided."
     exit 1
 fi
 
-# Check if runSpike is provided
 if [ -z "$5" ]; then
     echo "Error: runSpike not provided."
     exit 1
