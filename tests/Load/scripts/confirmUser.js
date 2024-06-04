@@ -38,10 +38,6 @@ export default async function confirmUser(data) {
         utils.getMergePatchHeader()
     );
 
-    if(response.status !== 200){
-        console.log(response.body)
-    }
-
     utils.checkResponse(
         response,
         'is status 200',

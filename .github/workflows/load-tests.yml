@@ -16,5 +16,14 @@ jobs:
       - name: Start application
         run: make start
 
+      - name: Check Docker containers
+        run: docker ps
+
+      - name: Check worker status
+        run: make workers-status
+
+      - name: Check worker logs
+        run: make workers-logs
+
       - name: Run load tests
         run: make smoke-load-tests
