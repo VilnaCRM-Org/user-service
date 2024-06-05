@@ -8,7 +8,12 @@ const scenarioName = utils.getCLIVariable('scenarioName');
 const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 
 export function setup() {
-    file.writeString(filepath, JSON.stringify(insertUsersUtils.prepareUsers()));
+    try{
+        file.writeString(filepath, JSON.stringify(insertUsersUtils.prepareUsers()));
+    }
+    catch (error){
+        console.log(`Error occurred while writing users to ${filepath}`)
+    }
 }
 
 export const options = {
