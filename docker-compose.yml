@@ -41,10 +41,9 @@ services:
       - container=docker
     volumes:
       - ./:/app
-      - /app/var
 
   database:
-    image: mariadb:latest
+    image: mariadb:11.4
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -66,7 +65,7 @@ services:
         ]
 
   redis:
-    image: redis:latest
+    image: redis:7.2.5-alpine
     ports:
       - "${REDIS_PORT}:6379"
 
