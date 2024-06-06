@@ -82,7 +82,7 @@ export default class InsertUsersUtils {
         const userPasswords = {};
 
         for (let requestIndex = 0; requestIndex < numberOfRequests; requestIndex++) {
-            const {value, done} = generator.next();
+            const { value, done } = generator.next();
             if (done) break;
             const [request, passwords] = value;
             requestBatch.push(request);
@@ -106,7 +106,6 @@ export default class InsertUsersUtils {
                     user.password = userPasswords[user.email];
                     users.push(user);
                 });
-
             });
         }
         catch (error) {
@@ -162,37 +161,30 @@ export default class InsertUsersUtils {
     }
 
     countDefaultRequests(config) {
-        const riseRequests =
-            this.countRequestForRampingRate(
+        const riseRequests = this.countRequestForRampingRate(
                 0,
                 config.rps,
                 config.duration.rise
             );
 
-        const plateauRequests =
-            config.rps * config.duration.plateau;
+        const plateauRequests = config.rps * config.duration.plateau;
 
-        const fallRequests =
-            this.countRequestForRampingRate(
+        const fallRequests = this.countRequestForRampingRate(
                 config.rps,
                 0, config.duration.fall
             );
 
-        return riseRequests
-            + plateauRequests
-            + fallRequests;
+        return riseRequests + plateauRequests + fallRequests;
     }
 
     countSpikeRequest() {
-        const spikeRiseRequests =
-            this.countRequestForRampingRate(
+        const spikeRiseRequests = this.countRequestForRampingRate(
                 0,
                 this.spikeConfig.rps,
                 this.spikeConfig.duration.rise
             );
 
-        const spikeFallRequests =
-            this.countRequestForRampingRate(
+        const spikeFallRequests = this.countRequestForRampingRate(
                 this.spikeConfig.rps,
                 0, this.spikeConfig.duration.fall
             );

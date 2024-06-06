@@ -15,15 +15,12 @@ module.exports = {
         'plugin:import/errors',
         'plugin:import/warnings',
         'plugin:import/typescript',
-        'plugin:react/recommended',
-        'plugin:react-hooks/recommended',
         'plugin:jsx-a11y/recommended',
         'plugin:jest-dom/recommended',
         'plugin:eslint-comments/recommended',
     ],
     rules: {
         'eslint-comments/no-use': ['error', { allow: [] }],
-        'react/jsx-no-bind': 'warn',
         'no-await-in-loop': 'warn',
         'no-restricted-syntax': 'warn',
         'no-alert': 'error',
@@ -68,14 +65,6 @@ module.exports = {
         'import/no-extraneous-dependencies': 'off',
         'import/no-unresolved': 'off',
         'import/extensions': 'off',
-        'react/prop-types': 'off',
-        'react/jsx-props-no-spreading': 'warn',
-        'react/react-in-jsx-scope': 'off',
-
-        'react/jsx-filename-extension': [
-            'error',
-            { extensions: ['.jsx', '.tsx'] },
-        ],
 
         'jsx-a11y/anchor-is-valid': 'off',
     },

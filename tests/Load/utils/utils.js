@@ -65,10 +65,7 @@ export default class Utils {
     }
 
     checkUserIsDefined(user) {
-        check(user, {
-            'user is defined': (u) =>
-                u !== undefined,
-        });
+        check(user, {'user is defined': (u) => u !== undefined});
     }
 
     generateUser(){
@@ -84,9 +81,7 @@ export default class Utils {
     }
 
    checkResponse(response, checkName, checkFunction) {
-        check(response, {
-            [checkName]: (res) => checkFunction(res),
-        });
+        check(response, {[checkName]: (res) => checkFunction(res)});
     }
 
     registerUser(user){

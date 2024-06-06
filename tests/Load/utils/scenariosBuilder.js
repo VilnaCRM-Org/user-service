@@ -49,7 +49,7 @@ export default class ScenariosBuilder {
                 },
             ],
             startTime: startTime + 's',
-            tags: {test_type: 'spike'},
+            tags: { test_type: 'spike' },
         };
 
         return this;
@@ -76,7 +76,7 @@ export default class ScenariosBuilder {
                 },
             ],
             startTime: startTime + 's',
-            tags: {test_type: scenarioName},
+            tags: { test_type: scenarioName },
         };
 
         return this;
