@@ -101,3 +101,12 @@ build-k6-docker:
 
 load-tests: build-k6-docker
 	$(K6) --out 'web-dashboard=period=1s&export=/loadTests/results/homepage.html' /loadTests/homepage.js
+
+run-test-visual:
+	docker build -t playwright-visual -f ./src/test/visual/Dockerfile . && \
+	docker rm -f playwright-test || true && \
+	docker run -v ./src/test/visual/visualComparison.spec.ts-snapshots:/app/src/test/visual/visualComparison.spec.ts-snapshots --rm --user "$(id -u):$(id -g)" -d --name playwright-test playwright-visual && \
+	docker exec -it playwright-test pnpm run test:visual
+
+
+

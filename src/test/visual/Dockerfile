@@ -1,16 +1,19 @@
-FROM mcr.microsoft.com/playwright:v1.40.1-focal
+FROM mcr.microsoft.com/playwright:v1.44.1-jammy
 
+RUN apt-get update && apt-get install -y python3 make g++ \
+    && npm install -g pnpm \
+    && apt-get clean
 
-# Set working directory
 WORKDIR /app
 
-# Copy test code
-COPY visual/ /app/src/test/visual/
-COPY package.json /app/
-# Install dependencies
-RUN npm cache clean --force
-RUN npm install -g playwright
-RUN npm install
-RUN apt-get update && apt-get install -y wget gnupg ca-certificates && \
-   curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
-   apt install -y nodejs
+COPY package*.json ./
+
+COPY checkNodeVersion.js ./
+
+RUN pnpm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["pnpm", "run", "dev"]
