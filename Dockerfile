@@ -5,13 +5,9 @@ RUN apk add --no-cache python3 make g++  \
 
 WORKDIR /app
 
-COPY package*.json ./
-
-COPY checkNodeVersion.js ./
+COPY . .
 
 RUN pnpm install
-
-COPY . .
 
 EXPOSE 3000
 

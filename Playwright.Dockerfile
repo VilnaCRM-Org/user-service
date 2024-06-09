@@ -6,14 +6,8 @@ RUN apt-get update && apt-get install -y python3 make g++ \
 
 WORKDIR /app
 
-COPY package*.json ./
-
-COPY checkNodeVersion.js ./
-
-RUN pnpm install
-
 COPY . .
 
-EXPOSE 3000
+RUN pnpm install
 
 CMD ["pnpm", "run", "dev"]

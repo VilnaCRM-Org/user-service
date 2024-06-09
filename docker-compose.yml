@@ -1,12 +1,4 @@
-version: '3.8'
-
 services:
-  structurizr:
-    image: structurizr/lite
-    ports:
-      - '8080:8080'
-    volumes:
-      - ./:/usr/local/structurizr
   nodejs:
     build: .
     restart: unless-stopped
@@ -14,3 +6,12 @@ services:
       - .:/app
     ports:
       - '3000:3000'
+  playwright:
+    build:
+      context: .
+      dockerfile: Playwright.Dockerfile
+    restart: unless-stopped
+    volumes:
+      - .:/app
+    ports:
+      - '9323:9323'
