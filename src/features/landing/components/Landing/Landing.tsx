@@ -5,21 +5,29 @@ import { ComponentClass } from 'react';
 import { useTranslation } from 'react-i18next';
 
 // @ts-expect-error asdf  af sf asfa
-const DynamicBackgroundImages: ComponentClass = dynamic(() => import('../BackgroundImages'));
+const DynamicBackgroundImages: ComponentClass = dynamic(() => import('../BackgroundImages'), {
+  ssr: false,
+});
 // @ts-expect-error asdf  af sf asfa
-const DynamicAboutUs: ComponentClass = dynamic(() => import('../AboutUs'));
+const DynamicAboutUs: ComponentClass = dynamic(() => import('../AboutUs'), { ssr: false });
 // @ts-expect-error asdf  af sf asfa
-const DynamicUiFooter: ComponentClass = dynamic(() => import('../../../../components/UiFooter'));
+const DynamicUiFooter: ComponentClass = dynamic(() => import('../../../../components/UiFooter'), {
+  ssr: false,
+});
 // @ts-expect-error asdf  af sf asfa
-const DynamicForWhoSection: ComponentClass = dynamic(() => import('../ForWhoSection'));
+const DynamicForWhoSection: ComponentClass = dynamic(() => import('../ForWhoSection'), {
+  ssr: false,
+});
 // @ts-expect-error asdf  af sf asfa
-const DynamicHeader: ComponentClass = dynamic(() => import('../Header'));
+const DynamicHeader: ComponentClass = dynamic(() => import('../Header'), { ssr: false });
 // @ts-expect-error asdf  af sf asfa
-const DynamicPossibilities: ComponentClass = dynamic(() => import('../Possibilities'));
+const DynamicPossibilities: ComponentClass = dynamic(() => import('../Possibilities'), {
+  ssr: false,
+});
 // @ts-expect-error asdf  af sf asfa
-const DynamicWhyUs: ComponentClass = dynamic(() => import('../WhyUs'));
+const DynamicWhyUs: ComponentClass = dynamic(() => import('../WhyUs'), { ssr: false });
 // @ts-expect-error asdf  af sf asfa
-const DynamicAuthSection: ComponentClass = dynamic(() => import('../AuthSection'));
+const DynamicAuthSection: ComponentClass = dynamic(() => import('../AuthSection'), { ssr: false });
 
 function Landing(): React.ReactElement {
   const { t } = useTranslation();
