@@ -10,9 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: Use Node.js
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: ${{ vars.NODE_VERSION }}
@@ -23,18 +24,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Install playwright browsers
-        run: pnpm exec playwright install --with-deps
-
-      - name: Run dev server
-        run: pnpm run dev
+      - name: Start application
+        run: make start
 
       - name: Run visual tests
-        run: pnpm run test:visual
+        run: make test-visual
 
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: visual-test-report
-          path: playwright-report/
-          retention-days: 30

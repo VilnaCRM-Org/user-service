@@ -55,11 +55,20 @@ test-e2e: ## This command executes cypress tests.
 test-e2e-local: ## This command opens management UI for cypress tests.
 	$(PNPM_RUN) test:e2e:local
 
+test-visual: ## This command executes playwright visual tests.
+	docker exec -it website-playwright-1 pnpm run test:visual
+
 test-unit: ## This command executes unit tests using Jest library.
 	$(PNPM_RUN) test:unit
 
 test-memory-leak: ## This command executes memory leaks tests using Memlab library.
 	$(PNPM_RUN) test:memory-leak
+
+build-k6-docker: ## This command build K6 image
+	$(DOCKER) build -t k6 -f ./src/test/load/Dockerfile .
+
+load-tests: build-k6-docker ## This command executes load tests using K6 library.
+	$(K6) --out 'web-dashboard=period=1s&export=/loadTests/results/homepage.html' /loadTests/homepage.js
 
 lighthouse-desktop: ## This command executes lighthouse tests for desktop.
 	$(PNPM_RUN) lighthouse:desktop
@@ -95,15 +104,6 @@ start: up ## Start docker
 
 stop: ## Stop docker
 	$(DOCKER_COMPOSE) stop
-
-build-k6-docker:
-	$(DOCKER) build -t k6 -f ./src/test/load/Dockerfile .
-
-load-tests: build-k6-docker
-	$(K6) --out 'web-dashboard=period=1s&export=/loadTests/results/homepage.html' /loadTests/homepage.js
-
-run-test-visual:
-	docker exec -it website-playwright-1 pnpm run test:visual
 
 
 
