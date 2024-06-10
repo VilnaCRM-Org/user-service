@@ -56,7 +56,7 @@ test-e2e-local: ## This command opens management UI for cypress tests.
 	$(PNPM_RUN) test:e2e:local
 
 test-visual: ## This command executes playwright visual tests.
-	docker exec -it website-playwright-1 pnpm run test:visual
+	docker exec website-playwright-1 pnpm run test:visual
 
 test-unit: ## This command executes unit tests using Jest library.
 	$(PNPM_RUN) test:unit
