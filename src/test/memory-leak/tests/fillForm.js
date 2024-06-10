@@ -4,9 +4,9 @@ const ScenarioBuilder = require('../utils/ScenarioBuilder');
 
 const scenarioBuilder = new ScenarioBuilder();
 
-const fullNameInputSelector = 'input[id=":R6j59al2m:"]';
-const emailInputSelector = 'input[id=":R6l59al2m:"]';
-const passwordInputSelector = 'input[id=":R6n59al2m:"]';
+const fullNameInputSelector = 'input[id=":r5:"]';
+const emailInputSelector = 'input[id=":r7:"]';
+const passwordInputSelector = 'input[id=":rb:"]';
 const privacyCheckboxSelector = 'input[type="checkbox"]';
 
 const fakeFullName = faker.person.fullName();
