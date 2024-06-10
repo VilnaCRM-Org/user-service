@@ -35,7 +35,8 @@ INFECTION 	  = ./vendor/bin/infection
 .PHONY: $(filter-out vendor node_modules,$(MAKECMDGOALS))
 
 # Variables
-ARTILLERY_FILES := $(notdir $(shell find ${PWD}/tests/Load -type f -name '*.yml'))
+HOST_USER_ID := $(shell id -u)
+HOST_GROUP_ID := $(shell id -g)
 
 #Input
 CLIENT_NAME ?= default_value
@@ -112,7 +113,7 @@ execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
 	tests/Load/execute-load-test.sh $(scenario) $(or $(runSmoke),true) $(or $(runAverage),true) $(or $(runStress),true) $(or $(runSpike),true)
 
 build-k6-docker:
-	$(DOCKER) build -t k6 -f ./tests/Load/Dockerfile .
+	$(DOCKER) build --build-arg HOST_USER_ID=$(HOST_USER_ID) --build-arg HOST_GROUP_ID=$(HOST_GROUP_ID) -t k6 -f ./tests/Load/Dockerfile .
 
 infection: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'php -d memory_limit=-1 ./vendor/bin/infection --test-framework-options="--testsuite=Unit" --show-mutations -j8'
@@ -191,12 +192,6 @@ down: ## Stop the docker hub
 
 sh: ## Log to the docker container
 	@$(EXEC_PHP) sh
-
-workers-status:
-	$(EXEC_WORKERS) sh -c 'systemctl status worker'
-
-workers-logs:
-	$(EXEC_WORKERS) sh -c 'journalctl -u worker.service'
 
 logs: ## Show all logs
 	@$(DOCKER_COMPOSE) logs --follow

@@ -2,12 +2,6 @@
     # Debug
     {$CADDY_DEBUG}
     auto_https disable_redirects
-
-    frankenphp {
-    	{$FRANKENPHP_CONFIG}
-    }
-
-    order php_server before file_server
 }
 
 {$SERVER_NAME}
@@ -17,7 +11,7 @@
 log
 
 route {
-    root * /app/public
+    root * /srv/app/public
     mercure {
         # Transport to use (default to Bolt)
         transport_url {$MERCURE_TRANSPORT_URL:bolt:///data/mercure.db}
@@ -33,6 +27,7 @@ route {
         {$MERCURE_EXTRA_DIRECTIVES}
     }
     vulcain
+    php_fastcgi unix//var/run/php/php-fpm.sock
     encode zstd gzip
-    php_server
+    file_server
 }
