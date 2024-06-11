@@ -52,13 +52,13 @@ function AuthForm(): React.ReactElement {
           input: {
             email: data.Email,
             initials: data.FullName,
-            clientMutationId: '132',
             password: data.Password,
+            clientMutationId: '132',
           },
         },
       });
     } catch (errorData) {
-      setServerError((errorData as ErrorData)?.message);
+      setServerError((errorData as ErrorData).message);
     }
   };
 

@@ -10,7 +10,10 @@ export const testText: string = faker.lorem.word(6);
 export const testImg: string = faker.image.avatar();
 export const testInitials: string = faker.person.fullName();
 export const testEmail: string = faker.internet.email();
-export const testPassword: string = faker.internet.password();
+export const testPassword: string = faker.internet.password({
+  length: 16,
+  prefix: 'Q9',
+});
 export const testPlaceholder: string = faker.lorem.word(8);
 export const testUrl: string = faker.internet.url();
 export const mockEmail: string = 'info@vilnacrm.com';

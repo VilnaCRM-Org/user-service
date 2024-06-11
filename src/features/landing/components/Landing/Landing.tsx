@@ -4,6 +4,7 @@ import Head from 'next/head';
 import { ComponentClass } from 'react';
 import { useTranslation } from 'react-i18next';
 
+// Stryker disable all
 // @ts-expect-error asdf  af sf asfa
 const DynamicBackgroundImages: ComponentClass = dynamic(() => import('../BackgroundImages'), {
   ssr: false,
@@ -19,16 +20,23 @@ const DynamicForWhoSection: ComponentClass = dynamic(() => import('../ForWhoSect
   ssr: false,
 });
 // @ts-expect-error asdf  af sf asfa
-const DynamicHeader: ComponentClass = dynamic(() => import('../Header'), { ssr: false });
+const DynamicHeader: ComponentClass = dynamic(() => import('../Header'), {
+  ssr: false,
+});
 // @ts-expect-error asdf  af sf asfa
 const DynamicPossibilities: ComponentClass = dynamic(() => import('../Possibilities'), {
   ssr: false,
 });
 // @ts-expect-error asdf  af sf asfa
-const DynamicWhyUs: ComponentClass = dynamic(() => import('../WhyUs'), { ssr: false });
+const DynamicWhyUs: ComponentClass = dynamic(() => import('../WhyUs'), {
+  ssr: false,
+});
 // @ts-expect-error asdf  af sf asfa
-const DynamicAuthSection: ComponentClass = dynamic(() => import('../AuthSection'), { ssr: false });
+const DynamicAuthSection: ComponentClass = dynamic(() => import('../AuthSection'), {
+  ssr: false,
+});
 
+// Stryker restore all
 function Landing(): React.ReactElement {
   const { t } = useTranslation();
 

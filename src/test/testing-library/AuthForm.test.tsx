@@ -1,17 +1,14 @@
-import { MockedProvider } from '@apollo/client/testing';
+import { MockedProvider, MockedResponse } from '@apollo/client/testing';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 
+import { SIGNUP_MUTATION } from '../../features/landing/api/service/userService';
 import AuthForm from '../../features/landing/components/AuthSection/AuthForm/AuthForm';
 import {
-  fullName,
-  email,
-  password,
   fullNamePlaceholder,
   emailPlaceholder,
   passwordPlaceholder,
   submitButtonText,
-  mocks,
   authFormSelector,
   mockErrors,
   formTitleText,
@@ -94,8 +91,37 @@ describe('AuthForm', () => {
   });
 
   it('successful registration', async () => {
-    const { getByRole, getByPlaceholderText } = render(
-      <MockedProvider addTypename={false}>
+    const mock: MockedResponse = {
+      request: {
+        query: SIGNUP_MUTATION,
+      },
+      delay: 1000,
+      variableMatcher: () => true,
+      result: variables => {
+        const { initials, email, password, clientMutationId } = variables.input;
+
+        expect(initials).toBe(testInitials);
+        expect(email).toBe(testEmail);
+        expect(password).toBe(testPassword);
+        expect(clientMutationId).toBe('132');
+
+        return {
+          data: {
+            createUser: {
+              user: {
+                email,
+                initials,
+                id: 0,
+                confirmed: true,
+              },
+              clientMutationId: '132',
+            },
+          },
+        };
+      },
+    };
+    const { getByRole, getByPlaceholderText, queryByRole, findByRole } = render(
+      <MockedProvider mocks={[mock]} addTypename={false}>
         <AuthForm />
       </MockedProvider>
     );
@@ -108,23 +134,32 @@ describe('AuthForm', () => {
       name: submitButtonText,
     });
 
-    fireEvent.change(fullNameInput, { target: { value: fullName } });
-    fireEvent.change(emailInput, { target: { value: email } });
-    fireEvent.change(passwordInput, { target: { value: password } });
+    fireEvent.change(fullNameInput, { target: { value: testInitials } });
+    fireEvent.change(emailInput, { target: { value: testEmail } });
+    fireEvent.change(passwordInput, { target: { value: testPassword } });
     fireEvent.click(privacyCheckbox);
     fireEvent.click(signUpButton);
 
-    await waitFor(() => {
-      const loader: HTMLElement = getByRole(statusRole);
+    const loader: HTMLElement = await findByRole(statusRole);
+    expect(loader).toBeInTheDocument();
 
-      expect(loader).toBeInTheDocument();
-      expect(mocks[0].result).resolves.toHaveProperty('status', 200);
-    });
+    const serverErrorMessage: HTMLElement | null = queryByRole(alertRole);
+    expect(serverErrorMessage).not.toBeInTheDocument();
   });
 
   it('registration with server error', async () => {
-    const { getByRole, getByPlaceholderText } = render(
-      <MockedProvider addTypename={false}>
+    const mock: MockedResponse = {
+      request: {
+        query: SIGNUP_MUTATION,
+        variables: {
+          input: {},
+        },
+      },
+      error: { name: 'MockError', message: 'Server Error' },
+    };
+
+    const { getByRole, getByPlaceholderText, findByRole } = render(
+      <MockedProvider mocks={[mock]} addTypename={false}>
         <AuthForm />
       </MockedProvider>
     );
@@ -143,12 +178,8 @@ describe('AuthForm', () => {
     fireEvent.click(privacyCheckbox);
     fireEvent.click(signUpButton);
 
-    await waitFor(() => {
-      const serverErrorMessage: HTMLElement | null = getByRole(alertRole);
-
-      expect(serverErrorMessage).toBeInTheDocument();
-      expect(mockErrors[0].error).toBeDefined();
-    });
+    const serverErrorMessage: HTMLElement = await findByRole(alertRole);
+    expect(serverErrorMessage).toBeInTheDocument();
   });
 
   it('correct linkage between inputs and values', async () => {
@@ -167,15 +198,15 @@ describe('AuthForm', () => {
     ) as HTMLInputElement;
     const privacyCheckbox: HTMLInputElement = getByRole(checkboxRole) as HTMLInputElement;
 
-    fireEvent.change(emailInput, { target: { value: email } });
-    fireEvent.change(passwordInput, { target: { value: password } });
-    fireEvent.change(fullNameInput, { target: { value: fullName } });
+    fireEvent.change(emailInput, { target: { value: testEmail } });
+    fireEvent.change(passwordInput, { target: { value: testPassword } });
+    fireEvent.change(fullNameInput, { target: { value: testInitials } });
     fireEvent.click(privacyCheckbox);
 
     await waitFor(() => {
-      expect(emailInput.value).toBe(email);
-      expect(passwordInput.value).toBe(password);
-      expect(fullNameInput.value).toBe(fullName);
+      expect(emailInput.value).toBe(testEmail);
+      expect(passwordInput.value).toBe(testPassword);
+      expect(fullNameInput.value).toBe(testInitials);
       expect(privacyCheckbox).toBeChecked();
     });
   });
