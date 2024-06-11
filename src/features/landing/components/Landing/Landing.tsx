@@ -4,7 +4,6 @@ import Head from 'next/head';
 import { ComponentClass } from 'react';
 import { useTranslation } from 'react-i18next';
 
-// Stryker disable all
 // @ts-expect-error asdf  af sf asfa
 const DynamicBackgroundImages: ComponentClass = dynamic(() => import('../BackgroundImages'), {
   ssr: false,
@@ -36,7 +35,6 @@ const DynamicAuthSection: ComponentClass = dynamic(() => import('../AuthSection'
   ssr: false,
 });
 
-// Stryker restore all
 function Landing(): React.ReactElement {
   const { t } = useTranslation();
 

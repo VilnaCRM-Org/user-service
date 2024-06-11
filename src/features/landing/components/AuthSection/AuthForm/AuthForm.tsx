@@ -34,12 +34,6 @@ function AuthForm(): React.ReactElement {
     control,
     formState: { errors },
   } = useForm<RegisterItem>({
-    defaultValues: {
-      FullName: '',
-      Email: '',
-      Password: '',
-      Privacy: false,
-    },
     mode: 'onTouched',
   });
   const { t } = useTranslation();

@@ -1,5 +1,6 @@
 import { MockedProvider, MockedResponse } from '@apollo/client/testing';
 import { render, fireEvent, waitFor } from '@testing-library/react';
+import userEvent, { UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
 import { SIGNUP_MUTATION } from '../../features/landing/api/service/userService';
@@ -95,11 +96,12 @@ describe('AuthForm', () => {
       request: {
         query: SIGNUP_MUTATION,
       },
-      delay: 1000,
       variableMatcher: () => true,
       result: variables => {
-        const { initials, email, password, clientMutationId } = variables.input;
+        const { input } = variables;
+        const { initials, email, password, clientMutationId } = input;
 
+        expect(input).not.toBeUndefined();
         expect(initials).toBe(testInitials);
         expect(email).toBe(testEmail);
         expect(password).toBe(testPassword);
@@ -120,7 +122,7 @@ describe('AuthForm', () => {
         };
       },
     };
-    const { getByRole, getByPlaceholderText, queryByRole, findByRole } = render(
+    const { getByRole, getByPlaceholderText, queryByRole } = render(
       <MockedProvider mocks={[mock]} addTypename={false}>
         <AuthForm />
       </MockedProvider>
@@ -140,8 +142,10 @@ describe('AuthForm', () => {
     fireEvent.click(privacyCheckbox);
     fireEvent.click(signUpButton);
 
-    const loader: HTMLElement = await findByRole(statusRole);
-    expect(loader).toBeInTheDocument();
+    await waitFor(() => {
+      const loader: HTMLElement = getByRole(statusRole);
+      expect(loader).toBeInTheDocument();
+    });
 
     const serverErrorMessage: HTMLElement | null = queryByRole(alertRole);
     expect(serverErrorMessage).not.toBeInTheDocument();
@@ -250,6 +254,27 @@ describe('AuthForm', () => {
       expect(serverErrorMessage).not.toBeInTheDocument();
 
       expect(mockErrors[0].error).toBeDefined();
+    });
+  });
+
+  it('Check onTouched mode', async () => {
+    const user: UserEvent = userEvent.setup();
+    const { getByPlaceholderText, getByText } = render(
+      <MockedProvider addTypename={false}>
+        <AuthForm />
+      </MockedProvider>
+    );
+
+    const fullNameInput: HTMLInputElement = getByPlaceholderText(
+      fullNamePlaceholder
+    ) as HTMLInputElement;
+    const emailInput: HTMLInputElement = getByPlaceholderText(emailPlaceholder) as HTMLInputElement;
+
+    await user.click(fullNameInput);
+    await user.click(emailInput);
+
+    await waitFor(() => {
+      expect(getByText('This field is required')).toBeInTheDocument();
     });
   });
 });
