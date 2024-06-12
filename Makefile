@@ -20,6 +20,8 @@ GIT         = git
 
 # Variables
 REPORT_FILENAME ?= default_value
+UID := $(shell id -u)
+GID := $(shell id -g)
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -83,7 +85,7 @@ update: ## Update node modules according to the current package.json file
 	$(PNPM) update
 
 up: ## Start the docker hub (Nodejs)
-	$(DOCKER_COMPOSE) up -d
+	UID=$(UID) GID=$(GID) $(DOCKER_COMPOSE) up -d
 
 down: ## Stop the docker hub
 	$(DOCKER_COMPOSE) down --remove-orphans

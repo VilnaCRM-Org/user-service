@@ -2,15 +2,18 @@ services:
   nodejs:
     build: .
     restart: unless-stopped
+    user: "${UID}:${GID}"
     volumes:
       - .:/app
     ports:
       - '3000:3000'
+
   playwright:
     build:
       context: .
       dockerfile: Playwright.Dockerfile
     restart: unless-stopped
+    user: "${UID}:${GID}"
     volumes:
       - .:/app
     ports:
