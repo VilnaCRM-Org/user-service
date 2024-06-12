@@ -5,8 +5,9 @@ import faker from 'k6/x/faker';
 export default class Utils {
     constructor() {
         const host = this.getConfig().apiHost;
+        const port = this.getConfig().apiPort;
 
-        this.baseUrl = `https://${host}/api`;
+        this.baseUrl = `http://${host}:${port}/api`;
         this.baseHttpUrl = this.baseUrl + '/users';
         this.baseGraphQLUrl = this.baseUrl + '/graphql';
         this.graphQLIdPrefix = '/api/users/';

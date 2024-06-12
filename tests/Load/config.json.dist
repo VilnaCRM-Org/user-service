@@ -1,5 +1,6 @@
 {
     "apiHost":"localhost",
+    "apiPort":"8081",
     "mailCatcherPort":"1080",
     "batchSize":5000,
     "delayBetweenScenarios":30,

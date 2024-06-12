@@ -20,6 +20,10 @@ services:
 
   caddy:
     command: [ "caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile", "--watch" ]
+    ports:
+      - target: 8081
+        published: 8081
+        protocol: tcp
     volumes:
       - ./public:/srv/app/public:ro
       - ./infrastructure/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
@@ -55,7 +59,7 @@ services:
       - SERVICES=sqs
       - DEBUG=1
     volumes:
-      - localstack-data:/var/lib/localstack
+      - localstack_data:/var/lib/localstack
       - ./infrastructure/docker/php/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
     networks:
       - user-service
@@ -73,4 +77,4 @@ networks:
   user-service:
 
 volumes:
-  localstack-data:
+  localstack_data:

@@ -13,14 +13,6 @@ RUN xk6 build \
 
 FROM alpine
 
-ARG HOST_USER_ID
-ARG HOST_GROUP_ID
-
-RUN addgroup -g $HOST_GROUP_ID user_group && \
-    adduser -D -u $HOST_USER_ID -G user_group user
-
 COPY --from=builder /app/k6 /bin/
-
-USER user
 
 ENTRYPOINT [ "k6" ]
