@@ -2,7 +2,6 @@ services:
   nodejs:
     build: .
     restart: unless-stopped
-    user: 1000:1000
     volumes:
       - .:/app
     ports:
@@ -13,7 +12,6 @@ services:
       context: .
       dockerfile: Playwright.Dockerfile
     restart: unless-stopped
-    user: 1000:1000
     volumes:
       - .:/app
     ports:
