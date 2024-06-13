@@ -31,4 +31,4 @@ when@test:
   framework:
     messenger:
       transports:
-        send-email: 'in-memory://'
+        send-email: '%env(REDIS_URL)%'

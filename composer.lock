@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "b33c77b2aa61462f6bef6f9495123cdb",
+  "content-hash": "a5c34a3c1c53749edc681a209f97a61f",
   "packages": [
     {
       "name": "api-platform/core",
@@ -7486,6 +7486,73 @@
         }
       ],
       "time": "2023-07-26T11:53:26+00:00"
+    },
+    {
+      "name": "symfony/redis-messenger",
+      "version": "v6.3.12",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/symfony/redis-messenger.git",
+        "reference": "fcdc5cd7923e0777c7957e805681be93164995af"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/symfony/redis-messenger/zipball/fcdc5cd7923e0777c7957e805681be93164995af",
+        "reference": "fcdc5cd7923e0777c7957e805681be93164995af",
+        "shasum": ""
+      },
+      "require": {
+        "ext-redis": "*",
+        "php": ">=8.1",
+        "symfony/messenger": "^6.1"
+      },
+      "require-dev": {
+        "symfony/property-access": "^5.4|^6.0",
+        "symfony/serializer": "^5.4|^6.0"
+      },
+      "type": "symfony-messenger-bridge",
+      "autoload": {
+        "psr-4": {
+          "Symfony\\Component\\Messenger\\Bridge\\Redis\\": ""
+        },
+        "exclude-from-classmap": [
+          "/Tests/"
+        ]
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Fabien Potencier",
+          "email": "fabien@symfony.com"
+        },
+        {
+          "name": "Symfony Community",
+          "homepage": "https://symfony.com/contributors"
+        }
+      ],
+      "description": "Symfony Redis extension Messenger Bridge",
+      "homepage": "https://symfony.com",
+      "support": {
+        "source": "https://github.com/symfony/redis-messenger/tree/v6.3.12"
+      },
+      "funding": [
+        {
+          "url": "https://symfony.com/sponsor",
+          "type": "custom"
+        },
+        {
+          "url": "https://github.com/fabpot",
+          "type": "github"
+        },
+        {
+          "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+          "type": "tidelift"
+        }
+      ],
+      "time": "2024-01-23T14:35:58+00:00"
     },
     {
       "name": "symfony/routing",

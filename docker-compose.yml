@@ -63,7 +63,7 @@ services:
     environment:
       - container=docker
     volumes:
-      - ./:/app
+      - ./:/srv/app
 
   database:
     image: mariadb:11.4
