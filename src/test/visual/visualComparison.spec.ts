@@ -6,7 +6,6 @@ test.describe('Visual Tests', () => {
   for (const screen of screenSizes) {
     test(`${screen.name} test`, async ({ page }) => {
       await page.goto('/');
-      await page.waitForTimeout(3000);
 
       await page.waitForLoadState('networkidle');
       await page.evaluateHandle('document.fonts.ready');
