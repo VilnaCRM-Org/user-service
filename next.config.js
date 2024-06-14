@@ -10,10 +10,12 @@ const nextConfig = {
   },
   reactStrictMode: true,
   swcMinify: true,
+  productionBrowserSourceMaps: true,
 
   webpack: config => {
     const localizationGenerator = new LocalizationGenerator();
     localizationGenerator.generateLocalizationFile();
+
     return config;
   },
 };
