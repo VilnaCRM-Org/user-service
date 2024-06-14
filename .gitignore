@@ -42,8 +42,7 @@ k6
 ###< league/oauth2-server-bundle ###
 
 /config/keys
-supervisord.log
-supervisord.pid
+supervisord.*
 
 ###> qossmic/deptrac-shim ###
 /.deptrac.cache

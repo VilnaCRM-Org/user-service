@@ -31,4 +31,7 @@ when@test:
   framework:
     messenger:
       transports:
-        send-email: '%env(REDIS_URL)%'
+        send-email:
+          dsn: '%env(REDIS_URL)%'
+          options:
+            consumer: '%env(MESSENGER_CONSUMER_NAME)%'

@@ -26,5 +26,5 @@ clientID=$2
 clientSecret=$3
 clientRedirectUri=$4
 
-eval "$SYMFONY" league:oauth2-server:delete-client "$clientID" || true
-eval "$SYMFONY" league:oauth2-server:create-client "$clientName" "$clientID" "$clientSecret" "$clientRedirectUri"
+eval "$SYMFONY" league:oauth2-server:delete-client "$clientID" --env=test || true
+eval "$SYMFONY" league:oauth2-server:create-client "$clientName" "$clientID" "$clientSecret" "$clientRedirectUri" --env=test
