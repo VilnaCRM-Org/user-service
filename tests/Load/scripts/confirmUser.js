@@ -24,9 +24,8 @@ export const options = scenarioUtils.getOptions();
 
 export default async function confirmUser(data) {
     const num = counter.up();
-    const user = data.users[num];
 
-    const token = await mailCatcherUtils.getConfirmationToken(user.email);
+    const token = await mailCatcherUtils.getConfirmationToken(num);
 
     const payload = JSON.stringify({
         token
@@ -43,4 +42,8 @@ export default async function confirmUser(data) {
         'is status 200',
         (res) => res.status === 200
     );
+}
+
+export function teardown(data) {
+    mailCatcherUtils.clearMessages();
 }

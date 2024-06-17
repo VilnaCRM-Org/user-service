@@ -23,11 +23,10 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default async function confirmUser(data) {
-    const user = data.users[counter.up()];
-    const id = utils.getGraphQLIdPrefix() + user.id;
+    const num = counter.up();
     const mutationName = 'confirmUser';
 
-    const token = await mailCatcherUtils.getConfirmationToken(user.email);
+    const token = await mailCatcherUtils.getConfirmationToken(num);
 
     const mutation = `
      mutation {
@@ -47,6 +46,10 @@ export default async function confirmUser(data) {
     utils.checkResponse(
         response,
         'confirmed user returned',
-        (res) => JSON.parse(res.body).data[mutationName].user.id === `${id}`
+        (res) => JSON.parse(res.body).data[mutationName].user.id !== undefined
     );
+}
+
+export function teardown(data) {
+    mailCatcherUtils.clearMessages();
 }

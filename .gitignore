@@ -1,6 +1,5 @@
 ###> symfony/framework-bundle ###
 /.idea
-/.env
 /.env.local
 /.env.local.php
 /.env.*.local
@@ -14,7 +13,6 @@ infection.log
 summary.log
 .structurizr
 /tests/Load/node_modules
-k6
 /tests/Load/users.json
 ###< symfony/framework-bundle ###
 

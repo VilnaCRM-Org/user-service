@@ -3,12 +3,14 @@ import counter from 'k6/x/counter';
 import InsertUsersUtils from '../utils/insertUsersUtils.js';
 import ScenarioUtils from '../utils/scenarioUtils.js';
 import Utils from '../utils/utils.js';
+import MailCatcherUtils from "../utils/mailCatcherUtils.js";
 
 const scenarioName = 'resendEmailToUser';
 
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
+const mailCatcherUtils = new MailCatcherUtils(utils);
 
 const users = insertUsersUtils.loadInsertedUsers()
 
@@ -37,4 +39,8 @@ export default function resendEmail(data) {
         'is status 200',
         (res) => res.status === 200
     );
+}
+
+export function teardown(data) {
+    mailCatcherUtils.clearMessages();
 }

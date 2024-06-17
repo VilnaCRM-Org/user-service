@@ -9,27 +9,14 @@ export default class MailCatcherUtils {
         this.mailCatcherUrl = `http://${host}:${mailCatcherPort}/messages`;
     }
 
-    getMessages() {
-        return JSON.parse(http.get(this.mailCatcherUrl).body);
+    clearMessages() {
+        http.del(this.mailCatcherUrl);
     }
 
-    async getConfirmationToken(email) {
-        let messageId = null;
-        for (let i = 0; i < this.config.gettingEmailMaxRetries; i++) {
-            messageId = this.getMessageId(this.getMessages(), email);
-            if (messageId) {
-                break;
-            }
-        }
+    async getConfirmationToken(messageId) {
         const message = await http.get(`${this.mailCatcherUrl}/${messageId}.source`);
 
         return this.extractConfirmationToken(message.body);
-    }
-
-    getMessageId(messages, email) {
-        const foundMessage = messages.find(message => message.recipients[0].includes(`<${email}>`));
-
-        return foundMessage ? foundMessage.id : null;
     }
 
     extractConfirmationToken(emailBody) {

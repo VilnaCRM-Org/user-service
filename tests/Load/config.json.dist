@@ -10,6 +10,7 @@
     "endpoints":{
         "getUser":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":60,
                 "rps":10,
@@ -49,6 +50,7 @@
         "getUsers":{
             "setupTimeoutInMinutes":30,
             "usersToGetInOneRequest":50,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":70,
                 "rps":10,
@@ -87,6 +89,7 @@
         },
         "createUser":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":4500,
                 "rps":10,
@@ -125,6 +128,7 @@
         },
         "createUserBatch":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "batchSize":10,
             "smoke":{
                 "threshold":4500,
@@ -164,6 +168,7 @@
         },
         "updateUser":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":4500,
                 "rps":10,
@@ -202,6 +207,7 @@
         },
         "replaceUser":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":4500,
                 "rps":10,
@@ -240,6 +246,7 @@
         },
         "confirmUser":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":60000,
                 "rps":10,
@@ -278,6 +285,7 @@
         },
         "deleteUser":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":90,
                 "rps":10,
@@ -316,6 +324,7 @@
         },
         "resendEmailToUser":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":4500,
                 "rps":10,
@@ -354,6 +363,7 @@
         },
         "oauth":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "clientName":"ClientName",
             "clientSecret":"Secret1",
             "clientID":"ID123",
@@ -396,6 +406,7 @@
         },
         "graphQLGetUser":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":60,
                 "rps":10,
@@ -435,6 +446,7 @@
         "graphQLGetUsers":{
             "setupTimeoutInMinutes":30,
             "usersToGetInOneRequest":50,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":70,
                 "rps":10,
@@ -473,6 +485,7 @@
         },
         "graphQLCreateUser":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":4500,
                 "rps":10,
@@ -511,6 +524,7 @@
         },
         "graphQLUpdateUser":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":6500,
                 "rps":10,
@@ -549,6 +563,7 @@
         },
         "graphQLConfirmUser":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":4500,
                 "rps":10,
@@ -587,6 +602,7 @@
         },
         "graphQLDeleteUser":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":90,
                 "rps":10,
@@ -625,6 +641,7 @@
         },
         "graphQLResendEmailToUser":{
             "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
             "smoke":{
                 "threshold":4500,
                 "rps":10,
