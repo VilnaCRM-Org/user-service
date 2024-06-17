@@ -7,6 +7,10 @@ module.exports = {
       psiStrategy: 'mobile',
       settings: {
         chromeFlags: '--no-sandbox',
+        extraHeaders: JSON.stringify({
+          [`aws-cf-cd-${process.env.NEXT_PUBLIC_CONTINUOUS_DEPLOYMENT_HEADER_NAME}`]:
+            process.env.NEXT_PUBLIC_CONTINUOUS_DEPLOYMENT_HEADER_VALUE,
+        }),
       },
     },
     upload: {

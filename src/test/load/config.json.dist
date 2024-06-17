@@ -2,6 +2,11 @@
   "protocol": "http",
   "host": "localhost",
   "port": "3000",
+  "params": {
+    "headers": {
+      "Continuous-Deployment-Header-Name": "continuous-deployment-header-value"
+    }
+  },
   "delayBetweenScenarios": 30,
   "endpoints": {
     "homepage": {

@@ -11,7 +11,7 @@ const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 export const options = scenarioUtils.getOptions();
 
 export default function homepage() {
-  const response = http.get(utils.getBaseUrl());
+  const response = http.get(utils.getBaseUrl(), utils.getParams());
 
   utils.checkResponse(response, 'is status 200', res => res.status === 200);
 }

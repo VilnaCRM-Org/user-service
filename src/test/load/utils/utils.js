@@ -2,9 +2,10 @@ import { check } from 'k6';
 
 export default class Utils {
   constructor() {
-    const { protocol, host, port } = this.getConfig();
+    const { protocol, host, port, params } = this.getConfig();
 
     this.baseUrl = `${protocol}://${host}:${port}`;
+    this.params = params;
   }
 
   getConfig() {
@@ -17,6 +18,10 @@ export default class Utils {
 
   getBaseUrl() {
     return this.baseUrl;
+  }
+
+  getParams() {
+    return this.params;
   }
 
   shouldExecuteScenario(variable) {
