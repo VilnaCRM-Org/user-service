@@ -201,7 +201,7 @@ logs: ## Show all logs
 new-logs: ## Show live logs
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
-start: up ## Start docker
+start: up doctrine-migrations-migrate## Start docker
 
 stop: down ## Stop docker and the Symfony binary server
 

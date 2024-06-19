@@ -29,7 +29,8 @@ services:
       context: .
       target: app_caddy
     depends_on:
-      - php
+      php:
+        condition: service_healthy
     environment:
       SERVER_NAME: ${SERVER_NAME:-localhost}
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}

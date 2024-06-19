@@ -16,8 +16,5 @@ jobs:
       - name: Start application
         run: make start
 
-      - name: Run migrations
-        run: make doctrine-migrations-migrate
-
       - name: Run load tests
         run: make smoke-load-tests
