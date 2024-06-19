@@ -536,6 +536,107 @@ paths:
         required: true
       deprecated: false
     parameters: []
+  /api/users/batch:
+    post:
+      operationId: create_batch_http
+      tags:
+        - User
+      responses:
+        201:
+          description: 'Users returned'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties: { confirmed: { type: boolean, maxLength: null, format: null }, email: { type: string, maxLength: null, format: null }, initials: { type: string, maxLength: null, format: null }, id: { type: string, maxLength: null, format: null } }
+                required:
+                  - confirmed
+                  - email
+                  - initials
+                  - id
+              example:
+                -
+                  confirmed: false
+                  email: user@example.com
+                  initials: 'Name Surname'
+                  id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
+          headers: {  }
+        422:
+          description: 'Validation error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  violations: { type: array, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - violations
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'some_property: This value should not be blank.'
+                violations:
+                  propertyPath: some_property
+                  message: 'This value should not be blank.'
+                  code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
+                status: 422
+          headers: {  }
+        500:
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Creates a User resource.'
+      description: 'Creates a User resource.'
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                users:
+                  type: array
+                  maxLength: null
+                  format: null
+              required:
+                - users
+            example:
+              users:
+                -
+                  email: user@example.com
+                  initials: 'Name Surname'
+                  password: passWORD1
+        required: true
+      deprecated: false
+    parameters: []
   /api/users/confirm:
     patch:
       operationId: confirm_http
