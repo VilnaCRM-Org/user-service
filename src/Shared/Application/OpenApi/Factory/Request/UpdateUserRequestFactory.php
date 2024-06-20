@@ -22,7 +22,8 @@ final class UpdateUserRequestFactory implements AbstractRequestFactory
                 $this->getInitialsParam(),
                 $this->getOldPasswordParam(),
                 $this->getNewPasswordParam(),
-            ]
+            ],
+            contentType: 'application/merge-patch+json'
         );
     }
 

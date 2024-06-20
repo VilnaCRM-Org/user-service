@@ -19,7 +19,8 @@ final class ConfirmUserRequestFactory implements AbstractRequestFactory
         return $this->requestBuilder->build(
             [
                 $this->getTokenParam(),
-            ]
+            ],
+            contentType: 'application/merge-patch+json'
         );
     }
 

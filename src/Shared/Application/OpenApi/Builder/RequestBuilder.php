@@ -15,9 +15,12 @@ final class RequestBuilder
     /**
      * @param array<Parameter> $params
      */
-    public function build(array $params, bool $required = true): RequestBody
-    {
-        $content = $this->contextBuilder->build($params);
+    public function build(
+        array $params,
+        bool $required = true,
+        string $contentType = 'application/json'
+    ): RequestBody {
+        $content = $this->contextBuilder->build($params, $contentType);
 
         return new RequestBody(
             content: $content,

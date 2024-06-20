@@ -9,31 +9,48 @@ final class ContextBuilder
     /**
      * @param array<Parameter> $params
      */
-    public function build(array $params): \ArrayObject
-    {
+    public function build(
+        array $params,
+        string $contentType = 'application/json'
+    ): \ArrayObject {
         $content = new \ArrayObject([
-            'application/json' => [
+            $contentType => [
                 'example' => '',
             ],
         ]);
 
         if (count($params) > 0) {
-            $properties = [];
-            $example = [];
-            $required = [];
-
-            foreach ($params as $param) {
-                if ($param->required) {
-                    $required[] = $param->name;
-                }
-                $this->addParameterToProperties($properties, $param);
-                $example[$param->name] = $param->example;
-            }
-
-            $content = $this->buildContent($properties, $example, $required);
+            $content = $this->processParams($params, $contentType);
         }
 
         return $content;
+    }
+
+    /**
+     * @param array<Parameter> $params
+     */
+    private function processParams(
+        array $params,
+        string $contentType
+    ): \ArrayObject {
+        $properties = [];
+        $example = [];
+        $required = [];
+
+        foreach ($params as $param) {
+            if ($param->required) {
+                $required[] = $param->name;
+            }
+            $this->addParameterToProperties($properties, $param);
+            $example[$param->name] = $param->example;
+        }
+
+        return $this->buildContent(
+            $contentType,
+            $properties,
+            $example,
+            $required
+        );
     }
 
     /**
@@ -56,12 +73,13 @@ final class ContextBuilder
      * @param array<string> $required
      */
     private function buildContent(
+        string $contentType,
         array $properties,
         array $example,
         array $required
     ): \ArrayObject {
         return new \ArrayObject([
-            'application/json' => [
+            $contentType => [
                 'schema' => [
                     'type' => 'object',
                     'properties' => $properties,
