@@ -19,5 +19,11 @@ jobs:
       - name: Setup test db
         run: make setup-test-db
 
+      - name: List containers
+        run: docker ps
+
+      - name: Check workers logs
+        run: docker compose logs workers
+
       - name: Run load tests
         run: make smoke-load-tests
