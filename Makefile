@@ -1,6 +1,7 @@
 # Parameters
 PROJECT	= frontend-ssr-template
 K6 = $(DOCKER) run -v ./src/test/load:/loadTests --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
+K6_BIN = ./k6
 
 # Executables: local only
 PNPM_BIN		= pnpm
@@ -12,6 +13,24 @@ EXEC_NODEJS	= $(DOCKER_COMPOSE) exec nodejs
 PNPM      	= $(EXEC_NODEJS) pnpm
 PNPM_RUN    = $(PNPM) run
 GIT         = git
+
+# CI variable
+CI ?= 0
+
+# Conditional PNPM_EXEC based on CI
+ifeq ($(CI), 1)
+    PNPM_EXEC = $(PNPM_BIN)
+	LHCI_DESKTOP = lighthouse:desktop-autorun
+	LHCI_MOBILE = lighthouse:mobile-autorun
+	VISUAL_EXEC = $(PNPM_EXEC)
+else
+    PNPM_EXEC = $(PNPM_RUN)
+	LHCI_DESKTOP = lighthouse:desktop
+	LHCI_MOBILE = lighthouse:mobile
+	VISUAL_EXEC = $(DOCKER) exec website-playwright-1 pnpm run
+endif
+
+# To Run in CI mode specify CI variable. Example: make lint-md CI=1
 
 # Misc
 .DEFAULT_GOAL = help
@@ -26,43 +45,49 @@ help:
 	@grep -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-15s\033[0m %s\n", $$1, $$2}'
 
 build: ## A tool build the project
-	$(PNPM_RUN) build
+	$(PNPM_EXEC) build
+
+format: ## This command executes Prettier Formating
+	$(PNPM_EXEC) format
 
 lint-next: ## This command executes ESLint
-	$(PNPM_RUN) lint:next
+	$(PNPM_EXEC) lint:next
 
 lint-tsc: ## This command executes Typescript linter
-	$(PNPM_RUN) lint:tsc
+	$(PNPM_EXEC) lint:tsc
 
 lint-md: ## This command executes Markdown linter
-	$(PNPM_RUN) lint:markdown
+	$(PNPM_EXEC) lint:md
 
 git-hooks-install: ## Install git hooks
-	$(PNPM_RUN) prepare
+	$(PNPM_EXEC) prepare
 
 storybook-start: ## Start Storybook UI. Storybook is a frontend workshop for building UI components and pages in isolation.
-	$(PNPM_RUN) storybook
+	$(PNPM_EXEC) storybook
 
 storybook-build: ## Build Storybook UI. Storybook is a frontend workshop for building UI components and pages in isolation.
-	$(PNPM_RUN) build-storybook
+	$(PNPM_EXEC) build-storybook
 
 generate-ts-doc: ## This command generates documentation from the typescript files.
-	$(PNPM_RUN) doc
+	$(PNPM_EXEC) doc
 
 test-e2e: ## This command executes cypress tests.
-	$(PNPM_RUN) test:e2e
+	$(PNPM_EXEC) test:e2e
 
 test-e2e-local: ## This command opens management UI for cypress tests.
-	$(PNPM_RUN) test:e2e:local
+	$(PNPM_EXEC) test:e2e-local
 
 test-visual: ## This command executes playwright visual tests.
-	docker exec website-playwright-1 pnpm run test:visual
-
+	$(VISUAL_EXEC) test:visual
+	
 test-unit: ## This command executes unit tests using Jest library.
-	$(PNPM_RUN) test:unit
+	$(PNPM_EXEC) test:unit
 
 test-memory-leak: ## This command executes memory leaks tests using Memlab library.
-	$(PNPM_RUN) test:memory-leak
+	$(PNPM_EXEC) test:memory-leak
+
+test-mutation:
+	$(PNPM_EXEC) test:mutation
 
 build-k6-docker: ## This command build K6 image
 	$(DOCKER) build -t k6 -f ./src/test/load/Dockerfile .
@@ -70,11 +95,14 @@ build-k6-docker: ## This command build K6 image
 load-tests: build-k6-docker ## This command executes load tests using K6 library.
 	$(K6) --out 'web-dashboard=period=1s&export=/loadTests/results/homepage.html' /loadTests/homepage.js
 
+load-tests-local: ## This command executes load tests using K6 library without Docker.
+	$(K6_BIN) run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out "web-dashboard=period=1s&export=./src/test/load/results/index.html" ./src/test/load/homepage.js
+
 lighthouse-desktop: ## This command executes lighthouse tests for desktop.
-	$(PNPM_RUN) lighthouse:desktop
+	$(PNPM_EXEC) $(LHCI_DESKTOP)
 
 lighthouse-mobile: ## This command executes lighthouse tests for mobile.
-	$(PNPM_RUN) lighthouse:mobile
+	$(PNPM_EXEC) $(LHCI_MOBILE)
 
 install: ## Install node modules according to the current pnpm-lock.yaml file
 	$(PNPM) install
@@ -104,6 +132,3 @@ start: up ## Start docker
 
 stop: ## Stop docker
 	$(DOCKER_COMPOSE) stop
-
-
-

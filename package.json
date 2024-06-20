@@ -23,6 +23,8 @@
     "test:memory-leak": "node ./src/test/memory-leak/runMemlabTests",
     "lighthouse:desktop": "next build && lhci autorun --config=lighthouserc.desktop.js --collect.startServerCommand=\"npx serve@latest out\"",
     "lighthouse:mobile": "next build && lhci autorun --config=lighthouserc.mobile.js --collect.startServerCommand=\"npx serve@latest out\"",
+    "lighthouse:desktop-autorun": "lhci autorun --config=lighthouserc.desktop.js",
+    "lighthouse:mobile-autorun": "lhci autorun --config=lighthouserc.mobile.js",
     "check-node-version": "node checkNodeVersion.js",
     "preinstall": "pnpm run check-node-version"
   },
