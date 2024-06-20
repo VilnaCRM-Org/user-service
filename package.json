@@ -18,7 +18,7 @@
     "test:e2e": "playwright run --headless --browser chrome",
     "test:e2e-local": "pnpm exec playwright test ./src/test/e2e",
     "test:mutation": "npx stryker run",
-    "test:visual": "pnpm exec playwright test ./src/test/visual --reporter=list",
+    "test:visual": "pnpm exec playwright test ./src/test/visual",
     "test:unit": "jest --verbose",
     "test:memory-leak": "node ./src/test/memory-leak/runMemlabTests",
     "lighthouse:desktop": "next build && lhci autorun --config=lighthouserc.desktop.js --collect.startServerCommand=\"npx serve@latest out\"",
