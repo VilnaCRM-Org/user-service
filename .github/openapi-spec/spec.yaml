@@ -683,7 +683,7 @@ paths:
       requestBody:
         description: ''
         content:
-          application/json:
+          application/merge-patch+json:
             schema:
               type: object
               properties:
@@ -1171,7 +1171,7 @@ paths:
       requestBody:
         description: ''
         content:
-          application/json:
+          application/merge-patch+json:
             schema:
               type: object
               properties:
