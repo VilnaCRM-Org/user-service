@@ -56,7 +56,8 @@ services:
 
   workers:
     depends_on:
-      - php
+      php:
+        condition: service_healthy
     build:
       context: .
       target: app_workers
