@@ -2,9 +2,13 @@ default:
     suites:
         default:
             contexts:
-                - App\Tests\Behat\DemoContext
+                - App\Tests\Behat\UserGraphQLContext\UserGraphQLContext
+                - App\Tests\Behat\UserContext\UserContext
+                - App\Tests\Behat\UserContext\UserOperationsContext
+                - App\Tests\Behat\OAuthContext\OAuthContext
 
     extensions:
+        DAMA\DoctrineTestBundle\Behat\ServiceContainer\DoctrineExtension: ~
         FriendsOfBehat\SymfonyExtension:
             bootstrap: 'tests/bootstrap.php'
             kernel:

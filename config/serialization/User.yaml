@@ -1,0 +1,10 @@
+App\User\Domain\Entity\User:
+  attributes:
+    id:
+      groups: ['output', 'deleteMutationOutput']
+    email:
+      groups: ['output']
+    initials:
+      groups: ['output']
+    confirmed:
+      groups: [ 'output' ]

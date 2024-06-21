@@ -1,0 +1,47 @@
+api_platform:
+    title: 'User Service API'
+    description: 'This API provides endpoints to manage user data within a VilnaCRM.'
+    version: '1.0.0'
+
+    defaults:
+        extra_properties:
+            rfc_7807_compliant_errors: true
+
+    formats:
+        json: [ 'application/json' ]
+        graphql: [ 'application/graphql' ]
+        jsonld:   ['application/ld+json']
+
+    error_formats:
+        jsonproblem: [ 'application/problem+json' ]
+
+    resource_class_directories:
+        - '%kernel.project_dir%/src/User/Domain/Entity'
+
+    oauth:
+        # To enable or disable OAuth.
+        enabled: true
+
+        # The OAuth client ID.
+        clientId: ''
+
+        # The OAuth client secret.
+        clientSecret: ''
+
+        # The OAuth type.
+        type: 'oauth2'
+
+        # The OAuth flow grant type.
+        flow: 'application'
+
+        # The OAuth token url.
+        tokenUrl: '/api/oauth/token'
+
+        # The OAuth authentication url.
+        authorizationUrl: '/api/oauth/authorize'
+
+        # The OAuth scopes.
+        scopes:
+            email: "This scope value requests access to the email"
+            profile: "This scope value requests access to the user profile"
+

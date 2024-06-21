@@ -1,0 +1,20 @@
+not:
+  blank: 'This value should not be blank.'
+email:
+  invalid: 'This value is not a valid email address.'
+  not:
+    unique: 'This email address is already registered'
+initials:
+  spaces: 'Initials can not consist only of spaces'
+password:
+  invalid:
+    length: 'Password must be between 8 and 64 characters long'
+  missing:
+    uppercase: 'Password must contain at least one uppercase letter'
+    number: 'Password must contain at least one number'
+batch:
+  empty:
+    'Batch should have at least one user'
+  email:
+    duplicate:
+      'Duplicate email in a batch'

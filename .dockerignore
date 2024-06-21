@@ -2,7 +2,6 @@
 **/*.md
 **/*.php~
 **/*.dist.php
-**/*.dist
 **/*.cache
 **/._*
 **/.dockerignore
@@ -20,9 +19,9 @@
 .github/
 docs/
 public/bundles/
-tests/
 var/
 vendor/
+tests/Load/config.json
 .editorconfig
 .env.*.local
 .env.local
