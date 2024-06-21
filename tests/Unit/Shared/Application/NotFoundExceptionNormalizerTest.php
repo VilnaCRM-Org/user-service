@@ -80,4 +80,13 @@ final class NotFoundExceptionNormalizerTest extends UnitTestCase
 
         $this->assertFalse($this->normalizer->supportsNormalization($error));
     }
+
+    public function testGetSupportedTypes(): void
+    {
+        $expected = [Error::class => true];
+
+        $result = $this->normalizer->getSupportedTypes(null);
+
+        $this->assertEquals($expected, $result);
+    }
 }

@@ -39,7 +39,7 @@ final readonly class RegisterUserBatchProcessor implements ProcessorInterface
         array $context = []
     ): Response {
         $normalizationGroups =
-            $context['operation']->getNormalizationContext()['groups'];
+            $operation->getNormalizationContext()['groups'] ?? [];
         $command = $this->commandFactory->create(
             new UserCollection($data->users)
         );
