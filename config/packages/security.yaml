@@ -1,0 +1,24 @@
+# config/packages/security.yaml
+security:
+  # enable_authenticator_manager: true
+
+  providers:
+    app_user_provider:
+      entity:
+        class: App\User\Domain\Entity\User
+        property: email
+
+  firewalls:
+    main:
+      security: false
+
+      # activate different ways to authenticate
+      # https://symfony.com/doc/current/security.html#firewalls-authentication
+
+      # https://symfony.com/doc/current/security/impersonating_user.html
+      # switch_user: true
+
+  password_hashers:
+    App\User\Domain\Entity\User:
+      algorithm: auto
+      cost: 4

@@ -1,6 +1,5 @@
 ###> symfony/framework-bundle ###
 /.idea
-/.env
 /.env.local
 /.env.local.php
 /.env.*.local
@@ -8,6 +7,13 @@
 /public/bundles/
 /var/
 /vendor/
+/metrics-report
+/coverage
+infection.log
+summary.log
+.structurizr
+/tests/Load/node_modules
+/tests/Load/users.json
 ###< symfony/framework-bundle ###
 
 ###> symfony/phpunit-bridge ###
@@ -28,3 +34,14 @@
 /.phpcs-cache
 /phpcs.xml
 ###< squizlabs/php_codesniffer ###
+
+###> league/oauth2-server-bundle ###
+/config/jwt/*.pem
+###< league/oauth2-server-bundle ###
+
+/config/keys
+supervisord.*
+
+###> qossmic/deptrac-shim ###
+/.deptrac.cache
+###< qossmic/deptrac-shim ###

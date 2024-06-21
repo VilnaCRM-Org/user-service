@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   php:
     build:
@@ -8,6 +6,9 @@ services:
       args:
         SYMFONY_VERSION: ${SYMFONY_VERSION:-}
         STABILITY: ${STABILITY:-stable}
+    depends_on:
+      database:
+        condition: service_healthy
     restart: unless-stopped
     volumes:
       - php_socket:/var/run/php
@@ -18,7 +19,6 @@ services:
       start_period: 30s
     environment:
       # Run "composer require symfony/orm-pack" to install and configure Doctrine ORM
-      DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-!ChangeMe!}@database:5432/${POSTGRES_DB:-app}?serverVersion=${POSTGRES_VERSION:-14}
       # Run "composer require symfony/mercure-bundle" to install and configure the Mercure integration
       MERCURE_URL: ${CADDY_MERCURE_URL:-http://caddy/.well-known/mercure}
       MERCURE_PUBLIC_URL: https://${SERVER_NAME:-localhost}/.well-known/mercure
@@ -29,9 +29,10 @@ services:
       context: .
       target: app_caddy
     depends_on:
-      - php
+      php:
+        condition: service_healthy
     environment:
-      SERVER_NAME: ${SERVER_NAME:-localhost, caddy:80}
+      SERVER_NAME: ${SERVER_NAME:-localhost}
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
     restart: unless-stopped
@@ -53,13 +54,48 @@ services:
         published: ${HTTP3_PORT:-443}
         protocol: udp
 
-# Mercure is installed as a Caddy module, prevent the Flex recipe from installing another service
-###> symfony/mercure-bundle ###
-###< symfony/mercure-bundle ###
+  workers:
+    depends_on:
+      php:
+        condition: service_healthy
+    build:
+      context: .
+      target: app_workers
+    privileged: true
+    environment:
+      - container=docker
+    volumes:
+      - ./:/srv/app
+
+  database:
+    image: mariadb:11.4
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      hostname: database
+    ports:
+      - '${DB_PORT}:3306'
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      interval: 10s
+      retries: 10
+      test:
+        [
+          "CMD",
+          "healthcheck.sh",
+          "--su-mysql",
+          "--connect",
+          "--innodb_initialized"
+        ]
+
+  redis:
+    image: redis:7.2.5-alpine
+    ports:
+      - "${REDIS_PORT}:6379"
 
 volumes:
   php_socket:
   caddy_data:
   caddy_config:
-###> symfony/mercure-bundle ###
-###< symfony/mercure-bundle ###
+  db_data:

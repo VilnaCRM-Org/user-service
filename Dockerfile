@@ -1,10 +1,10 @@
 # Builder images
 FROM composer/composer:2-bin AS composer
 
-FROM mlocati/php-extension-installer:latest AS php_extension_installer
+FROM mlocati/php-extension-installer:2.2 AS php_extension_installer
 
 # Build Caddy with the Mercure and Vulcain modules
-FROM caddy:2.7-builder-alpine AS app_caddy_builder
+FROM caddy:2.8-builder-alpine AS app_caddy_builder
 
 RUN xcaddy build \
 	--with github.com/dunglas/mercure \
@@ -44,6 +44,10 @@ RUN set -eux; \
     	zip \
     	apcu \
 		opcache \
+        pdo_mysql \
+        redis \
+        openssl \
+        xsl \
     ;
 
 ###> recipes ###
@@ -90,7 +94,6 @@ RUN set -eux; \
     if [ -f composer.json ]; then \
 		composer dump-autoload --classmap-authoritative --no-dev; \
 		composer dump-env prod; \
-		composer run-script --no-dev post-install-cmd; \
 		chmod +x bin/console; sync; \
     fi
 
@@ -102,7 +105,6 @@ RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.alpine.sh' 
 RUN apk add symfony-cli
 
 ENV APP_ENV=dev XDEBUG_MODE=off
-VOLUME /srv/app/var/
 
 RUN rm "$PHP_INI_DIR/conf.d/app.prod.ini"; \
 	mv "$PHP_INI_DIR/php.ini" "$PHP_INI_DIR/php.ini-production"; \
@@ -115,8 +117,21 @@ RUN set -eux; \
 
 RUN rm -f .env.local.php
 
+# Worker image
+FROM app_php AS app_workers
+
+RUN apk add --no-cache supervisor
+
+RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
+
+COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
+
+COPY --link infrastructure/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+
 # Caddy image
-FROM caddy:2.8.0-alpine AS app_caddy
+FROM caddy:2.8-alpine AS app_caddy
 
 WORKDIR /srv/app
 
