@@ -206,10 +206,10 @@ final class UserGraphQLContext implements Context
             [],
             [],
             ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/graphql',
+                'CONTENT_TYPE' => 'application/json',
                 'HTTP_ACCEPT_LANGUAGE' => $this->language,
             ],
-            $this->query
+            \Safe\json_encode(['query' => $this->query])
         ));
     }
 

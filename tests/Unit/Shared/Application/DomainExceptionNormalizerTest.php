@@ -13,46 +13,25 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class DomainExceptionNormalizerTest extends UnitTestCase
 {
     private DomainException $previousException;
+    private DomainExceptionNormalizer $normalizer;
+    private TranslatorInterface $translatorMock;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $template = $this->faker->word();
-        $args = [];
-        $this->previousException =
-            new class($template, $args) extends DomainException {
-                /**
-                 * @param array<string> $args
-                 */
-                public function __construct(
-                    private string $template,
-                    private array $args
-                ) {
-                    parent::__construct();
-                }
+        $this->translatorMock = $this->createMock(TranslatorInterface::class);
+        $this->normalizer =
+            new DomainExceptionNormalizer($this->translatorMock);
 
-                public function getTranslationTemplate(): string
-                {
-                    return $this->template;
-                }
-
-                /**
-                 * @return array<string>
-                 */
-                public function getTranslationArgs(): array
-                {
-                    return $this->args;
-                }
-            };
+        $this->previousException = $this->buildPreviousException();
     }
 
     public function testNormalize(): void
     {
         $errorText = $this->faker->word();
 
-        $translator = $this->createMock(TranslatorInterface::class);
-        $translator->expects($this->once())
+        $this->translatorMock->expects($this->once())
             ->method('trans')
             ->willReturn($errorText);
 
@@ -61,9 +40,7 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
             previous: $this->previousException
         );
 
-        $normalizer = new DomainExceptionNormalizer($translator);
-
-        $normalizedError = $normalizer->normalize($graphqlError);
+        $normalizedError = $this->normalizer->normalize($graphqlError);
 
         $this->assertEquals($errorText, $normalizedError['message']);
         $this->assertEquals(
@@ -77,12 +54,8 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
         $errorText = $this->faker->word();
         $graphqlError = new Error($errorText);
 
-        $normalizer = new DomainExceptionNormalizer(
-            $this->createMock(TranslatorInterface::class)
-        );
-
         $supportsNormalization =
-            $normalizer->supportsNormalization($graphqlError);
+            $this->normalizer->supportsNormalization($graphqlError);
 
         $this->assertFalse($supportsNormalization);
     }
@@ -96,12 +69,8 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
             previous: $this->previousException
         );
 
-        $normalizer = new DomainExceptionNormalizer(
-            $this->createMock(TranslatorInterface::class)
-        );
-
         $supportsNormalization =
-            $normalizer->supportsNormalization($graphqlError);
+            $this->normalizer->supportsNormalization($graphqlError);
 
         $this->assertTrue($supportsNormalization);
     }
@@ -115,12 +84,48 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
             previous: $this->previousException,
         );
 
-        $normalizer = new DomainExceptionNormalizer(
-            $this->createMock(TranslatorInterface::class)
-        );
-
-        $supportsNormalization = $normalizer->supportsNormalization($error);
+        $supportsNormalization =
+            $this->normalizer->supportsNormalization($error);
 
         $this->assertFalse($supportsNormalization);
+    }
+
+    public function testGetSupportedTypes(): void
+    {
+        $expected = [Error::class => true];
+
+        $result = $this->normalizer->getSupportedTypes(null);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    private function buildPreviousException(): DomainException
+    {
+        $template = $this->faker->word();
+        $args = [];
+        return new class($template, $args) extends DomainException {
+            /**
+             * @param array<string> $args
+             */
+            public function __construct(
+                private string $template,
+                private array $args
+            ) {
+                parent::__construct();
+            }
+
+            public function getTranslationTemplate(): string
+            {
+                return $this->template;
+            }
+
+            /**
+             * @return array<string>
+             */
+            public function getTranslationArgs(): array
+            {
+                return $this->args;
+            }
+        };
     }
 }

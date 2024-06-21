@@ -43,12 +43,22 @@ final readonly class DomainExceptionNormalizer implements NormalizerInterface
     /**
      * @param object $data
      * @param string|null $format
+     * @param array<string> $context
      */
     public function supportsNormalization(
         mixed $data,
-        mixed $format = null
+        mixed $format = null,
+        array $context = []
     ): bool {
         return $data instanceof Error && $data->getPrevious()
             instanceof DomainException;
+    }
+
+    /**
+     * @return array<string, bool>
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [Error::class => true];
     }
 }
