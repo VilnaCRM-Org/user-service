@@ -31,5 +31,5 @@ jobs:
         run: make start
 
       - name: Run visual tests
-        run: make test-visual
+        run: $PW_TEST_HTML_REPORT_OPEN make test-visual
 

@@ -7,6 +7,7 @@ K6_BIN = ./k6
 PNPM_BIN		= pnpm
 DOCKER			= docker
 DOCKER_COMPOSE	= docker compose
+MAKE 			= make
 
 # Executables
 EXEC_NODEJS	= $(DOCKER_COMPOSE) exec nodejs
@@ -23,11 +24,15 @@ ifeq ($(CI), 1)
 	LHCI_DESKTOP = lighthouse:desktop-autorun
 	LHCI_MOBILE = lighthouse:mobile-autorun
 	VISUAL_EXEC = $(PNPM_EXEC)
+	LOAD_TESTS_RUN = $(K6_BIN) run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out "web-dashboard=period=1s&export=./src/test/load/results/index.html" ./src/test/load/homepage.js
+	BUILD_K6_DOCKER =
 else
     PNPM_EXEC = $(PNPM_RUN)
 	LHCI_DESKTOP = lighthouse:desktop
 	LHCI_MOBILE = lighthouse:mobile
 	VISUAL_EXEC = $(DOCKER) exec website-playwright-1 pnpm run
+	LOAD_TESTS_RUN = $(K6) --out 'web-dashboard=period=1s&export=/loadTests/results/homepage.html' /loadTests/homepage.js
+	BUILD_K6_DOCKER = $(MAKE) build-k6-docker
 endif
 
 # To Run in CI mode specify CI variable. Example: make lint-md CI=1
@@ -92,11 +97,9 @@ test-mutation:
 build-k6-docker: ## This command build K6 image
 	$(DOCKER) build -t k6 -f ./src/test/load/Dockerfile .
 
-load-tests: build-k6-docker ## This command executes load tests using K6 library.
-	$(K6) --out 'web-dashboard=period=1s&export=/loadTests/results/homepage.html' /loadTests/homepage.js
-
-load-tests-local: ## This command executes load tests using K6 library without Docker.
-	$(K6_BIN) run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out "web-dashboard=period=1s&export=./src/test/load/results/index.html" ./src/test/load/homepage.js
+load-tests: ## This command executes load tests using K6 library.
+	$(BUILD_K6_DOCKER)
+	$(LOAD_TESTS_RUN)
 
 lighthouse-desktop: ## This command executes lighthouse tests for desktop.
 	$(PNPM_EXEC) $(LHCI_DESKTOP)
