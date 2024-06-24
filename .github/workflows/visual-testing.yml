@@ -5,9 +5,6 @@ on:
     branches:
       - main
 
-env:
-  PW_TEST_HTML_REPORT_OPEN: "never"
-
 jobs:
   visual-test:
     runs-on: ubuntu-latest
@@ -31,5 +28,5 @@ jobs:
         run: make start
 
       - name: Run visual tests
-        run: PW_TEST_HTML_REPORT_OPEN=$PW_TEST_HTML_REPORT_OPEN make test-visual
+        run: make test-visual
 
