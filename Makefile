@@ -23,14 +23,14 @@ ifeq ($(CI), 1)
     PNPM_EXEC = $(PNPM_BIN)
 	LHCI_DESKTOP = lighthouse:desktop-autorun
 	LHCI_MOBILE = lighthouse:mobile-autorun
-	PW_EXEC = $(PNPM_EXEC)
+	PLAYWRIGHT_EXEC = $(PNPM_EXEC)
 	LOAD_TESTS_RUN = $(K6_BIN) run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out "web-dashboard=period=1s&export=./src/test/load/results/index.html" ./src/test/load/homepage.js
 	BUILD_K6_DOCKER =
 else
     PNPM_EXEC = $(PNPM_RUN)
 	LHCI_DESKTOP = lighthouse:desktop
 	LHCI_MOBILE = lighthouse:mobile
-	PW_EXEC = $(DOCKER) exec website-playwright-1 pnpm run
+	PLAYWRIGHT_EXEC = $(DOCKER) exec website-playwright-1 pnpm run
 	LOAD_TESTS_RUN = $(K6) --out 'web-dashboard=period=1s&export=/loadTests/results/homepage.html' /loadTests/homepage.js
 	BUILD_K6_DOCKER = $(MAKE) build-k6-docker
 endif
@@ -77,10 +77,10 @@ generate-ts-doc: ## This command generates documentation from the typescript fil
 	$(PNPM_EXEC) doc
 
 test-e2e: ## This command executes PlayWright E2E tests.
-	$(PW_EXEC) test:e2e
+	$(PLAYWRIGHT_EXEC) test:e2e
 
 test-visual: ## This command executes PlayWright Visual tests.
-	$(PW_EXEC) test:visual
+	$(PLAYWRIGHT_EXEC) test:visual
 	
 test-unit: ## This command executes unit tests using Jest library.
 	$(PNPM_EXEC) test:unit
