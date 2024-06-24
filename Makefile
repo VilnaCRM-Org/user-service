@@ -23,14 +23,14 @@ ifeq ($(CI), 1)
     PNPM_EXEC = $(PNPM_BIN)
 	LHCI_DESKTOP = lighthouse:desktop-autorun
 	LHCI_MOBILE = lighthouse:mobile-autorun
-	VISUAL_EXEC = $(PNPM_EXEC)
+	PW_EXEC = $(PNPM_EXEC)
 	LOAD_TESTS_RUN = $(K6_BIN) run --summary-trend-stats="avg,min,med,max,p(95),p(99)" --out "web-dashboard=period=1s&export=./src/test/load/results/index.html" ./src/test/load/homepage.js
 	BUILD_K6_DOCKER =
 else
     PNPM_EXEC = $(PNPM_RUN)
 	LHCI_DESKTOP = lighthouse:desktop
 	LHCI_MOBILE = lighthouse:mobile
-	VISUAL_EXEC = $(DOCKER) exec website-playwright-1 pnpm run
+	PW_EXEC = $(DOCKER) exec website-playwright-1 pnpm run
 	LOAD_TESTS_RUN = $(K6) --out 'web-dashboard=period=1s&export=/loadTests/results/homepage.html' /loadTests/homepage.js
 	BUILD_K6_DOCKER = $(MAKE) build-k6-docker
 endif
@@ -76,14 +76,11 @@ storybook-build: ## Build Storybook UI. Storybook is a frontend workshop for bui
 generate-ts-doc: ## This command generates documentation from the typescript files.
 	$(PNPM_EXEC) doc
 
-test-e2e: ## This command executes cypress tests.
-	$(PNPM_EXEC) test:e2e
+test-e2e: ## This command executes PlayWright E2E tests.
+	$(PW_EXEC) test:e2e
 
-test-e2e-local: ## This command opens management UI for cypress tests.
-	$(PNPM_EXEC) test:e2e-local
-
-test-visual: ## This command executes playwright visual tests.
-	$(VISUAL_EXEC) test:visual
+test-visual: ## This command executes PlayWright Visual tests.
+	$(PW_EXEC) test:visual
 	
 test-unit: ## This command executes unit tests using Jest library.
 	$(PNPM_EXEC) test:unit
@@ -101,10 +98,10 @@ load-tests: ## This command executes load tests using K6 library.
 	$(BUILD_K6_DOCKER)
 	$(LOAD_TESTS_RUN)
 
-lighthouse-desktop: ## This command executes lighthouse tests for desktop.
+lighthouse-desktop: ## This command executes Lighthouse tests for desktop.
 	$(PNPM_EXEC) $(LHCI_DESKTOP)
 
-lighthouse-mobile: ## This command executes lighthouse tests for mobile.
+lighthouse-mobile: ## This command executes Lighthouse tests for mobile.
 	$(PNPM_EXEC) $(LHCI_MOBILE)
 
 install: ## Install node modules according to the current pnpm-lock.yaml file
