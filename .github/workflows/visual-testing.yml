@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+env:
+  PW_TEST_HTML_REPORT_OPEN: "never"
+
 jobs:
   visual-test:
     runs-on: ubuntu-latest
