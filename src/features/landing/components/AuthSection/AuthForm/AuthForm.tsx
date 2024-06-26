@@ -1,6 +1,6 @@
 import { useMutation } from '@apollo/client';
 import { Box, Stack, CircularProgress } from '@mui/material';
-import Image from 'next/image';
+import Image from 'next-export-optimize-images/image';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';

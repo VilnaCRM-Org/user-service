@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Image from 'next-export-optimize-images/image';
 import React from 'react';
 
 import { ImageList } from '../../../../types/possibilities/image-list';

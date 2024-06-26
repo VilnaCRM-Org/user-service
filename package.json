@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && next-export-optimize-images",
     "build:analyze": "ANALYZE=true pnpm run build",
     "start": "next build && npx serve@latest out",
     "git-hooks-install": "husky install",
@@ -37,6 +37,7 @@
     "dotenv": "^16.4.5",
     "graphql": "^16.8.1",
     "i18next": "^23.10.1",
+    "next-export-optimize-images": "^4.5.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.51.1",

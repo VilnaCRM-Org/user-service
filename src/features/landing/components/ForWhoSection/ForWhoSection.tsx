@@ -1,8 +1,8 @@
 import { Box, Container } from '@mui/material';
-import Image from 'next/image';
 import React from 'react';
 
 import VectorIcon from '../../assets/img/about-vilna/FrameDesktop.png';
+import VectorIconMd from '../../assets/img/about-vilna/FrameTablet.png';
 
 import { Cards } from './Cards';
 import MainTitle from './MainTitle/MainTitle';
@@ -19,7 +19,14 @@ function ForWhoSection(): React.ReactElement {
           </Box>
 
           <Box sx={styles.mainImage}>
-            <Image src={VectorIcon} alt="vector" width={800} height={500} />
+            <img
+              src={VectorIcon}
+              srcSet={`${VectorIconMd.src} 689w, ${VectorIcon.src} 821w`}
+              sizes="(max-width: 1130.98px) 680px, 800px"
+              alt="vector"
+              width={800}
+              height={498}
+            />
           </Box>
         </Box>
       </Container>

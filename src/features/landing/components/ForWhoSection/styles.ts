@@ -1,8 +1,6 @@
 import breakpointsTheme from '@/components/UiBreakpoints';
 import colorTheme from '@/components/UiColorTheme';
 
-import VectorIconMd from '../../assets/img/about-vilna/FrameTablet.png';
-
 export default {
   wrapper: {
     background: colorTheme.palette.backgroundGrey100.main,
@@ -46,7 +44,6 @@ export default {
       top: '7%',
       right: '-6%',
       '@media (max-width: 1130.98px)': {
-        content: `url(${VectorIconMd.src})`,
         width: '100dvw',
         maxWidth: '43rem',
         height: '39.8rem',

@@ -1,13 +1,11 @@
 const withBundleAnalyzer = require('@next/bundle-analyzer')();
+const withExportImages = require('next-export-optimize-images');
 const LocalizationGenerator = require('./scripts/localizationGenerator');
 
 /** @type {import('next').NextConfig} */
 
-const nextConfig = {
+const nextConfig = withExportImages({
   output: 'export',
-  images: {
-    unoptimized: true, // Is necessary to prevent an error from Next.js. https://nextjs.org/docs/messages/export-image-api
-  },
   reactStrictMode: true,
   swcMinify: true,
 
@@ -17,6 +15,6 @@ const nextConfig = {
 
     return config;
   },
-};
+});
 
 module.exports = process.env.ANALYZE === 'true' ? withBundleAnalyzer(nextConfig) : nextConfig;

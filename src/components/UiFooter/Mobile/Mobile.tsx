@@ -1,5 +1,5 @@
 import { Box, Container, Stack } from '@mui/material';
-import Image from 'next/image';
+import Image from 'next-export-optimize-images/image';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
