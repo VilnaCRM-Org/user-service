@@ -35,9 +35,6 @@ importers:
       i18next:
         specifier: ^23.10.1
         version: 23.11.5
-      next-export-optimize-images:
-        specifier: ^4.5.0
-        version: 4.5.0(next@14.1.4(@babel/core@7.24.6)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -137,7 +134,7 @@ importers:
         version: 14.3.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@testing-library/user-event':
         specifier: ^14.5.2
-        version: 14.5.2(@testing-library/dom@8.20.1)
+        version: 14.5.2(@testing-library/dom@9.3.4)
       '@types/jest':
         specifier: ^29.5.12
         version: 29.5.12
@@ -182,7 +179,7 @@ importers:
         version: 2.29.1(@typescript-eslint/parser@6.21.0(eslint@8.28.0)(typescript@5.4.5))(eslint@8.28.0)
       eslint-plugin-jest-dom:
         specifier: ^5.1.0
-        version: 5.4.0(@testing-library/dom@8.20.1)(eslint@8.28.0)
+        version: 5.4.0(@testing-library/dom@9.3.4)(eslint@8.28.0)
       eslint-plugin-jsx-a11y:
         specifier: ^6.8.0
         version: 6.8.0(eslint@8.28.0)
@@ -219,6 +216,9 @@ importers:
       next:
         specifier: 14.1.4
         version: 14.1.4(@babel/core@7.24.6)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      next-export-optimize-images:
+        specifier: ^4.5.0
+        version: 4.5.0(next@14.1.4(@babel/core@7.24.6)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       prettier:
         specifier: ^3.2.4
         version: 3.2.5
@@ -11293,10 +11293,6 @@ snapshots:
       '@babel/runtime': 7.24.6
       '@testing-library/dom': 8.20.1
 
-  '@testing-library/user-event@14.5.2(@testing-library/dom@8.20.1)':
-    dependencies:
-      '@testing-library/dom': 8.20.1
-
   '@testing-library/user-event@14.5.2(@testing-library/dom@9.3.4)':
     dependencies:
       '@testing-library/dom': 9.3.4
@@ -13478,13 +13474,13 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-plugin-jest-dom@5.4.0(@testing-library/dom@8.20.1)(eslint@8.28.0):
+  eslint-plugin-jest-dom@5.4.0(@testing-library/dom@9.3.4)(eslint@8.28.0):
     dependencies:
       '@babel/runtime': 7.24.6
       eslint: 8.28.0
       requireindex: 1.2.0
     optionalDependencies:
-      '@testing-library/dom': 8.20.1
+      '@testing-library/dom': 9.3.4
 
   eslint-plugin-jsx-a11y@6.8.0(eslint@8.28.0):
     dependencies:

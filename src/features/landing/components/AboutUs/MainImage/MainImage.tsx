@@ -1,4 +1,7 @@
 import { Box } from '@mui/material';
+import { ImageProps } from 'next/image';
+// @ts-expect-error no types
+import { getOptimizedImageProps } from 'next-export-optimize-images/image';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -13,19 +16,38 @@ import styles from './styles';
 function MainImage(): React.ReactElement {
   const { t } = useTranslation();
 
+  const mobileProps: ImageProps = getOptimizedImageProps({
+    src: PhoneMainImage,
+  }).props;
+  const tabletProps: ImageProps = getOptimizedImageProps({
+    src: TabletMainImage,
+  }).props;
+  const desktopProps: ImageProps = getOptimizedImageProps({
+    src: MainImageSrc,
+  }).props;
+
   return (
     <Box sx={styles.mainImageWrapper}>
-      <img
-        src={MainImageSrc}
-        srcSet={`${PhoneMainImage.src} 539w, ${TabletMainImage.src} 922w, ${MainImageSrc.src} 1280w`}
-        sizes={`
-          (max-width: ${breakpointsTheme.breakpoints.values.sm}px) 530px,
-          (max-width: ${breakpointsTheme.breakpoints.values.lg}px) 920px,
-          1270px`}
-        alt={t('Main image')}
-        width={766}
-        height={498}
-      />
+      <picture>
+        <source
+          srcSet={mobileProps.src as string}
+          width={mobileProps.width}
+          height={mobileProps.height}
+          media={`(max-width: ${breakpointsTheme.breakpoints.values.sm}px)`}
+        />
+        <source
+          srcSet={tabletProps.src as string}
+          width={tabletProps.width}
+          height={tabletProps.height}
+          media={`(max-width: ${breakpointsTheme.breakpoints.values.lg}px)`}
+        />
+        <img
+          src={desktopProps.src as string}
+          width={desktopProps.width}
+          height={desktopProps.height}
+          alt={t('Main image')}
+        />
+      </picture>
     </Box>
   );
 }

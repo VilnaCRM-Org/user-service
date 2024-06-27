@@ -1,10 +1,7 @@
 import breakpointsTheme from '@/components/UiBreakpoints';
 
-import VectorIcon from '../../assets/svg/about-vilna/Vector.svg';
-
 export default {
   vector: {
-    backgroundImage: `url(${VectorIcon.src})`,
     backgroundSize: 'contain',
     backgroundRepeat: 'no-repeat',
     width: '100%',
