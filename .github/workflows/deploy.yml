@@ -36,4 +36,4 @@ jobs:
       - name: Start Pipeline Execution
         if: steps.get_latest_commit.outputs.latest_commit == github.sha
         run: |
-          aws codepipeline start-pipeline-execution --name ${{ secrets.AWS_CODEPIPELINE_NAME }}
+          aws codepipeline start-pipeline-execution --name ${{ secrets.AWS_WEBSITE_CODEPIPELINE_NAME }}
