@@ -2,7 +2,8 @@
 
 # User Service
 
-
+[![CodeScene Code Health](https://codescene.io/projects/55791/status-badges/code-health)](https://codescene.io/projects/55791)
+[![CodeScene System Mastery](https://codescene.io/projects/55791/status-badges/system-mastery)](https://codescene.io/projects/55791)
 [![codecov](https://codecov.io/gh/VilnaCRM-Org/php-service-template/branch/main/graph/badge.svg?token=J3SGCHIFD5)](https://codecov.io/gh/VilnaCRM-Org/php-service-template)
 ![PHPInsights code](https://img.shields.io/badge/PHPInsights%20%7C%20Code%20-100.0%25-success.svg)
 ![PHPInsights style](https://img.shields.io/badge/PHPInsights%20%7C%20Style%20-100.0%25-success.svg)
@@ -107,11 +108,11 @@ up                         Start the docker hub (PHP, caddy)
  ```
 
 ## Documentation
-Start reading at the [GitHub wiki](https://github.com/VilnaCRM-Org/user-service/wiki). If you're having trouble, head for [the troubleshooting guide](https://github.com/VilnaCRM-Org/user-service/wiki/Troubleshooting) as it's frequently updated.
+Start reading at the [GitHub wiki](https://github.com/VilnaCRM-Org/user-service/wiki). If you're having trouble, head for [the troubleshooting guide](https://github.com/VilnaCRM-Org/user-service/wiki/Community-and-Support) as it's frequently updated.
 
 You can generate complete API-level documentation by running `phpdoc` in the top-level folder, and documentation will appear in the `docs` folder, though you'll need to have [PHPDocumentor](http://www.phpdoc.org) installed.
 
-If the documentation doesn't cover what you need, search the [many questions on Stack Overflow](http://stackoverflow.com/questions/tagged/vilnacrm), and before you ask a question, [read the troubleshooting guide](https://github.com/VilnaCRM-Org/user-service/wiki/Troubleshooting).
+If the documentation doesn't cover what you need, search the [many questions on Stack Overflow](http://stackoverflow.com/questions/tagged/vilnacrm), and before you ask a question, [read the troubleshooting guide](https://github.com/VilnaCRM-Org/user-service/wiki/Community-and-Support).
 
 ## Tests
 [Tests](https://github.com/VilnaCRM-Org/user-service/tree/main/tests/) use PHPUnit 9 and [Behat](https://github.com/Behat/Behat).
