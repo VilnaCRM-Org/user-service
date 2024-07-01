@@ -1,10 +1,6 @@
-name: deploy-sandbox
+name: sandbox
 
-on:
-  pull_request:
-    types:
-      - opened
-    branches: [ "main" ]
+on: push
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
