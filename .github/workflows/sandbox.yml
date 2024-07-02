@@ -25,4 +25,4 @@ jobs:
 
       - name: Start Pipeline Execution
         run: |
-          aws codepipeline start-pipeline-execution --name ${{ secrets.AWS_SANDBOX_CODEPIPELINE_NAME }} --variables name=BRANCH_NAME,value=$BRANCH_NAME 
+          aws codepipeline start-pipeline-execution --name ${{ secrets.AWS_SANDBOX_CODEPIPELINE_NAME }} --variables name=BRANCH_NAME,value=testing 
