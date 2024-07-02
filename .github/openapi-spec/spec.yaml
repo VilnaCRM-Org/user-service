@@ -15,7 +15,7 @@ paths:
       tags:
         - OAuth
       responses:
-        302:
+        '302':
           description: 'Redirect to the provided redirect URI with authorization code.'
           content:
             application/json:
@@ -34,7 +34,7 @@ paths:
               style: simple
               explode: false
               allowReserved: false
-        400:
+        '400':
           description: 'Unsupported grant type'
           content:
             application/json:
@@ -56,7 +56,7 @@ paths:
                 hint: 'Check that all required parameters have been provided'
                 message: 'The authorization grant type is not supported by the authorization server.'
           headers: {  }
-        401:
+        '401':
           description: 'Invalid client credentials'
           content:
             application/json:
@@ -75,7 +75,7 @@ paths:
                 error_description: 'Client authentication failed'
                 message: 'Client authentication failed'
           headers: {  }
-        500:
+        '500':
           description: 'Internal server error'
           content:
             application/json:
@@ -163,7 +163,6 @@ paths:
           explode: false
           allowReserved: false
           example: af0ifjsldkj
-    parameters: []
   /api/oauth/token:
     summary: 'Requests for access token'
     description: 'Requests for access token'
@@ -171,7 +170,7 @@ paths:
       tags:
         - OAuth
       responses:
-        200:
+        '200':
           description: 'Unsupported grant type'
           content:
             application/json:
@@ -193,7 +192,7 @@ paths:
                 access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdW
                 refresh_token: df9b4ae7ce2e1e8f2a3c1b4d
           headers: {  }
-        400:
+        '400':
           description: 'Unsupported grant type'
           content:
             application/json:
@@ -215,7 +214,7 @@ paths:
                 hint: 'Check that all required parameters have been provided'
                 message: 'The authorization grant type is not supported by the authorization server.'
           headers: {  }
-        401:
+        '401':
           description: 'Invalid client credentials'
           content:
             application/json:
@@ -234,7 +233,7 @@ paths:
                 error_description: 'Client authentication failed'
                 message: 'Client authentication failed'
           headers: {  }
-        500:
+        '500':
           description: 'Internal server error'
           content:
             application/json:
@@ -302,14 +301,13 @@ paths:
               code: e7f8c62113a47f7a5a9dca1f
               refresh_token: f7a5a9dca1fe7f8c62113a47
         required: true
-    parameters: []
   /api/users:
     get:
       operationId: api_users_get_collection
       tags:
         - User
       responses:
-        400:
+        '400':
           description: 'Bad request'
           content:
             application/json:
@@ -331,7 +329,7 @@ paths:
                 detail: 'The input data is misformatted.'
                 status: 400
           headers: {  }
-        200:
+        '200':
           description: 'Users returned'
           content:
             application/json:
@@ -351,7 +349,7 @@ paths:
                   initials: 'Name Surname'
                   id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
           headers: {  }
-        500:
+        '500':
           description: 'Internal server error'
           content:
             application/json:
@@ -409,7 +407,7 @@ paths:
       tags:
         - User
       responses:
-        201:
+        '201':
           description: 'User created'
           content:
             application/json:
@@ -431,7 +429,7 @@ paths:
                 initials: 'Name Surname'
                 id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
           headers: {  }
-        400:
+        '400':
           description: 'Bad request'
           content:
             application/json:
@@ -453,7 +451,7 @@ paths:
                 detail: 'The input data is misformatted.'
                 status: 400
           headers: {  }
-        422:
+        '422':
           description: 'Validation error'
           content:
             application/json:
@@ -481,7 +479,7 @@ paths:
                   code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
                 status: 422
           headers: {  }
-        500:
+        '500':
           description: 'Internal server error'
           content:
             application/json:
@@ -535,14 +533,13 @@ paths:
               password: passWORD1
         required: true
       deprecated: false
-    parameters: []
   /api/users/batch:
     post:
       operationId: create_batch_http
       tags:
         - User
       responses:
-        201:
+        '201':
           description: 'Users returned'
           content:
             application/json:
@@ -562,7 +559,7 @@ paths:
                   initials: 'Name Surname'
                   id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
           headers: {  }
-        422:
+        '422':
           description: 'Validation error'
           content:
             application/json:
@@ -590,7 +587,7 @@ paths:
                   code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
                 status: 422
           headers: {  }
-        500:
+        '500':
           description: 'Internal server error'
           content:
             application/json:
@@ -636,26 +633,25 @@ paths:
                   password: passWORD1
         required: true
       deprecated: false
-    parameters: []
   /api/users/confirm:
     patch:
       operationId: confirm_http
       tags:
         - User
       responses:
-        200:
+        '200':
           description: 'User confirmed'
           content:
             application/json:
               example: ''
           headers: {  }
-        404:
+        '404':
           description: 'Token not found or expired'
           content:
             application/json:
               example: ''
           headers: {  }
-        500:
+        '500':
           description: 'Internal server error'
           content:
             application/json:
@@ -697,14 +693,13 @@ paths:
               token: token
         required: true
       deprecated: false
-    parameters: []
   '/api/users/{id}':
     get:
       operationId: api_users_id_get
       tags:
         - User
       responses:
-        404:
+        '404':
           description: 'User not found'
           content:
             application/json:
@@ -726,7 +721,7 @@ paths:
                 detail: 'User not found'
                 status: 404
           headers: {  }
-        200:
+        '200':
           description: 'User returned'
           content:
             application/json:
@@ -748,7 +743,7 @@ paths:
                 initials: 'Name Surname'
                 id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
           headers: {  }
-        500:
+        '500':
           description: 'Internal server error'
           content:
             application/json:
@@ -792,7 +787,7 @@ paths:
       tags:
         - User
       responses:
-        200:
+        '200':
           description: 'User updated'
           content:
             application/json:
@@ -814,7 +809,7 @@ paths:
                 initials: 'Name Surname'
                 id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
           headers: {  }
-        400:
+        '400':
           description: 'Bad request'
           content:
             application/json:
@@ -836,7 +831,7 @@ paths:
                 detail: 'The input data is misformatted.'
                 status: 400
           headers: {  }
-        404:
+        '404':
           description: 'User not found'
           content:
             application/json:
@@ -858,7 +853,7 @@ paths:
                 detail: 'User not found'
                 status: 404
           headers: {  }
-        422:
+        '422':
           description: 'Validation error'
           content:
             application/json:
@@ -886,7 +881,7 @@ paths:
                   code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
                 status: 422
           headers: {  }
-        500:
+        '500':
           description: 'Internal server error'
           content:
             application/json:
@@ -964,13 +959,13 @@ paths:
       tags:
         - User
       responses:
-        204:
+        '204':
           description: 'User resource deleted'
           content:
             application/json:
               example: ''
           headers: {  }
-        404:
+        '404':
           description: 'User not found'
           content:
             application/json:
@@ -992,7 +987,7 @@ paths:
                 detail: 'User not found'
                 status: 404
           headers: {  }
-        500:
+        '500':
           description: 'Internal server error'
           content:
             application/json:
@@ -1036,7 +1031,7 @@ paths:
       tags:
         - User
       responses:
-        200:
+        '200':
           description: 'User updated'
           content:
             application/json:
@@ -1058,7 +1053,7 @@ paths:
                 initials: 'Name Surname'
                 id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
           headers: {  }
-        400:
+        '400':
           description: 'Bad request'
           content:
             application/json:
@@ -1080,7 +1075,7 @@ paths:
                 detail: 'The input data is misformatted.'
                 status: 400
           headers: {  }
-        404:
+        '404':
           description: 'User not found'
           content:
             application/json:
@@ -1102,7 +1097,7 @@ paths:
                 detail: 'User not found'
                 status: 404
           headers: {  }
-        422:
+        '422':
           description: 'Validation error'
           content:
             application/json:
@@ -1130,7 +1125,7 @@ paths:
                   code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
                 status: 422
           headers: {  }
-        500:
+        '500':
           description: 'Internal server error'
           content:
             application/json:
@@ -1200,20 +1195,19 @@ paths:
               newPassword: PASSword2
         required: true
       deprecated: false
-    parameters: []
   '/api/users/{id}/resend-confirmation-email':
     post:
       operationId: api_users_idresend-confirmation-email_post
       tags:
         - User
       responses:
-        200:
+        '200':
           description: 'Email was send again'
           content:
             application/json:
               example: ''
           headers: {  }
-        404:
+        '404':
           description: 'User not found'
           content:
             application/json:
@@ -1235,7 +1229,7 @@ paths:
                 detail: 'User not found'
                 status: 404
           headers: {  }
-        429:
+        '429':
           description: 'Too many requests'
           content:
             application/json:
@@ -1257,7 +1251,7 @@ paths:
                 detail: 'Cannot send new email till 2024-01-24T12:43:01+00:00'
                 status: 429
           headers: {  }
-        500:
+        '500':
           description: 'Internal server error'
           content:
             application/json:
@@ -1302,7 +1296,6 @@ paths:
             example: ''
         required: true
       deprecated: false
-    parameters: []
 components: []
 security:
   -
