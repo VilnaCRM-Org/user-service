@@ -5,7 +5,7 @@ export default {
   headerWrapper: {
     backgroundColor: colorTheme.palette.white.main,
     boxShadow: 'none',
-    position: 'fixed',
+    position: 'sticky',
     zIndex: 3000,
   },
 

@@ -17,7 +17,7 @@ function Header(): React.ReactElement {
   const { t } = useTranslation();
 
   return (
-    <AppBar position="static" sx={styles.headerWrapper}>
+    <AppBar sx={styles.headerWrapper}>
       <UiToolbar>
         <Image src={Logo} alt={t('header.logo_alt')} width={131} height={44} />
         <NavList navItems={headerNavList} />
