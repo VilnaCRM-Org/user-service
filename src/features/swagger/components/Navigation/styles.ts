@@ -1,6 +1,11 @@
+import breakpointsTheme from '@/components/UiBreakpoints';
+
 export default {
   navigationWrapper: {
-    paddingTop: '2.1875rem',
+    marginBottom: '0.625rem',
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
+      marginBottom: '1.063rem',
+    },
   },
   navigationButton: {
     alignItems: 'center',
