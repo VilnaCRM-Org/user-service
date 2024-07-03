@@ -105,10 +105,10 @@ lighthouse-mobile: ## This command executes Lighthouse tests for mobile.
 	$(PNPM_EXEC) $(LHCI_MOBILE)
 
 install: ## Install node modules according to the current pnpm-lock.yaml file
-	$(PNPM) install
+	$(PNPM_EXEC) install
 
 update: ## Update node modules according to the current package.json file
-	$(PNPM) update
+	$(PNPM_EXEC) update
 
 up: ## Start the docker hub (Nodejs)
 	$(DOCKER_COMPOSE) up -d
