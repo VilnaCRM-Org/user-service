@@ -2,12 +2,12 @@
 
 # User Service
 
-[![CodeScene Code Health](https://codescene.io/projects/55791/status-badges/code-health)](https://codescene.io/projects/55791)
-[![CodeScene System Mastery](https://codescene.io/projects/55791/status-badges/system-mastery)](https://codescene.io/projects/55791)
-[![codecov](https://codecov.io/gh/VilnaCRM-Org/php-service-template/branch/main/graph/badge.svg?token=J3SGCHIFD5)](https://codecov.io/gh/VilnaCRM-Org/php-service-template)
+[![CodeScene Code Health](https://img.shields.io/badge/CodeScene%20%7C%20Hotspot%20Code%20Health-9.7-brightgreen)](https://codescene.io/projects/55791)
+[![CodeScene System Mastery](https://img.shields.io/badge/CodeScene%20%7C%20Average%20Code%20Health-9.8-brightgreen)](https://codescene.io/projects/55791)
+[![codecov](https://codecov.io/gh/VilnaCRM-Org/user-service/branch/1-implement-user-registration/graph/badge.svg?token=FgXtmFulVd)](https://codecov.io/gh/VilnaCRM-Org/user-service)
 ![PHPInsights code](https://img.shields.io/badge/PHPInsights%20%7C%20Code%20-100.0%25-success.svg)
 ![PHPInsights style](https://img.shields.io/badge/PHPInsights%20%7C%20Style%20-100.0%25-success.svg)
-![PHPInsights complexity](https://img.shields.io/badge/PHPInsights%20%7C%20Complexity%20-100.0%25-success.svg)
+![PHPInsights complexity](https://img.shields.io/badge/PHPInsights%20%7C%20Complexity%20-98.9%25-success.svg)
 ![PHPInsights architecture](https://img.shields.io/badge/PHPInsights%20%7C%20Architecture%20-100.0%25-success.svg)
 
 ## Possibilities
