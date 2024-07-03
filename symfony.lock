@@ -162,13 +162,13 @@
             "tests/bootstrap.php"
         ]
     },
-    "qossmic/deptrac": {
-        "version": "2.0",
+    "qossmic/deptrac-shim": {
+        "version": "1.0",
         "recipe": {
             "repo": "github.com/symfony/recipes-contrib",
             "branch": "main",
-            "version": "2.0",
-            "ref": "05ab8813714080c7bc915cb10c780e6cfdbdb991"
+            "version": "0.19",
+            "ref": "3c3daab46226c37fc14e10faf81df737a3039d96"
         },
         "files": [
             "deptrac.yaml"
