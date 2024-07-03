@@ -1290,13 +1290,39 @@ paths:
           allowReserved: false
           example: 2b10b7a3-67f0-40ea-a367-44263321592a
       requestBody:
-        description: ''
+        description: 'RetryDto object, which is expected to be empty for this operation'
         content:
           application/json:
-            example: ''
+            schema:
+              type: object
+              properties: { }
         required: true
       deprecated: false
-components: []
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        initials:
+          type: string
+        confirmed:
+          type: boolean
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            read: Read access
+            write: Write access
 security:
   -
     oauth: []
