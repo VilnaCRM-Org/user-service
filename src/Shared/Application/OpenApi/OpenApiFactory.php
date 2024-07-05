@@ -9,6 +9,7 @@ use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Response;
+use ApiPlatform\OpenApi\Model\SecurityScheme;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory;
 use App\Shared\Application\OpenApi\Factory\Response\InternalErrorFactory;
@@ -32,7 +33,17 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     public function __invoke(array $context = []): OpenApi
     {
         $openApi = $this->decorated->__invoke($context);
-        $openApi = $openApi->withComponents(new Model\Components());
+        $securityScheme = new SecurityScheme(
+            type: 'http',
+            description: 'JWT Bearer Token authentication',
+            scheme: 'bearer',
+            bearerFormat: 'JWT'
+        );
+        $components = $openApi->getComponents();
+        $securitySchemes = $components->getSecuritySchemes();
+        $securitySchemes['BearerAuth'] = $securityScheme;
+        $components = $components->withSecuritySchemes($securitySchemes);
+        $openApi = $openApi->withComponents($components);
 
         foreach ($this->endpointFactories as $endpointFactory) {
             $endpointFactory->createEndpoint($openApi);
