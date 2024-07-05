@@ -1,7 +1,17 @@
 import breakpointsTheme from '@/components/UiBreakpoints';
 import colorTheme from '@/components/UiColorTheme';
+import { golos } from '@/config/Fonts/golos';
 
 export default {
+  apiInfoWrapper: {
+    marginBottom: '1.25rem',
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+      marginBottom: '1.5rem',
+    },
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
+      marginBottom: '0.75rem',
+    },
+  },
   apiHeader: {
     marginBottom: '0.625rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
@@ -32,6 +42,7 @@ export default {
   },
   apiUrlPart: {
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+      fontWeight: 600,
       fontSize: '1.125rem',
     },
     [`@media (max-width: 50rem)`]: {
@@ -43,7 +54,16 @@ export default {
   },
   fullUrl: {
     color: colorTheme.palette.primary.main,
+    textDecoration: 'none',
+    fontWeight: 500,
+    cursor: 'pointer',
+    fontSize: '0.9375rem',
+    fontFamily: golos.style.fontFamily,
+    [`@media (max-width: 1130px)`]: {
+      fontSize: '0.9375rem',
+    },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+      fontWeight: 600,
       fontSize: '1.125rem',
     },
     [`@media (max-width: 50rem)`]: {
@@ -63,7 +83,7 @@ export default {
   },
   apiSpecialKey: {
     display: 'inline-block',
-    margin: '0 0.75rem',
+    margin: '0',
     padding: '4px 12px 5px 12px',
     background: colorTheme.palette.backgroundGrey200.main,
     borderRadius: '0.5rem',
@@ -72,20 +92,15 @@ export default {
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
       fontSize: '1.125rem',
       fontWeight: 600,
-      margin: '0 0.563rem',
     },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
       fontSize: '0.938rem',
       fontWeight: 500,
-      margin: '0 0.5rem',
-    },
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xs}px)`]: {
-      marginLeft: 0,
     },
   },
   description: {
-    marginBottom: '1.25rem',
     maxWidth: '43.5rem',
+    color: `${colorTheme.palette.grey250.main}`,
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
       maxWidth: '31.625rem',
       fontSize: '0.938rem',
@@ -94,7 +109,7 @@ export default {
   },
   linkLineBreak: {
     display: 'none',
-    [`@media (maxWidth: ${breakpointsTheme.breakpoints.values.xs}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xs}px)`]: {
       display: 'inline',
     },
   },

@@ -1,14 +1,15 @@
-import { Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import React from 'react';
 
-import { UiTypography } from '@/components';
+import { UiLink, UiTypography } from '@/components';
 
-import ApiDot from './ApiDot/ApiDot';
+import { ApiDot } from '../ApiDot';
+
 import styles from './styles';
 
 function ApiInfo(): React.ReactElement {
   return (
-    <>
+    <Box sx={styles.apiInfoWrapper}>
       <Stack direction="row" alignItems="center" gap="1.5rem" sx={styles.apiHeader}>
         <UiTypography component="h2" variant="h2" sx={styles.apiTitle}>
           VilnaCRM Rest API
@@ -19,21 +20,21 @@ function ApiInfo(): React.ReactElement {
         <UiTypography variant="medium15" sx={styles.apiUrlPart}>
           [ Base URL: petstore.swagger.io/v2 ]
         </UiTypography>
-        <ApiDot />
-        <UiTypography variant="medium15" sx={styles.fullUrl}>
+        <ApiDot color="black" />
+        <UiLink variant="medium15" sx={styles.fullUrl}>
           https://petstore.swagger.io/v2/swagger.json
-        </UiTypography>
+        </UiLink>
       </Stack>
       <UiTypography component="p" variant="bodyText18" sx={styles.description}>
         This is a sample server Petstore server. You can find out more about Swagger at http://
-        <br style={styles.linkLineBreak} />
-        swagger.io or on irc.freenode.net, #swagger. For this sample, you can use the api key
+        <Box component="br" sx={styles.linkLineBreak} />
+        swagger.io or on irc.freenode.net, #swagger. For this sample, you can use the api key{' '}
         <UiTypography component="span" variant="medium15" sx={styles.apiSpecialKey}>
           special-key
-        </UiTypography>
+        </UiTypography>{' '}
         to test the authorization filters.
       </UiTypography>
-    </>
+    </Box>
   );
 }
 

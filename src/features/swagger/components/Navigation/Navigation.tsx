@@ -15,7 +15,7 @@ function Navigation(): React.ReactElement {
   return (
     <Box sx={styles.navigationWrapper}>
       <Stack direction="row" alignItems="center" role="navigation" sx={styles.navigationButton}>
-        <Image src={Svg} />
+        <Image src={Svg} alt="arrow" />
         <UiTypography variant="medium16" sx={styles.navigationText}>
           {t('navigation.navigate_to_home_page')}
         </UiTypography>

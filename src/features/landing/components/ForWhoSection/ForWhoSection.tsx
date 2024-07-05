@@ -27,7 +27,6 @@ function ForWhoSection(): React.ReactElement {
           <Box sx={styles.lgCardsWrapper}>
             <Cards />
           </Box>
-
           <Box sx={styles.mainImage}>
             <picture>
               <source
