@@ -41,6 +41,7 @@
     "react-dom": "18.2.0",
     "react-hook-form": "^7.51.1",
     "react-i18next": "^14.1.0",
+    "swagger-ui-react": "^5.17.14",
     "terser-webpack-plugin": "^5.3.10"
   },
   "devDependencies": {
@@ -77,6 +78,7 @@
     "@types/node": "18.11.9",
     "@types/react": "18.2.40",
     "@types/react-dom": "^18.2.18",
+    "@types/swagger-ui-react": "^4.18.3",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
     "eslint": "8.28.0",
@@ -101,6 +103,7 @@
     "next": "14.1.4",
     "next-export-optimize-images": "^4.5.0",
     "prettier": "^3.2.4",
+    "sass": "^1.77.6",
     "semver": "^7.5.4",
     "storybook": "^8.0.0",
     "swiper": "^11.0.5",

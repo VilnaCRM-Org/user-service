@@ -6,6 +6,7 @@ import UiFooter from '@/components/UiFooter';
 
 import Header from '../../../landing/components/Header';
 import AboutApi from '../AboutApi';
+import ApiDocumentation from '../ApiDocumentation/ApiDocumentation';
 import Navigation from '../Navigation/Navigation';
 
 import styles from './styles';
@@ -25,6 +26,7 @@ function Swagger(): React.ReactElement {
         <Container maxWidth="xl">
           <Navigation />
           <AboutApi />
+          <ApiDocumentation />
         </Container>
       </Box>
       <UiFooter />

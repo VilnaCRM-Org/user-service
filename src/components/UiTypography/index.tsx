@@ -1,5 +1,7 @@
-import { ThemeProvider, Typography, TypographyProps } from '@mui/material';
+import { ThemeProvider, Typography } from '@mui/material';
 import React from 'react';
+
+import { UiTypographyProps } from '@/components/UiTypography/types';
 
 import theme from './theme';
 
@@ -10,7 +12,7 @@ function UiTypography({
   variant,
   id,
   role,
-}: TypographyProps): React.ReactElement {
+}: UiTypographyProps): React.ReactElement {
   return (
     <ThemeProvider theme={theme}>
       <Typography sx={sx} component={component || 'p'} variant={variant} id={id} role={role}>

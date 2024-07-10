@@ -1,0 +1,13 @@
+@import "variables";
+@import "theme";
+
+@import "components/information";
+@import "components/scheme";
+
+.swagger-ui {
+  font-family: $golos;
+
+  .wrapper {
+    padding: 0;
+  }
+}
