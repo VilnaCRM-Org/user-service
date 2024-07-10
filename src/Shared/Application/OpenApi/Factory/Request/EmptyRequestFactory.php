@@ -20,7 +20,7 @@ final class EmptyRequestFactory implements AbstractRequestFactory
         $schema = new Schema();
         $schema['type'] = 'object';
         $schema['properties'] = new \ArrayObject();
-
+        $this->requestBuilder->build([]);
         return new RequestBody(
             description: 'This operation does not expect a body.',
             content: new \ArrayObject([
