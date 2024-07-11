@@ -1290,13 +1290,11 @@ paths:
           allowReserved: false
           example: 2b10b7a3-67f0-40ea-a367-44263321592a
       requestBody:
-        description: 'This operation does not expect a body.'
+        description: ''
         content:
           application/json:
-            schema:
-              type: object
-              properties: {  }
-        required: false
+            example: ''
+        required: true
       deprecated: false
 components:
   securitySchemes:
