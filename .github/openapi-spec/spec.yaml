@@ -1290,11 +1290,13 @@ paths:
           allowReserved: false
           example: 2b10b7a3-67f0-40ea-a367-44263321592a
       requestBody:
-        description: ''
+        description: 'This operation does not expect a body.'
         content:
           application/json:
-            example: ''
-        required: true
+            schema:
+              type: object
+              properties: {  }
+        required: false
       deprecated: false
 components:
   securitySchemes:
@@ -1313,8 +1315,8 @@ components:
       type: oauth2
       flows:
         authorizationCode:
-          authorizationUrl: 'https://example.com/api/oauth/dialog'
-          tokenUrl: 'https://example.com/api/oauth/token'
+          authorizationUrl: 'https://localhost/api/oauth/dialog'
+          tokenUrl: 'https://localhost/api/oauth/token'
           scopes:
             'write:pets': 'modify pets in your account'
             'read:pets': 'read your pets'
