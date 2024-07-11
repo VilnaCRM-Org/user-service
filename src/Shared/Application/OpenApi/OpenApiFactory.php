@@ -34,15 +34,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     public function __invoke(array $context = []): OpenApi
     {
         $openApi = $this->decorated->__invoke($context);
-
-        $components = $openApi->getComponents() ?? new Components();
-        $components = $components->withSecuritySchemes(new ArrayObject([
-            'ApiKeyAuth' => [
-                'type' => 'apiKey',
-                'in' => 'header',
-                'name' => 'X-API-KEY',
-            ],
-        ]));
+        $components = $this->createComponents();
         $openApi = $openApi->withComponents($components);
 
         foreach ($this->endpointFactories as $endpointFactory) {
@@ -54,6 +46,81 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         return $openApi->withServers([
             new Model\Server('https://localhost'),
         ]);
+    }
+
+    private function createComponents(): Components
+    {
+        $securitySchemes = new ArrayObject([
+            'ApiKeyAuth' => $this->createApiKeyAuthScheme(),
+            'BasicAuth' => $this->createBasicAuthScheme(),
+            'BearerAuth' => $this->createBearerAuthScheme(),
+            'OAuth2' => $this->createOAuth2Scheme(),
+        ]);
+
+        return (new Components())->withSecuritySchemes($securitySchemes);
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createApiKeyAuthScheme(): array
+    {
+        return [
+            'type' => 'apiKey',
+            'in' => 'header',
+            'name' => 'X-API-KEY',
+        ];
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createBasicAuthScheme(): array
+    {
+        return [
+            'type' => 'http',
+            'scheme' => 'basic',
+        ];
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createBearerAuthScheme(): array
+    {
+        return [
+            'type' => 'http',
+            'scheme' => 'bearer',
+            'bearerFormat' => 'JWT',
+        ];
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createOAuth2Scheme(): array
+    {
+        return [
+            'type' => 'oauth2',
+            'flows' => [
+                'authorizationCode' => $this->createOAuth2CodeFlow(),
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createOAuth2CodeFlow(): array
+    {
+        return [
+            'authorizationUrl' => 'https://example.com/api/oauth/dialog',
+            'tokenUrl' => 'https://example.com/api/oauth/token',
+            'scopes' => [
+                'write:pets' => 'modify pets in your account',
+                'read:pets' => 'read your pets',
+            ],
+        ];
     }
 
     private function addServerErrorResponseToAllEndpoints(
