@@ -1290,13 +1290,36 @@ paths:
           allowReserved: false
           example: 2b10b7a3-67f0-40ea-a367-44263321592a
       requestBody:
-        description: ''
+        description: 'This operation does not expect a body.'
         content:
           application/json:
-            example: ''
-        required: true
+            schema:
+              type: object
+              properties: {  }
+        required: false
       deprecated: false
-components: []
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+    BasicAuth:
+      type: http
+      scheme: basic
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: 'https://localhost/api/oauth/dialog'
+          tokenUrl: 'https://localhost/api/oauth/token'
+          scopes:
+            'write:pets': 'modify pets in your account'
+            'read:pets': 'read your pets'
 security:
   -
     oauth: []
