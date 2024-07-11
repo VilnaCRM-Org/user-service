@@ -114,8 +114,8 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     private function createOAuth2CodeFlow(): array
     {
         return [
-            'authorizationUrl' => 'https://example.com/api/oauth/dialog',
-            'tokenUrl' => 'https://example.com/api/oauth/token',
+            'authorizationUrl' => 'https://localhost/api/oauth/dialog',
+            'tokenUrl' => 'https://localhost/api/oauth/token',
             'scopes' => [
                 'write:pets' => 'modify pets in your account',
                 'read:pets' => 'read your pets',

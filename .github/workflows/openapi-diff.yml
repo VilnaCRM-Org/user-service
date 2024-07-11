@@ -1,4 +1,4 @@
-name: OpenApi spec backward comparability
+name: OpenApi spec backward compatibility
 
 on:
   pull_request:
