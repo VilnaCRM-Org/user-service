@@ -36,7 +36,6 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $openApi = $this->decorated->__invoke($context);
         $components = $this->createComponents();
         $openApi = $openApi->withComponents($components);
-
         foreach ($this->endpointFactories as $endpointFactory) {
             $endpointFactory->createEndpoint($openApi);
         }
@@ -45,7 +44,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
 
         return $openApi->withServers([
             new Model\Server('https://localhost'),
-        ]);
+        ])->withSecurity([['OAuth2' => []]]);
     }
 
     private function createComponents(): Components
