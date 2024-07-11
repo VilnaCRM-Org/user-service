@@ -35,7 +35,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     {
         $openApi = $this->decorated->__invoke($context);
 
-        $components = new Components();
+        $components = $openApi->getComponents() ?? new Components();
         $components = $components->withSecuritySchemes(new ArrayObject([
             'ApiKeyAuth' => [
                 'type' => 'apiKey',
