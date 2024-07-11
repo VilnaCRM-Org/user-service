@@ -45,6 +45,11 @@ final class OpenApiFactory implements OpenApiFactoryInterface
 
         return $openApi->withServers([
             new Model\Server('https://localhost'),
+        ])->withSecurity([
+            ['ApiKeyAuth' => []],
+            ['BasicAuth' => []],
+            ['BearerAuth' => []],
+            ['OAuth2' => []],
         ]);
     }
 

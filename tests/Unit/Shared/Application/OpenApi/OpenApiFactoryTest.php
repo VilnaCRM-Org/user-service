@@ -125,7 +125,12 @@ final class OpenApiFactoryTest extends UnitTestCase
 
         return $expectedOpenApi
             ->withComponents($components)
-            ->withServers([new Server('https://localhost')]);
+            ->withServers([new Server('https://localhost')])->withSecurity([
+                ['ApiKeyAuth' => []],
+                ['BasicAuth' => []],
+                ['BearerAuth' => []],
+                ['OAuth2' => []],
+            ]);
     }
 
     private function createComponents(): Components

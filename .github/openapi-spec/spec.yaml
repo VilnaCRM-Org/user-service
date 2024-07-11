@@ -1322,6 +1322,12 @@ components:
             'read:pets': 'read your pets'
 security:
   -
-    oauth: []
+    ApiKeyAuth: []
+  -
+    BasicAuth: []
+  -
+    BearerAuth: []
+  -
+    OAuth2: []
 tags: []
 webhooks: {  }
