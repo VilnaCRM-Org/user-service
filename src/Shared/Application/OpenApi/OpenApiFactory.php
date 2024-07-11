@@ -6,12 +6,14 @@ namespace App\Shared\Application\OpenApi;
 
 use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
 use ApiPlatform\OpenApi\Model;
+use ApiPlatform\OpenApi\Model\Components;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory;
 use App\Shared\Application\OpenApi\Factory\Response\InternalErrorFactory;
+use ArrayObject;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class OpenApiFactory implements OpenApiFactoryInterface
@@ -32,7 +34,8 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     public function __invoke(array $context = []): OpenApi
     {
         $openApi = $this->decorated->__invoke($context);
-        $openApi = $openApi->withComponents(new Model\Components());
+        $components = $this->createComponents();
+        $openApi = $openApi->withComponents($components);
 
         foreach ($this->endpointFactories as $endpointFactory) {
             $endpointFactory->createEndpoint($openApi);
@@ -42,14 +45,93 @@ final class OpenApiFactory implements OpenApiFactoryInterface
 
         return $openApi->withServers([
             new Model\Server('https://localhost'),
+        ])->withSecurity([
+            ['ApiKeyAuth' => []],
+            ['BasicAuth' => []],
+            ['BearerAuth' => []],
+            ['OAuth2' => []],
         ]);
+    }
+
+    private function createComponents(): Components
+    {
+        $securitySchemes = new ArrayObject([
+            'ApiKeyAuth' => $this->createApiKeyAuthScheme(),
+            'BasicAuth' => $this->createBasicAuthScheme(),
+            'BearerAuth' => $this->createBearerAuthScheme(),
+            'OAuth2' => $this->createOAuth2Scheme(),
+        ]);
+
+        return (new Components())->withSecuritySchemes($securitySchemes);
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createApiKeyAuthScheme(): array
+    {
+        return [
+            'type' => 'apiKey',
+            'in' => 'header',
+            'name' => 'X-API-KEY',
+        ];
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createBasicAuthScheme(): array
+    {
+        return [
+            'type' => 'http',
+            'scheme' => 'basic',
+        ];
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createBearerAuthScheme(): array
+    {
+        return [
+            'type' => 'http',
+            'scheme' => 'bearer',
+            'bearerFormat' => 'JWT',
+        ];
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createOAuth2Scheme(): array
+    {
+        return [
+            'type' => 'oauth2',
+            'flows' => [
+                'authorizationCode' => $this->createOAuth2CodeFlow(),
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createOAuth2CodeFlow(): array
+    {
+        return [
+            'authorizationUrl' => 'https://localhost/api/oauth/dialog',
+            'tokenUrl' => 'https://localhost/api/oauth/token',
+            'scopes' => [
+                'write:pets' => 'modify pets in your account',
+                'read:pets' => 'read your pets',
+            ],
+        ];
     }
 
     private function addServerErrorResponseToAllEndpoints(
         OpenApi $openApi
     ): void {
         $serverErrorResponse = $this->serverErrorResponseFactory->getResponse();
-
         foreach (array_keys($openApi->getPaths()->getPaths()) as $path) {
             $this->addServerErrorResponseToPath(
                 $openApi,

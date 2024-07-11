@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\OpenApi;
 
 use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
+use ApiPlatform\OpenApi\Model\Components;
 use ApiPlatform\OpenApi\Model\Info;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\PathItem;
@@ -16,6 +17,7 @@ use App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory;
 use App\Shared\Application\OpenApi\Factory\Response\InternalErrorFactory;
 use App\Shared\Application\OpenApi\OpenApiFactory;
 use App\Tests\Unit\UnitTestCase;
+use ArrayObject;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class OpenApiFactoryTest extends UnitTestCase
@@ -40,17 +42,8 @@ final class OpenApiFactoryTest extends UnitTestCase
 
     public function testInvoke(): void
     {
-        $expectedOpenApi = new OpenApi(
-            $this->createMock(Info::class),
-            [],
-            $this->createMock(Paths::class)
-        );
-        $expectedOpenApi =
-            $expectedOpenApi->withServers([new Server('https://localhost')]);
-
-        $this->testInvokeSetExpectations(
-            $expectedOpenApi
-        );
+        $expectedOpenApi = $this->createExpectedOpenApi();
+        $this->testInvokeSetExpectations($expectedOpenApi);
 
         $openApiFactory = new OpenApiFactory(
             $this->decoratedFactory,
@@ -58,8 +51,7 @@ final class OpenApiFactoryTest extends UnitTestCase
             $this->serverErrorResponseFactory
         );
 
-        $result = $openApiFactory->__invoke();
-
+        $result = $openApiFactory->__invoke([]);
         $this->assertEquals($expectedOpenApi, $result);
     }
 
@@ -120,6 +112,96 @@ final class OpenApiFactoryTest extends UnitTestCase
             ->invokeArgs($openApiFactory, [$openApi]);
 
         $this->testAddErrorResponseMakeAssertions($paths, $serverErrorResponse);
+    }
+
+    private function createExpectedOpenApi(): OpenApi
+    {
+        $components = $this->createComponents();
+        $expectedOpenApi = new OpenApi(
+            $this->createMock(Info::class),
+            [],
+            $this->createMock(Paths::class)
+        );
+
+        return $expectedOpenApi
+            ->withComponents($components)
+            ->withServers([new Server('https://localhost')])->withSecurity([
+                ['ApiKeyAuth' => []],
+                ['BasicAuth' => []],
+                ['BearerAuth' => []],
+                ['OAuth2' => []],
+            ]);
+    }
+
+    private function createComponents(): Components
+    {
+        return (new Components())->
+        withSecuritySchemes($this->createSecuritySchemes());
+    }
+
+    private function createSecuritySchemes(): ArrayObject
+    {
+        return new ArrayObject([
+            'ApiKeyAuth' => $this->createApiKeyAuthScheme(),
+            'BasicAuth' => $this->createBasicAuthScheme(),
+            'BearerAuth' => $this->createBearerAuthScheme(),
+            'OAuth2' => $this->createOAuth2Scheme(),
+        ]);
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createApiKeyAuthScheme(): array
+    {
+        return [
+            'type' => 'apiKey',
+            'in' => 'header',
+            'name' => 'X-API-KEY',
+        ];
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createBasicAuthScheme(): array
+    {
+        return [
+            'type' => 'http',
+            'scheme' => 'basic',
+        ];
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createBearerAuthScheme(): array
+    {
+        return [
+            'type' => 'http',
+            'scheme' => 'bearer',
+            'bearerFormat' => 'JWT',
+        ];
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createOAuth2Scheme(): array
+    {
+        return [
+            'type' => 'oauth2',
+            'flows' => [
+                'authorizationCode' => [
+                    'authorizationUrl' => 'https://localhost/api/oauth/dialog',
+                    'tokenUrl' => 'https://localhost/api/oauth/token',
+                    'scopes' => [
+                        'write:pets' => 'modify pets in your account',
+                        'read:pets' => 'read your pets',
+                    ],
+                ],
+            ],
+        ];
     }
 
     private function getReflectionMethod(string $method): \ReflectionMethod
