@@ -1,4 +1,4 @@
-name: E2E testing-mac
+name: E2E testing
 
 on:
   pull_request:
@@ -12,6 +12,12 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+
+      - name: Install Docker
+        run: |
+          brew install --cask docker
+          open /Applications/Docker.app
+          while ! docker system info > /dev/null 2>&1; do sleep 1; done
 
       - name: Start application
         run: make start
