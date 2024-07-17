@@ -60,10 +60,9 @@ if [ "$1" = 'php-fpm' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 			bin/console doctrine:migrations:migrate --no-interaction
 		fi
 	fi
-  if touch var/test_acl_support && setfacl -m u:www-data:rwx var/test_acl_support 2>/dev/null; then
-        setfacl -R -m u:www-data:rwX -m u:"$(whoami)":rwX var
-        setfacl -dR -m u:www-data:rwX -m u:"$(whoami)":rwX var
-        rm -f var/test_acl_support
+  if [ "$APP_ENV" = 'prod' ]; then
+    setfacl -R -m u:www-data:rwX -m u:"$(whoami)":rwX var
+    setfacl -dR -m u:www-data:rwX -m u:"$(whoami)":rwX var
 fi
 
 exec docker-php-entrypoint "$@"
