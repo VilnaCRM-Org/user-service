@@ -60,7 +60,19 @@ if [ "$1" = 'php-fpm' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 			bin/console doctrine:migrations:migrate --no-interaction
 		fi
 	fi
-  chmod -R 755 var
+  if command -v setfacl >/dev/null 2>&1; then
+      # Check if ACLs are supported by trying to apply an ACL
+      if setfacl -m u::rwx var 2>/dev/null; then
+          echo "ACLs are supported. Setting ACLs..."
+          setfacl -R -m u:www-data:rwX -m u:"$(whoami)":rwX var
+      else
+          echo "ACLs are not supported. Falling back to chmod..."
+          chmod 755 -R var
+      fi
+  else
+      echo "setfacl command not found. Using chmod..."
+      chmod 755 -R var
+  fi
 fi
 
 exec docker-php-entrypoint "$@"
