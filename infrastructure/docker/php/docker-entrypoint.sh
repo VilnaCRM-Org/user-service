@@ -67,11 +67,11 @@ if [ "$1" = 'php-fpm' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
           setfacl -R -m u:www-data:rwX -m u:"$(whoami)":rwX var
       else
           echo "ACLs are not supported. Falling back to chmod..."
-          chmod 755 -R var
+          chmod -R 755 var
       fi
   else
       echo "setfacl command not found. Using chmod..."
-      chmod 755 -R var
+      chmod -R 755 var
   fi
 fi
 
