@@ -1,3 +1,12 @@
+## [1.4.2](https://github.com/VilnaCRM-Org/user-service/compare/v1.4.1...v1.4.2) (2024-07-20)
+
+
+### Bug Fixes
+
+* **#36:** move fixtures to tests directory ([#37](https://github.com/VilnaCRM-Org/user-service/issues/37)) ([5f16944](https://github.com/VilnaCRM-Org/user-service/commit/5f16944ebee6a25609ec527988be591b1261a4fe)), closes [#36](https://github.com/VilnaCRM-Org/user-service/issues/36) [#34](https://github.com/VilnaCRM-Org/user-service/issues/34) [#36](https://github.com/VilnaCRM-Org/user-service/issues/36)
+
+
+
 ## [1.4.1](https://github.com/VilnaCRM-Org/user-service/compare/v1.4.0...v1.4.1) (2024-07-17)
 
 
