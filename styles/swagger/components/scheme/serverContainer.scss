@@ -1,0 +1,31 @@
+@import "../../variables/variables";
+@import "../../theme/theme";
+
+%serverContainer {
+  .schemes-server-container {
+    label {
+      @include uiLabel;
+      gap: 0.938rem;
+      .schemes-title {
+        @include bodyText16($grey250);
+        @media screen and (max-width: $lg) {
+          @include bodyText18($grey250);
+        }
+      }
+      #schemes {
+        @include uiSelect(9.813rem);
+        @media screen and (max-width: $lg) {
+          padding: 1rem 0 1rem 1.25rem;
+          background-position: right 1.25rem center;
+          width: 11.25rem;
+          line-height: 1.25rem;
+        }
+      }
+      @media screen and (max-width: $sm) {
+        gap: 0.25rem;
+        flex-direction: column;
+        align-items: normal;
+      }
+    }
+  }
+}

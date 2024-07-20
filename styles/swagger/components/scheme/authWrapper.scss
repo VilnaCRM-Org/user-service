@@ -1,0 +1,34 @@
+@import "../../variables/variables";
+@import "../../theme/theme";
+
+%authWrapper {
+  .auth-wrapper {
+    .authorize {
+      @include uiButton($primary, none);
+      @media screen and (max-width: $lg) {
+        padding: 1.25rem 2.75rem;
+      }
+      @media screen and (max-width: $sm) {
+        padding: 1rem 1.5rem;
+        width: 157px;
+        height: 54px;
+        text-align: center;
+        justify-content: center;
+        align-items: center;
+      }
+      span {
+        @include medium15($white);
+        padding: 0;
+        @media screen and (max-width: $lg) {
+          @include buttonText;
+        }
+        @media screen and (max-width: $sm) {
+          @include medium15($white);
+        }
+      }
+    }
+    svg {
+      display: none;
+    }
+  }
+}
