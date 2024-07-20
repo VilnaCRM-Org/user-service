@@ -55,7 +55,7 @@
                 "conditions": []
             },
             {
-                "action": "./vendor/bin/behat",
+                "action": "APP_ENV=test ./vendor/bin/behat",
                 "options": [],
                 "conditions": []
             }
