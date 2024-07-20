@@ -30,32 +30,32 @@
                 "conditions": []
             },
             {
-                "action": "make phpcsfixer",
+                "action": "PHP_CS_FIXER_IGNORE_ENV=1 ./vendor/bin/php-cs-fixer fix $(git ls-files -om --exclude-standard) --allow-risky=yes --config .php-cs-fixer.dist.php",
                 "options": [],
                 "conditions": []
             },
             {
-                "action": "make psalm",
+                "action": "./vendor/bin/psalm",
                 "options": [],
                 "conditions": []
             },
             {
-                "action": "make psalm-security",
+                "action": "./vendor/bin/psalm --taint-analysis",
                 "options": [],
                 "conditions": []
             },
             {
-                "action": "make phpinsights",
+                "action": "./vendor/bin/phpinsights --no-interaction && ./vendor/bin/phpinsights analyse tests --no-interaction",
                 "options": [],
                 "conditions": []
             },
             {
-                "action": "make phpunit",
+                "action": "./vendor/bin/phpunit --testsuite=Unit && ./vendor/bin/phpunit --testsuite=Integration",
                 "options": [],
                 "conditions": []
             },
             {
-                "action": "make behat",
+                "action": "./vendor/bin/behat",
                 "options": [],
                 "conditions": []
             }
