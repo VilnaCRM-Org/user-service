@@ -1,3 +1,12 @@
+## [1.4.3](https://github.com/VilnaCRM-Org/user-service/compare/v1.4.2...v1.4.3) (2024-07-23)
+
+
+### Bug Fixes
+
+* **#32:** fix starting app on macOS ([#33](https://github.com/VilnaCRM-Org/user-service/issues/33)) ([a0e6af7](https://github.com/VilnaCRM-Org/user-service/commit/a0e6af75194177639b81a37755c1827586beb378)), closes [#32](https://github.com/VilnaCRM-Org/user-service/issues/32) [#32](https://github.com/VilnaCRM-Org/user-service/issues/32) [#32](https://github.com/VilnaCRM-Org/user-service/issues/32) [#32](https://github.com/VilnaCRM-Org/user-service/issues/32) [#32](https://github.com/VilnaCRM-Org/user-service/issues/32) [#32](https://github.com/VilnaCRM-Org/user-service/issues/32) [#32](https://github.com/VilnaCRM-Org/user-service/issues/32) [#32](https://github.com/VilnaCRM-Org/user-service/issues/32) [#32](https://github.com/VilnaCRM-Org/user-service/issues/32) [#32](https://github.com/VilnaCRM-Org/user-service/issues/32) [#34](https://github.com/VilnaCRM-Org/user-service/issues/34) [#34](https://github.com/VilnaCRM-Org/user-service/issues/34) [#36](https://github.com/VilnaCRM-Org/user-service/issues/36) [#36](https://github.com/VilnaCRM-Org/user-service/issues/36)
+
+
+
 ## [1.4.2](https://github.com/VilnaCRM-Org/user-service/compare/v1.4.1...v1.4.2) (2024-07-20)
 
 
