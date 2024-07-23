@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\DataFixtures;
 
-use App\DataFixtures\AppFixtures;
 use Doctrine\Persistence\ObjectManager;
 use PHPUnit\Framework\TestCase;
 

@@ -1,51 +1,39 @@
-<!--- BEGIN HEADER -->
-# Changelog
+## [1.4.2](https://github.com/VilnaCRM-Org/user-service/compare/v1.4.1...v1.4.2) (2024-07-20)
 
-All notable changes to this project will be documented in this file.
-<!--- END HEADER -->
 
-## [1.1.0](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.0.0...v1.1.0) (2023-02-10)
+### Bug Fixes
+
+* **#36:** move fixtures to tests directory ([#37](https://github.com/VilnaCRM-Org/user-service/issues/37)) ([5f16944](https://github.com/VilnaCRM-Org/user-service/commit/5f16944ebee6a25609ec527988be591b1261a4fe)), closes [#36](https://github.com/VilnaCRM-Org/user-service/issues/36) [#34](https://github.com/VilnaCRM-Org/user-service/issues/34) [#36](https://github.com/VilnaCRM-Org/user-service/issues/36)
+
+
+
+## [1.4.1](https://github.com/VilnaCRM-Org/user-service/compare/v1.4.0...v1.4.1) (2024-07-17)
+
+
+### Bug Fixes
+
+* **#34:** add changelog in action ([#35](https://github.com/VilnaCRM-Org/user-service/issues/35)) ([596d702](https://github.com/VilnaCRM-Org/user-service/commit/596d702b225cf522dc30134b82a00dabe1b53afa)), closes [#34](https://github.com/VilnaCRM-Org/user-service/issues/34) [#34](https://github.com/VilnaCRM-Org/user-service/issues/34) [#34](https://github.com/VilnaCRM-Org/user-service/issues/34)
+
+
+
+# [1.4.0](https://github.com/VilnaCRM-Org/user-service/compare/3cddae6da7322dca28cddc492ba3ff20dff507ae...v1.4.0) (2024-07-12)
+
+
+### Bug Fixes
+
+* **#14:** fix README.md ([#15](https://github.com/VilnaCRM-Org/user-service/issues/15)) ([2b4e36f](https://github.com/VilnaCRM-Org/user-service/commit/2b4e36fc516e4db20e6cc8e52874f670060d1f05))
+* **#16:** fix CI issues ([#17](https://github.com/VilnaCRM-Org/user-service/issues/17)) ([6d06048](https://github.com/VilnaCRM-Org/user-service/commit/6d060483ab1d8166b63bc271c4b961a52e6c8581))
+* **#18:** fix badges ([#19](https://github.com/VilnaCRM-Org/user-service/issues/19)) ([bd2f580](https://github.com/VilnaCRM-Org/user-service/commit/bd2f580e6c4b404cfcd63158c82a8d8fa059fb7f))
+* **#20:** add github action for codecov ([#21](https://github.com/VilnaCRM-Org/user-service/issues/21)) ([5cc16b9](https://github.com/VilnaCRM-Org/user-service/commit/5cc16b98e7e034c0b8f813141829bd3c8be3b8b3)), closes [#20](https://github.com/VilnaCRM-Org/user-service/issues/20)
+* **#24:** fix generation OpenApi docs ([#25](https://github.com/VilnaCRM-Org/user-service/issues/25)) ([d556ce2](https://github.com/VilnaCRM-Org/user-service/commit/d556ce22475018bdb5853397fbd1aeff3f17aa32))
+* **#26:** release workflow ([#27](https://github.com/VilnaCRM-Org/user-service/issues/27)) ([418727c](https://github.com/VilnaCRM-Org/user-service/commit/418727cc9ba19986a8a8360c5fcaaef431ff330b)), closes [#26](https://github.com/VilnaCRM-Org/user-service/issues/26) [#26](https://github.com/VilnaCRM-Org/user-service/issues/26) [#26](https://github.com/VilnaCRM-Org/user-service/issues/26)
+* **#28:** delete fix-perm command ([#29](https://github.com/VilnaCRM-Org/user-service/issues/29)) ([245da7d](https://github.com/VilnaCRM-Org/user-service/commit/245da7d20ef486cfd686a990bf1a5e72a12c3ad8)), closes [#28](https://github.com/VilnaCRM-Org/user-service/issues/28) [#28](https://github.com/VilnaCRM-Org/user-service/issues/28)
+* **#30:** fix security in spec yaml ([#31](https://github.com/VilnaCRM-Org/user-service/issues/31)) ([161a0e3](https://github.com/VilnaCRM-Org/user-service/commit/161a0e346d9fb4ecc4795d65e5c85856ec63fbaa))
+
 
 ### Features
 
-
-##### #1
-
-* Remove composer validate from the CI ([4ebfe9](https://github.com/VilnaCRM-Org/php-service-template/commit/4ebfe988960da339ba6c147ce3a82fdd0ce10faf))
+* **#1:** implement user registration ([#1](https://github.com/VilnaCRM-Org/user-service/issues/1)) ([3cddae6](https://github.com/VilnaCRM-Org/user-service/commit/3cddae6da7322dca28cddc492ba3ff20dff507ae)), closes [#5](https://github.com/VilnaCRM-Org/user-service/issues/5) [#5](https://github.com/VilnaCRM-Org/user-service/issues/5) [#5](https://github.com/VilnaCRM-Org/user-service/issues/5) [#5](https://github.com/VilnaCRM-Org/user-service/issues/5) [#5](https://github.com/VilnaCRM-Org/user-service/issues/5) [#5](https://github.com/VilnaCRM-Org/user-service/issues/5) [#5](https://github.com/VilnaCRM-Org/user-service/issues/5) [#5](https://github.com/VilnaCRM-Org/user-service/issues/5) [#5](https://github.com/VilnaCRM-Org/user-service/issues/5) [#5](https://github.com/VilnaCRM-Org/user-service/issues/5)
 
 
----
-
-## [1.0.0](https://github.com/VilnaCRM-Org/php-service-template/compare/466f156a04dcca16cbc6bdd3f6cd68270bd0c54d...v1.0.0) (2023-02-10)
-
-### Features
-
-
-##### #1
-
-* Add behat to the CI ([d11cf0](https://github.com/VilnaCRM-Org/php-service-template/commit/d11cf078f2cd40de744e89d1aeb892e8a184f266))
-* Add CHANGELOG.md ([7084b2](https://github.com/VilnaCRM-Org/php-service-template/commit/7084b275758fcdfe780a2ade56cbf89041385f14))
-* Add CI config ([3802a0](https://github.com/VilnaCRM-Org/php-service-template/commit/3802a0ba7bca0eb25f8d0e4ba57baceca7257891))
-* Add codecov to CI ([a51f32](https://github.com/VilnaCRM-Org/php-service-template/commit/a51f3242f5b44730e9acce0cda728eabc5663ee5), [04d772](https://github.com/VilnaCRM-Org/php-service-template/commit/04d772865e7301b2f5be8d6c7bbf880d55c7cc7a), [0f4865](https://github.com/VilnaCRM-Org/php-service-template/commit/0f48659ce23d1b5eb984eeacf1b34935b1fc935d))
-* Add convenient cli command ([9958a5](https://github.com/VilnaCRM-Org/php-service-template/commit/9958a52ab8742decee9187895d85b127562a62dd))
-* Add doctrine fixtures bundle ([5ce7ab](https://github.com/VilnaCRM-Org/php-service-template/commit/5ce7ab6f9b081bb7f036ab7416ca2ec6b06c959e))
-* Add new commands to the make cli ([126557](https://github.com/VilnaCRM-Org/php-service-template/commit/126557e6fee3a66ff191216430c9357fa98179c9))
-* Add phpinsights ([1a489a](https://github.com/VilnaCRM-Org/php-service-template/commit/1a489a8c643093bd9a47d65a9d5126b4970e4372), [69f9d3](https://github.com/VilnaCRM-Org/php-service-template/commit/69f9d3082b3a9f7d440e7197b644057291e9b6a7))
-* Add phpunit to the CI ([2ab275](https://github.com/VilnaCRM-Org/php-service-template/commit/2ab275f010560fc67fba0857f68a7acb27e6bff3))
-* Add psalm to the CI ([b09084](https://github.com/VilnaCRM-Org/php-service-template/commit/b09084c1580bf3f0c0447c0e7e23668ddf106fec))
-* Add README.md ([7df47c](https://github.com/VilnaCRM-Org/php-service-template/commit/7df47c14cacf34e175bea5e49158076d976a127d))
-* Add SECURITY.md ([adf9ba](https://github.com/VilnaCRM-Org/php-service-template/commit/adf9ba96a84972f19e6b1f1cd36084d74a28c47a))
-* Add symfony checks to the CI ([0bcb78](https://github.com/VilnaCRM-Org/php-service-template/commit/0bcb7814c8f3faf2b67fc32eae4d5fd9a1d98e22))
-* Change docker ([db7e0c](https://github.com/VilnaCRM-Org/php-service-template/commit/db7e0cf8943c624a3352567229d4ff522ba111db))
-* Configure behat ([1df130](https://github.com/VilnaCRM-Org/php-service-template/commit/1df1308efd5bbba50beae07a7896789f245a7a70))
-* Configure phpcs ([82da35](https://github.com/VilnaCRM-Org/php-service-template/commit/82da35cb7844950e792628a0a68db57849f925b8))
-* Fix phpunit to the CI ([e9b6af](https://github.com/VilnaCRM-Org/php-service-template/commit/e9b6afda3a073c0a534addd04fcc5d83ec4dd55d))
-* Fix psalm to the CI ([5273e7](https://github.com/VilnaCRM-Org/php-service-template/commit/5273e7690f228a11def5c72b9059b0817a870fe0))
-* Fix symfony checks to the CI ([2665f2](https://github.com/VilnaCRM-Org/php-service-template/commit/2665f29365465f32abd56631a2a47ab369e1861f), [c847e4](https://github.com/VilnaCRM-Org/php-service-template/commit/c847e4346d074b750043926a39f11ed3b2bbf8f5), [d8a3ab](https://github.com/VilnaCRM-Org/php-service-template/commit/d8a3abfe0400a548fc8837279c92886889ead36a), [49f06a](https://github.com/VilnaCRM-Org/php-service-template/commit/49f06a69a23c02a30569da7a8d750f9f494dcf6a))
-* Improve phpcsfixer ([d889b3](https://github.com/VilnaCRM-Org/php-service-template/commit/d889b30a3c36782d6bed8c8e570ef2d7c4634516))
-* Remove composer validate from the CI ([4ebfe9](https://github.com/VilnaCRM-Org/php-service-template/commit/4ebfe988960da339ba6c147ce3a82fdd0ce10faf))
-* Remove psalm strict types ([c14233](https://github.com/VilnaCRM-Org/php-service-template/commit/c1423326d516bbc8ffe56565a83c2b22a3a1b0dd))
-
-
----
 
