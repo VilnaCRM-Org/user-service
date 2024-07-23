@@ -11,7 +11,7 @@ import 'swagger-ui-react/swagger-ui.css';
 
 import '../styles/global.css';
 
-import '../styles/swagger/styles.scss';
+import 'src/features/swagger/components/ApiDocumentation/styles.scss';
 
 import i18n from '../i18n';
 import client from '../src/features/landing/api/graphql/apollo';

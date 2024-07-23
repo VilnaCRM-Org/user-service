@@ -1,0 +1,31 @@
+@import "../SwaggerVariables/variables";
+@import "../SwaggerTheme/theme";
+
+@import "ServerContainer/serverContainer";
+@import "AuthWrapper/authWrapper";
+
+%scheme {
+  .scheme-container {
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    margin-bottom: 1rem;
+    @media screen and (max-width: $lg) {
+      margin-bottom: 1.438rem;
+    }
+    @media screen and (max-width: $sm) {
+      margin-bottom: 0.875rem;
+    }
+    .schemes {
+      @media screen and (max-width: $lg) {
+        align-items: center;
+      }
+      @media screen and (max-width: $sm) {
+        align-items: end;
+        flex-wrap: nowrap;
+      }
+      @extend %serverContainer;
+      @extend %authWrapper;
+    }
+  }
+}

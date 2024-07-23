@@ -1,0 +1,15 @@
+@import "SwaggerVariables/variables";
+@import "SwaggerTheme/theme";
+
+@import "Information/information";
+@import "Schemes/schemes";
+@import "OperationBlock/operationBlock";
+
+.swagger-ui {
+  font-family: $golos;
+  @extend %scheme;
+  .wrapper {
+    padding: 0;
+    @extend %operationBlock;
+  }
+}

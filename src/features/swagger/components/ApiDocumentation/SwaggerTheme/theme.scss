@@ -1,4 +1,4 @@
-@import "../variables/variables";
+@import "../SwaggerVariables/variables";
 
 @mixin uiLabel {
   display: flex;
@@ -12,7 +12,7 @@
   padding: 0.5rem 0 0.5rem 0.75rem;
   border: 1px solid $brandGray;
   background-color: $white;
-  background-image: url('../../../public/selectArrow.svg');
+  background-image: url('../../../../../../public/selectArrow.svg');
   border-radius: 0.5rem;
   font-size: 1rem;
   font-weight: 600;
@@ -52,4 +52,8 @@
 
 @mixin buttonText($color: $white) {
   @include typography($color, 1.125rem, 600, normal);
+}
+
+@mixin h5Text($color: $darkPrimary) {
+  @include typography($color, 1.75rem, 700, normal);
 }
