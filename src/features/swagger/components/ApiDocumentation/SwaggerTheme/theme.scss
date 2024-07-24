@@ -1,5 +1,18 @@
 @import "../SwaggerVariables/variables";
 
+@mixin uiIconButton($path, $width: 1.5rem, $height: 1.5rem) {
+  line-height: 0;
+  svg {
+    width: $width;
+    height: $height;
+    fill: transparent;
+    background-image: url($path);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: auto;
+  }
+}
+
 @mixin uiLabel {
   display: flex;
   flex-direction: row;
@@ -36,6 +49,10 @@
   line-height: $lineHeight;
   font-family: $fontFamily;
   letter-spacing: $letterSpacing;
+}
+
+@mixin medium12($color: $grey250) {
+  @include typography($color, 0.75rem, 500, 1.125rem, normal, $inter);
 }
 
 @mixin medium15($color: $grey250) {

@@ -1,0 +1,131 @@
+@import "../../SwaggerVariables/variables";
+@import "../../SwaggerTheme/theme";
+
+%operationContent {
+  .no-margin {
+    .operation-tag-content {
+      padding: 0 1.25rem;
+      .opblock {
+        margin-bottom: 0.5rem;
+        border-radius: 0.5rem;
+
+        .opblock-summary {
+          padding: 0.313rem 0.875rem 0.313rem 0.313rem;
+
+          .opblock-summary-control {
+            .opblock-summary-method {
+              background-color: $white;
+              border-radius: 0.5rem;
+              padding: 0.5rem 1.25rem 0.5rem 1.25rem;
+            }
+            .opblock-summary-path-description-wrapper {
+              padding-left: 1rem;
+              gap: 1rem;
+              .opblock-summary-path {
+                a {
+                  span {
+                    @include buttonText($darkPrimary);
+                    text-decoration: none;
+                  }
+                }
+              }
+              .opblock-summary-description {
+                @include medium15($grey200);
+              }
+            }
+          }
+          .opblock-control-arrow {
+            @include uiIconButton('../../../assets/svg/swagger/arrow-down-dark.svg');
+          }
+
+          .authorization__btn {
+            @include uiIconButton('../../../assets/svg/swagger/lock.svg');
+            order: 4;
+            padding-left: 0.625rem;
+            svg {
+              opacity: 1;
+            }
+          }
+
+          .view-line-link {
+            display: none;
+          }
+
+          &.opblock-summary-post {
+            border-color: #38B386;
+          }
+          &.opblock-summary-put {
+            border-color: #FFC01E;
+          }
+          &.opblock-summary-get {
+            border-color: #1EAEFF;
+          }
+          &.opblock-summary-delete {
+            border-color: #DC3939;
+          }
+        }
+
+        &.opblock-post {
+          border-color: #38B386;
+          background-color: #38B3861A;
+          .opblock-summary-control {
+            .opblock-summary-method {
+              @include typography(#38B386, 1rem, 600, 1.625rem);
+            }
+          }
+        }
+        &.opblock-put {
+          border-color: #FFC01E;
+          background-color: #FFC01E1A;
+          .opblock-summary-control {
+            .opblock-summary-method {
+              @include typography(#FFC01E, 1rem, 600, 1.625rem);
+            }
+          }
+        }
+        &.opblock-get {
+          border-color: #1EAEFF;
+          background-color: #1EAEFF1A;
+          .opblock-summary-control {
+            .opblock-summary-method {
+              @include typography(#1EAEFF, 1rem, 600, 1.625rem);
+            }
+          }
+        }
+        &.opblock-delete {
+          border-color: #DC3939;
+          background-color: #DC39391A;
+          .opblock-summary-control {
+            .opblock-summary-method {
+              @include typography(#DC3939, 1rem, 600, 1.625rem);
+            }
+          }
+        }
+        &.opblock-deprecated {
+          border-color: #E1E7EA;
+          background-color: #F4F5F6;
+          opacity: 1;
+          .opblock-summary-control {
+            .opblock-summary-method {
+              @include typography(#969B9D, 1rem, 600, 1.625rem);
+            }
+            .opblock-summary-path__deprecated {
+              text-decoration: none;
+              a {
+                span {
+                  @include buttonText($grey300);
+                  text-decoration: none;
+                }
+              }
+            }
+            .opblock-summary-path-description-wrapper {
+              .opblock-summary-description {
+                @include medium15($grey400);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

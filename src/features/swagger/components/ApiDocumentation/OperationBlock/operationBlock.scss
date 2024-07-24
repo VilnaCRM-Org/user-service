@@ -1,37 +1,22 @@
 @import "../SwaggerVariables/variables";
 @import "../SwaggerTheme/theme";
 
+@import "OperationHeader/operationHeader";
+@import "OperationContent/operationContent";
+
 %operationBlock {
   .opblock-tag-section {
-    .opblock-tag {
-      border-bottom: none;
-      border-radius: 0.5rem;
-      background-color: $backgroundGrey200;
-      padding: 11px 16px 11px 24px;
-      a:first-child {
-        @include h5Text;
-        line-height: 2.06rem;
-      }
-      small {
-        padding-left: 1rem;
-        .markdown {
-          p {
-            @include bodyText16($grey250);
-          }
-        }
-      }
-      button {
-        svg {
-          background-image: url('../../../assets/svg/swagger/arrow-down.svg');
-        }
-      }
-      .info__externaldocs {
-        display: none;
-      }
-    }
+    @extend %operationHeader;
+    @extend %operationContent;
     &.is-open {
       h3:first-child {
         background-color: transparent;
+        @media screen and (max-width: $sm) {
+          border: 1px solid transparent;
+        }
+        button {
+          @include uiIconButton('../../../assets/svg/swagger/arrow-top.svg');
+        }
       }
     }
   }

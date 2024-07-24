@@ -1,0 +1,62 @@
+@import "../../SwaggerVariables/variables";
+@import "../../SwaggerTheme/theme";
+
+%operationHeader {
+  .opblock-tag {
+    margin-bottom: 0.438rem;
+    border-bottom: none;
+    border-radius: 0.5rem;
+    background-color: $backgroundGrey200;
+    padding: 0.75rem 1rem 0.75rem 1.5rem;
+    @media screen and (max-width: $lg) {
+      margin-bottom: 0.75rem;
+    }
+    @media screen and (max-width: $sm) {
+      display: grid;
+      grid-template-columns: auto auto;
+      grid-template-rows: auto auto;
+      row-gap: 0.25rem;
+      border: 1px solid $brandGray;
+      padding: 0.688rem 1rem;
+      margin-bottom: 0.25rem;
+    }
+    a:first-child {
+      @include h5Text;
+      line-height: 2.06rem;
+      @media screen and (max-width: $sm) {
+        grid-column: 1;
+        @include buttonText($darkPrimary);
+      }
+    }
+    small {
+      @media screen and (max-width: $sm) {
+        padding: 0;
+        grid-column: 1;
+      }
+      padding-left: 1rem;
+      .markdown {
+        p {
+          margin: 0;
+          @include bodyText16($grey250);
+          @media screen and (max-width: $lg) {
+            @include bodyText18($grey250);
+          }
+          @media screen and (max-width: $sm) {
+            @include medium12;
+          }
+        }
+      }
+    }
+    button {
+      @include uiIconButton('../../../assets/svg/swagger/arrow-down.svg');
+      @media screen and (max-width: $sm) {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        justify-self: end;
+      }
+    }
+    .info__externaldocs {
+      display: none;
+    }
+  }
+}
