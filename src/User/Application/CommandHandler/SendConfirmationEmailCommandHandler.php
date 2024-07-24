@@ -7,6 +7,7 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\SendConfirmationEmailCommand;
+use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 final readonly class SendConfirmationEmailCommandHandler implements
@@ -14,7 +15,8 @@ final readonly class SendConfirmationEmailCommandHandler implements
 {
     public function __construct(
         private EventBusInterface $eventBus,
-        private UuidFactory $uuidFactory
+        private UuidFactory $uuidFactory,
+        private ConfirmationEmailSendEventFactoryInterface $eventFactory
     ) {
     }
 
@@ -22,7 +24,10 @@ final readonly class SendConfirmationEmailCommandHandler implements
     {
         $confirmationEmail = $command->confirmationEmail;
 
-        $confirmationEmail->send((string) $this->uuidFactory->create());
+        $confirmationEmail->send(
+            (string) $this->uuidFactory->create(),
+            $this->eventFactory
+        );
 
         $this->eventBus->publish(...$confirmationEmail->pullDomainEvents());
     }

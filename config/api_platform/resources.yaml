@@ -2,9 +2,11 @@ resources:
   App\User\Domain\Entity\User:
     exceptionToStatus:
       'App\User\Domain\Exception\UserTimedOutException': 429
+      'App\User\Domain\Exception\UserIsNotConfirmedException': 403
       'App\User\Domain\Exception\UserNotFoundException': 404
       'App\User\Domain\Exception\InvalidPasswordException': 400
       'App\User\Domain\Exception\TokenNotFoundException': 404
+      'App\User\Domain\Exception\UserByEmailNotFoundException': 404
       'App\User\Domain\Exception\DuplicateEmailException': 409
     normalizationContext:
       groups: [ 'output' ]
@@ -27,6 +29,11 @@ resources:
         input: 'App\User\Application\DTO\ConfirmUserDto'
         processor: 'App\User\Application\Processor\ConfirmUserProcessor'
         uriTemplate: 'users/confirm'
+      request_password_reset:
+        class: 'ApiPlatform\Metadata\Post'
+        input: 'App\User\Application\DTO\RequestPasswordResetDto'
+        processor: 'App\User\Application\Processor\RequestPasswordResetProcessor'
+        uriTemplate: '/users/request-password-reset'
       ApiPlatform\Metadata\Patch:
         input: 'App\User\Application\DTO\UserPatchDto'
         processor: 'App\User\Application\Processor\UserPatchProcessor'

@@ -4,6 +4,11 @@ email:
       subject: 'Password Change Notification'
       text: 'Your account password has been updated. If you made this change, no action is needed. 
             If not, or if you have concerns, contact our support team '
+    reset:
+      subject: 'VilnaCRM password reset confirmation'
+      text: 'We received a request to reset your password for your account.
+            If you did not make this request, please ignore this email.
+            Your password reset confirmation token - { tokenValue }'
   confirm:
     subject: 'VilnaCRM email confirmation'
     text: 'Your email confirmation token - { tokenValue }'
@@ -17,3 +22,5 @@ error:
   token-not-found: 'Token not found'
   user-not-found: 'User not found'
   user-timed-out: 'Cannot send new email till { datetime }'
+  user-by-email-not-found: 'User with email { email } not found'
+  user-is-not-confirmed: 'User is not confirmed'

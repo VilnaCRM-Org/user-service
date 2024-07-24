@@ -48,8 +48,9 @@ final class UserTimedOutExceptionTest extends UnitTestCase
 
     public function testExtendsRuntimeException(): void
     {
-        $this->assertTrue((new UserTimedOutException(
-            new DateTimeImmutable('+1 hour')
-        )) instanceof DomainException);
+        $this->assertInstanceOf(
+            DomainException::class,
+            (new UserTimedOutException(new DateTimeImmutable('+1 hour')))
+        );
     }
 }

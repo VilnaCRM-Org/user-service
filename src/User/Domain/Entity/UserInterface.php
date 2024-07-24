@@ -29,4 +29,10 @@ interface UserInterface
         EmailChangedEventFactoryInterface $emailChangedEventFactory,
         PasswordChangedEventFactoryInterface $passwordChangedEventFactory,
     ): array;
+
+    public function getId(): string;
+
+    public function getEmail(): string;
+
+    public function isConfirmed(): bool;
 }

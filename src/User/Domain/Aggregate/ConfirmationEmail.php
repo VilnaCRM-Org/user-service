@@ -8,6 +8,7 @@ use App\Shared\Domain\Aggregate\AggregateRoot;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactoryInterface;
+use App\User\Domain\Factory\Event\PasswordResetRequestedEventFactoryInterface;
 
 final class ConfirmationEmail extends AggregateRoot implements
     ConfirmationEmailInterface
@@ -15,15 +16,30 @@ final class ConfirmationEmail extends AggregateRoot implements
     public function __construct(
         public readonly ConfirmationTokenInterface $token,
         public readonly UserInterface $user,
-        private readonly ConfirmationEmailSendEventFactoryInterface $factory,
     ) {
     }
 
-    public function send(string $eventID): void
-    {
+    public function send(
+        string $eventID,
+        ConfirmationEmailSendEventFactoryInterface $eventFactory
+    ): void {
         $this->token->send();
         $this->record(
-            $this->factory->create(
+            $eventFactory->create(
+                $this->token,
+                $this->user,
+                $eventID
+            )
+        );
+    }
+
+    public function sendPasswordReset(
+        string $eventID,
+        PasswordResetRequestedEventFactoryInterface $eventFactory
+    ): void {
+        $this->token->send();
+        $this->record(
+            $eventFactory->create(
                 $this->token,
                 $this->user,
                 $eventID

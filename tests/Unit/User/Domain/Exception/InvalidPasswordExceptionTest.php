@@ -39,8 +39,9 @@ final class InvalidPasswordExceptionTest extends UnitTestCase
 
     public function testExtendsRuntimeException(): void
     {
-        $this->assertTrue(
-            (new InvalidPasswordException()) instanceof DomainException
+        $this->assertInstanceOf(
+            DomainException::class,
+            (new InvalidPasswordException())
         );
     }
 }

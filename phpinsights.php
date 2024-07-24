@@ -18,6 +18,7 @@ return [
     'ide' => 'phpstorm',
     'exclude' => [
         'vendor',
+        '.idea',
     ],
     'add' => [],
     'remove' => [
@@ -43,6 +44,8 @@ return [
             'exclude' => [
                 'phpinsights',
             ],
+            'lineLimit' => 105,
+            'absoluteLineLimit' => 120,
             'ignoreComments' => true,
         ],
         ForbiddenNormalClasses::class => [

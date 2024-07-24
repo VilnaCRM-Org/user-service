@@ -9,6 +9,7 @@ use App\User\Domain\Aggregate\ConfirmationEmail;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactoryInterface;
+use App\User\Domain\Factory\Event\PasswordResetRequestedEventFactoryInterface;
 
 final class ConfirmationEmailTest extends UnitTestCase
 {
@@ -28,8 +29,29 @@ final class ConfirmationEmailTest extends UnitTestCase
             ->method('create');
 
         $confirmationEmail =
-            new ConfirmationEmail($token, $user, $eventFactory);
+            new ConfirmationEmail($token, $user);
 
-        $confirmationEmail->send($this->faker->uuid());
+        $confirmationEmail->send($this->faker->uuid(), $eventFactory);
+    }
+
+    public function testSendPasswordReset(): void
+    {
+        $token =
+            $this->createMock(ConfirmationTokenInterface::class);
+        $token->expects($this->once())
+            ->method('send');
+
+        $user = $this->createMock(UserInterface::class);
+
+        $eventFactory = $this->createMock(
+            PasswordResetRequestedEventFactoryInterface::class
+        );
+        $eventFactory->expects($this->once())
+            ->method('create');
+
+        $confirmationEmail =
+            new ConfirmationEmail($token, $user);
+
+        $confirmationEmail->sendPasswordReset($this->faker->uuid(), $eventFactory);
     }
 }
