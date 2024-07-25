@@ -1,0 +1,79 @@
+@import "../../../SwaggerVariables/variables";
+@import "../../../SwaggerTheme/theme";
+
+%operationMethodsTheme {
+  &.opblock-post {
+    border-color: #38B386;
+    .opblock-summary-post {
+      outline: 1px solid #38B386;
+      background-color: #38B3861A;
+      .opblock-summary-control {
+        .opblock-summary-method {
+          color: #38B386;
+        }
+      }
+    }
+  }
+  &.opblock-put {
+    border-color: #FFC01E;
+    .opblock-summary-put {
+      outline: 1px solid #FFC01E;
+      background-color: #FFC01E1A;
+      .opblock-summary-control {
+        .opblock-summary-method {
+          color: #FFC01E;
+        }
+      }
+    }
+  }
+  &.opblock-get {
+    border-color: #1EAEFF;
+    .opblock-summary-get {
+      outline: 1px solid #1EAEFF;
+      background-color: #1EAEFF1A;
+      .opblock-summary-control {
+        .opblock-summary-method {
+          color: #1EAEFF;
+        }
+      }
+    }
+  }
+  &.opblock-delete {
+    border-color: #DC3939;
+    .opblock-summary-delete {
+      outline: 1px solid #DC3939;
+      background-color: #DC39391A;
+      .opblock-summary-control {
+        .opblock-summary-method {
+          color: #DC3939;
+        }
+      }
+    }
+  }
+  &.opblock-deprecated {
+    opacity: 1;
+    .opblock-summary {
+      outline: 1px solid #E1E7EA;
+      background-color: #F4F5F6;
+    }
+    .opblock-summary-control {
+      .opblock-summary-method {
+        color: #969B9D;
+      }
+      .opblock-summary-path__deprecated {
+        text-decoration: none;
+        a {
+          span {
+            @include buttonText($grey300);
+            text-decoration: none;
+          }
+        }
+      }
+      .opblock-summary-path-description-wrapper {
+        .opblock-summary-description {
+          @include medium15($grey400);
+        }
+      }
+    }
+  }
+}

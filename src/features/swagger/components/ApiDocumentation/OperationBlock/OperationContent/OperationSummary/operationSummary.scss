@@ -1,0 +1,82 @@
+@import "../../../SwaggerVariables/variables";
+@import "../../../SwaggerTheme/theme";
+
+%operationSummary {
+  .opblock-summary {
+    padding: 0.313rem 0.875rem 0.313rem 0.313rem;
+    border-radius: 0.44rem 0.44rem 0.45rem 0.45rem;
+    border: none;
+    @media screen and (max-width: $lg) {
+      padding-right: 1.5rem;
+    }
+    @media screen and (max-width: $sm) {
+      padding: 0.438rem 1rem 0.438rem 0.75rem;
+    }
+
+    .opblock-summary-control {
+      outline: none;
+      background-color: transparent;
+      .opblock-summary-method {
+        background-color: $white;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1.25rem 0.5rem 1.25rem;
+        text-shadow: none;
+        min-width: 72px;
+        @include typography($darkPrimary, 1rem, 600, 1.625rem);
+        @media screen and (max-width: $sm) {
+          padding: 0;
+          min-width: 0;
+          background: transparent;
+          @include demibold14;
+        }
+      }
+      .opblock-summary-path-description-wrapper {
+        padding-left: 1rem;
+        padding-right: 0;
+        gap: 1rem;
+        @media screen and (max-width: $sm) {
+          align-items: normal;
+          flex-direction: column;
+          gap: 0.125rem;
+        }
+        .opblock-summary-path {
+          a {
+            span {
+              text-decoration: none;
+              @include buttonText($darkPrimary);
+              @media screen and (max-width: $sm) {
+                @include medium16($darkPrimary);
+              }
+            }
+          }
+        }
+        .opblock-summary-description {
+          @include medium15($grey200);
+          @media screen and (max-width: $sm) {
+            @include medium12($grey200);
+          }
+        }
+      }
+    }
+    .opblock-control-arrow {
+      @include uiIconButton('../../../assets/svg/swagger/arrow-down-dark.svg');
+      @media screen and (max-width: $sm) {
+        @include uiIconButton('../../../assets/svg/swagger/arrow-down-dark.svg', 1.25rem, 1.25rem);
+      }
+    }
+    .authorization__btn {
+      @include uiIconButton('../../../assets/svg/swagger/lock.svg');
+      padding-right: 0.625rem;
+      padding-left: 0;
+      @media screen and (max-width: $sm) {
+        @include uiIconButton('../../../assets/svg/swagger/lock.svg', 1.25rem, 1.25rem);
+      }
+      svg {
+        opacity: 1;
+      }
+    }
+    .view-line-link {
+      display: none;
+    }
+  }
+}

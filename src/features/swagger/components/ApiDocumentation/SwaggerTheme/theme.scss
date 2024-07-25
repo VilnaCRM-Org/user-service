@@ -59,6 +59,10 @@
   @include typography($color, 0.9375rem, 500, 1.125rem);
 }
 
+@mixin medium16($color: $grey300) {
+  @include typography($color, 1rem, 500, 1.125rem, normal, $inter);
+}
+
 @mixin bodyText16($color: $darkPrimary) {
   @include typography($color, 1rem, 400, 1.625rem);
 }
@@ -69,6 +73,10 @@
 
 @mixin buttonText($color: $white) {
   @include typography($color, 1.125rem, 600, normal);
+}
+
+@mixin demibold14($color: $darkPrimary) {
+  @include typography($color, 0.875rem, 600, 1.05rem);
 }
 
 @mixin h5Text($color: $darkPrimary) {
