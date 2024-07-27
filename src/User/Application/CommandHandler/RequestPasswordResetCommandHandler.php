@@ -37,21 +37,18 @@ final readonly class RequestPasswordResetCommandHandler implements
             throw new UserIsNotConfirmedException();
         }
 
-        $confirmationToken = $this->confirmationTokenFactory->create(
-            $user->getId()
-        );
-        $confirmationEmailFactory = $this->confirmationEmailFactory->create(
+        $confirmationToken = $this->confirmationTokenFactory->create($user->getId());
+
+        $confirmationEmail = $this->confirmationEmailFactory->create(
             $confirmationToken,
             $user
         );
 
-        $confirmationEmailFactory->sendPasswordReset(
+        $confirmationEmail->sendPasswordReset(
             (string) $this->uuidFactory->create(),
             $this->eventFactory
         );
 
-        $this->eventBus->publish(
-            ...$confirmationEmailFactory->pullDomainEvents()
-        );
+        $this->eventBus->publish(...$confirmationEmail->pullDomainEvents());
     }
 }

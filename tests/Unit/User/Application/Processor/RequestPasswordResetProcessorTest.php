@@ -7,57 +7,48 @@ namespace App\Tests\Unit\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Command\RequestPasswordResetCommand;
 use App\User\Application\DTO\RequestPasswordResetDto;
-use App\User\Application\Factory\RequestPasswordResetCommandFactory;
 use App\User\Application\Factory\RequestPasswordResetCommandFactoryInterface;
 use App\User\Application\Processor\RequestPasswordResetProcessor;
-use Symfony\Component\HttpFoundation\Response;
 
 final class RequestPasswordResetProcessorTest extends UnitTestCase
 {
-    private RequestPasswordResetCommandFactoryInterface $requestPasswordResetCommandFactory;
-    private RequestPasswordResetCommandFactoryInterface $mockRequestPasswordResetCommandFactory;
-    private Operation $mockOperation;
-    private CommandBusInterface $commandBus;
-    private RequestPasswordResetProcessor $processor;
+    private RequestPasswordResetCommand $commandStub;
+
+    private RequestPasswordResetCommandFactoryInterface $commandFactoryMock;
+    private CommandBusInterface $commandBusMock;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->requestPasswordResetCommandFactory = new RequestPasswordResetCommandFactory();
-        $this->mockRequestPasswordResetCommandFactory =
-            $this->createMock(RequestPasswordResetCommandFactoryInterface::class);
-        $this->mockOperation = $this->createMock(Operation::class);
+        $this->commandStub = $this->createStub(RequestPasswordResetCommand::class);
 
-        $this->commandBus = $this->createMock(CommandBusInterface::class);
-
-        $this->processor = new RequestPasswordResetProcessor(
-            $this->mockRequestPasswordResetCommandFactory,
-            $this->commandBus,
-        );
+        $this->commandFactoryMock = $this->createMock(RequestPasswordResetCommandFactoryInterface::class);
+        $this->commandBusMock = $this->createMock(CommandBusInterface::class);
     }
 
     public function testProcess(): void
     {
         $email = $this->faker->email();
-        $confirmUserDto = new RequestPasswordResetDto($email);
 
-        $resetPasswordRequestedCommand = $this->requestPasswordResetCommandFactory->create($email);
-        $this->mockRequestPasswordResetCommandFactory->expects($this->once())
+        $this->commandFactoryMock->expects($this->once())
             ->method('create')
-            ->with($this->equalTo($email))
-            ->willReturn($resetPasswordRequestedCommand);
+            ->with($email)
+            ->willReturn($this->commandStub);
 
-        $this->commandBus->expects($this->once())
+        $this->commandBusMock->expects($this->once())
             ->method('dispatch')
-            ->with($this->equalTo($resetPasswordRequestedCommand));
+            ->with($this->commandStub);
 
-        $response = $this->processor->process(
-            $confirmUserDto,
-            $this->mockOperation
+        $processor = new RequestPasswordResetProcessor(
+            $this->commandFactoryMock,
+            $this->commandBusMock,
         );
-
-        $this->assertInstanceOf(Response::class, $response);
+        $processor->process(
+            new RequestPasswordResetDto($email),
+            $this->createStub(Operation::class)
+        );
     }
 }

@@ -26,7 +26,7 @@ final class UserBuilder
         $this->uuidTransformer = new UuidTransformer();
 
         $this->email = $faker->email();
-        $this->initials = $faker->firstName . ' ' . $faker->lastName();
+        $this->initials = $faker->firstName() . ' ' . $faker->lastName();
         $this->password = $faker->password();
         $this->id = $this->uuidTransformer->transformFromString($faker->uuid());
     }

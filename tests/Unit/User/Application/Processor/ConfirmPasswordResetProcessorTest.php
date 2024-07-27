@@ -17,10 +17,11 @@ use App\User\Domain\Repository\TokenRepositoryInterface;
 
 final class ConfirmPasswordResetProcessorTest extends UnitTestCase
 {
+    private ConfirmPasswordResetCommand $commandStub;
+
+    private ConfirmPasswordResetCommandFactoryInterface $commandFactoryMock;
     private CommandBusInterface $commandBusMock;
     private TokenRepositoryInterface $tokenRepositoryMock;
-    private ConfirmPasswordResetCommandFactoryInterface $confirmPasswordResetCommandFactoryMock;
-    private ConfirmPasswordResetCommand $confirmPasswordResetCommandStub;
 
     protected function setUp(): void
     {
@@ -28,61 +29,59 @@ final class ConfirmPasswordResetProcessorTest extends UnitTestCase
 
         $this->commandBusMock = $this->createMock(CommandBusInterface::class);
         $this->tokenRepositoryMock = $this->createMock(TokenRepositoryInterface::class);
-        $this->confirmPasswordResetCommandFactoryMock =
-            $this->createMock(ConfirmPasswordResetCommandFactoryInterface::class);
-        $this->confirmPasswordResetCommandStub = $this->createStub(ConfirmPasswordResetCommand::class);
+        $this->commandFactoryMock = $this->createMock(ConfirmPasswordResetCommandFactoryInterface::class);
+        $this->commandStub = $this->createStub(ConfirmPasswordResetCommand::class);
     }
 
     public function testProcess(): void
     {
-        $token = (new ConfirmationTokenBuilder())->build();
+        $confirmationToken = (new ConfirmationTokenBuilder())->build();
         $newPassword = $this->faker->password();
 
         $this->tokenRepositoryMock->expects($this->once())->method('find')
-            ->with($token->getTokenValue())
-            ->willReturn($token);
-        $this->confirmPasswordResetCommandFactoryMock->expects($this->once())->method('create')
-            ->with($token, $newPassword)
-            ->willReturn($this->confirmPasswordResetCommandStub);
+            ->with($confirmationToken->getTokenValue())
+            ->willReturn($confirmationToken);
+        $this->commandFactoryMock->expects($this->once())->method('create')
+            ->with($confirmationToken, $newPassword)
+            ->willReturn($this->commandStub);
         $this->commandBusMock->expects($this->once())->method('dispatch')
-            ->with($this->confirmPasswordResetCommandStub);
+            ->with($this->commandStub);
 
         $processor = new ConfirmPasswordResetProcessor(
             $this->commandBusMock,
             $this->tokenRepositoryMock,
-            $this->confirmPasswordResetCommandFactoryMock
+            $this->commandFactoryMock
         );
 
         $processor->process(
-            new ConfirmPasswordResetDto($token->getTokenValue(), $newPassword),
+            new ConfirmPasswordResetDto($confirmationToken->getTokenValue(), $newPassword),
             $this->createStub(Operation::class)
         );
     }
 
     public function testCanHandleNotExistingToken(): void
     {
-        $token = (new ConfirmationTokenBuilder())->build();
+        $confirmationToken = (new ConfirmationTokenBuilder())->build();
         $newPassword = $this->faker->password();
 
         $this->expectException(TokenNotFoundException::class);
-
         $this->tokenRepositoryMock->expects($this->once())->method('find')
-            ->with($token->getTokenValue())
+            ->with($confirmationToken->getTokenValue())
             ->willReturn(null);
-        $this->confirmPasswordResetCommandFactoryMock->expects($this->never())->method('create')
-            ->with($token, $newPassword)
-            ->willReturn($this->confirmPasswordResetCommandStub);
+        $this->commandFactoryMock->expects($this->never())->method('create')
+            ->with($confirmationToken, $newPassword)
+            ->willReturn($this->commandStub);
         $this->commandBusMock->expects($this->never())->method('dispatch')
-            ->with($this->confirmPasswordResetCommandStub);
+            ->with($this->commandStub);
 
         $processor = new ConfirmPasswordResetProcessor(
             $this->commandBusMock,
             $this->tokenRepositoryMock,
-            $this->confirmPasswordResetCommandFactoryMock
+            $this->commandFactoryMock
         );
 
         $processor->process(
-            new ConfirmPasswordResetDto($token->getTokenValue(), $newPassword),
+            new ConfirmPasswordResetDto($confirmationToken->getTokenValue(), $newPassword),
             $this->createStub(Operation::class)
         );
     }

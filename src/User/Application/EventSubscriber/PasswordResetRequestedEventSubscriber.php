@@ -33,7 +33,7 @@ final class PasswordResetRequestedEventSubscriber implements
             $event->emailAddress,
             $this->translator->trans('email.password.reset.requested.subject'),
             $this->translator->trans(
-                'email.password.reset.requested.test',
+                'email.password.reset.requested.text',
                 ['tokenValue' => $event->token->getTokenValue()]
             ),
             'email/password-reset.html.twig'
