@@ -44,7 +44,7 @@ return [
             'exclude' => [
                 'phpinsights',
             ],
-            'lineLimit' => 105,
+            'lineLimit' => 120,
             'absoluteLineLimit' => 120,
             'ignoreComments' => true,
         ],

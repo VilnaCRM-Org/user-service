@@ -34,6 +34,11 @@ resources:
         input: 'App\User\Application\DTO\RequestPasswordResetDto'
         processor: 'App\User\Application\Processor\RequestPasswordResetProcessor'
         uriTemplate: '/users/request-password-reset'
+      confirm_password_reset:
+        class: 'ApiPlatform\Metadata\Patch'
+        input: 'App\User\Application\DTO\ConfirmPasswordResetDto'
+        processor: 'App\User\Application\Processor\ConfirmPasswordResetProcessor'
+        uriTemplate: '/users/confirm-password-reset'
       ApiPlatform\Metadata\Patch:
         input: 'App\User\Application\DTO\UserPatchDto'
         processor: 'App\User\Application\Processor\UserPatchProcessor'

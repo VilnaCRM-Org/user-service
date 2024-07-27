@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Domain\Entity;
 
 use App\Shared\Application\Transformer\UuidTransformer;
+use App\Tests\Builders\UserBuilder;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Event\PasswordChangedEvent;
+use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 
 final class UserTest extends UnitTestCase
 {
@@ -42,5 +45,28 @@ final class UserTest extends UnitTestCase
         $this->assertEquals($newName, $user->getInitials());
         $this->assertEquals($newPassword, $user->getPassword());
         $this->assertEquals($newUuid, $user->getId());
+    }
+
+    public function testUpdatePassword(): void
+    {
+        $oldPassword = $this->faker->password();
+        $newPassword = $this->faker->password();
+
+        $user = (new UserBuilder())
+            ->withPassword($oldPassword)
+            ->build();
+
+        $passwordChangedEventFactoryMock = $this->createStub(PasswordChangedEventFactoryInterface::class);
+        $passwordChangedEventFactoryMock->method('create')
+            ->willReturn($this->createStub(PasswordChangedEvent::class));
+
+        $events = $user->updatePassword(
+            $newPassword,
+            $this->faker->uuid(),
+            $passwordChangedEventFactoryMock
+        );
+
+        $this->assertInstanceOf(PasswordChangedEvent::class, $events[0]);
+        $this->assertEquals($newPassword, $user->getPassword());
     }
 }

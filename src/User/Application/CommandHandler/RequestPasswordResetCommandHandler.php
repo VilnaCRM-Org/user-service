@@ -15,7 +15,7 @@ use App\User\Domain\Factory\Event\PasswordResetRequestedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-final class RequestPasswordResetCommandHandler implements
+final readonly class RequestPasswordResetCommandHandler implements
     CommandHandlerInterface
 {
     public function __construct(

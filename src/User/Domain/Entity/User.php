@@ -105,6 +105,28 @@ class User implements UserInterface
         return $events;
     }
 
+    /**
+     * @return array<DomainEvent>
+     */
+    public function updatePassword(
+        string $hashedPassword,
+        string $eventID,
+        PasswordChangedEventFactoryInterface $passwordChangedEventFactory
+    ): array {
+        $events = [];
+
+        $events += $this->processNewPassword(
+            $hashedPassword,
+            $this->password,
+            $eventID,
+            $passwordChangedEventFactory
+        );
+
+        $this->password = $hashedPassword;
+
+        return $events;
+    }
+
     public function isConfirmed(): bool
     {
         return $this->confirmed;

@@ -30,6 +30,15 @@ interface UserInterface
         PasswordChangedEventFactoryInterface $passwordChangedEventFactory,
     ): array;
 
+    /**
+     * @return array<DomainEvent>
+     */
+    public function updatePassword(
+        string $hashedPassword,
+        string $eventID,
+        PasswordChangedEventFactoryInterface $passwordChangedEventFactory
+    ): array;
+
     public function getId(): string;
 
     public function getEmail(): string;
