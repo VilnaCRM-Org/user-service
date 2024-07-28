@@ -127,7 +127,7 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
     private function testInvokeSetExpectations(
         UserInterface $user
     ): void {
-        $this->uuidFactory->expects($this->once())
+        $this->uuidFactory->expects($this->exactly(2))
             ->method('create')
             ->willReturn(new SymfonyUuid($this->faker->uuid()));
 

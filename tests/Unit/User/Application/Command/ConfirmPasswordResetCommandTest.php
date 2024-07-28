@@ -16,6 +16,7 @@ final class ConfirmPasswordResetCommandTest extends UnitTestCase
         $newPassword = $this->faker->password();
         $command = new ConfirmPasswordResetCommand($confirmationToken, $newPassword);
 
+        $this->assertInstanceOf(ConfirmPasswordResetCommand::class, $command);
         $this->assertEquals($confirmationToken, $command->token);
         $this->assertEquals($newPassword, $command->newPassword);
     }

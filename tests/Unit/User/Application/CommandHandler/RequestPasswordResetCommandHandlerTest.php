@@ -87,7 +87,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $commandHandler->__invoke($command);
     }
 
-    public function testCanHandleUserNotConfirmed(): void
+    public function testCanHandleWithUserNotConfirmed(): void
     {
         $user = (new UserBuilder())->build();
         $this->userRepositoryStub->method('findByEmail')

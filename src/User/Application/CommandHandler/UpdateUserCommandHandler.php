@@ -46,7 +46,7 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
         $events = $user->update(
             $command->updateData,
             $hashedPassword,
-            (string) $this->uuidFactory->create(),
+            $this->uuidFactory,
             $this->emailChangedEventFactory,
             $this->passwordChangedFactory
         );

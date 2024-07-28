@@ -15,10 +15,7 @@ final class RequestPasswordResetCommandTest extends UnitTestCase
 
         $command = new RequestPasswordResetCommand($email);
 
-        $this->assertInstanceOf(
-            RequestPasswordResetCommand::class,
-            $command
-        );
+        $this->assertInstanceOf(RequestPasswordResetCommand::class, $command);
         $this->assertSame($email, $command->email);
     }
 }

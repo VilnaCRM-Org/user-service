@@ -46,15 +46,15 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
     public function testInvoke(): void
     {
+        $this->userRepositoryMock->method('find')
+            ->willReturn($this->userMock);
         $this->passwordHasherFactoryStub->method('getPasswordHasher')
             ->willReturn($this->passwordHasherMock);
 
-        $this->userRepositoryMock->expects($this->once())->method('find')
-            ->willReturn($this->userMock);
-        $this->userRepositoryMock->expects($this->once())->method('save');
-        $this->passwordHasherMock->expects($this->once())->method('hash');
         $this->userMock->expects($this->once())->method('updatePassword')
             ->willReturn([$this->passwordChangedEventStub]);
+        $this->passwordHasherMock->expects($this->once())->method('hash');
+        $this->userRepositoryMock->expects($this->once())->method('save');
         $this->eventBusMock->expects($this->once())
             ->method('publish')
             ->with($this->passwordChangedEventStub);
@@ -75,10 +75,10 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             ->willReturn($this->passwordHasherMock);
 
         $this->expectException(UserNotFoundException::class);
-        $this->userRepositoryMock->expects($this->never())->method('save');
-        $this->passwordHasherMock->expects($this->never())->method('hash');
         $this->userMock->expects($this->never())->method('updatePassword')
             ->willReturn([$this->passwordChangedEventStub]);
+        $this->passwordHasherMock->expects($this->never())->method('hash');
+        $this->userRepositoryMock->expects($this->never())->method('save');
         $this->eventBusMock->expects($this->never())
             ->method('publish')
             ->with($this->passwordChangedEventStub);

@@ -34,7 +34,7 @@ final class ConfirmPasswordResetCommandHandler implements CommandHandlerInterfac
 
         $events = $user->updatePassword(
             $hasher->hash($command->newPassword),
-            (string) $this->uuidFactory->create(),
+            $this->uuidFactory,
             $this->passwordChangedEventFactory
         );
 
