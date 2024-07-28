@@ -22,8 +22,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
 {
     private Email $emailStub;
-    private TranslatorInterface $translatorStub;
 
+    private TranslatorInterface $translatorMock;
     private EmailFactoryInterface $emailFactoryMock;
     private LoggerInterface $loggerMock;
     private MailerInterface $mailerMock;
@@ -33,9 +33,9 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->translatorStub = $this->createStub(TranslatorInterface::class);
         $this->emailStub = $this->createStub(Email::class);
 
+        $this->translatorMock = $this->createMock(TranslatorInterface::class);
         $this->emailFactoryMock = $this->createMock(EmailFactoryInterface::class);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
         $this->mailerMock = $this->createMock(MailerInterface::class);
@@ -50,7 +50,11 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
 
         $this->tokenRepositoryMock->expects($this->once())->method('save')
             ->with($confirmationToken);
-        $this->translatorStub->method('trans')
+        $this->translatorMock->expects($this->exactly(2))->method('trans')
+            ->withConsecutive(
+                ['email.password.reset.requested.subject'],
+                ['email.password.reset.requested.text', ['tokenValue' => $confirmationToken->getTokenValue()]]
+            )
             ->willReturnOnConsecutiveCalls('subject-translation', 'text-translation');
         $this->emailFactoryMock->expects($this->once())->method('create')
             ->with(
@@ -58,9 +62,12 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
                 'subject-translation',
                 'text-translation',
                 'email/password-reset.html.twig'
-            )->willReturn($this->emailStub);
-        $this->mailerMock->expects($this->once())->method('send')->with($this->emailStub);
-        $this->loggerMock->expects($this->once())->method('info');
+            )
+            ->willReturn($this->emailStub);
+        $this->mailerMock->expects($this->once())->method('send')
+            ->with($this->emailStub);
+        $this->loggerMock->expects($this->once())->method('info')
+            ->with('Reset password token send to ' . $user->getEmail());
 
         $event = $this->getEvent($confirmationToken, $user);
         $this->getSubscriber()->__invoke($event);
@@ -81,7 +88,7 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
             $this->tokenRepositoryMock,
             $this->loggerMock,
             $this->emailFactoryMock,
-            $this->translatorStub,
+            $this->translatorMock,
         );
     }
 
