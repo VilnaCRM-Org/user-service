@@ -39,8 +39,9 @@ final class TokenNotFoundExceptionTest extends UnitTestCase
 
     public function testExtendsRuntimeException(): void
     {
-        $this->assertTrue(
-            (new TokenNotFoundException()) instanceof DomainException
+        $this->assertInstanceOf(
+            DomainException::class,
+            (new TokenNotFoundException())
         );
     }
 }

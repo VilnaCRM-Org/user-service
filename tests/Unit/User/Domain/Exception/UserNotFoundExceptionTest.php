@@ -36,8 +36,6 @@ final class UserNotFoundExceptionTest extends UnitTestCase
 
     public function testExtendsRuntimeException(): void
     {
-        $this->assertTrue(
-            (new UserNotFoundException()) instanceof DomainException
-        );
+        $this->assertInstanceOf(DomainException::class, (new UserNotFoundException()));
     }
 }

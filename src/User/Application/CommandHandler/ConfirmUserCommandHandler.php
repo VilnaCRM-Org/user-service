@@ -33,7 +33,7 @@ final readonly class ConfirmUserCommandHandler implements
         $this->eventBus->publish(
             $user->confirm(
                 $token,
-                (string) $this->uuidFactory->create(),
+                $this->uuidFactory,
                 $this->userConfirmedEventFactory,
             ),
         );
