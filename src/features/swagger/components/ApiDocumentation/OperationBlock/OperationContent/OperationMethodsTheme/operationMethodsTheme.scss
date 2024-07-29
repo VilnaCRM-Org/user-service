@@ -13,6 +13,14 @@
         }
       }
     }
+    .opblock-body {
+      .opblock-section-header {
+        border-bottom: 1px solid #38B386;
+      }
+      .parameters-container {
+        border-bottom: 1px solid #38B386;
+      }
+    }
   }
   &.opblock-put {
     border-color: #FFC01E;
@@ -23,6 +31,14 @@
         .opblock-summary-method {
           color: #FFC01E;
         }
+      }
+    }
+    .opblock-body {
+      .opblock-section-header {
+        border-bottom: 1px solid #FFC01E;
+      }
+      .parameters-container {
+        border-bottom: 1px solid #FFC01E;
       }
     }
   }
@@ -37,6 +53,14 @@
         }
       }
     }
+    .opblock-body {
+      .opblock-section-header {
+        border-bottom: 1px solid #1EAEFF;
+      }
+      .parameters-container {
+        border-bottom: 1px solid #1EAEFF;
+      }
+    }
   }
   &.opblock-delete {
     border-color: #DC3939;
@@ -47,6 +71,14 @@
         .opblock-summary-method {
           color: #DC3939;
         }
+      }
+    }
+    .opblock-body {
+      .opblock-section-header {
+        border-bottom: 1px solid #DC3939;
+      }
+      .parameters-container {
+        border-bottom: 1px solid #DC3939;
       }
     }
   }
@@ -70,9 +102,33 @@
         }
       }
       .opblock-summary-path-description-wrapper {
+        .opblock-summary-path__deprecated {
+          text-decoration: none;
+          a {
+            span {
+              text-decoration: none;
+              @include buttonText($grey300);
+              @media screen and (max-width: $sm) {
+                @include medium16($grey300);
+              }
+            }
+          }
+        }
         .opblock-summary-description {
           @include medium15($grey400);
+          @media screen and (max-width: $sm) {
+            @include medium12($grey400);
+          }
         }
+      }
+    }
+    .opblock-body {
+      .opblock-section-header {
+        border-bottom: 1px solid #E1E7EA;
+        box-shadow: none;
+      }
+      .parameters-container {
+        border-bottom: 1px solid #E1E7EA;
       }
     }
   }

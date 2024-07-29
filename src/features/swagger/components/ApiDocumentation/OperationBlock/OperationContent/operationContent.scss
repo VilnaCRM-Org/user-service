@@ -17,10 +17,96 @@
       .opblock {
         margin-bottom: 0.5rem;
         border-radius: 0.5rem;
-        background: none;
+        background: $white;
         box-shadow: none;
         @extend %operationSummary;
         @extend %operationMethodsTheme;
+        .opblock-body {
+          .opblock-section {
+            .opblock-section-header {
+              padding: 0.375rem 1.25rem 0.375rem 1.5rem;
+              @media screen and (max-width: $lg) {
+                padding: 0.75rem 1.5rem 0.75rem 1.5rem;
+              }
+              @media screen and (max-width: $sm) {
+                padding: 0.5rem 1rem 0.5rem 0.75rem;
+              }
+              .tab-header {
+                .opblock-title {
+                  @include medium15($grey200);
+                  @media screen and (max-width: $lg) {
+                    @include demi18($grey200);
+                  }
+                  @media screen and (max-width: $sm) {
+                    @include medium15($grey200);
+                  }
+                }
+              }
+              .try-out {
+                .try-out__btn {
+                  @include uiButton(transparent, 1px solid $grey300, 0.75rem 1.5rem);
+                  @include medium15($darkSecondary);
+                  @media screen and (max-width: $sm) {
+                    @include uiButton(transparent, 1px solid $grey300, 0.5rem 1rem);
+                  }
+                }
+              }
+            }
+            .table-container {
+              padding: 0.75rem 0.5rem;
+              thead {
+                th {
+                  padding: 0 0 0.688rem;
+                  border-bottom: none;
+                  @include medium15($grey200);
+                }
+                .parameters-col_name {
+                  padding-left: 17px;
+                }
+              }
+              tbody {
+                tr:nth-child(odd) {
+                  td {
+                    background: $backgroundGrey200;
+                  }
+                }
+                tr {
+                  td:first-child {
+                    padding: 0.563rem 2.813rem 0.563rem 1.063rem;
+                    border-bottom-left-radius: 0.25rem;
+                    border-top-left-radius: 0.25rem;
+                  }
+                  td:nth-child(2) {
+                    padding: 0.563rem 0;
+                    border-bottom-right-radius: 0.25rem;
+                    border-top-right-radius: 0.25rem;
+                  }
+                  td {
+                    .parameter__name {
+                      @include buttonText($darkPrimary);
+                      &.required {
+                        span {
+                          display: none;
+                        }
+                        &::after {
+                          content: '*required';
+                          margin-bottom: -10px;
+                          @include medium12($error);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        @media screen and (max-width: $lg) {
+          margin-bottom: 1rem;
+        }
+        @media screen and (max-width: $sm) {
+          margin-bottom: 0.5rem;
+        }
         &.is-open {
           .opblock-summary {
             .opblock-control-arrow {

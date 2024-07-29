@@ -27,7 +27,7 @@
           padding: 0;
           min-width: 0;
           background: transparent;
-          @include demibold14;
+          @include demiBold14;
         }
       }
       .opblock-summary-path-description-wrapper {
@@ -61,7 +61,7 @@
     .opblock-control-arrow {
       @include uiIconButton('../../../assets/svg/swagger/arrow-down-dark.svg');
       @media screen and (max-width: $sm) {
-        @include uiIconButton('../../../assets/svg/swagger/arrow-down-dark.svg', 1.25rem, 1.25rem);
+        @include uiIconButton('../../../assets/svg/swagger/arrow-down-dark-small.svg', 1.25rem, 1.25rem);
       }
     }
     .authorization__btn {
@@ -69,7 +69,7 @@
       padding-right: 0.625rem;
       padding-left: 0;
       @media screen and (max-width: $sm) {
-        @include uiIconButton('../../../assets/svg/swagger/lock.svg', 1.25rem, 1.25rem);
+        @include uiIconButton('../../../assets/svg/swagger/lock-small.svg', 1.25rem, 1.25rem);
       }
       svg {
         opacity: 1;

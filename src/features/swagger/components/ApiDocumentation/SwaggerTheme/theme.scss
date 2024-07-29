@@ -34,11 +34,11 @@
   box-shadow: 0px 8px 27px 0px #313b4324;
 }
 
-@mixin uiButton($backgroundColor, $border) {
+@mixin uiButton($backgroundColor, $border, $padding: 1rem 1.5rem) {
   background-color: $backgroundColor;
   border: $border;
   font-family: $golos;
-  padding: 1rem 1.5rem 1rem 1.5rem;
+  padding: $padding;
   border-radius: 3.563rem;
 }
 
@@ -75,7 +75,11 @@
   @include typography($color, 1.125rem, 600, normal);
 }
 
-@mixin demibold14($color: $darkPrimary) {
+@mixin demi18($color: $darkPrimary) {
+  @include typography($color, 1.125rem, 600, 1.05rem);
+}
+
+@mixin demiBold14($color: $darkPrimary) {
   @include typography($color, 0.875rem, 600, 1.05rem);
 }
 
