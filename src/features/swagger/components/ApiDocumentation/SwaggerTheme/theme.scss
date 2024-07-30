@@ -21,17 +21,16 @@
 }
 
 @mixin uiSelect($width) {
+  @include typography($darkPrimary, 1rem, 600, 1.625rem);
+  outline: none;
   width: $width;
   padding: 0.5rem 0 0.5rem 0.75rem;
   border: 1px solid $brandGray;
   background-color: $white;
   background-image: url('../../../../../../public/selectArrow.svg');
   border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  font-family: $golos;
-  line-height: 1.625rem;
   box-shadow: 0px 8px 27px 0px #313b4324;
+  min-width: auto;
 }
 
 @mixin uiButton($backgroundColor, $border, $padding: 1rem 1.5rem) {
@@ -55,6 +54,10 @@
   @include typography($color, 0.75rem, 500, 1.125rem, normal, $inter);
 }
 
+@mixin medium14($color: $grey200) {
+  @include typography($color, 0.875rem, 500, 1.125rem, normal, $inter);
+}
+
 @mixin medium15($color: $grey250) {
   @include typography($color, 0.9375rem, 500, 1.125rem);
 }
@@ -69,6 +72,10 @@
 
 @mixin bodyText18($color: $darkPrimary) {
   @include typography($color, 1.125rem, 400, 1.875rem);
+}
+
+@mixin bodyTextMobile($color: $darkPrimary) {
+  @include typography($color, 0.9375rem, 400, 1.563rem);
 }
 
 @mixin buttonText($color: $white) {
