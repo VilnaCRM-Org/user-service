@@ -3,6 +3,9 @@
 
 @import "OperationSummary/operationSummary";
 @import 'OperationMethodsTheme/operationMethodsTheme';
+@import 'OperationSelect/operationSelect';
+@import 'OperationCodeExample/operationCodeExample';
+@import 'OperationParameters/operationParameters';
 
 %operationContent {
   .no-margin {
@@ -21,173 +24,10 @@
         box-shadow: none;
         @extend %operationSummary;
         @extend %operationMethodsTheme;
+        @extend %operationCodeExample;
+        @extend %operationSelect;
         .opblock-body {
-          .opblock-section {
-            .opblock-section-header {
-              padding: 0.375rem 1.25rem 0.375rem 1.5rem;
-              @media screen and (max-width: $lg) {
-                padding: 0.75rem 1.5rem 0.75rem 1.5rem;
-              }
-              @media screen and (max-width: $sm) {
-                padding: 0.5rem 1rem 0.5rem 0.75rem;
-              }
-              .tab-header {
-                .opblock-title {
-                  @include medium15($grey200);
-                  @media screen and (max-width: $lg) {
-                    @include demi18($grey200);
-                  }
-                  @media screen and (max-width: $sm) {
-                    @include medium15($grey200);
-                  }
-                }
-              }
-              .try-out {
-                .try-out__btn {
-                  @include uiButton(transparent, 1px solid $grey300, 0.75rem 1.5rem);
-                  @include medium15($darkSecondary);
-                  @media screen and (max-width: $sm) {
-                    @include uiButton(transparent, 1px solid $grey300, 0.5rem 1rem);
-                  }
-                }
-              }
-            }
-            .table-container {
-              padding: 0.75rem 0.5rem;
-              @media screen and (max-width: $sm) {
-                padding: 0.75rem 0.375rem;
-              }
-              thead {
-                th {
-                  padding: 0 0 0.688rem;
-                  border-bottom: none;
-                  @include medium15($grey200);
-                  @media screen and (max-width: $sm) {
-                    padding: 0 0 0.5rem;
-                    @include medium12($grey200);
-                  }
-                }
-                .parameters-col_name {
-                  padding-left: 1.063rem;
-                  @media screen and (max-width: $sm) {
-                    padding-left: 0.625rem;
-                  }
-                }
-              }
-              tbody {
-                tr:nth-child(odd) {
-                  td {
-                    background: $backgroundGrey200;
-                  }
-                }
-                tr {
-                  td:first-child {
-                    padding: 0.563rem 2.813rem 0.563rem 1.063rem;
-                    border-bottom-left-radius: 0.25rem;
-                    border-top-left-radius: 0.25rem;
-                    @media screen and (max-width: $sm) {
-                      padding: 0.438rem 1.75rem 1.125rem 0.625rem;
-                    }
-                  }
-                  td:nth-child(2) {
-                    padding: 0.563rem 0;
-                    border-bottom-right-radius: 0.25rem;
-                    border-top-right-radius: 0.25rem;
-                    @media screen and (max-width: $sm) {
-                      padding: 0.563rem 0.5rem 0.563rem 0;
-                    }
-                  }
-                  .parameters-col_name {
-                    .parameter__name {
-                      @include buttonText($darkPrimary);
-                      @media screen and (max-width: $sm) {
-                        @include medium15($darkPrimary);
-                      }
-                      &.required {
-                        display: flex;
-                        align-items: center;
-                        gap: 0.375rem;
-                        @media screen and (max-width: $sm) {
-                          flex-direction: column;
-                          gap: 0.125rem;
-                          align-items: normal;
-                        }
-                        span {
-                          display: none;
-                        }
-                        &::after {
-                          content: '*reqired';
-                          position: static;
-                          background-color: #DC39391A;
-                          border-radius: 0.25rem;
-                          padding: 0.125rem 0.375rem;
-                          @include medium12($error);
-                          @media screen and (max-width: $sm) {
-                            width: max-content;
-                          }
-                        }
-                      }
-                    }
-                    .parameter__type {
-                      padding: 0.25rem 0 0.375rem;
-                      @include medium14($grey200);
-                      @media screen and (max-width: $sm) {
-                        @include medium12($grey200);
-                        padding: 0.25rem 0 0.125rem;
-                      }
-                    }
-                    .parameter__in {
-                      font-style: normal;
-                      @include medium12($grey300);
-                      @media screen and (max-width: $lg) {
-                        @include demiBold14($grey300);
-                      }
-                      @media screen and (max-width: $sm) {
-                        @include medium12($grey300);
-                      }
-                    }
-                  }
-                  .parameters-col_description {
-                    .markdown {
-                      p {
-                        padding-bottom: 0.25rem;
-                        @include medium12($grey200);
-                        @media screen and (max-width: $lg) {
-                          @include medium14($grey200);
-                        }
-                        @media screen and (max-width: $sm) {
-                          @include medium12($grey200);
-                        }
-                      }
-                    }
-                    input {
-                      margin: 0;
-                      padding: 0.875rem 0 0.875rem 1.75rem;
-                      height: 2.875rem;
-                      max-width: 19rem;
-                      border-radius: 0.5rem;
-                      background-color: $white;
-                      border-color: $grey400;
-                      @media screen and (max-width: $sm) {
-                        padding: 0 0 0 1rem;
-                        height: 2.5rem;
-                        max-width: 12.375rem;
-                      }
-                      &::placeholder {
-                        @include medium14($grey300);
-                        @media screen and (max-width: $lg) {
-                          @include medium16($grey300);
-                        }
-                        @media screen and (max-width: $sm) {
-                          @include medium14($grey300);
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          @extend %operationParameters;
           .execute-wrapper {
             display: none;
           }
@@ -231,14 +71,6 @@
                     @include bodyTextMobile($grey250);
                   }
                 }
-                select {
-                  @include uiSelect(14.375rem);
-                  @media screen and (max-width: $sm) {
-                    width: 100%;
-                    max-width: 21.25rem;
-                    padding: 0.75rem 0 0.65rem 1rem;
-                  }
-                }
               }
             }
             .responses-inner {
@@ -248,7 +80,7 @@
                 padding-bottom: 1.125rem;
               }
               @media screen and (max-width: $sm) {
-                padding: 0rem 1rem 0.813rem;
+                padding: 0 1rem 0.813rem;
               }
               thead {
                 td {

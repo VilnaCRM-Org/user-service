@@ -1,0 +1,101 @@
+@import "../../../SwaggerVariables/variables";
+@import "../../../SwaggerTheme/theme";
+
+%operationCodeExample {
+  .model-example {
+    margin-top: 0.75rem;
+    @media screen and (max-width: $lg) {
+      margin-top: 0.875rem;
+    }
+    @media screen and (max-width: $sm) {
+      margin-top: 0.25rem;
+    }
+    .tab {
+      margin-bottom: 1rem;
+      @media screen and (max-width: $lg) {
+        margin-bottom: 1.125rem;
+      }
+      @media screen and (max-width: $sm) {
+        margin-bottom: 0.5rem;
+      }
+      li:first-child {
+        position: relative;
+        padding-right: 0.75rem;
+        margin-right: 0.75rem;
+        @include medium12($darkPrimary);
+        @media screen and (max-width: $lg) {
+          @include medium16($darkPrimary);
+        }
+        @media screen and (max-width: $sm) {
+          padding-right: 1.15rem;
+          margin-right: 1.15rem;
+          @include medium14($darkPrimary);
+        }
+        &::after {
+          right: -1px;
+          transform: translateY(-50%);
+          top: 50%;
+          height: 1rem;
+          background-color: $grey300;
+        }
+      }
+      li:nth-child(2) {
+        @include medium12($grey300);
+        @media screen and (max-width: $lg) {
+          @include medium16($grey300);
+        }
+        @media screen and (max-width: $lg) {
+          @include medium14($grey300);
+        }
+      }
+    }
+    div {
+      .highlight-code {
+        .microlight {
+          padding: 0.75rem 1rem!important;
+          background-color: $darkSecondary!important;
+          border-radius: 0.5rem;
+          @media screen and (max-width: $lg) {
+            padding: 1rem!important;
+          }
+          @media screen and (max-width: $lg) {
+            padding: 0.75rem!important;
+          }
+          code {
+            @include demiBold14($white);
+            @media screen and (max-width: $lg) {
+              @include demi18($white);
+              line-height: 1.32rem;
+            }
+            @media screen and (max-width: $sm) {
+              @include medium15($white);
+              line-height: 1.125rem;
+            }
+          }
+        }
+      }
+      .body-param-options {
+        margin-top: 0.75rem;
+        label {
+          margin: 0;
+          padding: 0;
+          span {
+            @include medium14($grey200);
+            @media screen and (max-width: $sm) {
+              @include bodyTextMobile($grey200);
+            }
+          }
+          div {
+            margin-top: 0.5rem;
+            @media screen and (max-width: $sm) {
+              margin-top: 0.25rem;
+            }
+            select {
+              margin: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+}

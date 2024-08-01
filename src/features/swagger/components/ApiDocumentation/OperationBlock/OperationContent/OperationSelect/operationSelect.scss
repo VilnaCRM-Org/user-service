@@ -1,0 +1,13 @@
+@import "../../../SwaggerVariables/variables";
+@import "../../../SwaggerTheme/theme";
+
+%operationSelect {
+  select {
+    @include uiSelect(14.375rem);
+    @media screen and (max-width: $sm) {
+      width: 100%;
+      max-width: 21.25rem;
+      padding: 0.75rem 0 0.65rem 1rem;
+    }
+  }
+}
