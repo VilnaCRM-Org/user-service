@@ -1,0 +1,14 @@
+@import "../../../SwaggerVariables/variables";
+@import "../../../SwaggerTheme/theme";
+
+@import "Responses/responses";
+
+%operationBody {
+  .opblock-body {
+    @extend %operationParameters;
+    @extend %responses;
+    .execute-wrapper {
+      display: none;
+    }
+  }
+}
