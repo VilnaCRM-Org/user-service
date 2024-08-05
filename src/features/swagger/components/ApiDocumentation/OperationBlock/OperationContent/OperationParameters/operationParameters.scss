@@ -56,7 +56,7 @@
       }
       tbody {
         tr:nth-child(odd) {
-          td {
+          .parameters-col_name, .parameters-col_description {
             background: $backgroundGrey200;
           }
         }
