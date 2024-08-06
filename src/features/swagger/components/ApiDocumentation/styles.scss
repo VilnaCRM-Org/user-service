@@ -11,5 +11,32 @@
   .wrapper {
     padding: 0;
     @extend %operationBlock;
+    .models {
+      &.is-open {
+        h4 {
+          border: none;
+          margin: 0;
+        }
+      }
+      margin-top: 1.5rem;
+      margin-bottom: 0;
+      padding-bottom: 2.125rem;
+      border: none;
+      h4 {
+        padding: 0;
+        border-bottom: none;
+        &:hover {
+          background-color: transparent;
+        }
+        button {
+          padding: 0 1.25rem;
+          outline: none;
+          margin-bottom: 0;
+          span {
+            @include h3Text;
+          }
+        }
+      }
+    }
   }
 }

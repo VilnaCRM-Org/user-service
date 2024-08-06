@@ -1,0 +1,102 @@
+@import "../../../../SwaggerVariables/variables";
+@import "../../../../SwaggerTheme/theme";
+
+%modelBox {
+  .model-box {
+    padding: 0.438rem 1rem 0.75rem;
+    background-color: $grey400;
+    border: 1px solid $grey400;
+    & > .model {
+      & > span {
+        & > button {
+          outline: none;
+          .pointer {
+            .model-title {
+              .model-hint {
+                display: none;
+              }
+            }
+          }
+          &[aria-expanded="true"] {
+            margin-bottom: 0.625rem;
+          }
+          span {
+            @include demiBold14($darkPrimary);
+          }
+          .model-toggle {
+            margin: 0;
+            top: 5px;
+            &::after {
+              background-image: url("../../../../../../assets/svg/swagger/arrow-right.svg");
+            }
+          }
+        }
+      }
+      .brace-open, .brace-close {
+        @include demiBold14($darkPrimary);
+      }
+      .brace-close {
+        display: inline-block;
+        margin-top: 0.625rem;
+      }
+      .inner-object {
+        .model {
+          td {
+            padding: 0;
+            min-height: 22px;
+          }
+          td:first-child {
+            width: 6.25rem;
+            @include medium14($grey200);
+          }
+          td:nth-child(2) {
+            display: flex;
+            justify-content: end;
+            .model {
+              vertical-align: top;
+              span {
+                button {
+                  vertical-align: top;
+                  outline: none;
+                  @include demiBold14($grey200);
+                  .pointer {
+                    .model-hint {
+                      display: none;
+                    }
+                    .model-title__text {
+                      @include demiBold14($grey200);
+                    }
+                  }
+                  .model-toggle {
+                    top: 0;
+                    margin: 0;
+                    &::after {
+                      background-image: url("../../../../../../assets/svg/swagger/arrow-right.svg");
+                    }
+                  }
+                  span:nth-child(2) {
+                    vertical-align: top;
+                  }
+                }
+                .prop-type {
+                  @include demiBold14($primary);
+                }
+                .prop-format {
+                  @include medium14($grey300);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    &:focus-within {
+      background-color: $backgroundGrey200;
+      border: 1px solid $grey400;
+    }
+    &:hover {
+      background-color: $backgroundGrey200;
+      border: 1px solid $grey400;
+    }
+  }
+}

@@ -90,6 +90,10 @@
   @include typography($color, 0.875rem, 600, 1.05rem);
 }
 
+@mixin h3Text($color: $darkPrimary) {
+  @include typography($color, 2.25rem, 600, normal);
+}
+
 @mixin h5Text($color: $darkPrimary) {
   @include typography($color, 1.75rem, 700, normal);
 }
