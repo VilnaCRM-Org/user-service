@@ -90,6 +90,10 @@
   @include typography($color, 0.875rem, 600, 1.05rem);
 }
 
+@mixin bold22($color: $grey250) {
+  @include typography($color, 1.375rem, 700, 1.05rem);
+}
+
 @mixin h3Text($color: $darkPrimary) {
   @include typography($color, 2.25rem, 600, normal);
 }

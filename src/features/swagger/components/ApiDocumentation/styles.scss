@@ -12,19 +12,23 @@
     padding: 0;
     @extend %operationBlock;
     .models {
-      &.is-open {
-        h4 {
-          border: none;
-          margin: 0;
-        }
-      }
       margin-top: 1.5rem;
       margin-bottom: 0;
       padding-bottom: 2.125rem;
       border: none;
+      @media screen and (max-width: $lg) {
+        margin-top: 0.563rem;
+      }
+      @media screen and (max-width: $sm) {
+        margin-top: 1rem;
+      }
       h4 {
         padding: 0;
         border-bottom: none;
+        margin-bottom: 0.625rem;
+        @media screen and (max-width: $lg) {
+          margin-bottom: 0.438rem;
+        }
         &:hover {
           background-color: transparent;
         }
@@ -32,8 +36,34 @@
           padding: 0 1.25rem;
           outline: none;
           margin-bottom: 0;
+          @media screen and (max-width: $sm) {
+            padding: 0;
+          }
           span {
             @include h3Text;
+            @media screen and (max-width: $sm) {
+              @include bold22($darkPrimary);
+            }
+          }
+          @include uiIconButton('../../../assets/svg/swagger/arrow-down.svg');
+        }
+      }
+      .no-margin {
+        .model-container {
+          padding: 1.063rem 1rem 1.063rem 1.5rem;
+          margin: 0 0 0.5rem;
+          .model-box {
+            padding: 0;
+          }
+        }
+      }
+      &.is-open {
+        h4 {
+          border: none;
+          button {
+            svg {
+              transform: rotate(180deg);
+            }
           }
         }
       }

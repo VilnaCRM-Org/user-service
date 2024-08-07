@@ -46,12 +46,13 @@
             min-height: 22px;
           }
           td:first-child {
-            width: 6.25rem;
+            width: min-content;
+            min-width: min-content;
             @include medium14($grey200);
           }
           td:nth-child(2) {
             display: flex;
-            justify-content: end;
+            justify-content: flex-end;
             .model {
               vertical-align: top;
               span {
@@ -93,6 +94,12 @@
     &:focus-within {
       background-color: $backgroundGrey200;
       border: 1px solid $grey400;
+      @media screen and (max-width: $sm) {
+        z-index: 1000;
+        position: absolute;
+        left: 2rem;
+        right: 2rem;
+      }
     }
     &:hover {
       background-color: $backgroundGrey200;
