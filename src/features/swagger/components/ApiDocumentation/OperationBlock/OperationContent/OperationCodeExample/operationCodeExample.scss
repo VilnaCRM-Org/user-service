@@ -75,6 +75,18 @@
           }
         }
       }
+      textarea.body-param__text {
+        padding: 1rem;
+        margin: 0;
+        border-radius: 0.5rem;
+        min-height: 16.875rem;
+        scrollbar-width: none;
+        background-color: $white;
+        border: none;
+        outline: none;
+        resize: none;
+        @include medium14();
+      }
       .body-param-options {
         margin-top: 0.75rem;
         label {
@@ -94,6 +106,14 @@
             select {
               margin: 0;
             }
+          }
+        }
+        .body-param-edit {
+          padding-top: 0;
+          padding-bottom: 1rem;
+          button {
+            @include medium15($error);
+            @include uiButton(#DC39391A, 1px solid #DF7878, 0.75rem 1.5rem);
           }
         }
       }

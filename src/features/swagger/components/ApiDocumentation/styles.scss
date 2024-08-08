@@ -50,10 +50,120 @@
       }
       .no-margin {
         .model-container {
+          border-radius: 0.5rem;
+          background-color: $backgroundGrey200;
+          border: 1px solid $backgroundGrey200;
           padding: 1.063rem 1rem 1.063rem 1.5rem;
-          margin: 0 0 0.5rem;
-          .model-box {
+          margin: 0;
+          span.model-box {
             padding: 0;
+            .model-box-control {
+              outline: none;
+              span.model-title {
+                @include demi18($darkPrimary);
+                @media screen and (max-width: $sm) {
+                  @include medium15($darkPrimary);
+                }
+              }
+              &[aria-expanded="true"] {
+                span.model-toggle {
+                  margin-left: 1.25rem;
+                }
+              }
+            }
+            .model-toggle {
+              margin: 0;
+              top: 0.313rem;
+              &::after {
+                background-image: url("../../assets/svg/swagger/arrow-right-light.svg");
+                vertical-align: top;
+              }
+            }
+            .inner-object {
+              table.model {
+                margin-top: 0.875rem;
+                tr {
+                  max-height: 20px;
+                }
+                td {
+                  padding: 0;
+                }
+                td:first-child {
+                  height: 1.488rem;
+                  width: min-content;
+                  min-width: 7.938rem;
+                  @include medium14($grey200);
+                  @media screen and (max-width: $sm) {
+                    min-width: 5.625rem;
+                  }
+                }
+                td:nth-child(2) {
+                  display: flex;
+                  justify-content: flex-end;
+                  span.model {
+                    button.model-box-control {
+                      vertical-align: top;
+                      @include demiBold14($grey200);
+                      span.model-toggle {
+                        top: 0;
+                      }
+                      span:nth-child(2) {
+                        vertical-align: top;
+                      }
+                      span.pointer {
+                        span.model-title {
+                          span.model-title__text {
+                            @include demi16($grey200);
+                            @media screen and (max-width: $sm) {
+                              @include medium14($grey200);
+                            }
+                          }
+                        }
+                      }
+                    }
+                    .prop {
+                      .prop-type {
+                        @include demiBold14($primary);
+                      }
+                      .prop-format {
+                        @include medium14($grey300);
+                      }
+                    }
+                    table.model {
+                      margin-top: 0.375rem;
+                      td {
+                        min-width: min-content;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            div.model-box {
+              padding: 0;
+              span.model {
+                .brace-open {
+                  @include demiBold14($grey250);
+                }
+                .brace-close {
+                  @include demiBold14($darkPrimary);
+                }
+              }
+            }
+          }
+          &:hover {
+            background-color: $white;
+            border: 1px solid $brandGray;
+          }
+          &:focus-within {
+            background-color: $white;
+            border: 1px solid $brandGray;
+          }
+        }
+        .model-container:not(:last-child) {
+          margin-bottom: 0.5rem;
+          @media screen and (max-width: $sm) {
+            margin-bottom: 0.375rem;
           }
         }
       }

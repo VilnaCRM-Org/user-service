@@ -86,6 +86,10 @@
   @include typography($color, 1.125rem, 600, 1.05rem);
 }
 
+@mixin demi16($color: $darkPrimary) {
+  @include typography($color, 1rem, 600, 1.05rem);
+}
+
 @mixin demiBold14($color: $darkPrimary) {
   @include typography($color, 0.875rem, 600, 1.05rem);
 }

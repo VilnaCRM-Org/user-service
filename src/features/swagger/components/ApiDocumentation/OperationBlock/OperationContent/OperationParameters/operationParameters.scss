@@ -29,6 +29,11 @@
           @media screen and (max-width: $sm) {
             @include uiButton(transparent, 1px solid $grey300, 0.5rem 1rem);
           }
+          &.cancel {
+            border: 1px solid #DF7878;
+            background-color: #DC39391A;
+            color: $error;
+          }
         }
       }
     }
@@ -169,6 +174,20 @@
           }
         }
       }
+    }
+  }
+  .btn-group {
+    padding: 0.75rem 1.5rem 0;
+    gap: 0.5rem;
+    .execute {
+      flex: 0;
+      @include medium15($white);
+      @include uiButton($primary, none, 1rem 3.5rem);
+    }
+    .btn-clear {
+      flex: 0;
+      @include medium15($darkPrimary);
+      @include uiButton($white, 1px solid $grey300, 1rem 3.5rem);
     }
   }
 }
