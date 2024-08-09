@@ -10,12 +10,26 @@
     .execute-wrapper {
       padding: 0;
       text-align: left;
+      @media screen and (max-width: $sm) {
+        text-align: center;
+      }
       button {
-        margin-left: 24px;
-        margin-top: 19px;
+        margin-left: 1.5rem;
+        margin-top: 1.188rem;
         width: min-content;
         @include medium15($white);
         @include uiButton($primary, none, 1rem 3.5rem);
+        @media screen and (max-width: $lg) {
+          @include buttonText($white);
+          @include uiButton($primary, none, 1.063rem 3.5rem);
+        }
+        @media screen and (max-width: $sm) {
+          margin-top: 0.5rem;
+          margin-left: 0;
+          width: 95%;
+          @include medium15($white);
+          @include uiButton($primary, none, 1rem 3.5rem);
+        }
       }
     }
   }

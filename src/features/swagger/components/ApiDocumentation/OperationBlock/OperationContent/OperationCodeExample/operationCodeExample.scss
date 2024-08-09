@@ -86,9 +86,21 @@
         outline: none;
         resize: none;
         @include medium14();
+        @media screen and (max-width: $lg) {
+          @include regular16($darkPrimary);
+        }
+        @media screen and (max-width: $sm) {
+          @include medium12($darkPrimary);
+        }
       }
       .body-param-options {
         margin-top: 0.75rem;
+        @media screen and (max-width: $lg) {
+          margin-top: 0.813rem;
+        }
+        @media screen and (max-width: $sm) {
+          margin-top: 0.563rem;
+        }
         label {
           margin: 0;
           padding: 0;
@@ -111,9 +123,24 @@
         .body-param-edit {
           padding-top: 0;
           padding-bottom: 1rem;
+          @media screen and (max-width: $lg) {
+            padding-bottom: 0.875rem;
+          }
+          @media screen and (max-width: $lg) {
+            padding-bottom: 0.938rem;
+          }
           button {
             @include medium15($error);
             @include uiButton(#DC39391A, 1px solid #DF7878, 0.75rem 1.5rem);
+            @media screen and (max-width: $lg) {
+              @include buttonText($error);
+              @include uiButton(#DC39391A, 1px solid #DF7878, 1rem 3.438rem);
+            }
+            @media screen and (max-width: $sm) {
+              @include medium15($error);
+              @include uiButton(#DC39391A, 1px solid #DF7878, 0.813rem 3.438rem);
+              width: 100%;
+            }
           }
         }
       }

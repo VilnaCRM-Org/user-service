@@ -47,7 +47,7 @@
           }
           td:first-child {
             width: min-content;
-            min-width: min-content;
+            min-width: 5.375rem;
             @include medium14($grey200);
           }
           td:nth-child(2) {

@@ -66,6 +66,10 @@
   @include typography($color, 1rem, 500, 1.125rem, normal, $inter);
 }
 
+@mixin regular16($color: $grey300) {
+  @include typography($color, 1rem, 500, 1.125rem);
+}
+
 @mixin bodyText16($color: $darkPrimary) {
   @include typography($color, 1rem, 400, 1.625rem);
 }
