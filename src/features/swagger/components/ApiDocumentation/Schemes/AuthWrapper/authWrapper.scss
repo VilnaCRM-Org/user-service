@@ -28,13 +28,15 @@
       }
     }
     .dialog-ux {
+      @media screen and (max-width: $sm) {
+        position: absolute;
+      }
       .backdrop-ux {
         top: 4rem;
         background: #364F5D0D;
         backdrop-filter: blur(0.125rem);
       }
       .modal-ux {
-        background-color: transparent;
         border-radius: 1rem;
         background-color: $white;
         border: 1px solid $grey500;
@@ -46,7 +48,7 @@
           width: 39.75rem;
         }
         @media screen and (max-width: $sm) {
-          top: 48%;
+          top: 65%;
           width: 22.625rem;
         }
         .modal-dialog-ux {
@@ -81,6 +83,64 @@
               max-width: none;
               padding: 0 1.25rem 1.25rem 1.5rem;
               scrollbar-width: none;
+              .auth-btn-wrapper {
+                flex: 1;
+                padding: 0;
+                height: 3.5rem;
+                align-self: flex-end;
+                justify-content: space-between;
+                @media screen and (max-width: $sm) {
+                  flex-direction: column;
+                  gap: 0.25rem;
+                  height: min-content;
+                  align-self: normal;
+                }
+                button.authorize {
+                  @include uiButton($primary, 1px solid $primary, 1.125rem 1.5rem);
+                  @include medium15($white);
+                  @media screen and (max-width: $lg) {
+                    @include uiButton($primary, 1px solid $primary, 1rem 1.4rem);
+                    @include buttonText($white);
+                  }
+                  @media screen and (max-width: $sm) {
+                    @include uiButton($primary, 1px solid $primary, 0.938rem 0);
+                    @include medium15($white);
+                    width: 100%;
+                    height: auto;
+                  }
+                }
+                button.btn-done {
+                  margin: 0;
+                  @include uiButton(transparent, 1px solid $grey300);
+                  @include medium15($darkPrimary);
+                  @media screen and (max-width: $lg) {
+                    @include uiButton(transparent, 1px solid $grey300, 1rem 1.4rem);
+                    @include buttonText($darkPrimary);
+                  }
+                  @media screen and (max-width: $sm) {
+                    @include uiButton(transparent, 1px solid $grey300, 0.938rem 0);
+                    @include medium15($darkPrimary);
+                    width: 100%;
+                  }
+                }
+              }
+              input {
+                margin: 0;
+                padding: 1.125rem 0 1.125rem 1.75rem;
+                outline: none;
+                border: 1px solid $grey400;
+                border-radius: 0.5rem;
+                min-width: 21.5rem;
+                &::placeholder {
+                  @include regular16($grey250);
+                }
+                &:focus {
+                  border: 1px solid $grey300;
+                }
+                @media screen and (max-width: $sm) {
+                  min-width: 100%;
+                }
+              }
               .auth-container {
                 padding: 0;
                 border-bottom: none;
@@ -113,6 +173,9 @@
                       margin-bottom: 0.5rem;
                       @include regular16($grey200);
                       font-weight: 400;
+                      @media screen and (max-width: $sm) {
+                        word-break: break-all;
+                      }
                       code {
                         @include medium16($darkPrimary);
                       }
@@ -124,66 +187,6 @@
                       @include medium14($grey200);
                       @media screen and (max-width: $lg) {
                         @include medium16($grey200);
-                      }
-                    }
-                    section {
-                      input {
-                        margin: 0;
-                        padding: 1.125rem 0 1.125rem 1.75rem;
-                        outline: none;
-                        border: 1px solid $grey400;
-                        border-radius: 0.5rem;
-                        min-width: 21.5rem;
-                        &::placeholder {
-                          @include regular16($grey250);
-                        }
-                        &:focus {
-                          border: 1px solid $grey300;
-                        }
-                        @media screen and (max-width: $sm) {
-                          min-width: 100%;
-                        }
-                      }
-                    }
-                  }
-                  .auth-btn-wrapper {
-                    flex: 1;
-                    padding: 0;
-                    height: 3.5rem;
-                    align-self: flex-end;
-                    justify-content: space-between;
-                    @media screen and (max-width: $sm) {
-                      flex-direction: column;
-                      gap: 0.25rem;
-                      height: min-content;
-                      align-self: normal;
-                    }
-                    button.authorize {
-                      @include uiButton($primary, 1px solid $primary, 1.125rem 1.5rem);
-                      @include medium15($white);
-                      @media screen and (max-width: $lg) {
-                        @include uiButton($primary, 1px solid $primary, 1rem 1.4rem);
-                        @include buttonText($white);
-                      }
-                      @media screen and (max-width: $sm) {
-                        @include uiButton($primary, 1px solid $primary, 0.938rem 0);
-                        @include medium15($white);
-                        width: 100%;
-                        height: auto;
-                      }
-                    }
-                    button.btn-done {
-                      margin: 0;
-                      @include uiButton(transparent, 1px solid $grey300);
-                      @include medium15($darkPrimary);
-                      @media screen and (max-width: $lg) {
-                        @include uiButton(transparent, 1px solid $grey300, 1rem 1.4rem);
-                        @include buttonText($darkPrimary);
-                      }
-                      @media screen and (max-width: $sm) {
-                        @include uiButton(transparent, 1px solid $grey300, 0.938rem 0);
-                        @include medium15($darkPrimary);
-                        width: 100%;
                       }
                     }
                   }
@@ -205,19 +208,150 @@
                       }
                       p {
                         margin-bottom: 0.5rem;
+                        @media screen and (max-width: $sm) {
+                          display: flex;
+                          white-space: nowrap;
+                          gap: 0.5rem;
+                        }
                         @include regular16($grey200);
                         code {
                           display: inline-block;
                           margin-left: 0.3rem;
                           @include medium16($darkPrimary);
+                          @media screen and (max-width: $sm) {
+                            white-space: normal;
+                            word-break: break-all;
+                            word-wrap: break-word;
+                          }
                         }
                       }
                       .flow {
                         margin-bottom: 1rem;
+                        @media screen and (max-width: $lg) {
+                          margin-bottom: 0.75rem;
+                        }
                       }
                       & > .wrapper {
+                        margin-bottom: 1rem;
                         label {
+                          display: inline-block;
+                          margin-bottom: 0.25rem;
                           @include medium14($grey200);
+                          @media screen and (max-width: $lg) {
+                            @include medium16($grey200);
+                          }
+                        }
+                        section {
+                          input {
+                            width: 100%;
+                          }
+                        }
+                      }
+                      & > .scopes {
+                        margin-bottom: 1.25rem;
+                        h2 {
+                          margin-bottom: 1rem;
+                          @include medium14($grey200);
+                          @media screen and (max-width: $lg) {
+                            @include medium16($grey200);
+                          }
+                          a:first-child {
+                            padding-left: 0.75rem;
+                            @media screen and (max-width: $lg) {
+                              padding-left: 0.875rem;
+                            }
+                          }
+                          a:nth-child(2) {
+                            padding-left: 0.5rem;
+                            @media screen and (max-width: $lg) {
+                              padding-left: 1.375rem;
+                            }
+                          }
+                          a {
+                            text-decoration: underline;
+                            @include link14;
+                            @media screen and (max-width: $lg) {
+                              @include link16;
+                            }
+                          }
+                        }
+                        & > .wrapper {
+                          @media screen and (max-width: $lg) {
+                            width: min-content;
+                            display: inline-block;
+                          }
+                          @media screen and (max-width: $lg) {
+                            width: auto;
+                            display: block;
+                          }
+                          .checkbox {
+                            padding: 0;
+                            input[type="checkbox"]:checked + label > .item {
+                              background-image: url("../../../../assets/svg/swagger/check-icon.svg");
+                              background-color: $primary;
+                              border-color: $primary;
+                            }
+                            label {
+                              display: flex;
+                              span {
+                                margin-right: 0.75rem;
+                                background-color: transparent;
+                                border: 1px solid $grey400;
+                                padding: 0.688rem;
+                                box-shadow: none;
+                                border-radius: 0.5rem;
+                              }
+                              .text {
+                                padding-top: 0.125rem;
+                                p {
+                                  text-wrap: nowrap;
+                                  font-style: normal;
+                                  @include regular16($grey200);
+                                }
+                              }
+                            }
+                          }
+                        }
+                        & > .wrapper:not(:last-child) {
+                          margin-bottom: 0.75rem;
+                          @media screen and (max-width: $lg) {
+                            margin-bottom: 0;
+                            margin-right: 4.25rem;
+                          }
+                          @media screen and (max-width: $lg) {
+                            margin-bottom: 1rem;
+                            margin-right: 0;
+                          }
+                        }
+                        & > .wrapper:last-child {
+                          margin-bottom: 0;
+                        }
+                      }
+                      .auth-btn-wrapper {
+                        justify-content: flex-start;
+                        gap: 0.5rem;
+                        @media screen and (max-width: $lg) {
+                          justify-content: space-between;
+                        }
+                        @media screen and (max-width: $lg) {
+                          gap: 0.25rem;
+                        }
+                        button.authorize {
+                          @media screen and (max-width: $lg) {
+                            justify-content: center;
+                            width: 20.375rem;
+                          }
+                          @media screen and (max-width: $lg) {
+                            width: 100%;
+                          }
+                        }
+                        button.btn-done {
+                          @media screen and (max-width: $lg) {
+                            width: 15.625rem;
+                          }
+                          @media screen and (max-width: $sm) {
+                            width: 100%;
+                          }
                         }
                       }
                     }
