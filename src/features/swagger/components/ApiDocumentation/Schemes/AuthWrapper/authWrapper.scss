@@ -27,6 +27,208 @@
         }
       }
     }
+    .dialog-ux {
+      .backdrop-ux {
+        top: 4rem;
+        background: #364F5D0D;
+        backdrop-filter: blur(0.125rem);
+      }
+      .modal-ux {
+        background-color: transparent;
+        border-radius: 1rem;
+        background-color: $white;
+        border: 1px solid $grey500;
+        box-shadow: 0px 15px 40px 0px #33374714;
+        width: 38.375rem;
+        height: min-content;
+        top: 53%;
+        @media screen and (max-width: $lg) {
+          width: 39.75rem;
+        }
+        @media screen and (max-width: $sm) {
+          top: 48%;
+          width: 22.625rem;
+        }
+        .modal-dialog-ux {
+          background-color: transparent;
+          .modal-ux-inner {
+            background-color: transparent;
+            .modal-ux-header {
+              padding: 1.5rem 1.5rem 1rem;
+              border-bottom: 1px solid $grey500;
+              margin-bottom: 1rem;
+              @media screen and (max-width: $sm) {
+                padding: 1.25rem 1.25rem 1rem;
+              }
+              h3 {
+                padding: 0;
+                @include h4Text;
+                @media screen and (max-width: $sm) {
+                  @include bold22($darkPrimary);
+                }
+              }
+              button {
+                padding: 0;
+                align-self: flex-start;
+                @include uiIconButton('../../../assets/svg/swagger/close-icon.svg');
+                svg {
+                  display: block;
+                }
+              }
+            }
+            .modal-ux-content {
+              max-height: none;
+              max-width: none;
+              padding: 0 1.25rem 1.25rem 1.5rem;
+              scrollbar-width: none;
+              .auth-container {
+                padding: 0;
+                border-bottom: none;
+                form {
+                  display: flex;
+                  padding-bottom: 1.25rem;
+                  gap: 0.625rem;
+                  position: relative;
+                  @media screen and (max-width: $sm) {
+                    padding-bottom: 1rem;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                  }
+                  &::after {
+                    content: "";
+                    position: absolute;
+                    bottom: 0;
+                    height: 1px;
+                    left: -1.5rem;
+                    right: -1.25rem;
+                    background-color: $grey500;
+                  }
+                  h4 {
+                    margin-top: 0!important;
+                    margin-bottom: 0.75rem!important;
+                    @include demi18($darkPrimary);
+                  }
+                  .wrapper {
+                    p {
+                      margin-bottom: 0.5rem;
+                      @include regular16($grey200);
+                      font-weight: 400;
+                      code {
+                        @include medium16($darkPrimary);
+                      }
+                    }
+                    label {
+                      display: inline-block;
+                      margin-top: 0.5rem;
+                      margin-bottom: 0.25rem;
+                      @include medium14($grey200);
+                      @media screen and (max-width: $lg) {
+                        @include medium16($grey200);
+                      }
+                    }
+                    section {
+                      input {
+                        margin: 0;
+                        padding: 1.125rem 0 1.125rem 1.75rem;
+                        outline: none;
+                        border: 1px solid $grey400;
+                        border-radius: 0.5rem;
+                        min-width: 21.5rem;
+                        &::placeholder {
+                          @include regular16($grey250);
+                        }
+                        &:focus {
+                          border: 1px solid $grey300;
+                        }
+                        @media screen and (max-width: $sm) {
+                          min-width: 100%;
+                        }
+                      }
+                    }
+                  }
+                  .auth-btn-wrapper {
+                    flex: 1;
+                    padding: 0;
+                    height: 3.5rem;
+                    align-self: flex-end;
+                    justify-content: space-between;
+                    @media screen and (max-width: $sm) {
+                      flex-direction: column;
+                      gap: 0.25rem;
+                      height: min-content;
+                      align-self: normal;
+                    }
+                    button.authorize {
+                      @include uiButton($primary, 1px solid $primary, 1.125rem 1.5rem);
+                      @include medium15($white);
+                      @media screen and (max-width: $lg) {
+                        @include uiButton($primary, 1px solid $primary, 1rem 1.4rem);
+                        @include buttonText($white);
+                      }
+                      @media screen and (max-width: $sm) {
+                        @include uiButton($primary, 1px solid $primary, 0.938rem 0);
+                        @include medium15($white);
+                        width: 100%;
+                        height: auto;
+                      }
+                    }
+                    button.btn-done {
+                      margin: 0;
+                      @include uiButton(transparent, 1px solid $grey300);
+                      @include medium15($darkPrimary);
+                      @media screen and (max-width: $lg) {
+                        @include uiButton(transparent, 1px solid $grey300, 1rem 1.4rem);
+                        @include buttonText($darkPrimary);
+                      }
+                      @media screen and (max-width: $sm) {
+                        @include uiButton(transparent, 1px solid $grey300, 0.938rem 0);
+                        @include medium15($darkPrimary);
+                        width: 100%;
+                      }
+                    }
+                  }
+                }
+                div {
+                  .scope-def {
+                    padding-bottom: 1rem;
+                    p {
+                      margin: 0;
+                      @include medium12($darkPrimary);
+                    }
+                  }
+                  & > div {
+                    & > div {
+                      h4 {
+                        margin-top: 0!important;
+                        margin-bottom: 0.75rem!important;
+                        @include demi18($darkPrimary);
+                      }
+                      p {
+                        margin-bottom: 0.5rem;
+                        @include regular16($grey200);
+                        code {
+                          display: inline-block;
+                          margin-left: 0.3rem;
+                          @include medium16($darkPrimary);
+                        }
+                      }
+                      .flow {
+                        margin-bottom: 1rem;
+                      }
+                      & > .wrapper {
+                        label {
+                          @include medium14($grey200);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     svg {
       display: none;
     }
