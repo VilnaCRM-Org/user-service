@@ -1,7 +1,9 @@
+import spec from './spec.yaml';
+
 import SwaggerUI from 'swagger-ui-react';
 
 function ApiDocumentation(): React.ReactElement {
-  return <SwaggerUI url="https://petstore.swagger.io/v2/swagger.json" />;
+  return <SwaggerUI spec={spec} />;
 }
 
 export default ApiDocumentation;

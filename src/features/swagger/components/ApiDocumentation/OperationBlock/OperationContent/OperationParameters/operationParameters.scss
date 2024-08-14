@@ -21,6 +21,21 @@
             @include medium15($grey200);
           }
         }
+        .tab-item {
+          padding: 0;
+          span {
+            @include medium15($grey200);
+            @media screen and (max-width: $lg) {
+              @include demi18($grey200);
+            }
+            @media screen and (max-width: $sm) {
+              @include medium15($grey200);
+            }
+            &::after {
+              display: none;
+            }
+          }
+        }
       }
       .try-out {
         .try-out__btn {
@@ -137,6 +152,18 @@
             }
           }
           .parameters-col_description {
+            .renderedMarkdown {
+              p {
+                margin-bottom: 0.25rem;
+                @include medium12($grey200);
+                @media screen and (max-width: $lg) {
+                  @include medium14($grey200);
+                }
+                @media screen and (max-width: $lg) {
+                  @include medium12($grey200);
+                }
+              }
+            }
             .markdown {
               p {
                 padding-bottom: 0.25rem;
@@ -158,10 +185,23 @@
               background-color: $white;
               border-color: $grey400;
               outline: none;
+              @include medium14($darkPrimary);
+              @media screen and (max-width: $lg) {
+                @include medium16($darkPrimary);
+              }
+              @media screen and (max-width: $sm) {
+                @include medium14($darkPrimary);
+              }
               @media screen and (max-width: $sm) {
                 padding: 0 0 0 0.5rem;
                 height: 2.5rem;
                 max-width: 12.375rem;
+              }
+              &:hover {
+                border-color: $grey300;
+              }
+              &:focus {
+                border-color: $grey300;
               }
               &::placeholder {
                 @include medium14($grey300);

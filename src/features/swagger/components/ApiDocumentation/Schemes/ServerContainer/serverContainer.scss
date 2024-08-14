@@ -27,5 +27,41 @@
         }
       }
     }
+    & > div {
+      display: flex;
+      align-items: center;
+      gap: 0.938rem;
+      @media screen and (max-width: $lg) {
+        gap: 1rem;
+      }
+      @media screen and (max-width: $sm) {
+        flex-direction: column;
+        align-items: normal;
+        gap: 0.25rem;
+      }
+      .servers-title {
+        @include bodyText16($grey250);
+        @media screen and (max-width: $lg) {
+          @include bodyText18($grey250);
+        }
+      }
+      .servers {
+        label {
+          select {
+            cursor: pointer;
+            @include uiSelect(13rem);
+            @media screen and (max-width: $lg) {
+              @include buttonText($darkPrimary);
+              padding: 1rem 0 1rem 1.25rem;
+              width: 14rem;
+            }
+            @media screen and (max-width: $sm) {
+              @include uiSelect(11.5rem);
+              padding: 0.813rem 0 0.813rem 0.75rem;
+            }
+          }
+        }
+      }
+    }
   }
 }
