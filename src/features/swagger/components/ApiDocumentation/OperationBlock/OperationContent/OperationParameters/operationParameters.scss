@@ -162,6 +162,9 @@
                 @media screen and (max-width: $lg) {
                   @include medium12($grey200);
                 }
+                i {
+                  font-style: normal;
+                }
               }
             }
             .markdown {

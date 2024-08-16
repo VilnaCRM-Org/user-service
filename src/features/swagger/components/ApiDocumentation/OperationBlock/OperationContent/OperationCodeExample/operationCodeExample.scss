@@ -147,4 +147,43 @@
     }
     @extend %modelBox;
   }
+  div.headers-wrapper {
+    .headers__title {
+      margin-top: 0.875rem;
+      margin-bottom: 0;
+      @include medium15($darkPrimary);
+    }
+    table.headers {
+      margin-top: 0.625rem;
+      thead {
+        .header-row {
+          th:not(:first-child) {
+            padding-left: 0.75rem;
+          }
+          th {
+            padding-top: 0;
+            padding-bottom: 0.5rem;
+            border-bottom: none;
+            @include medium14($grey200);
+          }
+        }
+      }
+      tbody {
+        tr {
+          td:not(:first-child) {
+            padding-left: 0.75rem;
+          }
+          td {
+            vertical-align: text-top;
+            padding-top: 0;
+            @include medium15($grey200);
+            .header-example {
+              font-style: normal;
+              @include medium14($grey300);
+            }
+          }
+        }
+      }
+    }
+  }
 }

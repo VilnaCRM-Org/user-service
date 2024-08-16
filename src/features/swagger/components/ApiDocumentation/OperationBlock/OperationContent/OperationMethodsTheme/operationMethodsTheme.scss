@@ -82,6 +82,26 @@
       }
     }
   }
+  &.opblock-patch {
+    border-color: #9B59B6;
+    .opblock-summary-patch {
+      outline: 1px solid #9B59B6;
+      background-color: #9B59B61A;
+      .opblock-summary-control {
+        .opblock-summary-method {
+          color: #9B59B6;
+        }
+      }
+    }
+    .opblock-body {
+      .opblock-section-header {
+        border-bottom: 1px solid #9B59B6;
+      }
+      .parameters-container {
+        border-bottom: 1px solid #9B59B6;
+      }
+    }
+  }
   &.opblock-deprecated {
     opacity: 1;
     .opblock-summary {
