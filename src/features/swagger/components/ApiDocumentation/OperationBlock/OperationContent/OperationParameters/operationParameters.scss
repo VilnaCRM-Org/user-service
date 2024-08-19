@@ -52,6 +52,34 @@
         }
       }
     }
+    .opblock-section-request-body {
+      .opblock-section-header {
+        .opblock-title {
+          @include medium15($grey200);
+          @media (min-width: 641px) and (max-width: $lg) {
+            @include demi18($grey200);
+          }
+        }
+      }
+    }
+    .parameters-container {
+      .opblock-description-wrapper {
+        padding: 1.188rem 1.5rem;
+        margin-bottom: 0;
+        @media screen and (max-width: $sm) {
+          padding: 1.063rem 0.75rem;
+        }
+        p {
+          @include medium15($grey200);
+          @media screen and (max-width: $lg) {
+            @include demi18($grey200);
+          }
+          @media screen and (max-width: $sm) {
+            @include medium15($grey200);
+          }
+        }
+      }
+    }
     .table-container {
       padding: 0.75rem 0.5rem;
       @media screen and (max-width: $sm) {

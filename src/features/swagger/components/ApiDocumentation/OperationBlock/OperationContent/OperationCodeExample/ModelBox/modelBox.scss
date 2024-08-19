@@ -3,9 +3,46 @@
 
 %modelBox {
   .model-box {
-    padding: 0.438rem 1rem 0.75rem;
+    padding: 0.625rem 1rem 0.625rem 0.8rem;
     background-color: $grey400;
     border: 1px solid $grey400;
+    article.json-schema-2020-12 {
+      div.json-schema-2020-12-head {
+        display: flex;
+        align-items: center;
+        button.json-schema-2020-12-accordion {
+          span {
+            @include uiIconButton("../../../assets/svg/swagger/arrow-right.svg", 1.2rem, 1.2rem);
+          }
+        }
+        button.json-schema-2020-12-expand-deep-button {
+          @include demiBold14($darkPrimary);
+        }
+        strong {
+          @include demiBold14($primary);
+        }
+      }
+      div.json-schema-2020-12-body {
+        margin-top: 0.75rem;
+        margin-bottom: 0;
+        div {
+          margin-top: 0;
+          margin-bottom: 0;
+          ul {
+            li {
+              margin: 0.375rem 0;
+              article {
+                div {
+                  .json-schema-2020-12__title {
+                    @include medium14($grey200);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     & > .model {
       & > span {
         & > button {
