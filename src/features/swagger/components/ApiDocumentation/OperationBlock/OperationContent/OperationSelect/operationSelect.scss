@@ -10,4 +10,12 @@
       padding: 0.75rem 0 0.65rem 1rem;
     }
   }
+  select#patch_api_users_confirm_requests_select, select#patch_api_users__id__requests_select {
+    @include uiSelect(18.75rem);
+    @media screen and (max-width: $sm) {
+      width: 100%;
+      max-width: 21.25rem;
+      padding: 0.75rem 0 0.65rem 1rem;
+    }
+  }
 }

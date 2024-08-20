@@ -156,6 +156,9 @@
     @extend %modelBox;
   }
   div.headers-wrapper {
+    @media screen and (max-width: $sm) {
+      display: none;
+    }
     .headers__title {
       margin-top: 0.875rem;
       margin-bottom: 0;

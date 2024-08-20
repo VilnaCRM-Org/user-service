@@ -4,6 +4,7 @@
 %operationParameters {
   .opblock-section {
     .opblock-section-header {
+      box-shadow: none;
       padding: 0.375rem 1.25rem 0.375rem 1.5rem;
       @media screen and (max-width: $lg) {
         padding: 0.75rem 1.5rem 0.75rem 1.5rem;
@@ -58,6 +59,16 @@
           @include medium15($grey200);
           @media (min-width: 641px) and (max-width: $lg) {
             @include demi18($grey200);
+          }
+          &.required {
+            &::after {
+              content: '*required';
+              margin-left: 6px;
+              padding: 0.25rem 0.375rem;
+              border-radius: 0.25rem;
+              background-color: #DC39391A;
+              @include medium12($error);
+            }
           }
         }
       }
@@ -209,9 +220,10 @@
             }
             input {
               margin: 0;
-              padding: 0.875rem 0 0.875rem 1.75rem;
+              padding: 0.875rem 1.75rem;
               height: 2.875rem;
-              max-width: 19rem;
+              min-width: 19rem;
+              width: min-content;
               border-radius: 0.5rem;
               background-color: $white;
               border-color: $grey400;
@@ -221,12 +233,12 @@
                 @include medium16($darkPrimary);
               }
               @media screen and (max-width: $sm) {
-                @include medium14($darkPrimary);
-              }
-              @media screen and (max-width: $sm) {
+                min-width: auto;
+                width: 100%;
                 padding: 0 0 0 0.5rem;
                 height: 2.5rem;
-                max-width: 12.375rem;
+                max-width: 14rem;
+                @include medium14($darkPrimary);
               }
               &:hover {
                 border-color: $grey300;

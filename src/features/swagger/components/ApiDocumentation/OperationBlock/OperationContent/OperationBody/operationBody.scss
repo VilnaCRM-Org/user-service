@@ -7,6 +7,21 @@
   .opblock-body {
     @extend %operationParameters;
     @extend %responses;
+    & > .opblock-description-wrapper {
+      margin: 0;
+      padding: 1.219rem 1.5rem;
+      .opblock-description {
+        .renderedMarkdown {
+          p {
+            margin: 0;
+            @include medium14($grey200);
+            @media screen and (max-width: $lg) {
+              @include demi16($grey200);
+            }
+          }
+        }
+      }
+    }
     .execute-wrapper {
       padding: 0;
       text-align: left;

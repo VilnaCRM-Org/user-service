@@ -5,6 +5,7 @@
   .responses-wrapper {
     .opblock-section-header {
       padding: 0.625rem 1.5rem;
+      box-shadow: none;
       @media screen and (max-width: $lg) {
         padding: 0.75rem 1.5rem;
       }
@@ -51,7 +52,7 @@
         padding-bottom: 1.125rem;
       }
       @media screen and (max-width: $sm) {
-        padding: 0 1rem 0.813rem;
+        padding: 0 0.375rem 0.5rem;
       }
       table.responses-table {
         thead {
@@ -72,7 +73,7 @@
               max-width: 10.625rem;
             }
             @media screen and (max-width: $sm) {
-              min-width: 7.25rem;
+              min-width: 5.5rem;
             }
           }
         }
@@ -80,6 +81,9 @@
           tr.response:first-child {
             .response-col_status, .response-col_description {
               padding-top: 0.625rem;
+              @media screen and (max-width: $sm) {
+                padding-top: 0.438rem;
+              }
             }
             td.response-col_status {
               border-top-left-radius: 0.25rem;
@@ -96,17 +100,19 @@
               border-bottom-right-radius: 0.25rem;
             }
           }
-          td.response-col_description {
-            padding-right: 1rem;
-          }
           td.response-col_status {
             padding-left: 1rem;
             @include buttonText($darkPrimary);
             @media screen and (max-width: $sm) {
+              padding-left: 0.625rem;
               @include medium15($darkPrimary);
             }
           }
           td.response-col_description {
+            padding-right: 1rem;
+            @media screen and (max-width: $sm) {
+              padding-right: 0.625rem;
+            }
             div.response-col_description__inner {
               div.renderedMarkdown {
                 p {
@@ -118,9 +124,13 @@
               }
             }
             section.response-controls {
+              display: block;
               padding-top: 0.688rem;
               @media screen and (max-width: $sm) {
                 padding-top: 0.813rem;
+              }
+              div.response-control-media-type {
+                margin-right: 0;
               }
               small.response-control-media-type__title {
                 margin-bottom: 0.5rem;
@@ -128,6 +138,18 @@
                 @media screen and (max-width: $sm) {
                   margin-bottom: 0.25rem;
                   @include bodyTextMobile($grey200);
+                }
+              }
+              small.response-control-media-type__accept-message {
+                @include medium12(#38B386);
+                @media screen and (max-width: $sm) {
+                  @include medium14(#38B386);
+                }
+                code {
+                  @include medium12(#38B386);
+                  @media screen and (max-width: $sm) {
+                    @include medium14(#38B386);
+                  }
                 }
               }
             }
