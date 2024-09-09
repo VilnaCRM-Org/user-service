@@ -1,3 +1,12 @@
+## [1.4.4](https://github.com/VilnaCRM-Org/user-service/compare/v1.4.3...v1.4.4) (2024-09-09)
+
+
+### Bug Fixes
+
+* **#47:** openssl issue ([#48](https://github.com/VilnaCRM-Org/user-service/issues/48)) ([a7cf7c3](https://github.com/VilnaCRM-Org/user-service/commit/a7cf7c3e467b7f17d659e0f1208ca6495322d0c0)), closes [#47](https://github.com/VilnaCRM-Org/user-service/issues/47) [#47](https://github.com/VilnaCRM-Org/user-service/issues/47) [#47](https://github.com/VilnaCRM-Org/user-service/issues/47)
+
+
+
 ## [1.4.3](https://github.com/VilnaCRM-Org/user-service/compare/v1.4.2...v1.4.3) (2024-07-23)
 
 
