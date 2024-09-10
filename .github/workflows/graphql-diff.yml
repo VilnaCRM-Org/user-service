@@ -4,6 +4,12 @@ on:
   pull_request:
     branches: [ "main" ]
 
+
+permissions:
+  checks: write
+  contents: write
+  pull-requests: write
+
 jobs:
   graphql-diff:
     name: Openapi-diff
@@ -12,7 +18,7 @@ jobs:
     steps:
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: ${{ vars.PHP_VERSION }}
 
       - name: Checkout Repository
         uses: actions/checkout@v3
