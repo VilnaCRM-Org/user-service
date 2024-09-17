@@ -70,7 +70,7 @@ league_oauth2_server:
 
       # Table name prefix.
       table_prefix: oauth2_
-    # in_memory:            ~
+    # in_memory: ~
 
   # Set a custom prefix that replaces the default 'ROLE_OAUTH2_' role prefix
   role_prefix: ROLE_OAUTH2_
