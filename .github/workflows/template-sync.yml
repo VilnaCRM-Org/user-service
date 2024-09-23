@@ -1,3 +1,5 @@
+name: Template Sync
+
 on:
   schedule:
     - cron: "0 0 * * *"
@@ -10,13 +12,8 @@ jobs:
       pull-requests: write
 
     steps:
-      # To use this repository's private action, you must check out the repository
       - name: Checkout
         uses: actions/checkout@v4
-        # https://github.com/actions/checkout#usage
-        # uncomment if you use submodules within the repository
-        # with:
-        #   submodules: true
 
       - name: actions-template-sync
         uses: AndreasAugustin/actions-template-sync@v2
