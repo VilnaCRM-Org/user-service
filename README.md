@@ -121,6 +121,24 @@ If the documentation doesn't cover what you need, search the [many questions on 
 
 If this isn't passing, is there something you can do to help?
 
+## Repository Synchronization with Template
+
+We have integrated an automated repository synchronization feature using the [actions-template-sync](https://github.com/marketplace/actions/actions-template-sync) GitHub Action. This allows the repository to stay in sync with a designated template repository.
+
+### How It Works
+
+This workflow automatically creates a pull request in this repository whenever changes are detected in the template repository, ensuring that the latest updates from the template are applied.
+
+By default, the workflow runs every Monday at 9:00 AM UTC. You can also manually trigger it from the GitHub Actions tab.
+
+### Configuration
+
+1. The synchronization is managed through a GitHub Actions workflow, which is triggered automatically via cron or manually.
+2. The `source_repo_path` must point to the repository you want to sync from (e.g., `VilnaCRM-Org/php-service-template`).
+3. Make sure you have the necessary permissions set up for the GitHub token to allow synchronization.
+
+You can see a sample configuration for the synchronization workflow, stored in `.github/workflows/template-sync.yml`.
+
 ## Security
 Please disclose any vulnerabilities found responsibly – report security issues to the maintainers privately.
 
