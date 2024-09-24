@@ -135,9 +135,14 @@ By default, the workflow runs every Monday at 9:00 AM UTC. You can also manually
 
 1. The synchronization is managed through a GitHub Actions workflow, which is triggered automatically via cron or manually.
 2. The `source_repo_path` must point to the repository you want to sync from (e.g., `VilnaCRM-Org/php-service-template`).
-3. Make sure you have the necessary permissions set up for the GitHub token to allow synchronization.
+3. Make sure you have the necessary permissions set up for the GitHub token to allow synchronization. You can learn more about [configuring permissions for GitHub Actions tokens](https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token) in the official GitHub documentation.
 
-You can see a sample configuration for the synchronization workflow, stored in `.github/workflows/template-sync.yml`.
+You can see a sample configuration for the synchronization workflow, stored in [.github/workflows/template-sync.yml](https://github.com/VilnaCRM-Org/user-service/blob/main/.github/workflows/template-sync.yml).
+
+### Benefits of Synchronization
+
+Automated synchronization ensures that projects relying on this template always benefit from the latest features, improvements, and bug fixes without the need for manual intervention. This helps maintain consistency across multiple projects, reduces the likelihood of outdated code, and simplifies maintenance by automating the propagation of changes from the template. 
+In turn, it saves time and reduces the effort required to keep dependent projects aligned with best practices and new developments.
 
 ## Security
 Please disclose any vulnerabilities found responsibly – report security issues to the maintainers privately.
