@@ -129,7 +129,7 @@ We have integrated an automated repository synchronization feature using the [ac
 
 This workflow automatically creates a pull request in this repository whenever changes are detected in the template repository, ensuring that the latest updates from the template are applied.
 
-By default, the workflow runs every Monday at 9:00 AM UTC. You can also manually trigger it from the GitHub Actions tab.
+By default, the workflow runs every Monday at 9:00 AM UTC. You can also manually trigger it from the [GitHub Actions tab](https://github.com/VilnaCRM-Org/user-service/actions).
 
 ### Configuration
 
