@@ -1,3 +1,12 @@
 composer.json
 composer.lock
 .env
+docker-compose.override.yml
+docker-compose.prod.yml
+docker-composer.prod.override.yml
+docker-compose.yml
+README.md
+Makefiler
+workspace.dsl
+.dockerignore
+config/packages/doctrine.yaml
