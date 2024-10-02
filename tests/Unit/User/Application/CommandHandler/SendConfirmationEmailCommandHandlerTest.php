@@ -46,13 +46,14 @@ final class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
             $this->faker->numberBetween(1, 10)
         );
         $this->confirmationEmailFactory =
-            new ConfirmationEmailFactory($this->eventFactory);
+            new ConfirmationEmailFactory();
         $this->uuidTransformer = new UuidTransformer();
         $this->commandFactory = new SendConfirmationEmailCommandFactory();
 
         $this->handler = new SendConfirmationEmailCommandHandler(
             $this->eventBus,
-            $this->mockUuidFactory
+            $this->mockUuidFactory,
+            $this->eventFactory
         );
     }
 

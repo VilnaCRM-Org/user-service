@@ -92,6 +92,11 @@ App\User\Application\DTO\ConfirmUserDto:
     token:
       - NotBlank: { message: 'not.blank' }
 
+App\User\Application\DTO\RequestPasswordResetDto:
+  properties:
+    email:
+      - Email: { message: 'email.invalid' }
+
 App\User\Application\MutationInput\ConfirmUserMutationInput:
   properties:
     token:

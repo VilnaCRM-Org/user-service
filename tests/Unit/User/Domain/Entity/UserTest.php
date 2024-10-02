@@ -5,150 +5,156 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Domain\Entity;
 
 use App\Shared\Application\Transformer\UuidTransformer;
-use App\Shared\Domain\Bus\Event\DomainEvent;
+use App\Tests\Builders\ConfirmationTokenBuilder;
+use App\Tests\Builders\UserBuilder;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Entity\User;
+use App\User\Domain\Event\EmailChangedEvent;
+use App\User\Domain\Event\PasswordChangedEvent;
 use App\User\Domain\Event\UserConfirmedEvent;
-use App\User\Domain\Factory\ConfirmationTokenFactory;
-use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
-use App\User\Domain\Factory\UserFactory;
-use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
+use Symfony\Component\Uid\Factory\UuidFactory;
 
 final class UserTest extends UnitTestCase
 {
-    private UserInterface $user;
-    private UserConfirmedEventFactoryInterface $userConfirmedEventFactory;
-    private EmailChangedEventFactoryInterface $emailChangedEventFactory;
-    private PasswordChangedEventFactoryInterface $passwordChangedEventFactory;
-    private UserFactoryInterface $userFactory;
-    private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
     private UuidTransformer $uuidTransformer;
+    private UuidFactory $uuidFactoryStub;
+    private PasswordChangedEvent $passwordChangedEventStub;
+    private EmailChangedEvent $emailChangedEventStub;
+    private UserConfirmedEvent $userConfirmedEventStub;
+
+    private EmailChangedEventFactoryInterface $emailChangedEventFactoryMock;
+    private PasswordChangedEventFactoryInterface $passwordChangedEventFactoryMock;
+    private UserConfirmedEventFactoryInterface $userConfirmedEventFactoryMock;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->userConfirmedEventFactory =
-            $this->createMock(UserConfirmedEventFactoryInterface::class);
-        $this->emailChangedEventFactory =
-            $this->createMock(EmailChangedEventFactoryInterface::class);
-        $this->passwordChangedEventFactory =
-            $this->createMock(PasswordChangedEventFactoryInterface::class);
-        $this->userFactory = new UserFactory();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
-            $this->faker->numberBetween(1, 10)
-        );
         $this->uuidTransformer = new UuidTransformer();
+        $this->uuidFactoryStub = $this->createStub(UuidFactory::class);
+        $this->passwordChangedEventStub = $this->createStub(PasswordChangedEvent::class);
+        $this->emailChangedEventStub = $this->createStub(EmailChangedEvent::class);
+        $this->userConfirmedEventStub = $this->createStub(UserConfirmedEvent::class);
 
-        $this->user = $this->userFactory->create(
+        $this->emailChangedEventFactoryMock =
+            $this->createMock(EmailChangedEventFactoryInterface::class);
+        $this->passwordChangedEventFactoryMock =
+            $this->createMock(PasswordChangedEventFactoryInterface::class);
+        $this->userConfirmedEventFactoryMock =
+            $this->createMock(UserConfirmedEventFactoryInterface::class);
+    }
+
+    public function testCreate(): void
+    {
+        $newEmail = $this->faker->email();
+        $newName = $this->faker->name();
+        $newPassword = $this->faker->password();
+        $newUuid = $this->uuidTransformer->transformFromString($this->faker->uuid());
+
+        $user = new User(
             $this->faker->email(),
             $this->faker->name(),
             $this->faker->password(),
             $this->uuidTransformer->transformFromString($this->faker->uuid())
         );
+
+        $user->setEmail($newEmail);
+        $user->setInitials($newName);
+        $user->setPassword($newPassword);
+        $user->setId($newUuid);
+
+        $this->assertEquals($newEmail, $user->getEmail());
+        $this->assertEquals($newName, $user->getInitials());
+        $this->assertEquals($newPassword, $user->getPassword());
+        $this->assertEquals($newUuid, $user->getId());
     }
 
     public function testConfirm(): void
     {
-        $token =
-            $this->confirmationTokenFactory->create($this->faker->uuid());
-        $eventID = $this->faker->uuid();
+        $user = (new UserBuilder())->build();
+        $confirmationToken = (new ConfirmationTokenBuilder())->build();
+        $this->uuidFactoryStub->method('create')
+            ->willReturn($eventID = (new UuidFactory())->create());
 
-        $this->userConfirmedEventFactory->expects($this->once())
-            ->method('create')
-            ->with($token, $eventID)
-            ->willReturn(new UserConfirmedEvent($token, $eventID));
+        $this->userConfirmedEventFactoryMock->expects($this->once())->method('create')
+            ->with($confirmationToken, (string) $eventID)
+            ->willReturn($this->userConfirmedEventStub);
 
-        $confirmedEvent = $this->user->confirm(
-            $token,
-            $eventID,
-            $this->userConfirmedEventFactory
+        $events = $user->confirm(
+            $confirmationToken,
+            $this->uuidFactoryStub,
+            $this->userConfirmedEventFactoryMock
         );
 
-        $this->assertInstanceOf(
-            UserConfirmedEvent::class,
-            $confirmedEvent
-        );
-        $this->assertTrue($this->user->isConfirmed());
+        $this->assertTrue($user->isConfirmed());
+        $this->assertSame($this->userConfirmedEventStub, $events);
     }
 
     public function testUpdate(): void
     {
-        $updateData = new UserUpdate(
-            $this->faker->email(),
-            $this->faker->password(),
-            $this->faker->password(),
-            $this->faker->name()
+        $user = (new UserBuilder())
+            ->withEmail('old-email')
+            ->withInitials('old-initials')
+            ->withPassword('old-password')
+            ->build();
+        $userUpdateDto = new UserUpdate(
+            'new-email',
+            'new-initials',
+            'new-password',
+            'old-password'
         );
-        $hashedNewPassword = $this->faker->password();
-        $eventID = $this->faker->uuid();
+        $this->uuidFactoryStub->method('create')
+            ->willReturnOnConsecutiveCalls(
+                $firstEventID = (new UuidFactory())->create(),
+                $secondEventID = (new UuidFactory())->create()
+            );
 
-        $events = $this->user->update(
-            $updateData,
-            $hashedNewPassword,
-            $eventID,
-            $this->emailChangedEventFactory,
-            $this->passwordChangedEventFactory
+        $this->emailChangedEventFactoryMock->expects($this->once())->method('create')
+            ->with($user, (string) $firstEventID)
+            ->willReturn($this->emailChangedEventStub);
+        $this->passwordChangedEventFactoryMock->expects($this->once())->method('create')
+            ->with($userUpdateDto->newEmail, (string) $secondEventID)
+            ->willReturn($this->passwordChangedEventStub);
+
+        $events = $user->update(
+            $userUpdateDto,
+            'new-hashed-password',
+            $this->uuidFactoryStub,
+            $this->emailChangedEventFactoryMock,
+            $this->passwordChangedEventFactoryMock
         );
 
-        $this->testUpdateMakeAssertions(
-            $events,
-            $updateData,
-            $hashedNewPassword
+        $this->assertEquals([$this->emailChangedEventStub, $this->passwordChangedEventStub], $events);
+        $this->assertEquals($userUpdateDto->newEmail, $user->getEmail());
+        $this->assertEquals($userUpdateDto->newInitials, $user->getInitials());
+        $this->assertEquals('new-hashed-password', $user->getPassword());
+    }
+
+    public function testUpdatePassword(): void
+    {
+        $oldPassword = $this->faker->password();
+        $newPassword = $this->faker->password();
+        $user = (new UserBuilder())
+            ->withPassword($oldPassword)
+            ->build();
+        $this->uuidFactoryStub->method('create')
+            ->willReturn($eventID = (new UuidFactory())->create());
+
+        $this->passwordChangedEventFactoryMock->expects($this->once())->method('create')
+            ->with($user->getEmail(), $eventID)
+            ->willReturn($this->createStub(PasswordChangedEvent::class));
+
+        $events = $user->updatePassword(
+            $newPassword,
+            $this->uuidFactoryStub,
+            $this->passwordChangedEventFactoryMock
         );
-    }
 
-    public function testSetId(): void
-    {
-        $id = $this->faker->uuid();
-        $this->user->setId($this->uuidTransformer->transformFromString($id));
-
-        $this->assertEquals($id, $this->user->getId());
-    }
-
-    public function testSetEmail(): void
-    {
-        $email = $this->faker->email();
-        $this->user->setEmail($email);
-
-        $this->assertEquals($email, $this->user->getEmail());
-    }
-
-    public function testSetInitials(): void
-    {
-        $initials = $this->faker->name();
-        $this->user->setInitials($initials);
-
-        $this->assertEquals($initials, $this->user->getInitials());
-    }
-
-    public function testSetConfirmed(): void
-    {
-        $confirmed = true;
-        $this->user->setConfirmed(true);
-
-        $this->assertEquals($confirmed, $this->user->isConfirmed());
-    }
-
-    /**
-     * @param array<DomainEvent> $events
-     */
-    private function testUpdateMakeAssertions(
-        array $events,
-        UserUpdate $updateData,
-        string $hashedNewPassword
-    ): void {
-        $this->assertIsArray($events);
-        $this->assertNotEmpty($events);
-        $this->assertEquals($updateData->newEmail, $this->user->getEmail());
-        $this->assertEquals(
-            $updateData->newInitials,
-            $this->user->getInitials()
-        );
-        $this->assertEquals($hashedNewPassword, $this->user->getPassword());
+        $this->assertInstanceOf(PasswordChangedEvent::class, $events[0]);
+        $this->assertEquals($newPassword, $user->getPassword());
     }
 }

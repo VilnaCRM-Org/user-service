@@ -57,5 +57,6 @@ final class ConfirmationEmailSendEventFactoryTest extends UnitTestCase
         );
         $this->assertEquals($token, $event->token);
         $this->assertEquals($user->getEmail(), $event->emailAddress);
+        $this->assertEquals($eventId, $event->eventId());
     }
 }

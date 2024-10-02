@@ -10,12 +10,13 @@ use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
+use Symfony\Component\Uid\Factory\UuidFactory;
 
 interface UserInterface
 {
     public function confirm(
         ConfirmationToken $token,
-        string $eventID,
+        UuidFactory $uuidFactory,
         UserConfirmedEventFactoryInterface $userConfirmedEventFactory
     ): UserConfirmedEvent;
 
@@ -25,8 +26,23 @@ interface UserInterface
     public function update(
         UserUpdate $updateData,
         string $hashedNewPassword,
-        string $eventID,
+        UuidFactory $uuidFactory,
         EmailChangedEventFactoryInterface $emailChangedEventFactory,
         PasswordChangedEventFactoryInterface $passwordChangedEventFactory,
     ): array;
+
+    /**
+     * @return array<DomainEvent>
+     */
+    public function updatePassword(
+        string $hashedPassword,
+        UuidFactory $uuidFactory,
+        PasswordChangedEventFactoryInterface $passwordChangedEventFactory
+    ): array;
+
+    public function getId(): string;
+
+    public function getEmail(): string;
+
+    public function isConfirmed(): bool;
 }

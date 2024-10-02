@@ -11,6 +11,7 @@ use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
+use Symfony\Component\Uid\Factory\UuidFactory;
 
 class User implements UserInterface
 {
@@ -67,12 +68,12 @@ class User implements UserInterface
 
     public function confirm(
         ConfirmationToken $token,
-        string $eventID,
+        UuidFactory $uuidFactory,
         UserConfirmedEventFactoryInterface $userConfirmedEventFactory
     ): UserConfirmedEvent {
         $this->confirmed = true;
 
-        return $userConfirmedEventFactory->create($token, $eventID);
+        return $userConfirmedEventFactory->create($token, (string) $uuidFactory->create());
     }
 
     /**
@@ -81,26 +82,48 @@ class User implements UserInterface
     public function update(
         UserUpdate $updateData,
         string $hashedNewPassword,
-        string $eventID,
+        UuidFactory $uuidFactory,
         EmailChangedEventFactoryInterface $emailChangedEventFactory,
         PasswordChangedEventFactoryInterface $passwordChangedEventFactory,
     ): array {
-        $events = [];
-
-        $events += $this->processNewEmail(
-            $updateData->newEmail,
-            $eventID,
-            $emailChangedEventFactory
-        );
-        $events += $this->processNewPassword(
-            $updateData->newPassword,
-            $updateData->oldPassword,
-            $eventID,
-            $passwordChangedEventFactory
-        );
+        $events = [
+            ...$this->processNewEmail(
+                $updateData->newEmail,
+                (string) $uuidFactory->create(),
+                $emailChangedEventFactory
+            ),
+            ...$this->processNewPassword(
+                $updateData->newPassword,
+                $updateData->oldPassword,
+                (string) $uuidFactory->create(),
+                $passwordChangedEventFactory
+            ),
+        ];
 
         $this->initials = $updateData->newInitials;
         $this->password = $hashedNewPassword;
+
+        return $events;
+    }
+
+    /**
+     * @return array<DomainEvent>
+     */
+    public function updatePassword(
+        string $hashedPassword,
+        UuidFactory $uuidFactory,
+        PasswordChangedEventFactoryInterface $passwordChangedEventFactory
+    ): array {
+        $events = [];
+
+        $events += $this->processNewPassword(
+            $hashedPassword,
+            $this->password,
+            (string) $uuidFactory->create(),
+            $passwordChangedEventFactory
+        );
+
+        $this->password = $hashedPassword;
 
         return $events;
     }

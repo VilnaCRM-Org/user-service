@@ -17,7 +17,6 @@ use App\User\Domain\Factory\ConfirmationEmailFactory;
 use App\User\Domain\Factory\ConfirmationEmailFactoryInterface;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
-use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactory;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactory;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
@@ -46,9 +45,7 @@ final class UserRegisteredEventSubscriberTest extends UnitTestCase
         );
         $this->uuidTransformer = new UuidTransformer();
         $this->userRegisteredEventFactory = new UserRegisteredEventFactory();
-        $this->confirmationEmailFactory = new ConfirmationEmailFactory(
-            new ConfirmationEmailSendEventFactory()
-        );
+        $this->confirmationEmailFactory = new ConfirmationEmailFactory();
         $this->commandFactory = new SendConfirmationEmailCommandFactory();
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->tokenFactory =
