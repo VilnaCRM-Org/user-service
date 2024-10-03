@@ -9,6 +9,7 @@
 ![PHPInsights style](https://img.shields.io/badge/PHPInsights%20%7C%20Style%20-100.0%25-success.svg)
 ![PHPInsights complexity](https://img.shields.io/badge/PHPInsights%20%7C%20Complexity%20-98.9%25-success.svg)
 ![PHPInsights architecture](https://img.shields.io/badge/PHPInsights%20%7C%20Architecture%20-100.0%25-success.svg)
+[![Maintainability](https://api.codeclimate.com/v1/badges/b69a1d3fcff78ca1f9d9/maintainability)](https://codeclimate.com/github/VilnaCRM-Org/user-service/maintainability)
 
 ## Possibilities
 - Modern PHP stack for services: [API Platform 3](https://api-platform.com/), PHP 8, [Symfony 7](https://symfony.com/)
