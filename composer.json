@@ -133,7 +133,7 @@
     "pheromone/phpcs-security-audit": "^2.0",
     "phpmetrics/phpmetrics": "^2.8",
     "phpunit/phpunit": "^9.5",
-    "psalm/plugin-phpunit": "^0.18.4",
+    "psalm/plugin-phpunit": "^0.19.0",
     "psalm/plugin-symfony": "^5.2",
     "qossmic/deptrac-shim": "^1.0",
     "ramsey/conventional-commits": "^1.3",
