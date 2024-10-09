@@ -100,7 +100,6 @@ sh                         Log to the docker container
 smoke-load-tests           Run load tests with minimal load
 spike-load-tests           Run load tests with a spike of extreme load
 start                      Start docker
-stats                      Commits by the hour for the main author of this project stop                       Stop docker and the Symfony binary server
 stress-load-tests          Run load tests with high load
 unit-tests                 Run unit tests
 update                     Update vendors according to the current composer.json file
