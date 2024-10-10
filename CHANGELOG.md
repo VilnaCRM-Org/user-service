@@ -1,3 +1,12 @@
+# [1.6.0](https://github.com/VilnaCRM-Org/user-service/compare/v1.5.0...v1.6.0) (2024-10-10)
+
+
+### Features
+
+* **#52:** add code climate badge ([#53](https://github.com/VilnaCRM-Org/user-service/issues/53)) ([781b985](https://github.com/VilnaCRM-Org/user-service/commit/781b985a619336c73b95eef79370aad371da36f0)), closes [#52](https://github.com/VilnaCRM-Org/user-service/issues/52) [#52](https://github.com/VilnaCRM-Org/user-service/issues/52) [#50](https://github.com/VilnaCRM-Org/user-service/issues/50) [#57](https://github.com/VilnaCRM-Org/user-service/issues/57)
+
+
+
 # [1.5.0](https://github.com/VilnaCRM-Org/user-service/compare/v1.4.4...v1.5.0) (2024-10-02)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **#36:** move fixtures to tests directory ([#37](https://github.com/VilnaCRM-Org/user-service/issues/37)) ([5f16944](https://github.com/VilnaCRM-Org/user-service/commit/5f16944ebee6a25609ec527988be591b1261a4fe)), closes [#36](https://github.com/VilnaCRM-Org/user-service/issues/36) [#34](https://github.com/VilnaCRM-Org/user-service/issues/34) [#36](https://github.com/VilnaCRM-Org/user-service/issues/36)
-
-
-
-## [1.4.1](https://github.com/VilnaCRM-Org/user-service/compare/v1.4.0...v1.4.1) (2024-07-17)
-
-
-### Bug Fixes
-
-* **#34:** add changelog in action ([#35](https://github.com/VilnaCRM-Org/user-service/issues/35)) ([596d702](https://github.com/VilnaCRM-Org/user-service/commit/596d702b225cf522dc30134b82a00dabe1b53afa)), closes [#34](https://github.com/VilnaCRM-Org/user-service/issues/34) [#34](https://github.com/VilnaCRM-Org/user-service/issues/34) [#34](https://github.com/VilnaCRM-Org/user-service/issues/34)
 
 
 
