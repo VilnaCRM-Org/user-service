@@ -256,7 +256,6 @@ paths:
                 status: 500
           headers: {  }
       requestBody:
-        description: ''
         content:
           application/json:
             schema:
@@ -505,7 +504,6 @@ paths:
       description: 'Creates a User resource.'
       parameters: []
       requestBody:
-        description: ''
         content:
           application/json:
             schema:
@@ -613,7 +611,6 @@ paths:
       description: 'Creates a User resource.'
       parameters: []
       requestBody:
-        description: ''
         content:
           application/json:
             schema:
@@ -677,7 +674,6 @@ paths:
       description: 'Confirms the User'
       parameters: []
       requestBody:
-        description: ''
         content:
           application/merge-patch+json:
             schema:
@@ -920,7 +916,6 @@ paths:
           allowReserved: false
           example: 2b10b7a3-67f0-40ea-a367-44263321592a
       requestBody:
-        description: ''
         content:
           application/json:
             schema:
@@ -1164,7 +1159,6 @@ paths:
           allowReserved: false
           example: 2b10b7a3-67f0-40ea-a367-44263321592a
       requestBody:
-        description: ''
         content:
           application/merge-patch+json:
             schema:
