@@ -45,7 +45,7 @@ RUN set -eux; \
     	apcu \
 		opcache \
         pdo_mysql \
-        redis \
+        redis-6.0.2 \
         openssl \
         xsl \
     ;
