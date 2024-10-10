@@ -106,7 +106,7 @@ update                     Update vendors according to the current composer.json
 up                         Start the docker hub (PHP, caddy)
 
  ```
-#
+
 ## Documentation
 Start reading at the [GitHub wiki](https://github.com/VilnaCRM-Org/user-service/wiki). If you're having trouble, head for [the troubleshooting guide](https://github.com/VilnaCRM-Org/user-service/wiki/Community-and-Support) as it's frequently updated.
 
