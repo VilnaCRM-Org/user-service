@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6d3263d817c3f1c0fbfebf4c6d52268c",
+    "content-hash": "12dffbfdc5084cc8cc4ec34ca5f0fd16",
     "packages": [
         {
             "name": "api-platform/core",
@@ -475,16 +475,16 @@
         },
         {
             "name": "cfpinto/graphql",
-            "version": "v2.0.0",
+            "version": "v2.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cfpinto/graphql.git",
-                "reference": "94691ee8238c80c243dcf3636efb4546df5b86f4"
+                "reference": "0cefd3fa4d54835d53b9dedf45b194071d6a4966"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cfpinto/graphql/zipball/94691ee8238c80c243dcf3636efb4546df5b86f4",
-                "reference": "94691ee8238c80c243dcf3636efb4546df5b86f4",
+                "url": "https://api.github.com/repos/cfpinto/graphql/zipball/0cefd3fa4d54835d53b9dedf45b194071d6a4966",
+                "reference": "0cefd3fa4d54835d53b9dedf45b194071d6a4966",
                 "shasum": ""
             },
             "require": {
@@ -522,9 +522,9 @@
             ],
             "support": {
                 "issues": "https://github.com/cfpinto/graphql/issues",
-                "source": "https://github.com/cfpinto/graphql/tree/v2.0.0"
+                "source": "https://github.com/cfpinto/graphql/tree/v2.0.1"
             },
-            "time": "2023-01-20T17:13:41+00:00"
+            "time": "2024-10-11T10:06:52+00:00"
         },
         {
             "name": "defuse/php-encryption",
