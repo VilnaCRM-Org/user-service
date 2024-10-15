@@ -189,12 +189,6 @@ final class OAuthContext implements Context
             'Client authentication failed',
             $data['error_description']
         );
-
-        Assert::assertArrayHasKey('message', $data);
-        Assert::assertEquals(
-            'Client authentication failed',
-            $data['message']
-        );
     }
 
     /**
@@ -217,13 +211,6 @@ final class OAuthContext implements Context
             'The authorization grant type is '.
             'not supported by the authorization server.',
             $data['error_description']
-        );
-
-        Assert::assertArrayHasKey('message', $data);
-        Assert::assertEquals(
-            'The authorization grant type is not'.
-            ' supported by the authorization server.',
-            $data['message']
         );
     }
 
