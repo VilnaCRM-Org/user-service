@@ -1,96 +1,17 @@
 resources:
-  App\User\Domain\Entity\User:
-    exceptionToStatus:
-      'App\User\Domain\Exception\UserTimedOutException': 429
-      'App\User\Domain\Exception\UserNotFoundException': 404
-      'App\User\Domain\Exception\InvalidPasswordException': 400
-      'App\User\Domain\Exception\TokenNotFoundException': 404
-      'App\User\Domain\Exception\DuplicateEmailException': 409
-    normalizationContext:
-      groups: [ 'output' ]
-
+  App\CompanySubdomain\SomeModule\Domain\ExampleApiResource:
     operations:
-      ApiPlatform\Metadata\GetCollection:
-        paginationClientItemsPerPage: true
-      ApiPlatform\Metadata\Get: ~
-      create_http:
-        class: 'ApiPlatform\Metadata\Post'
-        input: 'App\User\Application\DTO\UserRegisterDto'
-        processor: 'App\User\Application\Processor\RegisterUserProcessor'
-      create_batch_http:
-        class: 'ApiPlatform\Metadata\Post'
-        input: 'App\User\Application\DTO\UserRegisterBatchDto'
-        processor: 'App\User\Application\Processor\RegisterUserBatchProcessor'
-        uriTemplate: 'users/batch'
-      confirm_http:
-        class: 'ApiPlatform\Metadata\Patch'
-        input: 'App\User\Application\DTO\ConfirmUserDto'
-        processor: 'App\User\Application\Processor\ConfirmUserProcessor'
-        uriTemplate: 'users/confirm'
-      ApiPlatform\Metadata\Patch:
-        input: 'App\User\Application\DTO\UserPatchDto'
-        processor: 'App\User\Application\Processor\UserPatchProcessor'
-      ApiPlatform\Metadata\Put:
-        input: 'App\User\Application\DTO\UserPutDto'
-        processor: 'App\User\Application\Processor\UserPutProcessor'
-      ApiPlatform\Metadata\Delete: ~
-      ApiPlatform\Metadata\Post:
-        uriTemplate: '/users/{id}/resend-confirmation-email'
-        input: 'App\User\Application\DTO\RetryDto'
-        processor: 'App\User\Application\Processor\ResendEmailProcessor'
+      ApiPlatform\Metadata\Get:
+        openapi: true
 
-    graphQlOperations:
-      - class: 'ApiPlatform\Metadata\GraphQl\Query'
-      - class: 'ApiPlatform\Metadata\GraphQl\QueryCollection'
-      - class: 'ApiPlatform\Metadata\GraphQl\DeleteMutation'
-        normalizationContext:
-          groups: [ 'deleteMutationOutput' ]
-        name: 'delete'
-      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
-        name: 'confirm'
-        resolver: 'App\User\Application\Resolver\ConfirmUserMutationResolver'
-        deserialize: false
-        denormalizationContext:
-          groups: [ ]
-        extraArgs:
-          token:
-            type: 'String!'
-      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
-        resolver: 'App\User\Application\Resolver\RegisterUserMutationResolver'
-        deserialize: false
-        name: 'create'
-        denormalizationContext:
-          groups: []
-        extraArgs:
-          email:
-            type: 'String!'
-          initials:
-            type: 'String!'
-          password:
-            type: 'String!'
-      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
-        resolver: 'App\User\Application\Resolver\UserUpdateMutationResolver'
-        deserialize: false
-        write: false
-        name: 'update'
-        denormalizationContext:
-          groups: []
-        extraArgs:
-          id:
-            type: 'ID!'
-          newPassword:
-            type: 'String'
-          password:
-            type: 'String!'
-          email:
-            type: 'String'
-          initials:
-            type: 'String'
-      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
-        resolver: 'App\User\Application\Resolver\ResendEmailMutationResolver'
-        name: 'resendEmailTo'
-        denormalizationContext:
-          groups: []
-        extraArgs:
-          id:
-            type: 'ID!'
+  App\Internal\HealthCheck\Domain\ValueObject\HealthCheck:
+    operations:
+      ApiPlatform\Metadata\Get:
+        uriTemplate: '/health'
+        controller: 'App\Internal\HealthCheck\Application\Controller\HealthCheckController'
+        openapiContext:
+          responses:
+            '204':
+              description: 'Health check passed with no content to return.'
+            '500':
+              description: 'Health check failed.'

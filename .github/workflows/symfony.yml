@@ -1,4 +1,4 @@
-name: Dependency audit and validation
+name: checks
 
 on:
   pull_request:
@@ -6,12 +6,11 @@ on:
 
 jobs:
   symfony-checks:
-    name: Symfony checks
     runs-on: ubuntu-latest
     steps:
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: ${{ vars.PHP_VERSION }}
       - uses: actions/checkout@v3
       - name: Copy .env.test.local
         run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
