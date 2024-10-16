@@ -1,16 +1,13 @@
-import { check } from 'k6';
-import http from 'k6/http';
-import faker from 'k6/x/faker';
+import {check} from 'k6';
 
 export default class Utils {
     constructor() {
-        const host = this.getConfig().apiHost;
-        const port = this.getConfig().apiPort;
+        const config = this.getConfig();
+        const host = config.apiHost;
+        const port = config.apiPort;
 
         this.baseUrl = `http://${host}:${port}/api`;
-        this.baseHttpUrl = this.baseUrl + '/users';
-        this.baseGraphQLUrl = this.baseUrl + '/graphql';
-        this.graphQLIdPrefix = '/api/users/';
+        this.baseHttpUrl = this.baseUrl;
     }
 
     getConfig() {
@@ -20,78 +17,22 @@ export default class Utils {
             try {
                 return JSON.parse(open('../config.json.dist'));
             } catch (error) {
-                console.log('Error occurred while trying to open config')
+                console.error('Failed to load configuration from config.json and config.json.dist:', error);
             }
         }
-    }
-
-    getBaseUrl() {
-        return this.baseUrl;
     }
 
     getBaseHttpUrl() {
         return this.baseHttpUrl;
     }
 
-    getBaseGraphQLUrl() {
-        return this.baseGraphQLUrl;
-    }
-
-    getGraphQLIdPrefix() {
-        return this.graphQLIdPrefix;
-    }
-
-    getJsonHeader() {
-        return {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        };
-    }
-
-    getMergePatchHeader() {
-        return {
-            headers: {
-                'Content-Type': 'application/merge-patch+json',
-            },
-        };
-    }
-
-    getRandomNumber(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
     getCLIVariable(variable) {
         return `${__ENV[variable]}`;
     }
 
-    checkUserIsDefined(user) {
-        check(user, {'user is defined': (u) => u !== undefined});
-    }
-
-    generateUser(){
-        const email = `${faker.number.int32()}${faker.person.email()}`;
-        const initials = faker.person.name();
-        const password = faker.internet.password(true, true, true, false, false, 60);
-
-        return {
-            email,
-            password,
-            initials,
-        };
-    }
 
    checkResponse(response, checkName, checkFunction) {
         check(response, {[checkName]: (res) => checkFunction(res)});
     }
 
-    registerUser(user){
-        const payload = JSON.stringify(user);
-
-        return http.post(
-            this.getBaseHttpUrl(),
-            payload,
-            this.getJsonHeader()
-        );
-    }
 }
