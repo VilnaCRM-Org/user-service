@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\OAuthContext;
 
+use App\Shared\Domain\ValueObject\Uuid;
 use App\Tests\Behat\OAuthContext\Input\AuthorizationCodeGrantInput;
 use App\Tests\Behat\OAuthContext\Input\ClientCredentialsGrantInput;
 use App\Tests\Behat\OAuthContext\Input\ObtainAccessTokenInput;
@@ -19,7 +20,6 @@ use League\Bundle\OAuth2ServerBundle\Model\Client;
 use League\Bundle\OAuth2ServerBundle\OAuth2Events;
 use League\Bundle\OAuth2ServerBundle\ValueObject\RedirectUri;
 use PHPUnit\Framework\Assert;
-use App\Shared\Domain\ValueObject\Uuid;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
