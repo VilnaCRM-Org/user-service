@@ -34,4 +34,9 @@ final readonly class AuthorizationUserDto implements UserInterface
     {
         return $this->email;
     }
+
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
 }
