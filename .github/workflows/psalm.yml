@@ -1,4 +1,4 @@
-name: Error static analysis tool
+name: code quality
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Psalm
         uses: docker://ghcr.io/psalm/psalm-github-actions
