@@ -42,6 +42,7 @@ return [
         LineLengthSniff::class => [
             'exclude' => [
                 'phpinsights',
+                'tests/Behat/OAuthContext/OAuthContext.php',
             ],
             'ignoreComments' => true,
         ],

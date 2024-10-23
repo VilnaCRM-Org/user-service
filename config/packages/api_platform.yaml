@@ -6,7 +6,6 @@ api_platform:
     use_symfony_listeners: false
     graphql:
         graphql_playground: false
-    keep_legacy_inflector: false
 
     defaults:
         extra_properties:

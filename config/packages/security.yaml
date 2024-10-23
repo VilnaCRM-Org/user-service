@@ -2,6 +2,9 @@
 security:
   # enable_authenticator_manager: true
 
+  access_control:
+    - { path: ^/authorize, roles: IS_AUTHENTICATED_REMEMBERED }
+
   providers:
     app_user_provider:
       entity:

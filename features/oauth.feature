@@ -12,6 +12,7 @@ Feature: OAuth authorization
   Scenario: Obtaining access token with authorization-code grant
     Given client with id "AuthCodeId", secret "AuthCodeSecret" and redirect uri "https://example.com/oauth/callback" exists
     And passing client id "AuthCodeId" and redirect_uri "https://example.com/oauth/callback"
+    And authenticating user with email "testuser@example.com" and password "password"
     And obtaining auth code
     And passing client id "AuthCodeId", client secret "AuthCodeSecret", redirect_uri "https://example.com/oauth/callback" and auth code
     When obtaining access token with "authorization_code" grant-type
@@ -33,3 +34,9 @@ Feature: OAuth authorization
     And passing client id "invalidId" and client secret "invalidSecret"
     When obtaining access token with "invalidGrant" grant-type
     Then unsupported grant type error should be returned
+
+  Scenario: Failing to obtain authorization code without authentication
+    Given client with id "AuthCodeId", secret "AuthCodeSecret" and redirect uri "https://example.com/oauth/callback" exists
+    And passing client id "AuthCodeId" and redirect_uri "https://example.com/oauth/callback"
+    When I request the authorization endpoint
+    Then unauthorized error should be returned
