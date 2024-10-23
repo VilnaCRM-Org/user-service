@@ -12,6 +12,7 @@ Feature: OAuth authorization
   Scenario: Obtaining access token with authorization-code grant
     Given client with id "AuthCodeId", secret "AuthCodeSecret" and redirect uri "https://example.com/oauth/callback" exists
     And passing client id "AuthCodeId" and redirect_uri "https://example.com/oauth/callback"
+    And authenticating user with email "testuser@example.com" and password "password"
     And obtaining auth code
     And passing client id "AuthCodeId", client secret "AuthCodeSecret", redirect_uri "https://example.com/oauth/callback" and auth code
     When obtaining access token with "authorization_code" grant-type

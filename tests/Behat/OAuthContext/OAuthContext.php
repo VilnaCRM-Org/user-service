@@ -175,6 +175,15 @@ final class OAuthContext implements Context
     }
 
     /**
+     * @Given authenticating user with email :email and password :password
+     */
+    public function authenticatingUser(string $email, string $password): void
+    {
+        $this->authenticateUser();
+    }
+
+
+    /**
      * @Then invalid credentials error should be returned
      */
     public function invalidCredentialsError(): void
@@ -221,8 +230,6 @@ final class OAuthContext implements Context
 
     private function approveAuthorization(): void
     {
-        $this->authenticateUser();
-
         $this->kernel->getContainer()->get('event_dispatcher')
             ->addListener(
                 OAuth2Events::AUTHORIZATION_REQUEST_RESOLVE,
