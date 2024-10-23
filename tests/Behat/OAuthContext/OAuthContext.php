@@ -179,17 +179,19 @@ final class OAuthContext implements Context
      */
     public function authenticatingUser(string $email, string $password): void
     {
+        $password = password_hash('password', PASSWORD_BCRYPT);
+
         $userDto = new AuthorizationUserDto(
             'testuser@example.com',
             'Test User',
-            password_hash('password', PASSWORD_BCRYPT),
+            $password,
             new Uuid($this->faker->uuid()),
             true
         );
 
         $token = new UsernamePasswordToken(
             $userDto,
-            $userDto->getPassword(),
+            $password,
             $userDto->getRoles()
         );
         $this->tokenStorage->setToken($token);
