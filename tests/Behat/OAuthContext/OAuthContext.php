@@ -116,21 +116,21 @@ final class OAuthContext implements Context
     {
         $this->approveAuthorization();
 
-        $this->response = $this->kernel->handle(Request::create(
-            '/api/oauth/authorize?' .
-            $this->obtainAuthorizeCodeInput->toUriParams(),
-            'GET',
-            [],
-            [],
-            [],
-            ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-            ]
-        ));
+        $this->sendAuthorizationRequest();
 
         $this->authCode = Request::create(
             $this->response->headers->get('location')
         )->query->get('code');
+    }
+
+    /**
+     * @Given I request the authorization endpoint
+     */
+    public function requestAuthorizationEndpoint(): void
+    {
+        $this->approveAuthorization();
+
+        $this->sendAuthorizationRequest();
     }
 
     /**
@@ -179,9 +179,21 @@ final class OAuthContext implements Context
      */
     public function authenticatingUser(string $email, string $password): void
     {
-        $this->authenticateUser();
-    }
+        $userDto = new AuthorizationUserDto(
+            'testuser@example.com',
+            'Test User',
+            password_hash('password', PASSWORD_BCRYPT),
+            new Uuid($this->faker->uuid()),
+            true
+        );
 
+        $token = new UsernamePasswordToken(
+            $userDto,
+            $userDto->getPassword(),
+            $userDto->getRoles()
+        );
+        $this->tokenStorage->setToken($token);
+    }
 
     /**
      * @Then invalid credentials error should be returned
@@ -202,6 +214,25 @@ final class OAuthContext implements Context
         Assert::assertEquals(
             'Client authentication failed',
             $data['error_description']
+        );
+    }
+
+    /**
+     * @Then unauthorized error should be returned
+     */
+    public function unauthorizedErrorShouldBeReturned(): void
+    {
+        $data = json_decode($this->response->getContent(), true);
+
+        Assert::assertSame(
+            Response::HTTP_INTERNAL_SERVER_ERROR,
+            $this->response->getStatusCode()
+        );
+
+        Assert::assertArrayHasKey('detail', $data);
+        Assert::assertEquals(
+            'A logged in user is required to resolve the authorization request.',
+            $data['detail']
         );
     }
 
@@ -241,21 +272,18 @@ final class OAuthContext implements Context
             );
     }
 
-    private function authenticateUser(): void
+    private function sendAuthorizationRequest(): void
     {
-        $userDto = new AuthorizationUserDto(
-            'testuser@example.com',
-            'Test User',
-            password_hash('password', PASSWORD_BCRYPT),
-            new Uuid($this->faker->uuid()),
-            true
-        );
-
-        $token = new UsernamePasswordToken(
-            $userDto,
-            $userDto->getPassword(),
-            $userDto->getRoles()
-        );
-        $this->tokenStorage->setToken($token);
+        $this->response = $this->kernel->handle(Request::create(
+            '/api/oauth/authorize?' .
+            $this->obtainAuthorizeCodeInput->toUriParams(),
+            'GET',
+            [],
+            [],
+            [],
+            ['HTTP_ACCEPT' => 'application/json',
+                'CONTENT_TYPE' => 'application/json',
+            ]
+        ));
     }
 }

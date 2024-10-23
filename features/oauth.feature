@@ -34,3 +34,9 @@ Feature: OAuth authorization
     And passing client id "invalidId" and client secret "invalidSecret"
     When obtaining access token with "invalidGrant" grant-type
     Then unsupported grant type error should be returned
+
+  Scenario: Failing to obtain authorization code without authentication
+    Given client with id "AuthCodeId", secret "AuthCodeSecret" and redirect uri "https://example.com/oauth/callback" exists
+    And passing client id "AuthCodeId" and redirect_uri "https://example.com/oauth/callback"
+    When I request the authorization endpoint
+    Then unauthorized error should be returned
