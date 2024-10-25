@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "337ce7d70853a07f16e8ccf38e55a111",
+    "content-hash": "c373cfb10764ccc9664e064f33d0fcf6",
     "packages": [
         {
             "name": "api-platform/core",
-            "version": "v4.0.4",
+            "version": "v4.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/core.git",
-                "reference": "0935664c206a935dd32d6cffb183503598ff9fb2"
+                "reference": "cbc873735caa5deda2a4abe8c02f13aaa58879a8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/core/zipball/0935664c206a935dd32d6cffb183503598ff9fb2",
-                "reference": "0935664c206a935dd32d6cffb183503598ff9fb2",
+                "url": "https://api.github.com/repos/api-platform/core/zipball/cbc873735caa5deda2a4abe8c02f13aaa58879a8",
+                "reference": "cbc873735caa5deda2a4abe8c02f13aaa58879a8",
                 "shasum": ""
             },
             "require": {
@@ -213,9 +213,9 @@
             ],
             "support": {
                 "issues": "https://github.com/api-platform/core/issues",
-                "source": "https://github.com/api-platform/core/tree/v4.0.4"
+                "source": "https://github.com/api-platform/core/tree/v4.0.5"
             },
-            "time": "2024-10-11T12:23:04+00:00"
+            "time": "2024-10-22T07:19:10+00:00"
         },
         {
             "name": "async-aws/core",
@@ -1859,16 +1859,16 @@
         },
         {
             "name": "doctrine/sql-formatter",
-            "version": "1.5.0",
+            "version": "1.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/sql-formatter.git",
-                "reference": "16ca9e39877369d664f06dacde468548298bdc40"
+                "reference": "b784cbde727cf806721451dde40eff4fec3bbe86"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/sql-formatter/zipball/16ca9e39877369d664f06dacde468548298bdc40",
-                "reference": "16ca9e39877369d664f06dacde468548298bdc40",
+                "url": "https://api.github.com/repos/doctrine/sql-formatter/zipball/b784cbde727cf806721451dde40eff4fec3bbe86",
+                "reference": "b784cbde727cf806721451dde40eff4fec3bbe86",
                 "shasum": ""
             },
             "require": {
@@ -1909,9 +1909,9 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/sql-formatter/issues",
-                "source": "https://github.com/doctrine/sql-formatter/tree/1.5.0"
+                "source": "https://github.com/doctrine/sql-formatter/tree/1.5.1"
             },
-            "time": "2024-09-11T07:29:40+00:00"
+            "time": "2024-10-21T18:21:57+00:00"
         },
         {
             "name": "dpauli/graphql-request-builder",
@@ -9735,38 +9735,47 @@
         },
         {
             "name": "webonyx/graphql-php",
-            "version": "v14.11.10",
+            "version": "v15.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webonyx/graphql-php.git",
-                "reference": "d9c2fdebc6aa01d831bc2969da00e8588cffef19"
+                "reference": "c4df6e57c0422e0148b7582573c634574eb2ec13"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webonyx/graphql-php/zipball/d9c2fdebc6aa01d831bc2969da00e8588cffef19",
-                "reference": "d9c2fdebc6aa01d831bc2969da00e8588cffef19",
+                "url": "https://api.github.com/repos/webonyx/graphql-php/zipball/c4df6e57c0422e0148b7582573c634574eb2ec13",
+                "reference": "c4df6e57c0422e0148b7582573c634574eb2ec13",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "ext-mbstring": "*",
-                "php": "^7.1 || ^8"
+                "php": "^7.4 || ^8"
             },
             "require-dev": {
-                "amphp/amp": "^2.3",
-                "doctrine/coding-standard": "^6.0",
-                "nyholm/psr7": "^1.2",
+                "amphp/amp": "^2.6",
+                "amphp/http-server": "^2.1",
+                "dms/phpunit-arraysubset-asserts": "dev-master",
+                "ergebnis/composer-normalize": "^2.28",
+                "friendsofphp/php-cs-fixer": "3.64.0",
+                "mll-lab/php-cs-fixer-config": "^5.9.2",
+                "nyholm/psr7": "^1.5",
                 "phpbench/phpbench": "^1.2",
-                "phpstan/extension-installer": "^1.0",
-                "phpstan/phpstan": "0.12.82",
-                "phpstan/phpstan-phpunit": "0.12.18",
-                "phpstan/phpstan-strict-rules": "0.12.9",
-                "phpunit/phpunit": "^7.2 || ^8.5",
-                "psr/http-message": "^1.0",
-                "react/promise": "2.*",
-                "simpod/php-coveralls-mirror": "^3.0"
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan": "1.12.7",
+                "phpstan/phpstan-phpunit": "1.4.0",
+                "phpstan/phpstan-strict-rules": "1.6.1",
+                "phpunit/phpunit": "^9.5 || ^10.5.21 || ^11",
+                "psr/http-message": "^1 || ^2",
+                "react/http": "^1.6",
+                "react/promise": "^2.0 || ^3.0",
+                "rector/rector": "^1.0",
+                "symfony/polyfill-php81": "^1.23",
+                "symfony/var-exporter": "^5 || ^6 || ^7",
+                "thecodingmachine/safe": "^1.3 || ^2"
             },
             "suggest": {
+                "amphp/http-server": "To leverage async resolving with webserver on AMPHP platform",
                 "psr/http-message": "To use standard GraphQL server",
                 "react/promise": "To leverage async resolving on React PHP platform"
             },
@@ -9788,7 +9797,7 @@
             ],
             "support": {
                 "issues": "https://github.com/webonyx/graphql-php/issues",
-                "source": "https://github.com/webonyx/graphql-php/tree/v14.11.10"
+                "source": "https://github.com/webonyx/graphql-php/tree/v15.15.0"
             },
             "funding": [
                 {
@@ -9796,7 +9805,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2023-07-05T14:23:37+00:00"
+            "time": "2024-10-23T09:49:46+00:00"
         },
         {
             "name": "willdurand/negotiation",
@@ -10105,25 +10114,25 @@
         },
         {
             "name": "behat/gherkin",
-            "version": "v4.9.0",
+            "version": "v4.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Behat/Gherkin.git",
-                "reference": "0bc8d1e30e96183e4f36db9dc79caead300beff4"
+                "reference": "cbb83c4c435dd8d05a161f2a5ae322e61b2f4db6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Behat/Gherkin/zipball/0bc8d1e30e96183e4f36db9dc79caead300beff4",
-                "reference": "0bc8d1e30e96183e4f36db9dc79caead300beff4",
+                "url": "https://api.github.com/repos/Behat/Gherkin/zipball/cbb83c4c435dd8d05a161f2a5ae322e61b2f4db6",
+                "reference": "cbb83c4c435dd8d05a161f2a5ae322e61b2f4db6",
                 "shasum": ""
             },
             "require": {
                 "php": "~7.2|~8.0"
             },
             "require-dev": {
-                "cucumber/cucumber": "dev-gherkin-22.0.0",
+                "cucumber/cucumber": "dev-gherkin-24.1.0",
                 "phpunit/phpunit": "~8|~9",
-                "symfony/yaml": "~3|~4|~5"
+                "symfony/yaml": "~3|~4|~5|~6|~7"
             },
             "suggest": {
                 "symfony/yaml": "If you want to parse features, represented in YAML files"
@@ -10162,9 +10171,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Behat/Gherkin/issues",
-                "source": "https://github.com/Behat/Gherkin/tree/v4.9.0"
+                "source": "https://github.com/Behat/Gherkin/tree/v4.10.0"
             },
-            "time": "2021-10-12T13:05:09+00:00"
+            "time": "2024-10-19T14:46:06+00:00"
         },
         {
             "name": "behat/transliterator",
@@ -12569,16 +12578,16 @@
         },
         {
             "name": "league/container",
-            "version": "4.2.2",
+            "version": "4.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/container.git",
-                "reference": "ff346319ca1ff0e78277dc2311a42107cc1aab88"
+                "reference": "72f9bebe7bd623007782a40f5ec305661ab706d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/container/zipball/ff346319ca1ff0e78277dc2311a42107cc1aab88",
-                "reference": "ff346319ca1ff0e78277dc2311a42107cc1aab88",
+                "url": "https://api.github.com/repos/thephpleague/container/zipball/72f9bebe7bd623007782a40f5ec305661ab706d8",
+                "reference": "72f9bebe7bd623007782a40f5ec305661ab706d8",
                 "shasum": ""
             },
             "require": {
@@ -12639,7 +12648,7 @@
             ],
             "support": {
                 "issues": "https://github.com/thephpleague/container/issues",
-                "source": "https://github.com/thephpleague/container/tree/4.2.2"
+                "source": "https://github.com/thephpleague/container/tree/4.2.3"
             },
             "funding": [
                 {
@@ -12647,7 +12656,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-03-13T13:12:53+00:00"
+            "time": "2024-10-23T12:06:58+00:00"
         },
         {
             "name": "marcocesarato/php-conventional-changelog",

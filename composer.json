@@ -54,7 +54,7 @@
     "thecodingmachine/safe": "^2.5",
     "twig/extra-bundle": "^3.10",
     "twig/inky-extra": "^3.8",
-    "webonyx/graphql-php": "^14.11"
+    "webonyx/graphql-php": "^15.14"
   },
   "config": {
     "allow-plugins": {
