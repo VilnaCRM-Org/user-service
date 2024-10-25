@@ -6,6 +6,7 @@ namespace App\Tests\Unit\User\Infrastructure\Repository;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -169,11 +170,12 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
         $unitOfWork = $this->createMock(UnitOfWork::class);
         $persister = $this->createMock(EntityPersister::class);
 
+        $metadataMock = $this->createMock(ClassMetadata::class);
+        $metadataMock->name = User::class;
         $this->entityManager->expects($this->once())
             ->method('getClassMetadata')
-            ->willReturn(
-                $this->createMock(ClassMetadata::class)
-            );
+            ->willReturn($metadataMock);
+
         $this->entityManager->expects($this->once())
             ->method('getUnitOfWork')
             ->willReturn($unitOfWork);
