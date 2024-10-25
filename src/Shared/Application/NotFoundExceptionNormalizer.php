@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-final class NotFoundExceptionNormalizer implements NormalizerInterface
+final readonly class NotFoundExceptionNormalizer extends AbstractErrorHandler implements NormalizerInterface
 {
     public function __construct(
         private TranslatorInterface $translator
@@ -42,6 +42,7 @@ final class NotFoundExceptionNormalizer implements NormalizerInterface
             'error.not.found.graphql',
             ['id' => $id]
         );
+        $this->addInternalCategoryIfMissing($error);
         return $error;
     }
 

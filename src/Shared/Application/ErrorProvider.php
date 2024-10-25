@@ -18,7 +18,7 @@ use Throwable;
 /**
  * @implements ProviderInterface<Error>
  */
-final readonly class ErrorProvider implements ProviderInterface
+final readonly class ErrorProvider extends AbstractErrorHandler implements ProviderInterface
 {
     public function __construct(
         private TranslatorInterface $translator
@@ -97,6 +97,7 @@ final readonly class ErrorProvider implements ProviderInterface
     ): array {
         $error = FormattedError::createFromException($exception);
         $error['message'] = $message;
+        $this->addInternalCategoryIfMissing($error);
         return $error;
     }
 

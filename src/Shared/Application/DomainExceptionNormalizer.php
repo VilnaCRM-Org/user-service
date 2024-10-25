@@ -10,7 +10,7 @@ use GraphQL\Error\FormattedError;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-final readonly class DomainExceptionNormalizer implements NormalizerInterface
+final readonly class DomainExceptionNormalizer extends AbstractErrorHandler implements NormalizerInterface
 {
     public function __construct(
         private TranslatorInterface $translator
@@ -36,6 +36,8 @@ final readonly class DomainExceptionNormalizer implements NormalizerInterface
             $exception->getTranslationTemplate(),
             $exception->getTranslationArgs()
         );
+
+        $this->addInternalCategoryIfMissing($error);
 
         return $error;
     }

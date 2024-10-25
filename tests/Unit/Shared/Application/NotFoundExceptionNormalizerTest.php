@@ -46,6 +46,10 @@ final class NotFoundExceptionNormalizerTest extends UnitTestCase
             'Item ' . $id . ' not found.',
             $normalizedError['message']
         );
+        $this->assertEquals(
+            'internal',
+            $normalizedError['extensions']['category']
+        );
     }
 
     public function testSupportsNormalization(): void
