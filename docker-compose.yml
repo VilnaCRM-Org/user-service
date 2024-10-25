@@ -68,7 +68,7 @@ services:
       - ./:/srv/app
 
   database:
-    image: mariadb:11.4
+    image: mariadb:${DB_VERSION}
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
