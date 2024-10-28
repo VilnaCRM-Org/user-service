@@ -14,6 +14,7 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Repository\MariaDBUserRepository;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Logging\Middleware;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Persisters\Entity\EntityPersister;
@@ -64,6 +65,49 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
         $user = $this->userRepository->findByEmail($email);
 
         $this->assertSame($expectedUser, $user);
+    }
+
+    public function testSaveBatchSetsMiddleware(): void
+    {
+        $users = [];
+        for ($i = 0; $i < self::BATCH_SIZE; $i++) {
+            $email = $this->faker->email();
+            $initials = $this->faker->name();
+            $password = $this->faker->password();
+
+            $users[] = $this->userFactory->create(
+                $email,
+                $initials,
+                $password,
+                $this->transformer->transformFromString($this->faker->uuid())
+            );
+        }
+
+        $configurationMock = $this->createMock(Configuration::class);
+        $configurationMock->expects($this->once())
+            ->method('setMiddlewares')
+            ->with($this->callback(static function ($middlewares) {
+                return isset(
+                    $middlewares[0]
+                ) && $middlewares[0] instanceof Middleware;
+            }));
+
+        $this->connection->expects($this->once())
+            ->method('getConfiguration')
+            ->willReturn($configurationMock);
+
+        $this->entityManager->expects($this->atLeastOnce())
+            ->method('getConnection')
+            ->willReturn($this->connection);
+
+        $this->entityManager->expects($this->atLeastOnce())
+            ->method('persist');
+        $this->entityManager->expects($this->atLeastOnce())
+            ->method('flush');
+        $this->entityManager->expects($this->atLeastOnce())
+            ->method('clear');
+
+        $this->userRepository->saveBatch($users);
     }
 
     public function testSave(): void
