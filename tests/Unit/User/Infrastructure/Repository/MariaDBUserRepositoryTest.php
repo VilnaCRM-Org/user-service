@@ -69,43 +69,10 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
 
     public function testSaveBatchSetsMiddleware(): void
     {
-        $users = [];
-        for ($i = 0; $i < self::BATCH_SIZE; $i++) {
-            $email = $this->faker->email();
-            $initials = $this->faker->name();
-            $password = $this->faker->password();
+        $users = $this->createUsers(self::BATCH_SIZE);
 
-            $users[] = $this->userFactory->create(
-                $email,
-                $initials,
-                $password,
-                $this->transformer->transformFromString($this->faker->uuid())
-            );
-        }
-
-        $configurationMock = $this->createMock(Configuration::class);
-        $configurationMock->expects($this->once())
-            ->method('setMiddlewares')
-            ->with($this->callback(static function ($middlewares) {
-                return isset(
-                    $middlewares[0]
-                ) && $middlewares[0] instanceof Middleware;
-            }));
-
-        $this->connection->expects($this->once())
-            ->method('getConfiguration')
-            ->willReturn($configurationMock);
-
-        $this->entityManager->expects($this->atLeastOnce())
-            ->method('getConnection')
-            ->willReturn($this->connection);
-
-        $this->entityManager->expects($this->atLeastOnce())
-            ->method('persist');
-        $this->entityManager->expects($this->atLeastOnce())
-            ->method('flush');
-        $this->entityManager->expects($this->atLeastOnce())
-            ->method('clear');
+        $this->setUpMiddlewareExpectations();
+        $this->setUpEntityManagerExpectations();
 
         $this->userRepository->saveBatch($users);
     }
@@ -270,5 +237,53 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
                     $users
                 )
             );
+    }
+
+    private function setUpMiddlewareExpectations(): void
+    {
+        $configurationMock = $this->createMock(Configuration::class);
+        $configurationMock->expects($this->once())
+            ->method('setMiddlewares')
+            ->with($this->callback(static function ($middlewares) {
+                return isset(
+                    $middlewares[0]
+                ) && $middlewares[0] instanceof Middleware;
+            }));
+
+        $this->connection->expects($this->once())
+            ->method('getConfiguration')
+            ->willReturn($configurationMock);
+
+        $this->entityManager->expects($this->atLeastOnce())
+            ->method('getConnection')
+            ->willReturn($this->connection);
+    }
+
+    private function setUpEntityManagerExpectations(): void
+    {
+        $this->entityManager->expects($this->atLeastOnce())
+            ->method('persist');
+        $this->entityManager->expects($this->atLeastOnce())
+            ->method('flush');
+        $this->entityManager->expects($this->atLeastOnce())
+            ->method('clear');
+    }
+
+    /**
+     * @return array<User> $users
+     */
+    private function createUsers(int $count): array
+    {
+        $users = [];
+        for ($i = 0; $i < $count; $i++) {
+            $users[] = $this->userFactory->create(
+                $this->faker->email(),
+                $this->faker->name(),
+                $this->faker->password(),
+                $this->transformer->transformFromString($this->faker->uuid())
+            );
+        }
+
+        return $users;
     }
 }
