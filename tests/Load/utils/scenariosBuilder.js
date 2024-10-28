@@ -1,14 +1,16 @@
 export default class ScenariosBuilder {
-    constructor() {
+    constructor()
+    {
         this.scenarios = {};
     }
 
-    addSmokeScenario(smokeConfig) {
+    addSmokeScenario(smokeConfig)
+    {
         this.scenarios.smoke = {
             executor: 'constant-arrival-rate',
             rate: smokeConfig.rps,
             timeUnit: '1s',
-            duration: smokeConfig.duration + 's',
+            duration: `${smokeConfig.duration}s`,
             preAllocatedVUs: smokeConfig.vus,
             tags: {test_type: 'smoke'},
         };
@@ -16,7 +18,8 @@ export default class ScenariosBuilder {
         return this;
     }
 
-    addAverageScenario(averageConfig, startTime) {
+    addAverageScenario(averageConfig, startTime)
+    {
         return this.addDefaultScenario(
             'average',
             averageConfig,
@@ -24,7 +27,8 @@ export default class ScenariosBuilder {
         );
     }
 
-    addStressScenario(stressConfig, startTime) {
+    addStressScenario(stressConfig, startTime)
+    {
         return this.addDefaultScenario(
             'stress',
             stressConfig,
@@ -32,7 +36,8 @@ export default class ScenariosBuilder {
         );
     }
 
-    addSpikeScenario(spikeConfig, startTime) {
+    addSpikeScenario(spikeConfig, startTime)
+    {
         this.scenarios.spike = {
             executor: 'ramping-arrival-rate',
             startRate: 0,
@@ -41,21 +46,22 @@ export default class ScenariosBuilder {
             stages: [
                 {
                     target: spikeConfig.rps,
-                    duration: spikeConfig.duration.rise + 's'
-                },
+                    duration: `${spikeConfig.duration.rise}s`
+            },
                 {
                     target: 0,
-                    duration: spikeConfig.duration.fall + 's'
-                },
+                    duration: `${spikeConfig.duration.fall}s`
+            },
             ],
-            startTime: startTime + 's',
+            startTime: `${startTime}s`,
             tags: { test_type: 'spike' },
         };
 
         return this;
     }
 
-    addDefaultScenario(scenarioName, config, startTime){
+    addDefaultScenario(scenarioName, config, startTime)
+    {
         this.scenarios[scenarioName] = {
             executor: 'ramping-arrival-rate',
             startRate: 0,
@@ -64,25 +70,26 @@ export default class ScenariosBuilder {
             stages: [
                 {
                     target: config.rps,
-                    duration: config.duration.rise + 's'
-                },
+                    duration: `${config.duration.rise}s`
+            },
                 {
                     target: config.rps,
-                    duration: config.duration.plateau + 's'
-                },
+                    duration: `${config.duration.plateau}s`
+            },
                 {
                     target: 0,
-                    duration: config.duration.fall + 's'
-                },
+                    duration: `${config.duration.fall}s`
+            },
             ],
-            startTime: startTime + 's',
+            startTime: `${startTime}s`,
             tags: { test_type: scenarioName },
         };
 
         return this;
     }
 
-    build() {
+    build()
+    {
         return this.scenarios;
     }
 }
