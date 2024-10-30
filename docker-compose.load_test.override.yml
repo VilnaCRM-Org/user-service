@@ -23,7 +23,7 @@ services:
     environment:
       MERCURE_URL: ${CADDY_MERCURE_URL:-http://caddy/.well-known/mercure}
       MERCURE_PUBLIC_URL: https://${SERVER_NAME}/.well-known/mercure
-      DB_URL: postgresql://${DB_USER}:${DB_PASSWORD}@database:${DB_PORT}/${DB_NAME}?serverVersion=${DB_VERSION}
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@database:${DB_PORT}/${DB_NAME}?serverVersion=${DB_VERSION}
 
   caddy:
     build:
