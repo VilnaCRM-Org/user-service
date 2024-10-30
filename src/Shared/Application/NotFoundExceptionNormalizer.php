@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Shared\Application;
 
 use GraphQL\Error\Error;
-use GraphQL\Error\FormattedError;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-final readonly class NotFoundExceptionNormalizer extends AbstractErrorHandler implements NormalizerInterface
+final readonly class NotFoundExceptionNormalizer implements NormalizerInterface
 {
     public function __construct(
         private TranslatorInterface $translator
@@ -31,19 +30,18 @@ final readonly class NotFoundExceptionNormalizer extends AbstractErrorHandler im
     ): array {
         $exception = $object->getPrevious();
         $errorMessage = $exception->getMessage();
-        $error = FormattedError::createFromException($exception);
 
         $pattern = '/Item (.*?) not found./';
-
         preg_match($pattern, $errorMessage, $matches);
-        $id = $matches[1];
 
-        $error['message'] = $this->translator->trans(
+        $id = $matches[1] ?? 'unknown';
+
+        $translatedMessage = $this->translator->trans(
             'error.not.found.graphql',
             ['id' => $id]
         );
-        $this->addInternalCategoryIfMissing($error);
-        return $error;
+
+        return ['message' => $translatedMessage];
     }
 
     /**

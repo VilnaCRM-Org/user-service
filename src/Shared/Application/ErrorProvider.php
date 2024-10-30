@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ApiResource\Error;
 use ApiPlatform\State\ProviderInterface;
 use App\User\Domain\Exception\DomainException;
-use GraphQL\Error\FormattedError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -18,7 +17,7 @@ use Throwable;
 /**
  * @implements ProviderInterface<Error>
  */
-final readonly class ErrorProvider extends AbstractErrorHandler implements ProviderInterface
+final readonly class ErrorProvider implements ProviderInterface
 {
     public function __construct(
         private TranslatorInterface $translator
@@ -55,15 +54,12 @@ final readonly class ErrorProvider extends AbstractErrorHandler implements Provi
 
         if ($status >= HttpResponse::HTTP_INTERNAL_SERVER_ERROR) {
             if ($this->isGraphQLRequest($request)) {
-                $error = $this->provideGraphQLInternalServerError(
-                    $exception,
-                    $internalErrorText
-                );
+                $error = $this->provideGraphQLInternalServerError($internalErrorText);
             } else {
                 $error = $this->provideRESTInternalServerError(
                     $exception,
                     $internalErrorText,
-                    $status,
+                    $status
                 );
             }
         } elseif ($exception instanceof DomainException) {
@@ -91,14 +87,9 @@ final readonly class ErrorProvider extends AbstractErrorHandler implements Provi
     /**
      * @return array<string,array<string>>
      */
-    private function provideGraphQLInternalServerError(
-        Throwable $exception,
-        string $message
-    ): array {
-        $error = FormattedError::createFromException($exception);
-        $error['message'] = $message;
-        $this->addInternalCategoryIfMissing($error);
-        return $error;
+    private function provideGraphQLInternalServerError(string $message): array
+    {
+        return ['message' => $message];
     }
 
     private function provideRESTInternalServerError(
