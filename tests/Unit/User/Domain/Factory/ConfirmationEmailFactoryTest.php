@@ -10,14 +10,13 @@ use App\User\Domain\Aggregate\ConfirmationEmailInterface;
 use App\User\Domain\Factory\ConfirmationEmailFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
-use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 
 final class ConfirmationEmailFactoryTest extends UnitTestCase
 {
     private UserFactoryInterface $userFactory;
-    private UuidTransformer $transformer;
+    private UuidTransformer $uuidTransformer;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
 
     protected function setUp(): void
@@ -25,7 +24,7 @@ final class ConfirmationEmailFactoryTest extends UnitTestCase
         parent::setUp();
 
         $this->userFactory = new UserFactory();
-        $this->transformer = new UuidTransformer();
+        $this->uuidTransformer = new UuidTransformer();
         $this->confirmationTokenFactory = new ConfirmationTokenFactory(
             $this->faker->numberBetween(1, 10)
         );
@@ -38,14 +37,11 @@ final class ConfirmationEmailFactoryTest extends UnitTestCase
             $this->faker->email(),
             $this->faker->name(),
             $this->faker->password(),
-            $this->transformer->transformFromString($userId)
+            $this->uuidTransformer->transformFromString($userId)
         );
         $token = $this->confirmationTokenFactory->create($userId);
 
-        $mockEventFactory = $this->createMock(
-            ConfirmationEmailSendEventFactoryInterface::class
-        );
-        $factory = new ConfirmationEmailFactory($mockEventFactory);
+        $factory = new ConfirmationEmailFactory();
 
         $confirmationEmail = $factory->create($token, $user);
 
