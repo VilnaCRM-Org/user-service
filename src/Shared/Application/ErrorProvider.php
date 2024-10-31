@@ -54,7 +54,9 @@ final readonly class ErrorProvider implements ProviderInterface
 
         if ($status >= HttpResponse::HTTP_INTERNAL_SERVER_ERROR) {
             if ($this->isGraphQLRequest($request)) {
-                $error = $this->provideGraphQLInternalServerError($internalErrorText);
+                $error = $this->provideGraphQLInternalServerError(
+                    $internalErrorText
+                );
             } else {
                 $error = $this->provideRESTInternalServerError(
                     $exception,

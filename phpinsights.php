@@ -43,9 +43,6 @@ return [
             'exclude' => [
                 'phpinsights',
                 'tests/Behat/OAuthContext/OAuthContext.php',
-                'src/Shared/Application/DomainExceptionNormalizer.php',
-                'src/Shared/Application/ErrorProvider.php',
-                'src/Shared/Application/NotFoundExceptionNormalizer.php',
             ],
             'ignoreComments' => true,
         ],
