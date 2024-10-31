@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
-use App\Shared\Application\Transformer\UuidTransformer;
+use App\Shared\Infrastructure\Factory\UuidFactory as UuidFactoryInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Domain\ValueObject\UuidInterface;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegisterUserBatchCommand;
 use App\User\Application\Command\RegisterUserBatchCommandResponse;
@@ -47,7 +48,7 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->uuidFactory = $this->createMock(UuidFactory::class);
         $this->userFactory = new UserFactory();
-        $this->transformer = new UuidTransformer();
+        $this->transformer = new UuidTransformer(new UuidFactoryInterface());
         $this->mockTransformer = $this->createMock(UuidTransformer::class);
         $this->registeredEventFactory =
             $this->createMock(UserRegisteredEventFactoryInterface::class);

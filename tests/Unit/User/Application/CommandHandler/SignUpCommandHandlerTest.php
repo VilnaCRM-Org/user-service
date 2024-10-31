@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
-use App\Shared\Application\Transformer\UuidTransformer;
+use App\Shared\Infrastructure\Factory\UuidFactory as UuidFactoryInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\CommandHandler\RegisterUserCommandHandler;
 use App\User\Application\Factory\SignUpCommandFactory;
@@ -43,7 +44,7 @@ final class SignUpCommandHandlerTest extends UnitTestCase
         $this->transformer = $this->createMock(SignUpTransformer::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer();
+        $this->uuidTransformer = new UuidTransformer(new UuidFactoryInterface());
         $this->signUpCommandFactory = new SignUpCommandFactory();
         $this->registeredEventFactory =
             $this->createMock(UserRegisteredEventFactoryInterface::class);

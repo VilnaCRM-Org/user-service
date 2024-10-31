@@ -4,55 +4,38 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Transformer;
 
-use App\Shared\Domain\Factory\UuidFactoryInterface;
 use App\Shared\Domain\ValueObject\Uuid;
+use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\Uid\AbstractUid;
 
 final class UuidTransformerTest extends UnitTestCase
 {
-    private UuidFactoryInterface $uuidFactory;
-    private UuidTransformer $uuidTransformer;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->uuidFactory = $this->createMock(UuidFactoryInterface::class);
-        $this->uuidTransformer = new UuidTransformer($this->uuidFactory);
-    }
-
     public function testTransformFromSymfonyUuid(): void
     {
-        $uuidString = $this->faker->uuid();
+        $uuid = $this->faker->uuid();
         $symfonyUuid = $this->createMock(AbstractUid::class);
-        $symfonyUuid->method('__toString')->willReturn($uuidString);
+        $symfonyUuid->method('__toString')
+            ->willReturn($uuid);
 
-        $expectedUuid = $this->createMock(Uuid::class);
+        $uuidTransformer = new UuidTransformer(new UuidFactory());
 
-        $this->uuidFactory->expects($this->once())
-            ->method('create')
-            ->with($uuidString)
-            ->willReturn($expectedUuid);
+        $result = $uuidTransformer->transformFromSymfonyUuid($symfonyUuid);
 
-        $result = $this->uuidTransformer
-            ->transformFromSymfonyUuid($symfonyUuid);
-
-        $this->assertSame($expectedUuid, $result);
+        $expectedUuid = new Uuid($uuid);
+        $this->assertEquals($expectedUuid, $result);
     }
 
     public function testTransformFromString(): void
     {
-        $uuidString = $this->faker->uuid();
-        $expectedUuid = $this->createMock(Uuid::class);
+        $uuid = $this->faker->uuid();
 
-        $this->uuidFactory->expects($this->once())
-            ->method('create')
-            ->with($uuidString)
-            ->willReturn($expectedUuid);
+        $uuidTransformer = new UuidTransformer(new UuidFactory());
 
-        $result = $this->uuidTransformer->transformFromString($uuidString);
+        $result = $uuidTransformer->transformFromString($uuid);
 
-        $this->assertSame($expectedUuid, $result);
+        $expectedUuid = new Uuid($uuid);
+        $this->assertEquals($expectedUuid, $result);
     }
 }

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\User\Infrastructure\Repository;
 
-use App\Shared\Application\Transformer\UuidTransformer;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Integration\IntegrationTestCase;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
@@ -26,7 +27,7 @@ final class MariaDBUserRepositoryTest extends IntegrationTestCase
             UserRepositoryInterface::class
         );
         $this->userFactory = new UserFactory();
-        $this->transformer = new UuidTransformer();
+        $this->transformer = new UuidTransformer(new UuidFactory());
     }
 
     public function testSave(): void

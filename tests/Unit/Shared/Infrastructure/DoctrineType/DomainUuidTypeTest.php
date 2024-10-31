@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Infrastructure\DoctrineType;
 
-use App\Shared\Application\Transformer\UuidTransformer;
+use App\Shared\Infrastructure\Factory\UuidFactory as UuidFactoryInterface;
 use App\Shared\Infrastructure\DoctrineType\DomainUuidType;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Symfony\Component\Uid\Factory\UuidFactory;
@@ -22,7 +23,7 @@ final class DomainUuidTypeTest extends UnitTestCase
 
         $this->domainUuidType = new DomainUuidType();
         $this->symfonyUuidFactory = new UuidFactory();
-        $this->transformer = new UuidTransformer();
+        $this->transformer = new UuidTransformer(new UuidFactoryInterface());
     }
 
     public function testGetName(): void

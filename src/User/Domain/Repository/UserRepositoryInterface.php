@@ -6,7 +6,6 @@ namespace App\User\Domain\Repository;
 
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
-use Doctrine\DBAL\LockMode;
 
 interface UserRepositoryInterface
 {
@@ -34,7 +33,7 @@ interface UserRepositoryInterface
      */
     public function find(
         mixed $id,
-        LockMode|int|null $lockMode = null,
+        ?int $lockMode = null,
         ?int $lockVersion = null
     ): ?object;
 }

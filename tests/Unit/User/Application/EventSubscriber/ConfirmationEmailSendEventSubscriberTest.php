@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\EventSubscriber;
 
-use App\Shared\Application\Transformer\UuidTransformer;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\EventSubscriber\ConfirmationEmailSentEventSubscriber;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
@@ -44,7 +45,7 @@ final class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
         $this->confirmationTokenFactory = new ConfirmationTokenFactory(
             $this->faker->numberBetween(1, 10)
         );
-        $this->uuidTransformer = new UuidTransformer();
+        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
         $this->sendEventFactory = new ConfirmationEmailSendEventFactory();
         $this->emailFactory = new EmailFactory();
         $this->mailer = $this->createMock(MailerInterface::class);
