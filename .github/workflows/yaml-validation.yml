@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: write
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -13,5 +16,16 @@ jobs:
         uses: github/super-linter@v4
         env:
           VALIDATE_YAML: true
-          FIX_YAML: true
+          FIX_YAML_PRETTIER: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit and push linting fixes
+        if: >
+          github.event_name == 'pull_request' &&
+          github.ref_name != github.event.repository.default_branch
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          branch: ${{ github.event.pull_request.head.ref || github.head_ref || github.ref }}
+          commit_message: 'chore(#${{ toJSON(github.event.number) }}): fix linting issues'
+          commit_user_name: super-linter
+          commit_user_email: super-linter@super-linter.dev
