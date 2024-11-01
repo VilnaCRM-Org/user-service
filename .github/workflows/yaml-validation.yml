@@ -1,0 +1,17 @@
+name: YAML Validation
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Super-Linter
+        uses: github/super-linter@v4
+        env:
+          VALIDATE_YAML: true
+          FIX_YAML: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
