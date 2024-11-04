@@ -3,21 +3,17 @@
 extends: default
 
 rules:
-  indentation: 2
+  indentation:
+    spaces: 2
+    level: error
 
   max-line-length:
-    max: 80
+    max: 120
     level: warning
 
-  trailing-spaces: disable
-
-  line-ending:
-    style: lf
+  new-line-at-end-of-file: enable
 
   document-end: enable
 
-  quoted-strings: disable
-
-  key-duplicates: enable
-
-  new-line-at-end-of-file: enable
+  line-ending:
+    style: lf
