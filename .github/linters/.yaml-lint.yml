@@ -11,7 +11,8 @@ rules:
     max: 120
     level: warning
 
-  new-line-at-end-of-file: enable
+  new-line-at-end-of-file:
+    level: warning
 
-  new-lines:
-    type: unix
+  trailing-spaces:
+    level: warning
