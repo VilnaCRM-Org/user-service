@@ -4,16 +4,23 @@ on:
   pull_request:
     branches: [ "main" ]
 
-permissions:
-  contents: write
-
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Generate token with necessary permissions
+        id: generate_token
+        uses: tibdex/github-app-token@v2
         with:
+          app_id: ${{ secrets.VILNACRM_APP_ID }}
+          private_key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
           fetch-depth: 0
+
       - name: Run Super-Linter
         uses: super-linter/super-linter@v7.1.0
         env:
@@ -31,7 +38,7 @@ jobs:
           VALIDATE_JSCPD: false
           VALIDATE_GITLEAKS: false
           VALIDATE_GHERKIN: false
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
 
       - name: Commit and push linting fixes
         if: >
@@ -43,3 +50,4 @@ jobs:
           commit_message: 'chore(#${{ toJSON(github.event.number) }}): fix linting issues'
           commit_user_name: super-linter
           commit_user_email: super-linter@super-linter.dev
+          token: ${{ steps.generate_token.outputs.token }}
