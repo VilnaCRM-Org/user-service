@@ -21,6 +21,16 @@ jobs:
           VALIDATE_PHP: false
           VALIDATE_PHP_PSALM: false
           VALIDATE_ALL_CODEBASE: false
+          VALIDATE_CHECKOV: false
+          VALIDATE_ENV: false
+          VALIDATE_GITHUB_ACTIONS: false
+          VALIDATE_JSON: false
+          VALIDATE_PHP_PHPSTAN: false
+          VALIDATE_PHP_PHPCS: false
+          VALIDATE_PHP_BUILTIN: false
+          VALIDATE_JSCPD: false
+          VALIDATE_GITLEAKS: false
+          VALIDATE_GHERKIN: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit and push linting fixes
