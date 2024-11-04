@@ -18,6 +18,7 @@ jobs:
         uses: super-linter/super-linter@v7.1.0
         env:
           FIX_YAML_PRETTIER: true
+          VALIDATE_PHP: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit and push linting fixes
