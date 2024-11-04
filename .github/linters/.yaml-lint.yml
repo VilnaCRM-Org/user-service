@@ -1,0 +1,23 @@
+# .yaml-lint.yml
+
+extends: default
+
+rules:
+  indentation: 2
+
+  max-line-length:
+    max: 80
+    level: warning
+
+  trailing-spaces: disable
+
+  line-ending:
+    style: lf
+
+  document-end: enable
+
+  quoted-strings: disable
+
+  key-duplicates: enable
+
+  new-line-at-end-of-file: enable
