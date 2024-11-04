@@ -16,3 +16,16 @@ rules:
 
   trailing-spaces:
     level: warning
+
+  brackets:
+    level: warning
+
+  commas:
+    level: warning
+
+  braces:
+    level: warning
+
+  empty-lines:
+    max: 0
+    level: warning
