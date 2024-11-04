@@ -40,7 +40,7 @@ final class UuidTest extends UnitTestCase
     public function testToBinaryConvertibleWithNonDefaultLength(): void
     {
         $additionalChars = 'aa';
-        $uuidString = $this->faker->uuid(). $additionalChars;
+        $uuidString = $this->faker->uuid().$additionalChars;
         $uuid = new Uuid($uuidString);
 
         $expectedBinary = hex2bin(
@@ -53,7 +53,7 @@ final class UuidTest extends UnitTestCase
     public function testToBinaryNotConvertible(): void
     {
         $additionalChar = 'a';
-        $uuidString = $this->faker->uuid() . $additionalChar;
+        $uuidString = $this->faker->uuid().$additionalChar;
         $uuid = new Uuid($uuidString);
 
         $this->assertNull($uuid->toBinary());
