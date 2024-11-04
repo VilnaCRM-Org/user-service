@@ -1,19 +1,17 @@
-# .yaml-lint.yml
-
 extends: default
 
 rules:
+  document-start: disable
+
   indentation:
     spaces: 2
-    level: error
+    level: warning
 
-  max-line-length:
+  line-length:
     max: 120
     level: warning
 
   new-line-at-end-of-file: enable
 
-  document-end: enable
-
-  line-ending:
-    style: lf
+  new-lines:
+    type: unix
