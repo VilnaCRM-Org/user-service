@@ -20,6 +20,7 @@ jobs:
           FIX_YAML_PRETTIER: true
           VALIDATE_PHP: false
           VALIDATE_PHP_PSALM: false
+          VALIDATE_ALL_CODEBASE: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit and push linting fixes
