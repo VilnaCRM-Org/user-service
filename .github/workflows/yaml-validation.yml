@@ -11,11 +11,12 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Run Super-Linter
-        uses: github/super-linter@v4
+        uses: super-linter/super-linter@v7.1.0
         env:
-          VALIDATE_YAML: true
           FIX_YAML_PRETTIER: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
