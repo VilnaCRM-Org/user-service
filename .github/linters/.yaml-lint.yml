@@ -29,3 +29,6 @@ rules:
   empty-lines:
     max: 0
     level: warning
+
+  colons:
+    level: warning
