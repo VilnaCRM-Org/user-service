@@ -24,12 +24,16 @@ jobs:
       - name: Run Super-Linter
         uses: super-linter/super-linter@v7.1.0
         env:
+          VALIDATE_MARKDOWN: true
+          VALIDATE_YAML: true
           FIX_YAML_PRETTIER: true
+          VALIDATE_ENV: true
+          FIX_ENV: true
+          FIX_JAVASCRIPT_PRETTIER: true
           VALIDATE_PHP: false
           VALIDATE_PHP_PSALM: false
           VALIDATE_ALL_CODEBASE: false
           VALIDATE_CHECKOV: false
-          VALIDATE_ENV: false
           VALIDATE_GITHUB_ACTIONS: false
           VALIDATE_JSON: false
           VALIDATE_PHP_PHPSTAN: false
