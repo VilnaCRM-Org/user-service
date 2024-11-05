@@ -2,193 +2,199 @@ import http from 'k6/http';
 import exec from 'k6/x/exec';
 
 export default class InsertUsersUtils {
-    constructor(utils, scenarioName) {
-        this.utils = utils;
-        this.config = utils.getConfig();
-        this.scenarioName = scenarioName;
-        this.additionalUsersRatio = 1.1;
-        this.smokeConfig = this.config.endpoints[scenarioName].smoke;
-        this.averageConfig = this.config.endpoints[scenarioName].average;
-        this.stressConfig = this.config.endpoints[scenarioName].stress;
-        this.spikeConfig = this.config.endpoints[scenarioName].spike;
+  constructor(utils, scenarioName) {
+    this.utils = utils;
+    this.config = utils.getConfig();
+    this.scenarioName = scenarioName;
+    this.additionalUsersRatio = 1.1;
+    this.smokeConfig = this.config.endpoints[scenarioName].smoke;
+    this.averageConfig = this.config.endpoints[scenarioName].average;
+    this.stressConfig = this.config.endpoints[scenarioName].stress;
+    this.spikeConfig = this.config.endpoints[scenarioName].spike;
+  }
+
+  execInsertUsersCommand() {
+    const runSmoke = this.utils.getCLIVariable('run_smoke') || 'true';
+    const runAverage = this.utils.getCLIVariable('run_average') || 'true';
+    const runStress = this.utils.getCLIVariable('run_stress') || 'true';
+    const runSpike = this.utils.getCLIVariable('run_spike') || 'true';
+    exec.command('make', [
+      `SCENARIO_NAME=${this.scenarioName}`,
+      `RUN_SMOKE=${runSmoke}`,
+      `RUN_AVERAGE=${runAverage}`,
+      `RUN_STRESS=${runStress}`,
+      `RUN_SPIKE=${runSpike}`,
+      `load-tests-prepare-users`,
+    ]);
+  }
+
+  loadInsertedUsers() {
+    return JSON.parse(open(`../${this.utils.getConfig()['usersFileName']}`));
+  }
+
+  *usersGenerator(numberOfUsers) {
+    for (let i = 0; i < numberOfUsers; i++) {
+      const user = this.utils.generateUser();
+
+      yield user;
+    }
+  }
+
+  prepareUserBatch(batchSize) {
+    const generator = this.usersGenerator(batchSize);
+    const batch = [];
+    const userPasswords = {};
+
+    for (let requestIndex = 0; requestIndex < batchSize; requestIndex++) {
+      const user = generator.next().value;
+      batch.push(user);
+      userPasswords[user.email] = user.password;
     }
 
-    execInsertUsersCommand() {
-        const runSmoke = this.utils.getCLIVariable('run_smoke') || 'true';
-        const runAverage = this.utils.getCLIVariable('run_average') || 'true';
-        const runStress = this.utils.getCLIVariable('run_stress') || 'true';
-        const runSpike = this.utils.getCLIVariable('run_spike') || 'true';
-        exec.command(
-            "make",
-            [
-                `SCENARIO_NAME=${this.scenarioName}`,
-                `RUN_SMOKE=${runSmoke}`,
-                `RUN_AVERAGE=${runAverage}`,
-                `RUN_STRESS=${runStress}`,
-                `RUN_SPIKE=${runSpike}`,
-                `load-tests-prepare-users`,
-            ]);
+    return [batch, userPasswords];
+  }
+
+  *requestGenerator(numberOfRequest, batchSize) {
+    for (let i = 0; i < numberOfRequest; i++) {
+      const [batch, userPasswords] = this.prepareUserBatch(batchSize);
+
+      const payload = JSON.stringify({
+        users: batch,
+      });
+
+      const request = {
+        method: 'POST',
+        url: `${this.utils.getBaseHttpUrl()}/batch`,
+        body: payload,
+        params: this.utils.getJsonHeader(),
+      };
+
+      yield [request, userPasswords];
     }
+  }
 
-    loadInsertedUsers() {
-        return JSON.parse(open(`../${this.utils.getConfig()['usersFileName']}`));
-    }
+  prepareRequestBatch(numberOfUsers, batchSize) {
+    const numberOfRequests = Math.ceil(numberOfUsers / batchSize);
+    const generator = this.requestGenerator(numberOfRequests, batchSize);
+    const requestBatch = [];
+    const userPasswords = {};
 
-    * usersGenerator(numberOfUsers) {
-        for (let i = 0; i < numberOfUsers; i++) {
-            const user = this.utils.generateUser();
-
-            yield user;
-        }
-    }
-
-    prepareUserBatch(batchSize) {
-        const generator = this.usersGenerator(batchSize);
-        const batch = [];
-        const userPasswords = {};
-
-        for (let requestIndex = 0; requestIndex < batchSize; requestIndex++) {
-            const user = generator.next().value;
-            batch.push(user);
-            userPasswords[user.email] = user.password;
-        }
-
-        return [batch, userPasswords];
-    }
-
-    * requestGenerator(numberOfRequest, batchSize) {
-        for (let i = 0; i < numberOfRequest; i++) {
-            const [batch, userPasswords] = this.prepareUserBatch(batchSize);
-
-            const payload = JSON.stringify({
-                'users': batch
-            });
-
-            const request = {
-                method: 'POST',
-                url: `${this.utils.getBaseHttpUrl()}/batch`,
-                body: payload,
-                params: this.utils.getJsonHeader(),
-            };
-
-            yield [request, userPasswords];
-        }
-    }
-
-    prepareRequestBatch(numberOfUsers, batchSize) {
-        const numberOfRequests = Math.ceil(numberOfUsers / batchSize);
-        const generator = this.requestGenerator(numberOfRequests, batchSize);
-        const requestBatch = [];
-        const userPasswords = {};
-
-        for (let requestIndex = 0; requestIndex < numberOfRequests; requestIndex++) {
-            const { value, done } = generator.next();
-            if (done) break;
-            const [request, passwords] = value;
-            requestBatch.push(request);
-            Object.assign(userPasswords, passwords);
-        }
-
-        return [requestBatch, userPasswords];
-    }
-
-    insertUsers(numberOfUsers) {
-        const batchSize = Math.min(this.config.batchSize, numberOfUsers);
-
-        const users = [];
-
-        const [requestBatch, userPasswords] = this.prepareRequestBatch(numberOfUsers, batchSize);
-
-        try {
-            const responses = http.batch(requestBatch);
-            responses.forEach((response) => {
-                JSON.parse(response.body).forEach((user) => {
-                    user.password = userPasswords[user.email];
-                    users.push(user);
-                });
-            });
-        }
-        catch (error) {
-            throw new Error('Error occurred during user insertion, try to lower batchSize in a config file');
-        }
-
-        return users;
-    }
-
-    countRequestForRampingRate(
-        startRps,
-        targetRps,
-        duration
+    for (
+      let requestIndex = 0;
+      requestIndex < numberOfRequests;
+      requestIndex++
     ) {
-        const acceleration = (targetRps - startRps) / duration;
-
-        return Math.round((startRps * duration + acceleration * duration * duration / 2));
+      const { value, done } = generator.next();
+      if (done) break;
+      const [request, passwords] = value;
+      requestBatch.push(request);
+      Object.assign(userPasswords, passwords);
     }
 
-    prepareUsers() {
-        return this.insertUsers(this.countTotalRequest());
+    return [requestBatch, userPasswords];
+  }
+
+  insertUsers(numberOfUsers) {
+    const batchSize = Math.min(this.config.batchSize, numberOfUsers);
+
+    const users = [];
+
+    const [requestBatch, userPasswords] = this.prepareRequestBatch(
+      numberOfUsers,
+      batchSize
+    );
+
+    try {
+      const responses = http.batch(requestBatch);
+      responses.forEach((response) => {
+        JSON.parse(response.body).forEach((user) => {
+          user.password = userPasswords[user.email];
+          users.push(user);
+        });
+      });
+    } catch (error) {
+      throw new Error(
+        'Error occurred during user insertion, try to lower batchSize in a config file'
+      );
     }
 
-    countTotalRequest() {
-        const requestsMap = {
-            'run_smoke': this.countSmokeRequest.bind(this),
-            'run_average': this.countAverageRequest.bind(this),
-            'run_stress': this.countStressRequest.bind(this),
-            'run_spike': this.countSpikeRequest.bind(this)
-        };
+    return users;
+  }
 
-        let totalRequests = 0;
+  countRequestForRampingRate(startRps, targetRps, duration) {
+    const acceleration = (targetRps - startRps) / duration;
 
-        for (const key in requestsMap) {
-            if (this.utils.getCLIVariable(key) !== 'false') {
-                totalRequests += requestsMap[key]();
-            }
-        }
+    return Math.round(
+      startRps * duration + (acceleration * duration * duration) / 2
+    );
+  }
 
-        return Math.round(totalRequests * this.additionalUsersRatio);
+  prepareUsers() {
+    return this.insertUsers(this.countTotalRequest());
+  }
+
+  countTotalRequest() {
+    const requestsMap = {
+      run_smoke: this.countSmokeRequest.bind(this),
+      run_average: this.countAverageRequest.bind(this),
+      run_stress: this.countStressRequest.bind(this),
+      run_spike: this.countSpikeRequest.bind(this),
+    };
+
+    let totalRequests = 0;
+
+    for (const key in requestsMap) {
+      if (this.utils.getCLIVariable(key) !== 'false') {
+        totalRequests += requestsMap[key]();
+      }
     }
 
-    countSmokeRequest() {
-        return this.smokeConfig.rps * this.smokeConfig.duration;
-    }
+    return Math.round(totalRequests * this.additionalUsersRatio);
+  }
 
-    countAverageRequest() {
-        return this.countDefaultRequests(this.averageConfig);
-    }
+  countSmokeRequest() {
+    return this.smokeConfig.rps * this.smokeConfig.duration;
+  }
 
-    countStressRequest() {
-        return this.countDefaultRequests(this.stressConfig);
-    }
+  countAverageRequest() {
+    return this.countDefaultRequests(this.averageConfig);
+  }
 
-    countDefaultRequests(config) {
-        const riseRequests = this.countRequestForRampingRate(
-                0,
-                config.rps,
-                config.duration.rise
-            );
+  countStressRequest() {
+    return this.countDefaultRequests(this.stressConfig);
+  }
 
-        const plateauRequests = config.rps * config.duration.plateau;
+  countDefaultRequests(config) {
+    const riseRequests = this.countRequestForRampingRate(
+      0,
+      config.rps,
+      config.duration.rise
+    );
 
-        const fallRequests = this.countRequestForRampingRate(
-                config.rps,
-                0, config.duration.fall
-            );
+    const plateauRequests = config.rps * config.duration.plateau;
 
-        return riseRequests + plateauRequests + fallRequests;
-    }
+    const fallRequests = this.countRequestForRampingRate(
+      config.rps,
+      0,
+      config.duration.fall
+    );
 
-    countSpikeRequest() {
-        const spikeRiseRequests = this.countRequestForRampingRate(
-                0,
-                this.spikeConfig.rps,
-                this.spikeConfig.duration.rise
-            );
+    return riseRequests + plateauRequests + fallRequests;
+  }
 
-        const spikeFallRequests = this.countRequestForRampingRate(
-                this.spikeConfig.rps,
-                0, this.spikeConfig.duration.fall
-            );
+  countSpikeRequest() {
+    const spikeRiseRequests = this.countRequestForRampingRate(
+      0,
+      this.spikeConfig.rps,
+      this.spikeConfig.duration.rise
+    );
 
-        return spikeRiseRequests + spikeFallRequests;
-    }
+    const spikeFallRequests = this.countRequestForRampingRate(
+      this.spikeConfig.rps,
+      0,
+      this.spikeConfig.duration.fall
+    );
+
+    return spikeRiseRequests + spikeFallRequests;
+  }
 }

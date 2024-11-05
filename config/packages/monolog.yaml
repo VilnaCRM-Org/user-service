@@ -2,7 +2,7 @@ monolog:
   handlers:
     stderr_handler:
       type: stream
-      path: "php://stderr"
+      path: 'php://stderr'
       level: error
 
 when@prod:
@@ -10,5 +10,5 @@ when@prod:
     handlers:
       stdout_handler:
         type: stream
-        path: "php://stdout"
+        path: 'php://stdout'
         level: debug
