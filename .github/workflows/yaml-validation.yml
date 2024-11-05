@@ -24,6 +24,7 @@ jobs:
       - name: Run Super-Linter
         uses: super-linter/super-linter@v7.1.0
         env:
+          VALIDATE_JAVASCRIPT_ES: true
           VALIDATE_MARKDOWN: true
           VALIDATE_MARKDOWN_PRETTIER: true
           FIX_MARKDOWN_PRETTIER: true
