@@ -1,16 +1,15 @@
 services:
-    Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface:
-        alias: 'security.token_storage'
-        public: true
+  Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface:
+    alias: 'security.token_storage'
+    public: true
 
+  App\Tests\Behat\OAuthContext\OAuthContext:
+    arguments:
+      $tokenStorage: '@security.token_storage'
 
-    App\Tests\Behat\OAuthContext\OAuthContext:
-        arguments:
-            $tokenStorage: '@security.token_storage'
+  _defaults:
+    autowire: true
+    autoconfigure: true
 
-    _defaults:
-        autowire: true
-        autoconfigure: true
-
-    App\Tests\Behat\:
-        resource: '../tests/Behat/*'
+  App\Tests\Behat\:
+    resource: '../tests/Behat/*'
