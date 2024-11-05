@@ -25,8 +25,10 @@ jobs:
         uses: super-linter/super-linter@v7.1.0
         env:
           VALIDATE_MARKDOWN: true
+          FIX_MARKDOWN_PRETTIER: true
           VALIDATE_YAML: true
           FIX_YAML_PRETTIER: true
+          VALIDATE_YAML_PRETTIER: true
           VALIDATE_ENV: true
           FIX_ENV: true
           VALIDATE_JAVASCRIPT_PRETTIER: true
