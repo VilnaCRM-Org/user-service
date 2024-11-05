@@ -6,58 +6,74 @@
 parameters:
 
 services:
-    # default configuration for services in *this* file
-    _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+  # default configuration for services in *this* file
+  _defaults:
+    autowire: true # Automatically injects dependencies in your services.
+    autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
-    App\:
-        resource: '../src/'
-        exclude:
-            - '../src/Shared/Kernel.php'
+  # makes classes in src/ available to be used as services
+  # this creates a service per class whose id is the fully-qualified class name
+  App\:
+    resource: '../src/'
+    exclude:
+      - '../src/Shared/Kernel.php'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+  # add more service definitions when explicit configuration is needed
+  # please note that last definitions always *replace* previous ones
 
-    _instanceof:
-        # services whose classes are instances of CustomInterface will be tagged automatically
-        App\Shared\Domain\Bus\Command\CommandHandlerInterface:
-            tags: [ 'app.command_handler' ]
+  _instanceof:
+    # services whose classes are instances of CustomInterface will be tagged automatically
+    App\Shared\Domain\Bus\Command\CommandHandlerInterface:
+      tags: ['app.command_handler']
 
-        App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface:
-            tags: [ 'app.event_subscriber' ]
+    App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface:
+      tags: ['app.event_subscriber']
 
-        App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory:
-            tags: [ 'app.openapi_endpoint_factory' ]
+    App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory:
+      tags: ['app.openapi_endpoint_factory']
 
-    App\Shared\Infrastructure\Bus\Command\InMemorySymfonyCommandBus:
-        arguments: ['@App\Shared\Infrastructure\Bus\MessageBusFactory', !tagged app.command_handler ]
-        lazy: true
+  App\Shared\Infrastructure\Bus\Command\InMemorySymfonyCommandBus:
+    arguments:
+      [
+        '@App\Shared\Infrastructure\Bus\MessageBusFactory',
+        !tagged app.command_handler,
+      ]
+    lazy: true
 
-    App\Shared\Infrastructure\Bus\Event\InMemorySymfonyEventBus:
-        arguments: ['@App\Shared\Infrastructure\Bus\MessageBusFactory',  !tagged app.event_subscriber ]
-        lazy: true
+  App\Shared\Infrastructure\Bus\Event\InMemorySymfonyEventBus:
+    arguments:
+      [
+        '@App\Shared\Infrastructure\Bus\MessageBusFactory',
+        !tagged app.event_subscriber,
+      ]
+    lazy: true
 
-    App\Shared\Application\OpenApi\OpenApiFactory:
-         decorates: 'api_platform.openapi.factory'
-         arguments: [ '@App\Shared\Application\OpenApi\OpenApiFactory.inner', !tagged app.openapi_endpoint_factory ]
-         autoconfigure: false
+  App\Shared\Application\OpenApi\OpenApiFactory:
+    decorates: 'api_platform.openapi.factory'
+    arguments:
+      [
+        '@App\Shared\Application\OpenApi\OpenApiFactory.inner',
+        !tagged app.openapi_endpoint_factory,
+      ]
+    autoconfigure: false
 
-    api_platform.state.error_provider:
-        arguments: [ '@Symfony\Contracts\Translation\TranslatorInterface']
-        class: 'App\Shared\Application\ErrorProvider'
+  api_platform.state.error_provider:
+    arguments: ['@Symfony\Contracts\Translation\TranslatorInterface']
+    class: 'App\Shared\Application\ErrorProvider'
 
-    App\User\Domain\Factory\ConfirmationTokenFactory:
-        arguments:
-            $tokenLength: '%env(int:CONFIRMATION_TOKEN_LENGTH)%'
+  App\User\Domain\Factory\ConfirmationTokenFactory:
+    arguments:
+      $tokenLength: '%env(int:CONFIRMATION_TOKEN_LENGTH)%'
 
-    App\User\Infrastructure\Repository\MariaDBUserRepository:
-        arguments:
-            $batchSize: '%env(int:USER_INSERT_BATCH_SIZE)%'
+  App\User\Infrastructure\Repository\MariaDBUserRepository:
+    arguments:
+      $batchSize: '%env(int:USER_INSERT_BATCH_SIZE)%'
 
-    # Event listener for OAuth2 password grant
-    App\User\Application\EventListener\UserResolveListener:
-        tags:
-            - { name: kernel.event_listener, event: league.oauth2_server.event.user_resolve, method: onUserResolve }
+  # Event listener for OAuth2 password grant
+  App\User\Application\EventListener\UserResolveListener:
+    tags:
+      - {
+          name: kernel.event_listener,
+          event: league.oauth2_server.event.user_resolve,
+          method: onUserResolve,
+        }

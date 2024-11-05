@@ -1,6 +1,6 @@
 import ScenarioUtils from '../utils/scenarioUtils.js';
 import Utils from '../utils/utils.js';
-import MailCatcherUtils from "../utils/mailCatcherUtils.js";
+import MailCatcherUtils from '../utils/mailCatcherUtils.js';
 
 const scenarioName = 'createUser';
 
@@ -11,15 +11,11 @@ const mailCatcherUtils = new MailCatcherUtils(utils);
 export const options = scenarioUtils.getOptions();
 
 export default function createUser() {
-    const response = utils.registerUser(utils.generateUser());
+  const response = utils.registerUser(utils.generateUser());
 
-    utils.checkResponse(
-        response,
-        'is status 201',
-        (res) => res.status === 201
-    );
+  utils.checkResponse(response, 'is status 201', (res) => res.status === 201);
 }
 
 export function teardown(data) {
-    mailCatcherUtils.clearMessages();
+  mailCatcherUtils.clearMessages();
 }

@@ -2,7 +2,7 @@ name: Error static analysis tool
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
 
 jobs:
   psalm:

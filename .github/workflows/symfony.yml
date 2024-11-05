@@ -2,7 +2,7 @@ name: Dependency audit and validation
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
 
 jobs:
   symfony-checks:
@@ -14,7 +14,9 @@ jobs:
           php-version: '8.2'
       - uses: actions/checkout@v3
       - name: Copy .env.test.local
-        run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
+        run:
+          php -r "file_exists('.env.test.local') || copy('.env.test',
+          '.env.test.local');"
       - name: Cache Composer packages
         id: composer-cache
         uses: actions/cache@v3
@@ -24,7 +26,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php-
       - name: Install Dependencies
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        run:
+          composer install -q --no-ansi --no-interaction --no-scripts
+          --no-progress --prefer-dist
       - name: Install Symfony CLI
         run: wget https://get.symfony.com/cli/installer -O - | bash
       - name: Composer validate
