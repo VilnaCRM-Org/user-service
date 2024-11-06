@@ -247,8 +247,8 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
             ->method('setMiddlewares')
             ->with($this->callback(static function ($middlewares) {
                 return isset(
-                        $middlewares[0]
-                    ) && $middlewares[0] instanceof Middleware;
+                    $middlewares[0]
+                ) && $middlewares[0] instanceof Middleware;
             }));
 
         $this->connection->expects($this->once())

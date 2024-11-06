@@ -44,7 +44,9 @@ final class UserResolveListenerTest extends UnitTestCase
         $this->userRepository =
             $this->createMock(UserRepositoryInterface::class);
         $this->mockUserTransformer = $this->createMock(UserTransformer::class);
-        $this->userTransformer = new UserTransformer(new UuidTransformer(new UuidFactory()));
+        $this->userTransformer = new UserTransformer(
+            new UuidTransformer(new UuidFactory())
+        );
         $this->userFactory = new UserFactory();
         $this->transformer = new UuidTransformer(new UuidFactory());
         $this->mockGrant = $this->createMock(Grant::class);

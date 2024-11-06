@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Infrastructure\DoctrineType;
 
-use App\Shared\Infrastructure\Factory\UuidFactory as UuidFactoryInterface;
 use App\Shared\Infrastructure\DoctrineType\DomainUuidType;
+use App\Shared\Infrastructure\Factory\UuidFactory as UuidFactoryInterface;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use Doctrine\DBAL\Platforms\AbstractPlatform;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
-use App\Shared\Infrastructure\Factory\UuidFactory as UuidFactoryInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
+use App\Shared\Infrastructure\Factory\UuidFactory as UuidFactoryInterface;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\CommandHandler\UpdateUserCommandHandler;
@@ -53,7 +53,9 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
             PasswordChangedEventFactoryInterface::class
         );
         $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer(new UuidFactoryInterface());
+        $this->uuidTransformer = new UuidTransformer(
+            new UuidFactoryInterface()
+        );
         $this->updateUserCommandFactory = new UpdateUserCommandFactory();
     }
 
