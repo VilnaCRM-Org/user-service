@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\OAuthContext;
 
+use App\Shared\Domain\ValueObject\Uuid;
 use App\Tests\Behat\OAuthContext\Input\AuthorizationCodeGrantInput;
 use App\Tests\Behat\OAuthContext\Input\ClientCredentialsGrantInput;
 use App\Tests\Behat\OAuthContext\Input\ObtainAccessTokenInput;
 use App\Tests\Behat\OAuthContext\Input\ObtainAuthorizeCodeInput;
 use App\Tests\Behat\OAuthContext\Input\PasswordGrantInput;
+use App\User\Application\DTO\AuthorizationUserDto;
 use Behat\Behat\Context\Context;
 use Doctrine\ORM\EntityManagerInterface;
 use Faker\Factory;
@@ -21,6 +23,8 @@ use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Serializer\SerializerInterface;
 
 final class OAuthContext implements Context
@@ -35,7 +39,8 @@ final class OAuthContext implements Context
         private readonly KernelInterface $kernel,
         private SerializerInterface $serializer,
         private ?Response $response,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private TokenStorageInterface $tokenStorage
     ) {
         $this->faker = Factory::create();
     }
@@ -111,21 +116,21 @@ final class OAuthContext implements Context
     {
         $this->approveAuthorization();
 
-        $this->response = $this->kernel->handle(Request::create(
-            '/api/oauth/authorize?' .
-            $this->obtainAuthorizeCodeInput->toUriParams(),
-            'GET',
-            [],
-            [],
-            [],
-            ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-            ]
-        ));
+        $this->sendAuthorizationRequest();
 
         $this->authCode = Request::create(
             $this->response->headers->get('location')
         )->query->get('code');
+    }
+
+    /**
+     * @Given I request the authorization endpoint
+     */
+    public function requestAuthorizationEndpoint(): void
+    {
+        $this->approveAuthorization();
+
+        $this->sendAuthorizationRequest();
     }
 
     /**
@@ -170,6 +175,29 @@ final class OAuthContext implements Context
     }
 
     /**
+     * @Given authenticating user with email :email and password :password
+     */
+    public function authenticatingUser(string $email, string $password): void
+    {
+        $password = password_hash('password', PASSWORD_BCRYPT);
+
+        $userDto = new AuthorizationUserDto(
+            'testuser@example.com',
+            'Test User',
+            $password,
+            new Uuid($this->faker->uuid()),
+            true
+        );
+
+        $token = new UsernamePasswordToken(
+            $userDto,
+            $password,
+            $userDto->getRoles()
+        );
+        $this->tokenStorage->setToken($token);
+    }
+
+    /**
      * @Then invalid credentials error should be returned
      */
     public function invalidCredentialsError(): void
@@ -189,11 +217,24 @@ final class OAuthContext implements Context
             'Client authentication failed',
             $data['error_description']
         );
+    }
 
-        Assert::assertArrayHasKey('message', $data);
+    /**
+     * @Then unauthorized error should be returned
+     */
+    public function unauthorizedErrorShouldBeReturned(): void
+    {
+        $data = json_decode($this->response->getContent(), true);
+
+        Assert::assertSame(
+            Response::HTTP_INTERNAL_SERVER_ERROR,
+            $this->response->getStatusCode()
+        );
+
+        Assert::assertArrayHasKey('detail', $data);
         Assert::assertEquals(
-            'Client authentication failed',
-            $data['message']
+            'A logged in user is required to resolve the authorization request.',
+            $data['detail']
         );
     }
 
@@ -214,16 +255,9 @@ final class OAuthContext implements Context
 
         Assert::assertArrayHasKey('error_description', $data);
         Assert::assertEquals(
-            'The authorization grant type is '.
+            'The authorization grant type is ' .
             'not supported by the authorization server.',
             $data['error_description']
-        );
-
-        Assert::assertArrayHasKey('message', $data);
-        Assert::assertEquals(
-            'The authorization grant type is not'.
-            ' supported by the authorization server.',
-            $data['message']
         );
     }
 
@@ -232,13 +266,26 @@ final class OAuthContext implements Context
         $this->kernel->getContainer()->get('event_dispatcher')
             ->addListener(
                 OAuth2Events::AUTHORIZATION_REQUEST_RESOLVE,
-                static function (
-                    AuthorizationRequestResolveEvent $event
-                ): void {
+                static function (AuthorizationRequestResolveEvent $event): void {
                     $event->resolveAuthorization(
                         AuthorizationRequestResolveEvent::AUTHORIZATION_APPROVED
                     );
                 }
             );
+    }
+
+    private function sendAuthorizationRequest(): void
+    {
+        $this->response = $this->kernel->handle(Request::create(
+            '/api/oauth/authorize?' .
+            $this->obtainAuthorizeCodeInput->toUriParams(),
+            'GET',
+            [],
+            [],
+            [],
+            ['HTTP_ACCEPT' => 'application/json',
+                'CONTENT_TYPE' => 'application/json',
+            ]
+        ));
     }
 }

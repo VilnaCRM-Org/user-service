@@ -8,8 +8,10 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Logging\Middleware;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Psr\Log\NullLogger;
 
 final class MariaDBUserRepository extends ServiceEntityRepository implements
     UserRepositoryInterface
@@ -45,7 +47,8 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
     public function saveBatch(array $users): void
     {
         $this->entityManager->getConnection()
-            ->getConfiguration()->setSQLLogger(null);
+            ->getConfiguration()
+            ->setMiddlewares([new Middleware(new NullLogger())]);
 
         $userCount = count($users);
         for ($i = 1; $i <= $userCount; ++$i) {

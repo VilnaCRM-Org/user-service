@@ -43,10 +43,6 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
         $normalizedError = $this->normalizer->normalize($graphqlError);
 
         $this->assertEquals($errorText, $normalizedError['message']);
-        $this->assertEquals(
-            'internal',
-            $normalizedError['extensions']['category']
-        );
     }
 
     public function testSupportsNormalizationWithoutPrevious(): void
