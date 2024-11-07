@@ -6,7 +6,6 @@ namespace App\Shared\Application;
 
 use App\User\Domain\Exception\DomainException;
 use GraphQL\Error\Error;
-use GraphQL\Error\FormattedError;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -30,14 +29,12 @@ final readonly class DomainExceptionNormalizer implements NormalizerInterface
         array $context = []
     ): array {
         $exception = $object->getPrevious();
-        $error = FormattedError::createFromException($exception);
-
-        $error['message'] = $this->translator->trans(
+        $translatedMessage = $this->translator->trans(
             $exception->getTranslationTemplate(),
             $exception->getTranslationArgs()
         );
 
-        return $error;
+        return ['message' => $translatedMessage];
     }
 
     /**

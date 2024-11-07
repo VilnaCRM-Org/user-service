@@ -8,6 +8,13 @@
 /public/bundles/
 /var/
 /vendor/
+/metrics-report
+/coverage
+infection.log
+summary.log
+.structurizr
+/tests/Load/node_modules
+/tests/Load/users.json
 ###< symfony/framework-bundle ###
 
 ###> symfony/phpunit-bridge ###
@@ -33,9 +40,8 @@
 /.deptrac.cache
 ###< qossmic/deptrac-shim ###
 
-###> league/oauth2-server-bundle ###
-/config/jwt/*.pem
-###< league/oauth2-server-bundle ###
+/config/keys
+supervisord.*
 
 ###> lexik/jwt-authentication-bundle ###
 /config/jwt/*.pem

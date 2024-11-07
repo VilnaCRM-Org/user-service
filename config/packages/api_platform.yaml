@@ -7,6 +7,9 @@ api_platform:
     graphql:
         graphql_playground: false
 
+    openapi:
+        overrideResponses: false
+
     defaults:
         extra_properties:
             rfc_7807_compliant_errors: true
@@ -21,6 +24,7 @@ api_platform:
 
     resource_class_directories:
         - '%kernel.project_dir%/src/User/Domain/Entity'
+        - '%kernel.project_dir%/src/Internal/HealthCheck/Domain/ValueObject'
 
     oauth:
         # To enable or disable OAuth.
