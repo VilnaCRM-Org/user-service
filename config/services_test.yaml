@@ -4,8 +4,13 @@ services:
         autoconfigure: true
 
     Symfony\Contracts\Cache\CacheInterface:
+        alias: 'cache_test'
         public: true
+
+    cache_test:
         class: Symfony\Component\Cache\Adapter\ArrayAdapter
+        public: true
+
 
     App\Tests\Behat\:
         resource: '../tests/Behat/*'

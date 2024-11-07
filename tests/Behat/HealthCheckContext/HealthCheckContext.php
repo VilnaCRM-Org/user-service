@@ -43,9 +43,9 @@ final class HealthCheckContext extends KernelTestCase implements Context
     }
 
     /**
-     * @Then the response status code should be :statusCode
+     * @Then the health check response status code should be :statusCode
      */
-    public function theResponseStatusCodeShouldBe(string $statusCode): void
+    public function theHealthCheckResponseStatusCodeShouldBe(string $statusCode): void
     {
         Assert::assertEquals($statusCode, $this->response->getStatusCode());
     }
@@ -64,19 +64,22 @@ final class HealthCheckContext extends KernelTestCase implements Context
     }
 
     /**
+    /**
      * @Given the cache is not working
      */
     public function theCacheIsNotWorking(): void
     {
-        /** @var CacheInterface|MockObject $cacheMock */
+        $this->kernelInterface->shutdown();
+        $this->kernelInterface->boot();
+
+        $container = $this->kernelInterface->getContainer()->get('test.service_container');
+
         $cacheMock = $this->createMock(CacheInterface::class);
+        $cacheMock->method('get')->willThrowException(new CacheException('Cache is not working'));
 
-        $cacheMock->method('get')
-            ->willThrowException(new CacheException('Cache is not working'));
-
-        $container = $this->kernelInterface->getContainer();
-        $container->set(CacheInterface::class, $cacheMock);
+        $container->set('cache_test', $cacheMock);
     }
+
 
     /**
      * @Given the database is not available

@@ -23,7 +23,7 @@ jobs:
         run: make setup-test-db
 
       - name: Run unit tests and collect coverage
-        run: make ci-tests
+        run: make coverage-xml
 
       - name: Copy coverage.xml to workspace
         run: docker cp user-service-php-1:/coverage/coverage.xml /tmp/coverage.xml
