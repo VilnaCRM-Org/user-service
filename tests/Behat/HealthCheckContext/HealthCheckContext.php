@@ -11,7 +11,6 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
 use PHPUnit\Framework\Assert;
-use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Cache\Exception\CacheException;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,8 +44,9 @@ final class HealthCheckContext extends KernelTestCase implements Context
     /**
      * @Then the health check response status code should be :statusCode
      */
-    public function theHealthCheckResponseStatusCodeShouldBe(string $statusCode): void
-    {
+    public function theHealthCheckResponseStatusCodeShouldBe(
+        string $statusCode
+    ): void {
         Assert::assertEquals($statusCode, $this->response->getStatusCode());
     }
 
@@ -64,7 +64,6 @@ final class HealthCheckContext extends KernelTestCase implements Context
     }
 
     /**
-    /**
      * @Given the cache is not working
      */
     public function theCacheIsNotWorking(): void
@@ -72,14 +71,16 @@ final class HealthCheckContext extends KernelTestCase implements Context
         $this->kernelInterface->shutdown();
         $this->kernelInterface->boot();
 
-        $container = $this->kernelInterface->getContainer()->get('test.service_container');
+        $container = $this->kernelInterface
+            ->getContainer()
+            ->get('test.service_container');
 
         $cacheMock = $this->createMock(CacheInterface::class);
-        $cacheMock->method('get')->willThrowException(new CacheException('Cache is not working'));
+        $cacheMock->method('get')
+            ->willThrowException(new CacheException('Cache is not working'));
 
         $container->set('cache_test', $cacheMock);
     }
-
 
     /**
      * @Given the database is not available
