@@ -68,9 +68,6 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theCacheIsNotWorking(): void
     {
-        $this->kernelInterface->shutdown();
-        $this->kernelInterface->boot();
-
         $container = $this->kernelInterface
             ->getContainer()
             ->get('test.service_container');
