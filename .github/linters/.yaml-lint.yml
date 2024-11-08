@@ -5,30 +5,30 @@ rules:
 
   indentation:
     spaces: 2
-    level: warning
+    level: error  # Enforce strict indentation
 
   line-length:
     max: 120
-    level: warning
+    level: warning  # Consider changing this to 100 for better readability
 
   new-line-at-end-of-file:
     level: warning
 
   trailing-spaces:
-    level: warning
+    level: error  # Enforce no trailing spaces
 
   brackets:
-    level: warning
+    level: error  # Enforce proper bracket usage
 
   commas:
-    level: warning
+    level: error  # Enforce proper comma usage
 
   braces:
-    level: warning
+    level: error  # Enforce proper brace usage
 
   empty-lines:
-    max: 0
+    max: 1  # Allow at least one empty line for readability
     level: warning
 
   colons:
-    level: warning
+    level: error  # Enforce proper colon usage
