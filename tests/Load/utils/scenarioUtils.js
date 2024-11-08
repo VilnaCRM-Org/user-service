@@ -9,10 +9,8 @@ export default class ScenarioUtils {
     this.averageConfig = this.config.endpoints[scenarioName].average;
     this.stressConfig = this.config.endpoints[scenarioName].stress;
     this.spikeConfig = this.config.endpoints[scenarioName].spike;
-    this.setupTimeout =
-      this.config.endpoints[scenarioName].setupTimeoutInMinutes + 'm';
-    this.teardownTimeout =
-      this.config.endpoints[scenarioName].teardownTimeoutInMinutes + 'm';
+    this.setupTimeout = this.config.endpoints[scenarioName].setupTimeoutInMinutes + 'm';
+    this.teardownTimeout = this.config.endpoints[scenarioName].teardownTimeoutInMinutes + 'm';
     this.delay = this.config.delayBetweenScenarios;
     this.averageTestStartTime = 0;
     this.stressTestStartTime = 0;
@@ -39,7 +37,7 @@ export default class ScenarioUtils {
       run_spike: this.addSpikeScenario.bind(this, scenariosBuilder),
     };
 
-    Object.keys(scenarioFunctions).forEach((key) => {
+    Object.keys(scenarioFunctions).forEach(key => {
       if (this.utils.getCLIVariable(key) !== 'false') {
         scenarioFunctions[key]();
       }
@@ -54,10 +52,7 @@ export default class ScenarioUtils {
   }
 
   addAverageScenario(scenariosBuilder) {
-    scenariosBuilder.addAverageScenario(
-      this.averageConfig,
-      this.averageTestStartTime
-    );
+    scenariosBuilder.addAverageScenario(this.averageConfig, this.averageTestStartTime);
     this.stressTestStartTime =
       this.averageTestStartTime +
       this.averageConfig.duration.rise +
@@ -67,10 +62,7 @@ export default class ScenarioUtils {
   }
 
   addStressScenario(scenariosBuilder) {
-    scenariosBuilder.addStressScenario(
-      this.stressConfig,
-      this.stressTestStartTime
-    );
+    scenariosBuilder.addStressScenario(this.stressConfig, this.stressTestStartTime);
     this.spikeTestStartTime =
       this.stressTestStartTime +
       this.stressConfig.duration.rise +
@@ -80,10 +72,7 @@ export default class ScenarioUtils {
   }
 
   addSpikeScenario(scenariosBuilder) {
-    scenariosBuilder.addSpikeScenario(
-      this.spikeConfig,
-      this.spikeTestStartTime
-    );
+    scenariosBuilder.addSpikeScenario(this.spikeConfig, this.spikeTestStartTime);
   }
 
   getThresholds() {
@@ -95,7 +84,7 @@ export default class ScenarioUtils {
       run_spike: { name: 'spike', config: this.spikeConfig },
     };
 
-    Object.keys(thresholdConfigs).forEach((key) => {
+    Object.keys(thresholdConfigs).forEach(key => {
       if (this.utils.getCLIVariable(key) !== 'false') {
         const { name, config } = thresholdConfigs[key];
         thresholdsBuilder.addThreshold(name, config);

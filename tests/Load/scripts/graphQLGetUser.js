@@ -44,7 +44,7 @@ export default function getUser(data) {
   utils.checkResponse(
     response,
     'user returned',
-    (res) => JSON.parse(res.body).data.user.id === `${id}`
+    res => JSON.parse(res.body).data.user.id === `${id}`
   );
 }
 

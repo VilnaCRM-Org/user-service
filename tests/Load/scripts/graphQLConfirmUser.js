@@ -46,7 +46,7 @@ export default async function confirmUser(data) {
   utils.checkResponse(
     response,
     'confirmed user returned',
-    (res) => JSON.parse(res.body).data[mutationName].user.id !== undefined
+    res => JSON.parse(res.body).data[mutationName].user.id !== undefined
   );
 }
 

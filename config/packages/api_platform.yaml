@@ -1,7 +1,6 @@
 api_platform:
   title: 'User Service API'
-  description:
-    'This API provides endpoints to manage user data within a VilnaCRM.'
+  description: 'This API provides endpoints to manage user data within a VilnaCRM.'
   version: '1.0.0'
 
   use_symfony_listeners: false

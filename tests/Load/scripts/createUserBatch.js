@@ -26,13 +26,9 @@ export default function createUser() {
     users: batch,
   });
 
-  const response = http.post(
-    `${utils.getBaseHttpUrl()}/batch`,
-    payload,
-    utils.getJsonHeader()
-  );
+  const response = http.post(`${utils.getBaseHttpUrl()}/batch`, payload, utils.getJsonHeader());
 
-  utils.checkResponse(response, 'is status 201', (res) => res.status === 201);
+  utils.checkResponse(response, 'is status 201', res => res.status === 201);
 }
 
 export function teardown(data) {

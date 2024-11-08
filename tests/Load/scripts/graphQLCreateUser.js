@@ -39,8 +39,7 @@ export default function createUser() {
   utils.checkResponse(
     response,
     'created user returned',
-    (res) =>
-      JSON.parse(res.body).data[mutationName].user.email === `${user.email}`
+    res => JSON.parse(res.body).data[mutationName].user.email === `${user.email}`
   );
 }
 

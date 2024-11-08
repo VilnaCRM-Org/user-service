@@ -28,12 +28,9 @@ export default function getUser(data) {
 
   const { id } = user;
 
-  const response = http.get(
-    `${utils.getBaseHttpUrl()}/${id}`,
-    utils.getJsonHeader()
-  );
+  const response = http.get(`${utils.getBaseHttpUrl()}/${id}`, utils.getJsonHeader());
 
-  utils.checkResponse(response, 'is status 200', (res) => res.status === 200);
+  utils.checkResponse(response, 'is status 200', res => res.status === 200);
 }
 
 export function teardown(data) {

@@ -26,8 +26,7 @@ jobs:
         run: make ci-tests
 
       - name: Copy coverage.xml to workspace
-        run:
-          docker cp user-service-php-1:/coverage/coverage.xml /tmp/coverage.xml
+        run: docker cp user-service-php-1:/coverage/coverage.xml /tmp/coverage.xml
 
       - name: Check if coverage.xml exists
         run: |

@@ -33,26 +33,14 @@ module.exports = {
     ],
     'no-extra-semi': 'off',
     'class-methods-use-this': 'off',
-    quotes: [
-      'error',
-      'single',
-      { avoidEscape: true, allowTemplateLiterals: true },
-    ],
+    quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
     'no-multiple-empty-lines': [2, { max: 2, maxEOF: 0 }],
     'linebreak-style': ['error', 'unix'],
 
     'import/order': [
       'error',
       {
-        groups: [
-          'builtin',
-          'external',
-          'internal',
-          'parent',
-          'sibling',
-          'index',
-          'object',
-        ],
+        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object'],
         'newlines-between': 'always',
         alphabetize: { order: 'asc', caseInsensitive: true },
       },

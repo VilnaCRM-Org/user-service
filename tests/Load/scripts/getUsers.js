@@ -9,8 +9,7 @@ const scenarioName = 'getUsers';
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
-const usersToGetInOneRequest =
-  utils.getConfig().endpoints[scenarioName].usersToGetInOneRequest;
+const usersToGetInOneRequest = utils.getConfig().endpoints[scenarioName].usersToGetInOneRequest;
 const mailCatcherUtils = new MailCatcherUtils(utils);
 
 const users = insertUsersUtils.loadInsertedUsers();
@@ -31,7 +30,7 @@ export default function getUsers() {
     utils.getJsonHeader()
   );
 
-  utils.checkResponse(response, 'is status 200', (res) => res.status === 200);
+  utils.checkResponse(response, 'is status 200', res => res.status === 200);
 }
 
 export function teardown(data) {

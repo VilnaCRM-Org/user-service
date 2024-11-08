@@ -14,9 +14,7 @@ export default class MailCatcherUtils {
   }
 
   async getConfirmationToken(messageId) {
-    const message = await http.get(
-      `${this.mailCatcherUrl}/${messageId}.source`
-    );
+    const message = await http.get(`${this.mailCatcherUrl}/${messageId}.source`);
 
     return this.extractConfirmationToken(message.body);
   }

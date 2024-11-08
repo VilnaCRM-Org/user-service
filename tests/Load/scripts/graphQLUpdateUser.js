@@ -56,7 +56,7 @@ export default function updateUser(data) {
   utils.checkResponse(
     response,
     'updated user returned',
-    (res) => JSON.parse(res.body).data[mutationName].user.id === `${id}`
+    res => JSON.parse(res.body).data[mutationName].user.id === `${id}`
   );
 }
 
