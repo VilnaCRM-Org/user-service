@@ -1,4 +1,4 @@
-name: YAML Validation
+name: Static analysis and fixers
 
 on:
   pull_request:
