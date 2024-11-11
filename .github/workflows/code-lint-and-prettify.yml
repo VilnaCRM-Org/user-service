@@ -25,6 +25,7 @@ jobs:
         continue-on-error: true
         uses: super-linter/super-linter@v7.1.0
         env:
+          FILTER_REGEX_EXCLUDE: '^\.github/openapi-spec/'
           VALIDATE_JAVASCRIPT_ES: true
           VALIDATE_MARKDOWN: true
           VALIDATE_MARKDOWN_PRETTIER: true
