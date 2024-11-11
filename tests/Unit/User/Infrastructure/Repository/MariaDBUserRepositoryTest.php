@@ -6,6 +6,7 @@ namespace App\Tests\Unit\User\Infrastructure\Repository;
 
 use App\Shared\Application\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -13,6 +14,7 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Repository\MariaDBUserRepository;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Logging\Middleware;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Persisters\Entity\EntityPersister;
@@ -63,6 +65,16 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
         $user = $this->userRepository->findByEmail($email);
 
         $this->assertSame($expectedUser, $user);
+    }
+
+    public function testSaveBatchSetsMiddleware(): void
+    {
+        $users = $this->createUsers(self::BATCH_SIZE);
+
+        $this->setUpMiddlewareExpectations();
+        $this->setUpEntityManagerExpectations();
+
+        $this->userRepository->saveBatch($users);
     }
 
     public function testSave(): void
@@ -169,11 +181,12 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
         $unitOfWork = $this->createMock(UnitOfWork::class);
         $persister = $this->createMock(EntityPersister::class);
 
+        $metadataMock = $this->createMock(ClassMetadata::class);
+        $metadataMock->name = User::class;
         $this->entityManager->expects($this->once())
             ->method('getClassMetadata')
-            ->willReturn(
-                $this->createMock(ClassMetadata::class)
-            );
+            ->willReturn($metadataMock);
+
         $this->entityManager->expects($this->once())
             ->method('getUnitOfWork')
             ->willReturn($unitOfWork);
@@ -224,5 +237,53 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
                     $users
                 )
             );
+    }
+
+    private function setUpMiddlewareExpectations(): void
+    {
+        $configurationMock = $this->createMock(Configuration::class);
+        $configurationMock->expects($this->once())
+            ->method('setMiddlewares')
+            ->with($this->callback(static function ($middlewares) {
+                return isset(
+                    $middlewares[0]
+                ) && $middlewares[0] instanceof Middleware;
+            }));
+
+        $this->connection->expects($this->once())
+            ->method('getConfiguration')
+            ->willReturn($configurationMock);
+
+        $this->entityManager->expects($this->atLeastOnce())
+            ->method('getConnection')
+            ->willReturn($this->connection);
+    }
+
+    private function setUpEntityManagerExpectations(): void
+    {
+        $this->entityManager->expects($this->atLeastOnce())
+            ->method('persist');
+        $this->entityManager->expects($this->atLeastOnce())
+            ->method('flush');
+        $this->entityManager->expects($this->atLeastOnce())
+            ->method('clear');
+    }
+
+    /**
+     * @return array<User> $users
+     */
+    private function createUsers(int $count): array
+    {
+        $users = [];
+        for ($i = 0; $i < $count; $i++) {
+            $users[] = $this->userFactory->create(
+                $this->faker->email(),
+                $this->faker->name(),
+                $this->faker->password(),
+                $this->transformer->transformFromString($this->faker->uuid())
+            );
+        }
+
+        return $users;
     }
 }

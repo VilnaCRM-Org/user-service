@@ -33,7 +33,7 @@ interface UserRepositoryInterface
      */
     public function find(
         mixed $id,
-        mixed $lockMode = null,
-        mixed $lockVersion = null
-    );
+        ?int $lockMode = null,
+        ?int $lockVersion = null
+    ): ?object;
 }

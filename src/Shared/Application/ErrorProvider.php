@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ApiResource\Error;
 use ApiPlatform\State\ProviderInterface;
 use App\User\Domain\Exception\DomainException;
-use GraphQL\Error\FormattedError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -56,14 +55,13 @@ final readonly class ErrorProvider implements ProviderInterface
         if ($status >= HttpResponse::HTTP_INTERNAL_SERVER_ERROR) {
             if ($this->isGraphQLRequest($request)) {
                 $error = $this->provideGraphQLInternalServerError(
-                    $exception,
                     $internalErrorText
                 );
             } else {
                 $error = $this->provideRESTInternalServerError(
                     $exception,
                     $internalErrorText,
-                    $status,
+                    $status
                 );
             }
         } elseif ($exception instanceof DomainException) {
@@ -91,13 +89,9 @@ final readonly class ErrorProvider implements ProviderInterface
     /**
      * @return array<string,array<string>>
      */
-    private function provideGraphQLInternalServerError(
-        Throwable $exception,
-        string $message
-    ): array {
-        $error = FormattedError::createFromException($exception);
-        $error['message'] = $message;
-        return $error;
+    private function provideGraphQLInternalServerError(string $message): array
+    {
+        return ['message' => $message];
     }
 
     private function provideRESTInternalServerError(

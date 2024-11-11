@@ -13,15 +13,15 @@
     "ext-mbstring": "*",
     "ext-simplexml": "*",
     "ext-xml": "*",
-    "api-platform/core": "^3.0",
+    "api-platform/core": "^4.0",
     "cfpinto/graphql": "^2.0",
     "doctrine/doctrine-bundle": "^2.12",
     "doctrine/doctrine-migrations-bundle": "^3.3",
-    "doctrine/orm": "^2.13",
+    "doctrine/orm": "^3.3",
     "dpauli/graphql-request-builder": "^1.8",
     "fakerphp/faker": "^1.23.0",
     "lambdish/phunctional": "^2.1",
-    "league/oauth2-server-bundle": "^0.8.0",
+    "league/oauth2-server-bundle": "^0.9.0",
     "lexik/jwt-authentication-bundle": "^3.0.0",
     "nelmio/cors-bundle": "^2.4",
     "phpmailer/phpmailer": "^6.6",
@@ -54,7 +54,7 @@
     "thecodingmachine/safe": "^2.5",
     "twig/extra-bundle": "^3.10",
     "twig/inky-extra": "^3.8",
-    "webonyx/graphql-php": "^14.11"
+    "webonyx/graphql-php": "^15.17"
   },
   "config": {
     "allow-plugins": {
@@ -125,7 +125,7 @@
     "dama/doctrine-test-bundle": "^8.2",
     "dg/bypass-finals": "^1.5",
     "doctrine/doctrine-fixtures-bundle": "^3.4",
-    "friends-of-behat/symfony-extension": "^2.5",
+    "friends-of-behat/symfony-extension": "^2.6",
     "friendsofphp/php-cs-fixer": "^3.14",
     "infection/infection": "^0.27.10",
     "marcocesarato/php-conventional-changelog": "^1.16",

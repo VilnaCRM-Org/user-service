@@ -7,4 +7,4 @@ App\User\Domain\Entity\User:
     initials:
       groups: ['output']
     confirmed:
-      groups: [ 'output' ]
+      groups: ['output']

@@ -3,7 +3,7 @@ import counter from 'k6/x/counter';
 import MailCatcherUtils from '../utils/mailCatcherUtils.js';
 import ScenarioUtils from '../utils/scenarioUtils.js';
 import Utils from '../utils/utils.js';
-import InsertUsersUtils from "../utils/insertUsersUtils.js";
+import InsertUsersUtils from '../utils/insertUsersUtils.js';
 
 const scenarioName = 'graphQLConfirmUser';
 
@@ -15,20 +15,20 @@ const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 const users = insertUsersUtils.loadInsertedUsers();
 
 export function setup() {
-    return {
-        users: users,
-    };
+  return {
+    users: users,
+  };
 }
 
 export const options = scenarioUtils.getOptions();
 
 export default async function confirmUser(data) {
-    const num = counter.up();
-    const mutationName = 'confirmUser';
+  const num = counter.up();
+  const mutationName = 'confirmUser';
 
-    const token = await mailCatcherUtils.getConfirmationToken(num);
+  const token = await mailCatcherUtils.getConfirmationToken(num);
 
-    const mutation = `
+  const mutation = `
      mutation {
         ${mutationName}(input: { token: "${token}" }) {
             user {
@@ -37,19 +37,19 @@ export default async function confirmUser(data) {
         }
      }`;
 
-    const response = http.post(
-        utils.getBaseGraphQLUrl(),
-        JSON.stringify({query: mutation}),
-        utils.getJsonHeader(),
-    );
+  const response = http.post(
+    utils.getBaseGraphQLUrl(),
+    JSON.stringify({ query: mutation }),
+    utils.getJsonHeader()
+  );
 
-    utils.checkResponse(
-        response,
-        'confirmed user returned',
-        (res) => JSON.parse(res.body).data[mutationName].user.id !== undefined
-    );
+  utils.checkResponse(
+    response,
+    'confirmed user returned',
+    res => JSON.parse(res.body).data[mutationName].user.id !== undefined
+  );
 }
 
 export function teardown(data) {
-    mailCatcherUtils.clearMessages();
+  mailCatcherUtils.clearMessages();
 }

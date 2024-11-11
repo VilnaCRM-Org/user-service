@@ -68,7 +68,7 @@ services:
       - ./:/srv/app
 
   database:
-    image: mariadb:11.4
+    image: mariadb:${DB_VERSION}
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -80,19 +80,12 @@ services:
     healthcheck:
       interval: 10s
       retries: 10
-      test:
-        [
-          "CMD",
-          "healthcheck.sh",
-          "--su-mysql",
-          "--connect",
-          "--innodb_initialized"
-        ]
+      test: ['CMD', 'healthcheck.sh', '--su-mysql', '--connect', '--innodb_initialized']
 
   redis:
     image: redis:7.2.5-alpine
     ports:
-      - "${REDIS_PORT}:6379"
+      - '${REDIS_PORT}:6379'
 
 volumes:
   php_socket:
