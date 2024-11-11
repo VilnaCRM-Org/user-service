@@ -66,20 +66,13 @@ export default class Utils {
   }
 
   checkUserIsDefined(user) {
-    check(user, { 'user is defined': (u) => u !== undefined });
+    check(user, { 'user is defined': u => u !== undefined });
   }
 
   generateUser() {
     const email = `${faker.number.int32()}${faker.person.email()}`;
     const initials = faker.person.name();
-    const password = faker.internet.password(
-      true,
-      true,
-      true,
-      false,
-      false,
-      60
-    );
+    const password = faker.internet.password(true, true, true, false, false, 60);
 
     return {
       email,
@@ -89,7 +82,7 @@ export default class Utils {
   }
 
   checkResponse(response, checkName, checkFunction) {
-    check(response, { [checkName]: (res) => checkFunction(res) });
+    check(response, { [checkName]: res => checkFunction(res) });
   }
 
   registerUser(user) {

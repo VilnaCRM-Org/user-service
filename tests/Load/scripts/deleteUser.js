@@ -28,13 +28,9 @@ export default function deleteUser(data) {
 
   const { id } = user;
 
-  const response = http.del(
-    `${utils.getBaseHttpUrl()}/${id}`,
-    null,
-    utils.getJsonHeader()
-  );
+  const response = http.del(`${utils.getBaseHttpUrl()}/${id}`, null, utils.getJsonHeader());
 
-  utils.checkResponse(response, 'is status 204', (res) => res.status === 204);
+  utils.checkResponse(response, 'is status 204', res => res.status === 204);
 }
 
 export function teardown(data) {

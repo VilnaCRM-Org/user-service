@@ -47,7 +47,7 @@ export default function resendEmail(data) {
   utils.checkResponse(
     response,
     'user returned',
-    (res) => JSON.parse(res.body).data[mutationName].user.id === `${id}`
+    res => JSON.parse(res.body).data[mutationName].user.id === `${id}`
   );
 }
 

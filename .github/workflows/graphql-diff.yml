@@ -29,16 +29,14 @@ jobs:
         run: make generate-graphql-spec
 
       - name: Copy openapi spec to host
-        run:
-          docker cp user-service-php-1:/srv/app/.github/graphql-spec/spec
+        run: docker cp user-service-php-1:/srv/app/.github/graphql-spec/spec
           .github/graphql-spec/spec
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:
           add: '.github/graphql-spec/spec'
-          message:
-            'feat(#${{ toJSON(github.event.number) }}): generate graphql spec'
+          message: 'feat(#${{ toJSON(github.event.number) }}): generate graphql spec'
 
       - name: GraphQL Inspector
         uses: kamilkisiela/graphql-inspector@release-1701263349990

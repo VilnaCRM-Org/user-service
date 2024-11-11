@@ -80,14 +80,7 @@ services:
     healthcheck:
       interval: 10s
       retries: 10
-      test:
-        [
-          'CMD',
-          'healthcheck.sh',
-          '--su-mysql',
-          '--connect',
-          '--innodb_initialized',
-        ]
+      test: ['CMD', 'healthcheck.sh', '--su-mysql', '--connect', '--innodb_initialized']
 
   redis:
     image: redis:7.2.5-alpine

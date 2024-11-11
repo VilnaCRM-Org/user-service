@@ -79,11 +79,7 @@ export default class InsertUsersUtils {
     const requestBatch = [];
     const userPasswords = {};
 
-    for (
-      let requestIndex = 0;
-      requestIndex < numberOfRequests;
-      requestIndex++
-    ) {
+    for (let requestIndex = 0; requestIndex < numberOfRequests; requestIndex++) {
       const { value, done } = generator.next();
       if (done) break;
       const [request, passwords] = value;
@@ -99,15 +95,12 @@ export default class InsertUsersUtils {
 
     const users = [];
 
-    const [requestBatch, userPasswords] = this.prepareRequestBatch(
-      numberOfUsers,
-      batchSize
-    );
+    const [requestBatch, userPasswords] = this.prepareRequestBatch(numberOfUsers, batchSize);
 
     try {
       const responses = http.batch(requestBatch);
-      responses.forEach((response) => {
-        JSON.parse(response.body).forEach((user) => {
+      responses.forEach(response => {
+        JSON.parse(response.body).forEach(user => {
           user.password = userPasswords[user.email];
           users.push(user);
         });
@@ -124,9 +117,7 @@ export default class InsertUsersUtils {
   countRequestForRampingRate(startRps, targetRps, duration) {
     const acceleration = (targetRps - startRps) / duration;
 
-    return Math.round(
-      startRps * duration + (acceleration * duration * duration) / 2
-    );
+    return Math.round(startRps * duration + (acceleration * duration * duration) / 2);
   }
 
   prepareUsers() {
@@ -165,19 +156,11 @@ export default class InsertUsersUtils {
   }
 
   countDefaultRequests(config) {
-    const riseRequests = this.countRequestForRampingRate(
-      0,
-      config.rps,
-      config.duration.rise
-    );
+    const riseRequests = this.countRequestForRampingRate(0, config.rps, config.duration.rise);
 
     const plateauRequests = config.rps * config.duration.plateau;
 
-    const fallRequests = this.countRequestForRampingRate(
-      config.rps,
-      0,
-      config.duration.fall
-    );
+    const fallRequests = this.countRequestForRampingRate(config.rps, 0, config.duration.fall);
 
     return riseRequests + plateauRequests + fallRequests;
   }

@@ -878,8 +878,7 @@ packages:
         integrity: sha512-dZ6+mexnaTIbSBZWgou51U6OmzIhYM2VcNdtiTtI7qPNZm35Akpr0f6vtw3w1Kmn5PYo+tZVfh13WrhpS6oLqQ==,
       }
     engines: { node: ^12.22.0 || ^14.17.0 || >=16.0.0 }
-    deprecated:
-      This version is no longer supported. Please see
+    deprecated: This version is no longer supported. Please see
       https://eslint.org/version-support for other options.
     hasBin: true
 
@@ -1190,8 +1189,7 @@ packages:
       {
         integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==,
       }
-    deprecated:
-      This module is not supported, and leaks memory. Do not use it. Check out
+    deprecated: This module is not supported, and leaks memory. Do not use it. Check out
       lru-cache if you want a good and tested way to coalesce async requests by
       a key value, which is much more comprehensive and powerful.
 
@@ -2000,8 +1998,7 @@ packages:
       }
     engines: { node: '>= 6' }
     peerDependencies:
-      typescript:
-        '>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev
+      typescript: '>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev
         || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta'
 
   type-check@0.4.0:

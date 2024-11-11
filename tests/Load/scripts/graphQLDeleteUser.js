@@ -47,7 +47,7 @@ export default function deleteUser(data) {
   utils.checkResponse(
     response,
     'deleted user returned',
-    (res) => JSON.parse(res.body).data[mutationName].user.id === `${id}`
+    res => JSON.parse(res.body).data[mutationName].user.id === `${id}`
   );
 }
 

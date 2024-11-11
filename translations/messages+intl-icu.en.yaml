@@ -2,8 +2,7 @@ email:
   password:
     changed:
       subject: 'Password Change Notification'
-      text:
-        'Your account password has been updated. If you made this change, no
+      text: 'Your account password has been updated. If you made this change, no
         action is needed. If not, or if you have concerns, contact our support
         team '
   confirm:
