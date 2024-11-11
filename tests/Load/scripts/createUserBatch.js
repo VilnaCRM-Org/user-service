@@ -1,8 +1,8 @@
 import ScenarioUtils from '../utils/scenarioUtils.js';
 import Utils from '../utils/utils.js';
-import InsertUsersUtils from "../utils/insertUsersUtils.js";
+import InsertUsersUtils from '../utils/insertUsersUtils.js';
 import http from 'k6/http';
-import MailCatcherUtils from "../utils/mailCatcherUtils.js";
+import MailCatcherUtils from '../utils/mailCatcherUtils.js';
 
 const scenarioName = 'createUserBatch';
 
@@ -23,7 +23,7 @@ export default function createUser() {
     }
 
     const payload = JSON.stringify({
-        'users': batch
+        users: batch,
     });
 
     const response = http.post(
@@ -32,11 +32,7 @@ export default function createUser() {
         utils.getJsonHeader()
     );
 
-    utils.checkResponse(
-        response,
-        'is status 201',
-        (res) => res.status === 201
-    );
+    utils.checkResponse(response, 'is status 201', (res) => res.status === 201);
 }
 
 export function teardown(data) {

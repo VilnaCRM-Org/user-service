@@ -3,7 +3,7 @@ import counter from 'k6/x/counter';
 import MailCatcherUtils from '../utils/mailCatcherUtils.js';
 import ScenarioUtils from '../utils/scenarioUtils.js';
 import Utils from '../utils/utils.js';
-import InsertUsersUtils from "../utils/insertUsersUtils.js";
+import InsertUsersUtils from '../utils/insertUsersUtils.js';
 
 const scenarioName = 'confirmUser';
 
@@ -28,7 +28,7 @@ export default async function confirmUser(data) {
     const token = await mailCatcherUtils.getConfirmationToken(num);
 
     const payload = JSON.stringify({
-        token
+        token,
     });
 
     const response = await http.patch(
@@ -37,11 +37,7 @@ export default async function confirmUser(data) {
         utils.getMergePatchHeader()
     );
 
-    utils.checkResponse(
-        response,
-        'is status 200',
-        (res) => res.status === 200
-    );
+    utils.checkResponse(response, 'is status 200', (res) => res.status === 200);
 }
 
 export function teardown(data) {
