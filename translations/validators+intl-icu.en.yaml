@@ -13,8 +13,6 @@ password:
     uppercase: 'Password must contain at least one uppercase letter'
     number: 'Password must contain at least one number'
 batch:
-  empty:
-    'Batch should have at least one user'
+  empty: 'Batch should have at least one user'
   email:
-    duplicate:
-      'Duplicate email in a batch'
+    duplicate: 'Duplicate email in a batch'

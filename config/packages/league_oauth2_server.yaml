@@ -1,6 +1,5 @@
 league_oauth2_server:
   authorization_server: # Required
-
     # Full path to the private key file.
     # How to generate a private key: https://oauth2.thephpleague.com/installation/#generating-public-and-private-keys
     private_key: '%env(resolve:OAUTH_PRIVATE_KEY)%' # Required, Example: /var/oauth/private.key
@@ -45,8 +44,7 @@ league_oauth2_server:
     # Whether to enable access token saving to persistence layer (default to true)
     persist_access_token: true
 
-  resource_server:      # Required
-
+  resource_server: # Required
     # Full path to the public key file
     # How to generate a public key: https://oauth2.thephpleague.com/installation/#generating-public-and-private-keys
     public_key: '%env(resolve:OAUTH_PUBLIC_KEY)%' # Required, Example: /var/oauth/public.key
@@ -62,9 +60,8 @@ league_oauth2_server:
 
   # Configures different persistence methods that can be used by the bundle for saving client and token data.
   # Only one persistence method can be configured at a time.
-  persistence:          # Required
+  persistence: # Required
     doctrine:
-
       # Name of the entity manager that you wish to use for managing clients and tokens.
       entity_manager: default
 

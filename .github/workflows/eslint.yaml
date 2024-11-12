@@ -2,7 +2,7 @@ name: Static analysis for load tests
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
 
 jobs:
   eslint:
@@ -22,7 +22,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: tests/Load/node_modules
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('tests/Load/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-dependencies-${{
+            hashFiles('tests/Load/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-dependencies-
 

@@ -15,31 +15,31 @@ const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 const users = insertUsersUtils.loadInsertedUsers();
 
 export function setup() {
-    return {
-        users: users,
-    };
+  return {
+    users: users,
+  };
 }
 
 export const options = scenarioUtils.getOptions();
 
 export default async function confirmUser(data) {
-    const num = counter.up();
+  const num = counter.up();
 
-    const token = await mailCatcherUtils.getConfirmationToken(num);
+  const token = await mailCatcherUtils.getConfirmationToken(num);
 
-    const payload = JSON.stringify({
-        token,
-    });
+  const payload = JSON.stringify({
+    token,
+  });
 
-    const response = await http.patch(
-        `${utils.getBaseHttpUrl()}/confirm`,
-        payload,
-        utils.getMergePatchHeader()
-    );
+  const response = await http.patch(
+    `${utils.getBaseHttpUrl()}/confirm`,
+    payload,
+    utils.getMergePatchHeader()
+  );
 
-    utils.checkResponse(response, 'is status 200', (res) => res.status === 200);
+  utils.checkResponse(response, 'is status 200', res => res.status === 200);
 }
 
 export function teardown(data) {
-    mailCatcherUtils.clearMessages();
+  mailCatcherUtils.clearMessages();
 }

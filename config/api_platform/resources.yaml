@@ -7,7 +7,7 @@ resources:
       'App\User\Domain\Exception\TokenNotFoundException': 404
       'App\User\Domain\Exception\DuplicateEmailException': 409
     normalizationContext:
-      groups: [ 'output' ]
+      groups: ['output']
 
     operations:
       ApiPlatform\Metadata\GetCollection:
@@ -44,14 +44,14 @@ resources:
       - class: 'ApiPlatform\Metadata\GraphQl\QueryCollection'
       - class: 'ApiPlatform\Metadata\GraphQl\DeleteMutation'
         normalizationContext:
-          groups: [ 'deleteMutationOutput' ]
+          groups: ['deleteMutationOutput']
         name: 'delete'
       - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
         name: 'confirm'
         resolver: 'App\User\Application\Resolver\ConfirmUserMutationResolver'
         deserialize: false
         denormalizationContext:
-          groups: [ ]
+          groups: []
         extraArgs:
           token:
             type: 'String!'
