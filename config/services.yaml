@@ -33,28 +33,17 @@ services:
       tags: ['app.openapi_endpoint_factory']
 
   App\Shared\Infrastructure\Bus\Command\InMemorySymfonyCommandBus:
-    arguments:
-      [
-        '@App\Shared\Infrastructure\Bus\MessageBusFactory',
-        !tagged app.command_handler,
-      ]
+    arguments: ['@App\Shared\Infrastructure\Bus\MessageBusFactory', !tagged app.command_handler]
     lazy: true
 
   App\Shared\Infrastructure\Bus\Event\InMemorySymfonyEventBus:
-    arguments:
-      [
-        '@App\Shared\Infrastructure\Bus\MessageBusFactory',
-        !tagged app.event_subscriber,
-      ]
+    arguments: ['@App\Shared\Infrastructure\Bus\MessageBusFactory', !tagged app.event_subscriber]
     lazy: true
 
   App\Shared\Application\OpenApi\OpenApiFactory:
     decorates: 'api_platform.openapi.factory'
     arguments:
-      [
-        '@App\Shared\Application\OpenApi\OpenApiFactory.inner',
-        !tagged app.openapi_endpoint_factory,
-      ]
+      ['@App\Shared\Application\OpenApi\OpenApiFactory.inner', !tagged app.openapi_endpoint_factory]
     autoconfigure: false
 
   api_platform.state.error_provider:
@@ -73,10 +62,10 @@ services:
   App\User\Application\EventListener\UserResolveListener:
     tags:
       - {
-        name: kernel.event_listener,
-        event: league.oauth2_server.event.user_resolve,
-        method: onUserResolve,
-      }
+          name: kernel.event_listener,
+          event: league.oauth2_server.event.user_resolve,
+          method: onUserResolve,
+        }
 
   Aws\Sqs\SqsClient:
     arguments:

@@ -1,23 +1,23 @@
 services:
-    Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface:
-        alias: 'security.token_storage'
-        public: true
+  Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface:
+    alias: 'security.token_storage'
+    public: true
 
-    App\Tests\Behat\OAuthContext\OAuthContext:
-        arguments:
-            $tokenStorage: '@security.token_storage'
+  App\Tests\Behat\OAuthContext\OAuthContext:
+    arguments:
+      $tokenStorage: '@security.token_storage'
 
-    Symfony\Contracts\Cache\CacheInterface:
-        alias: 'cache_test'
-        public: true
+  Symfony\Contracts\Cache\CacheInterface:
+    alias: 'cache_test'
+    public: true
 
-    cache_test:
-        class: Symfony\Component\Cache\Adapter\ArrayAdapter
-        public: true
+  cache_test:
+    class: Symfony\Component\Cache\Adapter\ArrayAdapter
+    public: true
 
-    _defaults:
-        autowire: true
-        autoconfigure: true
+  _defaults:
+    autowire: true
+    autoconfigure: true
 
-    App\Tests\Behat\:
-        resource: '../tests/Behat/*'
+  App\Tests\Behat\:
+    resource: '../tests/Behat/*'
