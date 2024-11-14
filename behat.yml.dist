@@ -17,4 +17,5 @@ default:
         FriendsOfBehat\SymfonyExtension:
             bootstrap: 'tests/bootstrap.php'
             kernel:
+                environment: test
                 class: App\Shared\Kernel
