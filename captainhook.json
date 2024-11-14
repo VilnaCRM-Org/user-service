@@ -2,7 +2,7 @@
     "config": {
         "run": {
             "mode": "docker",
-            "exec": "docker compose exec -i php"
+            "exec": "make sh"
         }
     },
     "commit-msg": {
