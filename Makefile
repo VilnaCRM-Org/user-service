@@ -149,9 +149,6 @@ build-k6-docker:
 infection: ## Run mutations test.
 	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations -j8
 
-execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
-	tests/Load/execute-load-test.sh $(scenario) $(or $(runSmoke),true) $(or $(runAverage),true) $(or $(runStress),true) $(or $(runSpike),true)
-
 doctrine-migrations-migrate: ## Executes a migration to a specified version or the latest available version
 	$(SYMFONY) d:m:m
 

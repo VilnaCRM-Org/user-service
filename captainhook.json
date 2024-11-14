@@ -1,8 +1,7 @@
 {
     "config": {
         "run": {
-            "mode": "docker",
-            "exec": "make sh"
+            "mode": "docker"
         }
     },
     "commit-msg": {
