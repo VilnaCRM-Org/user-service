@@ -26,7 +26,7 @@ jobs:
         run: make coverage-xml
 
       - name: Copy coverage.xml to workspace
-        run: docker cp user-service-php-1:/coverage/coverage.xml /tmp/coverage.xml
+        run: cp coverage/coverage.xml /tmp/coverage.xml
 
       - name: Check if coverage.xml exists
         run: |
