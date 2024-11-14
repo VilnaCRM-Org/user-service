@@ -7,14 +7,6 @@ services:
     arguments:
       $tokenStorage: '@security.token_storage'
 
-  Symfony\Contracts\Cache\CacheInterface:
-    alias: 'cache_test'
-    public: true
-
-  cache_test:
-    class: Symfony\Component\Cache\Adapter\ArrayAdapter
-    public: true
-
   _defaults:
     autowire: true
     autoconfigure: true

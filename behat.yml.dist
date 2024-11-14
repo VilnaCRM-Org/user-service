@@ -3,11 +3,14 @@ default:
         default:
             contexts:
                 - App\Tests\Behat\DemoContext
-                - App\Tests\Behat\HealthCheckContext\HealthCheckContext
                 - App\Tests\Behat\UserGraphQLContext\UserGraphQLContext
                 - App\Tests\Behat\UserContext\UserContext
                 - App\Tests\Behat\UserContext\UserOperationsContext
                 - App\Tests\Behat\OAuthContext\OAuthContext
+        health_check:
+            contexts:
+                - App\Tests\Behat\HealthCheckContext\HealthCheckContext
+
 
     extensions:
         DAMA\DoctrineTestBundle\Behat\ServiceContainer\DoctrineExtension: ~
