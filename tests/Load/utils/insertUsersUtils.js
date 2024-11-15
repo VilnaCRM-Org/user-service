@@ -107,7 +107,7 @@ export default class InsertUsersUtils {
       });
     } catch (error) {
       throw new Error(
-          'Error occurred during user insertion, try to lower batchSize in a config file'
+        'Error occurred during user insertion, try to lower batchSize in a config file'
       );
     }
 
@@ -167,15 +167,15 @@ export default class InsertUsersUtils {
 
   countSpikeRequest() {
     const spikeRiseRequests = this.countRequestForRampingRate(
-        0,
-        this.spikeConfig.rps,
-        this.spikeConfig.duration.rise
+      0,
+      this.spikeConfig.rps,
+      this.spikeConfig.duration.rise
     );
 
     const spikeFallRequests = this.countRequestForRampingRate(
-        this.spikeConfig.rps,
-        0,
-        this.spikeConfig.duration.fall
+      this.spikeConfig.rps,
+      0,
+      this.spikeConfig.duration.fall
     );
 
     return spikeRiseRequests + spikeFallRequests;
