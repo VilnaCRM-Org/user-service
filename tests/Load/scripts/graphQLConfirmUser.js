@@ -3,7 +3,7 @@ import counter from 'k6/x/counter';
 import MailCatcherUtils from '../utils/mailCatcherUtils.js';
 import ScenarioUtils from '../utils/scenarioUtils.js';
 import Utils from '../utils/utils.js';
-import InsertUsersUtils from "../utils/insertUsersUtils.js";
+import InsertUsersUtils from '../utils/insertUsersUtils.js';
 
 const scenarioName = 'graphQLConfirmUser';
 
@@ -38,15 +38,15 @@ export default async function confirmUser(data) {
      }`;
 
   const response = http.post(
-      utils.getBaseGraphQLUrl(),
-      JSON.stringify({query: mutation}),
-      utils.getJsonHeader(),
+    utils.getBaseGraphQLUrl(),
+    JSON.stringify({ query: mutation }),
+    utils.getJsonHeader()
   );
 
   utils.checkResponse(
-      response,
-      'confirmed user returned',
-      (res) => JSON.parse(res.body).data[mutationName].user.id !== undefined
+    response,
+    'confirmed user returned',
+    res => JSON.parse(res.body).data[mutationName].user.id !== undefined
   );
 }
 
