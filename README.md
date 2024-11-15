@@ -12,6 +12,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/b69a1d3fcff78ca1f9d9/maintainability)](https://codeclimate.com/github/VilnaCRM-Org/user-service/maintainability)
 
 ## Possibilities
+
 - Modern PHP stack for services: [API Platform 3](https://api-platform.com/), PHP 8, [Symfony 7](https://symfony.com/)
 - [Hexagonal Architecture, DDD & CQRS in PHP](https://github.com/CodelyTV/php-ddd-example)
 - Built-in docker environment and convenient `make` cli command
@@ -20,36 +21,47 @@
 - Much more!
 
 ## Why you might need it
+
 The User Service is designed to manage user accounts and authentication within the VilnaCRM ecosystem. It provides essential functionalities such as user registration and authentication, implemented with OAuth Server, REST API, and GraphQL, ensuring seamless integration with other components of the CRM system.
+
 ## License
+
 This software is distributed under the [Creative Commons Zero v1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/deed) license. Please read [LICENSE](https://github.com/VilnaCRM-Org/user-service/blob/main/LICENSE) for information on the software availability and distribution.
 
 ### Minimal installation
+
 You can clone this repository locally or use Github functionality "Use this template"
 
 Install the latest [docker](https://docs.docker.com/engine/install/) and [docker compose](https://docs.docker.com/compose/install/)
 
 Use `make` command to set up project
+
 > make start
 
 Use `make` command to automatically install all needed dependencies
+
 > make install
 
 Use `make` command to run migrations
+
 > make doctrine-migrations-migrate
 
 Go to browser and open the link below to access REST API docs
+
 > https://localhost/api/docs
 
 And using the link below you can access the GraphQL documentation
+
 > https://localhost/api/graphql/graphql_playground
 
 Also, you can see architecture diagram using link below
+
 > http://localhost:8080/workspace/diagrams
 
 That's it. You should now be ready to use user service!
 
 ## Using
+
 You can use `make` command to easily control and work with project locally.
 
 Execute `make` or `make help` to see the full list of project commands.
@@ -90,6 +102,7 @@ up                           Start the docker hub (PHP, caddy)
 ```
 
 ## Documentation
+
 Start reading at the [GitHub wiki](https://github.com/VilnaCRM-Org/user-service/wiki). If you're having trouble, head for [the troubleshooting guide](https://github.com/VilnaCRM-Org/user-service/wiki/Community-and-Support) as it's frequently updated.
 
 You can generate complete API-level documentation by running `phpdoc` in the top-level folder, and documentation will appear in the `docs` folder, though you'll need to have [PHPDocumentor](http://www.phpdoc.org) installed.
@@ -97,6 +110,7 @@ You can generate complete API-level documentation by running `phpdoc` in the top
 If the documentation doesn't cover what you need, search the [many questions on Stack Overflow](http://stackoverflow.com/questions/tagged/vilnacrm), and before you ask a question, [read the troubleshooting guide](https://github.com/VilnaCRM-Org/user-service/wiki/Community-and-Support).
 
 ## Tests
+
 [Tests](https://github.com/VilnaCRM-Org/user-service/tree/main/tests/) use PHPUnit 9 and [Behat](https://github.com/Behat/Behat).
 
 [Test status](https://github.com/VilnaCRM-Org/user-service/actions)
@@ -127,11 +141,13 @@ Automated synchronization ensures that projects relying on this template always 
 In turn, it saves time and reduces the effort required to keep dependent projects aligned with best practices and new developments.
 
 ## Security
+
 Please disclose any vulnerabilities found responsibly – report security issues to the maintainers privately.
 
 See [SECURITY](https://github.com/VilnaCRM-Org/user-service/tree/main/SECURITY.md) and [Security advisories on GitHub](https://github.com/VilnaCRM-Org/user-service/security).
 
 ## Contributing
+
 Please submit bug reports, suggestions, and pull requests to the [GitHub issue tracker](https://github.com/VilnaCRM-Org/user-service/issues).
 
 We're particularly interested in fixing edge cases, expanding test coverage, and updating translations.
@@ -139,9 +155,11 @@ We're particularly interested in fixing edge cases, expanding test coverage, and
 If you found a mistake in the docs, or want to add something, go ahead and amend the wiki – anyone can edit it.
 
 ## Sponsorship
+
 Development time and resources for this repository are provided by [VilnaCRM](https://vilnacrm.com/), the free and opensource CRM system.
 
 Donations are very welcome, whether in beer 🍺, T-shirts 👕, or cold, hard cash 💰. Sponsorship through GitHub is a simple and convenient way to say "thank you" to maintainers and contributors – just click the "Sponsor" button [on the project page](https://github.com/VilnaCRM-Org/user-service).
 
 ## Changelog
+
 See [changelog](CHANGELOG.md).
