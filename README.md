@@ -57,55 +57,37 @@ Execute `make` or `make help` to see the full list of project commands.
 The list of the `make` possibilities:
 
 ```
-all-tests                  Run unit, integration, and e2e tests
-average-load-tests         Run load tests with average load
-build                      Builds the images (PHP, caddy)
-cache-clear                Clears and warms up the application cache for a given environment and debug mode
-cache-warmup               Warmup the Symfony cache
-changelog-generate         Generate changelog from a project's commit messages
-check-requirements         Checks requirements for running Symfony and gives useful recommendations to optimize PHP for Symfony.
-check-security             Checks security issues in project dependencies. Without arguments, it looks for a "composer.lock" file in the current directory. Pass it explicitly to check a specific "composer.lock" file.
-commands                   List all Symfony commands
-composer-validate          The validate command validates a given composer.json and composer.lock
-coverage-html              Create the code coverage report with PHPUnit
-coverage-xml               Create the code coverage report with PHPUnit
-create-oauth-client        Run mutation testing
-deptrac                    Check directory structure
-deptrac-debug              Find files unassigned for Deptrac
-down                       Stop the docker hub
-e2e-tests                  Run end-to-end tests
-execute-load-tests-script  Execute single load test scenario.
-first-release              Generate changelog from a project's commit messages for the first release
-fix-perms                  Fix permissions of all var files
-infection                  Run mutation testing
-install                    Install vendors according to the current composer.lock file
-integration-tests          Run integration tests
-load-fixtures              Build the DB, control the schema validity, load fixtures and check the migration status
-load-tests                 Run load tests
-logs                       Show all logs
-new-logs                   Show live logs
-phpcsfixer                 A tool to automatically fix PHP Coding Standards issues
-phpinsights                Instant PHP quality checks and static analysis tool
-phpmetrics                 Get mathematical metrics
-phpunit-codecov            Get code coverage report
-psalm                      A static analysis tool for finding errors in PHP applications
-psalm-security             Psalm security analysis
-purge                      Purge cache and logs
-release                    Generate changelogs and release notes from a project's commit messages for the first release
-release-major              Generate changelogs and commit new major tag from a project's commit messages
-release-minor              Generate changelogs and commit new minor tag from a project's commit messages
-release-patch              Generate changelogs and commit new patch tag from a project's commit messages
-setup-test-db              Create database for testing purposes
-sh                         Log to the docker container
-smoke-load-tests           Run load tests with minimal load
-spike-load-tests           Run load tests with a spike of extreme load
-start                      Start docker
-stress-load-tests          Run load tests with high load
-unit-tests                 Run unit tests
-update                     Update vendors according to the current composer.json file
-up                         Start the docker hub (PHP, caddy)
-
- ```
+bats                         Bats is a TAP-compliant testing framework for Bash
+behat                        A php framework for autotesting business expectations
+build                        Builds the images (PHP, caddy)
+cache-clear                  Clears and warms up the application cache for a given environment and debug mode
+cache-warmup                 Warmup the Symfony cache
+changelog-generate           Generate changelog from a project's commit messages
+check-requirements           Checks requirements for running Symfony and gives useful recommendations to optimize PHP for Symfony.
+check-security               Checks security issues in project dependencies. Without arguments, it looks for a "composer.lock" file in the current directory. Pass it explicitly to check a specific "composer.lock" file.
+commands                     List all Symfony commands
+composer-validate            The validate command validates a given composer.json and composer.lock
+coverage                     Create the code coverage report with PHPUnit
+create-oauth-client          Run mutation testing
+doctrine-migrations-generate Generates a blank migration class
+doctrine-migrations-migrate  Executes a migration to a specified version or the latest available version
+down                         Stop the docker hub
+install                      Install vendors according to the current composer.lock file
+update                       update vendors according to the current composer.json file
+load-fixtures                Build the DB, control the schema validity, load fixtures and check the migration status
+logs                         Show all logs
+new-logs                     Show live logs
+phpcsfixer                   A tool to automatically fix PHP Coding Standards issues
+phpinsights                  Instant PHP quality checks and static analysis tool
+phpunit                      The PHP unit testing framework
+psalm                        A static analysis tool for finding errors in PHP applications
+psalm-security               Psalm security analysis
+purge                        Purge cache and logs
+sh                           Log to the docker container
+start                        Start docker
+stop                         Stop docker and the Symfony binary server
+up                           Start the docker hub (PHP, caddy)
+```
 
 ## Documentation
 Start reading at the [GitHub wiki](https://github.com/VilnaCRM-Org/user-service/wiki). If you're having trouble, head for [the troubleshooting guide](https://github.com/VilnaCRM-Org/user-service/wiki/Community-and-Support) as it's frequently updated.
