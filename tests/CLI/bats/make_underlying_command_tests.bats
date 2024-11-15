@@ -6,7 +6,7 @@ load 'bats-assert/load'
 @test "make sh attempts to open a shell in the PHP container" {
   run bash -c "make sh & sleep 2; kill $!"
   assert_failure
-  assert_output --partial "php-service-template"
+  assert_output --partial "user-service"
 }
 
 @test "make build command starts successfully and shows initial build output" {

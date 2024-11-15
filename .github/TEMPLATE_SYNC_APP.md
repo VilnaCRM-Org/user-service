@@ -2,7 +2,7 @@
 
 Alternatively, you can configure a GitHub App to handle workflow permissions. This method offers a more integrated and secure approach compared to using a Personal Access Token (PAT).
 
-For a detailed guide on how to set up a GitHub App and configure the necessary permissions, refer to the **[Autorelease action documentation](https://github.com/VilnaCRM-Org/php-service-template/blob/main/.github/AUTORELEASE.md)**.
+For a detailed guide on how to set up a GitHub App and configure the necessary permissions, refer to the **[Autorelease action documentation](https://github.com/VilnaCRM-Org/user-service/blob/main/.github/AUTORELEASE.md)**.
 
 ## Overview
 

@@ -2,7 +2,7 @@
 include .env.test
 
 # Parameters
-PROJECT       = php-service-template
+PROJECT       = user-service
 GIT_AUTHOR    = Kravalg
 
 # Executables: local only

@@ -20,7 +20,7 @@ export default class Utils {
       try {
         return JSON.parse(open('../config.json.dist'));
       } catch (error) {
-        console.log('Error occurred while trying to open config');
+        console.log('Error occurred while trying to open config')
       }
     }
   }
@@ -66,10 +66,10 @@ export default class Utils {
   }
 
   checkUserIsDefined(user) {
-    check(user, { 'user is defined': u => u !== undefined });
+    check(user, {'user is defined': (u) => u !== undefined});
   }
 
-  generateUser() {
+  generateUser(){
     const email = `${faker.number.int32()}${faker.person.email()}`;
     const initials = faker.person.name();
     const password = faker.internet.password(true, true, true, false, false, 60);
@@ -82,12 +82,16 @@ export default class Utils {
   }
 
   checkResponse(response, checkName, checkFunction) {
-    check(response, { [checkName]: res => checkFunction(res) });
+    check(response, {[checkName]: (res) => checkFunction(res)});
   }
 
-  registerUser(user) {
+  registerUser(user){
     const payload = JSON.stringify(user);
 
-    return http.post(this.getBaseHttpUrl(), payload, this.getJsonHeader());
+    return http.post(
+        this.getBaseHttpUrl(),
+        payload,
+        this.getJsonHeader()
+    );
   }
 }
