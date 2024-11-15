@@ -3,91 +3,95 @@ import http from 'k6/http';
 import faker from 'k6/x/faker';
 
 export default class Utils {
-  constructor() {
-    const host = this.getConfig().apiHost;
-    const port = this.getConfig().apiPort;
+    constructor() {
+        const host = this.getConfig().apiHost;
+        const port = this.getConfig().apiPort;
 
-    this.baseUrl = `http://${host}:${port}/api`;
-    this.baseHttpUrl = this.baseUrl + '/users';
-    this.baseGraphQLUrl = this.baseUrl + '/graphql';
-    this.graphQLIdPrefix = '/api/users/';
-  }
-
-  getConfig() {
-    try {
-      return JSON.parse(open('../config.json'));
-    } catch (error) {
-      try {
-        return JSON.parse(open('../config.json.dist'));
-      } catch (error) {
-        console.log('Error occurred while trying to open config');
-      }
+        this.baseUrl = `http://${host}:${port}/api`;
+        this.baseHttpUrl = this.baseUrl + '/users';
+        this.baseGraphQLUrl = this.baseUrl + '/graphql';
+        this.graphQLIdPrefix = '/api/users/';
     }
-  }
 
-  getBaseUrl() {
-    return this.baseUrl;
-  }
+    getConfig() {
+        try {
+            return JSON.parse(open('../config.json'));
+        } catch (error) {
+            try {
+                return JSON.parse(open('../config.json.dist'));
+            } catch (error) {
+                console.log('Error occurred while trying to open config')
+            }
+        }
+    }
 
-  getBaseHttpUrl() {
-    return this.baseHttpUrl;
-  }
+    getBaseUrl() {
+        return this.baseUrl;
+    }
 
-  getBaseGraphQLUrl() {
-    return this.baseGraphQLUrl;
-  }
+    getBaseHttpUrl() {
+        return this.baseHttpUrl;
+    }
 
-  getGraphQLIdPrefix() {
-    return this.graphQLIdPrefix;
-  }
+    getBaseGraphQLUrl() {
+        return this.baseGraphQLUrl;
+    }
 
-  getJsonHeader() {
-    return {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-  }
+    getGraphQLIdPrefix() {
+        return this.graphQLIdPrefix;
+    }
 
-  getMergePatchHeader() {
-    return {
-      headers: {
-        'Content-Type': 'application/merge-patch+json',
-      },
-    };
-  }
+    getJsonHeader() {
+        return {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+    }
 
-  getRandomNumber(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
+    getMergePatchHeader() {
+        return {
+            headers: {
+                'Content-Type': 'application/merge-patch+json',
+            },
+        };
+    }
 
-  getCLIVariable(variable) {
-    return `${__ENV[variable]}`;
-  }
+    getRandomNumber(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
 
-  checkUserIsDefined(user) {
-    check(user, { 'user is defined': u => u !== undefined });
-  }
+    getCLIVariable(variable) {
+        return `${__ENV[variable]}`;
+    }
 
-  generateUser() {
-    const email = `${faker.number.int32()}${faker.person.email()}`;
-    const initials = faker.person.name();
-    const password = faker.internet.password(true, true, true, false, false, 60);
+    checkUserIsDefined(user) {
+        check(user, {'user is defined': (u) => u !== undefined});
+    }
 
-    return {
-      email,
-      password,
-      initials,
-    };
-  }
+    generateUser(){
+        const email = `${faker.number.int32()}${faker.person.email()}`;
+        const initials = faker.person.name();
+        const password = faker.internet.password(true, true, true, false, false, 60);
 
-  checkResponse(response, checkName, checkFunction) {
-    check(response, { [checkName]: res => checkFunction(res) });
-  }
+        return {
+            email,
+            password,
+            initials,
+        };
+    }
 
-  registerUser(user) {
-    const payload = JSON.stringify(user);
+   checkResponse(response, checkName, checkFunction) {
+        check(response, {[checkName]: (res) => checkFunction(res)});
+    }
 
-    return http.post(this.getBaseHttpUrl(), payload, this.getJsonHeader());
-  }
+    registerUser(user){
+        const payload = JSON.stringify(user);
+
+        return http.post(
+            this.getBaseHttpUrl(),
+            payload,
+            this.getJsonHeader()
+        );
+    }
 }
