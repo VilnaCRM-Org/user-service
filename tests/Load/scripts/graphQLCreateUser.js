@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import ScenarioUtils from '../utils/scenarioUtils.js';
 import Utils from '../utils/utils.js';
-import MailCatcherUtils from "../utils/mailCatcherUtils.js";
+import MailCatcherUtils from '../utils/mailCatcherUtils.js';
 
 const scenarioName = 'graphQLCreateUser';
 
@@ -12,10 +12,10 @@ const mailCatcherUtils = new MailCatcherUtils(utils);
 export const options = scenarioUtils.getOptions();
 
 export default function createUser() {
-    const user = utils.generateUser();
-    const mutationName = 'createUser';
+  const user = utils.generateUser();
+  const mutationName = 'createUser';
 
-    const mutation = `
+  const mutation = `
      mutation {
         ${mutationName}(
             input: {
@@ -30,19 +30,19 @@ export default function createUser() {
         }
      }`;
 
-    const response = http.post(
-        utils.getBaseGraphQLUrl(),
-        JSON.stringify({query: mutation}),
-        utils.getJsonHeader(),
-    );
+  const response = http.post(
+    utils.getBaseGraphQLUrl(),
+    JSON.stringify({ query: mutation }),
+    utils.getJsonHeader()
+  );
 
-    utils.checkResponse(
-        response,
-        'created user returned',
-        (res) => JSON.parse(res.body).data[mutationName].user.email === `${user.email}`
-    );
+  utils.checkResponse(
+    response,
+    'created user returned',
+    res => JSON.parse(res.body).data[mutationName].user.email === `${user.email}`
+  );
 }
 
 export function teardown(data) {
-    mailCatcherUtils.clearMessages();
+  mailCatcherUtils.clearMessages();
 }
