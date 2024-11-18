@@ -1,4 +1,10 @@
 {
+    "config": {
+        "run": {
+            "mode": "docker",
+            "exec": "docker compose exec -i php"
+        }
+    },
     "commit-msg": {
         "enabled": true,
         "actions": [
@@ -24,32 +30,47 @@
                 "conditions": []
             },
             {
-                "action": "make phpcsfixer",
+                "action": "CI=1 make phpcsfixer",
                 "options": [],
                 "conditions": []
             },
             {
-                "action": "make psalm",
+                "action": "CI=1 make psalm",
                 "options": [],
                 "conditions": []
             },
             {
-                "action": "make psalm-security",
+                "action": "CI=1 make check-requirements",
                 "options": [],
                 "conditions": []
             },
             {
-                "action": "make phpinsights",
+                "action": "CI=1 make check-security",
                 "options": [],
                 "conditions": []
             },
             {
-                "action": "make phpunit",
+                "action": "CI=1 make psalm-security",
                 "options": [],
                 "conditions": []
             },
             {
-                "action": "make behat",
+                "action": "CI=1 make phpinsights",
+                "options": [],
+                "conditions": []
+            },
+            {
+                "action": "CI=1 make unit-tests",
+                "options": [],
+                "conditions": []
+            },
+            {
+                "action": "CI=1 make integration-tests",
+                "options": [],
+                "conditions": []
+            },
+            {
+                "action": "CI=1 make behat",
                 "options": [],
                 "conditions": []
             }

@@ -2,7 +2,7 @@ name: Load testing
 
 on:
   pull_request:
-    branches: ['main']
+    branches: [ "main" ]
 
 jobs:
   load-tests:
@@ -13,11 +13,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Start application
-        run: make start
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ vars.PHP_VERSION }}
 
-      - name: Setup test db
-        run: make setup-test-db
+      - name: Install Dependencies
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Start application
+        run: docker compose -f docker-compose.prod.yml -f docker-compose.load_test.override.yml up -d
 
       - name: Run load tests
         run: make smoke-load-tests
