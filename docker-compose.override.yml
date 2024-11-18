@@ -15,20 +15,41 @@ services:
     extra_hosts:
       # Ensure that host.docker.internal is correctly defined on Linux
       - host.docker.internal:host-gateway
+    networks:
+      - user-service
 
   caddy:
     command:
       ['caddy', 'run', '--config', '/etc/caddy/Caddyfile', '--adapter', 'caddyfile', '--watch']
+    ports:
+      - target: 8081
+        published: 8081
+        protocol: tcp
     volumes:
       - ./public:/srv/app/public:ro
       - ./infrastructure/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
 
-  structurizr:
-    image: structurizr/lite:2024.07.02
+  ###> symfony/mailer ###
+  mailer:
+    image: schickling/mailcatcher
     ports:
-      - '${STRUCTURIZR_PORT}:8080'
-    volumes:
-      - ./:/usr/local/structurizr
+      - '${MAILCATCHER_SMTP_PORT}:1025'
+      - '${MAILCATCHER_HTTP_PORT}:1080'
+    networks:
+      - user-service
+  ###< symfony/mailer ###
+
+  database:
+    networks:
+      - user-service
+
+  workers:
+    networks:
+      - user-service
+
+  redis:
+    networks:
+      - user-service
 
   localstack:
     image: localstack/localstack:3.4.0
@@ -36,10 +57,25 @@ services:
     ports:
       - '${LOCALSTACK_PORT}:4566'
     environment:
-      - SERVICES=sqs,ec2,s3,iam,sts
+      - SERVICES=sqs
       - DEBUG=1
     volumes:
       - localstack_data:/var/lib/localstack
       - ./infrastructure/docker/php/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
+    networks:
+      - user-service
+
+  structurizr:
+    image: structurizr/lite
+    ports:
+      - '${STRUCTURIZR_PORT}:8080'
+    volumes:
+      - ./:/usr/local/structurizr
+    networks:
+      - user-service
+
+networks:
+  user-service:
+
 volumes:
   localstack_data:

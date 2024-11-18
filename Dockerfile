@@ -40,12 +40,12 @@ RUN apk add --no-cache \
 
 RUN set -eux; \
     install-php-extensions \
-        intl \
-        zip \
-        apcu \
-        opcache \
-        pdo_pgsql \
-        redis \
+    	intl \
+    	zip \
+    	apcu \
+		opcache \
+        pdo_mysql \
+        redis-6.0.2 \
         openssl \
         xsl \
     ;
@@ -94,7 +94,6 @@ RUN set -eux; \
     if [ -f composer.json ]; then \
 		composer dump-autoload --classmap-authoritative --no-dev; \
 		composer dump-env prod; \
-		composer run-script --no-dev post-install-cmd; \
 		chmod +x bin/console; sync; \
     fi
 
@@ -104,10 +103,8 @@ FROM app_php AS app_php_dev
 RUN apk add --no-cache bash
 RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.alpine.sh' | bash
 RUN apk add symfony-cli
-RUN apk add --no-cache make
 
 ENV APP_ENV=dev XDEBUG_MODE=off
-VOLUME /srv/app/var/
 
 RUN rm "$PHP_INI_DIR/conf.d/app.prod.ini"; \
 	mv "$PHP_INI_DIR/php.ini" "$PHP_INI_DIR/php.ini-production"; \
@@ -118,9 +115,20 @@ COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
 RUN set -eux; \
 	install-php-extensions xdebug
 
-RUN git config --global --add safe.directory /srv/app
-
 RUN rm -f .env.local.php
+
+# Worker image
+FROM app_php AS app_workers
+
+RUN apk add --no-cache supervisor
+
+RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
+
+COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
+
+COPY --link infrastructure/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
 
 # Caddy image
 FROM caddy:2.8-alpine AS app_caddy

@@ -23,7 +23,6 @@ services:
       MERCURE_URL: ${CADDY_MERCURE_URL:-http://caddy/.well-known/mercure}
       MERCURE_PUBLIC_URL: https://${SERVER_NAME:-localhost}/.well-known/mercure
       MERCURE_JWT_SECRET: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
-      DB_URL: postgresql://${DB_USER}:${DB_PASSWORD}@database:${DB_PORT}/${DB_NAME}?serverVersion=${DB_VERSION}
 
   caddy:
     build:
@@ -55,29 +54,41 @@ services:
         published: ${HTTP3_PORT:-443}
         protocol: udp
 
-  database:
-    image: postgres:${DB_VERSION}-alpine
+  workers:
+    depends_on:
+      php:
+        condition: service_healthy
+    build:
+      context: .
+      target: app_workers
+    privileged: true
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      # You should definitely change the password in production
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_USER=${DB_USER}
-    ports:
-      - '${DB_PORT}:5432'
+      - container=docker
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - ./:/srv/app
+
+  database:
+    image: mariadb:${DB_VERSION}
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      hostname: database
+    ports:
+      - '${DB_PORT}:3306'
+    volumes:
+      - db_data:/var/lib/mysql
     healthcheck:
       interval: 10s
       retries: 10
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-app}']
-# Mercure is installed as a Caddy module, prevent the Flex recipe from installing another service
-###> symfony/mercure-bundle ###
-###< symfony/mercure-bundle ###
+      test: ['CMD', 'healthcheck.sh', '--su-mysql', '--connect', '--innodb_initialized']
+
+  redis:
+    image: redis:7.2.5-alpine
+    ports:
+      - '${REDIS_PORT}:6379'
 
 volumes:
   php_socket:
   caddy_data:
   caddy_config:
   db_data:
-###> symfony/mercure-bundle ###
-###< symfony/mercure-bundle ###
