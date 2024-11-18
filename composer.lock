@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "api-platform/core",
-            "version": "v4.0.8",
+            "version": "v4.0.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/core.git",
-                "reference": "64e3a5aec2fea9b15f8e821d606b61bdbf6d2f35"
+                "reference": "ffadacce69e1b9edc5a5b797a54af1e1dd34f834"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/core/zipball/64e3a5aec2fea9b15f8e821d606b61bdbf6d2f35",
-                "reference": "64e3a5aec2fea9b15f8e821d606b61bdbf6d2f35",
+                "url": "https://api.github.com/repos/api-platform/core/zipball/ffadacce69e1b9edc5a5b797a54af1e1dd34f834",
+                "reference": "ffadacce69e1b9edc5a5b797a54af1e1dd34f834",
                 "shasum": ""
             },
             "require": {
@@ -97,7 +97,7 @@
                 "orchestra/testbench": "^9.1",
                 "phpspec/prophecy-phpunit": "^2.2",
                 "phpstan/extension-installer": "^1.1",
-                "phpstan/phpdoc-parser": "^1.13",
+                "phpstan/phpdoc-parser": "^1.13|^2.0",
                 "phpstan/phpstan": "^1.10",
                 "phpstan/phpstan-doctrine": "^1.0",
                 "phpstan/phpstan-phpunit": "^1.0",
@@ -216,9 +216,9 @@
             ],
             "support": {
                 "issues": "https://github.com/api-platform/core/issues",
-                "source": "https://github.com/api-platform/core/tree/v4.0.8"
+                "source": "https://github.com/api-platform/core/tree/v4.0.9"
             },
-            "time": "2024-11-06T21:40:43+00:00"
+            "time": "2024-11-15T10:35:49+00:00"
         },
         {
             "name": "async-aws/core",
@@ -17480,7 +17480,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -17492,6 +17492,6 @@
         "ext-simplexml": "*",
         "ext-xml": "*"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }
