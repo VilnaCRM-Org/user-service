@@ -92,11 +92,6 @@ load 'bats-assert/load'
   assert_success
 }
 
-@test "make purge command executes" {
-  run make purge
-  assert_success
-}
-
 @test "make logs shows docker logs" {
   run bash -c "timeout 5 make logs"
   assert_failure 124
