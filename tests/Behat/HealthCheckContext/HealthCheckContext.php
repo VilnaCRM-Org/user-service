@@ -13,6 +13,7 @@ use Doctrine\DBAL\Driver;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Cache\Adapter\TraceableAdapter;
 use Symfony\Component\Cache\Exception\CacheException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -68,14 +69,16 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theCacheIsNotWorking(): void
     {
-        /** @var CacheInterface|MockObject $cacheMock */
-        $cacheMock = $this->createMock(CacheInterface::class);
+        $traceableCacheMock = $this->createMock(TraceableAdapter::class);
 
-        $cacheMock->method('get')
-            ->willThrowException(new CacheException('Cache is not working'));
+        $traceableCacheMock->method('get')
+            ->willThrowException(new \Exception('Cache is not working'));
 
-        $container = $this->kernelInterface->getContainer();
-        $container->set(CacheInterface::class, $cacheMock);
+        $container = $this->kernelInterface
+            ->getContainer()
+            ->get('test.service_container');
+
+        $container->set('cache.app', $traceableCacheMock);
     }
 
     /**

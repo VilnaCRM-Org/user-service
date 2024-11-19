@@ -115,6 +115,8 @@ COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
 RUN set -eux; \
 	install-php-extensions xdebug
 
+RUN git config --global --add safe.directory /srv/app
+
 RUN rm -f .env.local.php
 
 # Worker image
