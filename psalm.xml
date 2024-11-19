@@ -11,6 +11,7 @@
         <directory name="tests"/>
         <ignoreFiles>
             <directory name="vendor"/>
+            <directory name="tests/CLI"/>
         </ignoreFiles>
     </projectFiles>
     <plugins><pluginClass class="Psalm\PhpUnitPlugin\Plugin"/></plugins></psalm>
