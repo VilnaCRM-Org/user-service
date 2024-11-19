@@ -26,8 +26,6 @@ paths:
             application/ld+json:
               schema:
                 $ref: '#/components/schemas/ExampleApiResource.jsonld'
-        '404':
-          description: 'Resource not found'
         '500':
           description: 'Internal server error'
           content:
@@ -84,20 +82,6 @@ paths:
                 detail: 'Something went wrong'
                 status: 500
           headers: {  }
-        '200':
-          description: 'HealthCheck resource'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HealthCheck'
-            application/graphql:
-              schema:
-                $ref: '#/components/schemas/HealthCheck'
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/HealthCheck.jsonld'
-        '404':
-          description: 'Resource not found'
       summary: 'Retrieves a HealthCheck resource.'
       description: 'Retrieves a HealthCheck resource.'
       parameters: []
