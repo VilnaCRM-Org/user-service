@@ -35,10 +35,10 @@ load 'bats-assert/load'
 }
 
 @test "make behat should fail when scenarios fail" {
-  mv tests/Behat/DemoContext.php tests/
-  run make behat
-  mv tests/DemoContext.php tests/Behat/
-  assert_failure
+    mv tests/Behat/HealthCheckContext/HealthCheckContext.php tests/
+    run make behat
+    mv tests/HealthCheckContext.php tests/Behat/HealthCheckContext
+    assert_failure
 }
 
 @test "make psalm should fail when there are errors" {
@@ -65,9 +65,9 @@ load 'bats-assert/load'
 }
 
 @test "make e2e-tests should fail when scenarios fail" {
-  mv tests/Behat/DemoContext.php tests/
+    mv tests/Behat/HealthCheckContext/HealthCheckContext.php tests/
     run make behat
-    mv tests/DemoContext.php tests/Behat/
+    mv tests/HealthCheckContext.php tests/Behat/HealthCheckContext
     assert_failure
 }
 

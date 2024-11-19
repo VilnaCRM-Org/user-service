@@ -11,7 +11,7 @@ load 'bats-assert/load'
 
 @test "make e2e-tests command executes" {
   run make e2e-tests
-  assert_output --partial 'Symfony extension is correctly installed'
+  assert_output --partial 'theResponseStatusCodeShouldBe'
   assert_success
 }
 
