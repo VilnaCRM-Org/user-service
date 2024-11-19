@@ -53,14 +53,14 @@ load 'bats-assert/load'
 }
 
 @test "make deptrac should fail when there are dependency violations" {
-  mkdir src/CompanySubdomain/SomeModule/Domain/Entity/
-  mv tests/CLI/bats/php/SomeEntity.php src/CompanySubdomain/SomeModule/Domain/Entity/
+  mkdir src/Internal/HealthCheck/Domain/Entity/
+  mv tests/CLI/bats/php/SomeEntity.php src/Internal/HealthCheck/Domain/Entity/
 
   run make deptrac
 
-  mv src/CompanySubdomain/SomeModule/Domain/Entity/SomeEntity.php tests/CLI/bats/php/
-  rmdir src/CompanySubdomain/SomeModule/Domain/Entity/
-  assert_output --partial "error file=/home/runner/work/user-service/user-service/src/CompanySubdomain/SomeModule/Domain/Entity/SomeEntity.php"
+  mv src/Internal/HealthCheck/Domain/Entity/SomeEntity.php tests/CLI/bats/php/
+  rmdir src/Internal/HealthCheck/Domain/Entity/
+  assert_output --partial "error file=/home/runner/work/user-service/user-service/src/Internal/HealthCheck/Domain/Entity/SomeEntity.php"
   assert_failure
 }
 
