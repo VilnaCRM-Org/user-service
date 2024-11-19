@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
-use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegisterUserBatchCommand;
 use App\User\Application\Command\RegisterUserBatchCommandResponse;
@@ -46,7 +47,7 @@ final class RegisterUserBatchProcessorTest extends UnitTestCase
             $this->commandFactory
         );
         $this->userFactory = new UserFactory();
-        $this->transformer = new UuidTransformer();
+        $this->transformer = new UuidTransformer(new UuidFactory());
         $this->operation = $this->createMock(Operation::class);
     }
 

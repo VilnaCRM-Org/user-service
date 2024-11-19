@@ -28,6 +28,7 @@ final class UnsupportedTypeFactory implements
             []
         );
     }
+
     private function getErrorParam(): Parameter
     {
         return new Parameter(

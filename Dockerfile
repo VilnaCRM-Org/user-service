@@ -103,12 +103,16 @@ FROM app_php AS app_php_dev
 RUN apk add --no-cache bash
 RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.alpine.sh' | bash
 RUN apk add symfony-cli
+RUN apk add --no-cache make
 
 ENV APP_ENV=dev XDEBUG_MODE=off
+VOLUME /srv/app/var/
 
 RUN rm "$PHP_INI_DIR/conf.d/app.prod.ini"; \
 	mv "$PHP_INI_DIR/php.ini" "$PHP_INI_DIR/php.ini-production"; \
 	mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
+
+RUN git config --global --add safe.directory /srv/app
 
 COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
 

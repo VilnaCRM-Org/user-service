@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Transformer;
 
-use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\ValueObject\Uuid;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\Uid\AbstractUid;
 
@@ -18,7 +19,7 @@ final class UuidTransformerTest extends UnitTestCase
         $symfonyUuid->method('__toString')
             ->willReturn($uuid);
 
-        $uuidTransformer = new UuidTransformer();
+        $uuidTransformer = new UuidTransformer(new UuidFactory());
 
         $result = $uuidTransformer->transformFromSymfonyUuid($symfonyUuid);
 
@@ -30,7 +31,7 @@ final class UuidTransformerTest extends UnitTestCase
     {
         $uuid = $this->faker->uuid();
 
-        $uuidTransformer = new UuidTransformer();
+        $uuidTransformer = new UuidTransformer(new UuidFactory());
 
         $result = $uuidTransformer->transformFromString($uuid);
 

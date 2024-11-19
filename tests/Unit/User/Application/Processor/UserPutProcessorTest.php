@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
-use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\UserPutDto;
 use App\User\Application\Factory\UpdateUserCommandFactory;
@@ -38,7 +39,7 @@ final class UserPutProcessorTest extends UnitTestCase
         $this->mockOperation =
             $this->createMock(Operation::class);
         $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer();
+        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
         $this->updateUserCommandFactory = new UpdateUserCommandFactory();
         $this->userRepository =
             $this->createMock(UserRepositoryInterface::class);

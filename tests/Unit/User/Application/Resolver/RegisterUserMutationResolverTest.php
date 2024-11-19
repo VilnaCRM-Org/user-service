@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
-use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegisterUserCommandResponse;
 use App\User\Application\Factory\SignUpCommandFactory;
@@ -34,7 +35,7 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
 
         $this->signUpCommandFactory = new SignUpCommandFactory();
         $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer();
+        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
         $this->mockSignUpCommandFactory =
             $this->createMock(SignUpCommandFactoryInterface::class);
         $this->commandBus = $this->createMock(CommandBusInterface::class);

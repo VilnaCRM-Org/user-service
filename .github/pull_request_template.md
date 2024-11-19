@@ -43,8 +43,9 @@
 - [ ] My change requires a change to the documentation.
 - [ ] I have updated the documentation accordingly.
 - [ ] I have read the
-      [**CONTRIBUTING.md**](https://github.com/VilnaCRM-Org/php-service-template/blob/main/CONTRIBUTING.md)
+      [**CONTRIBUTING.md**](https://github.com/VilnaCRM-Org/user-service/blob/main/CONTRIBUTING.md)
       document.
 - [ ] I have added tests to cover my changes.
 - [ ] All new and existing tests passed.
 - [ ] You have only one commit (if not, squash them into one commit).
+- [ ] Structurizr documentation has been updated to reflect any architectural changes.

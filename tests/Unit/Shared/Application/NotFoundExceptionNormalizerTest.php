@@ -25,6 +25,7 @@ final class NotFoundExceptionNormalizerTest extends UnitTestCase
         $this->normalizer =
             new NotFoundExceptionNormalizer($this->translatorMock);
     }
+
     public function testNormalize(): void
     {
         $id = $this->faker->uuid();

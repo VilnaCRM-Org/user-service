@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Transformer;
 
-use App\Shared\Application\Transformer\UuidTransformer;
+use App\Shared\Infrastructure\Factory\UuidFactory as UuidFactoryInterface;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegisterUserCommand;
 use App\User\Application\Transformer\SignUpTransformer;
@@ -28,7 +29,7 @@ final class SignUpTransformerTest extends UnitTestCase
         parent::setUp();
 
         $this->userFactory = new UserFactory();
-        $this->transformer = new UuidTransformer();
+        $this->transformer = new UuidTransformer(new UuidFactoryInterface());
         $this->symfonyUuidFactory = new UuidFactory();
         $this->uuidTransformerMock =
             $this->createMock(UuidTransformer::class);

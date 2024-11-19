@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
-use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Factory\ConfirmUserCommandFactory;
 use App\User\Application\Factory\ConfirmUserCommandFactoryInterface;
@@ -45,7 +46,7 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
         );
         $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
         $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer();
+        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
 
         $this->tokenRepository =
             $this->createMock(TokenRepositoryInterface::class);

@@ -1,4 +1,4 @@
-name: Error static analysis tool
+name: code quality
 
 on:
   pull_request:

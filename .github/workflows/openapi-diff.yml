@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: ${{ vars.PHP_VERSION }}
 
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -29,8 +29,7 @@ jobs:
         run: make generate-openapi-spec
 
       - name: Copy openapi spec to host
-        run: docker cp user-service-php-1:/srv/app/.github/openapi-spec/spec.yaml
-          .github/openapi-spec/spec.yaml
+        run: docker cp user-service-php-1:/srv/app/.github/openapi-spec/spec.yaml .github/openapi-spec/spec.yaml
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
@@ -52,5 +51,4 @@ jobs:
       - name: Run OpenAPI Diff
         uses: docker://openapitools/openapi-diff:latest
         with:
-          args: --fail-on-incompatible base/.github/openapi-spec/spec.yaml
-            head/.github/openapi-spec/spec.yaml
+          args: --fail-on-incompatible base/.github/openapi-spec/spec.yaml head/.github/openapi-spec/spec.yaml

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Application\Transformer;
 
-use App\Shared\Application\Transformer\UuidTransformer;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Domain\Entity\UserInterface;
 

@@ -26,6 +26,7 @@ final class OpenApiFactoryTest extends UnitTestCase
     private OpenApiFactoryInterface $decoratedFactory;
     private AbstractEndpointFactory $endpointFactory1;
     private AbstractEndpointFactory $endpointFactory2;
+
     protected function setUp(): void
     {
         parent::setUp();

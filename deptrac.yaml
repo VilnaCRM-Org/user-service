@@ -25,7 +25,7 @@ parameters:
         - type: className
           regex: '.*App\\User\\Infrastructure\\(Factory|Repository).*'
         - type: className
-          regex: '.*App\\Shared\\Infrastructure\\(Bus\\(Command|Event|MessageBusFactory|CallableFirstParameterExtractor)|DoctrineType|RetryStrategy).*'
+          regex: '.*App\\Shared\\Infrastructure\\(Bus\\(Command|Event|MessageBusFactory|CallableFirstParameterExtractor)|DoctrineType|RetryStrategy|Transformer|Factory).*'
     - name: Symfony
       collectors:
         - type: className

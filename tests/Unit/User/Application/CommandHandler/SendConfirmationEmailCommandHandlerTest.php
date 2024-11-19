@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
-use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
+use App\Shared\Infrastructure\Factory\UuidFactory as UuidFactoryInterface;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\CommandHandler\SendConfirmationEmailCommandHandler;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactory;
@@ -47,7 +48,8 @@ final class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
         );
         $this->confirmationEmailFactory =
             new ConfirmationEmailFactory($this->eventFactory);
-        $this->uuidTransformer = new UuidTransformer();
+        $this->uuidTransformer =
+            new UuidTransformer(new UuidFactoryInterface());
         $this->commandFactory = new SendConfirmationEmailCommandFactory();
 
         $this->handler = new SendConfirmationEmailCommandHandler(

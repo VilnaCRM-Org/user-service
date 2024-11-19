@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
-use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
+use App\Shared\Infrastructure\Factory\UuidFactory as UuidFactoryInterface;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\CommandHandler\ConfirmUserCommandHandler;
 use App\User\Application\Factory\ConfirmUserCommandFactory;
@@ -49,7 +50,9 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
         );
         $this->uuidFactory = new UuidFactory();
         $this->userConfirmedEventFactory = new UserConfirmedEventFactory();
-        $this->uuidTransformer = new UuidTransformer();
+        $this->uuidTransformer = new UuidTransformer(
+            new UuidFactoryInterface()
+        );
         $this->userFactory = new UserFactory();
         $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
         $this->confirmationTokenFactory = new ConfirmationTokenFactory(
