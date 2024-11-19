@@ -8,6 +8,100 @@ servers:
     url: 'https://localhost'
     description: ''
 paths:
+  /api/example_api_resources:
+    get:
+      operationId: api_example_api_resources_get
+      tags:
+        - ExampleApiResource
+      responses:
+        '200':
+          description: 'ExampleApiResource resource'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExampleApiResource'
+            application/graphql:
+              schema:
+                $ref: '#/components/schemas/ExampleApiResource'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/ExampleApiResource.jsonld'
+        '404':
+          description: 'Resource not found'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Retrieves a ExampleApiResource resource.'
+      description: 'Retrieves a ExampleApiResource resource.'
+      parameters: []
+      deprecated: false
+  /api/health:
+    get:
+      operationId: api_health_get
+      tags:
+        - HealthCheck
+      responses:
+        '204':
+          description: 'Health check passed with no content to return.'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+        '200':
+          description: 'HealthCheck resource'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+            application/graphql:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck.jsonld'
+        '404':
+          description: 'Resource not found'
+      summary: 'Retrieves a HealthCheck resource.'
+      description: 'Retrieves a HealthCheck resource.'
+      parameters: []
+      deprecated: false
   /api/oauth/authorize:
     summary: 'Requests for authorization code'
     description: 'Requests for authorization code'
