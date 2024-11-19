@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Domain\Factory;
 
-use App\Shared\Application\Transformer\UuidTransformer;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
@@ -17,7 +18,7 @@ final class UserFactoryTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->transformer = new UuidTransformer();
+        $this->transformer = new UuidTransformer(new UuidFactory());
     }
 
     public function testCreate(): void

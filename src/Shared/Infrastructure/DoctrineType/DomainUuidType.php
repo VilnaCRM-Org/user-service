@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\DoctrineType;
 
-use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\ValueObject\Uuid;
 use App\Shared\Domain\ValueObject\UuidInterface;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 use Symfony\Bridge\Doctrine\Types\UuidType;
@@ -51,7 +52,7 @@ final class DomainUuidType extends Type
     ): ?Uuid {
         $symfonyType = $this->getSymfonyUuidType();
         $symfonyUuid = $symfonyType->convertToPHPValue($value, $platform);
-        $transformer = new UuidTransformer();
+        $transformer = new UuidTransformer(new UuidFactory());
 
         return $transformer->transformFromSymfonyUuid($symfonyUuid);
     }

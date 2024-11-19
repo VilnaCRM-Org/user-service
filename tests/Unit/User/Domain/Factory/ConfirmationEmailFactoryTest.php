@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Domain\Factory;
 
-use App\Shared\Application\Transformer\UuidTransformer;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Aggregate\ConfirmationEmailInterface;
 use App\User\Domain\Factory\ConfirmationEmailFactory;
@@ -25,7 +26,7 @@ final class ConfirmationEmailFactoryTest extends UnitTestCase
         parent::setUp();
 
         $this->userFactory = new UserFactory();
-        $this->transformer = new UuidTransformer();
+        $this->transformer = new UuidTransformer(new UuidFactory());
         $this->confirmationTokenFactory = new ConfirmationTokenFactory(
             $this->faker->numberBetween(1, 10)
         );

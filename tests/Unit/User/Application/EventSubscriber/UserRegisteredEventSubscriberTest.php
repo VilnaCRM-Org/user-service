@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\EventSubscriber;
 
-use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\EventSubscriber\UserRegisteredEventSubscriber;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactory;
@@ -44,7 +45,7 @@ final class UserRegisteredEventSubscriberTest extends UnitTestCase
         $this->confirmationTokenFactory = new ConfirmationTokenFactory(
             $this->faker->numberBetween(1, 10)
         );
-        $this->uuidTransformer = new UuidTransformer();
+        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
         $this->userRegisteredEventFactory = new UserRegisteredEventFactory();
         $this->confirmationEmailFactory = new ConfirmationEmailFactory(
             new ConfirmationEmailSendEventFactory()

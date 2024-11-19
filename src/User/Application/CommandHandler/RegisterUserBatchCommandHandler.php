@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\User\Application\CommandHandler;
 
-use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\User\Application\Command\RegisterUserBatchCommand;
 use App\User\Application\Command\RegisterUserBatchCommandResponse;
 use App\User\Domain\Collection\UserCollection;
