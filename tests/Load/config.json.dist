@@ -677,6 +677,45 @@
                     "fall":10
                 }
             }
+        },
+        "health":{
+            "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
+            "smoke":{
+                "threshold":4500,
+                "rps":10,
+                "vus":10,
+                "duration":10
+            },
+            "average":{
+                "threshold":15000,
+                "rps":50,
+                "vus":50,
+                "duration":{
+                    "rise":5,
+                    "plateau":20,
+                    "fall":5
+                }
+            },
+            "stress":{
+                "threshold":30000,
+                "rps":150,
+                "vus":150,
+                "duration":{
+                    "rise":5,
+                    "plateau":20,
+                    "fall":5
+                }
+            },
+            "spike":{
+                "threshold":60000,
+                "rps":200,
+                "vus":200,
+                "duration":{
+                    "rise":10,
+                    "fall":10
+                }
+            }
         }
     }
 }

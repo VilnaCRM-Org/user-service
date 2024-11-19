@@ -60,7 +60,7 @@ load 'bats-assert/load'
 
   mv src/CompanySubdomain/SomeModule/Domain/Entity/SomeEntity.php tests/CLI/bats/php/
   rmdir src/CompanySubdomain/SomeModule/Domain/Entity/
-  assert_output --partial "App\CompanySubdomain\SomeModule\Domain\Entity\SomeEntity must not depend on App\CompanySubdomain\SomeModule\Application\Command\SomeCommand"
+  assert_output --partial "error file=/home/runner/work/user-service/user-service/src/CompanySubdomain/SomeModule/Domain/Entity/SomeEntity.php"
   assert_failure
 }
 
