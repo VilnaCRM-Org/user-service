@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\EventListener;
 
-use App\Shared\Application\Transformer\UuidTransformer;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\EventListener\UserResolveListener;
@@ -43,9 +44,11 @@ final class UserResolveListenerTest extends UnitTestCase
         $this->userRepository =
             $this->createMock(UserRepositoryInterface::class);
         $this->mockUserTransformer = $this->createMock(UserTransformer::class);
-        $this->userTransformer = new UserTransformer(new UuidTransformer());
+        $this->userTransformer = new UserTransformer(
+            new UuidTransformer(new UuidFactory())
+        );
         $this->userFactory = new UserFactory();
-        $this->transformer = new UuidTransformer();
+        $this->transformer = new UuidTransformer(new UuidFactory());
         $this->mockGrant = $this->createMock(Grant::class);
         $this->mockAbstractClient = $this->createMock(AbstractClient::class);
     }

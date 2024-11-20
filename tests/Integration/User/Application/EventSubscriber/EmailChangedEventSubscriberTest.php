@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\User\Application\EventSubscriber;
 
-use App\Shared\Application\Transformer\UuidTransformer;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Integration\IntegrationTestCase;
 use App\Tests\Integration\TestEmailSendingUtils;
 use App\User\Application\EventSubscriber\EmailChangedEventSubscriber;

@@ -19,7 +19,7 @@ jobs:
         run: make setup-test-db
 
       - name: Execute Unit and Integration tests
-        run: make ci-tests
+        run: make tests-with-coverage
 
       - name: Copy coverage report to host
         run: docker cp user-service-php-1:/coverage/coverage.xml /tmp

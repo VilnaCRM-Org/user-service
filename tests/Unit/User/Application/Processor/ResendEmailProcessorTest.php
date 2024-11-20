@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
-use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\RetryDto;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactory;
@@ -44,7 +45,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
         parent::setUp();
 
         $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer();
+        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
         $this->confirmationTokenFactory = new ConfirmationTokenFactory(
             $this->faker->numberBetween(1, 10)
         );

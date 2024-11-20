@@ -49,4 +49,5 @@ supervisord.*
 ###> super-linter/super-linter ###
 super-linter-output
 super-linter.log
+venv
 ###< super-linter/super-linter ###

@@ -6,10 +6,15 @@ default:
                 - App\Tests\Behat\UserContext\UserContext
                 - App\Tests\Behat\UserContext\UserOperationsContext
                 - App\Tests\Behat\OAuthContext\OAuthContext
+        health_check:
+            contexts:
+                - App\Tests\Behat\HealthCheckContext\HealthCheckContext
+
 
     extensions:
         DAMA\DoctrineTestBundle\Behat\ServiceContainer\DoctrineExtension: ~
         FriendsOfBehat\SymfonyExtension:
             bootstrap: 'tests/bootstrap.php'
             kernel:
+                environment: test
                 class: App\Shared\Kernel

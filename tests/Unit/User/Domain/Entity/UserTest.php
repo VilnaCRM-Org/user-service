@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Domain\Entity;
 
-use App\Shared\Application\Transformer\UuidTransformer;
 use App\Shared\Domain\Bus\Event\DomainEvent;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
@@ -42,7 +43,7 @@ final class UserTest extends UnitTestCase
         $this->confirmationTokenFactory = new ConfirmationTokenFactory(
             $this->faker->numberBetween(1, 10)
         );
-        $this->uuidTransformer = new UuidTransformer();
+        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
 
         $this->user = $this->userFactory->create(
             $this->faker->email(),
