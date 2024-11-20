@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e7d2c0ff34559c44edee244df873f8ee",
+    "content-hash": "897b30e41c28c37c411177a1c0ca8f7f",
     "packages": [
         {
             "name": "api-platform/core",
@@ -402,16 +402,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.328.1",
+            "version": "3.328.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "52d8219935146c3261181de2da4d36bf04c76298"
+                "reference": "63a6366a8011dffec3d1ef838c97ca6b6ddb17a2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/52d8219935146c3261181de2da4d36bf04c76298",
-                "reference": "52d8219935146c3261181de2da4d36bf04c76298",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/63a6366a8011dffec3d1ef838c97ca6b6ddb17a2",
+                "reference": "63a6366a8011dffec3d1ef838c97ca6b6ddb17a2",
                 "shasum": ""
             },
             "require": {
@@ -494,9 +494,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.328.1"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.328.2"
             },
-            "time": "2024-11-18T19:13:28+00:00"
+            "time": "2024-11-19T20:28:51+00:00"
         },
         {
             "name": "blackbonjour/stdlib",
@@ -2542,73 +2542,17 @@
             "time": "2024-07-18T11:15:46+00:00"
         },
         {
-            "name": "lambdish/phunctional",
-            "version": "v2.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Lambdish/phunctional.git",
-                "reference": "ed3482e7da134d886789abb33c6df22a5d2f271c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Lambdish/phunctional/zipball/ed3482e7da134d886789abb33c6df22a5d2f271c",
-                "reference": "ed3482e7da134d886789abb33c6df22a5d2f271c",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.2"
-            },
-            "require-dev": {
-                "phpstan/phpstan": "^0.11.16",
-                "phpunit/phpunit": "^8.4"
-            },
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "src/_bootstrap.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Eloi Poch"
-                },
-                {
-                    "name": "Jorge Ávila"
-                },
-                {
-                    "name": "Rafa Gómez"
-                }
-            ],
-            "description": "λ PHP functional library",
-            "keywords": [
-                "functional",
-                "generator",
-                "lambda",
-                "library",
-                "php"
-            ],
-            "support": {
-                "issues": "https://github.com/Lambdish/phunctional/issues",
-                "source": "https://github.com/Lambdish/phunctional/tree/v2.1.0"
-            },
-            "time": "2020-09-18T07:22:08+00:00"
-        },
-        {
             "name": "laminas/laminas-code",
-            "version": "4.15.1",
+            "version": "4.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laminas/laminas-code.git",
-                "reference": "877ad42fe9c164785182fca8afa3f416a056884d"
+                "reference": "1793e78dad4108b594084d05d1fb818b85b110af"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laminas/laminas-code/zipball/877ad42fe9c164785182fca8afa3f416a056884d",
-                "reference": "877ad42fe9c164785182fca8afa3f416a056884d",
+                "url": "https://api.github.com/repos/laminas/laminas-code/zipball/1793e78dad4108b594084d05d1fb818b85b110af",
+                "reference": "1793e78dad4108b594084d05d1fb818b85b110af",
                 "shasum": ""
             },
             "require": {
@@ -2658,7 +2602,7 @@
                     "type": "community_bridge"
                 }
             ],
-            "time": "2024-10-25T10:15:16+00:00"
+            "time": "2024-11-20T13:15:13+00:00"
         },
         {
             "name": "lcobucci/clock",
@@ -18119,7 +18063,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -18131,6 +18075,6 @@
         "ext-simplexml": "*",
         "ext-xml": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }

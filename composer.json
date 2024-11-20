@@ -21,7 +21,6 @@
     "doctrine/orm": "^3.3",
     "dpauli/graphql-request-builder": "^1.8",
     "fakerphp/faker": "^1.23.0",
-    "lambdish/phunctional": "^2.1",
     "league/oauth2-server-bundle": "^0.9.0",
     "lexik/jwt-authentication-bundle": "^3.0.0",
     "nelmio/cors-bundle": "^2.4",
