@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "897b30e41c28c37c411177a1c0ca8f7f",
+    "content-hash": "8ac0c98eeaf87e1e06ad4af7352fb3f5",
     "packages": [
         {
             "name": "api-platform/core",
-            "version": "v4.0.9",
+            "version": "v4.0.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/core.git",
-                "reference": "ffadacce69e1b9edc5a5b797a54af1e1dd34f834"
+                "reference": "eb5321837d1e61f4a69e4b2e9021a472bd03c6c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/core/zipball/ffadacce69e1b9edc5a5b797a54af1e1dd34f834",
-                "reference": "ffadacce69e1b9edc5a5b797a54af1e1dd34f834",
+                "url": "https://api.github.com/repos/api-platform/core/zipball/eb5321837d1e61f4a69e4b2e9021a472bd03c6c3",
+                "reference": "eb5321837d1e61f4a69e4b2e9021a472bd03c6c3",
                 "shasum": ""
             },
             "require": {
@@ -216,9 +216,9 @@
             ],
             "support": {
                 "issues": "https://github.com/api-platform/core/issues",
-                "source": "https://github.com/api-platform/core/tree/v4.0.9"
+                "source": "https://github.com/api-platform/core/tree/v4.0.10"
             },
-            "time": "2024-11-15T10:35:49+00:00"
+            "time": "2024-11-22T11:09:29+00:00"
         },
         {
             "name": "async-aws/core",
@@ -18063,7 +18063,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -18075,6 +18075,6 @@
         "ext-simplexml": "*",
         "ext-xml": "*"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }
