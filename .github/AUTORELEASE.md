@@ -37,6 +37,7 @@ The auto-release process uses [Conventional Commits](https://www.conventionalcom
    - Result: `1.0.1` → `1.1.0`
 
 3. **MAJOR**: Incremented for breaking changes or significant alterations to APIs.
+
    - Example:
 
      ```
