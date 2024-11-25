@@ -38,11 +38,13 @@ The auto-release process uses [Conventional Commits](https://www.conventionalcom
 
 3. **MAJOR**: Incremented for breaking changes or significant alterations to APIs.
    - Example:
+
      ```
      feat(#3): overhaul authentication system
-     
+
      BREAKING CHANGE: authentication now requires OAuth2
      ```
+
    - Result: `1.1.0` → `2.0.0`
 
 ---
