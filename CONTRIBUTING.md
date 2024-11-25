@@ -21,11 +21,11 @@ To get an overview of the project, read the [README](README.md). Here are some r
 
 #### Create a new issue
 
-If you spot a problem with this template, [search if an issue already exists](https://docs.github.com/en/github/searching-for-information-on-github/searching-on-github/searching-issues-and-pull-requests#search-by-the-title-body-or-comments). If a related issue doesn't exist, you can open a new issue using a relevant [issue form](https://github.com/VilnaCRM-Org/user-service/issues/new).
+If you spot a problem with this template, [search if an issue already exists](https://docs.github.com/en/github/searching-for-information-on-github/searching-on-github/searching-issues-and-pull-requests#search-by-the-title-body-or-comments). If a related issue doesn't exist, you can open a new issue using a relevant [issue form](https://github.com/VilnaCRM-Org/php-service-template/issues/new).
 
 #### Solve an issue
 
-Scan through our [existing issues](https://github.com/VilnaCRM-Org/user-service/issues) to find one that interests you. You can narrow down the search using `labels` as filters. As a general rule, we don’t assign issues to anyone. If you find an issue to work on, you are welcome to open a PR with a fix.
+Scan through our [existing issues](https://github.com/VilnaCRM-Org/php-service-template/issues) to find one that interests you. You can narrow down the search using `labels` as filters. As a general rule, we don’t assign issues to anyone. If you find an issue to work on, you are welcome to open a PR with a fix.
 
 ### Make Changes
 
@@ -65,4 +65,4 @@ When you're finished with the changes, create a pull request, also known as a PR
 
 Congratulations :tada::tada: The our team thanks you :sparkles:.
 
-Now that you are part of the user service community.
+Now that you are part of the php service template community.
