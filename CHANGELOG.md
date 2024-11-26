@@ -1,16 +1,12 @@
 # [2.0.0](https://github.com/VilnaCRM-Org/user-service/compare/v1.8.0...v2.0.0) (2024-11-25)
 
-
 ### Documentation
 
-* **#87:** update auto release documentation ([#88](https://github.com/VilnaCRM-Org/user-service/issues/88)) ([0a41ec2](https://github.com/VilnaCRM-Org/user-service/commit/0a41ec270757a6548424d5172fc9ff5656509279)), closes [#87](https://github.com/VilnaCRM-Org/user-service/issues/87) [#87](https://github.com/VilnaCRM-Org/user-service/issues/87) [#87](https://github.com/VilnaCRM-Org/user-service/issues/87)
-
+- **#87:** update auto release documentation ([#88](https://github.com/VilnaCRM-Org/user-service/issues/88)) ([0a41ec2](https://github.com/VilnaCRM-Org/user-service/commit/0a41ec270757a6548424d5172fc9ff5656509279)), closes [#87](https://github.com/VilnaCRM-Org/user-service/issues/87) [#87](https://github.com/VilnaCRM-Org/user-service/issues/87) [#87](https://github.com/VilnaCRM-Org/user-service/issues/87)
 
 ### BREAKING CHANGES
 
-* **#87:** remove 'category' key from graphql response
-
-
+- **#87:** remove 'category' key from graphql response
 
 # [1.8.0](https://github.com/VilnaCRM-Org/user-service/compare/v1.7.0...v1.8.0) (2024-11-20)
 
