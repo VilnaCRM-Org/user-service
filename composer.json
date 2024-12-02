@@ -35,7 +35,7 @@
     "symfony/dotenv": "7.1.*",
     "symfony/flex": "^2.2",
     "symfony/framework-bundle": "7.1.*",
-    "symfony/mailer": "7.1.*",
+    "symfony/mailer": "7.2.*",
     "symfony/messenger": "7.1.*",
     "symfony/monolog-bundle": "^3.5",
     "symfony/password-hasher": "7.1.*",
