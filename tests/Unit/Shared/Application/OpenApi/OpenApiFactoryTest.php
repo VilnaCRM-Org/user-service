@@ -126,7 +126,8 @@ final class OpenApiFactoryTest extends UnitTestCase
 
         return $expectedOpenApi
             ->withComponents($components)
-            ->withServers([new Server('https://localhost')])->withSecurity([
+            ->withServers([new Server('https://api.vilnacrm.com')])
+            ->withSecurity([
                 ['ApiKeyAuth' => []],
                 ['BasicAuth' => []],
                 ['BearerAuth' => []],
