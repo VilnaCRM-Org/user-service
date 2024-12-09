@@ -17,6 +17,8 @@ jobs:
         with:
           php-version: ${{ vars.PHP_VERSION }}
 
+      - name: Composer update
+        run: composer update
       - name: Install Dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 

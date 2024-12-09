@@ -24,6 +24,8 @@ jobs:
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-
+      - name: Composer require
+        run: composer require symfony/runtime
       - name: Generate openapi spec
         run: php bin/console --env=test api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml
       - name: Commit changes
