@@ -44,7 +44,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $this->addServerErrorResponseToAllEndpoints($openApi);
 
         return $openApi->withServers([
-            new Model\Server('https://localhost'),
+            new Model\Server('https://api.vilnacrm.com'),
         ])->withSecurity([
             ['ApiKeyAuth' => []],
             ['BasicAuth' => []],
