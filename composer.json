@@ -50,7 +50,7 @@
     "symfony/twig-bundle": "7.2.*",
     "symfony/uid": "7.1.*",
     "symfony/validator": "7.1.*",
-    "symfony/yaml": "7.1.*",
+    "symfony/yaml": "7.2.*",
     "thecodingmachine/safe": "^2.5",
     "twig/extra-bundle": "^3.10",
     "twig/inky-extra": "^3.8",
