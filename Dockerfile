@@ -4,7 +4,7 @@ FROM composer/composer:2-bin AS composer
 FROM mlocati/php-extension-installer:2.2 AS php_extension_installer
 
 # Build Caddy with the Mercure and Vulcain modules
-FROM caddy:2.8-builder-alpine AS app_caddy_builder
+FROM caddy:2.9-builder-alpine AS app_caddy_builder
 
 RUN xcaddy build \
 	--with github.com/dunglas/mercure \
@@ -134,7 +134,7 @@ COPY --link infrastructure/supervisor/supervisord.conf /etc/supervisor/superviso
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
 
 # Caddy image
-FROM caddy:2.8-alpine AS app_caddy
+FROM caddy:2.9-alpine AS app_caddy
 
 WORKDIR /srv/app
 
