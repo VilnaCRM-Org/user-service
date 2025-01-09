@@ -1328,17 +1328,6 @@ paths:
       deprecated: false
 components:
   securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-KEY
-    BasicAuth:
-      type: http
-      scheme: basic
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
     OAuth2:
       type: oauth2
       flows:
@@ -1349,12 +1338,6 @@ components:
             'write:pets': 'modify pets in your account'
             'read:pets': 'read your pets'
 security:
-  -
-    ApiKeyAuth: []
-  -
-    BasicAuth: []
-  -
-    BearerAuth: []
   -
     OAuth2: []
 tags: []
