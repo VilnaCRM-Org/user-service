@@ -128,9 +128,6 @@ final class OpenApiFactoryTest extends UnitTestCase
             ->withComponents($components)
             ->withServers([new Server('https://api.vilnacrm.com')])
             ->withSecurity([
-                ['ApiKeyAuth' => []],
-                ['BasicAuth' => []],
-                ['BearerAuth' => []],
                 ['OAuth2' => []],
             ]);
     }
@@ -144,46 +141,8 @@ final class OpenApiFactoryTest extends UnitTestCase
     private function createSecuritySchemes(): ArrayObject
     {
         return new ArrayObject([
-            'ApiKeyAuth' => $this->createApiKeyAuthScheme(),
-            'BasicAuth' => $this->createBasicAuthScheme(),
-            'BearerAuth' => $this->createBearerAuthScheme(),
             'OAuth2' => $this->createOAuth2Scheme(),
         ]);
-    }
-
-    /**
-     * @return array<string>
-     */
-    private function createApiKeyAuthScheme(): array
-    {
-        return [
-            'type' => 'apiKey',
-            'in' => 'header',
-            'name' => 'X-API-KEY',
-        ];
-    }
-
-    /**
-     * @return array<string>
-     */
-    private function createBasicAuthScheme(): array
-    {
-        return [
-            'type' => 'http',
-            'scheme' => 'basic',
-        ];
-    }
-
-    /**
-     * @return array<string>
-     */
-    private function createBearerAuthScheme(): array
-    {
-        return [
-            'type' => 'http',
-            'scheme' => 'bearer',
-            'bearerFormat' => 'JWT',
-        ];
     }
 
     /**
