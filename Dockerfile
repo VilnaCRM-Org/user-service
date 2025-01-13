@@ -1,9 +1,12 @@
 # Builder images
 FROM composer/composer:2-bin AS composer
+FROM mlocati/php-extension-installer:2.2 AS php_extension_installer
 FROM dunglas/frankenphp:1-php8.3 AS frankenphp_upstream
 FROM frankenphp_upstream AS frankenphp_base
 
 WORKDIR /srv/app
+
+COPY --from=php_extension_installer --link /usr/bin/install-php-extensions /usr/local/bin/
 
 # persistent / runtime deps
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -12,6 +15,13 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 	gettext \
 	git \
 	&& rm -rf /var/lib/apt/lists/*
+
+ARG STABILITY="stable"
+ENV STABILITY ${STABILITY}
+
+# Allow to select Symfony version
+ARG SYMFONY_VERSION=""
+ENV SYMFONY_VERSION ${SYMFONY_VERSION}
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -29,6 +39,8 @@ RUN set -eux; \
 		xsl \
 	;
 
+COPY --link infrastructure/docker/php/docker-healthcheck.sh /usr/local/bin/docker-healthcheck
+RUN chmod +x /usr/local/bin/docker-healthcheck
 COPY --link infrastructure/docker/php/conf.d/app.ini $PHP_INI_DIR/conf.d/
 COPY --link --chmod=755 infrastructure/docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
 COPY --link infrastructure/docker/caddy/Caddyfile /etc/caddy/Caddyfile
@@ -64,6 +76,8 @@ COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
 CMD [ "frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--watch" ]
 
 RUN git config --global --add safe.directory /srv/app
+
+RUN rm -f .env.local.php
 
 # Prod FrankenPHP image
 FROM frankenphp_base AS frankenphp_prod
