@@ -43,10 +43,15 @@ CMD [ "frankenphp", "run", "--config", "/etc/caddy/Caddyfile" ]
 FROM frankenphp_base AS frankenphp_dev
 
 ENV APP_ENV=dev XDEBUG_MODE=off
-RUN apk add --no-cache bash
-RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.alpine.sh' | bash
-RUN apk add symfony-cli
-RUN apk add --no-cache make
+
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    bash \
+    curl \
+    make \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash
+RUN apt-get update && apt-get install --no-install-recommends -y symfony-cli && rm -rf /var/lib/apt/lists/*
 VOLUME /srv/app/var/
 
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
