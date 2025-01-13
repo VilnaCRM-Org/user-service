@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "36a528c47eacc18503222a22a187a55e",
+    "content-hash": "997998742799cc71065f4252ffb1fd7a",
     "packages": [
         {
             "name": "api-platform/core",
-            "version": "v4.0.13",
+            "version": "v4.0.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/core.git",
-                "reference": "c0c3f4c95ade69862414f46e39adadcc8a8c96f3"
+                "reference": "a6b84610364b4782eea85a21286d79e0d4e07152"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/core/zipball/c0c3f4c95ade69862414f46e39adadcc8a8c96f3",
-                "reference": "c0c3f4c95ade69862414f46e39adadcc8a8c96f3",
+                "url": "https://api.github.com/repos/api-platform/core/zipball/a6b84610364b4782eea85a21286d79e0d4e07152",
+                "reference": "a6b84610364b4782eea85a21286d79e0d4e07152",
                 "shasum": ""
             },
             "require": {
@@ -216,9 +216,9 @@
             ],
             "support": {
                 "issues": "https://github.com/api-platform/core/issues",
-                "source": "https://github.com/api-platform/core/tree/v4.0.13"
+                "source": "https://github.com/api-platform/core/tree/v4.0.14"
             },
-            "time": "2024-12-20T10:22:41+00:00"
+            "time": "2025-01-10T14:26:40+00:00"
         },
         {
             "name": "async-aws/core",
@@ -402,16 +402,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.336.11",
+            "version": "3.336.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "442039c766a82f06ecfecb0ac2c610d6aaba228d"
+                "reference": "dcb43c029ca74c52fa03a739341cc77086296a83"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/442039c766a82f06ecfecb0ac2c610d6aaba228d",
-                "reference": "442039c766a82f06ecfecb0ac2c610d6aaba228d",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/dcb43c029ca74c52fa03a739341cc77086296a83",
+                "reference": "dcb43c029ca74c52fa03a739341cc77086296a83",
                 "shasum": ""
             },
             "require": {
@@ -494,9 +494,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.336.11"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.336.13"
             },
-            "time": "2025-01-08T19:06:59+00:00"
+            "time": "2025-01-10T19:04:25+00:00"
         },
         {
             "name": "blackbonjour/stdlib",
@@ -4673,6 +4673,58 @@
                 }
             ],
             "time": "2024-04-27T21:32:50+00:00"
+        },
+        {
+            "name": "runtime/frankenphp-symfony",
+            "version": "0.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-runtime/frankenphp-symfony.git",
+                "reference": "56822c3631d9522a3136a4c33082d006bdfe4bad"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-runtime/frankenphp-symfony/zipball/56822c3631d9522a3136a4c33082d006bdfe4bad",
+                "reference": "56822c3631d9522a3136a4c33082d006bdfe4bad",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1",
+                "symfony/dependency-injection": "^5.4 || ^6.0 || ^7.0",
+                "symfony/http-kernel": "^5.4 || ^6.0 || ^7.0",
+                "symfony/runtime": "^5.4 || ^6.0 || ^7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Runtime\\FrankenPhpSymfony\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kévin Dunglas",
+                    "email": "kevin@dunglas.dev"
+                }
+            ],
+            "description": "FrankenPHP runtime for Symfony",
+            "support": {
+                "issues": "https://github.com/php-runtime/frankenphp-symfony/issues",
+                "source": "https://github.com/php-runtime/frankenphp-symfony/tree/0.2.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/nyholm",
+                    "type": "github"
+                }
+            ],
+            "time": "2023-12-12T12:06:11+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -10506,16 +10558,16 @@
         },
         {
             "name": "behat/behat",
-            "version": "v3.17.0",
+            "version": "v3.18.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Behat/Behat.git",
-                "reference": "3eb5ebae08db4e44ca6a458ba0f449dda753c465"
+                "reference": "4621239e20fa4bb1ae1df1b2235fc930e6b27a13"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Behat/Behat/zipball/3eb5ebae08db4e44ca6a458ba0f449dda753c465",
-                "reference": "3eb5ebae08db4e44ca6a458ba0f449dda753c465",
+                "url": "https://api.github.com/repos/Behat/Behat/zipball/4621239e20fa4bb1ae1df1b2235fc930e6b27a13",
+                "reference": "4621239e20fa4bb1ae1df1b2235fc930e6b27a13",
                 "shasum": ""
             },
             "require": {
@@ -10534,7 +10586,7 @@
                 "symfony/yaml": "^5.4 || ^6.4 || ^7.0"
             },
             "require-dev": {
-                "herrera-io/box": "~1.6.1",
+                "phpstan/phpstan": "^2.0",
                 "phpunit/phpunit": "^9.6",
                 "sebastian/diff": "^4.0",
                 "symfony/polyfill-php84": "^1.31",
@@ -10592,9 +10644,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Behat/Behat/issues",
-                "source": "https://github.com/Behat/Behat/tree/v3.17.0"
+                "source": "https://github.com/Behat/Behat/tree/v3.18.1"
             },
-            "time": "2024-12-18T10:27:06+00:00"
+            "time": "2025-01-10T10:08:15+00:00"
         },
         {
             "name": "behat/gherkin",
@@ -10710,16 +10762,16 @@
         },
         {
             "name": "captainhook/captainhook",
-            "version": "5.24.1",
+            "version": "5.24.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/captainhookphp/captainhook.git",
-                "reference": "1e56452fd7a7e486e5955ab72dc9ea34bb52a184"
+                "reference": "3e0915ff063a14d745c78e0181868e79c596b7e0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/captainhookphp/captainhook/zipball/1e56452fd7a7e486e5955ab72dc9ea34bb52a184",
-                "reference": "1e56452fd7a7e486e5955ab72dc9ea34bb52a184",
+                "url": "https://api.github.com/repos/captainhookphp/captainhook/zipball/3e0915ff063a14d745c78e0181868e79c596b7e0",
+                "reference": "3e0915ff063a14d745c78e0181868e79c596b7e0",
                 "shasum": ""
             },
             "require": {
@@ -10782,7 +10834,7 @@
             ],
             "support": {
                 "issues": "https://github.com/captainhookphp/captainhook/issues",
-                "source": "https://github.com/captainhookphp/captainhook/tree/5.24.1"
+                "source": "https://github.com/captainhookphp/captainhook/tree/5.24.2"
             },
             "funding": [
                 {
@@ -10790,7 +10842,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-11-26T18:42:37+00:00"
+            "time": "2025-01-11T12:52:49+00:00"
         },
         {
             "name": "captainhook/plugin-composer",
