@@ -64,7 +64,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash
 RUN apt-get update && apt-get install --no-install-recommends -y symfony-cli && rm -rf /var/lib/apt/lists/*
 VOLUME /srv/app/var/
-ENV APP_ENV=dev XDEBUG_MODE=off
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 RUN set -eux; \
