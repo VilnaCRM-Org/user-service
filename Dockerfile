@@ -13,13 +13,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 	git \
 	&& rm -rf /var/lib/apt/lists/*
 
-ARG STABILITY="stable"
-ENV STABILITY ${STABILITY}
-
-# Allow to select Symfony version
-ARG SYMFONY_VERSION=""
-ENV SYMFONY_VERSION ${SYMFONY_VERSION}
-
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
