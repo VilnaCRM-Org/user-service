@@ -4,12 +4,13 @@
 	frankenphp {
 		{$FRANKENPHP_CONFIG}
 	}
+	{$CADDY_DEBUG}
+	auto_https disable_redirects
 }
-
-{$CADDY_EXTRA_CONFIG}
 
 {$SERVER_NAME} {
     log
+    {$CADDY_EXTRA_CONFIG}
 	root * /srv/app/public
 	encode zstd br gzip
 
