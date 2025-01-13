@@ -18,6 +18,10 @@ services:
       - host.docker.internal:host-gateway
     networks:
       - user-service
+    ports:
+      - target: 8081
+        published: 8081
+        protocol: tcp
 
   ###> symfony/mailer ###
   mailer:
