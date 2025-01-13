@@ -1,12 +1,9 @@
 # Builder images
 FROM composer/composer:2-bin AS composer
-FROM mlocati/php-extension-installer:2.2 AS php_extension_installer
 FROM dunglas/frankenphp:1-php8.3 AS frankenphp_upstream
 FROM frankenphp_upstream AS frankenphp_base
 
 WORKDIR /srv/app
-
-COPY --from=php_extension_installer --link /usr/bin/install-php-extensions /usr/local/bin/
 
 # persistent / runtime deps
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -74,8 +71,6 @@ COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
 CMD [ "frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--watch" ]
 
 RUN git config --global --add safe.directory /srv/app
-
-RUN rm -f .env.local.php
 
 # Prod FrankenPHP image
 FROM frankenphp_base AS frankenphp_prod
