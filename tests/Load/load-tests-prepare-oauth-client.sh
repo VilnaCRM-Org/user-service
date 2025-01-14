@@ -27,7 +27,7 @@ clientSecret=$3
 clientRedirectUri=$4
 
 # Delete existing client if it exists
-if ! eval "$SYMFONY" league:oauth2-server:delete-client "$clientID" --env=test; then
+if ! eval "$SYMFONY" league:oauth2-server:delete-client "$clientID" --env=dev; then
     echo "Warning: Failed to delete client $clientID. Proceeding to create a new one."
 fi
 
