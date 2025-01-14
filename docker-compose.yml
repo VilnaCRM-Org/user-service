@@ -45,7 +45,7 @@ services:
         condition: service_healthy
     build:
       context: .
-      target: frankenphp_prod
+      target: app_workers
     privileged: true
     environment:
       - container=docker
