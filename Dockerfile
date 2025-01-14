@@ -39,8 +39,6 @@ RUN set -eux; \
 		xsl \
 	;
 
-COPY --link infrastructure/docker/php/docker-healthcheck.sh /usr/local/bin/docker-healthcheck
-RUN chmod +x /usr/local/bin/docker-healthcheck
 COPY --link infrastructure/docker/php/conf.d/app.ini $PHP_INI_DIR/conf.d/
 COPY --link --chmod=755 infrastructure/docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
 COPY --link infrastructure/docker/caddy/Caddyfile /etc/caddy/Caddyfile
