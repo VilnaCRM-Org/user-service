@@ -53,7 +53,9 @@
     }
 
     vulcain
-    php_server
+    php_server {
+        env APP_ENV test
+    }
     encode zstd gzip
     file_server
 }
