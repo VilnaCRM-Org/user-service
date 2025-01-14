@@ -17,7 +17,7 @@
     {$CADDY_EXTRA_CONFIG}
 
     root * /srv/app/public
-    encode zstd br gzip
+    encode zstd gzip
 
     # Handle Mercure
     mercure {
