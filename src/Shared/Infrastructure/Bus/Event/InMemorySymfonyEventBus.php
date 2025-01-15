@@ -13,9 +13,9 @@ use Symfony\Component\Messenger\Exception\NoHandlerForMessageException;
 use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-class InMemorySymfonyEventBus implements EventBusInterface
+readonly class InMemorySymfonyEventBus implements EventBusInterface
 {
-    private readonly MessageBusInterface $bus;
+    private MessageBusInterface $bus;
 
     /**
      * @param iterable<DomainEventSubscriberInterface> $subscribers

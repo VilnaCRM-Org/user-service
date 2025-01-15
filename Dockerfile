@@ -25,7 +25,7 @@ ENV SYMFONY_VERSION ${SYMFONY_VERSION}
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
 ENV COMPOSER_ALLOW_SUPERUSER=1
-
+ENV PATH="${PATH}:/root/.composer/vendor/bin"
 RUN set -eux; \
 	install-php-extensions \
 		@composer \
@@ -42,6 +42,7 @@ RUN set -eux; \
 COPY --link infrastructure/docker/php/conf.d/app.ini $PHP_INI_DIR/conf.d/
 COPY --link --chmod=755 infrastructure/docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
 COPY --link infrastructure/docker/caddy/Caddyfile /etc/caddy/Caddyfile
+COPY --from=composer --link /composer /usr/bin/composer
 
 ENTRYPOINT ["docker-entrypoint"]
 
