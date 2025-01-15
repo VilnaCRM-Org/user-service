@@ -100,8 +100,7 @@ CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--watch"]
 # Prod FrankenPHP image
 FROM frankenphp_base AS frankenphp_prod
 
-ENV APP_ENV=prod \
-    FRANKENPHP_CONFIG="import worker.Caddyfile"
+ENV FRANKENPHP_CONFIG="import worker.Caddyfile"
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
@@ -112,16 +111,7 @@ COPY --link composer.* symfony.* ./
 RUN set -eux; \
     composer install --no-cache --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress
 
-COPY --link . ./
 RUN rm -Rf infrastructure/docker/
-
-RUN set -eux; \
-    mkdir -p var/cache var/log; \
-    composer dump-autoload --classmap-authoritative --no-dev; \
-    composer dump-env prod; \
-    composer run-script --no-dev post-install-cmd; \
-    chmod +x bin/console; \
-    sync;
 
 # Worker image
 FROM frankenphp_base AS app_workers
