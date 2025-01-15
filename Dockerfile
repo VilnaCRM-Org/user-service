@@ -33,7 +33,7 @@ RUN set -eux; \
         opcache \
         zip \
         pdo_mysql \
-        redis \
+        redis-6.0.2 \
         openssl \
         xsl
 
