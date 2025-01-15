@@ -5,7 +5,6 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 	if [ -z "$(ls -A 'vendor/' 2>/dev/null)" ]; then
 		composer install --prefer-dist --no-progress --no-interaction
 	fi
-
 	if grep -q ^DATABASE_URL= .env; then
 		echo "Waiting for database to be ready..."
 		ATTEMPTS_LEFT_TO_REACH_DATABASE=60
@@ -36,5 +35,5 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 	setfacl -R -m u:www-data:rwX -m u:"$(whoami)":rwX var
 	setfacl -dR -m u:www-data:rwX -m u:"$(whoami)":rwX var
 fi
-
+php bin/console lexik:jwt:generate-keypair --skip-if-exists
 exec docker-php-entrypoint "$@"

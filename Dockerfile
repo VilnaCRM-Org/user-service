@@ -28,7 +28,6 @@ ENV PATH="${PATH}:/root/.composer/vendor/bin"
 
 RUN set -eux; \
     install-php-extensions \
-        @composer \
         apcu \
         intl \
         opcache \
