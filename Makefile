@@ -191,7 +191,7 @@ logs: ## Show all logs
 new-logs: ## Show live logs
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
-start: up doctrine-migrations-migrate ## Start docker
+start: up doctrine-migrations-migrate generate-key-pairs ## Start docker
 
 stop: ## Stop docker and the Symfony binary server
 	$(DOCKER_COMPOSE) stop
@@ -218,3 +218,6 @@ generate-openapi-spec:
 
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec
+
+generate-key-pairs:
+	$(SYMFONY) lexik:jwt:generate-keypair --skip-if-exists
