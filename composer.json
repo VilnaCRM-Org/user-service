@@ -29,7 +29,7 @@
     "ramsey/uuid": "^4.7",
     "sebastian/phpcpd": "^6.0",
     "symfony/amazon-sqs-messenger": "7.1.*",
-    "symfony/asset": "7.1.*",
+    "symfony/asset": "7.2.*",
     "symfony/cache": "7.1.*",
     "symfony/console": "7.1.*",
     "symfony/doctrine-messenger": "7.2.*",
