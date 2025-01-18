@@ -25,6 +25,7 @@
     "lexik/jwt-authentication-bundle": "^3.0.0",
     "nelmio/cors-bundle": "^2.4",
     "phpmailer/phpmailer": "^6.6",
+    "runtime/frankenphp-symfony": "^0.2",
     "ramsey/uuid": "^4.7",
     "sebastian/phpcpd": "^6.0",
     "symfony/amazon-sqs-messenger": "7.1.*",
