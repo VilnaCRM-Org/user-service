@@ -2,10 +2,11 @@
 services:
   php:
     build:
-      target: app_php_dev
+      target: frankenphp_dev
     volumes:
       - ./:/srv/app
       - ./infrastructure/docker/php/conf.d/app.dev.ini:/usr/local/etc/php/conf.d/app.dev.ini:ro
+      - ./infrastructure/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       # If you develop on Mac or Windows you can remove the vendor/ directory
       #  from the bind-mount for better performance by enabling the next line:
       #- /srv/app/vendor
@@ -17,17 +18,10 @@ services:
       - host.docker.internal:host-gateway
     networks:
       - user-service
-
-  caddy:
-    command:
-      ['caddy', 'run', '--config', '/etc/caddy/Caddyfile', '--adapter', 'caddyfile', '--watch']
     ports:
       - target: 8081
         published: 8081
         protocol: tcp
-    volumes:
-      - ./public:/srv/app/public:ro
-      - ./infrastructure/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
 
   ###> symfony/mailer ###
   mailer:

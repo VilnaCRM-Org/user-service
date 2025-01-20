@@ -25,17 +25,18 @@
     "lexik/jwt-authentication-bundle": "^3.0.0",
     "nelmio/cors-bundle": "^2.4",
     "phpmailer/phpmailer": "^6.6",
+    "runtime/frankenphp-symfony": "^0.2",
     "ramsey/uuid": "^4.7",
     "sebastian/phpcpd": "^6.0",
     "symfony/amazon-sqs-messenger": "7.1.*",
-    "symfony/asset": "7.1.*",
+    "symfony/asset": "7.2.*",
     "symfony/cache": "7.1.*",
     "symfony/console": "7.1.*",
     "symfony/doctrine-messenger": "7.2.*",
     "symfony/dotenv": "7.1.*",
     "symfony/flex": "^2.2",
     "symfony/framework-bundle": "7.1.*",
-    "symfony/mailer": "7.2.*",
+    "symfony/mailer": "7.1.*",
     "symfony/messenger": "7.1.*",
     "symfony/monolog-bundle": "^3.5",
     "symfony/password-hasher": "7.1.*",
@@ -45,7 +46,7 @@
     "symfony/security-bundle": "7.1.*",
     "symfony/security-http": "^7.1",
     "symfony/string": "7.1.*",
-    "symfony/translation": "7.1.*",
+    "symfony/translation": "7.2.*",
     "symfony/twig-bridge": "7.1.*",
     "symfony/twig-bundle": "7.2.*",
     "symfony/uid": "7.1.*",
@@ -147,5 +148,5 @@
     "weirdan/doctrine-psalm-plugin": "^2.5",
     "zenstruck/messenger-test": "^1.9"
   },
-  "version": "2.1.0"
+  "version": "2.3.0"
 }
