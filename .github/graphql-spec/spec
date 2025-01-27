@@ -1,7 +1,6 @@
 type Query {
   node(id: ID!): Node
-  user(id: ID!): User
-  users(
+  exampleApiResources(
     "Returns the first n elements from the list."
     first: Int
 
@@ -13,7 +12,8 @@ type Query {
 
     "Returns the elements in the list that come after the specified cursor."
     after: String
-  ): UserCursorConnection
+  ): ExampleApiResourceCursorConnection
+  exampleApiResource(id: ID!): ExampleApiResource
   healthChecks(
     "Returns the first n elements from the list."
     first: Int
@@ -36,28 +36,25 @@ interface Node {
   id: ID!
 }
 
-type User implements Node {
-  id: ID!
-  confirmed: Boolean!
-  email: String!
-  initials: String!
-}
-
-"Cursor connection for User."
-type UserCursorConnection {
-  edges: [UserEdge]
-  pageInfo: UserPageInfo!
+"Cursor connection for ExampleApiResource."
+type ExampleApiResourceCursorConnection {
+  edges: [ExampleApiResourceEdge]
+  pageInfo: ExampleApiResourcePageInfo!
   totalCount: Int!
 }
 
-"Edge of User."
-type UserEdge {
-  node: User
+"Edge of ExampleApiResource."
+type ExampleApiResourceEdge {
+  node: ExampleApiResource
   cursor: String!
 }
 
+type ExampleApiResource implements Node {
+  id: ID!
+}
+
 "Information about the current page."
-type UserPageInfo {
+type ExampleApiResourcePageInfo {
   endCursor: String
   startCursor: String
   hasNextPage: Boolean!
@@ -90,20 +87,14 @@ type HealthCheckPageInfo {
 }
 
 type Mutation {
-  "Deletes a User."
-  deleteUser(input: deleteUserInput!): deleteUserPayload
+  "Updates a ExampleApiResource."
+  updateExampleApiResource(input: updateExampleApiResourceInput!): updateExampleApiResourcePayload
 
-  "Confirms a User."
-  confirmUser(input: confirmUserInput!): confirmUserPayload
+  "Deletes a ExampleApiResource."
+  deleteExampleApiResource(input: deleteExampleApiResourceInput!): deleteExampleApiResourcePayload
 
-  "Creates a User."
-  createUser(input: createUserInput!): createUserPayload
-
-  "Updates a User."
-  updateUser(input: updateUserInput!): updateUserPayload
-
-  "ResendEmailTos a User."
-  resendEmailToUser(input: resendEmailToUserInput!): resendEmailToUserPayload
+  "Creates a ExampleApiResource."
+  createExampleApiResource(input: createExampleApiResourceInput!): createExampleApiResourcePayload
 
   "Updates a HealthCheck."
   updateHealthCheck(input: updateHealthCheckInput!): updateHealthCheckPayload
@@ -115,74 +106,38 @@ type Mutation {
   createHealthCheck(input: createHealthCheckInput!): createHealthCheckPayload
 }
 
-"Deletes a User."
-input deleteUserInput {
+"Updates a ExampleApiResource."
+input updateExampleApiResourceInput {
   id: ID!
   clientMutationId: String
 }
 
-"Deletes a User."
-type deleteUserPayload {
-  user: deleteUserPayloadData
+"Updates a ExampleApiResource."
+type updateExampleApiResourcePayload {
+  exampleApiResource: ExampleApiResource
   clientMutationId: String
 }
 
-"Deletes a User."
-type deleteUserPayloadData implements Node {
+"Deletes a ExampleApiResource."
+input deleteExampleApiResourceInput {
   id: ID!
-}
-
-"Confirms a User."
-input confirmUserInput {
-  clientMutationId: String
-  token: String!
-}
-
-"Confirms a User."
-type confirmUserPayload {
-  user: User
   clientMutationId: String
 }
 
-"Creates a User."
-input createUserInput {
-  clientMutationId: String
-  email: String!
-  initials: String!
-  password: String!
-}
-
-"Creates a User."
-type createUserPayload {
-  user: User
+"Deletes a ExampleApiResource."
+type deleteExampleApiResourcePayload {
+  exampleApiResource: ExampleApiResource
   clientMutationId: String
 }
 
-"Updates a User."
-input updateUserInput {
-  clientMutationId: String
-  id: ID!
-  newPassword: String
-  password: String!
-  email: String
-  initials: String
-}
-
-"Updates a User."
-type updateUserPayload {
-  user: User
+"Creates a ExampleApiResource."
+input createExampleApiResourceInput {
   clientMutationId: String
 }
 
-"ResendEmailTos a User."
-input resendEmailToUserInput {
-  clientMutationId: String
-  id: ID!
-}
-
-"ResendEmailTos a User."
-type resendEmailToUserPayload {
-  user: User
+"Creates a ExampleApiResource."
+type createExampleApiResourcePayload {
+  exampleApiResource: ExampleApiResource
   clientMutationId: String
 }
 
