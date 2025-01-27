@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "74973a1ac0c1e103636ca7b3af7a0f83",
+    "content-hash": "b87c472793c1ba035a4e3a7c98a54987",
     "packages": [
         {
             "name": "api-platform/core",
@@ -8876,16 +8876,16 @@
         },
         {
             "name": "symfony/string",
-            "version": "v7.1.8",
+            "version": "v7.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "591ebd41565f356fcd8b090fe64dbb5878f50281"
+                "reference": "446e0d146f991dde3e73f45f2c97a9faad773c82"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/591ebd41565f356fcd8b090fe64dbb5878f50281",
-                "reference": "591ebd41565f356fcd8b090fe64dbb5878f50281",
+                "url": "https://api.github.com/repos/symfony/string/zipball/446e0d146f991dde3e73f45f2c97a9faad773c82",
+                "reference": "446e0d146f991dde3e73f45f2c97a9faad773c82",
                 "shasum": ""
             },
             "require": {
@@ -8943,7 +8943,7 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/v7.1.8"
+                "source": "https://github.com/symfony/string/tree/v7.2.0"
             },
             "funding": [
                 {
@@ -8959,7 +8959,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-11-13T13:31:21+00:00"
+            "time": "2024-11-13T13:31:26+00:00"
         },
         {
             "name": "symfony/translation",
@@ -18103,7 +18103,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -18115,6 +18115,6 @@
         "ext-simplexml": "*",
         "ext-xml": "*"
     },
-    "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
 }
