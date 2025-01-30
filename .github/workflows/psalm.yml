@@ -12,8 +12,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Debug paths
-        run: pwd && ls -R vendor/amphp/amp
       - name: Psalm
         uses: docker://ghcr.io/psalm/psalm-github-actions:5.26.1
         with:
