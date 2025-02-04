@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "047e7f7b61d91b668dfec46c83e2aff3",
+    "content-hash": "2241f851ca3514dbf7c41e180527c5f6",
     "packages": [
         {
             "name": "api-platform/core",
@@ -402,16 +402,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.339.2",
+            "version": "3.339.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "2f4e85dd8466ffe5186887f8f1466a0248c6c094"
+                "reference": "cc0b21de3b1eaabb7d0a1ed4f3f067bad4be5f31"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/2f4e85dd8466ffe5186887f8f1466a0248c6c094",
-                "reference": "2f4e85dd8466ffe5186887f8f1466a0248c6c094",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/cc0b21de3b1eaabb7d0a1ed4f3f067bad4be5f31",
+                "reference": "cc0b21de3b1eaabb7d0a1ed4f3f067bad4be5f31",
                 "shasum": ""
             },
             "require": {
@@ -494,9 +494,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.339.2"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.339.6"
             },
-            "time": "2025-01-29T19:53:29+00:00"
+            "time": "2025-02-04T19:03:40+00:00"
         },
         {
             "name": "blackbonjour/stdlib",
@@ -18109,7 +18109,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -18121,6 +18121,6 @@
         "ext-simplexml": "*",
         "ext-xml": "*"
     },
-    "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
 }
