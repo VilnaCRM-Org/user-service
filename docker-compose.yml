@@ -56,7 +56,7 @@ services:
     image: mariadb:${DB_VERSION}
     environment:
       MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       hostname: database
     ports:
       - '${DB_PORT}:3306'
