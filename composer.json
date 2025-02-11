@@ -43,7 +43,7 @@
     "symfony/proxy-manager-bridge": "^6.4",
     "symfony/redis-messenger": "7.2.*",
     "symfony/runtime": "7.1.*",
-    "symfony/security-bundle": "7.1.*",
+    "symfony/security-bundle": "7.2.*",
     "symfony/security-http": "^7.1",
     "symfony/string": "7.2.*",
     "symfony/translation": "7.2.*",
