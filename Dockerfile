@@ -1,7 +1,7 @@
 FROM composer/composer:2-bin AS composer
 FROM mlocati/php-extension-installer:2.2 AS php_extension_installer
 
-FROM dunglas/frankenphp:1-php8.3 AS frankenphp_base
+FROM dunglas/frankenphp:1-php8.3.17-alpine AS frankenphp_base
 
 WORKDIR /srv/app
 
