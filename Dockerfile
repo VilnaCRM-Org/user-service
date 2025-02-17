@@ -7,13 +7,12 @@ WORKDIR /srv/app
 
 COPY --from=php_extension_installer --link /usr/bin/install-php-extensions /usr/local/bin/
 
-RUN apt-get update && apt-get install --no-install-recommends -y \
+RUN apk add --no-cache \
     acl \
     file \
     gettext \
     git \
-    curl \
- && rm -rf /var/lib/apt/lists/*
+    curl
 
 ARG STABILITY=stable
 ENV STABILITY=${STABILITY}
@@ -75,14 +74,12 @@ FROM frankenphp_base AS frankenphp_dev
 ENV APP_ENV=dev \
     XDEBUG_MODE=off
 
-RUN apt-get update && apt-get install --no-install-recommends -y \
+RUN apk add --no-cache \
     bash \
-    make \
- && rm -rf /var/lib/apt/lists/*
+    make
 
-RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash \
- && apt-get update && apt-get install --no-install-recommends -y symfony-cli \
- && rm -rf /var/lib/apt/lists/*
+RUN curl -sS https://get.symfony.com/cli/installer | bash \
+ && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
 
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
@@ -116,8 +113,7 @@ RUN rm -Rf infrastructure/docker/
 # Worker image
 FROM frankenphp_base AS app_workers
 
-RUN apt-get update && apt-get install --no-install-recommends -y supervisor \
- && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache supervisor
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
