@@ -50,7 +50,7 @@ services:
   database:
     image: mariadb:11.4
     environment:
-      MYSQL_DATABASE: root
+      MYSQL_DATABASE: db
       MYSQL_ROOT_PASSWORD: root
       hostname: database
     ports:
