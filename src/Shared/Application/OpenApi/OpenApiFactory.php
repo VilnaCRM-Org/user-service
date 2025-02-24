@@ -24,7 +24,8 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     public function __construct(
         private OpenApiFactoryInterface $decorated,
         private iterable $endpointFactories,
-        private InternalErrorFactory $serverErrorResponseFactory
+        private InternalErrorFactory $serverErrorResponseFactory,
+        private string $serverUrl
     ) {
     }
 
@@ -44,7 +45,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $this->addServerErrorResponseToAllEndpoints($openApi);
 
         return $openApi->withServers([
-            new Model\Server('https://api.vilnacrm.com'),
+            new Model\Server($this->serverUrl),
         ])->withSecurity([
             ['OAuth2' => []],
         ]);
