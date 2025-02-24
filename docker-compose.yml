@@ -53,13 +53,13 @@ services:
       - ./:/srv/app
 
   database:
-    image: mariadb:${DB_VERSION}
+    image: mariadb:11.4
     environment:
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: root
+      MYSQL_ROOT_PASSWORD: root
       hostname: database
     ports:
-      - '${DB_PORT}:3306'
+      - '3306:3306'
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -70,7 +70,7 @@ services:
   redis:
     image: redis:7.2.5-alpine
     ports:
-      - '${REDIS_PORT}:6379'
+      - '6379:6379'
 
 volumes:
   caddy_data:
