@@ -49,7 +49,8 @@ final class OpenApiFactoryTest extends UnitTestCase
         $openApiFactory = new OpenApiFactory(
             $this->decoratedFactory,
             [$this->endpointFactory1, $this->endpointFactory2],
-            $this->serverErrorResponseFactory
+            $this->serverErrorResponseFactory,
+            getenv('API_URL')
         );
 
         $result = $openApiFactory->__invoke([]);
@@ -67,14 +68,13 @@ final class OpenApiFactoryTest extends UnitTestCase
 
         $url = $this->faker->url();
         $pathItem = new PathItem();
-        $paths->method('getPath')
-            ->with($url)
-            ->willReturn($pathItem);
+        $paths->method('getPath')->with($url)->willReturn($pathItem);
 
         $openApiFactory = new OpenApiFactory(
             $this->createMock(OpenApiFactoryInterface::class),
             [],
-            $this->serverErrorResponseFactory
+            $this->serverErrorResponseFactory,
+            getenv('API_URL')
         );
 
         $this->getReflectionMethod('addServerErrorResponseToPath')
@@ -106,7 +106,8 @@ final class OpenApiFactoryTest extends UnitTestCase
         $openApiFactory = new OpenApiFactory(
             $this->createMock(OpenApiFactoryInterface::class),
             [],
-            $this->serverErrorResponseFactory
+            $this->serverErrorResponseFactory,
+            getenv('API_URL')
         );
 
         $this->getReflectionMethod('addServerErrorResponseToAllEndpoints')
@@ -126,7 +127,7 @@ final class OpenApiFactoryTest extends UnitTestCase
 
         return $expectedOpenApi
             ->withComponents($components)
-            ->withServers([new Server('https://api.vilnacrm.com')])
+            ->withServers([new Server(getenv('API_URL'))])
             ->withSecurity([
                 ['OAuth2' => []],
             ]);

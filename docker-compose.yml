@@ -17,11 +17,6 @@ services:
       start_period: 30s
     environment:
       SERVER_NAME: ${SERVER_NAME:-localhost}
-      MERCURE_URL: ${CADDY_MERCURE_URL:-http://caddy/.well-known/mercure}
-      MERCURE_PUBLIC_URL: https://${SERVER_NAME:-localhost}/.well-known/mercure
-      MERCURE_JWT_SECRET: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
-      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
-      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
     volumes:
       - caddy_data:/data
       - caddy_config:/config
@@ -53,13 +48,13 @@ services:
       - ./:/srv/app
 
   database:
-    image: mariadb:${DB_VERSION}
+    image: mariadb:11.4
     environment:
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: db
+      MYSQL_ROOT_PASSWORD: root
       hostname: database
     ports:
-      - '${DB_PORT}:3306'
+      - '3306:3306'
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -70,7 +65,7 @@ services:
   redis:
     image: redis:7.2.5-alpine
     ports:
-      - '${REDIS_PORT}:6379'
+      - '6379:6379'
 
 volumes:
   caddy_data:

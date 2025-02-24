@@ -43,7 +43,10 @@ services:
   App\Shared\Application\OpenApi\OpenApiFactory:
     decorates: 'api_platform.openapi.factory'
     arguments:
-      ['@App\Shared\Application\OpenApi\OpenApiFactory.inner', !tagged app.openapi_endpoint_factory]
+      - '@App\Shared\Application\OpenApi\OpenApiFactory.inner'
+      - !tagged app.openapi_endpoint_factory
+      - '@App\Shared\Application\OpenApi\Factory\Response\InternalErrorFactory'
+      - '%env(API_URL)%'
     autoconfigure: false
 
   api_platform.state.error_provider:

@@ -19,16 +19,6 @@
     root * /srv/app/public
     encode zstd gzip
 
-    # Handle Mercure
-    mercure {
-        transport_url {$MERCURE_TRANSPORT_URL:bolt:///data/mercure.db}
-        publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} {env.MERCURE_PUBLISHER_JWT_ALG}
-        subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} {env.MERCURE_SUBSCRIBER_JWT_ALG}
-        anonymous
-        subscriptions
-        {$MERCURE_EXTRA_DIRECTIVES}
-    }
-
     vulcain
 
     php_server
@@ -42,15 +32,6 @@
     }
 
     root * /srv/app/public
-
-    mercure {
-        transport_url {$MERCURE_TRANSPORT_URL:bolt:///data/mercure.db}
-        publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} {env.MERCURE_PUBLISHER_JWT_ALG}
-        subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} {env.MERCURE_SUBSCRIBER_JWT_ALG}
-        anonymous
-        subscriptions
-        {$MERCURE_EXTRA_DIRECTIVES}
-    }
 
     vulcain
     php_server {
