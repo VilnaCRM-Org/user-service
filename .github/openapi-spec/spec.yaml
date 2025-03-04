@@ -1340,5 +1340,9 @@ components:
 security:
   -
     OAuth2: []
-tags: []
+tags:
+  -
+    name: User
+  -
+    name: HealthCheck
 webhooks: {  }
