@@ -1,8 +1,8 @@
-FROM golang:1.22-alpine as builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
-ENV CGO_ENABLED 0
+ENV CGO_ENABLED=0
 RUN go install go.k6.io/xk6/cmd/xk6@v0.11.0
 
 RUN xk6 build \
