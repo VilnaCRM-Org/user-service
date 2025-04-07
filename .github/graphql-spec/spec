@@ -14,6 +14,7 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): UserCursorConnection
+  healthCheck(id: ID!): HealthCheck
   healthChecks(
     "Returns the first n elements from the list."
     first: Int
@@ -27,7 +28,6 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): HealthCheckCursorConnection
-  healthCheck(id: ID!): HealthCheck
 }
 
 "A node, according to the Relay specification."
@@ -64,6 +64,10 @@ type UserPageInfo {
   hasPreviousPage: Boolean!
 }
 
+type HealthCheck implements Node {
+  id: ID!
+}
+
 "Cursor connection for HealthCheck."
 type HealthCheckCursorConnection {
   edges: [HealthCheckEdge]
@@ -75,10 +79,6 @@ type HealthCheckCursorConnection {
 type HealthCheckEdge {
   node: HealthCheck
   cursor: String!
-}
-
-type HealthCheck implements Node {
-  id: ID!
 }
 
 "Information about the current page."
