@@ -148,5 +148,5 @@
     "weirdan/doctrine-psalm-plugin": "^2.5",
     "zenstruck/messenger-test": "^1.9"
   },
-  "version": "2.4.1"
+  "version": "2.5.0"
 }
