@@ -54,6 +54,7 @@ final class ConfirmUserEndpointFactoryTest extends UnitTestCase
         $this->setExpectations();
 
         $factory = new ConfirmUserEndpointFactory(
+            getenv('API_PREFIX'),
             $this->tokenNotFoundResponseFactory,
             $this->userConfirmedResponseFactory,
             $this->confirmUserRequestFactory

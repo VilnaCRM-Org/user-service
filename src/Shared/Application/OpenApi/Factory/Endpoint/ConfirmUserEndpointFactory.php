@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class ConfirmUserEndpointFactory implements AbstractEndpointFactory
 {
-    private const ENDPOINT_URI = '/api/users/confirm';
+    private string $endpointUri = '/users/confirm';
 
     private Response $userConfirmedResponse;
     private Response $notFoundResponse;
@@ -23,10 +23,12 @@ final class ConfirmUserEndpointFactory implements AbstractEndpointFactory
     private RequestBody $confirmUserRequest;
 
     public function __construct(
+        string $apiPrefix,
         private TokenNotFoundFactory $tokenNotFoundResponseFactory,
         private UserConfirmedFactory $userConfirmedResponseFactory,
         private ConfirmUserRequestFactory $confirmUserRequestFactory
     ) {
+        $this->endpointUri = $apiPrefix . $this->endpointUri;
         $this->userConfirmedResponse =
             $this->userConfirmedResponseFactory->getResponse();
         $this->notFoundResponse =
@@ -37,11 +39,11 @@ final class ConfirmUserEndpointFactory implements AbstractEndpointFactory
 
     public function createEndpoint(OpenApi $openApi): void
     {
-        $pathItem = $openApi->getPaths()->getPath(self::ENDPOINT_URI);
+        $pathItem = $openApi->getPaths()->getPath($this->endpointUri);
         $operationPatch = $pathItem->getPatch();
 
         $openApi->getPaths()->addPath(
-            self::ENDPOINT_URI,
+            $this->endpointUri,
             $pathItem->withPatch(
                 $this->getPatchOperation(
                     $operationPatch->withRequestBody($this->confirmUserRequest)

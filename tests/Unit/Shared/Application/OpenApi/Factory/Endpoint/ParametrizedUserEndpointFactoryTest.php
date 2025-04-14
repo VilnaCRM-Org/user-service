@@ -62,6 +62,7 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
         $this->setExpectations();
 
         $factory = new ParamUserEndpointFactory(
+            getenv('API_PREFIX'),
             $this->validationErrorResponseFactory,
             $this->badRequestResponseFactory,
             $this->userNotFoundResponseFactory,

@@ -5,6 +5,8 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
 
+  api_url_prefix: '%env(API_PREFIX)%'
+
 services:
   # default configuration for services in *this* file
   _defaults:
@@ -30,6 +32,8 @@ services:
       tags: ['app.event_subscriber']
 
     App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory:
+      bind:
+        $apiPrefix: '%api_url_prefix%'
       tags: ['app.openapi_endpoint_factory']
 
   App\Shared\Infrastructure\Bus\Command\InMemorySymfonyCommandBus:
