@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class ResendEmailEndpointFactory implements AbstractEndpointFactory
 {
-    private const ENDPOINT_URI = '/api/users/{id}/resend-confirmation-email';
+    private string $endpointUri = '/users/{id}/resend-confirmation-email';
 
     private Parameter $uuidWithExamplePathParam;
     private Response $sendAgainResponse;
@@ -24,12 +24,14 @@ final class ResendEmailEndpointFactory implements AbstractEndpointFactory
     private Response $timedOutResponse;
 
     public function __construct(
+        string $apiPrefix,
         private UserNotFoundResponseFactory $userNotFoundResponseFactory,
         private EmailSendFactory $sendAgainResponseFactory,
         private UserTimedOutResponseFactory $timedOutResponseFactory,
         private EmptyRequestFactory $emptyRequestFactory,
         private UuidUriParameterFactory $parameterFactory
     ) {
+        $this->endpointUri = $apiPrefix . $this->endpointUri;
         $this->uuidWithExamplePathParam =
             $this->parameterFactory->getParameter();
         $this->sendAgainResponse =
@@ -41,11 +43,11 @@ final class ResendEmailEndpointFactory implements AbstractEndpointFactory
 
     public function createEndpoint(OpenApi $openApi): void
     {
-        $pathItem = $openApi->getPaths()->getPath(self::ENDPOINT_URI);
+        $pathItem = $openApi->getPaths()->getPath($this->endpointUri);
         $operation = $pathItem->getPost();
 
         $openApi->getPaths()->addPath(
-            self::ENDPOINT_URI,
+            $this->endpointUri,
             $pathItem->withPost(
                 $operation
                     ->withParameters([$this->uuidWithExamplePathParam])

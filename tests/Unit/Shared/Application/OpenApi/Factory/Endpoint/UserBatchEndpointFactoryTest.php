@@ -50,6 +50,7 @@ final class UserBatchEndpointFactoryTest extends UnitTestCase
     public function testCreateEndpoint(): void
     {
         $this->factory = new UserBatchEndpointFactory(
+            getenv('API_PREFIX'),
             $this->validationErrorResponseFactory,
             $this->usersReturnedResponseFactory,
             $this->batchRequestFactory
