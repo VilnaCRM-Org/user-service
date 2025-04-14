@@ -15,18 +15,20 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class OAuthAuthEndpointFactory implements AbstractEndpointFactory
 {
-    private const ENDPOINT_URI = '/api/oauth/authorize';
+    private string $endpointUri = '/oauth/authorize';
 
     private Response $unsupportedResponse;
     private Response $invalidResponse;
     private Response $redirectResponse;
 
     public function __construct(
+        string $apiPrefix,
         private UnsupportedTypeFactory $unsupportedFactory,
         private InvalidCredentialsFactory $invalidCredsFactory,
         private OAuthRedirectFactory $redirectResponseFactory,
         private QueryParameterBuilder $queryParameterBuilder
     ) {
+        $this->endpointUri = $apiPrefix . $this->endpointUri;
         $this->unsupportedResponse = $this->unsupportedFactory->getResponse();
         $this->invalidResponse = $this->invalidCredsFactory->getResponse();
         $this->redirectResponse = $this->redirectResponseFactory->getResponse();
@@ -35,7 +37,7 @@ final class OAuthAuthEndpointFactory implements AbstractEndpointFactory
     public function createEndpoint(OpenApi $openApi): void
     {
         $openApi->getPaths()->addPath(
-            self::ENDPOINT_URI,
+            $this->endpointUri,
             $this->createPathItem()
         );
     }

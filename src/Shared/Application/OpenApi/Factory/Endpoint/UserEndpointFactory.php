@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class UserEndpointFactory implements AbstractEndpointFactory
 {
-    private const ENDPOINT_URI = '/api/users';
+    private string $endpointUri = '/users';
 
     private Response $validationErrorResponse;
     private Response $badRequestResponse;
@@ -25,12 +25,14 @@ final class UserEndpointFactory implements AbstractEndpointFactory
     private Response $usersReturnedResponse;
 
     public function __construct(
+        string $apiPrefix,
         private ValidationErrorFactory $validationErrorResponseFactory,
         private BadRequestResponseFactory $badRequestResponseFactory,
         private UserCreatedResponseFactory $userCreatedResponseFactory,
         private CreateUserRequestFactory $createUserRequestFactory,
         private UsersReturnedFactory $usersReturnedResponseFactory
     ) {
+        $this->endpointUri = $apiPrefix . $this->endpointUri;
         $this->validationErrorResponse =
             $this->validationErrorResponseFactory->getResponse();
         $this->badRequestResponse =
@@ -45,11 +47,11 @@ final class UserEndpointFactory implements AbstractEndpointFactory
 
     public function createEndpoint(OpenApi $openApi): void
     {
-        $pathItem = $openApi->getPaths()->getPath(self::ENDPOINT_URI);
+        $pathItem = $openApi->getPaths()->getPath($this->endpointUri);
         $operationPost = $pathItem->getPost();
         $operationGet = $pathItem->getGet();
 
-        $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem
+        $openApi->getPaths()->addPath($this->endpointUri, $pathItem
             ->withPost(
                 $operationPost
                     ->withResponses($this->getPostResponses())

@@ -16,18 +16,20 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class OAuthTokenEndpointFactory implements AbstractEndpointFactory
 {
-    private const ENDPOINT_URI = '/api/oauth/token';
+    private string $endpointUri = '/oauth/token';
 
     private Response $tokenResponse;
     private Response $invalidResponse;
     private Response $unsupportedResponse;
 
     public function __construct(
+        string $apiPrefix,
         private UnsupportedTypeFactory $unsupportedFactory,
         private InvalidCredentialsFactory $invalidCredsFactory,
         private OAuthTokenResponseFactory $tokenReturnedResponseFactory,
         private OAuthTokenRequestFactory $tokenRequestFactory
     ) {
+        $this->endpointUri = $apiPrefix . $this->endpointUri;
         $this->tokenResponse =
             $this->tokenReturnedResponseFactory->getResponse();
         $this->invalidResponse = $this->invalidCredsFactory->getResponse();
@@ -37,7 +39,7 @@ final class OAuthTokenEndpointFactory implements AbstractEndpointFactory
     public function createEndpoint(OpenApi $openApi): void
     {
         $openApi->getPaths()->addPath(
-            self::ENDPOINT_URI,
+            $this->endpointUri,
             new PathItem(
                 summary: 'Requests for access token',
                 description: 'Requests for access token',

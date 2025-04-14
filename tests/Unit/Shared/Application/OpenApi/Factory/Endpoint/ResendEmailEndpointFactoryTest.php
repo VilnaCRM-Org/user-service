@@ -60,6 +60,7 @@ final class ResendEmailEndpointFactoryTest extends UnitTestCase
         $this->setExpectations();
 
         $factory = new ResendEmailEndpointFactory(
+            getenv('API_PREFIX'),
             $this->userNotFoundResponseFactory,
             $this->sendAgainResponseFactory,
             $this->timedOutResponseFactory,
