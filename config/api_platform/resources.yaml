@@ -17,6 +17,10 @@ resources:
         class: 'ApiPlatform\Metadata\Post'
         input: 'App\User\Application\DTO\UserRegisterDto'
         processor: 'App\User\Application\Processor\RegisterUserProcessor'
+      signin_http:
+        class: ApiPlatform\Metadata\Post
+        uriTemplate: '/signin'
+        processor: 'App\User\Application\Processor\SigninAction'
       create_batch_http:
         class: 'ApiPlatform\Metadata\Post'
         input: 'App\User\Application\DTO\UserRegisterBatchDto'
