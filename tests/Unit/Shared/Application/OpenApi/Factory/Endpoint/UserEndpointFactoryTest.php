@@ -63,6 +63,7 @@ final class UserEndpointFactoryTest extends UnitTestCase
         $this->setExpectations();
 
         $factory = new UserEndpointFactory(
+            getenv('API_PREFIX'),
             $this->validationErrorResponseFactory,
             $this->badRequestResponseFactory,
             $this->userCreatedResponseFactory,

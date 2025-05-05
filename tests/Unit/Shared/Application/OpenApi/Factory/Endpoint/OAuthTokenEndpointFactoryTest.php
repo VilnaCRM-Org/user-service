@@ -45,6 +45,7 @@ final class OAuthTokenEndpointFactoryTest extends UnitTestCase
         $this->setExpectations();
 
         $factory = new OAuthTokenEndpointFactory(
+            getenv('API_PREFIX'),
             $this->unsupportedFactory,
             $this->invalidCredsFactory,
             $this->tokenReturnedResponseFactory,

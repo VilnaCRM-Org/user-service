@@ -5,7 +5,7 @@ info:
   version: 1.0.0
 servers:
   -
-    url: 'https://localhost'
+    url: 'https://api.vilnacrm.com'
     description: ''
 paths:
   /api/health:
@@ -1328,17 +1328,6 @@ paths:
       deprecated: false
 components:
   securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-KEY
-    BasicAuth:
-      type: http
-      scheme: basic
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
     OAuth2:
       type: oauth2
       flows:
@@ -1350,12 +1339,10 @@ components:
             'read:pets': 'read your pets'
 security:
   -
-    ApiKeyAuth: []
-  -
-    BasicAuth: []
-  -
-    BearerAuth: []
-  -
     OAuth2: []
-tags: []
+tags:
+  -
+    name: User
+  -
+    name: HealthCheck
 webhooks: {  }

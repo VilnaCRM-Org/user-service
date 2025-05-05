@@ -9,11 +9,14 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 final class Password extends Constraint
 {
+    private bool $optional = false;
+
     public function __construct(
         ?array $groups = null,
         mixed $payload = null,
-        private bool $optional = false,
+        ?bool $optional = null,
     ) {
+        $this->optional ??= $optional;
         parent::__construct([], $groups, $payload);
     }
 

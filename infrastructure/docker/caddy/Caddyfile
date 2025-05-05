@@ -1,52 +1,40 @@
 {
-    # Debug
+    {$CADDY_GLOBAL_OPTIONS}
+
+    frankenphp {
+        {$FRANKENPHP_CONFIG}
+    }
+
     {$CADDY_DEBUG}
     auto_https disable_redirects
 }
 
 {$SERVER_NAME} {
-    log
-    {$CADDY_EXTRA_CONFIG}
-    root * /srv/app/public
-    mercure {
-        # Transport to use (default to Bolt)
-        transport_url {$MERCURE_TRANSPORT_URL:bolt:///data/mercure.db}
-        # Publisher JWT key
-        publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} {env.MERCURE_PUBLISHER_JWT_ALG}
-        # Subscriber JWT key
-        subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} {env.MERCURE_SUBSCRIBER_JWT_ALG}
-        # Allow anonymous subscribers (double-check that it's what you want)
-        anonymous
-        # Enable the subscription API (double-check that it's what you want)
-        subscriptions
-        # Extra directives
-        {$MERCURE_EXTRA_DIRECTIVES}
+    log {
+        output stderr
+        format json
     }
-    vulcain
-    php_fastcgi unix//var/run/php/php-fpm.sock
+    {$CADDY_EXTRA_CONFIG}
+
+    root * /srv/app/public
     encode zstd gzip
+
+    vulcain
+
+    php_server
     file_server
 }
 
 :8081 {
-    log
-    root * /srv/app/public
-    mercure {
-        # Transport to use (default to Bolt)
-        transport_url {$MERCURE_TRANSPORT_URL:bolt:///data/mercure.db}
-        # Publisher JWT key
-        publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} {env.MERCURE_PUBLISHER_JWT_ALG}
-        # Subscriber JWT key
-        subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} {env.MERCURE_SUBSCRIBER_JWT_ALG}
-        # Allow anonymous subscribers (double-check that it's what you want)
-        anonymous
-        # Enable the subscription API (double-check that it's what you want)
-        subscriptions
-        # Extra directives
-        {$MERCURE_EXTRA_DIRECTIVES}
+    log {
+        output stderr
+        format json
     }
+
+    root * /srv/app/public
+
     vulcain
-    php_fastcgi unix//var/run/php/php-fpm.sock {
+    php_server {
         env APP_ENV test
     }
     encode zstd gzip

@@ -24,7 +24,8 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     public function __construct(
         private OpenApiFactoryInterface $decorated,
         private iterable $endpointFactories,
-        private InternalErrorFactory $serverErrorResponseFactory
+        private InternalErrorFactory $serverErrorResponseFactory,
+        private string $serverUrl
     ) {
     }
 
@@ -44,11 +45,8 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $this->addServerErrorResponseToAllEndpoints($openApi);
 
         return $openApi->withServers([
-            new Model\Server('https://localhost'),
+            new Model\Server($this->serverUrl),
         ])->withSecurity([
-            ['ApiKeyAuth' => []],
-            ['BasicAuth' => []],
-            ['BearerAuth' => []],
             ['OAuth2' => []],
         ]);
     }
@@ -56,48 +54,10 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     private function createComponents(): Components
     {
         $securitySchemes = new ArrayObject([
-            'ApiKeyAuth' => $this->createApiKeyAuthScheme(),
-            'BasicAuth' => $this->createBasicAuthScheme(),
-            'BearerAuth' => $this->createBearerAuthScheme(),
             'OAuth2' => $this->createOAuth2Scheme(),
         ]);
 
         return (new Components())->withSecuritySchemes($securitySchemes);
-    }
-
-    /**
-     * @return array<string>
-     */
-    private function createApiKeyAuthScheme(): array
-    {
-        return [
-            'type' => 'apiKey',
-            'in' => 'header',
-            'name' => 'X-API-KEY',
-        ];
-    }
-
-    /**
-     * @return array<string>
-     */
-    private function createBasicAuthScheme(): array
-    {
-        return [
-            'type' => 'http',
-            'scheme' => 'basic',
-        ];
-    }
-
-    /**
-     * @return array<string>
-     */
-    private function createBearerAuthScheme(): array
-    {
-        return [
-            'type' => 'http',
-            'scheme' => 'bearer',
-            'bearerFormat' => 'JWT',
-        ];
     }
 
     /**

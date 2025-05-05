@@ -1,39 +1,29 @@
-# [2.0.0](https://github.com/VilnaCRM-Org/user-service/compare/v1.8.0...v2.0.0) (2024-11-25)
-
-### Documentation
-
-- **#87:** update auto release documentation ([#88](https://github.com/VilnaCRM-Org/user-service/issues/88)) ([0a41ec2](https://github.com/VilnaCRM-Org/user-service/commit/0a41ec270757a6548424d5172fc9ff5656509279)), closes [#87](https://github.com/VilnaCRM-Org/user-service/issues/87) [#87](https://github.com/VilnaCRM-Org/user-service/issues/87) [#87](https://github.com/VilnaCRM-Org/user-service/issues/87)
-
-### BREAKING CHANGES
-
-- **#87:** remove 'category' key from graphql response
-
-# [1.8.0](https://github.com/VilnaCRM-Org/user-service/compare/v1.7.0...v1.8.0) (2024-11-20)
+# [2.5.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.4.1...v2.5.0) (2025-04-14)
 
 ### Features
 
-- **#80:** upstream merge template repository ([#80](https://github.com/VilnaCRM-Org/user-service/issues/80)) ([12f4b81](https://github.com/VilnaCRM-Org/user-service/commit/12f4b81d319795fb6a5450c64273c0ec7a3dd576))
+- **#171:** add prefix for routing from .env file ([#172](https://github.com/VilnaCRM-Org/user-service/issues/172)) ([2cdaa2c](https://github.com/VilnaCRM-Org/user-service/commit/2cdaa2c31ddeb9a54a3e1998a50d0058916a4d04))
 
-# [1.7.0](https://github.com/VilnaCRM-Org/user-service/compare/v1.6.0...v1.7.0) (2024-10-15)
-
-### Features
-
-- **#50:** add github app for sync workflow ([#61](https://github.com/VilnaCRM-Org/user-service/issues/61)) ([ce4b85d](https://github.com/VilnaCRM-Org/user-service/commit/ce4b85dbf0a1b39da7ae52a02ee93b474da94ac6)), closes [#50](https://github.com/VilnaCRM-Org/user-service/issues/50) [#50](https://github.com/VilnaCRM-Org/user-service/issues/50)
-
-# [1.6.0](https://github.com/VilnaCRM-Org/user-service/compare/v1.5.0...v1.6.0) (2024-10-10)
-
-### Features
-
-- **#52:** add code climate badge ([#53](https://github.com/VilnaCRM-Org/user-service/issues/53)) ([781b985](https://github.com/VilnaCRM-Org/user-service/commit/781b985a619336c73b95eef79370aad371da36f0)), closes [#52](https://github.com/VilnaCRM-Org/user-service/issues/52) [#52](https://github.com/VilnaCRM-Org/user-service/issues/52) [#50](https://github.com/VilnaCRM-Org/user-service/issues/50) [#57](https://github.com/VilnaCRM-Org/user-service/issues/57)
-
-# [1.5.0](https://github.com/VilnaCRM-Org/user-service/compare/v1.4.4...v1.5.0) (2024-10-02)
-
-### Features
-
-- **#50:** add GitHub action that synchronize changes from php-service-template repository ([#51](https://github.com/VilnaCRM-Org/user-service/issues/51)) ([85a3f93](https://github.com/VilnaCRM-Org/user-service/commit/85a3f93cfb700438f4d726379a343d62ff422f77)), closes [#50](https://github.com/VilnaCRM-Org/user-service/issues/50) [#50](https://github.com/VilnaCRM-Org/user-service/issues/50) [#50](https://github.com/VilnaCRM-Org/user-service/issues/50) [#50](https://github.com/VilnaCRM-Org/user-service/issues/50) [#50](https://github.com/VilnaCRM-Org/user-service/issues/50) [#50](https://github.com/VilnaCRM-Org/user-service/issues/50) [#50](https://github.com/VilnaCRM-Org/user-service/issues/50) [#50](https://github.com/VilnaCRM-Org/user-service/issues/50) [#50](https://github.com/VilnaCRM-Org/user-service/issues/50) [#50](https://github.com/VilnaCRM-Org/user-service/issues/50)
-
-## [1.4.4](https://github.com/VilnaCRM-Org/user-service/compare/v1.4.3...v1.4.4) (2024-09-09)
+## [2.4.1](https://github.com/VilnaCRM-Org/user-service/compare/v2.4.0...v2.4.1) (2025-02-24)
 
 ### Bug Fixes
 
-- **#47:** openssl issue ([#48](https://github.com/VilnaCRM-Org/user-service/issues/48)) ([a7cf7c3](https://github.com/VilnaCRM-Org/user-service/commit/a7cf7c3e467b7f17d659e0f1208ca6495322d0c0)), closes [#47](https://github.com/VilnaCRM-Org/user-service/issues/47) [#47](https://github.com/VilnaCRM-Org/user-service/issues/47) [#47](https://github.com/VilnaCRM-Org/user-service/issues/47)
+- **#144:** env and extract hardcoded dsn to env ([#151](https://github.com/VilnaCRM-Org/user-service/issues/151)) ([5af27cf](https://github.com/VilnaCRM-Org/user-service/commit/5af27cfec314106bafa2b5c4652267289f8f1486)), closes [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144)
+
+# [2.4.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.3.1...v2.4.0) (2025-02-11)
+
+### Features
+
+- **#144:** remove hardcoding in .env ([#145](https://github.com/VilnaCRM-Org/user-service/issues/145)) ([cf0ddb8](https://github.com/VilnaCRM-Org/user-service/commit/cf0ddb83c9794387d1c2dedcf6e56529931dd5a9)), closes [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144)
+
+## [2.3.1](https://github.com/VilnaCRM-Org/user-service/compare/v2.3.0...v2.3.1) (2025-02-04)
+
+### Bug Fixes
+
+- **#137:** load test reports and error fix ([#138](https://github.com/VilnaCRM-Org/user-service/issues/138)) ([87b9f48](https://github.com/VilnaCRM-Org/user-service/commit/87b9f48b482bb824e7ea8d9592b34a02b04d66e7)), closes [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137)
+
+# [2.3.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.2.0...v2.3.0) (2025-01-18)
+
+### Features
+
+- **#126:** replace php-fpm with frankenphp ([#127](https://github.com/VilnaCRM-Org/user-service/issues/127)) ([aa596d1](https://github.com/VilnaCRM-Org/user-service/commit/aa596d1a13cd92fdefc56f6934cc9ce4b267e775)), closes [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126)

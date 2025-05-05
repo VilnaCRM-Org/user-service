@@ -2,7 +2,7 @@ framework:
   messenger:
     transports:
       send-email:
-        dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+        dsn: '%env(SEND_EMAIL_TRANSPORT_DSN)%'
 
         retry_strategy:
           max_retries: 3

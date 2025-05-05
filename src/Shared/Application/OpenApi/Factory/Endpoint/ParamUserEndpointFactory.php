@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class ParamUserEndpointFactory implements AbstractEndpointFactory
 {
-    private const ENDPOINT_URI = '/api/users/{id}';
+    private string $endpointUri = '/users/{id}';
 
     private Parameter $uuidWithExamplePathParam;
     private Response $badRequestResponse;
@@ -37,6 +37,7 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
     private RequestBody $updateUserRequest;
 
     public function __construct(
+        string $apiPrefix,
         private ValidationErrorFactory $validationErrorResponseFactory,
         private BadRequestResponseFactory $badRequestResponseFactory,
         private UserNotFoundResponseFactory $userNotFoundResponseFactory,
@@ -47,6 +48,8 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
         private ReplaceUserRequestFactory $replaceUserRequestFactory,
         private UpdateUserRequestFactory $updateUserRequestFactory
     ) {
+        $this->endpointUri = $apiPrefix . $this->endpointUri;
+
         $this->uuidWithExamplePathParam =
             $this->parameterFactory->getParameter();
 
@@ -87,7 +90,7 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
     {
         $pathItem = $this->getPathItem($openApi);
         $operationPut = $pathItem->getPut();
-        $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem
+        $openApi->getPaths()->addPath($this->endpointUri, $pathItem
             ->withPut(
                 $operationPut
                     ->withParameters([$this->uuidWithExamplePathParam])
@@ -101,7 +104,7 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
         $pathItem = $this->getPathItem($openApi);
         $operationPatch = $pathItem->getPatch();
         $openApi->getPaths()->addPath(
-            self::ENDPOINT_URI,
+            $this->endpointUri,
             $pathItem
                 ->withPatch(
                     $operationPatch
@@ -130,7 +133,7 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
     {
         $pathItem = $this->getPathItem($openApi);
         $operationDelete = $pathItem->getDelete();
-        $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem
+        $openApi->getPaths()->addPath($this->endpointUri, $pathItem
             ->withDelete(
                 $operationDelete
                     ->withParameters([$this->uuidWithExamplePathParam])
@@ -153,7 +156,7 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
     {
         $pathItem = $this->getPathItem($openApi);
         $operationGet = $pathItem->getGet();
-        $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem
+        $openApi->getPaths()->addPath($this->endpointUri, $pathItem
             ->withGet(
                 $operationGet->withParameters([$this->uuidWithExamplePathParam])
                     ->withResponses(
@@ -175,6 +178,6 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
 
     private function getPathItem(OpenApi $openApi): PathItem
     {
-        return $openApi->getPaths()->getPath(self::ENDPOINT_URI);
+        return $openApi->getPaths()->getPath($this->endpointUri);
     }
 }

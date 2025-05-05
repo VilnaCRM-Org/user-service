@@ -15,17 +15,19 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class UserBatchEndpointFactory implements AbstractEndpointFactory
 {
-    private const ENDPOINT_URI = '/api/users/batch';
+    private string $endpointUri = '/users/batch';
 
     private Response $validationErrorResponse;
     private Response $usersReturnedResponse;
     private RequestBody $batchRequest;
 
     public function __construct(
+        string $apiPrefix,
         private ValidationErrorFactory $validationErrorResponseFactory,
         private UsersReturnedFactory $usersReturnedResponseFactory,
         private CreateBatchRequestFactory $batchRequestFactory
     ) {
+        $this->endpointUri = $apiPrefix . $this->endpointUri;
         $this->validationErrorResponse =
             $this->validationErrorResponseFactory->getResponse();
         $this->usersReturnedResponse =
@@ -42,7 +44,7 @@ final class UserBatchEndpointFactory implements AbstractEndpointFactory
     {
         $pathItem = $this->getPathItem($openApi);
         $operationPost = $pathItem->getPost();
-        $openApi->getPaths()->addPath(self::ENDPOINT_URI, $pathItem
+        $openApi->getPaths()->addPath($this->endpointUri, $pathItem
             ->withPost(
                 $operationPost
                     ->withResponses($this->getPostResponses())
@@ -64,6 +66,6 @@ final class UserBatchEndpointFactory implements AbstractEndpointFactory
 
     private function getPathItem(OpenApi $openApi): PathItem
     {
-        return $openApi->getPaths()->getPath(self::ENDPOINT_URI);
+        return $openApi->getPaths()->getPath($this->endpointUri);
     }
 }

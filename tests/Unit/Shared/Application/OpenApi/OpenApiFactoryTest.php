@@ -49,7 +49,8 @@ final class OpenApiFactoryTest extends UnitTestCase
         $openApiFactory = new OpenApiFactory(
             $this->decoratedFactory,
             [$this->endpointFactory1, $this->endpointFactory2],
-            $this->serverErrorResponseFactory
+            $this->serverErrorResponseFactory,
+            getenv('API_URL')
         );
 
         $result = $openApiFactory->__invoke([]);
@@ -67,14 +68,13 @@ final class OpenApiFactoryTest extends UnitTestCase
 
         $url = $this->faker->url();
         $pathItem = new PathItem();
-        $paths->method('getPath')
-            ->with($url)
-            ->willReturn($pathItem);
+        $paths->method('getPath')->with($url)->willReturn($pathItem);
 
         $openApiFactory = new OpenApiFactory(
             $this->createMock(OpenApiFactoryInterface::class),
             [],
-            $this->serverErrorResponseFactory
+            $this->serverErrorResponseFactory,
+            getenv('API_URL')
         );
 
         $this->getReflectionMethod('addServerErrorResponseToPath')
@@ -106,7 +106,8 @@ final class OpenApiFactoryTest extends UnitTestCase
         $openApiFactory = new OpenApiFactory(
             $this->createMock(OpenApiFactoryInterface::class),
             [],
-            $this->serverErrorResponseFactory
+            $this->serverErrorResponseFactory,
+            getenv('API_URL')
         );
 
         $this->getReflectionMethod('addServerErrorResponseToAllEndpoints')
@@ -126,10 +127,8 @@ final class OpenApiFactoryTest extends UnitTestCase
 
         return $expectedOpenApi
             ->withComponents($components)
-            ->withServers([new Server('https://localhost')])->withSecurity([
-                ['ApiKeyAuth' => []],
-                ['BasicAuth' => []],
-                ['BearerAuth' => []],
+            ->withServers([new Server(getenv('API_URL'))])
+            ->withSecurity([
                 ['OAuth2' => []],
             ]);
     }
@@ -143,46 +142,8 @@ final class OpenApiFactoryTest extends UnitTestCase
     private function createSecuritySchemes(): ArrayObject
     {
         return new ArrayObject([
-            'ApiKeyAuth' => $this->createApiKeyAuthScheme(),
-            'BasicAuth' => $this->createBasicAuthScheme(),
-            'BearerAuth' => $this->createBearerAuthScheme(),
             'OAuth2' => $this->createOAuth2Scheme(),
         ]);
-    }
-
-    /**
-     * @return array<string>
-     */
-    private function createApiKeyAuthScheme(): array
-    {
-        return [
-            'type' => 'apiKey',
-            'in' => 'header',
-            'name' => 'X-API-KEY',
-        ];
-    }
-
-    /**
-     * @return array<string>
-     */
-    private function createBasicAuthScheme(): array
-    {
-        return [
-            'type' => 'http',
-            'scheme' => 'basic',
-        ];
-    }
-
-    /**
-     * @return array<string>
-     */
-    private function createBearerAuthScheme(): array
-    {
-        return [
-            'type' => 'http',
-            'scheme' => 'bearer',
-            'bearerFormat' => 'JWT',
-        ];
     }
 
     /**
