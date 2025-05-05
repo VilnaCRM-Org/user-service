@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fb168abf50b9630bff7bc6f54043e961",
+    "content-hash": "0745e9efd0c490ddb14069a43396c4a3",
     "packages": [
         {
             "name": "api-platform/core",
@@ -2796,16 +2796,16 @@
         },
         {
             "name": "league/oauth2-server-bundle",
-            "version": "v0.10",
+            "version": "v0.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/oauth2-server-bundle.git",
-                "reference": "c6f8fff9c17b60a4089ff688d78ba6131b56e765"
+                "reference": "935f92bce72892dcc73df52e95d163428d6f3a03"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/oauth2-server-bundle/zipball/c6f8fff9c17b60a4089ff688d78ba6131b56e765",
-                "reference": "c6f8fff9c17b60a4089ff688d78ba6131b56e765",
+                "url": "https://api.github.com/repos/thephpleague/oauth2-server-bundle/zipball/935f92bce72892dcc73df52e95d163428d6f3a03",
+                "reference": "935f92bce72892dcc73df52e95d163428d6f3a03",
                 "shasum": ""
             },
             "require": {
@@ -2816,6 +2816,7 @@
                 "nyholm/psr7": "^1.4",
                 "php": "^8.1",
                 "psr/http-factory": "^1.0",
+                "symfony/deprecation-contracts": "^3",
                 "symfony/event-dispatcher": "^6.4|^7.0",
                 "symfony/filesystem": "^6.4|^7.0",
                 "symfony/framework-bundle": "^6.4|^7.0",
@@ -2832,7 +2833,7 @@
             "type": "symfony-bundle",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "0.10-dev"
+                    "dev-master": "0.11.x-dev"
                 }
             },
             "autoload": {
@@ -2865,9 +2866,9 @@
             ],
             "support": {
                 "issues": "https://github.com/thephpleague/oauth2-server-bundle/issues",
-                "source": "https://github.com/thephpleague/oauth2-server-bundle/tree/v0.10"
+                "source": "https://github.com/thephpleague/oauth2-server-bundle/tree/v0.11"
             },
-            "time": "2025-03-13T18:24:18+00:00"
+            "time": "2025-04-06T22:20:36+00:00"
         },
         {
             "name": "league/uri",
