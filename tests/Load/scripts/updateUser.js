@@ -40,12 +40,12 @@ export default function updateUser(data) {
   const response = http.patch(
     `${utils.getBaseHttpUrl()}/${id}`,
     payload,
-    utils.getMergePatchHeader()
+    utils.getMergePatchHeader(),
   );
 
   utils.checkResponse(response, 'is status 200', res => res.status === 200);
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

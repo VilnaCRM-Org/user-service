@@ -1,12 +1,22 @@
 {
   "name": "Load",
   "version": "1.0.0",
-  "description": "",
+  "description": "Load testing for VilnaCRM user-service",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare-users": "cd ../../.. && docker run -v ./tests/Load:/loadTests --net=host --rm --user $(id -u) k6 run /loadTests/utils/prepareUsers.js",
+    "smoke-test": "cd ../../.. && ./tests/Load/run-smoke-load-tests.sh",
+    "average-test": "cd ../../.. && ./tests/Load/run-average-load-tests.sh",
+    "stress-test": "cd ../../.. && ./tests/Load/run-stress-load-tests.sh",
+    "spike-test": "cd ../../.. && ./tests/Load/run-spike-load-tests.sh",
+    "load-test": "cd ../../.. && ./tests/Load/run-load-tests.sh",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:check": "eslint . --max-warnings 0"
   },
-  "keywords": [],
+  "keywords": ["load-testing", "k6", "performance"],
   "author": "",
   "license": "ISC",
   "devDependencies": {
@@ -23,5 +33,8 @@
     "eslint-plugin-jest-dom": "^5.5.0",
     "eslint-plugin-storybook": "^0.8.0",
     "globals": "^15.15.0"
+    "@eslint/js": "^9.28.0",
+    "eslint": "^9.28.0",
+    "globals": "^16.2.0"
   }
 }

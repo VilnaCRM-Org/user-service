@@ -22,7 +22,7 @@ export function setup() {
 
 export const options = scenarioUtils.getOptions();
 
-export default function getUsers(data) {
+export default function getUsers() {
   const query = `
         query{
             users(first: ${usersToGetInOneRequest}){
@@ -37,16 +37,16 @@ export default function getUsers(data) {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query: query }),
-    utils.getJsonHeader()
+    utils.getJsonHeader(),
   );
 
   utils.checkResponse(
     response,
     'users returned',
-    res => JSON.parse(res.body).data.users.edges.length === usersToGetInOneRequest
+    res => JSON.parse(res.body).data.users.edges.length === usersToGetInOneRequest,
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

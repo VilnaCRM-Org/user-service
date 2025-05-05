@@ -27,12 +27,12 @@ export default function getUsers() {
 
   const response = http.get(
     `${utils.getBaseHttpUrl()}?page=${page}&itemsPerPage=${usersToGetInOneRequest}`,
-    utils.getJsonHeader()
+    utils.getJsonHeader(),
   );
 
   utils.checkResponse(response, 'is status 200', res => res.status === 200);
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

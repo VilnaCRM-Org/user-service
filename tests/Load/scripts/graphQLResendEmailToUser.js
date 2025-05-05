@@ -41,16 +41,16 @@ export default function resendEmail(data) {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query: mutation }),
-    utils.getJsonHeader()
+    utils.getJsonHeader(),
   );
 
   utils.checkResponse(
     response,
     'user returned',
-    res => JSON.parse(res.body).data[mutationName].user.id === `${id}`
+    res => JSON.parse(res.body).data[mutationName].user.id === `${id}`,
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }
