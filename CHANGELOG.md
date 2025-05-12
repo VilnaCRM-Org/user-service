@@ -1,29 +1,45 @@
-# [2.5.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.4.1...v2.5.0) (2025-04-14)
+## [1.6.1](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.6.0...v1.6.1) (2025-05-05)
 
-### Features
-
-- **#171:** add prefix for routing from .env file ([#172](https://github.com/VilnaCRM-Org/user-service/issues/172)) ([2cdaa2c](https://github.com/VilnaCRM-Org/user-service/commit/2cdaa2c31ddeb9a54a3e1998a50d0058916a4d04))
-
-## [2.4.1](https://github.com/VilnaCRM-Org/user-service/compare/v2.4.0...v2.4.1) (2025-02-24)
 
 ### Bug Fixes
 
-- **#144:** env and extract hardcoded dsn to env ([#151](https://github.com/VilnaCRM-Org/user-service/issues/151)) ([5af27cf](https://github.com/VilnaCRM-Org/user-service/commit/5af27cfec314106bafa2b5c4652267289f8f1486)), closes [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144)
+* dependabot.yml ([be0056b](https://github.com/VilnaCRM-Org/php-service-template/commit/be0056bf3f16bb79826d51b6aadf42aa3d729437))
 
-# [2.4.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.3.1...v2.4.0) (2025-02-11)
+
+
+# [1.6.0](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.5.0...v1.6.0) (2025-05-05)
+
 
 ### Features
 
-- **#144:** remove hardcoding in .env ([#145](https://github.com/VilnaCRM-Org/user-service/issues/145)) ([cf0ddb8](https://github.com/VilnaCRM-Org/user-service/commit/cf0ddb83c9794387d1c2dedcf6e56529931dd5a9)), closes [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144)
+* improve dependabot updates ([253b194](https://github.com/VilnaCRM-Org/php-service-template/commit/253b19476e38bb5be219488eb54f5d33f78da2b3))
 
-## [2.3.1](https://github.com/VilnaCRM-Org/user-service/compare/v2.3.0...v2.3.1) (2025-02-04)
+
+
+# [1.5.0](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.4.0...v1.5.0) (2024-11-19)
+
+
+### Features
+
+* **#75:** move features from user-service ([#76](https://github.com/VilnaCRM-Org/php-service-template/issues/76)) ([39e871a](https://github.com/VilnaCRM-Org/php-service-template/commit/39e871a0d22fbde803319a3d3b97ee8d230e9744)), closes [#75](https://github.com/VilnaCRM-Org/php-service-template/issues/75) [#75](https://github.com/VilnaCRM-Org/php-service-template/issues/75) [#75](https://github.com/VilnaCRM-Org/php-service-template/issues/75) [#75](https://github.com/VilnaCRM-Org/php-service-template/issues/75) [#75](https://github.com/VilnaCRM-Org/php-service-template/issues/75)
+
+
+
+# [1.4.0](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.3.1...v1.4.0) (2024-10-15)
+
+
+### Features
+
+* **#34:** implement cloud based load testing with k6 ([#40](https://github.com/VilnaCRM-Org/php-service-template/issues/40)) ([dc3e465](https://github.com/VilnaCRM-Org/php-service-template/commit/dc3e465e4d95a02635fbf3062a176d8bb3128822)), closes [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34) [#34](https://github.com/VilnaCRM-Org/php-service-template/issues/34)
+
+
+
+## [1.3.1](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.3.0...v1.3.1) (2024-09-12)
+
 
 ### Bug Fixes
 
-- **#137:** load test reports and error fix ([#138](https://github.com/VilnaCRM-Org/user-service/issues/138)) ([87b9f48](https://github.com/VilnaCRM-Org/user-service/commit/87b9f48b482bb824e7ea8d9592b34a02b04d66e7)), closes [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137)
+* **#38:** add correct badges ([#39](https://github.com/VilnaCRM-Org/php-service-template/issues/39)) ([8f70ebc](https://github.com/VilnaCRM-Org/php-service-template/commit/8f70ebcd138b10fe99c189a24c45aee935a7fdd3)), closes [#38](https://github.com/VilnaCRM-Org/php-service-template/issues/38) [#38](https://github.com/VilnaCRM-Org/php-service-template/issues/38) [#38](https://github.com/VilnaCRM-Org/php-service-template/issues/38) [#38](https://github.com/VilnaCRM-Org/php-service-template/issues/38)
 
-# [2.3.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.2.0...v2.3.0) (2025-01-18)
 
-### Features
 
-- **#126:** replace php-fpm with frankenphp ([#127](https://github.com/VilnaCRM-Org/user-service/issues/127)) ([aa596d1](https://github.com/VilnaCRM-Org/user-service/commit/aa596d1a13cd92fdefc56f6934cc9ce4b267e775)), closes [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126) [#126](https://github.com/VilnaCRM-Org/user-service/issues/126)
