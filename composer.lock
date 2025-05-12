@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9188a2917c584e683e4e5626f0f03904",
+    "content-hash": "9bf73264470e85501f525ed66db1b7e2",
     "packages": [
         {
             "name": "api-platform/core",
@@ -402,16 +402,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.343.8",
+            "version": "3.343.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "9cf2ad840a0dc92929991c3142138182a700d7b1"
+                "reference": "6ca5eb1c60b879cf516e5fadefec87afc6219e74"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/9cf2ad840a0dc92929991c3142138182a700d7b1",
-                "reference": "9cf2ad840a0dc92929991c3142138182a700d7b1",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/6ca5eb1c60b879cf516e5fadefec87afc6219e74",
+                "reference": "6ca5eb1c60b879cf516e5fadefec87afc6219e74",
                 "shasum": ""
             },
             "require": {
@@ -493,9 +493,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.343.8"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.343.9"
             },
-            "time": "2025-05-09T18:07:37+00:00"
+            "time": "2025-05-12T18:11:31+00:00"
         },
         {
             "name": "blackbonjour/stdlib",
@@ -10615,25 +10615,30 @@
         },
         {
             "name": "behat/gherkin",
-            "version": "v4.9.0",
+            "version": "v4.13.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Behat/Gherkin.git",
-                "reference": "0bc8d1e30e96183e4f36db9dc79caead300beff4"
+                "reference": "9294d26bb75f1718441b89f3a10e15ecb2c67f70"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Behat/Gherkin/zipball/0bc8d1e30e96183e4f36db9dc79caead300beff4",
-                "reference": "0bc8d1e30e96183e4f36db9dc79caead300beff4",
+                "url": "https://api.github.com/repos/Behat/Gherkin/zipball/9294d26bb75f1718441b89f3a10e15ecb2c67f70",
+                "reference": "9294d26bb75f1718441b89f3a10e15ecb2c67f70",
                 "shasum": ""
             },
             "require": {
-                "php": "~7.2|~8.0"
+                "composer-runtime-api": "^2.2",
+                "php": "8.1.* || 8.2.* || 8.3.* || 8.4.*"
             },
             "require-dev": {
-                "cucumber/cucumber": "dev-gherkin-22.0.0",
-                "phpunit/phpunit": "~8|~9",
-                "symfony/yaml": "~3|~4|~5"
+                "cucumber/gherkin-monorepo": "dev-gherkin-v32.1.1",
+                "friendsofphp/php-cs-fixer": "^3.65",
+                "phpstan/extension-installer": "^1",
+                "phpstan/phpstan": "^2",
+                "phpstan/phpstan-phpunit": "^2",
+                "phpunit/phpunit": "^10.5",
+                "symfony/yaml": "^5.4 || ^6.4 || ^7.0"
             },
             "suggest": {
                 "symfony/yaml": "If you want to parse features, represented in YAML files"
@@ -10645,8 +10650,8 @@
                 }
             },
             "autoload": {
-                "psr-0": {
-                    "Behat\\Gherkin": "src/"
+                "psr-4": {
+                    "Behat\\Gherkin\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -10657,11 +10662,11 @@
                 {
                     "name": "Konstantin Kudryashov",
                     "email": "ever.zet@gmail.com",
-                    "homepage": "http://everzet.com"
+                    "homepage": "https://everzet.com"
                 }
             ],
             "description": "Gherkin DSL parser for PHP",
-            "homepage": "http://behat.org/",
+            "homepage": "https://behat.org/",
             "keywords": [
                 "BDD",
                 "Behat",
@@ -10672,9 +10677,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Behat/Gherkin/issues",
-                "source": "https://github.com/Behat/Gherkin/tree/v4.9.0"
+                "source": "https://github.com/Behat/Gherkin/tree/v4.13.0"
             },
-            "time": "2021-10-12T13:05:09+00:00"
+            "time": "2025-05-06T15:26:21+00:00"
         },
         {
             "name": "behat/transliterator",
@@ -18089,7 +18094,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -18101,6 +18106,6 @@
         "ext-simplexml": "*",
         "ext-xml": "*"
     },
-    "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
 }
