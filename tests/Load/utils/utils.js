@@ -21,7 +21,7 @@ export default class Utils {
       try {
         return JSON.parse(open('../config.json.dist'));
       } catch (error) {
-        throw new Error('Error occurred while trying to open config:' + error.message);
+        throw new Error('Error occurred while trying to open config:' + error.message + msg);
       }
     }
   }
