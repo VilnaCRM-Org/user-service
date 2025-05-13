@@ -23,7 +23,7 @@ export function setup() {
 
 export const options = scenarioUtils.getOptions();
 
-export default function getUsers(data) {
+export default function getUsers() {
   const query = `
         query{
             users(first: ${usersToGetInOneRequest}){
@@ -48,6 +48,6 @@ export default function getUsers(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

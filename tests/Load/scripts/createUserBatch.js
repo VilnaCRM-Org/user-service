@@ -5,7 +5,6 @@ import MailCatcherUtils from '../utils/mailCatcherUtils.js';
 import ScenarioUtils from '../utils/scenarioUtils.js';
 import Utils from '../utils/utils.js';
 
-
 const scenarioName = 'createUserBatch';
 
 const utils = new Utils();
@@ -33,6 +32,6 @@ export default function createUser() {
   utils.checkResponse(response, 'is status 201', res => res.status === 201);
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

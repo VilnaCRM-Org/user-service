@@ -34,6 +34,6 @@ export default function deleteUser(data) {
   utils.checkResponse(response, 'is status 204', res => res.status === 204);
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

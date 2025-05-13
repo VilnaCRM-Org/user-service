@@ -23,7 +23,7 @@ export function setup() {
 
 export const options = scenarioUtils.getOptions();
 
-export default async function confirmUser(data) {
+export default async function confirmUser() {
   const num = counter.up();
   const mutationName = 'confirmUser';
 
@@ -51,6 +51,6 @@ export default async function confirmUser(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }
