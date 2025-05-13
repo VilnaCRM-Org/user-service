@@ -17,10 +17,11 @@ export default class Utils {
     try {
       return JSON.parse(open('../config.json'));
     } catch (error) {
+      const msg = error.message;
       try {
         return JSON.parse(open('../config.json.dist'));
       } catch (error) {
-        console.log('Error occurred while trying to open config');
+        throw new Error('Error occurred while trying to open config:' + error.message + msg);
       }
     }
   }
