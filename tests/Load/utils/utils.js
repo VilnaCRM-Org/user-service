@@ -17,7 +17,7 @@ export default class Utils {
     try {
       return JSON.parse(open('../config.json'));
     } catch (error) {
-      console.log(error.message);
+      const msg = error.message;
       try {
         return JSON.parse(open('../config.json.dist'));
       } catch (error) {
