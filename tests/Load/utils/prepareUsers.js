@@ -11,8 +11,8 @@ const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 export function setup() {
   try {
     file.writeString(filepath, JSON.stringify(insertUsersUtils.prepareUsers()));
-  } catch {
-    throw new Error(`Error occurred while writing users to ${filepath}`);
+  } catch (error) {
+    throw new Error(`Error occurred while writing users to ${filepath}, ${error.message}`);
   }
 }
 
