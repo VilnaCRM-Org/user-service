@@ -1,8 +1,8 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import globals from "globals";
-import { fixupConfigRules } from "@eslint/compat";
-import { FlatCompat } from "@eslint/eslintrc";
-import js from "@eslint/js";
+const { defineConfig, globalIgnores } = require('eslint/config');
+const globals = require('globals');
+const { fixupConfigRules } = require('@eslint/compat');
+const js = require('@eslint/js');
+const { FlatCompat } = require('@eslint/eslintrc');
 
 const compat = new FlatCompat({
     baseDirectory: __dirname,
