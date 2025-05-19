@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9188a2917c584e683e4e5626f0f03904",
+    "content-hash": "965c02b1c634506ea0c96dbf5b2eb77c",
     "packages": [
         {
             "name": "api-platform/core",
-            "version": "v4.1.8",
+            "version": "v4.1.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/core.git",
-                "reference": "4ddce1f534a8b5cee198e593b456664fe4c04bab"
+                "reference": "c3297c067e2cec3cdc00fe7c5b3006c55d9074d2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/core/zipball/4ddce1f534a8b5cee198e593b456664fe4c04bab",
-                "reference": "4ddce1f534a8b5cee198e593b456664fe4c04bab",
+                "url": "https://api.github.com/repos/api-platform/core/zipball/c3297c067e2cec3cdc00fe7c5b3006c55d9074d2",
+                "reference": "c3297c067e2cec3cdc00fe7c5b3006c55d9074d2",
                 "shasum": ""
             },
             "require": {
@@ -32,6 +32,7 @@
                 "symfony/property-info": "^6.4 || ^7.1",
                 "symfony/serializer": "^6.4 || ^7.0",
                 "symfony/translation-contracts": "^3.3",
+                "symfony/type-info": "^7.2",
                 "symfony/web-link": "^6.4 || ^7.1",
                 "willdurand/negotiation": "^3.1"
             },
@@ -216,9 +217,9 @@
             ],
             "support": {
                 "issues": "https://github.com/api-platform/core/issues",
-                "source": "https://github.com/api-platform/core/tree/v4.1.8"
+                "source": "https://github.com/api-platform/core/tree/v4.1.9"
             },
-            "time": "2025-05-09T06:04:56+00:00"
+            "time": "2025-05-16T12:23:45+00:00"
         },
         {
             "name": "async-aws/core",
@@ -402,16 +403,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.343.8",
+            "version": "3.343.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "9cf2ad840a0dc92929991c3142138182a700d7b1"
+                "reference": "8bb5b542b28c4538b44de4335396e77bf9fbedf6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/9cf2ad840a0dc92929991c3142138182a700d7b1",
-                "reference": "9cf2ad840a0dc92929991c3142138182a700d7b1",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/8bb5b542b28c4538b44de4335396e77bf9fbedf6",
+                "reference": "8bb5b542b28c4538b44de4335396e77bf9fbedf6",
                 "shasum": ""
             },
             "require": {
@@ -493,9 +494,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.343.8"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.343.14"
             },
-            "time": "2025-05-09T18:07:37+00:00"
+            "time": "2025-05-19T18:02:45+00:00"
         },
         {
             "name": "blackbonjour/stdlib",
@@ -2795,21 +2796,19 @@
         },
         {
             "name": "league/oauth2-server-bundle",
-            "version": "v0.11",
+            "version": "v1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/oauth2-server-bundle.git",
-                "reference": "935f92bce72892dcc73df52e95d163428d6f3a03"
+                "reference": "7d890a6fc353abe37298147d3fe497a61dd553c4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/oauth2-server-bundle/zipball/935f92bce72892dcc73df52e95d163428d6f3a03",
-                "reference": "935f92bce72892dcc73df52e95d163428d6f3a03",
+                "url": "https://api.github.com/repos/thephpleague/oauth2-server-bundle/zipball/7d890a6fc353abe37298147d3fe497a61dd553c4",
+                "reference": "7d890a6fc353abe37298147d3fe497a61dd553c4",
                 "shasum": ""
             },
             "require": {
-                "doctrine/doctrine-bundle": "^2.8.0",
-                "doctrine/orm": "^2.14|^3.0",
                 "ext-openssl": "*",
                 "league/oauth2-server": "^9.2",
                 "nyholm/psr7": "^1.4",
@@ -2819,20 +2818,29 @@
                 "symfony/event-dispatcher": "^6.4|^7.0",
                 "symfony/filesystem": "^6.4|^7.0",
                 "symfony/framework-bundle": "^6.4|^7.0",
-                "symfony/polyfill-php81": "^1.22",
                 "symfony/psr-http-message-bridge": "^6.4|^7",
                 "symfony/security-bundle": "^6.4|^7.0"
             },
+            "conflict": {
+                "doctrine/doctrine-bundle": "<2.8.0",
+                "doctrine/orm": "<2.14"
+            },
             "require-dev": {
+                "doctrine/doctrine-bundle": "^2.8.0",
+                "doctrine/orm": "^2.14|^3.0",
                 "ext-pdo": "*",
                 "ext-pdo_sqlite": "*",
                 "symfony/browser-kit": "^6.4|^7.0",
                 "symfony/phpunit-bridge": "^7.2"
             },
+            "suggest": {
+                "doctrine/doctrine-bundle": "Allow usage of doctrine as persistence layer",
+                "doctrine/orm": "Allow usage of doctrine as persistence layer"
+            },
             "type": "symfony-bundle",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "0.11.x-dev"
+                    "dev-master": "1.x-dev"
                 }
             },
             "autoload": {
@@ -2865,9 +2873,9 @@
             ],
             "support": {
                 "issues": "https://github.com/thephpleague/oauth2-server-bundle/issues",
-                "source": "https://github.com/thephpleague/oauth2-server-bundle/tree/v0.11"
+                "source": "https://github.com/thephpleague/oauth2-server-bundle/tree/v1.0.0"
             },
-            "time": "2025-04-06T22:20:36+00:00"
+            "time": "2025-04-27T15:12:28+00:00"
         },
         {
             "name": "league/uri",
@@ -10615,25 +10623,30 @@
         },
         {
             "name": "behat/gherkin",
-            "version": "v4.9.0",
+            "version": "v4.13.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Behat/Gherkin.git",
-                "reference": "0bc8d1e30e96183e4f36db9dc79caead300beff4"
+                "reference": "9294d26bb75f1718441b89f3a10e15ecb2c67f70"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Behat/Gherkin/zipball/0bc8d1e30e96183e4f36db9dc79caead300beff4",
-                "reference": "0bc8d1e30e96183e4f36db9dc79caead300beff4",
+                "url": "https://api.github.com/repos/Behat/Gherkin/zipball/9294d26bb75f1718441b89f3a10e15ecb2c67f70",
+                "reference": "9294d26bb75f1718441b89f3a10e15ecb2c67f70",
                 "shasum": ""
             },
             "require": {
-                "php": "~7.2|~8.0"
+                "composer-runtime-api": "^2.2",
+                "php": "8.1.* || 8.2.* || 8.3.* || 8.4.*"
             },
             "require-dev": {
-                "cucumber/cucumber": "dev-gherkin-22.0.0",
-                "phpunit/phpunit": "~8|~9",
-                "symfony/yaml": "~3|~4|~5"
+                "cucumber/gherkin-monorepo": "dev-gherkin-v32.1.1",
+                "friendsofphp/php-cs-fixer": "^3.65",
+                "phpstan/extension-installer": "^1",
+                "phpstan/phpstan": "^2",
+                "phpstan/phpstan-phpunit": "^2",
+                "phpunit/phpunit": "^10.5",
+                "symfony/yaml": "^5.4 || ^6.4 || ^7.0"
             },
             "suggest": {
                 "symfony/yaml": "If you want to parse features, represented in YAML files"
@@ -10645,8 +10658,8 @@
                 }
             },
             "autoload": {
-                "psr-0": {
-                    "Behat\\Gherkin": "src/"
+                "psr-4": {
+                    "Behat\\Gherkin\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -10657,11 +10670,11 @@
                 {
                     "name": "Konstantin Kudryashov",
                     "email": "ever.zet@gmail.com",
-                    "homepage": "http://everzet.com"
+                    "homepage": "https://everzet.com"
                 }
             ],
             "description": "Gherkin DSL parser for PHP",
-            "homepage": "http://behat.org/",
+            "homepage": "https://behat.org/",
             "keywords": [
                 "BDD",
                 "Behat",
@@ -10672,9 +10685,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Behat/Gherkin/issues",
-                "source": "https://github.com/Behat/Gherkin/tree/v4.9.0"
+                "source": "https://github.com/Behat/Gherkin/tree/v4.13.0"
             },
-            "time": "2021-10-12T13:05:09+00:00"
+            "time": "2025-05-06T15:26:21+00:00"
         },
         {
             "name": "behat/transliterator",
@@ -18089,7 +18102,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -18101,6 +18114,6 @@
         "ext-simplexml": "*",
         "ext-xml": "*"
     },
-    "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
 }
