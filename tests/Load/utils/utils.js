@@ -16,12 +16,9 @@ export default class Utils {
   getConfig() {
     try {
       return JSON.parse(open('../config.json'));
-    } catch (error) {
-      try {
-        return JSON.parse(open('../config.json.dist'));
-      } catch (error) {
-        console.log('Error occurred while trying to open config');
-      }
+    } catch {
+      // If main config fails, try the dist version
+      return JSON.parse(open('../config.json.dist'));
     }
   }
 
@@ -87,7 +84,6 @@ export default class Utils {
 
   registerUser(user) {
     const payload = JSON.stringify(user);
-
     return http.post(this.getBaseHttpUrl(), payload, this.getJsonHeader());
   }
 }

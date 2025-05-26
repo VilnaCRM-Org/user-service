@@ -1,9 +1,10 @@
 import http from 'k6/http';
 import counter from 'k6/x/counter';
+
+import InsertUsersUtils from '../utils/insertUsersUtils.js';
 import MailCatcherUtils from '../utils/mailCatcherUtils.js';
 import ScenarioUtils from '../utils/scenarioUtils.js';
 import Utils from '../utils/utils.js';
-import InsertUsersUtils from '../utils/insertUsersUtils.js';
 
 const scenarioName = 'graphQLConfirmUser';
 
@@ -22,7 +23,7 @@ export function setup() {
 
 export const options = scenarioUtils.getOptions();
 
-export default async function confirmUser(data) {
+export default async function confirmUser() {
   const num = counter.up();
   const mutationName = 'confirmUser';
 
@@ -50,6 +51,6 @@ export default async function confirmUser(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

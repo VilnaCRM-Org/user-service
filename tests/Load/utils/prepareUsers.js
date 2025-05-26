@@ -1,6 +1,7 @@
+import file from 'k6/x/file';
+
 import InsertUsersUtils from './insertUsersUtils.js';
 import Utils from './utils.js';
-import file from 'k6/x/file';
 
 const utils = new Utils();
 const filepath = utils.getConfig()['usersFileLocation'] + utils.getConfig()['usersFileName'];
@@ -10,8 +11,9 @@ const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 export function setup() {
   try {
     file.writeString(filepath, JSON.stringify(insertUsersUtils.prepareUsers()));
-  } catch (error) {
-    console.log(`Error occurred while writing users to ${filepath}`);
+  } catch {
+    // Failed to write users to file - k6 will handle the error
+    throw new Error(`Failed to write users to ${filepath}`);
   }
 }
 
@@ -22,4 +24,5 @@ export const options = {
   batchPerHost: utils.getConfig().batchSize,
 };
 
-export default function func(data) {}
+// Empty default function required by k6
+export default function func() {}
