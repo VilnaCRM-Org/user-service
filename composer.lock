@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "965c02b1c634506ea0c96dbf5b2eb77c",
+    "content-hash": "f4ed8e6b5b27ab65fda04c26b14825f1",
     "packages": [
         {
             "name": "api-platform/core",
-            "version": "v4.1.9",
+            "version": "v4.1.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/core.git",
-                "reference": "c3297c067e2cec3cdc00fe7c5b3006c55d9074d2"
+                "reference": "abb1fac0c6201764589a8f22cb3e1ffd7e02aa16"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/core/zipball/c3297c067e2cec3cdc00fe7c5b3006c55d9074d2",
-                "reference": "c3297c067e2cec3cdc00fe7c5b3006c55d9074d2",
+                "url": "https://api.github.com/repos/api-platform/core/zipball/abb1fac0c6201764589a8f22cb3e1ffd7e02aa16",
+                "reference": "abb1fac0c6201764589a8f22cb3e1ffd7e02aa16",
                 "shasum": ""
             },
             "require": {
@@ -108,7 +108,7 @@
                 "ramsey/uuid": "^4.7",
                 "ramsey/uuid-doctrine": "^2.0",
                 "soyuka/contexts": "^3.3.10",
-                "soyuka/pmu": "^0.1.0",
+                "soyuka/pmu": "^0.2.0",
                 "soyuka/stubs-mongodb": "^1.0",
                 "symfony/asset": "^6.4 || ^7.0",
                 "symfony/browser-kit": "^6.4 || ^7.0",
@@ -217,9 +217,9 @@
             ],
             "support": {
                 "issues": "https://github.com/api-platform/core/issues",
-                "source": "https://github.com/api-platform/core/tree/v4.1.9"
+                "source": "https://github.com/api-platform/core/tree/v4.1.12"
             },
-            "time": "2025-05-16T12:23:45+00:00"
+            "time": "2025-05-22T13:26:31+00:00"
         },
         {
             "name": "async-aws/core",
@@ -403,16 +403,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.343.14",
+            "version": "3.343.18",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "8bb5b542b28c4538b44de4335396e77bf9fbedf6"
+                "reference": "ae98d503173740cce23b30d2ba2737c49b0d9876"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/8bb5b542b28c4538b44de4335396e77bf9fbedf6",
-                "reference": "8bb5b542b28c4538b44de4335396e77bf9fbedf6",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ae98d503173740cce23b30d2ba2737c49b0d9876",
+                "reference": "ae98d503173740cce23b30d2ba2737c49b0d9876",
                 "shasum": ""
             },
             "require": {
@@ -494,9 +494,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.343.14"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.343.18"
             },
-            "time": "2025-05-19T18:02:45+00:00"
+            "time": "2025-05-23T18:08:18+00:00"
         },
         {
             "name": "blackbonjour/stdlib",
@@ -10623,16 +10623,16 @@
         },
         {
             "name": "behat/gherkin",
-            "version": "v4.13.0",
+            "version": "v4.12.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Behat/Gherkin.git",
-                "reference": "9294d26bb75f1718441b89f3a10e15ecb2c67f70"
+                "reference": "cc3a7e224b36373be382b53ef02ede0f1807bb58"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Behat/Gherkin/zipball/9294d26bb75f1718441b89f3a10e15ecb2c67f70",
-                "reference": "9294d26bb75f1718441b89f3a10e15ecb2c67f70",
+                "url": "https://api.github.com/repos/Behat/Gherkin/zipball/cc3a7e224b36373be382b53ef02ede0f1807bb58",
+                "reference": "cc3a7e224b36373be382b53ef02ede0f1807bb58",
                 "shasum": ""
             },
             "require": {
@@ -10640,12 +10640,13 @@
                 "php": "8.1.* || 8.2.* || 8.3.* || 8.4.*"
             },
             "require-dev": {
-                "cucumber/gherkin-monorepo": "dev-gherkin-v32.1.1",
+                "cucumber/cucumber": "dev-gherkin-24.1.0",
                 "friendsofphp/php-cs-fixer": "^3.65",
                 "phpstan/extension-installer": "^1",
                 "phpstan/phpstan": "^2",
                 "phpstan/phpstan-phpunit": "^2",
                 "phpunit/phpunit": "^10.5",
+                "symfony/filesystem": "^5.4 || ^6.4 || ^7.0",
                 "symfony/yaml": "^5.4 || ^6.4 || ^7.0"
             },
             "suggest": {
@@ -10658,8 +10659,8 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Behat\\Gherkin\\": "src/"
+                "psr-0": {
+                    "Behat\\Gherkin": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -10685,9 +10686,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Behat/Gherkin/issues",
-                "source": "https://github.com/Behat/Gherkin/tree/v4.13.0"
+                "source": "https://github.com/Behat/Gherkin/tree/v4.12.0"
             },
-            "time": "2025-05-06T15:26:21+00:00"
+            "time": "2025-02-26T14:28:23+00:00"
         },
         {
             "name": "behat/transliterator",
@@ -18102,7 +18103,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -18114,6 +18115,6 @@
         "ext-simplexml": "*",
         "ext-xml": "*"
     },
-    "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "platform-dev": {},
+    "plugin-api-version": "2.6.0"
 }
