@@ -1,6 +1,7 @@
+import file from 'k6/x/file';
+
 import InsertUsersUtils from './insertUsersUtils.js';
 import Utils from './utils.js';
-import file from 'k6/x/file';
 
 const utils = new Utils();
 const filepath = utils.getConfig()['usersFileLocation'] + utils.getConfig()['usersFileName'];

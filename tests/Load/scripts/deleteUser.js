@@ -1,9 +1,10 @@
 import http from 'k6/http';
 import counter from 'k6/x/counter';
+
 import InsertUsersUtils from '../utils/insertUsersUtils.js';
+import MailCatcherUtils from '../utils/mailCatcherUtils.js';
 import ScenarioUtils from '../utils/scenarioUtils.js';
 import Utils from '../utils/utils.js';
-import MailCatcherUtils from '../utils/mailCatcherUtils.js';
 
 const scenarioName = 'deleteUser';
 
