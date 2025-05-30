@@ -52,7 +52,7 @@ Go to browser and open the link below to access REST API docs
 
 And using the link below you can access the GraphQL documentation
 
-- > [GraphQL endpoint](https://localhost/api/graphql)
+> [GraphQL endpoint](https://localhost/api/graphql)
 
 Also, you can see architecture diagram using link below
 
