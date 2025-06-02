@@ -107,7 +107,7 @@ export default class InsertUsersUtils {
       });
     } catch (error) {
       throw new Error(
-        'Error occurred during user insertion, try to lower batchSize in a config file: ${error.message}'
+        `Error occurred during user insertion, try to lower batchSize in a config file: ${error.message}`
       );
     }
 
