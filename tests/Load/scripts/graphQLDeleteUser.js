@@ -52,6 +52,6 @@ export default function deleteUser(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown(_data) {
   mailCatcherUtils.clearMessages();
 }

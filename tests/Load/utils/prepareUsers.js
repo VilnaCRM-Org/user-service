@@ -11,8 +11,8 @@ const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 export function setup() {
   try {
     file.writeString(filepath, JSON.stringify(insertUsersUtils.prepareUsers()));
-  } catch (error) {
-    console.log(`Error occurred while writing users to ${filepath}`);
+  } catch (_error) {
+    throw new Error(`Error occurred while writing users to ${filepath}`);
   }
 }
 
@@ -23,4 +23,4 @@ export const options = {
   batchPerHost: utils.getConfig().batchSize,
 };
 
-export default function func(data) {}
+export default function func(_data) {}

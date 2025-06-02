@@ -16,11 +16,11 @@ export default class Utils {
   getConfig() {
     try {
       return JSON.parse(open('../config.json'));
-    } catch (error) {
+    } catch (_error) {
       try {
         return JSON.parse(open('../config.json.dist'));
-      } catch (error) {
-        console.log('Error occurred while trying to open config');
+      } catch (_error) {
+        throw new Error('Error occurred while trying to open config');
       }
     }
   }
