@@ -23,7 +23,7 @@ export function setup() {
 
 export const options = scenarioUtils.getOptions();
 
-export default function getUsers(_data) {
+export default function getUsers() {
   const query = `
         query{
             users(first: ${usersToGetInOneRequest}){

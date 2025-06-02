@@ -23,7 +23,7 @@ export function setup() {
 
 export const options = scenarioUtils.getOptions();
 
-export default async function confirmUser(_data) {
+export default async function confirmUser() {
   const num = counter.up();
   const mutationName = 'confirmUser';
 
