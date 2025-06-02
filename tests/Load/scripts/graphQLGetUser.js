@@ -23,7 +23,7 @@ export function setup() {
 
 export const options = scenarioUtils.getOptions();
 
-export default function getUser(_data) {
+export default function getUser(data) {
   const user = data.users[counter.up()];
   utils.checkUserIsDefined(user);
 
@@ -49,6 +49,6 @@ export default function getUser(_data) {
   );
 }
 
-export function teardown(_data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

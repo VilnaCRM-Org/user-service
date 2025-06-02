@@ -51,6 +51,6 @@ export default async function confirmUser(_data) {
   );
 }
 
-export function teardown(_data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

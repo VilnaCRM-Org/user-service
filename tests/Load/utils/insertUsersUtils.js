@@ -105,7 +105,7 @@ export default class InsertUsersUtils {
           users.push(user);
         });
       });
-    } catch (_error) {
+    } catch {
       throw new Error(
         'Error occurred during user insertion, try to lower batchSize in a config file'
       );
