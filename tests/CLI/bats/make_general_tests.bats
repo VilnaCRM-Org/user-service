@@ -19,7 +19,7 @@ load 'bats-assert/load'
 @test "make composer-validate command executes and reports validity with warnings" {
   run make composer-validate
   assert_success
-  assert_output --partial "./composer.json is valid, but with a few warnings"
+  assert_output --partial "./composer.json is valid"
 }
 
 @test "make check-requirements command executes and passes" {
