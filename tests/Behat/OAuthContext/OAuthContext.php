@@ -12,12 +12,15 @@ use App\Tests\Behat\OAuthContext\Input\ObtainAuthorizeCodeInput;
 use App\Tests\Behat\OAuthContext\Input\PasswordGrantInput;
 use App\User\Application\DTO\AuthorizationUserDto;
 use Behat\Behat\Context\Context;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Gherkin\Node\PyStringNode;
 use Doctrine\ORM\EntityManagerInterface;
 use Faker\Factory;
 use Faker\Generator;
 use League\Bundle\OAuth2ServerBundle\Event\AuthorizationRequestResolveEvent;
 use League\Bundle\OAuth2ServerBundle\Model\Client;
 use League\Bundle\OAuth2ServerBundle\OAuth2Events;
+use League\Bundle\OAuth2ServerBundle\ValueObject\Grant;
 use League\Bundle\OAuth2ServerBundle\ValueObject\RedirectUri;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,13 +29,14 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Serializer\SerializerInterface;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class OAuthContext implements Context
 {
     private Generator $faker;
     private ObtainAccessTokenInput $obtainAccessTokenInput;
     private ObtainAuthorizeCodeInput $obtainAuthorizeCodeInput;
-
+    private RestContext $restContext;
     private string $authCode;
 
     public function __construct(
@@ -43,6 +47,15 @@ final class OAuthContext implements Context
         private TokenStorageInterface $tokenStorage
     ) {
         $this->faker = Factory::create();
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
     }
 
     /**
@@ -118,9 +131,11 @@ final class OAuthContext implements Context
 
         $this->sendAuthorizationRequest();
 
-        $this->authCode = Request::create(
-            $this->response->headers->get('location')
-        )->query->get('code');
+        $location = $this->restContext->getSession()->getResponseHeader('location');
+        $parts = parse_url($location);
+        parse_str($parts['query'] ?? '', $query);
+
+        $this->authCode = $query['code'] ?? null;
     }
 
     /**
@@ -138,21 +153,11 @@ final class OAuthContext implements Context
      */
     public function obtainingAccessToken(string $grantType): void
     {
+        $this->restContext->iAddHeaderEqualTo('HTTP_ACCEPT', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('CONTENT_TYPE', 'application/json');
         $this->obtainAccessTokenInput->grant_type = $grantType;
-        $this->response = $this->kernel->handle(Request::create(
-            '/api/oauth/token',
-            'POST',
-            [],
-            [],
-            [],
-            ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-            ],
-            $this->serializer->serialize(
-                $this->obtainAccessTokenInput,
-                'json'
-            )
-        ));
+        $body = new PyStringNode([$this->serializer->serialize($this->obtainAccessTokenInput, 'json')], 0);
+        $this->restContext->iSendARequestToWithBody('POST', '/api/oauth/token', $body);
     }
 
     /**
@@ -160,9 +165,12 @@ final class OAuthContext implements Context
      */
     public function accessTokenShouldBeProvided(): void
     {
-        $data = json_decode($this->response->getContent(), true);
+        $this->restContext->getSession()->getPage()->getContent();
+        $content = $this->restContext->getSession()->getPage()->getContent();
+        $statusCode = $this->restContext->getSession()->getStatusCode();
+        $data = json_decode($content, true);
 
-        Assert::assertSame(200, $this->response->getStatusCode());
+        Assert::assertSame(200, $statusCode);
 
         Assert::assertArrayHasKey('token_type', $data);
         Assert::assertEquals('Bearer', $data['token_type']);
@@ -202,11 +210,14 @@ final class OAuthContext implements Context
      */
     public function invalidCredentialsError(): void
     {
-        $data = json_decode($this->response->getContent(), true);
+        $this->restContext->getSession()->getPage()->getContent();
+        $content = $this->restContext->getSession()->getPage()->getContent();
+        $statusCode = $this->restContext->getSession()->getStatusCode();
+        $data = json_decode($content, true);
 
         Assert::assertSame(
             Response::HTTP_UNAUTHORIZED,
-            $this->response->getStatusCode()
+            $statusCode
         );
 
         Assert::assertArrayHasKey('error', $data);
@@ -224,11 +235,14 @@ final class OAuthContext implements Context
      */
     public function unauthorizedErrorShouldBeReturned(): void
     {
-        $data = json_decode($this->response->getContent(), true);
+        $this->restContext->getSession()->getPage()->getContent();
+        $content = $this->restContext->getSession()->getPage()->getContent();
+        $statusCode = $this->restContext->getSession()->getStatusCode();
+        $data = json_decode($content, true);
 
         Assert::assertSame(
             Response::HTTP_INTERNAL_SERVER_ERROR,
-            $this->response->getStatusCode()
+            $statusCode
         );
 
         Assert::assertArrayHasKey('detail', $data);
@@ -243,11 +257,14 @@ final class OAuthContext implements Context
      */
     public function unsupportedGrantTypeError(): void
     {
-        $data = json_decode($this->response->getContent(), true);
+        $this->restContext->getSession()->getPage()->getContent();
+        $content = $this->restContext->getSession()->getPage()->getContent();
+        $statusCode = $this->restContext->getSession()->getStatusCode();
+        $data = json_decode($content, true);
 
         Assert::assertSame(
             Response::HTTP_BAD_REQUEST,
-            $this->response->getStatusCode()
+            $statusCode
         );
 
         Assert::assertArrayHasKey('error', $data);
@@ -259,6 +276,18 @@ final class OAuthContext implements Context
             'not supported by the authorization server.',
             $data['error_description']
         );
+    }
+
+    /**
+     * @Then the response should contain the token
+     */
+    public function theResponseShouldContainTheToken(): void
+    {
+        $content = $this->restContext->getSession()->getPage()->getContent();
+        $data = json_decode($content, true);
+
+        Assert::assertArrayHasKey('access_token', $data);
+        Assert::assertNotEmpty($data['access_token']);
     }
 
     private function approveAuthorization(): void
@@ -276,16 +305,9 @@ final class OAuthContext implements Context
 
     private function sendAuthorizationRequest(): void
     {
-        $this->response = $this->kernel->handle(Request::create(
-            '/api/oauth/authorize?' .
-            $this->obtainAuthorizeCodeInput->toUriParams(),
-            'GET',
-            [],
-            [],
-            [],
-            ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-            ]
-        ));
+        $this->restContext->iAddHeaderEqualTo('HTTP_ACCEPT', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('CONTENT_TYPE', 'application/json');
+        $body = new PyStringNode([$this->obtainAuthorizeCodeInput->toUriParams()], 0);
+        $this->restContext->iSendARequestToWithBody('GET', '/api/oauth/authorize?', $body);
     }
 }

@@ -6,8 +6,13 @@ default:
                 - App\Tests\Behat\UserContext\UserContext
                 - App\Tests\Behat\UserContext\UserOperationsContext
                 - App\Tests\Behat\OAuthContext\OAuthContext
+                - TwentytwoLabs\BehatOpenApiExtension\Context\DebugContext: ~
+                - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
+                - TwentytwoLabs\BehatOpenApiExtension\Context\JsonContext: ~
+                - TwentytwoLabs\BehatOpenApiExtension\Context\OpenApiContext: ~
         health_check:
             contexts:
+                - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
                 - App\Tests\Behat\HealthCheckContext\HealthCheckContext
 
 
@@ -18,3 +23,10 @@ default:
             kernel:
                 environment: test
                 class: App\Shared\Kernel
+        TwentytwoLabs\BehatOpenApiExtension:
+            schemaFile: "file:///srv/app/.github/openapi-spec/spec.yaml"
+        Behat\MinkExtension:
+            base_url: "http://php"
+            sessions:
+              default:
+                browserkit_http: ~

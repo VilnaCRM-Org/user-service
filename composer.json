@@ -122,6 +122,9 @@
   "require-dev": {
     "behat/behat": "^3.12",
     "behat/gherkin": "4.9.0",
+    "behat/mink": "^1.12",
+    "behat/mink-browserkit-driver": "^2.2",
+    "behat/mink-extension": "*",
     "captainhook/captainhook": "^5.11",
     "captainhook/plugin-composer": "^5.3",
     "dama/doctrine-test-bundle": "^8.2",
@@ -145,6 +148,7 @@
     "symfony/phpunit-bridge": "7.2.*",
     "symfony/stopwatch": "7.2.*",
     "symfony/web-profiler-bundle": "7.2.*",
+    "twentytwo-labs/behat-open-api": "^1.0",
     "vimeo/psalm": "^5.1",
     "weirdan/doctrine-psalm-plugin": "^2.5",
     "zenstruck/messenger-test": "^1.9"

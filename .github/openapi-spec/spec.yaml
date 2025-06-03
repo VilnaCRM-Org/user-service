@@ -43,9 +43,9 @@ paths:
       parameters: []
       deprecated: false
   /api/oauth/authorize:
-    summary: 'Requests for authorization code'
-    description: 'Requests for authorization code'
     get:
+      summary: 'Requests for authorization code'
+      description: 'Redirects with an authorization code'
       tags:
         - OAuth
       responses:
@@ -198,8 +198,6 @@ paths:
           allowReserved: false
           example: af0ifjsldkj
   /api/oauth/token:
-    summary: 'Requests for access token'
-    description: 'Requests for access token'
     post:
       tags:
         - OAuth

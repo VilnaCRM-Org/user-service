@@ -11,6 +11,8 @@ use App\Tests\Behat\UserGraphQLContext\Input\GraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\ResendEmailGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\UpdateUserGraphQLMutationInput;
 use Behat\Behat\Context\Context;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Gherkin\Node\PyStringNode;
 use GraphQL\RequestBuilder\Argument;
 use GraphQL\RequestBuilder\RootType;
 use GraphQL\RequestBuilder\Type;
@@ -18,6 +20,7 @@ use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class UserGraphQLContext implements Context
 {
@@ -36,6 +39,7 @@ final class UserGraphQLContext implements Context
     private int $errorNum;
 
     private GraphQLMutationInput $graphQLInput;
+    private RestContext $restContext;
 
     public function __construct(
         private readonly KernelInterface $kernel,
@@ -43,7 +47,16 @@ final class UserGraphQLContext implements Context
     ) {
         $this->responseContent = [];
         $this->errorNum = 0;
-        $this->language = 'en';
+        $this->language = 'uk';
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
     }
 
     /**
@@ -199,18 +212,13 @@ final class UserGraphQLContext implements Context
      */
     public function sendGraphQlRequest(): void
     {
-        $this->response = $this->kernel->handle(Request::create(
-            $this->GRAPHQL_ENDPOINT_URI,
+        $this->addHeaders();
+        $body = $this->createRequestBody();
+        $this->restContext->iSendARequestTo(
             'POST',
-            [],
-            [],
-            [],
-            ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-                'HTTP_ACCEPT_LANGUAGE' => $this->language,
-            ],
-            \Safe\json_encode(['query' => $this->query])
-        ));
+            $this->GRAPHQL_ENDPOINT_URI,
+            $body
+        );
     }
 
     /**
@@ -218,20 +226,21 @@ final class UserGraphQLContext implements Context
      */
     public function mutationResponseShouldContainRequestedFields(): void
     {
-        $userData = json_decode(
-            $this->response->getContent(),
-            true
-        )['data'][$this->queryName]['user'];
+        $content = $this->restContext->getSession()->getPage()->getContent();
+        $data = json_decode($content, true);
+        $userData = $data['data'][$this->queryName]['user'];
 
-        foreach ($this->responseContent as $fieldName) {
-            Assert::assertArrayHasKey($fieldName, $userData);
-            if (property_exists($this->graphQLInput, $fieldName)) {
-                Assert::assertEquals(
-                    $this->graphQLInput->$fieldName,
-                    $userData[$fieldName]
-                );
-            }
-        }
+        $this->validateUserFields($userData);
+    }
+
+    /**
+     * @Then graphql error message should be :errorMessage
+     */
+    public function graphQLErrorShouldBe(string $errorMessage): void
+    {
+        $content = $this->restContext->getSession()->getPage()->getContent();
+        $data = json_decode($content, true);
+        $this->assertErrorMessage($data, $errorMessage);
     }
 
     /**
@@ -239,8 +248,9 @@ final class UserGraphQLContext implements Context
      */
     public function queryResponseShouldContainRequestedFields(): void
     {
+        $content = $this->restContext->getSession()->getPage()->getContent();
         $userData = json_decode(
-            $this->response->getContent(),
+            $content,
             true
         )['data'][$this->queryName];
 
@@ -254,8 +264,9 @@ final class UserGraphQLContext implements Context
      */
     public function queryResponseShouldBeNull(): void
     {
+        $content = $this->restContext->getSession()->getPage()->getContent();
         $userData = json_decode(
-            $this->response->getContent(),
+            $content,
             true
         )['data'][$this->queryName];
 
@@ -267,31 +278,108 @@ final class UserGraphQLContext implements Context
      */
     public function collectionOfUsersShouldBeReturned(): void
     {
-        $userData = json_decode(
-            $this->response->getContent(),
-            true
-        )['data'][$this->queryName]['edges'];
+        $content = $this->restContext->getSession()->getPage()->getContent();
+        $data = json_decode($content, true);
+        $userData = $data['data'][$this->queryName]['edges'];
 
-        Assert::assertIsArray($userData);
-        foreach ($userData as $user) {
-            foreach ($this->responseContent as $item) {
-                Assert::assertArrayHasKey($item, $user['node']);
-            }
+        $this->assertCollectionData($userData);
+    }
+
+    /**
+     * @param array<string, string|int|bool|null> $userData
+     */
+    private function validateUserFields(array $userData): void
+    {
+        foreach ($this->responseContent as $fieldName) {
+            $this->validateSingleField($fieldName, $userData);
         }
     }
 
     /**
-     * @Then graphql error message should be :errorMessage
+     * @param array<string, string|int|bool|null> $userData
      */
-    public function graphQLErrorShouldBe(string $errorMessage): void
-    {
-        $data = json_decode($this->response->getContent(), true);
+    private function validateSingleField(
+        string $fieldName,
+        array $userData
+    ): void {
+        Assert::assertArrayHasKey($fieldName, $userData);
 
+        if (!property_exists($this->graphQLInput, $fieldName)) {
+            return;
+        }
+
+        $this->assertFieldEquals($fieldName, $userData);
+    }
+
+    /**
+     * @param array<string, string|int|bool|null> $userData
+     */
+    private function assertCollectionData(array $userData): void
+    {
+        Assert::assertIsArray($userData);
+        foreach ($userData as $user) {
+            $this->assertUserNodeFields($user);
+        }
+    }
+
+    /**
+     * @param array{node: array<string, string|int|bool|null>} $user
+     */
+    private function assertUserNodeFields(array $user): void
+    {
+        foreach ($this->responseContent as $item) {
+            Assert::assertArrayHasKey($item, $user['node']);
+        }
+    }
+
+    /**
+     * @param array{errors: array<int, array{message: string}>} $data
+     */
+    private function assertErrorMessage(
+        array $data,
+        string $expectedMessage
+    ): void {
         Assert::assertEquals(
-            $errorMessage,
+            $expectedMessage,
             $data['errors'][$this->errorNum]['message']
         );
         $this->errorNum++;
+    }
+
+    private function addHeaders(): void
+    {
+        $this->restContext->iAddHeaderEqualTo(
+            'HTTP_ACCEPT',
+            'application/json'
+        );
+        $this->restContext->iAddHeaderEqualTo(
+            'CONTENT_TYPE',
+            'application/json'
+        );
+        $this->restContext->iAddHeaderEqualTo(
+            'HTTP_ACCEPT_LANGUAGE',
+            $this->language
+        );
+    }
+
+    private function createRequestBody(): PyStringNode
+    {
+        return new PyStringNode(
+            [\Safe\json_encode(['query' => $this->query])],
+            0
+        );
+    }
+
+    /**
+     * @param array<string, string|int|bool|null> $userData
+     */
+    private function assertFieldEquals(
+        string $fieldName,
+        array $userData
+    ): void {
+        $value = $userData[$fieldName];
+        $expected = $this->graphQLInput->$fieldName;
+        Assert::assertEquals($expected, $value);
     }
 
     /**
@@ -302,10 +390,18 @@ final class UserGraphQLContext implements Context
         GraphQLMutationInput $input,
         array $responseFields
     ): string {
-        $mutation = (string) (new RootType($name))->addArgument(
-            new Argument('input', $input->toGraphQLArguments())
-        )->addSubType((new Type('user'))->addSubTypes($responseFields));
+        $rootType = new RootType($name);
+        $argument = new Argument(
+            'input',
+            $input->toGraphQLArguments()
+        );
+        $userType = (new Type('user'))
+            ->addSubTypes($responseFields);
 
-        return 'mutation' . $mutation;
+        $mutation = $rootType
+            ->addArgument($argument)
+            ->addSubType($userType);
+
+        return 'mutation' . (string) $mutation;
     }
 }

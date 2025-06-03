@@ -10,6 +10,14 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class PasswordValidator extends ConstraintValidator
 {
+    private const MIN_LENGTH = 8;
+    private const MAX_LENGTH = 64;
+    private const RULES = [
+        'password.invalid.length' => 'isValidLength',
+        'password.missing.uppercase' => 'hasUppercase',
+        'password.missing.number' => 'hasNumber',
+    ];
+
     public function __construct(
         private readonly TranslatorInterface $translator
     ) {
@@ -17,42 +25,35 @@ final class PasswordValidator extends ConstraintValidator
 
     public function validate(mixed $value, Constraint $constraint): void
     {
-        if ($this->isNull($value) ||
-            ($constraint->isOptional() && $this->isEmpty($value))
-        ) {
+        if ($this->isNull($value)) {
             return;
         }
 
-        $this->validateLength($value);
-        $this->validateUppercase($value);
-        $this->validateNumber($value);
-    }
+        if ($constraint->isOptional() && $this->isEmpty($value)) {
+            return;
+        }
 
-    private function validateLength(mixed $value): void
-    {
-        if (!(strlen($value) >= 8 && strlen($value) <= 64)) {
-            $this->addViolation(
-                $this->translator->trans('password.invalid.length')
-            );
+        foreach (self::RULES as $message => $method) {
+            if (!$this->{$method}($value)) {
+                $this->addViolation($this->translator->trans($message));
+            }
         }
     }
 
-    private function validateNumber(mixed $value): void
+    private function isValidLength(mixed $value): bool
     {
-        if (!preg_match('/[0-9]/', $value)) {
-            $this->addViolation(
-                $this->translator->trans('password.missing.number')
-            );
-        }
+        $length = strlen($value);
+        return $length >= self::MIN_LENGTH && $length <= self::MAX_LENGTH;
     }
 
-    private function validateUppercase(mixed $value): void
+    private function hasNumber(mixed $value): bool
     {
-        if (!preg_match('/[A-Z]/', $value)) {
-            $this->addViolation(
-                $this->translator->trans('password.missing.uppercase')
-            );
-        }
+        return (bool) preg_match('/[0-9]/', $value);
+    }
+
+    private function hasUppercase(mixed $value): bool
+    {
+        return (bool) preg_match('/[A-Z]/', $value);
     }
 
     private function addViolation(string $message): void

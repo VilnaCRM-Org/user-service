@@ -4,23 +4,17 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\HealthCheckContext;
 
-use Aws\Sqs\SqsClient;
 use Behat\Behat\Context\Context;
-use Doctrine\Common\EventManager;
-use Doctrine\DBAL\Configuration;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use PHPUnit\Framework\Assert;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Cache\Adapter\TraceableAdapter;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class HealthCheckContext extends KernelTestCase implements Context
 {
     private KernelInterface $kernelInterface;
-    private Response $response;
+    private RestContext $restContext;
 
     public function __construct(
         KernelInterface $kernel
@@ -30,14 +24,20 @@ final class HealthCheckContext extends KernelTestCase implements Context
     }
 
     /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
+    }
+
+    /**
      * @When :method request is sent to :path
      */
     public function sendRequestTo(string $method, string $path): void
     {
-        $this->response = $this->kernelInterface->handle(Request::create(
-            $path,
-            $method,
-        ));
+        $this->restContext->iSendARequestTo($method, $path);
     }
 
     /**
@@ -45,7 +45,8 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theResponseStatusCodeShouldBe(string $statusCode): void
     {
-        Assert::assertEquals($statusCode, $this->response->getStatusCode());
+        $receivedCode = $this->restContext->getSession()->getStatusCode();
+        Assert::assertEquals($statusCode, $receivedCode);
     }
 
     /**
@@ -53,7 +54,8 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theResponseBodyShouldContain(string $text): void
     {
-        $responseContent = $this->response->getContent();
+        $responseContent =
+            $this->restContext->getSession()->getPage()->getContent();
         Assert::assertStringContainsString(
             $text,
             $responseContent,
@@ -66,16 +68,9 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theCacheIsNotWorking(): void
     {
-        $traceableCacheMock = $this->createMock(TraceableAdapter::class);
-
-        $traceableCacheMock->method('get')
-            ->willThrowException(new \Exception('Cache is not working'));
-
-        $container = $this->kernelInterface
-            ->getContainer()
-            ->get('test.service_container');
-
-        $container->set('cache.app', $traceableCacheMock);
+        if ($this->controller) {
+            $this->controller->setCacheFailure(true);
+        }
     }
 
     /**
@@ -83,25 +78,9 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theDatabaseIsNotAvailable(): void
     {
-        $driverMock = $this->createMock(Driver::class);
-
-        $connectionMock = $this->getMockBuilder(Connection::class)
-            ->setConstructorArgs([
-                [],
-                $driverMock,
-                new Configuration(),
-                new EventManager(),
-            ])
-            ->onlyMethods(['executeQuery'])
-            ->getMock();
-
-        $connectionMock->method('executeQuery')
-            ->willThrowException(new \Exception('Database is not available'));
-
-        $container = $this->kernelInterface
-            ->getContainer()
-            ->get('test.service_container');
-        $container->set(Connection::class, $connectionMock);
+        if ($this->controller) {
+            $this->controller->setDatabaseFailure(true);
+        }
     }
 
     /**
@@ -109,18 +88,8 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theMessageBrokerIsNotAvailable(): void
     {
-        $sqsClientMock = $this->createMock(SqsClient::class);
-
-        $sqsClientMock->method('__call')
-            ->willThrowException(
-                new \Exception(
-                    'Message broker is not available'
-                )
-            );
-
-        $container = $this->kernelInterface
-            ->getContainer()
-            ->get('test.service_container');
-        $container->set(SqsClient::class, $sqsClientMock);
+        if ($this->controller) {
+            $this->controller->setMessageBrokerFailure(true);
+        }
     }
 }

@@ -9,7 +9,7 @@
     auto_https disable_redirects
 }
 
-{$SERVER_NAME} {
+{$SERVER_NAME} :80 :443 {
     log {
         output stderr
         format json

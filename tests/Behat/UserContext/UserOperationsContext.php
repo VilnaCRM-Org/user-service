@@ -11,17 +11,21 @@ use App\Tests\Behat\UserContext\Input\EmptyInput;
 use App\Tests\Behat\UserContext\Input\RequestInput;
 use App\Tests\Behat\UserContext\Input\UpdateUserInput;
 use Behat\Behat\Context\Context;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Gherkin\Node\PyStringNode;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class UserOperationsContext implements Context
 {
     private ?RequestInput $requestBody;
     private int $violationNum;
     private string $language;
+    private RestContext $restContext;
 
     public function __construct(
         private readonly KernelInterface $kernel,
@@ -31,6 +35,15 @@ final class UserOperationsContext implements Context
         $this->requestBody = null;
         $this->violationNum = 0;
         $this->language = 'en';
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
     }
 
     /**
@@ -128,22 +141,9 @@ final class UserOperationsContext implements Context
      */
     public function requestSendTo(string $method, string $path): void
     {
-        $contentType = 'application/json';
-        if ($method === 'PATCH') {
-            $contentType = 'application/merge-patch+json';
-        }
-        $this->response = $this->kernel->handle(Request::create(
-            $path,
-            $method,
-            [],
-            [],
-            [],
-            ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => $contentType,
-                'HTTP_ACCEPT_LANGUAGE' => $this->language,
-            ],
-            $this->serializer->serialize($this->requestBody, 'json')
-        ));
+        $this->setupHeaders($method);
+        $body = $this->createRequestBody();
+        $this->restContext->iSendARequestToWithBody($method, $path, $body);
     }
 
     /**
@@ -151,7 +151,8 @@ final class UserOperationsContext implements Context
      */
     public function userShouldBeTimedOut(): void
     {
-        $data = json_decode($this->response->getContent(), true);
+        $content = $this->restContext->getSession()->getPage()->getContent();
+        $data = json_decode($content, true);
         Assert::assertStringContainsString(
             'Cannot send new email till',
             $data['detail']
@@ -163,7 +164,8 @@ final class UserOperationsContext implements Context
      */
     public function theErrorMessageShouldBe(string $errorMessage): void
     {
-        $data = json_decode($this->response->getContent(), true);
+        $content = $this->restContext->getSession()->getPage()->getContent();
+        $data = json_decode($content, true);
         Assert::assertEquals($errorMessage, $data['detail']);
     }
 
@@ -172,7 +174,8 @@ final class UserOperationsContext implements Context
      */
     public function theResponseStatusCodeShouldBe(string $statusCode): void
     {
-        Assert::assertEquals($statusCode, $this->response->getStatusCode());
+        $actualCode = $this->restContext->getSession()->getStatusCode();
+        Assert::assertEquals($statusCode, $actualCode);
     }
 
     /**
@@ -180,7 +183,8 @@ final class UserOperationsContext implements Context
      */
     public function theViolationShouldBe(string $violation): void
     {
-        $data = json_decode($this->response->getContent(), true);
+        $content = $this->restContext->getSession()->getPage()->getContent();
+        $data = json_decode($content, true);
         Assert::assertEquals(
             $violation,
             $data['violations'][$this->violationNum]['message']
@@ -193,7 +197,8 @@ final class UserOperationsContext implements Context
      */
     public function theResponseShouldContainAListOfUsers(): void
     {
-        $data = json_decode($this->response->getContent(), true);
+        $content = $this->restContext->getSession()->getPage()->getContent();
+        $data = json_decode($content, true);
         Assert::assertIsArray($data);
     }
 
@@ -204,7 +209,8 @@ final class UserOperationsContext implements Context
         string $email,
         string $initials
     ): void {
-        $data = json_decode($this->response->getContent(), true);
+        $content = $this->restContext->getSession()->getPage()->getContent();
+        $data = json_decode($content, true);
         Assert::assertArrayHasKey('id', $data);
         Assert::assertArrayHasKey('email', $data);
         Assert::assertEquals($email, $data['email']);
@@ -219,12 +225,45 @@ final class UserOperationsContext implements Context
      */
     public function userWithIdShouldBeReturned(string $id): void
     {
-        $data = json_decode($this->response->getContent(), true);
+        $content = $this->restContext->getSession()->getPage()->getContent();
+        $data = json_decode($content, true);
         Assert::assertArrayHasKey('id', $data);
         Assert::assertEquals($id, $data['id']);
         Assert::assertArrayHasKey('email', $data);
         Assert::assertArrayHasKey('initials', $data);
         Assert::assertArrayHasKey('confirmed', $data);
         Assert::assertArrayNotHasKey('password', $data);
+    }
+
+    private function getContentType(string $method): string
+    {
+        return $method === 'PATCH'
+            ? 'application/merge-patch+json'
+            : 'application/json';
+    }
+
+    private function setupHeaders(string $method): void
+    {
+        $contentType = $this->getContentType($method);
+        $this->restContext->iAddHeaderEqualTo(
+            'HTTP_ACCEPT',
+            'application/json'
+        );
+        $this->restContext->iAddHeaderEqualTo(
+            'CONTENT_TYPE',
+            $contentType
+        );
+        $this->restContext->iAddHeaderEqualTo(
+            'HTTP_ACCEPT_LANGUAGE',
+            $this->language
+        );
+    }
+
+    private function createRequestBody(): PyStringNode
+    {
+        return new PyStringNode(
+            [$this->serializer->serialize($this->requestBody, 'json')],
+            0
+        );
     }
 }
