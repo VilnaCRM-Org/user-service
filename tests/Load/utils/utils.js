@@ -16,11 +16,13 @@ export default class Utils {
   getConfig() {
     try {
       return JSON.parse(open('../config.json'));
-    } catch (error) {
+    } catch (primaryError) {
       try {
         return JSON.parse(open('../config.json.dist'));
-      } catch (error) {
-        console.log('Error occurred while trying to open config');
+      } catch (fallbackError) {
+        throw new Error(
+          `Config file not found. Primary error: ${primaryError.message}. Fallback error: ${fallbackError.message}`
+        );
       }
     }
   }
