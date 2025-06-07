@@ -17,13 +17,10 @@ export default class Utils {
     try {
       return JSON.parse(open('../config.json'));
     } catch (error) {
-      console.warn('config.json not found, trying config.json.dist:', error.message);
-
       try {
         return JSON.parse(open('../config.json.dist'));
       } catch (error) {
-        console.error('Failed to load both config files:', error.message);
-        throw new Error('Config file not found');
+        throw new Error(`Config file not found. Primary error: ${error.message}`);
       }
     }
   }
