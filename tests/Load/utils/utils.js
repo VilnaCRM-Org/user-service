@@ -16,11 +16,14 @@ export default class Utils {
   getConfig() {
     try {
       return JSON.parse(open('../config.json'));
-    } catch (_) {
+    } catch (error) {
+      console.warn('config.json not found, trying config.json.dist:', error.message);
+
       try {
         return JSON.parse(open('../config.json.dist'));
-      } catch (_) {
-        throw new Error('Error occurred while trying to open config');
+      } catch (error) {
+        console.error('Failed to load both config files:', error.message);
+        throw new Error('Config file not found');
       }
     }
   }
