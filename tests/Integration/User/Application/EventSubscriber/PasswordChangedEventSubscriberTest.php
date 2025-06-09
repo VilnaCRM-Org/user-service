@@ -26,7 +26,8 @@ final class PasswordChangedEventSubscriberTest extends IntegrationTestCase
 
     public function testConfirmationEmailSent(): void
     {
-        $emailAddress = $this->faker->email();
+        $emailAddress = 'test.user@example.com';
+
         $event = new PasswordChangedEvent(
             $emailAddress,
             $this->faker->uuid()
