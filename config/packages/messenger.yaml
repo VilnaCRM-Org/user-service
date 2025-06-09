@@ -1,37 +1,12 @@
 framework:
   messenger:
     transports:
-      send-email:
-        dsn: '%env(SEND_EMAIL_TRANSPORT_DSN)%'
-
-        retry_strategy:
-          max_retries: 3
-          # milliseconds delay
-          delay: 60000
-          multiplier: 2
-          max_delay: 0
-
-        failure_transport: failed-send-email
-
-      failed-send-email:
-        dsn: '%env(FAILED_EMAIL_TRANSPORT_DSN)%'
-
-        retry_strategy:
-          service: 'App\Shared\Infrastructure\RetryStrategy\InfiniteRetryStrategy'
-
-      insert-user-batch:
-        dsn: '%env(INSERT_USER_BATCH_TRANSPORT_DSN)%'
+      dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
 
     routing:
-      # Route your messages to the transports
-      'Symfony\Component\Mailer\Messenger\SendEmailMessage': send-email
-      'App\User\Application\Message\UserRegisteredMessage': insert-user-batch
 
 when@test:
   framework:
     messenger:
       transports:
-        send-email:
-          dsn: '%env(REDIS_URL)%'
-          options:
-            consumer: '%env(MESSENGER_CONSUMER_NAME)%'
+        - in-memory

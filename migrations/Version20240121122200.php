@@ -11,23 +11,22 @@ final class Version20240121122200 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Add user table';
+        return 'Create test_user table';
     }
 
     public function up(Schema $schema): void
     {
-        $this->addSql('CREATE TABLE IF NOT EXISTS user 
-        (id BINARY(16) NOT NULL, email VARCHAR(255) CHARACTER SET utf8mb4 NOT 
-        NULL COLLATE `utf8mb4_unicode_ci`, initials VARCHAR(255) CHARACTER SET 
-        utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`, password VARCHAR(255) 
-        CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`, 
-        confirmed TINYINT(1) NOT NULL, UNIQUE INDEX 
-        UNIQ_8D93D649E7927C74 (email), PRIMARY KEY(id)) DEFAULT CHARACTER SET 
-        utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = \'\' ');
+        $this->addSql('CREATE TABLE IF NOT EXISTS test_user 
+        (id UUID PRIMARY KEY, 
+         email VARCHAR(255) NOT NULL, 
+         initials VARCHAR(255) NOT NULL, 
+         password VARCHAR(255) NOT NULL, 
+         confirmed BOOLEAN NOT NULL, 
+         UNIQUE (email))');
     }
 
     public function down(Schema $schema): void
     {
-        $this->addSql('DROP TABLE user');
+        $this->addSql('DROP TABLE test_user');
     }
 }
