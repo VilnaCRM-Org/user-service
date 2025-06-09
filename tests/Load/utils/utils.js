@@ -20,7 +20,9 @@ export default class Utils {
       try {
         return JSON.parse(open('../config.json.dist'));
       } catch (fallbackError) {
-        throw new Error(`Config file not found. Primary error: ${primaryError.message}. Fallback error: ${fallbackError.message}`);
+        throw new Error(
+          `Config file not found. Primary error: ${primaryError.message}. Fallback error: ${fallbackError.message}`
+        );
       }
     }
   }
