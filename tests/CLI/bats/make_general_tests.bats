@@ -16,7 +16,7 @@ load 'bats-assert/load'
   assert_output --partial "Targets:"
 }
 
-@test "make composer-validate command executes and reports validity with warnings" {
+@test "make composer-validate command executes and reports validity" {
   run make composer-validate
   assert_success
   assert_output --partial "./composer.json is valid"
