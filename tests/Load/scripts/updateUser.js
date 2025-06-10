@@ -46,6 +46,6 @@ export default function updateUser(data) {
   utils.checkResponse(response, 'is status 200', res => res.status === 200);
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }
