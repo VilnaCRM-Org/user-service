@@ -38,16 +38,16 @@ export default function getUser(data) {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query: query }),
-    utils.getJsonHeader()
+    utils.getJsonHeader(),
   );
 
   utils.checkResponse(
     response,
     'user returned',
-    res => JSON.parse(res.body).data.user.id === `${id}`
+    res => JSON.parse(res.body).data.user.id === `${id}`,
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

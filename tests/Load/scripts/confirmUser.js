@@ -22,7 +22,7 @@ export function setup() {
 
 export const options = scenarioUtils.getOptions();
 
-export default async function confirmUser(data) {
+export default async function confirmUser() {
   const num = counter.up();
 
   const token = await mailCatcherUtils.getConfirmationToken(num);
@@ -34,12 +34,12 @@ export default async function confirmUser(data) {
   const response = await http.patch(
     `${utils.getBaseHttpUrl()}/confirm`,
     payload,
-    utils.getMergePatchHeader()
+    utils.getMergePatchHeader(),
   );
 
   utils.checkResponse(response, 'is status 200', res => res.status === 200);
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

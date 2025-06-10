@@ -33,16 +33,16 @@ export default function createUser() {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query: mutation }),
-    utils.getJsonHeader()
+    utils.getJsonHeader(),
   );
 
   utils.checkResponse(
     response,
     'created user returned',
-    res => JSON.parse(res.body).data[mutationName].user.email === `${user.email}`
+    res => JSON.parse(res.body).data[mutationName].user.email === `${user.email}`,
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

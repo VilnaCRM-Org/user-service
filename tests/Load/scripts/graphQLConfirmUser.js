@@ -22,7 +22,7 @@ export function setup() {
 
 export const options = scenarioUtils.getOptions();
 
-export default async function confirmUser(data) {
+export default async function confirmUser() {
   const num = counter.up();
   const mutationName = 'confirmUser';
 
@@ -40,16 +40,16 @@ export default async function confirmUser(data) {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query: mutation }),
-    utils.getJsonHeader()
+    utils.getJsonHeader(),
   );
 
   utils.checkResponse(
     response,
     'confirmed user returned',
-    res => JSON.parse(res.body).data[mutationName].user.id !== undefined
+    res => JSON.parse(res.body).data[mutationName].user.id !== undefined,
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }
