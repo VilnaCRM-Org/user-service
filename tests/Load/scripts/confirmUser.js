@@ -34,7 +34,7 @@ export default async function confirmUser() {
   const response = await http.patch(
     `${utils.getBaseHttpUrl()}/confirm`,
     payload,
-    utils.getMergePatchHeader(),
+    utils.getMergePatchHeader()
   );
 
   utils.checkResponse(response, 'is status 200', res => res.status === 200);
