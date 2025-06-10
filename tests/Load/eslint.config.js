@@ -58,21 +58,24 @@ export default [
       'no-console': 'warn',
       'max-len': ['error', { code: 150 }],
       'no-extra-semi': 'off',
-      'quotes': ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
+      quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
       'no-multiple-empty-lines': ['error', { max: 2, maxEOF: 0 }],
       'linebreak-style': ['error', 'unix'],
 
       'no-undef': 'off',
-      'no-unused-vars': ['warn', {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_|^data$|^error$',
-      }],
+      'no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_|^data$|^error$',
+        },
+      ],
 
-      'semi': ['error', 'always'],
+      semi: ['error', 'always'],
       'comma-dangle': ['error', 'always-multiline'],
       'no-trailing-spaces': 'error',
       'eol-last': ['error', 'always'],
-      'indent': ['error', 2],
+      indent: ['error', 2],
     },
   },
 
