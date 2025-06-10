@@ -1,7 +1,7 @@
 # [2.6.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.5.0...v2.6.0) (2025-05-28)
 
 
-### Features
+## Features
 
 * **deps:** bump the all-deps group across 1 directory with 5 updates ([#189](https://github.com/VilnaCRM-Org/user-service/issues/189)) ([c800529](https://github.com/VilnaCRM-Org/user-service/commit/c80052918cfbd1404ee77b0ef84d1dc4a3c96b97))
 
