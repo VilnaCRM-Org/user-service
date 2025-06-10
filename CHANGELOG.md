@@ -1,7 +1,7 @@
 # [2.6.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.5.0...v2.6.0) (2025-05-28)
 
 
-## Features
+### Features
 
 * **deps:** bump the all-deps group across 1 directory with 5 updates ([#189](https://github.com/VilnaCRM-Org/user-service/issues/189)) ([c800529](https://github.com/VilnaCRM-Org/user-service/commit/c80052918cfbd1404ee77b0ef84d1dc4a3c96b97))
 
@@ -40,3 +40,6 @@
 ### Bug Fixes
 
 * **#137:** load test reports and error fix ([#138](https://github.com/VilnaCRM-Org/user-service/issues/138)) ([87b9f48](https://github.com/VilnaCRM-Org/user-service/commit/87b9f48b482bb824e7ea8d9592b34a02b04d66e7)), closes [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137) [#137](https://github.com/VilnaCRM-Org/user-service/issues/137)
+
+
+
