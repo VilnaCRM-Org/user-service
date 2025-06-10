@@ -31,7 +31,7 @@ export default function resendEmail(data) {
   const response = http.post(
     `${utils.getBaseHttpUrl()}/${id}/resend-confirmation-email`,
     JSON.stringify(null),
-    utils.getJsonHeader(),
+    utils.getJsonHeader()
   );
 
   utils.checkResponse(response, 'is status 200', res => res.status === 200);
