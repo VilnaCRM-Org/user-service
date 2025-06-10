@@ -37,13 +37,13 @@ export default function getUsers() {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query: query }),
-    utils.getJsonHeader()
+    utils.getJsonHeader(),
   );
 
   utils.checkResponse(
     response,
     'users returned',
-    res => JSON.parse(res.body).data.users.edges.length === usersToGetInOneRequest
+    res => JSON.parse(res.body).data.users.edges.length === usersToGetInOneRequest,
   );
 }
 

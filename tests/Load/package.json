@@ -23,8 +23,5 @@
     "@eslint/js": "^9.28.0",
     "eslint": "^9.28.0",
     "globals": "^16.2.0"
-  },
-  "dependencies": {
-    "k6": "^0.0.0"
   }
 }
