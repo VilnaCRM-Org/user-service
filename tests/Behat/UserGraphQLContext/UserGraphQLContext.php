@@ -218,20 +218,8 @@ final class UserGraphQLContext implements Context
      */
     public function mutationResponseShouldContainRequestedFields(): void
     {
-        $userData = json_decode(
-            $this->response->getContent(),
-            true
-        )['data'][$this->queryName]['user'];
-
-        foreach ($this->responseContent as $fieldName) {
-            Assert::assertArrayHasKey($fieldName, $userData);
-            if (property_exists($this->graphQLInput, $fieldName)) {
-                Assert::assertEquals(
-                    $this->graphQLInput->$fieldName,
-                    $userData[$fieldName]
-                );
-            }
-        }
+        $userData = $this->extractUserDataFromResponse();
+        $this->validateResponseFields($userData);
     }
 
     /**
@@ -267,17 +255,11 @@ final class UserGraphQLContext implements Context
      */
     public function collectionOfUsersShouldBeReturned(): void
     {
-        $userData = json_decode(
-            $this->response->getContent(),
-            true
-        )['data'][$this->queryName]['edges'];
+        $data = json_decode($this->response->getContent(), true);
+        $edges = $data['data'][$this->queryName]['edges'];
 
-        Assert::assertIsArray($userData);
-        foreach ($userData as $user) {
-            foreach ($this->responseContent as $item) {
-                Assert::assertArrayHasKey($item, $user['node']);
-            }
-        }
+        Assert::assertIsArray($edges);
+        $this->validateCollectionNodes($edges);
     }
 
     /**
@@ -292,6 +274,67 @@ final class UserGraphQLContext implements Context
             $data['errors'][$this->errorNum]['message']
         );
         $this->errorNum++;
+    }
+
+    /**
+     * @param array<int, array<string, string|int|bool|null>> $edges
+     */
+    private function validateCollectionNodes(array $edges): void
+    {
+        foreach ($edges as $edge) {
+            $this->validateNodeFields($edge['node']);
+        }
+    }
+
+    /**
+     * @param array<string, string|int|bool|null> $node
+     */
+    private function validateNodeFields(array $node): void
+    {
+        foreach ($this->responseContent as $field) {
+            Assert::assertArrayHasKey($field, $node);
+        }
+    }
+
+    /**
+     * @return array<string, string|int|bool|null>
+     */
+    private function extractUserDataFromResponse(): array
+    {
+        return json_decode(
+            $this->response->getContent(),
+            true
+        )['data'][$this->queryName]['user'];
+    }
+
+    /**
+     * @param array<string, string|int|bool|null> $userData
+     */
+    private function validateResponseFields(array $userData): void
+    {
+        foreach ($this->responseContent as $fieldName) {
+            // Verify field exists in response
+            Assert::assertArrayHasKey($fieldName, $userData);
+
+            // Compare with expected value if available
+            $this->compareFieldWithExpected($fieldName, $userData[$fieldName]);
+        }
+    }
+
+    /**
+     * Compare field value with expected value from input
+     */
+    private function compareFieldWithExpected(
+        string $fieldName,
+        string|int|bool|null $fieldValue
+    ): void {
+        // Only compare if the field exists in the input
+        if (property_exists($this->graphQLInput, $fieldName)) {
+            Assert::assertEquals(
+                $this->graphQLInput->$fieldName,
+                $fieldValue
+            );
+        }
     }
 
     /**

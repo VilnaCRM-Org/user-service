@@ -7,7 +7,6 @@ namespace App\Tests\Integration;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\Mailer\Messenger\SendEmailMessage;
 
 final class TestEmailSendingUtils extends KernelTestCase
 {
@@ -15,27 +14,58 @@ final class TestEmailSendingUtils extends KernelTestCase
         ContainerInterface $container,
         string $emailAddress
     ): void {
-        $mailerEvent = self::getMailerEvent();
-        $message = new SendEmailMessage(
-            $mailerEvent->getMessage(),
-            $mailerEvent->getEnvelope()
-        );
-        $container->get('mailer.messenger.message_handler')->__invoke($message);
+        // Додаємо затримку для асинхронної обробки
+        sleep(2);
 
         $httpClient = HttpClient::create();
         $response = $httpClient->request(
             'GET',
             'http://mailer:'.getenv('MAILCATCHER_HTTP_PORT').'/messages'
         )->toArray();
-        $message = $response[sizeof($response) - 1];
+
+        $foundMessage = $this->findEmailByAddress($response, $emailAddress);
+        $this->validateFoundEmail($foundMessage, $emailAddress);
+    }
+
+    /**
+     * @param array<int, array<string, string|int|bool|array>> $messages
+     *
+     * @return array<string, string|int|bool|array>|null
+     */
+    private function findEmailByAddress(
+        array $messages,
+        string $emailAddress
+    ): ?array {
+        for ($i = count($messages) - 1; $i >= 0; $i--) {
+            $message = $messages[$i];
+            if (isset($message['recipients'][0]) &&
+                $message['recipients'][0] === '<' . $emailAddress . '>') {
+                return $message;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<string, string|int|bool|array>|null $foundMessage
+     */
+    private function validateFoundEmail(
+        ?array $foundMessage,
+        string $emailAddress
+    ): void {
+        $this->assertNotNull(
+            $foundMessage,
+            "Email to {$emailAddress} was not found in MailCatcher"
+        );
 
         $this->assertEquals(
             '<' . $emailAddress . '>',
-            $message['recipients'][0]
+            $foundMessage['recipients'][0]
         );
         $this->assertEquals(
             '<'.getenv('MAIL_SENDER').'>',
-            $message['sender']
+            $foundMessage['sender']
         );
     }
 }

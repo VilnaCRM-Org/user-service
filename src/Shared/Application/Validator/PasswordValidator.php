@@ -10,6 +10,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class PasswordValidator extends ConstraintValidator
 {
+    private const MIN_LENGTH = 8;
+    private const MAX_LENGTH = 64;
+
+    private BaseValidationHelper $helper;
+
     public function __construct(
         private readonly TranslatorInterface $translator
     ) {
@@ -17,57 +22,50 @@ final class PasswordValidator extends ConstraintValidator
 
     public function validate(mixed $value, Constraint $constraint): void
     {
-        if ($this->isNull($value) ||
-            ($constraint->isOptional() && $this->isEmpty($value))
-        ) {
+        $this->helper = new BaseValidationHelper(
+            $this->translator,
+            $this->context
+        );
+
+        if ($this->helper->shouldSkipValidation($value, $constraint)) {
             return;
         }
 
-        $this->validateLength($value);
-        $this->validateUppercase($value);
-        $this->validateNumber($value);
+        $password = (string) $value;
+        $this->validatePassword($password);
     }
 
-    private function validateLength(mixed $value): void
+    private function validatePassword(string $password): void
     {
-        if (!(strlen($value) >= 8 && strlen($value) <= 64)) {
-            $this->addViolation(
-                $this->translator->trans('password.invalid.length')
-            );
+        $this->validateLength($password);
+        $this->validateNumbers($password);
+        $this->validateUppercase($password);
+    }
+
+    private function validateLength(string $password): void
+    {
+        $isInvalid = $this->helper->isLengthInvalid(
+            $password,
+            self::MIN_LENGTH,
+            self::MAX_LENGTH
+        );
+
+        if ($isInvalid) {
+            $this->helper->addViolation('password.invalid.length');
         }
     }
 
-    private function validateNumber(mixed $value): void
+    private function validateNumbers(string $password): void
     {
-        if (!preg_match('/[0-9]/', $value)) {
-            $this->addViolation(
-                $this->translator->trans('password.missing.number')
-            );
+        if ($this->helper->hasNoNumbers($password)) {
+            $this->helper->addViolation('password.missing.number');
         }
     }
 
-    private function validateUppercase(mixed $value): void
+    private function validateUppercase(string $password): void
     {
-        if (!preg_match('/[A-Z]/', $value)) {
-            $this->addViolation(
-                $this->translator->trans('password.missing.uppercase')
-            );
+        if ($this->helper->hasNoUppercase($password)) {
+            $this->helper->addViolation('password.missing.uppercase');
         }
-    }
-
-    private function addViolation(string $message): void
-    {
-        $this->context->buildViolation($message)
-            ->addViolation();
-    }
-
-    private function isEmpty(mixed $value): bool
-    {
-        return $value === '';
-    }
-
-    private function isNull(mixed $value): bool
-    {
-        return $value === null;
     }
 }
