@@ -38,6 +38,6 @@ final class ConfirmationEmailSendEventSubscriberTest extends IntegrationTestCase
         );
 
         $this->subscriber->__invoke($event);
-        $this->utils->assertEmailWasSent($this->container, $emailAddress);
+        $this->utils->assertEmailWasSent($emailAddress);
     }
 }

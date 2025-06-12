@@ -148,6 +148,7 @@ Feature: User GraphQL Operations
 
   Scenario: Getting collection of users
     Given requesting to return user's id and email
+    And user with id "8be90127-9840-4235-a6da-39b8debfb114" exists
     And getting collection of users
     When graphQL request is send
     Then collection of users should be returned
