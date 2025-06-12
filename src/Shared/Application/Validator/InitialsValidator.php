@@ -10,8 +10,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class InitialsValidator extends ConstraintValidator
 {
-    private BaseValidationHelper $helper;
-
     public function __construct(
         private readonly TranslatorInterface $translator
     ) {
@@ -19,26 +17,28 @@ final class InitialsValidator extends ConstraintValidator
 
     public function validate(mixed $value, Constraint $constraint): void
     {
-        $this->helper = new BaseValidationHelper(
+        $helper = new BaseValidationHelper(
             $this->translator,
             $this->context
         );
 
-        if ($this->helper->shouldSkipValidation($value, $constraint)) {
+        if ($helper->shouldSkipValidation($value, $constraint)) {
             return;
         }
 
-        $this->validateInitials((string) $value);
+        $this->validateInitials((string) $value, $helper);
     }
 
-    private function validateInitials(string $value): void
-    {
+    private function validateInitials(
+        string $value,
+        BaseValidationHelper $helper
+    ): void {
         if ($value === '') {
             return;
         }
 
-        if ($this->helper->isOnlyWhitespace($value)) {
-            $this->helper->addViolation('initials.spaces');
+        if ($helper->isOnlyWhitespace($value)) {
+            $helper->addViolation('initials.spaces');
         }
     }
 }

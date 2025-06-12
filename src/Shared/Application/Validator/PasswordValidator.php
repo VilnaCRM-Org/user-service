@@ -13,8 +13,6 @@ final class PasswordValidator extends ConstraintValidator
     private const MIN_LENGTH = 8;
     private const MAX_LENGTH = 64;
 
-    private BaseValidationHelper $helper;
-
     public function __construct(
         private readonly TranslatorInterface $translator
     ) {
@@ -22,50 +20,58 @@ final class PasswordValidator extends ConstraintValidator
 
     public function validate(mixed $value, Constraint $constraint): void
     {
-        $this->helper = new BaseValidationHelper(
+        $helper = new BaseValidationHelper(
             $this->translator,
             $this->context
         );
 
-        if ($this->helper->shouldSkipValidation($value, $constraint)) {
+        if ($helper->shouldSkipValidation($value, $constraint)) {
             return;
         }
 
         $password = (string) $value;
-        $this->validatePassword($password);
+        $this->validatePassword($password, $helper);
     }
 
-    private function validatePassword(string $password): void
-    {
-        $this->validateLength($password);
-        $this->validateNumbers($password);
-        $this->validateUppercase($password);
+    private function validatePassword(
+        string $password,
+        BaseValidationHelper $helper
+    ): void {
+        $this->validateLength($password, $helper);
+        $this->validateNumbers($password, $helper);
+        $this->validateUppercase($password, $helper);
     }
 
-    private function validateLength(string $password): void
-    {
-        $isInvalid = $this->helper->isLengthInvalid(
+    private function validateLength(
+        string $password,
+        BaseValidationHelper $helper
+    ): void {
+        $isInvalid = $helper->isLengthInvalid(
             $password,
             self::MIN_LENGTH,
             self::MAX_LENGTH
         );
 
         if ($isInvalid) {
-            $this->helper->addViolation('password.invalid.length');
+            $helper->addViolation('password.invalid.length');
         }
     }
 
-    private function validateNumbers(string $password): void
-    {
-        if ($this->helper->hasNoNumbers($password)) {
-            $this->helper->addViolation('password.missing.number');
+    private function validateNumbers(
+        string $password,
+        BaseValidationHelper $helper
+    ): void {
+        if ($helper->hasNoNumbers($password)) {
+            $helper->addViolation('password.missing.number');
         }
     }
 
-    private function validateUppercase(string $password): void
-    {
-        if ($this->helper->hasNoUppercase($password)) {
-            $this->helper->addViolation('password.missing.uppercase');
+    private function validateUppercase(
+        string $password,
+        BaseValidationHelper $helper
+    ): void {
+        if ($helper->hasNoUppercase($password)) {
+            $helper->addViolation('password.missing.uppercase');
         }
     }
 }

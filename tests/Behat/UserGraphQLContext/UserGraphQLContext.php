@@ -259,6 +259,8 @@ final class UserGraphQLContext implements Context
         $edges = $data['data'][$this->queryName]['edges'];
 
         Assert::assertIsArray($edges);
+        Assert::assertNotEmpty($edges, 'Expected at least one user edge');
+
         $this->validateCollectionNodes($edges);
     }
 
@@ -301,10 +303,52 @@ final class UserGraphQLContext implements Context
      */
     private function extractUserDataFromResponse(): array
     {
-        return json_decode(
-            $this->response->getContent(),
-            true
-        )['data'][$this->queryName]['user'];
+        $data = json_decode($this->response->getContent(), true);
+        $this->assertResponseHasDataKey($data);
+        $this->assertResponseHasQueryKey($data);
+        $this->assertResponseHasUserKey($data);
+
+        return $data['data'][$this->queryName]['user'];
+    }
+
+    /**
+     * @param array<string, array<string, array<string, string|int|bool|null>>> $data
+     */
+    private function assertResponseHasDataKey(array $data): void
+    {
+        Assert::assertArrayHasKey(
+            'data',
+            $data,
+            'GraphQL response missing "data" key'
+        );
+    }
+
+    /**
+     * @param array<string, array<string, array<string, string|int|bool|null>>> $data
+     */
+    private function assertResponseHasQueryKey(array $data): void
+    {
+        Assert::assertArrayHasKey(
+            $this->queryName,
+            $data['data'],
+            sprintf('GraphQL response missing "%s" key', $this->queryName)
+        );
+    }
+
+    /**
+     * @param array<string, array<string, array<string, string|int|bool|null>>> $data
+     */
+    private function assertResponseHasUserKey(array $data): void
+    {
+        $errorMessage = sprintf(
+            '"user" key missing in %s GraphQL response',
+            $this->queryName
+        );
+        Assert::assertArrayHasKey(
+            'user',
+            $data['data'][$this->queryName],
+            $errorMessage
+        );
     }
 
     /**
@@ -313,12 +357,22 @@ final class UserGraphQLContext implements Context
     private function validateResponseFields(array $userData): void
     {
         foreach ($this->responseContent as $fieldName) {
-            // Verify field exists in response
-            Assert::assertArrayHasKey($fieldName, $userData);
-
-            // Compare with expected value if available
-            $this->compareFieldWithExpected($fieldName, $userData[$fieldName]);
+            $this->validateSingleField($fieldName, $userData);
         }
+    }
+
+    /**
+     * @param array<string, string|int|bool|null> $userData
+     */
+    private function validateSingleField(
+        string $fieldName,
+        array $userData
+    ): void {
+        // Verify field exists in response
+        Assert::assertArrayHasKey($fieldName, $userData);
+
+        // Compare with expected value if available
+        $this->compareFieldWithExpected($fieldName, $userData[$fieldName]);
     }
 
     /**
@@ -328,13 +382,25 @@ final class UserGraphQLContext implements Context
         string $fieldName,
         string|int|bool|null $fieldValue
     ): void {
-        // Only compare if the field exists in the input
-        if (property_exists($this->graphQLInput, $fieldName)) {
-            Assert::assertEquals(
-                $this->graphQLInput->$fieldName,
-                $fieldValue
-            );
+        if ($this->shouldCompareField($fieldName)) {
+            $this->assertFieldValueEquals($fieldName, $fieldValue);
         }
+    }
+
+    private function shouldCompareField(string $fieldName): bool
+    {
+        return $this->graphQLInput !== null
+            && property_exists($this->graphQLInput, $fieldName);
+    }
+
+    private function assertFieldValueEquals(
+        string $fieldName,
+        string|int|bool|null $fieldValue
+    ): void {
+        Assert::assertEquals(
+            $this->graphQLInput->$fieldName,
+            $fieldValue
+        );
     }
 
     /**
