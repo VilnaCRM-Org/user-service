@@ -50,9 +50,9 @@ Go to browser and open the link below to access REST API docs
 
 > https://localhost/api/docs
 
-And using the link below you can access the GraphQL documentation
+You can access the GraphQL endpoint via the link below:
 
-> https://localhost/api/graphql/graphql_playground
+> [GraphQL endpoint](https://localhost/api/graphql)
 
 Also, you can see architecture diagram using link below
 
