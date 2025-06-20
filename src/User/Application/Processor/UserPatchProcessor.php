@@ -10,6 +10,7 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\UserPatchDto;
 use App\User\Application\DTO\UserPutDto;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
+use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\UserNotFoundException;
@@ -22,9 +23,9 @@ use App\User\Domain\ValueObject\UserUpdate;
 final readonly class UserPatchProcessor implements ProcessorInterface
 {
     public function __construct(
-        private UserRepositoryInterface $userRepository,
         private CommandBusInterface $commandBus,
-        private UpdateUserCommandFactoryInterface $updateUserCommandFactory
+        private UpdateUserCommandFactoryInterface $updateUserCommandFactory,
+        private GetUserQueryHandler $getUserQueryHandler
     ) {
     }
 
@@ -39,9 +40,8 @@ final readonly class UserPatchProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): User {
-        $userId = $uriVariables['id'];
-        $user = $this->userRepository->find($userId)
-            ?? throw new UserNotFoundException();
+        $user = $this->getUserQueryHandler->handle($uriVariables['id']);
+
 
         $newEmail = $this->getNewValue($data->email, $user->getEmail());
         $newInitials = $this->getNewValue(
