@@ -10,16 +10,15 @@ use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\UserPatchDto;
-use App\User\Application\DTO\UserPutDto;
 use App\User\Application\Factory\UpdateUserCommandFactory;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\Processor\UserPatchProcessor;
+use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 
 final class UserPatchProcessorTest extends UnitTestCase
@@ -28,9 +27,9 @@ final class UserPatchProcessorTest extends UnitTestCase
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;
     private UpdateUserCommandFactoryInterface $updateUserCommandFactory;
-    private UserRepositoryInterface $userRepository;
     private CommandBusInterface $commandBus;
     private UpdateUserCommandFactoryInterface $mockUpdateUserCommandFactory;
+    private GetUserQueryHandler $getUserQueryHandler;
     private UserPatchProcessor $processor;
 
     protected function setUp(): void
@@ -42,16 +41,17 @@ final class UserPatchProcessorTest extends UnitTestCase
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new UuidFactory());
         $this->updateUserCommandFactory = new UpdateUserCommandFactory();
-        $this->userRepository =
-            $this->createMock(UserRepositoryInterface::class);
+        $this->getUserQueryHandler = $this->createMock(
+            GetUserQueryHandler::class
+        );
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->mockUpdateUserCommandFactory = $this->createMock(
             UpdateUserCommandFactoryInterface::class
         );
         $this->processor = new UserPatchProcessor(
-            $this->userRepository,
             $this->commandBus,
-            $this->mockUpdateUserCommandFactory
+            $this->mockUpdateUserCommandFactory,
+            $this->getUserQueryHandler
         );
     }
 
@@ -71,7 +71,7 @@ final class UserPatchProcessorTest extends UnitTestCase
 
         $user = $this->userFactory->create($email, $initials, $password, $uuid);
 
-        $this->testProcessSetExpectations($user, $updateData);
+        $this->testProcessSetExpectations($user, $updateData, $userId);
 
         $result = $this->processor->process(
             new UserPatchDto($newEmail, $newInitials, $password, $newPassword),
@@ -96,7 +96,11 @@ final class UserPatchProcessorTest extends UnitTestCase
         $user = $this->userFactory->create($email, $initials, $password, $uuid);
         $updateData = new UserUpdate($email, $initials, $password, $password);
 
-        $this->testProcessWithoutFullParamsSetExpectations($user, $updateData);
+        $this->testProcessWithoutFullParamsSetExpectations(
+            $user,
+            $updateData,
+            $userId
+        );
 
         $result = $this->processor->process(
             new UserPatchDto($newEmail, $newInitials, $password, $newPassword),
@@ -121,7 +125,11 @@ final class UserPatchProcessorTest extends UnitTestCase
         $user = $this->userFactory->create($email, $initials, $password, $uuid);
         $updateData = new UserUpdate($email, $initials, $password, $password);
 
-        $this->testProcessWithSpacesPassedSetExpectations($user, $updateData);
+        $this->testProcessWithSpacesPassedSetExpectations(
+            $user,
+            $updateData,
+            $userId
+        );
 
         $result = $this->processor->process(
             new UserPatchDto($newEmail, $newInitials, $password, $newPassword),
@@ -134,88 +142,104 @@ final class UserPatchProcessorTest extends UnitTestCase
 
     public function testProcessUserNotFound(): void
     {
-        $this->userRepository->expects($this->once())
-            ->method('find')
-            ->willReturn(null);
+        $userId = $this->faker->uuid();
+
+        $this->getUserQueryHandler->expects(
+            $this->once()
+        )
+            ->method('handle')
+            ->with($userId)
+            ->willThrowException(new UserNotFoundException());
 
         $newEmail = $this->faker->email();
         $newInitials = $this->faker->name();
         $newPassword = $this->faker->password();
         $oldPassword = $this->faker->password();
-        $userPutDto =
-            new UserPutDto($newEmail, $newInitials, $oldPassword, $newPassword);
 
         $this->expectException(UserNotFoundException::class);
 
         $this->processor->process(
-            $userPutDto,
+            new UserPatchDto(
+                $newEmail,
+                $newInitials,
+                $oldPassword,
+                $newPassword
+            ),
             $this->mockOperation,
-            ['id' => $this->faker->uuid()]
+            ['id' => $userId]
         );
     }
 
     private function testProcessSetExpectations(
         UserInterface $user,
-        UserUpdate $updateData
+        UserUpdate $updateData,
+        string $userId
     ): void {
-        $command = $this->updateUserCommandFactory->create($user, $updateData);
-
-        $this->userRepository->expects($this->once())
-            ->method('find')
-            ->willReturn($user);
-
-        $this->mockUpdateUserCommandFactory->expects($this->once())
-            ->method('create')
-            ->with($user, $updateData)
-            ->willReturn($command);
-
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($command);
+        $command = $this->createCommand($user, $updateData);
+        $this->expectUserQueryHandler($userId, $user);
+        $this->expectUpdateUserCommandFactory($user, $updateData, $command);
+        $this->expectCommandBusDispatch($command);
     }
 
     private function testProcessWithoutFullParamsSetExpectations(
         UserInterface $user,
-        UserUpdate $updateData
+        UserUpdate $updateData,
+        string $userId
     ): void {
-        $command = $this->updateUserCommandFactory->create(
-            $user,
-            $updateData
-        );
-
-        $this->userRepository->expects($this->once())
-            ->method('find')
-            ->willReturn($user);
-
-        $this->mockUpdateUserCommandFactory->expects($this->once())
-            ->method('create')
-            ->with($user, $updateData)
-            ->willReturn($command);
-
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($command);
+        $command = $this->createCommand($user, $updateData);
+        $this->expectUserQueryHandler($userId, $user);
+        $this->expectUpdateUserCommandFactory($user, $updateData, $command);
+        $this->expectCommandBusDispatch($command);
     }
 
     private function testProcessWithSpacesPassedSetExpectations(
         UserInterface $user,
-        UserUpdate $updateData
+        UserUpdate $updateData,
+        string $userId
     ): void {
-        $command = $this->updateUserCommandFactory->create(
-            $user,
-            $updateData
-        );
+        $command = $this->createCommand($user, $updateData);
+        $this->expectUserQueryHandler($userId, $user);
+        $this->expectUpdateUserCommandFactory($user, $updateData, $command);
+        $this->expectCommandBusDispatch($command);
+    }
 
-        $this->userRepository->expects($this->once())
-            ->method('find')
+    private function createCommand(
+        UserInterface $user,
+        UserUpdate $updateData
+    ): object {
+        return $this->updateUserCommandFactory->create($user, $updateData);
+    }
+
+    private function expectUserQueryHandler(
+        string $userId,
+        UserInterface $user
+    ): void {
+        $this->getUserQueryHandler->expects(
+            $this->once()
+        )
+            ->method('handle')
+            ->with($userId)
             ->willReturn($user);
+    }
 
-        $this->mockUpdateUserCommandFactory->expects($this->once())
+    private function expectUpdateUserCommandFactory(
+        UserInterface $user,
+        UserUpdate $updateData,
+        object $command
+    ): void {
+        $this->mockUpdateUserCommandFactory->expects(
+            $this->once()
+        )
             ->method('create')
             ->with($user, $updateData)
             ->willReturn($command);
+    }
 
-        $this->commandBus->expects($this->once())
+    private function expectCommandBusDispatch(object $command): void
+    {
+        $this->commandBus->expects(
+            $this->once()
+        )
             ->method('dispatch')
             ->with($command);
     }
