@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Query;
 
-use PHPUnit\Framework\TestCase;
 use App\User\Application\Query\GetUserQueryHandler;
-use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Exception\UserNotFoundException;
+use App\User\Domain\Repository\UserRepositoryInterface;
+use PHPUnit\Framework\TestCase;
 
-class GetUserQueryHandlerTest extends TestCase
+final class GetUserQueryHandlerTest extends TestCase
 {
     public function testReturnsUserIfFound(): void
     {

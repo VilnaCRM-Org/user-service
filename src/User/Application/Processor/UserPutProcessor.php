@@ -11,7 +11,6 @@ use App\User\Application\DTO\UserPutDto;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\ValueObject\UserUpdate;
 
 /**

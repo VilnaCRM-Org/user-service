@@ -13,8 +13,6 @@ use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
-use App\User\Domain\Exception\UserNotFoundException;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 
 /**
@@ -41,7 +39,6 @@ final readonly class UserPatchProcessor implements ProcessorInterface
         array $context = []
     ): User {
         $user = $this->getUserQueryHandler->handle($uriVariables['id']);
-
 
         $newEmail = $this->getNewValue($data->email, $user->getEmail());
         $newInitials = $this->getNewValue(

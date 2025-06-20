@@ -12,7 +12,7 @@ use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 
-class User implements UserInterface
+final class User implements UserInterface
 {
     private bool $confirmed;
 
