@@ -29,7 +29,7 @@ final class UserRegisteredEventSubscriberTest extends IntegrationTestCase
     public function testConfirmationEmailSent(): void
     {
         $userId = $this->faker->uuid();
-        $emailAddress = 'test@example.com';
+        $emailAddress = $this->faker->email();
         $user = $this->container->get(UserFactoryInterface::class)->create(
             $emailAddress,
             $this->faker->name(),
