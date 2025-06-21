@@ -22,4 +22,4 @@ export const options = {
   batchPerHost: utils.getConfig().batchSize,
 };
 
-export default function func(data) {}
+export default function func() {}

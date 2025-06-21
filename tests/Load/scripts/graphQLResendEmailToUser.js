@@ -51,6 +51,6 @@ export default function resendEmail(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

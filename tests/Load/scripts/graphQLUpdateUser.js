@@ -60,6 +60,6 @@ export default function updateUser(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

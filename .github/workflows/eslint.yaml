@@ -39,4 +39,4 @@ jobs:
 
       - name: Run linter
         working-directory: tests/Load/
-        run: pnpm eslint
+        run: pnpm lint:fix
