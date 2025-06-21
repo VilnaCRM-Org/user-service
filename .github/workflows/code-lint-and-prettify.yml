@@ -32,53 +32,6 @@ jobs:
           git_config_global: true
           git_tag_gpgsign: true
 
-      - name: Configure GPG for automated signing
-        run: |
-          export GPG_TTY=$(tty)
-          echo "GPG_TTY=$GPG_TTY" >> $GITHUB_ENV
-          echo "GPG_PASSPHRASE=${{ secrets.GPG_PASSPHRASE }}" >> $GITHUB_ENV
-
-          mkdir -p ~/.gnupg
-          chmod 700 ~/.gnupg
-
-          cat > ~/.gnupg/gpg.conf << EOF
-          batch
-          no-tty
-          pinentry-mode loopback
-          EOF
-
-          cat > ~/.gnupg/gpg-agent.conf << EOF
-          allow-loopback-pinentry
-          pinentry-mode loopback
-          max-cache-ttl 86400
-          default-cache-ttl 86400
-          EOF
-
-          gpg-connect-agent reloadagent /bye || true
-
-          cat > ~/.gnupg/gpg-wrapper.sh << 'EOF'
-          #!/bin/bash
-          export GPG_TTY=$(tty)
-
-          case "$*" in
-            *--detach-sign*|*--sign*)
-              echo "$GPG_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 "$@"
-              ;;
-            *)
-              gpg "$@"
-              ;;
-          esac
-          EOF
-
-          chmod +x ~/.gnupg/gpg-wrapper.sh
-
-          git config --global gpg.program ~/.gnupg/gpg-wrapper.sh
-
-      - name: Test GPG signing
-        run: |
-          echo "Testing GPG signing..."
-          echo "test message" | ~/.gnupg/gpg-wrapper.sh --armor --detach-sign > /dev/null 2>&1 && echo "✅ GPG signing works" || echo "❌ GPG signing failed"
-
       - name: Run Super-Linter
         continue-on-error: true
         uses: super-linter/super-linter@v7.1.0
@@ -101,14 +54,10 @@ jobs:
         if: >
           github.event_name == 'pull_request' && github.ref_name !=
           github.event.repository.default_branch
-        env:
-          GPG_TTY: ${{ env.GPG_TTY }}
-          GPG_PASSPHRASE: ${{ env.GPG_PASSPHRASE }}
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           branch: ${{ github.event.pull_request.head.ref || github.head_ref || github.ref }}
-          commit_message: 'chore(#${{ github.event.number }}): fix linting issues'
-          commit_author: '${{ steps.import-gpg.outputs.name }} <${{ steps.import-gpg.outputs.email }}>'
+          commit_message: 'chore(#${{ toJSON(github.event.number) }}): fix linting issues'
           commit_user_name: ${{ steps.import-gpg.outputs.name }}
           commit_user_email: ${{ steps.import-gpg.outputs.email }}
           commit_options: '--signoff --gpg-sign'
