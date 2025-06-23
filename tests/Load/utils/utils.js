@@ -8,8 +8,8 @@ export default class Utils {
     const port = this.getConfig().apiPort;
 
     this.baseUrl = `http://${host}:${port}/api`;
-    this.baseHttpUrl = this.baseUrl + '/users';
-    this.baseGraphQLUrl = this.baseUrl + '/graphql';
+    this.baseHttpUrl = `${this.baseUrl  }/users`;
+    this.baseGraphQLUrl = `${this.baseUrl  }/graphql`;
     this.graphQLIdPrefix = '/api/users/';
   }
 

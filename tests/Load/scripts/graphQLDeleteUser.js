@@ -16,7 +16,7 @@ const users = insertUsersUtils.loadInsertedUsers();
 
 export function setup() {
   return {
-    users: users,
+    users,
   };
 }
 
@@ -41,13 +41,13 @@ export default function deleteUser(data) {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query: mutation }),
-    utils.getJsonHeader()
+    utils.getJsonHeader(),
   );
 
   utils.checkResponse(
     response,
     'deleted user returned',
-    res => JSON.parse(res.body).data[mutationName].user.id === `${id}`
+    res => JSON.parse(res.body).data[mutationName].user.id === `${id}`,
   );
 }
 

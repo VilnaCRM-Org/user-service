@@ -16,7 +16,7 @@ const users = insertUsersUtils.loadInsertedUsers();
 
 export function setup() {
   return {
-    users: users,
+    users,
   };
 }
 
@@ -40,13 +40,13 @@ export default async function confirmUser() {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query: mutation }),
-    utils.getJsonHeader()
+    utils.getJsonHeader(),
   );
 
   utils.checkResponse(
     response,
     'confirmed user returned',
-    res => JSON.parse(res.body).data[mutationName].user.id !== undefined
+    res => JSON.parse(res.body).data[mutationName].user.id !== undefined,
   );
 }
 

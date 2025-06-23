@@ -16,7 +16,7 @@ const users = insertUsersUtils.loadInsertedUsers();
 
 export function setup() {
   return {
-    users: users,
+    users,
   };
 }
 

@@ -16,7 +16,7 @@ const users = insertUsersUtils.loadInsertedUsers();
 
 export function setup() {
   return {
-    users: users,
+    users,
   };
 }
 
@@ -26,9 +26,9 @@ export default function updateUser(data) {
   const user = data.users[counter.up()];
   utils.checkUserIsDefined(user);
 
-  const id = user.id;
+  const {id} = user;
   const generatedUser = utils.generateUser();
-  const password = user.password;
+  const {password} = user;
 
   const payload = JSON.stringify({
     email: generatedUser.email,

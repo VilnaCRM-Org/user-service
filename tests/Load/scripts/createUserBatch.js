@@ -1,7 +1,7 @@
+import http from 'k6/http';
 import ScenarioUtils from '../utils/scenarioUtils.js';
 import Utils from '../utils/utils.js';
 import InsertUsersUtils from '../utils/insertUsersUtils.js';
-import http from 'k6/http';
 import MailCatcherUtils from '../utils/mailCatcherUtils.js';
 
 const scenarioName = 'createUserBatch';
@@ -9,7 +9,7 @@ const scenarioName = 'createUserBatch';
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
-const batchSize = utils.getConfig().endpoints[scenarioName].batchSize;
+const {batchSize} = utils.getConfig().endpoints[scenarioName];
 const mailCatcherUtils = new MailCatcherUtils(utils);
 
 export const options = scenarioUtils.getOptions();
