@@ -2,7 +2,7 @@
 include .env.test
 
 # Parameters
-PROJECT       = user-service
+PROJECT       = php-service-template
 GIT_AUTHOR    = Kravalg
 
 # Executables: local only
@@ -27,6 +27,7 @@ PSALM         = ./vendor/bin/psalm
 PHP_CS_FIXER  = ./vendor/bin/php-cs-fixer
 DEPTRAC       = ./vendor/bin/deptrac
 INFECTION     = ./vendor/bin/infection
+RECTOR        = ./vendor/bin/rector
 
 # Misc
 .DEFAULT_GOAL = help
@@ -56,12 +57,6 @@ else
     RUN_PHP_CS_FIXER = $(call DOCKER_EXEC_WITH_ENV,$(FIXER_ENV),$(PHP_CS_FIXER_CMD))
     RUN_TESTS_COVERAGE = $(call DOCKER_EXEC_WITH_ENV,APP_ENV=test -e XDEBUG_MODE=coverage,$(COVERAGE_CMD))
 endif
-
-
-#Input
-CLIENT_NAME ?= default_value
-
-export SYMFONY
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -103,6 +98,12 @@ deptrac-debug: ## Find files unassigned for Deptrac
 behat: ## A php framework for autotesting business expectations
 	$(EXEC_ENV) $(BEHAT)
 
+rector-apply: ## Apply Rector transformations to the codebase
+	$(EXEC_ENV) env RECTOR_MODE=dev $(RECTOR) process --ansi --config=rector.php
+
+rector-ci: ## Run Rector in CI mode (dry-run, no diffs)
+	$(EXEC_ENV) $(RECTOR) process --dry-run --ansi --no-progress-bar --no-diffs --config=rector.php
+
 integration-tests: ## Run integration tests
 	$(EXEC_ENV) $(PHPUNIT) --testsuite=Integration
 
@@ -118,27 +119,19 @@ setup-test-db: ## Create database for testing purposes
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 
 smoke-load-tests: build-k6-docker ## Run load tests with minimal load
-	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-smoke-load-tests.sh
 
 average-load-tests: build-k6-docker ## Run load tests with average load
-	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-average-load-tests.sh
 
 stress-load-tests: build-k6-docker ## Run load tests with high load
-	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-stress-load-tests.sh
 
 spike-load-tests: build-k6-docker ## Run load tests with a spike of extreme load
-	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-spike-load-tests.sh
 
 load-tests: build-k6-docker ## Run load tests
-	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-load-tests.sh
-
-execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
-	tests/Load/execute-load-test.sh $(scenario) $(or $(runSmoke),true) $(or $(runAverage),true) $(or $(runStress),true) $(or $(runSpike),true)
 
 build-k6-docker:
 	$(DOCKER) build -t k6 -f ./tests/Load/Dockerfile .
@@ -146,8 +139,8 @@ build-k6-docker:
 infection: ## Run mutations test.
 	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations -j8
 
-create-oauth-client: ## Run mutation testing
-	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(clientName)'
+execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
+	tests/Load/execute-load-test.sh $(scenario) $(or $(runSmoke),true) $(or $(runAverage),true) $(or $(runStress),true) $(or $(runSpike),true)
 
 doctrine-migrations-migrate: ## Executes a migration to a specified version or the latest available version
 	$(SYMFONY) d:m:m
@@ -188,7 +181,7 @@ logs: ## Show all logs
 new-logs: ## Show live logs
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
-start: up doctrine-migrations-migrate ## Start docker
+start: up ## Start docker
 
 stop: ## Stop docker and the Symfony binary server
 	$(DOCKER_COMPOSE) stop
@@ -215,3 +208,9 @@ generate-openapi-spec:
 
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec
+
+aws-load-tests: ## Run load tests on AWS infrastructure
+	tests/Load/aws-execute-load-tests.sh
+
+aws-load-tests-cleanup: ## Cleanup AWS infrastructure after testing
+	tests/Load/cleanup.sh
