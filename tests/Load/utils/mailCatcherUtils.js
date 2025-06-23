@@ -5,7 +5,7 @@ export default class MailCatcherUtils {
     this.utils = utils;
     this.config = utils.getConfig();
     const host = this.config.apiHost;
-    const {mailCatcherPort} = this.config;
+    const { mailCatcherPort } = this.config;
     this.mailCatcherUrl = `http://${host}:${mailCatcherPort}/messages`;
   }
 

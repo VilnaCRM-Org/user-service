@@ -16,7 +16,7 @@ export function setup() {
 }
 
 export const options = {
-  setupTimeout: `${utils.getConfig().endpoints[scenarioName].setupTimeoutInMinutes  }m`,
+  setupTimeout: `${utils.getConfig().endpoints[scenarioName].setupTimeoutInMinutes}m`,
   stages: [{ duration: '1s', target: 1 }],
   insecureSkipTLSVerify: true,
   batchPerHost: utils.getConfig().batchSize,

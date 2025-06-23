@@ -5,11 +5,7 @@ module.exports = {
     browser: true,
     jest: true,
   },
-  extends: [
-    'eslint:recommended',
-    'airbnb-base',
-    'prettier',
-  ],
+  extends: ['eslint:recommended', 'airbnb-base', 'prettier'],
   parserOptions: {
     ecmaVersion: 2022,
     sourceType: 'module',
@@ -55,18 +51,28 @@ module.exports = {
     'eol-last': ['error', 'always'],
     indent: ['error', 2],
     // Ігнорувати K6 модулі
-    'import/no-unresolved': ['error', {
-      ignore: ['^k6', '^k6/.*'],
-    }],
+    'import/no-unresolved': [
+      'error',
+      {
+        ignore: ['^k6', '^k6/.*'],
+      },
+    ],
     // Дозволити .js розширення (необхідно для K6)
-    'import/extensions': ['error', 'never', {
-      js: 'always',
-    }],
+    'import/extensions': [
+      'error',
+      'never',
+      {
+        js: 'always',
+      },
+    ],
     // Дозволити деякі речі для K6
-    'no-restricted-globals': ['error', {
-      name: 'open',
-      message: 'Use import instead of global open (except in K6 context)',
-    }],
+    'no-restricted-globals': [
+      'error',
+      {
+        name: 'open',
+        message: 'Use import instead of global open (except in K6 context)',
+      },
+    ],
     'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
     'class-methods-use-this': 'off',
     'consistent-return': 'off',

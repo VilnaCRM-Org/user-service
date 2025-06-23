@@ -9,7 +9,7 @@ const scenarioName = 'createUserBatch';
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
-const {batchSize} = utils.getConfig().endpoints[scenarioName];
+const { batchSize } = utils.getConfig().endpoints[scenarioName];
 const mailCatcherUtils = new MailCatcherUtils(utils);
 
 export const options = scenarioUtils.getOptions();

@@ -28,7 +28,7 @@ export default function updateUser(data) {
 
   const { id } = user;
   const generatedUser = utils.generateUser();
-  const {password} = user;
+  const { password } = user;
 
   const payload = JSON.stringify({
     email: generatedUser.email,
@@ -40,7 +40,7 @@ export default function updateUser(data) {
   const response = http.patch(
     `${utils.getBaseHttpUrl()}/${id}`,
     payload,
-    utils.getMergePatchHeader(),
+    utils.getMergePatchHeader()
   );
 
   utils.checkResponse(response, 'is status 200', res => res.status === 200);

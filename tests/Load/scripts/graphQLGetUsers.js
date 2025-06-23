@@ -11,7 +11,7 @@ const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 const mailCatcherUtils = new MailCatcherUtils(utils);
 
-const {usersToGetInOneRequest} = utils.getConfig().endpoints[scenarioName];
+const { usersToGetInOneRequest } = utils.getConfig().endpoints[scenarioName];
 const users = insertUsersUtils.loadInsertedUsers();
 
 export function setup() {
@@ -37,13 +37,13 @@ export default function getUsers() {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query }),
-    utils.getJsonHeader(),
+    utils.getJsonHeader()
   );
 
   utils.checkResponse(
     response,
     'users returned',
-    res => JSON.parse(res.body).data.users.edges.length === usersToGetInOneRequest,
+    res => JSON.parse(res.body).data.users.edges.length === usersToGetInOneRequest
   );
 }
 

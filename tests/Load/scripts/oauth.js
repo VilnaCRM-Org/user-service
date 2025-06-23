@@ -15,7 +15,7 @@ export const options = scenarioUtils.getOptions();
 export default function getAccessToken() {
   const grantType = 'client_credentials';
   const clientId = config.endpoints[scenarioName].clientID;
-  const {clientSecret} = config.endpoints[scenarioName];
+  const { clientSecret } = config.endpoints[scenarioName];
 
   const payload = JSON.stringify({
     grant_type: grantType,

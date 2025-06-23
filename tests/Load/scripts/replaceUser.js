@@ -26,9 +26,9 @@ export default function updateUser(data) {
   const user = data.users[counter.up()];
   utils.checkUserIsDefined(user);
 
-  const {id} = user;
+  const { id } = user;
   const generatedUser = utils.generateUser();
-  const {password} = user;
+  const { password } = user;
 
   const payload = JSON.stringify({
     email: generatedUser.email,
