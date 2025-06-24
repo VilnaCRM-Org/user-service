@@ -63,7 +63,16 @@ final readonly class UserPatchProcessor implements ProcessorInterface
 
     private function getNewValue(string $newValue, string $defaultValue): string
     {
-        return strlen(trim($newValue)) > 0 ? $newValue : $defaultValue;
+        $trimmedValue = trim($newValue);
+        if (strlen($trimmedValue) === 0) {
+            return $defaultValue;
+        }
+
+        if (filter_var($trimmedValue, FILTER_VALIDATE_EMAIL)) {
+            return strtolower($trimmedValue);
+        }
+
+        return $trimmedValue;
     }
 
     private function dispatchCommand(

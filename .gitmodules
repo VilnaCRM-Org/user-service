@@ -4,9 +4,3 @@
 [submodule "tests/CLI/tests/CLI/bats-core/bats-support"]
 	path = tests/CLI/tests/CLI/bats-core/bats-support
 	url = https://github.com/bats-core/bats-support
-[submodule "tests/CLI/bats/bats-support"]
-	path = tests/CLI/bats/bats-support
-	url = https://github.com/bats-core/bats-support.git
-[submodule "tests/CLI/bats/bats-assert"]
-	path = tests/CLI/bats/bats-assert
-	url = https://github.com/bats-core/bats-assert.git

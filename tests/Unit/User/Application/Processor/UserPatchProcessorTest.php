@@ -71,7 +71,7 @@ final class UserPatchProcessorTest extends UnitTestCase
 
         $user = $this->userFactory->create($email, $initials, $password, $uuid);
 
-        $this->testProcessSetExpectations($user, $updateData, $userId);
+        $this->setupProcessExpectations($user, $updateData, $userId);
 
         $result = $this->processor->process(
             new UserPatchDto($newEmail, $newInitials, $password, $newPassword),
@@ -87,7 +87,7 @@ final class UserPatchProcessorTest extends UnitTestCase
         [$user, $email, $initials, $password, $userId] =
             $this->setupUserForPatchTest();
 
-        $this->testProcessWithoutFullParamsSetExpectations(
+        $this->setupProcessExpectations(
             $user,
             new UserUpdate($email, $initials, $password, $password),
             $userId
@@ -108,7 +108,7 @@ final class UserPatchProcessorTest extends UnitTestCase
         [$user, $email, $initials, $password, $userId] =
             $this->setupUserForPatchTest();
 
-        $this->testProcessWithSpacesPassedSetExpectations(
+        $this->setupProcessExpectations(
             $user,
             new UserUpdate($email, $initials, $password, $password),
             $userId
@@ -147,29 +147,7 @@ final class UserPatchProcessorTest extends UnitTestCase
         );
     }
 
-    private function testProcessSetExpectations(
-        UserInterface $user,
-        UserUpdate $updateData,
-        string $userId
-    ): void {
-        $command = $this->createCommand($user, $updateData);
-        $this->expectUserQueryHandler($userId, $user);
-        $this->expectUpdateUserCommandFactory($user, $updateData, $command);
-        $this->expectCommandBusDispatch($command);
-    }
-
-    private function testProcessWithoutFullParamsSetExpectations(
-        UserInterface $user,
-        UserUpdate $updateData,
-        string $userId
-    ): void {
-        $command = $this->createCommand($user, $updateData);
-        $this->expectUserQueryHandler($userId, $user);
-        $this->expectUpdateUserCommandFactory($user, $updateData, $command);
-        $this->expectCommandBusDispatch($command);
-    }
-
-    private function testProcessWithSpacesPassedSetExpectations(
+    private function setupProcessExpectations(
         UserInterface $user,
         UserUpdate $updateData,
         string $userId
