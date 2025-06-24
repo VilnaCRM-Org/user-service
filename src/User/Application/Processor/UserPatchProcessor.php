@@ -40,7 +40,7 @@ final readonly class UserPatchProcessor implements ProcessorInterface
     ): User {
         $user = $this->getUserQueryHandler->handle($uriVariables['id']);
 
-        $newEmail = $this->getNewValue($data->email, $user->getEmail());
+        $newEmail = $this->getNewEmailValue($data->email, $user->getEmail());
         $newInitials = $this->getNewValue(
             $data->initials,
             $user->getInitials()
@@ -64,15 +64,20 @@ final readonly class UserPatchProcessor implements ProcessorInterface
     private function getNewValue(string $newValue, string $defaultValue): string
     {
         $trimmedValue = trim($newValue);
+        return strlen($trimmedValue) === 0 ? $defaultValue : $trimmedValue;
+    }
+
+    private function getNewEmailValue(
+        string $newValue,
+        string $defaultValue
+    ): string {
+        $trimmedValue = trim($newValue);
         if (strlen($trimmedValue) === 0) {
             return $defaultValue;
         }
 
-        if (filter_var($trimmedValue, FILTER_VALIDATE_EMAIL)) {
-            return strtolower($trimmedValue);
-        }
-
-        return $trimmedValue;
+        $isValidEmail = filter_var($trimmedValue, FILTER_VALIDATE_EMAIL);
+        return $isValidEmail ? $trimmedValue : $defaultValue;
     }
 
     private function dispatchCommand(
