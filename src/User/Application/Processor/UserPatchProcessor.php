@@ -80,7 +80,7 @@ final readonly class UserPatchProcessor implements ProcessorInterface
             return strtolower($trimmedValue);
         }
         return $trimmedValue;
- }
+    }
 
     private function dispatchCommand(
         UserInterface $user,
