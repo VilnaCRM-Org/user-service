@@ -76,9 +76,11 @@ final readonly class UserPatchProcessor implements ProcessorInterface
             return $defaultValue;
         }
 
-        $isValidEmail = filter_var($trimmedValue, FILTER_VALIDATE_EMAIL);
-        return $isValidEmail ? $trimmedValue : $defaultValue;
-    }
+        if (filter_var($trimmedValue, FILTER_VALIDATE_EMAIL)) {
+            return strtolower($trimmedValue);
+        }
+        return $trimmedValue;
+ }
 
     private function dispatchCommand(
         UserInterface $user,
