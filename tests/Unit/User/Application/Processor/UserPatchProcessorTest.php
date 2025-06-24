@@ -84,86 +84,63 @@ final class UserPatchProcessorTest extends UnitTestCase
 
     public function testProcessWithoutFullParams(): void
     {
-        $email = $this->faker->email();
-        $initials = $this->faker->name();
-        $password = $this->faker->password();
-        $userId = $this->faker->uuid();
-        $newPassword = '';
-        $newInitials = '';
-        $newEmail = '';
-        $uuid = $this->uuidTransformer->transformFromString($userId);
-
-        $user = $this->userFactory->create($email, $initials, $password, $uuid);
-        $updateData = new UserUpdate($email, $initials, $password, $password);
+        [$user, $email, $initials, $password, $userId] =
+            $this->setupUserForPatchTest();
 
         $this->testProcessWithoutFullParamsSetExpectations(
             $user,
-            $updateData,
+            new UserUpdate($email, $initials, $password, $password),
             $userId
         );
 
-        $result = $this->processor->process(
-            new UserPatchDto($newEmail, $newInitials, $password, $newPassword),
-            $this->mockOperation,
-            ['id' => $userId]
+        $this->assertInstanceOf(
+            User::class,
+            $this->processor->process(
+                new UserPatchDto('', '', $password, ''),
+                $this->mockOperation,
+                ['id' => $userId]
+            )
         );
-
-        $this->assertInstanceOf(User::class, $result);
     }
 
     public function testProcessWithSpacesPassed(): void
     {
-        $email = $this->faker->email();
-        $initials = $this->faker->name();
-        $password = $this->faker->password();
-        $userId = $this->faker->uuid();
-        $newPassword = ' ';
-        $newInitials = ' ';
-        $newEmail = ' ';
-        $uuid = $this->uuidTransformer->transformFromString($userId);
-
-        $user = $this->userFactory->create($email, $initials, $password, $uuid);
-        $updateData = new UserUpdate($email, $initials, $password, $password);
+        [$user, $email, $initials, $password, $userId] =
+            $this->setupUserForPatchTest();
 
         $this->testProcessWithSpacesPassedSetExpectations(
             $user,
-            $updateData,
+            new UserUpdate($email, $initials, $password, $password),
             $userId
         );
 
-        $result = $this->processor->process(
-            new UserPatchDto($newEmail, $newInitials, $password, $newPassword),
-            $this->mockOperation,
-            ['id' => $userId]
+        $this->assertInstanceOf(
+            User::class,
+            $this->processor->process(
+                new UserPatchDto(' ', ' ', $password, ' '),
+                $this->mockOperation,
+                ['id' => $userId]
+            )
         );
-
-        $this->assertInstanceOf(User::class, $result);
     }
 
     public function testProcessUserNotFound(): void
     {
         $userId = $this->faker->uuid();
 
-        $this->getUserQueryHandler->expects(
-            $this->once()
-        )
+        $this->getUserQueryHandler->expects($this->once())
             ->method('handle')
             ->with($userId)
             ->willThrowException(new UserNotFoundException());
-
-        $newEmail = $this->faker->email();
-        $newInitials = $this->faker->name();
-        $newPassword = $this->faker->password();
-        $oldPassword = $this->faker->password();
 
         $this->expectException(UserNotFoundException::class);
 
         $this->processor->process(
             new UserPatchDto(
-                $newEmail,
-                $newInitials,
-                $oldPassword,
-                $newPassword
+                $this->faker->email(),
+                $this->faker->name(),
+                $this->faker->password(),
+                $this->faker->password()
             ),
             $this->mockOperation,
             ['id' => $userId]
@@ -242,5 +219,25 @@ final class UserPatchProcessorTest extends UnitTestCase
         )
             ->method('dispatch')
             ->with($command);
+    }
+
+    /**
+     * @return array{0: UserInterface, 1: string, 2: string, 3: string, 4: string}
+     */
+    private function setupUserForPatchTest(): array
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+        $userId = $this->faker->uuid();
+
+        $user = $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->uuidTransformer->transformFromString($userId)
+        );
+
+        return [$user, $email, $initials, $password, $userId];
     }
 }
