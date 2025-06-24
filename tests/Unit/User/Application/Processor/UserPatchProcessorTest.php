@@ -84,8 +84,13 @@ final class UserPatchProcessorTest extends UnitTestCase
 
     public function testProcessWithoutFullParams(): void
     {
-        [$user, $email, $initials, $password, $userId] =
-            $this->setupUserForPatchTest();
+        [
+            $user,
+            $email,
+            $initials,
+            $password,
+            $userId,
+        ] = $this->setupUserForPatchTest();
 
         $this->setupProcessExpectations(
             $user,
@@ -105,8 +110,13 @@ final class UserPatchProcessorTest extends UnitTestCase
 
     public function testProcessWithSpacesPassed(): void
     {
-        [$user, $email, $initials, $password, $userId] =
-            $this->setupUserForPatchTest();
+        [
+            $user,
+            $email,
+            $initials,
+            $password,
+            $userId,
+        ] = $this->setupUserForPatchTest();
 
         $this->setupProcessExpectations(
             $user,
@@ -142,6 +152,55 @@ final class UserPatchProcessorTest extends UnitTestCase
                 $this->faker->password(),
                 $this->faker->password()
             ),
+            $this->mockOperation,
+            ['id' => $userId]
+        );
+    }
+
+    public function testProcessWithInvalidEmailReturnsDefault(): void
+    {
+        [
+            $user,
+            $email,
+            $initials,
+            $password,
+            $userId,
+        ] = $this->setupUserForPatchTest();
+        $result = $this->processWithInvalidEmail(
+            $user,
+            $email,
+            $initials,
+            $password,
+            $userId
+        );
+        $this->assertEquals(
+            $email,
+            $result->getEmail()
+        );
+    }
+
+    private function processWithInvalidEmail(
+        UserInterface $user,
+        string $email,
+        string $initials,
+        string $password,
+        string $userId
+    ): UserInterface {
+        $invalidEmail = 'not-an-email';
+        $updateData = new UserUpdate(
+            $invalidEmail,
+            $initials,
+            $password,
+            $password
+        );
+        $this->setupProcessExpectations($user, $updateData, $userId);
+        return $this->processor->process(
+            (object) [
+                'email' => $invalidEmail,
+                'initials' => $initials,
+                'newPassword' => $password,
+                'oldPassword' => $password,
+            ],
             $this->mockOperation,
             ['id' => $userId]
         );
@@ -216,6 +275,12 @@ final class UserPatchProcessorTest extends UnitTestCase
             $this->uuidTransformer->transformFromString($userId)
         );
 
-        return [$user, $email, $initials, $password, $userId];
+        return [
+            $user,
+            $email,
+            $initials,
+            $password,
+            $userId,
+        ];
     }
 }
