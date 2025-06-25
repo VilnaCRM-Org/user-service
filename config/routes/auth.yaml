@@ -1,0 +1,3 @@
+auth_controllers:
+  resource: ../../src/User/Infrastructure/Controller/
+  type: attribute

@@ -54,7 +54,7 @@ final class InitialsValidatorTest extends UnitTestCase
 
     public function testOptionalDefaultValue(): void
     {
-        $this->context->expects($this->exactly(0))
+        $this->context->expects($this->never())
             ->method('buildViolation');
         $this->validator->validate(
             '',
