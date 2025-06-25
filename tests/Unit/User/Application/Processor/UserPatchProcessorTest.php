@@ -13,6 +13,7 @@ use App\User\Application\DTO\UserPatchDto;
 use App\User\Application\Factory\UpdateUserCommandFactory;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\Processor\UserPatchProcessor;
+use App\Tests\Unit\User\Application\Processor\UserPatchTestData;
 use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
