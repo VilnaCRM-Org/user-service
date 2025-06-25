@@ -18,7 +18,7 @@ updates:
   - package-ecosystem: 'npm'
     directory: '/tests/Load'
     schedule:
-      interval: 'weekly'
+      interval: 'monthly'
     reviewers:
       - 'Kravalg'
     groups:

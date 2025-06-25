@@ -1,12 +1,16 @@
-# Changelog
+# [2.7.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.6.0...v2.7.0) (2025-06-25)
 
-## [2.6.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.5.0...v2.6.0) (2025-05-28)
+### Features
+
+- **deps:** bump brace-expansion from 1.1.11 to 1.1.12 in /tests/Load in the npm_and_yarn group ([#196](https://github.com/VilnaCRM-Org/user-service/issues/196)) ([07efad3](https://github.com/VilnaCRM-Org/user-service/commit/07efad31bb5f92e8dbeb9697917e2acc1a05add8))
+
+# [2.6.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.5.0...v2.6.0) (2025-05-28)
 
 ### Features
 
 - **deps:** bump the all-deps group across 1 directory with 5 updates ([#189](https://github.com/VilnaCRM-Org/user-service/issues/189)) ([c800529](https://github.com/VilnaCRM-Org/user-service/commit/c80052918cfbd1404ee77b0ef84d1dc4a3c96b97))
 
-## [2.5.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.4.1...v2.5.0) (2025-04-14)
+# [2.5.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.4.1...v2.5.0) (2025-04-14)
 
 ### Features
 
@@ -16,10 +20,10 @@
 
 ### Bug Fixes
 
-- **#144:** env and extract hardcoded dsn to env ([#151](https://github.com/VilnaCRM-Org/user-service/issues/151)) ([5af27cf](https://github.com/VilnaCRM-Org/user-service/commit/5af27cfec314106bafa2b5c4652267289f8f1486)), closes [#144](https://github.com/VilnaCRM-Org/user-service/issues/144)
+- **#144:** env and extract hardcoded dsn to env ([#151](https://github.com/VilnaCRM-Org/user-service/issues/151)) ([5af27cf](https://github.com/VilnaCRM-Org/user-service/commit/5af27cfec314106bafa2b5c4652267289f8f1486)), closes [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144)
 
-## [2.3.1](https://github.com/VilnaCRM-Org/user-service/compare/v2.3.0...v2.3.1) (2025-02-04)
+# [2.4.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.3.1...v2.4.0) (2025-02-11)
 
-### Bug Fixes
+### Features
 
-- **#137:** load test reports and error fix ([#138](https://github.com/VilnaCRM-Org/user-service/issues/138)) ([87b9f48](https://github.com/VilnaCRM-Org/user-service/commit/87b9f48b482bb824e7ea8d9592b34a02b04d66e7)), closes [#137](https://github.com/VilnaCRM-Org/user-service/issues/137)
+- **#144:** remove hardcoding in .env ([#145](https://github.com/VilnaCRM-Org/user-service/issues/145)) ([cf0ddb8](https://github.com/VilnaCRM-Org/user-service/commit/cf0ddb83c9794387d1c2dedcf6e56529931dd5a9)), closes [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144)
