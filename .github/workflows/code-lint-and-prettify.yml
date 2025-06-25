@@ -84,7 +84,7 @@ jobs:
           VALIDATE_YAML_PRETTIER: true
           VALIDATE_ENV: true
           VALIDATE_JAVASCRIPT_PRETTIER: true
-          FIX_JAVASCRIPT_PRETTIER: false
+          FIX_JAVASCRIPT_PRETTIER: true
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
 
