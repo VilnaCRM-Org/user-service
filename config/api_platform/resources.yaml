@@ -67,7 +67,7 @@ resources:
                     properties:
                       errors:
                         type: object
-                        example: { "email": "This field is required" }
+                        example: { 'email': 'This field is required' }
             '401':
               description: 'Invalid credentials'
               content:
