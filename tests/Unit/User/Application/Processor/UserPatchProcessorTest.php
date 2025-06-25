@@ -36,6 +36,8 @@ final class UserPatchProcessorTest extends UnitTestCase
     {
         parent::setUp();
 
+        $this->faker->seed(1234);
+
         $this->mockOperation =
             $this->createMock(Operation::class);
         $this->userFactory = new UserFactory();

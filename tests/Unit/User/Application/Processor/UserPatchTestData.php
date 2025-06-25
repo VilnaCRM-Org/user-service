@@ -14,5 +14,6 @@ final class UserPatchTestData
         public readonly string $initials,
         public readonly string $password,
         public readonly string $userId,
-    ) {}
-} 
+    ) {
+    }
+}
