@@ -195,12 +195,7 @@ final class UserPatchProcessorTest extends UnitTestCase
         );
         $this->setupProcessExpectations($user, $updateData, $userId);
         return $this->processor->process(
-            (object) [
-                'email' => $invalidEmail,
-                'initials' => $initials,
-                'newPassword' => $password,
-                'oldPassword' => $password,
-            ],
+            new UserPatchDto($invalidEmail, $initials, $password, $password),
             $this->mockOperation,
             ['id' => $userId]
         );
