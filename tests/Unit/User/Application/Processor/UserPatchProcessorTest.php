@@ -157,7 +157,7 @@ final class UserPatchProcessorTest extends UnitTestCase
         );
     }
 
-    public function testProcessWithInvalidEmailReturnsDefault(): void
+    public function testProcessWithInvalidEmailPreservesOriginal(): void
     {
         [
             $user,
