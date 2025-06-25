@@ -84,52 +84,46 @@ final class UserPatchProcessorTest extends UnitTestCase
 
     public function testProcessWithoutFullParams(): void
     {
-        [
-            $user,
-            $email,
-            $initials,
-            $password,
-            $userId,
-        ] = $this->setupUserForPatchTest();
-
+        $testData = $this->setupUserForPatchTest();
         $this->setupProcessExpectations(
-            $user,
-            new UserUpdate($email, $initials, $password, $password),
-            $userId
+            $testData->user,
+            new UserUpdate(
+                $testData->email,
+                $testData->initials,
+                $testData->password,
+                $testData->password
+            ),
+            $testData->userId
         );
-
         $this->assertInstanceOf(
             User::class,
             $this->processor->process(
-                new UserPatchDto('', '', $password, ''),
+                new UserPatchDto('', '', $testData->password, ''),
                 $this->mockOperation,
-                ['id' => $userId]
+                ['id' => $testData->userId]
             )
         );
     }
 
     public function testProcessWithSpacesPassed(): void
     {
-        [
-            $user,
-            $email,
-            $initials,
-            $password,
-            $userId,
-        ] = $this->setupUserForPatchTest();
-
+        $testData = $this->setupUserForPatchTest();
         $this->setupProcessExpectations(
-            $user,
-            new UserUpdate($email, $initials, $password, $password),
-            $userId
+            $testData->user,
+            new UserUpdate(
+                $testData->email,
+                $testData->initials,
+                $testData->password,
+                $testData->password
+            ),
+            $testData->userId
         );
-
         $this->assertInstanceOf(
             User::class,
             $this->processor->process(
-                new UserPatchDto(' ', ' ', $password, ' '),
+                new UserPatchDto(' ', ' ', $testData->password, ' '),
                 $this->mockOperation,
-                ['id' => $userId]
+                ['id' => $testData->userId]
             )
         );
     }
@@ -159,43 +153,45 @@ final class UserPatchProcessorTest extends UnitTestCase
 
     public function testProcessWithInvalidEmailPreservesOriginal(): void
     {
-        [
-            $user,
-            $email,
-            $initials,
-            $password,
-            $userId,
-        ] = $this->setupUserForPatchTest();
-        $result = $this->processWithInvalidEmail(
-            $user,
-            $email,
-            $initials,
-            $password,
-            $userId
+        $testData = $this->setupUserForPatchTest();
+        $result = $this->processWithInvalidInput(
+            $testData->user,
+            $testData->email,
+            $testData->initials,
+            $testData->password,
+            $testData->userId
         );
         $this->assertEquals(
-            $email,
+            $testData->email,
             $result->getEmail()
         );
     }
 
-    private function processWithInvalidEmail(
+    private function processWithInvalidInput(
         UserInterface $user,
         string $email,
         string $initials,
         string $password,
-        string $userId
+        string $userId,
+        ?string $invalidEmail = null,
+        ?string $invalidInitials = null,
+        ?string $invalidPassword = null
     ): UserInterface {
-        $invalidEmail = 'not-an-email';
+        $invalidEmail = $invalidEmail ?? 'not-an-email';
         $updateData = new UserUpdate(
             $invalidEmail,
-            $initials,
-            $password,
+            $invalidInitials ?? $initials,
+            $invalidPassword ?? $password,
             $password
         );
         $this->setupProcessExpectations($user, $updateData, $userId);
         return $this->processor->process(
-            new UserPatchDto($invalidEmail, $initials, $password, $password),
+            new UserPatchDto(
+                $invalidEmail,
+                $invalidInitials ?? $initials,
+                $password,
+                $invalidPassword ?? $password
+            ),
             $this->mockOperation,
             ['id' => $userId]
         );
@@ -253,10 +249,7 @@ final class UserPatchProcessorTest extends UnitTestCase
             ->with($command);
     }
 
-    /**
-     * @return array{0: UserInterface, 1: string, 2: string, 3: string, 4: string}
-     */
-    private function setupUserForPatchTest(): array
+    private function setupUserForPatchTest(): UserPatchTestData
     {
         $email = $this->faker->email();
         $initials = $this->faker->name();
@@ -270,12 +263,12 @@ final class UserPatchProcessorTest extends UnitTestCase
             $this->uuidTransformer->transformFromString($userId)
         );
 
-        return [
+        return new UserPatchTestData(
             $user,
             $email,
             $initials,
             $password,
-            $userId,
-        ];
+            $userId
+        );
     }
 }
