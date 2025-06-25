@@ -10,8 +10,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class InitialsValidator extends ConstraintValidator
 {
-    private const MAX_INITIALS_LENGTH = 255;
-
     public function __construct(
         private readonly TranslatorInterface $translator
     ) {
@@ -19,33 +17,38 @@ final class InitialsValidator extends ConstraintValidator
 
     public function validate(mixed $value, Constraint $constraint): void
     {
-        if ($this->isNull($value) ||
-            ($constraint->isOptional() && $this->isEmpty($value))
-        ) {
+        if ($this->shouldSkipValidation($value, $constraint)) {
             return;
         }
 
-        $trimmedValue = trim($value);
-
-        if ($this->isEmpty($trimmedValue) && strlen($value) > 0) {
-            $this->addViolation(
-                $this->translator->trans('initials.spaces')
-            );
+        if ($this->isOnlySpaces($value)) {
+            $this->addTranslatedViolation('initials.spaces');
         }
     }
 
-    private function isEmpty(mixed $value): bool
-    {
-        return $value === '';
+    private function shouldSkipValidation(
+        mixed $value,
+        Constraint $constraint
+    ): bool {
+        if ($value === null) {
+            return true;
+        }
+
+        if ($constraint->isOptional() && $value === '') {
+            return true;
+        }
+
+        return false;
     }
 
-    private function isNull(mixed $value): bool
+    private function isOnlySpaces(mixed $value): bool
     {
-        return $value === null;
+        return $value !== '' && trim($value) === '';
     }
 
-    private function addViolation(string $message): void
+    private function addTranslatedViolation(string $messageKey): void
     {
+        $message = $this->translator->trans($messageKey);
         $this->context->buildViolation($message)->addViolation();
     }
 }

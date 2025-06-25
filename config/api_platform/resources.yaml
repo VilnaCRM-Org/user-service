@@ -19,8 +19,67 @@ resources:
         processor: 'App\User\Application\Processor\RegisterUserProcessor'
       signin_http:
         class: ApiPlatform\Metadata\Post
-        uriTemplate: '/signin'
-        processor: 'App\User\Application\Processor\SigninAction'
+        uriTemplate: '/oauth/signin'
+        input: 'App\User\Application\DTO\SignInDto'
+        controller: 'App\User\Infrastructure\Controller\AuthController::signin'
+        openapi:
+          tags: ['OAuth']
+          summary: 'User sign in'
+          description: 'Authenticate user and get session information'
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  type: object
+                  required: ['email', 'password']
+                  properties:
+                    email:
+                      type: string
+                      format: email
+                      example: 'user@example.com'
+                    password:
+                      type: string
+                      example: 'password123'
+                    rememberMe:
+                      type: boolean
+                      example: false
+          responses:
+            '200':
+              description: 'Successful sign in'
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      twoFactorEnabled:
+                        type: boolean
+                        example: false
+                      sessionId:
+                        type: string
+                        example: 'sess_1234567890abcdef'
+            '400':
+              description: 'Validation error'
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      errors:
+                        type: object
+                        example: { "email": "This field is required" }
+            '401':
+              description: 'Invalid credentials'
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      error:
+                        type: string
+                        example: 'Invalid credentials'
+            '500':
+              description: 'Internal server error'
       create_batch_http:
         class: 'ApiPlatform\Metadata\Post'
         input: 'App\User\Application\DTO\UserRegisterBatchDto'
