@@ -9,7 +9,6 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\Tests\Unit\User\Application\Processor\UserPatchTestData;
 use App\User\Application\DTO\UserPatchDto;
 use App\User\Application\Factory\UpdateUserCommandFactory;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
@@ -36,8 +35,6 @@ final class UserPatchProcessorTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->faker->seed(12345);
 
         $this->mockOperation =
             $this->createMock(Operation::class);
