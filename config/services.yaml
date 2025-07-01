@@ -81,3 +81,8 @@ services:
         credentials:
           key: '%env(AWS_SQS_KEY)%'
           secret: '%env(AWS_SQS_SECRET)%'
+
+  # Command Handlers
+  App\User\Application\CommandHandler\SignInCommandHandler:
+    arguments:
+      $userRepository: '@App\User\Infrastructure\Repository\MariaDBUserRepository'
