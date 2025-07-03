@@ -8,11 +8,10 @@ use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Factory\ConfirmUserCommandFactoryInterface;
 use App\User\Application\MutationInput\MutationInputValidator;
+use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Application\Transformer\ConfirmUserMutationInputTransformer;
 use App\User\Domain\Exception\TokenNotFoundException;
 use App\User\Domain\Repository\TokenRepositoryInterface;
-use App\User\Application\Query\GetUserQueryHandler;
-use App\User\Domain\Repository\UserRepositoryInterface;
 
 final readonly class ConfirmUserMutationResolver implements
     MutationResolverInterface
@@ -21,7 +20,6 @@ final readonly class ConfirmUserMutationResolver implements
         private TokenRepositoryInterface $tokenRepository,
         private CommandBusInterface $commandBus,
         private GetUserQueryHandler $getUserQueryHandler,
-        private UserRepositoryInterface $userRepository,
         private MutationInputValidator $validator,
         private ConfirmUserMutationInputTransformer $transformer,
         private ConfirmUserCommandFactoryInterface $confirmUserCommandFactory
