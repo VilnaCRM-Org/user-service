@@ -9,11 +9,10 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\RetryDto;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
-use App\User\Domain\Exception\UserNotFoundException;
+use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Factory\ConfirmationEmailFactoryInterface;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
-use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 

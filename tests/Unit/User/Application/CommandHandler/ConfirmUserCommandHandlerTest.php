@@ -11,6 +11,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\CommandHandler\ConfirmUserCommandHandler;
 use App\User\Application\Factory\ConfirmUserCommandFactory;
 use App\User\Application\Factory\ConfirmUserCommandFactoryInterface;
+use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
@@ -21,7 +22,6 @@ use App\User\Domain\Factory\Event\UserConfirmedEventFactory;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
-use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
