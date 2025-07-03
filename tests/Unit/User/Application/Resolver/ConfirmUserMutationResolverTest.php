@@ -149,7 +149,6 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
             $this->validator,
             $this->transformer,
             $this->mockConfirmUserCommandFactory,
-            $this->userRepository,
         );
     }
 
