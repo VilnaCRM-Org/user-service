@@ -129,6 +129,7 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
 
         $this->getUserQueryHandler->expects($this->once())
             ->method('handle')
+            ->with($userID)
             ->willThrowException(new UserNotFoundException());
 
         $this->expectException(UserNotFoundException::class);
@@ -171,6 +172,7 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
 
         $this->getUserQueryHandler->expects($this->once())
             ->method('handle')
+            ->with($token->getUserId())
             ->willReturn($user);
 
         $this->mockConfirmUserCommandFactory->expects($this->once())
