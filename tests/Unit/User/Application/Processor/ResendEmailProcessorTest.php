@@ -26,6 +26,7 @@ use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
+use App\User\Application\Query\GetUserQueryHandler;
 
 final class ResendEmailProcessorTest extends UnitTestCase
 {
@@ -39,6 +40,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
     private TokenRepositoryInterface $tokenRepository;
     private ConfirmationEmailFactoryInterface $mockConfirmationEmailFactory;
     private SendConfirmationEmailCommandFactoryInterface $mockEmailCmdFactory;
+    private GetUserQueryHandler $getUserQueryHandler;
 
     protected function setUp(): void
     {
@@ -63,6 +65,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $this->mockEmailCmdFactory = $this->createMock(
             SendConfirmationEmailCommandFactoryInterface::class
         );
+        $this->getUserQueryHandler = $this->createMock(GetUserQueryHandler::class);
     }
 
     public function testProcess(): void
@@ -96,10 +99,10 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $userId = $this->faker->uuid();
         $retryDto = new RetryDto();
 
-        $this->userRepository->expects($this->once())
-            ->method('find')
-            ->with($this->equalTo($userId))
-            ->willReturn(null);
+        $this->getUserQueryHandler->expects($this->once())
+            ->method('handle')
+            ->with($userId)
+            ->willThrowException(new UserNotFoundException());
 
         $this->expectException(UserNotFoundException::class);
 
@@ -114,6 +117,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
     {
         return new ResendEmailProcessor(
             $this->commandBus,
+            $this->getUserQueryHandler,
             $this->userRepository,
             $this->tokenRepository,
             $this->createMock(ConfirmationTokenFactoryInterface::class),
@@ -129,9 +133,9 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $confirmationEmail = $this->confirmationFactory->create($token, $user);
         $command = $this->emailCommandFactory->create($confirmationEmail);
 
-        $this->userRepository->expects($this->once())
-            ->method('find')
-            ->with($this->equalTo($user->getID()))
+        $this->getUserQueryHandler->expects($this->once())
+            ->method('handle')
+            ->with($user->getID())
             ->willReturn($user);
 
         $this->tokenRepository->expects($this->once())

@@ -13,6 +13,7 @@ use App\User\Domain\Exception\TokenNotFoundException;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Application\Query\GetUserQueryHandler;
 
 final readonly class ConfirmUserMutationResolver implements
     MutationResolverInterface
@@ -20,6 +21,7 @@ final readonly class ConfirmUserMutationResolver implements
     public function __construct(
         private TokenRepositoryInterface $tokenRepository,
         private CommandBusInterface $commandBus,
+        private GetUserQueryHandler $getUserQueryHandler,
         private UserRepositoryInterface $userRepository,
         private MutationInputValidator $validator,
         private ConfirmUserMutationInputTransformer $transformer,
@@ -38,8 +40,7 @@ final readonly class ConfirmUserMutationResolver implements
 
         $token = $this->tokenRepository->find($args['token'])
             ?? throw new TokenNotFoundException();
-        $user = $this->userRepository->find($token->getUserID())
-            ?? throw new UserNotFoundException();
+        $user = $this->getUserQueryHandler->handle($token->getUserID());
 
         $this->commandBus->dispatch(
             $this->confirmUserCommandFactory->create($token)

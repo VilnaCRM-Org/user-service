@@ -23,6 +23,7 @@ use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Application\Query\GetUserQueryHandler;
 
 final class ConfirmUserMutationResolverTest extends UnitTestCase
 {
@@ -36,6 +37,7 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
     private MutationInputValidator $validator;
     private ConfirmUserMutationInputTransformer $transformer;
     private ConfirmUserCommandFactoryInterface $mockConfirmUserCommandFactory;
+    private GetUserQueryHandler $getUserQueryHandler;
 
     protected function setUp(): void
     {
@@ -60,6 +62,7 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
         $this->mockConfirmUserCommandFactory = $this->createMock(
             ConfirmUserCommandFactoryInterface::class
         );
+        $this->getUserQueryHandler = $this->createMock(GetUserQueryHandler::class);
     }
 
     public function testInvoke(): void
@@ -127,9 +130,9 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
             ->with($tokenValue)
             ->willReturn($token);
 
-        $this->userRepository->expects($this->once())
-            ->method('find')
-            ->willReturn(null);
+        $this->getUserQueryHandler->expects($this->once())
+            ->method('handle')
+            ->willThrowException(new UserNotFoundException());
 
         $this->expectException(UserNotFoundException::class);
 
@@ -144,6 +147,7 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
         return new ConfirmUserMutationResolver(
             $this->tokenRepository,
             $this->commandBus,
+            $this->getUserQueryHandler,
             $this->userRepository,
             $this->validator,
             $this->transformer,
@@ -168,8 +172,8 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
             ->with($token->getTokenValue())
             ->willReturn($token);
 
-        $this->userRepository->expects($this->once())
-            ->method('find')
+        $this->getUserQueryHandler->expects($this->once())
+            ->method('handle')
             ->willReturn($user);
 
         $this->mockConfirmUserCommandFactory->expects($this->once())

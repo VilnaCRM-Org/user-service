@@ -11,11 +11,13 @@ use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
+use App\User\Application\Query\GetUserQueryHandler;
 
 final readonly class ConfirmUserCommandHandler implements
     CommandHandlerInterface
 {
     public function __construct(
+        private GetUserQueryHandler $getUserQueryHandler,
         private UserRepositoryInterface $userRepository,
         private EventBusInterface $eventBus,
         private UuidFactory $uuidFactory,
@@ -27,9 +29,9 @@ final readonly class ConfirmUserCommandHandler implements
     {
         $token = $command->token;
 
-        $user = $this->userRepository->find(
+        $user = $this->getUserQueryHandler->handle(
             $token->getUserID()
-        ) ?? throw new UserNotFoundException();
+        );
         $this->eventBus->publish(
             $user->confirm(
                 $token,
