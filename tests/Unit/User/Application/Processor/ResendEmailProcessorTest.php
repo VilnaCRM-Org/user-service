@@ -13,6 +13,7 @@ use App\User\Application\DTO\RetryDto;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactory;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
 use App\User\Application\Processor\ResendEmailProcessor;
+use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\UserNotFoundException;
@@ -26,7 +27,6 @@ use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
-use App\User\Application\Query\GetUserQueryHandler;
 
 final class ResendEmailProcessorTest extends UnitTestCase
 {
@@ -45,27 +45,23 @@ final class ResendEmailProcessorTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
-            $this->faker->numberBetween(1, 10)
-        );
-        $this->confirmationFactory = new ConfirmationEmailFactory(
-            new ConfirmationEmailSendEventFactory()
-        );
-        $this->emailCommandFactory = new SendConfirmationEmailCommandFactory();
+        $this->initFactories();
         $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->userRepository =
-            $this->createMock(UserRepositoryInterface::class);
-        $this->tokenRepository =
-            $this->createMock(TokenRepositoryInterface::class);
-        $this->mockConfirmationEmailFactory =
-            $this->createMock(ConfirmationEmailFactoryInterface::class);
+        $this->userRepository = $this->createMock(
+            UserRepositoryInterface::class
+        );
+        $this->tokenRepository = $this->createMock(
+            TokenRepositoryInterface::class
+        );
+        $this->mockConfirmationEmailFactory = $this->createMock(
+            ConfirmationEmailFactoryInterface::class
+        );
         $this->mockEmailCmdFactory = $this->createMock(
             SendConfirmationEmailCommandFactoryInterface::class
         );
-        $this->getUserQueryHandler = $this->createMock(GetUserQueryHandler::class);
+        $this->getUserQueryHandler = $this->createMock(
+            GetUserQueryHandler::class
+        );
     }
 
     public function testProcess(): void
@@ -155,5 +151,18 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($command);
+    }
+
+    private function initFactories(): void
+    {
+        $this->userFactory = new UserFactory();
+        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
+        $this->confirmationFactory = new ConfirmationEmailFactory(
+            new ConfirmationEmailSendEventFactory()
+        );
+        $this->emailCommandFactory = new SendConfirmationEmailCommandFactory();
     }
 }

@@ -13,8 +13,8 @@ use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\ConfirmationEmailFactoryInterface;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Application\Query\GetUserQueryHandler;
+use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -44,8 +44,7 @@ final readonly class ResendEmailProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): Response {
-        $user = $this->getUserQueryHandler->handle($uriVariables['id'])
-            ?? throw new UserNotFoundException();
+        $user = $this->getUserQueryHandler->handle($uriVariables['id']);
 
         $token = $this->tokenRepository->findByUserId(
             $user->getId()
