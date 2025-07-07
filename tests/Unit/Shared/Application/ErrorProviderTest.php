@@ -127,12 +127,12 @@ final class ErrorProviderTest extends UnitTestCase
         $args = [];
         $errorText = $this->faker->word();
 
-        $exception = $this->getDomainException($template, $args);
-
         $this->translator
             ->method('trans')
             ->withConsecutive(['error.internal'], [$template, $args])
             ->willReturnOnConsecutiveCalls('', $errorText);
+
+        $exception = $this->getDomainException($template, $args);
 
         $request = new Request();
         $request->attributes->set('exception', $exception);
