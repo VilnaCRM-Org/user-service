@@ -128,6 +128,7 @@ final class ErrorProviderTest extends UnitTestCase
         $errorText = $this->faker->word();
 
         $this->translator
+            ->expects($this->exactly(2))
             ->method('trans')
             ->withConsecutive(['error.internal'], [$template, $args])
             ->willReturnOnConsecutiveCalls('', $errorText);
