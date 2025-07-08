@@ -26,7 +26,7 @@
 
 ### Bug Fixes
 
-- **#144:** env and extract hardcoded dsn to env ([#151](https://github.com/VilnaCRM-Org/user-service/issues/151)) ([5af27cf](https://github.com/VilnaCRM-Org/user-service/commit/5af27cfec314106bafa2b5c4652267289f8f1486)), closes [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144) [#144](https://github.com/VilnaCRM-Org/user-service/issues/144)
+- **#144:** env and extract hardcoded DSN to env ([#151](https://github.com/VilnaCRM-Org/user-service/issues/151)) ([5af27cf](https://github.com/VilnaCRM-Org/user-service/commit/5af27cfec314106bafa2b5c4652267289f8f1486)), closes [#144](https://github.com/VilnaCRM-Org/user-service/issues/144)
 
 # [2.4.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.3.1...v2.4.0) (2025-02-11)
 
