@@ -13,12 +13,12 @@ use App\User\Application\DTO\UserPutDto;
 use App\User\Application\Factory\UpdateUserCommandFactory;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\Processor\UserPutProcessor;
+use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 
 final class UserPutProcessorTest extends UnitTestCase
@@ -27,9 +27,9 @@ final class UserPutProcessorTest extends UnitTestCase
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;
     private UpdateUserCommandFactoryInterface $updateUserCommandFactory;
-    private UserRepositoryInterface $userRepository;
     private CommandBusInterface $commandBus;
     private UpdateUserCommandFactoryInterface $mockUpdateUserCommandFactory;
+    private GetUserQueryHandler $getUserQueryHandler;
     private UserPutProcessor $processor;
 
     protected function setUp(): void
@@ -41,35 +41,35 @@ final class UserPutProcessorTest extends UnitTestCase
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new UuidFactory());
         $this->updateUserCommandFactory = new UpdateUserCommandFactory();
-        $this->userRepository =
-            $this->createMock(UserRepositoryInterface::class);
+        $this->getUserQueryHandler = $this->createMock(
+            GetUserQueryHandler::class
+        );
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->mockUpdateUserCommandFactory =
             $this->createMock(UpdateUserCommandFactoryInterface::class);
         $this->processor = new UserPutProcessor(
-            $this->userRepository,
             $this->commandBus,
-            $this->mockUpdateUserCommandFactory
+            $this->mockUpdateUserCommandFactory,
+            $this->getUserQueryHandler
         );
     }
 
     public function testProcess(): void
     {
-        $email = $this->faker->email();
-        $initials = $this->faker->name();
-        $password = $this->faker->password();
-        $userId = $this->faker->uuid();
+        [
+            $user,
+            $updateData,
+            $userPutDto,
+            $userId,
+        ] = $this->prepareUserPutTestData();
 
-        $user = $this->userFactory->create(
-            $email,
-            $initials,
-            $password,
-            $this->uuidTransformer->transformFromString($userId)
-        );
-        $updateData = new UserUpdate($email, $initials, $password, $password);
+        $this->getUserQueryHandler
+            ->expects($this->once())
+            ->method('handle')
+            ->with($userId)
+            ->willReturn($user);
+
         $this->testProcessSetExpectations($user, $updateData);
-
-        $userPutDto = new UserPutDto($email, $initials, $password, $password);
 
         $result = $this->processor->process(
             $userPutDto,
@@ -82,16 +82,12 @@ final class UserPutProcessorTest extends UnitTestCase
 
     public function testProcessUserNotFound(): void
     {
-        $this->userRepository->expects($this->once())
-            ->method('find')
-            ->willReturn(null);
+        [
+            $userPutDto,
+            $userId,
+        ] = $this->prepareUserNotFoundTestData();
 
-        $email = $this->faker->email();
-        $initials = $this->faker->name();
-        $password = $this->faker->password();
-        $userId = $this->faker->uuid();
-
-        $userPutDto = new UserPutDto($email, $initials, $password, $password);
+        $this->expectUserNotFound($userId);
 
         $this->expectException(UserNotFoundException::class);
 
@@ -100,6 +96,112 @@ final class UserPutProcessorTest extends UnitTestCase
             $this->mockOperation,
             ['id' => $userId]
         );
+    }
+
+    /**
+     * @return array{UserInterface, UserUpdate, UserPutDto, string}
+     */
+    private function prepareUserPutTestData(): array
+    {
+        $userId = $this->faker->uuid();
+        [
+            $email,
+            $initials,
+            $password,
+        ] = $this->generateUserData();
+
+        $user = $this->createUser($email, $initials, $password, $userId);
+        $updateData = $this->createUserUpdate($email, $initials, $password);
+        $userPutDto = $this->createUserPutDto($email, $initials, $password);
+
+        return [
+            $user,
+            $updateData,
+            $userPutDto,
+            $userId,
+        ];
+    }
+
+    private function createUser(
+        string $email,
+        string $initials,
+        string $password,
+        string $userId
+    ): UserInterface {
+        return $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->uuidTransformer->transformFromString($userId),
+        );
+    }
+
+    private function createUserUpdate(
+        string $email,
+        string $initials,
+        string $password
+    ): UserUpdate {
+        return new UserUpdate(
+            $email,
+            $initials,
+            $password,
+            $password,
+        );
+    }
+
+    private function createUserPutDto(
+        string $email,
+        string $initials,
+        string $password
+    ): UserPutDto {
+        return new UserPutDto(
+            $email,
+            $initials,
+            $password,
+            $password,
+        );
+    }
+
+    /**
+     * @return array{string, string, string}
+     */
+    private function generateUserData(): array
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+        return [
+            $email,
+            $initials,
+            $password,
+        ];
+    }
+
+    /**
+     * @return array{UserPutDto, string}
+     */
+    private function prepareUserNotFoundTestData(): array
+    {
+        $userId = $this->faker->uuid();
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+
+        $userPutDto = new UserPutDto($email, $initials, $password, $password);
+
+        return [
+            $userPutDto,
+            $userId,
+        ];
+    }
+
+    private function expectUserNotFound(string $userId): void
+    {
+        $this->getUserQueryHandler
+            ->expects($this->once())
+            ->method('handle')
+            ->with($userId)
+            ->willThrowException(new UserNotFoundException());
     }
 
     private function testProcessSetExpectations(
@@ -111,16 +213,14 @@ final class UserPutProcessorTest extends UnitTestCase
             $updateData
         );
 
-        $this->userRepository->expects($this->once())
-            ->method('find')
-            ->willReturn($user);
-
-        $this->mockUpdateUserCommandFactory->expects($this->once())
+        $this->mockUpdateUserCommandFactory
+            ->expects($this->once())
             ->method('create')
             ->with($user, $updateData)
             ->willReturn($command);
 
-        $this->commandBus->expects($this->once())
+        $this->commandBus
+            ->expects($this->once())
             ->method('dispatch')
             ->with($command);
     }

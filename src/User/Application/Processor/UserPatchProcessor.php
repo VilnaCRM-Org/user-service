@@ -10,10 +10,9 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\UserPatchDto;
 use App\User\Application\DTO\UserPutDto;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
+use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
-use App\User\Domain\Exception\UserNotFoundException;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 
 /**
@@ -22,9 +21,9 @@ use App\User\Domain\ValueObject\UserUpdate;
 final readonly class UserPatchProcessor implements ProcessorInterface
 {
     public function __construct(
-        private UserRepositoryInterface $userRepository,
         private CommandBusInterface $commandBus,
-        private UpdateUserCommandFactoryInterface $updateUserCommandFactory
+        private UpdateUserCommandFactoryInterface $updateUserCommandFactory,
+        private GetUserQueryHandler $getUserQueryHandler
     ) {
     }
 
@@ -39,11 +38,9 @@ final readonly class UserPatchProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): User {
-        $userId = $uriVariables['id'];
-        $user = $this->userRepository->find($userId)
-            ?? throw new UserNotFoundException();
+        $user = $this->getUserQueryHandler->handle($uriVariables['id']);
 
-        $newEmail = $this->getNewValue($data->email, $user->getEmail());
+        $newEmail = $this->getNewEmailValue($data->email, $user->getEmail());
         $newInitials = $this->getNewValue(
             $data->initials,
             $user->getInitials()
@@ -66,7 +63,23 @@ final readonly class UserPatchProcessor implements ProcessorInterface
 
     private function getNewValue(string $newValue, string $defaultValue): string
     {
-        return strlen(trim($newValue)) > 0 ? $newValue : $defaultValue;
+        $trimmedValue = trim($newValue);
+        return strlen($trimmedValue) === 0 ? $defaultValue : $trimmedValue;
+    }
+
+    private function getNewEmailValue(
+        string $newValue,
+        string $defaultValue
+    ): string {
+        $trimmedValue = trim($newValue);
+        if (strlen($trimmedValue) === 0) {
+            return $defaultValue;
+        }
+
+        if (filter_var($trimmedValue, FILTER_VALIDATE_EMAIL)) {
+            return strtolower($trimmedValue);
+        }
+        return $trimmedValue;
     }
 
     private function dispatchCommand(
