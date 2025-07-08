@@ -1,3 +1,12 @@
+## [2.7.1](https://github.com/VilnaCRM-Org/user-service/compare/v2.7.0...v2.7.1) (2025-07-07)
+
+
+### Bug Fixes
+
+* **#204:** Update dependabot.yml ([#204](https://github.com/VilnaCRM-Org/user-service/issues/204)) ([aebc727](https://github.com/VilnaCRM-Org/user-service/commit/aebc727f5cf5b5a1c98d921c7d504690a5e3d7e2))
+
+
+
 # [2.7.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.6.0...v2.7.0) (2025-06-25)
 
 ### Features

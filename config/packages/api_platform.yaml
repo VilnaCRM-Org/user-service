@@ -5,6 +5,9 @@ api_platform:
 
   use_symfony_listeners: false
 
+  graphql:
+    graphiql: false
+
   openapi:
     overrideResponses: false
 
