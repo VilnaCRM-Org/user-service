@@ -11,6 +11,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Factory\ConfirmUserCommandFactory;
 use App\User\Application\Factory\ConfirmUserCommandFactoryInterface;
 use App\User\Application\MutationInput\MutationInputValidator;
+use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Application\Resolver\ConfirmUserMutationResolver;
 use App\User\Application\Transformer\ConfirmUserMutationInputTransformer;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
@@ -36,29 +37,28 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
     private MutationInputValidator $validator;
     private ConfirmUserMutationInputTransformer $transformer;
     private ConfirmUserCommandFactoryInterface $mockConfirmUserCommandFactory;
+    private GetUserQueryHandler $getUserQueryHandler;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
-            $this->faker->numberBetween(1, 10)
+        $this->initFactories();
+        $this->tokenRepository = $this->createMock(
+            TokenRepositoryInterface::class
         );
-        $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
-        $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
-
-        $this->tokenRepository =
-            $this->createMock(TokenRepositoryInterface::class);
         $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->userRepository =
-            $this->createMock(UserRepositoryInterface::class);
+        $this->userRepository = $this->createMock(
+            UserRepositoryInterface::class
+        );
         $this->validator = $this->createMock(MutationInputValidator::class);
         $this->transformer = $this->createMock(
             ConfirmUserMutationInputTransformer::class
         );
         $this->mockConfirmUserCommandFactory = $this->createMock(
             ConfirmUserCommandFactoryInterface::class
+        );
+        $this->getUserQueryHandler = $this->createMock(
+            GetUserQueryHandler::class
         );
     }
 
@@ -127,9 +127,10 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
             ->with($tokenValue)
             ->willReturn($token);
 
-        $this->userRepository->expects($this->once())
-            ->method('find')
-            ->willReturn(null);
+        $this->getUserQueryHandler->expects($this->once())
+            ->method('handle')
+            ->with($userID)
+            ->willThrowException(new UserNotFoundException());
 
         $this->expectException(UserNotFoundException::class);
 
@@ -144,7 +145,7 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
         return new ConfirmUserMutationResolver(
             $this->tokenRepository,
             $this->commandBus,
-            $this->userRepository,
+            $this->getUserQueryHandler,
             $this->validator,
             $this->transformer,
             $this->mockConfirmUserCommandFactory,
@@ -168,8 +169,9 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
             ->with($token->getTokenValue())
             ->willReturn($token);
 
-        $this->userRepository->expects($this->once())
-            ->method('find')
+        $this->getUserQueryHandler->expects($this->once())
+            ->method('handle')
+            ->with($token->getUserId())
             ->willReturn($user);
 
         $this->mockConfirmUserCommandFactory->expects($this->once())
@@ -179,5 +181,15 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($command);
+    }
+
+    private function initFactories(): void
+    {
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
+        $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
+        $this->userFactory = new UserFactory();
+        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
     }
 }

@@ -11,6 +11,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\CommandHandler\ConfirmUserCommandHandler;
 use App\User\Application\Factory\ConfirmUserCommandFactory;
 use App\User\Application\Factory\ConfirmUserCommandFactoryInterface;
+use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
@@ -36,6 +37,7 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
     private UuidTransformer $uuidTransformer;
     private UserFactoryInterface $userFactory;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
+    private GetUserQueryHandler $getUserQueryHandler;
 
     protected function setUp(): void
     {
@@ -58,6 +60,8 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
         $this->confirmationTokenFactory = new ConfirmationTokenFactory(
             $this->faker->numberBetween(1, 10)
         );
+        $this->getUserQueryHandler =
+        $this->createMock(GetUserQueryHandler::class);
     }
 
     public function testInvoke(): void
@@ -81,9 +85,9 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
 
     public function testInvokeUserNotFound(): void
     {
-        $this->userRepository->expects($this->once())
-            ->method('find')
-            ->willReturn(null);
+        $this->getUserQueryHandler->expects($this->once())
+            ->method('handle')
+            ->willThrowException(new UserNotFoundException());
 
         $this->expectException(UserNotFoundException::class);
 
@@ -97,6 +101,7 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
     private function getHandler(): ConfirmUserCommandHandler
     {
         return new ConfirmUserCommandHandler(
+            $this->getUserQueryHandler,
             $this->userRepository,
             $this->eventBus,
             $this->mockUuidFactory,
@@ -108,12 +113,9 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
         UserInterface $user,
         ConfirmationTokenInterface $token
     ): void {
-        $this->userRepository->expects($this->once())
-            ->method('find')
+        $this->getUserQueryHandler->expects($this->once())
+            ->method('handle')
             ->willReturn($user);
-
-        $this->userRepository->expects($this->once())
-            ->method('save');
 
         $this->eventBus->expects($this->once())
             ->method('publish')
