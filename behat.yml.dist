@@ -6,9 +6,11 @@ default:
                 - App\Tests\Behat\UserContext\UserContext
                 - App\Tests\Behat\UserContext\UserOperationsContext
                 - App\Tests\Behat\OAuthContext\OAuthContext
+                - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
         health_check:
             contexts:
                 - App\Tests\Behat\HealthCheckContext\HealthCheckContext
+                - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
 
 
     extensions:
@@ -18,3 +20,8 @@ default:
             kernel:
                 environment: test
                 class: App\Shared\Kernel
+        Behat\MinkExtension:
+            base_url: 'http://localhost'
+            sessions:
+                default:
+                    browserkit_http: ~

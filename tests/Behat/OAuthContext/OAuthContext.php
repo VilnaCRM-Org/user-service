@@ -103,6 +103,12 @@ final class OAuthContext implements Context
      */
     public function clientExists(string $id, string $secret, string $uri): void
     {
+        $existingClient = $this->entityManager->getRepository(Client::class)->find($id);
+        if ($existingClient) {
+            $this->entityManager->remove($existingClient);
+            $this->entityManager->flush();
+            $this->entityManager->clear();
+        }
         $client = new Client($this->faker->name, $id, $secret);
         $client->setRedirectUris(new RedirectUri($uri));
         $this->entityManager->persist($client);
