@@ -23,22 +23,23 @@ App\User\Application\DTO\UserRegisterBatchDto:
       - App\Shared\Application\Validator\CreateUserBatch: ~
       - All:
           - Collection:
-              email:
-                - Email: { message: 'email.invalid' }
-                - NotBlank: { message: 'not.blank' }
-                - Length:
-                    max: 255
-                - App\Shared\Application\Validator\UniqueEmail: ~
-              initials:
-                - NotBlank: { message: 'not.blank' }
-                - Length:
-                    max: 255
-                - App\Shared\Application\Validator\Initials: ~
-              password:
-                - NotBlank: { message: 'not.blank' }
-                - Length:
-                    max: 255
-                - App\Shared\Application\Validator\Password: ~
+              fields:
+                email:
+                  - Email: { message: 'email.invalid' }
+                  - NotBlank: { message: 'not.blank' }
+                  - Length:
+                      max: 255
+                  - App\Shared\Application\Validator\UniqueEmail: ~
+                initials:
+                  - NotBlank: { message: 'not.blank' }
+                  - Length:
+                      max: 255
+                  - App\Shared\Application\Validator\Initials: ~
+                password:
+                  - NotBlank: { message: 'not.blank' }
+                  - Length:
+                      max: 255
+                  - App\Shared\Application\Validator\Password: ~
 
 App\User\Application\DTO\UserPatchDto:
   properties:
@@ -104,22 +105,23 @@ App\User\Application\MutationInput\CreateUserBatchMutationInput:
       - App\Shared\Application\Validator\CreateUserBatch: ~
       - All:
           - Collection:
-              email:
-                - Email: { message: 'email.invalid' }
-                - NotBlank: { message: 'not.blank' }
-                - Length:
-                    max: 255
-                - App\Shared\Application\Validator\UniqueEmail: ~
-              initials:
-                - NotBlank: { message: 'not.blank' }
-                - Length:
-                    max: 255
-                - App\Shared\Application\Validator\Initials: ~
-              password:
-                - NotBlank: { message: 'not.blank' }
-                - Length:
-                    max: 255
-                - App\Shared\Application\Validator\Password: ~
+              fields:
+                email:
+                  - Email: { message: 'email.invalid' }
+                  - NotBlank: { message: 'not.blank' }
+                  - Length:
+                      max: 255
+                  - App\Shared\Application\Validator\UniqueEmail: ~
+                initials:
+                  - NotBlank: { message: 'not.blank' }
+                  - Length:
+                      max: 255
+                  - App\Shared\Application\Validator\Initials: ~
+                password:
+                  - NotBlank: { message: 'not.blank' }
+                  - Length:
+                      max: 255
+                  - App\Shared\Application\Validator\Password: ~
 
 App\User\Application\MutationInput\CreateUserMutationInput:
   properties:
