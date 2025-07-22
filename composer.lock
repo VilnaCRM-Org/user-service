@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "63a2d8e06b1539986718be3123a93d85",
+    "content-hash": "6002399bb4144b7c45b1951a525026d6",
     "packages": [
         {
             "name": "api-platform/core",
@@ -10538,23 +10538,22 @@
         },
         {
             "name": "behat/behat",
-            "version": "v3.19.0",
+            "version": "v3.16.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Behat/Behat.git",
-                "reference": "6cf82375a88145e33e10a34b211a3f914cbd02ee"
+                "reference": "a3e46b78e2f7aec1a5475fde7f706253d510bb5e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Behat/Behat/zipball/6cf82375a88145e33e10a34b211a3f914cbd02ee",
-                "reference": "6cf82375a88145e33e10a34b211a3f914cbd02ee",
+                "url": "https://api.github.com/repos/Behat/Behat/zipball/a3e46b78e2f7aec1a5475fde7f706253d510bb5e",
+                "reference": "a3e46b78e2f7aec1a5475fde7f706253d510bb5e",
                 "shasum": ""
             },
             "require": {
-                "behat/gherkin": "^4.10.0",
+                "behat/gherkin": "^4.12.0",
                 "behat/transliterator": "^1.5",
                 "composer-runtime-api": "^2.2",
-                "composer/xdebug-handler": "^3.0",
                 "ext-mbstring": "*",
                 "php": "8.1.* || 8.2.* || 8.3.* || 8.4.* ",
                 "psr/container": "^1.0 || ^2.0",
@@ -10566,12 +10565,11 @@
                 "symfony/yaml": "^5.4 || ^6.4 || ^7.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.68",
-                "phpstan/phpstan": "^2.0",
+                "herrera-io/box": "~1.6.1",
                 "phpunit/phpunit": "^9.6",
-                "sebastian/diff": "^4.0",
                 "symfony/polyfill-php84": "^1.31",
-                "symfony/process": "^5.4 || ^6.4 || ^7.0"
+                "symfony/process": "^5.4 || ^6.4 || ^7.0",
+                "vimeo/psalm": "^4.8"
             },
             "suggest": {
                 "ext-dom": "Needed to output test results in JUnit format."
@@ -10590,9 +10588,7 @@
                     "Behat\\Hook\\": "src/Behat/Hook/",
                     "Behat\\Step\\": "src/Behat/Step/",
                     "Behat\\Behat\\": "src/Behat/Behat/",
-                    "Behat\\Config\\": "src/Behat/Config/",
-                    "Behat\\Testwork\\": "src/Behat/Testwork/",
-                    "Behat\\Transformation\\": "src/Behat/Transformation/"
+                    "Behat\\Testwork\\": "src/Behat/Testwork/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -10624,9 +10620,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Behat/Behat/issues",
-                "source": "https://github.com/Behat/Behat/tree/v3.19.0"
+                "source": "https://github.com/Behat/Behat/tree/v3.16.1"
             },
-            "time": "2025-02-13T09:07:11+00:00"
+            "time": "2025-05-07T11:30:06+00:00"
         },
         {
             "name": "behat/gherkin",
@@ -18137,7 +18133,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -18149,6 +18145,6 @@
         "ext-simplexml": "*",
         "ext-xml": "*"
     },
-    "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "platform-dev": {},
+    "plugin-api-version": "2.6.0"
 }
