@@ -10,7 +10,6 @@ use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Behat\Behat\Context\Context;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Faker\Factory;
 use Faker\Generator;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
@@ -34,12 +33,12 @@ final class UserContext implements Context
     /**
      * @BeforeScenario
      */
-    public function truncateUsersTable(BeforeScenarioScope $scope): void
+    public function truncateUsersTable(): void
     {
-        $em = method_exists($this->userRepository, 'getEntityManager') ? $this->userRepository->getEntityManager() : (method_exists($this->userRepository, 'getManager') ? $this->userRepository->getManager() : null);
-        if ($em) {
-            $connection = $em->getConnection();
-            $connection->executeStatement('DELETE FROM user'); // use DELETE instead of TRUNCATE
+        $entityManager = $this->getEntityManager();
+        if ($entityManager) {
+            $connection = $entityManager->getConnection();
+            $connection->executeStatement('DELETE FROM user');
         }
     }
 
@@ -55,17 +54,11 @@ final class UserContext implements Context
     /**
      * @Given user with email :email and password :password exists
      */
-    public function userWithEmailAndPasswordExists(string $email, string $password): void
-    {
-        $userRepo = $this->userRepository;
-        $existingUser = $userRepo->findOneBy(['email' => $email]);
-        if ($existingUser) {
-            $em = method_exists($userRepo, 'getEntityManager') ? $userRepo->getEntityManager() : (method_exists($userRepo, 'getManager') ? $userRepo->getManager() : null);
-            if ($em) {
-                $em->remove($existingUser);
-                $em->flush();
-            }
-        }
+    public function userWithEmailAndPasswordExists(
+        string $email,
+        string $password
+    ): void {
+        $this->removeExistingUser($email);
         $user = $this->userFactory->create(
             $email,
             $this->faker->name,
@@ -87,15 +80,7 @@ final class UserContext implements Context
      */
     public function userWithEmailExists(string $email): void
     {
-        $userRepo = $this->userRepository;
-        $existingUser = $userRepo->findOneBy(['email' => $email]);
-        if ($existingUser) {
-            $em = method_exists($userRepo, 'getEntityManager') ? $userRepo->getEntityManager() : (method_exists($userRepo, 'getManager') ? $userRepo->getManager() : null);
-            if ($em) {
-                $em->remove($existingUser);
-                $em->flush();
-            }
-        }
+        $this->removeExistingUser($email);
         $password = $this->faker->password;
         $user = $this->userFactory->create(
             $email,
@@ -147,5 +132,26 @@ final class UserContext implements Context
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
+    }
+
+    private function getEntityManager(): ?object
+    {
+        return method_exists($this->userRepository, 'getEntityManager')
+            ? $this->userRepository->getEntityManager()
+            : (method_exists($this->userRepository, 'getManager')
+                ? $this->userRepository->getManager()
+                : null);
+    }
+
+    private function removeExistingUser(string $email): void
+    {
+        $existingUser = $this->userRepository->findOneBy(['email' => $email]);
+        if ($existingUser) {
+            $entityManager = $this->getEntityManager();
+            if ($entityManager) {
+                $entityManager->remove($existingUser);
+                $entityManager->flush();
+            }
+        }
     }
 }
