@@ -146,9 +146,9 @@ final class UserOperationsContext implements Context
                 $path,
                 $pyStringBody
             );
-        } else {
-            $this->restContext->iSendARequestTo($method, $path);
+         return; 
         }
+            $this->restContext->iSendARequestTo($method, $path);
     }
 
     /**
