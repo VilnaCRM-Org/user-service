@@ -5,7 +5,7 @@ Feature: User GraphQL Operations
 
   Scenario: Creating user
     Given requesting to return user's id and email
-    And creating user with email "graphqltest@mail.com" initials "name surname" password "passWORD1"
+    And creating user with email "graphqlcreate456@mail.com" initials "name surname" password "passWORD1"
     When graphQL request is send
     Then mutation response should return requested fields
 

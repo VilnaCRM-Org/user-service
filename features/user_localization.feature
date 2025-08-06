@@ -58,8 +58,8 @@ Feature: User Operations Localization
   Scenario: Creating a batch of users and Ukrainian language
     Given sending a batch of users
     And with language "uk"
-    And with user with email "test1@mail.com", initials "name surname", password "passWORD1"
-    And with user with email "test2@mail.com", initials "name surname", password "passWORD1"
+    And with user with email "testloc1@mail.com", initials "name surname", password "passWORD1"
+    And with user with email "testloc2@mail.com", initials "name surname", password "passWORD1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 201
     And the response should contain a list of users

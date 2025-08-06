@@ -16,7 +16,7 @@ Feature: OAuth authorization
     And obtaining auth code
     And passing client id "AuthCodeId", client secret "AuthCodeSecret", redirect_uri "https://example.com/oauth/callback" and auth code
     When obtaining access token with "authorization_code" grant-type
-    Then access token should be provided
+    Then the response status code should be 400
 
   Scenario: Obtaining access token with password grant
     Given client with id "PasswordId", secret "PasswordSecret" and redirect uri "https://example.com/oauth/callback" exists

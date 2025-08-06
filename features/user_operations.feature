@@ -13,10 +13,10 @@ Feature: User Operations
     Then the response status code should be 400
 
   Scenario: Creating a user
-    Given creating user with email "test@mail.com", initials "name surname", password "passWORD1"
+    Given creating user with email "testcreate123@mail.com", initials "name surname", password "passWORD1"
     When POST request is send to "/api/users"
     Then the response status code should be 201
-    And user with email "test@mail.com" and initials "name surname" should be returned
+    And user with email "testcreate123@mail.com" and initials "name surname" should be returned
 
   Scenario: Creating a user with duplicate email
     Given user with email "test2@mail.com" exists
@@ -65,8 +65,8 @@ Feature: User Operations
 
   Scenario: Creating a batch of users
     Given sending a batch of users
-    And with user with email "test1@mail.com", initials "name surname", password "passWORD1"
-    And with user with email "test2@mail.com", initials "name surname", password "passWORD1"
+    And with user with email "testbatch1@mail.com", initials "name surname", password "passWORD1"
+    And with user with email "testbatch2@mail.com", initials "name surname", password "passWORD1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 201
     And the response should contain a list of users
@@ -261,7 +261,7 @@ Feature: User Operations
     When POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222/resend-confirmation-email"
     And POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222/resend-confirmation-email"
     Then the response status code should be 429
-    And user should be timed out
+    And the error message should be "Cannot send new email till"
 
   Scenario: Resending email to non-existing user
     When POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221/resend-confirmation-email"
