@@ -5,14 +5,14 @@ Feature: User GraphQL Operations
 
   Scenario: Creating user
     Given requesting to return user's id and email
-    And creating user with email "graphqlcreate456@mail.com" initials "name surname" password "passWORD1"
+    And creating user with email "graphqlcreate456@example.com" initials "name surname" password "passWORD1"
     When graphQL request is send
     Then mutation response should return requested fields
 
   Scenario: Creating a user with duplicate email
     Given requesting to return user's id and email
-    And user with email "graphqltest@mail.com2" exists
-    And creating user with email "graphqltest@mail.com2" initials "name surname" password "passWORD1"
+    And user with email "graphqltest@example.com2" exists
+    And creating user with email "graphqltest@example.com2" initials "name surname" password "passWORD1"
     When graphQL request is send
     Then graphql error message should be "email: This email address is already registered"
 
@@ -24,53 +24,53 @@ Feature: User GraphQL Operations
 
   Scenario: Creating a user with password with no uppercase letters
     Given requesting to return user's id and email
-    And creating user with email "graphqlTest@mail.com" initials "name surname" password "password1"
+    And creating user with email "graphqlTest@example.com" initials "name surname" password "password1"
     When graphQL request is send
     Then graphql error message should be "password: Password must contain at least one uppercase letter"
 
   Scenario: Creating a user with password with no numbers
     Given requesting to return user's id and email
-    And creating user with email "graphqlTest@mail.com" initials "name surname" password "passWORD"
+    And creating user with email "graphqlTest@example.com" initials "name surname" password "passWORD"
     When graphQL request is send
     Then graphql error message should be "password: Password must contain at least one number"
 
   Scenario: Creating a user with too short password
     Given requesting to return user's id and email
-    And creating user with email "graphqlTest@mail.com" initials "name surname" password "WORD1"
+    And creating user with email "graphqlTest@example.com" initials "name surname" password "WORD1"
     When graphQL request is send
     Then graphql error message should be "password: Password must be between 8 and 64 characters long"
 
   Scenario: Creating a user with initials that contains only spaces
     Given requesting to return user's id and email
-    And creating user with email "graphqlTest@mail.com" initials " " password "passWORD1"
+    And creating user with email "graphqlTest@example.com" initials " " password "passWORD1"
     When graphQL request is send
     Then graphql error message should be "initials: Initials can not consist only of spaces"
 
   Scenario: Updating user
     Given requesting to return user's id and email
     And user with id "8be90127-9840-4235-a6da-39b8debfb110" and password "passWORD1" exists
-    And updating user with id "8be90127-9840-4235-a6da-39b8debfb110" and password "passWORD1" to new email "testUpdateGraphQL@mail.com"
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb110" and password "passWORD1" to new email "testUpdateGraphQL@example.com"
     When graphQL request is send
     Then mutation response should return requested fields
 
   Scenario: Updating user to duplicate email
     Given requesting to return user's id and email
-    And user with email "testUpdateGraphQL2@mail.com" exists
+    And user with email "testUpdateGraphQL2@example.com" exists
     And user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "passWORD1" exists
-    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "passWORD1" to new email "testUpdateGraphQL2@mail.com"
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "passWORD1" to new email "testUpdateGraphQL2@example.com"
     When graphQL request is send
     Then graphql error message should be "email: This email address is already registered"
 
   Scenario: Updating user with wrong password
     Given requesting to return user's id and email
     And user with id "8be90127-9840-4235-a6da-39b8debfb111" exists
-    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "wrongpassWORD1" to new email "testUpdateGraphQL@mail.com"
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "wrongpassWORD1" to new email "testUpdateGraphQL@example.com"
     When graphQL request is send
     Then graphql error message should be "Old password is invalid"
 
   Scenario: Updating a non-existing user
     Given requesting to return user's id and email
-    And updating user with id "8be90127-9840-4235-a6da-39b8debfb112" and password "passWORD1" to new email "testUpdateGraphQL@mail.com"
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb112" and password "passWORD1" to new email "testUpdateGraphQL@example.com"
     When graphQL request is send
     Then graphql error message should be 'Item "/api/users/8be90127-9840-4235-a6da-39b8debfb112" not found.'
 

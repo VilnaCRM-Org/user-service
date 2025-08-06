@@ -20,8 +20,8 @@ Feature: OAuth authorization
 
   Scenario: Obtaining access token with password grant
     Given client with id "PasswordId", secret "PasswordSecret" and redirect uri "https://example.com/oauth/callback" exists
-    And user with email "passGrant@mail.com" and password "pass" exists
-    And passing client id "PasswordId", client secret "PasswordSecret", email "passGrant@mail.com" and password "pass"
+    And user with email "passGrant@example.com" and password "pass" exists
+    And passing client id "PasswordId", client secret "PasswordSecret", email "passGrant@example.com" and password "pass"
     When obtaining access token with "password" grant-type
     Then access token should be provided
 
