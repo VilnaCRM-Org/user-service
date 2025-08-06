@@ -11,13 +11,13 @@ use App\Tests\Behat\UserGraphQLContext\Input\GraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\ResendEmailGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\UpdateUserGraphQLMutationInput;
 use Behat\Behat\Context\Context;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Gherkin\Node\PyStringNode;
 use GraphQL\RequestBuilder\Argument;
 use GraphQL\RequestBuilder\RootType;
 use GraphQL\RequestBuilder\Type;
 use PHPUnit\Framework\Assert;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\KernelInterface;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class UserGraphQLContext implements Context
 {
@@ -36,14 +36,23 @@ final class UserGraphQLContext implements Context
     private int $errorNum;
 
     private GraphQLMutationInput $graphQLInput;
+    private RestContext $restContext;
 
-    public function __construct(
-        private readonly KernelInterface $kernel,
-        private ?Response $response,
-    ) {
+    public function __construct()
+    {
         $this->responseContent = [];
         $this->errorNum = 0;
         $this->language = 'en';
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
+        $this->errorNum = 0;
     }
 
     /**
@@ -71,11 +80,11 @@ final class UserGraphQLContext implements Context
         $this->queryName = 'user';
         $id = $this->GRAPHQL_ID_PREFIX . $id;
 
-        $query = (string) (new RootType($this->queryName))->addArgument(
-            new Argument('id', $id)
-        )->addSubTypes($this->responseContent);
-
-        $this->query = 'query' . $query;
+        $this->query = $this->createQuery(
+            $this->queryName,
+            [new Argument('id', $id)],
+            $this->responseContent
+        );
     }
 
     /**
@@ -85,13 +94,15 @@ final class UserGraphQLContext implements Context
     {
         $this->queryName = 'users';
 
-        $query = (string) (new RootType($this->queryName))->addArgument(
-            new Argument('first', 1)
-        )->addSubType((new Type('edges'))->addSubType(
-            (new Type('node'))->addSubTypes($this->responseContent)
-        ));
-
-        $this->query = 'query' . $query;
+        $this->query = $this->createQuery(
+            $this->queryName,
+            [new Argument('first', 1)],
+            [
+                (new Type('edges'))->addSubType(
+                    (new Type('node'))->addSubTypes($this->responseContent)
+                ),
+            ]
+        );
     }
 
     /**
@@ -121,11 +132,11 @@ final class UserGraphQLContext implements Context
      */
     public function updatingUser(
         string $id,
-        string $email,
-        string $oldPassword
+        string $oldPassword,
+        string $email
     ): void {
-        $id = $this->GRAPHQL_ID_PREFIX . $id;
         $this->queryName = 'updateUser';
+        $id = $this->GRAPHQL_ID_PREFIX . $id;
         $this->graphQLInput = new UpdateUserGraphQLMutationInput(
             $id,
             $email,
@@ -159,8 +170,8 @@ final class UserGraphQLContext implements Context
      */
     public function resendEmailToUser(string $id): void
     {
-        $id = $this->GRAPHQL_ID_PREFIX . $id;
         $this->queryName = 'resendEmailToUser';
+        $id = $this->GRAPHQL_ID_PREFIX . $id;
         $this->graphQLInput = new ResendEmailGraphQLMutationInput($id);
 
         $this->query = $this->createMutation(
@@ -199,18 +210,9 @@ final class UserGraphQLContext implements Context
      */
     public function sendGraphQlRequest(): void
     {
-        $this->response = $this->kernel->handle(Request::create(
-            $this->GRAPHQL_ENDPOINT_URI,
-            'POST',
-            [],
-            [],
-            [],
-            ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-                'HTTP_ACCEPT_LANGUAGE' => $this->language,
-            ],
-            \Safe\json_encode(['query' => $this->query])
-        ));
+        $this->setGraphQLHeaders();
+        $requestBody = $this->buildGraphQLRequestBody();
+        $this->executeGraphQLRequest($requestBody);
     }
 
     /**
@@ -218,11 +220,212 @@ final class UserGraphQLContext implements Context
      */
     public function mutationResponseShouldContainRequestedFields(): void
     {
-        $userData = json_decode(
-            $this->response->getContent(),
-            true
-        )['data'][$this->queryName]['user'];
+        $content = $this->getPageContent();
+        $decoded = json_decode($content, true);
 
+        $this->validateGraphQLResponse($decoded);
+        $userData = $this->extractUserData($decoded);
+        $this->validateUserFields($userData);
+    }
+
+    /**
+     * @Then query response should return requested fields
+     */
+    public function queryResponseShouldContainRequestedFields(): void
+    {
+        $content = $this->getPageContent();
+        $data = json_decode($content, true);
+
+        $this->validateQueryResponse($data);
+        $userData = $this->extractQueryUserData($data);
+        $this->validateQueryFields($userData);
+    }
+
+    /**
+     * @Then graphql response should be null
+     */
+    public function queryResponseShouldBeNull(): void
+    {
+        $content = $this->getPageContent();
+        $userData = json_decode($content, true)['data'][$this->queryName];
+
+        Assert::assertNull($userData);
+    }
+
+    /**
+     * @Then collection of users should be returned
+     */
+    public function collectionOfUsersShouldBeReturned(): void
+    {
+        $content = $this->getPageContent();
+        $data = json_decode($content, true)['data'][$this->queryName];
+
+        Assert::assertArrayHasKey('edges', $data);
+        Assert::assertIsArray($data['edges']);
+    }
+
+    /**
+     * @Then graphql error message should be :errorMessage
+     */
+    public function graphQLErrorShouldBe(string $errorMessage): void
+    {
+        $content = $this->getPageContent();
+        $data = json_decode($content, true);
+
+        if ($this->isInvalidJsonResponse($data)) {
+            $this->assertErrorInRawContent($content, $errorMessage);
+            return;
+        }
+
+        $this->validateErrorsArray($data);
+        $this->assertErrorContainsMessage($data, $errorMessage);
+    }
+
+    private function setGraphQLHeaders(): void
+    {
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $this->restContext->iAddHeaderEqualTo(
+            'Content-Type',
+            'application/json'
+        );
+        $this->restContext->iAddHeaderEqualTo(
+            'Accept-Language',
+            $this->language
+        );
+    }
+
+    private function buildGraphQLRequestBody(): string
+    {
+        if ($this->isMutationQuery()) {
+            return $this->buildMutationRequestBody();
+        }
+
+        return $this->buildQueryRequestBody();
+    }
+
+    private function isMutationQuery(): bool
+    {
+        $mutationNames = [
+            'createUser',
+            'updateUser',
+            'confirmUser',
+            'deleteUser',
+            'resendEmailToUser',
+        ];
+        return in_array($this->queryName, $mutationNames);
+    }
+
+    private function buildMutationRequestBody(): string
+    {
+        $fullQuery = 'mutation ' . $this->query;
+        $variables = $this->extractGraphQLVariables();
+
+        return json_encode([
+            'query' => $fullQuery,
+            'variables' => ['input' => $variables],
+        ]);
+    }
+
+    private function buildQueryRequestBody(): string
+    {
+        $fullQuery = $this->query;
+        return json_encode(['query' => $fullQuery]);
+    }
+
+    /**
+     * @return array<string, string|int|float|bool|null>
+     */
+    private function extractGraphQLVariables(): array
+    {
+        $variables = [];
+        if (isset($this->graphQLInput)) {
+            $fields = get_object_vars($this->graphQLInput);
+            foreach ($fields as $fieldName => $fieldValue) {
+                $variables[$fieldName] = $fieldValue;
+            }
+        }
+        return $variables;
+    }
+
+    private function executeGraphQLRequest(string $requestBody): void
+    {
+        $pyStringBody = new PyStringNode(explode(PHP_EOL, $requestBody), 0);
+        $this->restContext->iSendARequestToWithBody(
+            'POST',
+            $this->GRAPHQL_ENDPOINT_URI,
+            $pyStringBody
+        );
+    }
+
+    /**
+     * @param array<string, string|int|float|bool|null> $decoded
+     */
+    private function validateGraphQLResponse(array $decoded): void
+    {
+        $this->validateNoErrors($decoded);
+        $this->validateDataExists($decoded);
+        $this->validateQueryDataExists($decoded);
+        $this->validateUserDataExists($decoded);
+    }
+
+    /**
+     * @param array<string, string|int|float|bool|null> $decoded
+     */
+    private function validateNoErrors(array $decoded): void
+    {
+        if (isset($decoded['errors'])) {
+            $errorMessage = 'GraphQL Errors: '
+                . json_encode($decoded['errors']);
+            throw new \Exception($errorMessage);
+        }
+    }
+
+    /**
+     * @param array<string, string|int|float|bool|null> $decoded
+     */
+    private function validateDataExists(array $decoded): void
+    {
+        if (!isset($decoded['data'])) {
+            throw new \Exception('No data in response');
+        }
+    }
+
+    /**
+     * @param array<string, string|int|float|bool|null> $decoded
+     */
+    private function validateQueryDataExists(array $decoded): void
+    {
+        if (!isset($decoded['data'][$this->queryName])) {
+            $errorMessage = 'No data for query: ' . $this->queryName;
+            throw new \Exception($errorMessage);
+        }
+    }
+
+    /**
+     * @param array<string, string|int|float|bool|null> $decoded
+     */
+    private function validateUserDataExists(array $decoded): void
+    {
+        if (!isset($decoded['data'][$this->queryName]['user'])) {
+            throw new \Exception('No user data in response');
+        }
+    }
+
+    /**
+     * @param array<string, string|int|float|bool|null> $decoded
+     *
+     * @return array<string, string|int|float|bool|null>
+     */
+    private function extractUserData(array $decoded): array
+    {
+        return $decoded['data'][$this->queryName]['user'];
+    }
+
+    /**
+     * @param array<string, string|int|float|bool|null> $userData
+     */
+    private function validateUserFields(array $userData): void
+    {
         foreach ($this->responseContent as $fieldName) {
             Assert::assertArrayHasKey($fieldName, $userData);
             if (property_exists($this->graphQLInput, $fieldName)) {
@@ -234,64 +437,135 @@ final class UserGraphQLContext implements Context
         }
     }
 
-    /**
-     * @Then query response should return requested fields
-     */
-    public function queryResponseShouldContainRequestedFields(): void
+    private function getPageContent(): string
     {
-        $userData = json_decode(
-            $this->response->getContent(),
-            true
-        )['data'][$this->queryName];
+        return $this->restContext->getMink()
+            ->getSession()
+            ->getPage()
+            ->getContent();
+    }
 
-        foreach ($this->responseContent as $item) {
-            Assert::assertArrayHasKey($item, $userData);
+    /**
+     * @param array<string, string|int|float|bool|null> $data
+     */
+    private function validateQueryResponse(array $data): void
+    {
+        $this->validateNoErrors($data);
+        $this->validateDataExists($data);
+        $this->validateQueryDataExists($data);
+    }
+
+    /**
+     * @param array<string, string|int|float|bool|null> $data
+     *
+     * @return array<string, string|int|float|bool|null>
+     */
+    private function extractQueryUserData(array $data): array
+    {
+        return $data['data'][$this->queryName];
+    }
+
+    /**
+     * @param array<string, string|int|float|bool|null> $userData
+     */
+    private function validateQueryFields(array $userData): void
+    {
+        foreach ($this->responseContent as $fieldName) {
+            Assert::assertArrayHasKey($fieldName, $userData);
+        }
+    }
+
+    private function isInvalidJsonResponse(?array $data): bool
+    {
+        return $data === null;
+    }
+
+    private function assertErrorInRawContent(
+        string $content,
+        string $errorMessage
+    ): void {
+        Assert::assertStringContainsString($errorMessage, $content);
+    }
+
+    /**
+     * @param array<string, string|int|float|bool|null> $data
+     */
+    private function validateErrorsArray(array $data): void
+    {
+        $this->assertErrorsKeyExists($data);
+        $this->assertErrorsIsArray($data);
+        $this->assertErrorsNotEmpty($data);
+    }
+
+    /**
+     * @param array<string, string|int|float|bool|null> $data
+     */
+    private function assertErrorsKeyExists(array $data): void
+    {
+        Assert::assertArrayHasKey('errors', $data);
+    }
+
+    /**
+     * @param array<string, string|int|float|bool|null> $data
+     */
+    private function assertErrorsIsArray(array $data): void
+    {
+        if (!is_array($data['errors'])) {
+            $errorMessage = 'Errors is not an array: '
+                . json_encode($data['errors']);
+            throw new \Exception($errorMessage);
         }
     }
 
     /**
-     * @Then graphql response should be null
+     * @param array<string, string|int|float|bool|null> $data
      */
-    public function queryResponseShouldBeNull(): void
+    private function assertErrorsNotEmpty(array $data): void
     {
-        $userData = json_decode(
-            $this->response->getContent(),
-            true
-        )['data'][$this->queryName];
-
-        Assert::assertNull($userData);
+        if (count($data['errors']) === 0) {
+            $errorMessage = 'No errors found in response: '
+                . json_encode($data);
+            throw new \Exception($errorMessage);
+        }
     }
 
     /**
-     * @Then collection of users should be returned
+     * @param array<string, string|int|float|bool|null> $data
      */
-    public function collectionOfUsersShouldBeReturned(): void
-    {
-        $userData = json_decode(
-            $this->response->getContent(),
-            true
-        )['data'][$this->queryName]['edges'];
+    private function assertErrorContainsMessage(
+        array $data,
+        string $errorMessage
+    ): void {
+        $errorMessageFound = $this->findErrorMessageInErrors(
+            $data['errors'],
+            $errorMessage
+        );
 
-        Assert::assertIsArray($userData);
-        foreach ($userData as $user) {
-            foreach ($this->responseContent as $item) {
-                Assert::assertArrayHasKey($item, $user['node']);
+        if (!$errorMessageFound) {
+            $errorPrefix = 'Expected error message "'
+                . $errorMessage . '" not found in errors: ';
+            $errorMessageText = $errorPrefix
+                . json_encode($data['errors']);
+            throw new \Exception($errorMessageText);
+        }
+    }
+
+    /**
+     * @param array<string, string|int|float|bool|null> $errors
+     */
+    private function findErrorMessageInErrors(
+        array $errors,
+        string $errorMessage
+    ): bool {
+        foreach ($errors as $error) {
+            if (
+                isset($error['message']) &&
+                str_contains($error['message'], $errorMessage)
+            ) {
+                return true;
             }
         }
-    }
-
-    /**
-     * @Then graphql error message should be :errorMessage
-     */
-    public function graphQLErrorShouldBe(string $errorMessage): void
-    {
-        $data = json_decode($this->response->getContent(), true);
-
-        Assert::assertEquals(
-            $errorMessage,
-            $data['errors'][$this->errorNum]['message']
-        );
-        $this->errorNum++;
+        return false;
     }
 
     /**
@@ -302,10 +576,42 @@ final class UserGraphQLContext implements Context
         GraphQLMutationInput $input,
         array $responseFields
     ): string {
-        $mutation = (string) (new RootType($name))->addArgument(
-            new Argument('input', $input->toGraphQLArguments())
-        )->addSubType((new Type('user'))->addSubTypes($responseFields));
+        $mutationSignature = $this->buildMutationSignature($name);
+        $mutationContent = $this->buildMutationContent($name, $responseFields);
+        return $mutationSignature . $mutationContent;
+    }
 
-        return 'mutation' . $mutation;
+    private function buildMutationSignature(string $name): string
+    {
+        $mutationName = ucfirst($name);
+        $inputType = $name . 'Input';
+        return $mutationName . '($input: ' . $inputType . '!)';
+    }
+
+    /**
+     * @param array<string> $responseFields
+     */
+    private function buildMutationContent(
+        string $name,
+        array $responseFields
+    ): string {
+        $userFields = implode(' ', $responseFields);
+        $userSection = 'user { ' . $userFields . ' }';
+        $mutationBody = $name . '(input: $input) { ' . $userSection . ' }';
+        return ' { ' . $mutationBody . ' }';
+    }
+
+    /**
+     * @param array<string, string|int|float|bool|null> $arguments
+     * @param array<string> $responseFields
+     */
+    private function createQuery(
+        string $name,
+        array $arguments,
+        array $responseFields
+    ): string {
+        $rootType = new RootType($name);
+        $rootType->addArguments($arguments)->addSubTypes($responseFields);
+        return (string) $rootType;
     }
 }

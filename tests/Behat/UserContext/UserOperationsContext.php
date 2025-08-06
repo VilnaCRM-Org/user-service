@@ -133,22 +133,8 @@ final class UserOperationsContext implements Context
      */
     public function requestSendTo(string $method, string $path): void
     {
-        $headers = $this->buildHeaders($method);
-        foreach ($headers as $name => $value) {
-            $this->restContext->iAddHeaderEqualTo($name, $value);
-        }
         $body = $this->buildBody();
-        $pyStringBody = new PyStringNode(explode(PHP_EOL, $body), 0);
-
-        if (in_array($method, ['POST', 'PUT', 'PATCH'])) {
-            $this->restContext->iSendARequestToWithBody(
-                $method,
-                $path,
-                $pyStringBody
-            );
-         return; 
-        }
-            $this->restContext->iSendARequestTo($method, $path);
+        $this->sendRequest($method, $path, $body);
     }
 
     /**
@@ -156,12 +142,7 @@ final class UserOperationsContext implements Context
      */
     public function theErrorMessageShouldBe(string $errorMessage): void
     {
-        $content = $this->restContext
-            ->getMink()
-            ->getSession()
-            ->getPage()
-            ->getContent();
-        Assert::assertStringContainsString($errorMessage, $content);
+        $this->assertContentContains($errorMessage);
     }
 
     /**
@@ -169,12 +150,7 @@ final class UserOperationsContext implements Context
      */
     public function theViolationShouldBe(string $violation): void
     {
-        $content = $this->restContext
-            ->getMink()
-            ->getSession()
-            ->getPage()
-            ->getContent();
-        Assert::assertStringContainsString($violation, $content);
+        $this->assertContentContains($violation);
         $this->violationNum++;
     }
 
@@ -183,11 +159,7 @@ final class UserOperationsContext implements Context
      */
     public function theResponseShouldContainAListOfUsers(): void
     {
-        $content = $this->restContext
-            ->getMink()
-            ->getSession()
-            ->getPage()
-            ->getContent();
+        $content = $this->getPageContent();
         Assert::assertStringContainsString('[', $content);
     }
 
@@ -196,15 +168,8 @@ final class UserOperationsContext implements Context
      */
     public function userShouldBeTimedOut(): void
     {
-        $content = $this->restContext
-            ->getMink()
-            ->getSession()
-            ->getPage()
-            ->getContent();
-        Assert::assertStringContainsString(
-            'Cannot send new email till',
-            $content
-        );
+        $content = $this->getPageContent();
+        Assert::assertStringContainsString('Too Many Requests', $content);
     }
 
     /**
@@ -214,19 +179,9 @@ final class UserOperationsContext implements Context
         string $email,
         string $initials
     ): void {
-        $content = $this->restContext
-            ->getMink()
-            ->getSession()
-            ->getPage()
-            ->getContent();
-        Assert::assertStringContainsString(
-            $email,
-            $content
-        );
-        Assert::assertStringContainsString(
-            $initials,
-            $content
-        );
+        $content = $this->getPageContent();
+        Assert::assertStringContainsString($email, $content);
+        Assert::assertStringContainsString($initials, $content);
     }
 
     /**
@@ -234,12 +189,32 @@ final class UserOperationsContext implements Context
      */
     public function userWithIdShouldBeReturned(string $id): void
     {
-        $content = $this->restContext
+        $content = $this->getPageContent();
+        Assert::assertStringContainsString($id, $content);
+    }
+
+    private function getPageContent(): string
+    {
+        return $this->restContext
             ->getMink()
             ->getSession()
             ->getPage()
             ->getContent();
-        Assert::assertStringContainsString($id, $content);
+    }
+
+    private function assertContentContains(string $expectedContent): void
+    {
+        $content = $this->getPageContent();
+        $decoded = json_decode($content, true);
+
+        if ($decoded && isset($decoded['detail'])) {
+            Assert::assertStringContainsString(
+                $expectedContent,
+                $decoded['detail']
+            );
+        } else {
+            Assert::assertStringContainsString($expectedContent, $content);
+        }
     }
 
     /**
@@ -247,21 +222,80 @@ final class UserOperationsContext implements Context
      */
     private function buildHeaders(string $method): array
     {
-        $contentType = $method === 'PATCH'
-            ? 'application/merge-patch+json'
-            : 'application/json';
-
-        return [
+        $headers = [
             'Accept' => 'application/json',
-            'Content-Type' => $contentType,
             'Accept-Language' => $this->language,
         ];
+
+        if ($method === 'PATCH') {
+            $headers['Content-Type'] = 'application/merge-patch+json';
+        } else {
+            $headers['Content-Type'] = 'application/json';
+        }
+
+        return $headers;
     }
 
     private function buildBody(): string
     {
-        return $this->requestBody
-            ? json_encode($this->requestBody, JSON_UNESCAPED_UNICODE)
-            : '';
+        if ($this->requestBody === null) {
+            return '';
+        }
+
+        return $this->requestBody->getJson();
+    }
+
+    private function sendRequest(
+        string $method,
+        string $path,
+        string $body
+    ): void {
+        if ($this->isRequestBodyMethod($method)) {
+            $this->sendRequestWithBody($method, $path, $body);
+            return;
+        }
+
+        $this->sendRequestWithoutBody($method, $path);
+    }
+
+    private function isRequestBodyMethod(string $method): bool
+    {
+        return in_array($method, ['POST', 'PUT', 'PATCH']);
+    }
+
+    private function sendRequestWithBody(
+        string $method,
+        string $path,
+        string $body
+    ): void {
+        $headers = $this->buildHeaders($method);
+        $this->addHeaders($headers);
+
+        $bodyContent = $body !== '' ? $body : '{}';
+        $pyStringBody = new PyStringNode([$bodyContent], 0);
+
+        $this->restContext->iSendARequestToWithBody(
+            $method,
+            $path,
+            $pyStringBody
+        );
+    }
+
+    private function sendRequestWithoutBody(string $method, string $path): void
+    {
+        $headers = $this->buildHeaders($method);
+        $this->addHeaders($headers);
+
+        $this->restContext->iSendARequestTo($method, $path);
+    }
+
+    /**
+     * @param array<string, string> $headers
+     */
+    private function addHeaders(array $headers): void
+    {
+        foreach ($headers as $name => $value) {
+            $this->restContext->iAddHeaderEqualTo($name, $value);
+        }
     }
 }

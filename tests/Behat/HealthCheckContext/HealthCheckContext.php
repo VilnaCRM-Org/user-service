@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\HealthCheckContext;
 
-use Aws\Sqs\SqsClient;
 use Behat\Behat\Context\Context;
-use Doctrine\Common\EventManager;
-use Doctrine\DBAL\Configuration;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Cache\Adapter\TraceableAdapter;
-use Symfony\Component\HttpKernel\KernelInterface;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use PHPUnit\Framework\Assert;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\HttpKernel\KernelInterface;
 use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class HealthCheckContext extends KernelTestCase implements Context
@@ -46,20 +41,34 @@ final class HealthCheckContext extends KernelTestCase implements Context
     }
 
     /**
+     * @Then the response status code should be :statusCode
+     */
+    public function theResponseStatusCodeShouldBe(int $statusCode): void
+    {
+        $actualStatusCode = $this->restContext->getMink()
+            ->getSession()
+            ->getStatusCode();
+        Assert::assertSame($statusCode, $actualStatusCode);
+    }
+
+    /**
+     * @Then the response should contain :text
+     */
+    public function theResponseShouldContain(string $text): void
+    {
+        $content = $this->restContext->getMink()
+            ->getSession()
+            ->getPage()
+            ->getContent();
+        Assert::assertStringContainsString($text, $content);
+    }
+
+    /**
      * @Given the cache is not working
      */
     public function theCacheIsNotWorking(): void
     {
-        $traceableCacheMock = $this->createMock(TraceableAdapter::class);
-
-        $traceableCacheMock->method('get')
-            ->willThrowException(new \Exception('Cache is not working'));
-
-        $container = $this->kernelInterface
-            ->getContainer()
-            ->get('test.service_container');
-
-        $container->set('cache.app', $traceableCacheMock);
+        putenv('CACHE_FAILURE=true');
     }
 
     /**
@@ -67,25 +76,7 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theDatabaseIsNotAvailable(): void
     {
-        $driverMock = $this->createMock(Driver::class);
-
-        $connectionMock = $this->getMockBuilder(Connection::class)
-            ->setConstructorArgs([
-                [],
-                $driverMock,
-                new Configuration(),
-                new EventManager(),
-            ])
-            ->onlyMethods(['executeQuery'])
-            ->getMock();
-
-        $connectionMock->method('executeQuery')
-            ->willThrowException(new \Exception('Database is not available'));
-
-        $container = $this->kernelInterface
-            ->getContainer()
-            ->get('test.service_container');
-        $container->set(Connection::class, $connectionMock);
+        putenv('DATABASE_FAILURE=true');
     }
 
     /**
@@ -93,18 +84,6 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theMessageBrokerIsNotAvailable(): void
     {
-        $sqsClientMock = $this->createMock(SqsClient::class);
-
-        $sqsClientMock->method('__call')
-            ->willThrowException(
-                new \Exception(
-                    'Message broker is not available'
-                )
-            );
-
-        $container = $this->kernelInterface
-            ->getContainer()
-            ->get('test.service_container');
-        $container->set(SqsClient::class, $sqsClientMock);
+        putenv('MESSAGE_BROKER_FAILURE=true');
     }
 }

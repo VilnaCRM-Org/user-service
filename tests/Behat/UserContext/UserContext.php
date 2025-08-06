@@ -37,8 +37,9 @@ final class UserContext implements Context
     {
         $entityManager = $this->getEntityManager();
         if ($entityManager) {
-            $connection = $entityManager->getConnection();
-            $connection->executeStatement('DELETE FROM user');
+            $entityManager->createQuery(
+                'DELETE FROM App\User\Domain\Entity\User'
+            )->execute();
         }
     }
 
@@ -103,13 +104,20 @@ final class UserContext implements Context
      */
     public function userWithIdExists(string $id): void
     {
-        $user = $this->userRepository->find($id) ??
-            $this->userFactory->create(
-                $this->faker->email,
-                $this->faker->name,
-                $this->faker->password,
-                $this->transformer->transformFromString($id)
-            );
+        $email = $this->faker->email;
+        $this->removeExistingUser($email);
+        $password = $this->faker->password;
+        $user = $this->userFactory->create(
+            $email,
+            $this->faker->name,
+            $password,
+            $this->transformer->transformFromString($id)
+        );
+
+        $hasher = $this->hasherFactory->getPasswordHasher($user::class);
+        $hashedPassword = $hasher->hash($password, null);
+        $user->setPassword($hashedPassword);
+
         $this->userRepository->save($user);
     }
 
@@ -120,8 +128,10 @@ final class UserContext implements Context
         string $id,
         string $password
     ): void {
-        $user = $this->userRepository->find($id) ?? $this->userFactory->create(
-            $this->faker->email,
+        $email = $this->faker->email;
+        $this->removeExistingUser($email);
+        $user = $this->userFactory->create(
+            $email,
             $this->faker->name,
             $password,
             $this->transformer->transformFromString($id)
@@ -136,22 +146,20 @@ final class UserContext implements Context
 
     private function getEntityManager(): ?object
     {
-        return method_exists($this->userRepository, 'getEntityManager')
-            ? $this->userRepository->getEntityManager()
-            : (method_exists($this->userRepository, 'getManager')
-                ? $this->userRepository->getManager()
-                : null);
+        if (
+            $this->userRepository instanceof
+            \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository
+        ) {
+            return $this->userRepository->getEntityManager();
+        }
+        return null;
     }
 
     private function removeExistingUser(string $email): void
     {
-        $existingUser = $this->userRepository->findOneBy(['email' => $email]);
+        $existingUser = $this->userRepository->findByEmail($email);
         if ($existingUser) {
-            $entityManager = $this->getEntityManager();
-            if ($entityManager) {
-                $entityManager->remove($existingUser);
-                $entityManager->flush();
-            }
+            $this->userRepository->delete($existingUser);
         }
     }
 }
