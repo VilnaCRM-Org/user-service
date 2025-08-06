@@ -6,4 +6,5 @@ namespace App\Tests\Behat\UserContext\Input;
 
 abstract class RequestInput
 {
+    abstract public function getJson(): string;
 }

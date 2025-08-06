@@ -12,4 +12,13 @@ final class CreateUserInput extends RequestInput
         public readonly ?string $password = null
     ) {
     }
+
+    public function getJson(): string
+    {
+        return json_encode([
+            'email' => $this->email,
+            'initials' => $this->initials,
+            'password' => $this->password,
+        ]);
+    }
 }
