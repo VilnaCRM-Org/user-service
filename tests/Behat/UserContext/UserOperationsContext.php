@@ -193,6 +193,28 @@ final class UserOperationsContext implements Context
         Assert::assertStringContainsString($id, $content);
     }
 
+    /**
+     * @Then the response status code should be :statusCode
+     */
+    public function theResponseStatusCodeShouldBe(int $statusCode): void
+    {
+        $actualStatusCode = $this->restContext->getMink()
+            ->getSession()
+            ->getStatusCode();
+
+        if ($actualStatusCode !== $statusCode) {
+            $content = $this->restContext->getMink()
+                ->getSession()
+                ->getPage()
+                ->getContent();
+            echo 'Response content: ' . $content . "\n";
+            echo 'Expected: ' . $statusCode . ', Got: ' .
+                $actualStatusCode . "\n";
+        }
+
+        Assert::assertSame($statusCode, $actualStatusCode);
+    }
+
     private function getPageContent(): string
     {
         return $this->restContext

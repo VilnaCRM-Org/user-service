@@ -62,7 +62,7 @@ final class UserContext implements Context
         $this->removeExistingUser($email);
         $user = $this->userFactory->create(
             $email,
-            $this->faker->name,
+            'Test User',
             $password,
             $this->transformer->transformFromSymfonyUuid(
                 $this->uuidFactory->create()
@@ -74,6 +74,7 @@ final class UserContext implements Context
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
+        $this->flushAndClear();
     }
 
     /**
@@ -97,6 +98,7 @@ final class UserContext implements Context
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
+        $this->flushAndClear();
     }
 
     /**
@@ -119,6 +121,7 @@ final class UserContext implements Context
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
+        $this->flushAndClear();
     }
 
     /**
@@ -142,17 +145,7 @@ final class UserContext implements Context
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
-    }
-
-    private function getEntityManager(): ?object
-    {
-        if (
-            $this->userRepository instanceof
-            \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository
-        ) {
-            return $this->userRepository->getEntityManager();
-        }
-        return null;
+        $this->flushAndClear();
     }
 
     private function removeExistingUser(string $email): void
@@ -160,6 +153,29 @@ final class UserContext implements Context
         $existingUser = $this->userRepository->findByEmail($email);
         if ($existingUser) {
             $this->userRepository->delete($existingUser);
+        }
+    }
+
+    private function getEntityManager(): ?\Doctrine\ORM\EntityManagerInterface
+    {
+        if (
+            $this->userRepository instanceof
+            \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository
+        ) {
+            return $this->userRepository->getEntityManager();
+        }
+        if (method_exists($this->userRepository, 'getEntityManager')) {
+            return $this->userRepository->getEntityManager();
+        }
+        return null;
+    }
+
+    private function flushAndClear(): void
+    {
+        $em = $this->getEntityManager();
+        if ($em) {
+            $em->flush();
+            $em->clear();
         }
     }
 }

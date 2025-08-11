@@ -33,25 +33,6 @@ final class HealthCheckContext extends KernelTestCase implements Context
     }
 
     /**
-     * @When :method request is sent to :path
-     */
-    public function sendRequestTo(string $method, string $path): void
-    {
-        $this->restContext->iSendARequestTo($method, $path);
-    }
-
-    /**
-     * @Then the response status code should be :statusCode
-     */
-    public function theResponseStatusCodeShouldBe(int $statusCode): void
-    {
-        $actualStatusCode = $this->restContext->getMink()
-            ->getSession()
-            ->getStatusCode();
-        Assert::assertSame($statusCode, $actualStatusCode);
-    }
-
-    /**
      * @Then the response should contain :text
      */
     public function theResponseShouldContain(string $text): void
@@ -85,5 +66,28 @@ final class HealthCheckContext extends KernelTestCase implements Context
     public function theMessageBrokerIsNotAvailable(): void
     {
         putenv('MESSAGE_BROKER_FAILURE=true');
+    }
+
+    /**
+     * @Then print last response
+     */
+    public function printLastResponse(): void
+    {
+        $content = $this->restContext->getMink()
+            ->getSession()
+            ->getPage()
+            ->getContent();
+        echo 'Response content: ' . $content . "\n";
+    }
+
+    /**
+     * @Then the response status code should be :statusCode
+     */
+    public function theResponseStatusCodeShouldBe(int $statusCode): void
+    {
+        $actualStatusCode = $this->restContext->getMink()
+            ->getSession()
+            ->getStatusCode();
+        Assert::assertSame($statusCode, $actualStatusCode);
     }
 }

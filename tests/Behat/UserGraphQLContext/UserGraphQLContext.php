@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserGraphQLContext;
 
+use App\Tests\Behat\UserContext\UserContext;
 use App\Tests\Behat\UserGraphQLContext\Input\ConfirmUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\CreateUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\DeleteUserGraphQLMutationInput;
@@ -37,6 +38,7 @@ final class UserGraphQLContext implements Context
 
     private GraphQLMutationInput $graphQLInput;
     private RestContext $restContext;
+    private UserContext $userContext;
 
     public function __construct()
     {
@@ -52,6 +54,7 @@ final class UserGraphQLContext implements Context
     {
         $environment = $scope->getEnvironment();
         $this->restContext = $environment->getContext(RestContext::class);
+        $this->userContext = $environment->getContext(UserContext::class);
         $this->errorNum = 0;
     }
 
@@ -222,6 +225,11 @@ final class UserGraphQLContext implements Context
     {
         $content = $this->getPageContent();
         $decoded = json_decode($content, true);
+
+        if ($decoded === null) {
+            echo 'GraphQL Response content: ' . $content . "\n";
+            throw new \Exception('Invalid JSON response from GraphQL endpoint');
+        }
 
         $this->validateGraphQLResponse($decoded);
         $userData = $this->extractUserData($decoded);

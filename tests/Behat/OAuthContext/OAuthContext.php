@@ -10,6 +10,7 @@ use App\Tests\Behat\OAuthContext\Input\ClientCredentialsGrantInput;
 use App\Tests\Behat\OAuthContext\Input\ObtainAccessTokenInput;
 use App\Tests\Behat\OAuthContext\Input\ObtainAuthorizeCodeInput;
 use App\Tests\Behat\OAuthContext\Input\PasswordGrantInput;
+use App\Tests\Behat\UserContext\UserContext;
 use App\User\Application\DTO\AuthorizationUserDto;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
@@ -33,6 +34,7 @@ final class OAuthContext implements Context
     private ObtainAccessTokenInput $obtainAccessTokenInput;
     private ObtainAuthorizeCodeInput $obtainAuthorizeCodeInput;
     private RestContext $restContext;
+    private UserContext $userContext;
 
     private string $authCode;
 
@@ -51,6 +53,7 @@ final class OAuthContext implements Context
     {
         $environment = $scope->getEnvironment();
         $this->restContext = $environment->getContext(RestContext::class);
+        $this->userContext = $environment->getContext(UserContext::class);
     }
 
     /**
@@ -130,6 +133,7 @@ final class OAuthContext implements Context
 
         $this->entityManager->persist($client);
         $this->entityManager->flush();
+        $this->entityManager->clear();
     }
 
     /**
@@ -186,6 +190,8 @@ final class OAuthContext implements Context
     public function accessTokenShouldBeProvided(): void
     {
         $content = $this->restContext->getMink()->getSession()->getPage()->getContent();
+        echo 'OAuth Response: ' . $content . "\n";
+        echo 'Status Code: ' . $this->restContext->getMink()->getSession()->getStatusCode() . "\n";
 
         $data = json_decode($content, true);
 
@@ -291,8 +297,25 @@ final class OAuthContext implements Context
         Assert::assertEquals($expectedDescription, $data['error_description']);
     }
 
-    private function approveAuthorization(): void
+    /**
+     * @Then the response status code should be :statusCode
+     */
+    public function theResponseStatusCodeShouldBe(int $statusCode): void
     {
+        $actualStatusCode = $this->restContext->getMink()
+            ->getSession()
+            ->getStatusCode();
+
+        if ($actualStatusCode !== $statusCode) {
+            $content = $this->restContext->getMink()
+                ->getSession()
+                ->getPage()
+                ->getContent();
+            echo 'Response content: ' . $content . "\n";
+            echo 'Expected: ' . $statusCode . ', Got: ' . $actualStatusCode . "\n";
+        }
+
+        Assert::assertSame($statusCode, $actualStatusCode);
     }
 
     private function sendAuthorizationRequest(): void
@@ -302,5 +325,11 @@ final class OAuthContext implements Context
 
         $uriParams = $this->obtainAuthorizeCodeInput->toUriParams();
         $this->restContext->iSendARequestTo('GET', '/api/oauth/authorize?' . $uriParams);
+    }
+
+    private function approveAuthorization(): void
+    {
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
     }
 }
