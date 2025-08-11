@@ -40,7 +40,7 @@ Feature: User Operations Localization
     And violation should be "Пароль має містити від 8 до 64 символів"
 
   Scenario: Creating a user with initials that contains only spaces and Ukrainian language
-    Given creating user with email "testPass3@example.com", initials " ", password "pass"
+    Given creating user with email "testPass3@example.com", initials " ", password "passWORD1"
     And with language "uk"
     When POST request is send to "/api/users"
     Then the response status code should be 422
@@ -84,7 +84,7 @@ Feature: User Operations Localization
   Scenario: Creating a batch of users with password with no uppercase letters and Ukrainian language
     Given sending a batch of users
     And with language "uk"
-    And with user with email "test@example.com", initials "name surname", password "password1"
+    And with user with email "batchNoUpper@example.com", initials "name surname", password "password1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Пароль має містити принаймні одну велику літеру"
@@ -92,7 +92,7 @@ Feature: User Operations Localization
   Scenario: Creating a batch of users with password with no numbers and Ukrainian language
     Given sending a batch of users
     And with language "uk"
-    And with user with email "test@example.com", initials "name surname", password "passWORD"
+    And with user with email "batchNoNumbers@example.com", initials "name surname", password "passWORD"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Пароль повинен містити хоча б одне число"
@@ -100,7 +100,7 @@ Feature: User Operations Localization
   Scenario: Creating a batch of users with too short password and Ukrainian language
     Given sending a batch of users
     And with language "uk"
-    And with user with email "test@example.com", initials "name surname", password "pAss1"
+    And with user with email "batchTooShort@example.com", initials "name surname", password "pAss1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Пароль має містити від 8 до 64 символів"
@@ -108,7 +108,7 @@ Feature: User Operations Localization
   Scenario: Creating a batch of users with initials that contains only spaces and Ukrainian language
     Given sending a batch of users
     And with language "uk"
-    And with user with email "test@example.com", initials " ", password "pAss1"
+    And with user with email "batchOnlySpaces@example.com", initials " ", password "passWORD1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Ім'я та прізвище не можуть складатися лише з пробілів"

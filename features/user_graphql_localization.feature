@@ -6,8 +6,8 @@ Feature: User GraphQL Operations Localization
   Scenario: Creating a user with duplicate email and Ukrainian language
     Given requesting to return user's id and email
     And with graphql language "uk"
-    And user with email "graphqltest@mail.com2" exists
-    And creating user with email "graphqltest@mail.com2" initials "name surname" password "passWORD1"
+    And user with email "graphqltest2@mail.com" exists
+    And creating user with email "graphqltest2@mail.com" initials "name surname" password "passWORD1"
     When graphQL request is send
     Then graphql error message should be "email: Ця email-адреса вже зареєстрована"
 

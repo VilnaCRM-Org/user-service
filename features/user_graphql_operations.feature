@@ -11,8 +11,8 @@ Feature: User GraphQL Operations
 
   Scenario: Creating a user with duplicate email
     Given requesting to return user's id and email
-    And user with email "graphqltest@example.com2" exists
-    And creating user with email "graphqltest@example.com2" initials "name surname" password "passWORD1"
+    And user with email "graphqltest2@example.com" exists
+    And creating user with email "graphqltest2@example.com" initials "name surname" password "passWORD1"
     When graphQL request is send
     Then graphql error message should be "email: This email address is already registered"
 
