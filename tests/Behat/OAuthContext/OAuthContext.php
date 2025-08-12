@@ -141,7 +141,7 @@ final class OAuthContext implements Context
      */
     public function obtainAuthCode(): void
     {
-        $this->approveAuthorization();
+        $this->setAuthorizationHeaders();
 
         $this->sendAuthorizationRequest();
 
@@ -160,7 +160,7 @@ final class OAuthContext implements Context
      */
     public function requestAuthorizationEndpoint(): void
     {
-        $this->approveAuthorization();
+        $this->setAuthorizationHeaders();
 
         $this->sendAuthorizationRequest();
     }
@@ -327,7 +327,7 @@ final class OAuthContext implements Context
         $this->restContext->iSendARequestTo('GET', '/api/oauth/authorize?' . $uriParams);
     }
 
-    private function approveAuthorization(): void
+    private function setAuthorizationHeaders(): void
     {
         $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
         $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');

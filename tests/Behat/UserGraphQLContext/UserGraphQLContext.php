@@ -103,9 +103,9 @@ final class UserGraphQLContext implements Context
         );
     }
 
-        /**
+    /**
      * @Given creating user with email :email initials :initials password :password
-     * @Given creating user with email :email initials :initials 
+     * @Given creating user with email :email initials :initials
      *        password :password
      */
     public function creatingUser(
@@ -595,7 +595,8 @@ final class UserGraphQLContext implements Context
         foreach ($errors as $error) {
             if (
                 isset($error['message']) &&
-                str_contains($error['message'], $errorMessage)
+                ($error['message'] === $errorMessage ||
+                 str_contains($error['message'], $errorMessage))
             ) {
                 return true;
             }

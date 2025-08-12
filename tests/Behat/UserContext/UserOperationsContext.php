@@ -268,11 +268,9 @@ final class UserOperationsContext implements Context
             'Accept-Language' => $this->language,
         ];
 
-        if ($method === 'PATCH') {
-            $headers['Content-Type'] = 'application/merge-patch+json';
-        } else {
-            $headers['Content-Type'] = 'application/json';
-        }
+        $headers['Content-Type'] = ($method === 'PATCH')
+            ? 'application/merge-patch+json'
+            : 'application/json';
 
         return $headers;
     }
