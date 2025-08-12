@@ -153,12 +153,9 @@ final class UserOperationsContext implements Context
         $content = $this->getPageContent();
         $decoded = json_decode($content, true);
 
-        $errorMessage = '';
-        if ($decoded && isset($decoded['detail'])) {
-            $errorMessage = $decoded['detail'];
-        } else {
-            $errorMessage = $content;
-        }
+        $errorMessage = $decoded && isset($decoded['detail'])
+            ? $decoded['detail']
+            : $content;
 
         Assert::assertStringContainsString($partialMessage, $errorMessage);
     }
@@ -268,7 +265,7 @@ final class UserOperationsContext implements Context
             'Accept-Language' => $this->language,
         ];
 
-        $headers['Content-Type'] = ($method === 'PATCH')
+        $headers['Content-Type'] = $method === 'PATCH'
             ? 'application/merge-patch+json'
             : 'application/json';
 

@@ -119,6 +119,13 @@ final class OAuthContext implements Context
             $this->entityManager->remove($existingClient);
             $this->entityManager->flush();
             $this->entityManager->clear();
+            // Verify the client was removed
+            $verifyRemoved = $this->entityManager->getRepository(Client::class)->find($id);
+            if ($verifyRemoved !== null) {
+                throw new \RuntimeException(
+                    'Failed to remove existing client with ID: ' . $id
+                );
+            }
         }
 
         $client = new Client($this->faker->name, $id, $secret);
