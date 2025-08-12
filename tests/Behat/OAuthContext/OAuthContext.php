@@ -114,33 +114,9 @@ final class OAuthContext implements Context
      */
     public function clientExists(string $id, string $secret, string $uri): void
     {
-        $existingClient = $this->entityManager->getRepository(Client::class)->find($id);
-        if ($existingClient) {
-            $this->entityManager->remove($existingClient);
-            $this->entityManager->flush();
-            $this->entityManager->clear();
-            // Verify the client was removed
-            $verifyRemoved = $this->entityManager->getRepository(Client::class)->find($id);
-            if ($verifyRemoved !== null) {
-                throw new \RuntimeException(
-                    'Failed to remove existing client with ID: ' . $id
-                );
-            }
-        }
-
-        $client = new Client($this->faker->name, $id, $secret);
-        $client->setRedirectUris(new RedirectUri($uri));
-
-        $client->setGrants(
-            new Grant('client_credentials'),
-            new Grant('password'),
-            new Grant('authorization_code'),
-            new Grant('refresh_token')
-        );
-
-        $this->entityManager->persist($client);
-        $this->entityManager->flush();
-        $this->entityManager->clear();
+        $this->removeExistingClient($id);
+        $client = $this->createOAuthClient($id, $secret, $uri);
+        $this->persistClient($client);
     }
 
     /**
@@ -323,6 +299,52 @@ final class OAuthContext implements Context
         }
 
         Assert::assertSame($statusCode, $actualStatusCode);
+    }
+
+    private function removeExistingClient(string $id): void
+    {
+        $existingClient = $this->entityManager->getRepository(Client::class)->find($id);
+        if ($existingClient) {
+            $this->entityManager->remove($existingClient);
+            $this->entityManager->flush();
+            $this->entityManager->clear();
+            $this->verifyClientRemoval($id);
+        }
+    }
+
+    private function verifyClientRemoval(string $id): void
+    {
+        $verifyRemoved = $this->entityManager->getRepository(Client::class)->find($id);
+        if ($verifyRemoved !== null) {
+            throw new \RuntimeException(
+                'Failed to remove existing client with ID: ' . $id
+            );
+        }
+    }
+
+    private function createOAuthClient(string $id, string $secret, string $uri): Client
+    {
+        $client = new Client($this->faker->name, $id, $secret);
+        $client->setRedirectUris(new RedirectUri($uri));
+        $this->setClientGrants($client);
+        return $client;
+    }
+
+    private function setClientGrants(Client $client): void
+    {
+        $client->setGrants(
+            new Grant('client_credentials'),
+            new Grant('password'),
+            new Grant('authorization_code'),
+            new Grant('refresh_token')
+        );
+    }
+
+    private function persistClient(Client $client): void
+    {
+        $this->entityManager->persist($client);
+        $this->entityManager->flush();
+        $this->entityManager->clear();
     }
 
     private function sendAuthorizationRequest(): void
