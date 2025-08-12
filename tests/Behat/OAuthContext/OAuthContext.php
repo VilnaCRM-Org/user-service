@@ -110,7 +110,7 @@ final class OAuthContext implements Context
     }
 
     /**
-     * @Given client with id :id, secret :secret and redirect uri :uri exists
+     * @Given client with id :id, secret :secret and redirect_uri :uri exists
      */
     public function clientExists(string $id, string $secret, string $uri): void
     {

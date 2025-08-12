@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserGraphQLContext;
 
-use App\Tests\Behat\UserContext\UserContext;
 use App\Tests\Behat\UserGraphQLContext\Input\ConfirmUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\CreateUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\DeleteUserGraphQLMutationInput;
@@ -14,6 +13,7 @@ use App\Tests\Behat\UserGraphQLContext\Input\UpdateUserGraphQLMutationInput;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
+use Exception;
 use GraphQL\RequestBuilder\Argument;
 use GraphQL\RequestBuilder\RootType;
 use GraphQL\RequestBuilder\Type;
@@ -34,16 +34,13 @@ final class UserGraphQLContext implements Context
      * @var array<string>
      */
     private array $responseContent;
-    private int $errorNum;
 
     private GraphQLMutationInput $graphQLInput;
     private RestContext $restContext;
-    private UserContext $userContext;
 
     public function __construct()
     {
         $this->responseContent = [];
-        $this->errorNum = 0;
         $this->language = 'en';
     }
 
@@ -54,8 +51,6 @@ final class UserGraphQLContext implements Context
     {
         $environment = $scope->getEnvironment();
         $this->restContext = $environment->getContext(RestContext::class);
-        $this->userContext = $environment->getContext(UserContext::class);
-        $this->errorNum = 0;
     }
 
     /**
@@ -108,8 +103,10 @@ final class UserGraphQLContext implements Context
         );
     }
 
-    /**
+        /**
      * @Given creating user with email :email initials :initials password :password
+     * @Given creating user with email :email initials :initials 
+     *        password :password
      */
     public function creatingUser(
         string $email,
@@ -132,6 +129,8 @@ final class UserGraphQLContext implements Context
 
     /**
      * @Given updating user with id :id and password :oldPassword to new email :email
+     * @Given updating user with id :id and password :oldPassword
+     *        to new email :email
      */
     public function updatingUser(
         string $id,
@@ -227,8 +226,10 @@ final class UserGraphQLContext implements Context
         $decoded = json_decode($content, true);
 
         if ($decoded === null) {
-            echo 'GraphQL Response content: ' . $content . "\n";
-            throw new \Exception('Invalid JSON response from GraphQL endpoint');
+            throw new Exception(
+                'Invalid JSON response from GraphQL endpoint. Raw content: '
+                . $content
+            );
         }
 
         $this->validateGraphQLResponse($decoded);
@@ -243,6 +244,12 @@ final class UserGraphQLContext implements Context
     {
         $content = $this->getPageContent();
         $data = json_decode($content, true);
+        if ($data === null) {
+            throw new Exception(
+                'Invalid JSON response from GraphQL endpoint. Raw content: '
+                . $content
+            );
+        }
 
         $this->validateQueryResponse($data);
         $userData = $this->extractQueryUserData($data);
@@ -255,7 +262,14 @@ final class UserGraphQLContext implements Context
     public function queryResponseShouldBeNull(): void
     {
         $content = $this->getPageContent();
-        $userData = json_decode($content, true)['data'][$this->queryName];
+        $decoded = json_decode($content, true);
+        if ($decoded === null) {
+            throw new Exception(
+                'Invalid JSON response from GraphQL endpoint. Raw content: '
+                . $content
+            );
+        }
+        $userData = $decoded['data'][$this->queryName] ?? null;
 
         Assert::assertNull($userData);
     }
@@ -266,7 +280,17 @@ final class UserGraphQLContext implements Context
     public function collectionOfUsersShouldBeReturned(): void
     {
         $content = $this->getPageContent();
-        $data = json_decode($content, true)['data'][$this->queryName];
+        $decoded = json_decode($content, true);
+        if ($decoded === null) {
+            throw new Exception(
+                'Invalid JSON response from GraphQL endpoint. Raw content: '
+                . $content
+            );
+        }
+        $this->validateNoErrors($decoded);
+        $this->validateDataExists($decoded);
+        $this->validateQueryDataExists($decoded);
+        $data = $decoded['data'][$this->queryName] ?? null;
 
         Assert::assertArrayHasKey('edges', $data);
         Assert::assertIsArray($data['edges']);
@@ -320,7 +344,7 @@ final class UserGraphQLContext implements Context
             'deleteUser',
             'resendEmailToUser',
         ];
-        return in_array($this->queryName, $mutationNames);
+        return in_array($this->queryName, $mutationNames, true);
     }
 
     private function buildMutationRequestBody(): string
@@ -331,13 +355,16 @@ final class UserGraphQLContext implements Context
         return json_encode([
             'query' => $fullQuery,
             'variables' => ['input' => $variables],
-        ]);
+        ], JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
     }
 
     private function buildQueryRequestBody(): string
     {
         $fullQuery = $this->query;
-        return json_encode(['query' => $fullQuery]);
+        return json_encode(
+            ['query' => $fullQuery],
+            JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
+        );
     }
 
     /**
@@ -384,7 +411,7 @@ final class UserGraphQLContext implements Context
         if (isset($decoded['errors'])) {
             $errorMessage = 'GraphQL Errors: '
                 . json_encode($decoded['errors']);
-            throw new \Exception($errorMessage);
+            throw new Exception($errorMessage);
         }
     }
 
@@ -394,7 +421,7 @@ final class UserGraphQLContext implements Context
     private function validateDataExists(array $decoded): void
     {
         if (!isset($decoded['data'])) {
-            throw new \Exception('No data in response');
+            throw new Exception('No data in response');
         }
     }
 
@@ -405,7 +432,7 @@ final class UserGraphQLContext implements Context
     {
         if (!isset($decoded['data'][$this->queryName])) {
             $errorMessage = 'No data for query: ' . $this->queryName;
-            throw new \Exception($errorMessage);
+            throw new Exception($errorMessage);
         }
     }
 
@@ -415,7 +442,7 @@ final class UserGraphQLContext implements Context
     private function validateUserDataExists(array $decoded): void
     {
         if (!isset($decoded['data'][$this->queryName]['user'])) {
-            throw new \Exception('No user data in response');
+            throw new Exception('No user data in response');
         }
     }
 
@@ -521,7 +548,7 @@ final class UserGraphQLContext implements Context
         if (!is_array($data['errors'])) {
             $errorMessage = 'Errors is not an array: '
                 . json_encode($data['errors']);
-            throw new \Exception($errorMessage);
+            throw new Exception($errorMessage);
         }
     }
 
@@ -533,7 +560,7 @@ final class UserGraphQLContext implements Context
         if (count($data['errors']) === 0) {
             $errorMessage = 'No errors found in response: '
                 . json_encode($data);
-            throw new \Exception($errorMessage);
+            throw new Exception($errorMessage);
         }
     }
 
@@ -554,7 +581,7 @@ final class UserGraphQLContext implements Context
                 . $errorMessage . '" not found in errors: ';
             $errorMessageText = $errorPrefix
                 . json_encode($data['errors']);
-            throw new \Exception($errorMessageText);
+            throw new Exception($errorMessageText);
         }
     }
 

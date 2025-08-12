@@ -146,6 +146,24 @@ final class UserOperationsContext implements Context
     }
 
     /**
+     * @Then the error message should contain :partialMessage
+     */
+    public function theErrorMessageShouldContain(string $partialMessage): void
+    {
+        $content = $this->getPageContent();
+        $decoded = json_decode($content, true);
+
+        $errorMessage = '';
+        if ($decoded && isset($decoded['detail'])) {
+            $errorMessage = $decoded['detail'];
+        } else {
+            $errorMessage = $content;
+        }
+
+        Assert::assertStringContainsString($partialMessage, $errorMessage);
+    }
+
+    /**
      * @Then violation should be :violation
      */
     public function theViolationShouldBe(string $violation): void
@@ -234,9 +252,10 @@ final class UserOperationsContext implements Context
                 $expectedContent,
                 $decoded['detail']
             );
-        } else {
-            Assert::assertStringContainsString($expectedContent, $content);
+            return;
         }
+
+        Assert::assertStringContainsString($expectedContent, $content);
     }
 
     /**

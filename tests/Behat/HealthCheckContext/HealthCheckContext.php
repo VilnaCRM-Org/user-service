@@ -90,4 +90,14 @@ final class HealthCheckContext extends KernelTestCase implements Context
             ->getStatusCode();
         Assert::assertSame($statusCode, $actualStatusCode);
     }
+
+    /**
+     * @AfterScenario
+     */
+    public function cleanupEnvironmentVariables(): void
+    {
+        putenv('CACHE_FAILURE');
+        putenv('DATABASE_FAILURE');
+        putenv('MESSAGE_BROKER_FAILURE');
+    }
 }

@@ -261,7 +261,7 @@ Feature: User Operations
     When POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222/resend-confirmation-email"
     And POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222/resend-confirmation-email"
     Then the response status code should be 429
-    And the error message should be "Cannot send new email till"
+    And the error message should contain "Cannot send new email till"
 
   Scenario: Resending email to non-existing user
     When POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb221/resend-confirmation-email"

@@ -6,8 +6,8 @@ Feature: User GraphQL Operations Localization
   Scenario: Creating a user with duplicate email and Ukrainian language
     Given requesting to return user's id and email
     And with graphql language "uk"
-    And user with email "graphqltest2@mail.com" exists
-    And creating user with email "graphqltest2@mail.com" initials "name surname" password "passWORD1"
+    And user with email "graphqltest2@example.com" exists
+    And creating user with email "graphqltest2@example.com" initials "name surname" password "passWORD1"
     When graphQL request is send
     Then graphql error message should be "email: Ця email-адреса вже зареєстрована"
 
@@ -21,37 +21,37 @@ Feature: User GraphQL Operations Localization
   Scenario: Creating a user with password with no uppercase letters and Ukrainian language
     Given requesting to return user's id and email
     And with graphql language "uk"
-    And creating user with email "graphqlTest@mail.com" initials "name surname" password "password1"
+    And creating user with email "graphqlTest@example.com" initials "name surname" password "password1"
     When graphQL request is send
     Then graphql error message should be "password: Пароль має містити принаймні одну велику літеру"
 
   Scenario: Creating a user with password with no numbers and Ukrainian language
     Given requesting to return user's id and email
     And with graphql language "uk"
-    And creating user with email "graphqlTest@mail.com" initials "name surname" password "passWORD"
+    And creating user with email "graphqlTest@example.com" initials "name surname" password "passWORD"
     When graphQL request is send
     Then graphql error message should be "password: Пароль повинен містити хоча б одне число"
 
   Scenario: Creating a user with too short password and Ukrainian language
     Given requesting to return user's id and email
     And with graphql language "uk"
-    And creating user with email "graphqlTest@mail.com" initials "name surname" password "WORD1"
+    And creating user with email "graphqlTest@example.com" initials "name surname" password "WORD1"
     When graphQL request is send
     Then graphql error message should be "password: Пароль має містити від 8 до 64 символів"
 
   Scenario: Creating a user with initials that contains only spaces and Ukrainian language
     Given requesting to return user's id and email
     And with graphql language "uk"
-    And creating user with email "graphqlTest@mail.com" initials " " password "passWORD1"
+    And creating user with email "graphqlTest@example.com" initials " " password "passWORD1"
     When graphQL request is send
     Then graphql error message should be "initials: Ім'я та прізвище не можуть складатися лише з пробілів"
 
   Scenario: Updating user to duplicate email and Ukrainian language
     Given requesting to return user's id and email
     And with graphql language "uk"
-    And user with email "testUpdateGraphQL2@mail.com" exists
+    And user with email "testUpdateGraphQL2@example.com" exists
     And user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "passWORD1" exists
-    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "passWORD1" to new email "testUpdateGraphQL2@mail.com"
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "passWORD1" to new email "testUpdateGraphQL2@example.com"
     When graphQL request is send
     Then graphql error message should be "email: Ця email-адреса вже зареєстрована"
 
@@ -59,7 +59,7 @@ Feature: User GraphQL Operations Localization
     Given requesting to return user's id and email
     And with graphql language "uk"
     And user with id "8be90127-9840-4235-a6da-39b8debfb111" exists
-    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "wrongpassWORD1" to new email "testUpdateGraphQL@mail.com"
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb111" and password "wrongpassWORD1" to new email "testUpdateGraphQL@example.com"
     When graphQL request is send
     Then graphql error message should be "Старий пароль невірний"
 
@@ -73,7 +73,7 @@ Feature: User GraphQL Operations Localization
   Scenario: Updating a non-existing user and Ukrainian language
     Given requesting to return user's id and email
     And with graphql language "uk"
-    And updating user with id "8be90127-9840-4235-a6da-39b8debfb112" and password "passWORD1" to new email "testUpdateGraphQL@mail.com"
+    And updating user with id "8be90127-9840-4235-a6da-39b8debfb112" and password "passWORD1" to new email "testUpdateGraphQL@example.com"
     When graphQL request is send
     Then graphql error message should be 'Елемент "/api/users/8be90127-9840-4235-a6da-39b8debfb112" не знайдено.'
 
