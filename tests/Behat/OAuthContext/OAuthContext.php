@@ -10,7 +10,6 @@ use App\Tests\Behat\OAuthContext\Input\ClientCredentialsGrantInput;
 use App\Tests\Behat\OAuthContext\Input\ObtainAccessTokenInput;
 use App\Tests\Behat\OAuthContext\Input\ObtainAuthorizeCodeInput;
 use App\Tests\Behat\OAuthContext\Input\PasswordGrantInput;
-use App\Tests\Behat\UserContext\UserContext;
 use App\User\Application\DTO\AuthorizationUserDto;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
@@ -34,7 +33,6 @@ final class OAuthContext implements Context
     private ObtainAccessTokenInput $obtainAccessTokenInput;
     private ObtainAuthorizeCodeInput $obtainAuthorizeCodeInput;
     private RestContext $restContext;
-    private UserContext $userContext;
 
     private string $authCode;
 
@@ -53,7 +51,6 @@ final class OAuthContext implements Context
     {
         $environment = $scope->getEnvironment();
         $this->restContext = $environment->getContext(RestContext::class);
-        $this->userContext = $environment->getContext(UserContext::class);
     }
 
     /**
@@ -155,8 +152,7 @@ final class OAuthContext implements Context
     {
         $this->obtainAccessTokenInput->grant_type = $grantType;
 
-        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
-        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->setAuthorizationHeaders();
 
         $requestBody = $this->serializer->serialize(
             $this->obtainAccessTokenInput,
@@ -173,8 +169,11 @@ final class OAuthContext implements Context
     public function accessTokenShouldBeProvided(): void
     {
         $content = $this->restContext->getMink()->getSession()->getPage()->getContent();
-        echo 'OAuth Response: ' . $content . "\n";
-        echo 'Status Code: ' . $this->restContext->getMink()->getSession()->getStatusCode() . "\n";
+        $statusCode = $this->restContext->getMink()->getSession()->getStatusCode();
+        if ($statusCode !== 200 && getenv('BEHAT_DEBUG')) {
+            echo 'OAuth Response: ' . $content . "\n";
+            echo 'Status Code: ' . $statusCode . "\n";
+        }
 
         $data = json_decode($content, true);
 
@@ -220,7 +219,7 @@ final class OAuthContext implements Context
     {
         $content = $this->restContext->getMink()->getSession()->getPage()->getContent();
 
-        $data = json_decode($content, true);
+        $data = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
 
         Assert::assertSame(
             Response::HTTP_UNAUTHORIZED,
@@ -265,7 +264,7 @@ final class OAuthContext implements Context
     {
         $content = $this->restContext->getMink()->getSession()->getPage()->getContent();
 
-        $data = json_decode($content, true);
+        $data = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
 
         Assert::assertSame(
             Response::HTTP_BAD_REQUEST,
@@ -349,8 +348,7 @@ final class OAuthContext implements Context
 
     private function sendAuthorizationRequest(): void
     {
-        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
-        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+        $this->setAuthorizationHeaders();
 
         $uriParams = $this->obtainAuthorizeCodeInput->toUriParams();
         $this->restContext->iSendARequestTo('GET', '/api/oauth/authorize?' . $uriParams);
