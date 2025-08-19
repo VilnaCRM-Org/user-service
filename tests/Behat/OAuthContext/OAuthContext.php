@@ -140,8 +140,6 @@ final class OAuthContext implements Context
      */
     public function requestAuthorizationEndpoint(): void
     {
-        $this->setAuthorizationHeaders();
-
         $this->sendAuthorizationRequest();
     }
 
