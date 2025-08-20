@@ -151,14 +151,19 @@ final class OAuthContext implements Context
     {
         $this->obtainAccessTokenInput->grant_type = $grantType;
 
-        $this->setAuthorizationHeaders();
+        $this->setFormUrlEncodedHeaders();
 
-        $requestBody = $this->serializer->serialize(
-            $this->obtainAccessTokenInput,
-            'json'
-        );
+        $requestData = [];
+        $reflection = new \ReflectionObject($this->obtainAccessTokenInput);
+        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+            $value = $property->getValue($this->obtainAccessTokenInput);
+            if ($value !== null) {
+                $requestData[$property->getName()] = $value;
+            }
+        }
 
-        $pyStringBody = new PyStringNode(explode(PHP_EOL, $requestBody), 0);
+        $requestBody = http_build_query($requestData);
+        $pyStringBody = new PyStringNode([$requestBody], 0);
         $this->restContext->iSendARequestToWithBody('POST', '/api/oauth/token', $pyStringBody);
     }
 
@@ -170,13 +175,14 @@ final class OAuthContext implements Context
         $content = $this->restContext->getMink()->getSession()->getPage()->getContent();
         $statusCode = $this->restContext->getMink()->getSession()->getStatusCode();
         if ($statusCode !== 200 && getenv('BEHAT_DEBUG')) {
-            echo 'OAuth Response: ' . $content . "\n";
+            $sanitized = preg_replace('/("access_token"\s*:\s*")([^"]+)(")/i', '$1[REDACTED]$3', $content);
+            echo 'OAuth Response: ' . $sanitized . "\n";
             echo 'Status Code: ' . $statusCode . "\n";
         }
 
-        $data = json_decode($content, true);
+        $data = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
 
-        Assert::assertSame(200, $this->restContext->getMink()->getSession()->getStatusCode());
+        Assert::assertSame(200, $statusCode);
 
         Assert::assertArrayHasKey('token_type', $data);
         Assert::assertEquals('Bearer', $data['token_type']);
