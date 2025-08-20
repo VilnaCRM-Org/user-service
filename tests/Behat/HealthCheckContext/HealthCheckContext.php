@@ -7,11 +7,10 @@ namespace App\Tests\Behat\HealthCheckContext;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use PHPUnit\Framework\Assert;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpKernel\KernelInterface;
 use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
-final class HealthCheckContext extends KernelTestCase implements Context
+final class HealthCheckContext implements Context
 {
     private KernelInterface $kernelInterface;
     private RestContext $restContext;
@@ -19,7 +18,6 @@ final class HealthCheckContext extends KernelTestCase implements Context
     public function __construct(
         KernelInterface $kernel
     ) {
-        parent::__construct();
         $this->kernelInterface = $kernel;
     }
 

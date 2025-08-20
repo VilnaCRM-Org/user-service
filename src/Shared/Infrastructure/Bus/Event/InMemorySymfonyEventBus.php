@@ -13,7 +13,7 @@ use Symfony\Component\Messenger\Exception\NoHandlerForMessageException;
 use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-readonly class InMemorySymfonyEventBus implements EventBusInterface
+class InMemorySymfonyEventBus implements EventBusInterface
 {
     private MessageBusInterface $bus;
 

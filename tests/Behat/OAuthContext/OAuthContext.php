@@ -153,16 +153,11 @@ final class OAuthContext implements Context
 
         $this->setFormUrlEncodedHeaders();
 
-        $requestData = [];
-        $reflection = new \ReflectionObject($this->obtainAccessTokenInput);
-        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
-            $value = $property->getValue($this->obtainAccessTokenInput);
-            if ($value !== null) {
-                $requestData[$property->getName()] = $value;
-            }
-        }
-
-        $requestBody = http_build_query($requestData);
+        $requestData = array_filter(
+            get_object_vars($this->obtainAccessTokenInput),
+            static fn ($v) => $v !== null
+        );
+        $requestBody = http_build_query($requestData, '', '&', PHP_QUERY_RFC1738);
         $pyStringBody = new PyStringNode([$requestBody], 0);
         $this->restContext->iSendARequestToWithBody('POST', '/api/oauth/token', $pyStringBody);
     }
@@ -352,6 +347,12 @@ final class OAuthContext implements Context
     private function sendAuthorizationRequest(): void
     {
         $this->setAuthorizationHeaders();
+
+        if (!isset($this->obtainAuthorizeCodeInput)) {
+            throw new RuntimeException(
+                'obtainAuthorizeCodeInput is not set. Call "Given passing client id and redirect_uri :uri" before requesting authorization.'
+            );
+        }
 
         $uriParams = $this->obtainAuthorizeCodeInput->toUriParams();
         $this->restContext->iSendARequestTo('GET', '/api/oauth/authorize?' . $uriParams);
