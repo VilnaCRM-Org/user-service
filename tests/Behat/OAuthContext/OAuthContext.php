@@ -152,7 +152,7 @@ final class OAuthContext implements Context
         $this->obtainAccessTokenInput->grant_type = $grantType;
 
         $this->setFormUrlEncodedHeaders();
-        
+
         if (!isset($this->obtainAccessTokenInput)) {
             throw new RuntimeException(
                 'obtainAccessTokenInput is not set. '
@@ -177,7 +177,11 @@ final class OAuthContext implements Context
         $content = $this->restContext->getMink()->getSession()->getPage()->getContent();
         $statusCode = $this->restContext->getMink()->getSession()->getStatusCode();
         if ($statusCode !== 200 && getenv('BEHAT_DEBUG')) {
-            $sanitized = preg_replace('/("access_token"\s*:\s*")([^"]+)(")/i', '$1[REDACTED]$3', $content);
+            $sanitized = preg_replace(
+                ['/("access_token"\s*:\s*")([^"]+)(")/i', '/("refresh_token"\s*:\s*")([^"]+)(")/i'],
+                ['$1[REDACTED]$3', '$1[REDACTED]$3'],
+                $content
+            );
             echo 'OAuth Response: ' . $sanitized . "\n";
             echo 'Status Code: ' . $statusCode . "\n";
         }

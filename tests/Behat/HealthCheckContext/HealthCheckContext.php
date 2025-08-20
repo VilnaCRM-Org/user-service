@@ -67,7 +67,7 @@ final class HealthCheckContext implements Context
             ->getSession()
             ->getPage()
             ->getContent();
-        if (getenv('BEHAT_DEBUG')) {
+        if (filter_var(getenv('BEHAT_DEBUG'), FILTER_VALIDATE_BOOLEAN)) {
             echo 'Response content: ' . $content . "\n";
         }
     }
@@ -81,7 +81,9 @@ final class HealthCheckContext implements Context
             ->getSession()
             ->getStatusCode();
 
-        if ($actualStatusCode !== $statusCode && getenv('BEHAT_DEBUG')) {
+        if ($actualStatusCode !== $statusCode
+            && filter_var(getenv('BEHAT_DEBUG'), FILTER_VALIDATE_BOOLEAN)
+        ) {
             $content = $this->restContext->getMink()
                 ->getSession()
                 ->getPage()
