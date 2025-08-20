@@ -24,6 +24,8 @@ final class HealthCheckContext implements Context
 
     /**
      * @Then the response should contain :text
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function theResponseShouldContain(string $text): void
     {
@@ -67,13 +69,13 @@ final class HealthCheckContext implements Context
             ->getSession()
             ->getPage()
             ->getContent();
-        if (filter_var(getenv('BEHAT_DEBUG'), FILTER_VALIDATE_BOOLEAN)) {
-            echo 'Response content: ' . $content . "\n";
-        }
+        echo 'Response content: ' . $content . "\n";
     }
 
     /**
      * @Then the response status code should be :statusCode
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function theResponseStatusCodeShouldBe(int $statusCode): void
     {
@@ -81,7 +83,8 @@ final class HealthCheckContext implements Context
             ->getSession()
             ->getStatusCode();
 
-        if ($actualStatusCode !== $statusCode
+        if (
+            $actualStatusCode !== $statusCode
             && filter_var(getenv('BEHAT_DEBUG'), FILTER_VALIDATE_BOOLEAN)
         ) {
             $content = $this->restContext->getMink()

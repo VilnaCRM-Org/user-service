@@ -35,7 +35,7 @@ final class OAuthContext implements Context
     private ObtainAuthorizeCodeInput $obtainAuthorizeCodeInput;
     private RestContext $restContext;
 
-    private string $authCode;
+    private ?string $authCode = null;
 
     public function __construct(
         private SerializerInterface $serializer,
@@ -162,7 +162,7 @@ final class OAuthContext implements Context
 
         $requestData = array_filter(
             get_object_vars($this->obtainAccessTokenInput),
-            static fn ($v) => $v !== null
+            static fn ($value) => $value !== null
         );
         $requestBody = http_build_query($requestData, '', '&', PHP_QUERY_RFC1738);
         $pyStringBody = new PyStringNode([$requestBody], 0);
@@ -176,7 +176,7 @@ final class OAuthContext implements Context
     {
         $content = $this->restContext->getMink()->getSession()->getPage()->getContent();
         $statusCode = $this->restContext->getMink()->getSession()->getStatusCode();
-        if ($statusCode !== 200 && getenv('BEHAT_DEBUG')) {
+        if ($statusCode !== 200 && filter_var(getenv('BEHAT_DEBUG'), FILTER_VALIDATE_BOOLEAN)) {
             $sanitized = preg_replace(
                 ['/("access_token"\s*:\s*")([^"]+)(")/i', '/("refresh_token"\s*:\s*")([^"]+)(")/i'],
                 ['$1[REDACTED]$3', '$1[REDACTED]$3'],
@@ -352,7 +352,7 @@ final class OAuthContext implements Context
     {
         $this->entityManager->persist($client);
         $this->entityManager->flush();
-        $this->entityManager->clear();
+        $this->entityManager->clear(Client::class);
     }
 
     private function sendAuthorizationRequest(): void

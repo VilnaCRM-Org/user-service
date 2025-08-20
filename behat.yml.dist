@@ -11,7 +11,7 @@ default:
         environment: test
         class: App\Shared\Kernel
     TwentytwoLabs\BehatOpenApiExtension:
-      schemaFile: '%paths.base%/.github/openapi-spec/spec.yaml'
+      schemaFile: '%paths.base%/.github/openapi-spec/spec.yaml' 
     Behat\MinkExtension:
       base_url: "http://localhost:8081"
       sessions:
