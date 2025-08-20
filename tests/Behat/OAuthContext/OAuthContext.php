@@ -152,6 +152,13 @@ final class OAuthContext implements Context
         $this->obtainAccessTokenInput->grant_type = $grantType;
 
         $this->setFormUrlEncodedHeaders();
+        
+        if (!isset($this->obtainAccessTokenInput)) {
+            throw new RuntimeException(
+                'obtainAccessTokenInput is not set. '
+                . 'Call the corresponding Given step before requesting a token.'
+            );
+        }
 
         $requestData = array_filter(
             get_object_vars($this->obtainAccessTokenInput),
@@ -306,7 +313,7 @@ final class OAuthContext implements Context
         if ($existingClient) {
             $this->entityManager->remove($existingClient);
             $this->entityManager->flush();
-            $this->entityManager->clear();
+            $this->entityManager->clear(Client::class);
             $this->verifyClientRemoval($id);
         }
     }
@@ -350,7 +357,8 @@ final class OAuthContext implements Context
 
         if (!isset($this->obtainAuthorizeCodeInput)) {
             throw new RuntimeException(
-                'obtainAuthorizeCodeInput is not set. Call "Given passing client id and redirect_uri :uri" before requesting authorization.'
+                'obtainAuthorizeCodeInput is not set. '
+                . 'Call "Given passing client id and redirect_uri :uri" before requesting authorization.'
             );
         }
 

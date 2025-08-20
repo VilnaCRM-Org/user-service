@@ -7,19 +7,11 @@ namespace App\Tests\Behat\HealthCheckContext;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use PHPUnit\Framework\Assert;
-use Symfony\Component\HttpKernel\KernelInterface;
 use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class HealthCheckContext implements Context
 {
-    private KernelInterface $kernelInterface;
     private RestContext $restContext;
-
-    public function __construct(
-        KernelInterface $kernel
-    ) {
-        $this->kernelInterface = $kernel;
-    }
 
     /**
      * @BeforeScenario
@@ -75,7 +67,9 @@ final class HealthCheckContext implements Context
             ->getSession()
             ->getPage()
             ->getContent();
-        echo 'Response content: ' . $content . "\n";
+        if (getenv('BEHAT_DEBUG')) {
+            echo 'Response content: ' . $content . "\n";
+        }
     }
 
     /**
@@ -87,7 +81,7 @@ final class HealthCheckContext implements Context
             ->getSession()
             ->getStatusCode();
 
-        if ($actualStatusCode !== $statusCode) {
+        if ($actualStatusCode !== $statusCode && getenv('BEHAT_DEBUG')) {
             $content = $this->restContext->getMink()
                 ->getSession()
                 ->getPage()

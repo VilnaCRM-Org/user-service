@@ -15,7 +15,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 
 class InMemorySymfonyEventBus implements EventBusInterface
 {
-    private MessageBusInterface $bus;
+    private readonly MessageBusInterface $bus;
 
     /**
      * @param iterable<DomainEventSubscriberInterface> $subscribers
