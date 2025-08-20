@@ -21,6 +21,7 @@ use League\Bundle\OAuth2ServerBundle\Model\Client;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Grant;
 use League\Bundle\OAuth2ServerBundle\ValueObject\RedirectUri;
 use PHPUnit\Framework\Assert;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
@@ -313,9 +314,7 @@ final class OAuthContext implements Context
     {
         $verifyRemoved = $this->entityManager->getRepository(Client::class)->find($id);
         if ($verifyRemoved !== null) {
-            throw new \RuntimeException(
-                'Failed to remove existing client with ID: ' . $id
-            );
+            throw new RuntimeException('Failed to remove existing client with ID: ' . $id);
         }
     }
 
@@ -356,5 +355,11 @@ final class OAuthContext implements Context
     {
         $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
         $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/json');
+    }
+
+    private function setFormUrlEncodedHeaders(): void
+    {
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $this->restContext->iAddHeaderEqualTo('Content-Type', 'application/x-www-form-urlencoded');
     }
 }

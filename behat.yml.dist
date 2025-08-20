@@ -5,7 +5,6 @@ default:
   autoload:
     '': "%paths.base%/tests/Behat"
   extensions:
-    DAMA\DoctrineTestBundle\Behat\ServiceContainer\DoctrineExtension: ~
     FriendsOfBehat\SymfonyExtension:
       bootstrap: 'tests/bootstrap.php'
       kernel:
@@ -13,7 +12,7 @@ default:
         class: App\Shared\Kernel
     TwentytwoLabs\BehatOpenApiExtension: ~
     Behat\MinkExtension:
-      base_url: "http://localhost"
+      base_url: "http://localhost:8081"
       sessions:
         default:
           browserkit_http: ~
