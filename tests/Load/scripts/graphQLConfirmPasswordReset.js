@@ -38,15 +38,11 @@ export default function confirmPasswordReset() {
     utils.getJsonHeader()
   );
 
-  utils.checkResponse(
-    response,
-    'confirm password reset response received',
-    res => {
-      const body = JSON.parse(res.body);
-      // Expecting errors for invalid tokens in load test, which is normal
-      return res.status === 200;
-    }
-  );
+  utils.checkResponse(response, 'confirm password reset response received', res => {
+    const body = JSON.parse(res.body);
+    // Expecting errors for invalid tokens in load test, which is normal
+    return res.status === 200;
+  });
 }
 
 export function teardown(data) {

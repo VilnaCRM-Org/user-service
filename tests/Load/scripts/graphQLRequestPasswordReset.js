@@ -35,14 +35,10 @@ export default function requestPasswordReset() {
     utils.getJsonHeader()
   );
 
-  utils.checkResponse(
-    response,
-    'password reset request successful',
-    res => {
-      const body = JSON.parse(res.body);
-      return res.status === 200 && !body.errors;
-    }
-  );
+  utils.checkResponse(response, 'password reset request successful', res => {
+    const body = JSON.parse(res.body);
+    return res.status === 200 && !body.errors;
+  });
 }
 
 export function teardown(data) {
