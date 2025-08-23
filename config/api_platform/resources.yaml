@@ -125,7 +125,7 @@ resources:
         class: 'ApiPlatform\Metadata\Post'
         uriTemplate: '/password-reset/request'
         processor: 'App\User\Application\Processor\RequestPasswordResetProcessor'
-        
+
   App\User\Application\DTO\ConfirmPasswordResetDto:
     operations:
       confirm_password_reset:
