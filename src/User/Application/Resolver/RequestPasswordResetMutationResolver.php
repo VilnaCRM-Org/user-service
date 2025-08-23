@@ -21,14 +21,18 @@ final readonly class RequestPasswordResetMutationResolver implements
     }
 
     /**
-     * @param array<string,string> $context
+     * @param array<string,mixed> $context
      */
     public function __invoke(?object $item, array $context): ?object
     {
-        $args = $context['args']['input'];
+        $args = $context['args']['input'] ?? [];
 
         $mutationInput = $this->transformer->transform($args);
         $this->validator->validate($mutationInput);
+
+        if ($mutationInput->email === null) {
+            throw new \InvalidArgumentException('Email is required');
+        }
 
         $this->commandBus->dispatch(
             new RequestPasswordResetCommand($mutationInput->email)

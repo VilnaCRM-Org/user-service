@@ -25,7 +25,7 @@ final readonly class RedisPasswordResetTokenRepository implements PasswordResetT
     ) {
     }
 
-    public function save(object $token): void
+    public function save(PasswordResetTokenInterface $token): void
     {
         $this->saveForTokenValue($token);
         $this->saveForUserId($token);
@@ -45,13 +45,13 @@ final readonly class RedisPasswordResetTokenRepository implements PasswordResetT
         return $this->getFromCache($key);
     }
 
-    public function delete(object $token): void
+    public function delete(PasswordResetTokenInterface $token): void
     {
         $this->deleteForTokenValue($token);
         $this->deleteForUserId($token);
     }
 
-    private function saveForTokenValue(object $token): void
+    private function saveForTokenValue(PasswordResetTokenInterface $token): void
     {
         $tokenValue = $token->getTokenValue();
 
@@ -63,7 +63,7 @@ final readonly class RedisPasswordResetTokenRepository implements PasswordResetT
         $this->saveToCache($this->getTokenKey($tokenValue), $serializedToken);
     }
 
-    private function saveForUserId(object $token): void
+    private function saveForUserId(PasswordResetTokenInterface $token): void
     {
         $userId = $token->getUserID();
 
@@ -96,13 +96,13 @@ final readonly class RedisPasswordResetTokenRepository implements PasswordResetT
         $this->redisAdapter->save($cacheItem);
     }
 
-    private function deleteForTokenValue(object $token): void
+    private function deleteForTokenValue(PasswordResetTokenInterface $token): void
     {
         $tokenValue = $token->getTokenValue();
         $this->redisAdapter->delete($this->getTokenKey($tokenValue));
     }
 
-    private function deleteForUserId(object $token): void
+    private function deleteForUserId(PasswordResetTokenInterface $token): void
     {
         $userId = $token->getUserID();
         $this->redisAdapter->delete($this->getUserKey($userId));

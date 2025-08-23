@@ -9,13 +9,13 @@ use App\User\Application\MutationInput\ConfirmPasswordResetMutationInput;
 final class ConfirmPasswordResetMutationInputTransformer
 {
     /**
-     * @param array<string, string> $args
+     * @param array<string, mixed> $args
      */
     public function transform(array $args): ConfirmPasswordResetMutationInput
     {
         return new ConfirmPasswordResetMutationInput(
-            $args['token'] ?? null,
-            $args['newPassword'] ?? null
+            isset($args['token']) && is_string($args['token']) ? $args['token'] : null,
+            isset($args['newPassword']) && is_string($args['newPassword']) ? $args['newPassword'] : null
         );
     }
 }

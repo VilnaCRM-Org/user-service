@@ -23,8 +23,8 @@ final readonly class RequestPasswordResetProcessor implements ProcessorInterface
 
     /**
      * @param RequestPasswordResetDto $data
-     * @param array<string,string> $context
-     * @param array<string,string> $uriVariables
+     * @param array<string,mixed> $context
+     * @param array<string,mixed> $uriVariables
      */
     public function process(
         mixed $data,

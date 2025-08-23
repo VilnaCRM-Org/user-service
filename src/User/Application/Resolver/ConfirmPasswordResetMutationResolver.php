@@ -26,14 +26,18 @@ final readonly class ConfirmPasswordResetMutationResolver implements
     }
 
     /**
-     * @param array<string,string> $context
+     * @param array<string,mixed> $context
      */
     public function __invoke(?object $item, array $context): ?object
     {
-        $args = $context['args']['input'];
+        $args = $context['args']['input'] ?? [];
 
         $mutationInput = $this->transformer->transform($args);
         $this->validator->validate($mutationInput);
+
+        if ($mutationInput->token === null || $mutationInput->newPassword === null) {
+            throw new \InvalidArgumentException('Token and new password are required');
+        }
 
         $token = $this->passwordResetTokenRepository->find($mutationInput->token)
             ?? throw new TokenNotFoundException();

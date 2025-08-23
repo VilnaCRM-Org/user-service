@@ -12,17 +12,11 @@ use App\User\Domain\Entity\PasswordResetTokenInterface;
  */
 interface PasswordResetTokenRepositoryInterface extends RepositoryInterface
 {
-    /**
-     * @param PasswordResetToken $token
-     */
-    public function save(object $token): void;
+    public function save(PasswordResetTokenInterface $token): void;
 
     public function find(string $tokenValue): ?PasswordResetTokenInterface;
 
     public function findByUserId(string $userID): ?PasswordResetTokenInterface;
 
-    /**
-     * @param PasswordResetToken $token
-     */
-    public function delete(object $token): void;
+    public function delete(PasswordResetTokenInterface $token): void;
 }
