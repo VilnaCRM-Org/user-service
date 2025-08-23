@@ -150,7 +150,7 @@ create-oauth-client: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(clientName)'
 
 doctrine-migrations-migrate: ## Executes a migration to a specified version or the latest available version
-	$(SYMFONY) d:m:m
+	$(SYMFONY) d:m:m --no-interaction
 
 doctrine-migrations-generate: ## Generates a blank migration class
 	$(SYMFONY) d:m:g

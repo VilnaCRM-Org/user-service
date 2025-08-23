@@ -2,51 +2,192 @@
 
 User Service is a PHP 8.3+ microservice built with Symfony 7.2, API Platform 4.1, and GraphQL. It provides user account management and authentication within the VilnaCRM ecosystem using OAuth Server, REST API, and GraphQL. The project follows hexagonal architecture with DDD & CQRS patterns and includes comprehensive testing with 193 test files across unit, integration, and E2E test suites.
 
-**Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.**
+**CRITICAL: Always use make commands or docker exec into the PHP container. Never use direct PHP commands outside the container.**
 
-## Quick Start Summary
+## What Is User Service?
+
+The VilnaCRM User Service is designed to manage user accounts and authentication within the VilnaCRM ecosystem. It provides essential functionalities such as user registration and authentication, implemented with OAuth Server, REST API, and GraphQL, ensuring seamless integration with other components of the CRM system.
+
+### Key Features
+- **User Registration**: Facilitates adding new users with validation and confirmation workflows
+- **Authentication**: Robust OAuth mechanisms with multiple grant types (Authorization Code, Client Credentials, Password)
+- **Flexibility**: REST API and GraphQL interfaces for versatile integration
+- **Localization**: Supports English and Ukrainian languages
+- **Modern Architecture**: Built on Hexagonal Architecture, DDD, CQRS, and Event-Driven principles
+
+### Design Principles
+- **Hexagonal Architecture**: Separates core business logic from external dependencies
+- **Domain-Driven Design**: Focuses on core domain logic with bounded contexts
+- **CQRS**: Separates read and write operations for better performance and scalability
+- **Event-Driven Architecture**: Uses domain events for loose coupling and extensibility
+- **Modern PHP Stack**: Leverages latest PHP features and best practices
+
+## Command Reference
+
+### MANDATORY: Use Make Commands or Container Access Only
+**All development work MUST use either:**
+1. **Make commands** (preferred): `make command-name`
+2. **Direct container access**: `docker compose exec php command`
+3. **Container shell**: `make sh` then run commands inside
+
+**NEVER run PHP commands directly on host system.**
+
+### Quick Start
 1. `make build` (15-30 min, NEVER CANCEL)
-2. `make start` (5-10 min, includes database, Redis, LocalStack)  
+2. `make start` (5-10 min, includes database, Redis, LocalStack)
 3. `make install` (3-5 min, PHP dependencies)
 4. `make doctrine-migrations-migrate` (1-2 min)
 5. Verify: https://localhost/api/docs, https://localhost/api/graphql
-6. Always run `make phpcsfixer && make psalm` before committing
 
-## Working Effectively
+### Essential Development Commands
+- `make start` -- Start all services (Docker containers, database, Redis)
+- `make stop` -- Stop all services
+- `make sh` -- Access PHP container shell for manual commands
+- `make install` -- Install PHP dependencies via Composer
+- `make cache-clear` -- Clear Symfony cache
+- `make logs` -- Show all service logs
+- `make new-logs` -- Show live logs
 
-### Bootstrap, Build, and Test the Repository
-- Install Docker and Docker Compose (required for database and services)
-- `make build` -- builds Docker images. Takes 15-30 minutes on first run. NEVER CANCEL. Set timeout to 45+ minutes.
-- `make start` -- starts Docker environment including database, Redis, and application containers. Takes 5-10 minutes. NEVER CANCEL. Set timeout to 15+ minutes.
-- `make install` -- installs PHP dependencies via Composer. Takes 3-5 minutes. Set timeout to 10+ minutes.
-- `make doctrine-migrations-migrate` -- runs database migrations. Takes 1-2 minutes.
+### Testing Commands
+- `make unit-tests` -- Run unit tests (193 test files, 2-3 min)
+- `make integration-tests` -- Test database/external services (3-5 min)
+- `make behat` -- E2E tests via BDD scenarios (5-10 min)
+- `make all-tests` -- Run complete test suite (8-15 min, NEVER CANCEL)
+- `make setup-test-db` -- Create test database
+- `make tests-with-coverage` -- Generate code coverage (10-15 min)
+- `make coverage-html` -- Generate HTML coverage report
+- `make infection` -- Mutation testing with Infection (advanced quality check)
 
-### Environment Limitations
-- **CRITICAL**: In restricted network environments (CI, sandboxes), Docker builds may fail due to Alpine package repository access being blocked. In such cases:
-  - The error "Permission denied" when fetching Alpine packages indicates network restrictions
-  - Use local PHP development instead: `composer install --no-dev` and `APP_ENV=prod php bin/console` 
-  - Document the limitation as "Docker build fails due to firewall limitations"
+### Code Quality Commands (Run Before Every Commit)
+- `make phpcsfixer` -- Auto-fix PHP code style (PSR-12)
+- `make psalm` -- Static analysis for type safety
+- `make phpinsights` -- Code quality analysis
+- `make deptrac` -- Architecture dependency validation
 
-### Run the Application
-- **Always run the bootstrapping steps first**
-- Start all services: `make start`
-- Web API: Access via https://localhost/api/docs (REST API documentation)
-- GraphQL: Access via https://localhost/api/graphql
-- Architecture diagrams: http://localhost:8080/workspace/diagrams
+### Load Testing Commands
+- `make load-tests` -- Run complete load test suite with K6
+- `make smoke-load-tests` -- Minimal load testing
+- `make average-load-tests` -- Average load scenarios
+- `make stress-load-tests` -- High load testing
+- `make spike-load-tests` -- Extreme spike testing
+- `make execute-load-tests-script scenario=<name>` -- Run specific scenario
 
-### Testing
-- Unit tests: `make unit-tests` -- tests 193 test files. Takes 2-3 minutes. Set timeout to 10+ minutes.
-- Integration tests: `make integration-tests` -- tests database and external services. Takes 3-5 minutes. Set timeout to 15+ minutes.
-- E2E tests: `make behat` -- tests 6 feature files (user operations, GraphQL, OAuth, localization). Takes 5-10 minutes. Set timeout to 20+ minutes.
-- All tests: `make all-tests` -- runs all test suites. Takes 8-15 minutes total. NEVER CANCEL. Set timeout to 30+ minutes.
-- Coverage: `make tests-with-coverage` -- generates code coverage report. Takes 10-15 minutes. Set timeout to 25+ minutes.
+### Database & OAuth Commands
+- `make doctrine-migrations-migrate` -- Apply database migrations
+- `make doctrine-migrations-generate` -- Create new migration
+- `make create-oauth-client CLIENT_NAME=<name>` -- Create OAuth client
+- `make load-fixtures` -- Load database fixtures
 
-### Code Quality and Linting
-- Always run these before committing or the CI will fail:
-- `make phpcsfixer` -- PHP code style fixer. Takes 1-2 minutes.
-- `make psalm` -- static analysis. Takes 2-3 minutes.
-- `make phpinsights` -- code quality analysis. Takes 3-5 minutes.
-- `make deptrac` -- architecture dependency checking. Takes 1-2 minutes.
+### Specification Generation
+- `make generate-openapi-spec` -- Export OpenAPI YAML specification
+- `make generate-graphql-spec` -- Export GraphQL specification
+
+## Architecture Deep Dive
+
+### Bounded Contexts (DDD)
+The User Service is divided into 3 bounded contexts with predictable structure:
+
+#### 1. Shared Context
+Provides foundational support across the service:
+- **Application Layer**: Cross-cutting concerns (Validators, Exception Normalizers, OpenAPI docs)
+- **Domain Layer**: Interfaces for Infrastructure, abstract classes, common entities
+- **Infrastructure Layer**: Message Buses, custom Doctrine types, retry strategies
+
+#### 2. User Context (Core Domain)
+Comprehensive user management functionality:
+- **Application Layer**: 
+  - Commands: RegisterUserCommand, ConfirmUserCommand, UpdateUserCommand, SendConfirmationEmailCommand
+  - Command Handlers: Process business operations
+  - HTTP Request Processors & GraphQL Resolvers
+  - Event Listeners & Subscribers
+- **Domain Layer**: 
+  - Entities: User, ConfirmationToken
+  - Aggregates: ConfirmationEmail
+  - Events: UserRegisteredEvent, UserConfirmedEvent, EmailChangedEvent, PasswordChangedEvent
+  - Value Objects: UserUpdate
+  - Domain Exceptions: UserNotFoundException, InvalidPasswordException, TokenNotFoundException
+- **Infrastructure Layer**: Repository implementations
+
+#### 3. OAuth Context
+Thin context for OAuth server integration:
+- Uses [OAuth2 Server Bundle](https://oauth2.thephpleague.com/) for implementation
+- Contains minimal entity mapping for OpenAPI documentation
+
+### CQRS Implementation
+- **Commands**: Encapsulate write operations (RegisterUser, UpdateUser, etc.)
+- **Queries**: Handle read operations (separate from commands)
+- **Handlers**: Process commands/queries with business logic
+- **Message Bus**: Routes commands/queries to appropriate handlers
+
+### Event-Driven Architecture
+- **Domain Events**: Published from Domain layer or handlers
+- **Event Subscribers**: Handle events for system extensibility
+- **Available Events**: UserRegistered, UserConfirmed, EmailChanged, PasswordChanged, ConfirmationEmailSent
+
+## Comprehensive Testing Strategy
+
+### Testing Philosophy
+- **100% Unit & Integration Test Coverage** - All code paths covered
+- **0 Escaped Mutants** - Mutation testing with Infection ensures test quality
+- **End-to-End Coverage** - BDD scenarios cover all user journeys
+- **Load Testing** - Performance validated under various load conditions
+
+### Test Types & Commands
+1. **Unit Tests** (`make unit-tests`): 
+   - Focus on individual classes/methods with mocked dependencies
+   - 193 test files, 2-3 minutes runtime
+   - Test business logic in isolation
+
+2. **Integration Tests** (`make integration-tests`):
+   - Test interactions between components (database, external services)
+   - Real database connections and services
+   - 3-5 minutes runtime
+
+3. **End-to-End Tests** (`make behat`):
+   - BDD scenarios in Gherkin language in `/features` folder
+   - 6 feature files covering: user operations, GraphQL, OAuth, localization
+   - Test complete user journeys from UI to database
+
+4. **Mutation Testing** (`make infection`):
+   - Validates test quality by making code mutations
+   - Must maintain 0 escaped/uncovered mutants
+   - Uses Infection framework for rigorous testing
+
+5. **Load Testing** (K6-based):
+   - **Smoke**: `make smoke-load-tests` (10 VUs, minimal load)
+   - **Average**: `make average-load-tests` (50 VUs, normal patterns)  
+   - **Stress**: `make stress-load-tests` (300 VUs, high load)
+   - **Spike**: `make spike-load-tests` (400 VUs, extreme spikes)
+
+### Code Quality Standards
+- **PHPInsights**: Instant quality checks, architecture analysis
+- **Psalm**: Static analysis with security taint analysis (`make psalm-security`)
+- **Deptrac**: Architecture dependency validation, prevents unwanted coupling
+- **PHP CS Fixer**: PSR-12 compliance, auto-formatting
+
+## Security & Performance
+
+### Security Practices
+- **Password Security**: Bcrypt hashing with configurable cost (PASSWORD_HASHING_COST=15)
+- **Confirmation Tokens**: Random hex tokens with 1-hour expiration (CONFIRMATION_TOKEN_LENGTH=10)
+- **OAuth Implementation**: Secure OAuth2 server with multiple grant types
+- **Dependency Scanning**: Snyk and Dependabot for vulnerability detection
+
+### Performance Optimization
+- **Load Testing Results**: Service handles 400 RPS with P(99) < 100ms for most endpoints
+- **Database Optimization**: Doctrine ORM with proper indexing and migrations  
+- **Caching Strategy**: Redis integration for session/cache management
+- **Container Efficiency**: FrankenPHP for high-performance PHP execution
+
+### OAuth Grant Types
+1. **Authorization Code**: Full OAuth flow with redirect (`/api/oauth/authorize`)
+2. **Client Credentials**: Service-to-service authentication
+3. **Password**: Direct username/password authentication (for trusted clients)
+
+### Localization Support
+- **Languages**: English (default) and Ukrainian
+- **Header**: `Accept-Language: en` or `Accept-Language: uk`
+- **Coverage**: API messages, error responses, validation messages
 
 ## Validation
 
