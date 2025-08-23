@@ -1,0 +1,14 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\User\Application\DTO;
+
+final readonly class ConfirmPasswordResetDto
+{
+    public function __construct(
+        public ?string $token = null,
+        public ?string $newPassword = null
+    ) {
+    }
+}

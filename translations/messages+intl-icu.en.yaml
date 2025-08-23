@@ -16,5 +16,6 @@ error:
       graphql: 'Item { id } not found.'
   invalid-password: 'Old password is invalid'
   token-not-found: 'Token not found'
+  token-expired: 'Token has expired'
   user-not-found: 'User not found'
   user-timed-out: 'Cannot send new email till { datetime }'

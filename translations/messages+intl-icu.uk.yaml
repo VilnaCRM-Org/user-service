@@ -16,5 +16,6 @@ error:
       graphql: 'Елемент { id } не знайдено.'
   invalid-password: 'Старий пароль невірний'
   token-not-found: 'Токен не знайдено'
+  token-expired: 'Термін дії токену вичерпано'
   user-not-found: 'Користувача не знайдено'
   user-timed-out: 'Не можна надіслати новий лист до { datetime }'

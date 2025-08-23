@@ -64,6 +64,17 @@ services:
     arguments:
       $tokenLength: '%env(int:CONFIRMATION_TOKEN_LENGTH)%'
 
+  App\User\Domain\Factory\PasswordResetTokenFactory:
+    arguments:
+      $tokenLength: '%env(int:CONFIRMATION_TOKEN_LENGTH)%'
+
+  # Interface bindings
+  App\User\Domain\Repository\PasswordResetTokenRepositoryInterface:
+    alias: App\User\Infrastructure\Repository\RedisPasswordResetTokenRepository
+
+  App\User\Domain\Factory\PasswordResetTokenFactoryInterface:
+    alias: App\User\Domain\Factory\PasswordResetTokenFactory
+
   App\User\Infrastructure\Repository\MariaDBUserRepository:
     arguments:
       $batchSize: '%env(int:USER_INSERT_BATCH_SIZE)%'

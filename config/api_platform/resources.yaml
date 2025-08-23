@@ -5,6 +5,7 @@ resources:
       'App\User\Domain\Exception\UserNotFoundException': 404
       'App\User\Domain\Exception\InvalidPasswordException': 400
       'App\User\Domain\Exception\TokenNotFoundException': 404
+      'App\User\Domain\Exception\TokenExpiredException': 410
       'App\User\Domain\Exception\DuplicateEmailException': 409
     normalizationContext:
       groups: ['output']
@@ -38,6 +39,16 @@ resources:
         uriTemplate: '/users/{id}/resend-confirmation-email'
         input: 'App\User\Application\DTO\RetryDto'
         processor: 'App\User\Application\Processor\ResendEmailProcessor'
+      request_password_reset_http:
+        class: 'ApiPlatform\Metadata\Post'
+        input: 'App\User\Application\DTO\RequestPasswordResetDto'
+        processor: 'App\User\Application\Processor\RequestPasswordResetProcessor'
+        uriTemplate: 'users/request-password-reset'
+      confirm_password_reset_http:
+        class: 'ApiPlatform\Metadata\Patch'
+        input: 'App\User\Application\DTO\ConfirmPasswordResetDto'
+        processor: 'App\User\Application\Processor\ConfirmPasswordResetProcessor'
+        uriTemplate: 'users/confirm-password-reset'
 
     graphQlOperations:
       - class: 'ApiPlatform\Metadata\GraphQl\Query'
@@ -94,6 +105,26 @@ resources:
         extraArgs:
           id:
             type: 'ID!'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        resolver: 'App\User\Application\Resolver\RequestPasswordResetMutationResolver'
+        name: 'requestPasswordReset'
+        deserialize: false
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          email:
+            type: 'String!'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        resolver: 'App\User\Application\Resolver\ConfirmPasswordResetMutationResolver'
+        name: 'confirmPasswordReset'
+        deserialize: false
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          token:
+            type: 'String!'
+          newPassword:
+            type: 'String!'
 
   App\Internal\HealthCheck\Domain\ValueObject\HealthCheck:
     operations:
