@@ -80,6 +80,7 @@ The VilnaCRM User Service is designed to manage user accounts and authentication
 2. **Run all pre-commit checks manually**: `vendor/bin/captainhook hook:pre-commit`
 
 **Individual CaptainHook commands available:**
+
 - PHP syntax validation
 - `CI=1 make phpcsfixer` -- Code style fixes
 - `CI=1 make psalm` -- Static analysis
@@ -92,6 +93,7 @@ The VilnaCRM User Service is designed to manage user accounts and authentication
 - `CI=1 make behat` -- End-to-end BDD tests
 
 **Recommended workflow before commits:**
+
 1. Make your code changes
 2. Run `make sh` to access container
 3. Run `vendor/bin/captainhook hook:pre-commit` to validate all changes
