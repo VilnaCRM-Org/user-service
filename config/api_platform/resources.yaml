@@ -120,6 +120,8 @@ resources:
             type: 'String!'
 
   App\User\Application\DTO\RequestPasswordResetDto:
+    exceptionToStatus:
+      'App\User\Domain\Exception\PasswordResetRateLimitExceededException': 429
     operations:
       request_password_reset:
         class: 'ApiPlatform\Metadata\Post'
@@ -127,6 +129,10 @@ resources:
         processor: 'App\User\Application\Processor\RequestPasswordResetProcessor'
 
   App\User\Application\DTO\ConfirmPasswordResetDto:
+    exceptionToStatus:
+      'App\User\Domain\Exception\PasswordResetTokenNotFoundException': 404
+      'App\User\Domain\Exception\PasswordResetTokenExpiredException': 400
+      'App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException': 400
     operations:
       confirm_password_reset:
         class: 'ApiPlatform\Metadata\Post'

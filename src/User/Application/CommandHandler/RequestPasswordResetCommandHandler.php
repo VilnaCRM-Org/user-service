@@ -8,6 +8,7 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\RequestPasswordResetCommand;
 use App\User\Application\Command\RequestPasswordResetCommandResponse;
+use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetRequestedEvent;
 use App\User\Domain\Exception\PasswordResetRateLimitExceededException;
@@ -32,41 +33,51 @@ final readonly class RequestPasswordResetCommandHandler implements
 
     public function __invoke(RequestPasswordResetCommand $command): void
     {
-        // Always return success message for security (no information disclosure)
         $successMessage = 'If the email address is valid, you will receive a password reset link.';
 
         $user = $this->userRepository->findByEmail($command->email);
 
-        // If user doesn't exist, still return success message
         if (!$user instanceof UserInterface) {
             $command->setResponse(new RequestPasswordResetCommandResponse($successMessage));
             return;
         }
 
-        // Check rate limiting
+        $this->checkRateLimit($command->email);
+        $token = $this->createPasswordResetToken($user);
+        $this->publishEvent($user, $token);
+
+        $command->setResponse(new RequestPasswordResetCommandResponse($successMessage));
+    }
+
+    private function checkRateLimit(string $email): void
+    {
         $since = new \DateTimeImmutable("-{$this->rateLimitWindowHours} hours");
         $recentRequests = $this->passwordResetTokenRepository->countRecentRequestsByEmail(
-            $command->email,
+            $email,
             $since
         );
 
         if ($recentRequests >= $this->rateLimitMaxRequests) {
             throw new PasswordResetRateLimitExceededException();
         }
+    }
 
-        // Create new password reset token
+    private function createPasswordResetToken(UserInterface $user): PasswordResetTokenInterface
+    {
         $passwordResetToken = $this->passwordResetTokenFactory->create($user->getId());
         $this->passwordResetTokenRepository->save($passwordResetToken);
 
-        // Publish event
+        return $passwordResetToken;
+    }
+
+    private function publishEvent(UserInterface $user, PasswordResetTokenInterface $token): void
+    {
         $this->eventBus->publish(
             new PasswordResetRequestedEvent(
                 $user,
-                $passwordResetToken->getTokenValue(),
+                $token->getTokenValue(),
                 (string) $this->uuidFactory->create()
             )
         );
-
-        $command->setResponse(new RequestPasswordResetCommandResponse($successMessage));
     }
 }

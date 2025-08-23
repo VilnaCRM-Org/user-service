@@ -6,7 +6,9 @@ namespace App\Tests\Behat\UserContext;
 
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\User\Domain\Entity\ConfirmationToken;
+use App\User\Domain\Factory\PasswordResetTokenFactoryInterface;
 use App\User\Domain\Factory\UserFactoryInterface;
+use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Behat\Behat\Context\Context;
@@ -18,6 +20,7 @@ use Symfony\Component\Uid\Factory\UuidFactory;
 final class UserContext implements Context
 {
     private Generator $faker;
+    private static string $lastPasswordResetToken = '';
 
     public function __construct(
         private UserRepositoryInterface $userRepository,
@@ -26,6 +29,8 @@ final class UserContext implements Context
         private UserFactoryInterface $userFactory,
         private UuidTransformer $transformer,
         private UuidFactory $uuidFactory,
+        private PasswordResetTokenRepositoryInterface $passwordResetTokenRepository,
+        private PasswordResetTokenFactoryInterface $passwordResetTokenFactory,
     ) {
         $this->faker = Factory::create();
     }
@@ -118,5 +123,27 @@ final class UserContext implements Context
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
+    }
+
+    /**
+     * @Given password reset token exists for user :email
+     */
+    public function passwordResetTokenExistsForUser(string $email): void
+    {
+        $user = $this->userRepository->findByEmail($email);
+        if ($user === null) {
+            throw new \RuntimeException("User with email {$email} not found");
+        }
+
+        $token = $this->passwordResetTokenFactory->create($user->getId());
+        $this->passwordResetTokenRepository->save($token);
+
+        // Store the token value for use in other step definitions
+        self::$lastPasswordResetToken = $token->getTokenValue();
+    }
+
+    public static function getLastPasswordResetToken(): string
+    {
+        return self::$lastPasswordResetToken;
     }
 }

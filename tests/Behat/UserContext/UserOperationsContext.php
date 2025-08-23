@@ -239,22 +239,13 @@ final class UserOperationsContext implements Context
     }
 
     /**
-     * @Given password reset token exists for user :email
-     */
-    public function passwordResetTokenExistsForUser(string $email): void
-    {
-        // This would be handled by the test setup in a real scenario
-        // For now, we'll rely on the API to handle token creation
-    }
-
-    /**
      * @Given confirming password reset with valid token and password :password
      */
     public function confirmingPasswordResetWithValidTokenAndPassword(string $password): void
     {
-        // In a real test, you would retrieve the actual token from the database or email
-        // For now, we'll use a placeholder token that would be created by the previous step
-        $this->requestBody = new ConfirmPasswordResetInput('valid-token', $password);
+        // Use the actual token that was created in the previous step
+        $token = UserContext::getLastPasswordResetToken();
+        $this->requestBody = new ConfirmPasswordResetInput($token, $password);
     }
 
     /**
@@ -263,5 +254,18 @@ final class UserOperationsContext implements Context
     public function confirmingPasswordResetWithTokenAndPassword(string $token, string $password): void
     {
         $this->requestBody = new ConfirmPasswordResetInput($token, $password);
+    }
+
+    /**
+     * @Then the response should contain :text
+     */
+    public function theResponseShouldContain(string $text): void
+    {
+        $responseContent = $this->response->getContent();
+        Assert::assertStringContainsString(
+            $text,
+            $responseContent,
+            "The response does not contain the expected text: '{$text}'."
+        );
     }
 }

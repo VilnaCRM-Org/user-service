@@ -8,6 +8,7 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\ConfirmPasswordResetCommandResponse;
+use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetConfirmedEvent;
@@ -34,50 +35,69 @@ final readonly class ConfirmPasswordResetCommandHandler implements
 
     public function __invoke(ConfirmPasswordResetCommand $command): void
     {
-        // Find the password reset token
-        $passwordResetToken = $this->passwordResetTokenRepository->findByToken($command->token);
+        $passwordResetToken = $this->validatePasswordResetToken($command->token);
+        $user = $this->findUserByToken($passwordResetToken);
+
+        $this->updateUserPassword($user, $command->newPassword);
+        $this->markTokenAsUsed($passwordResetToken);
+        $this->publishEvent($user);
+
+        $command->setResponse(
+            new ConfirmPasswordResetCommandResponse('Password has been reset successfully.')
+        );
+    }
+
+    private function validatePasswordResetToken(string $token): PasswordResetTokenInterface
+    {
+        $passwordResetToken = $this->passwordResetTokenRepository->findByToken($token);
 
         if (!$passwordResetToken) {
             throw new PasswordResetTokenNotFoundException();
         }
 
-        // Check if token is expired
         if ($passwordResetToken->isExpired()) {
             throw new PasswordResetTokenExpiredException();
         }
 
-        // Check if token is already used
         if ($passwordResetToken->isUsed()) {
             throw new PasswordResetTokenAlreadyUsedException();
         }
 
-        // Find the user
-        $user = $this->userRepository->findById($passwordResetToken->getUserID());
+        return $passwordResetToken;
+    }
+
+    private function findUserByToken(PasswordResetTokenInterface $token): UserInterface
+    {
+        $user = $this->userRepository->findById($token->getUserID());
 
         if (!$user instanceof UserInterface) {
             throw new UserNotFoundException();
         }
 
-        // Hash the new password
+        return $user;
+    }
+
+    private function updateUserPassword(UserInterface $user, string $newPassword): void
+    {
         $hasher = $this->hasherFactory->getPasswordHasher(User::class);
-        $hashedPassword = $hasher->hash($command->newPassword);
+        $hashedPassword = $hasher->hash($newPassword);
         $user->setPassword($hashedPassword);
-
-        // Mark token as used
-        $passwordResetToken->markAsUsed();
-
-        // Save changes
         $this->userRepository->save($user);
-        $this->passwordResetTokenRepository->save($passwordResetToken);
+    }
 
-        // Publish event
+    private function markTokenAsUsed(PasswordResetTokenInterface $token): void
+    {
+        $token->markAsUsed();
+        $this->passwordResetTokenRepository->save($token);
+    }
+
+    private function publishEvent(UserInterface $user): void
+    {
         $this->eventBus->publish(
             new PasswordResetConfirmedEvent(
                 $user,
                 (string) $this->uuidFactory->create()
             )
         );
-
-        $command->setResponse(new ConfirmPasswordResetCommandResponse('Password has been reset successfully.'));
     }
 }

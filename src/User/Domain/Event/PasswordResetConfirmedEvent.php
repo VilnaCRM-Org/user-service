@@ -18,7 +18,7 @@ final class PasswordResetConfirmedEvent extends DomainEvent
     }
 
     /**
-     * @param array<string, mixed> $body
+     * @param array<string, UserInterface> $body
      */
     public static function fromPrimitives(
         array $body,
@@ -34,7 +34,7 @@ final class PasswordResetConfirmedEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, UserInterface>
      */
     public function toPrimitives(): array
     {

@@ -19,7 +19,7 @@ final class PasswordResetEmailSentEvent extends DomainEvent
     }
 
     /**
-     * @param array<string, mixed> $body
+     * @param array<string, string> $body
      */
     public static function fromPrimitives(
         array $body,
@@ -35,7 +35,7 @@ final class PasswordResetEmailSentEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, string>
      */
     public function toPrimitives(): array
     {

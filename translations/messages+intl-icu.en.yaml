@@ -5,6 +5,10 @@ email:
       text: 'Your account password has been updated. If you made this change, no
         action is needed. If not, or if you have concerns, contact our support
         team '
+    reset:
+      confirmed:
+        subject: 'Password Reset Confirmed'
+        text: 'Your password has been successfully reset. If you did not make this change, please contact our support team immediately.'
   confirm:
     subject: 'VilnaCRM email confirmation'
     text: 'Your email confirmation token - { tokenValue }'
