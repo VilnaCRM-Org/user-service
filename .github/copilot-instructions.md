@@ -1,8 +1,16 @@
 # User Service - GitHub Copilot Instructions
 
-User Service is a PHP 8.3+ microservice built with Symfony 7.2, API Platform 4.1, and GraphQL. It provides user account management and authentication within the VilnaCRM ecosystem using OAuth Server, REST API, and GraphQL. The project follows hexagonal architecture with DDD & CQRS patterns.
+User Service is a PHP 8.3+ microservice built with Symfony 7.2, API Platform 4.1, and GraphQL. It provides user account management and authentication within the VilnaCRM ecosystem using OAuth Server, REST API, and GraphQL. The project follows hexagonal architecture with DDD & CQRS patterns and includes comprehensive testing with 193 test files across unit, integration, and E2E test suites.
 
 **Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.**
+
+## Quick Start Summary
+1. `make build` (15-30 min, NEVER CANCEL)
+2. `make start` (5-10 min, includes database, Redis, LocalStack)  
+3. `make install` (3-5 min, PHP dependencies)
+4. `make doctrine-migrations-migrate` (1-2 min)
+5. Verify: https://localhost/api/docs, https://localhost/api/graphql
+6. Always run `make phpcsfixer && make psalm` before committing
 
 ## Working Effectively
 
@@ -109,6 +117,14 @@ User Service is a PHP 8.3+ microservice built with Symfony 7.2, API Platform 4.1
 - Clear cache: `make cache-clear`
 - Build for production: Use docker-compose.prod.yml
 - Generate API specs: `make generate-openapi-spec` and `make generate-graphql-spec`
+
+### CI/CD Integration
+The repository includes 15 GitHub Actions workflows for:
+- Automated testing (PHPUnit, Behat, load tests)
+- Code quality checks (Psalm, PHPInsights, PHP CS Fixer)
+- Security scanning and dependency analysis
+- API specification validation and diff checking
+- Automated releases and template synchronization
 
 ## Key Projects and Structure
 
