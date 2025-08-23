@@ -72,6 +72,32 @@ The VilnaCRM User Service is designed to manage user accounts and authentication
 - `make phpinsights` -- Code quality analysis
 - `make deptrac` -- Architecture dependency validation
 
+### Manual Pre-Commit Quality Checks with CaptainHook
+
+**IMPORTANT: CaptainHook pre-commit hooks are disabled for automatic execution. Run manually before committing changes:**
+
+1. **Access PHP container**: `make sh`
+2. **Run all pre-commit checks manually**: `vendor/bin/captainhook hook:pre-commit`
+
+**Individual CaptainHook commands available:**
+- PHP syntax validation
+- `CI=1 make phpcsfixer` -- Code style fixes
+- `CI=1 make psalm` -- Static analysis
+- `CI=1 make check-requirements` -- Dependency checks
+- `CI=1 make check-security` -- Security analysis
+- `CI=1 make psalm-security` -- Security taint analysis
+- `CI=1 make phpinsights` -- Code quality insights
+- `CI=1 make unit-tests` -- Unit test suite
+- `CI=1 make integration-tests` -- Integration test suite
+- `CI=1 make behat` -- End-to-end BDD tests
+
+**Recommended workflow before commits:**
+1. Make your code changes
+2. Run `make sh` to access container
+3. Run `vendor/bin/captainhook hook:pre-commit` to validate all changes
+4. Fix any issues reported by the checks
+5. Commit your changes
+
 ### Load Testing Commands
 
 - `make load-tests` -- Run complete load test suite with K6
