@@ -8,6 +8,9 @@ email:
   confirm:
     subject: 'VilnaCRM email confirmation'
     text: 'Your email confirmation token - { tokenValue }'
+  password_reset:
+    subject: 'VilnaCRM Password Reset'
+    text: 'Your password reset token - { tokenValue }'
 error:
   internal: 'Something went wrong'
   not:
@@ -18,3 +21,13 @@ error:
   token-not-found: 'Token not found'
   user-not-found: 'User not found'
   user-timed-out: 'Cannot send new email till { datetime }'
+  password-reset-token-not-found: 'Password reset token not found'
+  password-reset-token-expired: 'Password reset token has expired'
+  password-reset-token-already-used: 'Password reset token has already been used'
+  password-reset-rate-limit-exceeded: 'Password reset rate limit exceeded. Please try again later.'
+password_reset:
+  title: 'Password Reset Request'
+  message: 'You have requested a password reset. Click the button below to reset your password.'
+  button: 'Reset Password'
+  token_info: 'Token'
+  expires_info: 'This link will expire in 1 hour.'

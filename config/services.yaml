@@ -64,9 +64,18 @@ services:
     arguments:
       $tokenLength: '%env(int:CONFIRMATION_TOKEN_LENGTH)%'
 
+  App\User\Domain\Factory\PasswordResetTokenFactory:
+    arguments:
+      $tokenLength: '%env(int:PASSWORD_RESET_TOKEN_LENGTH)%'
+      $expirationTimeInHours: '%env(int:PASSWORD_RESET_TOKEN_EXPIRATION_HOURS)%'
+
   App\User\Infrastructure\Repository\MariaDBUserRepository:
     arguments:
       $batchSize: '%env(int:USER_INSERT_BATCH_SIZE)%'
+
+  App\User\Application\EventSubscriber\PasswordResetEmailSentEventSubscriber:
+    arguments:
+      $apiBaseUrl: '%env(API_BASE_URL)%'
 
   # Event listener for OAuth2 password grant
   App\User\Application\EventListener\UserResolveListener:

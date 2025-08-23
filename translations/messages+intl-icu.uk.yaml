@@ -8,6 +8,9 @@ email:
   confirm:
     subject: 'Підтвердження електронної пошти у VilnaCRM'
     text: 'Токен підтвердження вашої електронної пошти - { tokenValue }'
+  password_reset:
+    subject: 'Відновлення пароля VilnaCRM'
+    text: 'Токен відновлення пароля - { tokenValue }'
 error:
   internal: 'Щось пішло не так'
   not:
@@ -18,3 +21,13 @@ error:
   token-not-found: 'Токен не знайдено'
   user-not-found: 'Користувача не знайдено'
   user-timed-out: 'Не можна надіслати новий лист до { datetime }'
+  password-reset-token-not-found: 'Токен відновлення пароля не знайдено'
+  password-reset-token-expired: 'Токен відновлення пароля закінчився'
+  password-reset-token-already-used: 'Токен відновлення пароля вже використаний'
+  password-reset-rate-limit-exceeded: 'Перевищено ліміт запитів відновлення пароля. Спробуйте пізніше.'
+password_reset:
+  title: 'Запит на відновлення пароля'
+  message: 'Ви запросили відновлення пароля. Натисніть кнопку нижче, щоб скинути пароль.'
+  button: 'Скинути пароль'
+  token_info: 'Токен'
+  expires_info: 'Це посилання діє протягом 1 години.'

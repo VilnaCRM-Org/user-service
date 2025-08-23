@@ -41,6 +41,11 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
         return $this->findOneBy(['email' => $email]);
     }
 
+    public function findById(string $id): ?UserInterface
+    {
+        return $this->find($id);
+    }
+
     /**
      * @param array<User> $users
      */

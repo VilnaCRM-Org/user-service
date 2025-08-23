@@ -8,10 +8,14 @@ use Symfony\Component\Mime\Email;
 
 interface EmailFactoryInterface
 {
+    /**
+     * @param array<string, mixed> $additionalContext
+     */
     public function create(
         string $sendTo,
         string $subject,
         string $content,
-        string $template
+        string $template,
+        array $additionalContext = []
     ): Email;
 }

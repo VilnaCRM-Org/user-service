@@ -162,3 +162,46 @@ App\User\Application\MutationInput\UpdateUserMutationInput:
           max: 255
       - App\Shared\Application\Validator\Password:
           optional: true
+
+App\User\Application\DTO\RequestPasswordResetDto:
+  properties:
+    email:
+      - Email: { message: 'email.invalid' }
+      - NotBlank: { message: 'not.blank' }
+      - Length:
+          max: 255
+
+App\User\Application\DTO\ConfirmPasswordResetDto:
+  properties:
+    token:
+      - NotBlank: { message: 'not.blank' }
+      - Length:
+          max: 255
+    newPassword:
+      - NotBlank: { message: 'not.blank' }
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\Password: ~
+
+App\User\Application\MutationInput\RequestPasswordResetMutationInput:
+  properties:
+    email:
+      - Email: { message: 'email.invalid' }
+      - NotBlank: { message: 'not.blank' }
+      - NotNull: ~
+      - Length:
+          max: 255
+
+App\User\Application\MutationInput\ConfirmPasswordResetMutationInput:
+  properties:
+    token:
+      - NotBlank: { message: 'not.blank' }
+      - NotNull: ~
+      - Length:
+          max: 255
+    newPassword:
+      - NotBlank: { message: 'not.blank' }
+      - NotNull: ~
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\Password: ~

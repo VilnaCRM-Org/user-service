@@ -9,17 +9,22 @@ use Symfony\Component\Mime\Email;
 
 final class EmailFactory implements EmailFactoryInterface
 {
+    /**
+     * @param array<string, mixed> $additionalContext
+     */
     public function create(
         string $sendTo,
         string $subject,
         string $content,
-        string $template
+        string $template,
+        array $additionalContext = []
     ): Email {
         return (new TemplatedEmail())
             ->to($sendTo)
             ->subject($subject)
-            ->context([
+            ->context(array_merge([
                 'content' => $content,
-            ])->htmlTemplate($template);
+            ], $additionalContext))
+            ->htmlTemplate($template);
     }
 }

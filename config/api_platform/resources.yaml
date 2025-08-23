@@ -6,6 +6,10 @@ resources:
       'App\User\Domain\Exception\InvalidPasswordException': 400
       'App\User\Domain\Exception\TokenNotFoundException': 404
       'App\User\Domain\Exception\DuplicateEmailException': 409
+      'App\User\Domain\Exception\PasswordResetTokenNotFoundException': 404
+      'App\User\Domain\Exception\PasswordResetTokenExpiredException': 400
+      'App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException': 400
+      'App\User\Domain\Exception\PasswordResetRateLimitExceededException': 429
     normalizationContext:
       groups: ['output']
 
@@ -94,6 +98,40 @@ resources:
         extraArgs:
           id:
             type: 'ID!'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        resolver: 'App\User\Application\Resolver\RequestPasswordResetMutationResolver'
+        name: 'requestPasswordReset'
+        deserialize: false
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          email:
+            type: 'String!'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        resolver: 'App\User\Application\Resolver\ConfirmPasswordResetMutationResolver'
+        name: 'confirmPasswordReset'
+        deserialize: false
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          token:
+            type: 'String!'
+          newPassword:
+            type: 'String!'
+
+  App\User\Application\DTO\RequestPasswordResetDto:
+    operations:
+      request_password_reset:
+        class: 'ApiPlatform\Metadata\Post'
+        uriTemplate: '/password-reset/request'
+        processor: 'App\User\Application\Processor\RequestPasswordResetProcessor'
+        
+  App\User\Application\DTO\ConfirmPasswordResetDto:
+    operations:
+      confirm_password_reset:
+        class: 'ApiPlatform\Metadata\Post'
+        uriTemplate: '/password-reset/confirm'
+        processor: 'App\User\Application\Processor\ConfirmPasswordResetProcessor'
 
   App\Internal\HealthCheck\Domain\ValueObject\HealthCheck:
     operations:
