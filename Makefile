@@ -190,6 +190,8 @@ new-logs: ## Show live logs
 
 start: up doctrine-migrations-migrate ## Start docker
 
+copilot-setup: start setup-test-db ## Setup environment for Copilot coding agent (bypasses firewall restrictions)
+
 stop: ## Stop docker and the Symfony binary server
 	$(DOCKER_COMPOSE) stop
 

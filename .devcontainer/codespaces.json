@@ -1,0 +1,54 @@
+{
+  "name": "User Service Development",
+  "image": "mcr.microsoft.com/devcontainers/base:jammy",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+  "onCreateCommand": "sudo apt-get update && sudo apt-get install -y make",
+  "postCreateCommand": "./.devcontainer/setup.sh",
+  "forwardPorts": [8081, 3306, 6379, 1080, 1025, 4566, 8080],
+  "portsAttributes": {
+    "8081": {
+      "label": "Application",
+      "protocol": "http"
+    },
+    "3306": {
+      "label": "MariaDB"
+    },
+    "6379": {
+      "label": "Redis"  
+    },
+    "1080": {
+      "label": "MailCatcher Web UI",
+      "protocol": "http"
+    },
+    "1025": {
+      "label": "MailCatcher SMTP"
+    },
+    "4566": {
+      "label": "LocalStack",
+      "protocol": "http"
+    },
+    "8080": {
+      "label": "Structurizr",
+      "protocol": "http"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bmewburn.vscode-intelephense-client",
+        "ms-vscode.vscode-json",
+        "xdebug.php-debug",
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}

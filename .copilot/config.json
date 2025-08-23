@@ -1,0 +1,81 @@
+{
+  "name": "user-service",
+  "description": "VilnaCRM User Service - A Symfony-based microservice for user management",
+  "setup": {
+    "command": "make start",
+    "description": "Sets up the complete development environment using Docker with pre-installed dependencies",
+    "timeout": 300,
+    "retries": 2
+  },
+  "environment": {
+    "type": "docker-compose",
+    "files": ["docker-compose.yml", "docker-compose.override.yml"],
+    "service": "php",
+    "workdir": "/srv/app"
+  },
+  "dependencies": {
+    "install": {
+      "command": "make install",
+      "description": "Install PHP dependencies via Docker (avoids firewall issues)",
+      "when": "post-setup"
+    },
+    "update": {
+      "command": "make update", 
+      "description": "Update PHP dependencies"
+    }
+  },
+  "database": {
+    "setup": "make setup-test-db",
+    "migrate": "make doctrine-migrations-migrate",
+    "fixtures": "make load-fixtures"
+  },
+  "testing": {
+    "unit": "make unit-tests",
+    "integration": "make integration-tests", 
+    "coverage": "make tests-with-coverage",
+    "all": "make all-tests"
+  },
+  "linting": {
+    "php": "make phpcsfixer",
+    "psalm": "make psalm",
+    "insights": "make phpinsights"
+  },
+  "services": {
+    "app": {
+      "url": "http://localhost:8081",
+      "description": "Main application"
+    },
+    "database": {
+      "host": "localhost",
+      "port": 3306,
+      "type": "mariadb"
+    },
+    "redis": {
+      "host": "localhost", 
+      "port": 6379
+    },
+    "mailcatcher": {
+      "web": "http://localhost:1080",
+      "smtp": "localhost:1025"
+    }
+  },
+  "troubleshooting": {
+    "composer_install_fails": {
+      "problem": "composer install fails due to firewall restrictions",
+      "solution": "Use 'make start' which uses Docker containers with pre-installed dependencies"
+    },
+    "container_access": {
+      "problem": "Need to access container shell",
+      "solution": "Use 'make sh' to get interactive shell in PHP container"
+    },
+    "fresh_start": {
+      "problem": "Environment is corrupted",
+      "solution": "Run 'make down && make build && make start'"
+    }
+  },
+  "firewall": {
+    "bypass": true,
+    "method": "docker-preinstall",
+    "description": "Dependencies are installed during Docker build phase, before firewall restrictions take effect"
+  }
+}
