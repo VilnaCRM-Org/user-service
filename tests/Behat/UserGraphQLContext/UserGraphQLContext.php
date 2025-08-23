@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserGraphQLContext;
 
+use App\Tests\Behat\UserGraphQLContext\Input\ConfirmPasswordResetGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\ConfirmUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\CreateUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\DeleteUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\GraphQLMutationInput;
+use App\Tests\Behat\UserGraphQLContext\Input\RequestPasswordResetGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\ResendEmailGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\UpdateUserGraphQLMutationInput;
 use Behat\Behat\Context\Context;
@@ -307,5 +309,40 @@ final class UserGraphQLContext implements Context
         )->addSubType((new Type('user'))->addSubTypes($responseFields));
 
         return 'mutation' . $mutation;
+    }
+
+    /**
+     * @Given requesting password reset for email :email
+     */
+    public function requestingPasswordResetForEmail(string $email): void
+    {
+        $this->queryName = 'requestPasswordReset';
+        $this->graphQLInput = new RequestPasswordResetGraphQLMutationInput($email);
+
+        $this->query = $this->createMutation(
+            $this->queryName,
+            $this->graphQLInput,
+            $this->responseContent
+        );
+    }
+
+    /**
+     * @Given confirming password reset with token :token and new password :newPassword
+     */
+    public function confirmingPasswordResetWithTokenAndNewPassword(
+        string $token,
+        string $newPassword
+    ): void {
+        $this->queryName = 'confirmPasswordReset';
+        $this->graphQLInput = new ConfirmPasswordResetGraphQLMutationInput(
+            $token,
+            $newPassword
+        );
+
+        $this->query = $this->createMutation(
+            $this->queryName,
+            $this->graphQLInput,
+            $this->responseContent
+        );
     }
 }

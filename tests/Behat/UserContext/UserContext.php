@@ -6,7 +6,9 @@ namespace App\Tests\Behat\UserContext;
 
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\User\Domain\Entity\ConfirmationToken;
+use App\User\Domain\Entity\PasswordResetToken;
 use App\User\Domain\Factory\UserFactoryInterface;
+use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Behat\Behat\Context\Context;
@@ -23,6 +25,7 @@ final class UserContext implements Context
         private UserRepositoryInterface $userRepository,
         private PasswordHasherFactoryInterface $hasherFactory,
         private TokenRepositoryInterface $tokenRepository,
+        private PasswordResetTokenRepositoryInterface $passwordResetTokenRepository,
         private UserFactoryInterface $userFactory,
         private UuidTransformer $transformer,
         private UuidFactory $uuidFactory,
@@ -118,5 +121,26 @@ final class UserContext implements Context
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
+    }
+
+    /**
+     * @Given user with id :id has password reset token :token
+     */
+    public function userHasPasswordResetToken(string $id, string $token): void
+    {
+        $passwordResetToken = new PasswordResetToken($token, $id);
+        $this->passwordResetTokenRepository->save($passwordResetToken);
+    }
+
+    /**
+     * @Given user with id :id has expired password reset token :token
+     */
+    public function userHasExpiredPasswordResetToken(string $id, string $token): void
+    {
+        // Create token that expires in 1 second
+        $passwordResetToken = new PasswordResetToken($token, $id, 1);
+        $this->passwordResetTokenRepository->save($passwordResetToken);
+        // Sleep to ensure token expires
+        sleep(2);
     }
 }
