@@ -145,7 +145,7 @@
     "symfony/phpunit-bridge": "7.2.*",
     "symfony/stopwatch": "7.2.*",
     "symfony/web-profiler-bundle": "7.2.*",
-    "vimeo/psalm": "^5.1",
+    "vimeo/psalm": "*",
     "weirdan/doctrine-psalm-plugin": "^2.5",
     "zenstruck/messenger-test": "^1.9"
   },
