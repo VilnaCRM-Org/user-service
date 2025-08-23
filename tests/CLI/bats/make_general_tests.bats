@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
-load 'bats-support/load'
-load 'bats-assert/load'
+load 'test_helper/bats-support/load'
+load 'test_helper/bats-assert/load'
 
 @test "make setup-test-db works correctly" {
   run make setup-test-db

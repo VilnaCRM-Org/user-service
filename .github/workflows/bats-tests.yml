@@ -24,9 +24,6 @@ jobs:
 
       - name: Setup Bats and bats libs
         uses: bats-core/bats-action@2.0.0
-        with:
-          support-path: ${{ github.workspace }}/tests/CLI/bats/bats-support
-          assert-path: ${{ github.workspace }}/tests/CLI/bats/bats-assert
 
       - name: Run Bats tests
         run: make bats
