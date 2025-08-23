@@ -60,6 +60,24 @@ workspace {
                     passwordChangedEventSubscriber = component "PasswordChangedEventSubscriber" "Handles PasswordChangedEvent" "EventSubscriber" {
                         tags "Item"
                     }
+                    requestPasswordResetProcessor = component "RequestPasswordResetProcessor" "Processes HTTP requests for password reset request" "RequestProcessor" {
+                        tags "Item"
+                    }
+                    confirmPasswordResetProcessor = component "ConfirmPasswordResetProcessor" "Processes HTTP requests for password reset confirmation" "RequestProcessor" {
+                        tags "Item"
+                    }
+                    requestPasswordResetResolver = component "RequestPasswordResetResolver" "Processes GraphQL requests for password reset request" "MutationResolver" {
+                        tags "Item"
+                    }
+                    confirmPasswordResetResolver = component "ConfirmPasswordResetResolver" "Processes GraphQL requests for password reset confirmation" "MutationResolver" {
+                        tags "Item"
+                    }
+                    requestPasswordResetCommandHandler = component "RequestPasswordResetCommandHandler" "Handles RequestPasswordResetCommand" "CommandHandler" {
+                        tags "Item"
+                    }
+                    confirmPasswordResetCommandHandler = component "ConfirmPasswordResetCommandHandler" "Handles ConfirmPasswordResetCommand" "CommandHandler" {
+                        tags "Item"
+                    }
                 }
 
                 group "Domain" {
@@ -69,6 +87,12 @@ workspace {
                     token = component "ConfirmationToken" "Represents confirmation token" "Entity" {
                         tags "Item"
                     }
+                    passwordResetToken = component "PasswordResetToken" "Represents password reset token with expiration" "Entity" {
+                        tags "Item"
+                    }
+                    passwordResetTokenFactory = component "PasswordResetTokenFactory" "Creates password reset tokens" "Factory" {
+                        tags "Item"
+                    }
                 }
 
                 group "Infrastructure" {
@@ -76,6 +100,9 @@ workspace {
                         tags "Item"
                     }
                     tokenRepository = component "RedisTokenRepository" "Manages access to confirmation tokens" "Repository" {
+                        tags "Item"
+                    }
+                    passwordResetTokenRepository = component "RedisPasswordResetTokenRepository" "Manages access to password reset tokens with expiration" "Repository" {
                         tags "Item"
                     }
                     mailer = component "Symfony Mailer" "Manages sending of emails" {
@@ -121,6 +148,18 @@ workspace {
                 userRepository -> database "accesses data"
                 tokenRepository -> cache "accesses data"
                 mailer -> sqs "publish message"
+                
+                # Password Reset Relationships
+                requestPasswordResetProcessor -> requestPasswordResetCommandHandler "dispatches RequestPasswordResetCommand"
+                requestPasswordResetResolver -> requestPasswordResetCommandHandler "dispatches RequestPasswordResetCommand"
+                confirmPasswordResetProcessor -> confirmPasswordResetCommandHandler "dispatches ConfirmPasswordResetCommand"
+                confirmPasswordResetResolver -> confirmPasswordResetCommandHandler "dispatches ConfirmPasswordResetCommand"
+                requestPasswordResetCommandHandler -> passwordResetTokenFactory "creates token"
+                requestPasswordResetCommandHandler -> passwordResetToken "creates"
+                confirmPasswordResetCommandHandler -> passwordResetToken "validates and deletes"
+                confirmPasswordResetCommandHandler -> user "updates password"
+                passwordResetTokenRepository -> passwordResetToken "save and load"
+                passwordResetTokenRepository -> cache "accesses data"
             }
         }
     }

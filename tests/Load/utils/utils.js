@@ -90,4 +90,36 @@ export default class Utils {
 
     return http.post(this.getBaseHttpUrl(), payload, this.getJsonHeader());
   }
+
+  generateRandomEmail() {
+    return `${faker.number.int32()}${faker.person.email()}`;
+  }
+
+  generatePassword() {
+    return faker.internet.password(true, true, true, false, false, 60);
+  }
+
+  generateToken() {
+    return faker.string.alphanumeric(64);
+  }
+
+  requestPasswordReset(email) {
+    const payload = JSON.stringify({ email });
+
+    return http.post(
+      this.getBaseHttpUrl() + '/request-password-reset',
+      payload,
+      this.getJsonHeader()
+    );
+  }
+
+  confirmPasswordReset(token, newPassword) {
+    const payload = JSON.stringify({ token, newPassword });
+
+    return http.patch(
+      this.getBaseHttpUrl() + '/confirm-password-reset',
+      payload,
+      this.getJsonHeader()
+    );
+  }
 }
