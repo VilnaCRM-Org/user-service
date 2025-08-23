@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\MutationInput;
 
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\MutationInput\MutationInput;
 use App\User\Application\MutationInput\RequestPasswordResetMutationInput;
 
 final class RequestPasswordResetMutationInputTest extends UnitTestCase

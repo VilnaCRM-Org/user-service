@@ -6,6 +6,7 @@ namespace App\Tests\Unit\User\Application\MutationInput;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\MutationInput\ConfirmPasswordResetMutationInput;
+use App\User\Application\MutationInput\MutationInput;
 
 final class ConfirmPasswordResetMutationInputTest extends UnitTestCase
 {
