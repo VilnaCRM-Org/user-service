@@ -148,6 +148,5 @@
     "vimeo/psalm": "^5.1",
     "weirdan/doctrine-psalm-plugin": "^2.5",
     "zenstruck/messenger-test": "^1.9"
-  },
-  "version": "2.8.0"
+  }
 }
