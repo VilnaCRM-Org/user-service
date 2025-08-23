@@ -20,14 +20,5 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
       - name: Start Docker containers and run migrations
         run: make start
-      
-      - name: Install Composer dependencies
-        run: make install
-      
-      - name: Setup test database
-        run: make setup-test-db
