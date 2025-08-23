@@ -18,7 +18,7 @@
 - Built-in docker environment and convenient `make` cli command
 - A lot of CI checks to ensure the highest code quality that can be ([Psalm](https://psalm.dev/), [PHPInsights](https://phpinsights.com/), Security checks, Code style fixer)
 - Configured testing tools: [PHPUnit](https://phpunit.de/), [Behat](https://docs.behat.org/)
-- **GitHub Copilot coding agent support** with firewall-bypassing configuration
+- Much more!
 
 ## Why you might need it
 
