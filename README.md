@@ -20,15 +20,6 @@
 - Configured testing tools: [PHPUnit](https://phpunit.de/), [Behat](https://docs.behat.org/)
 - **GitHub Copilot coding agent support** with firewall-bypassing configuration
 
-## GitHub Copilot Agent Setup
-
-This repository includes special configuration for GitHub Copilot coding agents to avoid firewall restrictions:
-
-**For Copilot Agents**: Use `make copilot-setup` instead of direct `composer install`
-
-See [.copilot/INSTRUCTIONS.md](.copilot/INSTRUCTIONS.md) for detailed setup instructions.
-- Much more!
-
 ## Why you might need it
 
 The User Service is designed to manage user accounts and authentication within the VilnaCRM ecosystem. It provides essential functionalities such as user registration and authentication, implemented with OAuth Server, REST API, and GraphQL, ensuring seamless integration with other components of the CRM system.
