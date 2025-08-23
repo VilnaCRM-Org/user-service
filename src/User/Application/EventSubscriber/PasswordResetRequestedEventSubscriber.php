@@ -18,9 +18,9 @@ final readonly class PasswordResetRequestedEventSubscriber implements
 {
     public function __construct(
         private CommandBusInterface $commandBus,
-        private PasswordResetTokenRepositoryInterface $passwordResetTokenRepository,
-        private PasswordResetEmailFactoryInterface $passwordResetEmailFactory,
-        private SendPasswordResetEmailCommandFactoryInterface $emailCmdFactory
+        private PasswordResetTokenRepositoryInterface $tokenRepository,
+        private PasswordResetEmailFactoryInterface $emailFactory,
+        private SendPasswordResetEmailCommandFactoryInterface $cmdFactory
     ) {
     }
 
@@ -29,15 +29,15 @@ final readonly class PasswordResetRequestedEventSubscriber implements
         $user = $event->user;
 
         // Find the password reset token that was created
-        $token = $this->passwordResetTokenRepository->findByToken($event->token);
+        $token = $this->tokenRepository->findByToken($event->token);
 
         if (!$token instanceof PasswordResetTokenInterface) {
             return; // Token not found, skip email sending
         }
 
         $this->commandBus->dispatch(
-            $this->emailCmdFactory->create(
-                $this->passwordResetEmailFactory->create($token, $user)
+            $this->cmdFactory->create(
+                $this->emailFactory->create($token, $user)
             )
         );
     }

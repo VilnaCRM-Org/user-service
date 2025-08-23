@@ -21,8 +21,9 @@ final class ConfirmPasswordResetCommand implements CommandInterface
         return $this->response;
     }
 
-    public function setResponse(ConfirmPasswordResetCommandResponse $response): void
-    {
+    public function setResponse(
+        ConfirmPasswordResetCommandResponse $response
+    ): void {
         $this->response = $response;
     }
 }

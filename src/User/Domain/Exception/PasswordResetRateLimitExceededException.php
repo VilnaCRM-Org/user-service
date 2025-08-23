@@ -8,7 +8,9 @@ final class PasswordResetRateLimitExceededException extends DomainException
 {
     public function __construct()
     {
-        parent::__construct('Password reset rate limit exceeded. Please try again later.');
+        parent::__construct(
+            'Password reset rate limit exceeded. Please try again later.'
+        );
     }
 
     public function getTranslationTemplate(): string

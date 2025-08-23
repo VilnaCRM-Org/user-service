@@ -26,7 +26,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private PasswordResetTokenRepositoryInterface $passwordResetTokenRepository,
+        private PasswordResetTokenRepositoryInterface $tokenRepository,
         private PasswordHasherFactoryInterface $hasherFactory,
         private EventBusInterface $eventBus,
         private UuidFactory $uuidFactory,
@@ -35,7 +35,9 @@ final readonly class ConfirmPasswordResetCommandHandler implements
 
     public function __invoke(ConfirmPasswordResetCommand $command): void
     {
-        $passwordResetToken = $this->validatePasswordResetToken($command->token);
+        $passwordResetToken = $this->validatePasswordResetToken(
+            $command->token
+        );
         $user = $this->findUserByToken($passwordResetToken);
 
         $this->updateUserPassword($user, $command->newPassword);
@@ -43,13 +45,16 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         $this->publishEvent($user);
 
         $command->setResponse(
-            new ConfirmPasswordResetCommandResponse('Password has been reset successfully.')
+            new ConfirmPasswordResetCommandResponse(
+                'Password has been reset successfully.'
+            )
         );
     }
 
-    private function validatePasswordResetToken(string $token): PasswordResetTokenInterface
-    {
-        $passwordResetToken = $this->passwordResetTokenRepository->findByToken($token);
+    private function validatePasswordResetToken(
+        string $token
+    ): PasswordResetTokenInterface {
+        $passwordResetToken = $this->tokenRepository->findByToken($token);
 
         if (!$passwordResetToken) {
             throw new PasswordResetTokenNotFoundException();
@@ -66,8 +71,9 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         return $passwordResetToken;
     }
 
-    private function findUserByToken(PasswordResetTokenInterface $token): UserInterface
-    {
+    private function findUserByToken(
+        PasswordResetTokenInterface $token
+    ): UserInterface {
         $user = $this->userRepository->findById($token->getUserID());
 
         if (!$user instanceof UserInterface) {
@@ -77,18 +83,21 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         return $user;
     }
 
-    private function updateUserPassword(UserInterface $user, string $newPassword): void
-    {
+    private function updateUserPassword(
+        UserInterface $user,
+        string $newPassword
+    ): void {
         $hasher = $this->hasherFactory->getPasswordHasher(User::class);
         $hashedPassword = $hasher->hash($newPassword);
         $user->setPassword($hashedPassword);
         $this->userRepository->save($user);
     }
 
-    private function markTokenAsUsed(PasswordResetTokenInterface $token): void
-    {
+    private function markTokenAsUsed(
+        PasswordResetTokenInterface $token
+    ): void {
         $token->markAsUsed();
-        $this->passwordResetTokenRepository->save($token);
+        $this->tokenRepository->save($token);
     }
 
     private function publishEvent(UserInterface $user): void

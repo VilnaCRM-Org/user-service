@@ -20,8 +20,9 @@ final class RequestPasswordResetCommand implements CommandInterface
         return $this->response;
     }
 
-    public function setResponse(RequestPasswordResetCommandResponse $response): void
-    {
+    public function setResponse(
+        RequestPasswordResetCommandResponse $response
+    ): void {
         $this->response = $response;
     }
 }

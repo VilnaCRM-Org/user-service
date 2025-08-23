@@ -18,7 +18,7 @@ final readonly class PasswordResetEmailSentEventSubscriber implements
 {
     public function __construct(
         private MailerInterface $mailer,
-        private PasswordResetTokenRepositoryInterface $passwordResetTokenRepository,
+        private PasswordResetTokenRepositoryInterface $tokenRepository,
         private LoggerInterface $logger,
         private TranslatorInterface $translator,
         private EmailFactoryInterface $emailFactory,
@@ -32,14 +32,38 @@ final readonly class PasswordResetEmailSentEventSubscriber implements
         $tokenValue = $token->getTokenValue();
         $emailAddress = $event->email;
 
-        // The token should already be saved by the command handler
-        // but we can save it again to ensure consistency
-        $this->passwordResetTokenRepository->save($token);
+        $this->tokenRepository->save($token);
+        $resetUrl = $this->createResetUrl($tokenValue);
+        $email = $this->createPasswordResetEmail(
+            $emailAddress,
+            $tokenValue,
+            $resetUrl
+        );
 
-        // Create the reset URL
-        $resetUrl = $this->apiBaseUrl . '/password-reset?token=' . urlencode($tokenValue);
+        $this->mailer->send($email);
+        $this->logger->info('Password reset token sent to ' . $emailAddress);
+    }
 
-        $email = $this->emailFactory->create(
+    /**
+     * @return array<class-string<DomainEvent>>
+     */
+    public function subscribedTo(): array
+    {
+        return [PasswordResetEmailSentEvent::class];
+    }
+
+    private function createResetUrl(string $tokenValue): string
+    {
+        return $this->apiBaseUrl . '/password-reset?token=' .
+            urlencode($tokenValue);
+    }
+
+    private function createPasswordResetEmail(
+        string $emailAddress,
+        string $tokenValue,
+        string $resetUrl
+    ): \Symfony\Component\Mime\Email {
+        return $this->emailFactory->create(
             $emailAddress,
             $this->translator->trans('email.password_reset.subject'),
             $this->translator->trans(
@@ -52,17 +76,5 @@ final readonly class PasswordResetEmailSentEventSubscriber implements
                 'resetUrl' => $resetUrl,
             ]
         );
-
-        $this->mailer->send($email);
-
-        $this->logger->info('Password reset token sent to ' . $emailAddress);
-    }
-
-    /**
-     * @return array<class-string<DomainEvent>>
-     */
-    public function subscribedTo(): array
-    {
-        return [PasswordResetEmailSentEvent::class];
     }
 }

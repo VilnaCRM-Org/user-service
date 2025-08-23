@@ -22,8 +22,8 @@ final readonly class RequestPasswordResetCommandHandler implements
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private PasswordResetTokenRepositoryInterface $passwordResetTokenRepository,
-        private PasswordResetTokenFactoryInterface $passwordResetTokenFactory,
+        private PasswordResetTokenRepositoryInterface $tokenRepository,
+        private PasswordResetTokenFactoryInterface $tokenFactory,
         private EventBusInterface $eventBus,
         private UuidFactory $uuidFactory,
         private int $rateLimitMaxRequests = 3,
@@ -38,7 +38,9 @@ final readonly class RequestPasswordResetCommandHandler implements
         $user = $this->userRepository->findByEmail($command->email);
 
         if (!$user instanceof UserInterface) {
-            $command->setResponse(new RequestPasswordResetCommandResponse($successMessage));
+            $command->setResponse(
+                new RequestPasswordResetCommandResponse($successMessage)
+            );
             return;
         }
 
@@ -46,13 +48,17 @@ final readonly class RequestPasswordResetCommandHandler implements
         $token = $this->createPasswordResetToken($user);
         $this->publishEvent($user, $token);
 
-        $command->setResponse(new RequestPasswordResetCommandResponse($successMessage));
+        $command->setResponse(
+            new RequestPasswordResetCommandResponse($successMessage)
+        );
     }
 
     private function checkRateLimit(string $email): void
     {
-        $since = new \DateTimeImmutable("-{$this->rateLimitWindowHours} hours");
-        $recentRequests = $this->passwordResetTokenRepository->countRecentRequestsByEmail(
+        $since = new \DateTimeImmutable(
+            "-{$this->rateLimitWindowHours} hours"
+        );
+        $recentRequests = $this->tokenRepository->countRecentRequestsByEmail(
             $email,
             $since
         );
@@ -62,16 +68,19 @@ final readonly class RequestPasswordResetCommandHandler implements
         }
     }
 
-    private function createPasswordResetToken(UserInterface $user): PasswordResetTokenInterface
-    {
-        $passwordResetToken = $this->passwordResetTokenFactory->create($user->getId());
-        $this->passwordResetTokenRepository->save($passwordResetToken);
+    private function createPasswordResetToken(
+        UserInterface $user
+    ): PasswordResetTokenInterface {
+        $passwordResetToken = $this->tokenFactory->create($user->getId());
+        $this->tokenRepository->save($passwordResetToken);
 
         return $passwordResetToken;
     }
 
-    private function publishEvent(UserInterface $user, PasswordResetTokenInterface $token): void
-    {
+    private function publishEvent(
+        UserInterface $user,
+        PasswordResetTokenInterface $token
+    ): void {
         $this->eventBus->publish(
             new PasswordResetRequestedEvent(
                 $user,

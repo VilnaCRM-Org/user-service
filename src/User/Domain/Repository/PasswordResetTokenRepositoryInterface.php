@@ -8,13 +8,22 @@ use App\User\Domain\Entity\PasswordResetTokenInterface;
 
 interface PasswordResetTokenRepositoryInterface
 {
-    public function save(PasswordResetTokenInterface $passwordResetToken): void;
+    public function save(
+        PasswordResetTokenInterface $passwordResetToken
+    ): void;
 
     public function findByToken(string $token): ?PasswordResetTokenInterface;
 
-    public function findByUserID(string $userID): ?PasswordResetTokenInterface;
+    public function findByUserID(
+        string $userID
+    ): ?PasswordResetTokenInterface;
 
-    public function delete(PasswordResetTokenInterface $passwordResetToken): void;
+    public function delete(
+        PasswordResetTokenInterface $passwordResetToken
+    ): void;
 
-    public function countRecentRequestsByEmail(string $email, \DateTimeImmutable $since): int;
+    public function countRecentRequestsByEmail(
+        string $email,
+        \DateTimeImmutable $since
+    ): int;
 }
