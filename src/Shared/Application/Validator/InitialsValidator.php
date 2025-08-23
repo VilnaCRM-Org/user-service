@@ -19,29 +19,29 @@ final class InitialsValidator extends ConstraintValidator
 
     public function validate(mixed $value, Constraint $constraint): void
     {
-        if ($this->isNull($value) ||
-            ($constraint->isOptional() && $this->isEmpty($value))
-        ) {
+        if ($this->shouldSkipValidation($value, $constraint)) {
             return;
         }
 
-        $trimmedValue = trim($value);
+        $this->validateSpaces($value);
+    }
 
-        if ($this->isEmpty($trimmedValue) && strlen($value) > 0) {
+    private function shouldSkipValidation(
+        mixed $value,
+        Constraint $constraint
+    ): bool {
+        return $value === null ||
+            ($constraint->isOptional() && $value === '');
+    }
+
+    private function validateSpaces(mixed $value): void
+    {
+        $trimmedValue = trim($value);
+        if ($trimmedValue === '' && strlen($value) > 0) {
             $this->addViolation(
                 $this->translator->trans('initials.spaces')
             );
         }
-    }
-
-    private function isEmpty(mixed $value): bool
-    {
-        return $value === '';
-    }
-
-    private function isNull(mixed $value): bool
-    {
-        return $value === null;
     }
 
     private function addViolation(string $message): void

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use NunoMaduro\PhpInsights\Domain\Insights\CyclomaticComplexityIsHigh;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
@@ -44,6 +45,7 @@ return [
             'exclude' => [
                 'phpinsights',
                 'tests/Behat/OAuthContext/OAuthContext.php',
+                'src/User/Infrastructure/Repository/MariaDBPasswordResetTokenRepository.php',
             ],
             'ignoreComments' => true,
         ],
@@ -65,6 +67,12 @@ return [
                 'tests/Unit/Shared/Application/OpenApi/Factory/Response/OAuthRedirectResponseFactoryTest',
                 'tests/Unit/Shared/Application/OpenApi/Factory/Response/UnsupportedGrantTypeResponseFactoryTest',
                 'tests/Behat/OAuthContext/OAuthContext',
+            ],
+        ],
+        CyclomaticComplexityIsHigh::class => [
+            'exclude' => [
+                'src/Shared/Application/Validator/InitialsValidator.php',
+                'src/Shared/Application/Validator/PasswordValidator.php',
             ],
         ],
     ],

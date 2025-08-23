@@ -90,7 +90,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $command = new RequestPasswordResetCommand($email);
         $this->handler->__invoke($command);
 
-        $this->assertStringContainsString('If the email address is valid', $command->getResponse()->message);
+        $this->assertStringContainsString('If valid', $command->getResponse()->message);
     }
 
     public function testRequestPasswordResetForNonExistingUser(): void
@@ -118,7 +118,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $command = new RequestPasswordResetCommand($email);
         $this->handler->__invoke($command);
 
-        $this->assertStringContainsString('If the email address is valid', $command->getResponse()->message);
+        $this->assertStringContainsString('If valid', $command->getResponse()->message);
     }
 
     public function testRequestPasswordResetRateLimitExceeded(): void

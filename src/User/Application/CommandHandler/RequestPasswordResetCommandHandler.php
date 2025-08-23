@@ -33,7 +33,7 @@ final readonly class RequestPasswordResetCommandHandler implements
 
     public function __invoke(RequestPasswordResetCommand $command): void
     {
-        $successMessage = 'If the email address is valid, you will receive a password reset link.';
+        $successMessage = 'If valid, you will receive a password reset link.';
 
         $user = $this->userRepository->findByEmail($command->email);
 
