@@ -22,4 +22,11 @@ final class PasswordResetTokenAlreadyUsedExceptionTest extends UnitTestCase
 
         $this->assertSame(0, $exception->getCode());
     }
+
+    public function testGetTranslationTemplate(): void
+    {
+        $exception = new PasswordResetTokenAlreadyUsedException();
+
+        $this->assertSame('error.password-reset-token-already-used', $exception->getTranslationTemplate());
+    }
 }
