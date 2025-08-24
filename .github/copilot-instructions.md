@@ -72,33 +72,34 @@ The VilnaCRM User Service is designed to manage user accounts and authentication
 - `make phpinsights` -- Code quality analysis
 - `make deptrac` -- Architecture dependency validation
 
-### Manual Pre-Commit Quality Checks with CaptainHook
+### Comprehensive CI Quality Checks
 
-**IMPORTANT: CaptainHook pre-commit hooks are disabled for automatic execution. Run manually before committing changes:**
+**IMPORTANT: Run comprehensive CI checks before finishing any task and committing changes:**
 
-1. **Access PHP container**: `make sh`
-2. **Run all pre-commit checks manually**: `vendor/bin/captainhook hook:pre-commit`
+**Primary CI Command:**
+- `make ci` -- Run all comprehensive CI checks (composer validation, security analysis, code style, static analysis, architecture validation, complete test suite, mutation testing)
 
-**Individual CaptainHook commands available:**
+**Individual CI commands available:**
+- `make composer-validate` -- Validate composer.json and composer.lock
+- `make check-requirements` -- Check Symfony requirements
+- `make check-security` -- Security vulnerability analysis
+- `make phpcsfixer` -- Auto-fix PHP code style (PSR-12)
+- `make psalm` -- Static analysis for type safety
+- `make psalm-security` -- Security taint analysis
+- `make phpinsights` -- Code quality analysis
+- `make deptrac` -- Architecture dependency validation
+- `make unit-tests` -- Unit test suite
+- `make integration-tests` -- Integration test suite
+- `make behat` -- End-to-end BDD tests
+- `make infection` -- Mutation testing
 
-- PHP syntax validation
-- `CI=1 make phpcsfixer` -- Code style fixes
-- `CI=1 make psalm` -- Static analysis
-- `CI=1 make check-requirements` -- Dependency checks
-- `CI=1 make check-security` -- Security analysis
-- `CI=1 make psalm-security` -- Security taint analysis
-- `CI=1 make phpinsights` -- Code quality insights
-- `CI=1 make unit-tests` -- Unit test suite
-- `CI=1 make integration-tests` -- Integration test suite
-- `CI=1 make behat` -- End-to-end BDD tests
-
-**Recommended workflow before commits:**
+**Mandatory workflow before finishing tasks:**
 
 1. Make your code changes
-2. Run `make sh` to access container
-3. Run `vendor/bin/captainhook hook:pre-commit` to validate all changes
-4. Fix any issues reported by the checks
-5. Commit your changes
+2. Run `make ci` to execute all quality checks
+3. Fix any issues reported by the checks
+4. Ensure all tests pass and code coverage is maintained
+5. Commit your changes only after CI passes completely
 
 ### Load Testing Commands
 

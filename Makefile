@@ -215,3 +215,29 @@ generate-openapi-spec:
 
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec
+
+ci: ## Run comprehensive CI checks (excludes bats and load tests)
+	@echo "🚀 Running comprehensive CI checks..."
+	@echo "1️⃣  Validating composer.json and composer.lock..."
+	$(COMPOSER) validate
+	@echo "2️⃣  Checking Symfony requirements..."
+	$(EXEC_ENV) $(SYMFONY_BIN) check:requirements
+	@echo "3️⃣  Running security analysis..."
+	$(EXEC_ENV) $(SYMFONY_BIN) security:check
+	@echo "4️⃣  Fixing code style with PHP CS Fixer..."
+	$(RUN_PHP_CS_FIXER)
+	@echo "5️⃣  Running static analysis with Psalm..."
+	$(EXEC_ENV) $(PSALM)
+	@echo "6️⃣  Running security taint analysis..."
+	$(EXEC_ENV) $(PSALM) --taint-analysis
+	@echo "7️⃣  Running code quality analysis with PHPInsights..."
+	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --ansi --format=github-action --disable-security-check && ./vendor/bin/phpinsights analyse tests --no-interaction
+	@echo "8️⃣  Validating architecture with Deptrac..."
+	$(DEPTRAC) analyse --config-file=deptrac.yaml --report-uncovered --fail-on-uncovered
+	@echo "9️⃣  Running complete test suite (unit, integration, e2e)..."
+	$(EXEC_ENV) $(PHPUNIT) --testsuite=Unit
+	$(EXEC_ENV) $(PHPUNIT) --testsuite=Integration
+	$(EXEC_ENV) $(BEHAT)
+	@echo "🔟 Running mutation testing with Infection..."
+	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations -j8
+	@echo "✅ All CI checks completed successfully!"
