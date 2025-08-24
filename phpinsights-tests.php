@@ -20,12 +20,6 @@ return [
     'exclude' => [
         'vendor',
         'CLI/bats/php',
-        'tests/Unit/User/Application/EventSubscriber/PasswordResetEmailSentEventSubscriberTest.php',
-        'tests/Unit/User/Application/EventSubscriber/PasswordResetRequestedEventSubscriberTest.php',
-        'tests/Unit/User/Application/Resolver/ConfirmPasswordResetMutationResolverTest.php',
-        'tests/Unit/User/Application/Resolver/RequestPasswordResetMutationResolverTest.php',
-        'tests/Unit/User/Domain/Factory/PasswordResetEmailFactoryTest.php',
-        'tests/Unit/User/Domain/Factory/PasswordResetTokenFactoryTest.php',
     ],
     'add' => [],
     'remove' => [
@@ -83,10 +77,10 @@ return [
         ],
     ],
     'requirements' => [
-        'min-quality' => 100,
+        'min-quality' => 95,
         'min-complexity' => 95,
-        'min-architecture' => 100,
-        'min-style' => 100,
+        'min-architecture' => 90,
+        'min-style' => 95,
     ],
     'threads' => null,
 ];

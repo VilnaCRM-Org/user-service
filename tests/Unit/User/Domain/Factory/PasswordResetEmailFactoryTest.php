@@ -55,7 +55,7 @@ final class PasswordResetEmailFactoryTest extends UnitTestCase
         string $email,
         string $initials,
         string $uuid
-    ): User {
+    ): \App\User\Domain\Entity\User {
         $userFactory = new UserFactory();
         return $userFactory->create(
             $email,
