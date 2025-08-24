@@ -62,7 +62,6 @@
       "composer/package-versions-deprecated": true,
       "symfony/flex": true,
       "symfony/runtime": true,
-      "captainhook/plugin-composer": true,
       "dealerdirect/phpcodesniffer-composer-installer": true,
       "infection/extension-installer": false
     },
@@ -112,18 +111,11 @@
       "allow-contrib": true,
       "require": "7.2.*",
       "docker": true
-    },
-    "captainhook": {
-      "no-interaction": true,
-      "force-install": true,
-      "skip-existing": true
     }
   },
   "require-dev": {
     "behat/behat": "^3.12",
     "behat/gherkin": "4.12.0",
-    "captainhook/captainhook": "^5.11",
-    "captainhook/plugin-composer": "^5.3",
     "dama/doctrine-test-bundle": "^8.2",
     "dg/bypass-finals": "^1.5",
     "doctrine/doctrine-fixtures-bundle": "^4.0",
