@@ -25,6 +25,7 @@
     "lexik/jwt-authentication-bundle": "^3.0.0",
     "nelmio/cors-bundle": "^2.4",
     "phpmailer/phpmailer": "^6.6",
+    "predis/predis": "^3.1",
     "ramsey/uuid": "^4.7",
     "runtime/frankenphp-symfony": "^0.2",
     "sebastian/phpcpd": "^6.0",
@@ -120,8 +121,11 @@
     }
   },
   "require-dev": {
-    "behat/behat": "^3.12",
+    "behat/behat": "^3.7",
     "behat/gherkin": "4.12.0",
+    "behat/mink": "^1.12",
+    "behat/mink-browserkit-driver": "^2.2",
+    "behat/mink-extension": "^2.2",
     "captainhook/captainhook": "^5.11",
     "captainhook/plugin-composer": "^5.3",
     "dama/doctrine-test-bundle": "^8.2",
@@ -145,6 +149,7 @@
     "symfony/phpunit-bridge": "7.2.*",
     "symfony/stopwatch": "7.2.*",
     "symfony/web-profiler-bundle": "7.2.*",
+    "twentytwo-labs/behat-open-api": "^1.0",
     "vimeo/psalm": "^5.1",
     "weirdan/doctrine-psalm-plugin": "^2.5",
     "zenstruck/messenger-test": "^1.9"

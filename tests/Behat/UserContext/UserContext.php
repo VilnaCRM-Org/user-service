@@ -31,6 +31,19 @@ final class UserContext implements Context
     }
 
     /**
+     * @BeforeScenario
+     */
+    public function truncateUsersTable(): void
+    {
+        $entityManager = $this->getEntityManager();
+        if ($entityManager) {
+            $entityManager->createQuery(
+                'DELETE FROM App\User\Domain\Entity\User'
+            )->execute();
+        }
+    }
+
+    /**
      * @Given user with id :id has confirmation token :token
      */
     public function userHasConfirmationToken(string $id, string $token): void
@@ -46,9 +59,10 @@ final class UserContext implements Context
         string $email,
         string $password
     ): void {
+        $this->removeExistingUser($email);
         $user = $this->userFactory->create(
             $email,
-            $this->faker->name,
+            'Test User',
             $password,
             $this->transformer->transformFromSymfonyUuid(
                 $this->uuidFactory->create()
@@ -60,6 +74,7 @@ final class UserContext implements Context
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
+        $this->flushAndClear();
     }
 
     /**
@@ -67,6 +82,7 @@ final class UserContext implements Context
      */
     public function userWithEmailExists(string $email): void
     {
+        $this->removeExistingUser($email);
         $password = $this->faker->password;
         $user = $this->userFactory->create(
             $email,
@@ -82,6 +98,7 @@ final class UserContext implements Context
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
+        $this->flushAndClear();
     }
 
     /**
@@ -89,25 +106,11 @@ final class UserContext implements Context
      */
     public function userWithIdExists(string $id): void
     {
-        $user = $this->userRepository->find($id) ??
-            $this->userFactory->create(
-                $this->faker->email,
-                $this->faker->name,
-                $this->faker->password,
-                $this->transformer->transformFromString($id)
-            );
-        $this->userRepository->save($user);
-    }
-
-    /**
-     * @Given user with id :id and password :password exists
-     */
-    public function userWithIdAndPasswordExists(
-        string $id,
-        string $password
-    ): void {
-        $user = $this->userRepository->find($id) ?? $this->userFactory->create(
-            $this->faker->email,
+        $email = $this->faker->email;
+        $this->removeExistingUser($email);
+        $password = $this->faker->password;
+        $user = $this->userFactory->create(
+            $email,
             $this->faker->name,
             $password,
             $this->transformer->transformFromString($id)
@@ -118,5 +121,61 @@ final class UserContext implements Context
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
+        $this->flushAndClear();
+    }
+
+    /**
+     * @Given user with id :id and password :password exists
+     */
+    public function userWithIdAndPasswordExists(
+        string $id,
+        string $password
+    ): void {
+        $email = $this->faker->email;
+        $this->removeExistingUser($email);
+        $user = $this->userFactory->create(
+            $email,
+            $this->faker->name,
+            $password,
+            $this->transformer->transformFromString($id)
+        );
+
+        $hasher = $this->hasherFactory->getPasswordHasher($user::class);
+        $hashedPassword = $hasher->hash($password, null);
+        $user->setPassword($hashedPassword);
+
+        $this->userRepository->save($user);
+        $this->flushAndClear();
+    }
+
+    private function removeExistingUser(string $email): void
+    {
+        $existingUser = $this->userRepository->findByEmail($email);
+        if ($existingUser) {
+            $this->userRepository->delete($existingUser);
+        }
+    }
+
+    private function getEntityManager(): ?\Doctrine\ORM\EntityManagerInterface
+    {
+        if (
+            $this->userRepository instanceof
+            \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository
+        ) {
+            return $this->userRepository->getEntityManager();
+        }
+        if (method_exists($this->userRepository, 'getEntityManager')) {
+            return $this->userRepository->getEntityManager();
+        }
+        return null;
+    }
+
+    private function flushAndClear(): void
+    {
+        $em = $this->getEntityManager();
+        if ($em) {
+            $em->flush();
+            $em->clear();
+        }
     }
 }

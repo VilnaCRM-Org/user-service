@@ -4,9 +4,9 @@ Feature: User Operations Localization
   I want to receive messages in chosen language
 
   Scenario: Creating a user with duplicate email and Ukrainian language
-    Given user with email "test@mail.com" exists
+    Given user with email "test@example.com" exists
     And with language "uk"
-    And creating user with email "test@mail.com", initials "name surname", password "passWORD1"
+    And creating user with email "test@example.com", initials "name surname", password "passWORD1"
     When POST request is send to "/api/users"
     Then the response status code should be 422
     And violation should be "Ця email-адреса вже зареєстрована"
@@ -19,28 +19,28 @@ Feature: User Operations Localization
     And violation should be "Це значення не є дійсною електронною адресою."
 
   Scenario: Creating a user with password with no uppercase letters and Ukrainian language
-    Given creating user with email "testPass1@mail.com", initials "name surname", password "password1"
+    Given creating user with email "testPass1@example.com", initials "name surname", password "password1"
     And with language "uk"
     When POST request is send to "/api/users"
     Then the response status code should be 422
     And violation should be "Пароль має містити принаймні одну велику літеру"
 
   Scenario: Creating a user with password with no numbers and Ukrainian language
-    Given creating user with email "testPass2@mail.com", initials "name surname", password "passWORD"
+    Given creating user with email "testPass2@example.com", initials "name surname", password "passWORD"
     And with language "uk"
     When POST request is send to "/api/users"
     Then the response status code should be 422
     And violation should be "Пароль повинен містити хоча б одне число"
 
   Scenario: Creating a user with too short password and Ukrainian language
-    Given creating user with email "testPass3@mail.com", initials "name surname", password "pass"
+    Given creating user with email "testPass3@example.com", initials "name surname", password "pass"
     And with language "uk"
     When POST request is send to "/api/users"
     Then the response status code should be 422
     And violation should be "Пароль має містити від 8 до 64 символів"
 
   Scenario: Creating a user with initials that contains only spaces and Ukrainian language
-    Given creating user with email "testPass3@mail.com", initials " ", password "pass"
+    Given creating user with email "testPass3@example.com", initials " ", password "passWORD1"
     And with language "uk"
     When POST request is send to "/api/users"
     Then the response status code should be 422
@@ -58,17 +58,17 @@ Feature: User Operations Localization
   Scenario: Creating a batch of users and Ukrainian language
     Given sending a batch of users
     And with language "uk"
-    And with user with email "test1@mail.com", initials "name surname", password "passWORD1"
-    And with user with email "test2@mail.com", initials "name surname", password "passWORD1"
+    And with user with email "testloc1@example.com", initials "name surname", password "passWORD1"
+    And with user with email "testloc2@example.com", initials "name surname", password "passWORD1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 201
     And the response should contain a list of users
 
   Scenario: Creating a batch of users with duplicate email and Ukrainian language
-    Given user with email "test@mail.com" exists
+    Given user with email "test@example.com" exists
     And with language "uk"
     And sending a batch of users
-    And with user with email "test@mail.com", initials "name surname", password "passWORD1"
+    And with user with email "test@example.com", initials "name surname", password "passWORD1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Ця email-адреса вже зареєстрована"
@@ -84,7 +84,7 @@ Feature: User Operations Localization
   Scenario: Creating a batch of users with password with no uppercase letters and Ukrainian language
     Given sending a batch of users
     And with language "uk"
-    And with user with email "test@mail.com", initials "name surname", password "password1"
+    And with user with email "batchNoUpper@example.com", initials "name surname", password "password1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Пароль має містити принаймні одну велику літеру"
@@ -92,7 +92,7 @@ Feature: User Operations Localization
   Scenario: Creating a batch of users with password with no numbers and Ukrainian language
     Given sending a batch of users
     And with language "uk"
-    And with user with email "test@mail.com", initials "name surname", password "passWORD"
+    And with user with email "batchNoNumbers@example.com", initials "name surname", password "passWORD"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Пароль повинен містити хоча б одне число"
@@ -100,7 +100,7 @@ Feature: User Operations Localization
   Scenario: Creating a batch of users with too short password and Ukrainian language
     Given sending a batch of users
     And with language "uk"
-    And with user with email "test@mail.com", initials "name surname", password "pAss1"
+    And with user with email "batchTooShort@example.com", initials "name surname", password "pAss1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Пароль має містити від 8 до 64 символів"
@@ -108,7 +108,7 @@ Feature: User Operations Localization
   Scenario: Creating a batch of users with initials that contains only spaces and Ukrainian language
     Given sending a batch of users
     And with language "uk"
-    And with user with email "test@mail.com", initials " ", password "pAss1"
+    And with user with email "batchOnlySpaces@example.com", initials " ", password "passWORD1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Ім'я та прізвище не можуть складатися лише з пробілів"
@@ -123,8 +123,8 @@ Feature: User Operations Localization
   Scenario: Creating a batch of users with a duplicate emails in a batch and Ukrainian language
     Given sending a batch of users
     And with language "uk"
-    And with user with email "test@mail.com", initials "name surname", password "passWORD1"
-    And with user with email "test@mail.com", initials "name surname", password "passWORD1"
+    And with user with email "test@example.com", initials "name surname", password "passWORD1"
+    And with user with email "test@example.com", initials "name surname", password "passWORD1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Дублікат електронної пошти в групі"
@@ -132,7 +132,7 @@ Feature: User Operations Localization
   Scenario: Replacing user with wrong password and Ukrainian language
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
     And with language "uk"
-    And updating user with email "testput@mail.com", initials "name surname", oldPassword "wrongpassWORD1", newPassword "passWORD12"
+    And updating user with email "testput@example.com", initials "name surname", oldPassword "wrongpassWORD1", newPassword "passWORD12"
     When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 400
     And the error message should be "Старий пароль невірний"
@@ -140,8 +140,8 @@ Feature: User Operations Localization
   Scenario: Replacing user with duplicate email and Ukrainian language
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
     And with language "uk"
-    And user with email "test3@mail.com" exists
-    And updating user with email "test3@mail.com", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
+    And user with email "test3@example.com" exists
+    And updating user with email "test3@example.com", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
     When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 422
     And violation should be "Ця email-адреса вже зареєстрована"
@@ -168,7 +168,7 @@ Feature: User Operations Localization
   Scenario: Updating user with wrong password and Ukrainian language
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
     And with language "uk"
-    And updating user with email "testpatch@mail.com", initials "name surname", oldPassword "wrongpassWORD1", newPassword "passWORD1"
+    And updating user with email "testpatch@example.com", initials "name surname", oldPassword "wrongpassWORD1", newPassword "passWORD1"
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 400
     And the error message should be "Старий пароль невірний"
@@ -176,8 +176,8 @@ Feature: User Operations Localization
   Scenario: Updating user with duplicate email and Ukrainian language
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
     And with language "uk"
-    And user with email "test4@mail.com" exists
-    And updating user with email "test4@mail.com", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
+    And user with email "test4@example.com" exists
+    And updating user with email "test4@example.com", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 422
     And violation should be "Ця email-адреса вже зареєстрована"

@@ -4,61 +4,36 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\HealthCheckContext;
 
-use Aws\Sqs\SqsClient;
 use Behat\Behat\Context\Context;
-use Doctrine\Common\EventManager;
-use Doctrine\DBAL\Configuration;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use PHPUnit\Framework\Assert;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Cache\Adapter\TraceableAdapter;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\KernelInterface;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
-final class HealthCheckContext extends KernelTestCase implements Context
+final class HealthCheckContext implements Context
 {
-    private KernelInterface $kernelInterface;
-    private Response $response;
+    private RestContext $restContext;
 
-    public function __construct(
-        KernelInterface $kernel
-    ) {
-        parent::__construct();
-        $this->kernelInterface = $kernel;
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
     }
 
     /**
-     * @When :method request is sent to :path
+     * @Then the response should contain :text
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
-    public function sendRequestTo(string $method, string $path): void
+    public function theResponseShouldContain(string $text): void
     {
-        $this->response = $this->kernelInterface->handle(Request::create(
-            $path,
-            $method,
-        ));
-    }
-
-    /**
-     * @Then the response status code should be :statusCode
-     */
-    public function theResponseStatusCodeShouldBe(string $statusCode): void
-    {
-        Assert::assertEquals($statusCode, $this->response->getStatusCode());
-    }
-
-    /**
-     * @Then the response body should contain :text
-     */
-    public function theResponseBodyShouldContain(string $text): void
-    {
-        $responseContent = $this->response->getContent();
-        Assert::assertStringContainsString(
-            $text,
-            $responseContent,
-            "The response body does not contain the expected text: '{$text}'."
-        );
+        $content = $this->restContext->getMink()
+            ->getSession()
+            ->getPage()
+            ->getContent();
+        Assert::assertStringContainsString($text, $content);
     }
 
     /**
@@ -66,16 +41,7 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theCacheIsNotWorking(): void
     {
-        $traceableCacheMock = $this->createMock(TraceableAdapter::class);
-
-        $traceableCacheMock->method('get')
-            ->willThrowException(new \Exception('Cache is not working'));
-
-        $container = $this->kernelInterface
-            ->getContainer()
-            ->get('test.service_container');
-
-        $container->set('cache.app', $traceableCacheMock);
+        putenv('CACHE_FAILURE=true');
     }
 
     /**
@@ -83,25 +49,7 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theDatabaseIsNotAvailable(): void
     {
-        $driverMock = $this->createMock(Driver::class);
-
-        $connectionMock = $this->getMockBuilder(Connection::class)
-            ->setConstructorArgs([
-                [],
-                $driverMock,
-                new Configuration(),
-                new EventManager(),
-            ])
-            ->onlyMethods(['executeQuery'])
-            ->getMock();
-
-        $connectionMock->method('executeQuery')
-            ->willThrowException(new \Exception('Database is not available'));
-
-        $container = $this->kernelInterface
-            ->getContainer()
-            ->get('test.service_container');
-        $container->set(Connection::class, $connectionMock);
+        putenv('DATABASE_FAILURE=true');
     }
 
     /**
@@ -109,18 +57,55 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theMessageBrokerIsNotAvailable(): void
     {
-        $sqsClientMock = $this->createMock(SqsClient::class);
+        putenv('MESSAGE_BROKER_FAILURE=true');
+    }
 
-        $sqsClientMock->method('__call')
-            ->willThrowException(
-                new \Exception(
-                    'Message broker is not available'
-                )
-            );
+    /**
+     * @Then print last response
+     */
+    public function printLastResponse(): void
+    {
+        $content = $this->restContext->getMink()
+            ->getSession()
+            ->getPage()
+            ->getContent();
+        echo 'Response content: ' . $content . "\n";
+    }
 
-        $container = $this->kernelInterface
-            ->getContainer()
-            ->get('test.service_container');
-        $container->set(SqsClient::class, $sqsClientMock);
+    /**
+     * @Then the response status code should be :statusCode
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     */
+    public function theResponseStatusCodeShouldBe(int $statusCode): void
+    {
+        $actualStatusCode = $this->restContext->getMink()
+            ->getSession()
+            ->getStatusCode();
+
+        if (
+            $actualStatusCode !== $statusCode
+            && filter_var(getenv('BEHAT_DEBUG'), FILTER_VALIDATE_BOOLEAN)
+        ) {
+            $content = $this->restContext->getMink()
+                ->getSession()
+                ->getPage()
+                ->getContent();
+            echo 'Response content: ' . $content . "\n";
+            echo 'Expected: ' . $statusCode . ', Got: ' . $actualStatusCode
+                . "\n";
+        }
+
+        Assert::assertSame($statusCode, $actualStatusCode);
+    }
+
+    /**
+     * @AfterScenario
+     */
+    public function cleanupEnvironmentVariables(): void
+    {
+        putenv('CACHE_FAILURE');
+        putenv('DATABASE_FAILURE');
+        putenv('MESSAGE_BROKER_FAILURE');
     }
 }

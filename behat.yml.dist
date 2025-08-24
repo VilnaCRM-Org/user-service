@@ -1,20 +1,55 @@
 default:
-    suites:
+  testers:
+    stop_on_failure: true
+    strict: true
+  autoload:
+    '': "%paths.base%/tests/Behat"
+  extensions:
+    FriendsOfBehat\SymfonyExtension:
+      bootstrap: 'tests/bootstrap.php'
+      kernel:
+        environment: test
+        class: App\Shared\Kernel
+    TwentytwoLabs\BehatOpenApiExtension:
+      schemaFile: '%paths.base%/.github/openapi-spec/spec.yaml' 
+    Behat\MinkExtension:
+      base_url: "http://localhost:8081"
+      sessions:
         default:
-            contexts:
-                - App\Tests\Behat\UserGraphQLContext\UserGraphQLContext
-                - App\Tests\Behat\UserContext\UserContext
-                - App\Tests\Behat\UserContext\UserOperationsContext
-                - App\Tests\Behat\OAuthContext\OAuthContext
-        health_check:
-            contexts:
-                - App\Tests\Behat\HealthCheckContext\HealthCheckContext
-
-
-    extensions:
-        DAMA\DoctrineTestBundle\Behat\ServiceContainer\DoctrineExtension: ~
-        FriendsOfBehat\SymfonyExtension:
-            bootstrap: 'tests/bootstrap.php'
-            kernel:
-                environment: test
-                class: App\Shared\Kernel
+          browserkit_http: ~
+  suites:
+    health_check:
+      paths: ['%paths.base%/features/health_check.feature']
+      contexts:
+        - App\Tests\Behat\HealthCheckContext\HealthCheckContext
+        - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
+    oauth:
+      paths: ['%paths.base%/features/oauth.feature']
+      contexts:
+        - App\Tests\Behat\UserContext\UserContext
+        - App\Tests\Behat\OAuthContext\OAuthContext
+        - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
+    user_operations:
+      paths: ['%paths.base%/features/user_operations.feature']
+      contexts:
+        - App\Tests\Behat\UserContext\UserContext
+        - App\Tests\Behat\UserContext\UserOperationsContext
+        - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
+    user_localization:
+      paths: ['%paths.base%/features/user_localization.feature']
+      contexts:
+        - App\Tests\Behat\UserContext\UserContext
+        - App\Tests\Behat\UserContext\UserOperationsContext
+        - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
+    user_graphql_operations:
+      paths: ['%paths.base%/features/user_graphql_operations.feature']
+      contexts:
+        - App\Tests\Behat\UserContext\UserContext
+        - App\Tests\Behat\UserGraphQLContext\UserGraphQLContext
+        - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
+    user_graphql_localization:
+      paths: ['%paths.base%/features/user_graphql_localization.feature']
+      contexts:
+        - App\Tests\Behat\UserContext\UserContext
+        - App\Tests\Behat\UserGraphQLContext\UserGraphQLContext
+        - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
