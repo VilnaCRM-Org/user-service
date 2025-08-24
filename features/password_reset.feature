@@ -8,13 +8,13 @@ Feature: Password Reset Operations
     And requesting password reset for email "reset@test.com"
     When POST request is send to "/api/password-reset/request"
     Then the response status code should be 200
-    And the response should contain "If the email address is valid"
+    And the response should contain "If valid, you will receive a password reset link"
 
   Scenario: Requesting password reset for non-existing user
     Given requesting password reset for email "nonexistent@test.com"
     When POST request is send to "/api/password-reset/request"
     Then the response status code should be 200
-    And the response should contain "If the email address is valid"
+    And the response should contain "If valid, you will receive a password reset link"
 
   Scenario: Confirming password reset with valid token
     Given user with email "reset2@test.com" exists
