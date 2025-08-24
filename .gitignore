@@ -51,3 +51,6 @@ super-linter-output
 super-linter.log
 venv
 ###< super-linter/super-linter ###
+
+# Code coverage reports
+coverage-html/
