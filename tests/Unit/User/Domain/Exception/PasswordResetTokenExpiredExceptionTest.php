@@ -12,14 +12,14 @@ final class PasswordResetTokenExpiredExceptionTest extends UnitTestCase
     public function testExceptionMessage(): void
     {
         $exception = new PasswordResetTokenExpiredException();
-        
+
         $this->assertSame('Password reset token has expired', $exception->getMessage());
     }
-    
+
     public function testExceptionCode(): void
     {
         $exception = new PasswordResetTokenExpiredException();
-        
+
         $this->assertSame(0, $exception->getCode());
     }
 }

@@ -12,22 +12,27 @@ final class PasswordResetRateLimitExceededExceptionTest extends UnitTestCase
     public function testExceptionMessage(): void
     {
         $exception = new PasswordResetRateLimitExceededException();
-        
-        $this->assertSame('Password reset rate limit exceeded', $exception->getMessage());
+
+        $this->assertSame(
+            'Password reset rate limit exceeded. Please try again later.',
+            $exception->getMessage()
+        );
     }
-    
+
     public function testExceptionCode(): void
     {
         $exception = new PasswordResetRateLimitExceededException();
-        
+
         $this->assertSame(0, $exception->getCode());
     }
-    
-    public function testExceptionWithCustomMessage(): void
+
+    public function testTranslationTemplate(): void
     {
-        $customMessage = 'Too many password reset attempts';
-        $exception = new PasswordResetRateLimitExceededException($customMessage);
-        
-        $this->assertSame($customMessage, $exception->getMessage());
+        $exception = new PasswordResetRateLimitExceededException();
+
+        $this->assertSame(
+            'error.password-reset-rate-limit-exceeded',
+            $exception->getTranslationTemplate()
+        );
     }
 }

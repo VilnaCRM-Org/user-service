@@ -52,19 +52,19 @@ final class MariaDBPasswordResetTokenRepository extends ServiceEntityRepository 
         string $email,
         \DateTimeImmutable $since
     ): int {
-        $qb = $this->createQueryBuilder('prt')
-            ->select('COUNT(prt.tokenValue)')
-            ->join(
-                'App\User\Domain\Entity\User',
-                'u',
-                'WITH',
-                'u.id = prt.userID'
-            )
-            ->where('u.email = :email')
-            ->andWhere('prt.createdAt >= :since')
-            ->setParameter('email', $email)
-            ->setParameter('since', $since);
+        // Use native query to handle UUID conversion properly
+        $sql = '
+            SELECT COUNT(prt.token_value)
+            FROM password_reset_tokens prt
+            INNER JOIN user u ON u.id = prt.user_id
+            WHERE u.email = :email AND prt.created_at >= :since
+        ';
 
-        return (int) $qb->getQuery()->getSingleScalarResult();
+        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        $stmt->bindValue('email', $email);
+        $stmt->bindValue('since', $since->format('Y-m-d H:i:s'));
+
+        $result = $stmt->executeQuery();
+        return (int) $result->fetchOne();
     }
 }

@@ -60,32 +60,8 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $token = $this->createMock(PasswordResetTokenInterface::class);
         $token->method('getTokenValue')->willReturn($tokenValue);
 
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
-
-        $this->passwordResetTokenRepository
-            ->expects($this->once())
-            ->method('countRecentRequestsByEmail')
-            ->willReturn(0);
-
-        $this->passwordResetTokenFactory
-            ->expects($this->once())
-            ->method('create')
-            ->with($userId)
-            ->willReturn($token);
-
-        $this->passwordResetTokenRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($token);
-
-        $this->eventBus
-            ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(PasswordResetRequestedEvent::class));
+        $this->configureRepositoryMocks($email, $user, $userId, $token);
+        $this->configureEventBusMock();
 
         $command = new RequestPasswordResetCommand($email);
         $this->handler->__invoke($command);
@@ -142,5 +118,42 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
 
         $command = new RequestPasswordResetCommand($email);
         $this->handler->__invoke($command);
+    }
+
+    private function configureRepositoryMocks(
+        string $email,
+        UserInterface $user,
+        string $userId,
+        PasswordResetTokenInterface $token
+    ): void {
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->willReturn(0);
+
+        $this->passwordResetTokenFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with($userId)
+            ->willReturn($token);
+
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($token);
+    }
+
+    private function configureEventBusMock(): void
+    {
+        $this->eventBus
+            ->expects($this->once())
+            ->method('publish')
+            ->with($this->isInstanceOf(PasswordResetRequestedEvent::class));
     }
 }
