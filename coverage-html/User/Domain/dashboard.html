@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Dashboard for /srv/app/src/User/Domain</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../../_css/bootstrap.min.css?v=9.2.32" rel="stylesheet" type="text/css">
+  <link href="../../_css/nv.d3.min.css?v=9.2.32" rel="stylesheet" type="text/css">
+  <link href="../../_css/style.css?v=9.2.32" rel="stylesheet" type="text/css">
+  <link href="../../_css/custom.css" rel="stylesheet" type="text/css">
+ </head>
+ <body>
+  <header>
+   <div class="container-fluid">
+    <div class="row">
+     <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+       <ol class="breadcrumb">
+         <li class="breadcrumb-item"><a href="../../index.html">/srv/app/src</a></li>
+         <li class="breadcrumb-item"><a href="../index.html">User</a></li>
+         <li class="breadcrumb-item"><a href="index.html">Domain</a></li>
+         <li class="breadcrumb-item active">(Dashboard)</li>
+
+       </ol>
+      </nav>
+     </div>
+    </div>
+   </div>
+  </header>
+  <div class="container-fluid">
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Classes</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="classCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="classComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Aggregate/ConfirmationEmail.php.html#12">App\User\Domain\Aggregate\ConfirmationEmail</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Aggregate/PasswordResetEmail.php.html#12">App\User\Domain\Aggregate\PasswordResetEmail</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collection/UserCollection.php.html#17">App\User\Domain\Collection\UserCollection</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/ConfirmationToken.php.html#9">App\User\Domain\Entity\ConfirmationToken</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/PasswordResetToken.php.html#7">App\User\Domain\Entity\PasswordResetToken</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/ConfirmationEmailSentEvent.php.html#10">App\User\Domain\Event\ConfirmationEmailSentEvent</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/EmailChangedEvent.php.html#11">App\User\Domain\Event\EmailChangedEvent</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordChangedEvent.php.html#9">App\User\Domain\Event\PasswordChangedEvent</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetConfirmedEvent.php.html#10">App\User\Domain\Event\PasswordResetConfirmedEvent</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetEmailSentEvent.php.html#10">App\User\Domain\Event\PasswordResetEmailSentEvent</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetRequestedEvent.php.html#10">App\User\Domain\Event\PasswordResetRequestedEvent</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/UserConfirmedEvent.php.html#10">App\User\Domain\Event\UserConfirmedEvent</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/UserRegisteredEvent.php.html#11">App\User\Domain\Event\UserRegisteredEvent</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/DomainException.php.html#9">App\User\Domain\Exception\DomainException</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/InvalidPasswordException.php.html#7">App\User\Domain\Exception\InvalidPasswordException</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/PasswordResetRateLimitExceededException.php.html#7">App\User\Domain\Exception\PasswordResetRateLimitExceededException</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/PasswordResetTokenAlreadyUsedException.php.html#7">App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/PasswordResetTokenExpiredException.php.html#7">App\User\Domain\Exception\PasswordResetTokenExpiredException</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/PasswordResetTokenNotFoundException.php.html#7">App\User\Domain\Exception\PasswordResetTokenNotFoundException</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/TokenNotFoundException.php.html#7">App\User\Domain\Exception\TokenNotFoundException</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/UserNotFoundException.php.html#7">App\User\Domain\Exception\UserNotFoundException</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/UserTimedOutException.php.html#9">App\User\Domain\Exception\UserTimedOutException</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/ConfirmationEmailFactory.php.html#13">App\User\Domain\Factory\ConfirmationEmailFactory</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/ConfirmationTokenFactory.php.html#10">App\User\Domain\Factory\ConfirmationTokenFactory</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/Event/ConfirmationEmailSendEventFactory.php.html#11">App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactory</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/Event/EmailChangedEventFactory.php.html#10">App\User\Domain\Factory\Event\EmailChangedEventFactory</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/Event/PasswordChangedEventFactory.php.html#9">App\User\Domain\Factory\Event\PasswordChangedEventFactory</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/Event/PasswordResetEmailSendEventFactory.php.html#11">App\User\Domain\Factory\Event\PasswordResetEmailSendEventFactory</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/Event/UserConfirmedEventFactory.php.html#10">App\User\Domain\Factory\Event\UserConfirmedEventFactory</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/Event/UserRegisteredEventFactory.php.html#10">App\User\Domain\Factory\Event\UserRegisteredEventFactory</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/PasswordResetEmailFactory.php.html#13">App\User\Domain\Factory\PasswordResetEmailFactory</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/PasswordResetTokenFactory.php.html#10">App\User\Domain\Factory\PasswordResetTokenFactory</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ValueObject/UserUpdate.php.html#7">App\User\Domain\ValueObject\UserUpdate</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#15">App\User\Domain\Entity\User</a></td><td class="text-right">2%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Entity/User.php.html#15">App\User\Domain\Entity\User</a></td><td class="text-right">284</td></tr>
+       <tr><td><a href="Entity/ConfirmationToken.php.html#9">App\User\Domain\Entity\ConfirmationToken</a></td><td class="text-right">156</td></tr>
+       <tr><td><a href="Collection/UserCollection.php.html#17">App\User\Domain\Collection\UserCollection</a></td><td class="text-right">110</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Methods</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="methodCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="methodComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Aggregate/ConfirmationEmail.php.html#15"><abbr title="App\User\Domain\Aggregate\ConfirmationEmail::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Aggregate/ConfirmationEmail.php.html#22"><abbr title="App\User\Domain\Aggregate\ConfirmationEmail::send">send</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Aggregate/PasswordResetEmail.php.html#15"><abbr title="App\User\Domain\Aggregate\PasswordResetEmail::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Aggregate/PasswordResetEmail.php.html#22"><abbr title="App\User\Domain\Aggregate\PasswordResetEmail::send">send</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collection/UserCollection.php.html#22"><abbr title="App\User\Domain\Collection\UserCollection::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collection/UserCollection.php.html#26"><abbr title="App\User\Domain\Collection\UserCollection::add">add</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collection/UserCollection.php.html#31"><abbr title="App\User\Domain\Collection\UserCollection::remove">remove</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collection/UserCollection.php.html#37"><abbr title="App\User\Domain\Collection\UserCollection::getIterator">getIterator</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collection/UserCollection.php.html#42"><abbr title="App\User\Domain\Collection\UserCollection::count">count</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collection/UserCollection.php.html#47"><abbr title="App\User\Domain\Collection\UserCollection::offsetExists">offsetExists</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collection/UserCollection.php.html#52"><abbr title="App\User\Domain\Collection\UserCollection::offsetGet">offsetGet</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collection/UserCollection.php.html#57"><abbr title="App\User\Domain\Collection\UserCollection::offsetSet">offsetSet</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Collection/UserCollection.php.html#66"><abbr title="App\User\Domain\Collection\UserCollection::offsetUnset">offsetUnset</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/ConfirmationToken.php.html#19"><abbr title="App\User\Domain\Entity\ConfirmationToken::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/ConfirmationToken.php.html#33"><abbr title="App\User\Domain\Entity\ConfirmationToken::getTimesSent">getTimesSent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/ConfirmationToken.php.html#38"><abbr title="App\User\Domain\Entity\ConfirmationToken::setTimesSent">setTimesSent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/ConfirmationToken.php.html#43"><abbr title="App\User\Domain\Entity\ConfirmationToken::getAllowedToSendAfter">getAllowedToSendAfter</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/ConfirmationToken.php.html#48"><abbr title="App\User\Domain\Entity\ConfirmationToken::setAllowedToSendAfter">setAllowedToSendAfter</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/ConfirmationToken.php.html#54"><abbr title="App\User\Domain\Entity\ConfirmationToken::getTokenValue">getTokenValue</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/ConfirmationToken.php.html#59"><abbr title="App\User\Domain\Entity\ConfirmationToken::getUserID">getUserID</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/ConfirmationToken.php.html#64"><abbr title="App\User\Domain\Entity\ConfirmationToken::setTokenValue">setTokenValue</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/ConfirmationToken.php.html#69"><abbr title="App\User\Domain\Entity\ConfirmationToken::setUserID">setUserID</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/ConfirmationToken.php.html#74"><abbr title="App\User\Domain\Entity\ConfirmationToken::send">send</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/ConfirmationToken.php.html#93"><abbr title="App\User\Domain\Entity\ConfirmationToken::incrementTimesSent">incrementTimesSent</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/PasswordResetToken.php.html#11"><abbr title="App\User\Domain\Entity\PasswordResetToken::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/PasswordResetToken.php.html#20"><abbr title="App\User\Domain\Entity\PasswordResetToken::getTokenValue">getTokenValue</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/PasswordResetToken.php.html#25"><abbr title="App\User\Domain\Entity\PasswordResetToken::getUserID">getUserID</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/PasswordResetToken.php.html#30"><abbr title="App\User\Domain\Entity\PasswordResetToken::getExpiresAt">getExpiresAt</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/PasswordResetToken.php.html#35"><abbr title="App\User\Domain\Entity\PasswordResetToken::getCreatedAt">getCreatedAt</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/PasswordResetToken.php.html#40"><abbr title="App\User\Domain\Entity\PasswordResetToken::isUsed">isUsed</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/PasswordResetToken.php.html#45"><abbr title="App\User\Domain\Entity\PasswordResetToken::isExpired">isExpired</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/PasswordResetToken.php.html#50"><abbr title="App\User\Domain\Entity\PasswordResetToken::markAsUsed">markAsUsed</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#28"><abbr title="App\User\Domain\Entity\User::getId">getId</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#33"><abbr title="App\User\Domain\Entity\User::setId">setId</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#38"><abbr title="App\User\Domain\Entity\User::getEmail">getEmail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#43"><abbr title="App\User\Domain\Entity\User::setEmail">setEmail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#48"><abbr title="App\User\Domain\Entity\User::getInitials">getInitials</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#53"><abbr title="App\User\Domain\Entity\User::setInitials">setInitials</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#58"><abbr title="App\User\Domain\Entity\User::getPassword">getPassword</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#63"><abbr title="App\User\Domain\Entity\User::setPassword">setPassword</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#68"><abbr title="App\User\Domain\Entity\User::confirm">confirm</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#81"><abbr title="App\User\Domain\Entity\User::update">update</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#108"><abbr title="App\User\Domain\Entity\User::isConfirmed">isConfirmed</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#113"><abbr title="App\User\Domain\Entity\User::setConfirmed">setConfirmed</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#121"><abbr title="App\User\Domain\Entity\User::processNewEmail">processNewEmail</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Entity/User.php.html#140"><abbr title="App\User\Domain\Entity\User::processNewPassword">processNewPassword</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/ConfirmationEmailSentEvent.php.html#12"><abbr title="App\User\Domain\Event\ConfirmationEmailSentEvent::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/ConfirmationEmailSentEvent.php.html#24"><abbr title="App\User\Domain\Event\ConfirmationEmailSentEvent::fromPrimitives">fromPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/ConfirmationEmailSentEvent.php.html#37"><abbr title="App\User\Domain\Event\ConfirmationEmailSentEvent::eventName">eventName</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/ConfirmationEmailSentEvent.php.html#45"><abbr title="App\User\Domain\Event\ConfirmationEmailSentEvent::toPrimitives">toPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/EmailChangedEvent.php.html#13"><abbr title="App\User\Domain\Event\EmailChangedEvent::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/EmailChangedEvent.php.html#24"><abbr title="App\User\Domain\Event\EmailChangedEvent::fromPrimitives">fromPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/EmailChangedEvent.php.html#32"><abbr title="App\User\Domain\Event\EmailChangedEvent::eventName">eventName</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/EmailChangedEvent.php.html#40"><abbr title="App\User\Domain\Event\EmailChangedEvent::toPrimitives">toPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordChangedEvent.php.html#11"><abbr title="App\User\Domain\Event\PasswordChangedEvent::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordChangedEvent.php.html#22"><abbr title="App\User\Domain\Event\PasswordChangedEvent::fromPrimitives">fromPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordChangedEvent.php.html#30"><abbr title="App\User\Domain\Event\PasswordChangedEvent::eventName">eventName</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordChangedEvent.php.html#38"><abbr title="App\User\Domain\Event\PasswordChangedEvent::toPrimitives">toPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetConfirmedEvent.php.html#12"><abbr title="App\User\Domain\Event\PasswordResetConfirmedEvent::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetConfirmedEvent.php.html#23"><abbr title="App\User\Domain\Event\PasswordResetConfirmedEvent::fromPrimitives">fromPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetConfirmedEvent.php.html#31"><abbr title="App\User\Domain\Event\PasswordResetConfirmedEvent::eventName">eventName</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetConfirmedEvent.php.html#39"><abbr title="App\User\Domain\Event\PasswordResetConfirmedEvent::toPrimitives">toPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetEmailSentEvent.php.html#12"><abbr title="App\User\Domain\Event\PasswordResetEmailSentEvent::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetEmailSentEvent.php.html#24"><abbr title="App\User\Domain\Event\PasswordResetEmailSentEvent::fromPrimitives">fromPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetEmailSentEvent.php.html#32"><abbr title="App\User\Domain\Event\PasswordResetEmailSentEvent::eventName">eventName</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetEmailSentEvent.php.html#40"><abbr title="App\User\Domain\Event\PasswordResetEmailSentEvent::toPrimitives">toPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetRequestedEvent.php.html#12"><abbr title="App\User\Domain\Event\PasswordResetRequestedEvent::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetRequestedEvent.php.html#24"><abbr title="App\User\Domain\Event\PasswordResetRequestedEvent::fromPrimitives">fromPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetRequestedEvent.php.html#32"><abbr title="App\User\Domain\Event\PasswordResetRequestedEvent::eventName">eventName</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/PasswordResetRequestedEvent.php.html#40"><abbr title="App\User\Domain\Event\PasswordResetRequestedEvent::toPrimitives">toPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/UserConfirmedEvent.php.html#12"><abbr title="App\User\Domain\Event\UserConfirmedEvent::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/UserConfirmedEvent.php.html#23"><abbr title="App\User\Domain\Event\UserConfirmedEvent::fromPrimitives">fromPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/UserConfirmedEvent.php.html#31"><abbr title="App\User\Domain\Event\UserConfirmedEvent::eventName">eventName</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/UserConfirmedEvent.php.html#39"><abbr title="App\User\Domain\Event\UserConfirmedEvent::toPrimitives">toPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/UserRegisteredEvent.php.html#13"><abbr title="App\User\Domain\Event\UserRegisteredEvent::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/UserRegisteredEvent.php.html#24"><abbr title="App\User\Domain\Event\UserRegisteredEvent::fromPrimitives">fromPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/UserRegisteredEvent.php.html#32"><abbr title="App\User\Domain\Event\UserRegisteredEvent::eventName">eventName</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Event/UserRegisteredEvent.php.html#40"><abbr title="App\User\Domain\Event\UserRegisteredEvent::toPrimitives">toPrimitives</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/DomainException.php.html#16"><abbr title="App\User\Domain\Exception\DomainException::getTranslationArgs">getTranslationArgs</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/InvalidPasswordException.php.html#9"><abbr title="App\User\Domain\Exception\InvalidPasswordException::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/InvalidPasswordException.php.html#14"><abbr title="App\User\Domain\Exception\InvalidPasswordException::getTranslationTemplate">getTranslationTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/PasswordResetRateLimitExceededException.php.html#9"><abbr title="App\User\Domain\Exception\PasswordResetRateLimitExceededException::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/PasswordResetRateLimitExceededException.php.html#16"><abbr title="App\User\Domain\Exception\PasswordResetRateLimitExceededException::getTranslationTemplate">getTranslationTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/PasswordResetTokenAlreadyUsedException.php.html#9"><abbr title="App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/PasswordResetTokenAlreadyUsedException.php.html#14"><abbr title="App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException::getTranslationTemplate">getTranslationTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/PasswordResetTokenExpiredException.php.html#9"><abbr title="App\User\Domain\Exception\PasswordResetTokenExpiredException::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/PasswordResetTokenExpiredException.php.html#14"><abbr title="App\User\Domain\Exception\PasswordResetTokenExpiredException::getTranslationTemplate">getTranslationTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/PasswordResetTokenNotFoundException.php.html#9"><abbr title="App\User\Domain\Exception\PasswordResetTokenNotFoundException::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/PasswordResetTokenNotFoundException.php.html#14"><abbr title="App\User\Domain\Exception\PasswordResetTokenNotFoundException::getTranslationTemplate">getTranslationTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/TokenNotFoundException.php.html#9"><abbr title="App\User\Domain\Exception\TokenNotFoundException::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/TokenNotFoundException.php.html#14"><abbr title="App\User\Domain\Exception\TokenNotFoundException::getTranslationTemplate">getTranslationTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/UserNotFoundException.php.html#9"><abbr title="App\User\Domain\Exception\UserNotFoundException::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/UserNotFoundException.php.html#14"><abbr title="App\User\Domain\Exception\UserNotFoundException::getTranslationTemplate">getTranslationTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/UserTimedOutException.php.html#11"><abbr title="App\User\Domain\Exception\UserTimedOutException::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/UserTimedOutException.php.html#20"><abbr title="App\User\Domain\Exception\UserTimedOutException::getTranslationTemplate">getTranslationTemplate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Exception/UserTimedOutException.php.html#28"><abbr title="App\User\Domain\Exception\UserTimedOutException::getTranslationArgs">getTranslationArgs</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/ConfirmationEmailFactory.php.html#16"><abbr title="App\User\Domain\Factory\ConfirmationEmailFactory::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/ConfirmationEmailFactory.php.html#21"><abbr title="App\User\Domain\Factory\ConfirmationEmailFactory::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/ConfirmationTokenFactory.php.html#13"><abbr title="App\User\Domain\Factory\ConfirmationTokenFactory::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/ConfirmationTokenFactory.php.html#17"><abbr title="App\User\Domain\Factory\ConfirmationTokenFactory::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/Event/ConfirmationEmailSendEventFactory.php.html#14"><abbr title="App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactory::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/Event/EmailChangedEventFactory.php.html#13"><abbr title="App\User\Domain\Factory\Event\EmailChangedEventFactory::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/Event/PasswordChangedEventFactory.php.html#12"><abbr title="App\User\Domain\Factory\Event\PasswordChangedEventFactory::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/Event/PasswordResetEmailSendEventFactory.php.html#14"><abbr title="App\User\Domain\Factory\Event\PasswordResetEmailSendEventFactory::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/Event/UserConfirmedEventFactory.php.html#13"><abbr title="App\User\Domain\Factory\Event\UserConfirmedEventFactory::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/Event/UserRegisteredEventFactory.php.html#13"><abbr title="App\User\Domain\Factory\Event\UserRegisteredEventFactory::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/PasswordResetEmailFactory.php.html#16"><abbr title="App\User\Domain\Factory\PasswordResetEmailFactory::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/PasswordResetEmailFactory.php.html#21"><abbr title="App\User\Domain\Factory\PasswordResetEmailFactory::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/PasswordResetTokenFactory.php.html#13"><abbr title="App\User\Domain\Factory\PasswordResetTokenFactory::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="Factory/PasswordResetTokenFactory.php.html#19"><abbr title="App\User\Domain\Factory\PasswordResetTokenFactory::create">create</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ValueObject/UserUpdate.php.html#9"><abbr title="App\User\Domain\ValueObject\UserUpdate::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="Collection/UserCollection.php.html#57"><abbr title="App\User\Domain\Collection\UserCollection::offsetSet">offsetSet</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Entity/ConfirmationToken.php.html#74"><abbr title="App\User\Domain\Entity\ConfirmationToken::send">send</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Entity/User.php.html#121"><abbr title="App\User\Domain\Entity\User::processNewEmail">processNewEmail</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="Entity/User.php.html#140"><abbr title="App\User\Domain\Entity\User::processNewPassword">processNewPassword</abbr></a></td><td class="text-right">6</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <footer>
+    <hr/>
+    <p>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 9.2.32</a> using <a href="https://secure.php.net/" target="_top">PHP 8.3.17</a> and <a href="https://phpunit.de/">PHPUnit 9.6.23</a> at Sun Aug 24 17:32:39 UTC 2025.</small>
+    </p>
+   </footer>
+  </div>
+  <script src="../../_js/jquery.min.js?v=9.2.32" type="text/javascript"></script>
+  <script src="../../_js/d3.min.js?v=9.2.32" type="text/javascript"></script>
+  <script src="../../_js/nv.d3.min.js?v=9.2.32" type="text/javascript"></script>
+  <script type="text/javascript">
+$(document).ready(function() {
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#classCoverageDistribution svg')
+      .datum(getCoverageDistributionData([33,1,0,0,0,0,0,0,0,0,0,1], "Class Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#methodCoverageDistribution svg')
+      .datum(getCoverageDistributionData([111,0,0,0,0,0,0,0,0,0,0,3], "Method Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getCoverageDistributionData(data, label) {
+    var labels = [
+      '0%',
+      '0-10%',
+      '10-20%',
+      '20-30%',
+      '30-40%',
+      '40-50%',
+      '50-60%',
+      '60-70%',
+      '70-80%',
+      '80-90%',
+      '90-100%',
+      '100%'
+    ];
+    var values = [];
+    $.each(labels, function(key) {
+      values.push({x: labels[key], y: data[key]});
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Cyclomatic Complexity');
+
+    d3.select('#classComplexity svg')
+      .datum(getComplexityData([[0,2,"<a href=\"Aggregate\/ConfirmationEmail.php.html#12\">App\\User\\Domain\\Aggregate\\ConfirmationEmail<\/a>"],[0,2,"<a href=\"Aggregate\/PasswordResetEmail.php.html#12\">App\\User\\Domain\\Aggregate\\PasswordResetEmail<\/a>"],[0,10,"<a href=\"Collection\/UserCollection.php.html#17\">App\\User\\Domain\\Collection\\UserCollection<\/a>"],[0,12,"<a href=\"Entity\/ConfirmationToken.php.html#9\">App\\User\\Domain\\Entity\\ConfirmationToken<\/a>"],[0,8,"<a href=\"Entity\/PasswordResetToken.php.html#7\">App\\User\\Domain\\Entity\\PasswordResetToken<\/a>"],[2.5,17,"<a href=\"Entity\/User.php.html#15\">App\\User\\Domain\\Entity\\User<\/a>"],[0,4,"<a href=\"Event\/ConfirmationEmailSentEvent.php.html#10\">App\\User\\Domain\\Event\\ConfirmationEmailSentEvent<\/a>"],[0,4,"<a href=\"Event\/EmailChangedEvent.php.html#11\">App\\User\\Domain\\Event\\EmailChangedEvent<\/a>"],[0,4,"<a href=\"Event\/PasswordChangedEvent.php.html#9\">App\\User\\Domain\\Event\\PasswordChangedEvent<\/a>"],[0,4,"<a href=\"Event\/PasswordResetConfirmedEvent.php.html#10\">App\\User\\Domain\\Event\\PasswordResetConfirmedEvent<\/a>"],[0,4,"<a href=\"Event\/PasswordResetEmailSentEvent.php.html#10\">App\\User\\Domain\\Event\\PasswordResetEmailSentEvent<\/a>"],[0,4,"<a href=\"Event\/PasswordResetRequestedEvent.php.html#10\">App\\User\\Domain\\Event\\PasswordResetRequestedEvent<\/a>"],[0,4,"<a href=\"Event\/UserConfirmedEvent.php.html#10\">App\\User\\Domain\\Event\\UserConfirmedEvent<\/a>"],[0,4,"<a href=\"Event\/UserRegisteredEvent.php.html#11\">App\\User\\Domain\\Event\\UserRegisteredEvent<\/a>"],[0,1,"<a href=\"Exception\/DomainException.php.html#9\">App\\User\\Domain\\Exception\\DomainException<\/a>"],[0,2,"<a href=\"Exception\/InvalidPasswordException.php.html#7\">App\\User\\Domain\\Exception\\InvalidPasswordException<\/a>"],[0,2,"<a href=\"Exception\/PasswordResetRateLimitExceededException.php.html#7\">App\\User\\Domain\\Exception\\PasswordResetRateLimitExceededException<\/a>"],[0,2,"<a href=\"Exception\/PasswordResetTokenAlreadyUsedException.php.html#7\">App\\User\\Domain\\Exception\\PasswordResetTokenAlreadyUsedException<\/a>"],[0,2,"<a href=\"Exception\/PasswordResetTokenExpiredException.php.html#7\">App\\User\\Domain\\Exception\\PasswordResetTokenExpiredException<\/a>"],[0,2,"<a href=\"Exception\/PasswordResetTokenNotFoundException.php.html#7\">App\\User\\Domain\\Exception\\PasswordResetTokenNotFoundException<\/a>"],[0,2,"<a href=\"Exception\/TokenNotFoundException.php.html#7\">App\\User\\Domain\\Exception\\TokenNotFoundException<\/a>"],[0,2,"<a href=\"Exception\/UserNotFoundException.php.html#7\">App\\User\\Domain\\Exception\\UserNotFoundException<\/a>"],[0,3,"<a href=\"Exception\/UserTimedOutException.php.html#9\">App\\User\\Domain\\Exception\\UserTimedOutException<\/a>"],[0,2,"<a href=\"Factory\/ConfirmationEmailFactory.php.html#13\">App\\User\\Domain\\Factory\\ConfirmationEmailFactory<\/a>"],[0,2,"<a href=\"Factory\/ConfirmationTokenFactory.php.html#10\">App\\User\\Domain\\Factory\\ConfirmationTokenFactory<\/a>"],[0,1,"<a href=\"Factory\/Event\/ConfirmationEmailSendEventFactory.php.html#11\">App\\User\\Domain\\Factory\\Event\\ConfirmationEmailSendEventFactory<\/a>"],[0,1,"<a href=\"Factory\/Event\/EmailChangedEventFactory.php.html#10\">App\\User\\Domain\\Factory\\Event\\EmailChangedEventFactory<\/a>"],[0,1,"<a href=\"Factory\/Event\/PasswordChangedEventFactory.php.html#9\">App\\User\\Domain\\Factory\\Event\\PasswordChangedEventFactory<\/a>"],[0,1,"<a href=\"Factory\/Event\/PasswordResetEmailSendEventFactory.php.html#11\">App\\User\\Domain\\Factory\\Event\\PasswordResetEmailSendEventFactory<\/a>"],[0,1,"<a href=\"Factory\/Event\/UserConfirmedEventFactory.php.html#10\">App\\User\\Domain\\Factory\\Event\\UserConfirmedEventFactory<\/a>"],[0,1,"<a href=\"Factory\/Event\/UserRegisteredEventFactory.php.html#10\">App\\User\\Domain\\Factory\\Event\\UserRegisteredEventFactory<\/a>"],[0,2,"<a href=\"Factory\/PasswordResetEmailFactory.php.html#13\">App\\User\\Domain\\Factory\\PasswordResetEmailFactory<\/a>"],[0,2,"<a href=\"Factory\/PasswordResetTokenFactory.php.html#10\">App\\User\\Domain\\Factory\\PasswordResetTokenFactory<\/a>"],[100,1,"<a href=\"Factory\/UserFactory.php.html#11\">App\\User\\Domain\\Factory\\UserFactory<\/a>"],[0,1,"<a href=\"ValueObject\/UserUpdate.php.html#7\">App\\User\\Domain\\ValueObject\\UserUpdate<\/a>"]], 'Class Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Method Complexity');
+
+    d3.select('#methodComplexity svg')
+      .datum(getComplexityData([[0,1,"<a href=\"Aggregate\/ConfirmationEmail.php.html#15\">App\\User\\Domain\\Aggregate\\ConfirmationEmail::__construct<\/a>"],[0,1,"<a href=\"Aggregate\/ConfirmationEmail.php.html#22\">App\\User\\Domain\\Aggregate\\ConfirmationEmail::send<\/a>"],[0,1,"<a href=\"Aggregate\/PasswordResetEmail.php.html#15\">App\\User\\Domain\\Aggregate\\PasswordResetEmail::__construct<\/a>"],[0,1,"<a href=\"Aggregate\/PasswordResetEmail.php.html#22\">App\\User\\Domain\\Aggregate\\PasswordResetEmail::send<\/a>"],[0,1,"<a href=\"Collection\/UserCollection.php.html#22\">App\\User\\Domain\\Collection\\UserCollection::__construct<\/a>"],[0,1,"<a href=\"Collection\/UserCollection.php.html#26\">App\\User\\Domain\\Collection\\UserCollection::add<\/a>"],[0,1,"<a href=\"Collection\/UserCollection.php.html#31\">App\\User\\Domain\\Collection\\UserCollection::remove<\/a>"],[0,1,"<a href=\"Collection\/UserCollection.php.html#37\">App\\User\\Domain\\Collection\\UserCollection::getIterator<\/a>"],[0,1,"<a href=\"Collection\/UserCollection.php.html#42\">App\\User\\Domain\\Collection\\UserCollection::count<\/a>"],[0,1,"<a href=\"Collection\/UserCollection.php.html#47\">App\\User\\Domain\\Collection\\UserCollection::offsetExists<\/a>"],[0,1,"<a href=\"Collection\/UserCollection.php.html#52\">App\\User\\Domain\\Collection\\UserCollection::offsetGet<\/a>"],[0,2,"<a href=\"Collection\/UserCollection.php.html#57\">App\\User\\Domain\\Collection\\UserCollection::offsetSet<\/a>"],[0,1,"<a href=\"Collection\/UserCollection.php.html#66\">App\\User\\Domain\\Collection\\UserCollection::offsetUnset<\/a>"],[0,1,"<a href=\"Entity\/ConfirmationToken.php.html#19\">App\\User\\Domain\\Entity\\ConfirmationToken::__construct<\/a>"],[0,1,"<a href=\"Entity\/ConfirmationToken.php.html#33\">App\\User\\Domain\\Entity\\ConfirmationToken::getTimesSent<\/a>"],[0,1,"<a href=\"Entity\/ConfirmationToken.php.html#38\">App\\User\\Domain\\Entity\\ConfirmationToken::setTimesSent<\/a>"],[0,1,"<a href=\"Entity\/ConfirmationToken.php.html#43\">App\\User\\Domain\\Entity\\ConfirmationToken::getAllowedToSendAfter<\/a>"],[0,1,"<a href=\"Entity\/ConfirmationToken.php.html#48\">App\\User\\Domain\\Entity\\ConfirmationToken::setAllowedToSendAfter<\/a>"],[0,1,"<a href=\"Entity\/ConfirmationToken.php.html#54\">App\\User\\Domain\\Entity\\ConfirmationToken::getTokenValue<\/a>"],[0,1,"<a href=\"Entity\/ConfirmationToken.php.html#59\">App\\User\\Domain\\Entity\\ConfirmationToken::getUserID<\/a>"],[0,1,"<a href=\"Entity\/ConfirmationToken.php.html#64\">App\\User\\Domain\\Entity\\ConfirmationToken::setTokenValue<\/a>"],[0,1,"<a href=\"Entity\/ConfirmationToken.php.html#69\">App\\User\\Domain\\Entity\\ConfirmationToken::setUserID<\/a>"],[0,2,"<a href=\"Entity\/ConfirmationToken.php.html#74\">App\\User\\Domain\\Entity\\ConfirmationToken::send<\/a>"],[0,1,"<a href=\"Entity\/ConfirmationToken.php.html#93\">App\\User\\Domain\\Entity\\ConfirmationToken::incrementTimesSent<\/a>"],[0,1,"<a href=\"Entity\/PasswordResetToken.php.html#11\">App\\User\\Domain\\Entity\\PasswordResetToken::__construct<\/a>"],[0,1,"<a href=\"Entity\/PasswordResetToken.php.html#20\">App\\User\\Domain\\Entity\\PasswordResetToken::getTokenValue<\/a>"],[0,1,"<a href=\"Entity\/PasswordResetToken.php.html#25\">App\\User\\Domain\\Entity\\PasswordResetToken::getUserID<\/a>"],[0,1,"<a href=\"Entity\/PasswordResetToken.php.html#30\">App\\User\\Domain\\Entity\\PasswordResetToken::getExpiresAt<\/a>"],[0,1,"<a href=\"Entity\/PasswordResetToken.php.html#35\">App\\User\\Domain\\Entity\\PasswordResetToken::getCreatedAt<\/a>"],[0,1,"<a href=\"Entity\/PasswordResetToken.php.html#40\">App\\User\\Domain\\Entity\\PasswordResetToken::isUsed<\/a>"],[0,1,"<a href=\"Entity\/PasswordResetToken.php.html#45\">App\\User\\Domain\\Entity\\PasswordResetToken::isExpired<\/a>"],[0,1,"<a href=\"Entity\/PasswordResetToken.php.html#50\">App\\User\\Domain\\Entity\\PasswordResetToken::markAsUsed<\/a>"],[100,1,"<a href=\"Entity\/User.php.html#19\">App\\User\\Domain\\Entity\\User::__construct<\/a>"],[0,1,"<a href=\"Entity\/User.php.html#28\">App\\User\\Domain\\Entity\\User::getId<\/a>"],[0,1,"<a href=\"Entity\/User.php.html#33\">App\\User\\Domain\\Entity\\User::setId<\/a>"],[0,1,"<a href=\"Entity\/User.php.html#38\">App\\User\\Domain\\Entity\\User::getEmail<\/a>"],[0,1,"<a href=\"Entity\/User.php.html#43\">App\\User\\Domain\\Entity\\User::setEmail<\/a>"],[0,1,"<a href=\"Entity\/User.php.html#48\">App\\User\\Domain\\Entity\\User::getInitials<\/a>"],[0,1,"<a href=\"Entity\/User.php.html#53\">App\\User\\Domain\\Entity\\User::setInitials<\/a>"],[0,1,"<a href=\"Entity\/User.php.html#58\">App\\User\\Domain\\Entity\\User::getPassword<\/a>"],[0,1,"<a href=\"Entity\/User.php.html#63\">App\\User\\Domain\\Entity\\User::setPassword<\/a>"],[0,1,"<a href=\"Entity\/User.php.html#68\">App\\User\\Domain\\Entity\\User::confirm<\/a>"],[0,1,"<a href=\"Entity\/User.php.html#81\">App\\User\\Domain\\Entity\\User::update<\/a>"],[0,1,"<a href=\"Entity\/User.php.html#108\">App\\User\\Domain\\Entity\\User::isConfirmed<\/a>"],[0,1,"<a href=\"Entity\/User.php.html#113\">App\\User\\Domain\\Entity\\User::setConfirmed<\/a>"],[0,2,"<a href=\"Entity\/User.php.html#121\">App\\User\\Domain\\Entity\\User::processNewEmail<\/a>"],[0,2,"<a href=\"Entity\/User.php.html#140\">App\\User\\Domain\\Entity\\User::processNewPassword<\/a>"],[0,1,"<a href=\"Event\/ConfirmationEmailSentEvent.php.html#12\">App\\User\\Domain\\Event\\ConfirmationEmailSentEvent::__construct<\/a>"],[0,1,"<a href=\"Event\/ConfirmationEmailSentEvent.php.html#24\">App\\User\\Domain\\Event\\ConfirmationEmailSentEvent::fromPrimitives<\/a>"],[0,1,"<a href=\"Event\/ConfirmationEmailSentEvent.php.html#37\">App\\User\\Domain\\Event\\ConfirmationEmailSentEvent::eventName<\/a>"],[0,1,"<a href=\"Event\/ConfirmationEmailSentEvent.php.html#45\">App\\User\\Domain\\Event\\ConfirmationEmailSentEvent::toPrimitives<\/a>"],[0,1,"<a href=\"Event\/EmailChangedEvent.php.html#13\">App\\User\\Domain\\Event\\EmailChangedEvent::__construct<\/a>"],[0,1,"<a href=\"Event\/EmailChangedEvent.php.html#24\">App\\User\\Domain\\Event\\EmailChangedEvent::fromPrimitives<\/a>"],[0,1,"<a href=\"Event\/EmailChangedEvent.php.html#32\">App\\User\\Domain\\Event\\EmailChangedEvent::eventName<\/a>"],[0,1,"<a href=\"Event\/EmailChangedEvent.php.html#40\">App\\User\\Domain\\Event\\EmailChangedEvent::toPrimitives<\/a>"],[0,1,"<a href=\"Event\/PasswordChangedEvent.php.html#11\">App\\User\\Domain\\Event\\PasswordChangedEvent::__construct<\/a>"],[0,1,"<a href=\"Event\/PasswordChangedEvent.php.html#22\">App\\User\\Domain\\Event\\PasswordChangedEvent::fromPrimitives<\/a>"],[0,1,"<a href=\"Event\/PasswordChangedEvent.php.html#30\">App\\User\\Domain\\Event\\PasswordChangedEvent::eventName<\/a>"],[0,1,"<a href=\"Event\/PasswordChangedEvent.php.html#38\">App\\User\\Domain\\Event\\PasswordChangedEvent::toPrimitives<\/a>"],[0,1,"<a href=\"Event\/PasswordResetConfirmedEvent.php.html#12\">App\\User\\Domain\\Event\\PasswordResetConfirmedEvent::__construct<\/a>"],[0,1,"<a href=\"Event\/PasswordResetConfirmedEvent.php.html#23\">App\\User\\Domain\\Event\\PasswordResetConfirmedEvent::fromPrimitives<\/a>"],[0,1,"<a href=\"Event\/PasswordResetConfirmedEvent.php.html#31\">App\\User\\Domain\\Event\\PasswordResetConfirmedEvent::eventName<\/a>"],[0,1,"<a href=\"Event\/PasswordResetConfirmedEvent.php.html#39\">App\\User\\Domain\\Event\\PasswordResetConfirmedEvent::toPrimitives<\/a>"],[0,1,"<a href=\"Event\/PasswordResetEmailSentEvent.php.html#12\">App\\User\\Domain\\Event\\PasswordResetEmailSentEvent::__construct<\/a>"],[0,1,"<a href=\"Event\/PasswordResetEmailSentEvent.php.html#24\">App\\User\\Domain\\Event\\PasswordResetEmailSentEvent::fromPrimitives<\/a>"],[0,1,"<a href=\"Event\/PasswordResetEmailSentEvent.php.html#32\">App\\User\\Domain\\Event\\PasswordResetEmailSentEvent::eventName<\/a>"],[0,1,"<a href=\"Event\/PasswordResetEmailSentEvent.php.html#40\">App\\User\\Domain\\Event\\PasswordResetEmailSentEvent::toPrimitives<\/a>"],[0,1,"<a href=\"Event\/PasswordResetRequestedEvent.php.html#12\">App\\User\\Domain\\Event\\PasswordResetRequestedEvent::__construct<\/a>"],[0,1,"<a href=\"Event\/PasswordResetRequestedEvent.php.html#24\">App\\User\\Domain\\Event\\PasswordResetRequestedEvent::fromPrimitives<\/a>"],[0,1,"<a href=\"Event\/PasswordResetRequestedEvent.php.html#32\">App\\User\\Domain\\Event\\PasswordResetRequestedEvent::eventName<\/a>"],[0,1,"<a href=\"Event\/PasswordResetRequestedEvent.php.html#40\">App\\User\\Domain\\Event\\PasswordResetRequestedEvent::toPrimitives<\/a>"],[0,1,"<a href=\"Event\/UserConfirmedEvent.php.html#12\">App\\User\\Domain\\Event\\UserConfirmedEvent::__construct<\/a>"],[0,1,"<a href=\"Event\/UserConfirmedEvent.php.html#23\">App\\User\\Domain\\Event\\UserConfirmedEvent::fromPrimitives<\/a>"],[0,1,"<a href=\"Event\/UserConfirmedEvent.php.html#31\">App\\User\\Domain\\Event\\UserConfirmedEvent::eventName<\/a>"],[0,1,"<a href=\"Event\/UserConfirmedEvent.php.html#39\">App\\User\\Domain\\Event\\UserConfirmedEvent::toPrimitives<\/a>"],[0,1,"<a href=\"Event\/UserRegisteredEvent.php.html#13\">App\\User\\Domain\\Event\\UserRegisteredEvent::__construct<\/a>"],[0,1,"<a href=\"Event\/UserRegisteredEvent.php.html#24\">App\\User\\Domain\\Event\\UserRegisteredEvent::fromPrimitives<\/a>"],[0,1,"<a href=\"Event\/UserRegisteredEvent.php.html#32\">App\\User\\Domain\\Event\\UserRegisteredEvent::eventName<\/a>"],[0,1,"<a href=\"Event\/UserRegisteredEvent.php.html#40\">App\\User\\Domain\\Event\\UserRegisteredEvent::toPrimitives<\/a>"],[100,0,"<a href=\"Exception\/DomainException.php.html#11\">App\\User\\Domain\\Exception\\DomainException::getTranslationTemplate<\/a>"],[0,1,"<a href=\"Exception\/DomainException.php.html#16\">App\\User\\Domain\\Exception\\DomainException::getTranslationArgs<\/a>"],[0,1,"<a href=\"Exception\/InvalidPasswordException.php.html#9\">App\\User\\Domain\\Exception\\InvalidPasswordException::__construct<\/a>"],[0,1,"<a href=\"Exception\/InvalidPasswordException.php.html#14\">App\\User\\Domain\\Exception\\InvalidPasswordException::getTranslationTemplate<\/a>"],[0,1,"<a href=\"Exception\/PasswordResetRateLimitExceededException.php.html#9\">App\\User\\Domain\\Exception\\PasswordResetRateLimitExceededException::__construct<\/a>"],[0,1,"<a href=\"Exception\/PasswordResetRateLimitExceededException.php.html#16\">App\\User\\Domain\\Exception\\PasswordResetRateLimitExceededException::getTranslationTemplate<\/a>"],[0,1,"<a href=\"Exception\/PasswordResetTokenAlreadyUsedException.php.html#9\">App\\User\\Domain\\Exception\\PasswordResetTokenAlreadyUsedException::__construct<\/a>"],[0,1,"<a href=\"Exception\/PasswordResetTokenAlreadyUsedException.php.html#14\">App\\User\\Domain\\Exception\\PasswordResetTokenAlreadyUsedException::getTranslationTemplate<\/a>"],[0,1,"<a href=\"Exception\/PasswordResetTokenExpiredException.php.html#9\">App\\User\\Domain\\Exception\\PasswordResetTokenExpiredException::__construct<\/a>"],[0,1,"<a href=\"Exception\/PasswordResetTokenExpiredException.php.html#14\">App\\User\\Domain\\Exception\\PasswordResetTokenExpiredException::getTranslationTemplate<\/a>"],[0,1,"<a href=\"Exception\/PasswordResetTokenNotFoundException.php.html#9\">App\\User\\Domain\\Exception\\PasswordResetTokenNotFoundException::__construct<\/a>"],[0,1,"<a href=\"Exception\/PasswordResetTokenNotFoundException.php.html#14\">App\\User\\Domain\\Exception\\PasswordResetTokenNotFoundException::getTranslationTemplate<\/a>"],[0,1,"<a href=\"Exception\/TokenNotFoundException.php.html#9\">App\\User\\Domain\\Exception\\TokenNotFoundException::__construct<\/a>"],[0,1,"<a href=\"Exception\/TokenNotFoundException.php.html#14\">App\\User\\Domain\\Exception\\TokenNotFoundException::getTranslationTemplate<\/a>"],[0,1,"<a href=\"Exception\/UserNotFoundException.php.html#9\">App\\User\\Domain\\Exception\\UserNotFoundException::__construct<\/a>"],[0,1,"<a href=\"Exception\/UserNotFoundException.php.html#14\">App\\User\\Domain\\Exception\\UserNotFoundException::getTranslationTemplate<\/a>"],[0,1,"<a href=\"Exception\/UserTimedOutException.php.html#11\">App\\User\\Domain\\Exception\\UserTimedOutException::__construct<\/a>"],[0,1,"<a href=\"Exception\/UserTimedOutException.php.html#20\">App\\User\\Domain\\Exception\\UserTimedOutException::getTranslationTemplate<\/a>"],[0,1,"<a href=\"Exception\/UserTimedOutException.php.html#28\">App\\User\\Domain\\Exception\\UserTimedOutException::getTranslationArgs<\/a>"],[0,1,"<a href=\"Factory\/ConfirmationEmailFactory.php.html#16\">App\\User\\Domain\\Factory\\ConfirmationEmailFactory::__construct<\/a>"],[0,1,"<a href=\"Factory\/ConfirmationEmailFactory.php.html#21\">App\\User\\Domain\\Factory\\ConfirmationEmailFactory::create<\/a>"],[0,1,"<a href=\"Factory\/ConfirmationTokenFactory.php.html#13\">App\\User\\Domain\\Factory\\ConfirmationTokenFactory::__construct<\/a>"],[0,1,"<a href=\"Factory\/ConfirmationTokenFactory.php.html#17\">App\\User\\Domain\\Factory\\ConfirmationTokenFactory::create<\/a>"],[0,1,"<a href=\"Factory\/Event\/ConfirmationEmailSendEventFactory.php.html#14\">App\\User\\Domain\\Factory\\Event\\ConfirmationEmailSendEventFactory::create<\/a>"],[0,1,"<a href=\"Factory\/Event\/EmailChangedEventFactory.php.html#13\">App\\User\\Domain\\Factory\\Event\\EmailChangedEventFactory::create<\/a>"],[0,1,"<a href=\"Factory\/Event\/PasswordChangedEventFactory.php.html#12\">App\\User\\Domain\\Factory\\Event\\PasswordChangedEventFactory::create<\/a>"],[0,1,"<a href=\"Factory\/Event\/PasswordResetEmailSendEventFactory.php.html#14\">App\\User\\Domain\\Factory\\Event\\PasswordResetEmailSendEventFactory::create<\/a>"],[0,1,"<a href=\"Factory\/Event\/UserConfirmedEventFactory.php.html#13\">App\\User\\Domain\\Factory\\Event\\UserConfirmedEventFactory::create<\/a>"],[0,1,"<a href=\"Factory\/Event\/UserRegisteredEventFactory.php.html#13\">App\\User\\Domain\\Factory\\Event\\UserRegisteredEventFactory::create<\/a>"],[0,1,"<a href=\"Factory\/PasswordResetEmailFactory.php.html#16\">App\\User\\Domain\\Factory\\PasswordResetEmailFactory::__construct<\/a>"],[0,1,"<a href=\"Factory\/PasswordResetEmailFactory.php.html#21\">App\\User\\Domain\\Factory\\PasswordResetEmailFactory::create<\/a>"],[0,1,"<a href=\"Factory\/PasswordResetTokenFactory.php.html#13\">App\\User\\Domain\\Factory\\PasswordResetTokenFactory::__construct<\/a>"],[0,1,"<a href=\"Factory\/PasswordResetTokenFactory.php.html#19\">App\\User\\Domain\\Factory\\PasswordResetTokenFactory::create<\/a>"],[100,1,"<a href=\"Factory\/UserFactory.php.html#13\">App\\User\\Domain\\Factory\\UserFactory::create<\/a>"],[0,1,"<a href=\"ValueObject\/UserUpdate.php.html#9\">App\\User\\Domain\\ValueObject\\UserUpdate::__construct<\/a>"]], 'Method Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getComplexityData(data, label) {
+    var values = [];
+    $.each(data, function(key) {
+      var value = Math.round(data[key][0]*100) / 100;
+      values.push({
+        x: value,
+        y: data[key][1],
+        class: data[key][2],
+        size: 0.05,
+        shape: 'diamond'
+      });
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+});
+  </script>
+ </body>
+</html>

@@ -102,4 +102,35 @@ final class MariaDBUserRepositoryTest extends IntegrationTestCase
 
         $this->assertNull($foundUser);
     }
+
+    public function testFindById(): void
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+        $userId = $this->faker->uuid();
+
+        $user = $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->transformer->transformFromString($userId)
+        );
+
+        $this->repository->save($user);
+
+        $foundUser = $this->repository->findById($userId);
+
+        $this->assertInstanceOf(User::class, $foundUser);
+        $this->assertSame($initials, $foundUser->getInitials());
+        $this->assertSame($password, $foundUser->getPassword());
+        $this->assertSame($email, $foundUser->getEmail());
+    }
+
+    public function testFindByIdNotFound(): void
+    {
+        $foundUser = $this->repository->findById($this->faker->uuid());
+
+        $this->assertNull($foundUser);
+    }
 }
