@@ -77,9 +77,11 @@ The VilnaCRM User Service is designed to manage user accounts and authentication
 **IMPORTANT: Run comprehensive CI checks before finishing any task and committing changes:**
 
 **Primary CI Command:**
+
 - `make ci` -- Run all comprehensive CI checks (composer validation, security analysis, code style, static analysis, architecture validation, complete test suite, mutation testing)
 
 **Individual CI commands available:**
+
 - `make composer-validate` -- Validate composer.json and composer.lock
 - `make check-requirements` -- Check Symfony requirements
 - `make check-security` -- Security vulnerability analysis
