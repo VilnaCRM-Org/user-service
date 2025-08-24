@@ -15,24 +15,30 @@ final class PasswordResetTokenFactoryTest extends UnitTestCase
         $tokenLength = 16;
         $expirationTimeInHours = 2;
         $userID = $this->faker->uuid();
-        
-        $factory = new PasswordResetTokenFactory($tokenLength, $expirationTimeInHours);
-        
+
+        $factory = new PasswordResetTokenFactory(
+            $tokenLength,
+            $expirationTimeInHours
+        );
+
         $token = $factory->create($userID);
-        
+
         $this->assertInstanceOf(PasswordResetToken::class, $token);
         $this->assertSame($userID, $token->getUserID());
         $this->assertSame(32, strlen($token->getTokenValue())); // bin2hex doubles the length
         $this->assertFalse($token->isUsed());
         $this->assertFalse($token->isExpired());
-        
+
         // Verify the expiration time is set correctly
         $now = new \DateTimeImmutable();
         $expectedExpiry = $now->modify("+{$expirationTimeInHours} hours");
         $actualExpiry = $token->getExpiresAt();
-        
+
         // Allow 1 minute tolerance for test execution time
-        $this->assertLessThan(60, abs($expectedExpiry->getTimestamp() - $actualExpiry->getTimestamp()));
+        $this->assertLessThan(
+            60,
+            abs($expectedExpiry->getTimestamp() - $actualExpiry->getTimestamp())
+        );
     }
 
     public function testCreateWithDifferentTokenLength(): void
@@ -40,11 +46,14 @@ final class PasswordResetTokenFactoryTest extends UnitTestCase
         $tokenLength = 8;
         $expirationTimeInHours = 1;
         $userID = $this->faker->uuid();
-        
-        $factory = new PasswordResetTokenFactory($tokenLength, $expirationTimeInHours);
-        
+
+        $factory = new PasswordResetTokenFactory(
+            $tokenLength,
+            $expirationTimeInHours
+        );
+
         $token = $factory->create($userID);
-        
+
         $this->assertSame(16, strlen($token->getTokenValue())); // bin2hex doubles the length
     }
 
@@ -53,17 +62,23 @@ final class PasswordResetTokenFactoryTest extends UnitTestCase
         $tokenLength = 16;
         $expirationTimeInHours = 24;
         $userID = $this->faker->uuid();
-        
-        $factory = new PasswordResetTokenFactory($tokenLength, $expirationTimeInHours);
-        
+
+        $factory = new PasswordResetTokenFactory(
+            $tokenLength,
+            $expirationTimeInHours
+        );
+
         $token = $factory->create($userID);
-        
+
         $now = new \DateTimeImmutable();
         $expectedExpiry = $now->modify("+{$expirationTimeInHours} hours");
         $actualExpiry = $token->getExpiresAt();
-        
+
         // Allow 1 minute tolerance for test execution time
-        $this->assertLessThan(60, abs($expectedExpiry->getTimestamp() - $actualExpiry->getTimestamp()));
+        $this->assertLessThan(
+            60,
+            abs($expectedExpiry->getTimestamp() - $actualExpiry->getTimestamp())
+        );
     }
 
     public function testCreateMultipleTokensAreUnique(): void
@@ -71,12 +86,18 @@ final class PasswordResetTokenFactoryTest extends UnitTestCase
         $tokenLength = 16;
         $expirationTimeInHours = 1;
         $userID = $this->faker->uuid();
-        
-        $factory = new PasswordResetTokenFactory($tokenLength, $expirationTimeInHours);
-        
+
+        $factory = new PasswordResetTokenFactory(
+            $tokenLength,
+            $expirationTimeInHours
+        );
+
         $token1 = $factory->create($userID);
         $token2 = $factory->create($userID);
-        
-        $this->assertNotSame($token1->getTokenValue(), $token2->getTokenValue());
+
+        $this->assertNotSame(
+            $token1->getTokenValue(),
+            $token2->getTokenValue()
+        );
     }
 }
