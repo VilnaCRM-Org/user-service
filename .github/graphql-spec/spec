@@ -14,34 +14,6 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): UserCursorConnection
-  requestPasswordResetDto(id: ID!): RequestPasswordResetDto
-  requestPasswordResetDtos(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): RequestPasswordResetDtoCursorConnection
-  confirmPasswordResetDto(id: ID!): ConfirmPasswordResetDto
-  confirmPasswordResetDtos(
-    "Returns the first n elements from the list."
-    first: Int
-
-    "Returns the last n elements from the list."
-    last: Int
-
-    "Returns the elements in the list that come before the specified cursor."
-    before: String
-
-    "Returns the elements in the list that come after the specified cursor."
-    after: String
-  ): ConfirmPasswordResetDtoCursorConnection
   healthCheck(id: ID!): HealthCheck
   healthChecks(
     "Returns the first n elements from the list."
@@ -86,59 +58,6 @@ type UserEdge {
 
 "Information about the current page."
 type UserPageInfo {
-  endCursor: String
-  startCursor: String
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-}
-
-type RequestPasswordResetDto implements Node {
-  id: ID!
-  email: String
-}
-
-"Cursor connection for RequestPasswordResetDto."
-type RequestPasswordResetDtoCursorConnection {
-  edges: [RequestPasswordResetDtoEdge]
-  pageInfo: RequestPasswordResetDtoPageInfo!
-  totalCount: Int!
-}
-
-"Edge of RequestPasswordResetDto."
-type RequestPasswordResetDtoEdge {
-  node: RequestPasswordResetDto
-  cursor: String!
-}
-
-"Information about the current page."
-type RequestPasswordResetDtoPageInfo {
-  endCursor: String
-  startCursor: String
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-}
-
-type ConfirmPasswordResetDto implements Node {
-  id: ID!
-  token: String
-  newPassword: String
-}
-
-"Cursor connection for ConfirmPasswordResetDto."
-type ConfirmPasswordResetDtoCursorConnection {
-  edges: [ConfirmPasswordResetDtoEdge]
-  pageInfo: ConfirmPasswordResetDtoPageInfo!
-  totalCount: Int!
-}
-
-"Edge of ConfirmPasswordResetDto."
-type ConfirmPasswordResetDtoEdge {
-  node: ConfirmPasswordResetDto
-  cursor: String!
-}
-
-"Information about the current page."
-type ConfirmPasswordResetDtoPageInfo {
   endCursor: String
   startCursor: String
   hasNextPage: Boolean!
@@ -191,24 +110,6 @@ type Mutation {
 
   "ConfirmPasswordResets a User."
   confirmPasswordResetUser(input: confirmPasswordResetUserInput!): confirmPasswordResetUserPayload
-
-  "Updates a RequestPasswordResetDto."
-  updateRequestPasswordResetDto(input: updateRequestPasswordResetDtoInput!): updateRequestPasswordResetDtoPayload
-
-  "Deletes a RequestPasswordResetDto."
-  deleteRequestPasswordResetDto(input: deleteRequestPasswordResetDtoInput!): deleteRequestPasswordResetDtoPayload
-
-  "Creates a RequestPasswordResetDto."
-  createRequestPasswordResetDto(input: createRequestPasswordResetDtoInput!): createRequestPasswordResetDtoPayload
-
-  "Updates a ConfirmPasswordResetDto."
-  updateConfirmPasswordResetDto(input: updateConfirmPasswordResetDtoInput!): updateConfirmPasswordResetDtoPayload
-
-  "Deletes a ConfirmPasswordResetDto."
-  deleteConfirmPasswordResetDto(input: deleteConfirmPasswordResetDtoInput!): deleteConfirmPasswordResetDtoPayload
-
-  "Creates a ConfirmPasswordResetDto."
-  createConfirmPasswordResetDto(input: createConfirmPasswordResetDtoInput!): createConfirmPasswordResetDtoPayload
 
   "Updates a HealthCheck."
   updateHealthCheck(input: updateHealthCheckInput!): updateHealthCheckPayload
@@ -313,76 +214,6 @@ input confirmPasswordResetUserInput {
 "ConfirmPasswordResets a User."
 type confirmPasswordResetUserPayload {
   user: User
-  clientMutationId: String
-}
-
-"Updates a RequestPasswordResetDto."
-input updateRequestPasswordResetDtoInput {
-  id: ID!
-  clientMutationId: String
-}
-
-"Updates a RequestPasswordResetDto."
-type updateRequestPasswordResetDtoPayload {
-  requestPasswordResetDto: RequestPasswordResetDto
-  clientMutationId: String
-}
-
-"Deletes a RequestPasswordResetDto."
-input deleteRequestPasswordResetDtoInput {
-  id: ID!
-  clientMutationId: String
-}
-
-"Deletes a RequestPasswordResetDto."
-type deleteRequestPasswordResetDtoPayload {
-  requestPasswordResetDto: RequestPasswordResetDto
-  clientMutationId: String
-}
-
-"Creates a RequestPasswordResetDto."
-input createRequestPasswordResetDtoInput {
-  clientMutationId: String
-}
-
-"Creates a RequestPasswordResetDto."
-type createRequestPasswordResetDtoPayload {
-  requestPasswordResetDto: RequestPasswordResetDto
-  clientMutationId: String
-}
-
-"Updates a ConfirmPasswordResetDto."
-input updateConfirmPasswordResetDtoInput {
-  id: ID!
-  clientMutationId: String
-}
-
-"Updates a ConfirmPasswordResetDto."
-type updateConfirmPasswordResetDtoPayload {
-  confirmPasswordResetDto: ConfirmPasswordResetDto
-  clientMutationId: String
-}
-
-"Deletes a ConfirmPasswordResetDto."
-input deleteConfirmPasswordResetDtoInput {
-  id: ID!
-  clientMutationId: String
-}
-
-"Deletes a ConfirmPasswordResetDto."
-type deleteConfirmPasswordResetDtoPayload {
-  confirmPasswordResetDto: ConfirmPasswordResetDto
-  clientMutationId: String
-}
-
-"Creates a ConfirmPasswordResetDto."
-input createConfirmPasswordResetDtoInput {
-  clientMutationId: String
-}
-
-"Creates a ConfirmPasswordResetDto."
-type createConfirmPasswordResetDtoPayload {
-  confirmPasswordResetDto: ConfirmPasswordResetDto
   clientMutationId: String
 }
 
