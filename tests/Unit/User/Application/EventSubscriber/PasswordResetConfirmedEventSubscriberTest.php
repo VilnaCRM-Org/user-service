@@ -39,17 +39,32 @@ final class PasswordResetConfirmedEventSubscriberTest extends UnitTestCase
     {
         $userEmail = $this->faker->safeEmail();
         $eventId = $this->faker->uuid();
-        $subject = $this->faker->sentence();
-        $text = $this->faker->text();
 
+        $user = $this->createUserMock($userEmail);
+        $event = new PasswordResetConfirmedEvent($user, $eventId);
+        $email = $this->createMock(Email::class);
+
+        $this->expectTranslations();
+        $this->expectEmailCreation($userEmail, $email);
+        $this->expectMailerSend($email);
+
+        $this->subscriber->__invoke($event);
+    }
+
+    private function createUserMock(string $userEmail): UserInterface
+    {
         $user = $this->createMock(UserInterface::class);
         $user->expects($this->once())
             ->method('getEmail')
             ->willReturn($userEmail);
 
-        $event = new PasswordResetConfirmedEvent($user, $eventId);
+        return $user;
+    }
 
-        $email = $this->createMock(Email::class);
+    private function expectTranslations(): void
+    {
+        $subject = $this->faker->sentence();
+        $text = $this->faker->text();
 
         $this->translator->expects($this->exactly(2))
             ->method('trans')
@@ -57,6 +72,12 @@ final class PasswordResetConfirmedEventSubscriberTest extends UnitTestCase
                 ['email.password.reset.confirmed.subject', [], null, null, $subject],
                 ['email.password.reset.confirmed.text', [], null, null, $text],
             ]);
+    }
+
+    private function expectEmailCreation(string $userEmail, Email $email): void
+    {
+        $subject = $this->faker->sentence();
+        $text = $this->faker->text();
 
         $this->emailFactory->expects($this->once())
             ->method('create')
@@ -67,12 +88,13 @@ final class PasswordResetConfirmedEventSubscriberTest extends UnitTestCase
                 'email/confirm.html.twig'
             )
             ->willReturn($email);
+    }
 
+    private function expectMailerSend(Email $email): void
+    {
         $this->mailer->expects($this->once())
             ->method('send')
             ->with($email);
-
-        $this->subscriber->__invoke($event);
     }
 
     public function testSubscribedTo(): void

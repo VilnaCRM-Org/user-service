@@ -126,8 +126,6 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        $since = new \DateTimeImmutable('-2 hours'); // Changed from -1 hour to -2 hours
-
         // Create tokens for the user
         $createdAt1 = new \DateTimeImmutable();
         $expiresAt1 = $createdAt1->add(new \DateInterval('PT1H'));

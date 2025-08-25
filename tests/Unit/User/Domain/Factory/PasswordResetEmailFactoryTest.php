@@ -8,6 +8,7 @@ use App\Shared\Domain\ValueObject\Uuid;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Aggregate\PasswordResetEmail;
 use App\User\Domain\Entity\PasswordResetToken;
+use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\Event\PasswordResetEmailSendEventFactoryInterface;
 use App\User\Domain\Factory\PasswordResetEmailFactory;
 use App\User\Domain\Factory\UserFactory;
@@ -51,7 +52,7 @@ final class PasswordResetEmailFactoryTest extends UnitTestCase
         $this->assertSame($user, $passwordResetEmail->user);
     }
 
-    private function createTestUser()
+    private function createTestUser(): User
     {
         $userFactory = new UserFactory();
         $uuid = new Uuid('123e4567-e89b-12d3-a456-426614174000');
@@ -64,7 +65,7 @@ final class PasswordResetEmailFactoryTest extends UnitTestCase
         );
     }
 
-    private function createTestToken($user): PasswordResetToken
+    private function createTestToken(User $user): PasswordResetToken
     {
         $createdAt = new \DateTimeImmutable();
         $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
@@ -77,7 +78,7 @@ final class PasswordResetEmailFactoryTest extends UnitTestCase
         );
     }
 
-    private function createAlternateTestUser()
+    private function createAlternateTestUser(): User
     {
         $userFactory = new UserFactory();
         $uuid = new Uuid('456e7890-e89b-12d3-a456-426614174001');
@@ -90,7 +91,7 @@ final class PasswordResetEmailFactoryTest extends UnitTestCase
         );
     }
 
-    private function createAlternateTestToken($user): PasswordResetToken
+    private function createAlternateTestToken(User $user): PasswordResetToken
     {
         $createdAt = new \DateTimeImmutable();
         $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
