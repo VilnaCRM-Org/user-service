@@ -90,7 +90,7 @@ final class UserContext implements Context
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
-        
+
         // Track the user ID for later use in password reset tests
         self::$userIdsByEmail[$email] = $userId;
     }

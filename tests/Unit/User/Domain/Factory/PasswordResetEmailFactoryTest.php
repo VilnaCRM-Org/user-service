@@ -27,22 +27,8 @@ final class PasswordResetEmailFactoryTest extends UnitTestCase
 
     public function testCreate(): void
     {
-        $userFactory = new UserFactory();
-        $uuid = new Uuid('123e4567-e89b-12d3-a456-426614174000');
-        $user = $userFactory->create(
-            'user@example.com',
-            'JD',
-            'password123',
-            $uuid
-        );
-        $createdAt = new \DateTimeImmutable();
-        $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
-        $token = new PasswordResetToken(
-            'abc123token',
-            $user->getId(),
-            $expiresAt,
-            $createdAt
-        );
+        $user = $this->createTestUser();
+        $token = $this->createTestToken($user);
         $factory = new PasswordResetEmailFactory($this->eventFactoryMock);
 
         $passwordResetEmail = $factory->create($token, $user);
@@ -54,22 +40,8 @@ final class PasswordResetEmailFactoryTest extends UnitTestCase
 
     public function testCreateWithDifferentData(): void
     {
-        $userFactory = new UserFactory();
-        $uuid = new Uuid('456e7890-e89b-12d3-a456-426614174001');
-        $user = $userFactory->create(
-            'another@example.org',
-            'AB',
-            'password123',
-            $uuid
-        );
-        $createdAt = new \DateTimeImmutable();
-        $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
-        $token = new PasswordResetToken(
-            'xyz789token',
-            $user->getId(),
-            $expiresAt,
-            $createdAt
-        );
+        $user = $this->createAlternateTestUser();
+        $token = $this->createAlternateTestToken($user);
         $factory = new PasswordResetEmailFactory($this->eventFactoryMock);
 
         $passwordResetEmail = $factory->create($token, $user);
@@ -77,5 +49,57 @@ final class PasswordResetEmailFactoryTest extends UnitTestCase
         $this->assertInstanceOf(PasswordResetEmail::class, $passwordResetEmail);
         $this->assertSame($token, $passwordResetEmail->token);
         $this->assertSame($user, $passwordResetEmail->user);
+    }
+
+    private function createTestUser()
+    {
+        $userFactory = new UserFactory();
+        $uuid = new Uuid('123e4567-e89b-12d3-a456-426614174000');
+
+        return $userFactory->create(
+            'user@example.com',
+            'JD',
+            'password123',
+            $uuid
+        );
+    }
+
+    private function createTestToken($user): PasswordResetToken
+    {
+        $createdAt = new \DateTimeImmutable();
+        $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
+
+        return new PasswordResetToken(
+            'abc123token',
+            $user->getId(),
+            $expiresAt,
+            $createdAt
+        );
+    }
+
+    private function createAlternateTestUser()
+    {
+        $userFactory = new UserFactory();
+        $uuid = new Uuid('456e7890-e89b-12d3-a456-426614174001');
+
+        return $userFactory->create(
+            'another@example.org',
+            'AB',
+            'password123',
+            $uuid
+        );
+    }
+
+    private function createAlternateTestToken($user): PasswordResetToken
+    {
+        $createdAt = new \DateTimeImmutable();
+        $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
+
+        return new PasswordResetToken(
+            'xyz789token',
+            $user->getId(),
+            $expiresAt,
+            $createdAt
+        );
     }
 }

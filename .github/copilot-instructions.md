@@ -373,6 +373,86 @@ src/
 - Always check `config/routes/` after adding new endpoints
 - Review `src/User/Application/` when modifying user business logic
 
+## API Platform, Swagger, and OpenAPI Integration
+
+### API Platform Configuration
+
+This service uses **API Platform 4.1** for REST API and GraphQL functionality. API Platform automatically generates OpenAPI documentation and provides Swagger UI interface.
+
+**Key Configuration Files:**
+- `config/api_platform/resources.yaml` - Main API resource definitions
+- Individual entity annotations (User, etc.)
+- DTO classes for input/output
+
+### Swagger/OpenAPI Documentation Best Practices
+
+**IMPORTANT: Use API Platform Built-in Functionality, NOT OpenAPI Library Directly**
+
+- **DO NOT** use `OpenApi\Annotations` (OA\*) annotations in DTOs
+- **DO** rely on API Platform's automatic schema generation
+- **DO** use Symfony Serializer Groups for input/output control
+- **DO** define proper denormalizationContext in API Platform configuration
+
+**Correct DTO Structure:**
+```php
+<?php
+
+namespace App\User\Application\DTO;
+
+use Symfony\Component\Serializer\Annotation\Groups;
+
+final readonly class ExampleDto
+{
+    public function __construct(
+        #[Groups(['example:write'])]
+        public ?string $field = null
+    ) {
+    }
+}
+```
+
+**Correct API Platform Configuration:**
+```yaml
+App\User\Domain\Entity\User:
+  operations:
+    example_operation:
+      class: 'ApiPlatform\Metadata\Post'
+      uriTemplate: '/users/{id}/example'
+      input: 'App\User\Application\DTO\ExampleDto'
+      processor: 'App\User\Application\Processor\ExampleProcessor'
+      denormalizationContext:
+        groups: ['example:write']
+```
+
+### How API Platform Generates Swagger Documentation
+
+1. **Automatic Schema Generation**: API Platform scans DTOs and generates OpenAPI schemas
+2. **Serializer Groups**: Groups defined in denormalizationContext control which fields appear in request body
+3. **Type Inference**: PHP types and nullable properties automatically generate correct schemas
+4. **No Manual Annotations Needed**: Avoid OA\* annotations as they conflict with automatic generation
+
+### Swagger UI Access
+
+- **REST API Docs**: https://localhost/api/docs
+- **GraphQL Playground**: https://localhost/api/graphql
+- **OpenAPI Spec**: Generated via `make generate-openapi-spec`
+- **GraphQL Spec**: Generated via `make generate-graphql-spec`
+
+### Troubleshooting Swagger Issues
+
+**Problem**: Request body schema is empty in Swagger
+**Solution**: 
+1. Remove all `OpenApi\Annotations` (OA\*) from DTOs
+2. Ensure Serializer Groups are properly defined
+3. Verify denormalizationContext groups match DTO Groups annotations
+4. Check that input DTO is correctly specified in API Platform configuration
+
+**Problem**: Parameters not showing in Swagger
+**Solution**:
+1. Verify uriTemplate parameters match processor expectations
+2. Check that path parameters are properly handled in processors
+3. Ensure proper API Platform operation configuration
+
 ## Timing Expectations and Timeouts
 
 **CRITICAL TIMEOUT VALUES:**

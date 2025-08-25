@@ -11,7 +11,6 @@ use App\User\Application\Command\ConfirmPasswordResetCommandResponse;
 use App\User\Application\CommandHandler\ConfirmPasswordResetCommandHandler;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetConfirmedEvent;
 use App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException;
 use App\User\Domain\Exception\PasswordResetTokenExpiredException;
