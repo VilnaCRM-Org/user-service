@@ -380,6 +380,7 @@ src/
 This service uses **API Platform 4.1** for REST API and GraphQL functionality. API Platform automatically generates OpenAPI documentation and provides Swagger UI interface.
 
 **Key Configuration Files:**
+
 - `config/api_platform/resources.yaml` - Main API resource definitions
 - Individual entity annotations (User, etc.)
 - DTO classes for input/output
@@ -394,6 +395,7 @@ This service uses **API Platform 4.1** for REST API and GraphQL functionality. A
 - **DO** define proper denormalizationContext in API Platform configuration
 
 **Correct DTO Structure:**
+
 ```php
 <?php
 
@@ -412,6 +414,7 @@ final readonly class ExampleDto
 ```
 
 **Correct API Platform Configuration:**
+
 ```yaml
 App\User\Domain\Entity\User:
   operations:
@@ -441,7 +444,8 @@ App\User\Domain\Entity\User:
 ### Troubleshooting Swagger Issues
 
 **Problem**: Request body schema is empty in Swagger
-**Solution**: 
+**Solution**:
+
 1. Remove all `OpenApi\Annotations` (OA\*) from DTOs
 2. Ensure Serializer Groups are properly defined
 3. Verify denormalizationContext groups match DTO Groups annotations
@@ -449,6 +453,7 @@ App\User\Domain\Entity\User:
 
 **Problem**: Parameters not showing in Swagger
 **Solution**:
+
 1. Verify uriTemplate parameters match processor expectations
 2. Check that path parameters are properly handled in processors
 3. Ensure proper API Platform operation configuration
