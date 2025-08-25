@@ -42,6 +42,20 @@ resources:
         uriTemplate: '/users/{id}/resend-confirmation-email'
         input: 'App\User\Application\DTO\RetryDto'
         processor: 'App\User\Application\Processor\ResendEmailProcessor'
+      request_password_reset:
+        class: 'ApiPlatform\Metadata\Post'
+        uriTemplate: '/users/{id}/reset-password'
+        input: 'App\User\Application\DTO\RequestPasswordResetDto'
+        processor: 'App\User\Application\Processor\RequestPasswordResetProcessor'
+        denormalizationContext:
+          groups: ['request_password_reset:write']
+      confirm_password_reset:
+        class: 'ApiPlatform\Metadata\Post'
+        uriTemplate: '/users/{id}/reset-password/confirm'
+        input: 'App\User\Application\DTO\ConfirmPasswordResetDto'
+        processor: 'App\User\Application\Processor\ConfirmPasswordResetProcessor'
+        denormalizationContext:
+          groups: ['confirm_password_reset:write']
 
     graphQlOperations:
       - class: 'ApiPlatform\Metadata\GraphQl\Query'
@@ -118,26 +132,6 @@ resources:
             type: 'String!'
           newPassword:
             type: 'String!'
-
-  App\User\Application\DTO\RequestPasswordResetDto:
-    exceptionToStatus:
-      'App\User\Domain\Exception\PasswordResetRateLimitExceededException': 429
-    operations:
-      request_password_reset:
-        class: 'ApiPlatform\Metadata\Post'
-        uriTemplate: '/password-reset/request'
-        processor: 'App\User\Application\Processor\RequestPasswordResetProcessor'
-
-  App\User\Application\DTO\ConfirmPasswordResetDto:
-    exceptionToStatus:
-      'App\User\Domain\Exception\PasswordResetTokenNotFoundException': 404
-      'App\User\Domain\Exception\PasswordResetTokenExpiredException': 400
-      'App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException': 400
-    operations:
-      confirm_password_reset:
-        class: 'ApiPlatform\Metadata\Post'
-        uriTemplate: '/password-reset/confirm'
-        processor: 'App\User\Application\Processor\ConfirmPasswordResetProcessor'
 
   App\Internal\HealthCheck\Domain\ValueObject\HealthCheck:
     operations:

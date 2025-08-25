@@ -38,14 +38,14 @@ final class SendPasswordResetEmailCommandHandlerTest extends UnitTestCase
     public function testInvokeSuccessfully(): void
     {
         $eventId = Uuid::v4();
-
+        
         // Create concrete dependencies for PasswordResetEmail
         $token = $this->createMock(PasswordResetTokenInterface::class);
         $user = $this->createMock(UserInterface::class);
         $factory = $this->createMock(PasswordResetEmailSendEventFactoryInterface::class);
-
+        
         $passwordResetEmailSentEvent = $this->createMock(PasswordResetEmailSentEvent::class);
-
+        
         $factory->expects($this->once())
             ->method('create')
             ->with($token, $user, (string) $eventId)

@@ -40,11 +40,11 @@ final class RequestPasswordResetProcessorTest extends UnitTestCase
             ->method('dispatch')
             ->with($this->callback(function (RequestPasswordResetCommand $command) use ($email, $message) {
                 $this->assertSame($email, $command->email);
-
+                
                 // Mock the response
                 $response = new RequestPasswordResetCommandResponse($message);
                 $command->setResponse($response);
-
+                
                 return true;
             }));
 
@@ -65,11 +65,11 @@ final class RequestPasswordResetProcessorTest extends UnitTestCase
             ->method('dispatch')
             ->with($this->callback(function (RequestPasswordResetCommand $command) {
                 $this->assertSame('', $command->email); // Empty string, not null
-
+                
                 // Mock the response
                 $response = new RequestPasswordResetCommandResponse('Success');
                 $command->setResponse($response);
-
+                
                 return true;
             }));
 

@@ -34,41 +34,34 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
     {
         $email = $this->faker->safeEmail();
         $message = 'Password reset email sent successfully.';
-        $context = $this->buildContext($email);
 
-        $this->validator->expects($this->once())->method('validate');
-        $this->setupCommandBusExpectation($email, $message);
-
-        $result = $this->resolver->__invoke(null, $context);
-
-        $this->assertIsObject($result);
-        $this->assertSame($message, $result->message);
-    }
-
-    /**
-     * @return array<string, array<string, array<string, string>>>
-     */
-    private function buildContext(string $email): array
-    {
-        return [
+        $context = [
             'args' => [
                 'input' => [
                     'email' => $email,
                 ],
             ],
         ];
-    }
 
-    private function setupCommandBusExpectation(string $email, string $message): void
-    {
+        $this->validator->expects($this->once())
+            ->method('validate');
+
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(function (RequestPasswordResetCommand $command) use ($email, $message) {
                 $this->assertSame($email, $command->email);
+                
+                // Mock the response
                 $response = new RequestPasswordResetCommandResponse($message);
                 $command->setResponse($response);
+                
                 return true;
             }));
+
+        $result = $this->resolver->__invoke(null, $context);
+
+        $this->assertIsObject($result);
+        $this->assertSame($message, $result->message);
     }
 
     public function testInvokeWithMissingEmail(): void
@@ -86,11 +79,11 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(static function (RequestPasswordResetCommand $command) {
+            ->with($this->callback(function (RequestPasswordResetCommand $command) {
                 // Mock the response
                 $response = new RequestPasswordResetCommandResponse('Success');
                 $command->setResponse($response);
-
+                
                 return true;
             }));
 

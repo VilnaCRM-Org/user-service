@@ -32,6 +32,7 @@ final readonly class RequestPasswordResetProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): JsonResponse {
+        // Note: The user ID is available in $uriVariables['id'] if needed for validation
         $command = new RequestPasswordResetCommand($data->email);
         $this->commandBus->dispatch($command);
 

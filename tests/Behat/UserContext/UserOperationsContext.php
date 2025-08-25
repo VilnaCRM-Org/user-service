@@ -24,6 +24,7 @@ final class UserOperationsContext implements Context
     private ?RequestInput $requestBody;
     private int $violationNum;
     private string $language;
+    private string $currentUserEmail = '';
 
     public function __construct(
         private readonly KernelInterface $kernel,
@@ -130,6 +131,22 @@ final class UserOperationsContext implements Context
      */
     public function requestSendTo(string $method, string $path): void
     {
+        // For password reset endpoints, replace the URL with the actual user ID
+        if (str_contains($path, '/users/{id}/reset-password')) {
+            if (empty($this->currentUserEmail)) {
+                // For invalid token tests or cases where user doesn't exist, use a placeholder user ID
+                $path = str_replace('{id}', 'placeholder-id', $path);
+            } else {
+                try {
+                    $userId = UserContext::getUserIdByEmail($this->currentUserEmail);
+                    $path = str_replace('{id}', $userId, $path);
+                } catch (\RuntimeException $e) {
+                    // User doesn't exist, use placeholder ID for non-existing user tests
+                    $path = str_replace('{id}', 'nonexistent-user-id', $path);
+                }
+            }
+        }
+
         $contentType = 'application/json';
         if ($method === 'PATCH') {
             $contentType = 'application/merge-patch+json';
@@ -235,6 +252,7 @@ final class UserOperationsContext implements Context
      */
     public function requestingPasswordResetForEmail(string $email): void
     {
+        $this->currentUserEmail = $email;
         $this->requestBody = new RequestPasswordResetInput($email);
     }
 
@@ -245,6 +263,7 @@ final class UserOperationsContext implements Context
     {
         // Use the actual token that was created in the previous step
         $token = UserContext::getLastPasswordResetToken();
+        $this->currentUserEmail = UserContext::getCurrentTokenUserEmail();
         $this->requestBody = new ConfirmPasswordResetInput($token, $password);
     }
 
@@ -253,6 +272,10 @@ final class UserOperationsContext implements Context
      */
     public function confirmingPasswordResetWithTokenAndPassword(string $token, string $password): void
     {
+        // For invalid token tests, we need a fallback email or handle it differently
+        // Since this is an invalid token test, we don't have a valid user email
+        // We'll handle this case by using a placeholder that the URL replacement will skip
+        $this->currentUserEmail = '';
         $this->requestBody = new ConfirmPasswordResetInput($token, $password);
     }
 

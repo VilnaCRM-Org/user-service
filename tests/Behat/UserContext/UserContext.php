@@ -21,6 +21,8 @@ final class UserContext implements Context
 {
     private Generator $faker;
     private static string $lastPasswordResetToken = '';
+    private static array $userIdsByEmail = [];
+    private static string $currentTokenUserEmail = '';
 
     public function __construct(
         private UserRepositoryInterface $userRepository,
@@ -73,13 +75,14 @@ final class UserContext implements Context
     public function userWithEmailExists(string $email): void
     {
         $password = $this->faker->password;
+        $userId = $this->transformer->transformFromSymfonyUuid(
+            $this->uuidFactory->create()
+        );
         $user = $this->userFactory->create(
             $email,
             $this->faker->name,
             $password,
-            $this->transformer->transformFromSymfonyUuid(
-                $this->uuidFactory->create()
-            )
+            $userId
         );
 
         $hasher = $this->hasherFactory->getPasswordHasher($user::class);
@@ -87,6 +90,9 @@ final class UserContext implements Context
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
+        
+        // Track the user ID for later use in password reset tests
+        self::$userIdsByEmail[$email] = $userId;
     }
 
     /**
@@ -140,6 +146,20 @@ final class UserContext implements Context
 
         // Store the token value for use in other step definitions
         self::$lastPasswordResetToken = $token->getTokenValue();
+        self::$currentTokenUserEmail = $email;
+    }
+
+    public static function getUserIdByEmail(string $email): string
+    {
+        if (!isset(self::$userIdsByEmail[$email])) {
+            throw new \RuntimeException("User ID not found for email: {$email}");
+        }
+        return self::$userIdsByEmail[$email];
+    }
+
+    public static function getCurrentTokenUserEmail(): string
+    {
+        return self::$currentTokenUserEmail;
     }
 
     public static function getLastPasswordResetToken(): string

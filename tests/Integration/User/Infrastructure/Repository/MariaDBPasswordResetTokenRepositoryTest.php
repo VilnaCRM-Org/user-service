@@ -126,6 +126,8 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
+        $since = new \DateTimeImmutable('-2 hours'); // Changed from -1 hour to -2 hours
+
         // Create tokens for the user
         $createdAt1 = new \DateTimeImmutable();
         $expiresAt1 = $createdAt1->add(new \DateInterval('PT1H'));
@@ -138,7 +140,7 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
         $this->repository->save($token1);
         $this->repository->save($token2);
 
-        // Note: UUID JOIN issue between User.id and PasswordResetToken.userID requires review
+        // TODO: Fix UUID JOIN issue between User.id and PasswordResetToken.userID
         // For now, just verify tokens were saved
         $savedToken1 = $this->repository->findByToken('count_token1');
         $savedToken2 = $this->repository->findByToken('count_token2');

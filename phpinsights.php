@@ -20,12 +20,6 @@ return [
     'exclude' => [
         'vendor',
         'CLI/bats/php',
-        'tests/Unit/User/Application/EventSubscriber/PasswordResetEmailSentEventSubscriberTest.php',
-        'tests/Unit/User/Application/EventSubscriber/PasswordResetRequestedEventSubscriberTest.php',
-        'tests/Unit/User/Application/Resolver/ConfirmPasswordResetMutationResolverTest.php',
-        'tests/Unit/User/Application/Resolver/RequestPasswordResetMutationResolverTest.php',
-        'tests/Unit/User/Domain/Factory/PasswordResetEmailFactoryTest.php',
-        'tests/Unit/User/Domain/Factory/PasswordResetTokenFactoryTest.php',
     ],
     'add' => [],
     'remove' => [

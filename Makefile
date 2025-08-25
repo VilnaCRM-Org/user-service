@@ -89,7 +89,7 @@ psalm-security: ## Psalm security analysis
 	$(EXEC_ENV) $(PSALM) --taint-analysis
 
 phpinsights: ## Instant PHP quality checks and static analysis tool
-	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --ansi --format=github-action --disable-security-check && ./vendor/bin/phpinsights analyse tests --no-interaction --config-path=phpinsights-tests.php
+	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --ansi --format=github-action --disable-security-check && ./vendor/bin/phpinsights analyse tests --no-interaction
 
 unit-tests: ## Run unit tests
 	$(EXEC_ENV) $(PHPUNIT) --testsuite=Unit
@@ -231,7 +231,7 @@ ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	@echo "6️⃣  Running security taint analysis..."
 	$(EXEC_ENV) $(PSALM) --taint-analysis
 	@echo "7️⃣  Running code quality analysis with PHPInsights..."
-	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --ansi --format=github-action --disable-security-check && ./vendor/bin/phpinsights analyse tests --no-interaction --config-path=phpinsights-tests.php
+	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --ansi --format=github-action --disable-security-check && ./vendor/bin/phpinsights analyse tests --no-interaction
 	@echo "8️⃣  Validating architecture with Deptrac..."
 	$(DEPTRAC) analyse --config-file=deptrac.yaml --report-uncovered --fail-on-uncovered
 	@echo "9️⃣  Running complete test suite (unit, integration, e2e)..."

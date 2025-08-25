@@ -42,11 +42,11 @@ final class ConfirmPasswordResetProcessorTest extends UnitTestCase
             ->with($this->callback(function (ConfirmPasswordResetCommand $command) use ($token, $newPassword, $message) {
                 $this->assertSame($token, $command->token);
                 $this->assertSame($newPassword, $command->newPassword);
-
+                
                 // Mock the response
                 $response = new ConfirmPasswordResetCommandResponse($message);
                 $command->setResponse($response);
-
+                
                 return true;
             }));
 
@@ -68,11 +68,11 @@ final class ConfirmPasswordResetProcessorTest extends UnitTestCase
             ->with($this->callback(function (ConfirmPasswordResetCommand $command) {
                 $this->assertSame('', $command->token); // Empty string, not null
                 $this->assertSame('', $command->newPassword); // Empty string, not null
-
+                
                 // Mock the response
                 $response = new ConfirmPasswordResetCommandResponse('Success');
                 $command->setResponse($response);
-
+                
                 return true;
             }));
 
