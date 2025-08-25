@@ -8,84 +8,6 @@ servers:
     url: 'https://api.vilnacrm.com'
     description: ''
 paths:
-  /api/password-reset/confirm:
-    post:
-      operationId: confirm_password_reset
-      tags:
-        - ConfirmPasswordResetDto
-      responses:
-        '201':
-          description: 'ConfirmPasswordResetDto resource created'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConfirmPasswordResetDto'
-            application/graphql:
-              schema:
-                $ref: '#/components/schemas/ConfirmPasswordResetDto'
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/ConfirmPasswordResetDto.jsonld'
-          links: {  }
-        '400':
-          description: 'Invalid input'
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Error'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          links: {  }
-        '422':
-          description: 'An error occurred'
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/ConstraintViolation-json'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConstraintViolation-json'
-          links: {  }
-        '500':
-          description: 'Internal server error'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
-                required:
-                  - type
-                  - title
-                  - detail
-                  - status
-              example:
-                type: /errors/500
-                title: 'An error occurred'
-                detail: 'Something went wrong'
-                status: 500
-          headers: {  }
-      summary: 'Creates a ConfirmPasswordResetDto resource.'
-      description: 'Creates a ConfirmPasswordResetDto resource.'
-      parameters: []
-      requestBody:
-        description: 'The new ConfirmPasswordResetDto resource'
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ConfirmPasswordResetDto'
-          application/graphql:
-            schema:
-              $ref: '#/components/schemas/ConfirmPasswordResetDto'
-          application/ld+json:
-            schema:
-              $ref: '#/components/schemas/ConfirmPasswordResetDto.jsonld'
-        required: true
-      deprecated: false
   /api/health:
     get:
       operationId: api_health_get
@@ -412,84 +334,6 @@ paths:
               code: e7f8c62113a47f7a5a9dca1f
               refresh_token: f7a5a9dca1fe7f8c62113a47
         required: true
-  /api/password-reset/request:
-    post:
-      operationId: request_password_reset
-      tags:
-        - RequestPasswordResetDto
-      responses:
-        '201':
-          description: 'RequestPasswordResetDto resource created'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RequestPasswordResetDto'
-            application/graphql:
-              schema:
-                $ref: '#/components/schemas/RequestPasswordResetDto'
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/RequestPasswordResetDto.jsonld'
-          links: {  }
-        '400':
-          description: 'Invalid input'
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Error'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          links: {  }
-        '422':
-          description: 'An error occurred'
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/ConstraintViolation-json'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConstraintViolation-json'
-          links: {  }
-        '500':
-          description: 'Internal server error'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
-                required:
-                  - type
-                  - title
-                  - detail
-                  - status
-              example:
-                type: /errors/500
-                title: 'An error occurred'
-                detail: 'Something went wrong'
-                status: 500
-          headers: {  }
-      summary: 'Creates a RequestPasswordResetDto resource.'
-      description: 'Creates a RequestPasswordResetDto resource.'
-      parameters: []
-      requestBody:
-        description: 'The new RequestPasswordResetDto resource'
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RequestPasswordResetDto'
-          application/graphql:
-            schema:
-              $ref: '#/components/schemas/RequestPasswordResetDto'
-          application/ld+json:
-            schema:
-              $ref: '#/components/schemas/RequestPasswordResetDto.jsonld'
-        required: true
-      deprecated: false
   /api/users:
     get:
       operationId: api_users_get_collection
@@ -1482,6 +1326,186 @@ paths:
               properties: {  }
         required: false
       deprecated: false
+  '/api/users/{id}/reset-password':
+    post:
+      operationId: request_password_reset
+      tags:
+        - User
+      responses:
+        '201':
+          description: 'User resource created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User-output'
+            application/graphql:
+              schema:
+                $ref: '#/components/schemas/User-output'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/User.jsonld-output'
+          links: {  }
+        '400':
+          description: 'Invalid input'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          links: {  }
+        '422':
+          description: 'An error occurred'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ConstraintViolation-json'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConstraintViolation-json'
+          links: {  }
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Creates a User resource.'
+      description: 'Creates a User resource.'
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'User identifier'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: simple
+          explode: false
+          allowReserved: false
+      requestBody:
+        description: 'The new User resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User.RequestPasswordResetDto-request_password_reset.write'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/User.RequestPasswordResetDto-request_password_reset.write'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/User.RequestPasswordResetDto.jsonld-request_password_reset.write'
+        required: true
+      deprecated: false
+  '/api/users/{id}/reset-password/confirm':
+    post:
+      operationId: confirm_password_reset
+      tags:
+        - User
+      responses:
+        '201':
+          description: 'User resource created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User-output'
+            application/graphql:
+              schema:
+                $ref: '#/components/schemas/User-output'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/User.jsonld-output'
+          links: {  }
+        '400':
+          description: 'Invalid input'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          links: {  }
+        '422':
+          description: 'An error occurred'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ConstraintViolation-json'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConstraintViolation-json'
+          links: {  }
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Creates a User resource.'
+      description: 'Creates a User resource.'
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'User identifier'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: simple
+          explode: false
+          allowReserved: false
+      requestBody:
+        description: 'The new User resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User.ConfirmPasswordResetDto-confirm_password_reset.write'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/User.ConfirmPasswordResetDto-confirm_password_reset.write'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/User.ConfirmPasswordResetDto.jsonld-confirm_password_reset.write'
+        required: true
+      deprecated: false
 components:
   securitySchemes:
     OAuth2:
@@ -1499,10 +1523,6 @@ security:
 tags:
   -
     name: User
-  -
-    name: RequestPasswordResetDto
-  -
-    name: ConfirmPasswordResetDto
   -
     name: HealthCheck
 webhooks: {  }
