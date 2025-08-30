@@ -57,7 +57,6 @@ final class PasswordResetEmailSentEventSubscriberTest extends UnitTestCase
         $email = $this->createMock(Email::class);
 
         $this->expectTokenSave($token);
-        $this->expectTranslations($tokenValue);
         $this->expectEmailCreation($tokenValue, $emailAddress, $email);
         $this->expectMailerSend($email);
         $this->expectLogInfo($emailAddress);
@@ -82,8 +81,9 @@ final class PasswordResetEmailSentEventSubscriberTest extends UnitTestCase
             ->with($token);
     }
 
-    private function expectTranslations(string $tokenValue): void
+    private function expectEmailCreation(string $tokenValue, string $emailAddress, Email $email): void
     {
+        $resetUrl = $this->apiBaseUrl . '/password-reset?token=' . urlencode($tokenValue);
         $subject = $this->faker->sentence();
         $text = $this->faker->text();
 
@@ -93,18 +93,13 @@ final class PasswordResetEmailSentEventSubscriberTest extends UnitTestCase
                 ['email.password_reset.subject', [], null, null, $subject],
                 ['email.password_reset.text', ['tokenValue' => $tokenValue], null, null, $text],
             ]);
-    }
-
-    private function expectEmailCreation(string $tokenValue, string $emailAddress, Email $email): void
-    {
-        $resetUrl = $this->apiBaseUrl . '/password-reset?token=' . urlencode($tokenValue);
 
         $this->emailFactory->expects($this->once())
             ->method('create')
             ->with(
                 $emailAddress,
-                $this->faker->sentence(),
-                $this->faker->text(),
+                $subject,
+                $text,
                 'email/password_reset.html.twig',
                 [
                     'token' => $tokenValue,

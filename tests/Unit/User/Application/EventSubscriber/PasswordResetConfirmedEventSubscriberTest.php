@@ -44,7 +44,6 @@ final class PasswordResetConfirmedEventSubscriberTest extends UnitTestCase
         $event = new PasswordResetConfirmedEvent($user, $eventId);
         $email = $this->createMock(Email::class);
 
-        $this->expectTranslations();
         $this->expectEmailCreation($userEmail, $email);
         $this->expectMailerSend($email);
 
@@ -61,7 +60,7 @@ final class PasswordResetConfirmedEventSubscriberTest extends UnitTestCase
         return $user;
     }
 
-    private function expectTranslations(): void
+    private function expectEmailCreation(string $userEmail, Email $email): void
     {
         $subject = $this->faker->sentence();
         $text = $this->faker->text();
@@ -72,12 +71,6 @@ final class PasswordResetConfirmedEventSubscriberTest extends UnitTestCase
                 ['email.password.reset.confirmed.subject', [], null, null, $subject],
                 ['email.password.reset.confirmed.text', [], null, null, $text],
             ]);
-    }
-
-    private function expectEmailCreation(string $userEmail, Email $email): void
-    {
-        $subject = $this->faker->sentence();
-        $text = $this->faker->text();
 
         $this->emailFactory->expects($this->once())
             ->method('create')
