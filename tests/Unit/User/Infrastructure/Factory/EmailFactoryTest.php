@@ -46,12 +46,12 @@ final class EmailFactoryTest extends UnitTestCase
         $this->assertSame($sendTo, $email->getTo()[0]->getAddress());
         $this->assertSame($subject, $email->getSubject());
         $this->assertSame($template, $email->getHtmlTemplate());
-        
+
         // This test catches the UnwrapArrayMerge mutation by ensuring
         // both content and additionalContext are merged properly
         $expectedContext = array_merge(['content' => $content], $additionalContext);
         $this->assertSame($expectedContext, $email->getContext());
-        
+
         // Verify specific context keys exist
         $this->assertArrayHasKey('content', $email->getContext());
         $this->assertArrayHasKey('userName', $email->getContext());

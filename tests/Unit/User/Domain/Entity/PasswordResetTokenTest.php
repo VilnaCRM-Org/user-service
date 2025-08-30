@@ -70,10 +70,10 @@ final class PasswordResetTokenTest extends UnitTestCase
             $futureTime,
             $futureTime->modify('-1 hour')
         );
-        
+
         // This token should definitely not be expired
         $this->assertFalse($futureToken->isExpired());
-        
+
         // Create a token that expired far in the past to ensure it's expired
         $pastTime = new \DateTimeImmutable('-1 year');
         $pastToken = new PasswordResetToken(
@@ -82,10 +82,10 @@ final class PasswordResetTokenTest extends UnitTestCase
             $pastTime,
             $pastTime->modify('-1 hour')
         );
-        
+
         // This token should definitely be expired
         $this->assertTrue($pastToken->isExpired());
-        
+
         // Create multiple tokens with slightly different expiration times
         // to increase the chances of catching the boundary condition
         for ($i = 0; $i < 5; $i++) {
@@ -96,12 +96,73 @@ final class PasswordResetTokenTest extends UnitTestCase
                 $microTime,
                 $microTime->modify('-1 hour')
             );
-            
+
             // These tokens expire very close to now, likely expired
             // This increases chances of hitting the exact boundary condition
             $result = $microToken->isExpired();
             $this->assertIsBool($result); // Just ensure it returns a boolean
         }
+    }
+
+    public function testIsExpiredGreaterThanVsGreaterEqualBoundary(): void
+    {
+        // With the updated isExpired method that accepts a currentTime parameter,
+        // we can now precisely test the > vs >= boundary condition
+
+        $expirationTime = new \DateTimeImmutable('2024-01-01 12:00:00.000000');
+        $token = new PasswordResetToken(
+            'boundary-test-token',
+            $this->faker->uuid(),
+            $expirationTime,
+            $expirationTime->modify('-1 hour')
+        );
+
+        // Test with current time exactly equal to expiration time
+        // With > operator: false (not expired)
+        // With >= operator: true (expired)
+        $this->assertFalse($token->isExpired($expirationTime));
+
+        // Test with current time 1 microsecond before expiration
+        $beforeExpiration = $expirationTime->modify('-1 microsecond');
+        $this->assertFalse($token->isExpired($beforeExpiration));
+
+        // Test with current time 1 microsecond after expiration
+        $afterExpiration = $expirationTime->modify('+1 microsecond');
+        $this->assertTrue($token->isExpired($afterExpiration));
+
+        // Test boundary with different precisions
+        $this->assertFalse($token->isExpired($expirationTime->modify('-1 second')));
+        $this->assertTrue($token->isExpired($expirationTime->modify('+1 second')));
+    }
+
+    public function testIsExpiredWithPreciseTimestamp(): void
+    {
+        // Test with extremely precise timing to catch the > vs >= mutation
+        $baseTime = new \DateTimeImmutable('2024-01-01 12:00:00.000000');
+
+        // Test with time 1 second before expiration (should not be expired)
+        $beforeTime = $baseTime->modify('-1 second');
+        $beforeToken = new PasswordResetToken(
+            'before-token',
+            $this->faker->uuid(),
+            $beforeTime,
+            $beforeTime->modify('-1 hour')
+        );
+
+        // This should definitely be expired since current time > before time
+        $this->assertTrue($beforeToken->isExpired());
+
+        // Test with time far in the future (should definitely not be expired)
+        $futureTime = new \DateTimeImmutable('+1 hour');
+        $futureToken = new PasswordResetToken(
+            'future-token',
+            $this->faker->uuid(),
+            $futureTime,
+            $futureTime->modify('-1 hour')
+        );
+
+        // This should not be expired since future time > current time
+        $this->assertFalse($futureToken->isExpired());
     }
 
     public function testTokenProperties(): void

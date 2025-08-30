@@ -16,7 +16,7 @@ interface PasswordResetTokenInterface
 
     public function isUsed(): bool;
 
-    public function isExpired(): bool;
+    public function isExpired(?\DateTimeImmutable $currentTime = null): bool;
 
     public function markAsUsed(): void;
 }

@@ -417,6 +417,122 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $this->assertStringContainsString('If valid', $command->getResponse()->message);
     }
 
+    public function testConstructorDefaultWindowHoursZeroMutation(): void
+    {
+        // This test will fail if rateLimitWindowHours default is mutated from 1 to 0
+        // because countRecentRequestsByEmail will be called with "0 hours" which would
+        // look for requests from "now" instead of "1 hour ago"
+        $defaultHandler = new RequestPasswordResetCommandHandler(
+            $this->userRepository,
+            $this->passwordResetTokenRepository,
+            $this->passwordResetTokenFactory,
+            $this->eventBus,
+            $this->uuidFactory
+            // Using default constructor values (3, 1)
+        );
+
+        $email = $this->faker->email();
+        $user = $this->createMock(UserInterface::class);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+
+        // The mock expects to be called with a DateTimeImmutable representing "-1 hours"
+        // If the default gets mutated to 0, it would be called with "-0 hours" (i.e., now)
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->with(
+                $email,
+                $this->callback(function (\DateTimeImmutable $dateTime): bool {
+                    // Check that the datetime is approximately 1 hour ago (default window)
+                    $oneHourAgo = new \DateTimeImmutable('-1 hours');
+                    $diff = abs($dateTime->getTimestamp() - $oneHourAgo->getTimestamp());
+                    // Allow 60 seconds tolerance for test execution time
+                    return $diff <= 60;
+                })
+            )
+            ->willReturn(3); // At limit
+
+        $this->expectException(PasswordResetRateLimitExceededException::class);
+
+        $command = new RequestPasswordResetCommand($email);
+        $defaultHandler->__invoke($command);
+    }
+
+    public function testConstructorDefaultWindowHoursTwoMutation(): void
+    {
+        // This test will fail if rateLimitWindowHours default is mutated from 1 to 2
+        // because countRecentRequestsByEmail will be called with "-2 hours" instead of "-1 hours"
+        $defaultHandler = new RequestPasswordResetCommandHandler(
+            $this->userRepository,
+            $this->passwordResetTokenRepository,
+            $this->passwordResetTokenFactory,
+            $this->eventBus,
+            $this->uuidFactory
+            // Using default constructor values (3, 1)
+        );
+
+        $email = $this->faker->email();
+        $user = $this->createMock(UserInterface::class);
+        $userId = $this->faker->uuid();
+        $user->method('getId')->willReturn($userId);
+
+        $token = $this->createMock(PasswordResetTokenInterface::class);
+        $token->method('getTokenValue')->willReturn($this->faker->sha256());
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+
+        // The mock expects to be called with a DateTimeImmutable representing "-1 hours"
+        // If the default gets mutated to 2, it would be called with "-2 hours"
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->with(
+                $email,
+                $this->callback(function (\DateTimeImmutable $dateTime): bool {
+                    // Check that the datetime is approximately 1 hour ago (not 2 hours)
+                    $oneHourAgo = new \DateTimeImmutable('-1 hours');
+                    $twoHoursAgo = new \DateTimeImmutable('-2 hours');
+
+                    $diffOne = abs($dateTime->getTimestamp() - $oneHourAgo->getTimestamp());
+                    $diffTwo = abs($dateTime->getTimestamp() - $twoHoursAgo->getTimestamp());
+
+                    // Should be closer to 1 hour ago than 2 hours ago
+                    return $diffOne < $diffTwo && $diffOne <= 60;
+                })
+            )
+            ->willReturn(2); // Under limit, should succeed
+
+        $this->passwordResetTokenFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with($userId)
+            ->willReturn($token);
+
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($token);
+
+        $this->eventBus
+            ->expects($this->once())
+            ->method('publish')
+            ->with($this->isInstanceOf(PasswordResetRequestedEvent::class));
+
+        $command = new RequestPasswordResetCommand($email);
+        $defaultHandler->__invoke($command);
+
+        $this->assertStringContainsString('If valid', $command->getResponse()->message);
+    }
+
     private function configureRepositoryMocks(
         string $email,
         UserInterface $user,

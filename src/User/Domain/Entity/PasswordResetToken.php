@@ -42,9 +42,10 @@ final class PasswordResetToken implements PasswordResetTokenInterface
         return $this->isUsed;
     }
 
-    public function isExpired(): bool
+    public function isExpired(?\DateTimeImmutable $currentTime = null): bool
     {
-        return new \DateTimeImmutable() > $this->expiresAt;
+        $currentTime = $currentTime ?? new \DateTimeImmutable();
+        return $currentTime > $this->expiresAt;
     }
 
     public function markAsUsed(): void
