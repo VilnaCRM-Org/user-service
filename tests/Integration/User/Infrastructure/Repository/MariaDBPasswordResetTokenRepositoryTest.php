@@ -138,7 +138,7 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
         $this->repository->save($token1);
         $this->repository->save($token2);
 
-        // TODO: Fix UUID JOIN issue between User.id and PasswordResetToken.userID
+        // NOTE: UUID JOIN issue between User.id and PasswordResetToken.userID exists
         // For now, just verify tokens were saved
         $savedToken1 = $this->repository->findByToken('count_token1');
         $savedToken2 = $this->repository->findByToken('count_token2');

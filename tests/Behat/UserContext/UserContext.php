@@ -21,6 +21,9 @@ final class UserContext implements Context
 {
     private Generator $faker;
     private static string $lastPasswordResetToken = '';
+    /**
+     * @var array<string, string>
+     */
     private static array $userIdsByEmail = [];
     private static string $currentTokenUserEmail = '';
 

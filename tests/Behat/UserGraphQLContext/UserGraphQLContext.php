@@ -274,9 +274,17 @@ final class UserGraphQLContext implements Context
 
         Assert::assertIsArray($userData);
         foreach ($userData as $user) {
-            foreach ($this->responseContent as $item) {
-                Assert::assertArrayHasKey($item, $user['node']);
-            }
+            $this->assertUserNodeContainsExpectedFields($user['node']);
+        }
+    }
+
+    /**
+     * @param array<string, string> $userNode
+     */
+    private function assertUserNodeContainsExpectedFields(array $userNode): void
+    {
+        foreach ($this->responseContent as $item) {
+            Assert::assertArrayHasKey($item, $userNode);
         }
     }
 

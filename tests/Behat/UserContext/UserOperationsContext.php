@@ -132,25 +132,9 @@ final class UserOperationsContext implements Context
     public function requestSendTo(string $method, string $path): void
     {
         // For password reset endpoints, replace the URL with the actual user ID
-        if (str_contains($path, '/users/{id}/reset-password')) {
-            if (empty($this->currentUserEmail)) {
-                // For invalid token tests or cases where user doesn't exist, use a placeholder user ID
-                $path = str_replace('{id}', 'placeholder-id', $path);
-            } else {
-                try {
-                    $userId = UserContext::getUserIdByEmail($this->currentUserEmail);
-                    $path = str_replace('{id}', $userId, $path);
-                } catch (\RuntimeException $e) {
-                    // User doesn't exist, use placeholder ID for non-existing user tests
-                    $path = str_replace('{id}', 'nonexistent-user-id', $path);
-                }
-            }
-        }
+        $path = $this->replacePasswordResetUrlWithUserId($path);
 
-        $contentType = 'application/json';
-        if ($method === 'PATCH') {
-            $contentType = 'application/merge-patch+json';
-        }
+        $contentType = $this->getContentTypeForMethod($method);
         $this->response = $this->kernel->handle(Request::create(
             $path,
             $method,
@@ -163,6 +147,32 @@ final class UserOperationsContext implements Context
             ],
             $this->serializer->serialize($this->requestBody, 'json')
         ));
+    }
+
+    private function getContentTypeForMethod(string $method): string
+    {
+        return $method === 'PATCH' ? 'application/merge-patch+json' : 'application/json';
+    }
+
+    private function replacePasswordResetUrlWithUserId(string $path): string
+    {
+        if (!str_contains($path, '/users/{id}/reset-password')) {
+            return $path;
+        }
+
+        if ($this->currentUserEmail === '' || $this->currentUserEmail === null) {
+            // For invalid token tests or cases where user doesn't exist,
+            // use a placeholder user ID
+            return str_replace('{id}', 'placeholder-id', $path);
+        }
+
+        try {
+            $userId = UserContext::getUserIdByEmail($this->currentUserEmail);
+            return str_replace('{id}', $userId, $path);
+        } catch (\RuntimeException $e) {
+            // User doesn't exist, use placeholder ID for non-existing user tests
+            return str_replace('{id}', 'nonexistent-user-id', $path);
+        }
     }
 
     /**
@@ -259,8 +269,9 @@ final class UserOperationsContext implements Context
     /**
      * @Given confirming password reset with valid token and password :password
      */
-    public function confirmingPasswordResetWithValidTokenAndPassword(string $password): void
-    {
+    public function confirmingPasswordResetWithValidTokenAndPassword(
+        string $password
+    ): void {
         // Use the actual token that was created in the previous step
         $token = UserContext::getLastPasswordResetToken();
         $this->currentUserEmail = UserContext::getCurrentTokenUserEmail();
@@ -270,11 +281,14 @@ final class UserOperationsContext implements Context
     /**
      * @Given confirming password reset with token :token and password :password
      */
-    public function confirmingPasswordResetWithTokenAndPassword(string $token, string $password): void
-    {
+    public function confirmingPasswordResetWithTokenAndPassword(
+        string $token,
+        string $password
+    ): void {
         // For invalid token tests, we need a fallback email or handle it differently
         // Since this is an invalid token test, we don't have a valid user email
-        // We'll handle this case by using a placeholder that the URL replacement will skip
+        // We'll handle this case by using a placeholder that the URL replacement
+        // will skip
         $this->currentUserEmail = '';
         $this->requestBody = new ConfirmPasswordResetInput($token, $password);
     }

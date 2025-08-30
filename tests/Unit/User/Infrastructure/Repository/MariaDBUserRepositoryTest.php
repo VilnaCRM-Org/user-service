@@ -68,38 +68,53 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
         $this->assertSame($expectedUser, $user);
     }
 
-    public function testFindByIdMethodExists(): void
-    {
-        // This is a simple test to ensure the findById method exists and can be called
-        // The actual functionality is tested in integration tests
-        $this->assertTrue(method_exists($this->userRepository, 'findById'));
-
-        // Verify the method signature by using reflection
-        $reflection = new \ReflectionMethod($this->userRepository, 'findById');
-        $this->assertTrue($reflection->isPublic());
-        $this->assertEquals('findById', $reflection->getName());
-
-        // Verify return type allows null
-        $returnType = $reflection->getReturnType();
-        $this->assertNotNull($returnType);
-        $this->assertTrue($returnType->allowsNull());
-    }
-
     public function testFindById(): void
     {
-        // For this unit test, we'll just verify the method exists and call sequence
-        // The integration test covers the full functionality
-        $this->assertTrue(method_exists($this->userRepository, 'findById'));
+        $id = $this->faker->uuid();
+        $expectedUser = $this->createMock(UserInterface::class);
 
-        // Verify method signature
-        $reflection = new \ReflectionMethod($this->userRepository, 'findById');
-        $this->assertTrue($reflection->isPublic());
-        $this->assertEquals('findById', $reflection->getName());
+        // Create a mock repository that overrides just the find method
+        $repository = $this->getMockBuilder(MariaDBUserRepository::class)
+            ->setConstructorArgs([
+                $this->entityManager,
+                $this->registry,
+                self::BATCH_SIZE
+            ])
+            ->onlyMethods(['find'])
+            ->getMock();
 
-        // Verify return type allows null
-        $returnType = $reflection->getReturnType();
-        $this->assertNotNull($returnType);
-        $this->assertTrue($returnType->allowsNull());
+        $repository->expects($this->once())
+            ->method('find')
+            ->with($id)
+            ->willReturn($expectedUser);
+
+        $result = $repository->findById($id);
+
+        $this->assertSame($expectedUser, $result);
+    }
+
+    public function testFindByIdReturnsNull(): void
+    {
+        $id = $this->faker->uuid();
+
+        // Create a mock repository that overrides just the find method
+        $repository = $this->getMockBuilder(MariaDBUserRepository::class)
+            ->setConstructorArgs([
+                $this->entityManager,
+                $this->registry,
+                self::BATCH_SIZE
+            ])
+            ->onlyMethods(['find'])
+            ->getMock();
+
+        $repository->expects($this->once())
+            ->method('find')
+            ->with($id)
+            ->willReturn(null);
+
+        $result = $repository->findById($id);
+
+        $this->assertNull($result);
     }
 
     public function testSaveBatchSetsMiddleware(): void
