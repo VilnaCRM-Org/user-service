@@ -487,6 +487,7 @@ App\User\Domain\Entity\User:
 - **Memory issues during tests**: Use `php -d memory_limit=-1` for memory-intensive operations like infection testing.
 - **GitHub rate limits during composer install**: Use `COMPOSER_NO_INTERACTION=1` or configure GitHub token.
 - **Load test OAuth errors**: Ensure OAuth client is created with `make create-oauth-client` before running load tests.
+- **Load test network errors**: K6 extension downloading requires external network access. In restricted environments, load tests may fail due to DNS/network limitations when trying to access `ingest.k6.io` for extension provisioning.
 
 ### Network and Authentication
 
@@ -596,3 +597,99 @@ All code must pass these quality gates before commit:
 - **PHP CS Fixer**: PSR-12 compliance
 - **Unit/Integration Tests**: 100% test coverage
 - **Mutation Testing**: 0 escaped mutants
+
+### Achieving 100% Mutation Testing Coverage
+
+**Understanding Mutation Testing:**
+Mutation testing validates test quality by making small changes (mutations) to source code and checking if tests catch these changes. Escaped mutants indicate gaps in test coverage.
+
+**When Unit Tests Can't Catch Escaped Mutants:**
+
+If extending unit tests doesn't achieve 100% mutation score, consider refactoring the original classes to make them more testable:
+
+#### 1. **Constructor Default Parameters**
+```php
+// ❌ HARD TO TEST: Default values in constructor
+public function __construct(
+    private int $maxRequests = 3,
+    private int $timeWindow = 3600
+) {}
+
+// ✅ TESTABLE: Expose defaults or use factory methods
+public function __construct(
+    private int $maxRequests,
+    private int $timeWindow
+) {}
+
+public static function withDefaults(): self
+{
+    return new self(3, 3600);
+}
+```
+
+#### 2. **DateTime Boundary Conditions**
+```php
+// ❌ HARD TO TEST: Fixed current time
+public function isExpired(): bool
+{
+    return $this->expiresAt < new DateTime();
+}
+
+// ✅ TESTABLE: Injectable time parameter
+public function isExpired(?DateTime $currentTime = null): bool
+{
+    $currentTime ??= new DateTime();
+    return $this->expiresAt < $currentTime;
+}
+```
+
+#### 3. **Complex Boolean Logic**
+```php
+// ❌ HARD TO TEST: Complex nested conditions
+public function validate($value): bool
+{
+    return $value !== null && 
+           strlen($value) >= 8 && 
+           strlen($value) <= 64 &&
+           preg_match('/[A-Z]/', $value) &&
+           preg_match('/[0-9]/', $value);
+}
+
+// ✅ TESTABLE: Extract validation steps
+public function validate($value): bool
+{
+    if (!$this->hasValidLength($value)) return false;
+    if (!$this->hasUppercase($value)) return false;
+    if (!$this->hasDigit($value)) return false;
+    return true;
+}
+```
+
+#### 4. **Static Method Calls**
+```php
+// ❌ HARD TO TEST: Direct static calls
+public function generateToken(): string
+{
+    return bin2hex(random_bytes(16));
+}
+
+// ✅ TESTABLE: Dependency injection or factory
+public function generateToken(): string
+{
+    return $this->tokenGenerator->generate();
+}
+```
+
+**Mutation Testing Strategy:**
+
+1. **Run `make infection`** to identify escaped mutants
+2. **Analyze mutant types**: Constructor parameters, boundary conditions, logical operators
+3. **First try**: Add targeted unit tests for specific edge cases
+4. **If tests can't catch mutants**: Refactor original classes for better testability
+5. **Maintain backward compatibility** when refactoring existing public APIs
+6. **Update interface signatures** to match implementation changes
+
+**Target: 100% MSI (Mutation Score Indicator)**
+- 784/784 mutants killed (or equivalent for your codebase)
+- Zero escaped mutants
+- All boundary conditions, default values, and logical operators tested
