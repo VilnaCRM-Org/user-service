@@ -15,8 +15,3 @@ load 'test_helper/bats-assert/load'
   assert_success
 }
 
-@test "make tests-with-coverage command executes" {
-  run make tests-with-coverage
-  assert_output --partial 'Testing'
-  assert_success
-}

@@ -21,7 +21,7 @@ SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
 
 # Executables: vendors
-BEHAT         = ./vendor/bin/behat
+BEHAT         = ./vendor/bin/behat --stop-on-failure -n
 PHPUNIT       = ./vendor/bin/phpunit
 PSALM         = ./vendor/bin/psalm
 PHP_CS_FIXER  = ./vendor/bin/php-cs-fixer
@@ -42,7 +42,7 @@ endif
 # Variables for environment and commands
 FIXER_ENV = PHP_CS_FIXER_IGNORE_ENV=1
 PHP_CS_FIXER_CMD = php ./vendor/bin/php-cs-fixer fix $(git ls-files -om --exclude-standard) --allow-risky=yes --config .php-cs-fixer.dist.php
-COVERAGE_CMD = php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-clover /coverage/coverage.xml
+COVERAGE_CMD = php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-text
 
 define DOCKER_EXEC_WITH_ENV
 $(DOCKER_COMPOSE) exec -e $(1) php $(2)
@@ -89,25 +89,23 @@ psalm-security: ## Psalm security analysis
 	$(EXEC_ENV) $(PSALM) --taint-analysis
 
 phpinsights: ## Instant PHP quality checks and static analysis tool
-	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --ansi --format=github-action --disable-security-check && ./vendor/bin/phpinsights analyse tests --no-interaction
+	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --ansi --format=github-action --disable-security-check && $(EXEC_ENV) ./vendor/bin/phpinsights analyse tests --no-interaction
 
 unit-tests: ## Run unit tests
-	$(EXEC_ENV) $(PHPUNIT) --testsuite=Unit
+	$(RUN_TESTS_COVERAGE) --testsuite=Unit
 
 deptrac: ## Check directory structure
-	$(DEPTRAC) analyse --config-file=deptrac.yaml --report-uncovered --fail-on-uncovered
+	$(EXEC_ENV) $(DEPTRAC) analyse --config-file=deptrac.yaml --report-uncovered --fail-on-uncovered
 
 deptrac-debug: ## Find files unassigned for Deptrac
-	$(DEPTRAC) debug:unassigned --config-file=deptrac.yaml
+	$(EXEC_ENV) $(DEPTRAC) debug:unassigned --config-file=deptrac.yaml
 
-behat: ## A php framework for autotesting business expectations
+behat: setup-test-db ## A php framework for autotesting business expectations
 	$(EXEC_ENV) $(BEHAT)
 
-integration-tests: ## Run integration tests
-	$(EXEC_ENV) $(PHPUNIT) --testsuite=Integration
+integration-tests: setup-test-db ## Run integration tests
+	$(RUN_TESTS_COVERAGE) --testsuite=Integration
 
-tests-with-coverage: ## Run tests with coverage
-	$(RUN_TESTS_COVERAGE)
 
 setup-test-db: ## Create database for testing purposes
 	$(SYMFONY_TEST_ENV) c:c
@@ -144,7 +142,7 @@ build-k6-docker:
 	$(DOCKER) build -t k6 -f ./tests/Load/Dockerfile .
 
 infection: ## Run mutations test.
-	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations -j8
+	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations -j8 --min-msi=100 --min-covered-msi=100
 
 create-oauth-client: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(clientName)'
@@ -190,6 +188,9 @@ new-logs: ## Show live logs
 
 start: up doctrine-migrations-migrate ## Start docker
 
+ps: ## Check docker containers
+	$(DOCKER_COMPOSE) ps
+
 stop: ## Stop docker and the Symfony binary server
 	$(DOCKER_COMPOSE) stop
 
@@ -219,25 +220,25 @@ generate-graphql-spec:
 ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	@echo "🚀 Running comprehensive CI checks..."
 	@echo "1️⃣  Validating composer.json and composer.lock..."
-	$(COMPOSER) validate
+	make composer-validate
 	@echo "2️⃣  Checking Symfony requirements..."
-	$(EXEC_ENV) $(SYMFONY_BIN) check:requirements
+	make check-requirements
 	@echo "3️⃣  Running security analysis..."
-	$(EXEC_ENV) $(SYMFONY_BIN) security:check
+	make check-security
 	@echo "4️⃣  Fixing code style with PHP CS Fixer..."
-	$(RUN_PHP_CS_FIXER)
+	make phpcsfixer
 	@echo "5️⃣  Running static analysis with Psalm..."
-	$(EXEC_ENV) $(PSALM)
+	make psalm
 	@echo "6️⃣  Running security taint analysis..."
-	$(EXEC_ENV) $(PSALM) --taint-analysis
+	make psalm-security
 	@echo "7️⃣  Running code quality analysis with PHPInsights..."
-	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --ansi --format=github-action --disable-security-check && ./vendor/bin/phpinsights analyse tests --no-interaction
+	make phpinsights
 	@echo "8️⃣  Validating architecture with Deptrac..."
-	$(DEPTRAC) analyse --config-file=deptrac.yaml --report-uncovered --fail-on-uncovered
+	make deptrac
 	@echo "9️⃣  Running complete test suite (unit, integration, e2e)..."
-	$(EXEC_ENV) $(PHPUNIT) --testsuite=Unit
-	$(EXEC_ENV) $(PHPUNIT) --testsuite=Integration
-	$(EXEC_ENV) $(BEHAT)
+	make unit-tests
+	make integration-tests
+	make behat
 	@echo "🔟 Running mutation testing with Infection..."
-	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations -j8
+	make infection
 	@echo "✅ All CI checks completed successfully!"
