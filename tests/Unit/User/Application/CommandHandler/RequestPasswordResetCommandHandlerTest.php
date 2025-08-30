@@ -120,6 +120,303 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $this->handler->__invoke($command);
     }
 
+    public function testRequestPasswordResetRateLimitWithCustomValues(): void
+    {
+        // Test with different rate limit values to catch mutants
+        $customHandler = new RequestPasswordResetCommandHandler(
+            $this->userRepository,
+            $this->passwordResetTokenRepository,
+            $this->passwordResetTokenFactory,
+            $this->eventBus,
+            $this->uuidFactory,
+            5, // Different maxRequests
+            2  // Different windowHours
+        );
+
+        $email = $this->faker->email();
+        $user = $this->createMock(UserInterface::class);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->willReturn(5); // Exactly at limit
+
+        $this->expectException(PasswordResetRateLimitExceededException::class);
+
+        $command = new RequestPasswordResetCommand($email);
+        $customHandler->__invoke($command);
+    }
+
+    public function testRequestPasswordResetRateLimitBoundaryCondition(): void
+    {
+        // Test exactly at the boundary to catch increment/decrement mutations
+        $email = $this->faker->email();
+        $user = $this->createMock(UserInterface::class);
+        $userId = $this->faker->uuid();
+        $user->method('getId')->willReturn($userId);
+
+        $token = $this->createMock(PasswordResetTokenInterface::class);
+        $token->method('getTokenValue')->willReturn($this->faker->sha256());
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+
+        // Return exactly 2 (which is < 3, so should pass)
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->willReturn(2);
+
+        $this->passwordResetTokenFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with($userId)
+            ->willReturn($token);
+
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($token);
+
+        $this->eventBus
+            ->expects($this->once())
+            ->method('publish')
+            ->with($this->isInstanceOf(PasswordResetRequestedEvent::class));
+
+        $command = new RequestPasswordResetCommand($email);
+        $this->handler->__invoke($command);
+
+        $this->assertStringContainsString('If valid', $command->getResponse()->message);
+    }
+
+    public function testRateLimitMaxRequestsDecrement(): void
+    {
+        // Test to catch decrement mutation (3 → 2)
+        $customHandler = new RequestPasswordResetCommandHandler(
+            $this->userRepository,
+            $this->passwordResetTokenRepository,
+            $this->passwordResetTokenFactory,
+            $this->eventBus,
+            $this->uuidFactory,
+            2, // rateLimitMaxRequests = 2 (will catch if decremented to 1)
+            1
+        );
+
+        $email = $this->faker->email();
+        $user = $this->createMock(UserInterface::class);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->willReturn(2); // Exactly at custom limit of 2
+
+        $this->expectException(PasswordResetRateLimitExceededException::class);
+
+        $command = new RequestPasswordResetCommand($email);
+        $customHandler->__invoke($command);
+    }
+
+    public function testRateLimitMaxRequestsIncrement(): void
+    {
+        // Test to catch increment mutation (3 → 4)
+        $customHandler = new RequestPasswordResetCommandHandler(
+            $this->userRepository,
+            $this->passwordResetTokenRepository,
+            $this->passwordResetTokenFactory,
+            $this->eventBus,
+            $this->uuidFactory,
+            4, // rateLimitMaxRequests = 4 (will catch if incremented to 5)
+            1
+        );
+
+        $email = $this->faker->email();
+        $user = $this->createMock(UserInterface::class);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->willReturn(4); // Exactly at custom limit of 4
+
+        $this->expectException(PasswordResetRateLimitExceededException::class);
+
+        $command = new RequestPasswordResetCommand($email);
+        $customHandler->__invoke($command);
+    }
+
+    public function testRateLimitWindowHoursDecrement(): void
+    {
+        // Test to catch window hours decrement mutation (1 → 0)
+        $customHandler = new RequestPasswordResetCommandHandler(
+            $this->userRepository,
+            $this->passwordResetTokenRepository,
+            $this->passwordResetTokenFactory,
+            $this->eventBus,
+            $this->uuidFactory,
+            3,
+            0 // rateLimitWindowHours = 0 (will catch if decremented to -1)
+        );
+
+        $email = $this->faker->email();
+        $user = $this->createMock(UserInterface::class);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->willReturn(3); // At limit
+
+        $this->expectException(PasswordResetRateLimitExceededException::class);
+
+        $command = new RequestPasswordResetCommand($email);
+        $customHandler->__invoke($command);
+    }
+
+    public function testRateLimitWindowHoursIncrement(): void
+    {
+        // Test to catch window hours increment mutation (1 → 2)
+        $customHandler = new RequestPasswordResetCommandHandler(
+            $this->userRepository,
+            $this->passwordResetTokenRepository,
+            $this->passwordResetTokenFactory,
+            $this->eventBus,
+            $this->uuidFactory,
+            3,
+            2 // rateLimitWindowHours = 2 (will catch if incremented to 3)
+        );
+
+        $email = $this->faker->email();
+        $user = $this->createMock(UserInterface::class);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->willReturn(3); // At limit
+
+        $this->expectException(PasswordResetRateLimitExceededException::class);
+
+        $command = new RequestPasswordResetCommand($email);
+        $customHandler->__invoke($command);
+    }
+
+    public function testRequestPasswordResetWithDefaultRateLimitValues(): void
+    {
+        // Create handler with default constructor values to test default rate limits
+        $defaultHandler = new RequestPasswordResetCommandHandler(
+            $this->userRepository,
+            $this->passwordResetTokenRepository,
+            $this->passwordResetTokenFactory,
+            $this->eventBus,
+            $this->uuidFactory
+            // No explicit rate limit values - using defaults (3, 1)
+        );
+
+        $email = $this->faker->email();
+        $user = $this->createMock(UserInterface::class);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+
+        // Test default rate limit of 3 - return exactly 3 to trigger limit
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->willReturn(3); // Should trigger exception with default limit of 3
+
+        $this->expectException(PasswordResetRateLimitExceededException::class);
+
+        $command = new RequestPasswordResetCommand($email);
+        $defaultHandler->__invoke($command);
+    }
+
+    public function testRequestPasswordResetWithDefaultRateLimitBoundary(): void
+    {
+        // Test boundary condition with default rate limit (3)
+        $defaultHandler = new RequestPasswordResetCommandHandler(
+            $this->userRepository,
+            $this->passwordResetTokenRepository,
+            $this->passwordResetTokenFactory,
+            $this->eventBus,
+            $this->uuidFactory
+            // No explicit rate limit values - using defaults (3, 1)
+        );
+
+        $email = $this->faker->email();
+        $user = $this->createMock(UserInterface::class);
+        $userId = $this->faker->uuid();
+        $user->method('getId')->willReturn($userId);
+
+        $token = $this->createMock(PasswordResetTokenInterface::class);
+        $token->method('getTokenValue')->willReturn($this->faker->sha256());
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+
+        // Test with 2 requests (< default limit of 3) - should succeed
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->willReturn(2);
+
+        $this->passwordResetTokenFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with($userId)
+            ->willReturn($token);
+
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($token);
+
+        $this->eventBus
+            ->expects($this->once())
+            ->method('publish')
+            ->with($this->isInstanceOf(PasswordResetRequestedEvent::class));
+
+        $command = new RequestPasswordResetCommand($email);
+        $defaultHandler->__invoke($command);
+
+        $this->assertStringContainsString('If valid', $command->getResponse()->message);
+    }
+
     private function configureRepositoryMocks(
         string $email,
         UserInterface $user,
