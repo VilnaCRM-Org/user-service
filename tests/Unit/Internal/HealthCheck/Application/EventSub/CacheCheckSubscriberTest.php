@@ -36,6 +36,17 @@ final class CacheCheckSubscriberTest extends UnitTestCase
         $this->subscriber->onHealthCheck($event);
     }
 
+    public function testCacheMissHandler(): void
+    {
+        // Test the static method via reflection since it's private
+        $reflection = new \ReflectionClass(CacheCheckSubscriber::class);
+        $method = $reflection->getMethod('cacheMissHandler');
+        $method->setAccessible(true);
+        
+        $result = $method->invoke(null);
+        $this->assertSame('ok', $result);
+    }
+
     public function testGetSubscribedEvents(): void
     {
         $this->assertSame(

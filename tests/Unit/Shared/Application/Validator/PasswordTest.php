@@ -20,5 +20,25 @@ final class PasswordTest extends UnitTestCase
         self::assertInstanceOf(Constraint::class, $constraint);
         self::assertSame($groups, $constraint->groups);
         self::assertSame($payload, $constraint->payload);
+        self::assertFalse($constraint->isOptional());
+    }
+
+    public function testConstructorWithOptional(): void
+    {
+        $groups = [$this->faker->word()];
+        $payload = [$this->faker->word() => $this->faker->word()];
+
+        $constraint = new Password($groups, $payload, true);
+
+        self::assertInstanceOf(Constraint::class, $constraint);
+        self::assertSame($groups, $constraint->groups);
+        self::assertSame($payload, $constraint->payload);
+        self::assertTrue($constraint->isOptional());
+    }
+
+    public function testIsOptionalDefault(): void
+    {
+        $constraint = new Password();
+        self::assertFalse($constraint->isOptional());
     }
 }

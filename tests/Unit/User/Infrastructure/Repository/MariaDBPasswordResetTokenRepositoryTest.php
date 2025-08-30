@@ -1,0 +1,227 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Unit\User\Infrastructure\Repository;
+
+use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Entity\PasswordResetToken;
+use App\User\Domain\Entity\PasswordResetTokenInterface;
+use App\User\Infrastructure\Repository\MariaDBPasswordResetTokenRepository;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Result;
+use Doctrine\DBAL\Statement;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Persisters\Entity\EntityPersister;
+use Doctrine\ORM\UnitOfWork;
+use Doctrine\Persistence\ManagerRegistry;
+use PHPUnit\Framework\MockObject\MockObject;
+
+final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
+{
+    private EntityManagerInterface|MockObject $entityManager;
+    private ManagerRegistry|MockObject $registry;
+    private Connection|MockObject $connection;
+    private MariaDBPasswordResetTokenRepository $repository;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->registry = $this->createMock(ManagerRegistry::class);
+        $this->connection = $this->createMock(Connection::class);
+        
+        $this->repository = new MariaDBPasswordResetTokenRepository(
+            $this->entityManager,
+            $this->registry
+        );
+    }
+
+    public function testSave(): void
+    {
+        $token = $this->createMock(PasswordResetTokenInterface::class);
+
+        $this->entityManager->expects($this->once())
+            ->method('persist')
+            ->with($token);
+        
+        $this->entityManager->expects($this->once())
+            ->method('flush');
+
+        $this->repository->save($token);
+    }
+
+    public function testFindByToken(): void
+    {
+        $tokenValue = $this->faker->uuid();
+        $expectedToken = $this->createMock(PasswordResetTokenInterface::class);
+
+        $this->setupFindOneByExpectation(['tokenValue' => $tokenValue], $expectedToken);
+
+        $result = $this->repository->findByToken($tokenValue);
+
+        $this->assertSame($expectedToken, $result);
+    }
+
+    public function testFindByUserID(): void
+    {
+        $userID = $this->faker->uuid();
+        
+        // For this unit test, we'll just verify the method exists and call sequence
+        // The integration test covers the full functionality
+        $this->assertTrue(method_exists($this->repository, 'findByUserID'));
+        
+        // Verify method signature
+        $reflection = new \ReflectionMethod($this->repository, 'findByUserID');
+        $this->assertTrue($reflection->isPublic());
+        $this->assertEquals('findByUserID', $reflection->getName());
+        
+        // Verify return type allows null
+        $returnType = $reflection->getReturnType();
+        $this->assertNotNull($returnType);
+        $this->assertTrue($returnType->allowsNull());
+    }
+
+    public function testDelete(): void
+    {
+        $token = $this->createMock(PasswordResetTokenInterface::class);
+
+        $this->entityManager->expects($this->once())
+            ->method('remove')
+            ->with($token);
+        
+        $this->entityManager->expects($this->once())
+            ->method('flush');
+
+        $this->repository->delete($token);
+    }
+
+    public function testCountRecentRequestsByEmail(): void
+    {
+        $email = $this->faker->email();
+        $since = new \DateTimeImmutable('-1 hour');
+        $expectedCount = $this->faker->numberBetween(0, 10);
+
+        $statement = $this->createMock(Statement::class);
+        $result = $this->createMock(Result::class);
+
+        // Mock the getEntityManager method using reflection since it's inherited
+        $repositoryReflection = new \ReflectionClass($this->repository);
+        $parentClass = $repositoryReflection->getParentClass();
+        
+        // Create a partial mock to override the getEntityManager method
+        $repository = $this->getMockBuilder(MariaDBPasswordResetTokenRepository::class)
+            ->setConstructorArgs([$this->entityManager, $this->registry])
+            ->onlyMethods(['getEntityManager'])
+            ->getMock();
+
+        $repository->expects($this->once())
+            ->method('getEntityManager')
+            ->willReturn($this->entityManager);
+
+        $this->entityManager->expects($this->once())
+            ->method('getConnection')
+            ->willReturn($this->connection);
+
+        $this->connection->expects($this->once())
+            ->method('prepare')
+            ->with($this->stringContains('SELECT COUNT(prt.token_value)'))
+            ->willReturn($statement);
+
+        $statement->expects($this->exactly(2))
+            ->method('bindValue')
+            ->withConsecutive(
+                ['email', $email],
+                ['since', $since->format('Y-m-d H:i:s')]
+            );
+
+        $statement->expects($this->once())
+            ->method('executeQuery')
+            ->willReturn($result);
+
+        $result->expects($this->once())
+            ->method('fetchOne')
+            ->willReturn((string) $expectedCount);
+
+        $count = $repository->countRecentRequestsByEmail($email, $since);
+
+        $this->assertSame($expectedCount, $count);
+    }
+
+    public function testCountRecentRequestsByEmailReturnsZero(): void
+    {
+        $email = $this->faker->email();
+        $since = new \DateTimeImmutable('-1 hour');
+
+        $statement = $this->createMock(Statement::class);
+        $result = $this->createMock(Result::class);
+
+        // Create a partial mock to override the getEntityManager method
+        $repository = $this->getMockBuilder(MariaDBPasswordResetTokenRepository::class)
+            ->setConstructorArgs([$this->entityManager, $this->registry])
+            ->onlyMethods(['getEntityManager'])
+            ->getMock();
+
+        $repository->expects($this->once())
+            ->method('getEntityManager')
+            ->willReturn($this->entityManager);
+
+        $this->entityManager->expects($this->once())
+            ->method('getConnection')
+            ->willReturn($this->connection);
+
+        $this->connection->expects($this->once())
+            ->method('prepare')
+            ->willReturn($statement);
+
+        $statement->expects($this->exactly(2))
+            ->method('bindValue');
+
+        $statement->expects($this->once())
+            ->method('executeQuery')
+            ->willReturn($result);
+
+        $result->expects($this->once())
+            ->method('fetchOne')
+            ->willReturn('0');
+
+        $count = $repository->countRecentRequestsByEmail($email, $since);
+
+        $this->assertSame(0, $count);
+    }
+
+    private function setupFindOneByExpectation(
+        array $criteria,
+        ?PasswordResetTokenInterface $expectedResult,
+        ?array $orderBy = null
+    ): void {
+        $unitOfWork = $this->createMock(UnitOfWork::class);
+        $persister = $this->createMock(EntityPersister::class);
+
+        $metadataMock = $this->createMock(ClassMetadata::class);
+        $metadataMock->name = PasswordResetToken::class;
+        
+        $this->entityManager->expects($this->once())
+            ->method('getClassMetadata')
+            ->willReturn($metadataMock);
+
+        $this->entityManager->expects($this->once())
+            ->method('getUnitOfWork')
+            ->willReturn($unitOfWork);
+
+        $unitOfWork->expects($this->once())
+            ->method('getEntityPersister')
+            ->willReturn($persister);
+
+        $persister->expects($this->once())
+            ->method('load')
+            ->with($criteria, $this->anything(), $this->anything(), $this->anything(), $orderBy)
+            ->willReturn($expectedResult);
+
+        $this->registry->expects($this->once())
+            ->method('getManagerForClass')
+            ->willReturn($this->entityManager);
+    }
+}
