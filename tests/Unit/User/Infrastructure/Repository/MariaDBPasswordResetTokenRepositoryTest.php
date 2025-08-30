@@ -67,19 +67,43 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
 
     public function testFindByUserID(): void
     {
-        // For this unit test, we'll just verify the method exists and call sequence
-        // The integration test covers the full functionality
-        $this->assertTrue(method_exists($this->repository, 'findByUserID'));
+        $userID = $this->faker->uuid();
+        $expectedToken = $this->createMock(PasswordResetTokenInterface::class);
 
-        // Verify method signature
-        $reflection = new \ReflectionMethod($this->repository, 'findByUserID');
-        $this->assertTrue($reflection->isPublic());
-        $this->assertEquals('findByUserID', $reflection->getName());
+        // Create a mock repository that overrides just the findOneBy method
+        $repository = $this->getMockBuilder(MariaDBPasswordResetTokenRepository::class)
+            ->setConstructorArgs([$this->entityManager, $this->registry])
+            ->onlyMethods(['findOneBy'])
+            ->getMock();
 
-        // Verify return type allows null
-        $returnType = $reflection->getReturnType();
-        $this->assertNotNull($returnType);
-        $this->assertTrue($returnType->allowsNull());
+        $repository->expects($this->once())
+            ->method('findOneBy')
+            ->with(['userID' => $userID], ['createdAt' => 'DESC'])
+            ->willReturn($expectedToken);
+
+        $result = $repository->findByUserID($userID);
+
+        $this->assertSame($expectedToken, $result);
+    }
+
+    public function testFindByUserIDReturnsNull(): void
+    {
+        $userID = $this->faker->uuid();
+
+        // Create a mock repository that overrides just the findOneBy method
+        $repository = $this->getMockBuilder(MariaDBPasswordResetTokenRepository::class)
+            ->setConstructorArgs([$this->entityManager, $this->registry])
+            ->onlyMethods(['findOneBy'])
+            ->getMock();
+
+        $repository->expects($this->once())
+            ->method('findOneBy')
+            ->with(['userID' => $userID], ['createdAt' => 'DESC'])
+            ->willReturn(null);
+
+        $result = $repository->findByUserID($userID);
+
+        $this->assertNull($result);
     }
 
     public function testDelete(): void
@@ -233,7 +257,13 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
 
         $persister->expects($this->once())
             ->method('load')
-            ->with($criteria, $this->anything(), $this->anything(), $this->anything(), $orderBy)
+            ->with(
+                $criteria,
+                $this->anything(),
+                $this->anything(),
+                [],
+                $orderBy
+            )
             ->willReturn($expectedResult);
 
         $this->registry->expects($this->once())
