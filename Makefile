@@ -107,7 +107,7 @@ integration-tests: setup-test-db ## Run integration tests
 	$(RUN_TESTS_COVERAGE) --testsuite=Integration
 
 tests-with-coverage: ## Run tests with coverage
-	$(RUN_TESTS_COVERAGE)
+	$(RUN_TESTS_COVERAGE) --coverage-clover /coverage/coverage.xml
 
 setup-test-db: ## Create database for testing purposes
 	$(SYMFONY_TEST_ENV) c:c
