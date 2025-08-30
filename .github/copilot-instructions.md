@@ -544,6 +544,7 @@ When making changes, respect these architectural boundaries and patterns.
 **MANDATORY: Always follow software engineering best practices to maintain code quality:**
 
 #### Cyclomatic Complexity Management
+
 - **Keep cyclomatic complexity below 5 per class/method** (enforced by PHPInsights)
 - **When complexity exceeds threshold, refactor by:**
   - Creating new methods to extract complex logic
@@ -553,6 +554,7 @@ When making changes, respect these architectural boundaries and patterns.
   - Using the Strategy Pattern for complex conditional logic
 
 #### Example: Refactoring High Complexity Validators
+
 ```php
 // ❌ BAD: High cyclomatic complexity (8)
 public function validate($value, Constraint $constraint): void
@@ -577,6 +579,7 @@ public function validate($value, Constraint $constraint): void
 ```
 
 #### Other Best Practices
+
 - **Single Responsibility**: Each class/method should have one clear purpose
 - **DRY Principle**: Don't repeat yourself - extract common logic into reusable components
 - **SOLID Principles**: Follow dependency inversion, open/closed, and other SOLID principles
@@ -585,7 +588,9 @@ public function validate($value, Constraint $constraint): void
 - **Consistent Code Style**: Follow PSR-12 standards enforced by PHP CS Fixer
 
 ### Quality Gates
+
 All code must pass these quality gates before commit:
+
 - **PHPInsights**: 100% code quality, 95%+ complexity score, 100% architecture score, 100% style score
 - **Psalm**: Static analysis with no errors
 - **PHP CS Fixer**: PSR-12 compliance
