@@ -106,6 +106,8 @@ behat: setup-test-db ## A php framework for autotesting business expectations
 integration-tests: setup-test-db ## Run integration tests
 	$(RUN_TESTS_COVERAGE) --testsuite=Integration
 
+tests-with-coverage: ## Run tests with coverage
+	$(RUN_TESTS_COVERAGE)
 
 setup-test-db: ## Create database for testing purposes
 	$(SYMFONY_TEST_ENV) c:c
@@ -241,4 +243,6 @@ ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	make behat
 	@echo "🔟 Running mutation testing with Infection..."
 	make infection
+	@echo "🔟 Running CLI testing with Bats..."
+	make bats
 	@echo "✅ All CI checks completed successfully!"
