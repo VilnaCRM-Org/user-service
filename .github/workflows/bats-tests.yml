@@ -25,5 +25,10 @@ jobs:
       - name: Setup Bats and bats libs
         uses: bats-core/bats-action@2.0.0
 
+      - name: Install Bats plugins
+        run: cd tests/CLI/bats/test_helper && 
+          git clone https://github.com/bats-core/bats-support.git &&
+          git clone https://github.com/bats-core/bats-assert.git
+
       - name: Run Bats tests
         run: make bats
