@@ -102,13 +102,17 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $since = new \DateTimeImmutable('-1 hour');
         $expectedCount = $this->faker->numberBetween(0, 10);
 
-        $statement = $this->createMock(Statement::class);
-        $result = $this->createMock(Result::class);
+        $repository = $this->createRepositoryMock();
+        $statement = $this->setupDatabaseMocks($repository, $expectedCount);
+        $this->setupStatementBindings($statement, $email, $since);
 
-        // Mock the getEntityManager method using reflection since it's inherited
-        $repositoryReflection = new \ReflectionClass($this->repository);
+        $count = $repository->countRecentRequestsByEmail($email, $since);
 
-        // Create a partial mock to override the getEntityManager method
+        $this->assertSame($expectedCount, $count);
+    }
+
+    private function createRepositoryMock(): MariaDBPasswordResetTokenRepository
+    {
         $repository = $this->getMockBuilder(MariaDBPasswordResetTokenRepository::class)
             ->setConstructorArgs([$this->entityManager, $this->registry])
             ->onlyMethods(['getEntityManager'])
@@ -117,6 +121,16 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $repository->expects($this->once())
             ->method('getEntityManager')
             ->willReturn($this->entityManager);
+
+        return $repository;
+    }
+
+    private function setupDatabaseMocks(
+        MariaDBPasswordResetTokenRepository $repository,
+        int $expectedCount
+    ): Statement {
+        $statement = $this->createMock(Statement::class);
+        $result = $this->createMock(Result::class);
 
         $this->entityManager->expects($this->once())
             ->method('getConnection')
@@ -127,13 +141,6 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
             ->with($this->stringContains('SELECT COUNT(prt.token_value)'))
             ->willReturn($statement);
 
-        $statement->expects($this->exactly(2))
-            ->method('bindValue')
-            ->withConsecutive(
-                ['email', $email],
-                ['since', $since->format('Y-m-d H:i:s')]
-            );
-
         $statement->expects($this->once())
             ->method('executeQuery')
             ->willReturn($result);
@@ -142,9 +149,20 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
             ->method('fetchOne')
             ->willReturn((string) $expectedCount);
 
-        $count = $repository->countRecentRequestsByEmail($email, $since);
+        return $statement;
+    }
 
-        $this->assertSame($expectedCount, $count);
+    private function setupStatementBindings(
+        Statement $statement,
+        string $email,
+        \DateTimeImmutable $since
+    ): void {
+        $statement->expects($this->exactly(2))
+            ->method('bindValue')
+            ->withConsecutive(
+                ['email', $email],
+                ['since', $since->format('Y-m-d H:i:s')]
+            );
     }
 
     public function testCountRecentRequestsByEmailReturnsZero(): void
@@ -152,18 +170,19 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $email = $this->faker->email();
         $since = new \DateTimeImmutable('-1 hour');
 
+        $repository = $this->createRepositoryMock();
+        $this->setupDatabaseMocksForZeroResult($repository);
+
+        $count = $repository->countRecentRequestsByEmail($email, $since);
+
+        $this->assertSame(0, $count);
+    }
+
+    private function setupDatabaseMocksForZeroResult(
+        MariaDBPasswordResetTokenRepository $repository
+    ): void {
         $statement = $this->createMock(Statement::class);
         $result = $this->createMock(Result::class);
-
-        // Create a partial mock to override the getEntityManager method
-        $repository = $this->getMockBuilder(MariaDBPasswordResetTokenRepository::class)
-            ->setConstructorArgs([$this->entityManager, $this->registry])
-            ->onlyMethods(['getEntityManager'])
-            ->getMock();
-
-        $repository->expects($this->once())
-            ->method('getEntityManager')
-            ->willReturn($this->entityManager);
 
         $this->entityManager->expects($this->once())
             ->method('getConnection')
@@ -183,14 +202,10 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $result->expects($this->once())
             ->method('fetchOne')
             ->willReturn('0');
-
-        $count = $repository->countRecentRequestsByEmail($email, $since);
-
-        $this->assertSame(0, $count);
     }
 
     /**
-     * @param array<string, mixed> $criteria
+     * @param array<string, string> $criteria
      * @param array<string, string>|null $orderBy
      */
     private function setupFindOneByExpectation(

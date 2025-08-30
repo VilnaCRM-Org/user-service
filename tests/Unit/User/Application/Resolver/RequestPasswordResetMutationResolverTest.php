@@ -48,7 +48,7 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, array<string, array<string, string>>>
      */
     private function createContext(string $email): array
     {

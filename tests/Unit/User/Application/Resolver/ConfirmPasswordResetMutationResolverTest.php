@@ -36,7 +36,23 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
         $newPassword = $this->faker->password();
         $message = 'Password has been reset successfully.';
 
-        $context = [
+        $context = $this->createContext($token, $newPassword);
+
+        $this->expectValidationCall();
+        $this->expectCommandDispatch($token, $newPassword, $message);
+
+        $result = $this->resolver->__invoke(null, $context);
+
+        $this->assertIsObject($result);
+        $this->assertSame($message, $result->message);
+    }
+
+    /**
+     * @return array<string, array<string, array<string, string>>>
+     */
+    private function createContext(string $token, string $newPassword): array
+    {
+        return [
             'args' => [
                 'input' => [
                     'token' => $token,
@@ -44,10 +60,16 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
                 ],
             ],
         ];
+    }
 
+    private function expectValidationCall(): void
+    {
         $this->validator->expects($this->once())
             ->method('validate');
+    }
 
+    private function expectCommandDispatch(string $token, string $newPassword, string $message): void
+    {
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(function (ConfirmPasswordResetCommand $command) use ($token, $newPassword, $message) {
@@ -60,11 +82,6 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
 
                 return true;
             }));
-
-        $result = $this->resolver->__invoke(null, $context);
-
-        $this->assertIsObject($result);
-        $this->assertSame($message, $result->message);
     }
 
     public function testInvokeWithMissingArgs(): void
