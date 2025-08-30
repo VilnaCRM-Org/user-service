@@ -536,3 +536,58 @@ This application implements:
 - **API-First Design**: REST and GraphQL APIs using API Platform
 
 When making changes, respect these architectural boundaries and patterns.
+
+## Software Engineering Best Practices
+
+### Code Quality and Complexity Management
+
+**MANDATORY: Always follow software engineering best practices to maintain code quality:**
+
+#### Cyclomatic Complexity Management
+- **Keep cyclomatic complexity below 5 per class/method** (enforced by PHPInsights)
+- **When complexity exceeds threshold, refactor by:**
+  - Creating new methods to extract complex logic
+  - Extracting strategy classes for complex validation or business rules
+  - Using composition instead of inheritance where appropriate
+  - Breaking down large methods into smaller, focused methods
+  - Using the Strategy Pattern for complex conditional logic
+
+#### Example: Refactoring High Complexity Validators
+```php
+// ❌ BAD: High cyclomatic complexity (8)
+public function validate($value, Constraint $constraint): void
+{
+    if ($value === null || ($constraint->isOptional() && $value === '')) {
+        return;
+    }
+    if (!(strlen($value) >= 8 && strlen($value) <= 64)) {
+        $this->addViolation('password.invalid.length');
+    }
+    // ... more complex conditions
+}
+
+// ✅ GOOD: Low complexity using strategy classes
+public function validate($value, Constraint $constraint): void
+{
+    if ($this->skipChecker->shouldSkip($value, $constraint)) {
+        return;
+    }
+    $this->performValidations($value);
+}
+```
+
+#### Other Best Practices
+- **Single Responsibility**: Each class/method should have one clear purpose
+- **DRY Principle**: Don't repeat yourself - extract common logic into reusable components
+- **SOLID Principles**: Follow dependency inversion, open/closed, and other SOLID principles
+- **Meaningful Names**: Use descriptive class, method, and variable names
+- **Small Methods**: Keep methods under 20 lines when possible
+- **Consistent Code Style**: Follow PSR-12 standards enforced by PHP CS Fixer
+
+### Quality Gates
+All code must pass these quality gates before commit:
+- **PHPInsights**: 100% code quality, 95%+ complexity score, 100% architecture score, 100% style score
+- **Psalm**: Static analysis with no errors
+- **PHP CS Fixer**: PSR-12 compliance
+- **Unit/Integration Tests**: 100% test coverage
+- **Mutation Testing**: 0 escaped mutants

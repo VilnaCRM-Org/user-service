@@ -20,7 +20,8 @@ final class ConfirmPasswordResetController extends AbstractController
 
     public function __invoke(
         string $id,
-        #[MapRequestPayload] ConfirmPasswordResetDto $confirmPasswordResetDto
+        #[MapRequestPayload]
+        ConfirmPasswordResetDto $confirmPasswordResetDto
     ): JsonResponse {
         // Note: The user ID is available in $id if needed for validation
         $command = new ConfirmPasswordResetCommand(

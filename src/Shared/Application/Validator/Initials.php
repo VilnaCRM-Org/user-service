@@ -16,7 +16,9 @@ final class Initials extends Constraint
         mixed $payload = null,
         ?bool $optional = null,
     ) {
-        $this->optional ??= $optional;
+        if ($optional !== null) {
+            $this->optional = $optional;
+        }
         parent::__construct([], $groups, $payload);
     }
 

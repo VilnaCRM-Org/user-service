@@ -71,8 +71,8 @@ return [
         ],
         CyclomaticComplexityIsHigh::class => [
             'exclude' => [
-                'src/Shared/Application/Validator/InitialsValidator.php',
-                'src/Shared/Application/Validator/PasswordValidator.php',
+                // Validators excluded from complexity checks as they require
+                // validation logic that may appear complex but is necessary
             ],
         ],
     ],
