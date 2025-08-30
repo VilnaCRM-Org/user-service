@@ -92,7 +92,7 @@ final class UserContext implements Context
         $this->userRepository->save($user);
 
         // Track the user ID for later use in password reset tests
-        self::$userIdsByEmail[$email] = $userId;
+        self::$userIdsByEmail[$email] = (string) $userId;
     }
 
     /**

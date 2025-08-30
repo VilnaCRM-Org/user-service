@@ -1332,39 +1332,14 @@ paths:
       tags:
         - User
       responses:
-        '201':
-          description: 'User resource created'
+        '200':
+          description: 'Password reset email sent'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User-output'
-            application/graphql:
-              schema:
-                $ref: '#/components/schemas/User-output'
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/User.jsonld-output'
-          links: {  }
-        '400':
-          description: 'Invalid input'
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Error'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          links: {  }
-        '422':
-          description: 'An error occurred'
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/ConstraintViolation-json'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConstraintViolation-json'
-          links: {  }
+                type: object
+                properties:
+                  message: { type: string, example: 'Password reset email sent successfully' }
         '500':
           description: 'Internal server error'
           content:
@@ -1387,8 +1362,8 @@ paths:
                 detail: 'Something went wrong'
                 status: 500
           headers: {  }
-      summary: 'Creates a User resource.'
-      description: 'Creates a User resource.'
+      summary: 'Request password reset'
+      description: 'Initiates password reset process by sending reset email'
       parameters:
         -
           name: id
@@ -1403,17 +1378,19 @@ paths:
           explode: false
           allowReserved: false
       requestBody:
-        description: 'The new User resource'
+        description: 'Password reset request data'
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User.RequestPasswordResetDto-request_password_reset.write'
-          application/graphql:
-            schema:
-              $ref: '#/components/schemas/User.RequestPasswordResetDto-request_password_reset.write'
-          application/ld+json:
-            schema:
-              $ref: '#/components/schemas/User.RequestPasswordResetDto.jsonld-request_password_reset.write'
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: 'User email address'
+                  example: user@example.com
+              required:
+                - email
         required: true
       deprecated: false
   '/api/users/{id}/reset-password/confirm':
@@ -1422,39 +1399,14 @@ paths:
       tags:
         - User
       responses:
-        '201':
-          description: 'User resource created'
+        '200':
+          description: 'Password reset confirmed successfully'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User-output'
-            application/graphql:
-              schema:
-                $ref: '#/components/schemas/User-output'
-            application/ld+json:
-              schema:
-                $ref: '#/components/schemas/User.jsonld-output'
-          links: {  }
-        '400':
-          description: 'Invalid input'
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Error'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          links: {  }
-        '422':
-          description: 'An error occurred'
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/ConstraintViolation-json'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConstraintViolation-json'
-          links: {  }
+                type: object
+                properties:
+                  message: { type: string, example: 'Password reset confirmed successfully' }
         '500':
           description: 'Internal server error'
           content:
@@ -1477,8 +1429,8 @@ paths:
                 detail: 'Something went wrong'
                 status: 500
           headers: {  }
-      summary: 'Creates a User resource.'
-      description: 'Creates a User resource.'
+      summary: 'Confirm password reset'
+      description: 'Confirms password reset using token and sets new password'
       parameters:
         -
           name: id
@@ -1493,17 +1445,23 @@ paths:
           explode: false
           allowReserved: false
       requestBody:
-        description: 'The new User resource'
+        description: 'Password reset confirmation data'
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User.ConfirmPasswordResetDto-confirm_password_reset.write'
-          application/graphql:
-            schema:
-              $ref: '#/components/schemas/User.ConfirmPasswordResetDto-confirm_password_reset.write'
-          application/ld+json:
-            schema:
-              $ref: '#/components/schemas/User.ConfirmPasswordResetDto.jsonld-confirm_password_reset.write'
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: 'Password reset token'
+                  example: abc123def456
+                newPassword:
+                  type: string
+                  description: 'New password'
+                  example: newSecurePassword123
+              required:
+                - token
+                - newPassword
         required: true
       deprecated: false
 components:

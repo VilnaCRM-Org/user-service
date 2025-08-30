@@ -45,17 +45,70 @@ resources:
       request_password_reset:
         class: 'ApiPlatform\Metadata\Post'
         uriTemplate: '/users/{id}/reset-password'
-        input: 'App\User\Application\DTO\RequestPasswordResetDto'
-        processor: 'App\User\Application\Processor\RequestPasswordResetProcessor'
-        denormalizationContext:
-          groups: ['request_password_reset:write']
+        controller: 'App\User\Application\Controller\RequestPasswordResetController'
+        openapi:
+          summary: 'Request password reset'
+          description: 'Initiates password reset process by sending reset email'
+          requestBody:
+            description: 'Password reset request data'
+            required: true
+            content:
+              'application/json':
+                schema:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                      format: email
+                      description: 'User email address'
+                      example: 'user@example.com'
+                  required: ['email']
+          responses:
+            '200':
+              description: 'Password reset email sent'
+              content:
+                'application/json':
+                  schema:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: 'Password reset email sent successfully'
       confirm_password_reset:
         class: 'ApiPlatform\Metadata\Post'
         uriTemplate: '/users/{id}/reset-password/confirm'
-        input: 'App\User\Application\DTO\ConfirmPasswordResetDto'
-        processor: 'App\User\Application\Processor\ConfirmPasswordResetProcessor'
-        denormalizationContext:
-          groups: ['confirm_password_reset:write']
+        controller: 'App\User\Application\Controller\ConfirmPasswordResetController'
+        openapi:
+          summary: 'Confirm password reset'
+          description: 'Confirms password reset using token and sets new password'
+          requestBody:
+            description: 'Password reset confirmation data'
+            required: true
+            content:
+              'application/json':
+                schema:
+                  type: object
+                  properties:
+                    token:
+                      type: string
+                      description: 'Password reset token'
+                      example: 'abc123def456'
+                    newPassword:
+                      type: string
+                      description: 'New password'
+                      example: 'newSecurePassword123'
+                  required: ['token', 'newPassword']
+          responses:
+            '200':
+              description: 'Password reset confirmed successfully'
+              content:
+                'application/json':
+                  schema:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: 'Password reset confirmed successfully'
 
     graphQlOperations:
       - class: 'ApiPlatform\Metadata\GraphQl\Query'
