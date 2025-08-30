@@ -42,7 +42,7 @@ final class CacheCheckSubscriberTest extends UnitTestCase
         $reflection = new \ReflectionClass(CacheCheckSubscriber::class);
         $method = $reflection->getMethod('cacheMissHandler');
         $method->setAccessible(true);
-        
+
         $result = $method->invoke(null);
         $this->assertSame('ok', $result);
     }

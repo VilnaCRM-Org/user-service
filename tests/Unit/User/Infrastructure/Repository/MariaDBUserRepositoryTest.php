@@ -87,17 +87,15 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
 
     public function testFindById(): void
     {
-        $id = $this->faker->uuid();
-        
         // For this unit test, we'll just verify the method exists and call sequence
         // The integration test covers the full functionality
         $this->assertTrue(method_exists($this->userRepository, 'findById'));
-        
+
         // Verify method signature
         $reflection = new \ReflectionMethod($this->userRepository, 'findById');
         $this->assertTrue($reflection->isPublic());
         $this->assertEquals('findById', $reflection->getName());
-        
+
         // Verify return type allows null
         $returnType = $reflection->getReturnType();
         $this->assertNotNull($returnType);

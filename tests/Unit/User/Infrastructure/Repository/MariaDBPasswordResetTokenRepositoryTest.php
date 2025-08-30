@@ -32,7 +32,7 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->registry = $this->createMock(ManagerRegistry::class);
         $this->connection = $this->createMock(Connection::class);
-        
+
         $this->repository = new MariaDBPasswordResetTokenRepository(
             $this->entityManager,
             $this->registry
@@ -46,7 +46,7 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $this->entityManager->expects($this->once())
             ->method('persist')
             ->with($token);
-        
+
         $this->entityManager->expects($this->once())
             ->method('flush');
 
@@ -67,17 +67,15 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
 
     public function testFindByUserID(): void
     {
-        $userID = $this->faker->uuid();
-        
         // For this unit test, we'll just verify the method exists and call sequence
         // The integration test covers the full functionality
         $this->assertTrue(method_exists($this->repository, 'findByUserID'));
-        
+
         // Verify method signature
         $reflection = new \ReflectionMethod($this->repository, 'findByUserID');
         $this->assertTrue($reflection->isPublic());
         $this->assertEquals('findByUserID', $reflection->getName());
-        
+
         // Verify return type allows null
         $returnType = $reflection->getReturnType();
         $this->assertNotNull($returnType);
@@ -91,7 +89,7 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $this->entityManager->expects($this->once())
             ->method('remove')
             ->with($token);
-        
+
         $this->entityManager->expects($this->once())
             ->method('flush');
 
@@ -109,8 +107,7 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
 
         // Mock the getEntityManager method using reflection since it's inherited
         $repositoryReflection = new \ReflectionClass($this->repository);
-        $parentClass = $repositoryReflection->getParentClass();
-        
+
         // Create a partial mock to override the getEntityManager method
         $repository = $this->getMockBuilder(MariaDBPasswordResetTokenRepository::class)
             ->setConstructorArgs([$this->entityManager, $this->registry])
@@ -192,6 +189,10 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $this->assertSame(0, $count);
     }
 
+    /**
+     * @param array<string, mixed> $criteria
+     * @param array<string, string>|null $orderBy
+     */
     private function setupFindOneByExpectation(
         array $criteria,
         ?PasswordResetTokenInterface $expectedResult,
@@ -202,7 +203,7 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
 
         $metadataMock = $this->createMock(ClassMetadata::class);
         $metadataMock->name = PasswordResetToken::class;
-        
+
         $this->entityManager->expects($this->once())
             ->method('getClassMetadata')
             ->willReturn($metadataMock);

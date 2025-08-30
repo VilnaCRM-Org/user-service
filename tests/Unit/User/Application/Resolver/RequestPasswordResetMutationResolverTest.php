@@ -47,6 +47,9 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
         $this->assertSame($message, $result->message);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function createContext(string $email): array
     {
         return [
