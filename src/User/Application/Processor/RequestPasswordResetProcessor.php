@@ -8,11 +8,11 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\RequestPasswordResetCommand;
+use App\User\Application\DTO\PasswordResetPayload;
 use App\User\Application\DTO\RequestPasswordResetDto;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
- * @implements ProcessorInterface<RequestPasswordResetDto, JsonResponse>
+ * @implements ProcessorInterface<RequestPasswordResetDto, PasswordResetPayload>
  */
 final readonly class RequestPasswordResetProcessor implements ProcessorInterface
 {
@@ -31,13 +31,10 @@ final readonly class RequestPasswordResetProcessor implements ProcessorInterface
         Operation $operation,
         array $uriVariables = [],
         array $context = []
-    ): JsonResponse {
-        // Note: The user ID is available in $uriVariables['id'] if needed for validation
+    ): PasswordResetPayload {
         $command = new RequestPasswordResetCommand($data->email);
         $this->commandBus->dispatch($command);
 
-        return new JsonResponse([
-            'message' => $command->getResponse()->message,
-        ]);
+        return new PasswordResetPayload(true);
     }
 }

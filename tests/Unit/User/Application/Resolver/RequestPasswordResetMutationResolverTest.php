@@ -43,8 +43,8 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
 
         $result = $this->resolver->__invoke(null, $context);
 
-        $this->assertIsObject($result);
-        $this->assertSame($message, $result->message);
+        $this->assertInstanceOf(\App\User\Application\DTO\PasswordResetPayload::class, $result);
+        $this->assertTrue($result->ok);
     }
 
     /**

@@ -9,10 +9,10 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\DTO\ConfirmPasswordResetDto;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use App\User\Application\DTO\PasswordResetPayload;
 
 /**
- * @implements ProcessorInterface<ConfirmPasswordResetDto, JsonResponse>
+ * @implements ProcessorInterface<ConfirmPasswordResetDto, PasswordResetPayload>
  */
 final readonly class ConfirmPasswordResetProcessor implements ProcessorInterface
 {
@@ -31,16 +31,13 @@ final readonly class ConfirmPasswordResetProcessor implements ProcessorInterface
         Operation $operation,
         array $uriVariables = [],
         array $context = []
-    ): JsonResponse {
-        // Note: The user ID is available in $uriVariables['id'] if needed for validation
+    ): PasswordResetPayload {
         $command = new ConfirmPasswordResetCommand(
             $data->token,
             $data->newPassword
         );
         $this->commandBus->dispatch($command);
 
-        return new JsonResponse([
-            'message' => $command->getResponse()->message,
-        ]);
+        return new PasswordResetPayload(true);
     }
 }
