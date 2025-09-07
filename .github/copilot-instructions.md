@@ -608,6 +608,7 @@ Mutation testing validates test quality by making small changes (mutations) to s
 If extending unit tests doesn't achieve 100% mutation score, consider refactoring the original classes to make them more testable:
 
 #### 1. **Constructor Default Parameters**
+
 ```php
 // ❌ HARD TO TEST: Default values in constructor
 public function __construct(
@@ -628,6 +629,7 @@ public static function withDefaults(): self
 ```
 
 #### 2. **DateTime Boundary Conditions**
+
 ```php
 // ❌ HARD TO TEST: Fixed current time
 public function isExpired(): bool
@@ -644,12 +646,13 @@ public function isExpired(?DateTime $currentTime = null): bool
 ```
 
 #### 3. **Complex Boolean Logic**
+
 ```php
 // ❌ HARD TO TEST: Complex nested conditions
 public function validate($value): bool
 {
-    return $value !== null && 
-           strlen($value) >= 8 && 
+    return $value !== null &&
+           strlen($value) >= 8 &&
            strlen($value) <= 64 &&
            preg_match('/[A-Z]/', $value) &&
            preg_match('/[0-9]/', $value);
@@ -666,6 +669,7 @@ public function validate($value): bool
 ```
 
 #### 4. **Static Method Calls**
+
 ```php
 // ❌ HARD TO TEST: Direct static calls
 public function generateToken(): string
@@ -690,6 +694,7 @@ public function generateToken(): string
 6. **Update interface signatures** to match implementation changes
 
 **Target: 100% MSI (Mutation Score Indicator)**
+
 - 784/784 mutants killed (or equivalent for your codebase)
 - Zero escaped mutants
 - All boundary conditions, default values, and logical operators tested
