@@ -86,6 +86,15 @@ services:
           method: onUserResolve,
         }
 
+  App\User\Application\Service\CompositePasswordResetTokenValidator:
+    arguments:
+      $validators:
+        - '@App\User\Application\Service\TokenExistenceValidator'
+        - '@App\User\Application\Service\TokenExpirationValidator'
+        - '@App\User\Application\Service\TokenUsageValidator'
+
+  App\User\Domain\Service\PasswordResetTokenValidatorInterface: '@App\User\Application\Service\CompositePasswordResetTokenValidator'
+
   Aws\Sqs\SqsClient:
     arguments:
       - version: '%env(AWS_SQS_VERSION)%'

@@ -57,4 +57,39 @@ final class InitialsValidationChecksTest extends TestCase
 
         $this->assertTrue($result);
     }
+
+    public function testIsOnlySpacesWithNonStringValue(): void
+    {
+        $result = $this->validationChecks->isOnlySpaces(123);
+
+        $this->assertFalse($result);
+    }
+
+    public function testIsOnlySpacesWithStringableObject(): void
+    {
+        $stringable = new class {
+            public function __toString(): string
+            {
+                return '   ';
+            }
+        };
+
+        $result = $this->validationChecks->isOnlySpaces($stringable);
+
+        $this->assertTrue($result);
+    }
+
+    public function testIsOnlySpacesWithStringableObjectContainingText(): void
+    {
+        $stringable = new class {
+            public function __toString(): string
+            {
+                return 'A.B.';
+            }
+        };
+
+        $result = $this->validationChecks->isOnlySpaces($stringable);
+
+        $this->assertFalse($result);
+    }
 }

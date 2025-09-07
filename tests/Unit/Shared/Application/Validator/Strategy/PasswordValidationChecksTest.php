@@ -94,4 +94,11 @@ final class PasswordValidationChecksTest extends TestCase
 
         $this->assertTrue($result);
     }
+
+    public function testHasValidLengthWithNonStringValue(): void
+    {
+        $result = $this->validationChecks->hasValidLength(123);
+
+        $this->assertFalse($result);
+    }
 }

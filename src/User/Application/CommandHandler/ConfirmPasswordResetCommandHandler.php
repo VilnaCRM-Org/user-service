@@ -8,17 +8,14 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\ConfirmPasswordResetCommandResponse;
+use App\User\Application\Service\UserTokenMatchValidator;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetConfirmedEvent;
-use App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException;
-use App\User\Domain\Exception\PasswordResetTokenExpiredException;
-use App\User\Domain\Exception\PasswordResetTokenMismatchException;
-use App\User\Domain\Exception\PasswordResetTokenNotFoundException;
-use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Domain\Service\PasswordResetTokenValidatorInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
@@ -26,21 +23,23 @@ final readonly class ConfirmPasswordResetCommandHandler implements
     CommandHandlerInterface
 {
     public function __construct(
-        private UserRepositoryInterface $userRepository,
         private PasswordResetTokenRepositoryInterface $tokenRepository,
+        private UserRepositoryInterface $userRepository,
         private PasswordHasherFactoryInterface $hasherFactory,
         private EventBusInterface $eventBus,
         private UuidFactory $uuidFactory,
+        private PasswordResetTokenValidatorInterface $tokenValidator,
+        private UserTokenMatchValidator $userTokenMatchValidator,
     ) {
     }
 
     public function __invoke(ConfirmPasswordResetCommand $command): void
     {
-        $passwordResetToken = $this->validatePasswordResetToken(
-            $command->token
+        $passwordResetToken = $this->getValidatedToken($command->token);
+        $user = $this->userTokenMatchValidator->validateAndGetUser(
+            $passwordResetToken,
+            $command->userId
         );
-        $user = $this->findUserByToken($passwordResetToken);
-        $this->validateUserTokenMatch($user, $command->userId);
 
         $this->updateUserPassword($user, $command->newPassword);
         $this->markTokenAsUsed($passwordResetToken);
@@ -53,52 +52,13 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         );
     }
 
-    private function validatePasswordResetToken(
+    private function getValidatedToken(
         string $token
     ): PasswordResetTokenInterface {
         $passwordResetToken = $this->tokenRepository->findByToken($token);
-
-        $this->ensureTokenExists($passwordResetToken);
-        $this->ensureTokenNotExpired($passwordResetToken);
-        $this->ensureTokenNotUsed($passwordResetToken);
+        $this->tokenValidator->validate($passwordResetToken);
 
         return $passwordResetToken;
-    }
-
-    private function ensureTokenExists(
-        ?PasswordResetTokenInterface $token
-    ): void {
-        if (!$token) {
-            throw new PasswordResetTokenNotFoundException();
-        }
-    }
-
-    private function ensureTokenNotExpired(
-        PasswordResetTokenInterface $token
-    ): void {
-        if ($token->isExpired()) {
-            throw new PasswordResetTokenExpiredException();
-        }
-    }
-
-    private function ensureTokenNotUsed(
-        PasswordResetTokenInterface $token
-    ): void {
-        if ($token->isUsed()) {
-            throw new PasswordResetTokenAlreadyUsedException();
-        }
-    }
-
-    private function findUserByToken(
-        PasswordResetTokenInterface $token
-    ): UserInterface {
-        $user = $this->userRepository->findById($token->getUserID());
-
-        if (!$user instanceof UserInterface) {
-            throw new UserNotFoundException();
-        }
-
-        return $user;
     }
 
     private function updateUserPassword(
@@ -126,14 +86,5 @@ final readonly class ConfirmPasswordResetCommandHandler implements
                 (string) $this->uuidFactory->create()
             )
         );
-    }
-
-    private function validateUserTokenMatch(
-        UserInterface $user,
-        string $userId
-    ): void {
-        if ($user->getId() !== $userId) {
-            throw new PasswordResetTokenMismatchException();
-        }
     }
 }
