@@ -75,6 +75,15 @@ final class PasswordResetConfirmedEventSubscriberTest extends UnitTestCase
         $this->subscriber->__invoke($event);
     }
 
+    public function testSubscribedTo(): void
+    {
+        $subscribedEvents = $this->subscriber->subscribedTo();
+
+        $this->assertIsArray($subscribedEvents);
+        $this->assertContains(PasswordResetConfirmedEvent::class, $subscribedEvents);
+        $this->assertCount(1, $subscribedEvents);
+    }
+
     private function createUserMock(string $userEmail): UserInterface
     {
         $user = $this->createMock(UserInterface::class);
@@ -128,14 +137,5 @@ final class PasswordResetConfirmedEventSubscriberTest extends UnitTestCase
         $this->mailer->expects($this->once())
             ->method('send')
             ->with($email);
-    }
-
-    public function testSubscribedTo(): void
-    {
-        $subscribedEvents = $this->subscriber->subscribedTo();
-
-        $this->assertIsArray($subscribedEvents);
-        $this->assertContains(PasswordResetConfirmedEvent::class, $subscribedEvents);
-        $this->assertCount(1, $subscribedEvents);
     }
 }

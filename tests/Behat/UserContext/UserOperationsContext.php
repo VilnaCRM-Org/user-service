@@ -148,34 +148,6 @@ final class UserOperationsContext implements Context
         ));
     }
 
-    private function processRequestPath(string $path): string
-    {
-        $this->urlResolver->setCurrentUserEmail($this->currentUserEmail);
-        return $this->urlResolver->resolve($path);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function buildRequestHeaders(string $method): array
-    {
-        return [
-            'HTTP_ACCEPT' => 'application/json',
-            'CONTENT_TYPE' => $this->getContentTypeForMethod($method),
-            'HTTP_ACCEPT_LANGUAGE' => $this->language,
-        ];
-    }
-
-    private function serializeRequestBody(): string
-    {
-        return $this->serializer->serialize($this->requestBody, 'json');
-    }
-
-    private function getContentTypeForMethod(string $method): string
-    {
-        return $method === 'PATCH' ? 'application/merge-patch+json' : 'application/json';
-    }
-
     /**
      * @Then user should be timed out
      */
@@ -305,5 +277,33 @@ final class UserOperationsContext implements Context
             $responseContent,
             "The response does not contain the expected text: '{$text}'."
         );
+    }
+
+    private function processRequestPath(string $path): string
+    {
+        $this->urlResolver->setCurrentUserEmail($this->currentUserEmail);
+        return $this->urlResolver->resolve($path);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function buildRequestHeaders(string $method): array
+    {
+        return [
+            'HTTP_ACCEPT' => 'application/json',
+            'CONTENT_TYPE' => $this->getContentTypeForMethod($method),
+            'HTTP_ACCEPT_LANGUAGE' => $this->language,
+        ];
+    }
+
+    private function serializeRequestBody(): string
+    {
+        return $this->serializer->serialize($this->requestBody, 'json');
+    }
+
+    private function getContentTypeForMethod(string $method): string
+    {
+        return $method === 'PATCH' ? 'application/merge-patch+json' : 'application/json';
     }
 }

@@ -29,7 +29,9 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->entityManager = $this->createMock(
+            EntityManagerInterface::class
+        );
         $this->registry = $this->createMock(ManagerRegistry::class);
         $this->connection = $this->createMock(Connection::class);
 
@@ -58,7 +60,10 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $tokenValue = $this->faker->uuid();
         $expectedToken = $this->createMock(PasswordResetTokenInterface::class);
 
-        $this->setupFindOneByExpectation(['tokenValue' => $tokenValue], $expectedToken);
+        $this->setupFindOneByExpectation(
+            ['tokenValue' => $tokenValue],
+            $expectedToken
+        );
 
         $result = $this->repository->findByToken($tokenValue);
 
@@ -137,6 +142,19 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $this->assertSame($expectedCount, $count);
     }
 
+    public function testCountRecentRequestsByEmailReturnsZero(): void
+    {
+        $email = $this->faker->email();
+        $since = new \DateTimeImmutable('-1 hour');
+
+        $repository = $this->createRepositoryMock();
+        $this->setupDatabaseMocksForZeroResult($repository);
+
+        $count = $repository->countRecentRequestsByEmail($email, $since);
+
+        $this->assertSame(0, $count);
+    }
+
     private function createRepositoryMock(): MariaDBPasswordResetTokenRepository
     {
         $repositoryClass = MariaDBPasswordResetTokenRepository::class;
@@ -192,19 +210,6 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
             );
     }
 
-    public function testCountRecentRequestsByEmailReturnsZero(): void
-    {
-        $email = $this->faker->email();
-        $since = new \DateTimeImmutable('-1 hour');
-
-        $repository = $this->createRepositoryMock();
-        $this->setupDatabaseMocksForZeroResult($repository);
-
-        $count = $repository->countRecentRequestsByEmail($email, $since);
-
-        $this->assertSame(0, $count);
-    }
-
     private function setupDatabaseMocksForZeroResult(
         MariaDBPasswordResetTokenRepository $repository
     ): void {
@@ -242,7 +247,12 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
     ): void {
         $mocks = $this->createDoctrineManagerMocks();
         $this->setupEntityManagerExpectations($mocks);
-        $this->setupPersisterExpectations($mocks, $criteria, $expectedResult, $orderBy);
+        $this->setupPersisterExpectations(
+            $mocks,
+            $criteria,
+            $expectedResult,
+            $orderBy
+        );
         $this->setupRegistryExpectation();
     }
 
@@ -291,8 +301,16 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
             ->method('getEntityPersister')
             ->willReturn($mocks['persister']);
 
-        $persisterMethod = $mocks['persister']->expects($this->once())->method('load');
-        $persisterMethod->with($criteria, $this->anything(), $this->anything(), [], $orderBy)
+        $persisterMethod = $mocks['persister']
+            ->expects($this->once())
+            ->method('load');
+        $persisterMethod->with(
+            $criteria,
+            $this->anything(),
+            $this->anything(),
+            [],
+            $orderBy
+        )
             ->willReturn($expectedResult);
     }
 
