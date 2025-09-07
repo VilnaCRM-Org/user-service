@@ -54,3 +54,7 @@ venv
 
 # Code coverage reports
 coverage-html/
+
+###> bats-core ###
+/tests/CLI/bats/test_helper/
+###< bats-core ###

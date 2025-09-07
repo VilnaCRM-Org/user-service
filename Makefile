@@ -44,6 +44,9 @@ FIXER_ENV = PHP_CS_FIXER_IGNORE_ENV=1
 PHP_CS_FIXER_CMD = php ./vendor/bin/php-cs-fixer fix $(git ls-files -om --exclude-standard) --allow-risky=yes --config .php-cs-fixer.dist.php
 COVERAGE_CMD = php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-text
 
+GITHUB_HOST ?= github.com
+FORMAT ?= markdown
+
 define DOCKER_EXEC_WITH_ENV
 $(DOCKER_COMPOSE) exec -e $(1) php $(2)
 endef
@@ -133,9 +136,16 @@ spike-load-tests: build-k6-docker ## Run load tests with a spike of extreme load
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-spike-load-tests.sh
 
-load-tests: build-k6-docker ## Run load tests
-	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
-	tests/Load/run-load-tests.sh
+load-tests: ## Run load tests in containerized environment
+	@echo "Preparing OAuth client on app-prod container..."
+	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec app-prod bin/console league:oauth2-server:delete-client $$(jq -r '.endpoints.oauth.clientID' tests/Load/config.prod.json) --env=prod || echo "Client deletion failed or client did not exist"
+	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec app-prod bin/console league:oauth2-server:create-client $$(jq -r '.endpoints.oauth.clientName' tests/Load/config.prod.json) $$(jq -r '.endpoints.oauth.clientID' tests/Load/config.prod.json) $$(jq -r '.endpoints.oauth.clientSecret' tests/Load/config.prod.json) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' tests/Load/config.prod.json) --env=prod
+	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec app-prod bin/console doctrine:database:drop --force --if-exists
+	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec app-prod bin/console doctrine:database:create
+	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec app-prod bin/console doctrine:migrations:migrate --no-interaction
+	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec app-prod bin/console c:c
+	@echo "Starting load tests..."
+	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec load-tests sh -c "./run-load-tests.sh"
 
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
 	tests/Load/execute-load-test.sh $(scenario) $(or $(runSmoke),true) $(or $(runAverage),true) $(or $(runStress),true) $(or $(runSpike),true)
@@ -219,6 +229,15 @@ generate-openapi-spec:
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec
 
+start-prod-loadtest: ## Start production environment with load testing capabilities
+	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml up --detach
+
+stop-prod-loadtest: ## Stop production load testing environment
+	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml down --remove-orphans
+
+load-tests-prod: ## Run load tests against production container
+	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec load-tests sh -c "./load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' /loadTests/config.prod.json) $$(jq -r '.endpoints.oauth.clientID' /loadTests/config.prod.json) $$(jq -r '.endpoints.oauth.clientSecret' /loadTests/config.prod.json) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' /loadTests/config.prod.json) && ./run-load-tests.sh"
+
 ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	@echo "🚀 Running comprehensive CI checks..."
 	@echo "1️⃣  Validating composer.json and composer.lock..."
@@ -246,3 +265,20 @@ ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	@echo "🔟 Running CLI testing with Bats..."
 	make bats
 	@echo "✅ All CI checks completed successfully!"
+
+
+GH_CLI_CHECK := $(shell command -v gh 2> /dev/null)
+
+pr-comments: ## Retrieve unresolved comments for a GitHub Pull Request
+ifndef GH_CLI_CHECK
+	@echo "Error: GitHub CLI (gh) is required but not installed."
+	@echo "Visit: https://cli.github.com/ for installation instructions"
+	@exit 1
+endif
+ifdef PR
+	@echo "Retrieving unresolved comments for PR #$(PR)..."
+	@GITHUB_HOST="$(GITHUB_HOST)" ./scripts/get-pr-comments.sh "$(PR)" "$(FORMAT)"
+else
+	@echo "Auto-detecting PR from current git branch..."
+	@GITHUB_HOST="$(GITHUB_HOST)" ./scripts/get-pr-comments.sh "$(FORMAT)"
+endif
