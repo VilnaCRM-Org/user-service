@@ -12,7 +12,6 @@ export default class InsertUsersUtils {
     this.spikeConfig = this.config.endpoints[scenarioName].spike;
   }
 
-
   loadInsertedUsers() {
     return JSON.parse(open(`../${this.utils.getConfig()['usersFileName']}`));
   }
