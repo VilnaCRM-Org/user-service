@@ -17,7 +17,7 @@ final class ResponseValidator
     {
         foreach ($responseContent as $fieldName) {
             Assert::assertArrayHasKey($fieldName, $userData);
-            
+
             if ($graphQLInput !== null) {
                 $this->validateFieldValue($fieldName, $userData, $graphQLInput);
             }

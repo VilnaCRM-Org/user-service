@@ -6,7 +6,9 @@ namespace App\Tests\Behat\UserContext;
 
 final class UrlResolver
 {
-    public function __construct(private string $currentUserEmail = '') {}
+    public function __construct(private string $currentUserEmail = '')
+    {
+    }
 
     public function resolve(string $path): string
     {

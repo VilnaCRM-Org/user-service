@@ -247,7 +247,7 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, object>
      */
     private function createDoctrineManagerMocks(): array
     {
@@ -264,7 +264,7 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
     }
 
     /**
-     * @param array<string, mixed> $mocks
+     * @param array<string, object> $mocks
      */
     private function setupEntityManagerExpectations(array $mocks): void
     {
@@ -278,8 +278,8 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
     }
 
     /**
-     * @param array<string, mixed> $mocks
-     * @param array<string, mixed> $criteria
+     * @param array<string, object> $mocks
+     * @param array<string, string> $criteria
      */
     private function setupPersisterExpectations(
         array $mocks,
