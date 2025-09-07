@@ -4,6 +4,7 @@ include .env.test
 # Parameters
 PROJECT       = user-service
 GIT_AUTHOR    = Kravalg
+LOAD_TEST_CONFIG = tests/Load/config.prod.json
 
 # Executables: local only
 SYMFONY_BIN   = symfony
@@ -120,32 +121,25 @@ setup-test-db: ## Create database for testing purposes
 
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 
-smoke-load-tests: build-k6-docker ## Run load tests with minimal load
+smoke-load-tests: ## Run load tests with minimal load
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-smoke-load-tests.sh
 
-average-load-tests: build-k6-docker ## Run load tests with average load
+average-load-tests: ## Run load tests with average load
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-average-load-tests.sh
 
-stress-load-tests: build-k6-docker ## Run load tests with high load
+stress-load-tests: ## Run load tests with high load
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-stress-load-tests.sh
 
-spike-load-tests: build-k6-docker ## Run load tests with a spike of extreme load
+spike-load-tests: ## Run load tests with a spike of extreme load
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-spike-load-tests.sh
 
-load-tests: ## Run load tests in containerized environment
-	@echo "Preparing OAuth client on app-prod container..."
-	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec app-prod bin/console league:oauth2-server:delete-client $$(jq -r '.endpoints.oauth.clientID' tests/Load/config.prod.json) --env=prod || echo "Client deletion failed or client did not exist"
-	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec app-prod bin/console league:oauth2-server:create-client $$(jq -r '.endpoints.oauth.clientName' tests/Load/config.prod.json) $$(jq -r '.endpoints.oauth.clientID' tests/Load/config.prod.json) $$(jq -r '.endpoints.oauth.clientSecret' tests/Load/config.prod.json) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' tests/Load/config.prod.json) --env=prod
-	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec app-prod bin/console doctrine:database:drop --force --if-exists
-	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec app-prod bin/console doctrine:database:create
-	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec app-prod bin/console doctrine:migrations:migrate --no-interaction
-	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec app-prod bin/console c:c
-	@echo "Starting load tests..."
-	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec load-tests sh -c "./run-load-tests.sh"
+load-tests: ## Run load tests
+	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	tests/Load/run-load-tests.sh
 
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
 	tests/Load/execute-load-test.sh $(scenario) $(or $(runSmoke),true) $(or $(runAverage),true) $(or $(runStress),true) $(or $(runSpike),true)
@@ -193,12 +187,12 @@ sh: ## Log to the docker container
 	@$(EXEC_PHP) sh
 
 logs: ## Show all logs
-	@$(DOCKER_COMPOSE) logs --follow
+	@$(DOCKER_COMPOSE) logs
 
 new-logs: ## Show live logs
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
-start: up doctrine-migrations-migrate ## Start docker
+start: up doctrine-migrations-migrate build-k6-docker ## Start docker
 
 ps: ## Check docker containers
 	$(DOCKER_COMPOSE) ps
@@ -235,9 +229,6 @@ start-prod-loadtest: ## Start production environment with load testing capabilit
 stop-prod-loadtest: ## Stop production load testing environment
 	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml down --remove-orphans
 
-load-tests-prod: ## Run load tests against production container
-	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml exec load-tests sh -c "./load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' /loadTests/config.prod.json) $$(jq -r '.endpoints.oauth.clientID' /loadTests/config.prod.json) $$(jq -r '.endpoints.oauth.clientSecret' /loadTests/config.prod.json) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' /loadTests/config.prod.json) && ./run-load-tests.sh"
-
 ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	@echo "🚀 Running comprehensive CI checks..."
 	@echo "1️⃣  Validating composer.json and composer.lock..."
@@ -267,14 +258,12 @@ ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	@echo "✅ All CI checks completed successfully!"
 
 
-GH_CLI_CHECK := $(shell command -v gh 2> /dev/null)
-
 pr-comments: ## Retrieve unresolved comments for a GitHub Pull Request
-ifndef GH_CLI_CHECK
-	@echo "Error: GitHub CLI (gh) is required but not installed."
-	@echo "Visit: https://cli.github.com/ for installation instructions"
-	@exit 1
-endif
+	@if ! command -v gh >/dev/null 2>&1; then \
+		echo "Error: GitHub CLI (gh) is required but not installed."; \
+		echo "Visit: https://cli.github.com/ for installation instructions"; \
+		exit 1; \
+	fi
 ifdef PR
 	@echo "Retrieving unresolved comments for PR #$(PR)..."
 	@GITHUB_HOST="$(GITHUB_HOST)" ./scripts/get-pr-comments.sh "$(PR)" "$(FORMAT)"

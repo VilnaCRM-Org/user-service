@@ -1,5 +1,4 @@
 import http from 'k6/http';
-import exec from 'k6/x/exec';
 
 export default class InsertUsersUtils {
   constructor(utils, scenarioName) {
@@ -13,20 +12,6 @@ export default class InsertUsersUtils {
     this.spikeConfig = this.config.endpoints[scenarioName].spike;
   }
 
-  execInsertUsersCommand() {
-    const runSmoke = this.utils.getCLIVariable('run_smoke') || 'true';
-    const runAverage = this.utils.getCLIVariable('run_average') || 'true';
-    const runStress = this.utils.getCLIVariable('run_stress') || 'true';
-    const runSpike = this.utils.getCLIVariable('run_spike') || 'true';
-    exec.command('make', [
-      `SCENARIO_NAME=${this.scenarioName}`,
-      `RUN_SMOKE=${runSmoke}`,
-      `RUN_AVERAGE=${runAverage}`,
-      `RUN_STRESS=${runStress}`,
-      `RUN_SPIKE=${runSpike}`,
-      `load-tests-prepare-users`,
-    ]);
-  }
 
   loadInsertedUsers() {
     return JSON.parse(open(`../${this.utils.getConfig()['usersFileName']}`));

@@ -33,8 +33,7 @@ runStress=$4
 runSpike=$5
 htmlPrefix=$6
 
-K6="docker run -v ./tests/Load:/loadTests --net=host --rm \
-    --user $(id -u) \
+K6="docker run --user $(id -u):$(id -g) -v ./tests/Load:/loadTests --net=host --rm \
     k6 run --summary-trend-stats='avg,min,med,max,p(95),p(99)' \
     --out 'web-dashboard=period=1s&export=/loadTests/loadTestsResults/${htmlPrefix}${scenario}.html'"
 
