@@ -55,7 +55,7 @@ final class RequestPasswordResetControllerTest extends UnitTestCase
         $this->assertEquals(200, $response->getStatusCode());
 
         $content = json_decode($response->getContent(), true);
-        $this->assertEquals(['message' => $responseMessage], $content);
+        $this->assertEquals(['ok' => true], $content);
     }
 
     public function testConstructorSetsCommandBus(): void

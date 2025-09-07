@@ -8,17 +8,20 @@ final readonly class PasswordValidationChecks
 {
     public function hasValidLength(mixed $value): bool
     {
-        $length = strlen($value);
+        if (!is_string($value)) {
+            return false;
+        }
+        $length = mb_strlen($value);
         return $length >= 8 && $length <= 64;
     }
 
     public function hasNumber(mixed $value): bool
     {
-        return preg_match('/[0-9]/', $value) === 1;
+        return is_string($value) && preg_match('/[0-9]/', $value) === 1;
     }
 
     public function hasUppercase(mixed $value): bool
     {
-        return preg_match('/[A-Z]/', $value) === 1;
+        return is_string($value) && preg_match('/[A-Z]/', $value) === 1;
     }
 }

@@ -23,6 +23,8 @@ final readonly class ValidationSkipChecker
         mixed $value,
         Constraint $constraint
     ): bool {
-        return $constraint->isOptional() && $value === '';
+        return \method_exists($constraint, 'isOptional')
+            && $constraint->isOptional()
+            && $value === '';
     }
 }

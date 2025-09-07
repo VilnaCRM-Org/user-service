@@ -4,21 +4,18 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Domain\Event;
 
-use App\Shared\Domain\ValueObject\Uuid;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Event\PasswordResetConfirmedEvent;
-use App\User\Domain\Factory\UserFactory;
 
 final class PasswordResetConfirmedEventTest extends UnitTestCase
 {
     public function testConstruction(): void
     {
-        $userFactory = new UserFactory();
-        $user = $userFactory->create('user@example.com', 'JD', 'password123', new Uuid('123e4567-e89b-12d3-a456-426614174000'));
+        $userId = '123e4567-e89b-12d3-a456-426614174000';
         $eventId = 'event123';
-        $event = new PasswordResetConfirmedEvent($user, $eventId);
+        $event = new PasswordResetConfirmedEvent($userId, $eventId);
 
-        $this->assertSame($user, $event->user);
+        $this->assertSame($userId, $event->userId);
         $this->assertSame($eventId, $event->eventId());
     }
 
@@ -31,23 +28,21 @@ final class PasswordResetConfirmedEventTest extends UnitTestCase
 
     public function testToPrimitives(): void
     {
-        $userFactory = new UserFactory();
-        $user = $userFactory->create('user@example.com', 'JD', 'password123', new Uuid('123e4567-e89b-12d3-a456-426614174000'));
+        $userId = '123e4567-e89b-12d3-a456-426614174000';
         $eventId = 'event123';
-        $event = new PasswordResetConfirmedEvent($user, $eventId);
+        $event = new PasswordResetConfirmedEvent($userId, $eventId);
         $primitives = $event->toPrimitives();
 
         $this->assertIsArray($primitives);
-        $this->assertArrayHasKey('user', $primitives);
-        $this->assertSame($user, $primitives['user']);
+        $this->assertArrayHasKey('userId', $primitives);
+        $this->assertSame($userId, $primitives['userId']);
     }
 
     public function testFromPrimitives(): void
     {
-        $userFactory = new UserFactory();
-        $user = $userFactory->create('user@example.com', 'JD', 'password123', new Uuid('123e4567-e89b-12d3-a456-426614174000'));
+        $userId = '123e4567-e89b-12d3-a456-426614174000';
         $body = [
-            'user' => $user,
+            'userId' => $userId,
         ];
         $eventId = 'event123';
         $occurredOn = '2023-01-01 12:00:00';
@@ -55,7 +50,7 @@ final class PasswordResetConfirmedEventTest extends UnitTestCase
         $event = PasswordResetConfirmedEvent::fromPrimitives($body, $eventId, $occurredOn);
 
         $this->assertInstanceOf(PasswordResetConfirmedEvent::class, $event);
-        $this->assertSame($user, $event->user);
+        $this->assertSame($userId, $event->userId);
         $this->assertSame($eventId, $event->eventId());
     }
 }

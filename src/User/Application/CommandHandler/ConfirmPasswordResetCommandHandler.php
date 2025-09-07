@@ -104,7 +104,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements
     {
         $this->eventBus->publish(
             new PasswordResetConfirmedEvent(
-                $user,
+                $user->getId(),
                 (string) $this->uuidFactory->create()
             )
         );

@@ -8,7 +8,15 @@ final readonly class InitialsValidationChecks
 {
     public function isOnlySpaces(mixed $value): bool
     {
-        $trimmedValue = trim($value);
-        return $trimmedValue === '' && strlen($value) > 0;
+        if ($value instanceof \Stringable) {
+            $value = (string) $value;
+        }
+        if (!is_string($value)) {
+            return false;
+        }
+        if ($value === '') {
+            return false; // empty is not "only spaces"
+        }
+        return trim($value) === '';
     }
 }

@@ -29,10 +29,12 @@ final class ResponseValidator
      */
     private function validateFieldValue(string $fieldName, array $userData, GraphQLMutationInput $graphQLInput): void
     {
-        if (property_exists($graphQLInput, $fieldName)) {
-            Assert::assertEquals(
-                $graphQLInput->$fieldName,
-                $userData[$fieldName]
+        // Only public properties are accessible from here.
+        $inputProps = get_object_vars($graphQLInput);
+        if (array_key_exists($fieldName, $inputProps)) {
+            Assert::assertSame(
+                $inputProps[$fieldName],
+                $userData[$fieldName],
             );
         }
     }

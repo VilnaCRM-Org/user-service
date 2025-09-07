@@ -49,7 +49,7 @@ final class EmailFactoryTest extends UnitTestCase
 
         // This test catches the UnwrapArrayMerge mutation by ensuring
         // both content and additionalContext are merged properly
-        $expectedContext = array_merge(['content' => $content], $additionalContext);
+        $expectedContext = array_merge($additionalContext, ['content' => $content]);
         $this->assertSame($expectedContext, $email->getContext());
 
         // Verify specific context keys exist

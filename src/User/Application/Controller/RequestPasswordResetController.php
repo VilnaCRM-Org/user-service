@@ -29,8 +29,6 @@ final class RequestPasswordResetController extends AbstractController
         );
         $this->commandBus->dispatch($command);
 
-        return new JsonResponse([
-            'message' => $command->getResponse()->message,
-        ]);
+        return new JsonResponse(['ok' => true]);
     }
 }

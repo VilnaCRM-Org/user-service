@@ -289,11 +289,18 @@ show_installation_help() {
 }
 
 # Check prerequisites with enhanced authentication
-check_gh_cli() {
+check_dependencies() {
     if ! command -v gh &> /dev/null; then
         echo "Error: GitHub CLI (gh) is not installed."
         echo ""
         show_installation_help
+        exit 1
+    fi
+
+    if ! command -v jq &> /dev/null; then
+        echo "Error: jq is not installed."
+        echo ""
+        echo "Install jq via your package manager (e.g., brew install jq, apt-get install jq)."
         exit 1
     fi
     
@@ -708,7 +715,7 @@ main() {
     echo "========================================"
     echo ""
     
-    check_gh_cli
+    check_dependencies
     detect_repo
     
     # Auto-detect PR number if not provided

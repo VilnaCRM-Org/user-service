@@ -229,10 +229,26 @@ final class UserGraphQLContext implements Context
      */
     private function extractMutationUserData(): array
     {
-        return json_decode(
+        Assert::assertNotNull($this->response, 'Response is null; did you call sendGraphQlRequest()?');
+        $data = json_decode(
             $this->response->getContent(),
-            true
-        )['data'][$this->queryName]['user'];
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+        Assert::assertIsArray($data, 'GraphQL response is not a JSON object.');
+        Assert::assertArrayHasKey('data', $data, 'Missing "data" in GraphQL response.');
+        Assert::assertArrayHasKey(
+            $this->queryName,
+            $data['data'],
+            sprintf('Missing "%s" in GraphQL data.', $this->queryName)
+        );
+        Assert::assertArrayHasKey(
+            'user',
+            $data['data'][$this->queryName],
+            'Missing "user" in GraphQL data node.'
+        );
+        return $data['data'][$this->queryName]['user'];
     }
 
     /**
@@ -249,10 +265,21 @@ final class UserGraphQLContext implements Context
      */
     private function extractQueryUserData(): array
     {
-        return json_decode(
+        Assert::assertNotNull($this->response, 'Response is null; did you call sendGraphQlRequest()?');
+        $data = json_decode(
             $this->response->getContent(),
-            true
-        )['data'][$this->queryName];
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+        Assert::assertIsArray($data, 'GraphQL response is not a JSON object.');
+        Assert::assertArrayHasKey('data', $data, 'Missing "data" in GraphQL response.');
+        Assert::assertArrayHasKey(
+            $this->queryName,
+            $data['data'],
+            sprintf('Missing "%s" in GraphQL data.', $this->queryName)
+        );
+        return $data['data'][$this->queryName];
     }
 
     /**
