@@ -28,6 +28,7 @@ error:
   password-reset-token-not-found: 'Password reset token not found'
   password-reset-token-expired: 'Password reset token has expired'
   password-reset-token-already-used: 'Password reset token has already been used'
+  password-reset-token-mismatch: 'Password reset token does not belong to the specified user'
   password-reset-rate-limit-exceeded: 'Password reset rate limit exceeded. Please try again later.'
 password_reset:
   title: 'Password Reset Request'

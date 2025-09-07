@@ -9,6 +9,7 @@ final readonly class ConfirmPasswordResetMutationInput implements MutationInput
     public function __construct(
         public ?string $token = null,
         public ?string $newPassword = null,
+        public ?string $userId = null,
     ) {
     }
 }

@@ -14,6 +14,7 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetConfirmedEvent;
 use App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException;
 use App\User\Domain\Exception\PasswordResetTokenExpiredException;
+use App\User\Domain\Exception\PasswordResetTokenMismatchException;
 use App\User\Domain\Exception\PasswordResetTokenNotFoundException;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
@@ -39,6 +40,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements
             $command->token
         );
         $user = $this->findUserByToken($passwordResetToken);
+        $this->validateUserTokenMatch($user, $command->userId);
 
         $this->updateUserPassword($user, $command->newPassword);
         $this->markTokenAsUsed($passwordResetToken);
@@ -108,5 +110,14 @@ final readonly class ConfirmPasswordResetCommandHandler implements
                 (string) $this->uuidFactory->create()
             )
         );
+    }
+
+    private function validateUserTokenMatch(
+        UserInterface $user,
+        string $userId
+    ): void {
+        if ($user->getId() !== $userId) {
+            throw new PasswordResetTokenMismatchException();
+        }
     }
 }

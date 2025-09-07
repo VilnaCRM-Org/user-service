@@ -28,6 +28,7 @@ error:
   password-reset-token-not-found: 'Токен відновлення пароля не знайдено'
   password-reset-token-expired: 'Токен відновлення пароля закінчився'
   password-reset-token-already-used: 'Токен відновлення пароля вже використаний'
+  password-reset-token-mismatch: 'Токен відновлення пароля не належить вказаному користувачу'
   password-reset-rate-limit-exceeded: 'Перевищено ліміт запитів відновлення пароля. Спробуйте пізніше.'
 password_reset:
   title: 'Запит на відновлення пароля'

@@ -40,10 +40,11 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
         // Mock command behavior
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(function (ConfirmPasswordResetCommand $command) use ($token, $newPassword, $commandResponse) {
+            ->with($this->callback(function (ConfirmPasswordResetCommand $command) use ($token, $newPassword, $userId, $commandResponse) {
                 // Verify command properties
                 $this->assertEquals($token, $command->token);
                 $this->assertEquals($newPassword, $command->newPassword);
+                $this->assertEquals($userId, $command->userId);
 
                 // Set response on command
                 $command->setResponse($commandResponse);

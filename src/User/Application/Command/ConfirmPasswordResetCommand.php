@@ -13,6 +13,7 @@ final class ConfirmPasswordResetCommand implements CommandInterface
     public function __construct(
         public readonly string $token,
         public readonly string $newPassword,
+        public readonly string $userId,
     ) {
     }
 

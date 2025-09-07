@@ -23,10 +23,10 @@ final class ConfirmPasswordResetController extends AbstractController
         #[MapRequestPayload]
         ConfirmPasswordResetDto $confirmPasswordResetDto
     ): JsonResponse {
-        // Note: The user ID is available in $id if needed for validation
         $command = new ConfirmPasswordResetCommand(
             $confirmPasswordResetDto->token,
-            $confirmPasswordResetDto->newPassword
+            $confirmPasswordResetDto->newPassword,
+            $id
         );
         $this->commandBus->dispatch($command);
 

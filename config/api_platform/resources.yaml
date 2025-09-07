@@ -9,6 +9,7 @@ resources:
       'App\User\Domain\Exception\PasswordResetTokenNotFoundException': 404
       'App\User\Domain\Exception\PasswordResetTokenExpiredException': 400
       'App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException': 400
+      'App\User\Domain\Exception\PasswordResetTokenMismatchException': 400
       'App\User\Domain\Exception\PasswordResetRateLimitExceededException': 429
     normalizationContext:
       groups: ['output']
@@ -184,6 +185,8 @@ resources:
           token:
             type: 'String!'
           newPassword:
+            type: 'String!'
+          userId:
             type: 'String!'
 
   App\Internal\HealthCheck\Domain\ValueObject\HealthCheck:

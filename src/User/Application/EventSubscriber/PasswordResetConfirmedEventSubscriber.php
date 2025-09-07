@@ -29,12 +29,15 @@ final readonly class PasswordResetConfirmedEventSubscriber implements
     public function __invoke(
         PasswordResetConfirmedEvent $passwordResetConfirmedEvent
     ): void {
-        $user = $this->userRepository->findById($passwordResetConfirmedEvent->userId);
+        $user = $this->userRepository->findById(
+            $passwordResetConfirmedEvent->userId
+        );
 
         if (!$user instanceof UserInterface) {
-            $this->logger->warning('User not found for password reset confirmation', [
-                'userId' => $passwordResetConfirmedEvent->userId
-            ]);
+            $this->logger->warning(
+                'User not found for password reset confirmation',
+                ['userId' => $passwordResetConfirmedEvent->userId]
+            );
             return;
         }
 
