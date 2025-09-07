@@ -209,6 +209,7 @@ input confirmPasswordResetUserInput {
   clientMutationId: String
   token: String!
   newPassword: String!
+  userId: String!
 }
 
 "ConfirmPasswordResets a User."
