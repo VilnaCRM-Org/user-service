@@ -180,7 +180,7 @@ App\User\Application\DTO\ConfirmPasswordResetDto:
     newPassword:
       - NotBlank: { message: 'not.blank' }
       - Length:
-          max: 255
+          max: 256
       - App\Shared\Application\Validator\Password: ~
 
 App\User\Application\MutationInput\RequestPasswordResetMutationInput:
