@@ -698,3 +698,184 @@ public function generateToken(): string
 - 784/784 mutants killed (or equivalent for your codebase)
 - Zero escaped mutants
 - All boundary conditions, default values, and logical operators tested
+
+## Code Review Workflow and PR Refactoring
+
+### Automated Code Review Comment Retrieval
+
+**CRITICAL: Always use `make pr-comments` to retrieve and address all code review comments systematically.**
+
+The repository provides a comprehensive code review workflow that enables automatic retrieval and systematic addressing of all unresolved comments on a Pull Request.
+
+#### Using the PR Comments Command
+
+**Basic usage:**
+```bash
+make pr-comments                    # Auto-detect PR from current branch
+make pr-comments PR=215             # Specify PR number explicitly  
+make pr-comments FORMAT=json        # Get comments in JSON format
+make pr-comments FORMAT=markdown    # Get comments in Markdown format
+```
+
+**Command features:**
+- **Auto-detection**: Automatically detects PR number from current git branch
+- **Multiple formats**: Text (default), JSON, and Markdown output options
+- **GitHub Enterprise support**: Configurable via `GITHUB_HOST` environment variable
+- **Comprehensive output**: Shows file paths, line numbers, authors, timestamps, and GitHub URLs
+- **Unresolved focus**: Only retrieves unresolved comments that require action
+
+#### Code Review Refactoring Workflow
+
+**MANDATORY: Follow this systematic approach for addressing code review feedback:**
+
+##### 1. **Retrieve All Code Review Comments**
+```bash
+make pr-comments
+```
+This command will output all unresolved comments in a readable format, showing:
+- File path and line number where comment was made
+- Author and timestamp of the comment
+- Full comment content including suggestions and prompts
+- Direct GitHub URL for context
+
+##### 2. **Analyze Comment Types and Prioritize**
+
+**Categorize each comment by type:**
+
+**A. Committable Suggestions (Highest Priority)**
+- Comments containing code suggestions that can be directly applied
+- Usually prefixed with "suggestion" or contain code blocks
+- **Action**: Apply the suggested changes exactly as provided
+- **Priority**: Address these first as they provide explicit solutions
+
+**B. LLM Prompts and Instructions (High Priority)**  
+- Comments providing specific instructions on how to refactor
+- May include architectural guidance or implementation approaches
+- **Action**: Use these as detailed prompts for code generation/refactoring
+- **Priority**: Address after committable suggestions
+
+**C. Questions and Clarifications (Medium Priority)**
+- Comments asking for explanation or clarification of implementation
+- **Action**: Reply with explanations and make code more self-documenting if needed
+- **Priority**: Can be addressed alongside code changes
+
+**D. General Feedback and Observations (Low Priority)**
+- Comments providing general observations or praise
+- **Action**: Consider for future improvements, no immediate action needed
+- **Priority**: Address if time permits
+
+##### 3. **Systematic Implementation Strategy**
+
+**For Committable Suggestions:**
+```bash
+# Apply suggestion directly to the code
+# Example: If comment suggests changing variable name
+# Before: $userInfo = ...
+# After: $userData = ...  (as suggested)
+
+# Commit the change immediately
+git add .
+git commit -m "Apply code review suggestion: improve variable naming"
+```
+
+**For LLM Prompts:**
+```bash
+# Use the comment as a detailed prompt for refactoring
+# Example: "Refactor this method to use dependency injection"
+# 1. Analyze current implementation
+# 2. Design dependency injection approach  
+# 3. Implement changes following SOLID principles
+# 4. Update tests accordingly
+# 5. Verify with make ci
+```
+
+**For Complex Refactoring Requests:**
+```bash
+# Break down large refactoring into smaller commits
+# 1. Create interfaces/abstractions first
+# 2. Implement new classes/methods
+# 3. Update existing code to use new structure
+# 4. Remove deprecated code
+# 5. Update tests and documentation
+```
+
+##### 4. **Quality Assurance After Each Change**
+
+**MANDATORY: Run quality checks after addressing each comment or group of related comments:**
+
+```bash
+# For code changes
+make phpcsfixer              # Fix code style
+make psalm                   # Static analysis
+make unit-tests             # Run unit tests
+make ci                     # Full CI suite (for significant changes)
+
+# For test changes  
+make unit-tests             # Verify tests pass
+make infection              # Check mutation testing coverage
+```
+
+##### 5. **Documentation and Verification**
+
+**Update documentation when comments suggest:**
+- API documentation changes
+- README updates
+- Inline code comments for clarity
+- Architecture decision records
+
+**Verify changes meet requirements:**
+- All tests pass with expected coverage
+- No regressions introduced
+- Code quality metrics maintained
+- Architectural boundaries respected
+
+##### 6. **Comment Response Strategy**
+
+**Reply to comments systematically:**
+- **Questions**: Provide clear, concise answers
+- **Implemented suggestions**: Reply with commit hash that addresses the comment
+- **Complex refactoring**: Explain approach taken and reference relevant commits
+- **Cannot implement**: Explain technical constraints and propose alternatives
+
+#### Advanced Code Review Patterns
+
+**Handling Conflicting Comments:**
+1. Prioritize architectural concerns over stylistic preferences
+2. Discuss conflicting suggestions with reviewers before implementing
+3. Document decisions in commit messages or PR comments
+
+**Large-Scale Refactoring:**
+1. Create separate commits for each logical change
+2. Maintain backward compatibility when possible
+3. Update tests incrementally with code changes
+4. Use feature flags for risky changes
+
+**Performance and Security Comments:**
+1. Address security concerns immediately with highest priority
+2. Benchmark performance changes when suggested
+3. Document performance trade-offs in code comments
+
+#### Integration with Development Workflow
+
+**Before Starting Code Review Refactoring:**
+```bash
+git status                  # Ensure clean working directory
+git pull origin main        # Get latest changes
+make pr-comments           # Get current comment status
+```
+
+**During Refactoring:**
+```bash
+# Work on one comment or related group at a time
+# Commit frequently with descriptive messages
+# Reference comment URLs in commit messages for traceability
+```
+
+**After Completing All Comments:**
+```bash
+make ci                    # Full quality check
+make pr-comments           # Verify no new unresolved comments
+git push                   # Push all changes
+```
+
+This systematic approach ensures that all code review feedback is addressed thoroughly, maintaining high code quality while efficiently incorporating reviewer suggestions and maintaining project standards.
