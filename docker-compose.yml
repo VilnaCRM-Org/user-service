@@ -49,7 +49,7 @@ services:
       SERVER_NAME: ${SERVER_NAME:-:80}
       APP_ENV: prod
     ports:
-      - "8082:80"
+      - '8082:80'
 
   workers:
     depends_on:

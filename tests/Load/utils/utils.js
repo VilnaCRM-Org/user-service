@@ -71,13 +71,22 @@ export default class Utils {
   generateUser() {
     // Generate unique email using multiple entropy sources
     const email = this.generateUniqueEmail();
-    
+
     const firstNames = ['John', 'Jane', 'Mike', 'Sarah', 'David', 'Lisa', 'Robert', 'Emily'];
-    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis'];
+    const lastNames = [
+      'Smith',
+      'Johnson',
+      'Williams',
+      'Brown',
+      'Jones',
+      'Garcia',
+      'Miller',
+      'Davis',
+    ];
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
     const initials = `${firstName} ${lastName}`;
-    
+
     const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
     let password = '';
     for (let i = 0; i < 60; i++) {
@@ -93,29 +102,33 @@ export default class Utils {
 
   generateUniqueEmail() {
     // Get K6 runtime information for uniqueness
-    const vuId = (typeof __VU !== 'undefined') ? __VU : 1;
-    const iteration = (typeof __ITER !== 'undefined') ? __ITER : 0;
-    
+    const vuId = typeof __VU !== 'undefined' ? __VU : 1;
+    const iteration = typeof __ITER !== 'undefined' ? __ITER : 0;
+
     // High-precision timestamp components
     const timestamp = Date.now();
-    const microseconds = (typeof performance !== 'undefined' && performance.now) 
-      ? performance.now().toString().replace('.', '').substring(0, 8)
-      : Math.random().toString().replace('.', '').substring(0, 8);
-    
+    const microseconds =
+      typeof performance !== 'undefined' && performance.now
+        ? performance.now().toString().replace('.', '').substring(0, 8)
+        : Math.random().toString().replace('.', '').substring(0, 8);
+
     // Additional entropy sources
     const randomString1 = Math.random().toString(36).substring(2, 10); // 8 chars
-    const randomString2 = Math.random().toString(36).substring(2, 8);  // 6 chars
-    const processEntropy = (typeof process !== 'undefined' && process.hrtime) 
-      ? process.hrtime()[1].toString().substring(0, 6)
-      : Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-    
+    const randomString2 = Math.random().toString(36).substring(2, 8); // 6 chars
+    const processEntropy =
+      typeof process !== 'undefined' && process.hrtime
+        ? process.hrtime()[1].toString().substring(0, 6)
+        : Math.floor(Math.random() * 1000000)
+            .toString()
+            .padStart(6, '0');
+
     // Domain selection
     const domains = ['example.com', 'test.org', 'demo.net'];
     const domain = domains[Math.floor(Math.random() * domains.length)];
-    
+
     // Construct unique email with multiple entropy sources
     const uniqueId = `${vuId}_${iteration}_${timestamp}_${microseconds}_${randomString1}_${randomString2}_${processEntropy}`;
-    
+
     return `user_${uniqueId}@${domain}`;
   }
 
