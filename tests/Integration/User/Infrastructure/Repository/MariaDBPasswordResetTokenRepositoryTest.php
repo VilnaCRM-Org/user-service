@@ -72,16 +72,16 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        $createdAt1 = new \DateTimeImmutable();
+        $baseTime = new \DateTimeImmutable('2023-01-01 10:00:00');
+        $createdAt1 = $baseTime;
         $expiresAt1 = $createdAt1->add(new \DateInterval('PT1H'));
         $token1 = new PasswordResetToken('token1', $user->getId(), $expiresAt1, $createdAt1);
 
-        $createdAt2 = new \DateTimeImmutable();
+        $createdAt2 = $baseTime->add(new \DateInterval('PT1S'));
         $expiresAt2 = $createdAt2->add(new \DateInterval('PT1H'));
         $token2 = new PasswordResetToken('token2', $user->getId(), $expiresAt2, $createdAt2);
 
         $this->repository->save($token1);
-        sleep(1); // Ensure different creation times
         $this->repository->save($token2);
 
         $found = $this->repository->findByUserID($user->getId());
@@ -126,6 +126,8 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
+        $since = new \DateTimeImmutable('-2 hours'); // Changed from -1 hour to -2 hours
+
         // Create tokens for the user
         $createdAt1 = new \DateTimeImmutable();
         $expiresAt1 = $createdAt1->add(new \DateInterval('PT1H'));
@@ -138,14 +140,16 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
         $this->repository->save($token1);
         $this->repository->save($token2);
 
-        // NOTE: UUID JOIN issue between User.id and PasswordResetToken.userID exists
-        // For now, just verify tokens were saved
+        // TODO: If a JOIN issue resurfaces, adjust repository query. For now, verify count.
         $savedToken1 = $this->repository->findByToken('count_token1');
         $savedToken2 = $this->repository->findByToken('count_token2');
         $this->assertNotNull($savedToken1);
         $this->assertNotNull($savedToken2);
         $this->assertSame($user->getId(), $savedToken1->getUserID());
         $this->assertSame($user->getId(), $savedToken2->getUserID());
+
+        $count = $this->repository->countRecentRequestsByEmail($email, $since);
+        $this->assertSame(2, $count);
     }
 
     public function testCountRecentRequestsByEmailNoRequests(): void

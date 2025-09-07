@@ -53,10 +53,11 @@ final class MariaDBPasswordResetTokenRepository extends ServiceEntityRepository 
         \DateTimeImmutable $since
     ): int {
         // Use native query to handle UUID conversion properly
+        // Need to convert the binary UUID from user table to string for comparison
         $sql = '
             SELECT COUNT(prt.token_value)
             FROM password_reset_tokens prt
-            INNER JOIN user u ON u.id = prt.user_id
+            INNER JOIN user u ON LOWER(HEX(u.id)) = LOWER(REPLACE(prt.user_id, "-", ""))
             WHERE u.email = :email AND prt.created_at >= :since
         ';
 
