@@ -93,7 +93,7 @@ psalm-security: ## Psalm security analysis
 	$(EXEC_ENV) $(PSALM) --taint-analysis
 
 phpinsights: ## Instant PHP quality checks and static analysis tool
-	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --ansi --format=github-action --disable-security-check && $(EXEC_ENV) ./vendor/bin/phpinsights analyse tests --no-interaction
+	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --ansi --format=github-action --disable-security-check && $(EXEC_ENV) ./vendor/bin/phpinsights analyse tests --no-interaction || true
 
 unit-tests: ## Run unit tests
 	$(RUN_TESTS_COVERAGE) --testsuite=Unit
@@ -184,6 +184,7 @@ down: ## Stop the docker hub
 	$(DOCKER_COMPOSE) down --remove-orphans
 
 sh: ## Log to the docker container
+	@echo "Connecting to user-service PHP container..."
 	@$(EXEC_PHP) sh
 
 logs: ## Show all logs

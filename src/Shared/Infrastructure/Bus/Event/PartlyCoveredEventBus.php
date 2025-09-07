@@ -24,6 +24,9 @@ final class PartlyCoveredEventBus implements EventBus
         }
     }
 
+    /**
+     * @param array<object> $events
+     */
     public function getEventCount(array $events): int
     {
         $count = 0;
