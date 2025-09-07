@@ -155,7 +155,7 @@ final class UserOperationsContext implements Context
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, string>
      */
     private function buildRequestHeaders(string $method): array
     {

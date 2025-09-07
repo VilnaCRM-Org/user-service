@@ -67,7 +67,7 @@ final class InitialsValidationChecksTest extends TestCase
 
     public function testIsOnlySpacesWithStringableObject(): void
     {
-        $stringable = new class {
+        $stringable = new class() {
             public function __toString(): string
             {
                 return '   ';
@@ -81,7 +81,7 @@ final class InitialsValidationChecksTest extends TestCase
 
     public function testIsOnlySpacesWithStringableObjectContainingText(): void
     {
-        $stringable = new class {
+        $stringable = new class() {
             public function __toString(): string
             {
                 return 'A.B.';

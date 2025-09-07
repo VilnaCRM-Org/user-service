@@ -11,7 +11,7 @@ final class ResponseValidator
 {
     /**
      * @param array<string> $responseContent
-     * @param array<string, mixed> $userData
+     * @param array<string, string|bool|int|null> $userData
      */
     public function validateFields(array $responseContent, array $userData, ?GraphQLMutationInput $graphQLInput = null): void
     {
@@ -25,7 +25,7 @@ final class ResponseValidator
     }
 
     /**
-     * @param array<string, mixed> $userData
+     * @param array<string, string|bool|int|null> $userData
      */
     private function validateFieldValue(string $fieldName, array $userData, GraphQLMutationInput $graphQLInput): void
     {

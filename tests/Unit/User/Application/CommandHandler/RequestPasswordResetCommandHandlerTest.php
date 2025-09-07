@@ -332,30 +332,12 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
 
     public function testRequestPasswordResetWithDefaultRateLimitValues(): void
     {
-        // Create handler with default constructor values to test default rate limits
-        $defaultHandler = new RequestPasswordResetCommandHandler(
-            $this->userRepository,
-            $this->passwordResetTokenRepository,
-            $this->passwordResetTokenFactory,
-            $this->eventBus,
-            $this->uuidFactory
-            // No explicit rate limit values - using defaults (3, 1)
-        );
-
+        $defaultHandler = $this->createDefaultHandler();
         $email = $this->faker->email();
         $user = $this->createMock(UserInterface::class);
 
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
-
-        // Test default rate limit of 3 - return exactly 3 to trigger limit
-        $this->passwordResetTokenRepository
-            ->expects($this->once())
-            ->method('countRecentRequestsByEmail')
-            ->willReturn(3); // Should trigger exception with default limit of 3
+        $this->setupUserRepositoryMock($email, $user);
+        $this->setupRateLimitExceededMock(3);
 
         $this->expectException(PasswordResetRateLimitExceededException::class);
 
@@ -365,16 +347,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
 
     public function testRequestPasswordResetWithDefaultRateLimitBoundary(): void
     {
-        // Test boundary condition with default rate limit (3)
-        $defaultHandler = new RequestPasswordResetCommandHandler(
-            $this->userRepository,
-            $this->passwordResetTokenRepository,
-            $this->passwordResetTokenFactory,
-            $this->eventBus,
-            $this->uuidFactory
-            // No explicit rate limit values - using defaults (3, 1)
-        );
-
+        $defaultHandler = $this->createDefaultHandler();
         $email = $this->faker->email();
         $user = $this->createMock(UserInterface::class);
         $userId = $this->faker->uuid();
@@ -383,33 +356,10 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $token = $this->createMock(PasswordResetTokenInterface::class);
         $token->method('getTokenValue')->willReturn($this->faker->sha256());
 
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
-
-        // Test with 2 requests (< default limit of 3) - should succeed
-        $this->passwordResetTokenRepository
-            ->expects($this->once())
-            ->method('countRecentRequestsByEmail')
-            ->willReturn(2);
-
-        $this->passwordResetTokenFactory
-            ->expects($this->once())
-            ->method('create')
-            ->with($userId)
-            ->willReturn($token);
-
-        $this->passwordResetTokenRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($token);
-
-        $this->eventBus
-            ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(PasswordResetRequestedEvent::class));
+        $this->setupUserRepositoryMock($email, $user);
+        $this->setupRateLimitBelowThresholdMock(2);
+        $this->setupTokenCreationMocks($userId, $token);
+        $this->configureEventBusMock();
 
         $command = new RequestPasswordResetCommand($email);
         $defaultHandler->__invoke($command);
@@ -419,43 +369,12 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
 
     public function testConstructorDefaultWindowHoursZeroMutation(): void
     {
-        // This test will fail if rateLimitWindowHours default is mutated from 1 to 0
-        // because countRecentRequestsByEmail will be called with "0 hours" which would
-        // look for requests from "now" instead of "1 hour ago"
-        $defaultHandler = new RequestPasswordResetCommandHandler(
-            $this->userRepository,
-            $this->passwordResetTokenRepository,
-            $this->passwordResetTokenFactory,
-            $this->eventBus,
-            $this->uuidFactory
-            // Using default constructor values (3, 1)
-        );
-
+        $defaultHandler = $this->createDefaultHandler();
         $email = $this->faker->email();
         $user = $this->createMock(UserInterface::class);
 
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
-
-        // The mock expects to be called with a DateTimeImmutable representing "-1 hours"
-        // If the default gets mutated to 0, it would be called with "-0 hours" (i.e., now)
-        $this->passwordResetTokenRepository
-            ->expects($this->once())
-            ->method('countRecentRequestsByEmail')
-            ->with(
-                $email,
-                $this->callback(static function (\DateTimeImmutable $dateTime): bool {
-                    // Check that the datetime is approximately 1 hour ago (default window)
-                    $oneHourAgo = new \DateTimeImmutable('-1 hours');
-                    $diff = abs($dateTime->getTimestamp() - $oneHourAgo->getTimestamp());
-                    // Allow 60 seconds tolerance for test execution time
-                    return $diff <= 60;
-                })
-            )
-            ->willReturn(3); // At limit
+        $this->setupUserRepositoryMock($email, $user);
+        $this->setupWindowHourValidationMock($email);
 
         $this->expectException(PasswordResetRateLimitExceededException::class);
 
@@ -601,5 +520,64 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
             ->expects($this->once())
             ->method('publish')
             ->with($this->isInstanceOf(PasswordResetRequestedEvent::class));
+    }
+
+    private function setupUserRepositoryMock(string $email, UserInterface $user): void
+    {
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+    }
+
+    private function setupRateLimitExceededMock(int $returnCount): void
+    {
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->willReturn($returnCount);
+    }
+
+    private function setupRateLimitBelowThresholdMock(int $returnCount): void
+    {
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->willReturn($returnCount);
+    }
+
+    private function setupTokenCreationMocks(string $userId, PasswordResetTokenInterface $token): void
+    {
+        $this->passwordResetTokenFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with($userId)
+            ->willReturn($token);
+
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($token);
+    }
+
+    private function setupWindowHourValidationMock(string $email): void
+    {
+        // The mock expects to be called with a DateTimeImmutable representing "-1 hours"
+        // If the default gets mutated to 0, it would be called with "-0 hours" (i.e., now)
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->with(
+                $email,
+                $this->callback(static function (\DateTimeImmutable $dateTime): bool {
+                    // Check that the datetime is approximately 1 hour ago (default window)
+                    $oneHourAgo = new \DateTimeImmutable('-1 hours');
+                    $diff = abs($dateTime->getTimestamp() - $oneHourAgo->getTimestamp());
+                    // Allow 60 seconds tolerance for test execution time
+                    return $diff <= 60;
+                })
+            )
+            ->willReturn(3); // At limit
     }
 }
