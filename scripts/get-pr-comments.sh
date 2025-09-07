@@ -487,16 +487,78 @@ get_pr_comments() {
     
     echo "→ Fetching unresolved comments for PR #$pr_number..."
     
-    # Get PR review comments that are unresolved
-    local comments_data
-    if ! comments_data=$(gh api "/repos/$REPO/pulls/$pr_number/comments" --hostname "$GITHUB_HOST" --paginate 2>/dev/null); then
-        echo "Error: Failed to fetch PR comments. Check your permissions and network connection."
+    # Get repository owner and name for GraphQL query
+    local repo_owner repo_name
+    repo_owner=$(echo "$REPO" | cut -d'/' -f1)
+    repo_name=$(echo "$REPO" | cut -d'/' -f2)
+    
+    # Use GraphQL to get unresolved review threads
+    local graphql_query='{
+  repository(owner: "'$repo_owner'", name: "'$repo_name'") {
+    pullRequest(number: '$pr_number') {
+      reviewThreads(first: 100) {
+        nodes {
+          id
+          isResolved
+          isOutdated
+          path
+          line
+          originalLine
+          startLine
+          originalStartLine
+          comments(first: 10) {
+            nodes {
+              id
+              body
+              author {
+                login
+              }
+              createdAt
+              updatedAt
+              url
+            }
+          }
+        }
+      }
+    }
+  }
+}'
+    
+    local threads_data
+    # Use GraphQL API (only add hostname if it's not empty/default)
+    local gh_args=()
+    if [[ -n "$GITHUB_HOST" && "$GITHUB_HOST" != "github.com" ]]; then
+        gh_args+=(--hostname "$GITHUB_HOST")
+    fi
+    
+    if ! threads_data=$(gh api graphql "${gh_args[@]}" -f query="$graphql_query" 2>/dev/null); then
+        echo "Error: Failed to fetch PR comments via GraphQL. Check your permissions and network connection."
+        echo "Debug: GraphQL query failed. Trying to get error details..."
+        gh api graphql "${gh_args[@]}" -f query="$graphql_query"
         exit 1
     fi
     
-    # Filter for unresolved comments (comments without resolved_at or where resolved is null/false)
+    # Filter for unresolved and non-outdated threads and transform to expected format
     local unresolved_comments
-    unresolved_comments=$(echo "$comments_data" | jq '[.[] | select(.in_reply_to_id == null and (.resolved == false or .resolved == null))]')
+    unresolved_comments=$(echo "$threads_data" | jq --argjson pr_number "$pr_number" '
+        .data.repository.pullRequest.reviewThreads.nodes
+        | map(select(.isResolved == false and .isOutdated == false))
+        | map(.comments.nodes[0] as $comment | {
+            id: $comment.id,
+            path: .path,
+            line: .line,
+            original_line: .originalLine,
+            start_line: .startLine,
+            original_start_line: .originalStartLine,
+            body: $comment.body,
+            user: $comment.author,
+            created_at: $comment.createdAt,
+            updated_at: $comment.updatedAt,
+            html_url: $comment.url,
+            thread_id: .id,
+            in_reply_to_id: null
+        })
+    ')
     
     # Check if any unresolved comments exist
     local comment_count
