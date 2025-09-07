@@ -46,33 +46,50 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
         $tokenValue = $this->faker->sha256();
         $eventId = $this->faker->uuid();
 
-        $user = $this->createMock(UserInterface::class);
-        $token = $this->createMock(PasswordResetTokenInterface::class);
-        $passwordResetEmail = $this->createMock(PasswordResetEmailInterface::class);
-        $command = $this->createMock(SendPasswordResetEmailCommand::class);
+        $mocks = $this->createMocks();
+        $event = new PasswordResetRequestedEvent($mocks['user'], $tokenValue, $eventId);
 
-        $event = new PasswordResetRequestedEvent($user, $tokenValue, $eventId);
+        $this->setupSuccessfulFlow($tokenValue, $mocks);
 
+        $this->subscriber->__invoke($event);
+    }
+
+    /**
+     * @return array<string, \PHPUnit\Framework\MockObject\MockObject>
+     */
+    private function createMocks(): array
+    {
+        return [
+            'user' => $this->createMock(UserInterface::class),
+            'token' => $this->createMock(PasswordResetTokenInterface::class),
+            'passwordResetEmail' => $this->createMock(PasswordResetEmailInterface::class),
+            'command' => $this->createMock(SendPasswordResetEmailCommand::class),
+        ];
+    }
+
+    /**
+     * @param array<string, \PHPUnit\Framework\MockObject\MockObject> $mocks
+     */
+    private function setupSuccessfulFlow(string $tokenValue, array $mocks): void
+    {
         $this->tokenRepository->expects($this->once())
             ->method('findByToken')
             ->with($tokenValue)
-            ->willReturn($token);
+            ->willReturn($mocks['token']);
 
         $this->emailFactory->expects($this->once())
             ->method('create')
-            ->with($token, $user)
-            ->willReturn($passwordResetEmail);
+            ->with($mocks['token'], $mocks['user'])
+            ->willReturn($mocks['passwordResetEmail']);
 
         $this->cmdFactory->expects($this->once())
             ->method('create')
-            ->with($passwordResetEmail)
-            ->willReturn($command);
+            ->with($mocks['passwordResetEmail'])
+            ->willReturn($mocks['command']);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($command);
-
-        $this->subscriber->__invoke($event);
+            ->with($mocks['command']);
     }
 
     public function testInvokeWhenTokenNotFound(): void

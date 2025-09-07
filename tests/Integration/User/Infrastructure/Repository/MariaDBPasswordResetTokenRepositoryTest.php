@@ -140,7 +140,7 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
         $this->repository->save($token1);
         $this->repository->save($token2);
 
-        // TODO: If a JOIN issue resurfaces, adjust repository query. For now, verify count.
+        // Verify tokens were saved correctly
         $savedToken1 = $this->repository->findByToken('count_token1');
         $savedToken2 = $this->repository->findByToken('count_token2');
         $this->assertNotNull($savedToken1);

@@ -160,12 +160,25 @@ final class UserOperationsContext implements Context
             return $path;
         }
 
-        if ($this->currentUserEmail === '' || $this->currentUserEmail === null) {
-            // For invalid token tests or cases where user doesn't exist,
-            // use a placeholder user ID
+        return $this->getPasswordResetUrlWithUserId($path);
+    }
+
+    private function getPasswordResetUrlWithUserId(string $path): string
+    {
+        if ($this->isCurrentUserEmailEmpty()) {
             return str_replace('{id}', 'placeholder-id', $path);
         }
 
+        return $this->resolveUserIdInPath($path);
+    }
+
+    private function isCurrentUserEmailEmpty(): bool
+    {
+        return $this->currentUserEmail === '' || $this->currentUserEmail === null;
+    }
+
+    private function resolveUserIdInPath(string $path): string
+    {
         try {
             $userId = UserContext::getUserIdByEmail($this->currentUserEmail);
             return str_replace('{id}', $userId, $path);

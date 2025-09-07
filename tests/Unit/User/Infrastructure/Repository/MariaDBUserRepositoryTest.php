@@ -78,7 +78,7 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
             ->setConstructorArgs([
                 $this->entityManager,
                 $this->registry,
-                self::BATCH_SIZE
+                self::BATCH_SIZE,
             ])
             ->onlyMethods(['find'])
             ->getMock();
@@ -102,7 +102,7 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
             ->setConstructorArgs([
                 $this->entityManager,
                 $this->registry,
-                self::BATCH_SIZE
+                self::BATCH_SIZE,
             ])
             ->onlyMethods(['find'])
             ->getMock();
@@ -256,7 +256,7 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
     }
 
     private function getRepository(
-        int $batchSize = self::BATCH_SIZE
+        int $batchSize = self::BATCH_SIZE,
     ): UserRepositoryInterface {
         return new MariaDBUserRepository(
             $this->entityManager,

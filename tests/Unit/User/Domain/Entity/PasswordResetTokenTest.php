@@ -62,6 +62,13 @@ final class PasswordResetTokenTest extends UnitTestCase
 
     public function testTokenExpirationExactBoundary(): void
     {
+        $this->testFutureTokenNotExpired();
+        $this->testPastTokenExpired();
+        $this->testMicroSecondBoundaryConditions();
+    }
+
+    private function testFutureTokenNotExpired(): void
+    {
         // Create a token that expires far in the future to ensure it's not expired
         $futureTime = new \DateTimeImmutable('+1 year');
         $futureToken = new PasswordResetToken(
@@ -73,7 +80,10 @@ final class PasswordResetTokenTest extends UnitTestCase
 
         // This token should definitely not be expired
         $this->assertFalse($futureToken->isExpired());
+    }
 
+    private function testPastTokenExpired(): void
+    {
         // Create a token that expired far in the past to ensure it's expired
         $pastTime = new \DateTimeImmutable('-1 year');
         $pastToken = new PasswordResetToken(
@@ -85,7 +95,10 @@ final class PasswordResetTokenTest extends UnitTestCase
 
         // This token should definitely be expired
         $this->assertTrue($pastToken->isExpired());
+    }
 
+    private function testMicroSecondBoundaryConditions(): void
+    {
         // Create multiple tokens with slightly different expiration times
         // to increase the chances of catching the boundary condition
         for ($i = 0; $i < 5; $i++) {

@@ -447,7 +447,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
             ->method('countRecentRequestsByEmail')
             ->with(
                 $email,
-                $this->callback(function (\DateTimeImmutable $dateTime): bool {
+                $this->callback(static function (\DateTimeImmutable $dateTime): bool {
                     // Check that the datetime is approximately 1 hour ago (default window)
                     $oneHourAgo = new \DateTimeImmutable('-1 hours');
                     $diff = abs($dateTime->getTimestamp() - $oneHourAgo->getTimestamp());
@@ -497,7 +497,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
             ->method('countRecentRequestsByEmail')
             ->with(
                 $email,
-                $this->callback(function (\DateTimeImmutable $dateTime): bool {
+                $this->callback(static function (\DateTimeImmutable $dateTime): bool {
                     // Check that the datetime is approximately 1 hour ago (not 2 hours)
                     $oneHourAgo = new \DateTimeImmutable('-1 hours');
                     $twoHoursAgo = new \DateTimeImmutable('-2 hours');

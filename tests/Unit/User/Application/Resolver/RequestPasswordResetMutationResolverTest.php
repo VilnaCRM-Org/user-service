@@ -47,6 +47,34 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
         $this->assertTrue($result->ok);
     }
 
+    public function testInvokeWithMissingEmail(): void
+    {
+        $context = [
+            'args' => [
+                'input' => [
+                    'email' => '',
+                ],
+            ],
+        ];
+
+        $this->validator->expects($this->once())
+            ->method('validate');
+
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(static function (RequestPasswordResetCommand $command) {
+                // Mock the response
+                $response = new RequestPasswordResetCommandResponse('Success');
+                $command->setResponse($response);
+
+                return true;
+            }));
+
+        $result = $this->resolver->__invoke(null, $context);
+
+        $this->assertIsObject($result);
+    }
+
     /**
      * @return array<string, array<string, array<string, string>>>
      */
@@ -74,33 +102,5 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
 
                 return true;
             }));
-    }
-
-    public function testInvokeWithMissingEmail(): void
-    {
-        $context = [
-            'args' => [
-                'input' => [
-                    'email' => '',
-                ],
-            ],
-        ];
-
-        $this->validator->expects($this->once())
-            ->method('validate');
-
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(static function (RequestPasswordResetCommand $command) {
-                // Mock the response
-                $response = new RequestPasswordResetCommandResponse('Success');
-                $command->setResponse($response);
-
-                return true;
-            }));
-
-        $result = $this->resolver->__invoke(null, $context);
-
-        $this->assertIsObject($result);
     }
 }

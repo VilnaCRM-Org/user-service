@@ -47,6 +47,35 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
         $this->assertTrue($result->ok);
     }
 
+    public function testInvokeWithMissingArgs(): void
+    {
+        $context = [
+            'args' => [
+                'input' => [
+                    'token' => '',
+                    'newPassword' => '',
+                ],
+            ],
+        ];
+
+        $this->validator->expects($this->once())
+            ->method('validate');
+
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(static function (ConfirmPasswordResetCommand $command) {
+                // Mock the response
+                $response = new ConfirmPasswordResetCommandResponse('Success');
+                $command->setResponse($response);
+
+                return true;
+            }));
+
+        $result = $this->resolver->__invoke(null, $context);
+
+        $this->assertIsObject($result);
+    }
+
     /**
      * @return array<string, array<string, array<string, string>>>
      */
@@ -82,34 +111,5 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
 
                 return true;
             }));
-    }
-
-    public function testInvokeWithMissingArgs(): void
-    {
-        $context = [
-            'args' => [
-                'input' => [
-                    'token' => '',
-                    'newPassword' => '',
-                ],
-            ],
-        ];
-
-        $this->validator->expects($this->once())
-            ->method('validate');
-
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(static function (ConfirmPasswordResetCommand $command) {
-                // Mock the response
-                $response = new ConfirmPasswordResetCommandResponse('Success');
-                $command->setResponse($response);
-
-                return true;
-            }));
-
-        $result = $this->resolver->__invoke(null, $context);
-
-        $this->assertIsObject($result);
     }
 }
