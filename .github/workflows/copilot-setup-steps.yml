@@ -18,15 +18,10 @@ permissions:
 jobs:
   copilot-setup-steps:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.KRAVALG_GITHUB_PAT }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Authenticate GitHub CLI
-        run: gh auth status
 
       - name: Start Docker containers and run migrations
         run: make start
