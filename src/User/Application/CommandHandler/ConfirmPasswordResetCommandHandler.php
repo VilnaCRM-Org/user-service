@@ -58,19 +58,35 @@ final readonly class ConfirmPasswordResetCommandHandler implements
     ): PasswordResetTokenInterface {
         $passwordResetToken = $this->tokenRepository->findByToken($token);
 
-        if (!$passwordResetToken) {
-            throw new PasswordResetTokenNotFoundException();
-        }
-
-        if ($passwordResetToken->isExpired()) {
-            throw new PasswordResetTokenExpiredException();
-        }
-
-        if ($passwordResetToken->isUsed()) {
-            throw new PasswordResetTokenAlreadyUsedException();
-        }
+        $this->ensureTokenExists($passwordResetToken);
+        $this->ensureTokenNotExpired($passwordResetToken);
+        $this->ensureTokenNotUsed($passwordResetToken);
 
         return $passwordResetToken;
+    }
+
+    private function ensureTokenExists(
+        ?PasswordResetTokenInterface $token
+    ): void {
+        if (!$token) {
+            throw new PasswordResetTokenNotFoundException();
+        }
+    }
+
+    private function ensureTokenNotExpired(
+        PasswordResetTokenInterface $token
+    ): void {
+        if ($token->isExpired()) {
+            throw new PasswordResetTokenExpiredException();
+        }
+    }
+
+    private function ensureTokenNotUsed(
+        PasswordResetTokenInterface $token
+    ): void {
+        if ($token->isUsed()) {
+            throw new PasswordResetTokenAlreadyUsedException();
+        }
     }
 
     private function findUserByToken(
