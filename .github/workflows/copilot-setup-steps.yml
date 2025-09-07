@@ -11,6 +11,9 @@ on:
 
 permissions:
   contents: read
+  actions: read
+  issues: read
+  pull-requests: read
 
 jobs:
   copilot-setup-steps:
@@ -21,6 +24,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "$GITHUB_TOKEN" | gh auth login --with-token
+          gh auth status
 
       - name: Start Docker containers and run migrations
         run: make start
