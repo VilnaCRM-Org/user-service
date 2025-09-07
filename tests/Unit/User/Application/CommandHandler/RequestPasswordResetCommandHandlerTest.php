@@ -465,9 +465,24 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
 
     public function testConstructorDefaultWindowHoursTwoMutation(): void
     {
-        // This test will fail if rateLimitWindowHours default is mutated from 1 to 2
-        // because countRecentRequestsByEmail will be called with "-2 hours" instead of "-1 hours"
-        $defaultHandler = new RequestPasswordResetCommandHandler(
+        $defaultHandler = $this->createDefaultHandler();
+        $email = $this->faker->email();
+        $user = $this->setupUserMock();
+        $token = $this->setupTokenMock();
+
+        $this->setupUserRepositoryExpectation($email, $user);
+        $this->setupOneHourTimeWindowExpectation($email);
+        $this->setupTokenCreationExpectations($user->getId(), $token);
+
+        $command = new RequestPasswordResetCommand($email);
+        $defaultHandler->__invoke($command);
+
+        $this->assertStringContainsString('If valid', $command->getResponse()->message);
+    }
+
+    private function createDefaultHandler(): RequestPasswordResetCommandHandler
+    {
+        return new RequestPasswordResetCommandHandler(
             $this->userRepository,
             $this->passwordResetTokenRepository,
             $this->passwordResetTokenFactory,
@@ -475,42 +490,36 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
             $this->uuidFactory
             // Using default constructor values (3, 1)
         );
+    }
 
-        $email = $this->faker->email();
+    private function setupUserMock(): UserInterface
+    {
         $user = $this->createMock(UserInterface::class);
         $userId = $this->faker->uuid();
         $user->method('getId')->willReturn($userId);
 
+        return $user;
+    }
+
+    private function setupTokenMock(): PasswordResetTokenInterface
+    {
         $token = $this->createMock(PasswordResetTokenInterface::class);
         $token->method('getTokenValue')->willReturn($this->faker->sha256());
 
+        return $token;
+    }
+
+    private function setupUserRepositoryExpectation(string $email, UserInterface $user): void
+    {
         $this->userRepository
             ->expects($this->once())
             ->method('findByEmail')
             ->with($email)
             ->willReturn($user);
+    }
 
-        // The mock expects to be called with a DateTimeImmutable representing "-1 hours"
-        // If the default gets mutated to 2, it would be called with "-2 hours"
-        $this->passwordResetTokenRepository
-            ->expects($this->once())
-            ->method('countRecentRequestsByEmail')
-            ->with(
-                $email,
-                $this->callback(static function (\DateTimeImmutable $dateTime): bool {
-                    // Check that the datetime is approximately 1 hour ago (not 2 hours)
-                    $oneHourAgo = new \DateTimeImmutable('-1 hours');
-                    $twoHoursAgo = new \DateTimeImmutable('-2 hours');
-
-                    $diffOne = abs($dateTime->getTimestamp() - $oneHourAgo->getTimestamp());
-                    $diffTwo = abs($dateTime->getTimestamp() - $twoHoursAgo->getTimestamp());
-
-                    // Should be closer to 1 hour ago than 2 hours ago
-                    return $diffOne < $diffTwo && $diffOne <= 60;
-                })
-            )
-            ->willReturn(2); // Under limit, should succeed
-
+    private function setupTokenCreationExpectations(string $userId, PasswordResetTokenInterface $token): void
+    {
         $this->passwordResetTokenFactory
             ->expects($this->once())
             ->method('create')
@@ -526,11 +535,35 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
             ->expects($this->once())
             ->method('publish')
             ->with($this->isInstanceOf(PasswordResetRequestedEvent::class));
+    }
 
-        $command = new RequestPasswordResetCommand($email);
-        $defaultHandler->__invoke($command);
+    private function setupOneHourTimeWindowExpectation(string $email): void
+    {
+        // The mock expects to be called with a DateTimeImmutable representing "-1 hours"
+        // If the default gets mutated to 2, it would be called with "-2 hours"
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('countRecentRequestsByEmail')
+            ->with(
+                $email,
+                $this->callback(static function (\DateTimeImmutable $dateTime): bool {
+                    return self::validateOneHourTimeWindow($dateTime);
+                })
+            )
+            ->willReturn(2); // Under limit, should succeed
+    }
 
-        $this->assertStringContainsString('If valid', $command->getResponse()->message);
+    private static function validateOneHourTimeWindow(\DateTimeImmutable $dateTime): bool
+    {
+        // Check that the datetime is approximately 1 hour ago (not 2 hours)
+        $oneHourAgo = new \DateTimeImmutable('-1 hours');
+        $twoHoursAgo = new \DateTimeImmutable('-2 hours');
+
+        $diffOne = abs($dateTime->getTimestamp() - $oneHourAgo->getTimestamp());
+        $diffTwo = abs($dateTime->getTimestamp() - $twoHoursAgo->getTimestamp());
+
+        // Should be closer to 1 hour ago than 2 hours ago
+        return $diffOne < $diffTwo && $diffOne <= 60;
     }
 
     private function configureRepositoryMocks(

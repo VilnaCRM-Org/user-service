@@ -25,6 +25,7 @@ final class UserOperationsContext implements Context
     private int $violationNum;
     private string $language;
     private string $currentUserEmail = '';
+    private UrlResolver $urlResolver;
 
     public function __construct(
         private readonly KernelInterface $kernel,
@@ -34,6 +35,7 @@ final class UserOperationsContext implements Context
         $this->requestBody = null;
         $this->violationNum = 0;
         $this->language = 'en';
+        $this->urlResolver = new UrlResolver();
     }
 
     /**
@@ -131,61 +133,47 @@ final class UserOperationsContext implements Context
      */
     public function requestSendTo(string $method, string $path): void
     {
-        // For password reset endpoints, replace the URL with the actual user ID
-        $path = $this->replacePasswordResetUrlWithUserId($path);
+        $processedPath = $this->processRequestPath($path);
+        $headers = $this->buildRequestHeaders($method);
+        $requestBody = $this->serializeRequestBody();
 
-        $contentType = $this->getContentTypeForMethod($method);
         $this->response = $this->kernel->handle(Request::create(
-            $path,
+            $processedPath,
             $method,
             [],
             [],
             [],
-            ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => $contentType,
-                'HTTP_ACCEPT_LANGUAGE' => $this->language,
-            ],
-            $this->serializer->serialize($this->requestBody, 'json')
+            $headers,
+            $requestBody
         ));
+    }
+
+    private function processRequestPath(string $path): string
+    {
+        $this->urlResolver->setCurrentUserEmail($this->currentUserEmail);
+        return $this->urlResolver->resolve($path);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildRequestHeaders(string $method): array
+    {
+        return [
+            'HTTP_ACCEPT' => 'application/json',
+            'CONTENT_TYPE' => $this->getContentTypeForMethod($method),
+            'HTTP_ACCEPT_LANGUAGE' => $this->language,
+        ];
+    }
+
+    private function serializeRequestBody(): string
+    {
+        return $this->serializer->serialize($this->requestBody, 'json');
     }
 
     private function getContentTypeForMethod(string $method): string
     {
         return $method === 'PATCH' ? 'application/merge-patch+json' : 'application/json';
-    }
-
-    private function replacePasswordResetUrlWithUserId(string $path): string
-    {
-        if (!str_contains($path, '/users/{id}/reset-password')) {
-            return $path;
-        }
-
-        return $this->getPasswordResetUrlWithUserId($path);
-    }
-
-    private function getPasswordResetUrlWithUserId(string $path): string
-    {
-        if ($this->isCurrentUserEmailEmpty()) {
-            return str_replace('{id}', 'placeholder-id', $path);
-        }
-
-        return $this->resolveUserIdInPath($path);
-    }
-
-    private function isCurrentUserEmailEmpty(): bool
-    {
-        return $this->currentUserEmail === '' || $this->currentUserEmail === null;
-    }
-
-    private function resolveUserIdInPath(string $path): string
-    {
-        try {
-            $userId = UserContext::getUserIdByEmail($this->currentUserEmail);
-            return str_replace('{id}', $userId, $path);
-        } catch (\RuntimeException $e) {
-            // User doesn't exist, use placeholder ID for non-existing user tests
-            return str_replace('{id}', 'nonexistent-user-id', $path);
-        }
     }
 
     /**

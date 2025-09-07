@@ -71,7 +71,8 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $expectedToken = $this->createMock(PasswordResetTokenInterface::class);
 
         // Create a mock repository that overrides just the findOneBy method
-        $repository = $this->getMockBuilder(MariaDBPasswordResetTokenRepository::class)
+        $repositoryClass = MariaDBPasswordResetTokenRepository::class;
+        $repository = $this->getMockBuilder($repositoryClass)
             ->setConstructorArgs([$this->entityManager, $this->registry])
             ->onlyMethods(['findOneBy'])
             ->getMock();
@@ -91,7 +92,8 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $userID = $this->faker->uuid();
 
         // Create a mock repository that overrides just the findOneBy method
-        $repository = $this->getMockBuilder(MariaDBPasswordResetTokenRepository::class)
+        $repositoryClass = MariaDBPasswordResetTokenRepository::class;
+        $repository = $this->getMockBuilder($repositoryClass)
             ->setConstructorArgs([$this->entityManager, $this->registry])
             ->onlyMethods(['findOneBy'])
             ->getMock();
@@ -137,7 +139,8 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
 
     private function createRepositoryMock(): MariaDBPasswordResetTokenRepository
     {
-        $repository = $this->getMockBuilder(MariaDBPasswordResetTokenRepository::class)
+        $repositoryClass = MariaDBPasswordResetTokenRepository::class;
+        $repository = $this->getMockBuilder($repositoryClass)
             ->setConstructorArgs([$this->entityManager, $this->registry])
             ->onlyMethods(['getEntityManager'])
             ->getMock();
@@ -237,35 +240,64 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         ?PasswordResetTokenInterface $expectedResult,
         ?array $orderBy = null
     ): void {
+        $mocks = $this->createDoctrineManagerMocks();
+        $this->setupEntityManagerExpectations($mocks);
+        $this->setupPersisterExpectations($mocks, $criteria, $expectedResult, $orderBy);
+        $this->setupRegistryExpectation();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function createDoctrineManagerMocks(): array
+    {
         $unitOfWork = $this->createMock(UnitOfWork::class);
         $persister = $this->createMock(EntityPersister::class);
-
         $metadataMock = $this->createMock(ClassMetadata::class);
         $metadataMock->name = PasswordResetToken::class;
 
+        return [
+            'unitOfWork' => $unitOfWork,
+            'persister' => $persister,
+            'metadata' => $metadataMock,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $mocks
+     */
+    private function setupEntityManagerExpectations(array $mocks): void
+    {
         $this->entityManager->expects($this->once())
             ->method('getClassMetadata')
-            ->willReturn($metadataMock);
+            ->willReturn($mocks['metadata']);
 
         $this->entityManager->expects($this->once())
             ->method('getUnitOfWork')
-            ->willReturn($unitOfWork);
+            ->willReturn($mocks['unitOfWork']);
+    }
 
-        $unitOfWork->expects($this->once())
+    /**
+     * @param array<string, mixed> $mocks
+     * @param array<string, mixed> $criteria
+     */
+    private function setupPersisterExpectations(
+        array $mocks,
+        array $criteria,
+        ?PasswordResetTokenInterface $expectedResult,
+        ?array $orderBy
+    ): void {
+        $mocks['unitOfWork']->expects($this->once())
             ->method('getEntityPersister')
-            ->willReturn($persister);
+            ->willReturn($mocks['persister']);
 
-        $persister->expects($this->once())
-            ->method('load')
-            ->with(
-                $criteria,
-                $this->anything(),
-                $this->anything(),
-                [],
-                $orderBy
-            )
+        $persisterMethod = $mocks['persister']->expects($this->once())->method('load');
+        $persisterMethod->with($criteria, $this->anything(), $this->anything(), [], $orderBy)
             ->willReturn($expectedResult);
+    }
 
+    private function setupRegistryExpectation(): void
+    {
         $this->registry->expects($this->once())
             ->method('getManagerForClass')
             ->willReturn($this->entityManager);

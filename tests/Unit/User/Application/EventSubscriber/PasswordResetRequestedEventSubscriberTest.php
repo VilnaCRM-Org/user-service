@@ -54,6 +54,40 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
         $this->subscriber->__invoke($event);
     }
 
+    public function testInvokeWhenTokenNotFound(): void
+    {
+        $tokenValue = $this->faker->sha256();
+        $eventId = $this->faker->uuid();
+
+        $user = $this->createMock(UserInterface::class);
+        $event = new PasswordResetRequestedEvent($user, $tokenValue, $eventId);
+
+        $this->tokenRepository->expects($this->once())
+            ->method('findByToken')
+            ->with($tokenValue)
+            ->willReturn(null);
+
+        $this->emailFactory->expects($this->never())
+            ->method('create');
+
+        $this->cmdFactory->expects($this->never())
+            ->method('create');
+
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+
+        $this->subscriber->__invoke($event);
+    }
+
+    public function testSubscribedTo(): void
+    {
+        $subscribedEvents = $this->subscriber->subscribedTo();
+
+        $this->assertIsArray($subscribedEvents);
+        $this->assertContains(PasswordResetRequestedEvent::class, $subscribedEvents);
+        $this->assertCount(1, $subscribedEvents);
+    }
+
     /**
      * @return array<string, \PHPUnit\Framework\MockObject\MockObject>
      */
@@ -90,39 +124,5 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($mocks['command']);
-    }
-
-    public function testInvokeWhenTokenNotFound(): void
-    {
-        $tokenValue = $this->faker->sha256();
-        $eventId = $this->faker->uuid();
-
-        $user = $this->createMock(UserInterface::class);
-        $event = new PasswordResetRequestedEvent($user, $tokenValue, $eventId);
-
-        $this->tokenRepository->expects($this->once())
-            ->method('findByToken')
-            ->with($tokenValue)
-            ->willReturn(null);
-
-        $this->emailFactory->expects($this->never())
-            ->method('create');
-
-        $this->cmdFactory->expects($this->never())
-            ->method('create');
-
-        $this->commandBus->expects($this->never())
-            ->method('dispatch');
-
-        $this->subscriber->__invoke($event);
-    }
-
-    public function testSubscribedTo(): void
-    {
-        $subscribedEvents = $this->subscriber->subscribedTo();
-
-        $this->assertIsArray($subscribedEvents);
-        $this->assertContains(PasswordResetRequestedEvent::class, $subscribedEvents);
-        $this->assertCount(1, $subscribedEvents);
     }
 }

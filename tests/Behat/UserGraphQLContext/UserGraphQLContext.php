@@ -36,6 +36,7 @@ final class UserGraphQLContext implements Context
     private int $errorNum;
 
     private GraphQLMutationInput $graphQLInput;
+    private ResponseValidator $responseValidator;
 
     public function __construct(
         private readonly KernelInterface $kernel,
@@ -44,6 +45,7 @@ final class UserGraphQLContext implements Context
         $this->responseContent = [];
         $this->errorNum = 0;
         $this->language = 'en';
+        $this->responseValidator = new ResponseValidator();
     }
 
     /**
@@ -218,20 +220,19 @@ final class UserGraphQLContext implements Context
      */
     public function mutationResponseShouldContainRequestedFields(): void
     {
-        $userData = json_decode(
+        $userData = $this->extractMutationUserData();
+        $this->responseValidator->validateFields($this->responseContent, $userData, $this->graphQLInput);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function extractMutationUserData(): array
+    {
+        return json_decode(
             $this->response->getContent(),
             true
         )['data'][$this->queryName]['user'];
-
-        foreach ($this->responseContent as $fieldName) {
-            Assert::assertArrayHasKey($fieldName, $userData);
-            if (property_exists($this->graphQLInput, $fieldName)) {
-                Assert::assertEquals(
-                    $this->graphQLInput->$fieldName,
-                    $userData[$fieldName]
-                );
-            }
-        }
     }
 
     /**
@@ -239,14 +240,19 @@ final class UserGraphQLContext implements Context
      */
     public function queryResponseShouldContainRequestedFields(): void
     {
-        $userData = json_decode(
+        $userData = $this->extractQueryUserData();
+        $this->responseValidator->validateFields($this->responseContent, $userData);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function extractQueryUserData(): array
+    {
+        return json_decode(
             $this->response->getContent(),
             true
         )['data'][$this->queryName];
-
-        foreach ($this->responseContent as $item) {
-            Assert::assertArrayHasKey($item, $userData);
-        }
     }
 
     /**
