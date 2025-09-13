@@ -900,3 +900,192 @@ git push                   # Push all changes
 ```
 
 This systematic approach ensures that all code review feedback is addressed thoroughly, maintaining high code quality while efficiently incorporating reviewer suggestions and maintaining project standards.
+
+## Documentation Synchronization Requirements
+
+**MANDATORY: When making ANY code changes, adding features, or modifying functionality, you MUST update the corresponding documentation in the `docs/` directory to maintain synchronization between codebase and documentation.**
+
+### Core Documentation Synchronization Rules
+
+**1. Feature Implementation Documentation Updates**
+When implementing new features or modifying existing ones:
+
+- **API Changes**: Update `docs/api-endpoints.md` with new endpoints, modified request/response schemas, authentication requirements, and examples
+- **Architecture Changes**: Update `docs/design-and-architecture.md` when adding new components, modifying existing patterns, or changing system interactions
+- **Configuration Changes**: Update `docs/advanced-configuration.md` when adding new environment variables, configuration options, or deployment parameters
+- **Performance Impact**: Update `docs/performance.md` and `docs/performance-frankenphp.md` when changes affect system performance or resource usage
+
+**2. Testing Documentation Updates**
+When adding or modifying tests:
+
+- **Test Coverage**: Update `docs/testing.md` with new test categories, testing strategies, or coverage requirements
+- **Test Commands**: Update testing section if new make commands or testing procedures are introduced
+- **BDD Scenarios**: Document new Behat scenarios or testing workflows
+
+**3. Developer Experience Documentation Updates**
+When modifying development workflows:
+
+- **Getting Started**: Update `docs/getting-started.md` if setup procedures change
+- **Developer Guide**: Update `docs/developer-guide.md` with new development patterns, tools, or workflows  
+- **Onboarding**: Update `docs/onboarding.md` if new team member procedures change
+
+**4. Security and Operational Documentation Updates**
+When implementing security or operational changes:
+
+- **Security**: Update `docs/security.md` with new authentication methods, authorization rules, or security considerations
+- **Operational**: Update `docs/operational.md` with new monitoring, logging, or maintenance procedures
+
+**5. User-Facing Documentation Updates**
+When adding user-facing features:
+
+- **User Guide**: Update `docs/user-guide.md` with new user workflows, features, or API usage examples
+- **API Documentation**: Ensure OpenAPI/GraphQL schemas in `.github/openapi-spec/` and `.github/graphql-spec/` are updated
+
+### Specific Documentation Update Scenarios
+
+**When adding new REST API endpoints:**
+```markdown
+1. Update `docs/api-endpoints.md` with:
+   - Endpoint URL and HTTP method
+   - Request/response schemas with examples
+   - Authentication/authorization requirements
+   - Error codes and responses
+   - Rate limiting information
+
+2. Update `docs/user-guide.md` with usage examples
+3. Update OpenAPI specification in `.github/openapi-spec/`
+```
+
+**When adding new GraphQL operations:**
+```markdown
+1. Update `docs/api-endpoints.md` with:
+   - Query/mutation schemas
+   - Input/output types
+   - Example requests and responses
+   - Authentication requirements
+
+2. Update GraphQL schema in `.github/graphql-spec/`
+3. Update `docs/user-guide.md` with client integration examples
+```
+
+**When modifying database schema:**
+```markdown
+1. Update `docs/design-and-architecture.md` with:
+   - Updated entity relationships
+   - New database tables or fields
+   - Migration considerations
+
+2. Update `docs/developer-guide.md` with:
+   - New entity usage patterns
+   - Repository method examples
+```
+
+**When adding new configuration options:**
+```markdown
+1. Update `docs/advanced-configuration.md` with:
+   - New environment variables
+   - Configuration examples
+   - Default values and validation rules
+   - Docker compose updates if needed
+
+2. Update `docs/getting-started.md` if required for basic setup
+```
+
+**When implementing new domain features:**
+```markdown
+1. Update `docs/design-and-architecture.md` with:
+   - New domain models and aggregates
+   - Command/query handlers
+   - Domain events and their handlers
+   - Bounded context interactions
+
+2. Update `docs/glossary.md` with new domain terms
+3. Update `docs/developer-guide.md` with usage examples
+```
+
+**When modifying authentication/authorization:**
+```markdown
+1. Update `docs/security.md` with:
+   - New OAuth flows or grant types
+   - Permission changes
+   - Security considerations
+
+2. Update `docs/api-endpoints.md` with updated auth requirements
+3. Update `docs/user-guide.md` with client authentication examples
+```
+
+**When adding new testing strategies or tools:**
+```markdown
+1. Update `docs/testing.md` with:
+   - New test categories or patterns
+   - Updated coverage requirements
+   - New testing commands or procedures
+
+2. Update `docs/developer-guide.md` if development workflow changes
+```
+
+**When implementing performance optimizations:**
+```markdown
+1. Update `docs/performance.md` with:
+   - Performance benchmarks and improvements
+   - New caching strategies
+   - Resource usage optimizations
+
+2. Update `docs/php-fpm-vs-frankenphp.md` if runtime comparisons change
+```
+
+### Documentation Quality Standards
+
+**Consistency Requirements:**
+- Follow existing documentation structure and formatting
+- Use consistent terminology from `docs/glossary.md`
+- Include practical code examples with proper syntax highlighting
+- Add cross-references to related documentation sections
+
+**Completeness Requirements:**
+- Document all public APIs, endpoints, and user-facing features
+- Include error handling and edge cases
+- Provide both basic and advanced usage examples
+- Update version information in `docs/versioning.md` when applicable
+
+**Maintenance Requirements:**
+- Remove outdated information when features are deprecated
+- Update `docs/release-notes.md` with significant changes
+- Ensure all links and references remain valid
+- Update screenshots or diagrams if UI/architecture changes
+
+### Documentation Validation Process
+
+**Before committing code changes:**
+
+1. **Review Documentation Impact**: Identify which documentation files need updates based on your code changes
+2. **Update Relevant Files**: Make comprehensive updates to all affected documentation
+3. **Cross-Reference Check**: Ensure all internal links and references remain valid
+4. **Example Validation**: Test all code examples and ensure they work with current implementation
+5. **Consistency Check**: Verify terminology alignment with `docs/glossary.md`
+
+**Documentation Update Checklist:**
+- [ ] API documentation updated for endpoint/schema changes
+- [ ] Architecture documentation reflects structural changes  
+- [ ] Configuration documentation includes new options
+- [ ] Testing documentation covers new test scenarios
+- [ ] User guide includes new feature usage examples
+- [ ] Security documentation addresses new auth/security aspects
+- [ ] Performance documentation reflects optimization changes
+- [ ] Glossary updated with new domain terms
+- [ ] Release notes updated for significant changes
+- [ ] All code examples tested and validated
+
+### Automated Documentation Maintenance
+
+**Integration with CI/CD:**
+- Documentation updates should be part of the same pull request as code changes
+- Consider the `make ci` command should validate documentation consistency
+- Use the existing quality checks to ensure documentation standards
+
+**Version Synchronization:**
+- Keep documentation version aligned with application version in `docs/versioning.md`
+- Update `docs/release-notes.md` for each release with documentation changes
+- Maintain backward compatibility notes in relevant documentation sections
+
+This comprehensive approach ensures that the `docs/` directory remains an accurate, up-to-date reflection of the codebase, providing developers and users with reliable documentation that evolves alongside the system.
