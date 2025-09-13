@@ -72,7 +72,7 @@ help:
 	@grep -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-15s\033[0m %s\n", $$1, $$2}'
 
 bats: ## Run tests for bash commands
-	bats tests/CLI/bats/
+	$(DOCKER_COMPOSE) exec -e APP_ENV=test -e BATS_LIB_PATH=/usr/lib/bats php bats tests/CLI/bats/
 
 phpcsfixer: ## A tool to automatically fix PHP Coding Standards issues
 	$(RUN_PHP_CS_FIXER)
@@ -93,7 +93,7 @@ psalm-security: ## Psalm security analysis
 	$(EXEC_ENV) $(PSALM) --taint-analysis
 
 phpinsights: ## Instant PHP quality checks and static analysis tool
-	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --ansi --format=github-action --disable-security-check && $(EXEC_ENV) ./vendor/bin/phpinsights analyse tests --no-interaction || true
+	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --ansi --format=github-action --disable-security-check && $(EXEC_ENV) ./vendor/bin/phpinsights analyse tests --no-interaction --config-path=phpinsights-tests.php
 
 unit-tests: ## Run unit tests
 	$(RUN_TESTS_COVERAGE) --testsuite=Unit

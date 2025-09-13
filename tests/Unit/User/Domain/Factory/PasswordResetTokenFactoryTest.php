@@ -37,7 +37,9 @@ final class PasswordResetTokenFactoryTest extends UnitTestCase
 
         // Allow 1 minute tolerance for test execution time
         $toleranceInSeconds = 60;
-        $timeDifference = abs($expectedExpiry->getTimestamp() - $actualExpiry->getTimestamp());
+        $timeDifference = abs(
+            $expectedExpiry->getTimestamp() - $actualExpiry->getTimestamp()
+        );
         $this->assertLessThan($toleranceInSeconds, $timeDifference);
     }
 
@@ -77,7 +79,9 @@ final class PasswordResetTokenFactoryTest extends UnitTestCase
 
         // Allow 1 minute tolerance for test execution time
         $toleranceInSeconds = 60;
-        $timeDifference = abs($expectedExpiry->getTimestamp() - $actualExpiry->getTimestamp());
+        $timeDifference = abs(
+            $expectedExpiry->getTimestamp() - $actualExpiry->getTimestamp()
+        );
         $this->assertLessThan($toleranceInSeconds, $timeDifference);
     }
 
