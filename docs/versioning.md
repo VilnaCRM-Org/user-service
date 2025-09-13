@@ -10,7 +10,6 @@ We have chosen not to use semantic versioning for the User Service for the follo
 - **Backward Compatibility**: Our focus is on maintaining backward compatibility through a well-defined deprecation policy rather than versioning. This approach ensures that developers have ample time to adapt to changes without being impacted by sudden version upgrades.
 - **Simplified Communication**: By avoiding the complexity of version numbers, we streamline our communication about updates and changes. Our users can focus on the functionality and stability of the API rather than keeping track of version numbers.
 
-
 ### Deprecation Policy
 
 Our deprecation policy is designed to give developers ample notice of breaking changes and deprecated features:

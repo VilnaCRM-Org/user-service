@@ -17,15 +17,17 @@ We have automated our release process using conventional commits and GitHub Acti
 The [conventional commits specification](https://www.conventionalcommits.org/en/v1.0.0/) provides a standardized way of writing commit messages. Each commit message includes a type and a description. This standardization allows tools to parse the commit history and generate release notes, version numbers, and changelogs automatically.
 
 Types of Commits:
-* **feat**: A new feature.
-* **fix**: A bug or vulnerability fix.
-* **refactor**: A code change that neither fixes a bug nor adds a feature, but improves the quality of existing code.
+
+- **feat**: A new feature.
+- **fix**: A bug or vulnerability fix.
+- **refactor**: A code change that neither fixes a bug nor adds a feature, but improves the quality of existing code.
 
 ### GitHub Actions
 
 GitHub Actions is a powerful automation platform that allows us to create custom workflows. We use GitHub Actions to automate the release process, triggered by the appropriate commit messages.
 
 Release Workflow:
+
 1. **Commit Parsing**: Once the commit is validated and pushed, [CaptainHook](http://captainhook.info/) parses the commit messages according to the conventional commit specification.
 2. **Changelog Generation**: A new changelog entry is generated automatically from the commit messages via [this](https://github.com/VilnaCRM-Org/user-service/actions/workflows/autorelease.yml?query=branch%3Amain) GitHub action.
 3. **Deployment to AWS**: The new version from the main branch is automatically deployed to our AWS services, ensuring that the latest updates are immediately available in our production environment.

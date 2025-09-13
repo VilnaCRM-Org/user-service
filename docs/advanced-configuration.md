@@ -5,6 +5,7 @@ Welcome to the Advanced Configuration Guide for the User Service. This guide is 
 ### Configuration
 
 The User Service utilizes environment variables for configuration to ensure that sensitive information is not hard-coded into the application. Here are the environment variables you can configure:
+
 - `APP_ENV`: Specifies the environment in which the application is running.
 - `APP_SECRET`: A secret key used for cryptographic purposes, such as generating CSRF tokens or signing cookies.
 - `API_DOMAIN`: The domain name of the API.
@@ -56,7 +57,6 @@ You can use `.env.test` and `.env.prod` to override variables for other environm
 
 2. While your `.env.prod` file should not be committed to version control, your `.env.test` file can be if it does not contain sensitive information. This helps maintain consistency across testing environments.
 
-
 ## Configuring Load Tests
 
 The User Service includes a comprehensive suite for load testing its endpoints. The configuration for these tests is defined in a JSON file (`tests/Load/config.json.dist`). Below is a guide on how to configure general settings and specific endpoint settings for load testing.
@@ -81,36 +81,39 @@ Each endpoint testing config has some common settings. Here is their breakdown:
 - `teardownTimeoutInMinutes`: Specifies the time (in minutes) finishing the load test script after execution.
 
 - `smoke`: Configuration for smoke testing.
-    - `threshold`: Specifies the threshold for response time (in milliseconds).
-    - `rps`: Specifies the requests per second (RPS) for the smoke test.
-    - `vus`: Specifies the virtual users (VUs) for the smoke test.
-    - `duration`: Specifies the duration of the smoke test (in seconds).
+
+  - `threshold`: Specifies the threshold for response time (in milliseconds).
+  - `rps`: Specifies the requests per second (RPS) for the smoke test.
+  - `vus`: Specifies the virtual users (VUs) for the smoke test.
+  - `duration`: Specifies the duration of the smoke test (in seconds).
 
 - `average`: Configuration for average load testing.
-    - `threshold`: Specifies the threshold for response time (in milliseconds).
-    - `rps`: Specifies the requests per second (RPS) for average load testing.
-    - `vus`: Specifies the virtual users (VUs) for average load testing.
-    - `duration`: Specifies the duration of each phase of the load test:
-        - `rise`: The duration of the ramp-up phase (in seconds).
-        - `plateau`: The duration of the plateau phase (in seconds).
-        - `fall`: The duration of the ramp-down phase (in seconds).
+
+  - `threshold`: Specifies the threshold for response time (in milliseconds).
+  - `rps`: Specifies the requests per second (RPS) for average load testing.
+  - `vus`: Specifies the virtual users (VUs) for average load testing.
+  - `duration`: Specifies the duration of each phase of the load test:
+    - `rise`: The duration of the ramp-up phase (in seconds).
+    - `plateau`: The duration of the plateau phase (in seconds).
+    - `fall`: The duration of the ramp-down phase (in seconds).
 
 - `stress`: Configuration for stress testing.
-    - `threshold`: Specifies the threshold for response time (in milliseconds).
-    - `rps`: Specifies the requests per second (RPS) for stress testing.
-    - `vus`: Specifies the virtual users (VUs) for stress testing.
-    - `duration`: Specifies the duration of each phase of the load test:
-        - `rise`: The duration of the ramp-up phase (in seconds).
-        - `plateau`: The duration of the plateau phase (in seconds).
-        - `fall`: The duration of the ramp-down phase (in seconds).
+
+  - `threshold`: Specifies the threshold for response time (in milliseconds).
+  - `rps`: Specifies the requests per second (RPS) for stress testing.
+  - `vus`: Specifies the virtual users (VUs) for stress testing.
+  - `duration`: Specifies the duration of each phase of the load test:
+    - `rise`: The duration of the ramp-up phase (in seconds).
+    - `plateau`: The duration of the plateau phase (in seconds).
+    - `fall`: The duration of the ramp-down phase (in seconds).
 
 - `spike`: Configuration for spike testing.
-    - `threshold`: Specifies the threshold for response time (in milliseconds).
-    - `rps`: Specifies the requests per second (RPS) for spike testing.
-    - `vus`: Specifies the virtual users (VUs) for spike testing.
-    - `duration`: Specifies the duration of each phase of the spike test:
-        - `rise`: The duration of the spike ramp-up phase (in seconds).
-        - `fall`: The duration of the spike ramp-down phase (in seconds).
+  - `threshold`: Specifies the threshold for response time (in milliseconds).
+  - `rps`: Specifies the requests per second (RPS) for spike testing.
+  - `vus`: Specifies the virtual users (VUs) for spike testing.
+  - `duration`: Specifies the duration of each phase of the spike test:
+    - `rise`: The duration of the spike ramp-up phase (in seconds).
+    - `fall`: The duration of the spike ramp-down phase (in seconds).
 
 Learn more about [Load testing with K6](https://grafana.com/docs/k6/latest/javascript-api/k6/)
 

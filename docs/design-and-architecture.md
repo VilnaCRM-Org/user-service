@@ -13,6 +13,7 @@ Dividing a codebase into bounded contexts allows for better organization and man
 - **Scalability:** Bounded contexts can be developed, deployed, and scaled independently, allowing teams to work autonomously and efficiently.
 
 Currently, we have 3 bounded contexts in User Service:
+
 1. **Shared**: Provides foundational support across the service.
 2. **OAuth**: Designed to manage OAuth entities and related processes.
 3. **User**: Encompasses the user management system, including authentication and confirmation functionalities.
@@ -35,7 +36,6 @@ The Infrastructure Layer provides implementations for external concerns such as 
 
 By following this predictable structure for each bounded context, teams can maintain consistency and clarity throughout the codebase, making it easier to understand, modify, and extend the system over time.
 
-
 ## Hexagonal Architecture
 
 Hexagonal Architecture, also known as Ports and Adapters Architecture, is a software design pattern that promotes loose coupling and separation of concerns in systems. In this architectural style, the core business logic of an application is encapsulated within the innermost layer, often referred to as the "hexagon" or "core." This core does not depend on any external systems or interfaces, making it highly testable and independent.
@@ -55,6 +55,7 @@ In User Service, CQRS allows us to encapsulate behavior and reuse it in differen
 All interfaces related to Commands can be found in `Shared/Domain/Bus/Command`.
 
 This is the list of currently available Commands, which can be found in `User/Application/Command` folder:
+
 1. **ConfirmUserCommand**: Dispatched to confirm a user.
 2. **RegisterUserCommand**: Dispatched to register a new user.
 3. **RegisterUserBatchCommand**: Dispatched to register multiple users in batch.
@@ -77,6 +78,7 @@ In User Service, we use Domain Events to have a flexible way to extend our syste
 All interfaces and Abstract classes related to Domain Events can be found in `Shared/Domain/Bus/Event`.
 
 This is the list of currently available Domain Events, which can be found in `User/Domain/Event` folder:
+
 1. **ConfirmationEmailSentEvent**: Published after the call of the `send()` function from the `ConfirmationEmail` aggregate.
 2. **EmailChangedEvent**: Published after the user's email is changed.
 3. **PasswordChangedEvent**: Published after the user's password is changed.

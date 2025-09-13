@@ -10,7 +10,8 @@ There are 3 bounded contexts in User Service:
 
 The Shared context provides foundational support across the User Service application. It includes utilities and infrastructure components common to other contexts, ensuring consistency and reducing duplication.
 
-* **Application:** This layer mainly consists of classes, responsible for handling cross-cutting concerns across the application, such as Validators and Exception Normalizers. Also, it has an OpenApi folder, which is responsible for building OpenAPI docs for the User Service, facilitating API discoverability and usability by generating detailed documentation for various API endpoints, request bodies, and response structures.
+- **Application:** This layer mainly consists of classes, responsible for handling cross-cutting concerns across the application, such as Validators and Exception Normalizers. Also, it has an OpenApi folder, which is responsible for building OpenAPI docs for the User Service, facilitating API discoverability and usability by generating detailed documentation for various API endpoints, request bodies, and response structures.
+
 ```bash
 Shared/Application
 ├── ErrorHandling
@@ -18,7 +19,9 @@ Shared/Application
 ├── Transformer
 └── Validator
 ```
-* **Domain:** This layer mainly consists of interfaces for classes in the Infrastructure layer, and abstract classes to be inherited in other bounded contexts. Also, it has entities, that can not be encapsulated in a specific bounded context.
+
+- **Domain:** This layer mainly consists of interfaces for classes in the Infrastructure layer, and abstract classes to be inherited in other bounded contexts. Also, it has entities, that can not be encapsulated in a specific bounded context.
+
 ```bash
 Shared/Domain
 ├── Aggregate
@@ -27,7 +30,9 @@ Shared/Domain
 │   └── Event
 └── ValueObject
 ```
-* **Infrastructure:** This layer mainly consists of services used to support the whole application infrastructure, such as Message Buses and utils for them. Also, some additional tools can be used for configuration, such as custom Retry Strategies for Message busses, or to override existing solutions, like custom database types.
+
+- **Infrastructure:** This layer mainly consists of services used to support the whole application infrastructure, such as Message Buses and utils for them. Also, some additional tools can be used for configuration, such as custom Retry Strategies for Message busses, or to override existing solutions, like custom database types.
+
 ```bash
 Shared/Infrastructure
 ├── Bus
@@ -42,7 +47,8 @@ Shared/Infrastructure
 
 The User context encapsulates all functionality related to user management within the service. It is comprehensive, covering aspects from user creation to authentication.
 
-* **Application:** This layer consists of classes, responsible for handling requests, such as HTTP Request Processors and GraphQL Mutation resolvers, and classes, that encapsulate behavior, such as Command and Event Handlers.
+- **Application:** This layer consists of classes, responsible for handling requests, such as HTTP Request Processors and GraphQL Mutation resolvers, and classes, that encapsulate behavior, such as Command and Event Handlers.
+
 ```bash
 User/Application
 ├── Command
@@ -56,7 +62,9 @@ User/Application
 ├── Resolver
 └── Transformer
 ```
-* **Domain:** This layer consists of Entities, Value Objects, Aggregates, Domain Events, and Domain Exceptions, which represent everything related to business logic in the User bounded context.
+
+- **Domain:** This layer consists of Entities, Value Objects, Aggregates, Domain Events, and Domain Exceptions, which represent everything related to business logic in the User bounded context.
+
 ```bash
 User/Domain
 ├── Aggregate
@@ -67,7 +75,9 @@ User/Domain
 ├── Repository
 └── ValueObject
 ```
-* **Infrastructure:** This layer consists of various Repositories for Entities from the Domain layer.
+
+- **Infrastructure:** This layer consists of various Repositories for Entities from the Domain layer.
+
 ```bash
 User/Infrastructure
 ├── Factory

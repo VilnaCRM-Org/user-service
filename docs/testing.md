@@ -11,20 +11,23 @@ Unit tests are the foundation of our testing strategy, focusing on small, isolat
 Our Unit and Integration test coverage is **100%**. You can check [this](https://github.com/VilnaCRM-Org/user-service/actions/workflows/tests.yml?query=branch%3Amain) GitHub CI workflow to see the results of the latest Unit and Integration test execution.
 
 ### Location:
+
 Tests are organized under the `/tests/Unit` directory, with further categorization, similar to folders in `src`.
 
 ### Tools:
+
 We primarily use PHPUnit for unit testing, along with mock objects for dependencies.
 
 ### Best Practices:
-* **Test One Thing at a Time**: Each test should focus on a single behavior or aspect of the component under the test. This approach makes it easier to identify what is broken when a test fails and ensures that each test is only for one purpose.
-* **Use Descriptive Test Names**: Test method names should clearly describe what they are testing. A well-named test can serve as documentation for what a piece of code is supposed to do. Descriptive names make it easier to understand the purpose of the test without having to dive into the implementation details.
-* **Keep Tests Independent**: Tests should not rely on the state produced by other tests. Each test should set up its data and not depend on the order of test execution. This practice ensures that tests can be run in any order and that the outcome of a test is not affected by the preceding tests.
-* **Mock External Dependencies**: Use mocks for any external service or database interaction to isolate the component under test. Mocking external dependencies allows us to test the internal logic of a component without worrying about the setup and behavior of external systems.
+
+- **Test One Thing at a Time**: Each test should focus on a single behavior or aspect of the component under the test. This approach makes it easier to identify what is broken when a test fails and ensures that each test is only for one purpose.
+- **Use Descriptive Test Names**: Test method names should clearly describe what they are testing. A well-named test can serve as documentation for what a piece of code is supposed to do. Descriptive names make it easier to understand the purpose of the test without having to dive into the implementation details.
+- **Keep Tests Independent**: Tests should not rely on the state produced by other tests. Each test should set up its data and not depend on the order of test execution. This practice ensures that tests can be run in any order and that the outcome of a test is not affected by the preceding tests.
+- **Mock External Dependencies**: Use mocks for any external service or database interaction to isolate the component under test. Mocking external dependencies allows us to test the internal logic of a component without worrying about the setup and behavior of external systems.
 
 ### Execution:
-Run `make unit-tests` to execute unit tests.
 
+Run `make unit-tests` to execute unit tests.
 
 ## Integration Testing
 
@@ -33,20 +36,23 @@ Our Unit and Integration test coverage is **100%**. You can check [this](https:/
 Integration tests assess the interaction between different parts of the application, such as database access and external services, to ensure they work together as expected. These tests are crucial for identifying issues that may not be visible through unit testing alone.
 
 ### Location:
+
 Integration tests are located in the `/tests/Integration` directory. This organization mirrors the structure of the `src` directory to make it easier to find the tests relevant to specific components or functionalities.
 
 ### Tools:
+
 For integration testing, we use PHPUnit in conjunction with real database connections and external services. This approach allows us to test the application in an environment that closely resembles production.
 
 ### Best Practices:
-* **Test Real Interactions**: Unlike unit tests, integration tests should use real instances of classes and services to ensure that their interactions are tested accurately.
-* **Use Transactional Rollbacks**: To maintain a consistent state and avoid polluting the database, use transactional rollbacks after each test. This ensures that each test starts in a clean state.
-* **Focus on Critical Paths**: Given the potentially large scope of integration testing, focus on critical paths through the application. This includes user registration, login flows, and data processing tasks.
-* **Monitor Performance**: Integration tests can be slower than unit tests due to their reliance on external services and databases. Monitor performance to ensure that the test suite remains efficient and manageable.
+
+- **Test Real Interactions**: Unlike unit tests, integration tests should use real instances of classes and services to ensure that their interactions are tested accurately.
+- **Use Transactional Rollbacks**: To maintain a consistent state and avoid polluting the database, use transactional rollbacks after each test. This ensures that each test starts in a clean state.
+- **Focus on Critical Paths**: Given the potentially large scope of integration testing, focus on critical paths through the application. This includes user registration, login flows, and data processing tasks.
+- **Monitor Performance**: Integration tests can be slower than unit tests due to their reliance on external services and databases. Monitor performance to ensure that the test suite remains efficient and manageable.
 
 ### Execution:
-Run `make integration-tests` to execute the integration tests. This command ensures that all dependencies are correctly set up and that the tests are run against the configured test database and external services.
 
+Run `make integration-tests` to execute the integration tests. This command ensures that all dependencies are correctly set up and that the tests are run against the configured test database and external services.
 
 ## Mutation Testing
 
@@ -61,7 +67,6 @@ We utilize **Infection**, a powerful PHP mutation testing framework. Infection a
 ### Execution
 
 Run `make infection`, to run mutation testing and see a comprehensive report about the quality of our test.
-
 
 ## Load Testing
 
@@ -78,7 +83,6 @@ Our load testing scripts are organized within the `/tests/Load` directory. These
 ### Tools
 
 For scripting and executing our load tests, we rely on **k6**, a powerful and modern load-testing tool. k6 allows us to script complex user behavior and supports running these tests at scale. The scripts cover a wide range of API endpoints and user actions, ensuring comprehensive coverage of our application's functionality.
-
 
 ### Configuration
 
@@ -100,6 +104,7 @@ There is a wide range of customizable options, starting with a global setting fo
 **Note:** Update `apiHost` with your actual domain when running load tests against production or staging environments.
 
 Also, you can customize plenty of options for each separate script, and even for each load type. Here is an example:
+
 ```bash
     "getUser": {
             "setupTimeoutInMinutes": 10,
@@ -168,6 +173,7 @@ By default, all load types will be executed, but you can disable some of them by
     runStress=false
     runSpike=false
 ```
+
 After the load test execution, you'll find `.html` reports in a `/tests/Load/loadTestsResults` folder.
 
 ## End-to-End (E2E) Testing
@@ -183,12 +189,15 @@ Testing scenarios, written in BDD style, are located in the `/features` folder.
 Code, responsible for processing the scenarios, is located in the `/tests/Behat` folder, with further categorization for each scenario.
 
 ### Tools:
+
 For E2E testing, our project utilizes **Behat**, a PHP framework for auto-testing your business expectations. Behat allows us to write tests in a human-readable format, using the Gherkin language, which makes it accessible not only to developers but also to non-technical stakeholders.
 
 ### Best Practices for writing scenarios:
+
 Check [this link](https://behat.org/en/latest/user_guide/writing_scenarios.html) to learn how to write features for Behat.
 
 ### Execution:
+
 Run `make behat` to execute end-to-end tests.
 
 Learn more about [Advanced Configuration Guide](advanced-configuration.md).

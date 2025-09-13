@@ -25,6 +25,7 @@ UserService is built on several key design principles:
 - **Event-Driven Architecture**: Utilizes an event-driven approach to handle user actions, making the system highly responsive and scalable.
 
 ## What Problem Does User Service Solve?
+
 - **Modern PHP Stack Integration**: By providing a template that leverages a modern PHP stack, the user service aims to streamline the development of PHP services, ensuring they are built on a solid, up-to-date foundation.
 - **Built-in Docker Environment**: The challenge of setting up consistent development environments across different machines is solved by providing a Docker-based setup. This ensures that service can be developed, tested, and deployed with the same configurations, reducing "works on my machine" problems.
 - **Convenient Make CLI Commands**: The service solves the problem of remembering and managing multiple commands for different tasks by providing a `make` command interface. This simplifies the process of building, running, and managing the application.

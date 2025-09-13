@@ -926,7 +926,7 @@ When adding or modifying tests:
 When modifying development workflows:
 
 - **Getting Started**: Update `docs/getting-started.md` if setup procedures change
-- **Developer Guide**: Update `docs/developer-guide.md` with new development patterns, tools, or workflows  
+- **Developer Guide**: Update `docs/developer-guide.md` with new development patterns, tools, or workflows
 - **Onboarding**: Update `docs/onboarding.md` if new team member procedures change
 
 **4. Security and Operational Documentation Updates**
@@ -944,8 +944,10 @@ When adding user-facing features:
 ### Specific Documentation Update Scenarios
 
 **When adding new REST API endpoints:**
+
 ```markdown
 1. Update `docs/api-endpoints.md` with:
+
    - Endpoint URL and HTTP method
    - Request/response schemas with examples
    - Authentication/authorization requirements
@@ -957,8 +959,10 @@ When adding user-facing features:
 ```
 
 **When adding new GraphQL operations:**
+
 ```markdown
 1. Update `docs/api-endpoints.md` with:
+
    - Query/mutation schemas
    - Input/output types
    - Example requests and responses
@@ -969,8 +973,10 @@ When adding user-facing features:
 ```
 
 **When modifying database schema:**
+
 ```markdown
 1. Update `docs/design-and-architecture.md` with:
+
    - Updated entity relationships
    - New database tables or fields
    - Migration considerations
@@ -981,8 +987,10 @@ When adding user-facing features:
 ```
 
 **When adding new configuration options:**
+
 ```markdown
 1. Update `docs/advanced-configuration.md` with:
+
    - New environment variables
    - Configuration examples
    - Default values and validation rules
@@ -992,8 +1000,10 @@ When adding user-facing features:
 ```
 
 **When implementing new domain features:**
+
 ```markdown
 1. Update `docs/design-and-architecture.md` with:
+
    - New domain models and aggregates
    - Command/query handlers
    - Domain events and their handlers
@@ -1004,8 +1014,10 @@ When adding user-facing features:
 ```
 
 **When modifying authentication/authorization:**
+
 ```markdown
 1. Update `docs/security.md` with:
+
    - New OAuth flows or grant types
    - Permission changes
    - Security considerations
@@ -1015,8 +1027,10 @@ When adding user-facing features:
 ```
 
 **When adding new testing strategies or tools:**
+
 ```markdown
 1. Update `docs/testing.md` with:
+
    - New test categories or patterns
    - Updated coverage requirements
    - New testing commands or procedures
@@ -1025,8 +1039,10 @@ When adding user-facing features:
 ```
 
 **When implementing performance optimizations:**
+
 ```markdown
 1. Update `docs/performance.md` with:
+
    - Performance benchmarks and improvements
    - New caching strategies
    - Resource usage optimizations
@@ -1037,18 +1053,21 @@ When adding user-facing features:
 ### Documentation Quality Standards
 
 **Consistency Requirements:**
+
 - Follow existing documentation structure and formatting
 - Use consistent terminology from `docs/glossary.md`
 - Include practical code examples with proper syntax highlighting
 - Add cross-references to related documentation sections
 
 **Completeness Requirements:**
+
 - Document all public APIs, endpoints, and user-facing features
 - Include error handling and edge cases
 - Provide both basic and advanced usage examples
 - Update version information in `docs/versioning.md` when applicable
 
 **Maintenance Requirements:**
+
 - Remove outdated information when features are deprecated
 - Update `docs/release-notes.md` with significant changes
 - Ensure all links and references remain valid
@@ -1065,8 +1084,9 @@ When adding user-facing features:
 5. **Consistency Check**: Verify terminology alignment with `docs/glossary.md`
 
 **Documentation Update Checklist:**
+
 - [ ] API documentation updated for endpoint/schema changes
-- [ ] Architecture documentation reflects structural changes  
+- [ ] Architecture documentation reflects structural changes
 - [ ] Configuration documentation includes new options
 - [ ] Testing documentation covers new test scenarios
 - [ ] User guide includes new feature usage examples
@@ -1079,11 +1099,13 @@ When adding user-facing features:
 ### Automated Documentation Maintenance
 
 **Integration with CI/CD:**
+
 - Documentation updates should be part of the same pull request as code changes
 - Consider the `make ci` command should validate documentation consistency
 - Use the existing quality checks to ensure documentation standards
 
 **Version Synchronization:**
+
 - Keep documentation version aligned with application version in `docs/versioning.md`
 - Update `docs/release-notes.md` for each release with documentation changes
 - Maintain backward compatibility notes in relevant documentation sections

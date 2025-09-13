@@ -50,6 +50,4 @@ Here is an example:
 
 <img src="https://github.com/VilnaCRM-Org/user-service/assets/81823080/b908d54d-e07e-4f90-9048-a0c4c661f974" alt="Description of the image" width="800" height="200">
 
-
 Learn more about [Developer Guide](developer-guide.md).
-

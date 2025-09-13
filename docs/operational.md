@@ -22,5 +22,4 @@ The length of Confirmation Tokens is configurable via the `.env` file, with the 
 
 You can find our config for it [here](https://github.com/VilnaCRM-Org/user-service/blob/main/config/packages/cache.yaml).
 
-
 Learn more about [Security Documentation](security.md)

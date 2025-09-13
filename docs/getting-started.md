@@ -5,6 +5,7 @@ Welcome to the User Service, a modern PHP microservice for user management, incl
 ### Prerequisites
 
 Before you begin, ensure you have the following installed on your system:
+
 - Docker 25.0.3+
 - Docker Compose 2.24.5+
 - Git 2.34.1+
@@ -31,12 +32,12 @@ As you will see, we use Make commands to manage the project. Run `make help` aft
    Configuration is managed through environment variables. You can copy `.env` to `.env.local` and customize the environment variables for local development.
    Here's an example configuration:
 
-    ```bash
-    DATABASE_URL="mysql://root:root@database:3306/db?serverVersion=11.4"
-    REDIS_URL=redis://redis:6379/0
-    MAILER_DSN=smtp://mailer:1025
-    API_BASE_URL=https://localhost
-    ```
+   ```bash
+   DATABASE_URL="mysql://root:root@database:3306/db?serverVersion=11.4"
+   REDIS_URL=redis://redis:6379/0
+   MAILER_DSN=smtp://mailer:1025
+   API_BASE_URL=https://localhost
+   ```
 
 3. **Start the project**
 
@@ -50,7 +51,6 @@ As you will see, we use Make commands to manage the project. Run `make help` aft
 
    That's it! Now the service is ready for work.
 
-
 4. **Quick start guide**
 
    Once the service runs, you can check these **local** URLs for a list of available endpoints and detailed info about them.
@@ -60,6 +60,7 @@ As you will see, we use Make commands to manage the project. Run `make help` aft
    [GraphQL docs](https://localhost/api/graphql/graphql_playground) (available when running locally)
 
    You can also view the API specifications directly on GitHub:
+
    - [OpenAPI Specification](https://github.com/VilnaCRM-Org/user-service/blob/main/.github/openapi-spec/spec.yaml)
    - [GraphQL Specification](https://github.com/VilnaCRM-Org/user-service/blob/main/.github/graphql-spec/spec)
 
