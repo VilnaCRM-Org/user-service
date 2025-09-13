@@ -233,30 +233,30 @@ stop-prod-loadtest: ## Stop production load testing environment
 ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	@echo "🚀 Running comprehensive CI checks..."
 	@echo "1️⃣  Validating composer.json and composer.lock..."
-	make composer-validate
+	@if ! make composer-validate; then echo "❌ CI checks failed: composer validation failed"; exit 1; fi
 	@echo "2️⃣  Checking Symfony requirements..."
-	make check-requirements
+	@if ! make check-requirements; then echo "❌ CI checks failed: Symfony requirements check failed"; exit 1; fi
 	@echo "3️⃣  Running security analysis..."
-	make check-security
+	@if ! make check-security; then echo "❌ CI checks failed: security analysis failed"; exit 1; fi
 	@echo "4️⃣  Fixing code style with PHP CS Fixer..."
-	make phpcsfixer
+	@if ! make phpcsfixer; then echo "❌ CI checks failed: PHP CS Fixer failed"; exit 1; fi
 	@echo "5️⃣  Running static analysis with Psalm..."
-	make psalm
+	@if ! make psalm; then echo "❌ CI checks failed: Psalm static analysis failed"; exit 1; fi
 	@echo "6️⃣  Running security taint analysis..."
-	make psalm-security
+	@if ! make psalm-security; then echo "❌ CI checks failed: Psalm security analysis failed"; exit 1; fi
 	@echo "7️⃣  Running code quality analysis with PHPInsights..."
-	make phpinsights
+	@if ! make phpinsights; then echo "❌ CI checks failed: PHPInsights quality analysis failed"; exit 1; fi
 	@echo "8️⃣  Validating architecture with Deptrac..."
-	make deptrac
+	@if ! make deptrac; then echo "❌ CI checks failed: Deptrac architecture validation failed"; exit 1; fi
 	@echo "9️⃣  Running complete test suite (unit, integration, e2e)..."
-	make unit-tests
-	make integration-tests
-	make behat
+	@if ! make unit-tests; then echo "❌ CI checks failed: unit tests failed"; exit 1; fi
+	@if ! make integration-tests; then echo "❌ CI checks failed: integration tests failed"; exit 1; fi
+	@if ! make behat; then echo "❌ CI checks failed: Behat e2e tests failed"; exit 1; fi
 	@echo "🔟 Running mutation testing with Infection..."
-	make infection
+	@if ! make infection; then echo "❌ CI checks failed: mutation testing failed"; exit 1; fi
 	@echo "🔟 Running CLI testing with Bats..."
-	make bats
-	@echo "✅ All CI checks completed successfully!"
+	@if ! make bats; then echo "❌ CI checks failed: Bats CLI testing failed"; exit 1; fi
+	@echo "✅ CI checks successfully passed!"
 
 
 pr-comments: ## Retrieve unresolved comments for a GitHub Pull Request

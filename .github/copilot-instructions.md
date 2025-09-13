@@ -78,7 +78,7 @@ The VilnaCRM User Service is designed to manage user accounts and authentication
 
 **Primary CI Command:**
 
-- `make ci` -- Run all comprehensive CI checks (composer validation, security analysis, code style, static analysis, architecture validation, complete test suite, mutation testing)
+- `make ci` -- Run all comprehensive CI checks (composer validation, security analysis, code style, static analysis, architecture validation, complete test suite, mutation testing). **MUST output "✅ CI checks successfully passed!" at the end when all checks pass successfully. If any check fails, outputs "❌ CI checks failed:" with specific error details.**
 
 **Individual CI commands available:**
 
@@ -99,9 +99,12 @@ The VilnaCRM User Service is designed to manage user accounts and authentication
 
 1. Make your code changes
 2. Run `make ci` to execute all quality checks
-3. Fix any issues reported by the checks
-4. Ensure all tests pass and code coverage is maintained
-5. Commit your changes only after CI passes completely
+3. **CRITICAL**: The `make ci` command MUST output "✅ CI checks successfully passed!" at the end
+4. If you see "❌ CI checks failed:" message, you MUST fix the reported issues and rerun `make ci`
+5. **DO NOT finish the task** until you see "✅ CI checks successfully passed!" in the output
+6. Fix any issues reported by the checks iteratively
+7. Ensure all tests pass and code coverage is maintained
+8. Commit your changes only after CI passes completely with the success message
 
 ### Load Testing Commands
 

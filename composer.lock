@@ -225,16 +225,16 @@
         },
         {
             "name": "async-aws/core",
-            "version": "1.27.0",
+            "version": "1.27.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/async-aws/core.git",
-                "reference": "00b69a04a36b5ba75e0448e46158c9718ac95755"
+                "reference": "5b8e35c8df94990161e2c9750c9ba1683d0b48b8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/async-aws/core/zipball/00b69a04a36b5ba75e0448e46158c9718ac95755",
-                "reference": "00b69a04a36b5ba75e0448e46158c9718ac95755",
+                "url": "https://api.github.com/repos/async-aws/core/zipball/5b8e35c8df94990161e2c9750c9ba1683d0b48b8",
+                "reference": "5b8e35c8df94990161e2c9750c9ba1683d0b48b8",
                 "shasum": ""
             },
             "require": {
@@ -277,7 +277,7 @@
                 "sts"
             ],
             "support": {
-                "source": "https://github.com/async-aws/core/tree/1.27.0"
+                "source": "https://github.com/async-aws/core/tree/1.27.1"
             },
             "funding": [
                 {
@@ -289,20 +289,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-08-11T10:03:27+00:00"
+            "time": "2025-09-08T07:05:54+00:00"
         },
         {
             "name": "async-aws/sqs",
-            "version": "2.7.0",
+            "version": "2.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/async-aws/sqs.git",
-                "reference": "01d471a5d68a316fddd493b6159f8da5eed0b7e3"
+                "reference": "6f5780a221e433cf4cc477c69b131825bc9d8d71"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/async-aws/sqs/zipball/01d471a5d68a316fddd493b6159f8da5eed0b7e3",
-                "reference": "01d471a5d68a316fddd493b6159f8da5eed0b7e3",
+                "url": "https://api.github.com/repos/async-aws/sqs/zipball/6f5780a221e433cf4cc477c69b131825bc9d8d71",
+                "reference": "6f5780a221e433cf4cc477c69b131825bc9d8d71",
                 "shasum": ""
             },
             "require": {
@@ -335,7 +335,7 @@
                 "sqs"
             ],
             "support": {
-                "source": "https://github.com/async-aws/sqs/tree/2.7.0"
+                "source": "https://github.com/async-aws/sqs/tree/2.7.1"
             },
             "funding": [
                 {
@@ -347,7 +347,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-08-11T10:03:27+00:00"
+            "time": "2025-09-08T07:05:54+00:00"
         },
         {
             "name": "aws/aws-crt-php",
@@ -405,16 +405,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.356.12",
+            "version": "3.356.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "0068088fed44e2bed3a2e82f2c7a0bb9e356b3c3"
+                "reference": "d0357fbe2535bb7d832e594a4ff2ff8da29d229c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/0068088fed44e2bed3a2e82f2c7a0bb9e356b3c3",
-                "reference": "0068088fed44e2bed3a2e82f2c7a0bb9e356b3c3",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d0357fbe2535bb7d832e594a4ff2ff8da29d229c",
+                "reference": "d0357fbe2535bb7d832e594a4ff2ff8da29d229c",
                 "shasum": ""
             },
             "require": {
@@ -427,7 +427,7 @@
                 "guzzlehttp/psr7": "^2.4.5",
                 "mtdowling/jmespath.php": "^2.8.0",
                 "php": ">=8.1",
-                "psr/http-message": "^2.0"
+                "psr/http-message": "^1.0 || ^2.0"
             },
             "require-dev": {
                 "andrewsville/php-token-reflection": "^1.4",
@@ -496,9 +496,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.356.12"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.356.17"
             },
-            "time": "2025-09-05T18:10:41+00:00"
+            "time": "2025-09-12T18:07:37+00:00"
         },
         {
             "name": "blackbonjour/stdlib",
@@ -982,16 +982,16 @@
         },
         {
             "name": "doctrine/doctrine-bundle",
-            "version": "2.16.1",
+            "version": "2.16.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/DoctrineBundle.git",
-                "reference": "152d5083f0cd205a278131dc4351a8c94d007fe1"
+                "reference": "1c10de0fe995f01eca6b073d1c2549ef0b603a7f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/DoctrineBundle/zipball/152d5083f0cd205a278131dc4351a8c94d007fe1",
-                "reference": "152d5083f0cd205a278131dc4351a8c94d007fe1",
+                "url": "https://api.github.com/repos/doctrine/DoctrineBundle/zipball/1c10de0fe995f01eca6b073d1c2549ef0b603a7f",
+                "reference": "1c10de0fe995f01eca6b073d1c2549ef0b603a7f",
                 "shasum": ""
             },
             "require": {
@@ -1025,12 +1025,11 @@
                 "phpstan/phpstan": "2.1.1",
                 "phpstan/phpstan-phpunit": "2.0.3",
                 "phpstan/phpstan-strict-rules": "^2",
-                "phpunit/phpunit": "^9.6.22",
+                "phpunit/phpunit": "^10.5.53",
                 "psr/log": "^1.1.4 || ^2.0 || ^3.0",
                 "symfony/doctrine-messenger": "^6.4 || ^7.0",
                 "symfony/expression-language": "^6.4 || ^7.0",
                 "symfony/messenger": "^6.4 || ^7.0",
-                "symfony/phpunit-bridge": "^7.2",
                 "symfony/property-info": "^6.4 || ^7.0",
                 "symfony/security-bundle": "^6.4 || ^7.0",
                 "symfony/stopwatch": "^6.4 || ^7.0",
@@ -1085,7 +1084,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/DoctrineBundle/issues",
-                "source": "https://github.com/doctrine/DoctrineBundle/tree/2.16.1"
+                "source": "https://github.com/doctrine/DoctrineBundle/tree/2.16.2"
             },
             "funding": [
                 {
@@ -1101,7 +1100,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-09-05T15:24:53+00:00"
+            "time": "2025-09-10T19:14:48+00:00"
         },
         {
             "name": "doctrine/doctrine-migrations-bundle",
@@ -10680,16 +10679,16 @@
         },
         {
             "name": "behat/behat",
-            "version": "v3.23.0",
+            "version": "v3.24.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Behat/Behat.git",
-                "reference": "c465af8756adaaa6d962c3176a0a6c594361809b"
+                "reference": "2e820251d67b205cfaa363ea14ee5f54551c21c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Behat/Behat/zipball/c465af8756adaaa6d962c3176a0a6c594361809b",
-                "reference": "c465af8756adaaa6d962c3176a0a6c594361809b",
+                "url": "https://api.github.com/repos/Behat/Behat/zipball/2e820251d67b205cfaa363ea14ee5f54551c21c3",
+                "reference": "2e820251d67b205cfaa363ea14ee5f54551c21c3",
                 "shasum": ""
             },
             "require": {
@@ -10711,8 +10710,9 @@
                 "friendsofphp/php-cs-fixer": "^3.68",
                 "phpstan/phpstan": "^2.0",
                 "phpunit/phpunit": "^9.6",
-                "rector/rector": "^2.0",
+                "rector/rector": "2.1.4",
                 "sebastian/diff": "^4.0",
+                "symfony/filesystem": "^5.4 || ^6.4 || ^7.0",
                 "symfony/polyfill-php84": "^1.31",
                 "symfony/process": "^5.4 || ^6.4 || ^7.0"
             },
@@ -10767,9 +10767,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Behat/Behat/issues",
-                "source": "https://github.com/Behat/Behat/tree/v3.23.0"
+                "source": "https://github.com/Behat/Behat/tree/v3.24.0"
             },
-            "time": "2025-07-15T16:58:54+00:00"
+            "time": "2025-09-11T09:17:09+00:00"
         },
         {
             "name": "behat/gherkin",
@@ -12460,16 +12460,16 @@
         },
         {
             "name": "friendsofphp/php-cs-fixer",
-            "version": "v3.87.1",
+            "version": "v3.87.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer.git",
-                "reference": "2f5170365e2a422d0c5421f9c8818b2c078105f6"
+                "reference": "da5f0a7858c79b56fc0b8c36d3efcfe5f37f0992"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/2f5170365e2a422d0c5421f9c8818b2c078105f6",
-                "reference": "2f5170365e2a422d0c5421f9c8818b2c078105f6",
+                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/da5f0a7858c79b56fc0b8c36d3efcfe5f37f0992",
+                "reference": "da5f0a7858c79b56fc0b8c36d3efcfe5f37f0992",
                 "shasum": ""
             },
             "require": {
@@ -12552,7 +12552,7 @@
             ],
             "support": {
                 "issues": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/issues",
-                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.87.1"
+                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.87.2"
             },
             "funding": [
                 {
@@ -12560,7 +12560,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-09-02T15:27:36+00:00"
+            "time": "2025-09-10T09:51:40+00:00"
         },
         {
             "name": "infection/abstract-testframework-adapter",
@@ -14483,16 +14483,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "9.6.25",
+            "version": "9.6.26",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "049c011e01be805202d8eebedef49f769a8ec7b7"
+                "reference": "a0139ea157533454f611038326f3020b3051f129"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/049c011e01be805202d8eebedef49f769a8ec7b7",
-                "reference": "049c011e01be805202d8eebedef49f769a8ec7b7",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/a0139ea157533454f611038326f3020b3051f129",
+                "reference": "a0139ea157533454f611038326f3020b3051f129",
                 "shasum": ""
             },
             "require": {
@@ -14566,7 +14566,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.6.25"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.6.26"
             },
             "funding": [
                 {
@@ -14590,7 +14590,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-08-20T14:38:31+00:00"
+            "time": "2025-09-11T06:17:45+00:00"
         },
         {
             "name": "psalm/plugin-phpunit",
@@ -16650,16 +16650,16 @@
         },
         {
             "name": "slevomat/coding-standard",
-            "version": "8.22.0",
+            "version": "8.22.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/slevomat/coding-standard.git",
-                "reference": "a4cef983bad2e70125612d22b2f6e2bd1333d5c2"
+                "reference": "1dd80bf3b93692bedb21a6623c496887fad05fec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/a4cef983bad2e70125612d22b2f6e2bd1333d5c2",
-                "reference": "a4cef983bad2e70125612d22b2f6e2bd1333d5c2",
+                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/1dd80bf3b93692bedb21a6623c496887fad05fec",
+                "reference": "1dd80bf3b93692bedb21a6623c496887fad05fec",
                 "shasum": ""
             },
             "require": {
@@ -16671,11 +16671,11 @@
             "require-dev": {
                 "phing/phing": "3.0.1|3.1.0",
                 "php-parallel-lint/php-parallel-lint": "1.4.0",
-                "phpstan/phpstan": "2.1.22",
+                "phpstan/phpstan": "2.1.24",
                 "phpstan/phpstan-deprecation-rules": "2.0.3",
                 "phpstan/phpstan-phpunit": "2.0.7",
                 "phpstan/phpstan-strict-rules": "2.0.6",
-                "phpunit/phpunit": "9.6.8|10.5.48|11.4.4|11.5.36|12.3.8"
+                "phpunit/phpunit": "9.6.8|10.5.48|11.4.4|11.5.36|12.3.10"
             },
             "type": "phpcodesniffer-standard",
             "extra": {
@@ -16699,7 +16699,7 @@
             ],
             "support": {
                 "issues": "https://github.com/slevomat/coding-standard/issues",
-                "source": "https://github.com/slevomat/coding-standard/tree/8.22.0"
+                "source": "https://github.com/slevomat/coding-standard/tree/8.22.1"
             },
             "funding": [
                 {
@@ -16711,7 +16711,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-09-06T09:14:48+00:00"
+            "time": "2025-09-13T08:53:30+00:00"
         },
         {
             "name": "spatie/array-to-xml",
