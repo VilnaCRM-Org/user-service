@@ -24,7 +24,6 @@ export default function createUser() {
     let user;
     let retryCount = 0;
 
-    // Generate user with duplicate checking within batch
     do {
       user = generator.next().value;
       retryCount++;
@@ -33,14 +32,12 @@ export default function createUser() {
         console.error(
           `Failed to generate unique email after ${maxRetries} attempts for user ${userIndex}`
         );
-        // Generate a fallback unique email using userIndex and timestamp
         const fallbackEmail = `user_fallback_${userIndex}_${Date.now()}_${Math.random().toString(36).substring(2)}@example.com`;
         user.email = fallbackEmail;
         break;
       }
     } while (usedEmails.has(user.email));
 
-    // Track used emails within this batch
     usedEmails.add(user.email);
     batch.push(user);
   }

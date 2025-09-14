@@ -62,13 +62,13 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
     public function testInvokeSuccessfully(): void
     {
-        $token = 'valid-token';
-        $newPassword = 'newPassword123!';
-        $hashedPassword = 'hashed_password';
+        $token = $this->faker->lexify('??????????');
+        $newPassword = $this->faker->password(12);
+        $hashedPassword = $this->faker->sha256();
         $userId = $this->faker->uuid();
         $eventId = Uuid::v4();
 
-        $command = new ConfirmPasswordResetCommand($token, $newPassword, $userId);
+        $command = new ConfirmPasswordResetCommand($token, $newPassword);
 
         $passwordResetToken = $this->createMock(PasswordResetTokenInterface::class);
         $passwordResetToken->expects($this->once())
@@ -132,11 +132,10 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
     public function testInvokeThrowsExceptionWhenTokenNotFound(): void
     {
-        $token = 'invalid-token';
-        $newPassword = 'newPassword123!';
-        $userId = $this->faker->uuid();
+        $token = $this->faker->lexify('??????????');
+        $newPassword = $this->faker->password(12);
 
-        $command = new ConfirmPasswordResetCommand($token, $newPassword, $userId);
+        $command = new ConfirmPasswordResetCommand($token, $newPassword);
 
         $this->tokenRepository->expects($this->once())
             ->method('findByToken')
@@ -155,11 +154,10 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
     public function testInvokeThrowsExceptionWhenTokenExpired(): void
     {
-        $token = 'expired-token';
-        $newPassword = 'newPassword123!';
-        $userId = $this->faker->uuid();
+        $token = $this->faker->lexify('??????????');
+        $newPassword = $this->faker->password(12);
 
-        $command = new ConfirmPasswordResetCommand($token, $newPassword, $userId);
+        $command = new ConfirmPasswordResetCommand($token, $newPassword);
 
         $passwordResetToken = $this->createMock(PasswordResetTokenInterface::class);
 
@@ -180,11 +178,10 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
     public function testInvokeThrowsExceptionWhenTokenAlreadyUsed(): void
     {
-        $token = 'used-token';
-        $newPassword = 'newPassword123!';
-        $userId = $this->faker->uuid();
+        $token = $this->faker->lexify('??????????');
+        $newPassword = $this->faker->password(12);
 
-        $command = new ConfirmPasswordResetCommand($token, $newPassword, $userId);
+        $command = new ConfirmPasswordResetCommand($token, $newPassword);
 
         $passwordResetToken = $this->createMock(PasswordResetTokenInterface::class);
 
@@ -205,11 +202,10 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
     public function testInvokeThrowsExceptionWhenUserNotFound(): void
     {
-        $token = 'valid-token';
-        $newPassword = 'newPassword123!';
-        $userId = $this->faker->uuid();
+        $token = $this->faker->lexify('??????????');
+        $newPassword = $this->faker->password(12);
 
-        $command = new ConfirmPasswordResetCommand($token, $newPassword, $userId);
+        $command = new ConfirmPasswordResetCommand($token, $newPassword);
 
         $passwordResetToken = $this->createMock(PasswordResetTokenInterface::class);
 
@@ -234,11 +230,10 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
     public function testInvokeThrowsExceptionWhenTokenUserMismatch(): void
     {
-        $token = 'valid-token';
-        $newPassword = 'newPassword123!';
-        $requestUserId = $this->faker->uuid();
+        $token = $this->faker->lexify('??????????');
+        $newPassword = $this->faker->password(12);
 
-        $command = new ConfirmPasswordResetCommand($token, $newPassword, $requestUserId);
+        $command = new ConfirmPasswordResetCommand($token, $newPassword);
 
         $passwordResetToken = $this->createMock(PasswordResetTokenInterface::class);
 

@@ -122,7 +122,7 @@ resources:
           userId:
             type: 'String!'
 
-  App\Shared\Application\DTO\Empty:
+  App\Shared\Application\DTO\EmptyResponse:
     operations:
       request_password_reset:
         class: 'ApiPlatform\Metadata\Post'

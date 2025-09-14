@@ -19,8 +19,9 @@ final readonly class PasswordResetTokenFactory implements
     public function create(string $userID): PasswordResetTokenInterface
     {
         $createdAt = new \DateTimeImmutable();
+        $hourUnit = $this->expirationTimeInHours === 1 ? 'hour' : 'hours';
         $expiresAt = $createdAt->modify(
-            "+{$this->expirationTimeInHours} hours"
+            "+{$this->expirationTimeInHours} {$hourUnit}"
         );
 
         return new PasswordResetToken(

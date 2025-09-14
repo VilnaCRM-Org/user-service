@@ -27,72 +27,92 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
 
     public function testSave(): void
     {
-        $user = $this->userFactory->create('test@example.com', 'TE', 'password123', new Uuid('123e4567-e89b-12d3-a456-426614174000'));
+        $email = $this->faker->unique()->email();
+        $initials = strtoupper(substr($this->faker->firstName(), 0, 1) . substr($this->faker->lastName(), 0, 1));
+        $password = $this->faker->password(8);
+        $userId = $this->faker->uuid();
+
+        $user = $this->userFactory->create($email, $initials, $password, new Uuid($userId));
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
         $createdAt = new \DateTimeImmutable();
         $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
-        $token = new PasswordResetToken('test_token_123', $user->getId(), $expiresAt, $createdAt);
+        $tokenValue = $this->faker->lexify('??????????');
+        $token = new PasswordResetToken($tokenValue, $user->getId(), $expiresAt, $createdAt);
 
         $this->repository->save($token);
 
-        $found = $this->repository->findByToken('test_token_123');
+        $found = $this->repository->findByToken($tokenValue);
         $this->assertNotNull($found);
-        $this->assertSame('test_token_123', $found->getTokenValue());
+        $this->assertSame($tokenValue, $found->getTokenValue());
         $this->assertSame($user->getId(), $found->getUserID());
     }
 
     public function testFindByToken(): void
     {
-        $user = $this->userFactory->create('test2@example.com', 'T2', 'password123', new Uuid('223e4567-e89b-12d3-a456-426614174001'));
+        $email = $this->faker->unique()->email();
+        $initials = strtoupper(substr($this->faker->firstName(), 0, 1) . substr($this->faker->lastName(), 0, 1));
+        $password = $this->faker->password(8);
+        $userId = $this->faker->uuid();
+
+        $user = $this->userFactory->create($email, $initials, $password, new Uuid($userId));
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
         $createdAt = new \DateTimeImmutable();
         $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
-        $token = new PasswordResetToken('find_token_123', $user->getId(), $expiresAt, $createdAt);
+        $tokenValue = $this->faker->lexify('??????????');
+        $token = new PasswordResetToken($tokenValue, $user->getId(), $expiresAt, $createdAt);
         $this->repository->save($token);
 
-        $found = $this->repository->findByToken('find_token_123');
+        $found = $this->repository->findByToken($tokenValue);
         $this->assertNotNull($found);
-        $this->assertSame('find_token_123', $found->getTokenValue());
+        $this->assertSame($tokenValue, $found->getTokenValue());
         $this->assertSame($user->getId(), $found->getUserID());
     }
 
     public function testFindByTokenNotFound(): void
     {
-        $found = $this->repository->findByToken('non_existent_token');
+        $nonExistentToken = $this->faker->lexify('??????????');
+        $found = $this->repository->findByToken($nonExistentToken);
         $this->assertNull($found);
     }
 
     public function testFindByUserID(): void
     {
-        $user = $this->userFactory->create('test3@example.com', 'T3', 'password123', new Uuid('323e4567-e89b-12d3-a456-426614174002'));
+        $email = $this->faker->unique()->email();
+        $initials = strtoupper(substr($this->faker->firstName(), 0, 1) . substr($this->faker->lastName(), 0, 1));
+        $password = $this->faker->password(8);
+        $userId = $this->faker->uuid();
+
+        $user = $this->userFactory->create($email, $initials, $password, new Uuid($userId));
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
         $baseTime = new \DateTimeImmutable('2023-01-01 10:00:00');
         $createdAt1 = $baseTime;
         $expiresAt1 = $createdAt1->add(new \DateInterval('PT1H'));
-        $token1 = new PasswordResetToken('token1', $user->getId(), $expiresAt1, $createdAt1);
+        $token1Value = $this->faker->lexify('??????????');
+        $token1 = new PasswordResetToken($token1Value, $user->getId(), $expiresAt1, $createdAt1);
 
         $createdAt2 = $baseTime->add(new \DateInterval('PT1S'));
         $expiresAt2 = $createdAt2->add(new \DateInterval('PT1H'));
-        $token2 = new PasswordResetToken('token2', $user->getId(), $expiresAt2, $createdAt2);
+        $token2Value = $this->faker->lexify('??????????');
+        $token2 = new PasswordResetToken($token2Value, $user->getId(), $expiresAt2, $createdAt2);
 
         $this->repository->save($token1);
         $this->repository->save($token2);
 
         $found = $this->repository->findByUserID($user->getId());
         $this->assertNotNull($found);
-        // Should return the most recent token
-        $this->assertSame('token2', $found->getTokenValue());
+        $this->assertSame($token2Value, $found->getTokenValue());
     }
 
     public function testFindByUserIDNotFound(): void
     {
-        $found = $this->repository->findByUserID('non_existent_user_id');
+        $nonExistentUserId = $this->faker->uuid();
+        $found = $this->repository->findByUserID($nonExistentUserId);
         $this->assertNull($found);
     }
 

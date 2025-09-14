@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\DTO;
 
-final readonly class Empty
+final readonly class EmptyResponse
 {
 }

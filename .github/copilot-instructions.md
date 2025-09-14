@@ -1114,3 +1114,91 @@ When adding user-facing features:
 - Maintain backward compatibility notes in relevant documentation sections
 
 This comprehensive approach ensures that the `docs/` directory remains an accurate, up-to-date reflection of the codebase, providing developers and users with reliable documentation that evolves alongside the system.
+
+## Additional Development Guidelines
+
+### Code Comments and Self-Explanatory Code
+
+**MANDATORY: Remove all inline comments and write self-explanatory code:**
+
+- **No inline comments** in PHP, JavaScript, Docker, or any other code files
+- **Self-explanatory code** should tell its own story through clear naming and structure
+- **Function extraction** is preferred over explanatory comments
+- If complex logic needs explanation, extract it into a method with a descriptive name
+
+**Examples:**
+
+```php
+// ❌ BAD: Inline comment explaining code
+if ($value === '') {
+    return false; // empty is not "only spaces"
+}
+
+// ✅ GOOD: Self-explanatory method name
+private function isEmptyButNotOnlySpaces(string $value): bool
+{
+    return $value === '';
+}
+```
+
+### Symfony Built-in Features Preference
+
+**MANDATORY: Use Symfony and API Platform built-in features instead of custom implementations:**
+
+- **Validators**: Use Symfony's built-in validators instead of custom validation classes
+- **Rate Limiting**: Use Symfony Rate Limiter component instead of custom rate limiting
+- **Caching**: Use Symfony Cache component for rate limiting and other caching needs
+- **API Platform**: Rely on automatic OpenAPI generation instead of manual `openapi.requestBody` decorations
+
+**Rate Limiting Migration:**
+- Replace custom database-based rate limiting with Symfony Rate Limiter
+- Store rate limiting data in Symfony Cache (Redis) instead of database tables
+- Remove violation of Single Responsibility Principle from tokens table
+
+### Testing Standards
+
+**MANDATORY: Use Faker library for all test data generation:**
+
+- **No hardcoded values** in tests (emails, passwords, tokens, IDs, etc.)
+- **Faker integration** already available in `tests/Unit/UnitTestCase.php` and `tests/Integration/IntegrationTestCase.php`
+- **Dynamic test data** ensures tests are more robust and realistic
+
+**Examples:**
+
+```php
+// ❌ BAD: Hardcoded test values
+$email = 'test@example.com';
+$token = 'test_token_123';
+$password = 'password123';
+
+// ✅ GOOD: Faker-generated values
+$email = $this->faker->unique()->email();
+$token = $this->faker->lexify('??????????');
+$password = $this->faker->password(12);
+```
+
+### Database Migrations
+
+**MANDATORY: Clean up empty migration files:**
+
+- **Delete empty migrations** immediately if they contain no schema changes
+- **Empty migrations** with only boilerplate code and no actual schema modifications should be removed
+- **Check migration content** before committing to ensure they serve a purpose
+
+### API Platform Best Practices
+
+**MANDATORY: Follow API Platform patterns for clean API design:**
+
+- **Input DTOs**: Use `input:` parameter in API Platform configuration instead of `openapi.requestBody`
+- **Automatic schema generation**: Let API Platform generate OpenAPI schemas from DTOs
+- **Empty response classes**: Use separate Empty DTO class for endpoints that don't return response bodies
+- **HTTP status codes**: Use appropriate HTTP status codes (204 No Content) instead of success messages
+- **No response messages**: For security operations like password reset, return only HTTP status codes
+
+### Pluralization and Internationalization
+
+**MANDATORY: Proper pluralization for time units and user-facing text:**
+
+- **Time units**: Use correct singular/plural forms (1 hour vs 2 hours)
+- **Dynamic pluralization**: Implement logic to handle both singular and plural forms
+- **Consistent messaging**: Ensure all user-facing text follows proper grammar rules

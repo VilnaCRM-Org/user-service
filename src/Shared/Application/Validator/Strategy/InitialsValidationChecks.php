@@ -15,7 +15,7 @@ final readonly class InitialsValidationChecks
             return false;
         }
         if ($value === '') {
-            return false; // empty is not "only spaces"
+            return false;
         }
         return trim($value) === '';
     }
