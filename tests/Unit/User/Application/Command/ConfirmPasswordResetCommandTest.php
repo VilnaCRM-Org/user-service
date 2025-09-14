@@ -14,24 +14,21 @@ final class ConfirmPasswordResetCommandTest extends UnitTestCase
     {
         $token = $this->faker->sha256();
         $newPassword = $this->faker->password();
-        $userId = $this->faker->uuid();
 
-        $command = new ConfirmPasswordResetCommand($token, $newPassword, $userId);
+        $command = new ConfirmPasswordResetCommand($token, $newPassword);
 
         $this->assertInstanceOf(ConfirmPasswordResetCommand::class, $command);
         $this->assertSame($token, $command->token);
         $this->assertSame($newPassword, $command->newPassword);
-        $this->assertSame($userId, $command->userId);
     }
 
     public function testSetAndGetResponse(): void
     {
         $token = $this->faker->sha256();
         $newPassword = $this->faker->password();
-        $userId = $this->faker->uuid();
         $message = $this->faker->sentence();
 
-        $command = new ConfirmPasswordResetCommand($token, $newPassword, $userId);
+        $command = new ConfirmPasswordResetCommand($token, $newPassword);
         $response = new ConfirmPasswordResetCommandResponse($message);
 
         $command->setResponse($response);
