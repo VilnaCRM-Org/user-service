@@ -104,4 +104,79 @@ final class PasswordResetTokenFactoryTest extends UnitTestCase
             $token2->getTokenValue()
         );
     }
+
+    public function testCreateWithOneHourExpiration(): void
+    {
+        $tokenLength = 16;
+        $expirationTimeInHours = 1;
+        $userID = $this->faker->uuid();
+
+        $factory = new PasswordResetTokenFactory(
+            $tokenLength,
+            $expirationTimeInHours
+        );
+
+        $token = $factory->create($userID);
+
+        $now = new \DateTimeImmutable();
+        $expectedExpiry = $now->modify('+1 hour');
+        $actualExpiry = $token->getExpiresAt();
+
+        // Allow 1 minute tolerance for test execution time
+        $toleranceInSeconds = 60;
+        $timeDifference = abs(
+            $expectedExpiry->getTimestamp() - $actualExpiry->getTimestamp()
+        );
+        $this->assertLessThan($toleranceInSeconds, $timeDifference);
+    }
+
+    public function testCreateWithTwoHoursExpiration(): void
+    {
+        $tokenLength = 16;
+        $expirationTimeInHours = 2;
+        $userID = $this->faker->uuid();
+
+        $factory = new PasswordResetTokenFactory(
+            $tokenLength,
+            $expirationTimeInHours
+        );
+
+        $token = $factory->create($userID);
+
+        $now = new \DateTimeImmutable();
+        $expectedExpiry = $now->modify('+2 hours');
+        $actualExpiry = $token->getExpiresAt();
+
+        // Allow 1 minute tolerance for test execution time
+        $toleranceInSeconds = 60;
+        $timeDifference = abs(
+            $expectedExpiry->getTimestamp() - $actualExpiry->getTimestamp()
+        );
+        $this->assertLessThan($toleranceInSeconds, $timeDifference);
+    }
+
+    public function testCreateWithZeroHoursExpiration(): void
+    {
+        $tokenLength = 16;
+        $expirationTimeInHours = 0;
+        $userID = $this->faker->uuid();
+
+        $factory = new PasswordResetTokenFactory(
+            $tokenLength,
+            $expirationTimeInHours
+        );
+
+        $token = $factory->create($userID);
+
+        $now = new \DateTimeImmutable();
+        $expectedExpiry = $now->modify('+0 hours');
+        $actualExpiry = $token->getExpiresAt();
+
+        // Allow 1 minute tolerance for test execution time
+        $toleranceInSeconds = 60;
+        $timeDifference = abs(
+            $expectedExpiry->getTimestamp() - $actualExpiry->getTimestamp()
+        );
+        $this->assertLessThan($toleranceInSeconds, $timeDifference);
+    }
 }
