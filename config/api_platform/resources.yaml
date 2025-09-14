@@ -119,8 +119,6 @@ resources:
             type: 'String!'
           newPassword:
             type: 'String!'
-          userId:
-            type: 'String!'
 
   App\Shared\Application\DTO\EmptyResponse:
     operations:

@@ -29,20 +29,17 @@ final readonly class ConfirmPasswordResetMutationResolver implements
 
         $mutationInput = new ConfirmPasswordResetMutationInput(
             $args['token'] ?? null,
-            $args['newPassword'] ?? null,
-            $args['userId'] ?? null
+            $args['newPassword'] ?? null
         );
 
         $this->validator->validate($mutationInput);
 
         $command = new ConfirmPasswordResetCommand(
             $args['token'],
-            $args['newPassword'],
-            $args['userId']
+            $args['newPassword']
         );
         $this->commandBus->dispatch($command);
 
-        // Return a PasswordResetPayload with ok status
         return new PasswordResetPayload(true);
     }
 }

@@ -34,13 +34,12 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
     {
         $token = $this->faker->sha256();
         $newPassword = $this->faker->password();
-        $userId = $this->faker->uuid();
         $message = 'Password has been reset successfully.';
 
-        $context = $this->createContext($token, $newPassword, $userId);
+        $context = $this->createContext($token, $newPassword);
 
         $this->expectValidationCall();
-        $this->expectCommandDispatch($token, $newPassword, $userId, $message);
+        $this->expectCommandDispatch($token, $newPassword, $message);
 
         $result = $this->resolver->__invoke(null, $context);
 
@@ -55,7 +54,6 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
                 'input' => [
                     'token' => '',
                     'newPassword' => '',
-                    'userId' => '',
                 ],
             ],
         ];
@@ -66,7 +64,6 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(static function (ConfirmPasswordResetCommand $command) {
-                // Mock the response
                 $response = new ConfirmPasswordResetCommandResponse('Success');
                 $command->setResponse($response);
 
@@ -81,14 +78,13 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
     /**
      * @return array<string, array<string, array<string, string>>>
      */
-    private function createContext(string $token, string $newPassword, string $userId): array
+    private function createContext(string $token, string $newPassword): array
     {
         return [
             'args' => [
                 'input' => [
                     'token' => $token,
                     'newPassword' => $newPassword,
-                    'userId' => $userId,
                 ],
             ],
         ];
@@ -100,16 +96,14 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
             ->method('validate');
     }
 
-    private function expectCommandDispatch(string $token, string $newPassword, string $userId, string $message): void
+    private function expectCommandDispatch(string $token, string $newPassword, string $message): void
     {
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(function (ConfirmPasswordResetCommand $command) use ($token, $newPassword, $userId, $message) {
+            ->with($this->callback(function (ConfirmPasswordResetCommand $command) use ($token, $newPassword, $message) {
                 $this->assertSame($token, $command->token);
                 $this->assertSame($newPassword, $command->newPassword);
-                $this->assertSame($userId, $command->userId);
 
-                // Mock the response
                 $response = new ConfirmPasswordResetCommandResponse($message);
                 $command->setResponse($response);
 

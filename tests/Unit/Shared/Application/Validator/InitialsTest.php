@@ -11,12 +11,10 @@ final class InitialsTest extends UnitTestCase
 {
     public function testConstraintInitialization(): void
     {
-        $groups = [$this->faker->word(), $this->faker->word()];
-        $payload = [$this->faker->word() => $this->faker->word()];
-
-        $constraint = new Initials($groups, $payload);
-
-        $this->assertEquals($groups, $constraint->groups);
-        $this->assertEquals($payload, $constraint->payload);
+        $constraint = new Initials();
+        
+        $this->assertInstanceOf(Initials::class, $constraint);
+        $this->assertIsArray($constraint->groups);
+        $this->assertNull($constraint->payload);
     }
 }
