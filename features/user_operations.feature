@@ -13,38 +13,38 @@ Feature: User Operations
     Then the response status code should be 400
 
   Scenario: Creating a user
-    Given creating user with email "test@mail.com", initials "name surname", password "passWORD1"
+    Given creating user with email "test@mail.com", initials "namesurname", password "passWORD1"
     When POST request is send to "/api/users"
     Then the response status code should be 201
-    And user with email "test@mail.com" and initials "name surname" should be returned
+    And user with email "test@mail.com" and initials "namesurname" should be returned
 
   Scenario: Creating a user with duplicate email
     Given user with email "test2@mail.com" exists
-    And creating user with email "test2@mail.com", initials "name surname", password "passWORD1"
+    And creating user with email "test2@mail.com", initials "namesurname", password "passWORD1"
     When POST request is send to "/api/users"
     Then the response status code should be 422
     And violation should be "This email address is already registered"
 
   Scenario: Creating a user with invalid email
-    Given creating user with email "test", initials "name surname", password "passWORD1"
+    Given creating user with email "test", initials "namesurname", password "passWORD1"
     When POST request is send to "/api/users"
     Then the response status code should be 422
     And violation should be "This value is not a valid email address."
 
   Scenario: Creating a user with password with no uppercase letters
-    Given creating user with email "testPass1@mail.com", initials "name surname", password "password1"
+    Given creating user with email "testPass1@mail.com", initials "namesurname", password "password1"
     When POST request is send to "/api/users"
     Then the response status code should be 422
     And violation should be "Password must contain at least one uppercase letter"
 
   Scenario: Creating a user with password with no numbers
-    Given creating user with email "testPass2@mail.com", initials "name surname", password "passWORD"
+    Given creating user with email "testPass2@mail.com", initials "namesurname", password "passWORD"
     When POST request is send to "/api/users"
     Then the response status code should be 422
     And violation should be "Password must contain at least one number"
 
   Scenario: Creating a user with too short password
-    Given creating user with email "testPass3@mail.com", initials "name surname", password "pass"
+    Given creating user with email "testPass3@mail.com", initials "namesurname", password "pass"
     When POST request is send to "/api/users"
     Then the response status code should be 422
     And violation should be "Password must be between 8 and 64 characters long"
@@ -65,8 +65,8 @@ Feature: User Operations
 
   Scenario: Creating a batch of users
     Given sending a batch of users
-    And with user with email "test1@mail.com", initials "name surname", password "passWORD1"
-    And with user with email "test2@mail.com", initials "name surname", password "passWORD1"
+    And with user with email "test1@mail.com", initials "namesurname", password "passWORD1"
+    And with user with email "test2@mail.com", initials "namesurname", password "passWORD1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 201
     And the response should contain a list of users
@@ -74,35 +74,35 @@ Feature: User Operations
   Scenario: Creating a batch of users with duplicate email
     Given user with email "test@mail.com" exists
     And sending a batch of users
-    And with user with email "test@mail.com", initials "name surname", password "passWORD1"
+    And with user with email "test@mail.com", initials "namesurname", password "passWORD1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "This email address is already registered"
 
   Scenario: Creating a batch of users invalid email
     Given sending a batch of users
-    And with user with email "test", initials "name surname", password "passWORD1"
+    And with user with email "test", initials "namesurname", password "passWORD1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "This value is not a valid email address."
 
   Scenario: Creating a batch of users with password with no uppercase letters
     Given sending a batch of users
-    And with user with email "test@mail.com", initials "name surname", password "password1"
+    And with user with email "test@mail.com", initials "namesurname", password "password1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Password must contain at least one uppercase letter"
 
   Scenario: Creating a batch of users with password with no numbers
     Given sending a batch of users
-    And with user with email "test@mail.com", initials "name surname", password "passWORD"
+    And with user with email "test@mail.com", initials "namesurname", password "passWORD"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Password must contain at least one number"
 
   Scenario: Creating a batch of users with too short password
     Given sending a batch of users
-    And with user with email "test@mail.com", initials "name surname", password "pAss1"
+    And with user with email "test@mail.com", initials "namesurname", password "pAss1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Password must be between 8 and 64 characters long"
@@ -122,8 +122,8 @@ Feature: User Operations
 
   Scenario: Creating a batch of users with a duplicate emails in a batch
     Given sending a batch of users
-    And with user with email "test@mail.com", initials "name surname", password "passWORD1"
-    And with user with email "test@mail.com", initials "name surname", password "passWORD1"
+    And with user with email "test@mail.com", initials "namesurname", password "passWORD1"
+    And with user with email "test@mail.com", initials "namesurname", password "passWORD1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Duplicate email in a batch"
@@ -161,14 +161,14 @@ Feature: User Operations
 
   Scenario: Replacing user
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
-    And updating user with email "testput@mail.com", initials "name surname", oldPassword "passWORD1", newPassword "passWORD2"
+    And updating user with email "testput@mail.com", initials "namesurname", oldPassword "passWORD1", newPassword "passWORD2"
     When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 200
     And user with id "8be90127-9840-4235-a6da-39b8debfb222" should be returned
 
   Scenario: Replacing user with wrong password
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
-    And updating user with email "testput@mail.com", initials "name surname", oldPassword "wrongpassWORD1", newPassword "passWORD12"
+    And updating user with email "testput@mail.com", initials "namesurname", oldPassword "wrongpassWORD1", newPassword "passWORD12"
     When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 400
     And the error message should be "Old password is invalid"
@@ -181,14 +181,14 @@ Feature: User Operations
   Scenario: Replacing user with duplicate email
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
     And user with email "test3@mail.com" exists
-    And updating user with email "test3@mail.com", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
+    And updating user with email "test3@mail.com", initials "namesurname", oldPassword "passWORD1", newPassword "passWORD1"
     When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 422
     And violation should be "This email address is already registered"
 
   Scenario: Replacing user with invalid email
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
-    And updating user with email "test", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
+    And updating user with email "test", initials "namesurname", oldPassword "passWORD1", newPassword "passWORD1"
     When PUT request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 422
     And violation should be "This value is not a valid email address."
@@ -205,7 +205,7 @@ Feature: User Operations
 
   Scenario: Updating user
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
-    And updating user with email "testupdate@mail.com", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
+    And updating user with email "testupdate@mail.com", initials "namesurname", oldPassword "passWORD1", newPassword "passWORD1"
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 200
     And user with id "8be90127-9840-4235-a6da-39b8debfb222" should be returned
@@ -219,7 +219,7 @@ Feature: User Operations
 
   Scenario: Updating user with wrong password
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
-    And updating user with email "testpatch@mail.com", initials "name surname", oldPassword "wrongpassWORD1", newPassword "passWORD1"
+    And updating user with email "testpatch@mail.com", initials "namesurname", oldPassword "wrongpassWORD1", newPassword "passWORD1"
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 400
     And the error message should be "Old password is invalid"
@@ -232,14 +232,14 @@ Feature: User Operations
   Scenario: Updating user with duplicate email
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" and password "passWORD1" exists
     And user with email "test4@mail.com" exists
-    And updating user with email "test4@mail.com", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
+    And updating user with email "test4@mail.com", initials "namesurname", oldPassword "passWORD1", newPassword "passWORD1"
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 422
     And violation should be "This email address is already registered"
 
   Scenario: Updating user with invalid email
     Given user with id "8be90127-9840-4235-a6da-39b8debfb222" exists
-    And updating user with email "test", initials "name surname", oldPassword "passWORD1", newPassword "passWORD1"
+    And updating user with email "test", initials "namesurname", oldPassword "passWORD1", newPassword "passWORD1"
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb222"
     Then the response status code should be 422
     And violation should be "This value is not a valid email address."

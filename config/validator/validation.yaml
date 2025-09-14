@@ -50,8 +50,7 @@ App\User\Application\DTO\UserPatchDto:
     initials:
       - Length:
           max: 255
-      - App\Shared\Application\Validator\Initials:
-          optional: true
+      - App\Shared\Application\Validator\Initials: ~
     oldPassword:
       - NotBlank: { message: 'not.blank' }
       - Length:
@@ -59,9 +58,17 @@ App\User\Application\DTO\UserPatchDto:
       - App\Shared\Application\Validator\Password: ~
     newPassword:
       - Length:
-          max: 255
-      - App\Shared\Application\Validator\Password:
-          optional: true
+          max: 64
+          maxMessage: 'password.invalid.length'
+      - Regex:
+          pattern: '/^$|^.{8,}$/'
+          message: 'password.invalid.length'
+      - Regex:
+          pattern: '/^$|.*[0-9].*/'
+          message: 'password.missing.number'
+      - Regex:
+          pattern: '/^$|.*[A-Z].*/'
+          message: 'password.missing.uppercase'
 
 App\User\Application\DTO\UserPutDto:
   properties:
@@ -150,18 +157,33 @@ App\User\Application\MutationInput\UpdateUserMutationInput:
     initials:
       - Length:
           max: 255
-      - App\Shared\Application\Validator\Initials:
-          optional: true
+      - App\Shared\Application\Validator\Initials: ~
     password:
       - Length:
-          max: 255
-      - NotBlank: { message: 'not.blank' }
-      - App\Shared\Application\Validator\Password: ~
+          max: 64
+          maxMessage: 'password.invalid.length'
+      - Regex:
+          pattern: '/^$|^.{8,}$/'
+          message: 'password.invalid.length'
+      - Regex:
+          pattern: '/^$|.*[0-9].*/'
+          message: 'password.missing.number'
+      - Regex:
+          pattern: '/^$|.*[A-Z].*/'
+          message: 'password.missing.uppercase'
     newPassword:
       - Length:
-          max: 255
-      - App\Shared\Application\Validator\Password:
-          optional: true
+          max: 64
+          maxMessage: 'password.invalid.length'
+      - Regex:
+          pattern: '/^$|^.{8,}$/'
+          message: 'password.invalid.length'
+      - Regex:
+          pattern: '/^$|.*[0-9].*/'
+          message: 'password.missing.number'
+      - Regex:
+          pattern: '/^$|.*[A-Z].*/'
+          message: 'password.missing.uppercase'
 
 App\User\Application\DTO\RequestPasswordResetDto:
   properties:

@@ -12,6 +12,7 @@ use App\User\Application\Service\UserPasswordService;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetConfirmedEvent;
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Domain\Service\PasswordResetTokenValidatorInterface;
@@ -59,7 +60,13 @@ final readonly class ConfirmPasswordResetCommandHandler implements
     private function getUserFromToken(
         PasswordResetTokenInterface $token
     ): UserInterface {
-        return $this->userRepository->find($token->getUserId());
+        $user = $this->userRepository->find($token->getUserId());
+
+        if (!$user instanceof UserInterface) {
+            throw new UserNotFoundException();
+        }
+
+        return $user;
     }
 
     private function markTokenAsUsed(

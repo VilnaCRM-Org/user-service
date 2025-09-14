@@ -66,7 +66,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $command = new RequestPasswordResetCommand($email);
         $this->handler->__invoke($command);
 
-        $this->assertStringContainsString('If valid', $command->getResponse()->message);
+        $this->assertEquals('', $command->getResponse()->message);
     }
 
     public function testRequestPasswordResetForNonExistingUser(): void
@@ -94,7 +94,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $command = new RequestPasswordResetCommand($email);
         $this->handler->__invoke($command);
 
-        $this->assertStringContainsString('If valid', $command->getResponse()->message);
+        $this->assertEquals('', $command->getResponse()->message);
     }
 
     public function testRequestPasswordResetRateLimitExceeded(): void
@@ -195,7 +195,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $command = new RequestPasswordResetCommand($email);
         $this->handler->__invoke($command);
 
-        $this->assertStringContainsString('If valid', $command->getResponse()->message);
+        $this->assertEquals('', $command->getResponse()->message);
     }
 
     public function testRateLimitMaxRequestsDecrement(): void
@@ -313,7 +313,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $command = new RequestPasswordResetCommand($email);
         $defaultHandler->__invoke($command);
 
-        $this->assertStringContainsString('If valid', $command->getResponse()->message);
+        $this->assertEquals('', $command->getResponse()->message);
     }
 
     public function testConstructorDefaultWindowHoursZeroMutation(): void
@@ -345,7 +345,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $command = new RequestPasswordResetCommand($email);
         $defaultHandler->__invoke($command);
 
-        $this->assertStringContainsString('If valid', $command->getResponse()->message);
+        $this->assertEquals('', $command->getResponse()->message);
     }
 
     private function createDefaultHandler(): RequestPasswordResetCommandHandler

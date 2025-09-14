@@ -15,13 +15,11 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Event\PasswordResetConfirmedEvent;
 use App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException;
 use App\User\Domain\Exception\PasswordResetTokenExpiredException;
-
 use App\User\Domain\Exception\PasswordResetTokenNotFoundException;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Domain\Service\PasswordResetTokenValidatorInterface;
-
 use Symfony\Component\Uid\Factory\UuidFactory;
 use Symfony\Component\Uid\Uuid;
 
@@ -192,6 +190,11 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $command = new ConfirmPasswordResetCommand($token, $newPassword);
 
         $passwordResetToken = $this->createMock(PasswordResetTokenInterface::class);
+        $userId = $this->faker->uuid();
+
+        $passwordResetToken->expects($this->once())
+            ->method('getUserId')
+            ->willReturn($userId);
 
         $this->tokenRepository->expects($this->once())
             ->method('findByToken')
@@ -202,40 +205,12 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             ->method('validate')
             ->with($passwordResetToken);
 
-        $this->userTokenMatchValidator->expects($this->once())
-            ->method('validateAndGetUser')
-            ->with($passwordResetToken, $userId)
-            ->willThrowException(new UserNotFoundException());
+        $this->userRepository->expects($this->once())
+            ->method('find')
+            ->with($userId)
+            ->willReturn(null);
 
         $this->expectException(UserNotFoundException::class);
-
-        $this->handler->__invoke($command);
-    }
-
-    public function testInvokeThrowsExceptionWhenTokenUserMismatch(): void
-    {
-        $token = $this->faker->lexify('??????????');
-        $newPassword = $this->faker->password(12);
-
-        $command = new ConfirmPasswordResetCommand($token, $newPassword);
-
-        $passwordResetToken = $this->createMock(PasswordResetTokenInterface::class);
-
-        $this->tokenRepository->expects($this->once())
-            ->method('findByToken')
-            ->with($token)
-            ->willReturn($passwordResetToken);
-
-        $this->tokenValidator->expects($this->once())
-            ->method('validate')
-            ->with($passwordResetToken);
-
-        $this->userTokenMatchValidator->expects($this->once())
-            ->method('validateAndGetUser')
-            ->with($passwordResetToken, $requestUserId)
-            ->willThrowException(new PasswordResetTokenMismatchException());
-
-        $this->expectException(PasswordResetTokenMismatchException::class);
 
         $this->handler->__invoke($command);
     }

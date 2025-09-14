@@ -6,7 +6,6 @@ namespace App\Shared\Application\Validator;
 
 use Symfony\Component\Validator\Constraints\Compound;
 use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 
 #[\Attribute]
@@ -20,7 +19,6 @@ final class Password extends Compound
     protected function getConstraints(array $options): array
     {
         return [
-            new NotBlank(message: 'password.invalid.blank'),
             new Length(
                 min: 8,
                 max: 64,
