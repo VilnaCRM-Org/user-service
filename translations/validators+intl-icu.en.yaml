@@ -6,6 +6,8 @@ email:
     unique: 'This email address is already registered'
 initials:
   spaces: 'Initials can not consist only of spaces'
+  invalid:
+    length: 'This value is too long. It should have {limit} character or less.|This value is too long. It should have {limit} characters or less.'
 password:
   invalid:
     length: 'Password must be between 8 and 64 characters long'
