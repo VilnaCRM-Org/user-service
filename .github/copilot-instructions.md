@@ -1115,6 +1115,95 @@ When adding user-facing features:
 
 This comprehensive approach ensures that the `docs/` directory remains an accurate, up-to-date reflection of the codebase, providing developers and users with reliable documentation that evolves alongside the system.
 
+## Quality Standards Protection
+
+**MANDATORY: Maintain or improve quality standards - NEVER decrease current quality levels:**
+
+### Protected Quality Metrics
+
+**PHPInsights Quality Requirements (phpinsights.php):**
+- **min-quality**: 100% (NEVER decrease below 100%)
+- **min-complexity**: 95% (NEVER decrease below 95%)
+- **min-architecture**: 100% (NEVER decrease below 100%)
+- **min-style**: 100% (NEVER decrease below 100%)
+
+**PHPInsights Test Quality Requirements (phpinsights-tests.php):**
+- **min-quality**: 95% (NEVER decrease below 95%)
+- **min-complexity**: 95% (NEVER decrease below 95%)
+- **min-architecture**: 90% (NEVER decrease below 90%)
+- **min-style**: 95% (NEVER decrease below 95%)
+
+**Test Coverage Requirements:**
+- **Unit test coverage**: 100% (NEVER decrease below 100%)
+- **Integration test coverage**: Must maintain comprehensive coverage
+- **Mutation testing (Infection)**: 100% MSI (NEVER decrease below 100% - 0 escaped mutants)
+
+**Prohibited Quality Downgrades:**
+
+```php
+// ❌ FORBIDDEN: Decreasing PHPInsights requirements
+'requirements' => [
+    'min-quality' => 95,    // FORBIDDEN: Was 100%
+    'min-complexity' => 90, // FORBIDDEN: Was 95%
+    'min-architecture' => 95, // FORBIDDEN: Was 100%
+    'min-style' => 95,      // FORBIDDEN: Was 100%
+],
+
+// ❌ FORBIDDEN: Adjusting infection threshold below 100%
+{
+  "mutators": {
+    "@default": true
+  },
+  "minMsi": 99  // FORBIDDEN: Must be 100%
+}
+```
+
+**Quality Enforcement Rules:**
+
+1. **Never modify quality thresholds downward** in any configuration file:
+   - `phpinsights.php` requirements section
+   - `phpinsights-tests.php` requirements section  
+   - `infection.json5` mutation score indicator
+   - `phpunit.xml.dist` coverage settings
+
+2. **Always maintain or improve coverage** when adding new code:
+   - Write tests for all new functionality
+   - Ensure 100% line and branch coverage
+   - Add mutation tests for complex logic
+   - Update integration and E2E tests as needed
+
+3. **Code quality must meet or exceed standards**:
+   - Cyclomatic complexity below 5 per method
+   - No architectural violations in Deptrac
+   - PSR-12 code style compliance
+   - Zero static analysis errors in Psalm
+
+4. **Quality gate enforcement**:
+   - `make ci` must output "✅ CI checks successfully passed!"
+   - All quality checks must pass before code can be committed
+   - Any quality regression must be fixed immediately
+   - No exceptions or temporary quality downgrades allowed
+
+### Quality Improvement Guidelines
+
+**When refactoring or adding features:**
+
+- **Improve quality scores** when possible, but never decrease them
+- **Add more comprehensive tests** to catch edge cases
+- **Reduce cyclomatic complexity** through better code organization
+- **Enhance architectural separation** following DDD/CQRS patterns
+- **Maintain backward compatibility** while improving code quality
+
+**If quality checks fail:**
+
+1. **Fix the underlying issue** rather than lowering standards
+2. **Refactor complex code** to reduce complexity scores
+3. **Add missing tests** to maintain coverage
+4. **Update architecture** to resolve dependency violations
+5. **Follow SOLID principles** to improve design quality
+
+This ensures the codebase maintains its high quality standards while continuously improving over time.
+
 ## Additional Development Guidelines
 
 ### Code Comments and Self-Explanatory Code
