@@ -12,6 +12,11 @@ use Symfony\Component\Validator\Constraints\Regex;
 #[\Attribute]
 final class Password extends Compound
 {
+    /**
+     * @param array<string, string> $options
+     *
+     * @return array<int, \Symfony\Component\Validator\Constraint>
+     */
     protected function getConstraints(array $options): array
     {
         return [

@@ -17,8 +17,10 @@ final readonly class UserPasswordService
     ) {
     }
 
-    public function updateUserPassword(UserInterface $user, string $newPassword): void
-    {
+    public function updateUserPassword(
+        UserInterface $user,
+        string $newPassword
+    ): void {
         $hasher = $this->hasherFactory->getPasswordHasher(User::class);
         $hashedPassword = $hasher->hash($newPassword);
         $user->setPassword($hashedPassword);

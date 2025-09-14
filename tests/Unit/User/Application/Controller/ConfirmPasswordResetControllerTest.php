@@ -27,38 +27,28 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
 
     public function testInvokeDispatchesCommandAndReturnsResponse(): void
     {
-        $userId = $this->faker->uuid();
         $token = $this->faker->lexify('??????????');
         $newPassword = $this->faker->password(8, 20);
-        $responseMessage = 'Password reset confirmed successfully';
+        $responseMessage = '';
 
         $dto = new ConfirmPasswordResetDto($token, $newPassword);
 
-        // Mock command response
         $commandResponse = new ConfirmPasswordResetCommandResponse($responseMessage);
-
-        // Mock command behavior
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(function (ConfirmPasswordResetCommand $command) use ($token, $newPassword, $userId, $commandResponse) {
-                // Verify command properties
+            ->with($this->callback(function (ConfirmPasswordResetCommand $command) use ($token, $newPassword, $commandResponse) {
                 $this->assertEquals($token, $command->token);
                 $this->assertEquals($newPassword, $command->newPassword);
-                $this->assertEquals($userId, $command->userId);
 
-                // Set response on command
                 $command->setResponse($commandResponse);
 
                 return true;
             }));
 
-        $response = ($this->controller)($userId, $dto);
+        $response = ($this->controller)($dto);
 
         $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertEquals(200, $response->getStatusCode());
-
-        $content = json_decode($response->getContent(), true);
-        $this->assertEquals(['ok' => true], $content);
+        $this->assertEquals(204, $response->getStatusCode());
     }
 
     public function testConstructorSetsCommandBus(): void

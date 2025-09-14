@@ -35,7 +35,10 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         $passwordResetToken = $this->getValidatedToken($command->token);
         $user = $this->getUserFromToken($passwordResetToken);
 
-        $this->passwordService->updateUserPassword($user, $command->newPassword);
+        $this->passwordService->updateUserPassword(
+            $user,
+            $command->newPassword
+        );
         $this->markTokenAsUsed($passwordResetToken);
         $this->publishEvent($user);
 

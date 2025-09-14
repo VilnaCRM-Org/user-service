@@ -12,7 +12,7 @@ final class InitialsTest extends UnitTestCase
     public function testConstraintInitialization(): void
     {
         $constraint = new Initials();
-        
+
         $this->assertInstanceOf(Initials::class, $constraint);
         $this->assertIsArray($constraint->groups);
         $this->assertNull($constraint->payload);

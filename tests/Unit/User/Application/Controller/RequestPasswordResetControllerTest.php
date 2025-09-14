@@ -27,35 +27,27 @@ final class RequestPasswordResetControllerTest extends UnitTestCase
 
     public function testInvokeDispatchesCommandAndReturnsResponse(): void
     {
-        $userId = $this->faker->uuid();
         $email = $this->faker->email();
-        $responseMessage = 'Password reset email sent successfully';
+        $responseMessage = '';
 
         $dto = new RequestPasswordResetDto($email);
 
-        // Mock command response
         $commandResponse = new RequestPasswordResetCommandResponse($responseMessage);
 
-        // Mock command behavior
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(function (RequestPasswordResetCommand $command) use ($email, $commandResponse) {
-                // Verify command properties
                 $this->assertEquals($email, $command->email);
 
-                // Set response on command
                 $command->setResponse($commandResponse);
 
                 return true;
             }));
 
-        $response = ($this->controller)($userId, $dto);
+        $response = ($this->controller)($dto);
 
         $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertEquals(200, $response->getStatusCode());
-
-        $content = json_decode($response->getContent(), true);
-        $this->assertEquals(['ok' => true], $content);
+        $this->assertEquals(204, $response->getStatusCode());
     }
 
     public function testConstructorSetsCommandBus(): void
