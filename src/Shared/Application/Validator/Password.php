@@ -4,26 +4,32 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Validator;
 
-use Symfony\Component\Validator\Constraint;
+use Symfony\Component\Validator\Constraints\Compound;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 
 #[\Attribute]
-final class Password extends Constraint
+final class Password extends Compound
 {
-    private bool $optional = false;
-
-    public function __construct(
-        ?array $groups = null,
-        mixed $payload = null,
-        ?bool $optional = null,
-    ) {
-        if ($optional !== null) {
-            $this->optional = $optional;
-        }
-        parent::__construct([], $groups, $payload);
-    }
-
-    public function isOptional(): bool
+    protected function getConstraints(array $options): array
     {
-        return $this->optional;
+        return [
+            new NotBlank(message: 'password.invalid.blank'),
+            new Length(
+                min: 8,
+                max: 64,
+                minMessage: 'password.invalid.length',
+                maxMessage: 'password.invalid.length'
+            ),
+            new Regex(
+                pattern: '/[0-9]/',
+                message: 'password.missing.number'
+            ),
+            new Regex(
+                pattern: '/[A-Z]/',
+                message: 'password.missing.uppercase'
+            ),
+        ];
     }
 }
