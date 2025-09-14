@@ -14,6 +14,20 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): UserCursorConnection
+  emptyResponse(id: ID!): EmptyResponse
+  emptyResponses(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): EmptyResponseCursorConnection
   healthCheck(id: ID!): HealthCheck
   healthChecks(
     "Returns the first n elements from the list."
@@ -58,6 +72,31 @@ type UserEdge {
 
 "Information about the current page."
 type UserPageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+type EmptyResponse implements Node {
+  id: ID!
+}
+
+"Cursor connection for EmptyResponse."
+type EmptyResponseCursorConnection {
+  edges: [EmptyResponseEdge]
+  pageInfo: EmptyResponsePageInfo!
+  totalCount: Int!
+}
+
+"Edge of EmptyResponse."
+type EmptyResponseEdge {
+  node: EmptyResponse
+  cursor: String!
+}
+
+"Information about the current page."
+type EmptyResponsePageInfo {
   endCursor: String
   startCursor: String
   hasNextPage: Boolean!
@@ -110,6 +149,15 @@ type Mutation {
 
   "ConfirmPasswordResets a User."
   confirmPasswordResetUser(input: confirmPasswordResetUserInput!): confirmPasswordResetUserPayload
+
+  "Updates a EmptyResponse."
+  updateEmptyResponse(input: updateEmptyResponseInput!): updateEmptyResponsePayload
+
+  "Deletes a EmptyResponse."
+  deleteEmptyResponse(input: deleteEmptyResponseInput!): deleteEmptyResponsePayload
+
+  "Creates a EmptyResponse."
+  createEmptyResponse(input: createEmptyResponseInput!): createEmptyResponsePayload
 
   "Updates a HealthCheck."
   updateHealthCheck(input: updateHealthCheckInput!): updateHealthCheckPayload
@@ -209,12 +257,46 @@ input confirmPasswordResetUserInput {
   clientMutationId: String
   token: String!
   newPassword: String!
-  userId: String!
 }
 
 "ConfirmPasswordResets a User."
 type confirmPasswordResetUserPayload {
   user: User
+  clientMutationId: String
+}
+
+"Updates a EmptyResponse."
+input updateEmptyResponseInput {
+  id: ID!
+  clientMutationId: String
+}
+
+"Updates a EmptyResponse."
+type updateEmptyResponsePayload {
+  emptyResponse: EmptyResponse
+  clientMutationId: String
+}
+
+"Deletes a EmptyResponse."
+input deleteEmptyResponseInput {
+  id: ID!
+  clientMutationId: String
+}
+
+"Deletes a EmptyResponse."
+type deleteEmptyResponsePayload {
+  emptyResponse: EmptyResponse
+  clientMutationId: String
+}
+
+"Creates a EmptyResponse."
+input createEmptyResponseInput {
+  clientMutationId: String
+}
+
+"Creates a EmptyResponse."
+type createEmptyResponsePayload {
+  emptyResponse: EmptyResponse
   clientMutationId: String
 }
 
