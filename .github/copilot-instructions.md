@@ -1151,6 +1151,7 @@ private function isEmptyButNotOnlySpaces(string $value): bool
 - **API Platform**: Rely on automatic OpenAPI generation instead of manual `openapi.requestBody` decorations
 
 **Rate Limiting Migration:**
+
 - Replace custom database-based rate limiting with Symfony Rate Limiter
 - Store rate limiting data in Symfony Cache (Redis) instead of database tables
 - Remove violation of Single Responsibility Principle from tokens table
