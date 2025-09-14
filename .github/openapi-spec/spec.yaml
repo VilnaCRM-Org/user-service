@@ -8,6 +8,162 @@ servers:
     url: 'https://api.vilnacrm.com'
     description: ''
 paths:
+  /api/reset-password:
+    post:
+      operationId: request_password_reset
+      tags:
+        - EmptyResponse
+      responses:
+        '201':
+          description: 'EmptyResponse resource created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/graphql:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse.jsonld'
+          links: {  }
+        '400':
+          description: 'Invalid input'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          links: {  }
+        '422':
+          description: 'An error occurred'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ConstraintViolation-json'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConstraintViolation-json'
+          links: {  }
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Creates a EmptyResponse resource.'
+      description: 'Creates a EmptyResponse resource.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.RequestPasswordResetDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.RequestPasswordResetDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.RequestPasswordResetDto.jsonld'
+        required: true
+      deprecated: false
+  /api/reset-password/confirm:
+    post:
+      operationId: confirm_password_reset
+      tags:
+        - EmptyResponse
+      responses:
+        '201':
+          description: 'EmptyResponse resource created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/graphql:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse.jsonld'
+          links: {  }
+        '400':
+          description: 'Invalid input'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          links: {  }
+        '422':
+          description: 'An error occurred'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ConstraintViolation-json'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConstraintViolation-json'
+          links: {  }
+        '500':
+          description: 'Internal server error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string, maxLength: null, format: null }
+                  title: { type: string, maxLength: null, format: null }
+                  detail: { type: string, maxLength: null, format: null }
+                  status: { type: integer, maxLength: null, format: null }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Creates a EmptyResponse resource.'
+      description: 'Creates a EmptyResponse resource.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.ConfirmPasswordResetDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.ConfirmPasswordResetDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.ConfirmPasswordResetDto.jsonld'
+        required: true
+      deprecated: false
   /api/health:
     get:
       operationId: api_health_get
@@ -1326,144 +1482,6 @@ paths:
               properties: {  }
         required: false
       deprecated: false
-  '/api/users/{id}/reset-password':
-    post:
-      operationId: request_password_reset
-      tags:
-        - User
-      responses:
-        '200':
-          description: 'Password reset email sent'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string, example: 'Password reset email sent successfully' }
-        '500':
-          description: 'Internal server error'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
-                required:
-                  - type
-                  - title
-                  - detail
-                  - status
-              example:
-                type: /errors/500
-                title: 'An error occurred'
-                detail: 'Something went wrong'
-                status: 500
-          headers: {  }
-      summary: 'Request password reset'
-      description: 'Initiates password reset process by sending reset email'
-      parameters:
-        -
-          name: id
-          in: path
-          description: 'User identifier'
-          required: true
-          deprecated: false
-          allowEmptyValue: false
-          schema:
-            type: string
-          style: simple
-          explode: false
-          allowReserved: false
-      requestBody:
-        description: 'Password reset request data'
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                  format: email
-                  description: 'User email address'
-                  example: user@example.com
-              required:
-                - email
-        required: true
-      deprecated: false
-  '/api/users/{id}/reset-password/confirm':
-    post:
-      operationId: confirm_password_reset
-      tags:
-        - User
-      responses:
-        '200':
-          description: 'Password reset confirmed successfully'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string, example: 'Password reset confirmed successfully' }
-        '500':
-          description: 'Internal server error'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
-                required:
-                  - type
-                  - title
-                  - detail
-                  - status
-              example:
-                type: /errors/500
-                title: 'An error occurred'
-                detail: 'Something went wrong'
-                status: 500
-          headers: {  }
-      summary: 'Confirm password reset'
-      description: 'Confirms password reset using token and sets new password'
-      parameters:
-        -
-          name: id
-          in: path
-          description: 'User identifier'
-          required: true
-          deprecated: false
-          allowEmptyValue: false
-          schema:
-            type: string
-          style: simple
-          explode: false
-          allowReserved: false
-      requestBody:
-        description: 'Password reset confirmation data'
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                token:
-                  type: string
-                  description: 'Password reset token'
-                  example: abc123def456
-                newPassword:
-                  type: string
-                  description: 'New password'
-                  example: newSecurePassword123
-              required:
-                - token
-                - newPassword
-        required: true
-      deprecated: false
 components:
   securitySchemes:
     OAuth2:
@@ -1481,6 +1499,8 @@ security:
 tags:
   -
     name: User
+  -
+    name: EmptyResponse
   -
     name: HealthCheck
 webhooks: {  }
