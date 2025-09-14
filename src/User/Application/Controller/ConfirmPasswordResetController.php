@@ -19,17 +19,15 @@ final class ConfirmPasswordResetController extends AbstractController
     }
 
     public function __invoke(
-        string $id,
         #[MapRequestPayload]
         ConfirmPasswordResetDto $confirmPasswordResetDto
     ): JsonResponse {
         $command = new ConfirmPasswordResetCommand(
             $confirmPasswordResetDto->token,
-            $confirmPasswordResetDto->newPassword,
-            $id
+            $confirmPasswordResetDto->newPassword
         );
         $this->commandBus->dispatch($command);
 
-        return new JsonResponse(['ok' => true]);
+        return new JsonResponse(null, 204);
     }
 }

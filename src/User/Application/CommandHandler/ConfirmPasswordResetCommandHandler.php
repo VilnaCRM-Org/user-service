@@ -8,7 +8,6 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\ConfirmPasswordResetCommandResponse;
-use App\User\Application\Service\UserTokenMatchValidator;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
@@ -29,26 +28,20 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         private EventBusInterface $eventBus,
         private UuidFactory $uuidFactory,
         private PasswordResetTokenValidatorInterface $tokenValidator,
-        private UserTokenMatchValidator $userTokenMatchValidator,
     ) {
     }
 
     public function __invoke(ConfirmPasswordResetCommand $command): void
     {
         $passwordResetToken = $this->getValidatedToken($command->token);
-        $user = $this->userTokenMatchValidator->validateAndGetUser(
-            $passwordResetToken,
-            $command->userId
-        );
+        $user = $this->getUserFromToken($passwordResetToken);
 
         $this->updateUserPassword($user, $command->newPassword);
         $this->markTokenAsUsed($passwordResetToken);
         $this->publishEvent($user);
 
         $command->setResponse(
-            new ConfirmPasswordResetCommandResponse(
-                'Password has been reset successfully.'
-            )
+            new ConfirmPasswordResetCommandResponse('')
         );
     }
 
@@ -59,6 +52,12 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         $this->tokenValidator->validate($passwordResetToken);
 
         return $passwordResetToken;
+    }
+
+    private function getUserFromToken(
+        PasswordResetTokenInterface $token
+    ): UserInterface {
+        return $this->userRepository->find($token->getUserId());
     }
 
     private function updateUserPassword(

@@ -19,16 +19,14 @@ final class RequestPasswordResetController extends AbstractController
     }
 
     public function __invoke(
-        string $id,
         #[MapRequestPayload]
         RequestPasswordResetDto $requestPasswordResetDto
     ): JsonResponse {
-        // Note: User ID is available in $id if needed for validation
         $command = new RequestPasswordResetCommand(
             $requestPasswordResetDto->email
         );
         $this->commandBus->dispatch($command);
 
-        return new JsonResponse(['ok' => true]);
+        return new JsonResponse(null, 204);
     }
 }
