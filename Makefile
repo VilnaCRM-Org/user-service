@@ -232,31 +232,41 @@ stop-prod-loadtest: ## Stop production load testing environment
 
 ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	@echo "🚀 Running comprehensive CI checks..."
-	@echo "1️⃣  Validating composer.json and composer.lock..."
-	@if ! make composer-validate; then echo "❌ CI checks failed: composer validation failed"; exit 1; fi
-	@echo "2️⃣  Checking Symfony requirements..."
-	@if ! make check-requirements; then echo "❌ CI checks failed: Symfony requirements check failed"; exit 1; fi
-	@echo "3️⃣  Running security analysis..."
-	@if ! make check-security; then echo "❌ CI checks failed: security analysis failed"; exit 1; fi
-	@echo "4️⃣  Fixing code style with PHP CS Fixer..."
-	@if ! make phpcsfixer; then echo "❌ CI checks failed: PHP CS Fixer failed"; exit 1; fi
-	@echo "5️⃣  Running static analysis with Psalm..."
-	@if ! make psalm; then echo "❌ CI checks failed: Psalm static analysis failed"; exit 1; fi
-	@echo "6️⃣  Running security taint analysis..."
-	@if ! make psalm-security; then echo "❌ CI checks failed: Psalm security analysis failed"; exit 1; fi
-	@echo "7️⃣  Running code quality analysis with PHPInsights..."
-	@if ! make phpinsights; then echo "❌ CI checks failed: PHPInsights quality analysis failed"; exit 1; fi
-	@echo "8️⃣  Validating architecture with Deptrac..."
-	@if ! make deptrac; then echo "❌ CI checks failed: Deptrac architecture validation failed"; exit 1; fi
-	@echo "9️⃣  Running complete test suite (unit, integration, e2e)..."
-	@if ! make unit-tests; then echo "❌ CI checks failed: unit tests failed"; exit 1; fi
-	@if ! make integration-tests; then echo "❌ CI checks failed: integration tests failed"; exit 1; fi
-	@if ! make behat; then echo "❌ CI checks failed: Behat e2e tests failed"; exit 1; fi
-	@echo "🔟 Running mutation testing with Infection..."
-	@if ! make infection; then echo "❌ CI checks failed: mutation testing failed"; exit 1; fi
-	@echo "🔟 Running CLI testing with Bats..."
-	@if ! make bats; then echo "❌ CI checks failed: Bats CLI testing failed"; exit 1; fi
-	@echo "✅ CI checks successfully passed!"
+	@failed_checks=""; \
+	echo "1️⃣  Validating composer.json and composer.lock..."; \
+	if ! make composer-validate; then failed_checks="$$failed_checks\n❌ composer validation"; fi; \
+	echo "2️⃣  Checking Symfony requirements..."; \
+	if ! make check-requirements; then failed_checks="$$failed_checks\n❌ Symfony requirements check"; fi; \
+	echo "3️⃣  Running security analysis..."; \
+	if ! make check-security; then failed_checks="$$failed_checks\n❌ security analysis"; fi; \
+	echo "4️⃣  Fixing code style with PHP CS Fixer..."; \
+	if ! make phpcsfixer; then failed_checks="$$failed_checks\n❌ PHP CS Fixer"; fi; \
+	echo "5️⃣  Running static analysis with Psalm..."; \
+	if ! make psalm; then failed_checks="$$failed_checks\n❌ Psalm static analysis"; fi; \
+	echo "6️⃣  Running security taint analysis..."; \
+	if ! make psalm-security; then failed_checks="$$failed_checks\n❌ Psalm security analysis"; fi; \
+	echo "7️⃣  Running code quality analysis with PHPInsights..."; \
+	if ! make phpinsights; then failed_checks="$$failed_checks\n❌ PHPInsights quality analysis"; fi; \
+	echo "8️⃣  Validating architecture with Deptrac..."; \
+	if ! make deptrac; then failed_checks="$$failed_checks\n❌ Deptrac architecture validation"; fi; \
+	echo "9️⃣  Running complete test suite (unit, integration, e2e)..."; \
+	if ! make unit-tests; then failed_checks="$$failed_checks\n❌ unit tests"; fi; \
+	if ! make integration-tests; then failed_checks="$$failed_checks\n❌ integration tests"; fi; \
+	if ! make behat; then failed_checks="$$failed_checks\n❌ Behat e2e tests"; fi; \
+	echo "🔟 Running mutation testing with Infection..."; \
+	if ! make infection; then failed_checks="$$failed_checks\n❌ mutation testing"; fi; \
+	echo "🔟 Running CLI testing with Bats..."; \
+	if ! make bats; then failed_checks="$$failed_checks\n❌ Bats CLI testing"; fi; \
+	if [ -n "$$failed_checks" ]; then \
+		echo ""; \
+		echo "💥 CI checks completed with failures:"; \
+		printf "$$failed_checks\n"; \
+		echo ""; \
+		echo "❌ CI checks failed! Please fix the above issues."; \
+		exit 1; \
+	else \
+		echo "✅ CI checks successfully passed!"; \
+	fi
 
 
 pr-comments: ## Retrieve unresolved comments for a GitHub Pull Request
