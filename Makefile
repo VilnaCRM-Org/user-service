@@ -96,7 +96,20 @@ phpinsights: ## Instant PHP quality checks and static analysis tool
 	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --ansi --format=github-action --disable-security-check && $(EXEC_ENV) ./vendor/bin/phpinsights analyse tests --no-interaction --config-path=phpinsights-tests.php
 
 unit-tests: ## Run unit tests
-	$(RUN_TESTS_COVERAGE) --testsuite=Unit
+	@echo "Running unit tests with coverage requirement of 100%..."
+	@$(RUN_TESTS_COVERAGE) --testsuite=Unit 2>&1 | tee /tmp/phpunit_output.txt
+	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_output.txt | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
+	if [ -n "$$coverage" ]; then \
+		if [ $$(echo "$$coverage < 100" | bc -l) -eq 1 ]; then \
+			echo "❌ COVERAGE FAILURE: Line coverage is $$coverage%, but 100% is required. Please cover all lines of code and achieve the 100% code coverage"; \
+			exit 1; \
+		else \
+			echo "✅ COVERAGE SUCCESS: Line coverage is $$coverage%"; \
+		fi; \
+	else \
+		echo "❌ ERROR: Could not parse coverage from output"; \
+		exit 1; \
+	fi
 
 deptrac: ## Check directory structure
 	$(EXEC_ENV) $(DEPTRAC) analyse --config-file=deptrac.yaml --report-uncovered --fail-on-uncovered
