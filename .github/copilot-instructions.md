@@ -1122,18 +1122,21 @@ This comprehensive approach ensures that the `docs/` directory remains an accura
 ### Protected Quality Metrics
 
 **PHPInsights Quality Requirements (phpinsights.php):**
+
 - **min-quality**: 100% (NEVER decrease below 100%)
 - **min-complexity**: 95% (NEVER decrease below 95%)
 - **min-architecture**: 100% (NEVER decrease below 100%)
 - **min-style**: 100% (NEVER decrease below 100%)
 
 **PHPInsights Test Quality Requirements (phpinsights-tests.php):**
+
 - **min-quality**: 95% (NEVER decrease below 95%)
 - **min-complexity**: 95% (NEVER decrease below 95%)
 - **min-architecture**: 90% (NEVER decrease below 90%)
 - **min-style**: 95% (NEVER decrease below 95%)
 
 **Test Coverage Requirements:**
+
 - **Unit test coverage**: 100% (NEVER decrease below 100%)
 - **Integration test coverage**: Must maintain comprehensive coverage
 - **Mutation testing (Infection)**: 100% MSI (NEVER decrease below 100% - 0 escaped mutants)
@@ -1161,18 +1164,21 @@ This comprehensive approach ensures that the `docs/` directory remains an accura
 **Quality Enforcement Rules:**
 
 1. **Never modify quality thresholds downward** in any configuration file:
+
    - `phpinsights.php` requirements section
-   - `phpinsights-tests.php` requirements section  
+   - `phpinsights-tests.php` requirements section
    - `infection.json5` mutation score indicator
    - `phpunit.xml.dist` coverage settings
 
 2. **Always maintain or improve coverage** when adding new code:
+
    - Write tests for all new functionality
    - Ensure 100% line and branch coverage
    - Add mutation tests for complex logic
    - Update integration and E2E tests as needed
 
 3. **Code quality must meet or exceed standards**:
+
    - Cyclomatic complexity below 5 per method
    - No architectural violations in Deptrac
    - PSR-12 code style compliance
