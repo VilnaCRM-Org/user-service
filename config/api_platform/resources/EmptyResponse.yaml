@@ -1,0 +1,42 @@
+resources:
+  App\Shared\Application\DTO\EmptyResponse:
+    exceptionToStatus:
+      'App\User\Domain\Exception\UserTimedOutException': 429
+      'App\User\Domain\Exception\UserNotFoundException': 404
+      'App\User\Domain\Exception\InvalidPasswordException': 400
+      'App\User\Domain\Exception\TokenNotFoundException': 404
+      'App\User\Domain\Exception\DuplicateEmailException': 409
+      'App\User\Domain\Exception\PasswordResetTokenNotFoundException': 404
+      'App\User\Domain\Exception\PasswordResetTokenExpiredException': 400
+      'App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException': 400
+      'App\User\Domain\Exception\PasswordResetTokenMismatchException': 400
+      'App\User\Domain\Exception\PasswordResetRateLimitExceededException': 429
+    operations:
+      request_password_reset:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        status: 200
+        uriTemplate: '/reset-password'
+        input: 'App\User\Application\DTO\RequestPasswordResetDto'
+        controller: 'App\User\Application\Controller\RequestPasswordResetController'
+        output: false
+        read: false
+        openapi:
+          summary: 'Request a password reset'
+          description: 'Initiates a password reset process by sending a reset token to the provided email address.'
+          tags:
+            - 'User reset password'
+      confirm_password_reset:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        status: 200
+        uriTemplate: '/reset-password/confirm'
+        input: 'App\User\Application\DTO\ConfirmPasswordResetDto'
+        controller: 'App\User\Application\Controller\ConfirmPasswordResetController'
+        output: false
+        read: false
+        openapi:
+          summary: 'Confirm a password reset'
+          description: 'Completes the password reset process by validating the reset token and setting a new password.'
+          tags:
+            - 'User reset password'

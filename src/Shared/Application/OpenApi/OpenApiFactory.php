@@ -35,8 +35,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     public function __invoke(array $context = []): OpenApi
     {
         $openApi = $this->decorated->__invoke($context);
-        $components = $this->createComponents();
-        $openApi = $openApi->withComponents($components);
+        $openApi = $openApi->withComponents($this->augmentComponents($openApi));
 
         foreach ($this->endpointFactories as $endpointFactory) {
             $endpointFactory->createEndpoint($openApi);
@@ -51,13 +50,14 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         ]);
     }
 
-    private function createComponents(): Components
+    private function augmentComponents(OpenApi $openApi): Components
     {
-        $securitySchemes = new ArrayObject([
-            'OAuth2' => $this->createOAuth2Scheme(),
-        ]);
+        $components = $openApi->getComponents() ?? new Components();
+        $securitySchemes = $components->getSecuritySchemes()
+            ?? new ArrayObject();
+        $securitySchemes['OAuth2'] = $this->createOAuth2Scheme();
 
-        return (new Components())->withSecuritySchemes($securitySchemes);
+        return $components->withSecuritySchemes($securitySchemes);
     }
 
     /**

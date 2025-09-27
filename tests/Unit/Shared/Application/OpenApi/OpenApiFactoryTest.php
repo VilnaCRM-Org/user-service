@@ -116,6 +116,37 @@ final class OpenApiFactoryTest extends UnitTestCase
         $this->testAddErrorResponseMakeAssertions($paths, $serverErrorResponse);
     }
 
+    public function testInvokeEnsuresSecuritySchemeWhenComponentsMissing(): void
+    {
+        $paths = new Paths();
+        $openApiWithoutComponents = new OpenApi(
+            $this->createMock(Info::class),
+            [],
+            $paths
+        );
+
+        $this->decoratedFactory->expects($this->once())
+            ->method('__invoke')
+            ->willReturn($openApiWithoutComponents);
+
+        $this->serverErrorResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn(new Response());
+
+        $openApiFactory = new OpenApiFactory(
+            $this->decoratedFactory,
+            [],
+            $this->serverErrorResponseFactory,
+            getenv('API_URL')
+        );
+
+        $result = $openApiFactory->__invoke([]);
+
+        $components = $result->getComponents();
+        $this->assertNotNull($components);
+        $this->assertArrayHasKey('OAuth2', $components->getSecuritySchemes());
+    }
+
     private function createExpectedOpenApi(): OpenApi
     {
         $components = $this->createComponents();

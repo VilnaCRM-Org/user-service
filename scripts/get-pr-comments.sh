@@ -549,6 +549,7 @@ get_pr_comments() {
     local unresolved_comments
     unresolved_comments=$(echo "$threads_data" | jq --argjson pr_number "$pr_number" '
         .data.repository.pullRequest.reviewThreads.nodes
+        | map(select(.isResolved == false))
         | map(select(.isOutdated == false))
         | map(select(.comments.nodes | length > 0))
         | map(.comments.nodes[0] as $comment | {
