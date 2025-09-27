@@ -44,6 +44,9 @@ final class OAuthTokenEndpointFactory implements AbstractEndpointFactory
                 summary: 'Requests for access token',
                 description: 'Requests for access token',
                 post: new Operation(
+                    operationId: 'oauth_token_post',
+                    summary: 'Exchange authorization data for tokens',
+                    description: $this->tokenDescription(),
                     tags: ['OAuth'],
                     responses: $this->getResponses(),
                     requestBody: $this->tokenRequestFactory->getRequest(),
@@ -62,5 +65,16 @@ final class OAuthTokenEndpointFactory implements AbstractEndpointFactory
             HttpResponse::HTTP_BAD_REQUEST => $this->unsupportedResponse,
             HttpResponse::HTTP_UNAUTHORIZED => $this->invalidResponse,
         ];
+    }
+
+    private function tokenDescription(): string
+    {
+        return implode(
+            ' ',
+            [
+                'Exchanges an authorization code or refresh token for',
+                'OAuth access and refresh tokens.',
+            ]
+        );
     }
 }

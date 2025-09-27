@@ -10,8 +10,8 @@ final readonly class Header
         public string $name,
         public string $description,
         public string $type,
-        public string $format,
-        public string $example
+        public ?string $format = null,
+        public ?string $example = null
     ) {
     }
 }

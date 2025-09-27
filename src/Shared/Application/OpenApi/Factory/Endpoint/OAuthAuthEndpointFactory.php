@@ -54,6 +54,9 @@ final class OAuthAuthEndpointFactory implements AbstractEndpointFactory
     private function createOperation(): Model\Operation
     {
         return new Model\Operation(
+            operationId: 'oauth_authorize_get',
+            summary: 'Start OAuth authorization flow',
+            description: $this->authorizeDescription(),
             tags: ['OAuth'],
             responses: $this->getResponses(),
             parameters: $this->getQueryParams()
@@ -138,6 +141,17 @@ final class OAuthAuthEndpointFactory implements AbstractEndpointFactory
             true,
             'code',
             'string'
+        );
+    }
+
+    private function authorizeDescription(): string
+    {
+        return implode(
+            ' ',
+            [
+                'Redirects the resource owner to grant access',
+                'and returns an authorization code.',
+            ]
         );
     }
 }

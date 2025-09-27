@@ -52,7 +52,6 @@ services:
     arguments:
       - '@App\Shared\Application\OpenApi\OpenApiFactory.inner'
       - !tagged_iterator 'app.openapi_endpoint_factory'
-      - '@App\Shared\Application\OpenApi\Factory\Response\InternalErrorFactory'
       - '%env(API_URL)%'
     autoconfigure: false
 

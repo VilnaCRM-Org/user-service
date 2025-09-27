@@ -21,7 +21,7 @@ final class OAuthTokenReturnedResponseFactoryTest extends UnitTestCase
         $responseBuilder->expects($this->once())
             ->method('build')
             ->with(
-                'Unsupported grant type',
+                'OAuth access token response',
                 [
                     $this->getTypeParam(),
                     $this->getExpiresInParam(),

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\OpenApi\Builder;
 
-use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Response;
 
 final class ResponseBuilder
@@ -22,26 +21,39 @@ final class ResponseBuilder
         array $params,
         array $headers
     ): Response {
-        $content = $this->contextBuilder->build($params);
-        $headersArray = new \ArrayObject();
-
-        if (count($headers) > 0) {
-            foreach ($headers as $header) {
-                $headersArray[$header->name] = new Model\Header(
-                    description: $header->description,
-                    schema: [
-                        'type' => $header->type,
-                        'format' => $header->format,
-                        'example' => $header->example,
-                    ]
-                );
-            }
-        }
-
         return new Response(
             description: $description,
-            content: $content,
-            headers: $headersArray
+            content: $this->contextBuilder->build($params),
+            headers: $this->buildHeaders($headers)
         );
+    }
+
+    /**
+     * @param array<Header> $headers
+     */
+    private function buildHeaders(array $headers): \ArrayObject
+    {
+        $headersArray = new \ArrayObject();
+
+        foreach ($headers as $header) {
+            $schema = ['type' => $header->type];
+
+            if ($header->format !== null) {
+                $schema['format'] = $header->format;
+            }
+
+            $headerData = [
+                'description' => $header->description,
+                'schema' => $schema,
+            ];
+
+            if ($header->example !== null) {
+                $headerData['example'] = $header->example;
+            }
+
+            $headersArray[$header->name] = $headerData;
+        }
+
+        return $headersArray;
     }
 }

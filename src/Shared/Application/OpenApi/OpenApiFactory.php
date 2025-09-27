@@ -7,14 +7,12 @@ namespace App\Shared\Application\OpenApi;
 use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Components;
-use ApiPlatform\OpenApi\Model\Operation;
-use ApiPlatform\OpenApi\Model\PathItem;
-use ApiPlatform\OpenApi\Model\Response;
+use ApiPlatform\OpenApi\Model\Tag;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory;
-use App\Shared\Application\OpenApi\Factory\Response\InternalErrorFactory;
+use App\Shared\Application\OpenApi\Processor\PathParametersSanitizer;
+use App\Shared\Application\OpenApi\Processor\ServerErrorResponseAugmenter;
 use ArrayObject;
-use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class OpenApiFactory implements OpenApiFactoryInterface
 {
@@ -24,8 +22,9 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     public function __construct(
         private OpenApiFactoryInterface $decorated,
         private iterable $endpointFactories,
-        private InternalErrorFactory $serverErrorResponseFactory,
-        private string $serverUrl
+        private string $serverUrl,
+        private PathParametersSanitizer $pathParametersSanitizer,
+        private ServerErrorResponseAugmenter $serverErrorResponseAugmenter
     ) {
     }
 
@@ -35,13 +34,16 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     public function __invoke(array $context = []): OpenApi
     {
         $openApi = $this->decorated->__invoke($context);
-        $openApi = $openApi->withComponents($this->augmentComponents($openApi));
+        $openApi = $openApi
+            ->withComponents($this->augmentComponents($openApi))
+            ->withTags($this->buildTags());
 
         foreach ($this->endpointFactories as $endpointFactory) {
             $endpointFactory->createEndpoint($openApi);
         }
 
-        $this->addServerErrorResponseToAllEndpoints($openApi);
+        $this->serverErrorResponseAugmenter->augment($openApi);
+        $openApi = $this->pathParametersSanitizer->sanitize($openApi);
 
         return $openApi->withServers([
             new Model\Server($this->serverUrl),
@@ -58,6 +60,19 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $securitySchemes['OAuth2'] = $this->createOAuth2Scheme();
 
         return $components->withSecuritySchemes($securitySchemes);
+    }
+
+    /**
+     * @return array<int, Tag>
+     */
+    private function buildTags(): array
+    {
+        return [
+            new Tag('HealthCheck', 'Service health monitoring endpoints'),
+            new Tag('OAuth', 'OAuth 2.0 authorization and token endpoints'),
+            new Tag('User', 'User account management operations'),
+            new Tag('User reset password', 'Password reset workflows'),
+        ];
     }
 
     /**
@@ -86,64 +101,5 @@ final class OpenApiFactory implements OpenApiFactoryInterface
                 'read:pets' => 'read your pets',
             ],
         ];
-    }
-
-    private function addServerErrorResponseToAllEndpoints(
-        OpenApi $openApi
-    ): void {
-        $serverErrorResponse = $this->serverErrorResponseFactory->getResponse();
-        foreach (array_keys($openApi->getPaths()->getPaths()) as $path) {
-            $this->addServerErrorResponseToPath(
-                $openApi,
-                $path,
-                $serverErrorResponse
-            );
-        }
-    }
-
-    private function addServerErrorResponseToPath(
-        OpenApi $openApi,
-        string $path,
-        Response $response
-    ): void {
-        $pathItem = $openApi->getPaths()->getPath($path);
-        $pathItem = $this->processPathItemOperations($pathItem, $response);
-        $openApi->getPaths()->addPath($path, $pathItem);
-    }
-
-    private function processPathItemOperations(
-        PathItem $pathItem,
-        Response $standardResponse
-    ): PathItem {
-        return $pathItem->withGet($this->addErrorResponseToOperation(
-            $pathItem->getGet(),
-            $standardResponse
-        ))
-            ->withPost($this->addErrorResponseToOperation(
-                $pathItem->getPost(),
-                $standardResponse
-            ))
-            ->withPut($this->addErrorResponseToOperation(
-                $pathItem->getPut(),
-                $standardResponse
-            ))
-            ->withPatch($this->addErrorResponseToOperation(
-                $pathItem->getPatch(),
-                $standardResponse
-            ))
-            ->withDelete($this->addErrorResponseToOperation(
-                $pathItem->getDelete(),
-                $standardResponse
-            ));
-    }
-
-    private function addErrorResponseToOperation(
-        ?Operation $operation,
-        Response $standardResponse
-    ): ?Operation {
-        return $operation?->withResponse(
-            HttpResponse::HTTP_INTERNAL_SERVER_ERROR,
-            $standardResponse
-        );
     }
 }

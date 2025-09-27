@@ -13,7 +13,7 @@ parameters:
         - type: className
           regex: '.*App\\Shared\\Application\\(Validator|Transformer|ErrorProvider|DomainExceptionNormalizer|NotFoundExceptionNormalizer).*'
         - type: className
-          regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|OpenApiFactory).*'
+          regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|Processor|OpenApiFactory).*'
     - name: Domain
       collectors:
         - type: className

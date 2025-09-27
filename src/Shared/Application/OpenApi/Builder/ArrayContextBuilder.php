@@ -11,47 +11,43 @@ final class ArrayContextBuilder
      */
     public function build(array $params): \ArrayObject
     {
-        $content = new \ArrayObject([
-            'application/json' => [
-                'example' => [''],
-            ],
-        ]);
-
-        if (count($params) > 0) {
-            $items = [];
-            $example = [];
-            $required = [];
-
-            foreach ($params as $param) {
-                if ($param->required) {
-                    $required[] = $param->name;
-                }
-                $this->addParameterToItems($items, $param);
-                $example[$param->name] = $param->example;
-            }
-
-            $content = $this->buildContent($items, $example, $required);
+        if ($params === []) {
+            return $this->buildEmptyContent();
         }
 
-        return $content;
+        $items = [];
+        $example = [];
+        $required = [];
+
+        foreach ($params as $param) {
+            if ($param->required) {
+                $required[] = $param->name;
+            }
+
+            $items[$param->name] = $this->createPropertySchema($param);
+            $example[$param->name] = $param->example;
+        }
+
+        return $this->buildContent($items, $example, $required);
     }
 
-    /**
-     * @param array<string, string> $items
-     */
-    private function addParameterToItems(array &$items, Parameter $param): void
+    private function buildEmptyContent(): \ArrayObject
     {
-        $items[$param->name] = [
-            'type' => $param->type,
-            'maxLength' => $param->maxLength,
-            'format' => $param->format,
-        ];
+        return new \ArrayObject([
+            'application/json' => [
+                'example' => [],
+                'schema' => [
+                    'type' => 'array',
+                    'items' => ['type' => 'object'],
+                ],
+            ],
+        ]);
     }
 
     /**
-     * @param array<string, string> $items
-     * @param array<string, string|int|array> $example
-     * @param array<string> $required
+     * @param array<string, array<string, string|int>> $items
+     * @param array<string, string|int|array|bool> $example
+     * @param array<int, string> $required
      */
     private function buildContent(
         array $items,
@@ -62,11 +58,32 @@ final class ArrayContextBuilder
             'application/json' => [
                 'schema' => [
                     'type' => 'array',
-                    'items' => ['properties' => $items],
-                    'required' => $required,
+                    'items' => array_filter(
+                        [
+                            'type' => 'object',
+                            'properties' => $items,
+                            'required' => $required === [] ? null : $required,
+                        ],
+                        static fn ($value) => $value !== null
+                    ),
                 ],
                 'example' => [$example],
             ],
         ]);
+    }
+
+    /**
+     * @return array<string, string|int>
+     */
+    private function createPropertySchema(Parameter $param): array
+    {
+        return array_filter(
+            [
+                'type' => $param->type,
+                'maxLength' => $param->maxLength,
+                'format' => $param->format,
+            ],
+            static fn ($value) => $value !== null
+        );
     }
 }

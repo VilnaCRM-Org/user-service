@@ -6,6 +6,15 @@ namespace App\Shared\Application\OpenApi\Builder;
 
 final class ContextBuilder
 {
+    private ParameterSchemaFactory $parameterSchemaFactory;
+
+    public function __construct(
+        ?ParameterSchemaFactory $parameterSchemaFactory = null
+    ) {
+        $this->parameterSchemaFactory = $parameterSchemaFactory
+            ?? new ParameterSchemaFactory();
+    }
+
     /**
      * @param array<Parameter> $params
      */
@@ -13,17 +22,15 @@ final class ContextBuilder
         array $params,
         string $contentType = 'application/json'
     ): \ArrayObject {
-        $content = new \ArrayObject([
-            $contentType => [
-                'example' => '',
-            ],
-        ]);
-
-        if (count($params) > 0) {
-            $content = $this->processParams($params, $contentType);
+        if (count($params) === 0) {
+            return new \ArrayObject([
+                $contentType => [
+                    'example' => new \ArrayObject(),
+                ],
+            ]);
         }
 
-        return $content;
+        return $this->processParams($params, $contentType);
     }
 
     /**
@@ -41,7 +48,9 @@ final class ContextBuilder
             if ($param->required) {
                 $required[] = $param->name;
             }
-            $this->addParameterToProperties($properties, $param);
+
+            $properties[$param->name] = $this->parameterSchemaFactory
+                ->create($param);
             $example[$param->name] = $param->example;
         }
 
@@ -54,23 +63,9 @@ final class ContextBuilder
     }
 
     /**
-     * @param array<string, string> $properties
-     */
-    private function addParameterToProperties(
-        array &$properties,
-        Parameter $param
-    ): void {
-        $properties[$param->name] = [
-            'type' => $param->type,
-            'maxLength' => $param->maxLength,
-            'format' => $param->format,
-        ];
-    }
-
-    /**
-     * @param array<string, string> $properties
-     * @param array<string, string|int|array> $example
-     * @param array<string> $required
+     * @param array<string, array<string, string|int>> $properties
+     * @param array<string, string|int|array|bool> $example
+     * @param array<int, string> $required
      */
     private function buildContent(
         string $contentType,
@@ -80,11 +75,14 @@ final class ContextBuilder
     ): \ArrayObject {
         return new \ArrayObject([
             $contentType => [
-                'schema' => [
-                    'type' => 'object',
-                    'properties' => $properties,
-                    'required' => $required,
-                ],
+                'schema' => array_filter(
+                    [
+                        'type' => 'object',
+                        'properties' => $properties,
+                        'required' => $required === [] ? null : $required,
+                    ],
+                    static fn ($value) => $value !== null
+                ),
                 'example' => $example,
             ],
         ]);

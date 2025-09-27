@@ -17,7 +17,7 @@ final class OAuthTokenResponseFactory implements AbstractResponseFactory
     public function getResponse(): Response
     {
         return $this->responseBuilder->build(
-            'Unsupported grant type',
+            'OAuth access token response',
             [
                 $this->getTokenTypeParam(),
                 $this->getExpiresInParam(),

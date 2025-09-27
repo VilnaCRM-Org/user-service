@@ -27,7 +27,11 @@ final class ArrayContextBuilderTest extends UnitTestCase
         $this->assertEquals(
             new ArrayObject([
                 'application/json' => [
-                    'example' => [''],
+                    'example' => [],
+                    'schema' => [
+                        'type' => 'array',
+                        'items' => ['type' => 'object'],
+                    ],
                 ],
             ]),
             $content
@@ -78,6 +82,23 @@ final class ArrayContextBuilderTest extends UnitTestCase
         );
     }
 
+    public function testBuildOmitsRequiredWhenParametersOptional(): void
+    {
+        $optionalParam = new Parameter(
+            'notes',
+            'string',
+            $this->faker->sentence(),
+            null,
+            null,
+            false
+        );
+
+        $content = $this->contextBuilder->build([$optionalParam]);
+        $schema = $content['application/json']['schema'];
+
+        $this->assertArrayNotHasKey('required', $schema['items']);
+    }
+
     /**
      * @return  array<string,string|array<string>>
      */
@@ -86,20 +107,19 @@ final class ArrayContextBuilderTest extends UnitTestCase
         return [
             'type' => 'array',
             'items' => [
+                'type' => 'object',
                 'properties' => [
                     'name' => [
                         'type' => 'string',
-                        'maxLength' => null,
-                        'format' => null,
+                        'maxLength' => 255,
+                        'format' => 'uuid',
                     ],
                     'age' => [
                         'type' => 'integer',
-                        'maxLength' => null,
-                        'format' => null,
                     ],
                 ],
+                'required' => ['name', 'age'],
             ],
-            'required' => ['name', 'age'],
         ];
     }
 
@@ -111,15 +131,14 @@ final class ArrayContextBuilderTest extends UnitTestCase
         return [
             'type' => 'array',
             'items' => [
+                'type' => 'object',
                 'properties' => [
                     'address' => [
                         'type' => 'object',
-                        'maxLength' => null,
-                        'format' => null,
                     ],
                 ],
+                'required' => ['address'],
             ],
-            'required' => ['address'],
         ];
     }
 
@@ -148,7 +167,9 @@ final class ArrayContextBuilderTest extends UnitTestCase
             new Parameter(
                 'name',
                 'string',
-                $this->faker->name()
+                $this->faker->name(),
+                255,
+                'uuid'
             ),
             new Parameter(
                 'age',

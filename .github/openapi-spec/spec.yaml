@@ -2,6 +2,10 @@ openapi: 3.1.0
 info:
   title: 'User Service API'
   description: 'This API provides endpoints to manage user data within a VilnaCRM.'
+  contact:
+    name: 'VilnaCRM Support'
+    url: 'https://vilnacrm.com'
+    email: support@vilnacrm.com
   version: 1.0.0
 servers:
   -
@@ -23,10 +27,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -46,6 +50,7 @@ paths:
     summary: 'Requests for authorization code'
     description: 'Requests for authorization code'
     get:
+      operationId: oauth_authorize_get
       tags:
         - OAuth
       responses:
@@ -53,21 +58,14 @@ paths:
           description: 'Redirect to the provided redirect URI with authorization code.'
           content:
             application/json:
-              example: ''
+              example: {  }
           headers:
             Location:
-              in: header
               description: 'The URI to redirect to for user authorization'
-              required: false
-              deprecated: false
-              allowEmptyValue: false
               schema:
                 type: string
                 format: uri
-                example: 'https://example.com/oauth/callback?code=e7f8c62113a4'
-              style: simple
-              explode: false
-              allowReserved: false
+              example: 'https://example.com/oauth/callback?code=e7f8c62113a4'
         '400':
           description: 'Unsupported grant type'
           content:
@@ -75,10 +73,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  error: { type: string, maxLength: null, format: null }
-                  error_description: { type: string, maxLength: null, format: null }
-                  hint: { type: string, maxLength: null, format: null }
-                  message: { type: string, maxLength: null, format: null }
+                  error: { type: string }
+                  error_description: { type: string }
+                  hint: { type: string }
+                  message: { type: string }
                 required:
                   - error
                   - error_description
@@ -97,9 +95,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  error: { type: string, maxLength: null, format: null }
-                  error_description: { type: string, maxLength: null, format: null }
-                  message: { type: string, maxLength: null, format: null }
+                  error: { type: string }
+                  error_description: { type: string }
+                  message: { type: string }
                 required:
                   - error
                   - error_description
@@ -116,10 +114,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -131,6 +129,8 @@ paths:
                 detail: 'Something went wrong'
                 status: 500
           headers: {  }
+      summary: 'Start OAuth authorization flow'
+      description: 'Redirects the resource owner to grant access and returns an authorization code.'
       parameters:
         -
           name: response_type
@@ -201,20 +201,21 @@ paths:
     summary: 'Requests for access token'
     description: 'Requests for access token'
     post:
+      operationId: oauth_token_post
       tags:
         - OAuth
       responses:
         '200':
-          description: 'Unsupported grant type'
+          description: 'OAuth access token response'
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  token_type: { type: string, maxLength: null, format: null }
-                  expires_in: { type: integer, maxLength: null, format: null }
-                  access_token: { type: string, maxLength: null, format: null }
-                  refresh_token: { type: string, maxLength: null, format: null }
+                  token_type: { type: string }
+                  expires_in: { type: integer }
+                  access_token: { type: string }
+                  refresh_token: { type: string }
                 required:
                   - token_type
                   - expires_in
@@ -233,10 +234,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  error: { type: string, maxLength: null, format: null }
-                  error_description: { type: string, maxLength: null, format: null }
-                  hint: { type: string, maxLength: null, format: null }
-                  message: { type: string, maxLength: null, format: null }
+                  error: { type: string }
+                  error_description: { type: string }
+                  hint: { type: string }
+                  message: { type: string }
                 required:
                   - error
                   - error_description
@@ -255,9 +256,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  error: { type: string, maxLength: null, format: null }
-                  error_description: { type: string, maxLength: null, format: null }
-                  message: { type: string, maxLength: null, format: null }
+                  error: { type: string }
+                  error_description: { type: string }
+                  message: { type: string }
                 required:
                   - error
                   - error_description
@@ -274,10 +275,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -289,6 +290,8 @@ paths:
                 detail: 'Something went wrong'
                 status: 500
           headers: {  }
+      summary: 'Exchange authorization data for tokens'
+      description: 'Exchanges an authorization code or refresh token for OAuth access and refresh tokens.'
       requestBody:
         content:
           application/json:
@@ -297,28 +300,16 @@ paths:
               properties:
                 grant_type:
                   type: string
-                  maxLength: null
-                  format: null
                 client_id:
                   type: string
-                  maxLength: null
-                  format: null
                 client_secret:
                   type: string
-                  maxLength: null
-                  format: null
                 redirect_uri:
                   type: string
-                  maxLength: null
-                  format: null
                 code:
                   type: string
-                  maxLength: null
-                  format: null
                 refresh_token:
                   type: string
-                  maxLength: null
-                  format: null
               required:
                 - grant_type
                 - client_id
@@ -347,10 +338,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -369,12 +360,9 @@ paths:
               schema:
                 type: array
                 items:
-                  properties: { confirmed: { type: boolean, maxLength: null, format: null }, email: { type: string, maxLength: null, format: null }, initials: { type: string, maxLength: null, format: null }, id: { type: string, maxLength: null, format: null } }
-                required:
-                  - confirmed
-                  - email
-                  - initials
-                  - id
+                  type: object
+                  properties: { confirmed: { type: boolean }, email: { type: string }, initials: { type: string }, id: { type: string } }
+                  required: [confirmed, email, initials, id]
               example:
                 -
                   confirmed: false
@@ -389,10 +377,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -447,10 +435,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  confirmed: { type: boolean, maxLength: null, format: null }
-                  email: { type: string, maxLength: null, format: null }
-                  initials: { type: string, maxLength: null, format: null }
-                  id: { type: string, maxLength: null, format: null }
+                  confirmed: { type: boolean }
+                  email: { type: string }
+                  initials: { type: string }
+                  id: { type: string }
                 required:
                   - confirmed
                   - email
@@ -469,10 +457,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -491,11 +479,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  violations: { type: array, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  violations: { type: array, items: { type: object } }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -507,9 +495,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'some_property: This value should not be blank.'
                 violations:
-                  propertyPath: some_property
-                  message: 'This value should not be blank.'
-                  code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
+                  - { propertyPath: some_property, message: 'This value should not be blank.', code: c1051bb4-d103-4f74-8988-acbcafc7fdc3 }
                 status: 422
           headers: {  }
         '500':
@@ -519,10 +505,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -550,11 +536,9 @@ paths:
                 initials:
                   type: string
                   maxLength: 255
-                  format: null
                 password:
                   type: string
                   maxLength: 255
-                  format: null
               required:
                 - email
                 - initials
@@ -578,12 +562,9 @@ paths:
               schema:
                 type: array
                 items:
-                  properties: { confirmed: { type: boolean, maxLength: null, format: null }, email: { type: string, maxLength: null, format: null }, initials: { type: string, maxLength: null, format: null }, id: { type: string, maxLength: null, format: null } }
-                required:
-                  - confirmed
-                  - email
-                  - initials
-                  - id
+                  type: object
+                  properties: { confirmed: { type: boolean }, email: { type: string }, initials: { type: string }, id: { type: string } }
+                  required: [confirmed, email, initials, id]
               example:
                 -
                   confirmed: false
@@ -598,11 +579,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  violations: { type: array, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  violations: { type: array, items: { type: object } }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -614,9 +595,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'some_property: This value should not be blank.'
                 violations:
-                  propertyPath: some_property
-                  message: 'This value should not be blank.'
-                  code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
+                  - { propertyPath: some_property, message: 'This value should not be blank.', code: c1051bb4-d103-4f74-8988-acbcafc7fdc3 }
                 status: 422
           headers: {  }
         '500':
@@ -626,10 +605,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -652,8 +631,7 @@ paths:
               properties:
                 users:
                   type: array
-                  maxLength: null
-                  format: null
+                  items: { type: object }
               required:
                 - users
             example:
@@ -674,13 +652,13 @@ paths:
           description: 'User confirmed'
           content:
             application/json:
-              example: ''
+              example: {  }
           headers: {  }
         '404':
           description: 'Token not found or expired'
           content:
             application/json:
-              example: ''
+              example: {  }
           headers: {  }
         '500':
           description: 'Internal server error'
@@ -689,10 +667,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -715,8 +693,6 @@ paths:
               properties:
                 token:
                   type: string
-                  maxLength: null
-                  format: null
               required:
                 - token
             example:
@@ -736,10 +712,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -758,10 +734,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  confirmed: { type: boolean, maxLength: null, format: null }
-                  email: { type: string, maxLength: null, format: null }
-                  initials: { type: string, maxLength: null, format: null }
-                  id: { type: string, maxLength: null, format: null }
+                  confirmed: { type: boolean }
+                  email: { type: string }
+                  initials: { type: string }
+                  id: { type: string }
                 required:
                   - confirmed
                   - email
@@ -780,10 +756,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -804,12 +780,10 @@ paths:
           description: 'User identifier'
           required: true
           deprecated: false
-          allowEmptyValue: false
           schema:
             type: string
           style: simple
           explode: false
-          allowReserved: false
           example: 2b10b7a3-67f0-40ea-a367-44263321592a
       deprecated: false
     put:
@@ -824,10 +798,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  confirmed: { type: boolean, maxLength: null, format: null }
-                  email: { type: string, maxLength: null, format: null }
-                  initials: { type: string, maxLength: null, format: null }
-                  id: { type: string, maxLength: null, format: null }
+                  confirmed: { type: boolean }
+                  email: { type: string }
+                  initials: { type: string }
+                  id: { type: string }
                 required:
                   - confirmed
                   - email
@@ -846,10 +820,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -868,10 +842,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -890,11 +864,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  violations: { type: array, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  violations: { type: array, items: { type: object } }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -906,9 +880,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'some_property: This value should not be blank.'
                 violations:
-                  propertyPath: some_property
-                  message: 'This value should not be blank.'
-                  code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
+                  - { propertyPath: some_property, message: 'This value should not be blank.', code: c1051bb4-d103-4f74-8988-acbcafc7fdc3 }
                 status: 422
           headers: {  }
         '500':
@@ -918,10 +890,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -942,12 +914,10 @@ paths:
           description: 'User identifier'
           required: true
           deprecated: false
-          allowEmptyValue: false
           schema:
             type: string
           style: simple
           explode: false
-          allowReserved: false
           example: 2b10b7a3-67f0-40ea-a367-44263321592a
       requestBody:
         content:
@@ -962,15 +932,12 @@ paths:
                 initials:
                   type: string
                   maxLength: 255
-                  format: null
                 oldPassword:
                   type: string
                   maxLength: 255
-                  format: null
                 newPassword:
                   type: string
                   maxLength: 255
-                  format: null
               required:
                 - email
                 - initials
@@ -992,7 +959,7 @@ paths:
           description: 'User resource deleted'
           content:
             application/json:
-              example: ''
+              example: {  }
           headers: {  }
         '404':
           description: 'User not found'
@@ -1001,10 +968,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -1023,10 +990,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -1047,12 +1014,10 @@ paths:
           description: 'User identifier'
           required: true
           deprecated: false
-          allowEmptyValue: false
           schema:
             type: string
           style: simple
           explode: false
-          allowReserved: false
           example: 2b10b7a3-67f0-40ea-a367-44263321592a
       deprecated: false
     patch:
@@ -1067,10 +1032,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  confirmed: { type: boolean, maxLength: null, format: null }
-                  email: { type: string, maxLength: null, format: null }
-                  initials: { type: string, maxLength: null, format: null }
-                  id: { type: string, maxLength: null, format: null }
+                  confirmed: { type: boolean }
+                  email: { type: string }
+                  initials: { type: string }
+                  id: { type: string }
                 required:
                   - confirmed
                   - email
@@ -1089,10 +1054,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -1111,10 +1076,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -1133,11 +1098,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  violations: { type: array, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  violations: { type: array, items: { type: object } }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -1149,9 +1114,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'some_property: This value should not be blank.'
                 violations:
-                  propertyPath: some_property
-                  message: 'This value should not be blank.'
-                  code: c1051bb4-d103-4f74-8988-acbcafc7fdc3
+                  - { propertyPath: some_property, message: 'This value should not be blank.', code: c1051bb4-d103-4f74-8988-acbcafc7fdc3 }
                 status: 422
           headers: {  }
         '500':
@@ -1161,10 +1124,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -1185,12 +1148,10 @@ paths:
           description: 'User identifier'
           required: true
           deprecated: false
-          allowEmptyValue: false
           schema:
             type: string
           style: simple
           explode: false
-          allowReserved: false
           example: 2b10b7a3-67f0-40ea-a367-44263321592a
       requestBody:
         content:
@@ -1205,15 +1166,12 @@ paths:
                 initials:
                   type: string
                   maxLength: 255
-                  format: null
                 oldPassword:
                   type: string
                   maxLength: 255
-                  format: null
                 newPassword:
                   type: string
                   maxLength: 255
-                  format: null
               required:
                 - oldPassword
             example:
@@ -1233,7 +1191,7 @@ paths:
           description: 'Email was send again'
           content:
             application/json:
-              example: ''
+              example: {  }
           headers: {  }
         '404':
           description: 'User not found'
@@ -1242,10 +1200,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -1264,10 +1222,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -1286,10 +1244,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -1310,12 +1268,10 @@ paths:
           description: 'User identifier'
           required: true
           deprecated: false
-          allowEmptyValue: false
           schema:
             type: string
           style: simple
           explode: false
-          allowReserved: false
           example: 2b10b7a3-67f0-40ea-a367-44263321592a
       requestBody:
         description: 'This operation does not expect a body.'
@@ -1369,10 +1325,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -1444,10 +1400,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: { type: string, maxLength: null, format: null }
-                  title: { type: string, maxLength: null, format: null }
-                  detail: { type: string, maxLength: null, format: null }
-                  status: { type: integer, maxLength: null, format: null }
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
                 required:
                   - type
                   - title
@@ -1946,16 +1902,6 @@ components:
   requestBodies: {  }
   headers: {  }
   securitySchemes:
-    oauth:
-      type: oauth2
-      description: 'OAuth 2.0 application Grant'
-      flows:
-        clientCredentials:
-          authorizationUrl: /api/oauth/authorize
-          tokenUrl: /api/oauth/token
-          scopes:
-            email: 'This scope value requests access to the email'
-            profile: 'This scope value requests access to the user profile'
     OAuth2:
       type: oauth2
       flows:
@@ -1970,9 +1916,15 @@ security:
     OAuth2: []
 tags:
   -
-    name: 'User reset password'
-  -
     name: HealthCheck
+    description: 'Service health monitoring endpoints'
+  -
+    name: OAuth
+    description: 'OAuth 2.0 authorization and token endpoints'
   -
     name: User
+    description: 'User account management operations'
+  -
+    name: 'User reset password'
+    description: 'Password reset workflows'
 webhooks: {  }

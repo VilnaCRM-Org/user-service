@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Shared\Application\Validator;
 
 use App\Shared\Application\Validator\Initials;
 use App\Tests\Unit\UnitTestCase;
+use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Regex;
 
@@ -14,9 +15,9 @@ final class InitialsConstraintTest extends UnitTestCase
     public function testGetConstraintsReturnsCorrectMaxLength(): void
     {
         $initialsConstraint = new Initials();
-        $constraints = $this->getConstraintsFromInitials($initialsConstraint);
-
-        $lengthConstraint = $this->findLengthConstraint($constraints);
+        $lengthConstraint = $this->findLengthConstraint(
+            $this->getConstraintsFromInitials($initialsConstraint)
+        );
         $this->assertInstanceOf(Length::class, $lengthConstraint);
         $this->assertSame(255, $lengthConstraint->max);
     }
@@ -24,9 +25,9 @@ final class InitialsConstraintTest extends UnitTestCase
     public function testGetConstraintsReturnsNoSpacesRegexPattern(): void
     {
         $initialsConstraint = new Initials();
-        $constraints = $this->getConstraintsFromInitials($initialsConstraint);
-
-        $regexConstraint = $this->findRegexConstraint($constraints);
+        $regexConstraint = $this->findRegexConstraint(
+            $this->getConstraintsFromInitials($initialsConstraint)
+        );
         $this->assertInstanceOf(Regex::class, $regexConstraint);
         $this->assertSame('/^\S+$/', $regexConstraint->pattern);
         $this->assertSame('initials.spaces', $regexConstraint->message);
@@ -35,9 +36,9 @@ final class InitialsConstraintTest extends UnitTestCase
     public function testMaxLengthBoundaryExactly255Characters(): void
     {
         $initialsConstraint = new Initials();
-        $constraints = $this->getConstraintsFromInitials($initialsConstraint);
-
-        $lengthConstraint = $this->findLengthConstraint($constraints);
+        $lengthConstraint = $this->findLengthConstraint(
+            $this->getConstraintsFromInitials($initialsConstraint)
+        );
 
         // Testing that max is exactly 255, not 254 or 256
         $this->assertSame(255, $lengthConstraint->max);
@@ -48,12 +49,15 @@ final class InitialsConstraintTest extends UnitTestCase
     public function testLengthConstraintMessage(): void
     {
         $initialsConstraint = new Initials();
-        $constraints = $this->getConstraintsFromInitials($initialsConstraint);
-
-        $lengthConstraint = $this->findLengthConstraint($constraints);
+        $lengthConstraint = $this->findLengthConstraint(
+            $this->getConstraintsFromInitials($initialsConstraint)
+        );
         $this->assertSame('initials.invalid.length', $lengthConstraint->maxMessage);
     }
 
+    /**
+     * @return array<int, Constraint>
+     */
     private function getConstraintsFromInitials(Initials $initials): array
     {
         $reflection = new \ReflectionClass($initials);
@@ -63,21 +67,37 @@ final class InitialsConstraintTest extends UnitTestCase
         return $method->invoke($initials, []);
     }
 
-    private function findLengthConstraint(array $constraints): ?Length
+    /**
+     * @param iterable<Constraint> $constraints
+     */
+    private function findLengthConstraint(iterable $constraints): ?Length
     {
-        foreach ($constraints as $constraint) {
-            if ($constraint instanceof Length) {
-                return $constraint;
-            }
-        }
-
-        return null;
+        return $this->findConstraint(
+            $constraints,
+            static fn (Constraint $constraint) => $constraint instanceof Length
+        );
     }
 
-    private function findRegexConstraint(array $constraints): ?Regex
+    /**
+     * @param iterable<Constraint> $constraints
+     */
+    private function findRegexConstraint(iterable $constraints): ?Regex
     {
+        return $this->findConstraint(
+            $constraints,
+            static fn (Constraint $constraint) => $constraint instanceof Regex
+        );
+    }
+
+    /**
+     * @param iterable<Constraint> $constraints
+     */
+    private function findConstraint(
+        iterable $constraints,
+        callable $matcher
+    ): ?Constraint {
         foreach ($constraints as $constraint) {
-            if ($constraint instanceof Regex) {
+            if ($matcher($constraint)) {
                 return $constraint;
             }
         }

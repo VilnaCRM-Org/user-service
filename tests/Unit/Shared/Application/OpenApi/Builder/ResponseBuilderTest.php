@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\OpenApi\Builder;
 
-use ApiPlatform\OpenApi\Model\Header as ApiPlatformHeader;
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Application\OpenApi\Builder\ContextBuilder;
 use App\Shared\Application\OpenApi\Builder\Header;
@@ -129,15 +128,23 @@ final class ResponseBuilderTest extends UnitTestCase
 
     private function getExpectedHeaders(): \ArrayObject
     {
+        $schema = ['type' => $this->headerType];
+
+        if ($this->headerFormat !== '') {
+            $schema['format'] = $this->headerFormat;
+        }
+
+        $header = [
+            'description' => $this->headerDescription,
+            'schema' => $schema,
+        ];
+
+        if ($this->headerExample !== '') {
+            $header['example'] = $this->headerExample;
+        }
+
         return new \ArrayObject([
-            $this->headerName => new ApiPlatformHeader(
-                description: $this->headerDescription,
-                schema: [
-                    'type' => $this->headerType,
-                    'format' => $this->headerFormat,
-                    'example' => $this->headerExample,
-                ],
-            ),
+            $this->headerName => $header,
         ]);
     }
 }

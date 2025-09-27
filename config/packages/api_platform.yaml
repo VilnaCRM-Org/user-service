@@ -10,6 +10,10 @@ api_platform:
 
   openapi:
     overrideResponses: false
+    contact:
+      name: 'VilnaCRM Support'
+      url: 'https://vilnacrm.com'
+      email: 'support@vilnacrm.com'
 
   defaults:
     extra_properties:
@@ -27,28 +31,4 @@ api_platform:
     jsonproblem: ['application/problem+json']
 
   oauth:
-    # To enable or disable OAuth.
-    enabled: true
-
-    # The OAuth client ID.
-    clientId: ''
-
-    # The OAuth client secret.
-    clientSecret: ''
-
-    # The OAuth type.
-    type: 'oauth2'
-
-    # The OAuth flow grant type.
-    flow: 'application'
-
-    # The OAuth token url.
-    tokenUrl: '/api/oauth/token'
-
-    # The OAuth authentication url.
-    authorizationUrl: '/api/oauth/authorize'
-
-    # The OAuth scopes.
-    scopes:
-      email: 'This scope value requests access to the email'
-      profile: 'This scope value requests access to the user profile'
+    enabled: false

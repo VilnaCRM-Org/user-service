@@ -39,11 +39,17 @@ final class ValidationErrorResponseFactoryTest extends UnitTestCase
 
     private function getViolationsParam(): Parameter
     {
-        return new Parameter('violations', 'array', [
-            'propertyPath' => 'some_property',
-            'message' => 'This value should not be blank.',
-            'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
-        ]);
+        return new Parameter(
+            'violations',
+            'array',
+            [
+                [
+                    'propertyPath' => 'some_property',
+                    'message' => 'This value should not be blank.',
+                    'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+                ],
+            ]
+        );
     }
 
     private function getTypeParam(): Parameter
