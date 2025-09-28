@@ -6,10 +6,13 @@ info:
     name: 'VilnaCRM Support'
     url: 'https://vilnacrm.com'
     email: support@vilnacrm.com
+  license:
+    name: 'VilnaCRM Proprietary'
+    url: 'https://vilnacrm.com/legal/license'
   version: 1.0.0
 servers:
   -
-    url: 'https://api.vilnacrm.com'
+    url: 'https://localhost'
     description: ''
 paths:
   /api/health:
@@ -1904,6 +1907,7 @@ components:
   securitySchemes:
     OAuth2:
       type: oauth2
+      description: 'OAuth2 Authorization Code flow securing VilnaCRM API.'
       flows:
         authorizationCode:
           authorizationUrl: 'https://localhost/api/oauth/dialog'

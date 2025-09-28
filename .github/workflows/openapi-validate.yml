@@ -1,0 +1,17 @@
+name: Validate OpenAPI Spec
+
+on:
+  pull_request:
+    branches: ['main']
+
+jobs:
+  validate-openapi:
+    name: Spectral Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Validate OpenAPI spec
+        run: make validate-openapi-spec

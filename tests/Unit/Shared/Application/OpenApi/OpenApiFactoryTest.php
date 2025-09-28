@@ -161,6 +161,7 @@ final class OpenApiFactoryTest extends UnitTestCase
     /**
      * @return array{
      *     type: string,
+     *     description: string,
      *     flows: array{
      *         authorizationCode: array{
      *             authorizationUrl: string,
@@ -174,6 +175,7 @@ final class OpenApiFactoryTest extends UnitTestCase
     {
         return [
             'type' => 'oauth2',
+            'description' => 'OAuth2 Authorization Code flow securing VilnaCRM API.',
             'flows' => [
                 'authorizationCode' => [
                     'authorizationUrl' => 'https://localhost/api/oauth/dialog',

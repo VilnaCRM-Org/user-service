@@ -16,6 +16,9 @@ use ArrayObject;
 
 final class OpenApiFactory implements OpenApiFactoryInterface
 {
+    private const OAUTH2_DESCRIPTION
+        = 'OAuth2 Authorization Code flow securing VilnaCRM API.';
+
     /**
      * @param iterable<AbstractEndpointFactory> $endpointFactories
      */
@@ -82,6 +85,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     {
         return [
             'type' => 'oauth2',
+            'description' => self::OAUTH2_DESCRIPTION,
             'flows' => [
                 'authorizationCode' => $this->createOAuth2CodeFlow(),
             ],

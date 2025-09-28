@@ -160,6 +160,9 @@ execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
 build-k6-docker:
 	$(DOCKER) build -t k6 -f ./tests/Load/Dockerfile .
 
+build-spectral-docker:
+	$(DOCKER) build -t user-service-spectral -f ./docker/spectral/Dockerfile .
+
 infection: ## Run mutations test.
 	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations -j8 --min-msi=100 --min-covered-msi=100
 
@@ -206,7 +209,7 @@ logs: ## Show all logs
 new-logs: ## Show live logs
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
-start: up doctrine-migrations-migrate build-k6-docker ## Start docker
+start: up doctrine-migrations-migrate build-k6-docker build-spectral-docker ## Start docker
 
 ps: ## Check docker containers
 	$(DOCKER_COMPOSE) ps
@@ -233,6 +236,12 @@ coverage-xml: ## Create the code coverage report with PHPUnit
 
 generate-openapi-spec:
 	$(EXEC_PHP) php bin/console api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml
+
+validate-openapi-spec: generate-openapi-spec build-spectral-docker ## Generate and lint the OpenAPI spec with Spectral
+	./scripts/validate-openapi-spec.sh
+
+openapi-diff: generate-openapi-spec ## Compare the generated OpenAPI spec against the base reference using OpenAPI Diff
+	./scripts/openapi-diff.sh $(or $(base_ref),origin/main)
 
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec
@@ -268,6 +277,10 @@ ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	if ! make behat; then failed_checks="$$failed_checks\n❌ Behat e2e tests"; fi; \
 	echo "🔟 Running mutation testing with Infection..."; \
 	if ! make infection; then failed_checks="$$failed_checks\n❌ mutation testing"; fi; \
+	echo "1️⃣1️⃣ Validating OpenAPI specification..."; \
+	if ! make validate-openapi-spec; then failed_checks="$$failed_checks\n❌ OpenAPI Spectral validation"; fi; \
+	echo "1️⃣2️⃣ Checking OpenAPI backward compatibility..."; \
+	if ! make openapi-diff; then failed_checks="$$failed_checks\n❌ OpenAPI diff"; fi; \
 	if [ -n "$$failed_checks" ]; then \
 		echo ""; \
 		echo "💥 CI checks completed with failures:"; \
