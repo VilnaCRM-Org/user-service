@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\Validator;
 
 use App\Shared\Application\Validator\CreateUserBatch;
+use App\Shared\Application\Validator\CreateUserBatchConstraintEvaluator;
 use App\Shared\Application\Validator\CreateUserBatchValidator;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\Validator\Constraint;
@@ -18,74 +19,63 @@ final class CreateUserBatchValidatorTest extends UnitTestCase
     private ExecutionContextInterface $context;
     private CreateUserBatchValidator $validator;
     private Constraint $constraint;
+    private CreateUserBatchConstraintEvaluator $constraintEvaluator;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->translator = $this->createMock(TranslatorInterface::class);
         $this->context = $this->createMock(ExecutionContextInterface::class);
-        $this->validator = new CreateUserBatchValidator($this->translator);
+        $this->constraintEvaluator = $this->createMock(CreateUserBatchConstraintEvaluator::class);
+        $this->validator = new CreateUserBatchValidator($this->translator, $this->constraintEvaluator);
         $this->validator->initialize($this->context);
         $this->constraint = $this->createMock(CreateUserBatch::class);
     }
 
-    public function testValidateEmptyBatch(): void
+    public function testAddsViolationsReturnedByEvaluator(): void
     {
-        $message = $this->faker->word();
-        $this->translator->method('trans')
-            ->with('batch.empty')
-            ->willReturn($message);
+        $messages = ['batch.empty', 'batch.email.duplicate'];
+        $translated = [$this->faker->sentence(), $this->faker->sentence()];
 
-        $violationBuilder =
-            $this->createMock(ConstraintViolationBuilderInterface::class);
-        $this->context->expects($this->once())
-            ->method('buildViolation')
-            ->with($message)
-            ->willReturn($violationBuilder);
+        $this->constraintEvaluator->expects($this->once())
+            ->method('evaluate')
+            ->with('value')
+            ->willReturn($messages);
 
-        $violationBuilder->expects($this->once())
+        $this->translator->expects($this->exactly(2))
+            ->method('trans')
+            ->withConsecutive([$messages[0]], [$messages[1]])
+            ->willReturnOnConsecutiveCalls($translated[0], $translated[1]);
+
+        $firstBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
+        $firstBuilder->expects($this->once())
             ->method('addViolation');
 
-        $this->validator->validate([], $this->constraint);
+        $secondBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
+        $secondBuilder->expects($this->once())
+            ->method('addViolation');
+
+        $this->context->expects($this->exactly(2))
+            ->method('buildViolation')
+            ->withConsecutive([$translated[0]], [$translated[1]])
+            ->willReturnOnConsecutiveCalls($firstBuilder, $secondBuilder);
+
+        $this->validator->validate('value', $this->constraint);
     }
 
-    public function testValidateUniqueEmails(): void
+    public function testSkipsViolationsWhenEvaluatorReturnsNoMessages(): void
     {
+        $this->constraintEvaluator->expects($this->once())
+            ->method('evaluate')
+            ->with('value')
+            ->willReturn([]);
+
+        $this->translator->expects($this->never())
+            ->method('trans');
+
         $this->context->expects($this->never())
             ->method('buildViolation');
 
-        $users = [
-            ['email' => 'user1@example.com'],
-            ['email' => 'user2@example.com'],
-            ['email' => 'user3@example.com'],
-        ];
-
-        $this->validator->validate($users, $this->constraint);
-    }
-
-    public function testValidateDuplicateEmails(): void
-    {
-        $message = $this->faker->word();
-        $this->translator->method('trans')
-            ->with('batch.email.duplicate')
-            ->willReturn($message);
-
-        $violationBuilder =
-            $this->createMock(ConstraintViolationBuilderInterface::class);
-        $this->context->expects($this->once())
-            ->method('buildViolation')
-            ->with($message)
-            ->willReturn($violationBuilder);
-
-        $violationBuilder->expects($this->once())
-            ->method('addViolation');
-
-        $users = [
-            ['email' => 'user1@example.com'],
-            ['email' => 'user2@example.com'],
-            ['email' => 'user1@example.com'],
-        ];
-
-        $this->validator->validate($users, $this->constraint);
+        $this->validator->validate('value', $this->constraint);
     }
 }

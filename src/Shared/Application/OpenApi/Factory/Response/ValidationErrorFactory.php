@@ -26,7 +26,8 @@ final class ValidationErrorFactory implements AbstractResponseFactory
                 $this->getViolationsParam(),
                 $this->getStatusParam(),
             ],
-            []
+            [],
+            'application/problem+json'
         );
     }
 

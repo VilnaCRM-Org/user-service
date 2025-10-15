@@ -17,14 +17,14 @@ final class RequestBuilder
      */
     public function build(
         array $params,
-        bool $required = true,
+        Requirement $requirement = Requirement::REQUIRED,
         string $contentType = 'application/json'
     ): RequestBody {
         $content = $this->contextBuilder->build($params, $contentType);
 
         return new RequestBody(
             content: $content,
-            required: $required
+            required: $requirement->toBool()
         );
     }
 }

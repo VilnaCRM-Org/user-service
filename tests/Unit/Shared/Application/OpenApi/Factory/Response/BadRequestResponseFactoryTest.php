@@ -22,7 +22,9 @@ final class BadRequestResponseFactoryTest extends UnitTestCase
             ->method('build')
             ->with(
                 'Bad request',
-                $this->getParams()
+                $this->getParams(),
+                [],
+                'application/problem+json'
             )
             ->willReturn(new Response());
 

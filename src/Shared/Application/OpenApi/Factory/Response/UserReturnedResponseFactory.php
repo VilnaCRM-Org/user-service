@@ -51,7 +51,7 @@ final class UserReturnedResponseFactory implements AbstractResponseFactory
         return new Parameter(
             'initials',
             'string',
-            'Name Surname'
+            'NameSurname'
         );
     }
 

@@ -10,6 +10,8 @@ use ApiPlatform\OpenApi\Model\Components;
 use ApiPlatform\OpenApi\Model\Tag;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory;
+use App\Shared\Application\OpenApi\Processor\NoContentResponseCleaner;
+use App\Shared\Application\OpenApi\Processor\PaginationQueryParametersSanitizer;
 use App\Shared\Application\OpenApi\Processor\PathParametersSanitizer;
 use App\Shared\Application\OpenApi\Processor\ServerErrorResponseAugmenter;
 use ArrayObject;
@@ -18,6 +20,9 @@ final class OpenApiFactory implements OpenApiFactoryInterface
 {
     private const OAUTH2_DESCRIPTION
         = 'OAuth2 Authorization Code flow securing VilnaCRM API.';
+    private const OAUTH_CLIENT_BASIC_DESCRIPTION
+        = 'HTTP Basic authentication for OAuth client credentials.';
+    private PaginationQueryParametersSanitizer $paginationSanitizer;
 
     /**
      * @param iterable<AbstractEndpointFactory> $endpointFactories
@@ -27,8 +32,11 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         private iterable $endpointFactories,
         private string $serverUrl,
         private PathParametersSanitizer $pathParametersSanitizer,
-        private ServerErrorResponseAugmenter $serverErrorResponseAugmenter
+        private ServerErrorResponseAugmenter $serverErrorResponseAugmenter,
+        PaginationQueryParametersSanitizer $paginationQueryParametersSanitizer,
+        private NoContentResponseCleaner $noContentResponseCleaner
     ) {
+        $this->paginationSanitizer = $paginationQueryParametersSanitizer;
     }
 
     /**
@@ -47,6 +55,8 @@ final class OpenApiFactory implements OpenApiFactoryInterface
 
         $this->serverErrorResponseAugmenter->augment($openApi);
         $openApi = $this->pathParametersSanitizer->sanitize($openApi);
+        $openApi = $this->paginationSanitizer->sanitize($openApi);
+        $openApi = $this->noContentResponseCleaner->clean($openApi);
 
         return $openApi->withServers([
             new Model\Server($this->serverUrl),
@@ -61,6 +71,11 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $securitySchemes = $components->getSecuritySchemes()
             ?? new ArrayObject();
         $securitySchemes['OAuth2'] = $this->createOAuth2Scheme();
+        $securitySchemes['OAuthClientBasic'] = [
+            'type' => 'http',
+            'scheme' => 'basic',
+            'description' => self::OAUTH_CLIENT_BASIC_DESCRIPTION,
+        ];
 
         return $components->withSecuritySchemes($securitySchemes);
     }

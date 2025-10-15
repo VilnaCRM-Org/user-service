@@ -8,9 +8,9 @@ final readonly class ConfirmPasswordResetDto
 {
     public function __construct(
         #[\SensitiveParameter]
-        public ?string $token = null,
+        public string $token = '',
         #[\SensitiveParameter]
-        public ?string $newPassword = null
+        public string $newPassword = ''
     ) {
     }
 }

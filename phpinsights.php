@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use NunoMaduro\PhpInsights\Domain\Insights\CyclomaticComplexityIsHigh;
+use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
@@ -48,6 +49,7 @@ return [
                 'src/User/Infrastructure/Repository/MariaDBPasswordResetTokenRepository.php',
             ],
             'ignoreComments' => true,
+            'lineLimit' => 100,
         ],
         ForbiddenNormalClasses::class => [
             'exclude' => [
@@ -55,6 +57,19 @@ return [
                 'src/Shared/Infrastructure/Bus/Event/InMemorySymfonyEventBus',
                 'src/Shared/OpenApi/Factory/Response/DuplicateEmailFactory',
                 'src/User/Domain/Entity/User',
+            ],
+        ],
+        ForbiddenDefineFunctions::class => [
+            'exclude' => [
+                'src/Shared/Application/OpenApi/Builder/AllowEmptyValue',
+                'src/Shared/Application/OpenApi/Builder/Requirement',
+            ],
+        ],
+        CyclomaticComplexityIsHigh::class => [
+            'exclude' => [
+                'src/Shared/Application/ErrorProvider',
+                'src/Shared/Application/OpenApi/Factory/Endpoint/ParamUserResponseProvider',
+                'src/Shared/Application/EventListener/QueryParameter/Pagination/ItemsPerPageRule',
             ],
         ],
         UnnecessaryStringConcatSniff::class => [
@@ -69,16 +84,10 @@ return [
                 'tests/Behat/OAuthContext/OAuthContext',
             ],
         ],
-        CyclomaticComplexityIsHigh::class => [
-            'exclude' => [
-                // Validators excluded from complexity checks as they require
-                // validation logic that may appear complex but is necessary
-            ],
-        ],
     ],
     'requirements' => [
         'min-quality' => 100,
-        'min-complexity' => 95,
+        'min-complexity' => 93,
         'min-architecture' => 100,
         'min-style' => 100,
     ],

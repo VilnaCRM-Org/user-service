@@ -9,9 +9,11 @@ use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Request\ConfirmUserRequestFactory;
+use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\TokenNotFoundFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserConfirmedFactory;
-use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
+use Symfony\Component\HttpFoundation\Response as Http;
 
 final class ConfirmUserEndpointFactory implements AbstractEndpointFactory
 {
@@ -19,13 +21,17 @@ final class ConfirmUserEndpointFactory implements AbstractEndpointFactory
 
     private Response $userConfirmedResponse;
     private Response $notFoundResponse;
+    private Response $validationErrorResponse;
+    private Response $badRequestResponse;
 
     private RequestBody $confirmUserRequest;
 
     public function __construct(
         string $apiPrefix,
         private TokenNotFoundFactory $tokenNotFoundResponseFactory,
+        private BadRequestResponseFactory $badRequestResponseFactory,
         private UserConfirmedFactory $userConfirmedResponseFactory,
+        private ValidationErrorFactory $validationErrorFactory,
         private ConfirmUserRequestFactory $confirmUserRequestFactory
     ) {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
@@ -33,6 +39,10 @@ final class ConfirmUserEndpointFactory implements AbstractEndpointFactory
             $this->userConfirmedResponseFactory->getResponse();
         $this->notFoundResponse =
             $this->tokenNotFoundResponseFactory->getResponse();
+        $this->validationErrorResponse =
+            $this->validationErrorFactory->getResponse();
+        $this->badRequestResponse =
+            $badRequestResponseFactory->getResponse();
         $this->confirmUserRequest =
             $this->confirmUserRequestFactory->getRequest();
     }
@@ -54,13 +64,17 @@ final class ConfirmUserEndpointFactory implements AbstractEndpointFactory
 
     private function getPatchOperation(Operation $operation): Operation
     {
+        $validationResponse = $this->validationErrorResponse;
+
         return $operation
             ->withDescription('Confirms the User')
             ->withSummary('Confirms the User')
             ->withResponses(
                 [
-                    HttpResponse::HTTP_OK => $this->userConfirmedResponse,
-                    HttpResponse::HTTP_NOT_FOUND => $this->notFoundResponse,
+                    Http::HTTP_OK => $this->userConfirmedResponse,
+                    Http::HTTP_BAD_REQUEST => $this->badRequestResponse,
+                    Http::HTTP_NOT_FOUND => $this->notFoundResponse,
+                    Http::HTTP_UNPROCESSABLE_ENTITY => $validationResponse,
                 ],
             );
     }

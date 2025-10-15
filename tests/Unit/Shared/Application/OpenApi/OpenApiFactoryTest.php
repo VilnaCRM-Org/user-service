@@ -13,6 +13,8 @@ use ApiPlatform\OpenApi\Model\Tag;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory;
 use App\Shared\Application\OpenApi\OpenApiFactory;
+use App\Shared\Application\OpenApi\Processor\NoContentResponseCleaner;
+use App\Shared\Application\OpenApi\Processor\PaginationQueryParametersSanitizer;
 use App\Shared\Application\OpenApi\Processor\PathParametersSanitizer;
 use App\Shared\Application\OpenApi\Processor\ServerErrorResponseAugmenter;
 use App\Tests\Unit\UnitTestCase;
@@ -26,6 +28,8 @@ final class OpenApiFactoryTest extends UnitTestCase
     private AbstractEndpointFactory&MockObject $endpointFactoryTwo;
     private PathParametersSanitizer&MockObject $pathParametersSanitizer;
     private ServerErrorResponseAugmenter&MockObject $errorResponseAugmenter;
+    private PaginationQueryParametersSanitizer&MockObject $paginationQueryParametersSanitizer;
+    private NoContentResponseCleaner&MockObject $noContentResponseCleaner;
 
     protected function setUp(): void
     {
@@ -41,6 +45,10 @@ final class OpenApiFactoryTest extends UnitTestCase
             $this->createMock(PathParametersSanitizer::class);
         $this->errorResponseAugmenter =
             $this->createMock(ServerErrorResponseAugmenter::class);
+        $this->paginationQueryParametersSanitizer =
+            $this->createMock(PaginationQueryParametersSanitizer::class);
+        $this->noContentResponseCleaner =
+            $this->createMock(NoContentResponseCleaner::class);
     }
 
     public function testInvokeDecoratesOpenApiDocument(): void
@@ -65,6 +73,16 @@ final class OpenApiFactoryTest extends UnitTestCase
 
         $this->pathParametersSanitizer->expects($this->once())
             ->method('sanitize')
+            ->with($this->isInstanceOf(OpenApi::class))
+            ->willReturnCallback(static fn (OpenApi $document) => $document);
+
+        $this->paginationQueryParametersSanitizer->expects($this->once())
+            ->method('sanitize')
+            ->with($this->isInstanceOf(OpenApi::class))
+            ->willReturnCallback(static fn (OpenApi $document) => $document);
+
+        $this->noContentResponseCleaner->expects($this->once())
+            ->method('clean')
             ->with($this->isInstanceOf(OpenApi::class))
             ->willReturnCallback(static fn (OpenApi $document) => $document);
 
@@ -95,13 +113,25 @@ final class OpenApiFactoryTest extends UnitTestCase
             ->with($this->isInstanceOf(OpenApi::class))
             ->willReturnCallback(static fn (OpenApi $document) => $document);
 
+        $this->paginationQueryParametersSanitizer->expects($this->once())
+            ->method('sanitize')
+            ->with($this->isInstanceOf(OpenApi::class))
+            ->willReturnCallback(static fn (OpenApi $document) => $document);
+
+        $this->noContentResponseCleaner->expects($this->once())
+            ->method('clean')
+            ->with($this->isInstanceOf(OpenApi::class))
+            ->willReturnCallback(static fn (OpenApi $document) => $document);
+
         $factory = $this->createFactory([]);
 
         $result = $factory->__invoke([]);
 
         $components = $result->getComponents();
         $this->assertNotNull($components);
-        $this->assertArrayHasKey('OAuth2', $components->getSecuritySchemes());
+        $schemes = $components->getSecuritySchemes();
+        $this->assertArrayHasKey('OAuth2', $schemes);
+        $this->assertArrayHasKey('OAuthClientBasic', $schemes);
     }
 
     /**
@@ -117,7 +147,9 @@ final class OpenApiFactoryTest extends UnitTestCase
             ],
             getenv('API_URL'),
             $this->pathParametersSanitizer,
-            $this->errorResponseAugmenter
+            $this->errorResponseAugmenter,
+            $this->paginationQueryParametersSanitizer,
+            $this->noContentResponseCleaner
         );
     }
 
@@ -135,6 +167,11 @@ final class OpenApiFactoryTest extends UnitTestCase
         $components = $base->getComponents() ?? new Components();
         $securitySchemes = $components->getSecuritySchemes() ?? new ArrayObject();
         $securitySchemes['OAuth2'] = $this->createOAuth2Scheme();
+        $securitySchemes['OAuthClientBasic'] = [
+            'type' => 'http',
+            'scheme' => 'basic',
+            'description' => 'HTTP Basic authentication for OAuth client credentials.',
+        ];
 
         return $base
             ->withComponents($components->withSecuritySchemes($securitySchemes))

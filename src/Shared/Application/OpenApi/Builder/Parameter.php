@@ -9,10 +9,18 @@ final readonly class Parameter
     public function __construct(
         public string $name,
         public string $type,
-        public string|int|array|bool $example,
+        public string|int|array|bool|null $example,
         public ?int $maxLength = null,
         public ?string $format = null,
-        public bool $required = true
+        public Requirement $requirement = Requirement::REQUIRED,
+        public ?string $pattern = null,
+        public ?int $minItems = null,
+        public ?array $enum = null
     ) {
+    }
+
+    public function isRequired(): bool
+    {
+        return $this->requirement->toBool();
     }
 }

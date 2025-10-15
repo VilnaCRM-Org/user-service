@@ -6,6 +6,7 @@ namespace App\User\Domain\Factory;
 
 use App\User\Domain\Entity\PasswordResetToken;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
+use DateTimeImmutable;
 
 final readonly class PasswordResetTokenFactory implements
     PasswordResetTokenFactoryInterface
@@ -18,7 +19,7 @@ final readonly class PasswordResetTokenFactory implements
 
     public function create(string $userID): PasswordResetTokenInterface
     {
-        $createdAt = new \DateTimeImmutable();
+        $createdAt = new DateTimeImmutable();
         $hourUnit = $this->getHourUnit();
         $expiresAt = $createdAt->modify(
             "+{$this->expirationTimeInHours} {$hourUnit}"

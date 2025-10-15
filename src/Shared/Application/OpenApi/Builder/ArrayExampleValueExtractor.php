@@ -8,20 +8,11 @@ final class ArrayExampleValueExtractor
 {
     public function extract(mixed $example): array|string|int|bool|null
     {
-        if (!is_array($example)) {
-            return null;
-        }
-
-        if ($example === []) {
-            return null;
-        }
-
-        if (array_is_list($example)) {
-            return $example[0] ?? null;
-        }
-
-        $firstKey = array_key_first($example);
-
-        return $firstKey === null ? null : $example[$firstKey];
+        return match (true) {
+            !is_array($example),
+            $example === [] => null,
+            array_is_list($example) => $example[0] ?? null,
+            default => reset($example),
+        };
     }
 }

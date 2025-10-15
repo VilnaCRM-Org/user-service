@@ -47,6 +47,8 @@ services:
       - !tagged_iterator 'app.event_subscriber'
     lazy: true
 
+  Ramsey\Uuid\Validator\GenericValidator: ~
+
   App\Shared\Application\OpenApi\OpenApiFactory:
     decorates: 'api_platform.openapi.factory'
     arguments:
@@ -54,6 +56,36 @@ services:
       - !tagged_iterator 'app.openapi_endpoint_factory'
       - '%env(API_URL)%'
     autoconfigure: false
+
+  App\Shared\Application\EventListener\MethodNotAllowedListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, priority: 120 }
+
+  App\Shared\Application\EventListener\InvalidUuidRequestListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, priority: 10 }
+
+  App\User\Application\CommandHandler\RequestPasswordResetCommandHandler:
+    arguments:
+      $rateLimitMaxRequests: '%env(int:PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS)%'
+      $rateLimitWindowHours: '%env(int:PASSWORD_RESET_RATE_LIMIT_WINDOW_HOURS)%'
+
+  App\Shared\Application\EventListener\QueryParameter\AllowedParametersRule:
+    arguments:
+      $allowedParameters:
+        '/api/users': ['page', 'itemsPerPage']
+    tags:
+      - { name: app.query_parameter_rule }
+
+  App\Shared\Application\EventListener\QueryParameter\Pagination\PaginationRule:
+    tags:
+      - { name: app.query_parameter_rule }
+
+  App\Shared\Application\EventListener\QueryParameterValidationListener:
+    arguments:
+      $rules: !tagged_iterator app.query_parameter_rule
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, priority: 5 }
 
   api_platform.state.error_provider:
     arguments: ['@Symfony\Contracts\Translation\TranslatorInterface']

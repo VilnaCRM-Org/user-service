@@ -10,6 +10,11 @@ use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 
 final class MessageBusFactory
 {
+    public function __construct(
+        private readonly CallableFirstParameterExtractor $extractor
+    ) {
+    }
+
     /**
      * @param iterable<object> $callables
      */
@@ -25,9 +30,7 @@ final class MessageBusFactory
     {
         return new HandleMessageMiddleware(
             new HandlersLocator(
-                CallableFirstParameterExtractor::forCallables(
-                    $callables
-                )
+                $this->extractor->forCallables($callables)
             )
         );
     }

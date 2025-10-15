@@ -22,7 +22,9 @@ final class InternalServerErrorResponseFactoryTest extends UnitTestCase
             ->method('build')
             ->with(
                 'Internal server error',
-                $this->getParams()
+                $this->getParams(),
+                [],
+                'application/problem+json'
             )
             ->willReturn(new Response());
 

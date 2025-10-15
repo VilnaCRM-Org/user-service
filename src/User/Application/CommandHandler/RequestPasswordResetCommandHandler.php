@@ -15,6 +15,7 @@ use App\User\Domain\Exception\PasswordResetRateLimitExceededException;
 use App\User\Domain\Factory\PasswordResetTokenFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use DateTimeImmutable;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 final readonly class RequestPasswordResetCommandHandler implements
@@ -53,7 +54,7 @@ final readonly class RequestPasswordResetCommandHandler implements
 
     private function checkRateLimit(string $email): void
     {
-        $since = new \DateTimeImmutable(
+        $since = new DateTimeImmutable(
             "-{$this->rateLimitWindowHours} hours"
         );
         $recentRequests = $this->tokenRepository->countRecentRequestsByEmail(

@@ -38,20 +38,27 @@ final class UserRegisteredBatchMessageHandler implements BatchHandlerInterface
     private function process(array $jobs): void
     {
         foreach ($jobs as [$message, $ack]) {
-            try {
-                $user = $message->user;
-                $this->userRepository->save($user);
-                $this->eventBus->publish(
-                    $this->registeredEventFactory->create(
-                        $user,
-                        (string) $this->uuidFactory->create()
-                    )
-                );
+            $this->handleJob($message, $ack);
+        }
+    }
 
-                $ack->ack($user);
-            } catch (\Throwable $e) {
-                $ack->nack($e);
-            }
+    private function handleJob(
+        UserRegisteredMessage $message,
+        Acknowledger $ack
+    ): void {
+        try {
+            $user = $message->user;
+            $this->userRepository->save($user);
+            $this->eventBus->publish(
+                $this->registeredEventFactory->create(
+                    $user,
+                    (string) $this->uuidFactory->create()
+                )
+            );
+
+            $ack->ack($user);
+        } catch (\Throwable $e) {
+            $ack->nack($e);
         }
     }
 }

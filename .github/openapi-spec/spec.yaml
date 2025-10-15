@@ -12,7 +12,7 @@ info:
   version: 1.0.0
 servers:
   -
-    url: 'https://api.vilnacrm.com'
+    url: 'https://localhost'
     description: ''
 paths:
   /api/health:
@@ -26,7 +26,7 @@ paths:
         '500':
           description: 'Internal server error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -57,6 +57,11 @@ paths:
       tags:
         - OAuth
       responses:
+        '200':
+          description: 'Redirect target served HTML response.'
+          content:
+            text/html:
+              example: '<!doctype html><html lang="en"><head><title>Example Domain</title></head><body><h1>Example Domain</h1></body></html>'
         '302':
           description: 'Redirect to the provided redirect URI with authorization code.'
           content:
@@ -68,7 +73,7 @@ paths:
               schema:
                 type: string
                 format: uri
-              example: 'https://example.com/oauth/callback?code=e7f8c62113a4'
+              example: 'https://example.com?code=e7f8c62113a4'
         '400':
           description: 'Unsupported grant type'
           content:
@@ -79,17 +84,14 @@ paths:
                   error: { type: string }
                   error_description: { type: string }
                   hint: { type: string }
-                  message: { type: string }
                 required:
                   - error
                   - error_description
                   - hint
-                  - message
               example:
                 error: unsupported_grant_type
                 error_description: 'The authorization grant type is not supported by the authorization server.'
                 hint: 'Check that all required parameters have been provided'
-                message: 'The authorization grant type is not supported by the authorization server.'
           headers: {  }
         '401':
           description: 'Invalid client credentials'
@@ -100,20 +102,17 @@ paths:
                 properties:
                   error: { type: string }
                   error_description: { type: string }
-                  message: { type: string }
                 required:
                   - error
                   - error_description
-                  - message
               example:
                 error: invalid_client
                 error_description: 'Client authentication failed'
-                message: 'Client authentication failed'
           headers: {  }
         '500':
           description: 'Internal server error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -144,6 +143,9 @@ paths:
           allowEmptyValue: false
           schema:
             type: string
+            minLength: 1
+            enum:
+              - code
           style: form
           explode: false
           allowReserved: false
@@ -157,6 +159,7 @@ paths:
           allowEmptyValue: false
           schema:
             type: string
+            minLength: 1
           style: form
           explode: false
           allowReserved: false
@@ -170,10 +173,11 @@ paths:
           allowEmptyValue: false
           schema:
             type: string
+            minLength: 1
           style: form
           explode: false
           allowReserved: false
-          example: 'https://example.com/oauth/callback'
+          example: 'https://example.com'
         -
           name: scope
           in: query
@@ -183,6 +187,7 @@ paths:
           allowEmptyValue: false
           schema:
             type: string
+            minLength: 1
           style: form
           explode: false
           allowReserved: false
@@ -196,6 +201,7 @@ paths:
           allowEmptyValue: false
           schema:
             type: string
+            minLength: 1
           style: form
           explode: false
           allowReserved: false
@@ -240,17 +246,14 @@ paths:
                   error: { type: string }
                   error_description: { type: string }
                   hint: { type: string }
-                  message: { type: string }
                 required:
                   - error
                   - error_description
                   - hint
-                  - message
               example:
                 error: unsupported_grant_type
                 error_description: 'The authorization grant type is not supported by the authorization server.'
                 hint: 'Check that all required parameters have been provided'
-                message: 'The authorization grant type is not supported by the authorization server.'
           headers: {  }
         '401':
           description: 'Invalid client credentials'
@@ -261,20 +264,17 @@ paths:
                 properties:
                   error: { type: string }
                   error_description: { type: string }
-                  message: { type: string }
                 required:
                   - error
                   - error_description
-                  - message
               example:
                 error: invalid_client
                 error_description: 'Client authentication failed'
-                message: 'Client authentication failed'
           headers: {  }
         '500':
           description: 'Internal server error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -294,7 +294,7 @@ paths:
                 status: 500
           headers: {  }
       summary: 'Exchange authorization data for tokens'
-      description: 'Exchanges an authorization code or refresh token for OAuth access and refresh tokens.'
+      description: 'Exchanges an authorization code, password credentials, or refresh token for OAuth access and refresh tokens.'
       requestBody:
         content:
           application/json:
@@ -303,31 +303,56 @@ paths:
               properties:
                 grant_type:
                   type: string
+                  pattern: ^(authorization_code|refresh_token|password)$
+                  enum: [password]
                 client_id:
                   type: string
+                  pattern: ^.+$
+                  enum: [dc0bc6323f16fecd4224a3860ca894c5]
                 client_secret:
                   type: string
+                  pattern: ^.+$
+                  enum: [8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7]
                 redirect_uri:
                   type: string
+                  format: uri
+                  pattern: '^https?://.+$'
+                  enum: ['https://example.com']
                 code:
                   type: string
+                  pattern: ^.+$
+                  enum: [e7f8c62113a47f7a5a9dca1f]
                 refresh_token:
                   type: string
+                  pattern: ^.+$
+                username:
+                  type: string
+                  pattern: ^.+$
+                  enum: [password-reset-confirm@example.com]
+                password:
+                  type: string
+                  pattern: ^.+$
+                  enum: [Password1!]
+                scope:
+                  type: string
+                  pattern: ^.+$
+                  enum: ['profile email']
               required:
                 - grant_type
-                - client_id
-                - client_secret
-                - redirect_uri
-                - code
-                - refresh_token
+                - username
+                - password
             example:
-              grant_type: authorization_code
+              grant_type: password
               client_id: dc0bc6323f16fecd4224a3860ca894c5
               client_secret: 8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7
-              redirect_uri: 'https://example.com/oauth/callback'
+              redirect_uri: 'https://example.com'
               code: e7f8c62113a47f7a5a9dca1f
               refresh_token: f7a5a9dca1fe7f8c62113a47
+              username: password-reset-confirm@example.com
+              password: Password1!
+              scope: 'profile email'
         required: true
+      security: []
   /api/users:
     get:
       operationId: api_users_get_collection
@@ -337,7 +362,7 @@ paths:
         '400':
           description: 'Bad request'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -370,13 +395,13 @@ paths:
                 -
                   confirmed: false
                   email: user@example.com
-                  initials: 'Name Surname'
+                  initials: NameSurname
                   id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
           headers: {  }
         '500':
           description: 'Internal server error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -404,10 +429,11 @@ paths:
           description: 'The collection page number'
           required: false
           deprecated: false
-          allowEmptyValue: true
+          allowEmptyValue: false
           schema:
             type: integer
             default: 1
+            minimum: 1
           style: form
           explode: false
           allowReserved: false
@@ -417,11 +443,11 @@ paths:
           description: 'The number of items per page'
           required: false
           deprecated: false
-          allowEmptyValue: true
+          allowEmptyValue: false
           schema:
             type: integer
             default: 30
-            minimum: 0
+            minimum: 1
           style: form
           explode: false
           allowReserved: false
@@ -449,14 +475,14 @@ paths:
                   - id
               example:
                 confirmed: false
-                email: user@example.com
-                initials: 'Name Surname'
-                id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
+                email: create-user@example.com
+                initials: CreateUser
+                id: 018dd6ba-e901-7a8c-b27d-65d122caca70
           headers: {  }
         '400':
           description: 'Bad request'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -478,7 +504,7 @@ paths:
         '422':
           description: 'Validation error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -504,7 +530,7 @@ paths:
         '500':
           description: 'Internal server error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -531,25 +557,30 @@ paths:
           application/json:
             schema:
               type: object
-              properties:
-                email:
-                  type: string
-                  maxLength: 255
-                  format: email
-                initials:
-                  type: string
-                  maxLength: 255
-                password:
-                  type: string
-                  maxLength: 255
               required:
                 - email
                 - initials
                 - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                initials:
+                  type: string
+                  maxLength: 255
+                  pattern: ^\S+$
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 64
+                  pattern: '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
+              additionalProperties: false
+              unevaluatedProperties: false
             example:
-              email: user@example.com
-              initials: 'Name Surname'
-              password: passWORD1
+              email: create-user@example.com
+              initials: CreateUser
+              password: CreatePass1!
         required: true
       deprecated: false
   /api/users/batch:
@@ -571,14 +602,36 @@ paths:
               example:
                 -
                   confirmed: false
-                  email: user@example.com
-                  initials: 'Name Surname'
-                  id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
+                  email: batch-user-one@example.com
+                  initials: BatchUserOne
+                  id: 018dd6ba-e901-7a8c-b27d-65d122caca71
+          headers: {  }
+        '400':
+          description: 'Bad request'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'The input data is misformatted.'
+                status: 400
           headers: {  }
         '422':
           description: 'Validation error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -604,7 +657,7 @@ paths:
         '500':
           description: 'Internal server error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -631,18 +684,24 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - users
               properties:
                 users:
                   type: array
-                  items: { type: object }
-              required:
-                - users
+                  minItems: 1
+                  uniqueItems: true
+                  items: { type: object, required: [email, initials, password], properties: { email: { type: string, format: email, maxLength: 255 }, initials: { type: string, maxLength: 255, pattern: ^\S+$ }, password: { type: string, minLength: 8, maxLength: 64, pattern: '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$' } }, additionalProperties: false, unevaluatedProperties: false }
             example:
               users:
                 -
-                  email: user@example.com
-                  initials: 'Name Surname'
-                  password: passWORD1
+                  email: batch-user-one@example.com
+                  initials: BatchUserOne
+                  password: BatchPass1!
+                -
+                  email: batch-user-two@example.com
+                  initials: BatchUserTwo
+                  password: BatchPass2!
         required: true
       deprecated: false
   /api/users/confirm:
@@ -657,16 +716,64 @@ paths:
             application/json:
               example: {  }
           headers: {  }
+        '400':
+          description: 'Bad request'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'The input data is misformatted.'
+                status: 400
+          headers: {  }
         '404':
           description: 'Token not found or expired'
           content:
-            application/json:
+            application/problem+json:
               example: {  }
+          headers: {  }
+        '422':
+          description: 'Validation error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  violations: { type: array, items: { type: object } }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - violations
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'some_property: This value should not be blank.'
+                violations:
+                  - { propertyPath: some_property, message: 'This value should not be blank.', code: c1051bb4-d103-4f74-8988-acbcafc7fdc3 }
+                status: 422
           headers: {  }
         '500':
           description: 'Internal server error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -696,10 +803,11 @@ paths:
               properties:
                 token:
                   type: string
+                  enum: [confirm-token]
               required:
                 - token
             example:
-              token: token
+              token: confirm-token
         required: true
       deprecated: false
   '/api/users/{id}':
@@ -711,7 +819,7 @@ paths:
         '404':
           description: 'User not found'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -749,13 +857,13 @@ paths:
               example:
                 confirmed: false
                 email: user@example.com
-                initials: 'Name Surname'
+                initials: NameSurname
                 id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
           headers: {  }
         '500':
           description: 'Internal server error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -785,9 +893,12 @@ paths:
           deprecated: false
           schema:
             type: string
+            format: uuid
+            enum:
+              - 018dd6ba-e901-7a8c-b27d-65d122caca6b
           style: simple
           explode: false
-          example: 2b10b7a3-67f0-40ea-a367-44263321592a
+          example: 018dd6ba-e901-7a8c-b27d-65d122caca6b
       deprecated: false
     put:
       operationId: api_users_id_put
@@ -812,14 +923,14 @@ paths:
                   - id
               example:
                 confirmed: false
-                email: user@example.com
-                initials: 'Name Surname'
-                id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
+                email: update-user@example.com
+                initials: UpdateUser
+                id: 018dd6ba-e901-7a8c-b27d-65d122caca6c
           headers: {  }
         '400':
           description: 'Bad request'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -841,7 +952,7 @@ paths:
         '404':
           description: 'User not found'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -863,7 +974,7 @@ paths:
         '422':
           description: 'Validation error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -889,7 +1000,7 @@ paths:
         '500':
           description: 'Internal server error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -919,9 +1030,12 @@ paths:
           deprecated: false
           schema:
             type: string
+            format: uuid
+            enum:
+              - 018dd6ba-e901-7a8c-b27d-65d122caca6c
           style: simple
           explode: false
-          example: 2b10b7a3-67f0-40ea-a367-44263321592a
+          example: 018dd6ba-e901-7a8c-b27d-65d122caca6c
       requestBody:
         content:
           application/json:
@@ -935,22 +1049,25 @@ paths:
                 initials:
                   type: string
                   maxLength: 255
+                  pattern: ^\S+$
                 oldPassword:
                   type: string
-                  maxLength: 255
+                  maxLength: 64
+                  pattern: '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
                 newPassword:
                   type: string
-                  maxLength: 255
+                  maxLength: 64
+                  pattern: '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
               required:
                 - email
                 - initials
                 - oldPassword
                 - newPassword
             example:
-              email: user@example.com
-              initials: 'Name Surname'
-              oldPassword: passWORD1
-              newPassword: PASSword2
+              email: update-user@example.com
+              initials: UpdateUser
+              oldPassword: Password1!
+              newPassword: Password1!
         required: true
       deprecated: false
     delete:
@@ -960,14 +1077,12 @@ paths:
       responses:
         '204':
           description: 'User resource deleted'
-          content:
-            application/json:
-              example: {  }
+          content: {  }
           headers: {  }
         '404':
           description: 'User not found'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -989,7 +1104,7 @@ paths:
         '500':
           description: 'Internal server error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -1019,9 +1134,12 @@ paths:
           deprecated: false
           schema:
             type: string
+            format: uuid
+            enum:
+              - 018dd6ba-e901-7a8c-b27d-65d122caca6d
           style: simple
           explode: false
-          example: 2b10b7a3-67f0-40ea-a367-44263321592a
+          example: 018dd6ba-e901-7a8c-b27d-65d122caca6d
       deprecated: false
     patch:
       operationId: api_users_id_patch
@@ -1046,14 +1164,14 @@ paths:
                   - id
               example:
                 confirmed: false
-                email: user@example.com
-                initials: 'Name Surname'
-                id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
+                email: update-user@example.com
+                initials: UpdateUser
+                id: 018dd6ba-e901-7a8c-b27d-65d122caca6c
           headers: {  }
         '400':
           description: 'Bad request'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -1075,7 +1193,7 @@ paths:
         '404':
           description: 'User not found'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -1097,7 +1215,7 @@ paths:
         '422':
           description: 'Validation error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -1123,7 +1241,7 @@ paths:
         '500':
           description: 'Internal server error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -1153,9 +1271,12 @@ paths:
           deprecated: false
           schema:
             type: string
+            format: uuid
+            enum:
+              - 018dd6ba-e901-7a8c-b27d-65d122caca6c
           style: simple
           explode: false
-          example: 2b10b7a3-67f0-40ea-a367-44263321592a
+          example: 018dd6ba-e901-7a8c-b27d-65d122caca6c
       requestBody:
         content:
           application/merge-patch+json:
@@ -1169,19 +1290,22 @@ paths:
                 initials:
                   type: string
                   maxLength: 255
+                  pattern: ^\S+$
                 oldPassword:
                   type: string
-                  maxLength: 255
+                  maxLength: 64
+                  pattern: '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
                 newPassword:
                   type: string
-                  maxLength: 255
+                  maxLength: 64
+                  pattern: '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
               required:
                 - oldPassword
             example:
-              email: user@example.com
-              initials: 'Name Surname'
-              oldPassword: passWORD1
-              newPassword: PASSword2
+              email: update-user@example.com
+              initials: UpdateUser
+              oldPassword: Password1!
+              newPassword: Password1!
         required: true
       deprecated: false
   '/api/users/{id}/resend-confirmation-email':
@@ -1196,10 +1320,32 @@ paths:
             application/json:
               example: {  }
           headers: {  }
+        '400':
+          description: 'Bad request'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'The input data is misformatted.'
+                status: 400
+          headers: {  }
         '404':
           description: 'User not found'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -1221,7 +1367,7 @@ paths:
         '429':
           description: 'Too many requests'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -1240,10 +1386,32 @@ paths:
                 detail: 'Cannot send new email till 2024-01-24T12:43:01+00:00'
                 status: 429
           headers: {  }
+        '415':
+          description: 'Unsupported media type'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/415
+                title: 'Unsupported Media Type'
+                detail: 'The "Content-Type" header must exist.'
+                status: 415
+          headers: {  }
         '500':
           description: 'Internal server error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -1273,9 +1441,12 @@ paths:
           deprecated: false
           schema:
             type: string
+            format: uuid
+            enum:
+              - 018dd6ba-e901-7a8c-b27d-65d122caca6b
           style: simple
           explode: false
-          example: 2b10b7a3-67f0-40ea-a367-44263321592a
+          example: 018dd6ba-e901-7a8c-b27d-65d122caca6b
       requestBody:
         description: 'This operation does not expect a body.'
         content:
@@ -1291,40 +1462,20 @@ paths:
       tags:
         - 'User reset password'
       responses:
-        '200':
-          description: 'EmptyResponse resource created'
-          content:
-            application/json:
-              schema: {  }
-            application/graphql:
-              schema: {  }
-            application/ld+json:
-              schema: {  }
-          links: {  }
+        '204':
+          description: 'Password reset request accepted'
         '400':
-          description: 'Invalid input'
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Error'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          links: {  }
+          description: 'Invalid request payload'
+        '404':
+          description: 'User not found'
         '422':
-          description: 'An error occurred'
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/ConstraintViolation-json'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConstraintViolation-json'
-          links: {  }
+          description: 'Validation error'
+        '429':
+          description: 'Password reset rate limit exceeded'
         '500':
           description: 'Internal server error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -1347,17 +1498,31 @@ paths:
       description: 'Initiates a password reset process by sending a reset token to the provided email address.'
       parameters: []
       requestBody:
-        description: 'The new EmptyResponse resource'
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EmptyResponse.RequestPasswordResetDto'
-          application/graphql:
-            schema:
-              $ref: '#/components/schemas/EmptyResponse.RequestPasswordResetDto'
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+            example:
+              email: password-reset@example.com
           application/ld+json:
             schema:
-              $ref: '#/components/schemas/EmptyResponse.RequestPasswordResetDto.jsonld'
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+            example:
+              email: password-reset@example.com
         required: true
       deprecated: false
   /api/reset-password/confirm:
@@ -1366,40 +1531,18 @@ paths:
       tags:
         - 'User reset password'
       responses:
-        '200':
-          description: 'EmptyResponse resource created'
-          content:
-            application/json:
-              schema: {  }
-            application/graphql:
-              schema: {  }
-            application/ld+json:
-              schema: {  }
-          links: {  }
+        '204':
+          description: 'Password reset confirmed'
         '400':
-          description: 'Invalid input'
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Error'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          links: {  }
+          description: 'Invalid or expired password reset token'
+        '404':
+          description: 'Password reset token not found'
         '422':
-          description: 'An error occurred'
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/ConstraintViolation-json'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConstraintViolation-json'
-          links: {  }
+          description: 'Validation error'
         '500':
           description: 'Internal server error'
           content:
-            application/json:
+            application/problem+json:
               schema:
                 type: object
                 properties:
@@ -1422,17 +1565,47 @@ paths:
       description: 'Completes the password reset process by validating the reset token and setting a new password.'
       parameters: []
       requestBody:
-        description: 'The new EmptyResponse resource'
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EmptyResponse.ConfirmPasswordResetDto'
-          application/graphql:
-            schema:
-              $ref: '#/components/schemas/EmptyResponse.ConfirmPasswordResetDto'
+              type: object
+              required:
+                - token
+                - newPassword
+              properties:
+                token:
+                  type: string
+                  maxLength: 255
+                  enum: [reset-confirm-token]
+                newPassword:
+                  type: string
+                  minLength: 8
+                  maxLength: 64
+                  pattern: '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
+                  enum: [passWORD1]
+            example:
+              token: reset-confirm-token
+              newPassword: passWORD1
           application/ld+json:
             schema:
-              $ref: '#/components/schemas/EmptyResponse.ConfirmPasswordResetDto.jsonld'
+              type: object
+              required:
+                - token
+                - newPassword
+              properties:
+                token:
+                  type: string
+                  maxLength: 255
+                  enum: [reset-confirm-token-ld]
+                newPassword:
+                  type: string
+                  minLength: 8
+                  maxLength: 64
+                  pattern: '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
+                  enum: [passWORD1]
+            example:
+              token: reset-confirm-token-ld
+              newPassword: passWORD1
         required: true
       deprecated: false
 components:
@@ -1483,16 +1656,12 @@ components:
       properties:
         token:
           maxLength: 255
-          type:
-            - string
-            - 'null'
+          type: string
         newPassword:
           maxLength: 64
           minLength: 8
           pattern: '^(.*[A-Z].*)$'
-          type:
-            - string
-            - 'null'
+          type: string
     EmptyResponse.ConfirmPasswordResetDto.jsonld:
       type: object
       description: ''
@@ -1503,16 +1672,12 @@ components:
       properties:
         token:
           maxLength: 255
-          type:
-            - string
-            - 'null'
+          type: string
         newPassword:
           maxLength: 64
           minLength: 8
           pattern: '^(.*[A-Z].*)$'
-          type:
-            - string
-            - 'null'
+          type: string
     EmptyResponse.RequestPasswordResetDto:
       type: object
       description: ''
@@ -1525,9 +1690,7 @@ components:
           maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
-          type:
-            - string
-            - 'null'
+          type: string
     EmptyResponse.RequestPasswordResetDto.jsonld:
       type: object
       description: ''
@@ -1540,9 +1703,7 @@ components:
           maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
-          type:
-            - string
-            - 'null'
+          type: string
     Error:
       type: object
       description: 'A representation of common errors.'
@@ -1628,9 +1789,7 @@ components:
         - token
       properties:
         token:
-          type:
-            - string
-            - 'null'
+          type: string
     User.RetryDto:
       type: object
       description: ''
@@ -1666,8 +1825,9 @@ components:
             - string
             - 'null'
         newPassword:
+          minLength: 8
           maxLength: 64
-          pattern: '^(.*(^$|.*[A-Z].*).*)$'
+          pattern: '^(.*[A-Z].*)$'
           type:
             - string
             - 'null'
@@ -1752,28 +1912,27 @@ components:
     User.UserRegisterBatchDto:
       type: object
       description: ''
+      additionalProperties: false
       deprecated: false
       properties:
         users:
-          type:
-            - array
-            - 'null'
+          type: array
           items:
             type: string
     User.UserRegisterBatchDto.jsonld:
       type: object
       description: ''
+      additionalProperties: false
       deprecated: false
       properties:
         users:
-          type:
-            - array
-            - 'null'
+          type: array
           items:
             type: string
     User.UserRegisterDto:
       type: object
       description: ''
+      additionalProperties: false
       deprecated: false
       required:
         - email
@@ -1785,25 +1944,20 @@ components:
           maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
-          type:
-            - string
-            - 'null'
+          type: string
         initials:
           maxLength: 255
           pattern: ^(\S+)$
-          type:
-            - string
-            - 'null'
+          type: string
         password:
           maxLength: 64
           minLength: 8
           pattern: '^(.*[A-Z].*)$'
-          type:
-            - string
-            - 'null'
+          type: string
     User.UserRegisterDto.jsonld:
       type: object
       description: ''
+      additionalProperties: false
       deprecated: false
       required:
         - email
@@ -1815,22 +1969,16 @@ components:
           maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
-          type:
-            - string
-            - 'null'
+          type: string
         initials:
           maxLength: 255
           pattern: ^(\S+)$
-          type:
-            - string
-            - 'null'
+          type: string
         password:
           maxLength: 64
           minLength: 8
           pattern: '^(.*[A-Z].*)$'
-          type:
-            - string
-            - 'null'
+          type: string
     User.jsonld-output:
       type: object
       description: ''
@@ -1915,6 +2063,10 @@ components:
           scopes:
             'write:pets': 'modify pets in your account'
             'read:pets': 'read your pets'
+    OAuthClientBasic:
+      type: http
+      scheme: basic
+      description: 'HTTP Basic authentication for OAuth client credentials.'
 security:
   -
     OAuth2: []

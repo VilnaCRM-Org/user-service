@@ -10,6 +10,7 @@ use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Endpoint\ParamUserEndpointFactory;
+use App\Shared\Application\OpenApi\Factory\Endpoint\ParamUserResponseProvider;
 use App\Shared\Application\OpenApi\Factory\Request\ReplaceUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Request\UpdateUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
@@ -52,6 +53,12 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
             $this->createMock(UuidUriParameterFactory::class);
         $this->userUpdatedResponseFactory =
             $this->createMock(UserUpdatedResponseFactory::class);
+        $this->userReturnedResponseFactory =
+            $this->createMock(UserReturnedResponseFactory::class);
+        $this->replaceUserRequestFactory =
+            $this->createMock(ReplaceUserRequestFactory::class);
+        $this->updateUserRequestFactory =
+            $this->createMock(UpdateUserRequestFactory::class);
         $this->openApi = $this->createMock(OpenApi::class);
         $this->paths = $this->createMock(Paths::class);
         $this->pathItem = $this->createMock(PathItem::class);
@@ -61,17 +68,21 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
     {
         $this->setExpectations();
 
-        $factory = new ParamUserEndpointFactory(
-            getenv('API_PREFIX'),
+        $responseProvider = new ParamUserResponseProvider(
             $this->validationErrorResponseFactory,
             $this->badRequestResponseFactory,
             $this->userNotFoundResponseFactory,
             $this->userDeletedResponseFactory,
-            $this->uuidUriParameterFactory,
             $this->userUpdatedResponseFactory,
-            $this->createMock(UserReturnedResponseFactory::class),
-            $this->createMock(ReplaceUserRequestFactory::class),
-            $this->createMock(UpdateUserRequestFactory::class)
+            $this->userReturnedResponseFactory
+        );
+
+        $factory = new ParamUserEndpointFactory(
+            getenv('API_PREFIX'),
+            $responseProvider,
+            $this->uuidUriParameterFactory,
+            $this->replaceUserRequestFactory,
+            $this->updateUserRequestFactory
         );
 
         $factory->createEndpoint($this->openApi);
@@ -98,6 +109,16 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
         $this->userUpdatedResponseFactory->expects($this->once())
             ->method('getResponse')
             ->willReturn($this->createMock(Response::class));
+
+        $this->userReturnedResponseFactory->expects($this->once())
+            ->method('getResponse')
+            ->willReturn($this->createMock(Response::class));
+
+        $this->replaceUserRequestFactory->expects($this->once())
+            ->method('getRequest');
+
+        $this->updateUserRequestFactory->expects($this->once())
+            ->method('getRequest');
 
         $this->openApi->expects($this->exactly(8))
             ->method('getPaths')

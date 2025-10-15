@@ -9,6 +9,7 @@ use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Constraints\Type;
 
 final class InitialsConstraintTest extends UnitTestCase
 {
@@ -55,6 +56,18 @@ final class InitialsConstraintTest extends UnitTestCase
         $this->assertSame('initials.invalid.length', $lengthConstraint->maxMessage);
     }
 
+    public function testTypeConstraintRequiresString(): void
+    {
+        $initialsConstraint = new Initials();
+        $typeConstraint = $this->findTypeConstraint(
+            $this->getConstraintsFromInitials($initialsConstraint)
+        );
+
+        $this->assertInstanceOf(Type::class, $typeConstraint);
+        $this->assertSame('string', $typeConstraint->type);
+        $this->assertSame('initials.invalid.type', $typeConstraint->message);
+    }
+
     /**
      * @return array<int, Constraint>
      */
@@ -86,6 +99,17 @@ final class InitialsConstraintTest extends UnitTestCase
         return $this->findConstraint(
             $constraints,
             static fn (Constraint $constraint) => $constraint instanceof Regex
+        );
+    }
+
+    /**
+     * @param iterable<Constraint> $constraints
+     */
+    private function findTypeConstraint(iterable $constraints): ?Type
+    {
+        return $this->findConstraint(
+            $constraints,
+            static fn (Constraint $constraint) => $constraint instanceof Type
         );
     }
 

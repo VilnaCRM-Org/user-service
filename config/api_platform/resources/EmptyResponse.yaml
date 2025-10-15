@@ -15,7 +15,7 @@ resources:
       request_password_reset:
         class: ApiPlatform\Metadata\Post
         method: POST
-        status: 200
+        status: 204
         uriTemplate: '/reset-password'
         input: 'App\User\Application\DTO\RequestPasswordResetDto'
         controller: 'App\User\Application\Controller\RequestPasswordResetController'
@@ -26,10 +26,21 @@ resources:
           description: 'Initiates a password reset process by sending a reset token to the provided email address.'
           tags:
             - 'User reset password'
+          responses:
+            204:
+              description: 'Password reset request accepted'
+            400:
+              description: 'Invalid request payload'
+            404:
+              description: 'User not found'
+            422:
+              description: 'Validation error'
+            429:
+              description: 'Password reset rate limit exceeded'
       confirm_password_reset:
         class: ApiPlatform\Metadata\Post
         method: POST
-        status: 200
+        status: 204
         uriTemplate: '/reset-password/confirm'
         input: 'App\User\Application\DTO\ConfirmPasswordResetDto'
         controller: 'App\User\Application\Controller\ConfirmPasswordResetController'
@@ -40,3 +51,12 @@ resources:
           description: 'Completes the password reset process by validating the reset token and setting a new password.'
           tags:
             - 'User reset password'
+          responses:
+            204:
+              description: 'Password reset confirmed'
+            400:
+              description: 'Invalid or expired password reset token'
+            404:
+              description: 'Password reset token not found'
+            422:
+              description: 'Validation error'

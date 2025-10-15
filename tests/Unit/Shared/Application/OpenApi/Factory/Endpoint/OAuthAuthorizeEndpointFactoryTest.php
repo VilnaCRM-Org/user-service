@@ -10,6 +10,7 @@ use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Builder\QueryParameterBuilder;
 use App\Shared\Application\OpenApi\Factory\Endpoint\OAuthAuthEndpointFactory;
+use App\Shared\Application\OpenApi\Factory\Endpoint\OAuthAuthorizeQueryParametersFactory;
 use App\Shared\Application\OpenApi\Factory\Response\InvalidCredentialsFactory;
 use App\Shared\Application\OpenApi\Factory\Response\OAuthRedirectFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UnsupportedTypeFactory;
@@ -20,7 +21,6 @@ final class OAuthAuthorizeEndpointFactoryTest extends UnitTestCase
     private UnsupportedTypeFactory $unsupportedFactory;
     private InvalidCredentialsFactory $invalidCredsFactory;
     private OAuthRedirectFactory $redirectResponseFactory;
-    private QueryParameterBuilder $queryParameterBuilder;
     private OpenApi $openApi;
     private Paths $paths;
 
@@ -34,8 +34,6 @@ final class OAuthAuthorizeEndpointFactoryTest extends UnitTestCase
             $this->createMock(InvalidCredentialsFactory::class);
         $this->redirectResponseFactory =
             $this->createMock(OAuthRedirectFactory::class);
-        $this->queryParameterBuilder =
-            $this->createMock(QueryParameterBuilder::class);
         $this->openApi = $this->createMock(OpenApi::class);
         $this->paths = $this->createMock(Paths::class);
     }
@@ -49,7 +47,7 @@ final class OAuthAuthorizeEndpointFactoryTest extends UnitTestCase
             $this->unsupportedFactory,
             $this->invalidCredsFactory,
             $this->redirectResponseFactory,
-            $this->queryParameterBuilder
+            new OAuthAuthorizeQueryParametersFactory(new QueryParameterBuilder())
         );
 
         $factory->createEndpoint($this->openApi);

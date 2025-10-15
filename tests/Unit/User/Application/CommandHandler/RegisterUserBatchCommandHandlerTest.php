@@ -82,6 +82,48 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
         $this->assertEquals($users[1], $response->users[1]);
     }
 
+    public function testInvokeReturnsExistingUsersWhenAlreadyRegistered(): void
+    {
+        $password = $this->faker->password();
+        $email = $this->faker->email();
+        $initials = $this->faker->word();
+        $userId =
+            $this->transformer->transformFromString($this->faker->uuid());
+        $existingUser = $this->userFactory->create($email, $initials, $password, $userId);
+
+        $command = new RegisterUserBatchCommand(
+            new UserCollection([
+                [
+                    'email' => $email,
+                    'initials' => $initials,
+                    'password' => $password,
+                ],
+            ])
+        );
+
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($existingUser);
+
+        $this->hasherFactory->expects($this->never())
+            ->method('getPasswordHasher');
+        $this->userRepository->expects($this->never())
+            ->method('saveBatch');
+        $this->registeredEventFactory->expects($this->never())
+            ->method('create');
+        $this->eventBus->expects($this->never())
+            ->method('publish');
+
+        $this->handler->__invoke($command);
+
+        $response = $command->getResponse();
+        $this->assertInstanceOf(RegisterUserBatchCommandResponse::class, $response);
+        $users = iterator_to_array($response->users);
+        $this->assertCount(1, $users);
+        $this->assertSame($existingUser, $users[0]);
+    }
+
     /**
      * Prepare data for testing
      *
@@ -146,6 +188,10 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
         $this->registeredEventFactory->expects($this->exactly(self::BATCH_SIZE))
             ->method('create')
             ->willReturnOnConsecutiveCalls(...$events);
+
+        $this->userRepository->expects($this->exactly(self::BATCH_SIZE))
+            ->method('findByEmail')
+            ->willReturn(null);
 
         $this->userRepository->expects($this->once())
             ->method('saveBatch')

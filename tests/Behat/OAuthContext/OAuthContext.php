@@ -34,6 +34,8 @@ final class OAuthContext implements Context
     private ObtainAuthorizeCodeInput $obtainAuthorizeCodeInput;
 
     private string $authCode;
+    private ?string $clientId = null;
+    private ?string $clientSecret = null;
 
     public function __construct(
         private readonly KernelInterface $kernel,
@@ -50,6 +52,8 @@ final class OAuthContext implements Context
      */
     public function passingIdAndSecret(string $id, string $secret): void
     {
+        $this->clientId = $id;
+        $this->clientSecret = $secret;
         $this->obtainAccessTokenInput =
             new ClientCredentialsGrantInput($id, $secret);
     }
@@ -62,6 +66,8 @@ final class OAuthContext implements Context
         string $secret,
         string $uri
     ): void {
+        $this->clientId = $id;
+        $this->clientSecret = $secret;
         $this->obtainAccessTokenInput = new AuthorizationCodeGrantInput(
             $id,
             $secret,
@@ -90,6 +96,8 @@ final class OAuthContext implements Context
         string $email,
         string $password
     ): void {
+        $this->clientId = $id;
+        $this->clientSecret = $secret;
         $this->obtainAccessTokenInput = new PasswordGrantInput(
             $id,
             $secret,
@@ -145,9 +153,7 @@ final class OAuthContext implements Context
             [],
             [],
             [],
-            ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-            ],
+            $this->buildRequestHeaders(),
             $this->serializer->serialize(
                 $this->obtainAccessTokenInput,
                 'json'
@@ -227,14 +233,17 @@ final class OAuthContext implements Context
         $data = json_decode($this->response->getContent(), true);
 
         Assert::assertSame(
-            Response::HTTP_INTERNAL_SERVER_ERROR,
+            Response::HTTP_UNAUTHORIZED,
             $this->response->getStatusCode()
         );
 
-        Assert::assertArrayHasKey('detail', $data);
+        Assert::assertArrayHasKey('error', $data);
+        Assert::assertEquals('invalid_client', $data['error']);
+
+        Assert::assertArrayHasKey('error_description', $data);
         Assert::assertEquals(
-            'A logged in user is required to resolve the authorization request.',
-            $data['detail']
+            'User authentication is required to resolve the authorization request.',
+            $data['error_description']
         );
     }
 
@@ -287,5 +296,24 @@ final class OAuthContext implements Context
                 'CONTENT_TYPE' => 'application/json',
             ]
         ));
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function buildRequestHeaders(): array
+    {
+        $headers = [
+            'HTTP_ACCEPT' => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
+        ];
+
+        if ($this->clientId !== null && $this->clientSecret !== null) {
+            $headers['HTTP_AUTHORIZATION'] = 'Basic ' . base64_encode(
+                $this->clientId . ':' . $this->clientSecret
+            );
+        }
+
+        return $headers;
     }
 }

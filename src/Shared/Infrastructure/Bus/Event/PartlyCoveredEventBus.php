@@ -29,12 +29,12 @@ final class PartlyCoveredEventBus implements EventBus
      */
     public function getEventCount(array $events): int
     {
-        $count = 0;
-        foreach ($events as $event) {
-            if ($event instanceof DomainEvent) {
-                $count++;
-            }
-        }
-        return $count;
+        return array_reduce(
+            $events,
+            static function (int $count, object $event): int {
+                return $event instanceof DomainEvent ? $count + 1 : $count;
+            },
+            0
+        );
     }
 }

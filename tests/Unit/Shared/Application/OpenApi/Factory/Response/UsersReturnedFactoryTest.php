@@ -58,7 +58,7 @@ final class UsersReturnedFactoryTest extends UnitTestCase
         return new Parameter(
             'initials',
             'string',
-            'Name Surname'
+            'NameSurname'
         );
     }
 

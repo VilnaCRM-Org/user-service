@@ -29,6 +29,8 @@ final class ParameterSchemaFactory
                 'type' => $param->type,
                 'maxLength' => $param->maxLength,
                 'format' => $param->format,
+                'pattern' => $param->pattern,
+                'enum' => $param->enum,
             ],
             static fn ($value) => $value !== null
         );

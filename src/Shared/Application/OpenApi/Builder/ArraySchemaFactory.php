@@ -20,10 +20,14 @@ final class ArraySchemaFactory
      */
     public function create(Parameter $param): array
     {
-        return [
-            'type' => 'array',
-            'items' => $this->resolveItemsSchema($param->example),
-        ];
+        return array_filter(
+            [
+                'type' => 'array',
+                'items' => $this->resolveItemsSchema($param->example),
+                'minItems' => $param->minItems,
+            ],
+            static fn ($value) => $value !== null
+        );
     }
 
     /**

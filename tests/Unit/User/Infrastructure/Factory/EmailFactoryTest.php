@@ -48,6 +48,7 @@ final class EmailFactoryTest extends UnitTestCase
 
     /**
      * @param array<string, string> $additionalContext
+     *
      * @return array{
      *     email: Email,
      *     sendTo: string,

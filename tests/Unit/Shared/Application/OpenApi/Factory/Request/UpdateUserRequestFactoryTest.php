@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Request;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\RequestBuilder;
+use App\Shared\Application\OpenApi\Builder\Requirement;
 use App\Shared\Application\OpenApi\Factory\Request\UpdateUserRequestFactory;
 use App\Tests\Unit\UnitTestCase;
 
@@ -48,10 +49,10 @@ final class UpdateUserRequestFactoryTest extends UnitTestCase
         return new Parameter(
             'email',
             'string',
-            'user@example.com',
+            'update-user@example.com',
             255,
             'email',
-            required: false
+            Requirement::OPTIONAL
         );
     }
 
@@ -60,9 +61,11 @@ final class UpdateUserRequestFactoryTest extends UnitTestCase
         return new Parameter(
             'initials',
             'string',
-            'Name Surname',
+            'UpdateUser',
             255,
-            required: false
+            null,
+            Requirement::OPTIONAL,
+            '^\\S+$'
         );
     }
 
@@ -71,8 +74,11 @@ final class UpdateUserRequestFactoryTest extends UnitTestCase
         return new Parameter(
             'oldPassword',
             'string',
-            'passWORD1',
-            255
+            'Password1!',
+            64,
+            null,
+            Requirement::REQUIRED,
+            '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
         );
     }
 
@@ -81,9 +87,11 @@ final class UpdateUserRequestFactoryTest extends UnitTestCase
         return new Parameter(
             'newPassword',
             'string',
-            'PASSword2',
-            255,
-            required: false
+            'Password1!',
+            64,
+            null,
+            Requirement::OPTIONAL,
+            '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
         );
     }
 }

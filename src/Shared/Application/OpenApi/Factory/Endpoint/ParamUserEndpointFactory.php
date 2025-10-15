@@ -5,26 +5,47 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Factory\Endpoint;
 
 use ApiPlatform\OpenApi\Model\Parameter;
-use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
+use App\Shared\Application\Fixture\SchemathesisFixtures;
 use App\Shared\Application\OpenApi\Factory\Request\ReplaceUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Request\UpdateUserRequestFactory;
-use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
-use App\Shared\Application\OpenApi\Factory\Response\UserDeletedResponseFactory;
-use App\Shared\Application\OpenApi\Factory\Response\UserNotFoundResponseFactory;
-use App\Shared\Application\OpenApi\Factory\Response\UserReturnedResponseFactory;
-use App\Shared\Application\OpenApi\Factory\Response\UserUpdatedResponseFactory;
-use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class ParamUserEndpointFactory implements AbstractEndpointFactory
 {
+    private const OPERATION_DEFINITIONS = [
+        [
+            'method' => 'put',
+            'parameterProperty' => 'updateUserPathParam',
+            'responsesProperty' => 'updateResponses',
+            'requestProperty' => 'replaceUserRequest',
+        ],
+        [
+            'method' => 'patch',
+            'parameterProperty' => 'updateUserPathParam',
+            'responsesProperty' => 'updateResponses',
+            'requestProperty' => 'updateUserRequest',
+        ],
+        [
+            'method' => 'get',
+            'parameterProperty' => 'baseUserPathParam',
+            'responsesProperty' => 'getResponses',
+        ],
+        [
+            'method' => 'delete',
+            'parameterProperty' => 'deleteUserPathParam',
+            'responsesProperty' => 'deleteResponses',
+        ],
+    ];
+
     private string $endpointUri = '/users/{id}';
 
-    private Parameter $uuidWithExamplePathParam;
+    private Parameter $baseUserPathParam;
+    private Parameter $updateUserPathParam;
+    private Parameter $deleteUserPathParam;
     private Response $badRequestResponse;
     private Response $userNotFoundResponse;
     private Response $validationErrorResponse;
@@ -36,148 +57,138 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
 
     private RequestBody $updateUserRequest;
 
+    /**
+     * @var array<int,Response>
+     */
+    private array $updateResponses = [];
+
+    /**
+     * @var array<int,Response>
+     */
+    private array $deleteResponses = [];
+
+    /**
+     * @var array<int,Response>
+     */
+    private array $getResponses = [];
+
     public function __construct(
         string $apiPrefix,
-        private ValidationErrorFactory $validationErrorResponseFactory,
-        private BadRequestResponseFactory $badRequestResponseFactory,
-        private UserNotFoundResponseFactory $userNotFoundResponseFactory,
-        private UserDeletedResponseFactory $deletedResponseFactory,
+        private ParamUserResponseProvider $responseProvider,
         private UuidUriParameterFactory $parameterFactory,
-        private UserUpdatedResponseFactory $userUpdatedResponseFactory,
-        private UserReturnedResponseFactory $userReturnedResponseFactory,
         private ReplaceUserRequestFactory $replaceUserRequestFactory,
         private UpdateUserRequestFactory $updateUserRequestFactory
     ) {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
 
-        $this->uuidWithExamplePathParam =
-            $this->parameterFactory->getParameter();
-
-        $this->badRequestResponse =
-            $this->badRequestResponseFactory->getResponse();
-
-        $this->userNotFoundResponse =
-            $this->userNotFoundResponseFactory->getResponse();
-
-        $this->validationErrorResponse =
-            $this->validationErrorResponseFactory->getResponse();
-
-        $this->userDeletedResponse =
-            $this->deletedResponseFactory->getResponse();
-
-        $this->userUpdatedResponse =
-            $this->userUpdatedResponseFactory->getResponse();
-
-        $this->userReturnedResponse =
-            $this->userReturnedResponseFactory->getResponse();
-
-        $this->replaceUserRequest =
-            $this->replaceUserRequestFactory->getRequest();
-
-        $this->updateUserRequest =
-            $this->updateUserRequestFactory->getRequest();
+        $this->configurePathParameters();
+        $this->configureResponses();
+        $this->configureRequests();
     }
 
     public function createEndpoint(OpenApi $openApi): void
     {
-        $this->setPutOperation($openApi);
-        $this->setPatchOperation($openApi);
-        $this->setGetOperation($openApi);
-        $this->setDeleteOperation($openApi);
+        foreach (self::OPERATION_DEFINITIONS as $definition) {
+            $parameter = $this->{$definition['parameterProperty']};
+            $responses = $this->{$definition['responsesProperty']};
+            $requestProperty = $definition['requestProperty'] ?? null;
+            $requestBody = $requestProperty !== null
+                ? $this->{$requestProperty}
+                : null;
+
+            $this->addOperation(
+                $openApi,
+                $definition['method'],
+                $parameter,
+                $responses,
+                $requestBody
+            );
+        }
     }
 
-    private function setPutOperation(OpenApi $openApi): void
-    {
-        $pathItem = $this->getPathItem($openApi);
-        $operationPut = $pathItem->getPut();
-        $openApi->getPaths()->addPath($this->endpointUri, $pathItem
-            ->withPut(
-                $operationPut
-                    ->withParameters([$this->uuidWithExamplePathParam])
-                    ->withResponses($this->getUpdateResponses())
-                    ->withRequestBody($this->replaceUserRequest)
-            ));
-    }
+    /**
+     * @param array<int,Response> $responses
+     */
+    private function addOperation(
+        OpenApi $openApi,
+        string $method,
+        Parameter $parameter,
+        array $responses,
+        ?RequestBody $requestBody = null
+    ): void {
+        $pathItem = $openApi->getPaths()->getPath($this->endpointUri);
+        $getter = 'get' . ucfirst($method);
+        $operation = $pathItem->$getter()
+            ->withParameters([$parameter])
+            ->withResponses($responses);
 
-    private function setPatchOperation(OpenApi $openApi): void
-    {
-        $pathItem = $this->getPathItem($openApi);
-        $operationPatch = $pathItem->getPatch();
+        if ($requestBody !== null) {
+            $operation = $operation->withRequestBody($requestBody);
+        }
+
+        $setter = 'with' . ucfirst($method);
         $openApi->getPaths()->addPath(
             $this->endpointUri,
-            $pathItem
-                ->withPatch(
-                    $operationPatch
-                        ->withParameters([$this->uuidWithExamplePathParam])
-                        ->withResponses($this->getUpdateResponses())
-                        ->withRequestBody($this->updateUserRequest)
-                )
+            $pathItem->$setter($operation)
         );
     }
 
-    /**
-     * @return array<int,Response>
-     */
-    private function getUpdateResponses(): array
+    private function configurePathParameters(): void
     {
-        $valResponse = $this->validationErrorResponse;
-        return [
+        $this->baseUserPathParam = $this->parameterFactory->getParameterFor(
+            SchemathesisFixtures::USER_ID
+        );
+        $this->updateUserPathParam = $this->parameterFactory->getParameterFor(
+            SchemathesisFixtures::UPDATE_USER_ID
+        );
+        $this->deleteUserPathParam = $this->parameterFactory->getParameterFor(
+            SchemathesisFixtures::DELETE_USER_ID
+        );
+    }
+
+    private function configureResponses(): void
+    {
+        $this->initializeResponseObjects();
+        $this->initializeResponseCollections();
+    }
+
+    private function initializeResponseObjects(): void
+    {
+        $this->badRequestResponse = $this->responseProvider->badRequest();
+        $this->userNotFoundResponse = $this->responseProvider->userNotFound();
+        $this->validationErrorResponse = $this->responseProvider->validationError();
+        $this->userDeletedResponse = $this->responseProvider->userDeleted();
+        $this->userUpdatedResponse = $this->responseProvider->userUpdated();
+        $this->userReturnedResponse = $this->responseProvider->userReturned();
+    }
+
+    private function initializeResponseCollections(): void
+    {
+        $validationError = $this->validationErrorResponse;
+
+        $this->updateResponses = [
             HttpResponse::HTTP_OK => $this->userUpdatedResponse,
             HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
             HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
-            HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $valResponse,
+            HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $validationError,
         ];
-    }
 
-    private function setDeleteOperation(OpenApi $openApi): void
-    {
-        $pathItem = $this->getPathItem($openApi);
-        $operationDelete = $pathItem->getDelete();
-        $openApi->getPaths()->addPath($this->endpointUri, $pathItem
-            ->withDelete(
-                $operationDelete
-                    ->withParameters([$this->uuidWithExamplePathParam])
-                    ->withResponses($this->getDeleteResponses())
-            ));
-    }
-
-    /**
-     * @return array<int,Response>
-     */
-    private function getDeleteResponses(): array
-    {
-        return [
+        $this->deleteResponses = [
             HttpResponse::HTTP_NO_CONTENT => $this->userDeletedResponse,
             HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
         ];
-    }
 
-    private function setGetOperation(OpenApi $openApi): void
-    {
-        $pathItem = $this->getPathItem($openApi);
-        $operationGet = $pathItem->getGet();
-        $openApi->getPaths()->addPath($this->endpointUri, $pathItem
-            ->withGet(
-                $operationGet->withParameters([$this->uuidWithExamplePathParam])
-                    ->withResponses(
-                        $this->getGetResponses()
-                    )
-            ));
-    }
-
-    /**
-     * @return array<int,Response>
-     */
-    private function getGetResponses(): array
-    {
-        return [
+        $this->getResponses = [
             HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
             HttpResponse::HTTP_OK => $this->userReturnedResponse,
         ];
     }
 
-    private function getPathItem(OpenApi $openApi): PathItem
+    private function configureRequests(): void
     {
-        return $openApi->getPaths()->getPath($this->endpointUri);
+        $this->replaceUserRequest =
+            $this->replaceUserRequestFactory->getRequest();
+        $this->updateUserRequest =
+            $this->updateUserRequestFactory->getRequest();
     }
 }

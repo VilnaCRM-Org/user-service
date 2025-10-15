@@ -13,7 +13,7 @@ final readonly class TokenExpirationValidator implements
 {
     public function validate(?PasswordResetTokenInterface $token): void
     {
-        if ($token && $token->isExpired()) {
+        if ($token?->isExpired()) {
             throw new PasswordResetTokenExpiredException();
         }
     }

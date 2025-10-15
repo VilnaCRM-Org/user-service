@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Shared\Application\OpenApi\Builder;
 use App\Shared\Application\OpenApi\Builder\ContextBuilder;
 use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ParameterSchemaFactory;
+use App\Shared\Application\OpenApi\Builder\Requirement;
 use App\Tests\Unit\UnitTestCase;
 use ArrayObject;
 
@@ -256,7 +257,7 @@ final class ContextBuilderTest extends UnitTestCase
                 $this->faker->sentence(),
                 null,
                 null,
-                false
+                Requirement::OPTIONAL
             ),
         ];
 

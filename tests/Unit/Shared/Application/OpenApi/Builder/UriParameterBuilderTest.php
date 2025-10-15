@@ -68,4 +68,53 @@ final class UriParameterBuilderTest extends UnitTestCase
         $this->assertEquals(['type' => $type], $parameter->getSchema());
         $this->assertEquals($example, $parameter->getExample());
     }
+
+    public function testBuildWithFormat(): void
+    {
+        $name = $this->faker->unique()->word();
+        $description = $this->faker->sentence();
+        $required = true;
+        $example = $this->faker->uuid();
+        $type = 'string';
+        $format = 'uuid';
+
+        $parameter = $this->builder->build(
+            $name,
+            $description,
+            $required,
+            $example,
+            $type,
+            $format
+        );
+
+        $this->assertSame(
+            ['type' => $type, 'format' => $format],
+            $parameter->getSchema()
+        );
+    }
+
+    public function testBuildWithEnum(): void
+    {
+        $name = $this->faker->unique()->word();
+        $description = $this->faker->sentence();
+        $required = true;
+        $example = $this->faker->uuid();
+        $type = 'string';
+        $enum = [$example];
+
+        $parameter = $this->builder->build(
+            $name,
+            $description,
+            $required,
+            $example,
+            $type,
+            null,
+            $enum
+        );
+
+        $this->assertSame(
+            ['type' => $type, 'enum' => $enum],
+            $parameter->getSchema()
+        );
+    }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
+use App\Shared\Application\Fixture\SchemathesisFixtures;
 use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 
@@ -42,7 +43,7 @@ final class UserCreatedResponseFactory implements AbstractResponseFactory
         return new Parameter(
             'email',
             'string',
-            'user@example.com'
+            SchemathesisFixtures::CREATE_USER_EMAIL
         );
     }
 
@@ -51,7 +52,7 @@ final class UserCreatedResponseFactory implements AbstractResponseFactory
         return new Parameter(
             'initials',
             'string',
-            'Name Surname'
+            SchemathesisFixtures::CREATE_USER_INITIALS
         );
     }
 
@@ -60,7 +61,7 @@ final class UserCreatedResponseFactory implements AbstractResponseFactory
         return new Parameter(
             'id',
             'string',
-            '018dd6ba-e901-7a8c-b27d-65d122caca6b'
+            SchemathesisFixtures::CREATE_USER_ID
         );
     }
 }

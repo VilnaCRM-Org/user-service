@@ -57,18 +57,7 @@ App\User\Application\DTO\UserPatchDto:
           max: 255
       - App\Shared\Application\Validator\Password: ~
     newPassword:
-      - Length:
-          max: 64
-          maxMessage: 'password.invalid.length'
-      - Regex:
-          pattern: '/^$|^.{8,}$/'
-          message: 'password.invalid.length'
-      - Regex:
-          pattern: '/^$|.*[0-9].*/'
-          message: 'password.missing.number'
-      - Regex:
-          pattern: '/^$|.*[A-Z].*/'
-          message: 'password.missing.uppercase'
+      - App\Shared\Application\Validator\Password: ~
 
 App\User\Application\DTO\UserPutDto:
   properties:
@@ -90,7 +79,7 @@ App\User\Application\DTO\UserPutDto:
       - App\Shared\Application\Validator\Password: ~
     newPassword:
       - Length:
-          max: 255
+          max: 64
       - NotBlank: { message: 'not.blank' }
       - App\Shared\Application\Validator\Password: ~
 
@@ -187,11 +176,11 @@ App\User\Application\MutationInput\UpdateUserMutationInput:
 
 App\User\Application\DTO\RequestPasswordResetDto:
   properties:
-    email:
-      - Email: { message: 'email.invalid' }
-      - NotBlank: { message: 'not.blank' }
-      - Length:
-          max: 255
+              email:
+                - Email: { message: 'email.invalid' }
+                - NotBlank: { message: 'not.blank' }
+                - Length:
+                    max: 255
 
 App\User\Application\DTO\ConfirmPasswordResetDto:
   properties:

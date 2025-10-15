@@ -13,7 +13,7 @@ final readonly class TokenUsageValidator implements
 {
     public function validate(?PasswordResetTokenInterface $token): void
     {
-        if ($token && $token->isUsed()) {
+        if ($token?->isUsed()) {
             throw new PasswordResetTokenAlreadyUsedException();
         }
     }

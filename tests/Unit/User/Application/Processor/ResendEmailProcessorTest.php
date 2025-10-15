@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
+use App\Shared\Application\Http\JsonBodyDecoder;
+use App\Shared\Application\Http\JsonRequestContentProvider;
+use App\Shared\Application\Http\JsonRequestValidator;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
@@ -26,13 +29,17 @@ use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 final class ResendEmailProcessorTest extends UnitTestCase
 {
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
+    private ConfirmationTokenFactoryInterface $tokenFactory;
     private ConfirmationEmailFactoryInterface $confirmationFactory;
     private SendConfirmationEmailCommandFactoryInterface $emailCommandFactory;
     private CommandBusInterface $commandBus;
@@ -41,6 +48,8 @@ final class ResendEmailProcessorTest extends UnitTestCase
     private ConfirmationEmailFactoryInterface $mockConfirmationEmailFactory;
     private SendConfirmationEmailCommandFactoryInterface $mockEmailCmdFactory;
     private GetUserQueryHandler $getUserQueryHandler;
+    private RequestStack $requestStack;
+    private JsonRequestValidator $jsonRequestValidator;
 
     protected function setUp(): void
     {
@@ -62,6 +71,12 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $this->getUserQueryHandler = $this->createMock(
             GetUserQueryHandler::class
         );
+        $this->requestStack = new RequestStack();
+        $this->jsonRequestValidator = new JsonRequestValidator(
+            new JsonRequestContentProvider($this->requestStack),
+            new JsonBodyDecoder()
+        );
+        $this->tokenFactory = $this->createMock(ConfirmationTokenFactoryInterface::class);
     }
 
     public function testProcess(): void
@@ -81,11 +96,15 @@ final class ResendEmailProcessorTest extends UnitTestCase
 
         $this->testProcessSetExpectations($user, $token);
 
+        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '{}'));
+
         $response = $this->getProcessor()->process(
             new RetryDto(),
             $this->createMock(Operation::class),
             ['id' => $userId]
         );
+
+        $this->requestStack->pop();
 
         $this->assertInstanceOf(Response::class, $response);
     }
@@ -102,8 +121,179 @@ final class ResendEmailProcessorTest extends UnitTestCase
 
         $this->expectException(UserNotFoundException::class);
 
+        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '{}'));
+        try {
+            $this->getProcessor()->process(
+                $retryDto,
+                $this->createMock(Operation::class),
+                ['id' => $userId]
+            );
+        } finally {
+            $this->requestStack->pop();
+        }
+    }
+
+    public function testProcessCreatesTokenWhenMissing(): void
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+        $userId = $this->faker->uuid();
+
+        $user = $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->uuidTransformer->transformFromString($userId)
+        );
+
+        $token = $this->confirmationTokenFactory->create($userId);
+
+        $this->getUserQueryHandler->expects($this->once())
+            ->method('handle')
+            ->with($userId)
+            ->willReturn($user);
+
+        $this->tokenRepository->expects($this->once())
+            ->method('findByUserId')
+            ->with($userId)
+            ->willReturn(null);
+
+        $this->tokenFactory->expects($this->once())
+            ->method('create')
+            ->with($user->getId())
+            ->willReturn($token);
+
+        $confirmationEmail = $this->confirmationFactory->create($token, $user);
+        $command = $this->emailCommandFactory->create($confirmationEmail);
+
+        $this->mockConfirmationEmailFactory->expects($this->once())
+            ->method('create')
+            ->with($token, $user)
+            ->willReturn($confirmationEmail);
+
+        $this->mockEmailCmdFactory->expects($this->once())
+            ->method('create')
+            ->with($confirmationEmail)
+            ->willReturn($command);
+
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($command);
+
+        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '{}'));
+
+        try {
+            $this->getProcessor()->process(
+                new RetryDto(),
+                $this->createMock(Operation::class),
+                ['id' => $userId]
+            );
+        } finally {
+            $this->requestStack->pop();
+        }
+    }
+
+    public function testProcessAllowsEmptyRequestBody(): void
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+        $userId = $this->faker->uuid();
+
+        $user = $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->uuidTransformer->transformFromString($userId)
+        );
+        $token = $this->confirmationTokenFactory->create($userId);
+
+        $this->testProcessSetExpectations($user, $token);
+
+        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], ''));
+
+        try {
+            $this->getProcessor()->process(
+                new RetryDto(),
+                $this->createMock(Operation::class),
+                ['id' => $userId]
+            );
+        } finally {
+            $this->requestStack->pop();
+        }
+    }
+
+    public function testProcessWithInvalidJsonThrowsBadRequest(): void
+    {
+        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '{invalid'));
+
+        $this->expectException(BadRequestHttpException::class);
+
+        try {
+            $this->getProcessor()->process(
+                new RetryDto(),
+                $this->createMock(Operation::class),
+                ['id' => $this->faker->uuid()]
+            );
+        } finally {
+            $this->requestStack->pop();
+        }
+    }
+
+    public function testProcessWithArrayJsonThrowsBadRequest(): void
+    {
+        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '[1]'));
+
+        $this->expectException(BadRequestHttpException::class);
+
+        try {
+            $this->getProcessor()->process(
+                new RetryDto(),
+                $this->createMock(Operation::class),
+                ['id' => $this->faker->uuid()]
+            );
+        } finally {
+            $this->requestStack->pop();
+        }
+    }
+
+    public function testProcessWithScalarJsonThrowsBadRequest(): void
+    {
+        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '"value"'));
+
+        $this->expectException(BadRequestHttpException::class);
+
+        try {
+            $this->getProcessor()->process(
+                new RetryDto(),
+                $this->createMock(Operation::class),
+                ['id' => $this->faker->uuid()]
+            );
+        } finally {
+            $this->requestStack->pop();
+        }
+    }
+
+    public function testProcessWithoutCurrentRequestSkipsValidation(): void
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+        $userId = $this->faker->uuid();
+
+        $user = $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->uuidTransformer->transformFromString($userId)
+        );
+        $token = $this->confirmationTokenFactory->create($userId);
+
+        $this->testProcessSetExpectations($user, $token);
+
         $this->getProcessor()->process(
-            $retryDto,
+            new RetryDto(),
             $this->createMock(Operation::class),
             ['id' => $userId]
         );
@@ -116,9 +306,10 @@ final class ResendEmailProcessorTest extends UnitTestCase
             $this->getUserQueryHandler,
             $this->userRepository,
             $this->tokenRepository,
-            $this->createMock(ConfirmationTokenFactoryInterface::class),
+            $this->tokenFactory,
             $this->mockConfirmationEmailFactory,
-            $this->mockEmailCmdFactory
+            $this->mockEmailCmdFactory,
+            $this->jsonRequestValidator
         );
     }
 
@@ -138,6 +329,8 @@ final class ResendEmailProcessorTest extends UnitTestCase
             ->method('findByUserId')
             ->with($this->equalTo($user->getID()))
             ->willReturn($token);
+
+        $this->tokenFactory->expects($this->never())->method('create');
 
         $this->mockConfirmationEmailFactory->expects($this->once())
             ->method('create')

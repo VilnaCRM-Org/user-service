@@ -77,9 +77,46 @@ final class SignUpCommandHandlerTest extends UnitTestCase
         $this->handler->__invoke($command);
     }
 
+    public function testInvokeReturnsExistingUserWhenEmailAlreadyRegistered(): void
+    {
+        $email = $this->faker->email();
+        $password = $this->faker->password();
+        $initials = $this->faker->firstName();
+        $userId =
+            $this->uuidTransformer->transformFromString($this->faker->uuid());
+        $existingUser =
+            $this->userFactory->create($email, $initials, $password, $userId);
+        $command =
+            $this->signUpCommandFactory->create($email, $initials, $password);
+
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($existingUser);
+
+        $this->transformer->expects($this->never())
+            ->method('transformToUser');
+        $this->hasherFactory->expects($this->never())
+            ->method('getPasswordHasher');
+        $this->userRepository->expects($this->never())
+            ->method('save');
+        $this->registeredEventFactory->expects($this->never())
+            ->method('create');
+        $this->eventBus->expects($this->never())
+            ->method('publish');
+
+        $this->handler->__invoke($command);
+
+        $this->assertSame($existingUser, $command->getResponse()->createdUser);
+    }
+
     private function setExpectations(
         UserInterface $user
     ): void {
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')
+            ->willReturn(null);
+
         $this->transformer->expects($this->once())
             ->method('transformToUser')
             ->willReturn($user);

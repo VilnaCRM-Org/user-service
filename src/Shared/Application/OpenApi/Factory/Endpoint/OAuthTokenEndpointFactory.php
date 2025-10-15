@@ -50,6 +50,7 @@ final class OAuthTokenEndpointFactory implements AbstractEndpointFactory
                     tags: ['OAuth'],
                     responses: $this->getResponses(),
                     requestBody: $this->tokenRequestFactory->getRequest(),
+                    security: []
                 )
             )
         );
@@ -72,8 +73,8 @@ final class OAuthTokenEndpointFactory implements AbstractEndpointFactory
         return implode(
             ' ',
             [
-                'Exchanges an authorization code or refresh token for',
-                'OAuth access and refresh tokens.',
+                'Exchanges an authorization code, password credentials,',
+                'or refresh token for OAuth access and refresh tokens.',
             ]
         );
     }

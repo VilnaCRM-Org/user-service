@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application;
 
+use ApiPlatform\Metadata\Exception\HttpExceptionInterface as ApiPlatformHttpExceptionInterface;
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\State\ApiResource\Error;
 use App\Shared\Application\ErrorProvider;
@@ -120,7 +121,7 @@ final class ErrorProviderTest extends UnitTestCase
 
     public function testProvideDomainException(): void
     {
-        $status = $this->faker->numberBetween(200, 500);
+        $status = Response::HTTP_BAD_REQUEST;
         $this->operation->expects($this->once())
             ->method('getStatus')->willReturn($status);
         $template = $this->faker->word();
@@ -175,6 +176,74 @@ final class ErrorProviderTest extends UnitTestCase
         $error = $errorProvider->provide($this->operation, [], $context);
 
         $this->assertEquals($errorText, $error['message']);
+    }
+
+    public function testApiPlatformHttpExceptionHeadersArePreserved(): void
+    {
+        $this->operation->expects($this->once())
+            ->method('getStatus')
+            ->willReturn(Response::HTTP_BAD_REQUEST);
+
+        $exception = new class() extends \RuntimeException implements ApiPlatformHttpExceptionInterface {
+            public function __construct()
+            {
+                parent::__construct('Invalid payload');
+            }
+
+            public function getStatusCode(): int
+            {
+                return Response::HTTP_BAD_REQUEST;
+            }
+
+            public function getHeaders(): array
+            {
+                return ['X-Debug' => '1'];
+            }
+        };
+
+        $request = new Request(attributes: ['exception' => $exception]);
+        $context = ['request' => $request];
+
+        $this->translator
+            ->method('trans')
+            ->with('error.internal')
+            ->willReturn('');
+
+        $errorProvider = new ErrorProvider($this->translator);
+
+        $error = $errorProvider->provide($this->operation, [], $context);
+
+        $this->assertInstanceOf(Error::class, $error);
+        $this->assertSame(['X-Debug' => '1'], $error->getHeaders());
+    }
+
+    public function testSymfonyHttpExceptionHeadersArePreserved(): void
+    {
+        $this->operation->expects($this->once())
+            ->method('getStatus')
+            ->willReturn(Response::HTTP_BAD_REQUEST);
+
+        $exception = new HttpException(
+            Response::HTTP_BAD_REQUEST,
+            'Invalid request',
+            null,
+            ['Retry-After' => '30']
+        );
+
+        $request = new Request(attributes: ['exception' => $exception]);
+        $context = ['request' => $request];
+
+        $this->translator
+            ->method('trans')
+            ->with('error.internal')
+            ->willReturn('');
+
+        $errorProvider = new ErrorProvider($this->translator);
+
+        $error = $errorProvider->provide($this->operation, [], $context);
+
+        $this->assertInstanceOf(Error::class, $error);
+        $this->assertSame(['Retry-After' => '30'], $error->getHeaders());
     }
 
     /**

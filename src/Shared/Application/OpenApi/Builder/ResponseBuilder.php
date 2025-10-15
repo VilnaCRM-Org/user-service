@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model\Response;
+use ArrayObject;
 
 final class ResponseBuilder
 {
@@ -19,11 +20,12 @@ final class ResponseBuilder
     public function build(
         string $description,
         array $params,
-        array $headers
+        array $headers,
+        string $contentType = 'application/json'
     ): Response {
         return new Response(
             description: $description,
-            content: $this->contextBuilder->build($params),
+            content: $this->contextBuilder->build($params, $contentType),
             headers: $this->buildHeaders($headers)
         );
     }
@@ -31,27 +33,27 @@ final class ResponseBuilder
     /**
      * @param array<Header> $headers
      */
-    private function buildHeaders(array $headers): \ArrayObject
+    private function buildHeaders(array $headers): ArrayObject
     {
-        $headersArray = new \ArrayObject();
+        $headersArray = new ArrayObject();
 
         foreach ($headers as $header) {
-            $schema = ['type' => $header->type];
+            $schema = array_filter(
+                [
+                    'type' => $header->type,
+                    'format' => $header->format,
+                ],
+                static fn ($value): bool => $value !== null
+            );
 
-            if ($header->format !== null) {
-                $schema['format'] = $header->format;
-            }
-
-            $headerData = [
-                'description' => $header->description,
-                'schema' => $schema,
-            ];
-
-            if ($header->example !== null) {
-                $headerData['example'] = $header->example;
-            }
-
-            $headersArray[$header->name] = $headerData;
+            $headersArray[$header->name] = array_filter(
+                [
+                    'description' => $header->description,
+                    'schema' => $schema,
+                    'example' => $header->example,
+                ],
+                static fn ($value): bool => $value !== null
+            );
         }
 
         return $headersArray;

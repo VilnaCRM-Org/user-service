@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\User\Domain\Entity;
 
+use DateTimeImmutable;
+
 final class PasswordResetToken implements PasswordResetTokenInterface
 {
     private bool $isUsed;
@@ -11,8 +13,8 @@ final class PasswordResetToken implements PasswordResetTokenInterface
     public function __construct(
         private string $tokenValue,
         private string $userID,
-        private \DateTimeImmutable $expiresAt,
-        private \DateTimeImmutable $createdAt
+        private DateTimeImmutable $expiresAt,
+        private DateTimeImmutable $createdAt
     ) {
         $this->isUsed = false;
     }
@@ -27,12 +29,12 @@ final class PasswordResetToken implements PasswordResetTokenInterface
         return $this->userID;
     }
 
-    public function getExpiresAt(): \DateTimeImmutable
+    public function getExpiresAt(): DateTimeImmutable
     {
         return $this->expiresAt;
     }
 
-    public function getCreatedAt(): \DateTimeImmutable
+    public function getCreatedAt(): DateTimeImmutable
     {
         return $this->createdAt;
     }
@@ -42,9 +44,9 @@ final class PasswordResetToken implements PasswordResetTokenInterface
         return $this->isUsed;
     }
 
-    public function isExpired(?\DateTimeImmutable $currentTime = null): bool
+    public function isExpired(?DateTimeImmutable $currentTime = null): bool
     {
-        $currentTime = $currentTime ?? new \DateTimeImmutable();
+        $currentTime = $currentTime ?? new DateTimeImmutable();
         return $currentTime > $this->expiresAt;
     }
 

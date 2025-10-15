@@ -49,7 +49,7 @@ final class UserUpdatedResponseFactoryTest extends UnitTestCase
         return new Parameter(
             'email',
             'string',
-            'user@example.com'
+            'update-user@example.com'
         );
     }
 
@@ -58,7 +58,7 @@ final class UserUpdatedResponseFactoryTest extends UnitTestCase
         return new Parameter(
             'initials',
             'string',
-            'Name Surname'
+            'UpdateUser'
         );
     }
 
@@ -67,7 +67,7 @@ final class UserUpdatedResponseFactoryTest extends UnitTestCase
         return new Parameter(
             'id',
             'string',
-            '018dd6ba-e901-7a8c-b27d-65d122caca6b'
+            '018dd6ba-e901-7a8c-b27d-65d122caca6c'
         );
     }
 }

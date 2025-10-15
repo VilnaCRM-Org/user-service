@@ -29,7 +29,8 @@ final class UserTimedOutResponseFactoryTest extends UnitTestCase
                     $this->getDetailParam(),
                     $this->getStatusParam(),
                 ],
-                []
+                [],
+                'application/problem+json'
             )
             ->willReturn($this->createStub(Response::class));
 

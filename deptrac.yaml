@@ -14,6 +14,10 @@ parameters:
           regex: '.*App\\Shared\\Application\\(Validator|Transformer|ErrorProvider|DomainExceptionNormalizer|NotFoundExceptionNormalizer).*'
         - type: className
           regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|Processor|OpenApiFactory).*'
+        - type: className
+          regex: '.*App\\Shared\\Application\\Fixture\\.*'
+        - type: className
+          regex: '.*App\\Shared\\Application\\Http\\.*'
     - name: Domain
       collectors:
         - type: className

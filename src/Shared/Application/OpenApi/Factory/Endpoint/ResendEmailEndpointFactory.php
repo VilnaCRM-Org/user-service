@@ -8,11 +8,13 @@ use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Request\EmptyRequestFactory;
+use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\EmailSendFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UnsupportedMediaTypeFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserNotFoundResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserTimedOutResponseFactory;
 use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
-use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use Symfony\Component\HttpFoundation\Response as Http;
 
 final class ResendEmailEndpointFactory implements AbstractEndpointFactory
 {
@@ -20,14 +22,18 @@ final class ResendEmailEndpointFactory implements AbstractEndpointFactory
 
     private Parameter $uuidWithExamplePathParam;
     private Response $sendAgainResponse;
+    private Response $badRequestResponse;
     private Response $userNotFoundResponse;
     private Response $timedOutResponse;
+    private Response $unsupportedMediaResponse;
 
     public function __construct(
         string $apiPrefix,
         private UserNotFoundResponseFactory $userNotFoundResponseFactory,
         private EmailSendFactory $sendAgainResponseFactory,
         private UserTimedOutResponseFactory $timedOutResponseFactory,
+        private UnsupportedMediaTypeFactory $unsupportedMediaTypeFactory,
+        private BadRequestResponseFactory $badRequestResponseFactory,
         private EmptyRequestFactory $emptyRequestFactory,
         private UuidUriParameterFactory $parameterFactory
     ) {
@@ -36,9 +42,13 @@ final class ResendEmailEndpointFactory implements AbstractEndpointFactory
             $this->parameterFactory->getParameter();
         $this->sendAgainResponse =
             $this->sendAgainResponseFactory->getResponse();
+        $this->badRequestResponse =
+            $badRequestResponseFactory->getResponse();
         $this->userNotFoundResponse =
             $this->userNotFoundResponseFactory->getResponse();
         $this->timedOutResponse = $this->timedOutResponseFactory->getResponse();
+        $this->unsupportedMediaResponse =
+            $this->unsupportedMediaTypeFactory->getResponse();
     }
 
     public function createEndpoint(OpenApi $openApi): void
@@ -65,10 +75,14 @@ final class ResendEmailEndpointFactory implements AbstractEndpointFactory
      */
     private function getResponses(): array
     {
+        $unsupportedMediaResponse = $this->unsupportedMediaResponse;
+
         return [
-            HttpResponse::HTTP_OK => $this->sendAgainResponse,
-            HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
-            HttpResponse::HTTP_TOO_MANY_REQUESTS => $this->timedOutResponse,
+            Http::HTTP_OK => $this->sendAgainResponse,
+            Http::HTTP_BAD_REQUEST => $this->badRequestResponse,
+            Http::HTTP_NOT_FOUND => $this->userNotFoundResponse,
+            Http::HTTP_TOO_MANY_REQUESTS => $this->timedOutResponse,
+            Http::HTTP_UNSUPPORTED_MEDIA_TYPE => $unsupportedMediaResponse,
         ];
     }
 }

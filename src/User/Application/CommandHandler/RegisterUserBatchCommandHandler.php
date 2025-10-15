@@ -35,32 +35,43 @@ final readonly class RegisterUserBatchCommandHandler implements
 
     public function __invoke(RegisterUserBatchCommand $command): void
     {
-        $users = [];
+        $usersToPersist = [];
+        $returnedUsers = [];
         $events = [];
 
         foreach ($command->users as $user) {
-            $this->processUser($user, $events, $users);
+            $returnedUsers[] = $this->processUser(
+                $user,
+                $events,
+                $usersToPersist
+            );
         }
 
-        $this->userRepository->saveBatch($users);
+        $this->persistUsersIfNeeded($usersToPersist);
 
         $command->setResponse(new RegisterUserBatchCommandResponse(
-            new UserCollection($users)
+            new UserCollection($returnedUsers)
         ));
 
-        $this->eventBus->publish(...$events);
+        $this->publishEventsIfNeeded($events);
     }
 
     /**
      * @param array<string> $user
      * @param array<DomainEvent> $events
-     * @param array<UserInterface> $users
+     * @param array<UserInterface> $usersToPersist
      */
     private function processUser(
         array $user,
         array &$events,
-        array &$users
-    ): void {
+        array &$usersToPersist
+    ): UserInterface {
+        $existingUser = $this->userRepository->findByEmail($user['email']);
+
+        if ($existingUser !== null) {
+            return $existingUser;
+        }
+
         $hasher = $this->hasherFactory->getPasswordHasher(User::class);
         $createdUser = $this->userFactory->create(
             $user['email'],
@@ -70,10 +81,35 @@ final readonly class RegisterUserBatchCommandHandler implements
                 $this->uuidFactory->create()
             )
         );
-        $users[] = $createdUser;
+        $usersToPersist[] = $createdUser;
         $events[] = $this->registeredEventFactory->create(
             $createdUser,
             (string) $this->uuidFactory->create()
         );
+        return $createdUser;
+    }
+
+    /**
+     * @param array<UserInterface> $users
+     */
+    private function persistUsersIfNeeded(array $users): void
+    {
+        if ($users === []) {
+            return;
+        }
+
+        $this->userRepository->saveBatch($users);
+    }
+
+    /**
+     * @param array<DomainEvent> $events
+     */
+    private function publishEventsIfNeeded(array $events): void
+    {
+        if ($events === []) {
+            return;
+        }
+
+        $this->eventBus->publish(...$events);
     }
 }

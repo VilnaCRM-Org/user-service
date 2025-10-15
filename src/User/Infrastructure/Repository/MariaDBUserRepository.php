@@ -51,18 +51,32 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
      */
     public function saveBatch(array $users): void
     {
+        $this->persistUsersInBatch($users);
+    }
+
+    /**
+     * @param array<User> $users
+     */
+    private function persistUsersInBatch(array $users): void
+    {
         $this->entityManager->getConnection()
             ->getConfiguration()
             ->setMiddlewares([new Middleware(new NullLogger())]);
 
-        $userCount = count($users);
-        for ($i = 1; $i <= $userCount; ++$i) {
-            $this->entityManager->persist($users[$i - 1]);
-            if ($i % $this->batchSize === 0) {
-                $this->entityManager->flush();
-                $this->entityManager->clear();
+        $usersForPersistence = array_values($users);
+
+        array_walk(
+            $usersForPersistence,
+            function (User $user, int $index): void {
+                $position = $index + 1;
+                $this->entityManager->persist($user);
+
+                if ($position % $this->batchSize === 0) {
+                    $this->entityManager->flush();
+                    $this->entityManager->clear();
+                }
             }
-        }
+        );
         $this->entityManager->flush();
         $this->entityManager->clear();
     }

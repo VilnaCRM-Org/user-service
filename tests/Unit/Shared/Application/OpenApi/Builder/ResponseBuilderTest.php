@@ -47,7 +47,7 @@ final class ResponseBuilderTest extends UnitTestCase
     {
         $this->contextBuilderMock->expects($this->once())
             ->method('build')
-            ->with([])
+            ->with([], 'application/json')
             ->willReturn(new \ArrayObject([]));
 
         $response = $this->builder->build($this->description, [], []);
@@ -69,7 +69,7 @@ final class ResponseBuilderTest extends UnitTestCase
 
         $this->contextBuilderMock->expects($this->once())
             ->method('build')
-            ->with($params)
+            ->with($params, 'application/json')
             ->willReturn($expectedContent);
 
         $response =

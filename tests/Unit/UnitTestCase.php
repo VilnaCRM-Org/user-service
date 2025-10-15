@@ -8,6 +8,9 @@ use Faker\Factory;
 use Faker\Generator;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @SuppressWarnings(PHPMD.NumberOfChildren)
+ */
 abstract class UnitTestCase extends TestCase
 {
     protected Generator $faker;

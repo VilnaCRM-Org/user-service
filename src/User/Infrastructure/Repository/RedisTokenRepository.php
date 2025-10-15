@@ -16,6 +16,10 @@ final readonly class RedisTokenRepository implements TokenRepositoryInterface
     private const REDIS_KEY_PREFIX = 'token-';
     private const TOKEN_VALUE_PREFIX = 'tokenValue-';
     private const USER_ID_PREFIX = 'userID-';
+    private const CACHE_MAPPINGS = [
+        ['prefix' => self::TOKEN_VALUE_PREFIX, 'accessor' => 'getTokenValue'],
+        ['prefix' => self::USER_ID_PREFIX, 'accessor' => 'getUserID'],
+    ];
 
     private const EXPIRES_AFTER_IN_SECONDS = 86400; // 24 hours
 
@@ -27,82 +31,42 @@ final readonly class RedisTokenRepository implements TokenRepositoryInterface
 
     public function save(object $token): void
     {
-        $this->saveForTokenValue($token);
-        $this->saveForUserId($token);
+        $serializedToken = $this->serializer->serialize(
+            $token,
+            JsonEncoder::FORMAT
+        );
+
+        foreach (self::CACHE_MAPPINGS as $mapping) {
+            $value = $this->extractTokenValue($token, $mapping['accessor']);
+            $this->storeSerializedToken(
+                $this->buildKey($mapping['prefix'], $value),
+                $serializedToken
+            );
+        }
     }
 
     public function find(string $tokenValue): ?ConfirmationTokenInterface
     {
-        $key = $this->getTokenKey($tokenValue);
-
-        return $this->getFromCache($key);
+        return $this->getFromCache(
+            $this->buildKey(self::TOKEN_VALUE_PREFIX, $tokenValue)
+        );
     }
 
     public function findByUserId(string $userID): ?ConfirmationTokenInterface
     {
-        $key = $this->getUserKey($userID);
-
-        return $this->getFromCache($key);
+        return $this->getFromCache(
+            $this->buildKey(self::USER_ID_PREFIX, $userID)
+        );
     }
 
     public function delete(object $token): void
     {
-        $this->deleteForTokenValue($token);
-        $this->deleteForUserId($token);
-    }
-
-    private function saveForTokenValue(object $token): void
-    {
-        $tokenValue = $token->getTokenValue();
-
-        $serializedToken = $this->serializer->serialize(
-            $token,
-            JsonEncoder::FORMAT
-        );
-
-        $this->saveToCache($this->getTokenKey($tokenValue), $serializedToken);
-    }
-
-    private function saveForUserId(object $token): void
-    {
-        $userId = $token->getUserID();
-
-        $serializedToken = $this->serializer->serialize(
-            $token,
-            JsonEncoder::FORMAT
-        );
-
-        $this->saveToCache($this->getUserKey($userId), $serializedToken);
-    }
-
-    private function saveToCache(string $key, string $value): void
-    {
-        $cacheItem = $this->redisAdapter->getItem($key);
-        $cacheItem->set($value);
-        $cacheItem->expiresAfter(self::EXPIRES_AFTER_IN_SECONDS);
-        $this->redisAdapter->save($cacheItem);
-    }
-
-    private function deleteForTokenValue(object $token): void
-    {
-        $tokenValue = $token->getTokenValue();
-        $this->redisAdapter->delete($this->getTokenKey($tokenValue));
-    }
-
-    private function deleteForUserId(object $token): void
-    {
-        $userId = $token->getUserID();
-        $this->redisAdapter->delete($this->getUserKey($userId));
-    }
-
-    private function getTokenKey(string $tokenValue): string
-    {
-        return self::REDIS_KEY_PREFIX . self::TOKEN_VALUE_PREFIX . $tokenValue;
-    }
-
-    private function getUserKey(string $userID): string
-    {
-        return self::REDIS_KEY_PREFIX . self::USER_ID_PREFIX . $userID;
+        foreach (self::CACHE_MAPPINGS as $mapping) {
+            $value = $this->extractTokenValue($token, $mapping['accessor']);
+            $this->redisAdapter->delete(
+                $this->buildKey($mapping['prefix'], $value)
+            );
+        }
     }
 
     private function getFromCache(string $key): ?ConfirmationTokenInterface
@@ -116,5 +80,23 @@ final readonly class RedisTokenRepository implements TokenRepositoryInterface
             JsonEncoder::FORMAT
         )
             : null;
+    }
+
+    private function storeSerializedToken(string $key, string $value): void
+    {
+        $cacheItem = $this->redisAdapter->getItem($key);
+        $cacheItem->set($value);
+        $cacheItem->expiresAfter(self::EXPIRES_AFTER_IN_SECONDS);
+        $this->redisAdapter->save($cacheItem);
+    }
+
+    private function buildKey(string $prefix, string $identifier): string
+    {
+        return self::REDIS_KEY_PREFIX . $prefix . $identifier;
+    }
+
+    private function extractTokenValue(object $token, string $accessor): string
+    {
+        return $token->$accessor();
     }
 }

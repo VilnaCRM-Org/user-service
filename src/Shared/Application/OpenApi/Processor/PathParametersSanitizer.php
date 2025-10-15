@@ -10,13 +10,12 @@ use ApiPlatform\OpenApi\OpenApi;
 
 final class PathParametersSanitizer
 {
-    private PathParameterCleaner $parameterCleaner;
+    private readonly PathParameterCleaner $parameterCleaner;
 
     public function __construct(
-        ?PathParameterCleaner $parameterCleaner = null
+        PathParameterCleaner $parameterCleaner = new PathParameterCleaner()
     ) {
-        $this->parameterCleaner = $parameterCleaner
-            ?? new PathParameterCleaner();
+        $this->parameterCleaner = $parameterCleaner;
     }
 
     public function sanitize(OpenApi $openApi): OpenApi
@@ -44,19 +43,17 @@ final class PathParametersSanitizer
 
     private function sanitizeOperation(?Operation $operation): ?Operation
     {
-        if ($operation === null) {
-            return null;
-        }
-
-        if (!\is_array($operation->getParameters())) {
-            return $operation;
-        }
-
-        $parameters = array_map(
-            fn (mixed $parameter) => $this->parameterCleaner->clean($parameter),
-            $operation->getParameters()
-        );
-
-        return $operation->withParameters($parameters);
+        return match (true) {
+            $operation === null => null,
+            !\is_array($operation->getParameters()) => $operation,
+            default => $operation->withParameters(
+                array_map(
+                    fn (mixed $parameter) => $this->parameterCleaner->clean(
+                        $parameter
+                    ),
+                    $operation->getParameters()
+                )
+            ),
+        };
     }
 }

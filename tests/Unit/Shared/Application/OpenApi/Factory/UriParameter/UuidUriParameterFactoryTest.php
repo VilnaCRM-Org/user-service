@@ -26,11 +26,22 @@ final class UuidUriParameterFactoryTest extends UnitTestCase
     {
         $name = 'id';
         $description = 'User identifier';
-        $example = '2b10b7a3-67f0-40ea-a367-44263321592a';
+        $example = '018dd6ba-e901-7a8c-b27d-65d122caca6b';
         $required = true;
         $type = 'string';
+        $format = 'uuid';
 
-        $this->setExpectations($name, $description, $example, $required, $type);
+        $enum = [$example];
+
+        $this->setExpectations(
+            $name,
+            $description,
+            $example,
+            $required,
+            $type,
+            $format,
+            $enum
+        );
 
         $parameter = $this->factory->getParameter();
 
@@ -39,8 +50,41 @@ final class UuidUriParameterFactoryTest extends UnitTestCase
         $this->assertEquals('path', $parameter->getIn());
         $this->assertEquals($description, $parameter->getDescription());
         $this->assertTrue($parameter->getRequired());
-        $this->assertEquals(['type' => $type], $parameter->getSchema());
+        $this->assertEquals(
+            ['type' => $type, 'format' => $format, 'enum' => $enum],
+            $parameter->getSchema()
+        );
         $this->assertEquals($example, $parameter->getExample());
+    }
+
+    public function testGetParameterForCustomId(): void
+    {
+        $example = '018dd6ba-e901-7a8c-b27d-65d122caca6c';
+        $this->builderMock->expects($this->once())
+            ->method('build')
+            ->with(
+                'id',
+                'User identifier',
+                true,
+                $example,
+                'string',
+                'uuid',
+                [$example]
+            )
+            ->willReturn(
+                new Parameter(
+                    name: 'id',
+                    in: 'path',
+                    description: 'User identifier',
+                    required: true,
+                    schema: ['type' => 'string', 'format' => 'uuid', 'enum' => [$example]],
+                    example: $example
+                )
+            );
+
+        $parameter = $this->factory->getParameterFor($example);
+
+        $this->assertSame($example, $parameter->getExample());
     }
 
     private function setExpectations(
@@ -48,7 +92,9 @@ final class UuidUriParameterFactoryTest extends UnitTestCase
         string $description,
         string $example,
         bool $required,
-        string $type
+        string $type,
+        string $format,
+        array $enum
     ): void {
         $this->builderMock->expects($this->once())
             ->method('build')
@@ -57,7 +103,9 @@ final class UuidUriParameterFactoryTest extends UnitTestCase
                 $description,
                 $required,
                 $example,
-                $type
+                $type,
+                $format,
+                $enum
             )
             ->willReturn(
                 new Parameter(
@@ -65,7 +113,7 @@ final class UuidUriParameterFactoryTest extends UnitTestCase
                     in: 'path',
                     description: $description,
                     required: true,
-                    schema: ['type' => $type],
+                    schema: ['type' => $type, 'format' => $format, 'enum' => $enum],
                     example: $example
                 )
             );

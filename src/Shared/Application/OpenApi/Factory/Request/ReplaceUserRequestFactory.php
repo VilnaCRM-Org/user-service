@@ -7,6 +7,7 @@ namespace App\Shared\Application\OpenApi\Factory\Request;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\RequestBuilder;
+use App\Shared\Application\OpenApi\Builder\Requirement;
 
 final class ReplaceUserRequestFactory implements AbstractRequestFactory
 {
@@ -31,7 +32,7 @@ final class ReplaceUserRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'email',
             'string',
-            'user@example.com',
+            'update-user@example.com',
             255,
             'email'
         );
@@ -42,8 +43,11 @@ final class ReplaceUserRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'initials',
             'string',
-            'Name Surname',
-            255
+            'UpdateUser',
+            255,
+            null,
+            Requirement::REQUIRED,
+            '^\\S+$'
         );
     }
 
@@ -52,8 +56,11 @@ final class ReplaceUserRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'oldPassword',
             'string',
-            'passWORD1',
-            255
+            'Password1!',
+            64,
+            null,
+            Requirement::REQUIRED,
+            '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
         );
     }
 
@@ -62,8 +69,11 @@ final class ReplaceUserRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'newPassword',
             'string',
-            'PASSword2',
-            255
+            'Password1!',
+            64,
+            null,
+            Requirement::REQUIRED,
+            '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
         );
     }
 }

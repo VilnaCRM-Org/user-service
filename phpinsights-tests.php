@@ -48,6 +48,7 @@ return [
                 'src/User/Infrastructure/Repository/MariaDBPasswordResetTokenRepository.php',
             ],
             'ignoreComments' => true,
+            'lineLimit' => 100,
         ],
         ForbiddenNormalClasses::class => [
             'exclude' => [

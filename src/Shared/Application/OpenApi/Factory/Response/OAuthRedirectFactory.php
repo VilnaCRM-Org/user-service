@@ -21,7 +21,7 @@ final class OAuthRedirectFactory implements AbstractResponseFactory
             'The URI to redirect to for user authorization',
             'string',
             'uri',
-            'https://example.com/oauth/callback?code=e7f8c62113a4'
+            'https://example.com?code=e7f8c62113a4'
         );
 
         return $this->responseBuilder->build(

@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Shared\Application;
 
+use ApiPlatform\Metadata\Exception\HttpExceptionInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ApiResource\Error;
 use ApiPlatform\State\ProviderInterface;
 use App\User\Domain\Exception\DomainException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface as SymfonyHttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
@@ -51,33 +53,55 @@ final readonly class ErrorProvider implements ProviderInterface
         string $internalErrorText
     ): array|Error {
         $exception = $request->attributes->get('exception');
+        assert($exception instanceof Throwable);
 
         if ($status >= HttpResponse::HTTP_INTERNAL_SERVER_ERROR) {
-            if ($this->isGraphQLRequest($request)) {
-                $error = $this->provideGraphQLInternalServerError(
-                    $internalErrorText
-                );
-            } else {
-                $error = $this->provideRESTInternalServerError(
-                    $exception,
-                    $internalErrorText,
-                    $status
-                );
-            }
-        } elseif ($exception instanceof DomainException) {
-            $error = $this->provideRESTDomainException($exception, $status);
-        } else {
-            $error = $this->provideHttpException($exception, $status);
+            return $this->provideInternalServerError(
+                $request,
+                $exception,
+                $internalErrorText,
+                $status
+            );
         }
 
-        return $error;
+        return $this->provideDomainOrHttpError($exception, $status);
+    }
+
+    private function provideInternalServerError(
+        Request $request,
+        Throwable $exception,
+        string $internalErrorText,
+        int $status
+    ): array|Error {
+        if ($this->isGraphQLRequest($request)) {
+            return $this->provideGraphQLInternalServerError(
+                $internalErrorText
+            );
+        }
+
+        return $this->provideRESTInternalServerError(
+            $exception,
+            $internalErrorText,
+            $status
+        );
+    }
+
+    private function provideDomainOrHttpError(
+        Throwable $exception,
+        int $status
+    ): Error {
+        if ($exception instanceof DomainException) {
+            return $this->provideRESTDomainException($exception, $status);
+        }
+
+        return $this->provideHttpException($exception, $status);
     }
 
     private function provideHttpException(
         Throwable $exception,
         int $status
     ): Error {
-        $error = Error::createFromException($exception, $status);
+        $error = $this->createErrorFromException($exception, $status);
 
         if ($exception instanceof NotFoundHttpException) {
             $error->setDetail($this->translator->trans('error.not.found.http'));
@@ -99,7 +123,7 @@ final readonly class ErrorProvider implements ProviderInterface
         string $message,
         int $status
     ): Error {
-        $error = Error::createFromException($exception, $status);
+        $error = $this->createErrorFromException($exception, $status);
         $error->setDetail($message);
 
         return $error;
@@ -109,7 +133,7 @@ final readonly class ErrorProvider implements ProviderInterface
         DomainException $exception,
         int $status
     ): Error {
-        $error = Error::createFromException($exception, $status);
+        $error = $this->createErrorFromException($exception, $status);
         $error->setDetail($this->translator->trans(
             $exception->getTranslationTemplate(),
             $exception->getTranslationArgs()
@@ -121,5 +145,29 @@ final readonly class ErrorProvider implements ProviderInterface
     private function isGraphQLRequest(Request $request): bool
     {
         return str_contains($request->getRequestUri(), 'graphql');
+    }
+
+    private function createErrorFromException(
+        Throwable $exception,
+        int $status
+    ): Error {
+        $headers = [];
+
+        if (
+            $exception instanceof SymfonyHttpExceptionInterface
+            || $exception instanceof HttpExceptionInterface
+        ) {
+            $headers = $exception->getHeaders();
+        }
+
+        return new Error(
+            title: 'An error occurred',
+            detail: $exception->getMessage(),
+            status: $status,
+            originalTrace: $exception->getTrace(),
+            type: "/errors/{$status}",
+            headers: $headers,
+            previous: $exception->getPrevious()
+        );
     }
 }

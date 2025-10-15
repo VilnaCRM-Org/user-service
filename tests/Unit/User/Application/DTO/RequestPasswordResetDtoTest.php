@@ -24,6 +24,6 @@ final class RequestPasswordResetDtoTest extends UnitTestCase
         $dto = new RequestPasswordResetDto();
 
         $this->assertInstanceOf(RequestPasswordResetDto::class, $dto);
-        $this->assertNull($dto->email);
+        $this->assertSame('', $dto->email);
     }
 }

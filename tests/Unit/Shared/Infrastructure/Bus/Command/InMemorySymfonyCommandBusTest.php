@@ -9,6 +9,8 @@ use App\Shared\Infrastructure\Bus\Command\CommandNotRegisteredException;
 use App\Shared\Infrastructure\Bus\Command\InMemorySymfonyCommandBus;
 use App\Shared\Infrastructure\Bus\MessageBusFactory;
 use App\Tests\Unit\UnitTestCase;
+use ReflectionClass;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Messenger\Exception\NoHandlerForMessageException;
 use Symfony\Component\Messenger\MessageBus;
@@ -29,6 +31,24 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
             $this->createMock(MessageBusFactory::class);
         $this->commandHandlers =
             [$this->createMock(CommandInterface::class)];
+    }
+
+    public function testDispatchSucceeds(): void
+    {
+        $command = $this->createMock(CommandInterface::class);
+        $messageBus = $this->createMock(MessageBus::class);
+        $messageBus->expects($this->once())
+            ->method('dispatch')
+            ->with($command);
+        $this->messageBusFactory->method('create')
+            ->willReturn($messageBus);
+
+        $commandBus = new InMemorySymfonyCommandBus(
+            $this->messageBusFactory,
+            $this->commandHandlers
+        );
+
+        $commandBus->dispatch($command);
     }
 
     public function testDispatchWithNoHandlerForMessageException(): void
@@ -69,6 +89,71 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
         $this->expectException(HandlerFailedException::class);
 
         $commandBus->dispatch($command);
+    }
+
+    public function testDispatchUnwrapsHandlerFailedPreviousException(): void
+    {
+        $command = $this->createMock(CommandInterface::class);
+        $messageBus = $this->createMock(MessageBus::class);
+        $previous = new \LogicException('original failure');
+        $handlerFailed = new HandlerFailedException(
+            new Envelope(new \stdClass()),
+            [$previous]
+        );
+
+        $messageBus->expects($this->once())
+            ->method('dispatch')
+            ->willThrowException($handlerFailed);
+        $this->messageBusFactory->method('create')
+            ->willReturn($messageBus);
+        $commandBus = new InMemorySymfonyCommandBus(
+            $this->messageBusFactory,
+            $this->commandHandlers
+        );
+
+        $this->expectExceptionObject($previous);
+
+        $commandBus->dispatch($command);
+    }
+
+    public function testCommandBusHelperMethodsAreCovered(): void
+    {
+        $messageBus = $this->createMock(MessageBus::class);
+        $this->messageBusFactory->method('create')->willReturn($messageBus);
+        $commandBus = new InMemorySymfonyCommandBus(
+            $this->messageBusFactory,
+            $this->commandHandlers
+        );
+
+        $reflection = new ReflectionClass($commandBus);
+
+        $command = $this->createMock(CommandInterface::class);
+        $commandNotRegistered = $reflection->getMethod('commandNotRegistered');
+        $commandNotRegistered->setAccessible(true);
+
+        $exception = $commandNotRegistered->invoke($commandBus, $command);
+        self::assertInstanceOf(CommandNotRegisteredException::class, $exception);
+
+        $unwrap = $reflection->getMethod('unwrapHandlerFailure');
+        $unwrap->setAccessible(true);
+        $handlerFailure = new HandlerFailedException(
+            new Envelope(new \stdClass()),
+            [new \RuntimeException('failure')]
+        );
+
+        $result = $unwrap->invoke($commandBus, $handlerFailure);
+        self::assertInstanceOf(\RuntimeException::class, $result);
+
+        $handle = $reflection->getMethod('handleDispatchException');
+        $handle->setAccessible(true);
+        $otherError = new \RuntimeException('other failure');
+
+        try {
+            $handle->invoke($commandBus, $otherError, $command);
+            $this->fail('Expected exception not thrown.');
+        } catch (\RuntimeException $caught) {
+            self::assertSame($otherError, $caught);
+        }
     }
 
     public function testDispatchWithThrowable(): void

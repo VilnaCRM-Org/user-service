@@ -26,8 +26,8 @@ final class ConfirmPasswordResetDtoTest extends UnitTestCase
         $dto = new ConfirmPasswordResetDto();
 
         $this->assertInstanceOf(ConfirmPasswordResetDto::class, $dto);
-        $this->assertNull($dto->token);
-        $this->assertNull($dto->newPassword);
+        $this->assertSame('', $dto->token);
+        $this->assertSame('', $dto->newPassword);
     }
 
     public function testConstructWithPartialParameters(): void
@@ -38,6 +38,6 @@ final class ConfirmPasswordResetDtoTest extends UnitTestCase
 
         $this->assertInstanceOf(ConfirmPasswordResetDto::class, $dto);
         $this->assertSame($token, $dto->token);
-        $this->assertNull($dto->newPassword);
+        $this->assertSame('', $dto->newPassword);
     }
 }

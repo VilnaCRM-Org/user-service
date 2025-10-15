@@ -22,7 +22,6 @@ final class InvalidCredentialsFactory implements
             [
                 $this->getErrorParam(),
                 $this->getErrorDescriptionParam(),
-                $this->getMessageParam(),
             ],
             []
         );
@@ -41,15 +40,6 @@ final class InvalidCredentialsFactory implements
     {
         return new Parameter(
             'error_description',
-            'string',
-            'Client authentication failed'
-        );
-    }
-
-    private function getMessageParam(): Parameter
-    {
-        return new Parameter(
-            'message',
             'string',
             'Client authentication failed'
         );

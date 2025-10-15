@@ -21,6 +21,12 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 final class UserOperationsContext implements Context
 {
+    private const EMPTY_BODY_BY_METHOD = [
+        Request::METHOD_POST => '{}',
+        Request::METHOD_PUT => '{}',
+        Request::METHOD_PATCH => '{}',
+    ];
+
     private ?RequestInput $requestBody;
     private int $violationNum;
     private string $language;
@@ -130,12 +136,13 @@ final class UserOperationsContext implements Context
 
     /**
      * @When :method request is send to :path
+     * @When :method request is sent to :path
      */
     public function requestSendTo(string $method, string $path): void
     {
         $processedPath = $this->processRequestPath($path);
         $headers = $this->buildRequestHeaders($method);
-        $requestBody = $this->serializeRequestBody();
+        $requestBody = $this->serializeRequestBody($method);
 
         $this->response = $this->kernel->handle(Request::create(
             $processedPath,
@@ -175,6 +182,15 @@ final class UserOperationsContext implements Context
     public function theResponseStatusCodeShouldBe(string $statusCode): void
     {
         Assert::assertEquals($statusCode, $this->response->getStatusCode());
+    }
+
+    /**
+     * @Then the response body should contain :text
+     */
+    public function theResponseBodyShouldContain(string $text): void
+    {
+        Assert::assertNotNull($this->response);
+        Assert::assertStringContainsString($text, (string) $this->response->getContent());
     }
 
     /**
@@ -297,9 +313,34 @@ final class UserOperationsContext implements Context
         ];
     }
 
-    private function serializeRequestBody(): string
+    private function serializeRequestBody(string $method): string
     {
-        return $this->serializer->serialize($this->requestBody, 'json');
+        $defaultPayload = self::EMPTY_BODY_BY_METHOD[$method] ?? '';
+
+        if ($this->requestBody === null) {
+            return $defaultPayload;
+        }
+
+        if (!$this->requestBody instanceof RequestInput) {
+            return $this->serializer->serialize($this->requestBody, 'json');
+        }
+
+        $payload = array_filter(
+            get_object_vars($this->requestBody),
+            static function ($value): bool {
+                if ($value === null) {
+                    return false;
+                }
+
+                if (is_string($value)) {
+                    return $value !== '';
+                }
+
+                return true;
+            }
+        );
+
+        return json_encode((object) $payload, JSON_THROW_ON_ERROR);
     }
 
     private function getContentTypeForMethod(string $method): string

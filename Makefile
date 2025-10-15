@@ -10,6 +10,7 @@ LOAD_TEST_CONFIG = tests/Load/config.prod.json
 SYMFONY_BIN   = symfony
 DOCKER        = docker
 DOCKER_COMPOSE = docker compose
+SCHEMATHESIS_IMAGE = schemathesis/schemathesis:latest
 
 # Executables
 EXEC_PHP      = $(DOCKER_COMPOSE) exec php
@@ -92,8 +93,13 @@ psalm: ## A static analysis tool for finding errors in PHP applications
 psalm-security: ## Psalm security analysis
 	$(EXEC_ENV) $(PSALM) --taint-analysis
 
-phpinsights: ## Instant PHP quality checks and static analysis tool
-	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --ansi --format=github-action --disable-security-check && $(EXEC_ENV) ./vendor/bin/phpinsights analyse tests --no-interaction --config-path=phpinsights-tests.php
+phpmd: ## Instant PHP MD quality checks, static analysis, and complexity insights
+	$(EXEC_ENV) ./vendor/bin/phpmd src ansi codesize,design,cleancode --exclude vendor
+	$(EXEC_ENV) ./vendor/bin/phpmd tests ansi phpmd.tests.xml --exclude vendor
+
+phpinsights: phpmd ## Instant PHP quality checks, static analysis, and complexity insights
+	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --flush-cache --fix --ansi --disable-security-check
+	$(EXEC_ENV) ./vendor/bin/phpinsights analyse tests --no-interaction --flush-cache --fix --disable-security-check --config-path=phpinsights-tests.php
 
 unit-tests: ## Run unit tests
 	@echo "Running unit tests with coverage requirement of 100%..."
@@ -164,7 +170,7 @@ build-spectral-docker:
 	$(DOCKER) build -t user-service-spectral -f ./docker/spectral/Dockerfile .
 
 infection: ## Run mutations test.
-	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations -j8 --min-msi=100 --min-covered-msi=100
+	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j8 --min-msi=100 --min-covered-msi=100
 
 create-oauth-client: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(clientName)'
@@ -228,6 +234,13 @@ load-fixtures: ## Build the DB, control the schema validity, load fixtures and c
 	@$(SYMFONY) doctrine:schema:validate
 	@$(SYMFONY) d:f:l
 
+reset-db: ## Recreate the database schema for ephemeral test runs
+	@$(SYMFONY) doctrine:cache:clear-metadata
+	@$(SYMFONY) doctrine:database:create --if-not-exists
+	@$(SYMFONY) doctrine:schema:drop --force
+	@$(SYMFONY) doctrine:schema:create
+	@$(EXEC_PHP) php bin/console app:seed-schemathesis-data
+
 coverage-html: ## Create the code coverage report with PHPUnit
 	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php php -d memory_limit=-1 vendor/bin/phpunit --coverage-html=coverage/html
 
@@ -242,6 +255,12 @@ validate-openapi-spec: generate-openapi-spec build-spectral-docker ## Generate a
 
 openapi-diff: generate-openapi-spec ## Compare the generated OpenAPI spec against the base reference using OpenAPI Diff
 	./scripts/openapi-diff.sh $(or $(base_ref),origin/main)
+
+schemathesis-validate: reset-db generate-openapi-spec ## Validate the running API against the OpenAPI spec with Schemathesis
+	$(EXEC_PHP) php bin/console app:seed-schemathesis-data
+	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth 'dc0bc6323f16fecd4224a3860ca894c5:8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7'
+	$(EXEC_PHP) php bin/console app:seed-schemathesis-data
+	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth 'dc0bc6323f16fecd4224a3860ca894c5:8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7'
 
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec
@@ -267,6 +286,8 @@ ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	if ! make psalm; then failed_checks="$$failed_checks\n❌ Psalm static analysis"; fi; \
 	echo "6️⃣  Running security taint analysis..."; \
 	if ! make psalm-security; then failed_checks="$$failed_checks\n❌ Psalm security analysis"; fi; \
+	echo "7️⃣  Running code quality analysis with PHPMD..."; \
+	if ! make phpmd; then failed_checks="$$failed_checks\n❌ PHPMD quality analysis"; fi; \
 	echo "7️⃣  Running code quality analysis with PHPInsights..."; \
 	if ! make phpinsights; then failed_checks="$$failed_checks\n❌ PHPInsights quality analysis"; fi; \
 	echo "8️⃣  Validating architecture with Deptrac..."; \
@@ -277,10 +298,12 @@ ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	if ! make behat; then failed_checks="$$failed_checks\n❌ Behat e2e tests"; fi; \
 	echo "🔟 Running mutation testing with Infection..."; \
 	if ! make infection; then failed_checks="$$failed_checks\n❌ mutation testing"; fi; \
-	echo "1️⃣1️⃣ Validating OpenAPI specification..."; \
-	if ! make validate-openapi-spec; then failed_checks="$$failed_checks\n❌ OpenAPI Spectral validation"; fi; \
-	echo "1️⃣2️⃣ Checking OpenAPI backward compatibility..."; \
+	echo "1️⃣1️⃣ Checking OpenAPI backward compatibility..."; \
 	if ! make openapi-diff; then failed_checks="$$failed_checks\n❌ OpenAPI diff"; fi; \
+	echo "1️⃣2️⃣ Validating OpenAPI specification..."; \
+	if ! make validate-openapi-spec; then failed_checks="$$failed_checks\n❌ OpenAPI Spectral validation"; fi; \
+	echo "1️⃣3️⃣ Running Schemathesis validation..."; \
+	if ! make schemathesis-validate; then failed_checks="$$failed_checks\n❌ Schemathesis validation"; fi; \
 	if [ -n "$$failed_checks" ]; then \
 		echo ""; \
 		echo "💥 CI checks completed with failures:"; \

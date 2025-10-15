@@ -56,11 +56,12 @@ final class UserCollection implements IteratorAggregate, Countable, ArrayAccess
 
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        if (is_null($offset)) {
+        if ($offset === null) {
             $this->users[] = $value;
-        } else {
-            $this->users[$offset] = $value;
+            return;
         }
+
+        $this->users[$offset] = $value;
     }
 
     public function offsetUnset(mixed $offset): void

@@ -367,7 +367,7 @@
             "clientName":"ClientName",
             "clientSecret":"Secret1",
             "clientID":"ID123",
-            "clientRedirectUri":"https://example.com/oauth/callback",
+            "clientRedirectUri":"https://example.com",
             "smoke":{
                 "threshold":90,
                 "rps":10,

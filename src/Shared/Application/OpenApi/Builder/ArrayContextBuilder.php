@@ -4,44 +4,30 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\OpenApi\Builder;
 
+use function array_filter;
+use function array_values;
+use ArrayObject;
+
 final class ArrayContextBuilder
 {
+    private const EMPTY_CONTENT = [
+        'application/json' => [
+            'example' => [],
+            'schema' => [
+                'type' => 'array',
+                'items' => ['type' => 'object'],
+            ],
+        ],
+    ];
+
     /**
      * @param array<Parameter> $params
      */
-    public function build(array $params): \ArrayObject
+    public function build(array $params): ArrayObject
     {
-        if ($params === []) {
-            return $this->buildEmptyContent();
-        }
-
-        $items = [];
-        $example = [];
-        $required = [];
-
-        foreach ($params as $param) {
-            if ($param->required) {
-                $required[] = $param->name;
-            }
-
-            $items[$param->name] = $this->createPropertySchema($param);
-            $example[$param->name] = $param->example;
-        }
-
-        return $this->buildContent($items, $example, $required);
-    }
-
-    private function buildEmptyContent(): \ArrayObject
-    {
-        return new \ArrayObject([
-            'application/json' => [
-                'example' => [],
-                'schema' => [
-                    'type' => 'array',
-                    'items' => ['type' => 'object'],
-                ],
-            ],
-        ]);
+        return $params === []
+            ? new ArrayObject(self::EMPTY_CONTENT)
+            : $this->buildForParams($params);
     }
 
     /**
@@ -53,19 +39,21 @@ final class ArrayContextBuilder
         array $items,
         array $example,
         array $required
-    ): \ArrayObject {
-        return new \ArrayObject([
+    ): ArrayObject {
+        $itemSchema = [
+            'type' => 'object',
+            'properties' => $items,
+        ];
+
+        if ($required !== []) {
+            $itemSchema['required'] = $required;
+        }
+
+        return new ArrayObject([
             'application/json' => [
                 'schema' => [
                     'type' => 'array',
-                    'items' => array_filter(
-                        [
-                            'type' => 'object',
-                            'properties' => $items,
-                            'required' => $required === [] ? null : $required,
-                        ],
-                        static fn ($value) => $value !== null
-                    ),
+                    'items' => $itemSchema,
                 ],
                 'example' => [$example],
             ],
@@ -85,5 +73,26 @@ final class ArrayContextBuilder
             ],
             static fn ($value) => $value !== null
         );
+    }
+
+    /**
+     * @param array<Parameter> $params
+     */
+    private function buildForParams(array $params): ArrayObject
+    {
+        $items = [];
+        $example = [];
+        $required = [];
+
+        foreach ($params as $param) {
+            $items[$param->name] = $this->createPropertySchema($param);
+            $example[$param->name] = $param->example;
+
+            if ($param->isRequired()) {
+                $required[$param->name] = $param->name;
+            }
+        }
+
+        return $this->buildContent($items, $example, array_values($required));
     }
 }

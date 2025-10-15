@@ -6,8 +6,7 @@ namespace App\User\Application\Service;
 
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
-use App\User\Domain\Exception\PasswordResetTokenMismatchException;
-use App\User\Domain\Exception\UserNotFoundException;
+use App\User\Domain\Exception as DomainException;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
 final readonly class UserTokenMatchValidator
@@ -23,14 +22,20 @@ final readonly class UserTokenMatchValidator
     ): UserInterface {
         $user = $this->userRepository->findById($token->getUserID());
 
-        if (!$user instanceof UserInterface) {
-            throw new UserNotFoundException();
-        }
+        return match (true) {
+            !$user instanceof UserInterface => $this->throwUserNotFound(),
+            $user->getId() !== $userId => $this->throwTokenMismatch(),
+            default => $user,
+        };
+    }
 
-        if ($user->getId() !== $userId) {
-            throw new PasswordResetTokenMismatchException();
-        }
+    private function throwUserNotFound(): never
+    {
+        throw new DomainException\UserNotFoundException();
+    }
 
-        return $user;
+    private function throwTokenMismatch(): never
+    {
+        throw new DomainException\PasswordResetTokenMismatchException();
     }
 }

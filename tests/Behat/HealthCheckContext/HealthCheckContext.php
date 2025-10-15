@@ -10,55 +10,20 @@ use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
-use PHPUnit\Framework\Assert;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Cache\Adapter\TraceableAdapter;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 final class HealthCheckContext extends KernelTestCase implements Context
 {
     private KernelInterface $kernelInterface;
-    private Response $response;
+    private bool $kernelDirty = false;
 
     public function __construct(
         KernelInterface $kernel
     ) {
         parent::__construct();
         $this->kernelInterface = $kernel;
-    }
-
-    /**
-     * @When :method request is sent to :path
-     */
-    public function sendRequestTo(string $method, string $path): void
-    {
-        $this->response = $this->kernelInterface->handle(Request::create(
-            $path,
-            $method,
-        ));
-    }
-
-    /**
-     * @Then the response status code should be :statusCode
-     */
-    public function theResponseStatusCodeShouldBe(string $statusCode): void
-    {
-        Assert::assertEquals($statusCode, $this->response->getStatusCode());
-    }
-
-    /**
-     * @Then the response body should contain :text
-     */
-    public function theResponseBodyShouldContain(string $text): void
-    {
-        $responseContent = $this->response->getContent();
-        Assert::assertStringContainsString(
-            $text,
-            $responseContent,
-            "The response body does not contain the expected text: '{$text}'."
-        );
     }
 
     /**
@@ -71,11 +36,7 @@ final class HealthCheckContext extends KernelTestCase implements Context
         $traceableCacheMock->method('get')
             ->willThrowException(new \Exception('Cache is not working'));
 
-        $container = $this->kernelInterface
-            ->getContainer()
-            ->get('test.service_container');
-
-        $container->set('cache.app', $traceableCacheMock);
+        $this->replaceService('cache.app', $traceableCacheMock);
     }
 
     /**
@@ -98,10 +59,7 @@ final class HealthCheckContext extends KernelTestCase implements Context
         $connectionMock->method('executeQuery')
             ->willThrowException(new \Exception('Database is not available'));
 
-        $container = $this->kernelInterface
-            ->getContainer()
-            ->get('test.service_container');
-        $container->set(Connection::class, $connectionMock);
+        $this->replaceService(Connection::class, $connectionMock);
     }
 
     /**
@@ -118,9 +76,33 @@ final class HealthCheckContext extends KernelTestCase implements Context
                 )
             );
 
+        $this->replaceService(SqsClient::class, $sqsClientMock);
+    }
+
+    /**
+     * @AfterScenario
+     */
+    public function restoreMockedServices(): void
+    {
+        if ($this->kernelDirty === false) {
+            return;
+        }
+
+        $this->kernelInterface->reboot(null);
+        $this->kernelDirty = false;
+    }
+
+    private function replaceService(string $serviceId, object $service): void
+    {
+        if ($this->kernelDirty === false) {
+            $this->kernelInterface->reboot(null);
+            $this->kernelDirty = true;
+        }
+
         $container = $this->kernelInterface
             ->getContainer()
             ->get('test.service_container');
-        $container->set(SqsClient::class, $sqsClientMock);
+
+        $container->set($serviceId, $service);
     }
 }

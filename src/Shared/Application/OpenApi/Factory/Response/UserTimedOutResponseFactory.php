@@ -25,7 +25,8 @@ final class UserTimedOutResponseFactory implements AbstractResponseFactory
                 $this->getDetailParam(),
                 $this->getStatusParam(),
             ],
-            []
+            [],
+            'application/problem+json'
         );
     }
 

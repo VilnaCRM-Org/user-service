@@ -7,6 +7,7 @@ namespace App\Shared\Application\Validator;
 use Symfony\Component\Validator\Constraints\Compound;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Constraints\Type;
 
 #[\Attribute]
 final class Initials extends Compound
@@ -19,6 +20,10 @@ final class Initials extends Compound
     protected function getConstraints(array $options): array
     {
         return [
+            new Type(
+                type: 'string',
+                message: 'initials.invalid.type'
+            ),
             new Length(
                 max: 255,
                 maxMessage: 'initials.invalid.length'

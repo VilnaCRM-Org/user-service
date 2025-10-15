@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\OpenApi\Builder;
 
+use App\Shared\Application\Fixture\SchemathesisFixtures;
 use App\Shared\Application\OpenApi\Builder\ArraySchemaFactory;
 use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ParameterSchemaFactory;
@@ -34,5 +35,42 @@ final class ParameterSchemaFactoryTest extends UnitTestCase
         $schema = $factory->create($parameter);
 
         $this->assertSame(['type' => 'string'], $schema);
+    }
+
+    public function testScalarParameterIncludesPatternWhenProvided(): void
+    {
+        $factory = new ParameterSchemaFactory();
+        $parameter = new Parameter(
+            'initials',
+            'string',
+            'NameSurname',
+            pattern: '^\\S+$'
+        );
+
+        $schema = $factory->create($parameter);
+
+        $this->assertSame(
+            ['type' => 'string', 'pattern' => '^\\S+$'],
+            $schema
+        );
+    }
+
+    public function testScalarParameterIncludesEnumWhenProvided(): void
+    {
+        $factory = new ParameterSchemaFactory();
+        $enum = [SchemathesisFixtures::CONFIRMATION_TOKEN];
+        $parameter = new Parameter(
+            'token',
+            'string',
+            SchemathesisFixtures::CONFIRMATION_TOKEN,
+            enum: $enum
+        );
+
+        $schema = $factory->create($parameter);
+
+        $this->assertSame(
+            ['type' => 'string', 'enum' => $enum],
+            $schema
+        );
     }
 }

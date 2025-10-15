@@ -125,6 +125,7 @@
     "marcocesarato/php-conventional-changelog": "^1.16",
     "nunomaduro/phpinsights": "^2.7",
     "pheromone/phpcs-security-audit": "^2.0",
+    "phpmd/phpmd": "^2.15",
     "phpmetrics/phpmetrics": "^2.8",
     "phpunit/phpunit": "^9.5",
     "psalm/plugin-phpunit": "^0.19.0",

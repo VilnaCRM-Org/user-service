@@ -6,6 +6,7 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Shared\Application\Http\JsonRequestValidator;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\RetryDto;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
@@ -21,6 +22,9 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class ResendEmailProcessor implements ProcessorInterface
 {
+    private const ERROR_INVALID_JSON = 'Invalid JSON body.';
+    private const ERROR_EXPECTED_OBJECT = 'Request body must be a JSON object.';
+
     public function __construct(
         private CommandBusInterface $commandBus,
         private GetUserQueryHandler $getUserQueryHandler,
@@ -28,7 +32,8 @@ final readonly class ResendEmailProcessor implements ProcessorInterface
         private TokenRepositoryInterface $tokenRepository,
         private ConfirmationTokenFactoryInterface $tokenFactory,
         private ConfirmationEmailFactoryInterface $confirmationEmailFactory,
-        private SendConfirmationEmailCommandFactoryInterface $emailCmdFactory
+        private SendConfirmationEmailCommandFactoryInterface $emailCmdFactory,
+        private JsonRequestValidator $jsonRequestValidator
     ) {
     }
 
@@ -43,6 +48,11 @@ final readonly class ResendEmailProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): Response {
+        $this->jsonRequestValidator->assertJsonObjectRequest(
+            self::ERROR_INVALID_JSON,
+            self::ERROR_EXPECTED_OBJECT
+        );
+
         $user = $this->getUserQueryHandler->handle($uriVariables['id']);
 
         $token = $this->tokenRepository->findByUserId(

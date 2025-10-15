@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Request;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
+use App\Shared\Application\Fixture\SchemathesisFixtures;
 use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\RequestBuilder;
 use App\Shared\Application\OpenApi\Factory\Request\ConfirmUserRequestFactory;
@@ -45,7 +46,8 @@ final class ConfirmUserRequestFactoryTest extends UnitTestCase
         return new Parameter(
             'token',
             'string',
-            'token'
+            SchemathesisFixtures::CONFIRMATION_TOKEN,
+            enum: [SchemathesisFixtures::CONFIRMATION_TOKEN]
         );
     }
 }

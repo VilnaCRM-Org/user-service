@@ -30,7 +30,8 @@ final class ValidationErrorResponseFactoryTest extends UnitTestCase
                     $this->getViolationsParam(),
                     $this->getStatusParam(),
                 ],
-                []
+                [],
+                'application/problem+json'
             )
             ->willReturn($this->createStub(Response::class));
 

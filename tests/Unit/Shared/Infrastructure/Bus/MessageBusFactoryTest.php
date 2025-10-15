@@ -17,16 +17,15 @@ final class MessageBusFactoryTest extends UnitTestCase
     {
         $commandHandlers = [];
 
-        $factory = new MessageBusFactory();
+        $extractor = new CallableFirstParameterExtractor();
+        $factory = new MessageBusFactory($extractor);
 
         $messageBus = $factory->create($commandHandlers);
         $expectedMessageBus = new MessageBus(
             [
                 new HandleMessageMiddleware(
                     new HandlersLocator(
-                        CallableFirstParameterExtractor::forCallables(
-                            $commandHandlers
-                        )
+                        $extractor->forCallables($commandHandlers)
                     )
                 ),
             ]

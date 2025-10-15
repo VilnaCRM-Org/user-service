@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Factory\Request;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
+use App\Shared\Application\Fixture\SchemathesisFixtures;
 use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\RequestBuilder;
+use App\Shared\Application\OpenApi\Builder\Requirement;
 
 final class OAuthTokenRequestFactory implements AbstractRequestFactory
 {
@@ -24,6 +26,9 @@ final class OAuthTokenRequestFactory implements AbstractRequestFactory
                 $this->getRedirectUriParam(),
                 $this->getCodeParam(),
                 $this->getRefreshTokenParam(),
+                $this->getUsernameParam(),
+                $this->getPasswordParam(),
+                $this->getScopeParam(),
             ]
         );
     }
@@ -33,7 +38,12 @@ final class OAuthTokenRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'redirect_uri',
             'string',
-            'https://example.com/oauth/callback'
+            SchemathesisFixtures::OAUTH_REDIRECT_URI,
+            null,
+            'uri',
+            Requirement::OPTIONAL,
+            '^https?://.+$',
+            enum: [SchemathesisFixtures::OAUTH_REDIRECT_URI]
         );
     }
 
@@ -42,7 +52,12 @@ final class OAuthTokenRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'code',
             'string',
-            'e7f8c62113a47f7a5a9dca1f'
+            SchemathesisFixtures::AUTHORIZATION_CODE,
+            null,
+            null,
+            Requirement::OPTIONAL,
+            '^.+$',
+            enum: [SchemathesisFixtures::AUTHORIZATION_CODE]
         );
     }
 
@@ -51,7 +66,11 @@ final class OAuthTokenRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'refresh_token',
             'string',
-            'f7a5a9dca1fe7f8c62113a47'
+            'f7a5a9dca1fe7f8c62113a47',
+            null,
+            null,
+            Requirement::OPTIONAL,
+            '^.+$'
         );
     }
 
@@ -60,7 +79,12 @@ final class OAuthTokenRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'grant_type',
             'string',
-            'authorization_code'
+            'password',
+            null,
+            null,
+            Requirement::REQUIRED,
+            '^(authorization_code|refresh_token|password)$',
+            enum: ['password']
         );
     }
 
@@ -69,7 +93,12 @@ final class OAuthTokenRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'client_id',
             'string',
-            'dc0bc6323f16fecd4224a3860ca894c5'
+            SchemathesisFixtures::OAUTH_CLIENT_ID,
+            null,
+            null,
+            Requirement::OPTIONAL,
+            '^.+$',
+            enum: [SchemathesisFixtures::OAUTH_CLIENT_ID]
         );
     }
 
@@ -78,7 +107,54 @@ final class OAuthTokenRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'client_secret',
             'string',
-            '8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7'
+            SchemathesisFixtures::OAUTH_CLIENT_SECRET,
+            null,
+            null,
+            Requirement::OPTIONAL,
+            '^.+$',
+            enum: [SchemathesisFixtures::OAUTH_CLIENT_SECRET]
+        );
+    }
+
+    private function getUsernameParam(): Parameter
+    {
+        return new Parameter(
+            'username',
+            'string',
+            SchemathesisFixtures::PASSWORD_RESET_CONFIRM_EMAIL,
+            null,
+            null,
+            Requirement::REQUIRED,
+            '^.+$',
+            enum: [SchemathesisFixtures::PASSWORD_RESET_CONFIRM_EMAIL]
+        );
+    }
+
+    private function getPasswordParam(): Parameter
+    {
+        return new Parameter(
+            'password',
+            'string',
+            SchemathesisFixtures::USER_PASSWORD,
+            null,
+            null,
+            Requirement::REQUIRED,
+            '^.+$',
+            enum: [SchemathesisFixtures::USER_PASSWORD]
+        );
+    }
+
+    private function getScopeParam(): Parameter
+    {
+        return new Parameter(
+            'scope',
+            'string',
+            SchemathesisFixtures::OAUTH_SCOPE,
+            null,
+            null,
+            Requirement::OPTIONAL,
+            '^.+$',
+            enum: [SchemathesisFixtures::OAUTH_SCOPE]
         );
     }
 }

@@ -26,7 +26,8 @@ final class InternalErrorFactory implements
                 $this->getDetailParam(),
                 $this->getStatusParam(),
             ],
-            []
+            [],
+            'application/problem+json'
         );
     }
 

@@ -46,12 +46,6 @@ final class InvalidClientCredentialsResponseFactoryTest extends UnitTestCase
             'string',
             'Client authentication failed'
         );
-        $messageParam = new Parameter(
-            'message',
-            'string',
-            'Client authentication failed'
-        );
-
-        return [$errorParam, $errorDescriptionParam, $messageParam];
+        return [$errorParam, $errorDescriptionParam];
     }
 }
