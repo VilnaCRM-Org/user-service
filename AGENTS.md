@@ -138,10 +138,10 @@ The VilnaCRM User Service is designed to manage user accounts and authentication
 
 1. Run `make schemathesis-validate`, capture every failing curl snippet, and replay it from within the PHP container to observe the actual response (status code, headers, body).
 2. Triage failures by category and address the root issue:
-    - **Invalid authentication accepted**: ensure the OAuth password grant refuses tampered secrets or unexpected parameters and that fixtures expose only legitimate credential pairs.
-    - **500 errors / missing header handling**: add guards in listeners/transformers so unauthenticated flows return `application/problem+json` 401/400 responses rather than HTML error pages.
-    - **Schema-compliant payload rejected**: hydrate fixtures (users, tokens, OAuth codes) so documented examples reference real data, then align Symfony validators and command handlers with the schema contracts.
-    - **Repeated 404 warnings**: extend `app:seed-schemathesis-data` instead of skipping endpoints; create deterministic UUIDs/emails for `/api/users/{id}` flows and reuse them in OpenAPI examples.
+   - **Invalid authentication accepted**: ensure the OAuth password grant refuses tampered secrets or unexpected parameters and that fixtures expose only legitimate credential pairs.
+   - **500 errors / missing header handling**: add guards in listeners/transformers so unauthenticated flows return `application/problem+json` 401/400 responses rather than HTML error pages.
+   - **Schema-compliant payload rejected**: hydrate fixtures (users, tokens, OAuth codes) so documented examples reference real data, then align Symfony validators and command handlers with the schema contracts.
+   - **Repeated 404 warnings**: extend `app:seed-schemathesis-data` instead of skipping endpoints; create deterministic UUIDs/emails for `/api/users/{id}` flows and reuse them in OpenAPI examples.
 3. Update OpenAPI examples and serializer groups so the documented payloads exactly match the seeded data (no placeholder values that Schemathesis cannot reach).
 4. Re-run `make generate-openapi-spec` if invoked in isolation, or just rerun `make schemathesis-validate`. Repeat until both **Examples** and **Coverage** phases report zero failures and zero warnings.
 
@@ -164,16 +164,16 @@ Provides foundational support across the service:
 Comprehensive user management functionality:
 
 - **Application Layer**:
-    - Commands: RegisterUserCommand, ConfirmUserCommand, UpdateUserCommand, SendConfirmationEmailCommand
-    - Command Handlers: Process business operations
-    - HTTP Request Processors & GraphQL Resolvers
-    - Event Listeners & Subscribers
+  - Commands: RegisterUserCommand, ConfirmUserCommand, UpdateUserCommand, SendConfirmationEmailCommand
+  - Command Handlers: Process business operations
+  - HTTP Request Processors & GraphQL Resolvers
+  - Event Listeners & Subscribers
 - **Domain Layer**:
-    - Entities: User, ConfirmationToken
-    - Aggregates: ConfirmationEmail
-    - Events: UserRegisteredEvent, UserConfirmedEvent, EmailChangedEvent, PasswordChangedEvent
-    - Value Objects: UserUpdate
-    - Domain Exceptions: UserNotFoundException, InvalidPasswordException, TokenNotFoundException
+  - Entities: User, ConfirmationToken
+  - Aggregates: ConfirmationEmail
+  - Events: UserRegisteredEvent, UserConfirmedEvent, EmailChangedEvent, PasswordChangedEvent
+  - Value Objects: UserUpdate
+  - Domain Exceptions: UserNotFoundException, InvalidPasswordException, TokenNotFoundException
 - **Infrastructure Layer**: Repository implementations
 
 #### 3. OAuth Context
@@ -209,33 +209,33 @@ Thin context for OAuth server integration:
 
 1. **Unit Tests** (`make unit-tests`):
 
-    - Focus on individual classes/methods with mocked dependencies
-    - 193 test files, 2-3 minutes runtime
-    - Test business logic in isolation
+   - Focus on individual classes/methods with mocked dependencies
+   - 193 test files, 2-3 minutes runtime
+   - Test business logic in isolation
 
 2. **Integration Tests** (`make integration-tests`):
 
-    - Test interactions between components (database, external services)
-    - Real database connections and services
-    - 3-5 minutes runtime
+   - Test interactions between components (database, external services)
+   - Real database connections and services
+   - 3-5 minutes runtime
 
 3. **End-to-End Tests** (`make behat`):
 
-    - BDD scenarios in Gherkin language in `/features` folder
-    - 6 feature files covering: user operations, GraphQL, OAuth, localization
-    - Test complete user journeys from UI to database
+   - BDD scenarios in Gherkin language in `/features` folder
+   - 6 feature files covering: user operations, GraphQL, OAuth, localization
+   - Test complete user journeys from UI to database
 
 4. **Mutation Testing** (`make infection`):
 
-    - Validates test quality by making code mutations
-    - Must maintain 0 escaped/uncovered mutants
-    - Uses Infection framework for rigorous testing
+   - Validates test quality by making code mutations
+   - Must maintain 0 escaped/uncovered mutants
+   - Uses Infection framework for rigorous testing
 
 5. **Load Testing** (K6-based):
-    - **Smoke**: `make smoke-load-tests` (10 VUs, minimal load)
-    - **Average**: `make average-load-tests` (50 VUs, normal patterns)
-    - **Stress**: `make stress-load-tests` (300 VUs, high load)
-    - **Spike**: `make spike-load-tests` (400 VUs, extreme spikes)
+   - **Smoke**: `make smoke-load-tests` (10 VUs, minimal load)
+   - **Average**: `make average-load-tests` (50 VUs, normal patterns)
+   - **Stress**: `make stress-load-tests` (300 VUs, high load)
+   - **Spike**: `make spike-load-tests` (400 VUs, extreme spikes)
 
 ### Code Quality Standards
 
@@ -280,31 +280,31 @@ Thin context for OAuth server integration:
 
 1. **User Registration and Confirmation Flow:**
 
-    - Create a new user via REST API: `POST /api/users` with email/password
-    - Check that confirmation email is sent (check MailCatcher at http://localhost:1080)
-    - Extract confirmation token from email
-    - Confirm user registration: `POST /api/users/confirm` with token
-    - Verify user can authenticate via OAuth
+   - Create a new user via REST API: `POST /api/users` with email/password
+   - Check that confirmation email is sent (check MailCatcher at http://localhost:1080)
+   - Extract confirmation token from email
+   - Confirm user registration: `POST /api/users/confirm` with token
+   - Verify user can authenticate via OAuth
 
 2. **GraphQL User Operations:**
 
-    - Register user via GraphQL mutation `registerUser` at https://localhost/api/graphql
-    - Check email in MailCatcher for confirmation token
-    - Confirm user via GraphQL mutation `confirmUser` with token
-    - Query user information via GraphQL query `user`
-    - Test user updates via `updateUser` mutation
+   - Register user via GraphQL mutation `registerUser` at https://localhost/api/graphql
+   - Check email in MailCatcher for confirmation token
+   - Confirm user via GraphQL mutation `confirmUser` with token
+   - Query user information via GraphQL query `user`
+   - Test user updates via `updateUser` mutation
 
 3. **OAuth Authentication Flow:**
 
-    - Create OAuth client: `make create-oauth-client clientName=test`
-    - Test OAuth authorization flow with test client credentials
-    - Verify JWT token generation and validation
-    - Test token refresh capabilities
+   - Create OAuth client: `make create-oauth-client clientName=test`
+   - Test OAuth authorization flow with test client credentials
+   - Verify JWT token generation and validation
+   - Test token refresh capabilities
 
 4. **Localization Testing:**
-    - Test API responses in different languages (features include user_localization.feature)
-    - Verify error messages are properly localized
-    - Test GraphQL localization support
+   - Test API responses in different languages (features include user_localization.feature)
+   - Verify error messages are properly localized
+   - Test GraphQL localization support
 
 **Service Health Checks:**
 
@@ -569,11 +569,11 @@ When making changes, respect these architectural boundaries and patterns.
 
 - **Keep cyclomatic complexity below 5 per class/method** (enforced by PHPInsights)
 - **When complexity exceeds threshold, refactor by:**
-    - Creating new methods to extract complex logic
-    - Extracting strategy classes for complex validation or business rules
-    - Using composition instead of inheritance where appropriate
-    - Breaking down large methods into smaller, focused methods
-    - Using the Strategy Pattern for complex conditional logic
+  - Creating new methods to extract complex logic
+  - Extracting strategy classes for complex validation or business rules
+  - Using composition instead of inheritance where appropriate
+  - Breaking down large methods into smaller, focused methods
+  - Using the Strategy Pattern for complex conditional logic
 
 #### Example: Refactoring High Complexity Validators
 
@@ -1191,30 +1191,30 @@ This comprehensive approach ensures that the `docs/` directory remains an accura
 
 1. **Never modify quality thresholds downward** in any configuration file:
 
-    - `phpinsights.php` requirements section
-    - `phpinsights-tests.php` requirements section
-    - `infection.json5` mutation score indicator
-    - `phpunit.xml.dist` coverage settings
+   - `phpinsights.php` requirements section
+   - `phpinsights-tests.php` requirements section
+   - `infection.json5` mutation score indicator
+   - `phpunit.xml.dist` coverage settings
 
 2. **Always maintain or improve coverage** when adding new code:
 
-    - Write tests for all new functionality
-    - Ensure 100% line and branch coverage
-    - Add mutation tests for complex logic
-    - Update integration and E2E tests as needed
+   - Write tests for all new functionality
+   - Ensure 100% line and branch coverage
+   - Add mutation tests for complex logic
+   - Update integration and E2E tests as needed
 
 3. **Code quality must meet or exceed standards**:
 
-    - Cyclomatic complexity below 5 per method
-    - No architectural violations in Deptrac
-    - PSR-12 code style compliance
-    - Zero static analysis errors in Psalm
+   - Cyclomatic complexity below 5 per method
+   - No architectural violations in Deptrac
+   - PSR-12 code style compliance
+   - Zero static analysis errors in Psalm
 
 4. **Quality gate enforcement**:
-    - `make ci` must output "✅ CI checks successfully passed!"
-    - All quality checks must pass before code can be committed
-    - Any quality regression must be fixed immediately
-    - No exceptions or temporary quality downgrades allowed
+   - `make ci` must output "✅ CI checks successfully passed!"
+   - All quality checks must pass before code can be committed
+   - Any quality regression must be fixed immediately
+   - No exceptions or temporary quality downgrades allowed
 
 ### Quality Improvement Guidelines
 

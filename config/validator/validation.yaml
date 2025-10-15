@@ -176,11 +176,11 @@ App\User\Application\MutationInput\UpdateUserMutationInput:
 
 App\User\Application\DTO\RequestPasswordResetDto:
   properties:
-              email:
-                - Email: { message: 'email.invalid' }
-                - NotBlank: { message: 'not.blank' }
-                - Length:
-                    max: 255
+    email:
+      - Email: { message: 'email.invalid' }
+      - NotBlank: { message: 'not.blank' }
+      - Length:
+          max: 255
 
 App\User\Application\DTO\ConfirmPasswordResetDto:
   properties:
