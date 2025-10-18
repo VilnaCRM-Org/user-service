@@ -15,24 +15,24 @@ final class SchemathesisBatchUsersEmailExtractor
      */
     public function extract(array $payload): array
     {
-        $users = $payload['users'] ?? null;
-        if (! is_array($users)) {
+        $users = $payload['users'] ?? [];
+        if (!is_array($users)) {
             return [];
         }
-        $emails = [];
-        foreach ($users as $user) {
-            if (! is_array($user)) {
-                continue;
-            }
 
-            $email = $user['email'] ?? null;
-            if (! is_string($email)) {
-                continue;
-            }
+        return array_values(array_filter(
+            array_map($this->extractEmail(...), $users),
+            static fn ($email) => $email !== null
+        ));
+    }
 
-            $emails[] = $email;
-        }
-
-        return $emails;
+    /**
+     * @param array{email?: string|null}|scalar|null $user
+     */
+    private function extractEmail(mixed $user): ?string
+    {
+        return is_array($user) && is_string($user['email'] ?? null)
+            ? $user['email']
+            : null;
     }
 }

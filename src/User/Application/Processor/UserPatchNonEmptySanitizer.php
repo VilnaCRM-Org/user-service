@@ -18,6 +18,11 @@ final class UserPatchNonEmptySanitizer
             return $fallback;
         }
 
+        return $this->validateAndTrim($candidate, $field);
+    }
+
+    private function validateAndTrim(string $candidate, string $field): string
+    {
         $trimmed = trim($candidate);
 
         if ($trimmed === '') {

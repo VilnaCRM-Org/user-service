@@ -18,16 +18,25 @@ final class UserPatchEmailSanitizer
         }
 
         $trimmed = trim($candidate);
+        $this->validateNotBlank($trimmed);
 
-        if ($trimmed === '') {
+        return $this->normalizeEmail($trimmed);
+    }
+
+    private function validateNotBlank(string $email): void
+    {
+        if ($email === '') {
             $this->blankEmail();
         }
+    }
 
-        if (filter_var($trimmed, FILTER_VALIDATE_EMAIL) === false) {
-            return $trimmed;
+    private function normalizeEmail(string $email): string
+    {
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            return $email;
         }
 
-        return strtolower($trimmed);
+        return strtolower($email);
     }
 
     private function blankEmail(): never
