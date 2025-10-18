@@ -51,3 +51,64 @@ Here is an example:
 <img src="https://github.com/VilnaCRM-Org/user-service/assets/81823080/b908d54d-e07e-4f90-9048-a0c4c661f974" alt="Description of the image" width="800" height="200">
 
 Learn more about [Developer Guide](developer-guide.md).
+
+## GraphQL Password Reset Feature
+
+The User Service now provides comprehensive password reset functionality through GraphQL mutations. This feature consists of two mutations that enable secure password recovery workflows.
+
+### requestPasswordResetUser Mutation
+
+Initiates a password reset request for a user by their email address. Sends a password reset token to the user's email.
+
+**GraphQL Mutation:**
+```graphql
+mutation {
+  requestPasswordResetUser(input: {email: "user@example.com"}) {
+    user {
+      id
+      email
+    }
+  }
+}
+```
+
+**Security Behavior:**
+- Returns null payload for the `user` field (no data leak)
+- Does not reveal whether the email exists in the system
+- Executes without errors for both existing and non-existing users
+- Sends email only to existing users
+
+### confirmPasswordResetUser Mutation
+
+Confirms the password reset using the token received via email and sets a new password.
+
+**GraphQL Mutation:**
+```graphql
+mutation {
+  confirmPasswordResetUser(input: {
+    token: "abc123token",
+    password: "NewSecurePassword123!"
+  }) {
+    user {
+      id
+      email
+    }
+  }
+}
+```
+
+**Security Behavior:**
+- Returns null payload for the `user` field (no data leak)
+- Validates token existence and expiration
+- Returns error for invalid or expired tokens
+- Does not reveal user information
+
+### Testing
+
+Both mutations are comprehensively tested with Behat E2E tests covering:
+- Successful password reset flow for existing users
+- Security behavior for non-existing users
+- Valid token confirmation
+- Error handling for invalid/expired tokens
+
+See [testing.md](testing.md) for detailed test scenarios.
