@@ -30,11 +30,9 @@ final class MethodNotAllowedListener
         }
 
         $allowed = $this->restrictions[$path];
-        if ($this->isAllowed($event->getRequest()->getMethod(), $allowed)) {
-            return;
+        if (!$this->isAllowed($event->getRequest()->getMethod(), $allowed)) {
+            $event->setResponse($this->buildProblemResponse($allowed));
         }
-
-        $event->setResponse($this->buildProblemResponse($allowed));
     }
 
     private function resolveRestrictedPath(RequestEvent $event): ?string

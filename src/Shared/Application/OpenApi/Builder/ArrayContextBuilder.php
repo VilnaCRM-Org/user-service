@@ -6,6 +6,7 @@ namespace App\Shared\Application\OpenApi\Builder;
 
 use function array_filter;
 use function array_values;
+
 use ArrayObject;
 
 final class ArrayContextBuilder

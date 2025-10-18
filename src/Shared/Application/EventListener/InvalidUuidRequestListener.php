@@ -21,13 +21,10 @@ final class InvalidUuidRequestListener
 
     public function __invoke(RequestEvent $event): void
     {
-        if (!$this->isSupportedRequest($event)) {
-            return;
+        if ($this->isSupportedRequest($event)) {
+            $message = $this->translator->trans('error.not.found.http');
+            $event->setResponse($this->createNotFoundResponse($message));
         }
-
-        $message = $this->translator->trans('error.not.found.http');
-
-        $event->setResponse($this->createNotFoundResponse($message));
     }
 
     private function isSupportedRequest(RequestEvent $event): bool

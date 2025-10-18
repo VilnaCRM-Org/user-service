@@ -39,11 +39,9 @@ final class QueryParameterValidationListener
             $request->query->all()
         );
 
-        if ($violation === null) {
-            return;
+        if ($violation !== null) {
+            $event->setResponse($this->buildProblemResponse($violation));
         }
-
-        $event->setResponse($this->buildProblemResponse($violation));
     }
 
     private function buildProblemResponse(

@@ -80,11 +80,8 @@ final readonly class SchemathesisUserSeeder
         string $initials,
         bool $confirmed
     ): UserInterface {
-        $user = $this->userRepository->findById($id);
-
-        if (! $user instanceof UserInterface) {
-            $user = $this->createUser($id, $email, $initials);
-        }
+        $user = $this->userRepository->findById($id)
+            ?? $this->createUser($id, $email, $initials);
 
         $this->updateUser($user, $email, $initials, $confirmed);
 
