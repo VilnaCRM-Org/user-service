@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\Bus;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
-
 use function array_combine;
 use function array_map;
 use function array_reduce;
 use function iterator_to_array;
-
 use LogicException;
 use ReflectionClass;
 use ReflectionMethod;

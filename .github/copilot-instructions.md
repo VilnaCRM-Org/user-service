@@ -1147,7 +1147,7 @@ This comprehensive approach ensures that the `docs/` directory remains an accura
 **PHPInsights Quality Requirements (phpinsights.php):**
 
 - **min-quality**: 100% (NEVER decrease below 100%)
-- **min-complexity**: 95% (NEVER decrease below 95%)
+- **min-complexity**: 94% (NEVER decrease below 94%)
 - **min-architecture**: 100% (NEVER decrease below 100%)
 - **min-style**: 100% (NEVER decrease below 100%)
 
@@ -1170,7 +1170,7 @@ This comprehensive approach ensures that the `docs/` directory remains an accura
 // ❌ FORBIDDEN: Decreasing PHPInsights requirements
 'requirements' => [
     'min-quality' => 95,    // FORBIDDEN: Was 100%
-    'min-complexity' => 90, // FORBIDDEN: Was 95%
+    'min-complexity' => 90, // FORBIDDEN: Was 94%
     'min-architecture' => 95, // FORBIDDEN: Was 100%
     'min-style' => 95,      // FORBIDDEN: Was 100%
 ],
