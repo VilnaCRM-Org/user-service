@@ -23,13 +23,13 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 final class OpenApiFactoryTest extends UnitTestCase
 {
-    private OpenApiFactoryInterface&MockObject $decoratedFactory;
-    private AbstractEndpointFactory&MockObject $endpointFactoryOne;
-    private AbstractEndpointFactory&MockObject $endpointFactoryTwo;
-    private PathParametersSanitizer&MockObject $pathParametersSanitizer;
-    private ServerErrorResponseAugmenter&MockObject $errorResponseAugmenter;
-    private PaginationQueryParametersSanitizer&MockObject $paginationQueryParametersSanitizer;
-    private NoContentResponseCleaner&MockObject $noContentResponseCleaner;
+    private MockObject $decoratedFactory;
+    private MockObject $endpointFactoryOne;
+    private MockObject $endpointFactoryTwo;
+    private MockObject $pathParametersSanitizer;
+    private MockObject $errorResponseAugmenter;
+    private MockObject $paginationQueryParametersSanitizer;
+    private MockObject $noContentResponseCleaner;
 
     protected function setUp(): void
     {
