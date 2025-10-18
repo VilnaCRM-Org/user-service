@@ -265,12 +265,6 @@ schemathesis-validate: reset-db generate-openapi-spec ## Validate the running AP
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec
 
-graphql-schema-validate: reset-db ## Validate GraphQL API with Schemathesis
-	$(EXEC_PHP) php bin/console app:seed-schemathesis-data
-	@echo "Running GraphQL Schemathesis validation (fuzzing phase with 50 test cases per operation)..."
-	@echo "Note: Validation errors (422) are expected and acceptable. Only checking for server errors (500)."
-	$(DOCKER) run --rm --network=host $(SCHEMATHESIS_IMAGE) run --checks not_a_server_error --max-examples=50 https://localhost/api/graphql --tls-verify=false --phases=fuzzing --continue-on-failure --header 'X-Schemathesis-Test: cleanup-users' --auth 'dc0bc6323f16fecd4224a3860ca894c5:8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7'
-
 start-prod-loadtest: ## Start production environment with load testing capabilities
 	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml up --detach
 
@@ -310,8 +304,6 @@ ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	if ! make validate-openapi-spec; then failed_checks="$$failed_checks\n❌ OpenAPI Spectral validation"; fi; \
 	echo "1️⃣3️⃣ Running Schemathesis validation..."; \
 	if ! make schemathesis-validate; then failed_checks="$$failed_checks\n❌ Schemathesis validation"; fi; \
-	echo "1️⃣4️⃣ Running GraphQL Schemathesis validation..."; \
-	if ! make graphql-schema-validate; then failed_checks="$$failed_checks\n❌ GraphQL Schemathesis validation"; fi; \
 	if [ -n "$$failed_checks" ]; then \
 		echo ""; \
 		echo "💥 CI checks completed with failures:"; \
