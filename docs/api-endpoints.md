@@ -61,9 +61,10 @@ The User Service now provides comprehensive password reset functionality through
 Initiates a password reset request for a user by their email address. Sends a password reset token to the user's email.
 
 **GraphQL Mutation:**
+
 ```graphql
 mutation {
-  requestPasswordResetUser(input: {email: "user@example.com"}) {
+  requestPasswordResetUser(input: { email: "user@example.com" }) {
     user {
       id
       email
@@ -73,6 +74,7 @@ mutation {
 ```
 
 **Security Behavior:**
+
 - Returns null payload for the `user` field (no data leak)
 - Does not reveal whether the email exists in the system
 - Executes without errors for both existing and non-existing users
@@ -83,12 +85,10 @@ mutation {
 Confirms the password reset using the token received via email and sets a new password.
 
 **GraphQL Mutation:**
+
 ```graphql
 mutation {
-  confirmPasswordResetUser(input: {
-    token: "abc123token",
-    password: "NewSecurePassword123!"
-  }) {
+  confirmPasswordResetUser(input: { token: "abc123token", password: "NewSecurePassword123!" }) {
     user {
       id
       email
@@ -98,6 +98,7 @@ mutation {
 ```
 
 **Security Behavior:**
+
 - Returns null payload for the `user` field (no data leak)
 - Validates token existence and expiration
 - Returns error for invalid or expired tokens
@@ -106,6 +107,7 @@ mutation {
 ### Testing
 
 Both mutations are comprehensively tested with Behat E2E tests covering:
+
 - Successful password reset flow for existing users
 - Security behavior for non-existing users
 - Valid token confirmation
