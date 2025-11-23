@@ -28,7 +28,6 @@ use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactory;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,7 +42,6 @@ final class ResendEmailProcessorTest extends UnitTestCase
     private ConfirmationEmailFactoryInterface $confirmationFactory;
     private SendConfirmationEmailCommandFactoryInterface $emailCommandFactory;
     private CommandBusInterface $commandBus;
-    private UserRepositoryInterface $userRepository;
     private TokenRepositoryInterface $tokenRepository;
     private ConfirmationEmailFactoryInterface $mockConfirmationEmailFactory;
     private SendConfirmationEmailCommandFactoryInterface $mockEmailCmdFactory;
@@ -57,9 +55,6 @@ final class ResendEmailProcessorTest extends UnitTestCase
         parent::setUp();
         $this->initFactories();
         $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->userRepository = $this->createMock(
-            UserRepositoryInterface::class
-        );
         $this->tokenRepository = $this->createMock(
             TokenRepositoryInterface::class
         );
