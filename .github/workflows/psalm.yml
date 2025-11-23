@@ -27,7 +27,7 @@ jobs:
         run: vendor/bin/psalm --output-format=github --no-diff
 
       - name: Psalm Security
-        run: vendor/bin/psalm --taint-analysis --output-format=sarif --output-file=results.sarif --no-diff
+        run: vendor/bin/psalm --taint-analysis --output-format=sarif --report=results.sarif --no-diff
 
       - name: Upload Security Analysis results to GitHub
         uses: github/codeql-action/upload-sarif@v1
