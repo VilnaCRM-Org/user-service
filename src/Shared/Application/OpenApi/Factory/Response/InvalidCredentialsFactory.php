@@ -15,6 +15,7 @@ final class InvalidCredentialsFactory implements
     {
     }
 
+    #[\Override]
     public function getResponse(): Response
     {
         return $this->responseBuilder->build(

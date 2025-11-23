@@ -13,6 +13,8 @@ use IteratorAggregate;
 /**
  * @implements IteratorAggregate<int, User>
  * @implements ArrayAccess<int, User>
+ *
+ * @psalm-suppress PossiblyUnusedMethod Methods are invoked via interface usage and iteration.
  */
 final class UserCollection implements IteratorAggregate, Countable, ArrayAccess
 {
@@ -34,26 +36,34 @@ final class UserCollection implements IteratorAggregate, Countable, ArrayAccess
             array_filter($this->users, static fn ($i) => $i !== $user);
     }
 
+    #[\Override]
     public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->users);
     }
 
+    /**
+     * @psalm-suppress PossiblyUnusedMethod Called by Countable consumers.
+     */
+    #[\Override]
     public function count(): int
     {
         return count($this->users);
     }
 
+    #[\Override]
     public function offsetExists(mixed $offset): bool
     {
         return isset($this->users[$offset]);
     }
 
+    #[\Override]
     public function offsetGet(mixed $offset): ?User
     {
         return $this->users[$offset] ?? null;
     }
 
+    #[\Override]
     public function offsetSet(mixed $offset, mixed $value): void
     {
         if ($offset === null) {
@@ -64,6 +74,7 @@ final class UserCollection implements IteratorAggregate, Countable, ArrayAccess
         $this->users[$offset] = $value;
     }
 
+    #[\Override]
     public function offsetUnset(mixed $offset): void
     {
         unset($this->users[$offset]);

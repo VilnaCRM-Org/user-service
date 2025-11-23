@@ -12,6 +12,7 @@ use ArrayObject;
 
 final class CreateUserRequestFactory implements AbstractRequestFactory
 {
+    #[\Override]
     public function getRequest(): RequestBody
     {
         $schema = $this->createSchema();

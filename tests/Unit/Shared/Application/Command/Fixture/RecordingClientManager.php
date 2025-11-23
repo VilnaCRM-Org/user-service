@@ -17,16 +17,19 @@ final class RecordingClientManager implements ClientManagerInterface
     {
     }
 
+    #[\Override]
     public function save(ClientInterface $client): void
     {
         $this->savedClient = $client;
     }
 
+    #[\Override]
     public function remove(ClientInterface $client): void
     {
         $this->removedClient = $client;
     }
 
+    #[\Override]
     public function find(string $identifier): ?ClientInterface
     {
         return $this->existingClient;
@@ -35,6 +38,7 @@ final class RecordingClientManager implements ClientManagerInterface
     /**
      * @return array<ClientInterface>
      */
+    #[\Override]
     public function list(?ClientFilter $clientFilter): array
     {
         $clients = [];

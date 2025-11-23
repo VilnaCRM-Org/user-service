@@ -21,6 +21,7 @@ final class PasswordResetRequestedEvent extends DomainEvent
     /**
      * @param array<string, UserInterface|string> $body
      */
+    #[\Override]
     public static function fromPrimitives(
         array $body,
         string $eventId,
@@ -29,6 +30,7 @@ final class PasswordResetRequestedEvent extends DomainEvent
         return new self($body['user'], $body['token'], $eventId, $occurredOn);
     }
 
+    #[\Override]
     public static function eventName(): string
     {
         return 'user.password_reset_requested';
@@ -37,6 +39,7 @@ final class PasswordResetRequestedEvent extends DomainEvent
     /**
      * @return array<string, UserInterface|string>
      */
+    #[\Override]
     public function toPrimitives(): array
     {
         return [

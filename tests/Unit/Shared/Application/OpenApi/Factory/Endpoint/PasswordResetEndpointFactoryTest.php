@@ -27,6 +27,7 @@ final class PasswordResetEndpointFactoryTest extends UnitTestCase
     private Operation $requestOperation;
     private Operation $confirmOperation;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -59,12 +60,15 @@ final class PasswordResetEndpointFactoryTest extends UnitTestCase
 
         $this->paths->expects($this->exactly(2))
             ->method('getPath')
-            ->withConsecutive([
-                '/api/reset-password',
-            ], [
-                '/api/reset-password/confirm',
-            ])
-            ->willReturnOnConsecutiveCalls($this->requestPathItem, $this->confirmPathItem);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [
+                        ['/api/reset-password'],
+                        ['/api/reset-password/confirm'],
+                    ],
+                    [$this->requestPathItem, $this->confirmPathItem]
+                )
+            );
 
         $this->requestPathItem->expects($this->once())
             ->method('getPost')
@@ -93,13 +97,14 @@ final class PasswordResetEndpointFactoryTest extends UnitTestCase
 
         $this->paths->expects($this->exactly(2))
             ->method('addPath')
-            ->withConsecutive([
-                '/api/reset-password',
-                $this->requestPathItem,
-            ], [
-                '/api/reset-password/confirm',
-                $this->confirmPathItem,
-            ]);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [
+                        ['/api/reset-password', $this->requestPathItem],
+                        ['/api/reset-password/confirm', $this->confirmPathItem],
+                    ]
+                )
+            );
 
         $factory = new PasswordResetEndpointFactory(
             getenv('API_PREFIX'),

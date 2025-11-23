@@ -11,6 +11,7 @@ use App\User\Domain\Service\PasswordResetTokenValidatorInterface;
 final readonly class TokenExpirationValidator implements
     PasswordResetTokenValidatorInterface
 {
+    #[\Override]
     public function validate(?PasswordResetTokenInterface $token): void
     {
         if ($token?->isExpired()) {

@@ -16,6 +16,7 @@ final class OAuthTokenRequestFactory implements AbstractRequestFactory
     {
     }
 
+    #[\Override]
     public function getRequest(): RequestBody
     {
         return $this->requestBuilder->build(

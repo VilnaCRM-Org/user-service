@@ -14,6 +14,7 @@ final class QueryParameterBuilderTest extends UnitTestCase
 {
     private QueryParameterBuilder $builder;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

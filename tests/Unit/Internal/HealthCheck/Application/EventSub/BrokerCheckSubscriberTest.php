@@ -18,6 +18,7 @@ final class BrokerCheckSubscriberTest extends UnitTestCase
     private SqsClient|MockObject $sqsClient;
     private BrokerCheckSubscriber $subscriber;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -14,6 +14,7 @@ final class OAuthRedirectFactory implements AbstractResponseFactory
     {
     }
 
+    #[\Override]
     public function getResponse(): Response
     {
         $locationHeader = new Header(

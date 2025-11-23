@@ -30,6 +30,7 @@ final class PasswordResetEndpointFactory implements AbstractEndpointFactory
             $confirmResetFactory->getRequest();
     }
 
+    #[\Override]
     public function createEndpoint(OpenApi $openApi): void
     {
         $this->customiseRequestPasswordResetEndpoint($openApi);

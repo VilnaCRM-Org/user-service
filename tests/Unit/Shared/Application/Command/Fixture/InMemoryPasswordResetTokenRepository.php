@@ -15,16 +15,19 @@ final class InMemoryPasswordResetTokenRepository implements PasswordResetTokenRe
      */
     private array $tokens = [];
 
+    #[\Override]
     public function save(PasswordResetTokenInterface $passwordResetToken): void
     {
         $this->tokens[$passwordResetToken->getTokenValue()] = $passwordResetToken;
     }
 
+    #[\Override]
     public function findByToken(string $token): ?PasswordResetTokenInterface
     {
         return $this->tokens[$token] ?? null;
     }
 
+    #[\Override]
     public function findByUserID(string $userID): ?PasswordResetTokenInterface
     {
         foreach ($this->tokens as $token) {
@@ -36,11 +39,13 @@ final class InMemoryPasswordResetTokenRepository implements PasswordResetTokenRe
         return null;
     }
 
+    #[\Override]
     public function delete(PasswordResetTokenInterface $passwordResetToken): void
     {
         unset($this->tokens[$passwordResetToken->getTokenValue()]);
     }
 
+    #[\Override]
     public function countRecentRequestsByEmail(string $email, DateTimeImmutable $since): int
     {
         return 0;

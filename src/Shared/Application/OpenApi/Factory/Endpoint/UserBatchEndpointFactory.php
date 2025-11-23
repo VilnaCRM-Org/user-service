@@ -26,7 +26,7 @@ final class UserBatchEndpointFactory implements AbstractEndpointFactory
         ResponseF\BadRequestResponseFactory $badRequestFactory,
         ResponseF\ValidationErrorFactory $validationErrorFactory,
         ResponseF\UsersBatchCreatedResponseFactory $usersCreatedFactory,
-        private CreateBatchRequestFactory $batchRequestFactory
+        CreateBatchRequestFactory $batchRequestFactory
     ) {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
         $this->badRequestResponse = $badRequestFactory->getResponse();
@@ -35,6 +35,7 @@ final class UserBatchEndpointFactory implements AbstractEndpointFactory
         $this->batchRequest = $batchRequestFactory->getRequest();
     }
 
+    #[\Override]
     public function createEndpoint(OpenApi $openApi): void
     {
         $this->setPostOperation($openApi);

@@ -19,6 +19,7 @@ final class UserPasswordServiceTest extends UnitTestCase
     private MockObject|UserRepositoryInterface $userRepository;
     private MockObject|PasswordHasherInterface $passwordHasher;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

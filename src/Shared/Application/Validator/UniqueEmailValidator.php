@@ -16,6 +16,7 @@ final class UniqueEmailValidator extends ConstraintValidator
     ) {
     }
 
+    #[\Override]
     public function validate(mixed $value, Constraint $constraint): void
     {
         $candidate = $this->normalizedCandidate($value);
@@ -31,8 +32,6 @@ final class UniqueEmailValidator extends ConstraintValidator
 
     private function normalizedCandidate(mixed $value): ?string
     {
-        $candidate = null;
-
         return match (true) {
             !is_string($value) => null,
             ($candidate = trim($value)) === '' => null,

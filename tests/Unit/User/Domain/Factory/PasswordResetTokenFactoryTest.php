@@ -88,7 +88,7 @@ final class PasswordResetTokenFactoryTest extends UnitTestCase
     {
         $reflection = new \ReflectionClass(PasswordResetTokenFactory::class);
         $method = $reflection->getMethod('getHourUnit');
-        $method->setAccessible(true);
+        $this->makeAccessible($method);
 
         $oneHourUnit = $method->invoke($this->createFactory(16, 1));
         $zeroHourUnit = $method->invoke($this->createFactory(16, 0));
@@ -102,7 +102,7 @@ final class PasswordResetTokenFactoryTest extends UnitTestCase
     /**
      * @return iterable<string, array{int, int}>
      */
-    private function expirationProvider(): iterable
+    public static function expirationProvider(): iterable
     {
         yield 'one hour' => [16, 1];
         yield 'two hours' => [16, 2];

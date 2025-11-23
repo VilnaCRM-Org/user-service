@@ -27,6 +27,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
     private UuidFactory&MockObject $uuidFactory;
     private RequestPasswordResetCommandHandler $handler;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

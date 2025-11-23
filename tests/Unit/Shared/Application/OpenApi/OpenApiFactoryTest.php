@@ -31,6 +31,7 @@ final class OpenApiFactoryTest extends UnitTestCase
     private MockObject $paginationQueryParametersSanitizer;
     private MockObject $noContentResponseCleaner;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

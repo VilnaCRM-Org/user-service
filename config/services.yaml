@@ -70,14 +70,14 @@ services:
       $rateLimitMaxRequests: '%env(int:PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS)%'
       $rateLimitWindowHours: '%env(int:PASSWORD_RESET_RATE_LIMIT_WINDOW_HOURS)%'
 
-  App\Shared\Application\EventListener\QueryParameter\AllowedParametersRule:
+  App\Shared\Application\QueryParameter\AllowedParametersRule:
     arguments:
       $allowedParameters:
         '/api/users': ['page', 'itemsPerPage']
     tags:
       - { name: app.query_parameter_rule }
 
-  App\Shared\Application\EventListener\QueryParameter\Pagination\PaginationRule:
+  App\Shared\Application\QueryParameter\Pagination\PaginationRule:
     tags:
       - { name: app.query_parameter_rule }
 
@@ -88,8 +88,11 @@ services:
       - { name: kernel.event_listener, event: kernel.request, priority: 5 }
 
   api_platform.state.error_provider:
-    arguments: ['@Symfony\Contracts\Translation\TranslatorInterface']
     class: 'App\Shared\Application\ErrorProvider'
+    arguments:
+      - '@Symfony\Contracts\Translation\TranslatorInterface'
+      - '@request_stack'
+      - '@App\Shared\Application\Http\HttpExceptionHeadersResolver'
 
   App\User\Domain\Factory\ConfirmationTokenFactory:
     arguments:

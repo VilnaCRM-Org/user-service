@@ -12,6 +12,7 @@ final class ChainEmailSource implements BatchEmailSource
     ) {
     }
 
+    #[\Override]
     public function extract(mixed $entry): ?string
     {
         return $this->current->extract($entry)

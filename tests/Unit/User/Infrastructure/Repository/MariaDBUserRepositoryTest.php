@@ -33,6 +33,7 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
     private UuidTransformer $transformer;
     private Connection $connection;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -279,12 +280,12 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
             ->willReturn($this->createMock(Configuration::class));
         $this->entityManager->expects($this->exactly(self::BATCH_SIZE))
             ->method('persist')
-            ->withConsecutive(
-                ...array_map(
-                    static function ($user) {
-                        return [$user];
-                    },
-                    $users
+            ->willReturnCallback(
+                $this->expectSequential(
+                    array_map(
+                        static fn ($user) => [$user],
+                        $users
+                    )
                 )
             );
     }

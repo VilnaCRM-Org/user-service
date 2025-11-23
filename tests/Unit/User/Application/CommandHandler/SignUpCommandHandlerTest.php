@@ -33,6 +33,7 @@ final class SignUpCommandHandlerTest extends UnitTestCase
     private UuidTransformer $uuidTransformer;
     private SignUpCommandFactoryInterface $signUpCommandFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

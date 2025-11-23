@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Shared\Application;
 
-use ApiPlatform\Metadata\Exception\HttpExceptionInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ApiResource\Error;
 use ApiPlatform\State\ProviderInterface;
+use App\Shared\Application\Http\HttpExceptionHeadersResolver;
 use App\User\Domain\Exception\DomainException;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface as SymfonyHttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
@@ -22,7 +23,9 @@ use Throwable;
 final readonly class ErrorProvider implements ProviderInterface
 {
     public function __construct(
-        private TranslatorInterface $translator
+        private TranslatorInterface $translator,
+        private RequestStack $requestStack,
+        private HttpExceptionHeadersResolver $headersResolver
     ) {
     }
 
@@ -30,19 +33,25 @@ final readonly class ErrorProvider implements ProviderInterface
      * @param array<string,string> $uriVariables
      * @param array<string,array<string>> $context
      */
+    #[\Override]
     public function provide(
         Operation $operation,
         array $uriVariables = [],
         array $context = []
     ): object|array|null {
         $internalErrorText = $this->translator->trans('error.internal');
-        /** @var Request $request */
-        $request = $context['request'];
-        assert(is_object($request));
-        assert($request instanceof Request);
+        $request = $context['request'] ?? $this->requestStack->getCurrentRequest();
 
         $status = $operation->getStatus() ??
             HttpResponse::HTTP_INTERNAL_SERVER_ERROR;
+
+        if (!$request instanceof Request) {
+            return $this->provideRESTInternalServerError(
+                new RuntimeException($internalErrorText),
+                $internalErrorText,
+                $status
+            );
+        }
 
         return $this->getError($request, $status, $internalErrorText);
     }
@@ -151,22 +160,13 @@ final readonly class ErrorProvider implements ProviderInterface
         Throwable $exception,
         int $status
     ): Error {
-        $headers = [];
-
-        if (
-            $exception instanceof SymfonyHttpExceptionInterface
-            || $exception instanceof HttpExceptionInterface
-        ) {
-            $headers = $exception->getHeaders();
-        }
-
         return new Error(
             title: 'An error occurred',
             detail: $exception->getMessage(),
             status: $status,
             originalTrace: $exception->getTrace(),
             type: "/errors/{$status}",
-            headers: $headers,
+            headers: $this->headersResolver->resolve($exception),
             previous: $exception->getPrevious()
         );
     }

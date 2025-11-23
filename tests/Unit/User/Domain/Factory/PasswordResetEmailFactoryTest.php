@@ -18,6 +18,7 @@ final class PasswordResetEmailFactoryTest extends UnitTestCase
 {
     private MockObject|PasswordResetEmailSendEventFactoryInterface $eventFactoryMock;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

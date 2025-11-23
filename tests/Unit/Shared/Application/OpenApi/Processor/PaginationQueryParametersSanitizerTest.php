@@ -154,6 +154,37 @@ final class PaginationQueryParametersSanitizerTest extends UnitTestCase
         $this->assertSame('header', $parameter->getIn());
     }
 
+    public function testPaginationParametersOutsideQueryAreIgnored(): void
+    {
+        $headerParameter = new Parameter(
+            name: 'page',
+            in: 'header',
+            description: 'A header based pagination parameter',
+            schema: ['type' => 'integer'],
+            allowEmptyValue: true
+        );
+
+        $paths = new Paths();
+        $paths->addPath(
+            '/users',
+            (new PathItem())->withGet(
+                new Operation(parameters: [$headerParameter])
+            )
+        );
+
+        $openApi = new OpenApi(new Info('Test', '1.0.0'), [], $paths);
+
+        $sanitized = $this->createSanitizer()->sanitize($openApi);
+
+        $parameter = $sanitized->getPaths()
+            ->getPath('/users')
+            ->getGet()
+            ->getParameters()[0];
+
+        $this->assertTrue($parameter->getAllowEmptyValue());
+        $this->assertArrayNotHasKey('minimum', $parameter->getSchema());
+    }
+
     private function createSanitizer(): PaginationQueryParametersSanitizer
     {
         return new PaginationQueryParametersSanitizer(

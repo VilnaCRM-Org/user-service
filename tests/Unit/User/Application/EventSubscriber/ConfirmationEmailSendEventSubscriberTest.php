@@ -37,6 +37,7 @@ final class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
     private TranslatorInterface $translator;
     private EmailFactoryInterface $mockEmailFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -138,9 +139,14 @@ final class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
     ): void {
         $this->translator->expects($this->exactly(2))
             ->method('trans')
-            ->withConsecutive(
-                ['email.confirm.subject'],
-                ['email.confirm.text', ['tokenValue' => $tokenValue]]
-            )->willReturnOnConsecutiveCalls($email->getSubject(), $tokenValue);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [
+                        ['email.confirm.subject'],
+                        ['email.confirm.text', ['tokenValue' => $tokenValue]],
+                    ],
+                    [$email->getSubject(), $tokenValue]
+                )
+            );
     }
 }

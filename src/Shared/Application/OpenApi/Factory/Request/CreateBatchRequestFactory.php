@@ -12,6 +12,7 @@ use ArrayObject;
 
 final class CreateBatchRequestFactory implements AbstractRequestFactory
 {
+    #[\Override]
     public function getRequest(): RequestBody
     {
         $schema = $this->createRootSchema();

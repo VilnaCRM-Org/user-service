@@ -23,6 +23,7 @@ paths:
       responses:
         '204':
           description: 'Health check passed with no content to return.'
+          content: {  }
         '500':
           description: 'Internal server error'
           content:
@@ -48,7 +49,6 @@ paths:
       summary: 'Retrieves a HealthCheck resource.'
       description: 'Retrieves a HealthCheck resource.'
       parameters: []
-      deprecated: false
   /api/oauth/authorize:
     summary: 'Requests for authorization code'
     description: 'Requests for authorization code'
@@ -148,7 +148,6 @@ paths:
               - code
           style: form
           explode: false
-          allowReserved: false
           example: code
         -
           name: client_id
@@ -162,7 +161,6 @@ paths:
             minLength: 1
           style: form
           explode: false
-          allowReserved: false
           example: dc0bc6323f16fecd4224a3860ca894c5
         -
           name: redirect_uri
@@ -176,7 +174,6 @@ paths:
             minLength: 1
           style: form
           explode: false
-          allowReserved: false
           example: 'https://example.com'
         -
           name: scope
@@ -190,7 +187,6 @@ paths:
             minLength: 1
           style: form
           explode: false
-          allowReserved: false
           example: 'profile email'
         -
           name: state
@@ -204,7 +200,6 @@ paths:
             minLength: 1
           style: form
           explode: false
-          allowReserved: false
           example: af0ifjsldkj
   /api/oauth/token:
     summary: 'Requests for access token'
@@ -436,7 +431,6 @@ paths:
             minimum: 1
           style: form
           explode: false
-          allowReserved: false
         -
           name: itemsPerPage
           in: query
@@ -450,8 +444,6 @@ paths:
             minimum: 1
           style: form
           explode: false
-          allowReserved: false
-      deprecated: false
     post:
       operationId: create_http
       tags:
@@ -582,7 +574,6 @@ paths:
               initials: CreateUser
               password: CreatePass1!
         required: true
-      deprecated: false
   /api/users/batch:
     post:
       operationId: create_batch_http
@@ -703,7 +694,6 @@ paths:
                   initials: BatchUserTwo
                   password: BatchPass2!
         required: true
-      deprecated: false
   /api/users/confirm:
     patch:
       operationId: confirm_http
@@ -809,7 +799,6 @@ paths:
             example:
               token: confirm-token
         required: true
-      deprecated: false
   '/api/users/{id}':
     get:
       operationId: api_users_id_get
@@ -899,7 +888,6 @@ paths:
           style: simple
           explode: false
           example: 018dd6ba-e901-7a8c-b27d-65d122caca6b
-      deprecated: false
     put:
       operationId: api_users_id_put
       tags:
@@ -1069,7 +1057,6 @@ paths:
               oldPassword: Password1!
               newPassword: Password1!
         required: true
-      deprecated: false
     delete:
       operationId: api_users_id_delete
       tags:
@@ -1140,7 +1127,6 @@ paths:
           style: simple
           explode: false
           example: 018dd6ba-e901-7a8c-b27d-65d122caca6d
-      deprecated: false
     patch:
       operationId: api_users_id_patch
       tags:
@@ -1307,7 +1293,6 @@ paths:
               oldPassword: Password1!
               newPassword: Password1!
         required: true
-      deprecated: false
   '/api/users/{id}/resend-confirmation-email':
     post:
       operationId: api_users_idresend-confirmation-email_post
@@ -1455,7 +1440,6 @@ paths:
               type: object
               properties: {  }
         required: false
-      deprecated: false
   /api/reset-password:
     post:
       operationId: request_password_reset
@@ -1464,6 +1448,7 @@ paths:
       responses:
         '204':
           description: 'Password reset request accepted'
+          content: {  }
         '400':
           description: 'Invalid request payload'
         '404':
@@ -1524,7 +1509,6 @@ paths:
             example:
               email: password-reset@example.com
         required: true
-      deprecated: false
   /api/reset-password/confirm:
     post:
       operationId: confirm_password_reset
@@ -1533,6 +1517,7 @@ paths:
       responses:
         '204':
           description: 'Password reset confirmed'
+          content: {  }
         '400':
           description: 'Invalid or expired password reset token'
         '404':
@@ -1607,17 +1592,14 @@ paths:
               token: reset-confirm-token-ld
               newPassword: passWORD1
         required: true
-      deprecated: false
 components:
   schemas:
-    ConstraintViolation-json:
+    ConstraintViolation:
       type: object
       description: 'Unprocessable entity'
-      deprecated: false
       properties:
         status:
           default: 422
-          example: 422
           type: integer
         violations:
           type: array
@@ -1648,24 +1630,6 @@ components:
             - 'null'
     EmptyResponse.ConfirmPasswordResetDto:
       type: object
-      description: ''
-      deprecated: false
-      required:
-        - token
-        - newPassword
-      properties:
-        token:
-          maxLength: 255
-          type: string
-        newPassword:
-          maxLength: 64
-          minLength: 8
-          pattern: '^(.*[A-Z].*)$'
-          type: string
-    EmptyResponse.ConfirmPasswordResetDto.jsonld:
-      type: object
-      description: ''
-      deprecated: false
       required:
         - token
         - newPassword
@@ -1680,21 +1644,6 @@ components:
           type: string
     EmptyResponse.RequestPasswordResetDto:
       type: object
-      description: ''
-      deprecated: false
-      required:
-        - email
-      properties:
-        email:
-          format: email
-          maxLength: 255
-          externalDocs:
-            url: 'https://schema.org/email'
-          type: string
-    EmptyResponse.RequestPasswordResetDto.jsonld:
-      type: object
-      description: ''
-      deprecated: false
       required:
         - email
       properties:
@@ -1707,20 +1656,15 @@ components:
     Error:
       type: object
       description: 'A representation of common errors.'
-      deprecated: false
       properties:
         title:
           readOnly: true
           description: 'A short, human-readable summary of the problem.'
-          type:
-            - string
-            - 'null'
+          type: string
         detail:
           readOnly: true
           description: 'A human-readable explanation specific to this occurrence of the problem.'
-          type:
-            - string
-            - 'null'
+          type: string
         status:
           type: number
           examples:
@@ -1738,15 +1682,76 @@ components:
           type: string
     HealthCheck:
       type: object
-      description: ''
-      deprecated: false
-    HealthCheck.jsonld:
+    HealthCheck.graphql:
       type: object
-      description: ''
-      deprecated: false
+    HealthCheck.jsonld:
+      allOf:
+        -
+          $ref: '#/components/schemas/HydraItemBaseSchema'
+        -
+          type: object
+    HydraCollectionBaseSchema:
+      allOf:
+        -
+          $ref: '#/components/schemas/HydraCollectionBaseSchemaNoPagination'
+        -
+          type: object
+          properties:
+            view:
+              type: object
+              properties:
+                '@id':
+                  type: string
+                  format: iri-reference
+                '@type':
+                  type: string
+                first:
+                  type: string
+                  format: iri-reference
+                last:
+                  type: string
+                  format: iri-reference
+                previous:
+                  type: string
+                  format: iri-reference
+                next:
+                  type: string
+                  format: iri-reference
+              example:
+                '@id': string
+                type: string
+                first: string
+                last: string
+                previous: string
+                next: string
+    HydraCollectionBaseSchemaNoPagination:
+      type: object
+      properties:
+        totalItems:
+          type: integer
+          minimum: 0
+        search:
+          type: object
+          properties:
+            '@type':
+              type: string
+            template:
+              type: string
+            variableRepresentation:
+              type: string
+            mapping:
+              type: array
+              items:
+                type: object
+                properties:
+                  '@type': { type: string }
+                  variable: { type: string }
+                  property: { type: [string, 'null'] }
+                  required: { type: boolean }
+    HydraItemBaseSchema:
+      type: object
       properties:
         '@context':
-          readOnly: true
           oneOf:
             -
               type: string
@@ -1763,15 +1768,14 @@ components:
                 - hydra
               additionalProperties: true
         '@id':
-          readOnly: true
           type: string
         '@type':
-          readOnly: true
           type: string
+      required:
+        - '@id'
+        - '@type'
     User-output:
       type: object
-      description: ''
-      deprecated: false
       properties:
         confirmed:
           type: boolean
@@ -1781,27 +1785,15 @@ components:
           type: string
         id:
           $ref: '#/components/schemas/UuidInterface-output'
-    User.ConfirmUserDto:
+    User.ConfirmUserDto.jsonMergePatch:
       type: object
-      description: ''
-      deprecated: false
-      required:
-        - token
       properties:
         token:
           type: string
     User.RetryDto:
       type: object
-      description: ''
-      deprecated: false
-    User.RetryDto.jsonld:
+    User.UserPatchDto.jsonMergePatch:
       type: object
-      description: ''
-      deprecated: false
-    User.UserPatchDto:
-      type: object
-      description: ''
-      deprecated: false
       properties:
         email:
           format: email
@@ -1831,50 +1823,8 @@ components:
           type:
             - string
             - 'null'
-      required:
-        - oldPassword
     User.UserPutDto:
       type: object
-      description: ''
-      deprecated: false
-      required:
-        - email
-        - initials
-        - oldPassword
-        - newPassword
-      properties:
-        email:
-          format: email
-          maxLength: 255
-          externalDocs:
-            url: 'https://schema.org/email'
-          type:
-            - string
-            - 'null'
-        initials:
-          maxLength: 255
-          pattern: ^(\S+)$
-          type:
-            - string
-            - 'null'
-        oldPassword:
-          maxLength: 64
-          minLength: 8
-          pattern: '^(.*[A-Z].*)$'
-          type:
-            - string
-            - 'null'
-        newPassword:
-          maxLength: 64
-          minLength: 8
-          pattern: '^(.*[A-Z].*)$'
-          type:
-            - string
-            - 'null'
-    User.UserPutDto.jsonld:
-      type: object
-      description: ''
-      deprecated: false
       required:
         - email
         - initials
@@ -1911,29 +1861,17 @@ components:
             - 'null'
     User.UserRegisterBatchDto:
       type: object
-      description: ''
       additionalProperties: false
-      deprecated: false
       properties:
         users:
           type: array
           items:
-            type: string
-    User.UserRegisterBatchDto.jsonld:
-      type: object
-      description: ''
-      additionalProperties: false
-      deprecated: false
-      properties:
-        users:
-          type: array
-          items:
-            type: string
+            type:
+              - string
+              - 'null'
     User.UserRegisterDto:
       type: object
-      description: ''
       additionalProperties: false
-      deprecated: false
       required:
         - email
         - initials
@@ -1954,59 +1892,9 @@ components:
           minLength: 8
           pattern: '^(.*[A-Z].*)$'
           type: string
-    User.UserRegisterDto.jsonld:
+    User.graphql-output:
       type: object
-      description: ''
-      additionalProperties: false
-      deprecated: false
-      required:
-        - email
-        - initials
-        - password
       properties:
-        email:
-          format: email
-          maxLength: 255
-          externalDocs:
-            url: 'https://schema.org/email'
-          type: string
-        initials:
-          maxLength: 255
-          pattern: ^(\S+)$
-          type: string
-        password:
-          maxLength: 64
-          minLength: 8
-          pattern: '^(.*[A-Z].*)$'
-          type: string
-    User.jsonld-output:
-      type: object
-      description: ''
-      deprecated: false
-      properties:
-        '@context':
-          readOnly: true
-          oneOf:
-            -
-              type: string
-            -
-              type: object
-              properties:
-                '@vocab':
-                  type: string
-                hydra:
-                  type: string
-                  enum: ['http://www.w3.org/ns/hydra/core#']
-              required:
-                - '@vocab'
-                - hydra
-              additionalProperties: true
-        '@id':
-          readOnly: true
-          type: string
-        '@type':
-          readOnly: true
-          type: string
         confirmed:
           type: boolean
         email:
@@ -2014,39 +1902,28 @@ components:
         initials:
           type: string
         id:
-          $ref: '#/components/schemas/UuidInterface.jsonld-output'
+          $ref: '#/components/schemas/UuidInterface.graphql-output'
+    User.jsonld-output:
+      allOf:
+        -
+          $ref: '#/components/schemas/HydraItemBaseSchema'
+        -
+          type: object
+          properties:
+            confirmed:
+              type: boolean
+            email:
+              type: string
+            initials:
+              type: string
+            id:
+              $ref: '#/components/schemas/UuidInterface.jsonld-output'
     UuidInterface-output:
       type: object
-      description: ''
-      deprecated: false
+    UuidInterface.graphql-output:
+      type: object
     UuidInterface.jsonld-output:
       type: object
-      description: ''
-      deprecated: false
-      properties:
-        '@context':
-          readOnly: true
-          oneOf:
-            -
-              type: string
-            -
-              type: object
-              properties:
-                '@vocab':
-                  type: string
-                hydra:
-                  type: string
-                  enum: ['http://www.w3.org/ns/hydra/core#']
-              required:
-                - '@vocab'
-                - hydra
-              additionalProperties: true
-        '@id':
-          readOnly: true
-          type: string
-        '@type':
-          readOnly: true
-          type: string
   responses: {  }
   parameters: {  }
   examples: {  }

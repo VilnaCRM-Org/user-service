@@ -47,6 +47,7 @@ final readonly class PasswordResetEmailSentEventSubscriber implements
     /**
      * @return array<class-string<DomainEvent>>
      */
+    #[\Override]
     public function subscribedTo(): array
     {
         return [PasswordResetEmailSentEvent::class];

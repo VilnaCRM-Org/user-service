@@ -34,6 +34,7 @@ final class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
     private UuidTransformer $uuidTransformer;
     private SendConfirmationEmailCommandFactoryInterface $commandFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

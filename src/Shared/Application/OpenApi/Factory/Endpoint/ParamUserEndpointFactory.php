@@ -16,61 +16,18 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class ParamUserEndpointFactory implements AbstractEndpointFactory
 {
-    private const OPERATION_DEFINITIONS = [
-        [
-            'method' => 'put',
-            'parameterProperty' => 'updateUserPathParam',
-            'responsesProperty' => 'updateResponses',
-            'requestProperty' => 'replaceUserRequest',
-        ],
-        [
-            'method' => 'patch',
-            'parameterProperty' => 'updateUserPathParam',
-            'responsesProperty' => 'updateResponses',
-            'requestProperty' => 'updateUserRequest',
-        ],
-        [
-            'method' => 'get',
-            'parameterProperty' => 'baseUserPathParam',
-            'responsesProperty' => 'getResponses',
-        ],
-        [
-            'method' => 'delete',
-            'parameterProperty' => 'deleteUserPathParam',
-            'responsesProperty' => 'deleteResponses',
-        ],
-    ];
+    private const OPERATIONS = ['put', 'patch', 'get', 'delete'];
 
     private string $endpointUri = '/users/{id}';
 
-    private Parameter $baseUserPathParam;
-    private Parameter $updateUserPathParam;
-    private Parameter $deleteUserPathParam;
-    private Response $badRequestResponse;
-    private Response $userNotFoundResponse;
-    private Response $validationErrorResponse;
-    private Response $userDeletedResponse;
-    private Response $userUpdatedResponse;
-    private Response $userReturnedResponse;
+    /** @var array<string, Parameter> */
+    private array $pathParameters = [];
 
-    private RequestBody $replaceUserRequest;
+    /** @var array<string, array<int, Response>> */
+    private array $operationResponses = [];
 
-    private RequestBody $updateUserRequest;
-
-    /**
-     * @var array<int,Response>
-     */
-    private array $updateResponses = [];
-
-    /**
-     * @var array<int,Response>
-     */
-    private array $deleteResponses = [];
-
-    /**
-     * @var array<int,Response>
-     */
-    private array $getResponses = [];
+    /** @var array<string, RequestBody> */
+    private array $requestBodies = [];
 
     public function __construct(
         string $apiPrefix,
@@ -86,19 +43,17 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
         $this->configureRequests();
     }
 
+    #[\Override]
     public function createEndpoint(OpenApi $openApi): void
     {
-        foreach (self::OPERATION_DEFINITIONS as $definition) {
-            $parameter = $this->{$definition['parameterProperty']};
-            $responses = $this->{$definition['responsesProperty']};
-            $requestProperty = $definition['requestProperty'] ?? null;
-            $requestBody = $requestProperty !== null
-                ? $this->{$requestProperty}
-                : null;
+        foreach (self::OPERATIONS as $method) {
+            $parameter = $this->pathParameters[$method];
+            $responses = $this->operationResponses[$method];
+            $requestBody = $this->requestBodies[$method] ?? null;
 
             $this->addOperation(
                 $openApi,
-                $definition['method'],
+                $method,
                 $parameter,
                 $responses,
                 $requestBody
@@ -135,60 +90,76 @@ final class ParamUserEndpointFactory implements AbstractEndpointFactory
 
     private function configurePathParameters(): void
     {
-        $this->baseUserPathParam = $this->parameterFactory->getParameterFor(
-            SchemathesisFixtures::USER_ID
-        );
-        $this->updateUserPathParam = $this->parameterFactory->getParameterFor(
-            SchemathesisFixtures::UPDATE_USER_ID
-        );
-        $this->deleteUserPathParam = $this->parameterFactory->getParameterFor(
-            SchemathesisFixtures::DELETE_USER_ID
-        );
+        $this->pathParameters = [
+            'put' => $this->parameterFactory->getParameterFor(
+                SchemathesisFixtures::UPDATE_USER_ID
+            ),
+            'patch' => $this->parameterFactory->getParameterFor(
+                SchemathesisFixtures::UPDATE_USER_ID
+            ),
+            'get' => $this->parameterFactory->getParameterFor(
+                SchemathesisFixtures::USER_ID
+            ),
+            'delete' => $this->parameterFactory->getParameterFor(
+                SchemathesisFixtures::DELETE_USER_ID
+            ),
+        ];
     }
 
     private function configureResponses(): void
     {
-        $this->initializeResponseObjects();
-        $this->initializeResponseCollections();
+        $mutationResponses = $this->userMutationResponses();
+        $readResponses = $this->userReadResponses();
+        $deleteResponses = $this->userDeleteResponses();
+
+        $this->operationResponses = [
+            'put' => $mutationResponses,
+            'patch' => $mutationResponses,
+            'get' => $readResponses,
+            'delete' => $deleteResponses,
+        ];
     }
 
-    private function initializeResponseObjects(): void
+    /**
+     * @return array<int, Response>
+     */
+    private function userMutationResponses(): array
     {
-        $this->badRequestResponse = $this->responseProvider->badRequest();
-        $this->userNotFoundResponse = $this->responseProvider->userNotFound();
-        $this->validationErrorResponse = $this->responseProvider->validationError();
-        $this->userDeletedResponse = $this->responseProvider->userDeleted();
-        $this->userUpdatedResponse = $this->responseProvider->userUpdated();
-        $this->userReturnedResponse = $this->responseProvider->userReturned();
+        return [
+            HttpResponse::HTTP_OK => $this->responseProvider->userUpdated(),
+            HttpResponse::HTTP_BAD_REQUEST => $this->responseProvider->badRequest(),
+            HttpResponse::HTTP_NOT_FOUND => $this->responseProvider->userNotFound(),
+            HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $this->responseProvider->validationError(),
+        ];
     }
 
-    private function initializeResponseCollections(): void
+    /**
+     * @return array<int, Response>
+     */
+    private function userReadResponses(): array
     {
-        $validationError = $this->validationErrorResponse;
-
-        $this->updateResponses = [
-            HttpResponse::HTTP_OK => $this->userUpdatedResponse,
-            HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
-            HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
-            HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $validationError,
+        return [
+            HttpResponse::HTTP_NOT_FOUND => $this->responseProvider->userNotFound(),
+            HttpResponse::HTTP_OK => $this->responseProvider->userReturned(),
         ];
+    }
 
-        $this->deleteResponses = [
-            HttpResponse::HTTP_NO_CONTENT => $this->userDeletedResponse,
-            HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
-        ];
-
-        $this->getResponses = [
-            HttpResponse::HTTP_NOT_FOUND => $this->userNotFoundResponse,
-            HttpResponse::HTTP_OK => $this->userReturnedResponse,
+    /**
+     * @return array<int, Response>
+     */
+    private function userDeleteResponses(): array
+    {
+        return [
+            HttpResponse::HTTP_NO_CONTENT => $this->responseProvider->userDeleted(),
+            HttpResponse::HTTP_NOT_FOUND => $this->responseProvider->userNotFound(),
         ];
     }
 
     private function configureRequests(): void
     {
-        $this->replaceUserRequest =
-            $this->replaceUserRequestFactory->getRequest();
-        $this->updateUserRequest =
-            $this->updateUserRequestFactory->getRequest();
+        $this->requestBodies = [
+            'put' => $this->replaceUserRequestFactory->getRequest(),
+            'patch' => $this->updateUserRequestFactory->getRequest(),
+        ];
     }
 }

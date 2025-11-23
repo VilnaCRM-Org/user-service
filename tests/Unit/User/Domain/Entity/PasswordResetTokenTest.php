@@ -14,6 +14,7 @@ final class PasswordResetTokenTest extends UnitTestCase
     private PasswordResetToken $passwordResetToken;
     private PasswordResetTokenFactoryInterface $passwordResetTokenFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

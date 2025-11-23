@@ -14,6 +14,7 @@ final class DBCheckSubscriberTest extends UnitTestCase
     private Connection $connection;
     private DBCheckSubscriber $subscriber;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

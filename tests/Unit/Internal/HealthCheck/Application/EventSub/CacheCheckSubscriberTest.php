@@ -14,6 +14,7 @@ final class CacheCheckSubscriberTest extends UnitTestCase
     private CacheInterface $cache;
     private CacheCheckSubscriber $subscriber;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -41,7 +42,7 @@ final class CacheCheckSubscriberTest extends UnitTestCase
         // Test the static method via reflection since it's private
         $reflection = new \ReflectionClass(CacheCheckSubscriber::class);
         $method = $reflection->getMethod('cacheMissHandler');
-        $method->setAccessible(true);
+        $this->makeAccessible($method);
 
         $result = $method->invoke(null);
         $this->assertSame('ok', $result);

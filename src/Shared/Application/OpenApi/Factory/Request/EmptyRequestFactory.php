@@ -16,6 +16,7 @@ final class EmptyRequestFactory implements AbstractRequestFactory
     {
     }
 
+    #[\Override]
     public function getRequest(): RequestBody
     {
         $schema = new Schema();

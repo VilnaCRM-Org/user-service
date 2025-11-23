@@ -12,6 +12,7 @@ final class UriParameterBuilderTest extends UnitTestCase
 {
     private UriParameterBuilder $builder;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

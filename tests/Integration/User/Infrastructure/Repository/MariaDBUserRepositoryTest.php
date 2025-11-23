@@ -19,6 +19,7 @@ final class MariaDBUserRepositoryTest extends IntegrationTestCase
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

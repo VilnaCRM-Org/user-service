@@ -12,6 +12,7 @@ use ArrayObject;
 
 final class ConfirmPasswordResetRequestFactory implements AbstractRequestFactory
 {
+    #[\Override]
     public function getRequest(): RequestBody
     {
         return new RequestBody(

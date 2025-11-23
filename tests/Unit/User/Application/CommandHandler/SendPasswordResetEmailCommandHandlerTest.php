@@ -22,6 +22,7 @@ final class SendPasswordResetEmailCommandHandlerTest extends UnitTestCase
     private UuidFactory $uuidFactory;
     private SendPasswordResetEmailCommandHandler $handler;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

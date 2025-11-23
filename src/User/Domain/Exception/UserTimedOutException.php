@@ -17,6 +17,7 @@ final class UserTimedOutException extends DomainException
         );
     }
 
+    #[\Override]
     public function getTranslationTemplate(): string
     {
         return 'error.user-timed-out';
@@ -25,6 +26,7 @@ final class UserTimedOutException extends DomainException
     /**
      * @return array<string, DateTimeInterface>
      */
+    #[\Override]
     public function getTranslationArgs(): array
     {
         return ['datetime' => $this->timeOutTill->format(

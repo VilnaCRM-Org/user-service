@@ -13,6 +13,7 @@ final class SendPasswordResetEmailCommandFactoryTest extends UnitTestCase
 {
     private SendPasswordResetEmailCommandFactory $factory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

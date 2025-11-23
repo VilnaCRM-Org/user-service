@@ -16,6 +16,7 @@ final class InternalErrorFactory implements
     {
     }
 
+    #[\Override]
     public function getResponse(): Response
     {
         return $this->responseBuilder->build(

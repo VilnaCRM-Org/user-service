@@ -33,6 +33,7 @@ final class RegisterUserBatchProcessorTest extends UnitTestCase
     private UuidTransformer $transformer;
     private Operation $operation;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

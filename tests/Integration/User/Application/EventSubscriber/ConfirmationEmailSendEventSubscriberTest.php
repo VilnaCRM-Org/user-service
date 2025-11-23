@@ -13,8 +13,8 @@ use App\User\Domain\Event\ConfirmationEmailSentEvent;
 final class ConfirmationEmailSendEventSubscriberTest extends IntegrationTestCase
 {
     private ConfirmationEmailSentEventSubscriber $subscriber;
-    private TestEmailSendingUtils $utils;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -22,7 +22,6 @@ final class ConfirmationEmailSendEventSubscriberTest extends IntegrationTestCase
         $this->subscriber = $this->container->get(
             ConfirmationEmailSentEventSubscriber::class
         );
-        $this->utils = new TestEmailSendingUtils();
     }
 
     public function testConfirmationEmailSent(): void
@@ -38,6 +37,6 @@ final class ConfirmationEmailSendEventSubscriberTest extends IntegrationTestCase
         );
 
         $this->subscriber->__invoke($event);
-        $this->utils->assertEmailWasSent($this->container, $emailAddress);
+        TestEmailSendingUtils::assertEmailWasSent($this->container, $emailAddress);
     }
 }

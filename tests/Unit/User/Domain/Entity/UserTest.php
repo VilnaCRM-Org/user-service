@@ -29,6 +29,7 @@ final class UserTest extends UnitTestCase
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
     private UuidTransformer $uuidTransformer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

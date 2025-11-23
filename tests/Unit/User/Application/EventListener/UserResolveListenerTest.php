@@ -35,6 +35,7 @@ final class UserResolveListenerTest extends UnitTestCase
     private Grant $mockGrant;
     private AbstractClient $mockAbstractClient;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

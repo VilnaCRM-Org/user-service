@@ -21,6 +21,7 @@ final class PasswordResetEmailSentEvent extends DomainEvent
     /**
      * @param array<string, string> $body
      */
+    #[\Override]
     public static function fromPrimitives(
         array $body,
         string $eventId,
@@ -29,6 +30,7 @@ final class PasswordResetEmailSentEvent extends DomainEvent
         return new self($body['token'], $body['email'], $eventId, $occurredOn);
     }
 
+    #[\Override]
     public static function eventName(): string
     {
         return 'user.password_reset_email_sent';
@@ -37,6 +39,7 @@ final class PasswordResetEmailSentEvent extends DomainEvent
     /**
      * @return array<string, string>
      */
+    #[\Override]
     public function toPrimitives(): array
     {
         return [

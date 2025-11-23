@@ -12,6 +12,7 @@ abstract class BaseHealthCheckSubscriber implements EventSubscriberInterface
     /**
      * @return array<class-string, string>
      */
+    #[\Override]
     public static function getSubscribedEvents(): array
     {
         return [HealthCheckEvent::class => 'onHealthCheck'];

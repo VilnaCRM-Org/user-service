@@ -83,7 +83,7 @@ final class PathParametersSanitizerTest extends UnitTestCase
         $sanitizer = new PathParametersSanitizer();
 
         $method = new \ReflectionMethod(PathParametersSanitizer::class, 'sanitizeOperation');
-        $method->setAccessible(true);
+        $this->makeAccessible($method);
 
         $result = $method->invoke($sanitizer, $operation);
 
@@ -95,7 +95,7 @@ final class PathParametersSanitizerTest extends UnitTestCase
         $sanitizer = new PathParametersSanitizer();
 
         $method = new \ReflectionMethod(PathParametersSanitizer::class, 'sanitizeOperation');
-        $method->setAccessible(true);
+        $this->makeAccessible($method);
 
         $this->assertNull($method->invoke($sanitizer, null));
     }

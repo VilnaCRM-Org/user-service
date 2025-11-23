@@ -21,6 +21,7 @@ final class CreateUserBatchValidatorTest extends UnitTestCase
     private Constraint $constraint;
     private CreateUserBatchConstraintEvaluator $constraintEvaluator;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -44,8 +45,12 @@ final class CreateUserBatchValidatorTest extends UnitTestCase
 
         $this->translator->expects($this->exactly(2))
             ->method('trans')
-            ->withConsecutive([$messages[0]], [$messages[1]])
-            ->willReturnOnConsecutiveCalls($translated[0], $translated[1]);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [[$messages[0]], [$messages[1]]],
+                    $translated
+                )
+            );
 
         $firstBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
         $firstBuilder->expects($this->once())
@@ -57,8 +62,12 @@ final class CreateUserBatchValidatorTest extends UnitTestCase
 
         $this->context->expects($this->exactly(2))
             ->method('buildViolation')
-            ->withConsecutive([$translated[0]], [$translated[1]])
-            ->willReturnOnConsecutiveCalls($firstBuilder, $secondBuilder);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [[$translated[0]], [$translated[1]]],
+                    [$firstBuilder, $secondBuilder]
+                )
+            );
 
         $this->validator->validate('value', $this->constraint);
     }

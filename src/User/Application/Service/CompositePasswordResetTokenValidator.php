@@ -18,6 +18,7 @@ final readonly class CompositePasswordResetTokenValidator implements
     ) {
     }
 
+    #[\Override]
     public function validate(?PasswordResetTokenInterface $token): void
     {
         foreach ($this->validators as $validator) {

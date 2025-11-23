@@ -15,8 +15,10 @@ interface TokenRepositoryInterface extends RepositoryInterface
     /**
      * @param ConfirmationToken $token
      */
+    #[\Override]
     public function save(object $token): void;
 
+    #[\Override]
     public function find(string $tokenValue): ?ConfirmationTokenInterface;
 
     public function findByUserId(string $userID): ?ConfirmationTokenInterface;
@@ -24,5 +26,6 @@ interface TokenRepositoryInterface extends RepositoryInterface
     /**
      * @param ConfirmationToken $token
      */
+    #[\Override]
     public function delete(object $token): void;
 }

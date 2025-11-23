@@ -15,6 +15,7 @@ final class UuidUriParameterFactory implements AbstractUriParameterFactory
     {
     }
 
+    #[\Override]
     public function getParameter(): Parameter
     {
         return $this->getParameterFor(self::DEFAULT_ID);

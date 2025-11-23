@@ -10,6 +10,7 @@ use App\User\Domain\Aggregate\ConfirmationEmailInterface;
 final class SendConfirmationEmailCommandFactory implements
     SendConfirmationEmailCommandFactoryInterface
 {
+    #[\Override]
     public function create(
         ConfirmationEmailInterface $confirmationEmail
     ): SendConfirmationEmailCommand {

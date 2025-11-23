@@ -6,17 +6,19 @@ namespace App\Tests\Unit\Shared\Infrastructure\Bus\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Infrastructure\Bus\Event\PartlyCoveredEventBus;
-use PHPUnit\Framework\TestCase;
+use App\Tests\Unit\UnitTestCase;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBus;
 
 /**
  * @covers \App\Shared\Infrastructure\Bus\Event\PartlyCoveredEventBus
  */
-final class PartlyCoveredEventBusTest extends TestCase
+final class PartlyCoveredEventBusTest extends UnitTestCase
 {
     private MessageBus $messageBus;
     private PartlyCoveredEventBus $eventBus;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->messageBus = $this->createMock(MessageBus::class);
@@ -41,7 +43,12 @@ final class PartlyCoveredEventBusTest extends TestCase
 
         $this->messageBus->expects($this->exactly(2))
             ->method('dispatch')
-            ->withConsecutive([$event1], [$event2]);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [[$event1], [$event2]],
+                    static fn (DomainEvent $event) => new Envelope($event)
+                )
+            );
 
         $this->eventBus->publish($event1, $event2);
     }

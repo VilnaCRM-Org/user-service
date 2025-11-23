@@ -29,6 +29,7 @@ final readonly class RedisTokenRepository implements TokenRepositoryInterface
     ) {
     }
 
+    #[\Override]
     public function save(object $token): void
     {
         $serializedToken = $this->serializer->serialize(
@@ -45,6 +46,7 @@ final readonly class RedisTokenRepository implements TokenRepositoryInterface
         }
     }
 
+    #[\Override]
     public function find(string $tokenValue): ?ConfirmationTokenInterface
     {
         return $this->getFromCache(
@@ -52,6 +54,7 @@ final readonly class RedisTokenRepository implements TokenRepositoryInterface
         );
     }
 
+    #[\Override]
     public function findByUserId(string $userID): ?ConfirmationTokenInterface
     {
         return $this->getFromCache(
@@ -59,6 +62,7 @@ final readonly class RedisTokenRepository implements TokenRepositoryInterface
         );
     }
 
+    #[\Override]
     public function delete(object $token): void
     {
         foreach (self::CACHE_MAPPINGS as $mapping) {

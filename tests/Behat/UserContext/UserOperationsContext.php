@@ -19,6 +19,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @psalm-suppress UnusedClass
+ * @psalm-suppress PossiblyUnusedMethod
+ */
 final class UserOperationsContext implements Context
 {
     private const EMPTY_BODY_BY_METHOD = [

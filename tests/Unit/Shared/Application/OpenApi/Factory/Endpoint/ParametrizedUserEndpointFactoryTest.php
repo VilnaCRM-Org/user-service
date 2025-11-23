@@ -37,6 +37,7 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
     private ReplaceUserRequestFactory $replaceUserRequestFactory;
     private UpdateUserRequestFactory $updateUserRequestFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -138,12 +139,10 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
 
         $this->paths->expects($this->exactly(4))
             ->method('addPath')
-            ->withConsecutive(
-                [$endpointUri, $this->isInstanceOf(PathItem::class)],
-                [$endpointUri, $this->isInstanceOf(PathItem::class)],
-                [$endpointUri, $this->isInstanceOf(PathItem::class)],
-                [$endpointUri, $this->isInstanceOf(PathItem::class)],
-            );
+            ->willReturnCallback(function (string $uri, PathItem $pathItem) use ($endpointUri): void {
+                $this->assertSame($endpointUri, $uri);
+                $this->assertInstanceOf(PathItem::class, $pathItem);
+            });
     }
 
     private function setExpectationsFotPathItem(): void

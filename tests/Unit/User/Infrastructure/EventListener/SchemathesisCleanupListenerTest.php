@@ -7,12 +7,12 @@ namespace App\Tests\Unit\User\Infrastructure\EventListener;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Infrastructure\EventListener\SchemathesisBatchUsersEmailExtractor;
-use App\User\Infrastructure\EventListener\SchemathesisCleanupEvaluator;
 use App\User\Infrastructure\EventListener\SchemathesisCleanupListener;
-use App\User\Infrastructure\EventListener\SchemathesisEmailExtractor;
-use App\User\Infrastructure\EventListener\SchemathesisPayloadDecoder;
-use App\User\Infrastructure\EventListener\SchemathesisSingleUserEmailExtractor;
+use App\User\Infrastructure\Schemathesis\SchemathesisBatchUsersEmailExtractor;
+use App\User\Infrastructure\Schemathesis\SchemathesisCleanupEvaluator;
+use App\User\Infrastructure\Schemathesis\SchemathesisEmailExtractor;
+use App\User\Infrastructure\Schemathesis\SchemathesisPayloadDecoder;
+use App\User\Infrastructure\Schemathesis\SchemathesisSingleUserEmailExtractor;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
@@ -23,6 +23,7 @@ final class SchemathesisCleanupListenerTest extends UnitTestCase
     private SchemathesisCleanupEvaluator $evaluator;
     private SchemathesisEmailExtractor $emailExtractor;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->evaluator = new SchemathesisCleanupEvaluator();
@@ -118,12 +119,20 @@ final class SchemathesisCleanupListenerTest extends UnitTestCase
 
         $repository->expects($this->exactly(2))
             ->method('findByEmail')
-            ->withConsecutive(['batch-user-one@example.com'], ['batch-user-two@example.com'])
-            ->willReturnOnConsecutiveCalls($firstUser, $secondUser);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [['batch-user-one@example.com'], ['batch-user-two@example.com']],
+                    [$firstUser, $secondUser]
+                )
+            );
 
         $repository->expects($this->exactly(2))
             ->method('delete')
-            ->withConsecutive([$firstUser], [$secondUser]);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [[$firstUser], [$secondUser]]
+                )
+            );
 
         $listener($event);
     }
@@ -222,8 +231,12 @@ final class SchemathesisCleanupListenerTest extends UnitTestCase
 
         $repository->expects($this->exactly(2))
             ->method('findByEmail')
-            ->withConsecutive(['missing@example.com'], ['present@example.com'])
-            ->willReturnOnConsecutiveCalls(null, $existingUser);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [['missing@example.com'], ['present@example.com']],
+                    [null, $existingUser]
+                )
+            );
 
         $repository->expects($this->once())
             ->method('delete')
@@ -348,12 +361,20 @@ final class SchemathesisCleanupListenerTest extends UnitTestCase
 
         $repository->expects($this->exactly(2))
             ->method('findByEmail')
-            ->withConsecutive(['batch-user-one@example.com'], ['batch-user-two@example.com'])
-            ->willReturnOnConsecutiveCalls($firstUser, $secondUser);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [['batch-user-one@example.com'], ['batch-user-two@example.com']],
+                    [$firstUser, $secondUser]
+                )
+            );
 
         $repository->expects($this->exactly(2))
             ->method('delete')
-            ->withConsecutive([$firstUser], [$secondUser]);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [[$firstUser], [$secondUser]]
+                )
+            );
 
         $listener($event);
     }
@@ -407,12 +428,20 @@ final class SchemathesisCleanupListenerTest extends UnitTestCase
 
         $repository->expects($this->exactly(2))
             ->method('findByEmail')
-            ->withConsecutive(['duplicate@example.com'], ['unique@example.com'])
-            ->willReturnOnConsecutiveCalls($duplicateUser, $uniqueUser);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [['duplicate@example.com'], ['unique@example.com']],
+                    [$duplicateUser, $uniqueUser]
+                )
+            );
 
         $repository->expects($this->exactly(2))
             ->method('delete')
-            ->withConsecutive([$duplicateUser], [$uniqueUser]);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [[$duplicateUser], [$uniqueUser]]
+                )
+            );
 
         $listener($event);
     }

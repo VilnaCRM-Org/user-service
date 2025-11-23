@@ -12,6 +12,7 @@ final class EmailFactory implements EmailFactoryInterface
     /**
      * @param array<string, string|int|float|bool|null> $additionalContext
      */
+    #[\Override]
     public function create(
         string $sendTo,
         string $subject,

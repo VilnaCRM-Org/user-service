@@ -14,7 +14,6 @@ use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Factory\ConfirmationEmailFactoryInterface;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -28,7 +27,6 @@ final readonly class ResendEmailProcessor implements ProcessorInterface
     public function __construct(
         private CommandBusInterface $commandBus,
         private GetUserQueryHandler $getUserQueryHandler,
-        private UserRepositoryInterface $userRepository,
         private TokenRepositoryInterface $tokenRepository,
         private ConfirmationTokenFactoryInterface $tokenFactory,
         private ConfirmationEmailFactoryInterface $confirmationEmailFactory,
@@ -42,6 +40,7 @@ final readonly class ResendEmailProcessor implements ProcessorInterface
      * @param array<string,string> $context
      * @param array<string,string> $uriVariables
      */
+    #[\Override]
     public function process(
         mixed $data,
         Operation $operation,

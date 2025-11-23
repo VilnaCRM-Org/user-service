@@ -72,6 +72,7 @@ final class ConfirmationToken implements ConfirmationTokenInterface
         $this->userID = $userID;
     }
 
+    #[\Override]
     public function send(?DateTimeImmutable $sendAt = null): void
     {
         $datetime = $sendAt ?? new DateTimeImmutable();

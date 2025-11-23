@@ -23,7 +23,6 @@ use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
 
 final class ConfirmUserMutationResolverTest extends UnitTestCase
 {
@@ -33,12 +32,12 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
     private UuidTransformer $uuidTransformer;
     private TokenRepositoryInterface $tokenRepository;
     private CommandBusInterface $commandBus;
-    private UserRepositoryInterface $userRepository;
     private MutationInputValidator $validator;
     private ConfirmUserMutationInputTransformer $transformer;
     private ConfirmUserCommandFactoryInterface $mockConfirmUserCommandFactory;
     private GetUserQueryHandler $getUserQueryHandler;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -47,9 +46,6 @@ final class ConfirmUserMutationResolverTest extends UnitTestCase
             TokenRepositoryInterface::class
         );
         $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->userRepository = $this->createMock(
-            UserRepositoryInterface::class
-        );
         $this->validator = $this->createMock(MutationInputValidator::class);
         $this->transformer = $this->createMock(
             ConfirmUserMutationInputTransformer::class

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\DTO;
 
+use App\Shared\Domain\ValueObject\UuidInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
@@ -14,7 +15,12 @@ final class AuthorizationUserTest extends UnitTestCase
     private AuthorizationUserDto $authUser;
     private UuidTransformer $transformer;
     private string $email;
+    private string $initials;
+    private string $password;
+    private bool $confirmed;
+    private UuidInterface $uuid;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -22,17 +28,19 @@ final class AuthorizationUserTest extends UnitTestCase
         $this->transformer = new UuidTransformer(new UuidFactory());
 
         $this->email = $this->faker->email();
-        $initials = $this->faker->name();
-        $password = $this->faker->password();
-        $uuid = $this->transformer->transformFromString($this->faker->uuid());
-        $confirmed = true;
+        $this->initials = $this->faker->name();
+        $this->password = $this->faker->password();
+        $this->uuid = $this->transformer->transformFromString(
+            $this->faker->uuid()
+        );
+        $this->confirmed = true;
 
         $this->authUser = new AuthorizationUserDto(
             $this->email,
-            $initials,
-            $password,
-            $uuid,
-            $confirmed
+            $this->initials,
+            $this->password,
+            $this->uuid,
+            $this->confirmed
         );
     }
 
@@ -51,5 +59,13 @@ final class AuthorizationUserTest extends UnitTestCase
     public function testGetUserIdentifier(): void
     {
         $this->assertEquals($this->email, $this->authUser->getUserIdentifier());
+    }
+
+    public function testExposesCredentialsAndProfile(): void
+    {
+        $this->assertSame($this->password, $this->authUser->getPassword());
+        $this->assertSame($this->initials, $this->authUser->getInitials());
+        $this->assertSame($this->uuid, $this->authUser->getId());
+        $this->assertTrue($this->authUser->isConfirmed());
     }
 }

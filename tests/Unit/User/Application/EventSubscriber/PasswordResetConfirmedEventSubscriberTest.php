@@ -24,6 +24,7 @@ final class PasswordResetConfirmedEventSubscriberTest extends UnitTestCase
     private LoggerInterface $logger;
     private PasswordResetConfirmedEventSubscriber $subscriber;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

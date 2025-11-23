@@ -81,7 +81,7 @@ final class PasswordConstraintTest extends UnitTestCase
     {
         $reflection = new \ReflectionClass($password);
         $method = $reflection->getMethod('getConstraints');
-        $method->setAccessible(true);
+        $this->makeAccessible($method);
 
         return $method->invoke($password, []);
     }

@@ -20,6 +20,7 @@ final class UserConfirmedEvent extends DomainEvent
     /**
      * @param array<string, ConfirmationToken> $body
      */
+    #[\Override]
     public static function fromPrimitives(
         array $body,
         string $eventId,
@@ -28,6 +29,7 @@ final class UserConfirmedEvent extends DomainEvent
         return new self($body['token'], $eventId, $occurredOn);
     }
 
+    #[\Override]
     public static function eventName(): string
     {
         return 'user.confirmed';
@@ -36,6 +38,7 @@ final class UserConfirmedEvent extends DomainEvent
     /**
      * @return array<string, ConfirmationToken>
      */
+    #[\Override]
     public function toPrimitives(): array
     {
         return ['token' => $this->token];

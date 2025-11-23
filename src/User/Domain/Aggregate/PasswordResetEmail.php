@@ -19,6 +19,7 @@ final class PasswordResetEmail extends AggregateRoot implements
     ) {
     }
 
+    #[\Override]
     public function send(string $eventID): void
     {
         $this->record(

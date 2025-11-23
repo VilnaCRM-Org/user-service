@@ -41,6 +41,7 @@ final class ResendEmailEndpointFactoryTest extends UnitTestCase
     private PathItem $pathItem;
     private Operation $operation;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

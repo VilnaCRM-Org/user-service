@@ -11,6 +11,7 @@ use App\User\Domain\Service\PasswordResetTokenValidatorInterface;
 final readonly class TokenExistenceValidator implements
     PasswordResetTokenValidatorInterface
 {
+    #[\Override]
     public function validate(?PasswordResetTokenInterface $token): void
     {
         if (!$token) {

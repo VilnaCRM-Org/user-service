@@ -17,6 +17,7 @@ final readonly class PasswordResetTokenFactory implements
     ) {
     }
 
+    #[\Override]
     public function create(string $userID): PasswordResetTokenInterface
     {
         $createdAt = new DateTimeImmutable();

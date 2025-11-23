@@ -11,6 +11,7 @@ final class PasswordResetTokenExpiredException extends DomainException
         parent::__construct('Password reset token has expired');
     }
 
+    #[\Override]
     public function getTranslationTemplate(): string
     {
         return 'error.password-reset-token-expired';

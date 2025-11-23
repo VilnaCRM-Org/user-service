@@ -17,6 +17,7 @@ final class PartlyCoveredEventBus implements EventBus
         $this->bus = $bus;
     }
 
+    #[\Override]
     public function publish(DomainEvent ...$events): void
     {
         foreach ($events as $event) {

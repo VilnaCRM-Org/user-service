@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\EventListener;
 
-use App\Shared\Application\EventListener\QueryParameter as QP;
-use App\Shared\Application\EventListener\QueryParameter\Pagination as QPP;
-use App\Shared\Application\EventListener\QueryParameter\QueryParameterViolationFactory;
-use App\Shared\Application\EventListener\QueryParameter\QueryViolationFinder;
 use App\Shared\Application\EventListener\QueryParameterValidationListener;
+use App\Shared\Application\QueryParameter as QP;
+use App\Shared\Application\QueryParameter\Pagination as QPP;
+use App\Shared\Application\QueryParameter\QueryParameterViolationFactory;
+use App\Shared\Application\QueryParameter\QueryViolationFinder;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;

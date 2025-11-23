@@ -8,9 +8,11 @@ use ApiPlatform\Metadata\Exception\HttpExceptionInterface as ApiPlatformHttpExce
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\State\ApiResource\Error;
 use App\Shared\Application\ErrorProvider;
+use App\Shared\Application\Http\HttpExceptionHeadersResolver;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Exception\DomainException;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -20,13 +22,16 @@ final class ErrorProviderTest extends UnitTestCase
 {
     private TranslatorInterface $translator;
     private HttpOperation $operation;
+    private RequestStack $requestStack;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->translator = $this->createMock(TranslatorInterface::class);
         $this->operation = $this->createMock(HttpOperation::class);
+        $this->requestStack = new RequestStack();
     }
 
     public function testProvide(): void
@@ -49,7 +54,7 @@ final class ErrorProviderTest extends UnitTestCase
             ->with('error.internal')
             ->willReturn($this->faker->word());
 
-        $errorProvider = new ErrorProvider($this->translator);
+        $errorProvider = $this->errorProvider();
 
         $error = $errorProvider->provide($this->operation, [], $context);
 
@@ -78,7 +83,7 @@ final class ErrorProviderTest extends UnitTestCase
             ->method('trans')
             ->with('error.internal')->willReturn($errorText);
 
-        $errorProvider = new ErrorProvider($this->translator);
+        $errorProvider = $this->errorProvider();
         $error = $errorProvider->provide($this->operation, [], $context);
 
         $this->assertInstanceOf(Error::class, $error);
@@ -105,10 +110,14 @@ final class ErrorProviderTest extends UnitTestCase
 
         $this->translator
             ->method('trans')
-            ->withConsecutive(['error.internal'], ['error.not.found.http'])
-            ->willReturnOnConsecutiveCalls('', $errorText);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [['error.internal'], ['error.not.found.http']],
+                    ['', $errorText]
+                )
+            );
 
-        $errorProvider = new ErrorProvider($this->translator);
+        $errorProvider = $this->errorProvider();
 
         $error = $errorProvider->provide($this->operation, [], $context);
 
@@ -131,8 +140,12 @@ final class ErrorProviderTest extends UnitTestCase
         $this->translator
             ->expects($this->exactly(2))
             ->method('trans')
-            ->withConsecutive(['error.internal'], [$template, $args])
-            ->willReturnOnConsecutiveCalls('', $errorText);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [['error.internal'], [$template, $args]],
+                    ['', $errorText]
+                )
+            );
 
         $exception = $this->getDomainException($template, $args);
 
@@ -140,7 +153,7 @@ final class ErrorProviderTest extends UnitTestCase
         $request->attributes->set('exception', $exception);
         $context = ['request' => $request];
 
-        $errorProvider = new ErrorProvider($this->translator);
+        $errorProvider = $this->errorProvider();
 
         $error = $errorProvider->provide($this->operation, [], $context);
 
@@ -171,7 +184,7 @@ final class ErrorProviderTest extends UnitTestCase
             ->with('error.internal')
             ->willReturn($errorText);
 
-        $errorProvider = new ErrorProvider($this->translator);
+        $errorProvider = $this->errorProvider();
 
         $error = $errorProvider->provide($this->operation, [], $context);
 
@@ -190,11 +203,13 @@ final class ErrorProviderTest extends UnitTestCase
                 parent::__construct('Invalid payload');
             }
 
+            #[\Override]
             public function getStatusCode(): int
             {
                 return Response::HTTP_BAD_REQUEST;
             }
 
+            #[\Override]
             public function getHeaders(): array
             {
                 return ['X-Debug' => '1'];
@@ -209,7 +224,7 @@ final class ErrorProviderTest extends UnitTestCase
             ->with('error.internal')
             ->willReturn('');
 
-        $errorProvider = new ErrorProvider($this->translator);
+        $errorProvider = $this->errorProvider();
 
         $error = $errorProvider->provide($this->operation, [], $context);
 
@@ -238,12 +253,36 @@ final class ErrorProviderTest extends UnitTestCase
             ->with('error.internal')
             ->willReturn('');
 
-        $errorProvider = new ErrorProvider($this->translator);
+        $errorProvider = $this->errorProvider();
 
         $error = $errorProvider->provide($this->operation, [], $context);
 
         $this->assertInstanceOf(Error::class, $error);
         $this->assertSame(['Retry-After' => '30'], $error->getHeaders());
+    }
+
+    public function testProvideWhenRequestIsMissing(): void
+    {
+        $status = $this->faker->numberBetween(400, 599);
+        $internalError = $this->faker->word();
+
+        $this->operation
+            ->method('getStatus')
+            ->willReturn($status);
+
+        $this->translator
+            ->expects($this->once())
+            ->method('trans')
+            ->with('error.internal')
+            ->willReturn($internalError);
+
+        $errorProvider = $this->errorProvider();
+
+        $error = $errorProvider->provide($this->operation);
+
+        $this->assertInstanceOf(Error::class, $error);
+        $this->assertSame($status, $error->getStatusCode());
+        $this->assertSame($internalError, $error->getDetail());
     }
 
     /**
@@ -264,6 +303,7 @@ final class ErrorProviderTest extends UnitTestCase
                 parent::__construct();
             }
 
+            #[\Override]
             public function getTranslationTemplate(): string
             {
                 return $this->template;
@@ -272,10 +312,20 @@ final class ErrorProviderTest extends UnitTestCase
             /**
              * @return array<string>
              */
+            #[\Override]
             public function getTranslationArgs(): array
             {
                 return $this->args;
             }
         };
+    }
+
+    private function errorProvider(): ErrorProvider
+    {
+        return new ErrorProvider(
+            $this->translator,
+            $this->requestStack,
+            new HttpExceptionHeadersResolver()
+        );
     }
 }

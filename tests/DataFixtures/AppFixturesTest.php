@@ -9,11 +9,6 @@ use PHPUnit\Framework\TestCase;
 
 final class AppFixturesTest extends TestCase
 {
-    public function load(ObjectManager $manager): void
-    {
-        $manager->flush();
-    }
-
     public function testLoad(): void
     {
         $managerMock = $this->getMockBuilder(

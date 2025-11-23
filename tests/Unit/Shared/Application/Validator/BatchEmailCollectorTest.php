@@ -15,6 +15,7 @@ final class BatchEmailCollectorTest extends UnitTestCase
 {
     private BatchEmailCollector $collector;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -105,7 +106,7 @@ final class BatchEmailCollectorTest extends UnitTestCase
     {
         $reflection = new ReflectionClass($this->collector);
         $method = $reflection->getMethod('toArray');
-        $method->setAccessible(true);
+        $this->makeAccessible($method);
 
         /** @var array<array-key, array|object|string|int|float|bool|null> $result */
         return $method->invoke($this->collector, $entries);

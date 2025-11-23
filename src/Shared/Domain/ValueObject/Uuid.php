@@ -18,6 +18,7 @@ final class Uuid implements UuidInterface
         return $this->uid;
     }
 
+    #[\Override]
     public function toBinary(): ?string
     {
         return $this->isConvertableToBinary($this->uid) ?

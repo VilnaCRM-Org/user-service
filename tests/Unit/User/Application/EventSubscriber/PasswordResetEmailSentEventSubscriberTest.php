@@ -25,6 +25,7 @@ final class PasswordResetEmailSentEventSubscriberTest extends UnitTestCase
     private PasswordResetEmailSentEventSubscriber $subscriber;
     private string $apiBaseUrl;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

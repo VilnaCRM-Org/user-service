@@ -39,6 +39,7 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
     private GetUserQueryHandler $getUserQueryHandler;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

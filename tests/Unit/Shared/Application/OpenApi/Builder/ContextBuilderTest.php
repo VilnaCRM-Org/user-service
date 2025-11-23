@@ -15,6 +15,7 @@ final class ContextBuilderTest extends UnitTestCase
 {
     private ContextBuilder $contextBuilder;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

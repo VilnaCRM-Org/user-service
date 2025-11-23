@@ -29,6 +29,7 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
     private CreateUserMutationInputTransformer $transformer;
     private RegisterUserMutationResolver $resolver;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

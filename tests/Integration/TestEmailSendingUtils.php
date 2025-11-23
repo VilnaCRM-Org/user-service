@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
+use PHPUnit\Framework\Assert;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpClient\HttpClient;
@@ -11,7 +12,7 @@ use Symfony\Component\Mailer\Messenger\SendEmailMessage;
 
 final class TestEmailSendingUtils extends KernelTestCase
 {
-    public function assertEmailWasSent(
+    public static function assertEmailWasSent(
         ContainerInterface $container,
         string $emailAddress
     ): void {
@@ -29,11 +30,11 @@ final class TestEmailSendingUtils extends KernelTestCase
         )->toArray();
         $message = $response[sizeof($response) - 1];
 
-        $this->assertEquals(
+        Assert::assertEquals(
             '<' . $emailAddress . '>',
             $message['recipients'][0]
         );
-        $this->assertEquals(
+        Assert::assertEquals(
             '<'.getenv('MAIL_SENDER').'>',
             $message['sender']
         );

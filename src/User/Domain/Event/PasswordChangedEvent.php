@@ -19,6 +19,7 @@ final class PasswordChangedEvent extends DomainEvent
     /**
      * @param array<string, string> $body
      */
+    #[\Override]
     public static function fromPrimitives(
         array $body,
         string $eventId,
@@ -27,6 +28,7 @@ final class PasswordChangedEvent extends DomainEvent
         return new self($body['email'], $eventId, $occurredOn);
     }
 
+    #[\Override]
     public static function eventName(): string
     {
         return 'password.changed';
@@ -35,6 +37,7 @@ final class PasswordChangedEvent extends DomainEvent
     /**
      * @return array<string, string>
      */
+    #[\Override]
     public function toPrimitives(): array
     {
         return [

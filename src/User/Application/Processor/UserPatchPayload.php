@@ -35,8 +35,6 @@ final readonly class UserPatchPayload
 
     private function findInvalidField(): ?string
     {
-        $field = null;
-
         return match (true) {
             $this->payload === null => null,
             ($field = array_search(

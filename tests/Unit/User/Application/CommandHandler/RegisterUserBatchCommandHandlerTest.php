@@ -37,6 +37,7 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
     private RegisterUserBatchCommandHandler $handler;
     private PasswordHasherInterface $hasher;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

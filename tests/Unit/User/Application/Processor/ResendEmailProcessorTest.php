@@ -51,6 +51,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
     private RequestStack $requestStack;
     private JsonRequestValidator $jsonRequestValidator;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -304,7 +305,6 @@ final class ResendEmailProcessorTest extends UnitTestCase
         return new ResendEmailProcessor(
             $this->commandBus,
             $this->getUserQueryHandler,
-            $this->userRepository,
             $this->tokenRepository,
             $this->tokenFactory,
             $this->mockConfirmationEmailFactory,

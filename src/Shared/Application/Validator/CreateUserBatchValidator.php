@@ -16,6 +16,7 @@ final class CreateUserBatchValidator extends ConstraintValidator
     ) {
     }
 
+    #[\Override]
     public function validate(mixed $value, Constraint $constraint): void
     {
         $messages = $this->constraintEvaluator->evaluate($value);

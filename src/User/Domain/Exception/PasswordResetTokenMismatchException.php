@@ -13,6 +13,7 @@ final class PasswordResetTokenMismatchException extends DomainException
         );
     }
 
+    #[\Override]
     public function getTranslationTemplate(): string
     {
         return 'error.password-reset-token-mismatch';

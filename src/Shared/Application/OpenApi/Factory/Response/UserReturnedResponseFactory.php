@@ -14,6 +14,7 @@ final class UserReturnedResponseFactory implements AbstractResponseFactory
     {
     }
 
+    #[\Override]
     public function getResponse(): Response
     {
         return $this->responseBuilder->build(

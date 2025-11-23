@@ -16,6 +16,7 @@ final class UserPatchSanitizersTest extends UnitTestCase
     private UserPatchNonEmptySanitizer $nonEmptySanitizer;
     private UserPatchPasswordSanitizer $passwordSanitizer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

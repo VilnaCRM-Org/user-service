@@ -18,6 +18,7 @@ final class EmailUniquenessCheckerTest extends UnitTestCase
     private RequestStack $requestStack;
     private EmailUniquenessChecker $checker;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

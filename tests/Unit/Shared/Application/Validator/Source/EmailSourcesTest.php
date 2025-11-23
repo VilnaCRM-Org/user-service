@@ -24,6 +24,7 @@ final class EmailSourcesTest extends UnitTestCase
     public function testChainEmailSourceReturnsValueFromFirstSource(): void
     {
         $primary = new class() implements BatchEmailSource {
+            #[\Override]
             public function extract(mixed $entry): ?string
             {
                 return 'primary@example.com';
@@ -31,6 +32,7 @@ final class EmailSourcesTest extends UnitTestCase
         };
 
         $fallback = new class() implements BatchEmailSource {
+            #[\Override]
             public function extract(mixed $entry): ?string
             {
                 return 'fallback@example.com';
@@ -45,6 +47,7 @@ final class EmailSourcesTest extends UnitTestCase
     public function testChainEmailSourceFallsBackWhenPrimaryReturnsNull(): void
     {
         $primary = new class() implements BatchEmailSource {
+            #[\Override]
             public function extract(mixed $entry): ?string
             {
                 return null;
@@ -52,6 +55,7 @@ final class EmailSourcesTest extends UnitTestCase
         };
 
         $fallback = new class() implements BatchEmailSource {
+            #[\Override]
             public function extract(mixed $entry): ?string
             {
                 return 'fallback@example.com';

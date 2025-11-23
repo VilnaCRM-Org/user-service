@@ -17,6 +17,7 @@ final class DomainUuidTypeTest extends UnitTestCase
     private UuidFactory $symfonyUuidFactory;
     private UuidTransformer $transformer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -12,6 +12,7 @@ final class InMemoryConfirmationTokenRepository implements TokenRepositoryInterf
 {
     private ?ConfirmationToken $token = null;
 
+    #[\Override]
     public function save(object $token): void
     {
         if (! $token instanceof ConfirmationToken) {
@@ -21,6 +22,7 @@ final class InMemoryConfirmationTokenRepository implements TokenRepositoryInterf
         $this->token = $token;
     }
 
+    #[\Override]
     public function delete(object $token): void
     {
         if (! $token instanceof ConfirmationToken) {
@@ -34,6 +36,7 @@ final class InMemoryConfirmationTokenRepository implements TokenRepositoryInterf
         $this->token = null;
     }
 
+    #[\Override]
     public function find(string $tokenValue): ?ConfirmationTokenInterface
     {
         if ($this->token !== null && $this->token->getTokenValue() === $tokenValue) {
@@ -43,6 +46,7 @@ final class InMemoryConfirmationTokenRepository implements TokenRepositoryInterf
         return null;
     }
 
+    #[\Override]
     public function findByUserId(string $userID): ?ConfirmationTokenInterface
     {
         if ($this->token !== null && $this->token->getUserID() === $userID) {

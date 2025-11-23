@@ -21,21 +21,24 @@ final class OAuthAuthEndpointFactory implements AbstractEndpointFactory
     private Response $invalidResponse;
     private Response $redirectResponse;
     private Response $redirectTargetResponse;
+    private OAuthAuthorizeQueryParametersFactory $queryParametersFactory;
 
     public function __construct(
         string $apiPrefix,
-        private UnsupportedTypeFactory $unsupportedFactory,
-        private InvalidCredentialsFactory $invalidCredsFactory,
-        private OAuthRedirectFactory $redirectResponseFactory,
-        private OAuthAuthorizeQueryParametersFactory $queryParametersFactory
+        UnsupportedTypeFactory $unsupportedFactory,
+        InvalidCredentialsFactory $invalidCredsFactory,
+        OAuthRedirectFactory $redirectResponseFactory,
+        OAuthAuthorizeQueryParametersFactory $queryParametersFactory
     ) {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
-        $this->unsupportedResponse = $this->unsupportedFactory->getResponse();
-        $this->invalidResponse = $this->invalidCredsFactory->getResponse();
-        $this->redirectResponse = $this->redirectResponseFactory->getResponse();
+        $this->unsupportedResponse = $unsupportedFactory->getResponse();
+        $this->invalidResponse = $invalidCredsFactory->getResponse();
+        $this->redirectResponse = $redirectResponseFactory->getResponse();
         $this->redirectTargetResponse = $this->createRedirectTargetResponse();
+        $this->queryParametersFactory = $queryParametersFactory;
     }
 
+    #[\Override]
     public function createEndpoint(OpenApi $openApi): void
     {
         $openApi->getPaths()->addPath(

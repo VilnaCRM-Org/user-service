@@ -52,20 +52,37 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         $connection = $this->createMock(Connection::class);
         $connection->expects($this->exactly(2))
             ->method('executeStatement')
-            ->withConsecutive(
-                ['DELETE FROM password_reset_tokens'],
-                ['DELETE FROM `user`']
-            )
-            ->willReturn(1);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [
+                        ['DELETE FROM password_reset_tokens'],
+                        ['DELETE FROM `user`'],
+                    ],
+                    1
+                )
+            );
 
         $connection->expects($this->exactly(3))
             ->method('delete')
-            ->withConsecutive(
-                ['password_reset_tokens', ['token_value' => SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN]],
-                ['password_reset_tokens', ['token_value' => SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN_LD]],
-                ['oauth2_authorization_code', ['identifier' => SchemathesisFixtures::AUTHORIZATION_CODE]]
-            )
-            ->willReturn(1);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [
+                        [
+                            'password_reset_tokens',
+                            ['token_value' => SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN],
+                        ],
+                        [
+                            'password_reset_tokens',
+                            ['token_value' => SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN_LD],
+                        ],
+                        [
+                            'oauth2_authorization_code',
+                            ['identifier' => SchemathesisFixtures::AUTHORIZATION_CODE],
+                        ],
+                    ],
+                    1
+                )
+            );
 
         $userSeeder = new SchemathesisUserSeeder(
             $userRepository,
@@ -171,11 +188,15 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         $connection = $this->createMock(Connection::class);
         $connection->expects($this->exactly(2))
             ->method('executeStatement')
-            ->withConsecutive(
-                ['DELETE FROM password_reset_tokens'],
-                ['DELETE FROM `user`']
-            )
-            ->willReturn(1);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [
+                        ['DELETE FROM password_reset_tokens'],
+                        ['DELETE FROM `user`'],
+                    ],
+                    1
+                )
+            );
 
         $connection->expects($this->exactly(3))
             ->method('delete')

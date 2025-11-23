@@ -28,8 +28,6 @@ final readonly class RouteIdentifierProvider
 
     private function normalizeAttributeValue(mixed $value): ?string
     {
-        $normalized = null;
-
         return match (true) {
             !is_string($value) => null,
             ($normalized = trim($value)) === '' => null,

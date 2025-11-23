@@ -37,6 +37,7 @@ final class EmailChangedEventSubscriberTest extends UnitTestCase
     private ConfirmationEmailFactoryInterface $mockConfirmationEmailFactory;
     private SendConfirmationEmailCommandFactoryInterface $emailCmdFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

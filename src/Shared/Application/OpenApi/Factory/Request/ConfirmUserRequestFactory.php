@@ -15,6 +15,7 @@ final class ConfirmUserRequestFactory implements AbstractRequestFactory
     {
     }
 
+    #[\Override]
     public function getRequest(): RequestBody
     {
         return $this->requestBuilder->build(

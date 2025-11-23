@@ -21,6 +21,7 @@ final class ConfirmationEmailSentEvent extends DomainEvent
     /**
      * @param array<string, string|ConfirmationToken> $body
      */
+    #[\Override]
     public static function fromPrimitives(
         array $body,
         string $eventId,
@@ -34,6 +35,7 @@ final class ConfirmationEmailSentEvent extends DomainEvent
         );
     }
 
+    #[\Override]
     public static function eventName(): string
     {
         return 'confirmation_email.send';
@@ -42,6 +44,7 @@ final class ConfirmationEmailSentEvent extends DomainEvent
     /**
      * @return array<string, string|ConfirmationToken>
      */
+    #[\Override]
     public function toPrimitives(): array
     {
         return [

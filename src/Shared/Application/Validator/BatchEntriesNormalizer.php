@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Validator;
 
+use Traversable;
+
 final class BatchEntriesNormalizer
 {
     public function normalize(mixed $value): BatchEntriesResult
     {
-        $entries = null;
-
         return match (true) {
             !is_iterable($value) => $this->notIterableResult(),
             ($entries = $this->toArray($value)) === [] => $this->emptyResult(),
@@ -28,6 +28,16 @@ final class BatchEntriesNormalizer
             return array_values($value);
         }
 
+        return $this->normalizeTraversable($value);
+    }
+
+    /**
+     * @param Traversable<array-key, array|object|string|int|float|bool|null> $value
+     *
+     * @return array<int, array|object|string|int|float|bool|null>
+     */
+    private function normalizeTraversable(Traversable $value): array
+    {
         return iterator_to_array($value, false);
     }
 

@@ -24,6 +24,7 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
      */
     private array $commandHandlers;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -129,13 +130,13 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
 
         $command = $this->createMock(CommandInterface::class);
         $commandNotRegistered = $reflection->getMethod('commandNotRegistered');
-        $commandNotRegistered->setAccessible(true);
+        $this->makeAccessible($commandNotRegistered);
 
         $exception = $commandNotRegistered->invoke($commandBus, $command);
         self::assertInstanceOf(CommandNotRegisteredException::class, $exception);
 
         $unwrap = $reflection->getMethod('unwrapHandlerFailure');
-        $unwrap->setAccessible(true);
+        $this->makeAccessible($unwrap);
         $handlerFailure = new HandlerFailedException(
             new Envelope(new \stdClass()),
             [new \RuntimeException('failure')]
@@ -145,7 +146,7 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
         self::assertInstanceOf(\RuntimeException::class, $result);
 
         $handle = $reflection->getMethod('handleDispatchException');
-        $handle->setAccessible(true);
+        $this->makeAccessible($handle);
         $otherError = new \RuntimeException('other failure');
 
         try {

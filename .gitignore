@@ -58,3 +58,5 @@ coverage-html/
 ###> bats-core ###
 /tests/CLI/bats/test_helper/
 ###< bats-core ###
+
+.phpunit.cache

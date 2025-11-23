@@ -11,16 +11,19 @@ final class RecordingAuthorizationCodeManager implements AuthorizationCodeManage
 {
     private ?AuthorizationCodeInterface $savedCode = null;
 
+    #[\Override]
     public function find(string $identifier): ?AuthorizationCodeInterface
     {
         return null;
     }
 
+    #[\Override]
     public function save(AuthorizationCodeInterface $authCode): void
     {
         $this->savedCode = $authCode;
     }
 
+    #[\Override]
     public function clearExpired(): int
     {
         return 0;

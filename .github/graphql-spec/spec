@@ -318,7 +318,7 @@ input requestPasswordResetUserInput {
 
 "RequestPasswordResets a User."
 type requestPasswordResetUserPayload {
-  user: User
+  ok: Boolean!
   clientMutationId: String
 }
 
@@ -331,6 +331,6 @@ input confirmPasswordResetUserInput {
 
 "ConfirmPasswordResets a User."
 type confirmPasswordResetUserPayload {
-  user: User
+  ok: Boolean!
   clientMutationId: String
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\EventListener;
 
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Infrastructure\Schemathesis\SchemathesisCleanupEvaluator;
+use App\User\Infrastructure\Schemathesis\SchemathesisEmailExtractor;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
 use Symfony\Component\HttpKernel\KernelEvents;

@@ -15,6 +15,7 @@ final class UuidTransformerTest extends UnitTestCase
     private UuidFactoryInterface $uuidFactory;
     private UuidTransformer $uuidTransformer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

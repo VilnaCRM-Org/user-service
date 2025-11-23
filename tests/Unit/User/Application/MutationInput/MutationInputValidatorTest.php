@@ -16,6 +16,7 @@ final class MutationInputValidatorTest extends UnitTestCase
 {
     private ValidatorInterface $validatorMock;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -27,6 +27,7 @@ final class RedisTokenRepositoryTest extends UnitTestCase
     private SerializerInterface $serializer;
     private SerializerInterface $mockSerializer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -56,10 +57,14 @@ final class RedisTokenRepositoryTest extends UnitTestCase
 
         $this->cache->expects($this->exactly(2))
             ->method('getItem')
-            ->withConsecutive([$tokenKey], [$userKey])
-            ->willReturnOnConsecutiveCalls(
-                $this->createCacheItem(key: $tokenKey),
-                $this->createCacheItem(key: $userKey)
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [[$tokenKey], [$userKey]],
+                    [
+                        $this->createCacheItem(key: $tokenKey),
+                        $this->createCacheItem(key: $userKey),
+                    ]
+                )
             );
         $this->mockSerializer->expects($this->once())
             ->method('serialize')
@@ -72,7 +77,7 @@ final class RedisTokenRepositoryTest extends UnitTestCase
                 $this->assertSame($serializedToken, $item->get());
 
                 $expiry = new ReflectionProperty(CacheItem::class, 'expiry');
-                $expiry->setAccessible(true);
+                $this->makeAccessible($expiry);
                 $this->assertNotNull($expiry->getValue($item));
 
                 return true;
@@ -145,8 +150,12 @@ final class RedisTokenRepositoryTest extends UnitTestCase
 
         $this->cache->expects($this->exactly(2))
             ->method('delete')
-            ->withConsecutive([$tokenKey], [$userKey])
-            ->willReturn(true);
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [[$tokenKey], [$userKey]],
+                    true
+                )
+            );
 
         $this->repository->delete($token);
     }
@@ -157,7 +166,7 @@ final class RedisTokenRepositoryTest extends UnitTestCase
 
         if ($key !== null) {
             $property = new ReflectionProperty(CacheItem::class, 'key');
-            $property->setAccessible(true);
+            $this->makeAccessible($property);
             $property->setValue($item, $key);
         }
 

@@ -13,6 +13,7 @@ final class BatchEmailResolverTest extends UnitTestCase
     public function testResolveCastsNullCandidateToEmptyString(): void
     {
         $source = new class() implements BatchEmailSource {
+            #[\Override]
             public function extract(mixed $entry): ?string
             {
                 return null;
@@ -27,6 +28,7 @@ final class BatchEmailResolverTest extends UnitTestCase
     public function testResolveNormalizesMultibyteEmail(): void
     {
         $source = new class() implements BatchEmailSource {
+            #[\Override]
             public function extract(mixed $entry): ?string
             {
                 return 'ÜSER@Example.com';
@@ -41,6 +43,7 @@ final class BatchEmailResolverTest extends UnitTestCase
     public function testResolveTrimsWhitespaceAroundEmail(): void
     {
         $source = new class() implements BatchEmailSource {
+            #[\Override]
             public function extract(mixed $entry): ?string
             {
                 return '  spaced@example.com  ';

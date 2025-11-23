@@ -33,6 +33,7 @@ final class UserBatchEndpointFactoryTest extends UnitTestCase
     private Operation $operationPost;
     private Paths $paths;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->badRequestResponseFactory =

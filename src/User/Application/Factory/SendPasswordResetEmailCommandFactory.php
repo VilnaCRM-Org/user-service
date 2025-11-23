@@ -10,6 +10,7 @@ use App\User\Domain\Aggregate\PasswordResetEmailInterface;
 final class SendPasswordResetEmailCommandFactory implements
     SendPasswordResetEmailCommandFactoryInterface
 {
+    #[\Override]
     public function create(
         PasswordResetEmailInterface $passwordResetEmail
     ): SendPasswordResetEmailCommand {

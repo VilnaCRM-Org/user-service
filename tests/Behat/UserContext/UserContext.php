@@ -17,6 +17,10 @@ use Faker\Generator;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
+/**
+ * @psalm-suppress UnusedClass
+ * @psalm-suppress PossiblyUnusedMethod
+ */
 final class UserContext implements Context
 {
     private Generator $faker;

@@ -33,6 +33,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     private PasswordResetTokenValidatorInterface $tokenValidator;
     private ConfirmPasswordResetCommandHandler $handler;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

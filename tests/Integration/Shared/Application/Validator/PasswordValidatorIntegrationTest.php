@@ -12,6 +12,7 @@ final class PasswordValidatorIntegrationTest extends IntegrationTestCase
 {
     private ValidatorInterface $validator;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -25,6 +25,7 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
     private Connection|MockObject $connection;
     private MariaDBPasswordResetTokenRepository $repository;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -148,7 +149,7 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $since = new \DateTimeImmutable('-1 hour');
 
         $repository = $this->createRepositoryMock();
-        $this->setupDatabaseMocksForZeroResult($repository);
+        $this->setupDatabaseMocksForZeroResult();
 
         $count = $repository->countRecentRequestsByEmail($email, $since);
 
@@ -204,15 +205,18 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
     ): void {
         $statement->expects($this->exactly(2))
             ->method('bindValue')
-            ->withConsecutive(
-                ['email', $email],
-                ['since', $since->format('Y-m-d H:i:s')]
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [
+                        ['email', $email],
+                        ['since', $since->format('Y-m-d H:i:s')],
+                    ]
+                )
             );
     }
 
-    private function setupDatabaseMocksForZeroResult(
-        MariaDBPasswordResetTokenRepository $repository
-    ): void {
+    private function setupDatabaseMocksForZeroResult(): void
+    {
         $statement = $this->createMock(Statement::class);
         $result = $this->createMock(Result::class);
 

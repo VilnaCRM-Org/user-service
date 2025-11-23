@@ -12,6 +12,9 @@ use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 
+/**
+ * @psalm-suppress PossiblyUnusedMethod Doctrine hydration and testing accessors.
+ */
 class User implements UserInterface
 {
     private bool $confirmed;
@@ -25,21 +28,29 @@ class User implements UserInterface
         $this->confirmed = false;
     }
 
+    #[\Override]
     public function getId(): string
     {
         return (string) $this->id;
     }
 
+    /**
+     * @psalm-suppress PossiblyUnusedMethod Used by Doctrine when hydrating entities.
+     */
     public function setId(UuidInterface $id): void
     {
         $this->id = $id;
     }
 
+    #[\Override]
     public function getEmail(): string
     {
         return $this->email;
     }
 
+    /**
+     * @psalm-suppress PossiblyUnusedMethod Used by Doctrine when hydrating entities.
+     */
     public function setEmail(string $email): void
     {
         $this->email = $email;
@@ -50,6 +61,9 @@ class User implements UserInterface
         return $this->initials;
     }
 
+    /**
+     * @psalm-suppress PossiblyUnusedMethod Used by Doctrine when hydrating entities.
+     */
     public function setInitials(string $initials): void
     {
         $this->initials = $initials;
@@ -65,6 +79,7 @@ class User implements UserInterface
         $this->password = $password;
     }
 
+    #[\Override]
     public function confirm(
         ConfirmationToken $token,
         string $eventID,
@@ -78,6 +93,7 @@ class User implements UserInterface
     /**
      * @return array<DomainEvent>
      */
+    #[\Override]
     public function update(
         UserUpdate $updateData,
         string $hashedNewPassword,
@@ -105,11 +121,17 @@ class User implements UserInterface
         return $events;
     }
 
+    /**
+     * @psalm-suppress PossiblyUnusedMethod Used by Doctrine when hydrating entities.
+     */
     public function isConfirmed(): bool
     {
         return $this->confirmed;
     }
 
+    /**
+     * @psalm-suppress PossiblyUnusedMethod Used by Doctrine when hydrating entities.
+     */
     public function setConfirmed(bool $confirmed): void
     {
         $this->confirmed = $confirmed;

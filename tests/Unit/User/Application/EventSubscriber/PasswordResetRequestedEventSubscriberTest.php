@@ -24,6 +24,7 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
     private SendPasswordResetEmailCommandFactoryInterface $cmdFactory;
     private PasswordResetRequestedEventSubscriber $subscriber;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

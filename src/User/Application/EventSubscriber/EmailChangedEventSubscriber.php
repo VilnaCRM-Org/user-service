@@ -38,6 +38,7 @@ final readonly class EmailChangedEventSubscriber implements
     /**
      * @return array<DomainEvent>
      */
+    #[\Override]
     public function subscribedTo(): array
     {
         return [EmailChangedEvent::class];

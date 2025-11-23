@@ -16,6 +16,7 @@ final class RequestBuilderTest extends UnitTestCase
     private RequestBuilder $builder;
     private ContextBuilder $contextBuilderMock;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

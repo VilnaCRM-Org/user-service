@@ -29,6 +29,7 @@ class InMemorySymfonyCommandBus implements CommandBusInterface
     /**
      * @throws \Throwable
      */
+    #[\Override]
     public function dispatch(CommandInterface $command): void
     {
         $this->dispatchCommand($command);

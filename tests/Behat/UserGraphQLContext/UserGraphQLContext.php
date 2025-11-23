@@ -21,6 +21,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 
+/**
+ * @psalm-suppress UnusedClass
+ * @psalm-suppress PossiblyUnusedMethod
+ */
 final class UserGraphQLContext implements Context
 {
     private string $GRAPHQL_ENDPOINT_URI = '/api/graphql';

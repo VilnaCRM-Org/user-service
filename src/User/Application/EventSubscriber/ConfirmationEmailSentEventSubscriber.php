@@ -51,6 +51,7 @@ final readonly class ConfirmationEmailSentEventSubscriber implements
     /**
      * @return array<DomainEvent>
      */
+    #[\Override]
     public function subscribedTo(): array
     {
         return [ConfirmationEmailSentEvent::class];

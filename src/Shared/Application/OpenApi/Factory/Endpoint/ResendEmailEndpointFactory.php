@@ -26,31 +26,34 @@ final class ResendEmailEndpointFactory implements AbstractEndpointFactory
     private Response $userNotFoundResponse;
     private Response $timedOutResponse;
     private Response $unsupportedMediaResponse;
+    private EmptyRequestFactory $emptyRequestFactory;
 
     public function __construct(
         string $apiPrefix,
-        private UserNotFoundResponseFactory $userNotFoundResponseFactory,
-        private EmailSendFactory $sendAgainResponseFactory,
-        private UserTimedOutResponseFactory $timedOutResponseFactory,
-        private UnsupportedMediaTypeFactory $unsupportedMediaTypeFactory,
-        private BadRequestResponseFactory $badRequestResponseFactory,
-        private EmptyRequestFactory $emptyRequestFactory,
-        private UuidUriParameterFactory $parameterFactory
+        UserNotFoundResponseFactory $userNotFoundResponseFactory,
+        EmailSendFactory $sendAgainResponseFactory,
+        UserTimedOutResponseFactory $timedOutResponseFactory,
+        UnsupportedMediaTypeFactory $unsupportedMediaTypeFactory,
+        BadRequestResponseFactory $badRequestResponseFactory,
+        EmptyRequestFactory $emptyRequestFactory,
+        UuidUriParameterFactory $parameterFactory
     ) {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
         $this->uuidWithExamplePathParam =
-            $this->parameterFactory->getParameter();
+            $parameterFactory->getParameter();
         $this->sendAgainResponse =
-            $this->sendAgainResponseFactory->getResponse();
+            $sendAgainResponseFactory->getResponse();
         $this->badRequestResponse =
             $badRequestResponseFactory->getResponse();
         $this->userNotFoundResponse =
-            $this->userNotFoundResponseFactory->getResponse();
-        $this->timedOutResponse = $this->timedOutResponseFactory->getResponse();
+            $userNotFoundResponseFactory->getResponse();
+        $this->timedOutResponse = $timedOutResponseFactory->getResponse();
         $this->unsupportedMediaResponse =
-            $this->unsupportedMediaTypeFactory->getResponse();
+            $unsupportedMediaTypeFactory->getResponse();
+        $this->emptyRequestFactory = $emptyRequestFactory;
     }
 
+    #[\Override]
     public function createEndpoint(OpenApi $openApi): void
     {
         $pathItem = $openApi->getPaths()->getPath($this->endpointUri);

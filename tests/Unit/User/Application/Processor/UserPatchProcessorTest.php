@@ -45,6 +45,7 @@ final class UserPatchProcessorTest extends UnitTestCase
     private JsonRequestPayloadProvider $payloadProvider;
     private UserPatchUpdateResolver $updateResolver;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

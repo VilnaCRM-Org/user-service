@@ -15,6 +15,7 @@ final class UpdateUserRequestFactory implements AbstractRequestFactory
     {
     }
 
+    #[\Override]
     public function getRequest(): RequestBody
     {
         return $this->requestBuilder->build(

@@ -14,8 +14,8 @@ use App\User\Domain\Factory\UserFactoryInterface;
 final class UserRegisteredEventSubscriberTest extends IntegrationTestCase
 {
     private UserRegisteredEventSubscriber $subscriber;
-    private TestEmailSendingUtils $utils;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -23,7 +23,6 @@ final class UserRegisteredEventSubscriberTest extends IntegrationTestCase
         $this->subscriber = $this->container->get(
             UserRegisteredEventSubscriber::class
         );
-        $this->utils = new TestEmailSendingUtils();
     }
 
     public function testConfirmationEmailSent(): void
@@ -44,6 +43,6 @@ final class UserRegisteredEventSubscriberTest extends IntegrationTestCase
         );
 
         $this->subscriber->__invoke($event);
-        $this->utils->assertEmailWasSent($this->container, $emailAddress);
+        TestEmailSendingUtils::assertEmailWasSent($this->container, $emailAddress);
     }
 }

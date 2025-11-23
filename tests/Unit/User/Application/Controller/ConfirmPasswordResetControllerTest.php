@@ -17,6 +17,7 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
     private CommandBusInterface $commandBus;
     private ConfirmPasswordResetController $controller;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

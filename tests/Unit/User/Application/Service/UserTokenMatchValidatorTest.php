@@ -17,6 +17,7 @@ final class UserTokenMatchValidatorTest extends UnitTestCase
     private UserRepositoryInterface $userRepository;
     private UserTokenMatchValidator $validator;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

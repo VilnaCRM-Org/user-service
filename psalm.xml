@@ -12,6 +12,7 @@
         <ignoreFiles>
             <directory name="vendor"/>
             <directory name="tests/CLI"/>
+            <directory name="tests/Behat"/>
         </ignoreFiles>
     </projectFiles>
     <plugins><pluginClass class="Psalm\PhpUnitPlugin\Plugin"/></plugins></psalm>

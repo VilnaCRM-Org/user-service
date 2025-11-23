@@ -11,6 +11,7 @@ final class ArrayExampleValueExtractorTest extends UnitTestCase
 {
     private ArrayExampleValueExtractor $extractor;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -16,6 +16,7 @@ final class DBCheckSubscriber extends BaseHealthCheckSubscriber
         $this->connection = $connection;
     }
 
+    #[\Override]
     public function onHealthCheck(HealthCheckEvent $event): void
     {
         $this->connection->executeQuery('SELECT 1');

@@ -17,8 +17,6 @@ final readonly class JsonRequestPayloadProvider
      */
     public function getPayload(string $invalidJsonMessage): ?array
     {
-        $content = null;
-
         return match (true) {
             ($content = $this->contentProvider->content()) === null => null,
             $content === '' => [],

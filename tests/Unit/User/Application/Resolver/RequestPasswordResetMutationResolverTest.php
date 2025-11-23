@@ -17,6 +17,7 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
     private MutationInputValidator $validator;
     private RequestPasswordResetMutationResolver $resolver;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

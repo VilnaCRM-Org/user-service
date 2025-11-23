@@ -23,6 +23,7 @@ final readonly class DomainExceptionNormalizer implements NormalizerInterface
      *
      * @return array<string,array<string>>
      */
+    #[\Override]
     public function normalize(
         mixed $object,
         mixed $format = null,
@@ -42,6 +43,7 @@ final readonly class DomainExceptionNormalizer implements NormalizerInterface
      * @param string|null $format
      * @param array<string> $context
      */
+    #[\Override]
     public function supportsNormalization(
         mixed $data,
         mixed $format = null,
@@ -54,8 +56,10 @@ final readonly class DomainExceptionNormalizer implements NormalizerInterface
     /**
      * @return array<string, bool>
      */
+    #[\Override]
     public function getSupportedTypes(?string $format): array
     {
-        return [Error::class => true];
+        // Cacheability depends on the wrapped previous exception, so keep it dynamic.
+        return [Error::class => false];
     }
 }

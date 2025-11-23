@@ -38,6 +38,7 @@ final readonly class PasswordChangedEventSubscriber implements
     /**
      * @return array<DomainEvent>
      */
+    #[\Override]
     public function subscribedTo(): array
     {
         return [PasswordChangedEvent::class];

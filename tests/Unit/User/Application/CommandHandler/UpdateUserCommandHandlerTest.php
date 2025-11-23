@@ -36,6 +36,7 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
     private UuidTransformer $uuidTransformer;
     private UpdateUserCommandFactoryInterface $updateUserCommandFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -9,7 +9,6 @@ use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SendConfirmationEmailCommand;
-use App\User\Application\Factory\SendConfirmationEmailCommandFactory;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
 use App\User\Application\Resolver\ResendEmailMutationResolver;
 use App\User\Domain\Aggregate\ConfirmationEmailInterface;
@@ -30,13 +29,13 @@ final class ResendEmailMutationResolverTest extends UnitTestCase
     private UuidTransformer $uuidTransformer;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
     private ConfirmationEmailFactoryInterface $confirmationEmailFactory;
-    private SendConfirmationEmailCommandFactoryInterface $emailCommandFactory;
     private CommandBusInterface $commandBus;
     private TokenRepositoryInterface $tokenRepository;
     private ConfirmationTokenFactoryInterface $tokenFactory;
     private ConfirmationEmailFactoryInterface $mockConfirmationEmailFactory;
     private SendConfirmationEmailCommandFactoryInterface $mockEmailCmdFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -49,7 +48,6 @@ final class ResendEmailMutationResolverTest extends UnitTestCase
         $this->confirmationEmailFactory = new ConfirmationEmailFactory(
             new ConfirmationEmailSendEventFactory()
         );
-        $this->emailCommandFactory = new SendConfirmationEmailCommandFactory();
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->tokenRepository =
             $this->createMock(TokenRepositoryInterface::class);

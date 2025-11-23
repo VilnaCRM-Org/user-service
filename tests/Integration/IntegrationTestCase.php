@@ -14,6 +14,7 @@ abstract class IntegrationTestCase extends KernelTestCase
     protected Generator $faker;
     protected ContainerInterface $container;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

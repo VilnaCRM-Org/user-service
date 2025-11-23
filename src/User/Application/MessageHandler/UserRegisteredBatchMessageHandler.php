@@ -35,6 +35,7 @@ final class UserRegisteredBatchMessageHandler implements BatchHandlerInterface
     /**
      * @param array<UserRegisteredMessage, Acknowledger> $jobs
      */
+    #[\Override]
     private function process(array $jobs): void
     {
         foreach ($jobs as [$message, $ack]) {

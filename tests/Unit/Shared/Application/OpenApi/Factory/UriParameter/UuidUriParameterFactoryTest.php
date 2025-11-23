@@ -14,6 +14,7 @@ final class UuidUriParameterFactoryTest extends UnitTestCase
     private UuidUriParameterFactory $factory;
     private UriParameterBuilder $builderMock;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

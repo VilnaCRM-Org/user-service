@@ -26,25 +26,22 @@ final class UserEndpointFactory implements AbstractEndpointFactory
 
     public function __construct(
         string $apiPrefix,
-        private ValidationErrorFactory $validationErrorResponseFactory,
-        private BadRequestResponseFactory $badRequestResponseFactory,
-        private UserCreatedResponseFactory $userCreatedResponseFactory,
-        private CreateUserRequestFactory $createUserRequestFactory,
-        private UsersReturnedFactory $usersReturnedResponseFactory
+        ValidationErrorFactory $validationErrorResponseFactory,
+        BadRequestResponseFactory $badRequestResponseFactory,
+        UserCreatedResponseFactory $userCreatedResponseFactory,
+        CreateUserRequestFactory $createUserRequestFactory,
+        UsersReturnedFactory $usersReturnedResponseFactory
     ) {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
         $this->validationErrorResponse =
-            $this->validationErrorResponseFactory->getResponse();
-        $this->badRequestResponse =
-            $this->badRequestResponseFactory->getResponse();
-        $this->userCreatedResponse =
-            $this->userCreatedResponseFactory->getResponse();
-        $this->createUserRequest =
-            $this->createUserRequestFactory->getRequest();
-        $this->usersReturnedResponse =
-            $this->usersReturnedResponseFactory->getResponse();
+            $validationErrorResponseFactory->getResponse();
+        $this->badRequestResponse = $badRequestResponseFactory->getResponse();
+        $this->userCreatedResponse = $userCreatedResponseFactory->getResponse();
+        $this->createUserRequest = $createUserRequestFactory->getRequest();
+        $this->usersReturnedResponse = $usersReturnedResponseFactory->getResponse();
     }
 
+    #[\Override]
     public function createEndpoint(OpenApi $openApi): void
     {
         $pathItem = $openApi->getPaths()->getPath($this->endpointUri);

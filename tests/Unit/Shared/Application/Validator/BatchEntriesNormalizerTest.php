@@ -13,6 +13,7 @@ final class BatchEntriesNormalizerTest extends UnitTestCase
 {
     private BatchEntriesNormalizer $normalizer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

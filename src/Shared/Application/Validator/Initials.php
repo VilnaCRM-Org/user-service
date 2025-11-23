@@ -17,6 +17,7 @@ final class Initials extends Compound
      *
      * @return array<int, \Symfony\Component\Validator\Constraint>
      */
+    #[\Override]
     protected function getConstraints(array $options): array
     {
         return [

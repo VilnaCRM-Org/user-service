@@ -16,6 +16,7 @@ final class NotFoundExceptionNormalizerTest extends UnitTestCase
     private TranslatorInterface $translatorMock;
     private NotFoundExceptionNormalizer $normalizer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

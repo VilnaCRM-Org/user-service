@@ -23,6 +23,7 @@ final class PasswordChangedEventSubscriberTest extends UnitTestCase
     private TranslatorInterface $translator;
     private PasswordChangedEventSubscriber $subscriber;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

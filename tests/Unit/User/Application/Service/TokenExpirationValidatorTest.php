@@ -13,6 +13,7 @@ final class TokenExpirationValidatorTest extends UnitTestCase
 {
     private TokenExpirationValidator $validator;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

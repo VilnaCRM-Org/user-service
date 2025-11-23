@@ -75,7 +75,7 @@ final class InitialsConstraintTest extends UnitTestCase
     {
         $reflection = new \ReflectionClass($initials);
         $method = $reflection->getMethod('getConstraints');
-        $method->setAccessible(true);
+        $this->makeAccessible($method);
 
         return $method->invoke($initials, []);
     }

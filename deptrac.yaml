@@ -1,6 +1,7 @@
 parameters:
   paths:
     - './src'
+    - './vendor/symfony/polyfill-php83/Resources/stubs'
   exclude_files:
     - './DataFixtures/.'
     - './Shared/Kernel.'
@@ -54,6 +55,10 @@ parameters:
       collectors:
         - type: className
           regex: '.*GraphQL\\.*'
+    - name: PhpAttributes
+      collectors:
+        - type: className
+          regex: '^Override$'
   ruleset:
     Application:
       - Domain
@@ -63,6 +68,7 @@ parameters:
       - Logging
       - League
       - GraphQl
+      - PhpAttributes
     Infrastructure:
       - Domain
       - Application
@@ -70,4 +76,6 @@ parameters:
       - Doctrine
       - Logging
       - League
-    Domain: ~
+      - PhpAttributes
+    Domain:
+      - PhpAttributes

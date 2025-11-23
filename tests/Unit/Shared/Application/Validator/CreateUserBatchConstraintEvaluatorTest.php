@@ -14,6 +14,7 @@ final class CreateUserBatchConstraintEvaluatorTest extends UnitTestCase
 {
     private CreateUserBatchConstraintEvaluator $evaluator;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

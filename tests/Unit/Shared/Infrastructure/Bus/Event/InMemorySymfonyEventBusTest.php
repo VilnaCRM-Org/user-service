@@ -24,6 +24,7 @@ final class InMemorySymfonyEventBusTest extends UnitTestCase
      */
     private array $eventSubscribers;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -128,13 +129,13 @@ final class InMemorySymfonyEventBusTest extends UnitTestCase
 
         $event = $this->createMock(DomainEvent::class);
         $eventNotRegistered = $reflection->getMethod('eventNotRegistered');
-        $eventNotRegistered->setAccessible(true);
+        $this->makeAccessible($eventNotRegistered);
 
         $exception = $eventNotRegistered->invoke($eventBus, $event);
         self::assertInstanceOf(EventNotRegisteredException::class, $exception);
 
         $unwrap = $reflection->getMethod('unwrapHandlerFailure');
-        $unwrap->setAccessible(true);
+        $this->makeAccessible($unwrap);
         $handlerFailure = new HandlerFailedException(
             new Envelope(new \stdClass()),
             [new \RuntimeException('event failure')]
@@ -144,7 +145,7 @@ final class InMemorySymfonyEventBusTest extends UnitTestCase
         self::assertInstanceOf(\RuntimeException::class, $result);
 
         $handle = $reflection->getMethod('handleDispatchException');
-        $handle->setAccessible(true);
+        $this->makeAccessible($handle);
         $otherException = new \RuntimeException('other event failure');
 
         try {

@@ -11,6 +11,7 @@ use App\User\Domain\Event\PasswordResetEmailSentEvent;
 final class PasswordResetEmailSendEventFactory implements
     PasswordResetEmailSendEventFactoryInterface
 {
+    #[\Override]
     public function create(
         PasswordResetTokenInterface $token,
         UserInterface $user,

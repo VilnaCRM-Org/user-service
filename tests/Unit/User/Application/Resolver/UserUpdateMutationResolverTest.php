@@ -29,6 +29,7 @@ final class UserUpdateMutationResolverTest extends UnitTestCase
     private UpdateUserCommandFactoryInterface $mockUpdateUserCommandFactory;
     private UserUpdateMutationResolver $resolver;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

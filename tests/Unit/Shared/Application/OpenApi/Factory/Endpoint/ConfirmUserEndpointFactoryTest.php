@@ -34,6 +34,7 @@ final class ConfirmUserEndpointFactoryTest extends UnitTestCase
     private OpenApi $openApi;
     private Paths $paths;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

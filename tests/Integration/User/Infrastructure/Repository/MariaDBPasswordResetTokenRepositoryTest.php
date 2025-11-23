@@ -17,6 +17,7 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
     private EntityManagerInterface $entityManager;
     private UserFactory $userFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

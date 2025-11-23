@@ -28,25 +28,26 @@ final class ConfirmUserEndpointFactory implements AbstractEndpointFactory
 
     public function __construct(
         string $apiPrefix,
-        private TokenNotFoundFactory $tokenNotFoundResponseFactory,
-        private BadRequestResponseFactory $badRequestResponseFactory,
-        private UserConfirmedFactory $userConfirmedResponseFactory,
-        private ValidationErrorFactory $validationErrorFactory,
-        private ConfirmUserRequestFactory $confirmUserRequestFactory
+        TokenNotFoundFactory $tokenNotFoundResponseFactory,
+        BadRequestResponseFactory $badRequestResponseFactory,
+        UserConfirmedFactory $userConfirmedResponseFactory,
+        ValidationErrorFactory $validationErrorFactory,
+        ConfirmUserRequestFactory $confirmUserRequestFactory
     ) {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
         $this->userConfirmedResponse =
-            $this->userConfirmedResponseFactory->getResponse();
+            $userConfirmedResponseFactory->getResponse();
         $this->notFoundResponse =
-            $this->tokenNotFoundResponseFactory->getResponse();
+            $tokenNotFoundResponseFactory->getResponse();
         $this->validationErrorResponse =
-            $this->validationErrorFactory->getResponse();
+            $validationErrorFactory->getResponse();
         $this->badRequestResponse =
             $badRequestResponseFactory->getResponse();
         $this->confirmUserRequest =
-            $this->confirmUserRequestFactory->getRequest();
+            $confirmUserRequestFactory->getRequest();
     }
 
+    #[\Override]
     public function createEndpoint(OpenApi $openApi): void
     {
         $pathItem = $openApi->getPaths()->getPath($this->endpointUri);

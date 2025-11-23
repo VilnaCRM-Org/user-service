@@ -16,6 +16,7 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
     private DomainExceptionNormalizer $normalizer;
     private TranslatorInterface $translatorMock;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -88,7 +89,7 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
 
     public function testGetSupportedTypes(): void
     {
-        $expected = [Error::class => true];
+        $expected = [Error::class => false];
 
         $result = $this->normalizer->getSupportedTypes(null);
 
@@ -110,6 +111,7 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
                 parent::__construct();
             }
 
+            #[\Override]
             public function getTranslationTemplate(): string
             {
                 return $this->template;
@@ -118,6 +120,7 @@ final class DomainExceptionNormalizerTest extends UnitTestCase
             /**
              * @return array<string>
              */
+            #[\Override]
             public function getTranslationArgs(): array
             {
                 return $this->args;

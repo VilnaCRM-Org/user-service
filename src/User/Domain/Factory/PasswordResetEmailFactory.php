@@ -18,6 +18,7 @@ final readonly class PasswordResetEmailFactory implements
     ) {
     }
 
+    #[\Override]
     public function create(
         PasswordResetTokenInterface $token,
         UserInterface $user,

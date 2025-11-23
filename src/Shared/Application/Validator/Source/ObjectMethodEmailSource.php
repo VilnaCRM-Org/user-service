@@ -10,10 +10,9 @@ final class ObjectMethodEmailSource implements BatchEmailSource
     {
     }
 
+    #[\Override]
     public function extract(mixed $entry): ?string
     {
-        $value = null;
-
         return match (true) {
             !is_callable([$entry, $this->method]) => null,
             !is_string($value = $entry->{$this->method}()) => null,

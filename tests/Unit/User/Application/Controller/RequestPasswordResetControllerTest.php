@@ -17,6 +17,7 @@ final class RequestPasswordResetControllerTest extends UnitTestCase
     private CommandBusInterface $commandBus;
     private RequestPasswordResetController $controller;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
