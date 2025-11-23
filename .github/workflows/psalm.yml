@@ -10,21 +10,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ vars.PHP_VERSION }}
+          tools: composer
+          coverage: none
+          ini-values: memory_limit=-1
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist --ignore-platform-reqs
 
       - name: Psalm
-        uses: docker://ghcr.io/psalm/psalm-github-actions:5.26.1
-        with:
-          composer_require_dev: true
-          composer_ignore_platform_reqs: true
+        run: vendor/bin/psalm --output-format=github --no-diff
 
       - name: Psalm Security
-        uses: docker://ghcr.io/psalm/psalm-github-actions:5.26.1
-        with:
-          composer_require_dev: true
-          composer_ignore_platform_reqs: true
-          security_analysis: true
-          report_file: results.sarif
+        run: vendor/bin/psalm --taint-analysis --output-format=sarif --output-file=results.sarif --no-diff
 
       - name: Upload Security Analysis results to GitHub
         uses: github/codeql-action/upload-sarif@v1

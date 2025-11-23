@@ -11,7 +11,8 @@ export function setup() {
   try {
     file.writeString(filepath, JSON.stringify(insertUsersUtils.prepareUsers()));
   } catch (error) {
-    console.log(`Error occurred while writing users to ${filepath}`);
+    console.log(`Error occurred while writing users to ${filepath}: ${error}`);
+    throw error;
   }
 }
 

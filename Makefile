@@ -140,23 +140,23 @@ setup-test-db: ## Create database for testing purposes
 
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 
-smoke-load-tests: ## Run load tests with minimal load
+smoke-load-tests: build-k6-docker ## Run load tests with minimal load
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-smoke-load-tests.sh
 
-average-load-tests: ## Run load tests with average load
+average-load-tests: build-k6-docker ## Run load tests with average load
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-average-load-tests.sh
 
-stress-load-tests: ## Run load tests with high load
+stress-load-tests: build-k6-docker ## Run load tests with high load
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-stress-load-tests.sh
 
-spike-load-tests: ## Run load tests with a spike of extreme load
+spike-load-tests: build-k6-docker ## Run load tests with a spike of extreme load
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-spike-load-tests.sh
 
-load-tests: ## Run load tests
+load-tests: build-k6-docker ## Run load tests
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-load-tests.sh
 

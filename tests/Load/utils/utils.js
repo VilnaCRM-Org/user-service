@@ -85,7 +85,7 @@ export default class Utils {
     ];
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-    const initials = `${firstName} ${lastName}`;
+    const initials = `${firstName}${lastName}`;
 
     const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
     let password = '';

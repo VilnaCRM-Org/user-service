@@ -68,7 +68,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $passwordResetToken->expects($this->once())
             ->method('markAsUsed');
         $passwordResetToken->expects($this->once())
-            ->method('getUserId')
+            ->method('getUserID')
             ->willReturn($userId);
 
         $user = $this->createMock(User::class);
@@ -111,6 +111,72 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $response = $command->getResponse();
         $this->assertInstanceOf(ConfirmPasswordResetCommandResponse::class, $response);
         $this->assertEquals('', $response->message);
+    }
+
+    public function testInvokePublishesEventWithCorrectUserId(): void
+    {
+        $token = $this->faker->lexify('??????????');
+        $newPassword = $this->faker->password(12);
+        $userId = $this->faker->uuid();
+        $eventId = Uuid::v4();
+
+        $command = new ConfirmPasswordResetCommand($token, $newPassword);
+
+        $passwordResetToken = $this->createMock(PasswordResetTokenInterface::class);
+        $passwordResetToken->expects($this->once())
+            ->method('markAsUsed');
+        $passwordResetToken->expects($this->once())
+            ->method('getUserID')
+            ->willReturn($userId);
+
+        $user = $this->createMock(User::class);
+        $user->expects($this->once())
+            ->method('getId')
+            ->willReturn($userId);
+
+        $this->tokenRepository->expects($this->once())
+            ->method('findByToken')
+            ->with($token)
+            ->willReturn($passwordResetToken);
+
+        $this->tokenValidator->expects($this->once())
+            ->method('validate')
+            ->with($passwordResetToken);
+
+        $this->userRepository->expects($this->once())
+            ->method('find')
+            ->with($userId)
+            ->willReturn($user);
+
+        $this->passwordService->expects($this->once())
+            ->method('updateUserPassword')
+            ->with($user, $newPassword);
+
+        $this->tokenRepository->expects($this->once())
+            ->method('save')
+            ->with($passwordResetToken);
+
+        $this->uuidFactory->expects($this->once())
+            ->method('create')
+            ->willReturn($eventId);
+
+        $this->eventBus->expects($this->once())
+            ->method('publish')
+            ->with(
+                $this->callback(
+                    function (PasswordResetConfirmedEvent $event) use (
+                        $userId,
+                        $eventId
+                    ): bool {
+                        $this->assertSame($userId, $event->userId);
+                        $this->assertSame((string) $eventId, $event->eventId());
+
+                        return true;
+                    }
+                )
+            );
+
+        $this->handler->__invoke($command);
     }
 
     public function testInvokeThrowsExceptionWhenTokenNotFound(): void
@@ -194,7 +260,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $userId = $this->faker->uuid();
 
         $passwordResetToken->expects($this->once())
-            ->method('getUserId')
+            ->method('getUserID')
             ->willReturn($userId);
 
         $this->tokenRepository->expects($this->once())
