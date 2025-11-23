@@ -261,7 +261,7 @@ Infrastructure → Application → Domain
 
 **NEVER modify `deptrac.yaml` to bypass violations—fix the code.**
 
-1) **Domain → Symfony Validation**
+1. **Domain → Symfony Validation**
 
 ```
 Domain must not depend on Symfony
@@ -272,7 +272,7 @@ Domain must not depend on Symfony
 - Remove Symfony validation from Domain. Keep entities pure.
 - Use DTO + YAML validation in `config/validator/validation.yaml`.
 
-2) **Domain → Doctrine Annotations**
+2. **Domain → Doctrine Annotations**
 
 ```
 Domain must not depend on Doctrine
@@ -283,7 +283,7 @@ Domain must not depend on Doctrine
 - Move mappings to XML under `config/doctrine/*.orm.xml`.
 - Keep Domain entities annotation-free.
 
-3) **Domain → API Platform**
+3. **Domain → API Platform**
 
 ```
 Domain must not depend on ApiPlatform
@@ -293,7 +293,7 @@ Domain must not depend on ApiPlatform
 
 - Move configuration to YAML or Application DTOs.
 
-4) **Infrastructure → Application Handler**
+4. **Infrastructure → Application Handler**
 
 ```
 Infrastructure must not depend on Application handlers
@@ -336,16 +336,16 @@ Quick reference:
 
 ### Testing Structure
 
-| Test Type | Tool     | Directory           | Env var                     | Purpose                |
-| --------- | -------- | ------------------- | --------------------------- | ---------------------- |
-| Unit      | PHPUnit  | `tests/Unit/`       | `PHPUNIT_TESTSUITE=Unit`    | Isolated components    |
-| Integration | PHPUnit | `tests/Integration/` | `PHPUNIT_TESTSUITE=Integration` | Component interaction |
-| E2E (BDD) | Behat    | `features/` & `tests/Behat/` | - | User scenarios        |
-| Load      | k6       | `tests/Load/`       | -                           | Performance/stress     |
+| Test Type   | Tool    | Directory                    | Env var                         | Purpose               |
+| ----------- | ------- | ---------------------------- | ------------------------------- | --------------------- |
+| Unit        | PHPUnit | `tests/Unit/`                | `PHPUNIT_TESTSUITE=Unit`        | Isolated components   |
+| Integration | PHPUnit | `tests/Integration/`         | `PHPUNIT_TESTSUITE=Integration` | Component interaction |
+| E2E (BDD)   | Behat   | `features/` & `tests/Behat/` | -                               | User scenarios        |
+| Load        | k6      | `tests/Load/`                | -                               | Performance/stress    |
 
 ## Source Code Organization (Codely Pattern)
 
-````text
+```text
 src/
 ├── User/
 │   ├── Application/            # Commands, Handlers, DTOs, Validators, Processors/Resolvers
@@ -363,7 +363,7 @@ src/
 
 config/
 └── doctrine/                   # Doctrine XML mappings (NOT in Domain)
-````
+```
 
 **Placement rules:**
 

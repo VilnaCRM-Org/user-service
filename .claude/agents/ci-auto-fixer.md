@@ -36,8 +36,8 @@ You MUST follow this exact sequence:
      - `make deptrac` - Architectural boundary validation
      - `make unit-tests` - Unit test suite
      - `make integration-tests` - Integration test suite
-    - `make behat` - Behat end-to-end tests
-     - `make phpcsfixer` - Code style fixes
+   - `make behat` - Behat end-to-end tests
+   - `make phpcsfixer` - Code style fixes
    - Extract the exact error messages, file paths, and line numbers
 
 3. **Targeted Re-execution**

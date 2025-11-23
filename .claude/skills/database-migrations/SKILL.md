@@ -158,10 +158,10 @@ App\Core\Customer\Domain\Repository\CustomerRepositoryInterface:
 
 ### Custom Types
 
-| Type          | Usage                     | Purpose                            |
-| ------------- | ------------------------- | ---------------------------------- |
-| `ulid`        | Primary/foreign keys      | Sortable, time-ordered identifiers |
-| `domain_uuid` | Domain identifiers        | Standard UUID format (RFC 4122)    |
+| Type          | Usage                | Purpose                            |
+| ------------- | -------------------- | ---------------------------------- |
+| `ulid`        | Primary/foreign keys | Sortable, time-ordered identifiers |
+| `domain_uuid` | Domain identifiers   | Standard UUID format (RFC 4122)    |
 
 ```xml
 <id name="id" type="domain_uuid"/>
