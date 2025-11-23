@@ -25,5 +25,5 @@ jobs:
       - name: Run load tests
         env:
           API_HOST: localhost
-          API_PORT: 8082
+          API_PORT: 8081
         run: make smoke-load-tests
