@@ -3,8 +3,9 @@ import http from 'k6/http';
 
 export default class Utils {
   constructor() {
-    const host = this.getConfig().apiHost;
-    const port = this.getConfig().apiPort;
+    const config = this.getConfig();
+    const host = this.getEnv('API_HOST') ?? config.apiHost;
+    const port = this.getEnv('API_PORT') ?? config.apiPort;
 
     this.baseUrl = `http://${host}:${port}/api`;
     this.baseHttpUrl = this.baseUrl + '/users';
@@ -46,6 +47,16 @@ export default class Utils {
         'Content-Type': 'application/json',
       },
     };
+  }
+
+  getEnv(variable) {
+    const value = typeof __ENV !== 'undefined' ? __ENV[variable] : undefined;
+
+    if (value === undefined || value === null || value === '' || value === 'undefined') {
+      return undefined;
+    }
+
+    return value;
   }
 
   getMergePatchHeader() {

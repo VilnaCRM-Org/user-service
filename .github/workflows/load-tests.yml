@@ -23,4 +23,7 @@ jobs:
         run: make setup-test-db
 
       - name: Run load tests
+        env:
+          API_HOST: localhost
+          API_PORT: 8082
         run: make smoke-load-tests
