@@ -166,7 +166,7 @@ make generate-graphql-spec   # Export GraphQL spec to .github/graphql-spec/spec
 
 ### Directory Structure
 
-````text
+```text
 src/
 ├── User/                 # User bounded context
 ├── OAuth/                # OAuth bounded context
@@ -175,29 +175,29 @@ src/
     ├── Application/
     ├── Domain/
     └── Infrastructure/
-````
+```
 
 ### Layered Architecture (Hexagonal/DDD)
 
 The codebase enforces strict architectural boundaries via Deptrac:
 
-| Layer | Purpose | Contains | Dependencies |
-|-------|---------|----------|--------------|
-| **Domain** | Pure business logic | Entities, Value Objects, Aggregates, Events, Commands (interfaces), Repository interfaces | None (isolated) |
-| **Application** | Use cases & orchestration | Command Handlers, Event Subscribers, DTOs, Transformers, Processors, Resolvers | Domain + Infrastructure |
-| **Infrastructure** | External concerns | Repository implementations (MySQL/Doctrine ORM), Message buses (Symfony), Doctrine types, Retry strategies | Domain + Application |
+| Layer              | Purpose                   | Contains                                                                                                   | Dependencies            |
+| ------------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------- |
+| **Domain**         | Pure business logic       | Entities, Value Objects, Aggregates, Events, Commands (interfaces), Repository interfaces                  | None (isolated)         |
+| **Application**    | Use cases & orchestration | Command Handlers, Event Subscribers, DTOs, Transformers, Processors, Resolvers                             | Domain + Infrastructure |
+| **Infrastructure** | External concerns         | Repository implementations (MySQL/Doctrine ORM), Message buses (Symfony), Doctrine types, Retry strategies | Domain + Application    |
 
 **Rules**: Domain must stay framework-free. Application can use Symfony/API Platform. Infrastructure implements persistence/adapters.
 
 ### CQRS & Event-Driven Design
 
-| Component | Interface | Tag | Purpose |
-|-----------|-----------|-----|---------|
-| **Commands** | `CommandInterface` | - | Write operations |
-| **Command Handlers** | `CommandHandlerInterface` | `app.command_handler` | Execute commands |
-| **Domain Events** | Extend `DomainEvent` | - | Record state changes |
-| **Event Subscribers** | `DomainEventSubscriberInterface` | `app.event_subscriber` | React to events |
-| **Aggregates** | Extend `AggregateRoot` | - | Record and pull events |
+| Component             | Interface                        | Tag                    | Purpose                |
+| --------------------- | -------------------------------- | ---------------------- | ---------------------- |
+| **Commands**          | `CommandInterface`               | -                      | Write operations       |
+| **Command Handlers**  | `CommandHandlerInterface`        | `app.command_handler`  | Execute commands       |
+| **Domain Events**     | Extend `DomainEvent`             | -                      | Record state changes   |
+| **Event Subscribers** | `DomainEventSubscriberInterface` | `app.event_subscriber` | React to events        |
+| **Aggregates**        | Extend `AggregateRoot`           | -                      | Record and pull events |
 
 **Flow**: Command → Handler → Aggregate → Domain Events → Subscribers
 
@@ -208,22 +208,22 @@ The codebase enforces strict architectural boundaries via Deptrac:
 
 ### API Platform & Database
 
-| Component       | Technology | Location                           | Notes                              |
-|-----------------|------------|------------------------------------|------------------------------------|
-| **Database**    | MySQL      | -                                  | Doctrine ORM                       |
-| **Custom Types**| ULID, UUID | `Shared/Infrastructure/DoctrineType`| Custom field types                 |
-| **Mappings**    | XML        | `config/doctrine/*.orm.xml`        | Keep Domain entities annotation-free |
-| **Resources**   | API Platform | `src/{Context}/Domain/Entity`    | Resource discovery enabled         |
-| **Filters**     | API Platform | `services.yaml`                   | Order, Search, Range, Date, Boolean|
+| Component        | Technology   | Location                             | Notes                                |
+| ---------------- | ------------ | ------------------------------------ | ------------------------------------ |
+| **Database**     | MySQL        | -                                    | Doctrine ORM                         |
+| **Custom Types** | ULID, UUID   | `Shared/Infrastructure/DoctrineType` | Custom field types                   |
+| **Mappings**     | XML          | `config/doctrine/*.orm.xml`          | Keep Domain entities annotation-free |
+| **Resources**    | API Platform | `src/{Context}/Domain/Entity`        | Resource discovery enabled           |
+| **Filters**      | API Platform | `services.yaml`                      | Order, Search, Range, Date, Boolean  |
 
 ### Testing Structure
 
-| Test Type | Tool    | Directory           | Env Var                     | Purpose |
-|-----------|---------|---------------------|-----------------------------|---------|
-| Unit      | PHPUnit | `tests/Unit/`       | `PHPUNIT_TESTSUITE=Unit`    | Isolated logic |
-| Integration | PHPUnit | `tests/Integration/` | `PHPUNIT_TESTSUITE=Integration` | Interactions |
-| E2E (BDD) | Behat   | `features/`, `tests/Behat/` | - | User scenarios |
-| Load      | k6      | `tests/Load/`       | -                           | Performance |
+| Test Type   | Tool    | Directory                   | Env Var                         | Purpose        |
+| ----------- | ------- | --------------------------- | ------------------------------- | -------------- |
+| Unit        | PHPUnit | `tests/Unit/`               | `PHPUNIT_TESTSUITE=Unit`        | Isolated logic |
+| Integration | PHPUnit | `tests/Integration/`        | `PHPUNIT_TESTSUITE=Integration` | Interactions   |
+| E2E (BDD)   | Behat   | `features/`, `tests/Behat/` | -                               | User scenarios |
+| Load        | k6      | `tests/Load/`               | -                               | Performance    |
 
 ## 🔄 Common Workflows
 
@@ -249,11 +249,11 @@ Run `make ci` before finishing any task. Checks include PHP CS Fixer, Psalm (+ s
 
 Key variables in `.env`/`.env.test`:
 
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `APP_ENV` | Application environment | `dev`, `test`, `prod` |
-| `DB_URL`  | Database connection string | `mysql://root:root@database:3306/db` |
-| `AWS_SQS_*` | AWS SQS message queue config | Various |
+| Variable    | Purpose                      | Example                              |
+| ----------- | ---------------------------- | ------------------------------------ |
+| `APP_ENV`   | Application environment      | `dev`, `test`, `prod`                |
+| `DB_URL`    | Database connection string   | `mysql://root:root@database:3306/db` |
+| `AWS_SQS_*` | AWS SQS message queue config | Various                              |
 
 ## 📚 Additional Resources
 
