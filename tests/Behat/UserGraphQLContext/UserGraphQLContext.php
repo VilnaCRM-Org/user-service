@@ -202,8 +202,6 @@ final class UserGraphQLContext implements Context
         $this->queryName = 'requestPasswordResetUser';
         $this->graphQLInput = new RequestPasswordResetGraphQLMutationInput($email);
 
-        // Password reset mutations are on User resource, so they return user in the payload
-        // but since we don't return actual user data, we just check for null
         $mutation = (string) (new RootType($this->queryName))->addArgument(
             new Argument('input', $this->graphQLInput->toGraphQLArguments())
         )->addSubType((new Type('user'))->addSubType(new Type('id')));
@@ -219,8 +217,6 @@ final class UserGraphQLContext implements Context
         $this->queryName = 'confirmPasswordResetUser';
         $this->graphQLInput = new ConfirmPasswordResetGraphQLMutationInput($token, $newPassword);
 
-        // Password reset mutations are on User resource, so they return user in the payload
-        // but since we don't return actual user data, we just check for null
         $mutation = (string) (new RootType($this->queryName))->addArgument(
             new Argument('input', $this->graphQLInput->toGraphQLArguments())
         )->addSubType((new Type('user'))->addSubType(new Type('id')));
@@ -237,8 +233,6 @@ final class UserGraphQLContext implements Context
         $this->queryName = 'confirmPasswordResetUser';
         $this->graphQLInput = new ConfirmPasswordResetGraphQLMutationInput($token, $newPassword);
 
-        // Password reset mutations are on User resource, so they return user in the payload
-        // but since we don't return actual user data, we just check for null
         $mutation = (string) (new RootType($this->queryName))->addArgument(
             new Argument('input', $this->graphQLInput->toGraphQLArguments())
         )->addSubType((new Type('user'))->addSubType(new Type('id')));
@@ -322,10 +316,9 @@ final class UserGraphQLContext implements Context
         Assert::assertArrayHasKey('data', $responseData);
         Assert::assertArrayHasKey($this->queryName, $responseData['data']);
 
-        // Password reset mutations return PasswordResetPayload which doesn't match User type
-        // So the payload is null, but no errors means success
         $mutationData = $responseData['data'][$this->queryName];
-        Assert::assertNull($mutationData, 'Password reset mutations should return null for security');
+        Assert::assertArrayHasKey('user', $mutationData);
+        Assert::assertNull($mutationData['user'], 'Password reset mutations should return an empty payload for security');
     }
 
     /**

@@ -7,7 +7,6 @@ namespace App\User\Application\Resolver;
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
-use App\User\Application\DTO\PasswordResetPayload;
 use App\User\Application\MutationInput\ConfirmPasswordResetMutationInput;
 use App\User\Application\MutationInput\MutationInputValidator;
 
@@ -41,6 +40,6 @@ final readonly class ConfirmPasswordResetMutationResolver implements
         );
         $this->commandBus->dispatch($command);
 
-        return new PasswordResetPayload(true);
+        return null;
     }
 }

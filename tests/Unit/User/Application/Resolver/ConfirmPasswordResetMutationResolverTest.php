@@ -44,8 +44,7 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
 
         $result = $this->resolver->__invoke(null, $context);
 
-        $this->assertInstanceOf(\App\User\Application\DTO\PasswordResetPayload::class, $result);
-        $this->assertTrue($result->ok);
+        $this->assertNull($result);
     }
 
     public function testInvokeWithMissingArgs(): void
@@ -73,7 +72,7 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
 
         $result = $this->resolver->__invoke(null, $context);
 
-        $this->assertIsObject($result);
+        $this->assertNull($result);
     }
 
     /**
