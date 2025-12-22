@@ -9,6 +9,8 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\ConfirmPasswordResetCommandResponse;
 use App\User\Application\CommandHandler\ConfirmPasswordResetCommandHandler;
+use App\User\Domain\Contract\PasswordHasherInterface;
+use App\User\Domain\Contract\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Event\PasswordResetConfirmedEvent;
@@ -18,8 +20,6 @@ use App\User\Domain\Exception\PasswordResetTokenNotFoundException;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Domain\Service\PasswordHasherInterface;
-use App\User\Domain\Service\PasswordResetTokenValidatorInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 use Symfony\Component\Uid\Uuid;
 

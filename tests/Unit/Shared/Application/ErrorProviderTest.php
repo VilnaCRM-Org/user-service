@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Exception\HttpExceptionInterface as ApiPlatformHttpExce
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\State\ApiResource\Error;
 use App\Shared\Application\ErrorProvider;
-use App\Shared\Application\Http\HttpExceptionHeadersResolver;
+use App\Shared\Application\Resolver\HttpExceptionHeadersResolver;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Exception\DomainException;
 use Symfony\Component\HttpFoundation\Request;

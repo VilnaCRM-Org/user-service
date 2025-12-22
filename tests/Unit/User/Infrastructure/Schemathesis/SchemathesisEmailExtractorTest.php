@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Infrastructure\Schemathesis;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Infrastructure\Schemathesis\SchemathesisBatchUsersEmailExtractor;
-use App\User\Infrastructure\Schemathesis\SchemathesisCleanupEvaluator;
-use App\User\Infrastructure\Schemathesis\SchemathesisEmailExtractor;
-use App\User\Infrastructure\Schemathesis\SchemathesisPayloadDecoder;
-use App\User\Infrastructure\Schemathesis\SchemathesisSingleUserEmailExtractor;
+use App\User\Infrastructure\Decoder\SchemathesisPayloadDecoder;
+use App\User\Infrastructure\Evaluator\SchemathesisCleanupEvaluator;
+use App\User\Infrastructure\Extractor\SchemathesisBatchUsersEmailExtractor;
+use App\User\Infrastructure\Extractor\SchemathesisEmailExtractor;
+use App\User\Infrastructure\Extractor\SchemathesisSingleUserEmailExtractor;
 use Symfony\Component\HttpFoundation\Request;
 
 final class SchemathesisEmailExtractorTest extends UnitTestCase

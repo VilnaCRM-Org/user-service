@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Validator;
 
+use App\Shared\Application\Checker\EmailUniquenessChecker;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Contracts\Translation\TranslatorInterface;

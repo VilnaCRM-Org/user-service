@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Http;
 
+use App\Shared\Application\Decoder\JsonBodyDecoder;
+
 final readonly class JsonRequestPayloadProvider
 {
     public function __construct(

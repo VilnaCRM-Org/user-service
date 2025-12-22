@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Infrastructure\Schemathesis;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Infrastructure\Schemathesis\SchemathesisBatchUsersEmailExtractor;
+use App\User\Infrastructure\Extractor\SchemathesisBatchUsersEmailExtractor;
 
 final class SchemathesisBatchUsersEmailExtractorTest extends UnitTestCase
 {

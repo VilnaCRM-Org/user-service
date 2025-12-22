@@ -9,33 +9,25 @@ parameters:
     - name: Application
       collectors:
         - type: className
-          regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query).*'
+          regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Controller|Sanitizer|Validator).*'
         - type: className
-          regex: '.*App\\Shared\\Application\\(Validator|Transformer|ErrorProvider|DomainExceptionNormalizer|NotFoundExceptionNormalizer).*'
+          regex: '.*App\\Shared\\Application\\(Validator|Transformer|ErrorProvider|DomainExceptionNormalizer|NotFoundExceptionNormalizer|Checker|Collector|Decoder|DTO|Evaluator|EventListener|Fixture|Http|Normalizer|QueryParameter|Resolver).*'
         - type: className
-          regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|Processor|OpenApiFactory).*'
-        - type: className
-          regex: '.*App\\Shared\\Application\\Fixture\\.*'
-        - type: className
-          regex: '.*App\\Shared\\Application\\Http\\.*'
-        - type: className
-          regex: '.*App\\Shared\\Application\\QueryParameter\\.*'
-        - type: className
-          regex: '.*App\\Shared\\Application\\EventListener\\.*'
+          regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|Processor|Extractor|OpenApiFactory).*'
         - type: className
           regex: '.*App\\Internal\\HealthCheck\\Application\\.*'
-        - type: className
-          regex: '.*App\\Shared\\Application\\Command\\.*'
     - name: Domain
       collectors:
         - type: className
-          regex: '.*App\\[A-Za-z]+\\Domain\\(Aggregate|Entity|ValueObject|Event|Exception|Factory|Repository|Collection|Service).*'
+          regex: '.*App\\[A-Za-z]+\\Domain\\(Aggregate|Entity|ValueObject|Event|Exception|Factory|Repository|Collection|Contract|Service).*'
         - type: className
           regex: '.*App\\Shared\\Domain\\Bus\\(Command|Event).*'
+        - type: className
+          regex: '.*App\\Internal\\HealthCheck\\Domain\\.*'
     - name: Infrastructure
       collectors:
         - type: className
-          regex: '.*App\\User\\Infrastructure\\(Factory|Repository|Service).*'
+          regex: '.*App\\User\\Infrastructure\\(Factory|Repository|Service|Decoder|Extractor|Evaluator|EventListener).*'
         - type: className
           regex: '.*App\\Shared\\Infrastructure\\(Bus\\(Command|Event|MessageBusFactory|CallableFirstParameterExtractor)|DoctrineType|RetryStrategy|Transformer|Factory|Command).*'
         - type: className
@@ -76,10 +68,6 @@ parameters:
       collectors:
         - type: className
           regex: '.*Ramsey\\.*'
-    - name: HealthCheck
-      collectors:
-        - type: className
-          regex: '.*App\\Internal\\HealthCheck\\Domain\\.*'
   ruleset:
     Application:
       - Domain
@@ -92,7 +80,6 @@ parameters:
       - PhpAttributes
       - Aws
       - Ramsey
-      - HealthCheck
     Infrastructure:
       - Domain
       - Application
@@ -103,6 +90,5 @@ parameters:
       - PhpAttributes
       - Aws
       - Ramsey
-      - HealthCheck
     Domain:
       - PhpAttributes

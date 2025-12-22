@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
-use App\Shared\Application\Http\JsonBodyDecoder;
+use App\Shared\Application\Decoder\JsonBodyDecoder;
 use App\Shared\Application\Http\JsonRequestContentProvider;
 use App\Shared\Application\Http\JsonRequestValidator;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;

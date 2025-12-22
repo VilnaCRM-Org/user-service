@@ -6,6 +6,8 @@ namespace App\Tests\Unit\Shared\Application\EventListener;
 
 use App\Shared\Application\EventListener\QueryParameterValidationListener;
 use App\Shared\Application\QueryParameter as QP;
+use App\Shared\Application\QueryParameter\Evaluator;
+use App\Shared\Application\QueryParameter\Normalizer;
 use App\Shared\Application\QueryParameter\Pagination as QPP;
 use App\Shared\Application\QueryParameter\QueryParameterViolationFactory;
 use App\Shared\Application\QueryParameter\QueryViolationFinder;
@@ -257,14 +259,14 @@ final class QueryParameterValidationListenerTest extends UnitTestCase
 
     public function testIsExplicitlyProvidedTrimsWhitespace(): void
     {
-        $evaluator = new QPP\ExplicitValueEvaluator();
+        $evaluator = new Evaluator\ExplicitValueEvaluator();
 
         $this->assertFalse($evaluator->isExplicitlyProvided('   '));
     }
 
     public function testIsExplicitlyProvidedDetectsEmptyArray(): void
     {
-        $evaluator = new QPP\ExplicitValueEvaluator();
+        $evaluator = new Evaluator\ExplicitValueEvaluator();
 
         $this->assertFalse($evaluator->isExplicitlyProvided([]));
     }
@@ -373,8 +375,8 @@ final class QueryParameterValidationListenerTest extends UnitTestCase
 
     private function createListener(): QueryParameterValidationListener
     {
-        $valueEvaluator = new QPP\ExplicitValueEvaluator();
-        $normalizer = new QPP\PositiveIntegerNormalizer();
+        $valueEvaluator = new Evaluator\ExplicitValueEvaluator();
+        $normalizer = new Normalizer\PositiveIntegerNormalizer();
         $violationFactory = new QueryParameterViolationFactory();
         $itemsPerPageRule = new QPP\ItemsPerPageRule(
             $valueEvaluator,

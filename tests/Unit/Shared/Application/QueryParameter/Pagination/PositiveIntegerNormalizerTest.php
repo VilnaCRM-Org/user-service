@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\QueryParameter\Pagination;
 
-use App\Shared\Application\QueryParameter\Pagination\PositiveIntegerNormalizer;
+use App\Shared\Application\QueryParameter\Normalizer\PositiveIntegerNormalizer;
 use App\Tests\Unit\UnitTestCase;
 
 final class PositiveIntegerNormalizerTest extends UnitTestCase

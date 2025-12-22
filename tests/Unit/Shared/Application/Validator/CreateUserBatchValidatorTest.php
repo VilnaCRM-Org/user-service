@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Validator;
 
+use App\Shared\Application\Evaluator\CreateUserBatchConstraintEvaluator;
 use App\Shared\Application\Validator\CreateUserBatch;
-use App\Shared\Application\Validator\CreateUserBatchConstraintEvaluator;
 use App\Shared\Application\Validator\CreateUserBatchValidator;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\Validator\Constraint;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Http;
 
+use App\Shared\Application\Decoder\JsonBodyDecoder;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 final class JsonRequestValidator

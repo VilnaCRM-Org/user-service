@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Validator;
 
+use App\Shared\Application\Checker\EmailUniquenessChecker;
 use App\Shared\Application\Http\RouteIdentifierProvider;
-use App\Shared\Application\Validator\EmailUniquenessChecker;
 use App\Shared\Application\Validator\UniqueEmail;
 use App\Shared\Application\Validator\UniqueEmailValidator;
 use App\Shared\Infrastructure\Factory\UuidFactory;

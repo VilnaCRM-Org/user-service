@@ -8,14 +8,14 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\ConfirmPasswordResetCommandResponse;
+use App\User\Domain\Contract\PasswordHasherInterface;
+use App\User\Domain\Contract\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetConfirmedEvent;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Domain\Service\PasswordHasherInterface;
-use App\User\Domain\Service\PasswordResetTokenValidatorInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 final readonly class ConfirmPasswordResetCommandHandler implements

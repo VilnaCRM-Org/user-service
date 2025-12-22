@@ -7,7 +7,7 @@ namespace App\Shared\Application;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ApiResource\Error;
 use ApiPlatform\State\ProviderInterface;
-use App\Shared\Application\Http\HttpExceptionHeadersResolver;
+use App\Shared\Application\Resolver\HttpExceptionHeadersResolver;
 use App\User\Domain\Exception\DomainException;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;

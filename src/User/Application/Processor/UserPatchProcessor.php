@@ -12,6 +12,7 @@ use App\User\Application\DTO\UserPatchDto;
 use App\User\Application\DTO\UserPutDto;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\Query\GetUserQueryHandler;
+use App\User\Application\Resolver\UserPatchUpdateResolver;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\ValueObject\UserUpdate;
