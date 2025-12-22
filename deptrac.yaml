@@ -19,7 +19,7 @@ parameters:
     - name: Domain
       collectors:
         - type: className
-          regex: '.*App\\[A-Za-z]+\\Domain\\(Aggregate|Entity|ValueObject|Event|Exception|Factory|Repository|Collection|Contract|Service).*'
+          regex: '.*App\\[A-Za-z]+\\Domain\\(Aggregate|Entity|ValueObject|Event|Exception|Factory|Repository|Collection|Contract).*'
         - type: className
           regex: '.*App\\Shared\\Domain\\Bus\\(Command|Event).*'
         - type: className
