@@ -1,7 +1,6 @@
 parameters:
   paths:
     - './src'
-    - './vendor/symfony/polyfill-php83/Resources/stubs'
   exclude_files:
     - './DataFixtures/.'
     - './Shared/Kernel.'
@@ -10,7 +9,7 @@ parameters:
     - name: Application
       collectors:
         - type: className
-          regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Service).*'
+          regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query).*'
         - type: className
           regex: '.*App\\Shared\\Application\\(Validator|Transformer|ErrorProvider|DomainExceptionNormalizer|NotFoundExceptionNormalizer).*'
         - type: className
@@ -19,6 +18,14 @@ parameters:
           regex: '.*App\\Shared\\Application\\Fixture\\.*'
         - type: className
           regex: '.*App\\Shared\\Application\\Http\\.*'
+        - type: className
+          regex: '.*App\\Shared\\Application\\QueryParameter\\.*'
+        - type: className
+          regex: '.*App\\Shared\\Application\\EventListener\\.*'
+        - type: className
+          regex: '.*App\\Internal\\HealthCheck\\Application\\.*'
+        - type: className
+          regex: '.*App\\Shared\\Application\\Command\\.*'
     - name: Domain
       collectors:
         - type: className
@@ -28,9 +35,11 @@ parameters:
     - name: Infrastructure
       collectors:
         - type: className
-          regex: '.*App\\User\\Infrastructure\\(Factory|Repository).*'
+          regex: '.*App\\User\\Infrastructure\\(Factory|Repository|Service).*'
         - type: className
-          regex: '.*App\\Shared\\Infrastructure\\(Bus\\(Command|Event|MessageBusFactory|CallableFirstParameterExtractor)|DoctrineType|RetryStrategy|Transformer|Factory).*'
+          regex: '.*App\\Shared\\Infrastructure\\(Bus\\(Command|Event|MessageBusFactory|CallableFirstParameterExtractor)|DoctrineType|RetryStrategy|Transformer|Factory|Command).*'
+        - type: className
+          regex: '.*App\\Internal\\HealthCheck\\Infrastructure\\.*'
     - name: Symfony
       collectors:
         - type: className
@@ -59,6 +68,18 @@ parameters:
       collectors:
         - type: className
           regex: '^Override$'
+    - name: Aws
+      collectors:
+        - type: className
+          regex: '.*Aws\\.*'
+    - name: Ramsey
+      collectors:
+        - type: className
+          regex: '.*Ramsey\\.*'
+    - name: HealthCheck
+      collectors:
+        - type: className
+          regex: '.*App\\Internal\\HealthCheck\\Domain\\.*'
   ruleset:
     Application:
       - Domain
@@ -69,6 +90,9 @@ parameters:
       - League
       - GraphQl
       - PhpAttributes
+      - Aws
+      - Ramsey
+      - HealthCheck
     Infrastructure:
       - Domain
       - Application
@@ -77,5 +101,8 @@ parameters:
       - Logging
       - League
       - PhpAttributes
+      - Aws
+      - Ramsey
+      - HealthCheck
     Domain:
       - PhpAttributes

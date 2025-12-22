@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Application\Command;
+namespace App\Tests\Unit\Shared\Infrastructure\Command;
 
-use App\Shared\Application\Command\PasswordResetTokenSeeder;
-use App\Shared\Application\Command\SchemathesisOAuthSeeder;
-use App\Shared\Application\Command\SchemathesisUserSeeder;
-use App\Shared\Application\Command\SeedSchemathesisDataCommand;
 use App\Shared\Application\Fixture\SchemathesisFixtures;
+use App\Shared\Infrastructure\Command\PasswordResetTokenSeeder;
+use App\Shared\Infrastructure\Command\SchemathesisOAuthSeeder;
+use App\Shared\Infrastructure\Command\SchemathesisUserSeeder;
+use App\Shared\Infrastructure\Command\SeedSchemathesisDataCommand;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\Shared\Application\Command\Fixture\HashingPasswordHasherFactory;

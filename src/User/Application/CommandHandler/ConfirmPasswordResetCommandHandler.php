@@ -8,13 +8,13 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\ConfirmPasswordResetCommandResponse;
-use App\User\Application\Service\UserPasswordService;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetConfirmedEvent;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Domain\Service\PasswordHasherInterface;
 use App\User\Domain\Service\PasswordResetTokenValidatorInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
@@ -24,7 +24,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements
     public function __construct(
         private PasswordResetTokenRepositoryInterface $tokenRepository,
         private UserRepositoryInterface $userRepository,
-        private UserPasswordService $passwordService,
+        private PasswordHasherInterface $passwordHasher,
         private EventBusInterface $eventBus,
         private UuidFactory $uuidFactory,
         private PasswordResetTokenValidatorInterface $tokenValidator,
@@ -36,10 +36,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         $passwordResetToken = $this->getValidatedToken($command->token);
         $user = $this->getUserFromToken($passwordResetToken);
 
-        $this->passwordService->updateUserPassword(
-            $user,
-            $command->newPassword
-        );
+        $this->updateUserPassword($user, $command->newPassword);
         $this->markTokenAsUsed($passwordResetToken);
         $this->publishEvent($user);
 
@@ -84,5 +81,14 @@ final readonly class ConfirmPasswordResetCommandHandler implements
                 (string) $this->uuidFactory->create()
             )
         );
+    }
+
+    private function updateUserPassword(
+        UserInterface $user,
+        string $newPassword
+    ): void {
+        $hashedPassword = $this->passwordHasher->hash($newPassword);
+        $user->setPassword($hashedPassword);
+        $this->userRepository->save($user);
     }
 }

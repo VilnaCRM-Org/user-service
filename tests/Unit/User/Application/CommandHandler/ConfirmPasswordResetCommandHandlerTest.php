@@ -9,7 +9,6 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\ConfirmPasswordResetCommandResponse;
 use App\User\Application\CommandHandler\ConfirmPasswordResetCommandHandler;
-use App\User\Application\Service\UserPasswordService;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Event\PasswordResetConfirmedEvent;
@@ -19,6 +18,7 @@ use App\User\Domain\Exception\PasswordResetTokenNotFoundException;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Domain\Service\PasswordHasherInterface;
 use App\User\Domain\Service\PasswordResetTokenValidatorInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 use Symfony\Component\Uid\Uuid;
@@ -27,7 +27,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 {
     private UserRepositoryInterface $userRepository;
     private PasswordResetTokenRepositoryInterface $tokenRepository;
-    private UserPasswordService $passwordService;
+    private PasswordHasherInterface $passwordHasher;
     private EventBusInterface $eventBus;
     private UuidFactory $uuidFactory;
     private PasswordResetTokenValidatorInterface $tokenValidator;
@@ -40,7 +40,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->tokenRepository = $this->createMock(PasswordResetTokenRepositoryInterface::class);
-        $this->passwordService = $this->createMock(UserPasswordService::class);
+        $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->uuidFactory = $this->createMock(UuidFactory::class);
         $this->tokenValidator = $this->createMock(PasswordResetTokenValidatorInterface::class);
@@ -48,7 +48,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $this->handler = new ConfirmPasswordResetCommandHandler(
             $this->tokenRepository,
             $this->userRepository,
-            $this->passwordService,
+            $this->passwordHasher,
             $this->eventBus,
             $this->uuidFactory,
             $this->tokenValidator
@@ -90,9 +90,18 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             ->with($userId)
             ->willReturn($user);
 
-        $this->passwordService->expects($this->once())
-            ->method('updateUserPassword')
-            ->with($user, $newPassword);
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->with($newPassword)
+            ->willReturn('hashed_password');
+
+        $user->expects($this->once())
+            ->method('setPassword')
+            ->with('hashed_password');
+
+        $this->userRepository->expects($this->once())
+            ->method('save')
+            ->with($user);
 
         $this->tokenRepository->expects($this->once())
             ->method('save')
@@ -148,9 +157,18 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             ->with($userId)
             ->willReturn($user);
 
-        $this->passwordService->expects($this->once())
-            ->method('updateUserPassword')
-            ->with($user, $newPassword);
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->with($newPassword)
+            ->willReturn('hashed_password');
+
+        $user->expects($this->once())
+            ->method('setPassword')
+            ->with('hashed_password');
+
+        $this->userRepository->expects($this->once())
+            ->method('save')
+            ->with($user);
 
         $this->tokenRepository->expects($this->once())
             ->method('save')

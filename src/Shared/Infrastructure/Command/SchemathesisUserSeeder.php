@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Application\Command;
+namespace App\Shared\Infrastructure\Command;
 
 use App\Shared\Application\Fixture\SchemathesisFixtures;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
