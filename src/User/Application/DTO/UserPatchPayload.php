@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Processor;
+namespace App\User\Application\DTO;
 
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 

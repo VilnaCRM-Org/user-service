@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Infrastructure\Command;
+namespace App\Shared\Infrastructure\Command\Seeder;
 
 use App\User\Domain\Entity\PasswordResetToken;
 use App\User\Domain\Entity\UserInterface;

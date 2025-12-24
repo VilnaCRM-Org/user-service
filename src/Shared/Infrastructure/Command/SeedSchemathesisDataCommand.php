@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\Command;
 
 use App\Shared\Application\Fixture\SchemathesisFixtures;
+use App\Shared\Infrastructure\Command\Seeder\PasswordResetTokenSeeder;
+use App\Shared\Infrastructure\Command\Seeder\SchemathesisOAuthSeeder;
+use App\Shared\Infrastructure\Command\Seeder\SchemathesisUserSeeder;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;

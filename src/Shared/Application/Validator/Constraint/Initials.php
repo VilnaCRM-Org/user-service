@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Application\Validator;
+namespace App\Shared\Application\Validator\Constraint;
 
 use Symfony\Component\Validator\Constraints\Compound;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Constraints\Type;
 
 #[\Attribute]
-final class Password extends Compound
+final class Initials extends Compound
 {
     /**
      * @param array<string, string> $options
@@ -20,19 +21,17 @@ final class Password extends Compound
     protected function getConstraints(array $options): array
     {
         return [
+            new Type(
+                type: 'string',
+                message: 'initials.invalid.type'
+            ),
             new Length(
-                min: 8,
-                max: 64,
-                minMessage: 'password.invalid.length',
-                maxMessage: 'password.invalid.length'
+                max: 255,
+                maxMessage: 'initials.invalid.length'
             ),
             new Regex(
-                pattern: '/[0-9]/',
-                message: 'password.missing.number'
-            ),
-            new Regex(
-                pattern: '/[A-Z]/',
-                message: 'password.missing.uppercase'
+                pattern: '/^\S+$/',
+                message: 'initials.spaces'
             ),
         ];
     }

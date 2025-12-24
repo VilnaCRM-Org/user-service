@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Application\Validator;
+namespace App\Tests\Unit\Shared\Application\Validator\Constraint;
 
-use App\Shared\Application\Validator\CreateUserBatch;
+use App\Shared\Application\Validator\Constraint\CreateUserBatch;
 use App\Tests\Unit\UnitTestCase;
 
 final class CreateUserBatchTest extends UnitTestCase
@@ -18,5 +18,9 @@ final class CreateUserBatchTest extends UnitTestCase
 
         $this->assertEquals($groups, $constraint->groups);
         $this->assertEquals($payload, $constraint->payload);
+        $this->assertSame(
+            \App\Shared\Application\Validator\CreateUserBatchValidator::class,
+            $constraint->validatedBy()
+        );
     }
 }

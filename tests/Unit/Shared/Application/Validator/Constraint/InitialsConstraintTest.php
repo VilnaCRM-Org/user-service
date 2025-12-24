@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Application\Validator;
+namespace App\Tests\Unit\Shared\Application\Validator\Constraint;
 
-use App\Shared\Application\Validator\Initials;
+use App\Shared\Application\Validator\Constraint\Initials;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\Length;

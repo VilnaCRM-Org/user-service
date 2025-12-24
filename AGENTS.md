@@ -100,10 +100,10 @@ App\User\Application\DTO\UserRegisterDto:
     email:
       - NotBlank: { message: 'not.blank' }
       - Email: { message: 'email.invalid' }
-      - App\Shared\Application\Validator\UniqueEmail: ~
+      - App\Shared\Application\Validator\Constraint\UniqueEmail: ~
     initials:
       - NotBlank: { message: 'not.blank' }
-      - App\Shared\Application\Validator\Initials: ~
+      - App\Shared\Application\Validator\Constraint\Initials: ~
 ```
 
 **Why This Matters:** Skills encode the real architecture patterns. AGENTS.md is a reference, not a fix guide.

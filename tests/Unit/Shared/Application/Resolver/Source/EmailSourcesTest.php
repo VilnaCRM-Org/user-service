@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Application\Validator\Source;
+namespace App\Tests\Unit\Shared\Application\Resolver\Source;
 
-use App\Shared\Application\Validator\Source\ArrayEmailSource;
-use App\Shared\Application\Validator\Source\BatchEmailSource;
-use App\Shared\Application\Validator\Source\ChainEmailSource;
-use App\Shared\Application\Validator\Source\NullEmailSource;
-use App\Shared\Application\Validator\Source\ObjectMethodEmailSource;
-use App\Shared\Application\Validator\Source\ObjectPropertyEmailSource;
+use App\Shared\Application\Resolver\Source\ArrayEmailSource;
+use App\Shared\Application\Resolver\Source\BatchEmailSource;
+use App\Shared\Application\Resolver\Source\ChainEmailSource;
+use App\Shared\Application\Resolver\Source\NullEmailSource;
+use App\Shared\Application\Resolver\Source\ObjectMethodEmailSource;
+use App\Shared\Application\Resolver\Source\ObjectPropertyEmailSource;
 use App\Tests\Unit\UnitTestCase;
 
 final class EmailSourcesTest extends UnitTestCase

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Application\Validator;
+namespace App\Tests\Unit\Shared\Application\Validator\Constraint;
 
-use App\Shared\Application\Validator\UniqueEmail;
+use App\Shared\Application\Validator\Constraint\UniqueEmail;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\Validator\Constraint;
 
@@ -20,5 +20,9 @@ final class UniqueEmailTest extends UnitTestCase
         self::assertInstanceOf(Constraint::class, $constraint);
         self::assertSame($groups, $constraint->groups);
         self::assertSame($payload, $constraint->payload);
+        self::assertSame(
+            \App\Shared\Application\Validator\UniqueEmailValidator::class,
+            $constraint->validatedBy()
+        );
     }
 }

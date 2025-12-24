@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Shared\Application\Validator;
+namespace App\Tests\Integration\Shared\Application\Validator\Constraint;
 
-use App\Shared\Application\Validator\Password;
+use App\Shared\Application\Validator\Constraint\Password;
 use App\Tests\Integration\IntegrationTestCase;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-final class PasswordValidatorIntegrationTest extends IntegrationTestCase
+final class PasswordConstraintIntegrationTest extends IntegrationTestCase
 {
     private ValidatorInterface $validator;
 
@@ -36,7 +36,7 @@ final class PasswordValidatorIntegrationTest extends IntegrationTestCase
 
     public function testPasswordTooLong(): void
     {
-        $longPassword = str_repeat('A1', 33); // 66 characters
+        $longPassword = str_repeat('A1', 33);
         $violations = $this->validator->validate($longPassword, [new Password()]);
 
         $this->assertCount(1, $violations);
@@ -52,7 +52,7 @@ final class PasswordValidatorIntegrationTest extends IntegrationTestCase
 
     public function testPasswordExactlyMaxLength(): void
     {
-        $maxLengthPassword = str_repeat('A1', 32); // 64 characters
+        $maxLengthPassword = str_repeat('A1', 32);
         $violations = $this->validator->validate($maxLengthPassword, [new Password()]);
 
         $this->assertCount(0, $violations);
@@ -60,7 +60,7 @@ final class PasswordValidatorIntegrationTest extends IntegrationTestCase
 
     public function testPasswordOneCharacterBelowMaxLength(): void
     {
-        $nearMaxPassword = str_repeat('A1', 31) . 'A'; // 63 characters
+        $nearMaxPassword = str_repeat('A1', 31) . 'A';
         $violations = $this->validator->validate($nearMaxPassword, [new Password()]);
 
         $this->assertCount(0, $violations);
@@ -68,7 +68,7 @@ final class PasswordValidatorIntegrationTest extends IntegrationTestCase
 
     public function testPasswordOneCharacterAboveMaxLength(): void
     {
-        $aboveMaxPassword = str_repeat('A1', 32) . 'X'; // 65 characters
+        $aboveMaxPassword = str_repeat('A1', 32) . 'X';
         $violations = $this->validator->validate($aboveMaxPassword, [new Password()]);
 
         $this->assertCount(1, $violations);

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Infrastructure\Command;
 
 use App\Shared\Application\Fixture\SchemathesisFixtures;
-use App\Shared\Infrastructure\Command\PasswordResetTokenSeeder;
-use App\Shared\Infrastructure\Command\SchemathesisOAuthSeeder;
-use App\Shared\Infrastructure\Command\SchemathesisUserSeeder;
+use App\Shared\Infrastructure\Command\Seeder\PasswordResetTokenSeeder;
+use App\Shared\Infrastructure\Command\Seeder\SchemathesisOAuthSeeder;
+use App\Shared\Infrastructure\Command\Seeder\SchemathesisUserSeeder;
 use App\Shared\Infrastructure\Command\SeedSchemathesisDataCommand;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;

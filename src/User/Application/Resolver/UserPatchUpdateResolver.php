@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application\Resolver;
 
 use App\User\Application\DTO\UserPatchDto;
-use App\User\Application\Processor\UserPatchPayload;
+use App\User\Application\DTO\UserPatchPayload;
 use App\User\Application\Sanitizer\UserPatchEmailSanitizer;
 use App\User\Application\Sanitizer\UserPatchNonEmptySanitizer;
 use App\User\Application\Sanitizer\UserPatchPasswordSanitizer;

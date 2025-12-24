@@ -9,6 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Application\Http\JsonRequestPayloadProvider;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\UserPatchDto;
+use App\User\Application\DTO\UserPatchPayload;
 use App\User\Application\DTO\UserPutDto;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\Query\GetUserQueryHandler;

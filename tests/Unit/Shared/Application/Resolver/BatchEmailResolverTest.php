@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\Resolver;
 
 use App\Shared\Application\Resolver\BatchEmailResolver;
-use App\Shared\Application\Validator\Source\BatchEmailSource;
+use App\Shared\Application\Resolver\Source\BatchEmailSource;
 use App\Tests\Unit\UnitTestCase;
 
 final class BatchEmailResolverTest extends UnitTestCase
