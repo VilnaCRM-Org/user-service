@@ -30,7 +30,7 @@ declare(strict_types=1);
  */
 
 // ❌ WRONG - Domain depending on Symfony framework
-namespace App\Customer\Domain\Entity;
+namespace Example\Customer\Domain\Entity;
 
 use Symfony\Component\Validator\Constraints as Assert; // Framework in Domain!
 
@@ -50,7 +50,7 @@ class CustomerWrong
  *
  * Location: src/Core/Customer/Domain/Entity/Customer.php
  */
-namespace App\Core\Customer\Domain\Entity;
+namespace Example\Core\Customer\Domain\Entity;
 
 use App\Shared\Domain\ValueObject\UlidInterface;
 use DateTimeImmutable;
@@ -111,7 +111,7 @@ App\Core\Customer\Application\DTO\CustomerCreate:
  *
  * Location: src/Core/Customer/Application/DTO/CustomerCreate.php
  */
-namespace App\Core\Customer\Application\DTO;
+namespace Example\Core\Customer\Application\DTO;
 
 final class CustomerCreate
 {
@@ -136,7 +136,7 @@ final class CustomerCreate
  */
 
 // ❌ WRONG - Doctrine annotations in Domain entity
-namespace App\Product\Domain\Entity;
+namespace Example\Product\Domain\Entity;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM; // Doctrine in Domain!
 
@@ -154,7 +154,7 @@ class ProductWrong
 }
 
 // ✅ CORRECT - Pure domain entity with XML mappings
-namespace App\Product\Domain\Entity;
+namespace Example\Product\Domain\Entity;
 
 // NO Doctrine imports - pure PHP!
 class Product extends AggregateRoot
@@ -202,7 +202,7 @@ class Product extends AggregateRoot
  */
 
 // ❌ WRONG - API Platform in Domain entity
-namespace App\Customer\Domain\Entity;
+namespace Example\Customer\Domain\Entity;
 
 use ApiPlatform\Metadata\ApiResource; // API concern in Domain!
 use ApiPlatform\Metadata\Get;
@@ -223,7 +223,7 @@ class CustomerWrongApi
 // ✅ CORRECT - Configure API Platform in YAML (ACTUAL PATTERN)
 
 // Pure domain entity - NO API Platform imports
-namespace App\Customer\Domain\Entity;
+namespace Example\Customer\Domain\Entity;
 
 class Customer extends AggregateRoot
 {
@@ -288,7 +288,7 @@ resources:
  */
 
 // ❌ WRONG - Infrastructure calling handler directly
-namespace App\Customer\Infrastructure\EventListener;
+namespace Example\Customer\Infrastructure\EventListener;
 
 use App\Customer\Application\CommandHandler\SendWelcomeEmailHandler; // Wrong!
 use Doctrine\ODM\MongoDB\Event\LifecycleEventArgs;
@@ -312,7 +312,7 @@ class CustomerListenerWrong
 // ✅ CORRECT - Use Command Bus or Domain Events
 
 // Option 1: Use Command Bus
-namespace App\Customer\Infrastructure\EventListener;
+namespace Example\Customer\Infrastructure\EventListener;
 
 use App\Shared\Domain\Bus\Command\CommandBusInterface; // Use bus
 use Doctrine\ODM\MongoDB\Event\LifecycleEventArgs;
@@ -336,7 +336,7 @@ class CustomerListener
 }
 
 // ✅ BETTER - Use Domain Events (RECOMMENDED PATTERN)
-namespace App\Customer\Domain\Entity;
+namespace Example\Customer\Domain\Entity;
 
 class Customer extends AggregateRoot
 {
@@ -356,7 +356,7 @@ class Customer extends AggregateRoot
 }
 
 // Event subscriber in Application layer handles it
-namespace App\Customer\Application\EventSubscriber;
+namespace Example\Customer\Application\EventSubscriber;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 
@@ -386,7 +386,7 @@ class SendWelcomeEmailOnCustomerCreated implements DomainEventSubscriberInterfac
 // ============================================================================
 
 // ❌ WRONG - Direct instantiation with 'new' in handler
-namespace App\Customer\Application\CommandHandler;
+namespace Example\Customer\Application\CommandHandler;
 
 class CreateCustomerHandlerWrong implements CommandHandlerInterface
 {
@@ -409,7 +409,7 @@ class CreateCustomerHandlerWrong implements CommandHandlerInterface
 }
 
 // ✅ CORRECT - Use Factory Pattern (ACTUAL CODEBASE PATTERN)
-namespace App\Customer\Application\CommandHandler;
+namespace Example\Customer\Application\CommandHandler;
 
 use App\Customer\Domain\Factory\CustomerFactoryInterface;
 
@@ -435,7 +435,7 @@ class CreateCustomerHandler implements CommandHandlerInterface
 }
 
 // Factory implementation
-namespace App\Customer\Domain\Factory;
+namespace Example\Customer\Domain\Factory;
 
 use App\Customer\Domain\Entity\Customer;
 use App\Shared\Domain\ValueObject\UlidInterface;
@@ -485,7 +485,7 @@ final readonly class CustomerFactory implements CustomerFactoryInterface
 // ============================================================================
 
 // ❌ WRONG - Business logic in Application layer
-namespace App\Customer\Application\CommandHandler;
+namespace Example\Customer\Application\CommandHandler;
 
 class UpdateCustomerStatusHandlerWrong implements CommandHandlerInterface
 {
@@ -509,7 +509,7 @@ class UpdateCustomerStatusHandlerWrong implements CommandHandlerInterface
 }
 
 // ✅ CORRECT - Business logic in Domain entity
-namespace App\Customer\Domain\Entity;
+namespace Example\Customer\Domain\Entity;
 
 class Customer extends AggregateRoot
 {
@@ -546,7 +546,7 @@ class Customer extends AggregateRoot
 }
 
 // Handler only orchestrates - delegates to domain
-namespace App\Customer\Application\CommandHandler;
+namespace Example\Customer\Application\CommandHandler;
 
 class UpdateCustomerStatusHandler implements CommandHandlerInterface
 {

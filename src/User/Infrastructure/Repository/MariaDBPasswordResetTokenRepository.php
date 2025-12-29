@@ -52,8 +52,6 @@ final class MariaDBPasswordResetTokenRepository extends ServiceEntityRepository 
         string $email,
         \DateTimeImmutable $since
     ): int {
-        // Use native query to handle UUID conversion properly
-        // Need to convert the binary UUID from user table to string for comparison
         $sql = '
             SELECT COUNT(prt.token_value)
             FROM password_reset_tokens prt

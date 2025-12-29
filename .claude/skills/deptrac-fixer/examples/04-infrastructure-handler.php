@@ -15,7 +15,7 @@ declare(strict_types=1);
 // BEFORE (WRONG) - Infrastructure directly depends on Application Handler
 // ============================================================================
 
-namespace App\Customer\Infrastructure\EventListener;
+namespace Example\Customer\Infrastructure\EventListener;
 
 use App\Customer\Application\CommandHandler\UpdateSearchIndexHandler;  // VIOLATION!
 use App\Customer\Application\CommandHandler\SendNotificationHandler;   // VIOLATION!
@@ -64,7 +64,7 @@ final class CustomerDoctrineListenerBefore
 // AFTER - OPTION 1: Use Command Bus (Quick Fix)
 // ============================================================================
 
-namespace App\Customer\Infrastructure\EventListener;
+namespace Example\Customer\Infrastructure\EventListener;
 
 use App\Customer\Application\Command\UpdateSearchIndexCommand;
 use App\Customer\Application\Command\SendNotificationCommand;
@@ -112,7 +112,7 @@ final class CustomerDoctrineListenerOption1
 // ============================================================================
 
 // STEP 1: Domain Entity records events
-namespace App\Customer\Domain\Entity;
+namespace Example\Customer\Domain\Entity;
 
 use App\Customer\Domain\Event\CustomerCreated;
 use App\Customer\Domain\Event\CustomerUpdated;
@@ -168,7 +168,7 @@ final class Customer extends AggregateRoot
 }
 
 // STEP 2: Domain Events (pure domain, no framework)
-namespace App\Customer\Domain\Event;
+namespace Example\Customer\Domain\Event;
 
 use App\Customer\Domain\ValueObject\Email;
 use App\Customer\Domain\ValueObject\CustomerName;
@@ -246,7 +246,7 @@ final readonly class CustomerUpdated extends DomainEvent
 }
 
 // STEP 3: Application Event Subscribers (handle the domain events)
-namespace App\Customer\Application\EventSubscriber;
+namespace Example\Customer\Application\EventSubscriber;
 
 use App\Customer\Domain\Event\CustomerCreated;
 use App\Customer\Domain\Event\CustomerUpdated;
@@ -332,7 +332,7 @@ final readonly class SendWelcomeEmailOnCustomerCreated implements DomainEventSub
 // INFRASTRUCTURE: Event Dispatcher (handles event publishing)
 // ============================================================================
 
-namespace App\Shared\Infrastructure\Bus\Event;
+namespace Example\Shared\Infrastructure\Bus\Event;
 
 use App\Shared\Domain\Aggregate\AggregateRoot;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
@@ -401,7 +401,7 @@ final class DomainEventPublisher
 // DOMAIN FACTORY - Encapsulates entity creation
 // ============================================================================
 
-namespace App\Customer\Domain\Factory;
+namespace Example\Customer\Domain\Factory;
 
 use App\Customer\Domain\Entity\Customer;
 use App\Customer\Domain\ValueObject\Email;
@@ -434,7 +434,7 @@ final readonly class CustomerFactory implements CustomerFactoryInterface
 // COMMAND HANDLER - Uses factory and repository (no direct Doctrine)
 // ============================================================================
 
-namespace App\Customer\Application\CommandHandler;
+namespace Example\Customer\Application\CommandHandler;
 
 use App\Customer\Application\Command\CreateCustomerCommand;
 use App\Customer\Domain\Factory\CustomerFactoryInterface;

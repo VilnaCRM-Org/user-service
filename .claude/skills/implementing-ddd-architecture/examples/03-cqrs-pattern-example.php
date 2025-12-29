@@ -16,7 +16,7 @@ declare(strict_types=1);
 // COMMAND (Application Layer)
 // ============================================================================
 
-namespace App\Catalog\Application\Command;
+namespace Example\Catalog\Application\Command;
 
 use App\Shared\Domain\Bus\Command\CommandInterface;
 use App\Shared\Domain\ValueObject\Ulid;
@@ -68,7 +68,7 @@ final readonly class PublishProductCommand implements CommandInterface
 // COMMAND HANDLERS (Application Layer)
 // ============================================================================
 
-namespace App\Catalog\Application\CommandHandler;
+namespace Example\Catalog\Application\CommandHandler;
 
 use App\Catalog\Application\Command\CreateProductCommand;
 use App\Catalog\Application\Command\UpdateProductPriceCommand;
@@ -214,7 +214,7 @@ final readonly class PublishProductHandler implements CommandHandlerInterface
 // HOW TO USE COMMANDS IN YOUR CODE
 // ============================================================================
 
-namespace App\Catalog\Application\Processor;
+namespace Example\Catalog\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
@@ -264,7 +264,7 @@ final readonly class CreateProductProcessor implements ProcessorInterface
 // REPOSITORY INTERFACE (Domain Layer)
 // ============================================================================
 
-namespace App\Catalog\Domain\Repository;
+namespace Example\Catalog\Domain\Repository;
 
 use App\Catalog\Domain\Entity\Product;
 use App\Shared\Domain\ValueObject\Ulid;
@@ -304,7 +304,7 @@ interface ProductRepositoryInterface
 // REPOSITORY IMPLEMENTATION (Infrastructure Layer)
 // ============================================================================
 
-namespace App\Catalog\Infrastructure\Repository;
+namespace Example\Catalog\Infrastructure\Repository;
 
 use App\Catalog\Domain\Entity\Product;
 use App\Catalog\Domain\Repository\ProductRepositoryInterface;

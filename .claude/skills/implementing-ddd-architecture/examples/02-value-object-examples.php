@@ -15,7 +15,7 @@ declare(strict_types=1);
 // ❌ DON'T DO THIS - Over-Engineering with Value Objects
 // ============================================================================
 
-namespace App\Customer\Domain\ValueObject;
+namespace Example\Customer\Domain\ValueObject;
 
 use App\Customer\Domain\Exception\InvalidEmailException;
 use App\Customer\Domain\Exception\InvalidCustomerNameException;
@@ -89,7 +89,7 @@ final readonly class CustomerNameBad
  *
  * Location: src/Core/Customer/Domain/Entity/Customer.php
  */
-namespace App\Core\Customer\Domain\Entity;
+namespace Example\Core\Customer\Domain\Entity;
 
 use App\Shared\Domain\ValueObject\UlidInterface;
 use DateTimeImmutable;
@@ -160,7 +160,7 @@ App\Core\Customer\Application\DTO\CustomerCreate:
  *
  * Location: src/Shared/Domain/ValueObject/UlidInterface.php
  */
-namespace App\Shared\Domain\ValueObject;
+namespace Example\Shared\Domain\ValueObject;
 
 interface UlidInterface extends \Stringable
 {
@@ -180,7 +180,7 @@ interface UlidInterface extends \Stringable
  *
  * Use this when you need operations on values!
  */
-namespace App\Catalog\Domain\ValueObject;
+namespace Example\Catalog\Domain\ValueObject;
 
 use App\Catalog\Domain\Exception\InvalidMoneyException;
 
@@ -281,7 +281,7 @@ final readonly class Money
  * - Expressive query methods (isDraft(), isPublished())
  * - Can use PHP 8.1+ enums or this pattern
  */
-namespace App\Catalog\Domain\ValueObject;
+namespace Example\Catalog\Domain\ValueObject;
 
 use App\Catalog\Domain\Exception\InvalidProductStatusException;
 

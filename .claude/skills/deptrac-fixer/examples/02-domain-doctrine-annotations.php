@@ -15,7 +15,7 @@ declare(strict_types=1);
 // BEFORE (WRONG) - Domain entity with Doctrine ODM annotations
 // ============================================================================
 
-namespace App\Product\Domain\Entity;
+namespace Example\Product\Domain\Entity;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;  // VIOLATION!
 use Doctrine\Common\Collections\ArrayCollection;      // VIOLATION!
@@ -63,7 +63,7 @@ class ProductBefore
  * - No static factory methods - use injectable Factory instead
  * - Entity constructor is public to allow Factory to instantiate
  */
-namespace App\Product\Domain\Entity;
+namespace Example\Product\Domain\Entity;
 
 use App\Product\Domain\ValueObject\Money;  // ✅ VO - has operations (add, subtract)
 use App\Product\Domain\Collection\TagCollection;  // ✅ Domain collection
@@ -166,7 +166,7 @@ final class Product extends AggregateRoot
 // FACTORY PATTERN (RECOMMENDED)
 // ============================================================================
 
-namespace App\Product\Domain\Factory;
+namespace Example\Product\Domain\Factory;
 
 use App\Product\Domain\Entity\Product;
 use App\Product\Domain\ValueObject\Money;
@@ -203,7 +203,7 @@ final readonly class ProductFactory implements ProductFactoryInterface
 }
 
 // Usage in Command Handler
-namespace App\Product\Application\CommandHandler;
+namespace Example\Product\Application\CommandHandler;
 
 use App\Product\Domain\Factory\ProductFactoryInterface;
 
@@ -232,7 +232,7 @@ final readonly class CreateProductHandler implements CommandHandlerInterface
 // DOMAIN COLLECTION - Replace Doctrine Collection
 // ============================================================================
 
-namespace App\Product\Domain\Collection;
+namespace Example\Product\Domain\Collection;
 
 use App\Product\Domain\Entity\Tag;
 
@@ -287,7 +287,7 @@ final class TagCollection
 // VALUE OBJECT - Money (embedded document)
 // ============================================================================
 
-namespace App\Product\Domain\ValueObject;
+namespace Example\Product\Domain\ValueObject;
 
 use App\Product\Domain\Exception\InvalidMoneyException;
 
@@ -425,7 +425,7 @@ File: config/doctrine/Money.mongodb.xml
 // INFRASTRUCTURE REPOSITORY - Uses Doctrine internally
 // ============================================================================
 
-namespace App\Product\Infrastructure\Repository;
+namespace Example\Product\Infrastructure\Repository;
 
 use App\Product\Domain\Entity\Product;
 use App\Product\Domain\Repository\ProductRepositoryInterface;

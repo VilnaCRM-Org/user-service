@@ -15,7 +15,7 @@ declare(strict_types=1);
 // BEFORE (WRONG) - Domain entity with API Platform attributes
 // ============================================================================
 
-namespace App\Customer\Domain\Entity;
+namespace Example\Customer\Domain\Entity;
 
 use ApiPlatform\Metadata\ApiResource;       // VIOLATION!
 use ApiPlatform\Metadata\Get;               // VIOLATION!
@@ -69,7 +69,7 @@ class CustomerBefore
  * - Validation happens in YAML (config/validator/), NOT in domain
  * - This matches src/Core/Customer/Domain/Entity/Customer.php
  */
-namespace App\Core\Customer\Domain\Entity;
+namespace Example\Core\Customer\Domain\Entity;
 
 use App\Shared\Domain\ValueObject\UlidInterface;
 use DateTimeImmutable;
@@ -201,7 +201,7 @@ App\Customer\Domain\Entity\Customer:
 // AFTER - OPTION 2: Application Layer DTO (For complex transformations)
 // ============================================================================
 
-namespace App\Customer\Application\DTO;
+namespace Example\Customer\Application\DTO;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
@@ -271,7 +271,7 @@ final class CustomerResource
 // INPUT DTO - For write operations (NO ANNOTATIONS - use YAML validation)
 // ============================================================================
 
-namespace App\Customer\Application\DTO;
+namespace Example\Customer\Application\DTO;
 
 /**
  * ✅ PRAGMATIC APPROACH: No annotations on DTOs
@@ -332,7 +332,7 @@ App\Customer\Application\DTO\UpdateCustomerInput:
 // STATE PROVIDER - Application Layer
 // ============================================================================
 
-namespace App\Customer\Application\Provider;
+namespace Example\Customer\Application\Provider;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
@@ -364,7 +364,7 @@ final readonly class CustomerProvider implements ProviderInterface
 // STATE PROCESSOR - Application Layer
 // ============================================================================
 
-namespace App\Customer\Application\Processor;
+namespace Example\Customer\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;

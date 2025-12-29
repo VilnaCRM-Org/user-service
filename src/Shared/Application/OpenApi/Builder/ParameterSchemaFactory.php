@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\OpenApi\Builder;
 
-final class ParameterSchemaFactory
+final readonly class ParameterSchemaFactory
 {
-    private ArraySchemaFactory $arraySchemaFactory;
-
     public function __construct(
-        ?ArraySchemaFactory $arraySchemaFactory = null
+        private ArraySchemaFactory $arraySchemaFactory
     ) {
-        $this->arraySchemaFactory = $arraySchemaFactory
-            ?? new ArraySchemaFactory();
     }
 
     /**

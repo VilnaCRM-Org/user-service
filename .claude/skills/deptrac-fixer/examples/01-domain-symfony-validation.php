@@ -15,7 +15,7 @@ declare(strict_types=1);
 // BEFORE (WRONG) - Domain entity with Symfony validation attributes
 // ============================================================================
 
-namespace App\Customer\Domain\Entity;
+namespace Example\Customer\Domain\Entity;
 
 use Symfony\Component\Validator\Constraints as Assert;  // VIOLATION!
 use Symfony\Component\Uid\Ulid;
@@ -55,7 +55,7 @@ class CustomerBefore
 // - Shared concepts across entities
 // ============================================================================
 
-namespace App\Customer\Domain\Entity;
+namespace Example\Customer\Domain\Entity;
 
 use App\Customer\Domain\ValueObject\CustomerId;
 use App\Customer\Domain\ValueObject\Email;
@@ -119,7 +119,7 @@ final class Customer extends AggregateRoot
 // VALUE OBJECTS - Self-validating, immutable
 // ============================================================================
 
-namespace App\Customer\Domain\ValueObject;
+namespace Example\Customer\Domain\ValueObject;
 
 use App\Customer\Domain\Exception\InvalidEmailException;
 
@@ -165,7 +165,7 @@ final readonly class Email
     }
 }
 
-namespace App\Customer\Domain\ValueObject;
+namespace Example\Customer\Domain\ValueObject;
 
 use App\Customer\Domain\Exception\InvalidCustomerNameException;
 
@@ -216,7 +216,7 @@ final readonly class CustomerName
     }
 }
 
-namespace App\Customer\Domain\ValueObject;
+namespace Example\Customer\Domain\ValueObject;
 
 use App\Customer\Domain\Exception\InvalidLoyaltyPointsException;
 
@@ -274,7 +274,7 @@ final readonly class LoyaltyPoints
 // DOMAIN EXCEPTIONS - Specific, meaningful errors
 // ============================================================================
 
-namespace App\Customer\Domain\Exception;
+namespace Example\Customer\Domain\Exception;
 
 use App\Shared\Domain\Exception\DomainException;
 
@@ -306,7 +306,7 @@ final class InvalidLoyaltyPointsException extends DomainException
 // DOMAIN FACTORY - Encapsulates entity creation (RECOMMENDED)
 // ============================================================================
 
-namespace App\Customer\Domain\Factory;
+namespace Example\Customer\Domain\Factory;
 
 use App\Customer\Domain\Entity\Customer;
 use App\Customer\Domain\ValueObject\CustomerId;
@@ -341,7 +341,7 @@ final readonly class CustomerFactory implements CustomerFactoryInterface
 // USAGE IN COMMAND HANDLER (WITH FACTORY PATTERN)
 // ============================================================================
 
-namespace App\Customer\Application\CommandHandler;
+namespace Example\Customer\Application\CommandHandler;
 
 use App\Customer\Application\Command\CreateCustomerCommand;
 use App\Customer\Domain\Factory\CustomerFactoryInterface;
@@ -390,7 +390,7 @@ final readonly class CreateCustomerHandler implements CommandHandlerInterface
 // ACTUAL CODEBASE PATTERN: YAML Validation on Application DTOs
 // ============================================================================
 
-namespace App\Customer\Application\DTO;
+namespace Example\Customer\Application\DTO;
 
 /**
  * Application layer DTO - simple properties, NO validation annotations
@@ -445,7 +445,7 @@ final class CustomerCreate
 /**
  * Custom Validator (when you need business logic validation)
  */
-namespace App\Shared\Application\Validator;
+namespace Example\Shared\Application\Validator;
 
 use Symfony\Component\Validator\Constraint;
 
@@ -458,7 +458,7 @@ final class UniqueEmail extends Constraint
 /**
  * Custom Validator Implementation
  */
-namespace App\Shared\Application\Validator;
+namespace Example\Shared\Application\Validator;
 
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;

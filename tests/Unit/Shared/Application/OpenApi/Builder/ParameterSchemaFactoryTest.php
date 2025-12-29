@@ -8,6 +8,7 @@ use App\Shared\Application\Fixture\SchemathesisFixtures;
 use App\Shared\Application\OpenApi\Builder\ArraySchemaFactory;
 use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ParameterSchemaFactory;
+use App\Shared\Application\OpenApi\Extractor\ArrayExampleValueExtractor;
 use App\Tests\Unit\UnitTestCase;
 
 final class ParameterSchemaFactoryTest extends UnitTestCase
@@ -29,7 +30,7 @@ final class ParameterSchemaFactoryTest extends UnitTestCase
 
     public function testScalarParameterExcludesNullAttributes(): void
     {
-        $factory = new ParameterSchemaFactory();
+        $factory = $this->createFactory();
         $parameter = new Parameter('email', 'string', 'a@example.com');
 
         $schema = $factory->create($parameter);
@@ -39,7 +40,7 @@ final class ParameterSchemaFactoryTest extends UnitTestCase
 
     public function testScalarParameterIncludesPatternWhenProvided(): void
     {
-        $factory = new ParameterSchemaFactory();
+        $factory = $this->createFactory();
         $parameter = new Parameter(
             'initials',
             'string',
@@ -57,7 +58,7 @@ final class ParameterSchemaFactoryTest extends UnitTestCase
 
     public function testScalarParameterIncludesEnumWhenProvided(): void
     {
-        $factory = new ParameterSchemaFactory();
+        $factory = $this->createFactory();
         $enum = [SchemathesisFixtures::CONFIRMATION_TOKEN];
         $parameter = new Parameter(
             'token',
@@ -71,6 +72,13 @@ final class ParameterSchemaFactoryTest extends UnitTestCase
         $this->assertSame(
             ['type' => 'string', 'enum' => $enum],
             $schema
+        );
+    }
+
+    private function createFactory(): ParameterSchemaFactory
+    {
+        return new ParameterSchemaFactory(
+            new ArraySchemaFactory(new ArrayExampleValueExtractor())
         );
     }
 }

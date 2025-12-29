@@ -6,15 +6,11 @@ namespace App\Shared\Application\OpenApi\Builder;
 
 use App\Shared\Application\OpenApi\Extractor\ArrayExampleValueExtractor;
 
-final class ArraySchemaFactory
+final readonly class ArraySchemaFactory
 {
-    private ArrayExampleValueExtractor $exampleValueExtractor;
-
     public function __construct(
-        ?ArrayExampleValueExtractor $exampleValueExtractor = null
+        private ArrayExampleValueExtractor $exampleValueExtractor
     ) {
-        $this->exampleValueExtractor = $exampleValueExtractor
-            ?? new ArrayExampleValueExtractor();
     }
 
     /**

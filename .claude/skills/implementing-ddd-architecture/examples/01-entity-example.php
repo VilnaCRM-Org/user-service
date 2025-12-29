@@ -10,7 +10,7 @@ declare(strict_types=1);
  * Dependencies: NONE (pure PHP, only domain value objects)
  */
 
-namespace App\Catalog\Domain\Entity;
+namespace Example\Catalog\Domain\Entity;
 
 use App\Catalog\Domain\Event\ProductCreated;
 use App\Catalog\Domain\Event\ProductPriceChanged;
