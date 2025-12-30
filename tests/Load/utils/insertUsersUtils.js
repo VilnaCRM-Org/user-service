@@ -84,10 +84,10 @@ export default class InsertUsersUtils {
     const responses = http.batch(requestBatch);
     responses.forEach((response, index) => {
       if (response.status !== 200 && response.status !== 201) {
-        console.log(`Batch request ${index} failed with status ${response.status}: ${response.body}`);
-        throw new Error(
-          `Batch request failed with status ${response.status}: ${response.body}`
+        console.log(
+          `Batch request ${index} failed with status ${response.status}: ${response.body}`
         );
+        throw new Error(`Batch request failed with status ${response.status}: ${response.body}`);
       }
       try {
         JSON.parse(response.body).forEach(user => {
@@ -96,9 +96,7 @@ export default class InsertUsersUtils {
         });
       } catch (parseError) {
         console.log(`Failed to parse response body for batch ${index}: ${response.body}`);
-        throw new Error(
-          `Failed to parse batch response: ${response.body}`
-        );
+        throw new Error(`Failed to parse batch response: ${response.body}`);
       }
     });
 
