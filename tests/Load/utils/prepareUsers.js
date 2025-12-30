@@ -16,7 +16,19 @@ export function setup() {
     if (scenariosRequiringFreshEmails.includes(scenarioName)) {
       mailCatcherUtils.clearMessages();
     }
-    file.writeString(filepath, JSON.stringify(insertUsersUtils.prepareUsers()));
+    const users = insertUsersUtils.prepareUsers();
+    file.writeString(filepath, JSON.stringify(users));
+
+    if (scenariosRequiringFreshEmails.includes(scenarioName)) {
+      const expectedEmails = users.length;
+      console.log(`Waiting for ${expectedEmails} emails to arrive in mailcatcher...`);
+      const arrived = mailCatcherUtils.waitForEmails(expectedEmails, 60);
+      if (!arrived) {
+        console.log(`Warning: Only ${mailCatcherUtils.getMessageCount()} of ${expectedEmails} emails arrived`);
+      } else {
+        console.log(`All ${expectedEmails} emails arrived`);
+      }
+    }
   } catch (error) {
     console.log(`Error occurred while writing users to ${filepath}: ${error}`);
     throw error;
