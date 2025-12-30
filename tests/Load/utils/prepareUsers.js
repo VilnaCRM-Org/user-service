@@ -24,7 +24,9 @@ export function setup() {
       console.log(`Waiting for ${expectedEmails} emails to arrive in mailcatcher...`);
       const arrived = mailCatcherUtils.waitForEmails(expectedEmails, 60);
       if (!arrived) {
-        console.log(`Warning: Only ${mailCatcherUtils.getMessageCount()} of ${expectedEmails} emails arrived`);
+        console.log(
+          `Warning: Only ${mailCatcherUtils.getMessageCount()} of ${expectedEmails} emails arrived`
+        );
       } else {
         console.log(`All ${expectedEmails} emails arrived`);
       }
