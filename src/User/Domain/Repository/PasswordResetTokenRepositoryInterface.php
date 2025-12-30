@@ -21,9 +21,4 @@ interface PasswordResetTokenRepositoryInterface
     public function delete(
         PasswordResetTokenInterface $passwordResetToken
     ): void;
-
-    public function countRecentRequestsByEmail(
-        string $email,
-        \DateTimeImmutable $since
-    ): int;
 }

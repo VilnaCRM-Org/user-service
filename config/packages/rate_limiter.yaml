@@ -1,0 +1,7 @@
+framework:
+  rate_limiter:
+    password_reset:
+      policy: 'sliding_window'
+      limit: '%env(int:PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:PASSWORD_RESET_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'

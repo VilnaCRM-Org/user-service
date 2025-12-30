@@ -47,23 +47,4 @@ final class MariaDBPasswordResetTokenRepository extends ServiceEntityRepository 
         $this->entityManager->remove($passwordResetToken);
         $this->entityManager->flush();
     }
-
-    public function countRecentRequestsByEmail(
-        string $email,
-        \DateTimeImmutable $since
-    ): int {
-        $sql = '
-            SELECT COUNT(prt.token_value)
-            FROM password_reset_tokens prt
-            INNER JOIN user u ON LOWER(HEX(u.id)) = LOWER(REPLACE(prt.user_id, "-", ""))
-            WHERE u.email = :email AND prt.created_at >= :since
-        ';
-
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
-        $stmt->bindValue('email', $email);
-        $stmt->bindValue('since', $since->format('Y-m-d H:i:s'));
-
-        $result = $stmt->executeQuery();
-        return (int) $result->fetchOne();
-    }
 }

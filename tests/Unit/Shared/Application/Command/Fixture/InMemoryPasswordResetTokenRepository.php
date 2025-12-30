@@ -6,7 +6,6 @@ namespace App\Tests\Unit\Shared\Application\Command\Fixture;
 
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
-use DateTimeImmutable;
 
 final class InMemoryPasswordResetTokenRepository implements PasswordResetTokenRepositoryInterface
 {
@@ -43,12 +42,6 @@ final class InMemoryPasswordResetTokenRepository implements PasswordResetTokenRe
     public function delete(PasswordResetTokenInterface $passwordResetToken): void
     {
         unset($this->tokens[$passwordResetToken->getTokenValue()]);
-    }
-
-    #[\Override]
-    public function countRecentRequestsByEmail(string $email, DateTimeImmutable $since): int
-    {
-        return 0;
     }
 
     /**

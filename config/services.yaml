@@ -68,10 +68,6 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 10 }
 
-  App\User\Application\CommandHandler\RequestPasswordResetCommandHandler:
-    arguments:
-      $rateLimitMaxRequests: '%env(int:PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS)%'
-      $rateLimitWindowHours: '%env(int:PASSWORD_RESET_RATE_LIMIT_WINDOW_HOURS)%'
 
   App\Shared\Application\QueryParameter\AllowedParametersRule:
     arguments:

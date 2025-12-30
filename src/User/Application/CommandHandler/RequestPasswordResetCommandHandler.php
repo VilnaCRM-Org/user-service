@@ -15,7 +15,8 @@ use App\User\Domain\Exception\PasswordResetRateLimitExceededException;
 use App\User\Domain\Factory\PasswordResetTokenFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use DateTimeImmutable;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 final readonly class RequestPasswordResetCommandHandler implements
@@ -27,8 +28,8 @@ final readonly class RequestPasswordResetCommandHandler implements
         private PasswordResetTokenFactoryInterface $tokenFactory,
         private EventBusInterface $eventBus,
         private UuidFactory $uuidFactory,
-        private int $rateLimitMaxRequests = 3,
-        private int $rateLimitWindowHours = 1,
+        #[Autowire(service: 'limiter.password_reset')]
+        private RateLimiterFactory $passwordResetLimiter,
     ) {
     }
 
@@ -54,15 +55,9 @@ final readonly class RequestPasswordResetCommandHandler implements
 
     private function checkRateLimit(string $email): void
     {
-        $since = new DateTimeImmutable(
-            "-{$this->rateLimitWindowHours} hours"
-        );
-        $recentRequests = $this->tokenRepository->countRecentRequestsByEmail(
-            $email,
-            $since
-        );
+        $limit = $this->passwordResetLimiter->create($email)->consume(1);
 
-        if ($recentRequests >= $this->rateLimitMaxRequests) {
+        if (!$limit->isAccepted()) {
             throw new PasswordResetRateLimitExceededException();
         }
     }
