@@ -1,4 +1,5 @@
 import http from 'k6/http';
+import { sleep } from 'k6';
 
 export default class MailCatcherUtils {
   constructor(utils) {
@@ -7,6 +8,8 @@ export default class MailCatcherUtils {
     const host = this.config.apiHost;
     const mailCatcherPort = this.config.mailCatcherPort;
     this.mailCatcherUrl = `http://${host}:${mailCatcherPort}/messages`;
+    this.maxRetries = this.config.gettingEmailMaxRetries || 300;
+    this.retryDelayMs = 100;
   }
 
   clearMessages() {
@@ -14,9 +17,21 @@ export default class MailCatcherUtils {
   }
 
   async getConfirmationToken(messageId) {
-    const message = await http.get(`${this.mailCatcherUrl}/${messageId}.source`);
+    for (let attempt = 0; attempt < this.maxRetries; attempt++) {
+      const message = http.get(`${this.mailCatcherUrl}/${messageId}.source`);
 
-    return this.extractConfirmationToken(message.body);
+      if (message.status === 200 && message.body) {
+        const token = this.extractConfirmationToken(message.body);
+        if (token) {
+          return token;
+        }
+      }
+
+      sleep(this.retryDelayMs / 1000);
+    }
+
+    const finalMessage = http.get(`${this.mailCatcherUrl}/${messageId}.source`);
+    return this.extractConfirmationToken(finalMessage.body);
   }
 
   extractConfirmationToken(emailBody) {
