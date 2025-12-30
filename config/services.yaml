@@ -68,7 +68,6 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 10 }
 
-
   App\Shared\Application\QueryParameter\AllowedParametersRule:
     arguments:
       $allowedParameters:
