@@ -5,7 +5,7 @@ export default class MailCatcherUtils {
   constructor(utils) {
     this.utils = utils;
     this.config = utils.getConfig();
-    const host = this.utils.getEnv('API_HOST') ?? this.config.apiHost;
+    const host = this.config.apiHost;
     const mailCatcherPort = this.config.mailCatcherPort;
     this.mailCatcherUrl = `http://${host}:${mailCatcherPort}/messages`;
     this.maxRetries = this.config.gettingEmailMaxRetries || 300;
@@ -16,7 +16,7 @@ export default class MailCatcherUtils {
     http.del(this.mailCatcherUrl);
   }
 
-  getConfirmationToken(messageId) {
+  async getConfirmationToken(messageId) {
     const url = `${this.mailCatcherUrl}/${messageId}.source`;
 
     for (let attempt = 0; attempt < this.maxRetries; attempt++) {
