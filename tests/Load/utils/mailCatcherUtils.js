@@ -9,29 +9,31 @@ export default class MailCatcherUtils {
     const mailCatcherPort = this.config.mailCatcherPort;
     this.mailCatcherUrl = `http://${host}:${mailCatcherPort}/messages`;
     this.maxRetries = this.config.gettingEmailMaxRetries || 300;
-    this.retryDelayMs = 100;
+    this.retryDelaySeconds = 0.1;
   }
 
   clearMessages() {
     http.del(this.mailCatcherUrl);
   }
 
-  async getConfirmationToken(messageId) {
-    for (let attempt = 0; attempt < this.maxRetries; attempt++) {
-      const message = http.get(`${this.mailCatcherUrl}/${messageId}.source`);
+  getConfirmationToken(messageId) {
+    const url = `${this.mailCatcherUrl}/${messageId}.source`;
 
-      if (message.status === 200 && message.body) {
-        const token = this.extractConfirmationToken(message.body);
+    for (let attempt = 0; attempt < this.maxRetries; attempt++) {
+      const response = http.get(url);
+
+      if (response.status === 200 && response.body) {
+        const token = this.extractConfirmationToken(response.body);
         if (token) {
           return token;
         }
       }
 
-      sleep(this.retryDelayMs / 1000);
+      sleep(this.retryDelaySeconds);
     }
 
-    const finalMessage = http.get(`${this.mailCatcherUrl}/${messageId}.source`);
-    return this.extractConfirmationToken(finalMessage.body);
+    const finalResponse = http.get(url);
+    return this.extractConfirmationToken(finalResponse.body || '');
   }
 
   extractConfirmationToken(emailBody) {
