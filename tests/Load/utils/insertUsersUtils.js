@@ -81,19 +81,26 @@ export default class InsertUsersUtils {
 
     const [requestBatch, userPasswords] = this.prepareRequestBatch(numberOfUsers, batchSize);
 
-    try {
-      const responses = http.batch(requestBatch);
-      responses.forEach(response => {
+    const responses = http.batch(requestBatch);
+    responses.forEach((response, index) => {
+      if (response.status !== 200 && response.status !== 201) {
+        console.log(`Batch request ${index} failed with status ${response.status}: ${response.body}`);
+        throw new Error(
+          `Batch request failed with status ${response.status}: ${response.body}`
+        );
+      }
+      try {
         JSON.parse(response.body).forEach(user => {
           user.password = userPasswords[user.email];
           users.push(user);
         });
-      });
-    } catch (error) {
-      throw new Error(
-        'Error occurred during user insertion, try to lower batchSize in a config file'
-      );
-    }
+      } catch (parseError) {
+        console.log(`Failed to parse response body for batch ${index}: ${response.body}`);
+        throw new Error(
+          `Failed to parse batch response: ${response.body}`
+        );
+      }
+    });
 
     return users;
   }
