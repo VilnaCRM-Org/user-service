@@ -33,16 +33,8 @@ runStress=$4
 runSpike=$5
 htmlPrefix=$6
 
-ENV_VARS=""
-if [ -n "${API_HOST:-}" ]; then
-  ENV_VARS="${ENV_VARS} -e API_HOST=${API_HOST}"
-fi
-
-if [ -n "${API_PORT:-}" ]; then
-  ENV_VARS="${ENV_VARS} -e API_PORT=${API_PORT}"
-fi
-
-K6="docker run --user $(id -u):$(id -g) -v ./tests/Load:/loadTests --net=host --rm ${ENV_VARS} \
+K6="docker run -v ./tests/Load:/loadTests --net=host --rm \
+    --user $(id -u) \
     k6 run --summary-trend-stats='avg,min,med,max,p(95),p(99)' \
     --out 'web-dashboard=period=1s&export=/loadTests/loadTestsResults/${htmlPrefix}${scenario}.html'"
 
