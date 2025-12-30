@@ -16,11 +16,8 @@ jobs:
       - name: Start application
         run: make start
 
-      - name: Reset database for load tests
-        run: |
-          docker compose exec -T php bin/console doctrine:database:drop --force --if-exists
-          docker compose exec -T php bin/console doctrine:database:create
-          docker compose exec -T php bin/console doctrine:migrations:migrate --no-interaction
+      - name: Setup test db
+        run: make setup-test-db
 
       - name: Run load tests
         run: make smoke-load-tests
