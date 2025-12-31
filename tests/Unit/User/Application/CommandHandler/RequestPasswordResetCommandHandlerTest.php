@@ -11,14 +11,11 @@ use App\User\Application\CommandHandler\RequestPasswordResetCommandHandler;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetRequestedEvent;
-use App\User\Domain\Exception\PasswordResetRateLimitExceededException;
+use App\User\Domain\Factory\Event\PasswordResetRequestedEventFactoryInterface;
 use App\User\Domain\Factory\PasswordResetTokenFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\RateLimiter\LimiterInterface;
-use Symfony\Component\RateLimiter\RateLimit;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Uid\Factory\UuidFactory;
 use Symfony\Component\Uid\Uuid;
 
@@ -29,9 +26,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
     private PasswordResetTokenFactoryInterface&MockObject $passwordResetTokenFactory;
     private EventBusInterface&MockObject $eventBus;
     private UuidFactory&MockObject $uuidFactory;
-    private RateLimiterFactory&MockObject $rateLimiterFactory;
-    private LimiterInterface&MockObject $limiter;
-    private RateLimit&MockObject $rateLimit;
+    private PasswordResetRequestedEventFactoryInterface&MockObject $eventFactory;
 
     private RequestPasswordResetCommandHandler $handler;
 
@@ -45,9 +40,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $this->passwordResetTokenFactory = $this->createMock(PasswordResetTokenFactoryInterface::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->uuidFactory = $this->createMock(UuidFactory::class);
-        $this->rateLimiterFactory = $this->createMock(RateLimiterFactory::class);
-        $this->limiter = $this->createMock(LimiterInterface::class);
-        $this->rateLimit = $this->createMock(RateLimit::class);
+        $this->eventFactory = $this->createMock(PasswordResetRequestedEventFactoryInterface::class);
 
         $this->handler = new RequestPasswordResetCommandHandler(
             $this->userRepository,
@@ -55,7 +48,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
             $this->passwordResetTokenFactory,
             $this->eventBus,
             $this->uuidFactory,
-            $this->rateLimiterFactory,
+            $this->eventFactory,
         );
     }
 
@@ -66,34 +59,19 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $tokenValue = $this->faker->sha256();
         $uuid = Uuid::fromString($this->faker->uuid());
 
+        $token = $this->createMock(PasswordResetTokenInterface::class);
+        $token->method('getTokenValue')->willReturn($tokenValue);
+
         $user = $this->createMock(UserInterface::class);
         $user->method('getId')->willReturn($userId);
 
-        $token = $this->createMock(PasswordResetTokenInterface::class);
-        $token->method('getTokenValue')->willReturn($tokenValue);
+        $event = $this->createMock(PasswordResetRequestedEvent::class);
 
         $this->userRepository
             ->expects($this->once())
             ->method('findByEmail')
             ->with($email)
             ->willReturn($user);
-
-        $this->rateLimiterFactory
-            ->expects($this->once())
-            ->method('create')
-            ->with($email)
-            ->willReturn($this->limiter);
-
-        $this->limiter
-            ->expects($this->once())
-            ->method('consume')
-            ->with(1)
-            ->willReturn($this->rateLimit);
-
-        $this->rateLimit
-            ->expects($this->once())
-            ->method('isAccepted')
-            ->willReturn(true);
 
         $this->passwordResetTokenFactory
             ->expects($this->once())
@@ -111,10 +89,16 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
             ->method('create')
             ->willReturn($uuid);
 
+        $this->eventFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with($user, $tokenValue, (string) $uuid)
+            ->willReturn($event);
+
         $this->eventBus
             ->expects($this->once())
             ->method('publish')
-            ->with($this->isInstanceOf(PasswordResetRequestedEvent::class));
+            ->with($event);
 
         $command = new RequestPasswordResetCommand($email);
         $this->handler->__invoke($command);
@@ -132,11 +116,11 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
             ->with($email)
             ->willReturn(null);
 
-        $this->rateLimiterFactory
+        $this->passwordResetTokenFactory
             ->expects($this->never())
             ->method('create');
 
-        $this->passwordResetTokenFactory
+        $this->eventFactory
             ->expects($this->never())
             ->method('create');
 
@@ -148,48 +132,5 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $this->handler->__invoke($command);
 
         $this->assertSame('', $command->getResponse()->message);
-    }
-
-    public function testRequestPasswordResetRateLimitExceeded(): void
-    {
-        $email = $this->faker->email();
-
-        $user = $this->createMock(UserInterface::class);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
-
-        $this->rateLimiterFactory
-            ->expects($this->once())
-            ->method('create')
-            ->with($email)
-            ->willReturn($this->limiter);
-
-        $this->limiter
-            ->expects($this->once())
-            ->method('consume')
-            ->with(1)
-            ->willReturn($this->rateLimit);
-
-        $this->rateLimit
-            ->expects($this->once())
-            ->method('isAccepted')
-            ->willReturn(false);
-
-        $this->passwordResetTokenFactory
-            ->expects($this->never())
-            ->method('create');
-
-        $this->eventBus
-            ->expects($this->never())
-            ->method('publish');
-
-        $this->expectException(PasswordResetRateLimitExceededException::class);
-
-        $command = new RequestPasswordResetCommand($email);
-        $this->handler->__invoke($command);
     }
 }

@@ -121,6 +121,13 @@ services:
 
   App\User\Domain\Contract\PasswordResetTokenValidatorInterface: '@App\User\Application\Validator\CompositePasswordResetTokenValidator'
   App\User\Domain\Contract\PasswordHasherInterface: '@App\User\Infrastructure\Service\SymfonyPasswordHasher'
+  App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface: '@App\User\Application\CommandHandler\RequestPasswordResetCommandHandler'
+
+  App\User\Infrastructure\Decorator\RateLimitedRequestPasswordResetHandler:
+    decorates: App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface
+    arguments:
+      $inner: '@.inner'
+      $rateLimiter: '@limiter.password_reset'
 
   Aws\Sqs\SqsClient:
     arguments:
