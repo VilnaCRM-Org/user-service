@@ -12,8 +12,8 @@ use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Contract\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
-use App\User\Domain\Event\PasswordResetConfirmedEvent;
 use App\User\Domain\Exception\UserNotFoundException;
+use App\User\Domain\Factory\Event\PasswordResetConfirmedEventFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
@@ -28,6 +28,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         private EventBusInterface $eventBus,
         private UuidFactory $uuidFactory,
         private PasswordResetTokenValidatorInterface $tokenValidator,
+        private PasswordResetConfirmedEventFactoryInterface $eventFactory,
     ) {
     }
 
@@ -76,7 +77,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements
     private function publishEvent(UserInterface $user): void
     {
         $this->eventBus->publish(
-            new PasswordResetConfirmedEvent(
+            $this->eventFactory->create(
                 $user->getId(),
                 (string) $this->uuidFactory->create()
             )

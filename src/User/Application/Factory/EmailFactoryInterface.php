@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\Factory;
+namespace App\User\Application\Factory;
 
 use Symfony\Component\Mime\Email;
 

@@ -11,7 +11,9 @@ final class ConfirmPasswordResetCommand implements CommandInterface
     private ConfirmPasswordResetCommandResponse $response;
 
     public function __construct(
+        #[\SensitiveParameter]
         public readonly string $token,
+        #[\SensitiveParameter]
         public readonly string $newPassword,
     ) {
     }

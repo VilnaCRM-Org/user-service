@@ -6,9 +6,9 @@ namespace App\User\Application\EventSubscriber;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
+use App\User\Application\Factory\EmailFactoryInterface;
 use App\User\Domain\Event\PasswordResetEmailSentEvent;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
-use App\User\Infrastructure\Factory\EmailFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;

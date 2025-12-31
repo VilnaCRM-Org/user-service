@@ -6,10 +6,10 @@ namespace App\Tests\Unit\User\Application\EventSubscriber;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\EventSubscriber\PasswordResetConfirmedEventSubscriber;
+use App\User\Application\Factory\EmailFactoryInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetConfirmedEvent;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Infrastructure\Factory\EmailFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;

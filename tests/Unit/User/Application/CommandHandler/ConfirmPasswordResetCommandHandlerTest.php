@@ -18,19 +18,22 @@ use App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException;
 use App\User\Domain\Exception\PasswordResetTokenExpiredException;
 use App\User\Domain\Exception\PasswordResetTokenNotFoundException;
 use App\User\Domain\Exception\UserNotFoundException;
+use App\User\Domain\Factory\Event\PasswordResetConfirmedEventFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Uid\Factory\UuidFactory;
 use Symfony\Component\Uid\Uuid;
 
 final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 {
-    private UserRepositoryInterface $userRepository;
-    private PasswordResetTokenRepositoryInterface $tokenRepository;
-    private PasswordHasherInterface $passwordHasher;
-    private EventBusInterface $eventBus;
-    private UuidFactory $uuidFactory;
-    private PasswordResetTokenValidatorInterface $tokenValidator;
+    private UserRepositoryInterface&MockObject $userRepository;
+    private PasswordResetTokenRepositoryInterface&MockObject $tokenRepository;
+    private PasswordHasherInterface&MockObject $passwordHasher;
+    private EventBusInterface&MockObject $eventBus;
+    private UuidFactory&MockObject $uuidFactory;
+    private PasswordResetTokenValidatorInterface&MockObject $tokenValidator;
+    private PasswordResetConfirmedEventFactoryInterface&MockObject $eventFactory;
     private ConfirmPasswordResetCommandHandler $handler;
 
     #[\Override]
@@ -44,6 +47,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->uuidFactory = $this->createMock(UuidFactory::class);
         $this->tokenValidator = $this->createMock(PasswordResetTokenValidatorInterface::class);
+        $this->eventFactory = $this->createMock(PasswordResetConfirmedEventFactoryInterface::class);
 
         $this->handler = new ConfirmPasswordResetCommandHandler(
             $this->tokenRepository,
@@ -51,7 +55,8 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             $this->passwordHasher,
             $this->eventBus,
             $this->uuidFactory,
-            $this->tokenValidator
+            $this->tokenValidator,
+            $this->eventFactory,
         );
     }
 
@@ -75,6 +80,8 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $user->expects($this->once())
             ->method('getId')
             ->willReturn($userId);
+
+        $event = $this->createMock(PasswordResetConfirmedEvent::class);
 
         $this->tokenRepository->expects($this->once())
             ->method('findByToken')
@@ -111,9 +118,14 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             ->method('create')
             ->willReturn($eventId);
 
+        $this->eventFactory->expects($this->once())
+            ->method('create')
+            ->with($userId, (string) $eventId)
+            ->willReturn($event);
+
         $this->eventBus->expects($this->once())
             ->method('publish')
-            ->with($this->isInstanceOf(PasswordResetConfirmedEvent::class));
+            ->with($event);
 
         $this->handler->__invoke($command);
 
@@ -143,6 +155,8 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             ->method('getId')
             ->willReturn($userId);
 
+        $event = $this->createMock(PasswordResetConfirmedEvent::class);
+
         $this->tokenRepository->expects($this->once())
             ->method('findByToken')
             ->with($token)
@@ -178,21 +192,14 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             ->method('create')
             ->willReturn($eventId);
 
+        $this->eventFactory->expects($this->once())
+            ->method('create')
+            ->with($userId, (string) $eventId)
+            ->willReturn($event);
+
         $this->eventBus->expects($this->once())
             ->method('publish')
-            ->with(
-                $this->callback(
-                    function (PasswordResetConfirmedEvent $event) use (
-                        $userId,
-                        $eventId
-                    ): bool {
-                        $this->assertSame($userId, $event->userId);
-                        $this->assertSame((string) $eventId, $event->eventId());
-
-                        return true;
-                    }
-                )
-            );
+            ->with($event);
 
         $this->handler->__invoke($command);
     }

@@ -42,29 +42,26 @@ final class PasswordResetRequestedEventTest extends UnitTestCase
         $primitives = $event->toPrimitives();
 
         $this->assertIsArray($primitives);
-        $this->assertArrayHasKey('user', $primitives);
+        $this->assertArrayHasKey('userId', $primitives);
+        $this->assertArrayHasKey('userEmail', $primitives);
         $this->assertArrayHasKey('token', $primitives);
-        $this->assertSame($user, $primitives['user']);
+        $this->assertSame($user->getId(), $primitives['userId']);
+        $this->assertSame($user->getEmail(), $primitives['userEmail']);
         $this->assertSame($token, $primitives['token']);
     }
 
-    public function testFromPrimitives(): void
+    public function testFromPrimitivesThrowsException(): void
     {
-        $userFactory = new UserFactory();
-        $user = $userFactory->create('user@example.com', 'JD', 'password123', new Uuid('123e4567-e89b-12d3-a456-426614174000'));
-        $token = 'abc123';
         $body = [
-            'user' => $user,
-            'token' => $token,
+            'userId' => '123e4567-e89b-12d3-a456-426614174000',
+            'userEmail' => 'user@example.com',
+            'token' => 'abc123',
         ];
         $eventId = 'event123';
         $occurredOn = '2023-01-01 12:00:00';
 
-        $event = PasswordResetRequestedEvent::fromPrimitives($body, $eventId, $occurredOn);
+        $this->expectException(\RuntimeException::class);
 
-        $this->assertInstanceOf(PasswordResetRequestedEvent::class, $event);
-        $this->assertSame($user, $event->user);
-        $this->assertSame($token, $event->token);
-        $this->assertSame($eventId, $event->eventId());
+        PasswordResetRequestedEvent::fromPrimitives($body, $eventId, $occurredOn);
     }
 }
