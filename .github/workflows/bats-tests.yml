@@ -2,7 +2,6 @@ name: CLI testing
 
 on:
   pull_request:
-    branches: ['main']
 
 jobs:
   bats_core_tests:
@@ -11,9 +10,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
-
-      - name: Setup Docker
-        uses: docker/setup-docker-action@v4
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -27,11 +23,11 @@ jobs:
 
       - name: Setup Bats and bats libs
         uses: bats-core/bats-action@2.0.0
-
-      - name: Install Bats plugins
-        run: mkdir -p tests/CLI/bats/test_helper && cd tests/CLI/bats/test_helper &&
-          git clone https://github.com/bats-core/bats-support.git &&
-          git clone https://github.com/bats-core/bats-assert.git
+        with:
+          support-path: ${{ github.workspace }}/tests/CLI/bats/bats-support
+          assert-path: ${{ github.workspace }}/tests/CLI/bats/bats-assert
 
       - name: Run Bats tests
         run: make bats
+        env:
+          CI: 1

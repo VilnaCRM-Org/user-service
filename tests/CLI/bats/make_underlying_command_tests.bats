@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
-load 'test_helper/bats-support/load'
-load 'test_helper/bats-assert/load'
+load 'bats-support/load'
+load 'bats-assert/load'
 
 @test "make sh attempts to open a shell in the PHP container" {
   run bash -c "make sh & sleep 2; kill $!"

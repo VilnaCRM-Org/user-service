@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
-load 'test_helper/bats-support/load'
-load 'test_helper/bats-assert/load'
+load 'bats-support/load'
+load 'bats-assert/load'
 
 # Test environment setup
 setup() {
