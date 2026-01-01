@@ -273,7 +273,11 @@ final class UserGraphQLContext implements Context
     public function mutationResponseShouldContainRequestedFields(): void
     {
         $userData = $this->extractMutationUserData();
-        $this->responseValidator->validateFields($this->responseContent, $userData, $this->graphQLInput);
+        $this->responseValidator->validateFields(
+            $this->responseContent,
+            $userData,
+            $this->graphQLInput
+        );
     }
 
     /**
@@ -318,7 +322,10 @@ final class UserGraphQLContext implements Context
 
         $mutationData = $responseData['data'][$this->queryName];
         Assert::assertArrayHasKey('user', $mutationData);
-        Assert::assertNull($mutationData['user'], 'Password reset mutations should return an empty payload for security');
+        Assert::assertNull(
+            $mutationData['user'],
+            'Password reset mutations should return an empty payload for security'
+        );
     }
 
     /**
@@ -356,7 +363,10 @@ final class UserGraphQLContext implements Context
      */
     private function extractMutationUserData(): array
     {
-        Assert::assertNotNull($this->response, 'Response is null; did you call sendGraphQlRequest()?');
+        Assert::assertNotNull(
+            $this->response,
+            'Response is null; did you call sendGraphQlRequest()?'
+        );
         $data = json_decode(
             $this->response->getContent(),
             true,
@@ -383,7 +393,10 @@ final class UserGraphQLContext implements Context
      */
     private function extractQueryUserData(): array
     {
-        Assert::assertNotNull($this->response, 'Response is null; did you call sendGraphQlRequest()?');
+        Assert::assertNotNull(
+            $this->response,
+            'Response is null; did you call sendGraphQlRequest()?'
+        );
         $data = json_decode(
             $this->response->getContent(),
             true,

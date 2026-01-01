@@ -30,8 +30,12 @@ final class HealthCheckContext implements Context
     public function theCacheIsNotWorking(): void
     {
         $failingPool = new class() extends ArrayAdapter {
-            public function get(string $key, callable $callback, ?float $beta = null, ?array &$metadata = null): mixed
-            {
+            public function get(
+                string $key,
+                callable $callback,
+                ?float $beta = null,
+                ?array &$metadata = null
+            ): mixed {
                 throw new \RuntimeException('Cache is not working');
             }
         };
@@ -48,8 +52,11 @@ final class HealthCheckContext implements Context
     {
         /** @var Connection $connection */
         $connection = $this->container()->get(Connection::class);
+        $params = $connection->getParams();
+        $driver = $connection->getDriver();
+        $config = $connection->getConfiguration();
 
-        $failingConnection = new class($connection->getParams(), $connection->getDriver(), $connection->getConfiguration()) extends Connection {
+        $failingConnection = new class($params, $driver, $config) extends Connection {
             public function executeQuery(
                 string $sql,
                 array $params = [],
@@ -59,8 +66,11 @@ final class HealthCheckContext implements Context
                 throw new \RuntimeException('Database is not available');
             }
 
-            public function executeStatement(string $sql, array $params = [], array $types = []): int
-            {
+            public function executeStatement(
+                string $sql,
+                array $params = [],
+                array $types = []
+            ): int {
                 throw new \RuntimeException('Database is not available');
             }
         };

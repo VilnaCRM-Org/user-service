@@ -29,7 +29,9 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
     public function testSave(): void
     {
         $email = $this->faker->unique()->email();
-        $initials = strtoupper(substr($this->faker->firstName(), 0, 1) . substr($this->faker->lastName(), 0, 1));
+        $initials = strtoupper(
+            substr($this->faker->firstName(), 0, 1) . substr($this->faker->lastName(), 0, 1)
+        );
         $password = $this->faker->password(8);
         $userId = $this->faker->uuid();
 
@@ -53,7 +55,9 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
     public function testFindByToken(): void
     {
         $email = $this->faker->unique()->email();
-        $initials = strtoupper(substr($this->faker->firstName(), 0, 1) . substr($this->faker->lastName(), 0, 1));
+        $initials = strtoupper(
+            substr($this->faker->firstName(), 0, 1) . substr($this->faker->lastName(), 0, 1)
+        );
         $password = $this->faker->password(8);
         $userId = $this->faker->uuid();
 
@@ -83,7 +87,9 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
     public function testFindByUserID(): void
     {
         $email = $this->faker->unique()->email();
-        $initials = strtoupper(substr($this->faker->firstName(), 0, 1) . substr($this->faker->lastName(), 0, 1));
+        $initials = strtoupper(
+            substr($this->faker->firstName(), 0, 1) . substr($this->faker->lastName(), 0, 1)
+        );
         $password = $this->faker->password(8);
         $userId = $this->faker->uuid();
 
@@ -119,7 +125,12 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
 
     public function testDelete(): void
     {
-        $user = $this->userFactory->create('test4@example.com', 'T4', 'password123', new Uuid('423e4567-e89b-12d3-a456-426614174003'));
+        $user = $this->userFactory->create(
+            'test4@example.com',
+            'T4',
+            'password123',
+            new Uuid('423e4567-e89b-12d3-a456-426614174003')
+        );
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 

@@ -32,8 +32,12 @@ final class PasswordResetEndpointFactoryTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->requestPasswordResetRequestFactory = $this->createMock(RequestPasswordResetRequestFactory::class);
-        $this->confirmPasswordResetRequestFactory = $this->createMock(ConfirmPasswordResetRequestFactory::class);
+        $this->requestPasswordResetRequestFactory = $this->createMock(
+            RequestPasswordResetRequestFactory::class
+        );
+        $this->confirmPasswordResetRequestFactory = $this->createMock(
+            ConfirmPasswordResetRequestFactory::class
+        );
         $this->requestPasswordResetBody = $this->createMock(RequestBody::class);
         $this->confirmPasswordResetBody = $this->createMock(RequestBody::class);
         $this->openApi = $this->createMock(OpenApi::class);

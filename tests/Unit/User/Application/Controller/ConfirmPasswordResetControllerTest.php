@@ -28,22 +28,11 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
 
     public function testInvokeDispatchesCommandAndReturnsResponse(): void
     {
-        $token = $this->faker->lexify('??????????');
-        $newPassword = $this->faker->password(8, 20);
-
-        $dto = new ConfirmPasswordResetDto($token, $newPassword);
-
+        $testData = $this->createTestData();
+        $dto = new ConfirmPasswordResetDto($testData['token'], $testData['newPassword']);
         $commandResponse = new ConfirmPasswordResetCommandResponse();
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(function (ConfirmPasswordResetCommand $command) use ($token, $newPassword, $commandResponse) {
-                $this->assertEquals($token, $command->token);
-                $this->assertEquals($newPassword, $command->newPassword);
 
-                $command->setResponse($commandResponse);
-
-                return true;
-            }));
+        $this->setupCommandBusExpectations($testData, $commandResponse);
 
         $response = ($this->controller)($dto);
 
@@ -57,5 +46,48 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
         $controller = new ConfirmPasswordResetController($commandBus);
 
         $this->assertInstanceOf(ConfirmPasswordResetController::class, $controller);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function createTestData(): array
+    {
+        return [
+            'token' => $this->faker->lexify('??????????'),
+            'newPassword' => $this->faker->password(8, 20),
+        ];
+    }
+
+    /**
+     * @param array<string, string> $testData
+     */
+    private function setupCommandBusExpectations(
+        array $testData,
+        ConfirmPasswordResetCommandResponse $commandResponse
+    ): void {
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(
+                fn (ConfirmPasswordResetCommand $cmd) => $this->validateCommand(
+                    $cmd,
+                    $testData['token'],
+                    $testData['newPassword'],
+                    $commandResponse
+                )
+            ));
+    }
+
+    private function validateCommand(
+        ConfirmPasswordResetCommand $command,
+        string $token,
+        string $newPassword,
+        ConfirmPasswordResetCommandResponse $commandResponse
+    ): bool {
+        $this->assertEquals($token, $command->token);
+        $this->assertEquals($newPassword, $command->newPassword);
+        $command->setResponse($commandResponse);
+
+        return true;
     }
 }

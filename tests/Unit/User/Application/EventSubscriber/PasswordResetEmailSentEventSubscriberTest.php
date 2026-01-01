@@ -79,18 +79,31 @@ final class PasswordResetEmailSentEventSubscriberTest extends UnitTestCase
         return $token;
     }
 
-    private function expectEmailCreation(string $tokenValue, string $emailAddress, Email $email): void
-    {
+    private function expectEmailCreation(
+        string $tokenValue,
+        string $emailAddress,
+        Email $email
+    ): void {
         $resetUrl = $this->apiBaseUrl . '/password-reset?token=' . urlencode($tokenValue);
         $subject = $this->faker->sentence();
         $text = $this->faker->text();
 
         $this->setupTranslatorExpectations($tokenValue, $subject, $text);
-        $this->setupEmailFactoryExpectation($emailAddress, $subject, $text, $tokenValue, $resetUrl, $email);
+        $this->setupEmailFactoryExpectation(
+            $emailAddress,
+            $subject,
+            $text,
+            $tokenValue,
+            $resetUrl,
+            $email
+        );
     }
 
-    private function setupTranslatorExpectations(string $tokenValue, string $subject, string $text): void
-    {
+    private function setupTranslatorExpectations(
+        string $tokenValue,
+        string $subject,
+        string $text
+    ): void {
         $this->translator->expects($this->exactly(2))
             ->method('trans')
             ->willReturnMap([

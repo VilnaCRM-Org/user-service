@@ -76,11 +76,12 @@ final class OAuthAuthorizationExceptionListenerTest extends UnitTestCase
         $request = Request::create('/api/oauth/authorize');
         $request->attributes->set('_route', 'oauth2_authorize');
 
+        $message = 'A logged in user is required to resolve the authorization request.';
         $event = new ExceptionEvent(
             $this->createMock(HttpKernelInterface::class),
             $request,
             HttpKernelInterface::MAIN_REQUEST,
-            new class('A logged in user is required to resolve the authorization request.') extends \Exception {
+            new class($message) extends \Exception {
             }
         );
 

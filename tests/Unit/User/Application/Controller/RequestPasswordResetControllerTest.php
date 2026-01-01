@@ -36,13 +36,18 @@ final class RequestPasswordResetControllerTest extends UnitTestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(function (RequestPasswordResetCommand $command) use ($email, $commandResponse) {
-                $this->assertEquals($email, $command->email);
+            ->with($this->callback(
+                function (RequestPasswordResetCommand $command) use (
+                    $email,
+                    $commandResponse
+                ) {
+                    $this->assertEquals($email, $command->email);
 
-                $command->setResponse($commandResponse);
+                    $command->setResponse($commandResponse);
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $response = ($this->controller)($dto);
 

@@ -31,7 +31,10 @@ final class PasswordConstraintIntegrationTest extends IntegrationTestCase
         $violations = $this->validator->validate('Pass1', [new Password()]);
 
         $this->assertCount(1, $violations);
-        $this->assertEquals('Password must be between 8 and 64 characters long', $violations[0]->getMessage());
+        $this->assertEquals(
+            'Password must be between 8 and 64 characters long',
+            $violations[0]->getMessage()
+        );
     }
 
     public function testPasswordTooLong(): void
@@ -40,7 +43,10 @@ final class PasswordConstraintIntegrationTest extends IntegrationTestCase
         $violations = $this->validator->validate($longPassword, [new Password()]);
 
         $this->assertCount(1, $violations);
-        $this->assertEquals('Password must be between 8 and 64 characters long', $violations[0]->getMessage());
+        $this->assertEquals(
+            'Password must be between 8 and 64 characters long',
+            $violations[0]->getMessage()
+        );
     }
 
     public function testPasswordExactlyMinLength(): void
@@ -72,7 +78,10 @@ final class PasswordConstraintIntegrationTest extends IntegrationTestCase
         $violations = $this->validator->validate($aboveMaxPassword, [new Password()]);
 
         $this->assertCount(1, $violations);
-        $this->assertEquals('Password must be between 8 and 64 characters long', $violations[0]->getMessage());
+        $this->assertEquals(
+            'Password must be between 8 and 64 characters long',
+            $violations[0]->getMessage()
+        );
     }
 
     public function testPasswordWithoutNumber(): void
@@ -80,7 +89,10 @@ final class PasswordConstraintIntegrationTest extends IntegrationTestCase
         $violations = $this->validator->validate('Password', [new Password()]);
 
         $this->assertCount(1, $violations);
-        $this->assertEquals('Password must contain at least one number', $violations[0]->getMessage());
+        $this->assertEquals(
+            'Password must contain at least one number',
+            $violations[0]->getMessage()
+        );
     }
 
     public function testPasswordWithoutUppercase(): void
@@ -88,6 +100,9 @@ final class PasswordConstraintIntegrationTest extends IntegrationTestCase
         $violations = $this->validator->validate('password123', [new Password()]);
 
         $this->assertCount(1, $violations);
-        $this->assertEquals('Password must contain at least one uppercase letter', $violations[0]->getMessage());
+        $this->assertEquals(
+            'Password must contain at least one uppercase letter',
+            $violations[0]->getMessage()
+        );
     }
 }

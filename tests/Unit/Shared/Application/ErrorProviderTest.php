@@ -197,7 +197,9 @@ final class ErrorProviderTest extends UnitTestCase
             ->method('getStatus')
             ->willReturn(Response::HTTP_BAD_REQUEST);
 
-        $exception = new class() extends \RuntimeException implements ApiPlatformHttpExceptionInterface {
+        $exception = new class() extends \RuntimeException implements
+            ApiPlatformHttpExceptionInterface
+{
             public function __construct()
             {
                 parent::__construct('Invalid payload');

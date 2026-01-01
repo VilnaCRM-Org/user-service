@@ -31,7 +31,10 @@ final class InitialsConstraintIntegrationTest extends IntegrationTestCase
         $violations = $this->validator->validate('name surname', [new Initials()]);
 
         $this->assertCount(1, $violations);
-        $this->assertEquals('Initials can not consist only of spaces', $violations[0]->getMessage());
+        $this->assertEquals(
+            'Initials can not consist only of spaces',
+            $violations[0]->getMessage()
+        );
     }
 
     public function testInitialsTooLong(): void

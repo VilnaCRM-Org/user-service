@@ -118,42 +118,13 @@ final class InMemorySymfonyEventBusTest extends UnitTestCase
 
     public function testEventBusHelperMethodsAreCovered(): void
     {
-        $messageBus = $this->createMock(MessageBus::class);
-        $this->messageBusFactory->method('create')->willReturn($messageBus);
-        $eventBus = new InMemorySymfonyEventBus(
-            $this->messageBusFactory,
-            $this->eventSubscribers
-        );
-
+        $eventBus = $this->createEventBusForHelperTests();
         $reflection = new ReflectionClass($eventBus);
-
         $event = $this->createMock(DomainEvent::class);
-        $eventNotRegistered = $reflection->getMethod('eventNotRegistered');
-        $this->makeAccessible($eventNotRegistered);
 
-        $exception = $eventNotRegistered->invoke($eventBus, $event);
-        self::assertInstanceOf(EventNotRegisteredException::class, $exception);
-
-        $unwrap = $reflection->getMethod('unwrapHandlerFailure');
-        $this->makeAccessible($unwrap);
-        $handlerFailure = new HandlerFailedException(
-            new Envelope(new \stdClass()),
-            [new \RuntimeException('event failure')]
-        );
-
-        $result = $unwrap->invoke($eventBus, $handlerFailure);
-        self::assertInstanceOf(\RuntimeException::class, $result);
-
-        $handle = $reflection->getMethod('handleDispatchException');
-        $this->makeAccessible($handle);
-        $otherException = new \RuntimeException('other event failure');
-
-        try {
-            $handle->invoke($eventBus, $otherException, $event);
-            $this->fail('Expected exception not thrown.');
-        } catch (\RuntimeException $caught) {
-            self::assertSame($otherException, $caught);
-        }
+        $this->testEventNotRegisteredMethod($eventBus, $reflection, $event);
+        $this->testUnwrapHandlerFailureMethod($eventBus, $reflection);
+        $this->testHandleDispatchExceptionMethod($eventBus, $reflection, $event);
     }
 
     public function testDispatchWithThrowable(): void
@@ -173,5 +144,60 @@ final class InMemorySymfonyEventBusTest extends UnitTestCase
         $this->expectException(\RuntimeException::class);
 
         $eventBus->publish($event);
+    }
+
+    private function createEventBusForHelperTests(): InMemorySymfonyEventBus
+    {
+        $messageBus = $this->createMock(MessageBus::class);
+        $this->messageBusFactory->method('create')->willReturn($messageBus);
+
+        return new InMemorySymfonyEventBus(
+            $this->messageBusFactory,
+            $this->eventSubscribers
+        );
+    }
+
+    private function testEventNotRegisteredMethod(
+        InMemorySymfonyEventBus $eventBus,
+        ReflectionClass $reflection,
+        DomainEvent $event
+    ): void {
+        $eventNotRegistered = $reflection->getMethod('eventNotRegistered');
+        $this->makeAccessible($eventNotRegistered);
+
+        $exception = $eventNotRegistered->invoke($eventBus, $event);
+        self::assertInstanceOf(EventNotRegisteredException::class, $exception);
+    }
+
+    private function testUnwrapHandlerFailureMethod(
+        InMemorySymfonyEventBus $eventBus,
+        ReflectionClass $reflection
+    ): void {
+        $unwrap = $reflection->getMethod('unwrapHandlerFailure');
+        $this->makeAccessible($unwrap);
+        $handlerFailure = new HandlerFailedException(
+            new Envelope(new \stdClass()),
+            [new \RuntimeException('event failure')]
+        );
+
+        $result = $unwrap->invoke($eventBus, $handlerFailure);
+        self::assertInstanceOf(\RuntimeException::class, $result);
+    }
+
+    private function testHandleDispatchExceptionMethod(
+        InMemorySymfonyEventBus $eventBus,
+        ReflectionClass $reflection,
+        DomainEvent $event
+    ): void {
+        $handle = $reflection->getMethod('handleDispatchException');
+        $this->makeAccessible($handle);
+        $otherException = new \RuntimeException('other event failure');
+
+        try {
+            $handle->invoke($eventBus, $otherException, $event);
+            $this->fail('Expected exception not thrown.');
+        } catch (\RuntimeException $caught) {
+            self::assertSame($otherException, $caught);
+        }
     }
 }

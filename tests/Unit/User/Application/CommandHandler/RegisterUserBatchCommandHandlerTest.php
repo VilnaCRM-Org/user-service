@@ -85,44 +85,17 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
 
     public function testInvokeReturnsExistingUsersWhenAlreadyRegistered(): void
     {
-        $password = $this->faker->password();
-        $email = $this->faker->email();
-        $initials = $this->faker->word();
-        $userId =
-            $this->transformer->transformFromString($this->faker->uuid());
-        $existingUser = $this->userFactory->create($email, $initials, $password, $userId);
+        $testData = $this->createExistingUserTestData();
+        $existingUser = $testData['existingUser'];
+        $email = $testData['email'];
+        $command = $this->createBatchCommandWithUser($testData);
 
-        $command = new RegisterUserBatchCommand(
-            new UserCollection([
-                [
-                    'email' => $email,
-                    'initials' => $initials,
-                    'password' => $password,
-                ],
-            ])
-        );
-
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($existingUser);
-
-        $this->hasherFactory->expects($this->never())
-            ->method('getPasswordHasher');
-        $this->userRepository->expects($this->never())
-            ->method('saveBatch');
-        $this->registeredEventFactory->expects($this->never())
-            ->method('create');
-        $this->eventBus->expects($this->never())
-            ->method('publish');
+        $this->setupExistingUserBatchExpectations($email, $existingUser);
+        $this->setupNeverCalledForBatchRegistration();
 
         $this->handler->__invoke($command);
 
-        $response = $command->getResponse();
-        $this->assertInstanceOf(RegisterUserBatchCommandResponse::class, $response);
-        $users = iterator_to_array($response->users);
-        $this->assertCount(1, $users);
-        $this->assertSame($existingUser, $users[0]);
+        $this->assertBatchResponse($command, $existingUser);
     }
 
     /**
@@ -231,5 +204,73 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
             $this->mockTransformer,
             $this->registeredEventFactory
         );
+    }
+
+    /**
+     * @return array<string, string|UserInterface>
+     */
+    private function createExistingUserTestData(): array
+    {
+        $password = $this->faker->password();
+        $email = $this->faker->email();
+        $initials = $this->faker->word();
+        $userId = $this->transformer->transformFromString($this->faker->uuid());
+        $existingUser = $this->userFactory->create($email, $initials, $password, $userId);
+
+        return [
+            'password' => $password,
+            'email' => $email,
+            'initials' => $initials,
+            'existingUser' => $existingUser,
+        ];
+    }
+
+    /**
+     * @param array<string, string|UserInterface> $testData
+     */
+    private function createBatchCommandWithUser(array $testData): RegisterUserBatchCommand
+    {
+        return new RegisterUserBatchCommand(
+            new UserCollection([
+                [
+                    'email' => $testData['email'],
+                    'initials' => $testData['initials'],
+                    'password' => $testData['password'],
+                ],
+            ])
+        );
+    }
+
+    private function setupExistingUserBatchExpectations(
+        string $email,
+        UserInterface $existingUser
+    ): void {
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($existingUser);
+    }
+
+    private function setupNeverCalledForBatchRegistration(): void
+    {
+        $this->hasherFactory->expects($this->never())
+            ->method('getPasswordHasher');
+        $this->userRepository->expects($this->never())
+            ->method('saveBatch');
+        $this->registeredEventFactory->expects($this->never())
+            ->method('create');
+        $this->eventBus->expects($this->never())
+            ->method('publish');
+    }
+
+    private function assertBatchResponse(
+        RegisterUserBatchCommand $command,
+        UserInterface $existingUser
+    ): void {
+        $response = $command->getResponse();
+        $this->assertInstanceOf(RegisterUserBatchCommandResponse::class, $response);
+        $users = iterator_to_array($response->users);
+        $this->assertCount(1, $users);
+        $this->assertSame($existingUser, $users[0]);
     }
 }

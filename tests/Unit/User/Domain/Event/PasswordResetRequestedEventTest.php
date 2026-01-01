@@ -14,9 +14,14 @@ final class PasswordResetRequestedEventTest extends UnitTestCase
     public function testConstruction(): void
     {
         $userFactory = new UserFactory();
-        $user = $userFactory->create('user@example.com', 'JD', 'password123', new Uuid('123e4567-e89b-12d3-a456-426614174000'));
-        $token = 'abc123';
-        $eventId = 'event123';
+        $user = $userFactory->create(
+            $this->faker->safeEmail(),
+            $this->faker->lexify('??'),
+            $this->faker->password(),
+            new Uuid($this->faker->uuid())
+        );
+        $token = $this->faker->sha256();
+        $eventId = $this->faker->uuid();
         $event = new PasswordResetRequestedEvent($user, $token, $eventId);
 
         $this->assertSame($user, $event->user);
@@ -34,10 +39,15 @@ final class PasswordResetRequestedEventTest extends UnitTestCase
     public function testToPrimitives(): void
     {
         $userFactory = new UserFactory();
-        $uuid = new Uuid('123e4567-e89b-12d3-a456-426614174000');
-        $user = $userFactory->create('user@example.com', 'JD', 'password123', $uuid);
-        $token = 'abc123';
-        $eventId = 'event123';
+        $uuid = new Uuid($this->faker->uuid());
+        $user = $userFactory->create(
+            $this->faker->safeEmail(),
+            $this->faker->lexify('??'),
+            $this->faker->password(),
+            $uuid
+        );
+        $token = $this->faker->sha256();
+        $eventId = $this->faker->uuid();
         $event = new PasswordResetRequestedEvent($user, $token, $eventId);
         $primitives = $event->toPrimitives();
 
@@ -53,12 +63,12 @@ final class PasswordResetRequestedEventTest extends UnitTestCase
     public function testFromPrimitivesThrowsException(): void
     {
         $body = [
-            'userId' => '123e4567-e89b-12d3-a456-426614174000',
-            'userEmail' => 'user@example.com',
-            'token' => 'abc123',
+            'userId' => $this->faker->uuid(),
+            'userEmail' => $this->faker->safeEmail(),
+            'token' => $this->faker->sha256(),
         ];
-        $eventId = 'event123';
-        $occurredOn = '2023-01-01 12:00:00';
+        $eventId = $this->faker->uuid();
+        $occurredOn = $this->faker->dateTime()->format('Y-m-d H:i:s');
 
         $this->expectException(\RuntimeException::class);
 

@@ -44,22 +44,7 @@ final class RateLimitedRequestPasswordResetHandlerTest extends UnitTestCase
         $email = $this->faker->email();
         $command = new RequestPasswordResetCommand($email);
 
-        $this->rateLimiterFactory
-            ->expects($this->once())
-            ->method('create')
-            ->with($email)
-            ->willReturn($this->limiter);
-
-        $this->limiter
-            ->expects($this->once())
-            ->method('consume')
-            ->with(1)
-            ->willReturn($this->rateLimit);
-
-        $this->rateLimit
-            ->expects($this->once())
-            ->method('isAccepted')
-            ->willReturn(true);
+        $this->expectRateLimitCheck($email, accepted: true);
 
         $this->innerHandler
             ->expects($this->once())
@@ -74,6 +59,19 @@ final class RateLimitedRequestPasswordResetHandlerTest extends UnitTestCase
         $email = $this->faker->email();
         $command = new RequestPasswordResetCommand($email);
 
+        $this->expectRateLimitCheck($email, accepted: false);
+
+        $this->innerHandler
+            ->expects($this->never())
+            ->method('__invoke');
+
+        $this->expectException(PasswordResetRateLimitExceededException::class);
+
+        $this->decorator->__invoke($command);
+    }
+
+    private function expectRateLimitCheck(string $email, bool $accepted): void
+    {
         $this->rateLimiterFactory
             ->expects($this->once())
             ->method('create')
@@ -89,14 +87,6 @@ final class RateLimitedRequestPasswordResetHandlerTest extends UnitTestCase
         $this->rateLimit
             ->expects($this->once())
             ->method('isAccepted')
-            ->willReturn(false);
-
-        $this->innerHandler
-            ->expects($this->never())
-            ->method('__invoke');
-
-        $this->expectException(PasswordResetRateLimitExceededException::class);
-
-        $this->decorator->__invoke($command);
+            ->willReturn($accepted);
     }
 }

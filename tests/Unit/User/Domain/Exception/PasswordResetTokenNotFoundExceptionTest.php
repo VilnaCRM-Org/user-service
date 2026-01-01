@@ -27,6 +27,9 @@ final class PasswordResetTokenNotFoundExceptionTest extends UnitTestCase
     {
         $exception = new PasswordResetTokenNotFoundException();
 
-        $this->assertSame('error.password-reset-token-not-found', $exception->getTranslationTemplate());
+        $this->assertSame(
+            'error.password-reset-token-not-found',
+            $exception->getTranslationTemplate()
+        );
     }
 }

@@ -99,14 +99,16 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
     {
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(function (ConfirmPasswordResetCommand $command) use ($token, $newPassword) {
-                $this->assertSame($token, $command->token);
-                $this->assertSame($newPassword, $command->newPassword);
+            ->with($this->callback(
+                function (ConfirmPasswordResetCommand $command) use ($token, $newPassword) {
+                    $this->assertSame($token, $command->token);
+                    $this->assertSame($newPassword, $command->newPassword);
 
-                $response = new ConfirmPasswordResetCommandResponse();
-                $command->setResponse($response);
+                    $response = new ConfirmPasswordResetCommandResponse();
+                    $command->setResponse($response);
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
     }
 }

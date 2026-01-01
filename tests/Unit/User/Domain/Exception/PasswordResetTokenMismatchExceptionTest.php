@@ -13,7 +13,10 @@ final class PasswordResetTokenMismatchExceptionTest extends UnitTestCase
     {
         $exception = new PasswordResetTokenMismatchException();
 
-        $this->assertSame('Password reset token does not belong to the specified user', $exception->getMessage());
+        $this->assertSame(
+            'Password reset token does not belong to the specified user',
+            $exception->getMessage()
+        );
     }
 
     public function testExceptionCode(): void
@@ -27,6 +30,9 @@ final class PasswordResetTokenMismatchExceptionTest extends UnitTestCase
     {
         $exception = new PasswordResetTokenMismatchException();
 
-        $this->assertSame('error.password-reset-token-mismatch', $exception->getTranslationTemplate());
+        $this->assertSame(
+            'error.password-reset-token-mismatch',
+            $exception->getTranslationTemplate()
+        );
     }
 }

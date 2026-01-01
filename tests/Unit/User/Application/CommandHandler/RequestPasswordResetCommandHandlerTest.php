@@ -37,8 +37,12 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         parent::setUp();
 
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
-        $this->passwordResetTokenRepository = $this->createMock(PasswordResetTokenRepositoryInterface::class);
-        $this->passwordResetTokenFactory = $this->createMock(PasswordResetTokenFactoryInterface::class);
+        $this->passwordResetTokenRepository = $this->createMock(
+            PasswordResetTokenRepositoryInterface::class
+        );
+        $this->passwordResetTokenFactory = $this->createMock(
+            PasswordResetTokenFactoryInterface::class
+        );
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->uuidFactory = $this->createMock(UuidFactory::class);
         $this->eventFactory = $this->createMock(PasswordResetRequestedEventFactoryInterface::class);
@@ -55,68 +59,44 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
 
     public function testRequestPasswordResetForExistingUser(): void
     {
-        $email = $this->faker->email();
-        $userId = $this->faker->uuid();
-        $tokenValue = $this->faker->sha256();
-        $uuid = Uuid::fromString($this->faker->uuid());
+        $testData = $this->createPasswordResetTestData();
+        $mocks = $this->createPasswordResetMocks($testData);
 
-        $token = $this->createMock(PasswordResetTokenInterface::class);
-        $token->method('getTokenValue')->willReturn($tokenValue);
+        $this->setupPasswordResetExpectations($testData, $mocks);
 
-        $user = $this->createMock(UserInterface::class);
-        $user->method('getId')->willReturn($userId);
-
-        $event = $this->createMock(PasswordResetRequestedEvent::class);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
-
-        $this->passwordResetTokenFactory
-            ->expects($this->once())
-            ->method('create')
-            ->with($userId)
-            ->willReturn($token);
-
-        $this->passwordResetTokenRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($token);
-
-        $this->uuidFactory
-            ->expects($this->once())
-            ->method('create')
-            ->willReturn($uuid);
-
-        $this->eventFactory
-            ->expects($this->once())
-            ->method('create')
-            ->with($user, $tokenValue, (string) $uuid)
-            ->willReturn($event);
-
-        $this->eventBus
-            ->expects($this->once())
-            ->method('publish')
-            ->with($event);
-
-        $command = new RequestPasswordResetCommand($email);
+        $command = new RequestPasswordResetCommand($testData['email']);
         $this->handler->__invoke($command);
 
-        $this->assertInstanceOf(RequestPasswordResetCommandResponse::class, $command->getResponse());
+        $this->assertPasswordResetResponse($command);
     }
 
     public function testRequestPasswordResetForNonExistingUser(): void
     {
         $email = $this->faker->email();
 
+        $this->setupUserNotFoundExpectations($email);
+        $this->setupNeverCalledExpectations();
+
+        $command = new RequestPasswordResetCommand($email);
+        $this->handler->__invoke($command);
+
+        $this->assertInstanceOf(
+            RequestPasswordResetCommandResponse::class,
+            $command->getResponse()
+        );
+    }
+
+    private function setupUserNotFoundExpectations(string $email): void
+    {
         $this->userRepository
             ->expects($this->once())
             ->method('findByEmail')
             ->with($email)
             ->willReturn(null);
+    }
 
+    private function setupNeverCalledExpectations(): void
+    {
         $this->passwordResetTokenFactory
             ->expects($this->never())
             ->method('create');
@@ -128,10 +108,107 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $this->eventBus
             ->expects($this->never())
             ->method('publish');
+    }
 
-        $command = new RequestPasswordResetCommand($email);
-        $this->handler->__invoke($command);
+    /**
+     * @return array<string, string|Uuid>
+     */
+    private function createPasswordResetTestData(): array
+    {
+        return [
+            'email' => $this->faker->email(),
+            'userId' => $this->faker->uuid(),
+            'tokenValue' => $this->faker->sha256(),
+            'uuid' => Uuid::fromString($this->faker->uuid()),
+        ];
+    }
 
-        $this->assertInstanceOf(RequestPasswordResetCommandResponse::class, $command->getResponse());
+    /**
+     * @param array<string, string|Uuid> $testData
+     *
+     * @return array<string, PasswordResetTokenInterface|UserInterface|PasswordResetRequestedEvent>
+     */
+    private function createPasswordResetMocks(array $testData): array
+    {
+        $token = $this->createMock(PasswordResetTokenInterface::class);
+        $token->method('getTokenValue')->willReturn($testData['tokenValue']);
+
+        $user = $this->createMock(UserInterface::class);
+        $user->method('getId')->willReturn($testData['userId']);
+
+        $event = $this->createMock(PasswordResetRequestedEvent::class);
+
+        return [
+            'token' => $token,
+            'user' => $user,
+            'event' => $event,
+        ];
+    }
+
+    /**
+     * @param array<string, string|Uuid> $testData
+     * @param array<string, PasswordResetTokenInterface|UserInterface|PasswordResetRequestedEvent> $mocks
+     */
+    private function setupPasswordResetExpectations(array $testData, array $mocks): void
+    {
+        $this->setupUserRepositoryExpectations($testData['email'], $mocks['user']);
+        $this->setupTokenFactoryExpectations($testData['userId'], $mocks['token']);
+        $this->setupEventExpectations($testData, $mocks);
+    }
+
+    private function setupUserRepositoryExpectations(string $email, UserInterface $user): void
+    {
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+    }
+
+    private function setupTokenFactoryExpectations(
+        string $userId,
+        PasswordResetTokenInterface $token
+    ): void {
+        $this->passwordResetTokenFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with($userId)
+            ->willReturn($token);
+
+        $this->passwordResetTokenRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($token);
+    }
+
+    /**
+     * @param array<string, string|Uuid> $testData
+     * @param array<string, PasswordResetTokenInterface|UserInterface|PasswordResetRequestedEvent> $mocks
+     */
+    private function setupEventExpectations(array $testData, array $mocks): void
+    {
+        $this->uuidFactory
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($testData['uuid']);
+
+        $this->eventFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with($mocks['user'], $testData['tokenValue'], (string) $testData['uuid'])
+            ->willReturn($mocks['event']);
+
+        $this->eventBus
+            ->expects($this->once())
+            ->method('publish')
+            ->with($mocks['event']);
+    }
+
+    private function assertPasswordResetResponse(RequestPasswordResetCommand $command): void
+    {
+        $this->assertInstanceOf(
+            RequestPasswordResetCommandResponse::class,
+            $command->getResponse()
+        );
     }
 }

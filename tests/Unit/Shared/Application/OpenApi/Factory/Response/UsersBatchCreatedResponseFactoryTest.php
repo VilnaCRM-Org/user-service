@@ -25,8 +25,16 @@ final class UsersBatchCreatedResponseFactoryTest extends UnitTestCase
                 'Users returned',
                 [
                     new Parameter('confirmed', 'boolean', false),
-                    new Parameter('email', 'string', SchemathesisFixtures::CREATE_BATCH_FIRST_USER_EMAIL),
-                    new Parameter('initials', 'string', SchemathesisFixtures::CREATE_BATCH_FIRST_USER_INITIALS),
+                    new Parameter(
+                        'email',
+                        'string',
+                        SchemathesisFixtures::CREATE_BATCH_FIRST_USER_EMAIL
+                    ),
+                    new Parameter(
+                        'initials',
+                        'string',
+                        SchemathesisFixtures::CREATE_BATCH_FIRST_USER_INITIALS
+                    ),
                     new Parameter('id', 'string', SchemathesisFixtures::CREATE_BATCH_FIRST_USER_ID),
                 ],
                 []

@@ -127,31 +127,14 @@ final class UniqueEmailValidatorTest extends UnitTestCase
     public function testDuplicateEmailWithoutRequestStackTriggersViolation(): void
     {
         $email = $this->faker->email();
-        $user = $this->userFactory->create(
-            $email,
-            $this->faker->name(),
-            $this->faker->password(),
-            $this->transformer->transformFromString($this->faker->uuid()),
-        );
+        $user = $this->createUserWithEmail($email);
 
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
+        $this->setupUserFoundExpectation($email, $user);
 
         // Remove the current request so isSameUser() cannot short-circuit.
         $this->requestStack->pop();
 
-        $message = $this->faker->sentence();
-
-        $this->translator->expects($this->once())
-            ->method('trans')
-            ->with('email.not.unique')
-            ->willReturn($message);
-
-        $this->context->expects($this->once())
-            ->method('buildViolation')
-            ->with($message);
+        $this->setupViolationExpectations();
 
         $this->validator->validate($email, new UniqueEmail());
     }
@@ -159,30 +142,11 @@ final class UniqueEmailValidatorTest extends UnitTestCase
     public function testDuplicateEmailWithNonStringRouteIdTriggersViolation(): void
     {
         $email = $this->faker->email();
-        $user = $this->userFactory->create(
-            $email,
-            $this->faker->name(),
-            $this->faker->password(),
-            $this->transformer->transformFromString($this->faker->uuid()),
-        );
+        $user = $this->createUserWithEmail($email);
 
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
-
+        $this->setupUserFoundExpectation($email, $user);
         $this->request->attributes->set('id', ['not-a-string']);
-
-        $message = $this->faker->sentence();
-
-        $this->translator->expects($this->once())
-            ->method('trans')
-            ->with('email.not.unique')
-            ->willReturn($message);
-
-        $this->context->expects($this->once())
-            ->method('buildViolation')
-            ->with($message);
+        $this->setupViolationExpectations();
 
         $this->validator->validate($email, new UniqueEmail());
     }
@@ -213,5 +177,37 @@ final class UniqueEmailValidatorTest extends UnitTestCase
         $this->context->expects($this->never())->method('buildViolation');
 
         $this->validator->validate($email, new UniqueEmail());
+    }
+
+    private function createUserWithEmail(string $email): UserInterface
+    {
+        return $this->userFactory->create(
+            $email,
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->transformer->transformFromString($this->faker->uuid()),
+        );
+    }
+
+    private function setupUserFoundExpectation(string $email, UserInterface $user): void
+    {
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+    }
+
+    private function setupViolationExpectations(): void
+    {
+        $message = $this->faker->sentence();
+
+        $this->translator->expects($this->once())
+            ->method('trans')
+            ->with('email.not.unique')
+            ->willReturn($message);
+
+        $this->context->expects($this->once())
+            ->method('buildViolation')
+            ->with($message);
     }
 }

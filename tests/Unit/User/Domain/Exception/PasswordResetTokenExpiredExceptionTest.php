@@ -27,6 +27,9 @@ final class PasswordResetTokenExpiredExceptionTest extends UnitTestCase
     {
         $exception = new PasswordResetTokenExpiredException();
 
-        $this->assertSame('error.password-reset-token-expired', $exception->getTranslationTemplate());
+        $this->assertSame(
+            'error.password-reset-token-expired',
+            $exception->getTranslationTemplate()
+        );
     }
 }

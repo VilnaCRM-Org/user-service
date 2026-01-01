@@ -39,7 +39,10 @@ final class ConfirmPasswordResetRequestFactoryTest extends UnitTestCase
         $this->assertInstanceOf(Schema::class, $jsonTokenSchema);
         $this->assertSame('string', $jsonTokenSchema['type']);
         $this->assertSame(255, $jsonTokenSchema['maxLength']);
-        $this->assertSame([SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN], $jsonTokenSchema['enum']);
+        $this->assertSame(
+            [SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN],
+            $jsonTokenSchema['enum']
+        );
 
         /** @var Schema $jsonPasswordSchema */
         $jsonPasswordSchema = $schemaData['properties']['newPassword'];
@@ -70,7 +73,10 @@ final class ConfirmPasswordResetRequestFactoryTest extends UnitTestCase
         $this->assertInstanceOf(Schema::class, $ldTokenSchema);
         $this->assertSame('string', $ldTokenSchema['type']);
         $this->assertSame(255, $ldTokenSchema['maxLength']);
-        $this->assertSame([SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN_LD], $ldTokenSchema['enum']);
+        $this->assertSame(
+            [SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN_LD],
+            $ldTokenSchema['enum']
+        );
 
         $this->assertSame([
             'token' => SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN_LD,

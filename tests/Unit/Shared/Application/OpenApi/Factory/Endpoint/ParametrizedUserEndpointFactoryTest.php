@@ -139,10 +139,12 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
 
         $this->paths->expects($this->exactly(4))
             ->method('addPath')
-            ->willReturnCallback(function (string $uri, PathItem $pathItem) use ($endpointUri): void {
-                $this->assertSame($endpointUri, $uri);
-                $this->assertInstanceOf(PathItem::class, $pathItem);
-            });
+            ->willReturnCallback(
+                function (string $uri, PathItem $pathItem) use ($endpointUri): void {
+                    $this->assertSame($endpointUri, $uri);
+                    $this->assertInstanceOf(PathItem::class, $pathItem);
+                }
+            );
     }
 
     private function setExpectationsFotPathItem(): void

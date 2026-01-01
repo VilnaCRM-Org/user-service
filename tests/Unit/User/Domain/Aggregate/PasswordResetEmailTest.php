@@ -25,11 +25,8 @@ final class PasswordResetEmailTest extends UnitTestCase
 
     public function testConstruction(): void
     {
-        $userFactory = new UserFactory();
-        $user = $userFactory->create('user@example.com', 'JD', 'password123', new Uuid('123e4567-e89b-12d3-a456-426614174000'));
-        $createdAt = new \DateTimeImmutable();
-        $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
-        $token = new PasswordResetToken('abc123', $user->getId(), $expiresAt, $createdAt);
+        $user = $this->createUser();
+        $token = $this->createPasswordResetToken($user->getId());
 
         $passwordResetEmail = new PasswordResetEmail($token, $user, $this->factoryMock);
 
@@ -39,12 +36,9 @@ final class PasswordResetEmailTest extends UnitTestCase
 
     public function testSend(): void
     {
-        $userFactory = new UserFactory();
-        $user = $userFactory->create('user@example.com', 'JD', 'password123', new Uuid('123e4567-e89b-12d3-a456-426614174000'));
-        $createdAt = new \DateTimeImmutable();
-        $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
-        $token = new PasswordResetToken('abc123', $user->getId(), $expiresAt, $createdAt);
-        $eventID = 'event123';
+        $user = $this->createUser();
+        $token = $this->createPasswordResetToken($user->getId());
+        $eventID = $this->faker->uuid();
 
         $this->factoryMock->expects($this->once())
             ->method('create')
@@ -52,5 +46,25 @@ final class PasswordResetEmailTest extends UnitTestCase
 
         $passwordResetEmail = new PasswordResetEmail($token, $user, $this->factoryMock);
         $passwordResetEmail->send($eventID);
+    }
+
+    private function createUser(): \App\User\Domain\Entity\UserInterface
+    {
+        $userFactory = new UserFactory();
+
+        return $userFactory->create(
+            $this->faker->safeEmail(),
+            $this->faker->lexify('??'),
+            $this->faker->password(),
+            new Uuid($this->faker->uuid())
+        );
+    }
+
+    private function createPasswordResetToken(string $userId): PasswordResetToken
+    {
+        $createdAt = new \DateTimeImmutable();
+        $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
+
+        return new PasswordResetToken($this->faker->sha256(), $userId, $expiresAt, $createdAt);
     }
 }

@@ -6,6 +6,7 @@ namespace App\Tests\Unit\User\Infrastructure\Repository;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\ConfirmationToken;
+use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
@@ -33,12 +34,10 @@ final class RedisTokenRepositoryTest extends UnitTestCase
         parent::setUp();
 
         $this->cache = $this->createMock(RedisAdapter::class);
-        $this->serializer =
-            new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
-        $this->mockSerializer =
-            $this->createMock(SerializerInterface::class);
-        $this->repository =
-            new RedisTokenRepository($this->cache, $this->mockSerializer);
+        $this->serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
+        $this->mockSerializer = $this->createMock(SerializerInterface::class);
+
+        $this->repository = new RedisTokenRepository($this->cache, $this->mockSerializer);
         $this->confirmationTokenFactory = new ConfirmationTokenFactory(
             $this->faker->numberBetween(1, 10)
         );
@@ -46,15 +45,150 @@ final class RedisTokenRepositoryTest extends UnitTestCase
 
     public function testSave(): void
     {
+        $token = $this->confirmationTokenFactory->create($this->faker->uuid());
+        $serializedToken = $this->serializer->serialize($token, JsonEncoder::FORMAT);
+
+        $keys = $this->tokenKeys($token);
+        $this->expectSavingToken($token, $serializedToken, $keys['tokenKey'], $keys['userKey']);
+
+        $this->repository->save($token);
+    }
+
+    public function testFind(): void
+    {
+        $token = $this->confirmationTokenFactory->create($this->faker->uuid());
+        $serializedToken = $this->serializer->serialize($token, JsonEncoder::FORMAT);
+        $tokenKey = $this->tokenKey($token->getTokenValue());
+
+        $this->cache->expects($this->once())
+            ->method('getItem')
+            ->with($tokenKey)
+            ->willReturn($this->createCacheItem($serializedToken, $tokenKey));
+
+        $this->mockSerializer->expects($this->once())
+            ->method('deserialize')
+            ->with($serializedToken, ConfirmationToken::class, JsonEncoder::FORMAT)
+            ->willReturn($token);
+
+        $result = $this->repository->find($token->getTokenValue());
+
+        $this->assertSame($token, $result);
+    }
+
+    public function testFindByUserId(): void
+    {
         $userId = $this->faker->uuid();
         $token = $this->confirmationTokenFactory->create($userId);
-        $serializedToken =
-            $this->serializer->serialize($token, JsonEncoder::FORMAT);
+        $serializedToken = $this->serializer->serialize($token, JsonEncoder::FORMAT);
+        $userKey = $this->userKey($userId);
 
-        $tokenValue = $token->getTokenValue();
-        $userKey = 'token-userID-'.$token->getUserID();
-        $tokenKey = 'token-tokenValue-'.$tokenValue;
+        $this->cache->expects($this->once())
+            ->method('getItem')
+            ->with($userKey)
+            ->willReturn($this->createCacheItem($serializedToken, $userKey));
 
+        $this->mockSerializer->expects($this->once())
+            ->method('deserialize')
+            ->with($serializedToken, ConfirmationToken::class, JsonEncoder::FORMAT)
+            ->willReturn($token);
+
+        $result = $this->repository->findByUserId($userId);
+
+        $this->assertSame($token, $result);
+    }
+
+    public function testRemove(): void
+    {
+        $userId = $this->faker->uuid();
+        $token = $this->confirmationTokenFactory->create($userId);
+
+        $keys = $this->tokenKeys($token);
+
+        $this->cache->expects($this->exactly(2))
+            ->method('delete')
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [[$keys['tokenKey']], [$keys['userKey']]],
+                    [true, true]
+                )
+            );
+
+        $this->repository->remove($token);
+    }
+
+    public function testRemoveByTokenValue(): void
+    {
+        $tokenValue = $this->faker->lexify('??????????');
+        $tokenKey = $this->tokenKey($tokenValue);
+
+        $this->cache->expects($this->once())
+            ->method('delete')
+            ->with($tokenKey)
+            ->willReturn(true);
+
+        $this->repository->removeByTokenValue($tokenValue);
+    }
+
+    public function testRemoveByUserId(): void
+    {
+        $userId = $this->faker->uuid();
+        $userKey = $this->userKey($userId);
+
+        $this->cache->expects($this->once())
+            ->method('delete')
+            ->with($userKey)
+            ->willReturn(true);
+
+        $this->repository->removeByUserId($userId);
+    }
+
+    public function testRemoveByUserIdWhenCacheDeleteFails(): void
+    {
+        $userId = $this->faker->uuid();
+        $userKey = $this->userKey($userId);
+
+        $this->cache->expects($this->once())
+            ->method('delete')
+            ->with($userKey)
+            ->willReturn(false);
+
+        $this->repository->removeByUserId($userId);
+    }
+
+    /**
+     * @return array{tokenKey: string, userKey: string}
+     */
+    private function tokenKeys(ConfirmationTokenInterface $token): array
+    {
+        return [
+            'tokenKey' => $this->tokenKey($token->getTokenValue()),
+            'userKey' => $this->userKey($token->getUserID()),
+        ];
+    }
+
+    private function tokenKey(string $tokenValue): string
+    {
+        return 'token-tokenValue-'.$tokenValue;
+    }
+
+    private function userKey(string $userId): string
+    {
+        return 'token-userID-'.$userId;
+    }
+
+    private function expectSavingToken(
+        ConfirmationTokenInterface $token,
+        string $serializedToken,
+        string $tokenKey,
+        string $userKey
+    ): void {
+        $this->expectCacheItemsForSave($tokenKey, $userKey);
+        $this->expectTokenSerialization($token, $serializedToken);
+        $this->expectCacheSavesSerializedToken($serializedToken);
+    }
+
+    private function expectCacheItemsForSave(string $tokenKey, string $userKey): void
+    {
         $this->cache->expects($this->exactly(2))
             ->method('getItem')
             ->willReturnCallback(
@@ -66,114 +200,37 @@ final class RedisTokenRepositoryTest extends UnitTestCase
                     ]
                 )
             );
+    }
+
+    private function expectTokenSerialization(
+        ConfirmationTokenInterface $token,
+        string $serializedToken
+    ): void {
         $this->mockSerializer->expects($this->once())
             ->method('serialize')
             ->with($token, JsonEncoder::FORMAT)
             ->willReturn($serializedToken);
+    }
 
+    private function expectCacheSavesSerializedToken(string $serializedToken): void
+    {
         $this->cache->expects($this->exactly(2))
             ->method('save')
-            ->willReturnCallback(function (CacheItem $item) use ($serializedToken) {
-                $this->assertSame($serializedToken, $item->get());
-
-                $expiry = new ReflectionProperty(CacheItem::class, 'expiry');
-                $this->makeAccessible($expiry);
-                $this->assertNotNull($expiry->getValue($item));
-
-                return true;
-            });
-
-        $this->repository->save($token);
-    }
-
-    public function testFind(): void
-    {
-        $userId = $this->faker->uuid();
-        $token = $this->confirmationTokenFactory->create($userId);
-        $tokenValue = $token->getTokenValue();
-        $serializedToken = $this->serializer->serialize($token, JsonEncoder::FORMAT);
-        $tokenKey = 'token-tokenValue-'.$tokenValue;
-
-        $this->cache->expects($this->once())
-            ->method('getItem')
-            ->with($tokenKey)
-            ->willReturn($this->createCacheItem($serializedToken, $tokenKey));
-        $this->mockSerializer->expects($this->once())
-            ->method('deserialize')
-            ->with($serializedToken, ConfirmationToken::class, JsonEncoder::FORMAT)
-            ->willReturn($token);
-
-        $result = $this->repository->find($tokenValue);
-
-        $this->assertSame($token, $result);
-    }
-
-    public function testFindByUserId(): void
-    {
-        $userId = $this->faker->uuid();
-        $token = $this->confirmationTokenFactory->create($userId);
-        $serializedToken = $this->serializer->serialize($token, JsonEncoder::FORMAT);
-        $userKey = 'token-userID-'.$userId;
-
-        $this->cache->expects($this->once())
-            ->method('getItem')
-            ->with($userKey)
-            ->willReturn($this->createCacheItem($serializedToken, $userKey));
-        $this->mockSerializer->expects($this->once())
-            ->method('deserialize')
-            ->with($serializedToken, ConfirmationToken::class, JsonEncoder::FORMAT)
-            ->willReturn($token);
-
-        $this->assertSame($token, $this->repository->findByUserId($userId));
-    }
-
-    public function testFindReturnsNullWhenCacheIsEmpty(): void
-    {
-        $tokenValue = $this->faker->uuid();
-        $tokenKey = 'token-tokenValue-'.$tokenValue;
-
-        $this->cache->expects($this->once())
-            ->method('getItem')
-            ->with($tokenKey)
-            ->willReturn($this->createCacheItem(key: $tokenKey));
-        $this->mockSerializer->expects($this->never())->method('deserialize');
-
-        $this->assertNull($this->repository->find($tokenValue));
-    }
-
-    public function testDelete(): void
-    {
-        $userId = $this->faker->uuid();
-        $token = $this->confirmationTokenFactory->create($userId);
-        $tokenKey = 'token-tokenValue-'.$token->getTokenValue();
-        $userKey = 'token-userID-'.$userId;
-
-        $this->cache->expects($this->exactly(2))
-            ->method('delete')
             ->willReturnCallback(
-                $this->expectSequential(
-                    [[$tokenKey], [$userKey]],
-                    true
-                )
-            );
+                function (CacheItem $item) use ($serializedToken): bool {
+                    $this->assertSame($serializedToken, $item->get());
+                    $this->assertNotNull($this->expiry($item));
 
-        $this->repository->delete($token);
+                    return true;
+                }
+            );
     }
 
-    private function createCacheItem(?string $value = null, ?string $key = null): CacheItem
+    private function expiry(CacheItem $item): mixed
     {
-        $item = new CacheItem();
+        $expiry = new ReflectionProperty(CacheItem::class, 'expiry');
+        $this->makeAccessible($expiry);
 
-        if ($key !== null) {
-            $property = new ReflectionProperty(CacheItem::class, 'key');
-            $this->makeAccessible($property);
-            $property->setValue($item, $key);
-        }
-
-        if ($value !== null) {
-            $item->set($value);
-        }
-
-        return $item;
+        return $expiry->getValue($item);
     }
 }
