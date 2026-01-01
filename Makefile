@@ -320,16 +320,110 @@ ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	fi
 
 
-pr-comments: ## Retrieve unresolved comments for a GitHub Pull Request
+pr-comments: ## Retrieve ALL unresolved comments (including outdated) for current PR (markdown format)
 	@if ! command -v gh >/dev/null 2>&1; then \
 		echo "Error: GitHub CLI (gh) is required but not installed."; \
 		echo "Visit: https://cli.github.com/ for installation instructions"; \
 		exit 1; \
 	fi
+	@if ! command -v jq >/dev/null 2>&1; then \
+		echo "Error: jq is required but not installed."; \
+		echo "Install via package manager (e.g., apt-get install jq, brew install jq)"; \
+		exit 1; \
+	fi
 ifdef PR
-	@echo "Retrieving unresolved comments for PR #$(PR)..."
-	@GITHUB_HOST="$(GITHUB_HOST)" ./scripts/get-pr-comments.sh "$(PR)" "$(FORMAT)"
+	@echo "Retrieving unresolved comments (including outdated) for PR #$(PR)..."
+	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="true" \
+		./scripts/get-pr-comments.sh "$(PR)" "$${FORMAT:-markdown}"
 else
 	@echo "Auto-detecting PR from current git branch..."
-	@GITHUB_HOST="$(GITHUB_HOST)" ./scripts/get-pr-comments.sh "$(FORMAT)"
+	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="true" \
+		./scripts/get-pr-comments.sh "$${FORMAT:-markdown}"
 endif
+
+pr-comments-current: ## Retrieve only NON-OUTDATED unresolved comments (markdown format)
+	@if ! command -v gh >/dev/null 2>&1; then \
+		echo "Error: GitHub CLI (gh) is required but not installed."; \
+		echo "Visit: https://cli.github.com/ for installation instructions"; \
+		exit 1; \
+	fi
+	@if ! command -v jq >/dev/null 2>&1; then \
+		echo "Error: jq is required but not installed."; \
+		echo "Install via package manager (e.g., apt-get install jq, brew install jq)"; \
+		exit 1; \
+	fi
+ifdef PR
+	@echo "Retrieving current (non-outdated) unresolved comments for PR #$(PR)..."
+	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="false" \
+		./scripts/get-pr-comments.sh "$(PR)" "$${FORMAT:-markdown}"
+else
+	@echo "Auto-detecting PR from current git branch..."
+	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="false" \
+		./scripts/get-pr-comments.sh "$${FORMAT:-markdown}"
+endif
+
+pr-comments-all: ## Retrieve ALL unresolved comments (with pagination) for a GitHub Pull Request
+	@if ! command -v gh >/dev/null 2>&1; then \
+		echo "Error: GitHub CLI (gh) is required but not installed."; \
+		echo "Visit: https://cli.github.com/ for installation instructions"; \
+		exit 1; \
+	fi
+	@if ! command -v jq >/dev/null 2>&1; then \
+		echo "Error: jq is required but not installed."; \
+		echo "Install via package manager (e.g., apt-get install jq, brew install jq)"; \
+		exit 1; \
+	fi
+ifdef PR
+	@echo "Retrieving ALL unresolved comments for PR #$(PR)..."
+	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-false}" VERBOSE="$${VERBOSE:-false}" \
+		./scripts/get-pr-comments.sh "$(PR)" "$${FORMAT:-text}"
+else
+	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-false}" VERBOSE="$${VERBOSE:-false}" \
+		./scripts/get-pr-comments.sh "$${FORMAT:-text}"
+endif
+
+pr-comments-to-file: ## Fetch ALL unresolved PR comments and save to pr-comments-errors.txt
+	@if ! command -v gh >/dev/null 2>&1; then \
+		echo "Error: GitHub CLI (gh) is required but not installed."; \
+		echo "Visit: https://cli.github.com/ for installation instructions"; \
+		exit 1; \
+	fi
+	@if ! command -v jq >/dev/null 2>&1; then \
+		echo "Error: jq is required but not installed."; \
+		echo "Install via package manager (e.g., apt-get install jq, brew install jq)"; \
+		exit 1; \
+	fi
+	@output_file="$${OUTPUT_FILE:-pr-comments-errors.txt}"; \
+	if [ -f "$$output_file" ]; then \
+		echo "⚠️  File $$output_file already exists. Creating backup..."; \
+		mv "$$output_file" "$$output_file.backup.$$(date +%Y%m%d_%H%M%S)"; \
+	fi; \
+	{ \
+		echo "========================================"; \
+		echo "PR Comments and Errors Report"; \
+		echo "Generated: $$(date '+%Y-%m-%d %H:%M:%S')"; \
+		echo "========================================"; \
+		echo ""; \
+	} > "$$output_file"; \
+	if [ -n "$(PR)" ]; then \
+		GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="false" \
+			./scripts/get-pr-comments.sh "$(PR)" "text" >> "$$output_file" 2>&1 || true; \
+	else \
+		GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="false" \
+			./scripts/get-pr-comments.sh "text" >> "$$output_file" 2>&1 || true; \
+	fi; \
+	comment_count=$$(grep -c "^Comment ID:" "$$output_file" || echo "0"); \
+	echo "" >> "$$output_file"; \
+	echo "========================================" >> "$$output_file"; \
+	echo "Report Summary:" >> "$$output_file"; \
+	echo "Total Comments Found: $$comment_count" >> "$$output_file"; \
+	echo "Report saved to: $$output_file" >> "$$output_file"; \
+	echo "========================================" >> "$$output_file"; \
+	if [ "$$comment_count" -gt 0 ]; then \
+		echo "✅ Report successfully saved to: $$output_file"; \
+		echo "📊 Total comments found: $$comment_count"; \
+		cat "$$output_file"; \
+	else \
+		echo "ℹ️  No unresolved comments found"; \
+		echo "📄 Report saved to: $$output_file"; \
+	fi

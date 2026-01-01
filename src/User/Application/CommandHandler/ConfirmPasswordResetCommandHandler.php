@@ -58,7 +58,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements
     private function getUserFromToken(
         PasswordResetTokenInterface $token
     ): UserInterface {
-        $user = $this->userRepository->find($token->getUserID());
+        $user = $this->userRepository->findById($token->getUserID());
 
         if (!$user instanceof UserInterface) {
             throw new UserNotFoundException();

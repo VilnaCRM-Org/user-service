@@ -9,7 +9,7 @@ use Symfony\Component\Mime\Email;
 interface EmailFactoryInterface
 {
     /**
-     * @param array<string, string> $additionalContext
+     * @param array<string, string|int|float|bool|null> $additionalContext
      */
     public function create(
         string $sendTo,

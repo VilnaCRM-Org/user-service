@@ -8,7 +8,6 @@ use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Application\Factory\EmailFactoryInterface;
 use App\User\Domain\Event\PasswordResetEmailSentEvent;
-use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -18,7 +17,6 @@ final readonly class PasswordResetEmailSentEventSubscriber implements
 {
     public function __construct(
         private MailerInterface $mailer,
-        private PasswordResetTokenRepositoryInterface $tokenRepository,
         private LoggerInterface $logger,
         private TranslatorInterface $translator,
         private EmailFactoryInterface $emailFactory,
@@ -32,7 +30,6 @@ final readonly class PasswordResetEmailSentEventSubscriber implements
         $tokenValue = $token->getTokenValue();
         $emailAddress = $event->email;
 
-        $this->tokenRepository->save($token);
         $resetUrl = $this->createResetUrl($tokenValue);
         $email = $this->createPasswordResetEmail(
             $emailAddress,

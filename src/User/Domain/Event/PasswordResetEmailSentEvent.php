@@ -21,6 +21,8 @@ final class PasswordResetEmailSentEvent extends DomainEvent
 
     /**
      * @param array<string, string> $body
+     *
+     * @psalm-return never
      */
     #[\Override]
     public static function fromPrimitives(

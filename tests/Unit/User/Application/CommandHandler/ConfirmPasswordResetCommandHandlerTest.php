@@ -93,7 +93,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             ->with($passwordResetToken);
 
         $this->userRepository->expects($this->once())
-            ->method('find')
+            ->method('findById')
             ->with($userId)
             ->willReturn($user);
 
@@ -167,7 +167,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             ->with($passwordResetToken);
 
         $this->userRepository->expects($this->once())
-            ->method('find')
+            ->method('findById')
             ->with($userId)
             ->willReturn($user);
 
@@ -298,7 +298,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             ->with($passwordResetToken);
 
         $this->userRepository->expects($this->once())
-            ->method('find')
+            ->method('findById')
             ->with($userId)
             ->willReturn(null);
 

@@ -9,7 +9,6 @@ use App\User\Application\EventSubscriber\PasswordResetEmailSentEventSubscriber;
 use App\User\Application\Factory\EmailFactoryInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Event\PasswordResetEmailSentEvent;
-use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -18,7 +17,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class PasswordResetEmailSentEventSubscriberTest extends UnitTestCase
 {
     private MailerInterface $mailer;
-    private PasswordResetTokenRepositoryInterface $tokenRepository;
     private LoggerInterface $logger;
     private TranslatorInterface $translator;
     private EmailFactoryInterface $emailFactory;
@@ -31,7 +29,6 @@ final class PasswordResetEmailSentEventSubscriberTest extends UnitTestCase
         parent::setUp();
 
         $this->mailer = $this->createMock(MailerInterface::class);
-        $this->tokenRepository = $this->createMock(PasswordResetTokenRepositoryInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->translator = $this->createMock(TranslatorInterface::class);
         $this->emailFactory = $this->createMock(EmailFactoryInterface::class);
@@ -39,7 +36,6 @@ final class PasswordResetEmailSentEventSubscriberTest extends UnitTestCase
 
         $this->subscriber = new PasswordResetEmailSentEventSubscriber(
             $this->mailer,
-            $this->tokenRepository,
             $this->logger,
             $this->translator,
             $this->emailFactory,
@@ -57,7 +53,6 @@ final class PasswordResetEmailSentEventSubscriberTest extends UnitTestCase
         $event = new PasswordResetEmailSentEvent($token, $emailAddress, $eventId);
         $email = $this->createMock(Email::class);
 
-        $this->expectTokenSave($token);
         $this->expectEmailCreation($tokenValue, $emailAddress, $email);
         $this->expectMailerSend($email);
         $this->expectLogInfo($emailAddress);
@@ -82,13 +77,6 @@ final class PasswordResetEmailSentEventSubscriberTest extends UnitTestCase
             ->willReturn($tokenValue);
 
         return $token;
-    }
-
-    private function expectTokenSave(PasswordResetTokenInterface $token): void
-    {
-        $this->tokenRepository->expects($this->once())
-            ->method('save')
-            ->with($token);
     }
 
     private function expectEmailCreation(string $tokenValue, string $emailAddress, Email $email): void
