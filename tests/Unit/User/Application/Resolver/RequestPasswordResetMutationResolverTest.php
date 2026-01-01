@@ -34,13 +34,12 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
     public function testInvokeSuccessfully(): void
     {
         $email = $this->faker->safeEmail();
-        $message = 'Password reset email sent successfully.';
         $context = $this->createContext($email);
 
         $this->validator->expects($this->once())
             ->method('validate');
 
-        $this->expectCommandDispatch($email, $message);
+        $this->expectCommandDispatch($email);
 
         $result = $this->resolver->__invoke(null, $context);
 
@@ -63,8 +62,7 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(static function (RequestPasswordResetCommand $command) {
-                // Mock the response
-                $response = new RequestPasswordResetCommandResponse('Success');
+                $response = new RequestPasswordResetCommandResponse();
                 $command->setResponse($response);
 
                 return true;
@@ -89,15 +87,14 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
         ];
     }
 
-    private function expectCommandDispatch(string $email, string $message): void
+    private function expectCommandDispatch(string $email): void
     {
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(function (RequestPasswordResetCommand $command) use ($email, $message) {
+            ->with($this->callback(function (RequestPasswordResetCommand $command) use ($email) {
                 $this->assertSame($email, $command->email);
 
-                // Mock the response
-                $response = new RequestPasswordResetCommandResponse($message);
+                $response = new RequestPasswordResetCommandResponse();
                 $command->setResponse($response);
 
                 return true;

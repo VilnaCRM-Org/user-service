@@ -23,14 +23,12 @@ final class RequestPasswordResetCommandTest extends UnitTestCase
     public function testSetAndGetResponse(): void
     {
         $email = $this->faker->safeEmail();
-        $message = $this->faker->sentence();
 
         $command = new RequestPasswordResetCommand($email);
-        $response = new RequestPasswordResetCommandResponse($message);
+        $response = new RequestPasswordResetCommandResponse();
 
         $command->setResponse($response);
 
         $this->assertSame($response, $command->getResponse());
-        $this->assertSame($message, $command->getResponse()->message);
     }
 }

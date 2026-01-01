@@ -36,7 +36,7 @@ final readonly class RequestPasswordResetCommandHandler implements
 
         if (!$user instanceof UserInterface) {
             $command->setResponse(
-                new RequestPasswordResetCommandResponse('')
+                new RequestPasswordResetCommandResponse()
             );
             return;
         }
@@ -53,7 +53,7 @@ final readonly class RequestPasswordResetCommandHandler implements
         );
 
         $command->setResponse(
-            new RequestPasswordResetCommandResponse('')
+            new RequestPasswordResetCommandResponse()
         );
     }
 }

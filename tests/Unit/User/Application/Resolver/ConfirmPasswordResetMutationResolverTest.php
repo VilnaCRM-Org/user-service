@@ -35,12 +35,11 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
     {
         $token = $this->faker->sha256();
         $newPassword = $this->faker->password();
-        $message = 'Password has been reset successfully.';
 
         $context = $this->createContext($token, $newPassword);
 
         $this->expectValidationCall();
-        $this->expectCommandDispatch($token, $newPassword, $message);
+        $this->expectCommandDispatch($token, $newPassword);
 
         $result = $this->resolver->__invoke(null, $context);
 
@@ -64,7 +63,7 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(static function (ConfirmPasswordResetCommand $command) {
-                $response = new ConfirmPasswordResetCommandResponse('Success');
+                $response = new ConfirmPasswordResetCommandResponse();
                 $command->setResponse($response);
 
                 return true;
@@ -96,15 +95,15 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
             ->method('validate');
     }
 
-    private function expectCommandDispatch(string $token, string $newPassword, string $message): void
+    private function expectCommandDispatch(string $token, string $newPassword): void
     {
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(function (ConfirmPasswordResetCommand $command) use ($token, $newPassword, $message) {
+            ->with($this->callback(function (ConfirmPasswordResetCommand $command) use ($token, $newPassword) {
                 $this->assertSame($token, $command->token);
                 $this->assertSame($newPassword, $command->newPassword);
 
-                $response = new ConfirmPasswordResetCommandResponse($message);
+                $response = new ConfirmPasswordResetCommandResponse();
                 $command->setResponse($response);
 
                 return true;

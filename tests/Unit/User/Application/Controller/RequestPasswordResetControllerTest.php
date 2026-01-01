@@ -29,11 +29,10 @@ final class RequestPasswordResetControllerTest extends UnitTestCase
     public function testInvokeDispatchesCommandAndReturnsResponse(): void
     {
         $email = $this->faker->email();
-        $responseMessage = '';
 
         $dto = new RequestPasswordResetDto($email);
 
-        $commandResponse = new RequestPasswordResetCommandResponse($responseMessage);
+        $commandResponse = new RequestPasswordResetCommandResponse();
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')

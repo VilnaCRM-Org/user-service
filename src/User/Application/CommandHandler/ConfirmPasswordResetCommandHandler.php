@@ -42,7 +42,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         $this->publishEvent($user);
 
         $command->setResponse(
-            new ConfirmPasswordResetCommandResponse('')
+            new ConfirmPasswordResetCommandResponse()
         );
     }
 

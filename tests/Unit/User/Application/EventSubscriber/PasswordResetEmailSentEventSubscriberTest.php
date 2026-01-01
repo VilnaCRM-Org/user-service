@@ -32,7 +32,7 @@ final class PasswordResetEmailSentEventSubscriberTest extends UnitTestCase
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->translator = $this->createMock(TranslatorInterface::class);
         $this->emailFactory = $this->createMock(EmailFactoryInterface::class);
-        $this->apiBaseUrl = 'https://example.com';
+        $this->apiBaseUrl = $this->faker->url();
 
         $this->subscriber = new PasswordResetEmailSentEventSubscriber(
             $this->mailer,

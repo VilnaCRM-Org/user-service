@@ -28,11 +28,10 @@ final readonly class PasswordResetRequestedEventSubscriber implements
     {
         $user = $event->user;
 
-        // Find the password reset token that was created
         $token = $this->tokenRepository->findByToken($event->token);
 
         if (!$token instanceof PasswordResetTokenInterface) {
-            return; // Token not found, skip email sending
+            return;
         }
 
         $this->commandBus->dispatch(

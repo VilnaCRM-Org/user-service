@@ -66,6 +66,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $newPassword = $this->faker->password(12);
         $userId = $this->faker->uuid();
         $eventId = Uuid::v4();
+        $hashedPassword = $this->faker->sha256();
 
         $command = new ConfirmPasswordResetCommand($token, $newPassword);
 
@@ -100,11 +101,11 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $this->passwordHasher->expects($this->once())
             ->method('hash')
             ->with($newPassword)
-            ->willReturn('hashed_password');
+            ->willReturn($hashedPassword);
 
         $user->expects($this->once())
             ->method('setPassword')
-            ->with('hashed_password');
+            ->with($hashedPassword);
 
         $this->userRepository->expects($this->once())
             ->method('save')
@@ -131,7 +132,6 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
         $response = $command->getResponse();
         $this->assertInstanceOf(ConfirmPasswordResetCommandResponse::class, $response);
-        $this->assertEquals('', $response->message);
     }
 
     public function testInvokePublishesEventWithCorrectUserId(): void
@@ -140,6 +140,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $newPassword = $this->faker->password(12);
         $userId = $this->faker->uuid();
         $eventId = Uuid::v4();
+        $hashedPassword = $this->faker->sha256();
 
         $command = new ConfirmPasswordResetCommand($token, $newPassword);
 
@@ -174,11 +175,11 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $this->passwordHasher->expects($this->once())
             ->method('hash')
             ->with($newPassword)
-            ->willReturn('hashed_password');
+            ->willReturn($hashedPassword);
 
         $user->expects($this->once())
             ->method('setPassword')
-            ->with('hashed_password');
+            ->with($hashedPassword);
 
         $this->userRepository->expects($this->once())
             ->method('save')

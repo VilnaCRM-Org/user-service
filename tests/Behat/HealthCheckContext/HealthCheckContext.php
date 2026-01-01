@@ -7,9 +7,7 @@ namespace App\Tests\Behat\HealthCheckContext;
 use Aws\Sqs\SqsClient;
 use Behat\Behat\Context\Context;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
-use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Result;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\TraceableAdapter;
@@ -52,11 +50,6 @@ final class HealthCheckContext implements Context
         $connection = $this->container()->get(Connection::class);
 
         $failingConnection = new class($connection->getParams(), $connection->getDriver(), $connection->getConfiguration()) extends Connection {
-            public function __construct(array $params, Driver $driver, Configuration $config)
-            {
-                parent::__construct($params, $driver, $config);
-            }
-
             public function executeQuery(
                 string $sql,
                 array $params = [],
@@ -94,7 +87,7 @@ final class HealthCheckContext implements Context
                 ]);
             }
 
-            public function __call($name, array $arguments): void
+            public function __call($name, array $args): void
             {
                 throw new \RuntimeException('Message broker is not available');
             }
@@ -128,7 +121,12 @@ final class HealthCheckContext implements Context
 
     private function container(): ContainerInterface
     {
-        /** @var ContainerInterface $container */
-        return $this->kernel->getContainer()->get('test.service_container');
+        $container = $this->kernel->getContainer()->get('test.service_container');
+
+        if (!$container instanceof ContainerInterface) {
+            throw new \RuntimeException('Test container is not available');
+        }
+
+        return $container;
     }
 }

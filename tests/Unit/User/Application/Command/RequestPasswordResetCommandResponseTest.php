@@ -11,11 +11,8 @@ final class RequestPasswordResetCommandResponseTest extends UnitTestCase
 {
     public function testConstructor(): void
     {
-        $message = $this->faker->sentence();
-
-        $response = new RequestPasswordResetCommandResponse($message);
+        $response = new RequestPasswordResetCommandResponse();
 
         $this->assertInstanceOf(RequestPasswordResetCommandResponse::class, $response);
-        $this->assertSame($message, $response->message);
     }
 }

@@ -88,6 +88,9 @@ final class UuidUriParameterFactoryTest extends UnitTestCase
         $this->assertSame($example, $parameter->getExample());
     }
 
+    /**
+     * @param array<int, string> $enum
+     */
     private function setExpectations(
         string $name,
         string $description,

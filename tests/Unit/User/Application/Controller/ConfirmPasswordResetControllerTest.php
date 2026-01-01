@@ -30,11 +30,10 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
     {
         $token = $this->faker->lexify('??????????');
         $newPassword = $this->faker->password(8, 20);
-        $responseMessage = '';
 
         $dto = new ConfirmPasswordResetDto($token, $newPassword);
 
-        $commandResponse = new ConfirmPasswordResetCommandResponse($responseMessage);
+        $commandResponse = new ConfirmPasswordResetCommandResponse();
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(function (ConfirmPasswordResetCommand $command) use ($token, $newPassword, $commandResponse) {

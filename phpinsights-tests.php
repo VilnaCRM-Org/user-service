@@ -9,6 +9,7 @@ use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Strings\UnnecessaryStringConcatSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
+use SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\UseSpacingSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\ParameterTypeHintSniff;
@@ -39,6 +40,7 @@ return [
         ParameterTypeHintSniff::class => [
             'exclude' => [
                 'tests/Unit/Shared/Infrastructure/Bus/CallableFirstParameterExtractorTest',
+                'tests/Behat/HealthCheckContext/HealthCheckContext.php',
             ],
         ],
         LineLengthSniff::class => [
@@ -78,10 +80,10 @@ return [
         ],
     ],
     'requirements' => [
-        'min-quality' => 95,
+        'min-quality' => 100,
         'min-complexity' => 95,
-        'min-architecture' => 90,
-        'min-style' => 95,
+        'min-architecture' => 100,
+        'min-style' => 100,
     ],
     'threads' => null,
 ];

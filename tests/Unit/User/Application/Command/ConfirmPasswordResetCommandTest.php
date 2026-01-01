@@ -26,14 +26,12 @@ final class ConfirmPasswordResetCommandTest extends UnitTestCase
     {
         $token = $this->faker->sha256();
         $newPassword = $this->faker->password();
-        $message = $this->faker->sentence();
 
         $command = new ConfirmPasswordResetCommand($token, $newPassword);
-        $response = new ConfirmPasswordResetCommandResponse($message);
+        $response = new ConfirmPasswordResetCommandResponse();
 
         $command->setResponse($response);
 
         $this->assertSame($response, $command->getResponse());
-        $this->assertSame($message, $command->getResponse()->message);
     }
 }

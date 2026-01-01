@@ -6,8 +6,4 @@ namespace App\User\Application\Command;
 
 final class RequestPasswordResetCommandResponse
 {
-    public function __construct(
-        public readonly string $message
-    ) {
-    }
 }

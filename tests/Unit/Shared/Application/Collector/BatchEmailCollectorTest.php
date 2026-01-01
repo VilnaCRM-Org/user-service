@@ -108,7 +108,9 @@ final class BatchEmailCollectorTest extends UnitTestCase
         $method = $reflection->getMethod('toArray');
         $this->makeAccessible($method);
 
-        /** @var array<array-key, array|object|string|int|float|bool|null> $result */
-        return $method->invoke($this->collector, $entries);
+        $result = $method->invoke($this->collector, $entries);
+        self::assertIsArray($result);
+
+        return $result;
     }
 }

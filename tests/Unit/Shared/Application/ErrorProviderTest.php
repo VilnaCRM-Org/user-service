@@ -209,6 +209,9 @@ final class ErrorProviderTest extends UnitTestCase
                 return Response::HTTP_BAD_REQUEST;
             }
 
+            /**
+             * @return array<string, string>
+             */
             #[\Override]
             public function getHeaders(): array
             {

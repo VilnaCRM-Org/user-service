@@ -7,6 +7,7 @@ namespace App\Tests\Unit\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RequestPasswordResetCommand;
+use App\User\Application\Command\RequestPasswordResetCommandResponse;
 use App\User\Application\CommandHandler\RequestPasswordResetCommandHandler;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
@@ -103,7 +104,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $command = new RequestPasswordResetCommand($email);
         $this->handler->__invoke($command);
 
-        $this->assertSame('', $command->getResponse()->message);
+        $this->assertInstanceOf(RequestPasswordResetCommandResponse::class, $command->getResponse());
     }
 
     public function testRequestPasswordResetForNonExistingUser(): void
@@ -131,6 +132,6 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $command = new RequestPasswordResetCommand($email);
         $this->handler->__invoke($command);
 
-        $this->assertSame('', $command->getResponse()->message);
+        $this->assertInstanceOf(RequestPasswordResetCommandResponse::class, $command->getResponse());
     }
 }
