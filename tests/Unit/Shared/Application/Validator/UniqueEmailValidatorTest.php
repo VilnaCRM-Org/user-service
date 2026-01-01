@@ -11,6 +11,7 @@ use App\Shared\Application\Validator\UniqueEmailValidator;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;

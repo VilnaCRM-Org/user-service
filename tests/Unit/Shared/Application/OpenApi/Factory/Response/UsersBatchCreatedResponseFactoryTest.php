@@ -16,31 +16,34 @@ final class UsersBatchCreatedResponseFactoryTest extends UnitTestCase
     public function testGetResponseProvidesBatchSpecificExamples(): void
     {
         $responseBuilder = $this->createMock(ArrayResponseBuilder::class);
-
+        $this->setupResponseBuilderExpectation($responseBuilder);
         $factory = new UsersBatchCreatedResponseFactory($responseBuilder);
 
+        $factory->getResponse();
+    }
+
+    private function setupResponseBuilderExpectation(ArrayResponseBuilder $responseBuilder): void
+    {
         $responseBuilder->expects($this->once())
             ->method('build')
-            ->with(
-                'Users returned',
-                [
-                    new Parameter('confirmed', 'boolean', false),
-                    new Parameter(
-                        'email',
-                        'string',
-                        SchemathesisFixtures::CREATE_BATCH_FIRST_USER_EMAIL
-                    ),
-                    new Parameter(
-                        'initials',
-                        'string',
-                        SchemathesisFixtures::CREATE_BATCH_FIRST_USER_INITIALS
-                    ),
-                    new Parameter('id', 'string', SchemathesisFixtures::CREATE_BATCH_FIRST_USER_ID),
-                ],
-                []
-            )
+            ->with('Users returned', $this->createBatchUserParameters(), [])
             ->willReturn($this->createStub(Response::class));
+    }
 
-        $factory->getResponse();
+    /**
+     * @return array<int, Parameter>
+     */
+    private function createBatchUserParameters(): array
+    {
+        return [
+            new Parameter('confirmed', 'boolean', false),
+            new Parameter('email', 'string', SchemathesisFixtures::CREATE_BATCH_FIRST_USER_EMAIL),
+            new Parameter(
+                'initials',
+                'string',
+                SchemathesisFixtures::CREATE_BATCH_FIRST_USER_INITIALS
+            ),
+            new Parameter('id', 'string', SchemathesisFixtures::CREATE_BATCH_FIRST_USER_ID),
+        ];
     }
 }

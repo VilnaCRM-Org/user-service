@@ -55,56 +55,53 @@ final class OpenApiFactoryTest extends UnitTestCase
     public function testInvokeDecoratesOpenApiDocument(): void
     {
         $initialDocument = $this->createBaseOpenApi();
+        $this->setupDecoratorExpectations($initialDocument);
+        $factory = $this->createFactory();
 
+        $result = $factory->__invoke([]);
+
+        $this->assertEquals($this->createExpectedOpenApi($initialDocument), $result);
+    }
+
+    public function testInvokeAddsSecuritySchemeWhenComponentsMissing(): void
+    {
+        $emptyDocument = $this->createBaseOpenApi();
+        $this->setupFactoryExpectation($emptyDocument);
+        $this->setupProcessorExpectations();
+        $factory = $this->createFactory([]);
+
+        $result = $factory->__invoke([]);
+
+        $this->assertSecuritySchemesPresent($result);
+    }
+
+    private function setupDecoratorExpectations(OpenApi $initialDocument): void
+    {
+        $this->setupFactoryExpectation($initialDocument);
+        $this->setupEndpointFactoryExpectations();
+        $this->setupProcessorExpectations();
+    }
+
+    private function setupFactoryExpectation(OpenApi $initialDocument): void
+    {
         $this->decoratedFactory->expects($this->once())
             ->method('__invoke')
             ->with([])
             ->willReturn($initialDocument);
+    }
 
+    private function setupEndpointFactoryExpectations(): void
+    {
         $this->endpointFactoryOne->expects($this->once())
             ->method('createEndpoint')
             ->with($this->isInstanceOf(OpenApi::class));
         $this->endpointFactoryTwo->expects($this->once())
             ->method('createEndpoint')
             ->with($this->isInstanceOf(OpenApi::class));
-
-        $this->errorResponseAugmenter->expects($this->once())
-            ->method('augment')
-            ->with($this->isInstanceOf(OpenApi::class));
-
-        $this->pathParametersSanitizer->expects($this->once())
-            ->method('sanitize')
-            ->with($this->isInstanceOf(OpenApi::class))
-            ->willReturnCallback(static fn (OpenApi $document) => $document);
-
-        $this->paginationQueryParametersSanitizer->expects($this->once())
-            ->method('sanitize')
-            ->with($this->isInstanceOf(OpenApi::class))
-            ->willReturnCallback(static fn (OpenApi $document) => $document);
-
-        $this->noContentResponseCleaner->expects($this->once())
-            ->method('clean')
-            ->with($this->isInstanceOf(OpenApi::class))
-            ->willReturnCallback(static fn (OpenApi $document) => $document);
-
-        $factory = $this->createFactory();
-
-        $result = $factory->__invoke([]);
-
-        $this->assertEquals(
-            $this->createExpectedOpenApi($initialDocument),
-            $result
-        );
     }
 
-    public function testInvokeAddsSecuritySchemeWhenComponentsMissing(): void
+    private function setupProcessorExpectations(): void
     {
-        $emptyDocument = $this->createBaseOpenApi();
-
-        $this->decoratedFactory->expects($this->once())
-            ->method('__invoke')
-            ->willReturn($emptyDocument);
-
         $this->errorResponseAugmenter->expects($this->once())
             ->method('augment')
             ->with($this->isInstanceOf(OpenApi::class));
@@ -123,11 +120,10 @@ final class OpenApiFactoryTest extends UnitTestCase
             ->method('clean')
             ->with($this->isInstanceOf(OpenApi::class))
             ->willReturnCallback(static fn (OpenApi $document) => $document);
+    }
 
-        $factory = $this->createFactory([]);
-
-        $result = $factory->__invoke([]);
-
+    private function assertSecuritySchemesPresent(OpenApi $result): void
+    {
         $components = $result->getComponents();
         $this->assertNotNull($components);
         $schemes = $components->getSecuritySchemes();

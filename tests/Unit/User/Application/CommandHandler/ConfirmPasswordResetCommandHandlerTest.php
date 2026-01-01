@@ -161,8 +161,8 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $command = $testData['command'];
         $token = $testData['token'];
 
-        $passwordResetToken = $this->createMockPasswordResetTokenWithUserId();
-        $userId = $passwordResetToken->getUserID();
+        $userId = $this->faker->uuid();
+        $passwordResetToken = $this->createMockPasswordResetTokenWithUserId($userId);
 
         $this->setupUserNotFoundExpectations($token, $passwordResetToken, $userId);
 
@@ -187,10 +187,9 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         ];
     }
 
-    private function createMockPasswordResetTokenWithUserId(): PasswordResetTokenInterface
+    private function createMockPasswordResetTokenWithUserId(string $userId): PasswordResetTokenInterface
     {
         $passwordResetToken = $this->createMock(PasswordResetTokenInterface::class);
-        $userId = $this->faker->uuid();
 
         $passwordResetToken->expects($this->once())
             ->method('getUserID')

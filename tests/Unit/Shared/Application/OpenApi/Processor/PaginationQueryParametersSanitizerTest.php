@@ -19,74 +19,19 @@ final class PaginationQueryParametersSanitizerTest extends UnitTestCase
 {
     public function testEnforcesPaginationConstraints(): void
     {
-        $pageParameter = new Parameter(
-            name: 'page',
-            in: 'query',
-            description: 'The collection page number',
-            schema: ['type' => 'integer', 'default' => 1],
-            allowEmptyValue: true
-        );
-
-        $itemsParameter = new Parameter(
-            name: 'itemsPerPage',
-            in: 'query',
-            description: 'The number of items per page',
-            schema: ['type' => 'integer', 'default' => 30],
-            allowEmptyValue: true
-        );
-
-        $operation = new Operation(
-            parameters: [$pageParameter, $itemsParameter]
-        );
-
-        $paths = new Paths();
-        $paths->addPath('/users', (new PathItem())->withGet($operation));
-
-        $openApi = new OpenApi(new Info('Test', '1.0.0'), [], $paths);
-
+        $openApi = $this->createOpenApiWithPaginationParameters();
         $sanitized = $this->createSanitizer()->sanitize($openApi);
 
-        $parameters = $sanitized->getPaths()
-            ->getPath('/users')
-            ->getGet()
-            ->getParameters();
-
-        $this->assertSame(1, $parameters[0]->getSchema()['minimum']);
-        $this->assertFalse($parameters[0]->getAllowEmptyValue());
-
-        $this->assertSame(1, $parameters[1]->getSchema()['minimum']);
-        $this->assertFalse($parameters[1]->getAllowEmptyValue());
+        $this->assertPaginationConstraintsEnforced($sanitized);
     }
 
     public function testSanitizeLeavesNonPaginationParametersUntouched(): void
     {
-        $filterParameter = new Parameter(
-            name: 'email',
-            in: 'query',
-            description: 'Filter by email',
-            schema: ['type' => 'string'],
-            allowEmptyValue: true
-        );
-
-        $paths = new Paths();
-        $paths->addPath(
-            '/users',
-            (new PathItem())->withGet(
-                new Operation(parameters: [$filterParameter])
-            )
-        );
-
-        $openApi = new OpenApi(new Info('Test', '1.0.0'), [], $paths);
-
+        $filterParameter = $this->createFilterParameter();
+        $openApi = $this->createOpenApiWithParameter($filterParameter);
         $sanitized = $this->createSanitizer()->sanitize($openApi);
 
-        $parameter = $sanitized->getPaths()
-            ->getPath('/users')
-            ->getGet()
-            ->getParameters()[0];
-
-        $this->assertTrue($parameter->getAllowEmptyValue());
-        $this->assertArrayNotHasKey('minimum', $parameter->getSchema());
+        $this->assertNonPaginationParameterUntouched($sanitized);
     }
 
     public function testSanitizeSkipsWhenParametersCollectionIsNotArray(): void
@@ -125,61 +70,130 @@ final class PaginationQueryParametersSanitizerTest extends UnitTestCase
 
     public function testSanitizeLeavesNonQueryParametersUntouched(): void
     {
-        $headerParameter = new Parameter(
-            name: 'X-Header',
-            in: 'header',
-            description: 'A header parameter',
+        $headerParameter = $this->createHeaderParameter('X-Header', 'A header parameter');
+        $openApi = $this->createOpenApiWithParameter($headerParameter);
+        $sanitized = $this->createSanitizer()->sanitize($openApi);
+
+        $this->assertHeaderParameterUntouched($sanitized);
+    }
+
+    public function testPaginationParametersOutsideQueryAreIgnored(): void
+    {
+        $headerParameter = $this->createPaginationHeaderParameter();
+        $openApi = $this->createOpenApiWithParameter($headerParameter);
+        $sanitized = $this->createSanitizer()->sanitize($openApi);
+
+        $this->assertPaginationHeaderParameterUntouched($sanitized);
+    }
+
+    private function createOpenApiWithPaginationParameters(): OpenApi
+    {
+        $pageParameter = $this->createPageParameter();
+        $itemsParameter = $this->createItemsPerPageParameter();
+        $operation = new Operation(parameters: [$pageParameter, $itemsParameter]);
+
+        $paths = new Paths();
+        $paths->addPath('/users', (new PathItem())->withGet($operation));
+
+        return new OpenApi(new Info('Test', '1.0.0'), [], $paths);
+    }
+
+    private function createPageParameter(): Parameter
+    {
+        return new Parameter(
+            name: 'page',
+            in: 'query',
+            description: 'The collection page number',
+            schema: ['type' => 'integer', 'default' => 1],
+            allowEmptyValue: true
+        );
+    }
+
+    private function createItemsPerPageParameter(): Parameter
+    {
+        return new Parameter(
+            name: 'itemsPerPage',
+            in: 'query',
+            description: 'The number of items per page',
+            schema: ['type' => 'integer', 'default' => 30],
+            allowEmptyValue: true
+        );
+    }
+
+    private function assertPaginationConstraintsEnforced(OpenApi $sanitized): void
+    {
+        $parameters = $sanitized->getPaths()->getPath('/users')->getGet()->getParameters();
+
+        $this->assertSame(1, $parameters[0]->getSchema()['minimum']);
+        $this->assertFalse($parameters[0]->getAllowEmptyValue());
+
+        $this->assertSame(1, $parameters[1]->getSchema()['minimum']);
+        $this->assertFalse($parameters[1]->getAllowEmptyValue());
+    }
+
+    private function createFilterParameter(): Parameter
+    {
+        return new Parameter(
+            name: 'email',
+            in: 'query',
+            description: 'Filter by email',
             schema: ['type' => 'string'],
             allowEmptyValue: true
         );
+    }
 
+    private function createOpenApiWithParameter(Parameter $parameter): OpenApi
+    {
         $paths = new Paths();
         $paths->addPath(
             '/users',
-            (new PathItem())->withGet(
-                new Operation(parameters: [$headerParameter])
-            )
+            (new PathItem())->withGet(new Operation(parameters: [$parameter]))
         );
 
-        $openApi = new OpenApi(new Info('Test', '1.0.0'), [], $paths);
+        return new OpenApi(new Info('Test', '1.0.0'), [], $paths);
+    }
 
-        $sanitized = $this->createSanitizer()->sanitize($openApi);
+    private function assertNonPaginationParameterUntouched(OpenApi $sanitized): void
+    {
+        $parameter = $sanitized->getPaths()->getPath('/users')->getGet()->getParameters()[0];
 
-        $parameter = $sanitized->getPaths()
-            ->getPath('/users')
-            ->getGet()
-            ->getParameters()[0];
+        $this->assertTrue($parameter->getAllowEmptyValue());
+        $this->assertArrayNotHasKey('minimum', $parameter->getSchema());
+    }
+
+    private function createHeaderParameter(string $name, string $description): Parameter
+    {
+        return new Parameter(
+            name: $name,
+            in: 'header',
+            description: $description,
+            schema: ['type' => 'string'],
+            allowEmptyValue: true
+        );
+    }
+
+    private function assertHeaderParameterUntouched(OpenApi $sanitized): void
+    {
+        $parameter = $sanitized->getPaths()->getPath('/users')->getGet()->getParameters()[0];
 
         $this->assertTrue($parameter->getAllowEmptyValue());
         $this->assertSame('header', $parameter->getIn());
     }
 
-    public function testPaginationParametersOutsideQueryAreIgnored(): void
+    private function createPaginationHeaderParameter(): Parameter
     {
-        $headerParameter = new Parameter(
+        return new Parameter(
             name: 'page',
             in: 'header',
             description: 'A header based pagination parameter',
             schema: ['type' => 'integer'],
             allowEmptyValue: true
         );
+    }
 
-        $paths = new Paths();
-        $paths->addPath(
-            '/users',
-            (new PathItem())->withGet(
-                new Operation(parameters: [$headerParameter])
-            )
-        );
-
-        $openApi = new OpenApi(new Info('Test', '1.0.0'), [], $paths);
-
-        $sanitized = $this->createSanitizer()->sanitize($openApi);
-
-        $parameter = $sanitized->getPaths()
-            ->getPath('/users')
-            ->getGet()
-            ->getParameters()[0];
+    private function assertPaginationHeaderParameterUntouched(OpenApi $sanitized): void
+    {
+        $parameter = $sanitized->getPaths()->getPath('/users')->getGet()->getParameters()[0];
 
         $this->assertTrue($parameter->getAllowEmptyValue());
         $this->assertArrayNotHasKey('minimum', $parameter->getSchema());

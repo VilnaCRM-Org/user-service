@@ -18,34 +18,11 @@ final class PathParametersSanitizerTest extends UnitTestCase
 {
     public function testSanitizeRemovesUnsupportedFlagsFromPathParameters(): void
     {
-        $parameter = new Parameter(
-            name: 'id',
-            in: 'path',
-            description: 'Identifier',
-            required: true,
-            allowEmptyValue: true,
-            schema: ['type' => 'string'],
-            allowReserved: true
-        );
-
-        $operation = new Operation(parameters: [$parameter]);
-        $pathItem = (new PathItem())->withGet($operation);
-
-        $paths = new Paths();
-        $paths->addPath('/resource/{id}', $pathItem);
-
-        $openApi = new OpenApi(new Info('Test', '1.0.0'), [], $paths);
-
+        $openApi = $this->createOpenApiWithPathParameter();
         $sanitizer = new PathParametersSanitizer(new PathParameterCleaner());
         $sanitized = $sanitizer->sanitize($openApi);
 
-        $sanitizedParameter = $sanitized->getPaths()
-            ->getPath('/resource/{id}')
-            ->getGet()
-            ->getParameters()[0];
-
-        $this->assertNull($sanitizedParameter->getAllowEmptyValue());
-        $this->assertNull($sanitizedParameter->getAllowReserved());
+        $this->assertPathParameterWasSanitized($sanitized);
     }
 
     public function testSanitizeUsesInjectedCleaner(): void
@@ -98,5 +75,41 @@ final class PathParametersSanitizerTest extends UnitTestCase
         $this->makeAccessible($method);
 
         $this->assertNull($method->invoke($sanitizer, null));
+    }
+
+    private function createOpenApiWithPathParameter(): OpenApi
+    {
+        $parameter = $this->createPathParameterWithUnsupportedFlags();
+        $operation = new Operation(parameters: [$parameter]);
+        $pathItem = (new PathItem())->withGet($operation);
+
+        $paths = new Paths();
+        $paths->addPath('/resource/{id}', $pathItem);
+
+        return new OpenApi(new Info('Test', '1.0.0'), [], $paths);
+    }
+
+    private function createPathParameterWithUnsupportedFlags(): Parameter
+    {
+        return new Parameter(
+            name: 'id',
+            in: 'path',
+            description: 'Identifier',
+            required: true,
+            allowEmptyValue: true,
+            schema: ['type' => 'string'],
+            allowReserved: true
+        );
+    }
+
+    private function assertPathParameterWasSanitized(OpenApi $sanitized): void
+    {
+        $sanitizedParameter = $sanitized->getPaths()
+            ->getPath('/resource/{id}')
+            ->getGet()
+            ->getParameters()[0];
+
+        $this->assertNull($sanitizedParameter->getAllowEmptyValue());
+        $this->assertNull($sanitizedParameter->getAllowReserved());
     }
 }

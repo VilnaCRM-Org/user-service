@@ -20,12 +20,27 @@ final class ServerErrorResponseAugmenterTest extends UnitTestCase
     public function testAugmentAddsInternalServerErrorResponse(): void
     {
         $internalErrorResponse = new Response(description: 'Server error');
+        $internalErrorFactory = $this->createInternalErrorFactory($internalErrorResponse);
+        $openApi = $this->createOpenApiWithOperations();
 
-        $internalErrorFactory = $this->createMock(InternalErrorFactory::class);
-        $internalErrorFactory->expects($this->once())
+        $augmenter = new ServerErrorResponseAugmenter($internalErrorFactory);
+        $augmenter->augment($openApi);
+
+        $this->assertBothOperationsHaveServerError($openApi, $internalErrorResponse);
+    }
+
+    private function createInternalErrorFactory(Response $response): InternalErrorFactory
+    {
+        $factory = $this->createMock(InternalErrorFactory::class);
+        $factory->expects($this->once())
             ->method('getResponse')
-            ->willReturn($internalErrorResponse);
+            ->willReturn($response);
 
+        return $factory;
+    }
+
+    private function createOpenApiWithOperations(): OpenApi
+    {
         $operation = new Operation(responses: []);
         $pathItem = (new PathItem())
             ->withGet($operation)
@@ -34,21 +49,17 @@ final class ServerErrorResponseAugmenterTest extends UnitTestCase
         $paths = new Paths();
         $paths->addPath('/resource', $pathItem);
 
-        $openApi = new OpenApi(new Info('Test', '1.0.0'), [], $paths);
+        return new OpenApi(new Info('Test', '1.0.0'), [], $paths);
+    }
 
-        $augmenter = new ServerErrorResponseAugmenter($internalErrorFactory);
-        $augmenter->augment($openApi);
-
+    private function assertBothOperationsHaveServerError(
+        OpenApi $openApi,
+        Response $internalErrorResponse
+    ): void {
         $path = $openApi->getPaths()->getPath('/resource');
 
-        $this->assertResponseContainsServerError(
-            $path->getGet(),
-            $internalErrorResponse
-        );
-        $this->assertResponseContainsServerError(
-            $path->getPost(),
-            $internalErrorResponse
-        );
+        $this->assertResponseContainsServerError($path->getGet(), $internalErrorResponse);
+        $this->assertResponseContainsServerError($path->getPost(), $internalErrorResponse);
     }
 
     private function assertResponseContainsServerError(

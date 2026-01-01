@@ -43,29 +43,12 @@ final class NoContentResponseCleanerTest extends UnitTestCase
 
     public function testCleanLeavesNonNoContentResponsesUntouched(): void
     {
-        $response = new Response(
-            description: 'OK',
-            content: new ArrayObject(['application/json' => []])
-        );
-        $operation = new Operation(
-            responses: ['200' => $response, '205' => $response]
-        );
-        $pathItem = (new PathItem())->withGet($operation);
-        $paths = new Paths();
-        $paths->addPath('/resource', $pathItem);
-        $openApi = new OpenApi(new Info('Test', '1.0.0'), [], $paths);
+        $response = $this->createOkResponse();
+        $openApi = $this->createOpenApiWith200And205Responses($response);
 
         $cleaned = $this->createCleaner()->clean($openApi);
-        $cleanedResponses = $cleaned->getPaths()
-            ->getPath('/resource')
-            ->getGet()
-            ->getResponses();
 
-        $this->assertSame($response, $cleanedResponses['200']);
-        $this->assertEquals(
-            new ArrayObject(),
-            $cleanedResponses['205']->getContent()
-        );
+        $this->assertNonNoContentResponseUntouched($cleaned, $response);
     }
 
     public function testCleanSkipsWhenResponsesCollectionIsNotArray(): void
@@ -106,28 +89,56 @@ final class NoContentResponseCleanerTest extends UnitTestCase
     public function testCleanerContinuesProcessingAfterNonResponseEntry(): void
     {
         $nonResponse = 'unexpected';
-        $response = new Response(
+        $openApi = $this->createOpenApiWithNonResponseEntry($nonResponse);
+
+        $cleaned = $this->createCleaner()->clean($openApi);
+
+        $this->assertNonResponseEntryHandled($cleaned, $nonResponse);
+    }
+
+    private function createOkResponse(): Response
+    {
+        return new Response(
+            description: 'OK',
             content: new ArrayObject(['application/json' => []])
         );
-        $operation = new Operation(
-            responses: ['204' => $nonResponse, '205' => $response]
-        );
+    }
+
+    private function createOpenApiWith200And205Responses(Response $response): OpenApi
+    {
+        $operation = new Operation(responses: ['200' => $response, '205' => $response]);
+        $pathItem = (new PathItem())->withGet($operation);
+        $paths = new Paths();
+        $paths->addPath('/resource', $pathItem);
+
+        return new OpenApi(new Info('Test', '1.0.0'), [], $paths);
+    }
+
+    private function assertNonNoContentResponseUntouched(OpenApi $cleaned, Response $response): void
+    {
+        $cleanedResponses = $cleaned->getPaths()->getPath('/resource')->getGet()->getResponses();
+
+        $this->assertSame($response, $cleanedResponses['200']);
+        $this->assertEquals(new ArrayObject(), $cleanedResponses['205']->getContent());
+    }
+
+    private function createOpenApiWithNonResponseEntry(string $nonResponse): OpenApi
+    {
+        $response = new Response(content: new ArrayObject(['application/json' => []]));
+        $operation = new Operation(responses: ['204' => $nonResponse, '205' => $response]);
         $pathItem = (new PathItem())->withPut($operation);
         $paths = new Paths();
         $paths->addPath('/resource', $pathItem);
-        $openApi = new OpenApi(new Info('Test', '1.0.0'), [], $paths);
 
-        $cleaned = $this->createCleaner()->clean($openApi);
-        $cleanedResponses = $cleaned->getPaths()
-            ->getPath('/resource')
-            ->getPut()
-            ->getResponses();
+        return new OpenApi(new Info('Test', '1.0.0'), [], $paths);
+    }
+
+    private function assertNonResponseEntryHandled(OpenApi $cleaned, string $nonResponse): void
+    {
+        $cleanedResponses = $cleaned->getPaths()->getPath('/resource')->getPut()->getResponses();
 
         $this->assertSame($nonResponse, $cleanedResponses['204']);
-        $this->assertEquals(
-            new ArrayObject(),
-            $cleanedResponses['205']->getContent()
-        );
+        $this->assertEquals(new ArrayObject(), $cleanedResponses['205']->getContent());
     }
 
     private function createCleaner(): NoContentResponseCleaner

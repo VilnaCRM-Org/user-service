@@ -97,7 +97,7 @@ final class RedisTokenRepositoryTest extends UnitTestCase
         $this->assertSame($token, $result);
     }
 
-    public function testRemove(): void
+    public function testDelete(): void
     {
         $userId = $this->faker->uuid();
         $token = $this->confirmationTokenFactory->create($userId);
@@ -113,47 +113,9 @@ final class RedisTokenRepositoryTest extends UnitTestCase
                 )
             );
 
-        $this->repository->remove($token);
+        $this->repository->delete($token);
     }
 
-    public function testRemoveByTokenValue(): void
-    {
-        $tokenValue = $this->faker->lexify('??????????');
-        $tokenKey = $this->tokenKey($tokenValue);
-
-        $this->cache->expects($this->once())
-            ->method('delete')
-            ->with($tokenKey)
-            ->willReturn(true);
-
-        $this->repository->removeByTokenValue($tokenValue);
-    }
-
-    public function testRemoveByUserId(): void
-    {
-        $userId = $this->faker->uuid();
-        $userKey = $this->userKey($userId);
-
-        $this->cache->expects($this->once())
-            ->method('delete')
-            ->with($userKey)
-            ->willReturn(true);
-
-        $this->repository->removeByUserId($userId);
-    }
-
-    public function testRemoveByUserIdWhenCacheDeleteFails(): void
-    {
-        $userId = $this->faker->uuid();
-        $userKey = $this->userKey($userId);
-
-        $this->cache->expects($this->once())
-            ->method('delete')
-            ->with($userKey)
-            ->willReturn(false);
-
-        $this->repository->removeByUserId($userId);
-    }
 
     /**
      * @return array{tokenKey: string, userKey: string}
@@ -224,6 +186,21 @@ final class RedisTokenRepositoryTest extends UnitTestCase
                     return true;
                 }
             );
+    }
+
+    private function createCacheItem(?string $value = null, string $key = 'key'): CacheItem
+    {
+        $item = new CacheItem();
+
+        $keyProperty = new ReflectionProperty(CacheItem::class, 'key');
+        $this->makeAccessible($keyProperty);
+        $keyProperty->setValue($item, $key);
+
+        if ($value !== null) {
+            $item->set($value);
+        }
+
+        return $item;
     }
 
     private function expiry(CacheItem $item): mixed

@@ -8,6 +8,7 @@ use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory as IdFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Command\RegisterUserCommand;
 use App\User\Application\CommandHandler\RegisterUserCommandHandler;
 use App\User\Application\Factory\SignUpCommandFactory;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
@@ -109,7 +110,7 @@ final class SignUpCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, string|UserInterface|SignUpCommand>
+     * @return array<string, string|UserInterface|RegisterUserCommand>
      */
     private function createTestDataForExistingUser(): array
     {
