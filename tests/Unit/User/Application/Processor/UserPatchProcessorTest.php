@@ -50,9 +50,33 @@ final class UserPatchProcessorTest extends UnitTestCase
     {
         parent::setUp();
         $this->faker->seed(12345);
-        $this->initializeMocks();
-        $this->initializeServices();
-        $this->initializeProcessor();
+
+        $this->mockOperation = $this->createMock(Operation::class);
+        $this->getUserQueryHandler = $this->createMock(GetUserQueryHandler::class);
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->mockUpdateUserCommandFactory = $this->createMock(UpdateUserCommandFactoryInterface::class);
+
+        $this->userFactory = new UserFactory();
+        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
+        $this->updateUserCommandFactory = new UpdateUserCommandFactory();
+        $this->requestStack = new RequestStack();
+        $this->payloadProvider = new JsonRequestPayloadProvider(
+            new JsonRequestContentProvider($this->requestStack),
+            new JsonBodyDecoder()
+        );
+        $this->updateResolver = new UserPatchUpdateResolver(
+            new UserPatchEmailSanitizer(),
+            new UserPatchNonEmptySanitizer(),
+            new UserPatchPasswordSanitizer()
+        );
+
+        $this->processor = new UserPatchProcessor(
+            $this->commandBus,
+            $this->mockUpdateUserCommandFactory,
+            $this->getUserQueryHandler,
+            $this->payloadProvider,
+            $this->updateResolver
+        );
     }
 
     public function testProcess(): void
@@ -330,17 +354,10 @@ final class UserPatchProcessorTest extends UnitTestCase
         UserUpdate $updateData,
         string $userId
     ): void {
-        $command = $this->createCommand($user, $updateData);
+        $command = $this->updateUserCommandFactory->create($user, $updateData);
         $this->expectUserQueryHandler($userId, $user);
         $this->expectUpdateUserCommandFactory($user, $updateData, $command);
         $this->expectCommandBusDispatch($command);
-    }
-
-    private function createCommand(
-        UserInterface $user,
-        UserUpdate $updateData
-    ): object {
-        return $this->updateUserCommandFactory->create($user, $updateData);
     }
 
     private function expectUserQueryHandler(
@@ -564,44 +581,6 @@ final class UserPatchProcessorTest extends UnitTestCase
                 $this->mockOperation,
                 ['id' => $userId]
             )
-        );
-    }
-
-    private function initializeMocks(): void
-    {
-        $this->mockOperation = $this->createMock(Operation::class);
-        $this->getUserQueryHandler = $this->createMock(GetUserQueryHandler::class);
-        $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->mockUpdateUserCommandFactory = $this->createMock(
-            UpdateUserCommandFactoryInterface::class
-        );
-    }
-
-    private function initializeServices(): void
-    {
-        $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
-        $this->updateUserCommandFactory = new UpdateUserCommandFactory();
-        $this->requestStack = new RequestStack();
-        $this->payloadProvider = new JsonRequestPayloadProvider(
-            new JsonRequestContentProvider($this->requestStack),
-            new JsonBodyDecoder()
-        );
-        $this->updateResolver = new UserPatchUpdateResolver(
-            new UserPatchEmailSanitizer(),
-            new UserPatchNonEmptySanitizer(),
-            new UserPatchPasswordSanitizer()
-        );
-    }
-
-    private function initializeProcessor(): void
-    {
-        $this->processor = new UserPatchProcessor(
-            $this->commandBus,
-            $this->mockUpdateUserCommandFactory,
-            $this->getUserQueryHandler,
-            $this->payloadProvider,
-            $this->updateResolver
         );
     }
 

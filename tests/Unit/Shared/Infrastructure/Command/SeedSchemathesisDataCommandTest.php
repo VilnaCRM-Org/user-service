@@ -244,7 +244,7 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
 
     private function executeCommandAndAssertSuccess(
         SeedSchemathesisDataCommand $command
-    ): CommandTester {
+    ): void {
         $tester = new CommandTester($command);
         $status = $tester->execute([]);
 
@@ -253,8 +253,6 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
             'Schemathesis reference data has been seeded.',
             $tester->getDisplay()
         );
-
-        return $tester;
     }
 
     private function assertUsersWereSeeded(

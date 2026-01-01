@@ -116,7 +116,6 @@ final class RedisTokenRepositoryTest extends UnitTestCase
         $this->repository->delete($token);
     }
 
-
     /**
      * @return array{tokenKey: string, userKey: string}
      */
