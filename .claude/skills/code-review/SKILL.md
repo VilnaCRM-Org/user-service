@@ -85,16 +85,16 @@ For any code changes (suggestions, prompts, or new files), **MANDATORY** verific
 
 **DDD Naming Patterns** (examples):
 
-| Layer              | Type               | Pattern                          | Example                           |
-| ------------------ | ------------------ | -------------------------------- | --------------------------------- |
-| **Domain**         | Entity             | `{EntityName}.php`               | `Customer.php`                    |
-|                    | Value Object       | `{ConceptName}.php`              | `Email.php`                       |
-|                    | Domain Event       | `{Entity}{PastTenseAction}.php`  | `CustomerCreated.php`             |
-| **Application**    | Command            | `{Action}{Entity}Command.php`    | `CreateCustomerCommand.php`       |
-|                    | Command Handler    | `{Action}{Entity}Handler.php`    | `CreateCustomerHandler.php`       |
-|                    | Processor          | `{Action}{Entity}Processor.php`  | `CreateCustomerProcessor.php`     |
-|                    | Transformer        | `{From}To{To}Transformer.php`    | `CustomerToArrayTransformer.php`  |
-| **Infrastructure** | Repository         | `{Tech}{Entity}Repository.php`   | `MySQLCustomerRepository.php`     |
+| Layer              | Type            | Pattern                         | Example                          |
+| ------------------ | --------------- | ------------------------------- | -------------------------------- |
+| **Domain**         | Entity          | `{EntityName}.php`              | `Customer.php`                   |
+|                    | Value Object    | `{ConceptName}.php`             | `Email.php`                      |
+|                    | Domain Event    | `{Entity}{PastTenseAction}.php` | `CustomerCreated.php`            |
+| **Application**    | Command         | `{Action}{Entity}Command.php`   | `CreateCustomerCommand.php`      |
+|                    | Command Handler | `{Action}{Entity}Handler.php`   | `CreateCustomerHandler.php`      |
+|                    | Processor       | `{Action}{Entity}Processor.php` | `CreateCustomerProcessor.php`    |
+|                    | Transformer     | `{From}To{To}Transformer.php`   | `CustomerToArrayTransformer.php` |
+| **Infrastructure** | Repository      | `{Tech}{Entity}Repository.php`  | `MySQLCustomerRepository.php`    |
 
 **For complete DDD patterns, see `implementing-ddd-architecture` skill.**
 
