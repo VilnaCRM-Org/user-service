@@ -19,6 +19,7 @@ Skills live in `.claude/skills/` and are auto-discovered. Use the decision tree 
 | **Run CI checks**          | `ci-workflow`                   | Before committing, validating changes     |
 | **Debug test failures**    | `testing-workflow`              | PHPUnit, Behat, or Infection issues       |
 | **Handle PR feedback**     | `code-review`                   | Processing code review comments           |
+| **Organize code structure**| `code-organization`             | Directory placement, naming, type safety  |
 | **Create DDD patterns**    | `implementing-ddd-architecture` | New entities, value objects, aggregates   |
 | **Add CRUD endpoints**     | `api-platform-crud`             | New API resources with full CRUD          |
 | **Create load tests**      | `load-testing`                  | K6 performance tests (REST/GraphQL)       |

@@ -16,26 +16,45 @@ final class CreateBatchRequestFactoryTest extends UnitTestCase
     public function testGetRequestEnforcesBatchItemSchema(): void
     {
         $factory = new CreateBatchRequestFactory();
-
         $requestBody = $factory->getRequest();
 
         $this->assertInstanceOf(RequestBody::class, $requestBody);
         $this->assertTrue($requestBody->getRequired());
 
+        $mediaType = $this->assertAndGetMediaType($requestBody);
+        $schemaData = $this->assertAndGetSchemaData($mediaType);
+        $this->assertUsersSchema($schemaData);
+        $this->assertBatchExample($mediaType);
+    }
+
+    private function assertAndGetMediaType(RequestBody $requestBody): MediaType
+    {
         $content = $requestBody->getContent();
         $this->assertNotNull($content);
         $this->assertTrue($content->offsetExists('application/json'));
-
         $mediaType = $content->offsetGet('application/json');
         $this->assertInstanceOf(MediaType::class, $mediaType);
+        return $mediaType;
+    }
 
+    /**
+     * @return array<string, Schema|string|array<string>>
+     */
+    private function assertAndGetSchemaData(MediaType $mediaType): array
+    {
         $schema = $mediaType->getSchema();
         $this->assertNotNull($schema);
-
         $schemaData = $schema->getArrayCopy();
         $this->assertSame('object', $schemaData['type']);
         $this->assertSame(['users'], $schemaData['required']);
+        return $schemaData;
+    }
 
+    /**
+     * @param array<string, Schema|string|array<string>> $schemaData
+     */
+    private function assertUsersSchema(array $schemaData): void
+    {
         /** @var Schema $usersSchema */
         $usersSchema = $schemaData['properties']['users'];
         $this->assertInstanceOf(Schema::class, $usersSchema);
@@ -43,47 +62,52 @@ final class CreateBatchRequestFactoryTest extends UnitTestCase
         $this->assertSame(1, $usersSchema['minItems']);
         $this->assertTrue($usersSchema['uniqueItems']);
 
-        /** @var Schema $itemSchema */
-        $itemSchema = $usersSchema['items'];
+        $this->assertItemSchema($usersSchema['items']);
+    }
+
+    private function assertItemSchema(Schema $itemSchema): void
+    {
         $this->assertInstanceOf(Schema::class, $itemSchema);
         $this->assertSame(['email', 'initials', 'password'], $itemSchema['required']);
         $this->assertFalse($itemSchema['additionalProperties']);
         $this->assertFalse($itemSchema['unevaluatedProperties']);
 
-        $itemProperties = $itemSchema['properties'];
+        $this->assertItemProperties($itemSchema['properties']);
+    }
 
+    /**
+     * @param array<string, array<string, string|int>> $itemProperties
+     */
+    private function assertItemProperties(array $itemProperties): void
+    {
         $this->assertSame('string', $itemProperties['email']['type']);
         $this->assertSame('email', $itemProperties['email']['format']);
         $this->assertSame(255, $itemProperties['email']['maxLength']);
-
         $this->assertSame('string', $itemProperties['initials']['type']);
         $this->assertSame(255, $itemProperties['initials']['maxLength']);
         $this->assertSame('^\\S+$', $itemProperties['initials']['pattern']);
-
         $this->assertSame('string', $itemProperties['password']['type']);
         $this->assertSame(8, $itemProperties['password']['minLength']);
         $this->assertSame(64, $itemProperties['password']['maxLength']);
-        $this->assertSame(
-            '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$',
-            $itemProperties['password']['pattern']
-        );
+        $passwordPattern = '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$';
+        $this->assertSame($passwordPattern, $itemProperties['password']['pattern']);
+    }
 
-        $this->assertSame(
-            [
-                'users' => [
-                    [
-                        'email' => SchemathesisFixtures::CREATE_BATCH_FIRST_USER_EMAIL,
-                        'initials' => SchemathesisFixtures::CREATE_BATCH_FIRST_USER_INITIALS,
-                        'password' => SchemathesisFixtures::CREATE_BATCH_FIRST_USER_PASSWORD,
-                    ],
-                    [
-                        'email' => SchemathesisFixtures::CREATE_BATCH_SECOND_USER_EMAIL,
-                        'initials' => SchemathesisFixtures::CREATE_BATCH_SECOND_USER_INITIALS,
-                        'password' => SchemathesisFixtures::CREATE_BATCH_SECOND_USER_PASSWORD,
-                    ],
+    private function assertBatchExample(MediaType $mediaType): void
+    {
+        $this->assertSame([
+            'users' => [
+                [
+                    'email' => SchemathesisFixtures::CREATE_BATCH_FIRST_USER_EMAIL,
+                    'initials' => SchemathesisFixtures::CREATE_BATCH_FIRST_USER_INITIALS,
+                    'password' => SchemathesisFixtures::CREATE_BATCH_FIRST_USER_PASSWORD,
+                ],
+                [
+                    'email' => SchemathesisFixtures::CREATE_BATCH_SECOND_USER_EMAIL,
+                    'initials' => SchemathesisFixtures::CREATE_BATCH_SECOND_USER_INITIALS,
+                    'password' => SchemathesisFixtures::CREATE_BATCH_SECOND_USER_PASSWORD,
                 ],
             ],
-            $mediaType->getExample()
-        );
+        ], $mediaType->getExample());
     }
 }

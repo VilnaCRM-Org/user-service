@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Internal\HealthCheck\Application\EventSub;
+namespace App\Internal\HealthCheck\Infrastructure\EventSubscriber;
 
 use App\Internal\HealthCheck\Domain\Event\HealthCheckEvent;
 use Aws\Sqs\SqsClient;

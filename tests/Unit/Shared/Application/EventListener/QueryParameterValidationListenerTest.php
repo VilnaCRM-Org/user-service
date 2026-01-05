@@ -375,36 +375,30 @@ final class QueryParameterValidationListenerTest extends UnitTestCase
 
     private function createListener(): QueryParameterValidationListener
     {
+        return new QueryParameterValidationListener(
+            [$this->createAllowedParametersRule(), $this->createPaginationRule()],
+            new QueryViolationFinder()
+        );
+    }
+
+    private function createAllowedParametersRule(): QP\AllowedParametersRule
+    {
+        $violationFactory = new QueryParameterViolationFactory();
+        $params = ['/api/users' => ['page', 'itemsPerPage']];
+        return new QP\AllowedParametersRule($params, $violationFactory);
+    }
+
+    private function createPaginationRule(): QPP\PaginationRule
+    {
         $valueEvaluator = new Evaluator\ExplicitValueEvaluator();
         $normalizer = new Normalizer\PositiveIntegerNormalizer();
         $violationFactory = new QueryParameterViolationFactory();
-        $itemsPerPageRule = new QPP\ItemsPerPageRule(
-            $valueEvaluator,
-            $normalizer,
-            $violationFactory
-        );
 
-        $allowedParametersRule = new QP\AllowedParametersRule([
-            '/api/users' => ['page', 'itemsPerPage'],
-        ], $violationFactory);
-
-        $paginationRule = new QPP\PaginationRule(
-            new QPP\PageParameterValidator(
-                $valueEvaluator,
-                $normalizer,
-                $violationFactory
-            ),
+        return new QPP\PaginationRule(
+            new QPP\PageParameterValidator($valueEvaluator, $normalizer, $violationFactory),
             new QPP\ItemsPerPageParameterValidator(
-                $itemsPerPageRule
+                new QPP\ItemsPerPageRule($valueEvaluator, $normalizer, $violationFactory)
             )
-        );
-
-        return new QueryParameterValidationListener(
-            [
-                $allowedParametersRule,
-                $paginationRule,
-            ],
-            new QueryViolationFinder()
         );
     }
 }

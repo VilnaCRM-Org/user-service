@@ -25,17 +25,12 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class UserOperationsContext implements Context
 {
-    private const EMPTY_BODY_BY_METHOD = [
-        Request::METHOD_POST => '{}',
-        Request::METHOD_PUT => '{}',
-        Request::METHOD_PATCH => '{}',
-    ];
-
     private ?RequestInput $requestBody;
     private int $violationNum;
     private string $language;
     private string $currentUserEmail = '';
     private UrlResolver $urlResolver;
+    private RequestBodySerializer $bodySerializer;
 
     public function __construct(
         private readonly KernelInterface $kernel,
@@ -46,6 +41,7 @@ final class UserOperationsContext implements Context
         $this->violationNum = 0;
         $this->language = 'en';
         $this->urlResolver = new UrlResolver();
+        $this->bodySerializer = new RequestBodySerializer($serializer);
     }
 
     /**
@@ -146,7 +142,7 @@ final class UserOperationsContext implements Context
     {
         $processedPath = $this->processRequestPath($path);
         $headers = $this->buildRequestHeaders($method);
-        $requestBody = $this->serializeRequestBody($method);
+        $requestBody = $this->bodySerializer->serialize($this->requestBody, $method);
 
         $this->response = $this->kernel->handle(Request::create(
             $processedPath,
@@ -315,36 +311,6 @@ final class UserOperationsContext implements Context
             'CONTENT_TYPE' => $this->getContentTypeForMethod($method),
             'HTTP_ACCEPT_LANGUAGE' => $this->language,
         ];
-    }
-
-    private function serializeRequestBody(string $method): string
-    {
-        $defaultPayload = self::EMPTY_BODY_BY_METHOD[$method] ?? '';
-
-        if ($this->requestBody === null) {
-            return $defaultPayload;
-        }
-
-        if (!$this->requestBody instanceof RequestInput) {
-            return $this->serializer->serialize($this->requestBody, 'json');
-        }
-
-        $payload = array_filter(
-            get_object_vars($this->requestBody),
-            static function ($value): bool {
-                if ($value === null) {
-                    return false;
-                }
-
-                if (is_string($value)) {
-                    return $value !== '';
-                }
-
-                return true;
-            }
-        );
-
-        return json_encode((object) $payload, JSON_THROW_ON_ERROR);
     }
 
     private function getContentTypeForMethod(string $method): string

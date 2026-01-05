@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Internal\HealthCheck\Infrastructure\EventSubscriber;
 
-use App\Internal\HealthCheck\Application\EventSub\BaseHealthCheckSubscriber;
 use App\Internal\HealthCheck\Domain\Event\HealthCheckEvent;
 use Doctrine\DBAL\Connection;
 

@@ -11,49 +11,35 @@ use App\User\Domain\Repository\TokenRepositoryInterface;
 final class InMemoryConfirmationTokenRepository implements TokenRepositoryInterface
 {
     private ?ConfirmationToken $token = null;
+    private TokenMatcher $matcher;
+
+    public function __construct()
+    {
+        $this->matcher = new TokenMatcher();
+    }
 
     #[\Override]
     public function save(object $token): void
     {
-        if (! $token instanceof ConfirmationToken) {
-            return;
-        }
-
-        $this->token = $token;
+        $this->storeIfValid($token);
     }
 
     #[\Override]
     public function delete(object $token): void
     {
-        if (! $token instanceof ConfirmationToken) {
-            return;
-        }
-
-        if (! $this->matchesStoredToken($token)) {
-            return;
-        }
-
-        $this->token = null;
+        $this->deleteIfMatches($token);
     }
 
     #[\Override]
     public function find(string $tokenValue): ?ConfirmationTokenInterface
     {
-        if ($this->token !== null && $this->token->getTokenValue() === $tokenValue) {
-            return $this->token;
-        }
-
-        return null;
+        return $this->matcher->matchesByTokenValue($this->token, $tokenValue);
     }
 
     #[\Override]
     public function findByUserId(string $userID): ?ConfirmationTokenInterface
     {
-        if ($this->token !== null && $this->token->getUserID() === $userID) {
-            return $this->token;
-        }
-
-        return null;
+        return $this->matcher->matchesByUserId($this->token, $userID);
     }
 
     public function getToken(): ?ConfirmationToken
@@ -61,9 +47,22 @@ final class InMemoryConfirmationTokenRepository implements TokenRepositoryInterf
         return $this->token;
     }
 
-    private function matchesStoredToken(ConfirmationToken $token): bool
+    private function storeIfValid(object $token): void
     {
-        return $this->token !== null
-            && $this->token->getTokenValue() === $token->getTokenValue();
+        if ($this->matcher->isConfirmationToken($token)) {
+            assert($token instanceof ConfirmationToken);
+            $this->token = $token;
+        }
+    }
+
+    private function deleteIfMatches(object $token): void
+    {
+        if (!$this->matcher->isConfirmationToken($token)) {
+            return;
+        }
+        assert($token instanceof ConfirmationToken);
+        if ($this->matcher->tokensMatch($this->token, $token)) {
+            $this->token = null;
+        }
     }
 }

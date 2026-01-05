@@ -16,41 +16,30 @@ final class InMemoryUserRepository implements UserRepositoryInterface
 
     public function __construct(UserInterface ...$users)
     {
-        foreach ($users as $user) {
-            $this->save($user);
-        }
+        array_map(fn (UserInterface $user) => $this->save($user), $users);
     }
 
     #[\Override]
     public function save(object $user): void
     {
-        if (! $user instanceof UserInterface) {
-            return;
+        if ($user instanceof UserInterface) {
+            $this->users[$user->getId()] = $user;
         }
-
-        $this->users[$user->getId()] = $user;
     }
 
     #[\Override]
     public function delete(object $user): void
     {
-        if (! $user instanceof UserInterface) {
-            return;
+        if ($user instanceof UserInterface) {
+            unset($this->users[$user->getId()]);
         }
-
-        unset($this->users[$user->getId()]);
     }
 
     #[\Override]
     public function findByEmail(string $email): ?UserInterface
     {
-        foreach ($this->users as $user) {
-            if ($user->getEmail() === $email) {
-                return $user;
-            }
-        }
-
-        return null;
+        $matcher = static fn (UserInterface $user): bool => $user->getEmail() === $email;
+        return $this->findUserBy($matcher);
     }
 
     #[\Override]
@@ -71,9 +60,7 @@ final class InMemoryUserRepository implements UserRepositoryInterface
     #[\Override]
     public function saveBatch(array $users): void
     {
-        foreach ($users as $user) {
-            $this->save($user);
-        }
+        array_map(fn (UserInterface $user) => $this->save($user), $users);
     }
 
     /**
@@ -82,5 +69,15 @@ final class InMemoryUserRepository implements UserRepositoryInterface
     public function all(): array
     {
         return $this->users;
+    }
+
+    private function findUserBy(callable $predicate): ?UserInterface
+    {
+        foreach ($this->users as $user) {
+            if ($predicate($user)) {
+                return $user;
+            }
+        }
+        return null;
     }
 }

@@ -54,29 +54,10 @@ final class UserPatchProcessorTest extends UnitTestCase
         $this->mockOperation = $this->createMock(Operation::class);
         $this->getUserQueryHandler = $this->createMock(GetUserQueryHandler::class);
         $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->mockUpdateUserCommandFactory = $this->createMock(UpdateUserCommandFactoryInterface::class);
+        $updateFactory = UpdateUserCommandFactoryInterface::class;
+        $this->mockUpdateUserCommandFactory = $this->createMock($updateFactory);
 
-        $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
-        $this->updateUserCommandFactory = new UpdateUserCommandFactory();
-        $this->requestStack = new RequestStack();
-        $this->payloadProvider = new JsonRequestPayloadProvider(
-            new JsonRequestContentProvider($this->requestStack),
-            new JsonBodyDecoder()
-        );
-        $this->updateResolver = new UserPatchUpdateResolver(
-            new UserPatchEmailSanitizer(),
-            new UserPatchNonEmptySanitizer(),
-            new UserPatchPasswordSanitizer()
-        );
-
-        $this->processor = new UserPatchProcessor(
-            $this->commandBus,
-            $this->mockUpdateUserCommandFactory,
-            $this->getUserQueryHandler,
-            $this->payloadProvider,
-            $this->updateResolver
-        );
+        $this->initializeRealObjectsAndProcessor();
     }
 
     public function testProcess(): void
@@ -124,7 +105,20 @@ final class UserPatchProcessorTest extends UnitTestCase
 
         $this->expectException(BadRequestHttpException::class);
 
-        $this->processWithSpaces($testData);
+        $payload = [
+            'email' => ' ',
+            'initials' => ' ',
+            'oldPassword' => $testData->password,
+            'newPassword' => ' ',
+        ];
+        $this->withRequest(
+            $payload,
+            fn () => $this->processor->process(
+                new UserPatchDto(' ', ' ', $testData->password, ' '),
+                $this->mockOperation,
+                ['id' => $testData->userId]
+            )
+        );
     }
 
     public function testProcessWithBlankInitialsThrowsBadRequest(): void
@@ -134,21 +128,33 @@ final class UserPatchProcessorTest extends UnitTestCase
 
         $this->expectException(BadRequestHttpException::class);
 
-        $this->processWithBlankInitials($testData);
+        $payload = ['initials' => ' ', 'oldPassword' => $testData->password];
+        $this->withRequest(
+            $payload,
+            fn () => $this->processor->process(
+                new UserPatchDto(null, ' ', $testData->password, null),
+                $this->mockOperation,
+                ['id' => $testData->userId]
+            )
+        );
     }
 
     public function testProcessUserNotFound(): void
     {
-        $userId = $this->faker->uuid();
-
-        $this->getUserQueryHandler->expects($this->once())
-            ->method('handle')
-            ->with($userId)
-            ->willThrowException(new UserNotFoundException());
-
+        $testData = $this->setupUserForPatchTest();
+        $this->getUserQueryHandler->expects($this->once())->method('handle')
+            ->with($testData->userId)->willThrowException(new UserNotFoundException());
         $this->expectException(UserNotFoundException::class);
 
-        $this->processWithRandomData($userId);
+        $payload = ['oldPassword' => $testData->password];
+        $this->withRequest(
+            $payload,
+            fn () => $this->processor->process(
+                new UserPatchDto(null, null, $testData->password, null),
+                $this->mockOperation,
+                ['id' => $testData->userId]
+            )
+        );
     }
 
     public function testProcessWithInvalidEmailPreservesOriginal(): void
@@ -170,9 +176,22 @@ final class UserPatchProcessorTest extends UnitTestCase
     public function testProcessUsesDefaultInitialsWhenDtoValueIsNull(): void
     {
         $testData = $this->setupUserForPatchTest();
-        $this->setupDefaultProcessExpectations($testData);
+        $userUpdate = new UserUpdate(
+            $testData->email,
+            $testData->initials,
+            $testData->password,
+            $testData->password
+        );
+        $this->setupProcessExpectations($testData->user, $userUpdate, $testData->userId);
 
-        $result = $this->processWithProvidedInitials($testData);
+        $result = $this->withRequest(
+            ['initials' => 'Provided Initials', 'oldPassword' => $testData->password],
+            fn () => $this->processor->process(
+                new UserPatchDto(null, null, $testData->password, null),
+                $this->mockOperation,
+                ['id' => $testData->userId]
+            )
+        );
 
         $this->assertSame($testData->initials, $result->getInitials());
     }
@@ -180,9 +199,22 @@ final class UserPatchProcessorTest extends UnitTestCase
     public function testProcessUsesDefaultPasswordWhenDtoValueIsNull(): void
     {
         $testData = $this->setupUserForPatchTest();
-        $this->setupDefaultProcessExpectations($testData);
+        $userUpdate = new UserUpdate(
+            $testData->email,
+            $testData->initials,
+            $testData->password,
+            $testData->password
+        );
+        $this->setupProcessExpectations($testData->user, $userUpdate, $testData->userId);
 
-        $result = $this->processWithProvidedPassword($testData);
+        $result = $this->withRequest(
+            ['newPassword' => 'Provided New Password', 'oldPassword' => $testData->password],
+            fn () => $this->processor->process(
+                new UserPatchDto(null, null, $testData->password, null),
+                $this->mockOperation,
+                ['id' => $testData->userId]
+            )
+        );
 
         $this->assertSame($testData->password, $result->getPassword());
     }
@@ -296,6 +328,30 @@ final class UserPatchProcessorTest extends UnitTestCase
         );
     }
 
+    private function initializeRealObjectsAndProcessor(): void
+    {
+        $this->userFactory = new UserFactory();
+        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
+        $this->updateUserCommandFactory = new UpdateUserCommandFactory();
+        $this->requestStack = new RequestStack();
+        $this->payloadProvider = new JsonRequestPayloadProvider(
+            new JsonRequestContentProvider($this->requestStack),
+            new JsonBodyDecoder()
+        );
+        $this->updateResolver = new UserPatchUpdateResolver(
+            new UserPatchEmailSanitizer(),
+            new UserPatchNonEmptySanitizer(),
+            new UserPatchPasswordSanitizer()
+        );
+        $this->processor = new UserPatchProcessor(
+            $this->commandBus,
+            $this->mockUpdateUserCommandFactory,
+            $this->getUserQueryHandler,
+            $this->payloadProvider,
+            $this->updateResolver
+        );
+    }
+
     private function processWithInvalidInput(
         UserInterface $user,
         string $email,
@@ -355,28 +411,12 @@ final class UserPatchProcessorTest extends UnitTestCase
         string $userId
     ): void {
         $command = $this->updateUserCommandFactory->create($user, $updateData);
-        $this->expectUserQueryHandler($userId, $user);
-        $this->expectUpdateUserCommandFactory($user, $updateData, $command);
-        $this->expectCommandBusDispatch($command);
-    }
 
-    private function expectUserQueryHandler(
-        string $userId,
-        UserInterface $user
-    ): void {
-        $this->getUserQueryHandler->expects(
-            $this->once()
-        )
+        $this->getUserQueryHandler->expects($this->once())
             ->method('handle')
             ->with($userId)
             ->willReturn($user);
-    }
 
-    private function expectUpdateUserCommandFactory(
-        UserInterface $user,
-        UserUpdate $updateData,
-        object $command
-    ): void {
         $this->mockUpdateUserCommandFactory->expects($this->once())
             ->method('create')
             ->with(
@@ -391,15 +431,8 @@ final class UserPatchProcessorTest extends UnitTestCase
                 })
             )
             ->willReturn($command);
-    }
 
-    private function expectCommandBusDispatch(object $command): void
-    {
-        $this->commandBus->expects(
-            $this->once()
-        )
-            ->method('dispatch')
-            ->with($command);
+        $this->commandBus->expects($this->once())->method('dispatch')->with($command);
     }
 
     private function setupUserForPatchTest(): UserPatchTestData
@@ -476,50 +509,6 @@ final class UserPatchProcessorTest extends UnitTestCase
         }
     }
 
-    private function setupDefaultProcessExpectations(UserPatchTestData $testData): void
-    {
-        $this->setupProcessExpectations(
-            $testData->user,
-            new UserUpdate(
-                $testData->email,
-                $testData->initials,
-                $testData->password,
-                $testData->password
-            ),
-            $testData->userId
-        );
-    }
-
-    private function processWithProvidedInitials(UserPatchTestData $testData): UserInterface
-    {
-        return $this->withRequest(
-            [
-                'initials' => 'Provided Initials',
-                'oldPassword' => $testData->password,
-            ],
-            fn () => $this->processor->process(
-                new UserPatchDto(null, null, $testData->password, null),
-                $this->mockOperation,
-                ['id' => $testData->userId]
-            )
-        );
-    }
-
-    private function processWithProvidedPassword(UserPatchTestData $testData): UserInterface
-    {
-        return $this->withRequest(
-            [
-                'newPassword' => 'Provided New Password',
-                'oldPassword' => $testData->password,
-            ],
-            fn () => $this->processor->process(
-                new UserPatchDto(null, null, $testData->password, null),
-                $this->mockOperation,
-                ['id' => $testData->userId]
-            )
-        );
-    }
-
     private function setupNoUpdateExpectations(UserPatchTestData $testData): void
     {
         $this->getUserQueryHandler->expects($this->once())
@@ -528,60 +517,6 @@ final class UserPatchProcessorTest extends UnitTestCase
             ->willReturn($testData->user);
         $this->mockUpdateUserCommandFactory->expects($this->never())->method('create');
         $this->commandBus->expects($this->never())->method('dispatch');
-    }
-
-    private function processWithSpaces(UserPatchTestData $testData): void
-    {
-        $this->withRequest(
-            [
-                'email' => ' ',
-                'initials' => ' ',
-                'oldPassword' => $testData->password,
-                'newPassword' => ' ',
-            ],
-            fn () => $this->processor->process(
-                new UserPatchDto(' ', ' ', $testData->password, ' '),
-                $this->mockOperation,
-                ['id' => $testData->userId]
-            )
-        );
-    }
-
-    private function processWithBlankInitials(UserPatchTestData $testData): void
-    {
-        $this->withRequest(
-            [
-                'initials' => ' ',
-                'oldPassword' => $testData->password,
-            ],
-            fn () => $this->processor->process(
-                new UserPatchDto(null, ' ', $testData->password, null),
-                $this->mockOperation,
-                ['id' => $testData->userId]
-            )
-        );
-    }
-
-    private function processWithRandomData(string $userId): void
-    {
-        $this->withRequest(
-            [
-                'email' => $this->faker->email(),
-                'initials' => $this->faker->name(),
-                'oldPassword' => $this->faker->password(),
-                'newPassword' => $this->faker->password(),
-            ],
-            fn () => $this->processor->process(
-                new UserPatchDto(
-                    $this->faker->email(),
-                    $this->faker->name(),
-                    $this->faker->password(),
-                    $this->faker->password()
-                ),
-                $this->mockOperation,
-                ['id' => $userId]
-            )
-        );
     }
 
     /**

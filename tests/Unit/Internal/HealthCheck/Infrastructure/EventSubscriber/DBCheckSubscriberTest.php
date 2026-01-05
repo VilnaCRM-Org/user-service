@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Internal\HealthCheck\Application\EventSub;
+namespace App\Tests\Unit\Internal\HealthCheck\Infrastructure\EventSubscriber;
 
 use App\Internal\HealthCheck\Domain\Event\HealthCheckEvent;
 use App\Internal\HealthCheck\Infrastructure\EventSubscriber\DBCheckSubscriber;

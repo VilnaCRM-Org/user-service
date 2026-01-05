@@ -23,6 +23,11 @@ final class ErrorProviderTest extends UnitTestCase
     private TranslatorInterface $translator;
     private HttpOperation $operation;
     private RequestStack $requestStack;
+    private int $status;
+    private string $template;
+    /** @var array<string> */
+    private array $args;
+    private string $errorText;
 
     #[\Override]
     protected function setUp(): void
@@ -130,38 +135,16 @@ final class ErrorProviderTest extends UnitTestCase
 
     public function testProvideDomainException(): void
     {
-        $status = Response::HTTP_BAD_REQUEST;
-        $this->operation->expects($this->once())
-            ->method('getStatus')->willReturn($status);
-        $template = $this->faker->word();
-        $args = [];
-        $errorText = $this->faker->word();
-
-        $this->translator
-            ->expects($this->exactly(2))
-            ->method('trans')
-            ->willReturnCallback(
-                $this->expectSequential(
-                    [['error.internal'], [$template, $args]],
-                    ['', $errorText]
-                )
-            );
-
-        $exception = $this->getDomainException($template, $args);
-
-        $request = new Request();
-        $request->attributes->set('exception', $exception);
-        $context = ['request' => $request];
-
+        $this->setUpDomainExceptionMocks();
+        $exception = $this->getDomainException($this->template, $this->args);
+        $context = $this->createDomainExceptionContext($exception);
         $errorProvider = $this->errorProvider();
 
         $error = $errorProvider->provide($this->operation, [], $context);
 
         $this->assertInstanceOf(Error::class, $error);
-
-        $this->assertEquals($status, $error->getStatusCode());
-
-        $this->assertEquals($errorText, $error->getDetail());
+        $this->assertEquals($this->status, $error->getStatusCode());
+        $this->assertEquals($this->errorText, $error->getDetail());
     }
 
     public function testProvideGraphQLInternalError(): void
@@ -193,41 +176,9 @@ final class ErrorProviderTest extends UnitTestCase
 
     public function testApiPlatformHttpExceptionHeadersArePreserved(): void
     {
-        $this->operation->expects($this->once())
-            ->method('getStatus')
-            ->willReturn(Response::HTTP_BAD_REQUEST);
-
-        $exception = new class() extends \RuntimeException implements
-            ApiPlatformHttpExceptionInterface {
-            public function __construct()
-            {
-                parent::__construct('Invalid payload');
-            }
-
-            #[\Override]
-            public function getStatusCode(): int
-            {
-                return Response::HTTP_BAD_REQUEST;
-            }
-
-            /**
-             * @return array<string, string>
-             */
-            #[\Override]
-            public function getHeaders(): array
-            {
-                return ['X-Debug' => '1'];
-            }
-        };
-
-        $request = new Request(attributes: ['exception' => $exception]);
-        $context = ['request' => $request];
-
-        $this->translator
-            ->method('trans')
-            ->with('error.internal')
-            ->willReturn('');
-
+        $this->setUpApiPlatformHttpExceptionMocks();
+        $exception = $this->createApiPlatformHttpException();
+        $context = ['request' => new Request(attributes: ['exception' => $exception])];
         $errorProvider = $this->errorProvider();
 
         $error = $errorProvider->provide($this->operation, [], $context);
@@ -287,6 +238,72 @@ final class ErrorProviderTest extends UnitTestCase
         $this->assertInstanceOf(Error::class, $error);
         $this->assertSame($status, $error->getStatusCode());
         $this->assertSame($internalError, $error->getDetail());
+    }
+
+    private function setUpDomainExceptionMocks(): void
+    {
+        $this->status = Response::HTTP_BAD_REQUEST;
+        $this->template = $this->faker->word();
+        $this->args = [];
+        $this->errorText = $this->faker->word();
+
+        $this->operation->expects($this->once())
+            ->method('getStatus')->willReturn($this->status);
+
+        $this->translator
+            ->expects($this->exactly(2))
+            ->method('trans')
+            ->willReturnCallback(
+                $this->expectSequential(
+                    [['error.internal'], [$this->template, $this->args]],
+                    ['', $this->errorText]
+                )
+            );
+    }
+
+    /**
+     * @return array{request: Request}
+     */
+    private function createDomainExceptionContext(\Throwable $exception): array
+    {
+        $request = new Request();
+        $request->attributes->set('exception', $exception);
+        return ['request' => $request];
+    }
+
+    private function setUpApiPlatformHttpExceptionMocks(): void
+    {
+        $this->operation->expects($this->once())
+            ->method('getStatus')
+            ->willReturn(Response::HTTP_BAD_REQUEST);
+
+        $this->translator
+            ->method('trans')
+            ->with('error.internal')
+            ->willReturn('');
+    }
+
+    private function createApiPlatformHttpException(): ApiPlatformHttpExceptionInterface
+    {
+        return new class() extends \RuntimeException implements ApiPlatformHttpExceptionInterface {
+            public function __construct()
+            {
+                parent::__construct('Invalid payload');
+            }
+
+            #[\Override]
+            public function getStatusCode(): int
+            {
+                return Response::HTTP_BAD_REQUEST;
+            }
+
+            /** @return array<string, string> */
+            #[\Override]
+            public function getHeaders(): array
+            {
+                return ['X-Debug' => '1'];
+            }
+        };
     }
 
     /**

@@ -66,7 +66,16 @@ final class ConfirmUserEndpointFactoryTest extends UnitTestCase
     {
         $this->setExpectations();
 
-        $factory = new ConfirmUserEndpointFactory(
+        $factory = $this->createConfirmUserEndpointFactory();
+
+        $factory->createEndpoint($this->openApi);
+        $this->patchOperation = $this->pathItem->getPatch();
+        $this->assertExpectedResponses();
+    }
+
+    private function createConfirmUserEndpointFactory(): ConfirmUserEndpointFactory
+    {
+        return new ConfirmUserEndpointFactory(
             getenv('API_PREFIX'),
             $this->tokenNotFoundResponseFactory,
             $this->badRequestResponseFactory,
@@ -74,19 +83,17 @@ final class ConfirmUserEndpointFactoryTest extends UnitTestCase
             $this->validationErrorFactory,
             $this->confirmUserRequestFactory
         );
+    }
 
-        $factory->createEndpoint($this->openApi);
-        $this->patchOperation = $this->pathItem->getPatch();
+    private function assertExpectedResponses(): void
+    {
         $responses = $this->patchOperation->getResponses() ?? [];
-        $this->assertEquals(
-            [
-                HttpResponse::HTTP_OK => $this->userConfirmedResponse,
-                HttpResponse::HTTP_NOT_FOUND => $this->notFoundResponse,
-                HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
-                HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $this->validationErrorResponse,
-            ],
-            $responses
-        );
+        $this->assertEquals([
+            HttpResponse::HTTP_OK => $this->userConfirmedResponse,
+            HttpResponse::HTTP_NOT_FOUND => $this->notFoundResponse,
+            HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
+            HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $this->validationErrorResponse,
+        ], $responses);
     }
 
     private function setExpectations(): void

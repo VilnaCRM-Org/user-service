@@ -6,9 +6,7 @@ namespace App\Tests\Behat\HealthCheckContext;
 
 use Aws\Sqs\SqsClient;
 use Behat\Behat\Context\Context;
-use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Result;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\TraceableAdapter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -50,31 +48,7 @@ final class HealthCheckContext implements Context
      */
     public function theDatabaseIsNotAvailable(): void
     {
-        /** @var Connection $connection */
-        $connection = $this->container()->get(Connection::class);
-        $params = $connection->getParams();
-        $driver = $connection->getDriver();
-        $config = $connection->getConfiguration();
-
-        $failingConnection = new class($params, $driver, $config) extends Connection {
-            public function executeQuery(
-                string $sql,
-                array $params = [],
-                array $types = [],
-                ?QueryCacheProfile $qcp = null
-            ): Result {
-                throw new \RuntimeException('Database is not available');
-            }
-
-            public function executeStatement(
-                string $sql,
-                array $params = [],
-                array $types = []
-            ): int {
-                throw new \RuntimeException('Database is not available');
-            }
-        };
-
+        $failingConnection = $this->createFailingConnection();
         $this->replaceService(Connection::class, $failingConnection);
     }
 
@@ -83,26 +57,7 @@ final class HealthCheckContext implements Context
      */
     public function theMessageBrokerIsNotAvailable(): void
     {
-        $failingSqsClient = new class() extends SqsClient {
-            public function __construct()
-            {
-                parent::__construct([
-                    'service' => 'sqs',
-                    'version' => 'latest',
-                    'region' => 'us-east-1',
-                    'credentials' => [
-                        'key' => 'invalid',
-                        'secret' => 'invalid',
-                    ],
-                ]);
-            }
-
-            public function __call($name, array $args): void
-            {
-                throw new \RuntimeException('Message broker is not available');
-            }
-        };
-
+        $failingSqsClient = $this->createFailingSqsClient();
         $this->replaceService(SqsClient::class, $failingSqsClient);
     }
 
@@ -117,6 +72,37 @@ final class HealthCheckContext implements Context
 
         $this->kernel->reboot(null);
         $this->kernelDirty = false;
+    }
+
+    private function createFailingSqsClient(): SqsClient
+    {
+        return new class() extends SqsClient {
+            public function __construct()
+            {
+                parent::__construct([
+                    'service' => 'sqs',
+                    'version' => 'latest',
+                    'region' => 'us-east-1',
+                    'credentials' => ['key' => 'invalid', 'secret' => 'invalid'],
+                ]);
+            }
+
+            public function __call($name, array $args): void
+            {
+                throw new \RuntimeException('Message broker is not available');
+            }
+        };
+    }
+
+    private function createFailingConnection(): FailingConnection
+    {
+        $connection = $this->container()->get(Connection::class);
+        assert($connection instanceof Connection);
+        $params = $connection->getParams();
+        $driver = $connection->getDriver();
+        $config = $connection->getConfiguration();
+
+        return new FailingConnection($params, $driver, $config);
     }
 
     private function replaceService(string $serviceId, object $service): void

@@ -87,34 +87,14 @@ final class ContextBuilderTest extends UnitTestCase
 
     public function testBuildWithArrayOfObjects(): void
     {
-        $example = [
-            [
-                'propertyPath' => 'field',
-                'message' => 'must not be blank',
-            ],
-        ];
-
+        $example = [['propertyPath' => 'field', 'message' => 'must not be blank']];
         $params = [new Parameter('violations', 'array', $example)];
 
         $content = $this->contextBuilder->build($params);
 
-        $expectedSchema = [
-            'type' => 'object',
-            'properties' => [
-                'violations' => [
-                    'type' => 'array',
-                    'items' => ['type' => 'object'],
-                ],
-            ],
-            'required' => ['violations'],
-        ];
-
-        $expectedExample = ['violations' => $example];
-
-        $this->assertEquals(
-            $this->getExpectedResult($expectedSchema, $expectedExample),
-            $content
-        );
+        $expectedSchema = $this->buildArrayObjectSchema('violations');
+        $expected = $this->getExpectedResult($expectedSchema, ['violations' => $example]);
+        $this->assertEquals($expected, $content);
     }
 
     public function testBuildWithArrayOfScalars(): void
@@ -224,37 +204,13 @@ final class ContextBuilderTest extends UnitTestCase
     public function testBuildWithFormattedParam(): void
     {
         $email = 'user@example.com';
-
-        $params = [
-            new Parameter(
-                'email',
-                'string',
-                $email,
-                255,
-                'email'
-            ),
-        ];
+        $params = [new Parameter('email', 'string', $email, 255, 'email')];
 
         $content = $this->contextBuilder->build($params);
 
-        $expectedSchema = [
-            'type' => 'object',
-            'properties' => [
-                'email' => [
-                    'type' => 'string',
-                    'maxLength' => 255,
-                    'format' => 'email',
-                ],
-            ],
-            'required' => ['email'],
-        ];
-
-        $expectedExample = ['email' => $email];
-
-        $this->assertEquals(
-            $this->getExpectedResult($expectedSchema, $expectedExample),
-            $content
-        );
+        $expectedSchema = $this->buildEmailSchema();
+        $expected = $this->getExpectedResult($expectedSchema, ['email' => $email]);
+        $this->assertEquals($expected, $content);
     }
 
     public function testBuildOmitsRequiredKeyWhenNoParametersRequired(): void
@@ -295,6 +251,32 @@ final class ContextBuilderTest extends UnitTestCase
             ['type' => 'string', 'format' => 'email'],
             $schema['properties']['email']
         );
+    }
+
+    /**
+     * @return array<string, string|array<string, string|array<string, string>>>
+     */
+    private function buildArrayObjectSchema(string $propertyName): array
+    {
+        return [
+            'type' => 'object',
+            'properties' => [$propertyName => ['type' => 'array', 'items' => ['type' => 'object']]],
+            'required' => [$propertyName],
+        ];
+    }
+
+    /**
+     * @return array<string, string|array<string, string|array<string, string|int>>>
+     */
+    private function buildEmailSchema(): array
+    {
+        return [
+            'type' => 'object',
+            'properties' => [
+                'email' => ['type' => 'string', 'maxLength' => 255, 'format' => 'email'],
+            ],
+            'required' => ['email'],
+        ];
     }
 
     /**

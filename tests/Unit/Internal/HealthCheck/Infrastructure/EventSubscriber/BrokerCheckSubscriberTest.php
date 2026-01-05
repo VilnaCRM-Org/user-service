@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Internal\HealthCheck\Application\EventSub;
+namespace App\Tests\Unit\Internal\HealthCheck\Infrastructure\EventSubscriber;
 
-use App\Internal\HealthCheck\Application\EventSub\BrokerCheckSubscriber;
 use App\Internal\HealthCheck\Domain\Event\HealthCheckEvent;
+use App\Internal\HealthCheck\Infrastructure\EventSubscriber\BrokerCheckSubscriber;
 use App\Tests\Unit\UnitTestCase;
 use Aws\CommandInterface;
 use Aws\Exception\AwsException;

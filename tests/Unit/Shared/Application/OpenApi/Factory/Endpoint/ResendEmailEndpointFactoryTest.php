@@ -46,36 +46,49 @@ final class ResendEmailEndpointFactoryTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->userNotFoundResponseFactory =
-            $this->createMock(UserNotFoundResponseFactory::class);
-        $this->sendAgainResponseFactory =
-            $this->createMock(EmailSendFactory::class);
-        $this->timedOutResponseFactory =
-            $this->createMock(UserTimedOutResponseFactory::class);
-        $this->unsupportedMediaTypeFactory =
-            $this->createMock(UnsupportedMediaTypeFactory::class);
-        $this->badRequestResponseFactory =
-            $this->createMock(BadRequestResponseFactory::class);
-        $this->emptyRequestFactory =
-            $this->createMock(EmptyRequestFactory::class);
-        $this->parameterFactory =
-            $this->createMock(UuidUriParameterFactory::class);
+        $this->initializeFactoryMocks();
+        $this->initializeResponseMocks();
+        $this->initializeOpenApiMocks();
+    }
+
+    public function testCreateEndpoint(): void
+    {
+        $this->setExpectations();
+        $factory = $this->createResendEmailEndpointFactory();
+        $factory->createEndpoint($this->openApi);
+    }
+
+    private function initializeFactoryMocks(): void
+    {
+        $this->userNotFoundResponseFactory = $this->createMock(UserNotFoundResponseFactory::class);
+        $this->sendAgainResponseFactory = $this->createMock(EmailSendFactory::class);
+        $this->timedOutResponseFactory = $this->createMock(UserTimedOutResponseFactory::class);
+        $this->unsupportedMediaTypeFactory = $this->createMock(UnsupportedMediaTypeFactory::class);
+        $this->badRequestResponseFactory = $this->createMock(BadRequestResponseFactory::class);
+        $this->emptyRequestFactory = $this->createMock(EmptyRequestFactory::class);
+        $this->parameterFactory = $this->createMock(UuidUriParameterFactory::class);
+    }
+
+    private function initializeResponseMocks(): void
+    {
         $this->userNotFoundResponse = $this->createMock(Response::class);
         $this->sendAgainResponse = $this->createMock(Response::class);
         $this->timedOutResponse = $this->createMock(Response::class);
         $this->unsupportedMediaResponse = $this->createMock(Response::class);
         $this->badRequestResponse = $this->createMock(Response::class);
+    }
+
+    private function initializeOpenApiMocks(): void
+    {
         $this->openApi = $this->createMock(OpenApi::class);
         $this->paths = $this->createMock(Paths::class);
         $this->pathItem = $this->createMock(PathItem::class);
         $this->operation = $this->createMock(Operation::class);
     }
 
-    public function testCreateEndpoint(): void
+    private function createResendEmailEndpointFactory(): ResendEmailEndpointFactory
     {
-        $this->setExpectations();
-
-        $factory = new ResendEmailEndpointFactory(
+        return new ResendEmailEndpointFactory(
             getenv('API_PREFIX'),
             $this->userNotFoundResponseFactory,
             $this->sendAgainResponseFactory,
@@ -85,37 +98,30 @@ final class ResendEmailEndpointFactoryTest extends UnitTestCase
             $this->emptyRequestFactory,
             $this->parameterFactory
         );
-
-        $factory->createEndpoint($this->openApi);
     }
 
     private function setExpectations(): void
     {
-        $this->userNotFoundResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($this->userNotFoundResponse);
-        $this->sendAgainResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($this->sendAgainResponse);
-        $this->timedOutResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($this->timedOutResponse);
-        $this->unsupportedMediaTypeFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($this->unsupportedMediaResponse);
-        $this->badRequestResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($this->badRequestResponse);
-        $this->emptyRequestFactory->expects($this->once())
-            ->method('getRequest');
-        $this->parameterFactory->expects($this->once())
-            ->method('getParameter');
-        $this->openApi->expects($this->exactly(2))
-            ->method('getPaths')
-            ->willReturn($this->paths);
-
+        $this->setResponseFactoryExpectations();
+        $this->emptyRequestFactory->expects($this->once())->method('getRequest');
+        $this->parameterFactory->expects($this->once())->method('getParameter');
+        $this->openApi->expects($this->exactly(2))->method('getPaths')->willReturn($this->paths);
         $this->setExpectationsForPaths();
         $this->setExpectationsForPathItem();
+    }
+
+    private function setResponseFactoryExpectations(): void
+    {
+        $this->userNotFoundResponseFactory->expects($this->once())
+            ->method('getResponse')->willReturn($this->userNotFoundResponse);
+        $this->sendAgainResponseFactory->expects($this->once())
+            ->method('getResponse')->willReturn($this->sendAgainResponse);
+        $this->timedOutResponseFactory->expects($this->once())
+            ->method('getResponse')->willReturn($this->timedOutResponse);
+        $this->unsupportedMediaTypeFactory->expects($this->once())
+            ->method('getResponse')->willReturn($this->unsupportedMediaResponse);
+        $this->badRequestResponseFactory->expects($this->once())
+            ->method('getResponse')->willReturn($this->badRequestResponse);
     }
 
     private function setExpectationsForPaths(): void
