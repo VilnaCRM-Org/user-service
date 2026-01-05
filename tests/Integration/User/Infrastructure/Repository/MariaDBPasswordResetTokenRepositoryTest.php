@@ -7,6 +7,7 @@ namespace App\Tests\Integration\User\Infrastructure\Repository;
 use App\Shared\Domain\ValueObject\Uuid;
 use App\Tests\Integration\IntegrationTestCase;
 use App\User\Domain\Entity\PasswordResetToken;
+use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Infrastructure\Repository\MariaDBPasswordResetTokenRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -87,33 +88,28 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
     public function testFindByUserID(): void
     {
         $email = $this->faker->unique()->email();
-        $initials = strtoupper(
-            substr($this->faker->firstName(), 0, 1) . substr($this->faker->lastName(), 0, 1)
-        );
         $password = $this->faker->password(8);
         $userId = $this->faker->uuid();
 
-        $user = $this->userFactory->create($email, $initials, $password, new Uuid($userId));
+        $user = $this->userFactory->create(
+            $email,
+            $this->initials(),
+            $password,
+            new Uuid($userId)
+        );
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
         $baseTime = new \DateTimeImmutable('2023-01-01 10:00:00');
-        $createdAt1 = $baseTime;
-        $expiresAt1 = $createdAt1->add(new \DateInterval('PT1H'));
-        $token1Value = $this->faker->lexify('??????????');
-        $token1 = new PasswordResetToken($token1Value, $user->getId(), $expiresAt1, $createdAt1);
-
-        $createdAt2 = $baseTime->add(new \DateInterval('PT1S'));
-        $expiresAt2 = $createdAt2->add(new \DateInterval('PT1H'));
-        $token2Value = $this->faker->lexify('??????????');
-        $token2 = new PasswordResetToken($token2Value, $user->getId(), $expiresAt2, $createdAt2);
+        $token1 = $this->tokenFor($user, $baseTime);
+        $token2 = $this->tokenFor($user, $baseTime->add(new \DateInterval('PT1S')));
 
         $this->repository->save($token1);
         $this->repository->save($token2);
 
         $found = $this->repository->findByUserID($user->getId());
         $this->assertNotNull($found);
-        $this->assertSame($token2Value, $found->getTokenValue());
+        $this->assertSame($token2->getTokenValue(), $found->getTokenValue());
     }
 
     public function testFindByUserIDNotFound(): void
@@ -125,29 +121,59 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
 
     public function testDelete(): void
     {
+        $user = $this->createAndPersistUser();
+        $token = $this->createAndSaveToken($user->getId());
+
+        $found = $this->repository->findByToken($token->getTokenValue());
+        $this->assertNotNull($found);
+
+        $this->repository->delete($token);
+
+        $found = $this->repository->findByToken($token->getTokenValue());
+        $this->assertNull($found);
+    }
+
+    private function createAndPersistUser(): User
+    {
         $user = $this->userFactory->create(
-            'test4@example.com',
-            'T4',
-            'password123',
-            new Uuid('423e4567-e89b-12d3-a456-426614174003')
+            $this->faker->unique()->email(),
+            $this->initials(),
+            $this->faker->password(8),
+            new Uuid($this->faker->uuid())
         );
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
+        return $user;
+    }
+
+    private function createAndSaveToken(string $userId): PasswordResetToken
+    {
         $createdAt = new \DateTimeImmutable();
         $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
-        $token = new PasswordResetToken('delete_token', $user->getId(), $expiresAt, $createdAt);
+        $token = new PasswordResetToken(
+            $this->faker->lexify('??????????'),
+            $userId,
+            $expiresAt,
+            $createdAt
+        );
         $this->repository->save($token);
 
-        // Verify token exists
-        $found = $this->repository->findByToken('delete_token');
-        $this->assertNotNull($found);
+        return $token;
+    }
 
-        // Delete token
-        $this->repository->delete($token);
+    private function initials(): string
+    {
+        return strtoupper(
+            substr($this->faker->firstName(), 0, 1) . substr($this->faker->lastName(), 0, 1)
+        );
+    }
 
-        // Verify token is deleted
-        $found = $this->repository->findByToken('delete_token');
-        $this->assertNull($found);
+    private function tokenFor(User $user, \DateTimeImmutable $createdAt): PasswordResetToken
+    {
+        $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
+        $tokenValue = $this->faker->lexify('??????????');
+
+        return new PasswordResetToken($tokenValue, $user->getId(), $expiresAt, $createdAt);
     }
 }

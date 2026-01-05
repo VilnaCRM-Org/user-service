@@ -187,8 +187,9 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         ];
     }
 
-    private function createMockPasswordResetTokenWithUserId(string $userId): PasswordResetTokenInterface
-    {
+    private function createMockPasswordResetTokenWithUserId(
+        string $userId
+    ): PasswordResetTokenInterface {
         $passwordResetToken = $this->createMock(PasswordResetTokenInterface::class);
 
         $passwordResetToken->expects($this->once())

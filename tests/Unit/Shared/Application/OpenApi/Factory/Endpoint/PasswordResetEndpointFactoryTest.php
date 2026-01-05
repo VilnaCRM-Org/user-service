@@ -50,6 +50,23 @@ final class PasswordResetEndpointFactoryTest extends UnitTestCase
 
     public function testCreateEndpointInjectsCustomRequests(): void
     {
+        $this->setupRequestFactoryExpectations();
+        $this->setupPathsExpectations();
+        $this->setupOperationExpectations();
+        $this->setupPathItemExpectations();
+        $this->setupAddPathExpectations();
+
+        $factory = new PasswordResetEndpointFactory(
+            getenv('API_PREFIX'),
+            $this->requestPasswordResetRequestFactory,
+            $this->confirmPasswordResetRequestFactory
+        );
+
+        $factory->createEndpoint($this->openApi);
+    }
+
+    private function setupRequestFactoryExpectations(): void
+    {
         $this->requestPasswordResetRequestFactory->expects($this->once())
             ->method('getRequest')
             ->willReturn($this->requestPasswordResetBody);
@@ -57,7 +74,10 @@ final class PasswordResetEndpointFactoryTest extends UnitTestCase
         $this->confirmPasswordResetRequestFactory->expects($this->once())
             ->method('getRequest')
             ->willReturn($this->confirmPasswordResetBody);
+    }
 
+    private function setupPathsExpectations(): void
+    {
         $this->openApi->expects($this->atLeast(2))
             ->method('getPaths')
             ->willReturn($this->paths);
@@ -73,7 +93,10 @@ final class PasswordResetEndpointFactoryTest extends UnitTestCase
                     [$this->requestPathItem, $this->confirmPathItem]
                 )
             );
+    }
 
+    private function setupOperationExpectations(): void
+    {
         $this->requestPathItem->expects($this->once())
             ->method('getPost')
             ->willReturn($this->requestOperation);
@@ -89,7 +112,10 @@ final class PasswordResetEndpointFactoryTest extends UnitTestCase
             ->method('withRequestBody')
             ->with($this->confirmPasswordResetBody)
             ->willReturn($this->confirmOperation);
+    }
 
+    private function setupPathItemExpectations(): void
+    {
         $this->requestPathItem->expects($this->once())
             ->method('withPost')
             ->with($this->requestOperation)
@@ -98,7 +124,10 @@ final class PasswordResetEndpointFactoryTest extends UnitTestCase
             ->method('withPost')
             ->with($this->confirmOperation)
             ->willReturn($this->confirmPathItem);
+    }
 
+    private function setupAddPathExpectations(): void
+    {
         $this->paths->expects($this->exactly(2))
             ->method('addPath')
             ->willReturnCallback(
@@ -109,13 +138,5 @@ final class PasswordResetEndpointFactoryTest extends UnitTestCase
                     ]
                 )
             );
-
-        $factory = new PasswordResetEndpointFactory(
-            getenv('API_PREFIX'),
-            $this->requestPasswordResetRequestFactory,
-            $this->confirmPasswordResetRequestFactory
-        );
-
-        $factory->createEndpoint($this->openApi);
     }
 }
