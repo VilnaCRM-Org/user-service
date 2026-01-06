@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use NunoMaduro\PhpInsights\Domain\Insights\CyclomaticComplexityIsHigh;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
@@ -57,7 +56,6 @@ return [
             'exclude' => [
                 'src/Shared/Infrastructure/Bus/Command/InMemorySymfonyCommandBus',
                 'src/Shared/Infrastructure/Bus/Event/InMemorySymfonyEventBus',
-                'src/Shared/OpenApi/Factory/Response/DuplicateEmailFactory',
                 'src/User/Domain/Entity/User',
             ],
         ],
@@ -67,18 +65,9 @@ return [
                 'src/Shared/Application/OpenApi/Builder/Requirement',
             ],
         ],
-        CyclomaticComplexityIsHigh::class => [
-            'exclude' => [
-                'src/Shared/Application/ErrorProvider',
-                'src/Shared/Application/OpenApi/Factory/Endpoint/ParamUserResponseProvider',
-                'src/Shared/Application/EventListener/QueryParameter/Pagination/ItemsPerPageRule',
-            ],
-        ],
         UnnecessaryStringConcatSniff::class => [
             'exclude' => [
                 'src/Shared/Application/OpenApi/Factory/Response/UnsupportedTypeFactory',
-                'src/User/Domain/Exception/DuplicateEmailException',
-                'src/Shared/Application/OpenApi/Factory/Response/DuplicateEmailFactory',
                 'src/Shared/Infrastructure/Bus/Command/CommandNotRegisteredException',
                 'src/Shared/Infrastructure/Bus/Event/EventNotRegisteredException.php',
                 'tests/Unit/Shared/Application/OpenApi/Factory/Response/OAuthRedirectResponseFactoryTest',

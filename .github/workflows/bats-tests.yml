@@ -29,5 +29,3 @@ jobs:
 
       - name: Run Bats tests
         run: make bats
-        env:
-          CI: 1

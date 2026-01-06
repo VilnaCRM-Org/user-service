@@ -72,11 +72,11 @@ load 'bats-assert/load'
 }
 
 @test "make phpinsights should fail when code quality is low" {
-  mv tests/CLI/bats/php/temp_bad_code.php temp_bad_code.php
+  mv tests/CLI/bats/php/temp_bad_code.php src/temp_bad_code.php
 
   run make phpinsights
 
-  mv temp_bad_code.php tests/CLI/bats/php/
+  mv src/temp_bad_code.php tests/CLI/bats/php/
 
   assert_failure
   assert_output --partial "The style score is too low"
