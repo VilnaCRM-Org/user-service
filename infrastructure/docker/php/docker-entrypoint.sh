@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Create required directories (needed when host volume is mounted)
+mkdir -p var/cache var/log
+
 if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 	if [ "$APP_ENV" != 'prod' ]; then
 		composer install --prefer-dist --no-progress --no-interaction
