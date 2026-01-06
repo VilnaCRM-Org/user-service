@@ -53,6 +53,7 @@ The password reset endpoint returns the same response regardless of whether the 
 ### Rate Limiting
 
 Password reset requests are rate-limited using Symfony's Rate Limiter component with a sliding window policy. Configuration:
+
 - `PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS`: Maximum requests allowed (default: 1000)
 - `PASSWORD_RESET_RATE_LIMIT_INTERVAL`: Time window (default: "1 hour")
 
@@ -68,6 +69,7 @@ Rate limiting is implemented via a decorator pattern (`RateLimitedRequestPasswor
 ### Token Validation
 
 Multiple validators ensure token integrity:
+
 - `TokenExistenceValidator`: Ensures the token exists
 - `TokenExpirationValidator`: Checks if the token has expired
 - `TokenUsageValidator`: Verifies the token hasn't been used

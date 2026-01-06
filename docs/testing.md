@@ -220,6 +220,7 @@ We use **Schemathesis**, a property-based testing tool that generates test cases
 ### Execution:
 
 Run `make schemathesis-validate` to execute OpenAPI validation tests. This command:
+
 1. Seeds deterministic test data via `app:seed-schemathesis-data`
 2. Runs Schemathesis against all API endpoints
 3. Validates responses match the OpenAPI schema
