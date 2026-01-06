@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Exception\HttpExceptionInterface as ApiPlatformHttpExce
 use ApiPlatform\Metadata\HttpOperation;
 use ApiPlatform\State\ApiResource\Error;
 use App\Shared\Application\Provider\ErrorProvider;
+use App\Shared\Application\Resolver\HttpExceptionDetailResolver;
 use App\Shared\Application\Resolver\HttpExceptionHeadersResolver;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Exception\DomainException;
@@ -346,7 +347,8 @@ final class ErrorProviderTest extends UnitTestCase
         return new ErrorProvider(
             $this->translator,
             $this->requestStack,
-            new HttpExceptionHeadersResolver()
+            new HttpExceptionHeadersResolver(),
+            new HttpExceptionDetailResolver($this->translator)
         );
     }
 }

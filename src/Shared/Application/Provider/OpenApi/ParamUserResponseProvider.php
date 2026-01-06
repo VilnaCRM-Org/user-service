@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Application\Provider\OpenApi;
 
 use ApiPlatform\OpenApi\Model\Response;
+use App\Shared\Application\OpenApi\Factory\Response\AbstractResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserDeletedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserNotFoundResponseFactory;
@@ -14,12 +15,8 @@ use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 
 final class ParamUserResponseProvider
 {
-    private ?Response $badRequest = null;
-    private ?Response $userNotFound = null;
-    private ?Response $validationError = null;
-    private ?Response $userDeleted = null;
-    private ?Response $userUpdated = null;
-    private ?Response $userReturned = null;
+    /** @var array<string, Response> */
+    private array $responses = [];
 
     public function __construct(
         private ValidationErrorFactory $validationErrorResponseFactory,
@@ -33,37 +30,56 @@ final class ParamUserResponseProvider
 
     public function badRequest(): Response
     {
-        return $this->badRequest ??=
-            $this->badRequestResponseFactory->getResponse();
+        return $this->getCachedResponse(
+            'badRequest',
+            $this->badRequestResponseFactory
+        );
     }
 
     public function userNotFound(): Response
     {
-        return $this->userNotFound ??=
-            $this->userNotFoundResponseFactory->getResponse();
+        return $this->getCachedResponse(
+            'userNotFound',
+            $this->userNotFoundResponseFactory
+        );
     }
 
     public function validationError(): Response
     {
-        return $this->validationError ??=
-            $this->validationErrorResponseFactory->getResponse();
+        return $this->getCachedResponse(
+            'validationError',
+            $this->validationErrorResponseFactory
+        );
     }
 
     public function userDeleted(): Response
     {
-        return $this->userDeleted ??=
-            $this->deletedResponseFactory->getResponse();
+        return $this->getCachedResponse(
+            'userDeleted',
+            $this->deletedResponseFactory
+        );
     }
 
     public function userUpdated(): Response
     {
-        return $this->userUpdated ??=
-            $this->userUpdatedResponseFactory->getResponse();
+        return $this->getCachedResponse(
+            'userUpdated',
+            $this->userUpdatedResponseFactory
+        );
     }
 
     public function userReturned(): Response
     {
-        return $this->userReturned ??=
-            $this->userReturnedResponseFactory->getResponse();
+        return $this->getCachedResponse(
+            'userReturned',
+            $this->userReturnedResponseFactory
+        );
+    }
+
+    private function getCachedResponse(
+        string $key,
+        AbstractResponseFactory $factory
+    ): Response {
+        return $this->responses[$key] ??= $factory->getResponse();
     }
 }

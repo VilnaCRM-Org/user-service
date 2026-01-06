@@ -7,13 +7,13 @@ namespace App\Shared\Application\Provider;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ApiResource\Error;
 use ApiPlatform\State\ProviderInterface;
+use App\Shared\Application\Resolver\HttpExceptionDetailResolver;
 use App\Shared\Application\Resolver\HttpExceptionHeadersResolver;
 use App\User\Domain\Exception\DomainException;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
@@ -25,7 +25,8 @@ final readonly class ErrorProvider implements ProviderInterface
     public function __construct(
         private TranslatorInterface $translator,
         private RequestStack $requestStack,
-        private HttpExceptionHeadersResolver $headersResolver
+        private HttpExceptionHeadersResolver $headersResolver,
+        private HttpExceptionDetailResolver $detailResolver
     ) {
     }
 
@@ -83,9 +84,7 @@ final readonly class ErrorProvider implements ProviderInterface
         int $status
     ): array|Error {
         if ($this->isGraphQLRequest($request)) {
-            return $this->provideGraphQLInternalServerError(
-                $internalErrorText
-            );
+            return ['message' => $internalErrorText];
         }
 
         return $this->provideRESTInternalServerError(
@@ -111,20 +110,9 @@ final readonly class ErrorProvider implements ProviderInterface
         int $status
     ): Error {
         $error = $this->createErrorFromException($exception, $status);
-
-        if ($exception instanceof NotFoundHttpException) {
-            $error->setDetail($this->translator->trans('error.not.found.http'));
-        }
+        $error->setDetail($this->detailResolver->resolve($exception));
 
         return $error;
-    }
-
-    /**
-     * @return array<string,array<string>>
-     */
-    private function provideGraphQLInternalServerError(string $message): array
-    {
-        return ['message' => $message];
     }
 
     private function provideRESTInternalServerError(

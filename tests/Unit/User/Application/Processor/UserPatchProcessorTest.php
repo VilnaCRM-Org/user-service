@@ -334,6 +334,12 @@ final class UserPatchProcessorTest extends UnitTestCase
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new UuidFactory());
         $this->updateUserCommandFactory = new UpdateUserCommandFactory();
+        $this->initializePayloadProviderAndResolver();
+        $this->initializeProcessor();
+    }
+
+    private function initializePayloadProviderAndResolver(): void
+    {
         $this->requestStack = new RequestStack();
         $this->payloadProvider = new JsonRequestPayloadProvider(
             new JsonRequestContentProvider($this->requestStack),
@@ -344,6 +350,10 @@ final class UserPatchProcessorTest extends UnitTestCase
             new UserPatchFieldResolver(),
             new UserPatchPasswordResolver()
         );
+    }
+
+    private function initializeProcessor(): void
+    {
         $this->processor = new UserPatchProcessor(
             $this->commandBus,
             $this->mockUpdateUserCommandFactory,
