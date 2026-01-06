@@ -8,8 +8,8 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RequestPasswordResetCommand;
 use App\User\Application\Command\RequestPasswordResetCommandResponse;
-use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\Resolver\RequestPasswordResetMutationResolver;
+use App\User\Application\Validator\MutationInputValidator;
 
 final class RequestPasswordResetMutationResolverTest extends UnitTestCase
 {

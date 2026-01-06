@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\Checker;
 
 use App\Shared\Application\Checker\EmailUniquenessChecker;
-use App\Shared\Application\Http\RouteIdentifierProvider;
+use App\Shared\Application\Provider\Http\RouteIdentifierProvider;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;

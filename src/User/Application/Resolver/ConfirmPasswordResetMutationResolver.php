@@ -8,7 +8,7 @@ use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\MutationInput\ConfirmPasswordResetMutationInput;
-use App\User\Application\MutationInput\MutationInputValidator;
+use App\User\Application\Validator\MutationInputValidator;
 
 final readonly class ConfirmPasswordResetMutationResolver implements
     MutationResolverInterface

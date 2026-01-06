@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\OpenApi\Builder;
 
+use App\Shared\Application\OpenApi\Factory\Schema\ParameterSchemaFactory;
+use ArrayObject;
+
 use function array_combine;
 use function array_filter;
 use function array_map;
 use function array_values;
-
-use ArrayObject;
 
 final readonly class ContextBuilder
 {

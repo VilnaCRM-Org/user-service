@@ -7,9 +7,9 @@ namespace App\User\Application\Resolver;
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Factory\ConfirmUserCommandFactoryInterface;
-use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Application\Transformer\ConfirmUserMutationInputTransformer;
+use App\User\Application\Validator\MutationInputValidator;
 use App\User\Domain\Exception\TokenNotFoundException;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 

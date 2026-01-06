@@ -80,7 +80,7 @@ services:
       - { name: kernel.event_listener, event: kernel.request, priority: 5 }
 
   api_platform.state.error_provider:
-    class: 'App\Shared\Application\ErrorProvider'
+    class: 'App\Shared\Application\Provider\ErrorProvider'
     arguments:
       - '@Symfony\Contracts\Translation\TranslatorInterface'
       - '@request_stack'

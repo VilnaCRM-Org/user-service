@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\QueryParameter\Pagination;
 
+use App\Shared\Application\Factory\QueryParameterViolationFactory;
 use App\Shared\Application\QueryParameter\Evaluator\ExplicitValueEvaluator;
 use App\Shared\Application\QueryParameter\Normalizer\PositiveIntegerNormalizer;
 use App\Shared\Application\QueryParameter\QueryParameterViolation;
-use App\Shared\Application\QueryParameter\QueryParameterViolationFactory;
 
 final class ItemsPerPageRule
 {

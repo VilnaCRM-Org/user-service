@@ -12,6 +12,7 @@ use App\Shared\Application\Fixture\SchemathesisFixtures;
 use App\Shared\Application\OpenApi\Factory\Request\ReplaceUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Request\UpdateUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
+use App\Shared\Application\Provider\OpenApi\ParamUserResponseProvider;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class ParamUserEndpointFactory implements AbstractEndpointFactory

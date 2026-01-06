@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\QueryParameter\Pagination;
 
-use App\Shared\Application\QueryParameter\Pagination\ItemsPerPageParameterValidator;
-use App\Shared\Application\QueryParameter\Pagination\PageParameterValidator;
 use App\Shared\Application\QueryParameter\Pagination\PaginationRule;
 use App\Shared\Application\QueryParameter\QueryParameterViolation;
+use App\Shared\Application\Validator\Pagination\ItemsPerPageParameterValidator;
+use App\Shared\Application\Validator\Pagination\PageParameterValidator;
 use App\Tests\Unit\UnitTestCase;
 
 final class PaginationRuleTest extends UnitTestCase

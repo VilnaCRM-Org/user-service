@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Checker;
 
-use App\Shared\Application\Http\RouteIdentifierProvider;
+use App\Shared\Application\Provider\Http\RouteIdentifierProvider;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 

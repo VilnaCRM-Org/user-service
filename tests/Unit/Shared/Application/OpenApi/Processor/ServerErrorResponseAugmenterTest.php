@@ -10,8 +10,8 @@ use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
+use App\Shared\Application\OpenApi\Augmenter\ServerErrorResponseAugmenter;
 use App\Shared\Application\OpenApi\Factory\Response\InternalErrorFactory;
-use App\Shared\Application\OpenApi\Processor\ServerErrorResponseAugmenter;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 

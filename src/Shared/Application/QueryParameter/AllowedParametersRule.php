@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\QueryParameter;
 
+use App\Shared\Application\Factory\QueryParameterViolationFactory;
+
 use function array_diff;
 use function array_keys;
 use function implode;

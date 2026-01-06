@@ -10,7 +10,6 @@ use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Endpoint\ParamUserEndpointFactory;
-use App\Shared\Application\OpenApi\Factory\Endpoint\ParamUserResponseProvider;
 use App\Shared\Application\OpenApi\Factory\Request\ReplaceUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Request\UpdateUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
@@ -20,6 +19,7 @@ use App\Shared\Application\OpenApi\Factory\Response\UserReturnedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserUpdatedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
+use App\Shared\Application\Provider\OpenApi\ParamUserResponseProvider;
 use App\Tests\Unit\UnitTestCase;
 
 final class ParametrizedUserEndpointFactoryTest extends UnitTestCase

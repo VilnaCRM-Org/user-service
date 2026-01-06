@@ -6,7 +6,7 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Shared\Application\Http\JsonRequestValidator;
+use App\Shared\Application\Validator\Http\JsonRequestValidator;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\RetryDto;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;

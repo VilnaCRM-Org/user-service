@@ -6,8 +6,8 @@ namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use App\Shared\Application\Decoder\JsonBodyDecoder;
-use App\Shared\Application\Http\JsonRequestContentProvider;
-use App\Shared\Application\Http\JsonRequestPayloadProvider;
+use App\Shared\Application\Provider\Http\JsonRequestContentProvider;
+use App\Shared\Application\Provider\Http\JsonRequestPayloadProvider;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;

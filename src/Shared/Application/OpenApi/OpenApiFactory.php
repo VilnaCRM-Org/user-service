@@ -9,11 +9,11 @@ use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Components;
 use ApiPlatform\OpenApi\Model\Tag;
 use ApiPlatform\OpenApi\OpenApi;
+use App\Shared\Application\OpenApi\Augmenter\ServerErrorResponseAugmenter;
+use App\Shared\Application\OpenApi\Cleaner\NoContentResponseCleaner;
 use App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory;
-use App\Shared\Application\OpenApi\Processor\NoContentResponseCleaner;
-use App\Shared\Application\OpenApi\Processor\PaginationQueryParametersSanitizer;
-use App\Shared\Application\OpenApi\Processor\PathParametersSanitizer;
-use App\Shared\Application\OpenApi\Processor\ServerErrorResponseAugmenter;
+use App\Shared\Application\OpenApi\Sanitizer\PaginationQueryParametersSanitizer;
+use App\Shared\Application\OpenApi\Sanitizer\PathParametersSanitizer;
 use ArrayObject;
 
 final class OpenApiFactory implements OpenApiFactoryInterface

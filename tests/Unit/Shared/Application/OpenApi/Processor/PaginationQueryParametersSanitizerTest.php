@@ -10,9 +10,9 @@ use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\Application\OpenApi\Processor\PaginationOperationSanitizer;
-use App\Shared\Application\OpenApi\Processor\PaginationParameterSanitizer;
-use App\Shared\Application\OpenApi\Processor\PaginationQueryParametersSanitizer;
+use App\Shared\Application\OpenApi\Sanitizer\PaginationOperationSanitizer;
+use App\Shared\Application\OpenApi\Sanitizer\PaginationParameterSanitizer;
+use App\Shared\Application\OpenApi\Sanitizer\PaginationQueryParametersSanitizer;
 use App\Tests\Unit\UnitTestCase;
 
 final class PaginationQueryParametersSanitizerTest extends UnitTestCase

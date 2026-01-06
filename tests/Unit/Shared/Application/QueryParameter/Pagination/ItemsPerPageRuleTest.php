@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\QueryParameter\Pagination;
 
+use App\Shared\Application\Factory\QueryParameterViolationFactory;
 use App\Shared\Application\QueryParameter\Evaluator\ExplicitValueEvaluator;
 use App\Shared\Application\QueryParameter\Normalizer\PositiveIntegerNormalizer;
 use App\Shared\Application\QueryParameter\Pagination\ItemsPerPageRule;
 use App\Shared\Application\QueryParameter\QueryParameterViolation;
-use App\Shared\Application\QueryParameter\QueryParameterViolationFactory;
 use App\Tests\Unit\UnitTestCase;
 
 final class ItemsPerPageRuleTest extends UnitTestCase

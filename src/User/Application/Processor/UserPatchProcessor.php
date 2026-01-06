@@ -6,7 +6,7 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Shared\Application\Http\JsonRequestPayloadProvider;
+use App\Shared\Application\Provider\Http\JsonRequestPayloadProvider;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\UserPatchDto;
 use App\User\Application\DTO\UserPatchPayload;

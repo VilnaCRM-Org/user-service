@@ -6,6 +6,8 @@ namespace App\Shared\Application\QueryParameter\Pagination;
 
 use App\Shared\Application\QueryParameter\QueryParameterRule;
 use App\Shared\Application\QueryParameter\QueryParameterViolation;
+use App\Shared\Application\Validator\Pagination\ItemsPerPageParameterValidator;
+use App\Shared\Application\Validator\Pagination\PageParameterValidator;
 
 /**
  * @implements QueryParameterRule
