@@ -36,28 +36,37 @@ Here is a breakdown of the meaning of our classes from the Domain layer:
 
 ### Aggregate
 
-- **ConfirmationEmail:** represents the process and data involved in sending a confirmation email to a user.
+- **ConfirmationEmail:** Represents the process and data involved in sending a confirmation email to a user.
+- **PasswordResetEmail:** Represents the process and data involved in sending a password reset email to a user.
 
 ### Entity
 
-- **ConfirmationToken:** represents a token to confirm a user's email address.
-
-- **User:** represents a user in the system.
+- **ConfirmationToken:** Represents a token to confirm a user's email address.
+- **PasswordResetToken:** Represents a token for password reset functionality, including expiration and usage tracking.
+- **User:** Represents a user in the system.
 
 ### Event
 
 - **ConfirmationEmailSentEvent**: Published after the call of the `send()` function from the `ConfirmationEmail` aggregate.
 - **EmailChangedEvent**: Published after the user's email is changed.
 - **PasswordChangedEvent**: Published after the user's password is changed.
+- **PasswordResetRequestedEvent**: Published after a password reset is requested by a user.
+- **PasswordResetConfirmedEvent**: Published after a password reset is successfully confirmed.
+- **PasswordResetEmailSentEvent**: Published after a password reset email is sent to the user.
 - **UserConfirmedEvent**: Published after the user is confirmed.
 - **UserRegisteredEvent**: Published after the user is registered.
 
 ### Exception
 
-- **InvalidPasswordException:** Thown, when the old password is invalid during user update.
-- **TokenNotFoundException:** Thown, when Confirmation Token does not exist or has been expired.
-- **UserNotFoundException:** Thown, when User was not found.
-- **UserTimedOutException:** Thown, when User was timed out for too many confirmation attempts.
+- **InvalidPasswordException:** Thrown when the old password is invalid during user update.
+- **PasswordResetRateLimitExceededException:** Thrown when too many password reset requests are made within the rate limit window.
+- **PasswordResetTokenAlreadyUsedException:** Thrown when attempting to use a password reset token that has already been used.
+- **PasswordResetTokenExpiredException:** Thrown when the password reset token has expired.
+- **PasswordResetTokenMismatchException:** Thrown when the password reset token does not match the user.
+- **PasswordResetTokenNotFoundException:** Thrown when the password reset token does not exist.
+- **TokenNotFoundException:** Thrown when Confirmation Token does not exist or has been expired.
+- **UserNotFoundException:** Thrown when User was not found.
+- **UserTimedOutException:** Thrown when User was timed out for too many confirmation attempts.
 
 ### ValueObject
 

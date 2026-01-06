@@ -42,6 +42,37 @@ Our CI pipeline incorporates security checks to ensure the ongoing security of t
 
 - Please disclose any security issues or vulnerabilities found to the maintainers privately through the [GitHub security system](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability) and do not disclose them publicly until they have been addressed.
 
+## Password Reset Security
+
+The password reset functionality implements several security best practices:
+
+### No User Enumeration
+
+The password reset endpoint returns the same response regardless of whether the email exists in the system. This prevents attackers from discovering valid email addresses through the password reset flow.
+
+### Rate Limiting
+
+Password reset requests are rate-limited using Symfony's Rate Limiter component with a sliding window policy. Configuration:
+- `PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS`: Maximum requests allowed (default: 1000)
+- `PASSWORD_RESET_RATE_LIMIT_INTERVAL`: Time window (default: "1 hour")
+
+Rate limiting is implemented via a decorator pattern (`RateLimitedRequestPasswordResetHandler`) in the Infrastructure layer.
+
+### Token Security
+
+- **Secure Generation**: Tokens are generated using `random_bytes()` for cryptographic security
+- **Configurable Length**: Token length is configurable via `PASSWORD_RESET_TOKEN_LENGTH` (default: 32 characters)
+- **Expiration**: Tokens expire after a configurable period via `PASSWORD_RESET_TOKEN_EXPIRATION_HOURS` (default: 1 hour)
+- **One-Time Use**: Tokens are marked as used after successful password reset and cannot be reused
+
+### Token Validation
+
+Multiple validators ensure token integrity:
+- `TokenExistenceValidator`: Ensures the token exists
+- `TokenExpirationValidator`: Checks if the token has expired
+- `TokenUsageValidator`: Verifies the token hasn't been used
+- `UserTokenMatchValidator`: Confirms the token belongs to the correct user
+
 ## Known Vulnerabilities
 
 TBD

@@ -200,4 +200,34 @@ Check [this link](https://behat.org/en/latest/user_guide/writing_scenarios.html)
 
 Run `make behat` to execute end-to-end tests.
 
+### GraphQL Password Reset E2E Tests
+
+The password reset feature includes comprehensive GraphQL E2E tests in `/features/graphql_password_reset.feature`:
+
+- **Requesting password reset for existing user via GraphQL**: Verifies the `requestPasswordResetUser` mutation returns success without leaking user existence
+- **Requesting password reset for non-existing user via GraphQL**: Confirms no user enumeration (same response for non-existent users)
+- **Confirming password reset with valid token via GraphQL**: Tests the complete `confirmPasswordResetUser` mutation flow
+- **Confirming password reset with invalid token via GraphQL**: Validates proper error handling for invalid tokens
+
+## OpenAPI Validation Testing (Schemathesis)
+
+Schemathesis is used to automatically validate API endpoints against the OpenAPI specification, ensuring the implementation matches the documented contract.
+
+### Tools:
+
+We use **Schemathesis**, a property-based testing tool that generates test cases from OpenAPI specifications. It automatically tests all documented endpoints with various valid and invalid inputs.
+
+### Execution:
+
+Run `make schemathesis-validate` to execute OpenAPI validation tests. This command:
+1. Seeds deterministic test data via `app:seed-schemathesis-data`
+2. Runs Schemathesis against all API endpoints
+3. Validates responses match the OpenAPI schema
+
+### Best Practices:
+
+- Keep OpenAPI examples consistent with seeded fixture data
+- Ensure validators return proper error responses (not HTML error pages)
+- Use `application/problem+json` content type for error responses
+
 Learn more about [Advanced Configuration Guide](advanced-configuration.md).

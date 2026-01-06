@@ -53,14 +53,17 @@ The User context encapsulates all functionality related to user management withi
 User/Application
 ├── Command
 ├── CommandHandler
+├── Controller
 ├── DTO
 ├── EventListener
 ├── EventSubscriber
 ├── Factory
-├── InputValidation
+├── MutationInput
 ├── Processor
 ├── Resolver
-└── Transformer
+├── Sanitizer
+├── Transformer
+└── Validator
 ```
 
 - **Domain:** This layer consists of Entities, Value Objects, Aggregates, Domain Events, and Domain Exceptions, which represent everything related to business logic in the User bounded context.
@@ -76,17 +79,44 @@ User/Domain
 └── ValueObject
 ```
 
-- **Infrastructure:** This layer consists of various Repositories for Entities from the Domain layer.
+- **Infrastructure:** This layer consists of various Repositories for Entities from the Domain layer, Decorators for cross-cutting concerns like rate limiting, and Services that implement domain interfaces using external frameworks.
 
 ```bash
 User/Infrastructure
+├── Decoder
+├── Decorator
+├── Evaluator
+├── EventListener
+├── Extractor
 ├── Factory
-└── Repository
+├── Repository
+└── Service
 ```
 
 ### OAuth
 
 This bounded context is very thin and contains only an empty entity, to map OpenApi docs on it, because the OAuth server is implemented using [this bundle](https://oauth2.thephpleague.com/).
+
+### Internal
+
+The Internal context contains infrastructure-level functionality that supports the application but is not part of the core business domain.
+
+#### HealthCheck
+
+The HealthCheck module provides health monitoring for external dependencies:
+
+```bash
+Internal/HealthCheck
+├── Domain
+│   └── ValueObject
+└── Infrastructure
+    ├── EventSubscriber
+    └── Factory
+```
+
+- **Domain/ValueObject**: Contains the `HealthCheck` value object representing health status
+- **Infrastructure/EventSubscriber**: Contains subscribers that check external services (Database, Redis, SQS Broker)
+- **Infrastructure/Factory**: Contains factories for creating health check events
 
 ### Deptrac
 

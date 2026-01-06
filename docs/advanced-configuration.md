@@ -6,42 +6,79 @@ Welcome to the Advanced Configuration Guide for the User Service. This guide is 
 
 The User Service utilizes environment variables for configuration to ensure that sensitive information is not hard-coded into the application. Here are the environment variables you can configure:
 
-- `APP_ENV`: Specifies the environment in which the application is running.
+#### Core Application
+
+- `APP_ENV`: Specifies the environment in which the application is running (e.g., `dev`, `test`, `prod`).
 - `APP_SECRET`: A secret key used for cryptographic purposes, such as generating CSRF tokens or signing cookies.
-- `API_DOMAIN`: The domain name of the API.
-- `API_BASE_URL`: The base URL of the API, constructed using the `API_DOMAIN`.
-- `DB_USER`: The username for the MySQL database.
-- `DB_PASSWORD`: The password for the MySQL database.
-- `DB_NAME`: The name of the MySQL database.
-- `DB_HOST`: Specifies the hostname or IP address where the MySQL database server is running.
-- `DB_PORT`: The port on which the MySQL database is running.
-- `DATABASE_URL`: The URL for connecting to the MySQL database, including the username, password, host, port, and database name.
-- `BATCH_SIZE`: The size of a batch for bulk inserts to a database.
-- `REDIS_PORT`: The port on which the Redis server is running.
-- `REDIS_URL`: The URL for connecting to the Redis server.
-- `STRUCTURIZR_PORT`: The port on which Structurizr is running.
-- `EMAIL_QUEUE_NAME`: The name of the queue for sending emails.
-- `FAILED_EMAIL_QUEUE_NAME`: The name of the queue for failed email deliveries.
-- `LOCALSTACK_PORT`: The port on which Localstack is running.
-- `MESSENGER_TRANSPORT_DSN`: The DSN (Data Source Name) for the messenger transport, configured to use Amazon SQS via Localstack for sending emails.
+- `API_BASE_URL`: The base URL of the API (e.g., `https://localhost`).
+- `API_URL`: The public API URL (e.g., `https://api.vilnacrm.com`).
+- `API_PREFIX`: The API route prefix (e.g., `/api`).
+
+#### Database
+
+- `DATABASE_URL`: The URL for connecting to the MariaDB/MySQL database, including credentials, host, port, and database name (e.g., `mysql://root:root@database:3306/db?serverVersion=11.4`).
+- `USER_INSERT_BATCH_SIZE`: The size of a batch for bulk user inserts to the database.
+
+#### Redis
+
+- `REDIS_URL`: The URL for connecting to the Redis server (e.g., `redis://redis:6379/0`).
+
+#### AWS SQS / LocalStack
+
+- `AWS_SQS_VERSION`: The AWS SQS API version.
+- `AWS_SQS_REGION`: The AWS region for SQS.
+- `AWS_SQS_ENDPOINT_BASE`: The SQS endpoint base (e.g., `localstack` for local development).
+- `AWS_SQS_KEY`: The AWS access key for SQS.
+- `AWS_SQS_SECRET`: The AWS secret key for SQS.
+- `LOCALSTACK_PORT`: The port on which LocalStack is running.
+
+#### Messenger Transports
+
+- `SEND_EMAIL_TRANSPORT_DSN`: The DSN for the messenger transport used for sending emails via Amazon SQS.
 - `FAILED_EMAIL_TRANSPORT_DSN`: The DSN for the messenger transport used for handling failed email deliveries.
-- `MAILCATCHER_SMTP_PORT`: The port on which the Mailcatcher SMTP server is running.
-- `MAILCATCHER_HTTP_PORT`: The port on which the Mailcatcher HTTP server is running.
-- `MAILER_DSN`: The DSN for the mailer, configured to use SMTP via Mailcatcher.
+- `INSERT_USER_BATCH_TRANSPORT_DSN`: The DSN for the messenger transport used for batch user inserts.
+- `MESSENGER_CONSUMER_NAME`: The name identifier for the messenger consumer (overwritten by Supervisor).
+
+#### Mailer
+
+- `MAILCATCHER_SMTP_PORT`: The port on which the MailCatcher SMTP server is running.
+- `MAILCATCHER_HTTP_PORT`: The port on which the MailCatcher HTTP server is running.
+- `MAILER_DSN`: The DSN for the mailer, configured to use SMTP via MailCatcher.
 - `MAIL_SENDER`: The email address used as the sender for outgoing emails.
+
+#### OAuth 2.0
+
 - `OAUTH_PRIVATE_KEY`: The path to the private key used for OAuth 2.0 authentication.
 - `OAUTH_PUBLIC_KEY`: The path to the public key used for OAuth 2.0 authentication.
 - `OAUTH_PASSPHRASE`: The passphrase used to decrypt the private key.
-- `OAUTH_ENCRYPTION_KEY_TYPE`: Specifies the type of encryption key used, either "plain" or "defuse".
-- `OAUTH_ENCRYPTION_KEY`: Required if `OAUTH_ENCRYPTION_KEY_TYPE` was set to "defuse". Learn more [here](https://oauth2.thephpleague.com/installation/#string-password).
+- `OAUTH_ENCRYPTION_KEY_TYPE`: Specifies the type of encryption key used, either `plain` or `defuse`.
+- `OAUTH_ENCRYPTION_KEY`: Required if `OAUTH_ENCRYPTION_KEY_TYPE` was set to `defuse`. Learn more [here](https://oauth2.thephpleague.com/installation/#string-password).
 - `ACCESS_TOKEN_TTL`: The TTL for access tokens. Learn more [here](http://php.net/manual/en/dateinterval.construct.php#refsect1-dateinterval.construct-parameters).
 - `REFRESH_TOKEN_TTL`: The TTL for refresh tokens. Learn more [here](http://php.net/manual/en/dateinterval.construct.php#refsect1-dateinterval.construct-parameters).
-- `AUTH_CODE_TTL`: The TTL for authorization codes. Learn more [here](http://php.net/manual/en/dateinterval.construct.php#refsect1-dateinterval.construct-parameters7).
-- `JWT_TOKEN_TTL`: The TTL for JWT tokens.
-- `PASSWORD_HASHING_COST`: The cost factor for the bcrypt password hashing algorithm.
+- `AUTH_CODE_TTL`: The TTL for authorization codes. Learn more [here](http://php.net/manual/en/dateinterval.construct.php#refsect1-dateinterval.construct-parameters).
+
+#### JWT
+
+- `JWT_TOKEN_TTL`: The TTL for JWT tokens in seconds.
+
+#### Security and Tokens
+
+- `CONFIRMATION_TOKEN_LENGTH`: The length of user confirmation tokens (default: 10).
+- `PASSWORD_RESET_TOKEN_LENGTH`: The length of password reset tokens (default: 32).
+- `PASSWORD_RESET_TOKEN_EXPIRATION_HOURS`: How long password reset tokens are valid in hours (default: 1).
+- `PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS`: Maximum password reset requests allowed within the rate limit interval (default: 1000).
+- `PASSWORD_RESET_RATE_LIMIT_INTERVAL`: The time window for password reset rate limiting (default: "1 hour").
+
+#### CORS
+
 - `CORS_ALLOW_ORIGIN`: The regular expression defining the allowed origins for Cross-Origin Resource Sharing (CORS).
 
-Learn more about [Symfony Environment Valiables](https://symfony.com/doc/current/configuration.html#configuring-environment-variables-in-env-files)
+#### Development
+
+- `STRUCTURIZR_PORT`: The port on which Structurizr architecture diagrams are served.
+- `XDEBUG_MODE`: Xdebug mode configuration (e.g., `off`, `debug`, `coverage`).
+
+Learn more about [Symfony Environment Variables](https://symfony.com/doc/current/configuration.html#configuring-environment-variables-in-env-files)
 
 ### Managing different environments
 
