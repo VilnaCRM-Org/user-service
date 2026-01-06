@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Systematically retrieve and address PR code review comments using make pr-comments. Enforces DDD architecture, code organization principles, and quality standards. Use when handling code review feedback, refactoring based on reviewer suggestions, or addressing PR comments.
+description: Systematically retrieve and address PR code review comments using make pr-comments. Use when handling code review feedback or addressing PR comments.
 ---
 
 # Code Review Workflow Skill
@@ -10,13 +10,37 @@ description: Systematically retrieve and address PR code review comments using m
 - PR has unresolved code review comments
 - Need systematic approach to address feedback
 - Ready to implement reviewer suggestions
-- Need to verify DDD architecture compliance
-- Need to ensure code organization best practices
-- Need to maintain quality standards
+- Need to maintain quality standards during review implementation
 
 ## Task (Function)
 
-Retrieve PR comments, categorize by type, verify architecture compliance, enforce code organization principles, and implement all changes systematically while maintaining 100% quality standards.
+Systematically retrieve, categorize, and address all PR code review comments while maintaining quality standards.
+
+**Success Criteria**: `make pr-comments` shows 0 unresolved AND `make ci` shows "✅ CI checks successfully passed!"
+
+## Workflow Overview
+
+```mermaid
+PR Comments → Categorize → Apply by Priority → Verify → Run CI → Done
+```
+
+## Quick Start
+
+```bash
+# 1. Get comments
+make pr-comments
+
+# 2. Apply each suggestion/fix (one commit per comment)
+git commit -m "Apply review suggestion: [description]
+
+Ref: [comment URL]"
+
+# 3. Verify all addressed
+make pr-comments  # Should show 0 unresolved
+
+# 4. Run CI
+make ci  # Must show "✅ CI checks successfully passed!"
+```
 
 ## Execution Steps
 
@@ -36,46 +60,28 @@ make pr-comments FORMAT=json  # JSON output
 | ---------------------- | --------------------------- | -------- | ------------------------------------ |
 | Committable Suggestion | Code block, "```suggestion" | Highest  | Apply immediately, commit separately |
 | LLM Prompt             | "🤖 Prompt for AI Agents"   | High     | Execute prompt, implement changes    |
-| Architecture Concern   | Class naming, file location | High     | Verify compliance (see Step 2.1)     |
+| Architecture Concern   | Class naming, file location | High     | Invoke appropriate skill             |
 | Question               | Ends with "?"               | Medium   | Answer inline or via code change     |
 | General Feedback       | Discussion, recommendation  | Low      | Consider and improve                 |
 
-#### Step 2.1: Architecture & Code Organization Verification
+### Step 3: Verify Architecture & Organization
 
-For any code changes (suggestions, prompts, or new files), **MANDATORY** verification:
+For code changes (suggestions, prompts, new files), invoke verification skills:
 
-**Use the `code-organization` skill** to verify:
-- Directory X contains ONLY class type X principle
-- DDD naming patterns
-- Correct layer placement
-- No framework imports in Domain layer
-- Specific variable/parameter names (not vague)
-- No Helper/Util classes
+| Concern Type           | Skill to Invoke                 |
+| ---------------------- | ------------------------------- |
+| Class placement/naming | `code-organization`             |
+| DDD patterns           | `implementing-ddd-architecture` |
+| Layer violations       | `deptrac-fixer` (if deptrac fails) |
 
-**Use the `implementing-ddd-architecture` skill** for:
-- DDD patterns and layer boundaries
-- Entity, value object, aggregate structure
-- Command/handler patterns
+**Quick verification**: Run `make phpcsfixer && make psalm && make deptrac && make unit-tests`
 
-**Quick verification checklist** (see skills above for complete rules):
-- ✅ Class in correct directory for its type?
-- ✅ Class name follows DDD naming pattern?
-- ✅ Namespace matches directory structure?
-- ✅ Variable names specific (not vague)?
-- ✅ No organizational anti-patterns?
-
-**On violations**: Consult `code-organization` skill for fix patterns, then run:
-```bash
-make phpcsfixer && make psalm && make deptrac && make unit-tests
-```
-
-### Step 3: Apply Changes Systematically
+### Step 4: Apply Changes Systematically
 
 #### For Committable Suggestions
 
 1. Apply code change exactly as suggested
 2. Commit with reference:
-
    ```bash
    git commit -m "Apply review suggestion: [brief description]
 
@@ -91,10 +97,10 @@ make phpcsfixer && make psalm && make deptrac && make unit-tests
 
 #### For Architecture/Organization Concerns
 
-1. Invoke `code-organization` skill to identify and fix issues
-2. Implement recommended changes (move/rename/refactor)
+1. Invoke appropriate skill (`code-organization` or `implementing-ddd-architecture`)
+2. Implement recommended changes
 3. Verify: `make phpcsfixer && make psalm && make deptrac && make unit-tests`
-4. Commit with reference to review comment
+4. Commit with reference
 
 #### For Questions
 
@@ -102,19 +108,19 @@ make phpcsfixer && make psalm && make deptrac && make unit-tests
 2. If code: implement + commit
 3. If reply: respond on GitHub
 
-#### For Feedback
+#### For General Feedback
 
 1. Evaluate suggestion merit
 2. Implement if beneficial
 3. Document reasoning if declined
 
-### Step 4: Verify All Addressed
+### Step 5: Verify All Addressed
 
 ```bash
 make pr-comments  # Should show zero unresolved comments
 ```
 
-### Step 5: Run Quality Checks
+### Step 6: Run Quality Checks
 
 **MANDATORY**: Run comprehensive CI checks after implementing all changes:
 
@@ -124,22 +130,16 @@ make ci  # Must output "✅ CI checks successfully passed!"
 
 **If CI fails**, invoke appropriate skill:
 
-| Failure Type              | Skill to Use                |
-| ------------------------- | --------------------------- |
-| Architecture violations   | `deptrac-fixer`             |
-| Complexity issues         | `complexity-management`     |
-| Test failures             | `testing-workflow`          |
-| Mutation testing issues   | `testing-workflow`          |
-| Code style                | Run `make phpcsfixer`       |
-| Static analysis           | Run `make psalm`            |
+| Failure Type              | Skill to Use            |
+| ------------------------- | ----------------------- |
+| Architecture violations   | `deptrac-fixer`         |
+| Complexity issues         | `complexity-management` |
+| Test failures             | `testing-workflow`      |
+| Mutation testing issues   | `testing-workflow`      |
+| Code style                | Run `make phpcsfixer`   |
+| Static analysis           | Run `make psalm`        |
 
 **DO NOT** finish the task until `make ci` shows: `✅ CI checks successfully passed!`
-
-## Comment Resolution Workflow
-
-```mermaid
-PR Comments → Categorize → Apply by Priority → Verify → Run CI → Done
-```
 
 ## Constraints (Parameters)
 
@@ -187,14 +187,13 @@ Ref: https://github.com/owner/repo/pull/XX#discussion_rYYYYYYY
 
 - [ ] All PR comments retrieved via `make pr-comments`
 - [ ] Comments categorized by type (suggestion/prompt/architecture/question/feedback)
-- [ ] **Organization verified**: Invoke `code-organization` skill for any structural changes
-- [ ] **Architecture verified**: Invoke `implementing-ddd-architecture` skill for DDD patterns
-- [ ] **Layer boundaries verified**: `make deptrac` passes (0 violations)
+- [ ] Architecture verified using appropriate skills
+- [ ] `make deptrac` passes (0 violations)
 - [ ] Committable suggestions applied and committed separately
 - [ ] LLM prompts executed and implemented
 - [ ] Questions answered (code or reply)
 - [ ] General feedback evaluated and addressed
-- [ ] **Quality verified**: `make ci` shows "✅ CI checks successfully passed!"
+- [ ] `make ci` shows "✅ CI checks successfully passed!"
 - [ ] `make pr-comments` shows zero unresolved
 - [ ] All conversations marked resolved on GitHub
 
@@ -202,15 +201,15 @@ Ref: https://github.com/owner/repo/pull/XX#discussion_rYYYYYYY
 
 During code review, you may need to invoke other skills:
 
-| Issue                       | Skill to Use                    |
-| --------------------------- | ------------------------------- |
-| Class in wrong directory    | `code-organization`             |
-| Vague naming                | `code-organization`             |
-| DDD pattern violations      | `implementing-ddd-architecture` |
-| Deptrac failures            | `deptrac-fixer`                 |
-| Complexity too high         | `complexity-management`         |
-| Test failures               | `testing-workflow`              |
-| Quality standards questions | `quality-standards`             |
+| Issue                    | Skill to Use                    |
+| ------------------------ | ------------------------------- |
+| Class in wrong directory | `code-organization`             |
+| Vague naming             | `code-organization`             |
+| DDD pattern violations   | `implementing-ddd-architecture` |
+| Deptrac failures         | `deptrac-fixer`                 |
+| Complexity too high      | `complexity-management`         |
+| Test failures            | `testing-workflow`              |
+| Quality standards        | `quality-standards`             |
 
 ## Related Skills
 
