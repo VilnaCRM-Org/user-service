@@ -1,6 +1,20 @@
 # Code Organization Fix Examples
 
-Real-world examples of code organization issues found in code reviews and how to fix them.
+Real-world examples from PR code reviews showing how to apply the **code-organization** skill principles.
+
+> **For complete rules, see the `code-organization` skill**
+>
+> Core principle: **"Directory X contains ONLY class type X"**
+
+## PR Review Workflow for Organization Issues
+
+When a reviewer comments on code organization:
+
+1. **Identify the issue type** (wrong directory, vague naming, helper class, namespace mismatch)
+2. **Consult `code-organization` skill** for the complete rules and decision tree
+3. **Apply the fix** using examples below
+4. **Commit separately** with reference to the review comment
+5. **Verify** with `make phpcsfixer && make psalm && make deptrac && make unit-tests`
 
 ## Example 1: Class in Wrong Directory Type
 
@@ -11,59 +25,28 @@ UlidValidator should be in Validator/ directory, not Transformer/.
 Transformers are for data transformation (DB <-> PHP), not validation.
 ```
 
-### Before
-
-```php
-// File: src/Shared/Infrastructure/Transformer/UlidValidator.php
-namespace App\Shared\Infrastructure\Transformer;
-
-use Symfony\Component\Validator\Constraint;
-use Symfony\Component\Validator\ConstraintValidator;
-
-final class UlidValidator extends ConstraintValidator
-{
-    public function validate($value, Constraint $constraint): void
-    {
-        // Validation logic
-    }
-}
-```
-
-### After
-
-```php
-// File: src/Shared/Infrastructure/Validator/UlidValidator.php
-namespace App\Shared\Infrastructure\Validator;
-
-use Symfony\Component\Validator\Constraint;
-use Symfony\Component\Validator\ConstraintValidator;
-
-final class UlidValidator extends ConstraintValidator
-{
-    public function validate($value, Constraint $constraint): void
-    {
-        // Validation logic
-    }
-}
-```
-
-### Fix Commands
+### Fix
 
 ```bash
 # Move file
 mv src/Shared/Infrastructure/Transformer/UlidValidator.php \
    src/Shared/Infrastructure/Validator/UlidValidator.php
 
-# Find all imports to update
-grep -r "use App\\Shared\\Infrastructure\\Transformer\\UlidValidator" src/ tests/
-
-# Update all references
-# (use IDE refactoring or manual update)
+# Update namespace in moved file
+# Update all imports: grep -r "use App\\Shared\\Infrastructure\\Transformer\\UlidValidator" src/ tests/
 
 # Verify
-make phpcsfixer
-make psalm
-make unit-tests
+make phpcsfixer && make psalm && make unit-tests
+```
+
+### Commit Message
+
+```
+Apply review suggestion: move UlidValidator to Validator/ directory
+
+UlidValidator extends ConstraintValidator, so belongs in Validator/ not Transformer/.
+
+Ref: https://github.com/owner/repo/pull/XX#discussion_rYYYYYYY
 ```
 
 ## Example 2: Vague Variable Names
@@ -75,48 +58,23 @@ Variable name `$converter` is too vague. What kind of converter?
 Use specific names: `$typeConverter` for type conversion.
 ```
 
-### Before
+### Fix
 
 ```php
-final readonly class UlidType extends Type
-{
-    public function __construct(
-        private UlidTypeConverter $converter,  // ❌ Too vague
-    ) {
-    }
+// Before: private UlidTypeConverter $converter;
+// After:  private UlidTypeConverter $typeConverter;
 
-    public function convertToPHPValue(mixed $value): ?Ulid
-    {
-        return $this->converter->toUlid($value);
-    }
-}
+// Update all usages in the class methods
 ```
 
-### After
+### Commit Message
 
-```php
-final readonly class UlidType extends Type
-{
-    public function __construct(
-        private UlidTypeConverter $typeConverter,  // ✅ Specific
-    ) {
-    }
-
-    public function convertToPHPValue(mixed $value): ?Ulid
-    {
-        return $this->typeConverter->toUlid($value);
-    }
-}
 ```
+Apply review suggestion: rename $converter to $typeConverter
 
-### Fix Commands
+Makes variable name more specific per code-organization principles.
 
-```bash
-# Update variable name in class
-# Update all usages in methods
-# Verify with static analysis
-make psalm
-make unit-tests
+Ref: https://github.com/owner/repo/pull/XX#discussion_rYYYYYYY
 ```
 
 ## Example 3: Resolver in Wrong Directory
@@ -128,91 +86,19 @@ CustomerUpdateScalarResolver resolves values, not creates them.
 Should be in Resolver/, not Factory/.
 ```
 
-### Before
-
-```php
-// File: src/Core/Customer/Application/Factory/CustomerUpdateScalarResolver.php
-namespace App\Core\Customer\Application\Factory;
-
-final readonly class CustomerUpdateScalarResolver
-{
-    public function resolveScalarValue(string $key, mixed $value): mixed
-    {
-        // Resolution logic
-    }
-}
-```
-
-### After
-
-```php
-// File: src/Core/Customer/Application/Resolver/CustomerUpdateScalarResolver.php
-namespace App\Core\Customer\Application\Resolver;
-
-final readonly class CustomerUpdateScalarResolver
-{
-    public function resolveScalarValue(string $key, mixed $value): mixed
-    {
-        // Resolution logic
-    }
-}
-```
-
-### Fix Commands
+### Fix
 
 ```bash
 # Move file
 mv src/Core/Customer/Application/Factory/CustomerUpdateScalarResolver.php \
    src/Core/Customer/Application/Resolver/CustomerUpdateScalarResolver.php
 
-# Update namespace in file
-# Update imports in:
-# - src/Core/Customer/Application/Factory/CustomerUpdateFactory.php
-# - tests/Unit/Core/Customer/Application/Resolver/CustomerUpdateScalarResolverTest.php
-
+# Update namespace and all imports
 # Verify
-make phpcsfixer
-make psalm
-make deptrac
-make unit-tests
+make phpcsfixer && make psalm && make deptrac && make unit-tests
 ```
 
-## Example 4: Misleading Parameter Names
-
-### Review Comment
-
-```text
-Parameter named `$binary` but accepts `mixed` type.
-Use accurate name like `$value` to match actual type.
-```
-
-### Before
-
-```php
-public function fromBinary(mixed $binary): Ulid  // ❌ Misleading
-{
-    if ($binary === null) {
-        throw ConversionException::conversionFailed($binary, 'ulid');
-    }
-
-    return Ulid::fromBinary((string) $binary);
-}
-```
-
-### After
-
-```php
-public function fromBinary(mixed $value): Ulid  // ✅ Accurate
-{
-    if ($value === null) {
-        throw ConversionException::conversionFailed($value, 'ulid');
-    }
-
-    return Ulid::fromBinary((string) $value);
-}
-```
-
-## Example 5: Helper Class Code Smell
+## Example 4: Helper Class Code Smell
 
 ### Review Comment
 
@@ -223,158 +109,51 @@ public function fromBinary(mixed $value): Ulid  // ✅ Accurate
 - Data conversion → CustomerDataConverter
 ```
 
-### Before
+### Fix
 
-```php
-// File: src/Core/Customer/Application/Helper/CustomerHelper.php
-namespace App\Core\Customer\Application\Helper;
+1. Create specific classes in correct directories (Validator/, Formatter/, Converter/)
+2. Update all usages to use new specific classes
+3. Delete old Helper class
+4. Run full test suite
 
-final class CustomerHelper
-{
-    public function validateEmail(string $email): bool { }
-    public function formatName(string $name): string { }
-    public function convertToArray(Customer $customer): array { }
-}
+### Commit Message
+
+```
+Apply review suggestion: split CustomerHelper into specific classes
+
+Extracted responsibilities per code-organization principles:
+- CustomerEmailValidator (Validator/)
+- CustomerNameFormatter (Formatter/)
+- CustomerDataConverter (Converter/)
+
+Deleted CustomerHelper.php.
+
+Ref: https://github.com/owner/repo/pull/XX#discussion_rYYYYYYY
 ```
 
-### After (Multiple Specific Classes)
-
-```php
-// File: src/Core/Customer/Application/Validator/CustomerEmailValidator.php
-namespace App\Core\Customer\Application\Validator;
-
-final class CustomerEmailValidator extends ConstraintValidator
-{
-    public function validate($value, Constraint $constraint): void { }
-}
-
-// File: src/Core/Customer/Application/Formatter/CustomerNameFormatter.php
-namespace App\Core\Customer\Application\Formatter;
-
-final readonly class CustomerNameFormatter
-{
-    public function format(string $name): string { }
-}
-
-// File: src/Core/Customer/Application/Converter/CustomerArrayConverter.php
-namespace App\Core\Customer\Application\Converter;
-
-final readonly class CustomerArrayConverter
-{
-    public function toArray(Customer $customer): array { }
-}
-```
-
-## Example 6: Namespace Mismatch
-
-### Review Comment
-
-```text
-Namespace doesn't match directory structure.
-File is in Validator/ but namespace says Transformer/.
-```
-
-### Before
-
-```php
-// File: src/Shared/Infrastructure/Validator/UlidValidator.php
-namespace App\Shared\Infrastructure\Transformer;  // ❌ Wrong!
-
-final class UlidValidator extends ConstraintValidator
-{
-}
-```
-
-### After
-
-```php
-// File: src/Shared/Infrastructure/Validator/UlidValidator.php
-namespace App\Shared\Infrastructure\Validator;  // ✅ Correct!
-
-final class UlidValidator extends ConstraintValidator
-{
-}
-```
-
-## Verification After Fixes
-
-After applying any organization fix:
+## Verification After Any Fix
 
 ```bash
-# 1. Code style
-make phpcsfixer
-
-# 2. Static analysis (catches namespace/import issues)
-make psalm
-
-# 3. Architecture compliance
-make deptrac
-
-# 4. Tests still pass
-make unit-tests
-make integration-tests
-
-# 5. Full CI check
-make ci  # Must show "✅ CI checks successfully passed!"
+# ALWAYS run after organization changes:
+make phpcsfixer  # Fix code style
+make psalm       # Catch namespace/import issues
+make deptrac     # Verify architecture compliance
+make unit-tests  # Ensure tests pass
+make ci          # Full CI check before pushing
 ```
 
-## Decision Tree: Where Does It Belong?
+## Quick Reference
 
-```text
-What does the class DO?
+**For detailed rules, decision tree, and verification checklist:**
+👉 See the `code-organization` skill
 
-├─ Converts between types (string ↔ object)? → Converter/
-├─ Transforms for DB/serialization? → Transformer/
-├─ Validates values? → Validator/
-├─ Builds/constructs objects? → Builder/
-├─ Fixes/modifies data? → Fixer/
-├─ Cleans/filters data? → Cleaner/
-├─ Creates complex objects? → Factory/
-├─ Resolves/determines values? → Resolver/
-├─ Normalizes/serializes? → Serializer/
-└─ Something else? → Define specific responsibility!
-```
+**Common organization issues:**
+- Class in wrong directory → Consult directory type table in `code-organization`
+- Vague naming → Use specific names per `code-organization` checklist
+- Helper/Util classes → Extract responsibilities per `code-organization` patterns
+- Namespace mismatch → Must match directory structure exactly
 
-## Common Patterns
-
-### Pattern: Moving Class to Correct Directory
-
-```bash
-# 1. Move file
-mv src/Path/OldDir/ClassName.php src/Path/NewDir/ClassName.php
-
-# 2. Update namespace in file
-sed -i 's|namespace App\\Path\\OldDir|namespace App\\Path\\NewDir|' \
-    src/Path/NewDir/ClassName.php
-
-# 3. Find and update all imports
-grep -r "use App\\Path\\OldDir\\ClassName" src/ tests/
-# Update each file manually or with sed
-
-# 4. Verify
-make phpcsfixer && make psalm && make unit-tests
-```
-
-### Pattern: Renaming Variable to Be Specific
-
-```bash
-# 1. Rename in constructor parameter
-# 2. Rename in property
-# 3. Rename in all method usages
-# 4. Update tests
-
-# Example:
-# $converter → $typeConverter
-# $resolver → $scalarResolver
-# $transformer → $relationTransformer
-```
-
-### Pattern: Splitting Helper Class
-
-```bash
-# 1. Identify distinct responsibilities
-# 2. Create specific class for each (in correct directory)
-# 3. Update all usages to use new specific classes
-# 4. Delete old Helper class
-# 5. Run full test suite
-```
+**Related skills:**
+- `code-organization` - Complete rules and patterns
+- `deptrac-fixer` - Fix layer boundary violations
+- `implementing-ddd-architecture` - DDD naming and structure
