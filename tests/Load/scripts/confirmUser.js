@@ -32,7 +32,7 @@ export default async function confirmUser(data) {
   });
 
   const response = await http.patch(
-    `${utils.getBaseHttpUrl()}/confirm`,
+    `${utils.getBaseHttpUrl()}/users/confirm`,
     payload,
     utils.getMergePatchHeader()
   );
