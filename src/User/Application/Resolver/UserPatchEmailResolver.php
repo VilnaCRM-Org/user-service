@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Sanitizer;
+namespace App\User\Application\Resolver;
 
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-final class UserPatchEmailSanitizer
+final class UserPatchEmailResolver
 {
-    public function sanitize(
+    public function resolve(
         ?string $candidate,
         string $fallback,
         bool $provided
@@ -18,15 +18,15 @@ final class UserPatchEmailSanitizer
         }
 
         $trimmed = trim($candidate);
-        $this->validateNotBlank($trimmed);
+        $this->ensureNotBlank($trimmed);
 
         return $this->normalizeEmail($trimmed);
     }
 
-    private function validateNotBlank(string $email): void
+    private function ensureNotBlank(string $email): void
     {
         if ($email === '') {
-            $this->blankEmail();
+            throw new BadRequestHttpException('email must not be blank.');
         }
     }
 
@@ -37,10 +37,5 @@ final class UserPatchEmailSanitizer
         }
 
         return strtolower($email);
-    }
-
-    private function blankEmail(): never
-    {
-        throw new BadRequestHttpException('email must not be blank.');
     }
 }

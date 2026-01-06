@@ -17,10 +17,11 @@ use App\User\Application\Factory\UpdateUserCommandFactory;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\Processor\UserPatchProcessor;
 use App\User\Application\Query\GetUserQueryHandler;
+use App\User\Application\Resolver\UserPatchEmailResolver;
+use App\User\Application\Resolver\UserPatchFieldResolver;
+use App\User\Application\Resolver\UserPatchPasswordResolver;
 use App\User\Application\Resolver\UserPatchUpdateResolver;
-use App\User\Application\Sanitizer\UserPatchEmailSanitizer;
-use App\User\Application\Sanitizer\UserPatchNonEmptySanitizer;
-use App\User\Application\Sanitizer\UserPatchPasswordSanitizer;
+use App\User\Application\Validator\UserPatchPayloadValidator;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\UserNotFoundException;
@@ -339,16 +340,17 @@ final class UserPatchProcessorTest extends UnitTestCase
             new JsonBodyDecoder()
         );
         $this->updateResolver = new UserPatchUpdateResolver(
-            new UserPatchEmailSanitizer(),
-            new UserPatchNonEmptySanitizer(),
-            new UserPatchPasswordSanitizer()
+            new UserPatchEmailResolver(),
+            new UserPatchFieldResolver(),
+            new UserPatchPasswordResolver()
         );
         $this->processor = new UserPatchProcessor(
             $this->commandBus,
             $this->mockUpdateUserCommandFactory,
             $this->getUserQueryHandler,
             $this->payloadProvider,
-            $this->updateResolver
+            $this->updateResolver,
+            new UserPatchPayloadValidator()
         );
     }
 

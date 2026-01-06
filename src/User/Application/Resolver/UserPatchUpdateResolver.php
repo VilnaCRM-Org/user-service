@@ -6,18 +6,15 @@ namespace App\User\Application\Resolver;
 
 use App\User\Application\DTO\UserPatchDto;
 use App\User\Application\DTO\UserPatchPayload;
-use App\User\Application\Sanitizer\UserPatchEmailSanitizer;
-use App\User\Application\Sanitizer\UserPatchNonEmptySanitizer;
-use App\User\Application\Sanitizer\UserPatchPasswordSanitizer;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 
 final readonly class UserPatchUpdateResolver
 {
     public function __construct(
-        private UserPatchEmailSanitizer $emailSanitizer,
-        private UserPatchNonEmptySanitizer $nonEmptySanitizer,
-        private UserPatchPasswordSanitizer $passwordSanitizer
+        private UserPatchEmailResolver $emailResolver,
+        private UserPatchFieldResolver $fieldResolver,
+        private UserPatchPasswordResolver $passwordResolver
     ) {
     }
 
@@ -27,7 +24,6 @@ final readonly class UserPatchUpdateResolver
         ?array $payload
     ): UserUpdate {
         $payloadWrapper = new UserPatchPayload($payload);
-        $payloadWrapper->ensureNoExplicitNulls();
 
         return $this->buildUpdate($data, $user, $payloadWrapper);
     }
@@ -38,18 +34,18 @@ final readonly class UserPatchUpdateResolver
         UserPatchPayload $payload
     ): UserUpdate {
         return new UserUpdate(
-            $this->emailSanitizer->sanitize(
+            $this->emailResolver->resolve(
                 $data->email,
                 $user->getEmail(),
                 $payload->provided('email')
             ),
-            $this->nonEmptySanitizer->sanitize(
+            $this->fieldResolver->resolve(
                 $data->initials,
                 $user->getInitials(),
                 $payload->provided('initials'),
                 'initials'
             ),
-            $this->passwordSanitizer->sanitize(
+            $this->passwordResolver->resolve(
                 $data->newPassword,
                 $data->oldPassword,
                 $payload->provided('newPassword')

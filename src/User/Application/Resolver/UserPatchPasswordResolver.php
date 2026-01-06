@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Sanitizer;
+namespace App\User\Application\Resolver;
 
-final class UserPatchPasswordSanitizer
+final class UserPatchPasswordResolver
 {
-    public function sanitize(
+    public function resolve(
         ?string $candidate,
         string $fallback,
         bool $provided

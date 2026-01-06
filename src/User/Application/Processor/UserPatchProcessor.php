@@ -9,11 +9,11 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Application\Provider\Http\JsonRequestPayloadProvider;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\UserPatchDto;
-use App\User\Application\DTO\UserPatchPayload;
 use App\User\Application\DTO\UserPutDto;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Application\Resolver\UserPatchUpdateResolver;
+use App\User\Application\Validator\UserPatchPayloadValidator;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\ValueObject\UserUpdate;
@@ -30,7 +30,8 @@ final readonly class UserPatchProcessor implements ProcessorInterface
         private UpdateUserCommandFactoryInterface $updateUserCommandFactory,
         private GetUserQueryHandler $getUserQueryHandler,
         private JsonRequestPayloadProvider $payloadProvider,
-        private UserPatchUpdateResolver $updateResolver
+        private UserPatchUpdateResolver $updateResolver,
+        private UserPatchPayloadValidator $payloadValidator
     ) {
     }
 
@@ -50,7 +51,7 @@ final readonly class UserPatchProcessor implements ProcessorInterface
             self::INVALID_JSON_MESSAGE
         );
 
-        (new UserPatchPayload($payload))->ensureNoExplicitNulls();
+        $this->payloadValidator->ensureNoExplicitNulls($payload);
 
         $user = $this->getUserQueryHandler->handle($uriVariables['id']);
         $update = $this->updateResolver->resolve($data, $user, $payload);
