@@ -27,23 +27,23 @@ Enforce strict code organization principles: proper directory structure, DDD nam
 
 Classes MUST be in directories matching their type:
 
-| Directory       | Contains ONLY                   | Example                         |
-| --------------- | ------------------------------- | ------------------------------- |
-| `Converter/`    | Type converters                 | `UlidTypeConverter`             |
-| `Transformer/`  | Data transformers (DB/serial)   | `CustomerToArrayTransformer`    |
-| `Validator/`    | Validation logic                | `UlidValidator`                 |
-| `Builder/`      | Object builders                 | `QueryBuilder`                  |
-| `Fixer/`        | Data fixers/modifiers           | `DataFixer`                     |
-| `Cleaner/`      | Data cleaners/filters           | `DataCleaner`                   |
-| `Factory/`      | Object factories                | `CustomerFactory`               |
-| `Resolver/`     | Value resolvers                 | `CustomerUpdateScalarResolver`  |
-| `Serializer/`   | Serializers/normalizers         | `CustomerNormalizer`            |
-| `Formatter/`    | Data formatters                 | `CustomerNameFormatter`         |
-| `Mapper/`       | Data mappers                    | `PathsMapper`                   |
-| `Provider/`     | Data/service providers          | `TimestampProvider`             |
-| `Processor/`    | API Platform processors         | `CreateCustomerProcessor`       |
-| `EventListener/`| Event listeners (Symfony)       | `QueryParameterValidationListener` |
-| `EventSubscriber/`| Event subscribers (Symfony/App)| `SendEmailOnCustomerCreated`   |
+| Directory          | Contains ONLY                   | Example                            |
+| ------------------ | ------------------------------- | ---------------------------------- |
+| `Converter/`       | Type converters                 | `UlidTypeConverter`                |
+| `Transformer/`     | Data transformers (DB/serial)   | `CustomerToArrayTransformer`       |
+| `Validator/`       | Validation logic                | `UlidValidator`                    |
+| `Builder/`         | Object builders                 | `QueryBuilder`                     |
+| `Fixer/`           | Data fixers/modifiers           | `DataFixer`                        |
+| `Cleaner/`         | Data cleaners/filters           | `DataCleaner`                      |
+| `Factory/`         | Object factories                | `CustomerFactory`                  |
+| `Resolver/`        | Value resolvers                 | `CustomerUpdateScalarResolver`     |
+| `Serializer/`      | Serializers/normalizers         | `CustomerNormalizer`               |
+| `Formatter/`       | Data formatters                 | `CustomerNameFormatter`            |
+| `Mapper/`          | Data mappers                    | `PathsMapper`                      |
+| `Provider/`        | Data/service providers          | `TimestampProvider`                |
+| `Processor/`       | API Platform processors         | `CreateCustomerProcessor`          |
+| `EventListener/`   | Event listeners (Symfony)       | `QueryParameterValidationListener` |
+| `EventSubscriber/` | Event subscribers (Symfony/App) | `SendEmailOnCustomerCreated`       |
 
 ## DDD Naming Patterns
 
