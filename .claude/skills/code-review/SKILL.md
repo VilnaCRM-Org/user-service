@@ -68,10 +68,10 @@ make pr-comments FORMAT=json  # JSON output
 
 For code changes (suggestions, prompts, new files), invoke verification skills:
 
-| Concern Type           | Skill to Invoke                 |
-| ---------------------- | ------------------------------- |
-| Class placement/naming | `code-organization`             |
-| DDD patterns           | `implementing-ddd-architecture` |
+| Concern Type           | Skill to Invoke                    |
+| ---------------------- | ---------------------------------- |
+| Class placement/naming | `code-organization`                |
+| DDD patterns           | `implementing-ddd-architecture`    |
 | Layer violations       | `deptrac-fixer` (if deptrac fails) |
 
 **Quick verification**: Run `make phpcsfixer && make psalm && make deptrac && make unit-tests`
@@ -82,6 +82,7 @@ For code changes (suggestions, prompts, new files), invoke verification skills:
 
 1. Apply code change exactly as suggested
 2. Commit with reference:
+
    ```bash
    git commit -m "Apply review suggestion: [brief description]
 
@@ -130,14 +131,14 @@ make ci  # Must output "✅ CI checks successfully passed!"
 
 **If CI fails**, invoke appropriate skill:
 
-| Failure Type              | Skill to Use            |
-| ------------------------- | ----------------------- |
-| Architecture violations   | `deptrac-fixer`         |
-| Complexity issues         | `complexity-management` |
-| Test failures             | `testing-workflow`      |
-| Mutation testing issues   | `testing-workflow`      |
-| Code style                | Run `make phpcsfixer`   |
-| Static analysis           | Run `make psalm`        |
+| Failure Type            | Skill to Use            |
+| ----------------------- | ----------------------- |
+| Architecture violations | `deptrac-fixer`         |
+| Complexity issues       | `complexity-management` |
+| Test failures           | `testing-workflow`      |
+| Mutation testing issues | `testing-workflow`      |
+| Code style              | Run `make phpcsfixer`   |
+| Static analysis         | Run `make psalm`        |
 
 **DO NOT** finish the task until `make ci` shows: `✅ CI checks successfully passed!`
 

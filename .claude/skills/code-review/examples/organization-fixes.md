@@ -148,12 +148,14 @@ make ci          # Full CI check before pushing
 👉 See the `code-organization` skill
 
 **Common organization issues:**
+
 - Class in wrong directory → Consult directory type table in `code-organization`
 - Vague naming → Use specific names per `code-organization` checklist
 - Helper/Util classes → Extract responsibilities per `code-organization` patterns
 - Namespace mismatch → Must match directory structure exactly
 
 **Related skills:**
+
 - `code-organization` - Complete rules and patterns
 - `deptrac-fixer` - Fix layer boundary violations
 - `implementing-ddd-architecture` - DDD naming and structure
