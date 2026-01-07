@@ -9,11 +9,8 @@ use Doctrine\DBAL\Connection;
 
 final class DBCheckSubscriber extends BaseHealthCheckSubscriber
 {
-    private Connection $connection;
-
-    public function __construct(Connection $connection)
+    public function __construct(private readonly Connection $connection)
     {
-        $this->connection = $connection;
     }
 
     #[\Override]

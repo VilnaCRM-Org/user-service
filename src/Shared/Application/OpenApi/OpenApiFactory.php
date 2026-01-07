@@ -22,7 +22,6 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         = 'OAuth2 Authorization Code flow securing VilnaCRM API.';
     private const OAUTH_CLIENT_BASIC_DESCRIPTION
         = 'HTTP Basic authentication for OAuth client credentials.';
-    private PaginationQueryParametersSanitizer $paginationSanitizer;
 
     /**
      * @param iterable<AbstractEndpointFactory> $endpointFactories
@@ -33,10 +32,9 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         private string $serverUrl,
         private PathParametersSanitizer $pathParametersSanitizer,
         private ServerErrorResponseAugmenter $serverErrorResponseAugmenter,
-        PaginationQueryParametersSanitizer $paginationQueryParametersSanitizer,
+        private PaginationQueryParametersSanitizer $paginationSanitizer,
         private NoContentResponseCleaner $noContentResponseCleaner
     ) {
-        $this->paginationSanitizer = $paginationQueryParametersSanitizer;
     }
 
     /**

@@ -18,14 +18,11 @@ use League\Bundle\OAuth2ServerBundle\ValueObject\Scope;
 
 final readonly class SchemathesisOAuthSeeder
 {
-    private Manager\AuthorizationCodeManagerInterface $authorizationCodeManager;
-
     public function __construct(
         private ClientManagerInterface $clientManager,
         private Connection $connection,
-        Manager\AuthorizationCodeManagerInterface $authorizationCodeManager
+        private Manager\AuthorizationCodeManagerInterface $authorizationCodeManager
     ) {
-        $this->authorizationCodeManager = $authorizationCodeManager;
     }
 
     public function seedClient(): Client

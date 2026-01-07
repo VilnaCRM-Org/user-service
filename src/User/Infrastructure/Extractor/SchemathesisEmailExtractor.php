@@ -8,23 +8,14 @@ use App\User\Infrastructure\Decoder\SchemathesisPayloadDecoder;
 use App\User\Infrastructure\Evaluator\SchemathesisCleanupEvaluator;
 use Symfony\Component\HttpFoundation\Request;
 
-final class SchemathesisEmailExtractor
+final readonly class SchemathesisEmailExtractor
 {
-    private readonly SchemathesisCleanupEvaluator $evaluator;
-    private readonly SchemathesisPayloadDecoder $payloadDecoder;
-    private readonly SchemathesisSingleUserEmailExtractor $singleUserExtractor;
-    private readonly SchemathesisBatchUsersEmailExtractor $batchUsersExtractor;
-
     public function __construct(
-        SchemathesisCleanupEvaluator $evaluator,
-        SchemathesisPayloadDecoder $payloadDecoder,
-        SchemathesisSingleUserEmailExtractor $singleUserExtractor,
-        SchemathesisBatchUsersEmailExtractor $batchUsersExtractor
+        private SchemathesisCleanupEvaluator $evaluator,
+        private SchemathesisPayloadDecoder $payloadDecoder,
+        private SchemathesisSingleUserEmailExtractor $singleUserExtractor,
+        private SchemathesisBatchUsersEmailExtractor $batchUsersExtractor
     ) {
-        $this->evaluator = $evaluator;
-        $this->payloadDecoder = $payloadDecoder;
-        $this->singleUserExtractor = $singleUserExtractor;
-        $this->batchUsersExtractor = $batchUsersExtractor;
     }
 
     /**

@@ -43,7 +43,6 @@ final readonly class PasswordResetConfirmedEventSubscriber implements
 
         $emailAddress = $user->getEmail();
 
-        // Send confirmation email
         $email = $this->emailFactory->create(
             $emailAddress,
             $this->translator->trans('email.password.reset.confirmed.subject'),

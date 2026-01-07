@@ -59,7 +59,6 @@ final readonly class DomainExceptionNormalizer implements NormalizerInterface
     #[\Override]
     public function getSupportedTypes(?string $format): array
     {
-        // Cacheability depends on the wrapped previous exception, so keep it dynamic.
         return [Error::class => false];
     }
 }

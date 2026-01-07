@@ -9,11 +9,8 @@ use Symfony\Contracts\Cache\CacheInterface;
 
 final class CacheCheckSubscriber extends BaseHealthCheckSubscriber
 {
-    private CacheInterface $cache;
-
-    public function __construct(CacheInterface $cache)
+    public function __construct(private readonly CacheInterface $cache)
     {
-        $this->cache = $cache;
     }
 
     #[\Override]

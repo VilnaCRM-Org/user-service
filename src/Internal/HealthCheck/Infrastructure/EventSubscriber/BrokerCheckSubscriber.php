@@ -9,15 +9,10 @@ use Aws\Sqs\SqsClient;
 
 final class BrokerCheckSubscriber extends BaseHealthCheckSubscriber
 {
-    private SqsClient $sqsClient;
-    private string $queueName;
-
     public function __construct(
-        SqsClient $sqsClient,
-        string $queueName = 'health-check-queue'
+        private readonly SqsClient $sqsClient,
+        private readonly string $queueName = 'health-check-queue'
     ) {
-        $this->sqsClient = $sqsClient;
-        $this->queueName = $queueName;
     }
 
     #[\Override]
