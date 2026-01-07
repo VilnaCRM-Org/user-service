@@ -23,6 +23,7 @@ load 'bats-assert/load'
 
 @test "make infection should fail due to partly covered class" {
   mv tests/CLI/bats/php/PartlyCoveredEventBus.php src/Shared/Infrastructure/Bus/Event/
+  mv tests/CLI/bats/php/PartlyCoveredEventBusTest.php tests/Unit/Shared/Infrastructure/Bus/Event/
 
   composer dump-autoload
 
@@ -30,6 +31,7 @@ load 'bats-assert/load'
   run make infection
 
   mv src/Shared/Infrastructure/Bus/Event/PartlyCoveredEventBus.php tests/CLI/bats/php/
+  mv tests/Unit/Shared/Infrastructure/Bus/Event/PartlyCoveredEventBusTest.php tests/CLI/bats/php/
 
   assert_output --partial "8 mutants were not covered by tests"
 }
