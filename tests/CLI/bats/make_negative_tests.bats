@@ -79,7 +79,7 @@ load 'bats-assert/load'
   mv src/Shared/Application/TempBadCode.php tests/CLI/bats/php/temp_bad_code.php
 
   assert_failure
-  assert_output --partial "The architecture score is too low"
+  assert_output --partial "Cyclomatic Complexity"
 }
 
 @test "make unit-tests should fail if tests fail" {

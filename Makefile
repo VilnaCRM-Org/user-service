@@ -107,6 +107,10 @@ phpinsights: phpmd ## Instant PHP quality checks, static analysis, and complexit
 unit-tests: ## Run unit tests
 	@echo "Running unit tests with coverage requirement of 100%..."
 	@$(RUN_TESTS_COVERAGE) --testsuite=Unit 2>&1 | tee /tmp/phpunit_output.txt
+	@if grep -q "FAILURES!" /tmp/phpunit_output.txt; then \
+		echo "❌ TEST FAILURE: Some tests failed"; \
+		exit 1; \
+	fi
 	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_output.txt | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
 	if [ -n "$$coverage" ]; then \
 		if [ $$(echo "$$coverage < 100" | bc -l) -eq 1 ]; then \
