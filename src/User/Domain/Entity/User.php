@@ -12,9 +12,6 @@ use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 
-/**
- * @psalm-suppress PossiblyUnusedMethod Doctrine hydration and testing accessors.
- */
 class User implements UserInterface
 {
     private bool $confirmed;
@@ -35,7 +32,8 @@ class User implements UserInterface
     }
 
     /**
-     * @psalm-suppress PossiblyUnusedMethod Used by Doctrine when hydrating entities.
+     * @internal For Doctrine ORM hydration and test fixtures only.
+     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
      */
     public function setId(UuidInterface $id): void
     {
@@ -49,7 +47,9 @@ class User implements UserInterface
     }
 
     /**
-     * @psalm-suppress PossiblyUnusedMethod Used by Doctrine when hydrating entities.
+     * @internal For Doctrine ORM hydration and test fixtures only. Use update() for business logic.
+     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @see User::update()
      */
     public function setEmail(string $email): void
     {
@@ -62,7 +62,9 @@ class User implements UserInterface
     }
 
     /**
-     * @psalm-suppress PossiblyUnusedMethod Used by Doctrine when hydrating entities.
+     * @internal For Doctrine ORM hydration and test fixtures only. Use update() for business logic.
+     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @see User::update()
      */
     public function setInitials(string $initials): void
     {
@@ -74,6 +76,9 @@ class User implements UserInterface
         return $this->password;
     }
 
+    /**
+     * @internal For Doctrine ORM hydration only. Use update() for business logic.
+     */
     public function setPassword(string $password): void
     {
         $this->password = $password;
@@ -121,16 +126,16 @@ class User implements UserInterface
         return $events;
     }
 
-    /**
-     * @psalm-suppress PossiblyUnusedMethod Used by Doctrine when hydrating entities.
-     */
+    /** @psalm-suppress PossiblyUnusedMethod API Platform serialization */
     public function isConfirmed(): bool
     {
         return $this->confirmed;
     }
 
     /**
-     * @psalm-suppress PossiblyUnusedMethod Used by Doctrine when hydrating entities.
+     * @internal For Doctrine ORM hydration and test fixtures only. Use confirm() for business logic.
+     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @see User::confirm()
      */
     public function setConfirmed(bool $confirmed): void
     {

@@ -12,7 +12,40 @@
         <ignoreFiles>
             <directory name="vendor"/>
             <directory name="tests/CLI"/>
-            <directory name="tests/Behat"/>
         </ignoreFiles>
     </projectFiles>
-    <plugins><pluginClass class="Psalm\PhpUnitPlugin\Plugin"/></plugins></psalm>
+    <plugins>
+        <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
+    </plugins>
+    <!-- Behat contexts use annotations (@Given/@When/@Then) to call methods,
+         and properties are serialized to JSON for API requests.
+         Psalm 6+ has stricter unused code detection that cannot trace these
+         framework-level invocations. -->
+    <issueHandlers>
+        <UnusedClass>
+            <errorLevel type="suppress">
+                <directory name="tests/Behat"/>
+            </errorLevel>
+        </UnusedClass>
+        <PossiblyUnusedMethod>
+            <errorLevel type="suppress">
+                <directory name="tests/Behat"/>
+            </errorLevel>
+        </PossiblyUnusedMethod>
+        <PossiblyUnusedProperty>
+            <errorLevel type="suppress">
+                <directory name="tests/Behat"/>
+            </errorLevel>
+        </PossiblyUnusedProperty>
+        <UnusedParam>
+            <errorLevel type="suppress">
+                <directory name="tests/Behat"/>
+            </errorLevel>
+        </UnusedParam>
+        <MissingOverrideAttribute>
+            <errorLevel type="suppress">
+                <directory name="tests/Behat"/>
+            </errorLevel>
+        </MissingOverrideAttribute>
+    </issueHandlers>
+</psalm>

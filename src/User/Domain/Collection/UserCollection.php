@@ -13,8 +13,6 @@ use IteratorAggregate;
 /**
  * @implements IteratorAggregate<int, User>
  * @implements ArrayAccess<int, User>
- *
- * @psalm-suppress PossiblyUnusedMethod Methods are invoked via interface usage and iteration.
  */
 final class UserCollection implements IteratorAggregate, Countable, ArrayAccess
 {
@@ -42,9 +40,7 @@ final class UserCollection implements IteratorAggregate, Countable, ArrayAccess
         return new ArrayIterator($this->users);
     }
 
-    /**
-     * @psalm-suppress PossiblyUnusedMethod Called by Countable consumers.
-     */
+    /** @psalm-suppress PossiblyUnusedMethod Called via Countable interface */
     #[\Override]
     public function count(): int
     {
