@@ -13,6 +13,9 @@ final class UserDeletedResponseFactory implements AbstractResponseFactory
     {
     }
 
+    /**
+     * @psalm-suppress PossiblyUnusedReturnValue
+     */
     #[\Override]
     public function getResponse(): Response
     {

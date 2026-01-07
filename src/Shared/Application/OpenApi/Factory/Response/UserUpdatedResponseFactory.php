@@ -14,6 +14,9 @@ final class UserUpdatedResponseFactory implements AbstractResponseFactory
     {
     }
 
+    /**
+     * @psalm-suppress PossiblyUnusedReturnValue
+     */
     #[\Override]
     public function getResponse(): Response
     {

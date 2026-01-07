@@ -97,17 +97,35 @@ export default class Utils {
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
     const initials = `${firstName}${lastName}`;
 
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
-    let password = '';
-    for (let i = 0; i < 60; i++) {
-      password += charset.charAt(Math.floor(Math.random() * charset.length));
-    }
+    const password = this.generateValidPassword();
 
     return {
       email,
       password,
       initials,
     };
+  }
+
+  generateValidPassword() {
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const numbers = '0123456789';
+    const special = '!@#$%^&*';
+    const allChars = lowercase + uppercase + numbers + special;
+
+    let password = '';
+    password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+    password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+    password += special.charAt(Math.floor(Math.random() * special.length));
+
+    for (let i = 0; i < 57; i++) {
+      password += allChars.charAt(Math.floor(Math.random() * allChars.length));
+    }
+
+    return password
+      .split('')
+      .sort(() => Math.random() - 0.5)
+      .join('');
   }
 
   generateUniqueEmail() {
