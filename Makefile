@@ -93,6 +93,9 @@ psalm: ## A static analysis tool for finding errors in PHP applications
 psalm-security: ## Psalm security analysis
 	$(EXEC_ENV) $(PSALM) --taint-analysis
 
+psalm-security-report: ## Psalm security analysis with SARIF output
+	$(EXEC_ENV) $(PSALM) --taint-analysis --report=results.sarif
+
 phpmd: ## Instant PHP MD quality checks, static analysis, and complexity insights
 	$(EXEC_ENV) ./vendor/bin/phpmd src ansi codesize,design,cleancode --exclude vendor
 	$(EXEC_ENV) ./vendor/bin/phpmd tests ansi phpmd.tests.xml --exclude vendor
