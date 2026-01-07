@@ -1,17 +1,15 @@
 # Code Organization Fix Examples
 
-Real-world examples from PR code reviews showing how to apply the **code-organization** skill principles.
+Real-world examples from PR code reviews showing how to apply code organization principles.
 
-> **For complete rules, see the `code-organization` skill**
->
-> Core principle: **"Directory X contains ONLY class type X"**
+> **Core principle: "Directory X contains ONLY class type X"**
 
 ## PR Review Workflow for Organization Issues
 
 When a reviewer comments on code organization:
 
 1. **Identify the issue type** (wrong directory, vague naming, helper class, namespace mismatch)
-2. **Consult `code-organization` skill** for the complete rules and decision tree
+2. **Consult the main SKILL.md** for complete rules and decision tree
 3. **Apply the fix** using examples below
 4. **Commit separately** with reference to the review comment
 5. **Verify** with `make phpcsfixer && make psalm && make deptrac && make unit-tests`
@@ -145,17 +143,17 @@ make ci          # Full CI check before pushing
 ## Quick Reference
 
 **For detailed rules, decision tree, and verification checklist:**
-👉 See the `code-organization` skill
+👉 See `SKILL.md` in this directory
 
 **Common organization issues:**
 
-- Class in wrong directory → Consult directory type table in `code-organization`
-- Vague naming → Use specific names per `code-organization` checklist
-- Helper/Util classes → Extract responsibilities per `code-organization` patterns
+- Class in wrong directory → Consult directory type table in SKILL.md
+- Vague naming → Use specific names per verification checklist
+- Helper/Util classes → Extract responsibilities per defined patterns
 - Namespace mismatch → Must match directory structure exactly
 
 **Related skills:**
 
-- `code-organization` - Complete rules and patterns
 - `deptrac-fixer` - Fix layer boundary violations
 - `implementing-ddd-architecture` - DDD naming and structure
+- `code-review` - Uses these examples during PR review workflow
