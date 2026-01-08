@@ -5,23 +5,25 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use PHPUnit\Framework\Assert;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\Mailer\Event\MessageEvent;
 use Symfony\Component\Mailer\Messenger\SendEmailMessage;
 
-final class TestEmailSendingUtils extends KernelTestCase
+final readonly class TestEmailSendingUtils
 {
-    public static function assertEmailWasSent(
-        ContainerInterface $container,
-        string $emailAddress
-    ): void {
-        $mailerEvent = self::getMailerEvent();
+    public function __construct(
+        private ContainerInterface $container
+    ) {
+    }
+
+    public function assertEmailWasSent(MessageEvent $mailerEvent, string $emailAddress): void
+    {
         $message = new SendEmailMessage(
             $mailerEvent->getMessage(),
             $mailerEvent->getEnvelope()
         );
-        $container->get('mailer.messenger.message_handler')->__invoke($message);
+        $this->container->get('mailer.messenger.message_handler')->__invoke($message);
 
         $httpClient = HttpClient::create();
         $response = $httpClient->request(

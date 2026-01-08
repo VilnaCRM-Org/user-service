@@ -13,7 +13,7 @@ use ApiPlatform\OpenApi\Model\Tag;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Augmenter\ServerErrorResponseAugmenter;
 use App\Shared\Application\OpenApi\Cleaner\NoContentResponseCleaner;
-use App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory;
+use App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface;
 use App\Shared\Application\OpenApi\OpenApiFactory;
 use App\Shared\Application\OpenApi\Sanitizer\PaginationQueryParametersSanitizer;
 use App\Shared\Application\OpenApi\Sanitizer\PathParametersSanitizer;
@@ -39,9 +39,9 @@ final class OpenApiFactoryTest extends UnitTestCase
         $this->decoratedFactory =
             $this->createMock(OpenApiFactoryInterface::class);
         $this->endpointFactoryOne =
-            $this->createMock(AbstractEndpointFactory::class);
+            $this->createMock(EndpointFactoryInterface::class);
         $this->endpointFactoryTwo =
-            $this->createMock(AbstractEndpointFactory::class);
+            $this->createMock(EndpointFactoryInterface::class);
         $this->pathParametersSanitizer =
             $this->createMock(PathParametersSanitizer::class);
         $this->errorResponseAugmenter =
@@ -132,7 +132,7 @@ final class OpenApiFactoryTest extends UnitTestCase
     }
 
     /**
-     * @param array<int, AbstractEndpointFactory&MockObject>|null $endpointFactories
+     * @param array<int, EndpointFactoryInterface&MockObject>|null $endpointFactories
      */
     private function createFactory(?array $endpointFactories = null): OpenApiFactory
     {

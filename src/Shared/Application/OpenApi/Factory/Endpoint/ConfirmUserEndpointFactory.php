@@ -15,7 +15,7 @@ use App\Shared\Application\OpenApi\Factory\Response\UserConfirmedFactory;
 use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use Symfony\Component\HttpFoundation\Response as Http;
 
-final class ConfirmUserEndpointFactory implements AbstractEndpointFactory
+final class ConfirmUserEndpointFactory implements EndpointFactoryInterface
 {
     private string $endpointUri = '/users/confirm';
 

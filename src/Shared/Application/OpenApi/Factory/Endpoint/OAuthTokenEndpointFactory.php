@@ -14,7 +14,7 @@ use App\Shared\Application\OpenApi\Factory\Response\OAuthTokenResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UnsupportedTypeFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-final class OAuthTokenEndpointFactory implements AbstractEndpointFactory
+final class OAuthTokenEndpointFactory implements EndpointFactoryInterface
 {
     private string $endpointUri = '/oauth/token';
 

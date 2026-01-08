@@ -12,7 +12,7 @@ use App\Shared\Application\OpenApi\Factory\Request\CreateBatchRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Response as ResponseF;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-final class UserBatchEndpointFactory implements AbstractEndpointFactory
+final class UserBatchEndpointFactory implements EndpointFactoryInterface
 {
     private string $endpointUri = '/users/batch';
 

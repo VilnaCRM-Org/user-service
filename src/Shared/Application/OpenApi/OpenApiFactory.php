@@ -11,7 +11,7 @@ use ApiPlatform\OpenApi\Model\Tag;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Augmenter\ServerErrorResponseAugmenter;
 use App\Shared\Application\OpenApi\Cleaner\NoContentResponseCleaner;
-use App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory;
+use App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface;
 use App\Shared\Application\OpenApi\Sanitizer\PaginationQueryParametersSanitizer;
 use App\Shared\Application\OpenApi\Sanitizer\PathParametersSanitizer;
 use ArrayObject;
@@ -24,7 +24,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         = 'HTTP Basic authentication for OAuth client credentials.';
 
     /**
-     * @param iterable<AbstractEndpointFactory> $endpointFactories
+     * @param iterable<EndpointFactoryInterface> $endpointFactories
      */
     public function __construct(
         private OpenApiFactoryInterface $decorated,

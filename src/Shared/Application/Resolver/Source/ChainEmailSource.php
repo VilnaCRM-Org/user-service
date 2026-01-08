@@ -7,15 +7,15 @@ namespace App\Shared\Application\Resolver\Source;
 final class ChainEmailSource implements BatchEmailSource
 {
     public function __construct(
-        private readonly BatchEmailSource $current,
-        private readonly BatchEmailSource $next
+        private readonly BatchEmailSource $primaryEmailSource,
+        private readonly BatchEmailSource $fallbackEmailSource
     ) {
     }
 
     #[\Override]
     public function extract(mixed $entry): ?string
     {
-        return $this->current->extract($entry)
-            ?? $this->next->extract($entry);
+        return $this->primaryEmailSource->extract($entry)
+            ?? $this->fallbackEmailSource->extract($entry);
     }
 }

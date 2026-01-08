@@ -13,7 +13,7 @@ use App\Shared\Application\OpenApi\Factory\Response\UnsupportedTypeFactory;
 use ArrayObject;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-final class OAuthAuthEndpointFactory implements AbstractEndpointFactory
+final class OAuthAuthEndpointFactory implements EndpointFactoryInterface
 {
     private string $endpointUri = '/oauth/authorize';
 

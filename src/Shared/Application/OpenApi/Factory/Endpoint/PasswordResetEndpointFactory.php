@@ -9,7 +9,7 @@ use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Request as RequestF;
 
-final class PasswordResetEndpointFactory implements AbstractEndpointFactory
+final class PasswordResetEndpointFactory implements EndpointFactoryInterface
 {
     private string $requestEndpointUri = '/reset-password';
     private string $confirmEndpointUri = '/reset-password/confirm';

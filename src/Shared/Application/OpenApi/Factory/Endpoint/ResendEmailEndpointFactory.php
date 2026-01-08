@@ -16,7 +16,7 @@ use App\Shared\Application\OpenApi\Factory\Response\UserTimedOutResponseFactory;
 use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
 use Symfony\Component\HttpFoundation\Response as Http;
 
-final class ResendEmailEndpointFactory implements AbstractEndpointFactory
+final class ResendEmailEndpointFactory implements EndpointFactoryInterface
 {
     private string $endpointUri = '/users/{id}/resend-confirmation-email';
 

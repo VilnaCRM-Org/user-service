@@ -15,7 +15,7 @@ use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
 use App\Shared\Application\Provider\OpenApi\ParamUserResponseProvider;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-final class ParamUserEndpointFactory implements AbstractEndpointFactory
+final class ParamUserEndpointFactory implements EndpointFactoryInterface
 {
     private const OPERATIONS = ['put', 'patch', 'get', 'delete'];
 

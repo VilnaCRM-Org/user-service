@@ -14,7 +14,7 @@ use App\Shared\Application\OpenApi\Factory\Response\UsersReturnedFactory;
 use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-final class UserEndpointFactory implements AbstractEndpointFactory
+final class UserEndpointFactory implements EndpointFactoryInterface
 {
     private string $endpointUri = '/users';
 

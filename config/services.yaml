@@ -30,7 +30,7 @@ services:
     App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface:
       tags: ['app.event_subscriber']
 
-    App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory:
+    App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface:
       bind:
         $apiPrefix: '%api_url_prefix%'
       tags: ['app.openapi_endpoint_factory']

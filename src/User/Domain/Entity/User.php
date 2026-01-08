@@ -33,6 +33,7 @@ class User implements UserInterface
 
     /**
      * @internal For Doctrine ORM hydration and test fixtures only.
+     *
      * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
      */
     public function setId(UuidInterface $id): void
@@ -48,7 +49,9 @@ class User implements UserInterface
 
     /**
      * @internal For Doctrine ORM hydration and test fixtures only. Use update() for business logic.
+     *
      * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     *
      * @see User::update()
      */
     public function setEmail(string $email): void
@@ -63,7 +66,9 @@ class User implements UserInterface
 
     /**
      * @internal For Doctrine ORM hydration and test fixtures only. Use update() for business logic.
+     *
      * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     *
      * @see User::update()
      */
     public function setInitials(string $initials): void
@@ -134,7 +139,9 @@ class User implements UserInterface
 
     /**
      * @internal For Doctrine ORM hydration and test fixtures only. Use confirm() for business logic.
+     *
      * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     *
      * @see User::confirm()
      */
     public function setConfirmed(bool $confirmed): void

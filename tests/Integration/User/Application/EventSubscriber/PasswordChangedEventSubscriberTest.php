@@ -12,6 +12,7 @@ use App\User\Domain\Event\PasswordChangedEvent;
 final class PasswordChangedEventSubscriberTest extends IntegrationTestCase
 {
     private PasswordChangedEventSubscriber $subscriber;
+    private TestEmailSendingUtils $emailUtils;
 
     #[\Override]
     protected function setUp(): void
@@ -21,6 +22,7 @@ final class PasswordChangedEventSubscriberTest extends IntegrationTestCase
         $this->subscriber = $this->container->get(
             PasswordChangedEventSubscriber::class
         );
+        $this->emailUtils = new TestEmailSendingUtils($this->container);
     }
 
     public function testConfirmationEmailSent(): void
@@ -32,6 +34,6 @@ final class PasswordChangedEventSubscriberTest extends IntegrationTestCase
         );
 
         $this->subscriber->__invoke($event);
-        TestEmailSendingUtils::assertEmailWasSent($this->container, $emailAddress);
+        $this->emailUtils->assertEmailWasSent($this->getMailerEvent(), $emailAddress);
     }
 }
