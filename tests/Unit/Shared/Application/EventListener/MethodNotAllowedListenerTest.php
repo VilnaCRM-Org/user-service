@@ -15,21 +15,10 @@ final class MethodNotAllowedListenerTest extends UnitTestCase
 {
     public function testAllowedMethodDoesNotSetResponse(): void
     {
-        $provider = $this->createMock(AllowedMethodsProvider::class);
-        $provider->expects($this->once())
-            ->method('getAllowedMethods')
-            ->with('/api/users/batch')
-            ->willReturn(['POST']);
-
+        $provider = $this->createProviderMock(['POST']);
         $listener = new MethodNotAllowedListener($provider);
-        $request = Request::create('/api/users/batch', 'POST');
 
-        $event = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST
-        );
-
+        $event = $this->createMainRequestEvent('POST');
         $listener($event);
 
         $this->assertFalse($event->hasResponse());
@@ -37,24 +26,76 @@ final class MethodNotAllowedListenerTest extends UnitTestCase
 
     public function testDisallowedMethodSetsProblemJsonResponse(): void
     {
-        $provider = $this->createMock(AllowedMethodsProvider::class);
-        $provider->expects($this->once())
-            ->method('getAllowedMethods')
-            ->with('/api/users/batch')
-            ->willReturn(['POST']);
-
+        $provider = $this->createProviderMock(['POST']);
         $listener = new MethodNotAllowedListener($provider);
-        $request = Request::create('/api/users/batch', 'PUT');
 
-        $event = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST
-        );
-
+        $event = $this->createMainRequestEvent('PUT');
         $listener($event);
 
         $this->assertTrue($event->hasResponse());
+        $this->assertResponseIsMethodNotAllowed($event);
+    }
+
+    public function testIgnoresSubRequest(): void
+    {
+        $provider = $this->createMock(AllowedMethodsProvider::class);
+        $provider->expects($this->never())->method('getAllowedMethods');
+
+        $listener = new MethodNotAllowedListener($provider);
+
+        $event = $this->createRequestEvent('PUT', HttpKernelInterface::SUB_REQUEST);
+        $listener($event);
+
+        $this->assertFalse($event->hasResponse());
+    }
+
+    public function testUntrackedPathIsIgnored(): void
+    {
+        $provider = $this->createProviderMock([], '/api/users');
+        $listener = new MethodNotAllowedListener($provider);
+        $requestType = HttpKernelInterface::MAIN_REQUEST;
+
+        $event = $this->createRequestEvent('DELETE', $requestType, '/api/users');
+        $listener($event);
+
+        $this->assertFalse($event->hasResponse());
+    }
+
+    /**
+     * @param array<int, string> $allowedMethods
+     */
+    private function createProviderMock(
+        array $allowedMethods,
+        string $path = '/api/users/batch'
+    ): AllowedMethodsProvider {
+        $provider = $this->createMock(AllowedMethodsProvider::class);
+        $provider->expects($this->once())
+            ->method('getAllowedMethods')
+            ->with($path)
+            ->willReturn($allowedMethods);
+
+        return $provider;
+    }
+
+    private function createMainRequestEvent(string $method): RequestEvent
+    {
+        return $this->createRequestEvent($method, HttpKernelInterface::MAIN_REQUEST);
+    }
+
+    private function createRequestEvent(
+        string $method,
+        int $requestType,
+        string $path = '/api/users/batch'
+    ): RequestEvent {
+        return new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            Request::create($path, $method),
+            $requestType
+        );
+    }
+
+    private function assertResponseIsMethodNotAllowed(RequestEvent $event): void
+    {
         $response = $event->getResponse();
         $this->assertSame(405, $response->getStatusCode());
         $this->assertEquals('application/problem+json', $response->headers->get('Content-Type'));
@@ -63,47 +104,5 @@ final class MethodNotAllowedListenerTest extends UnitTestCase
         $data = json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertSame('/errors/405', $data['type']);
         $this->assertSame(405, $data['status']);
-    }
-
-    public function testIgnoresSubRequest(): void
-    {
-        $provider = $this->createMock(AllowedMethodsProvider::class);
-        $provider->expects($this->never())
-            ->method('getAllowedMethods');
-
-        $listener = new MethodNotAllowedListener($provider);
-        $request = Request::create('/api/users/batch', 'PUT');
-
-        $event = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::SUB_REQUEST
-        );
-
-        $listener($event);
-
-        $this->assertFalse($event->hasResponse());
-    }
-
-    public function testUntrackedPathIsIgnored(): void
-    {
-        $provider = $this->createMock(AllowedMethodsProvider::class);
-        $provider->expects($this->once())
-            ->method('getAllowedMethods')
-            ->with('/api/users')
-            ->willReturn([]);
-
-        $listener = new MethodNotAllowedListener($provider);
-        $request = Request::create('/api/users', 'DELETE');
-
-        $event = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST
-        );
-
-        $listener($event);
-
-        $this->assertFalse($event->hasResponse());
     }
 }

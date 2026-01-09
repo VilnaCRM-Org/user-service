@@ -29,7 +29,7 @@ final readonly class MethodNotAllowedListener
         $path = $event->getRequest()->getPathInfo();
         $allowedMethods = $this->allowedMethodsProvider->getAllowedMethods($path);
 
-        if (empty($allowedMethods)) {
+        if ($allowedMethods === []) {
             return;
         }
 

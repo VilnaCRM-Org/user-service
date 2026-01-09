@@ -12,23 +12,24 @@ final readonly class UserPatchPayloadValidator
 
     public function ensureNoExplicitNulls(?array $payload): void
     {
-        $invalidField = $this->findInvalidField($payload);
-
-        if ($invalidField === null) {
+        if ($payload === null) {
             return;
         }
 
-        throw new BadRequestHttpException(
-            sprintf('%s must not be null.', $invalidField)
-        );
+        $invalidField = $this->findFirstExplicitlyNullField($payload);
+
+        if ($invalidField !== null) {
+            throw new BadRequestHttpException(
+                sprintf('%s must not be null.', $invalidField)
+            );
+        }
     }
 
-    private function findInvalidField(?array $payload): ?string
+    /**
+     * @param array<string, scalar|array|null> $payload
+     */
+    private function findFirstExplicitlyNullField(array $payload): ?string
     {
-        if ($payload === null) {
-            return null;
-        }
-
         foreach (self::IMMUTABLE_FIELDS as $field) {
             if ($this->fieldIsExplicitlyNull($payload, $field)) {
                 return $field;

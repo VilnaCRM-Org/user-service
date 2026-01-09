@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Infrastructure\Command;
+namespace App\Tests\Unit\DataFixtures\Command;
 
+use App\Shared\Application\Fixture\Command\SeedSchemathesisDataCommand;
 use App\Shared\Application\Fixture\SchemathesisFixtures;
-use App\Shared\Infrastructure\Command\SeedSchemathesisDataCommand;
 use App\Shared\Infrastructure\Factory\UuidFactory;
-use App\Shared\Infrastructure\Seeder\PasswordResetTokenSeeder;
-use App\Shared\Infrastructure\Seeder\SchemathesisConfirmationTokenSeeder;
-use App\Shared\Infrastructure\Seeder\SchemathesisOAuthSeeder;
-use App\Shared\Infrastructure\Seeder\SchemathesisUserSeeder;
+use App\Shared\Infrastructure\Fixture\Seeder\PasswordResetTokenSeeder;
+use App\Shared\Infrastructure\Fixture\Seeder\SchemathesisConfirmationTokenSeeder;
+use App\Shared\Infrastructure\Fixture\Seeder\SchemathesisOAuthSeeder;
+use App\Shared\Infrastructure\Fixture\Seeder\SchemathesisUserSeeder;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\Shared\Application\Command\Fixture\HashingPasswordHasherFactory;
 use App\Tests\Unit\Shared\Application\Command\Fixture\InMemoryConfirmationTokenRepository;

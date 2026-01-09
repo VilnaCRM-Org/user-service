@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Infrastructure\Command;
+namespace App\Shared\Application\Fixture\Command;
 
 use App\Shared\Application\Fixture\SchemathesisFixtures;
-use App\Shared\Infrastructure\Seeder\PasswordResetTokenSeeder;
-use App\Shared\Infrastructure\Seeder\SchemathesisConfirmationTokenSeeder;
-use App\Shared\Infrastructure\Seeder\SchemathesisOAuthSeeder;
-use App\Shared\Infrastructure\Seeder\SchemathesisUserSeeder;
+use App\Shared\Infrastructure\Fixture\Seeder\PasswordResetTokenSeeder;
+use App\Shared\Infrastructure\Fixture\Seeder\SchemathesisConfirmationTokenSeeder;
+use App\Shared\Infrastructure\Fixture\Seeder\SchemathesisOAuthSeeder;
+use App\Shared\Infrastructure\Fixture\Seeder\SchemathesisUserSeeder;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\Console\Attribute\AsCommand;

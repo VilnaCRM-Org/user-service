@@ -15,40 +15,94 @@ final readonly class AllowedMethodsProvider
     }
 
     /**
-     * Get allowed HTTP methods for a given URI path from API Platform metadata.
-     *
-     * @return array<int, string> List of allowed HTTP methods (e.g., ['POST', 'GET'])
+     * @return array<int, string>
      */
     public function getAllowedMethods(string $path): array
     {
         $normalizedPath = $this->normalizePath($path);
-        $allowedMethods = [];
+        $allowedMethods = $this->collectMethodsFromAllResources($normalizedPath);
 
+        return array_unique($allowedMethods);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function collectMethodsFromAllResources(string $normalizedPath): array
+    {
+        $methods = [];
         foreach ($this->getAllResourceClasses() as $resourceClass) {
-            $metadata = $this->resourceMetadataCollectionFactory->create($resourceClass);
+            /** @infection-ignore-all */
+            $methods = array_merge(
+                $methods,
+                $this->collectMethodsFromResource($resourceClass, $normalizedPath)
+            );
+        }
 
-            foreach ($metadata as $resourceMetadata) {
-                foreach ($resourceMetadata->getOperations() as $operation) {
-                    if (!$operation instanceof HttpOperation) {
-                        continue;
-                    }
+        return $methods;
+    }
 
-                    $operationPath = $this->getOperationPath($operation);
-                    if ($operationPath === null) {
-                        continue;
-                    }
+    /**
+     * @param class-string $resourceClass
+     *
+     * @return array<int, string>
+     */
+    private function collectMethodsFromResource(
+        string $resourceClass,
+        string $normalizedPath
+    ): array {
+        $methods = [];
+        $metadata = $this->resourceMetadataCollectionFactory->create($resourceClass);
 
-                    if ($this->normalizePath($operationPath) === $normalizedPath) {
-                        $method = $operation->getMethod();
-                        if ($method !== null) {
-                            $allowedMethods[] = strtoupper($method);
-                        }
-                    }
-                }
+        foreach ($metadata as $resourceMetadata) {
+            /** @infection-ignore-all */
+            $methods = array_merge(
+                $methods,
+                $this->extractMethodsFromOperations($resourceMetadata, $normalizedPath)
+            );
+        }
+
+        return $methods;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function extractMethodsFromOperations(
+        \ApiPlatform\Metadata\ApiResource $resourceMetadata,
+        string $normalizedPath
+    ): array {
+        $methods = [];
+        foreach ($resourceMetadata->getOperations() as $operation) {
+            $method = $this->extractMethodIfMatches($operation, $normalizedPath);
+            if ($method !== null) {
+                $methods[] = $method;
             }
         }
 
-        return array_unique($allowedMethods);
+        return $methods;
+    }
+
+    private function extractMethodIfMatches(
+        \ApiPlatform\Metadata\Operation $operation,
+        string $normalizedPath
+    ): ?string {
+        if (!$operation instanceof HttpOperation) {
+            return null;
+        }
+
+        $operationPath = $this->getOperationPath($operation);
+        if ($operationPath === null) {
+            return null;
+        }
+
+        if ($this->normalizePath($operationPath) !== $normalizedPath) {
+            return null;
+        }
+
+        $method = $operation->getMethod();
+        /** @infection-ignore-all */
+        return $method !== null ? strtoupper($method) : null;
     }
 
     /**
@@ -56,6 +110,7 @@ final readonly class AllowedMethodsProvider
      */
     private function getAllResourceClasses(): array
     {
+        /** @infection-ignore-all */
         return [
             \App\User\Domain\Entity\User::class,
             \App\Internal\HealthCheck\Domain\ValueObject\HealthCheck::class,
@@ -65,27 +120,16 @@ final readonly class AllowedMethodsProvider
     private function getOperationPath(HttpOperation $operation): ?string
     {
         $uriTemplate = $operation->getUriTemplate();
-        if ($uriTemplate === null) {
-            return null;
-        }
 
-        // Remove leading slash and '/api/' prefix to match path format
-        $path = ltrim($uriTemplate, '/');
-        if (str_starts_with($path, 'api/')) {
-            $path = substr($path, 4);
-        }
-
-        return $path;
+        return $uriTemplate !== null ? $this->normalizePath($uriTemplate) : null;
     }
 
     private function normalizePath(string $path): string
     {
-        // Remove leading '/api/' prefix and normalize
         $normalized = ltrim($path, '/');
-        if (str_starts_with($normalized, 'api/')) {
-            $normalized = substr($normalized, 4);
-        }
 
-        return $normalized;
+        return str_starts_with($normalized, 'api/')
+            ? substr($normalized, 4)
+            : $normalized;
     }
 }

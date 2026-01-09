@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\Provider\Http;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\Operations;
 use ApiPlatform\Metadata\Patch;
@@ -19,18 +20,9 @@ final class AllowedMethodsProviderTest extends UnitTestCase
 {
     public function testGetAllowedMethodsReturnsMethodsFromApiPlatform(): void
     {
-        $operation = new Post(uriTemplate: 'users/batch');
-        $operations = new Operations([$operation]);
-
-        $apiResource = (new ApiResource())
-            ->withOperations($operations);
-
-        $collection = new ResourceMetadataCollection(User::class, [$apiResource]);
-
-        $factory = $this->createMock(ResourceMetadataCollectionFactoryInterface::class);
-        $factory->method('create')->willReturn($collection);
-
-        $provider = new AllowedMethodsProvider($factory);
+        $provider = $this->createProviderWithOperations([
+            new Post(uriTemplate: 'users/batch'),
+        ]);
 
         $result = $provider->getAllowedMethods('/api/users/batch');
 
@@ -39,18 +31,9 @@ final class AllowedMethodsProviderTest extends UnitTestCase
 
     public function testGetAllowedMethodsReturnsEmptyArrayForNonExistentPath(): void
     {
-        $operation = new Post(uriTemplate: 'users/batch');
-        $operations = new Operations([$operation]);
-
-        $apiResource = (new ApiResource())
-            ->withOperations($operations);
-
-        $collection = new ResourceMetadataCollection(User::class, [$apiResource]);
-
-        $factory = $this->createMock(ResourceMetadataCollectionFactoryInterface::class);
-        $factory->method('create')->willReturn($collection);
-
-        $provider = new AllowedMethodsProvider($factory);
+        $provider = $this->createProviderWithOperations([
+            new Post(uriTemplate: 'users/batch'),
+        ]);
 
         $result = $provider->getAllowedMethods('/api/users/nonexistent');
 
@@ -59,18 +42,9 @@ final class AllowedMethodsProviderTest extends UnitTestCase
 
     public function testGetAllowedMethodsNormalizesPathCorrectly(): void
     {
-        $operation = new Patch(uriTemplate: 'users/confirm');
-        $operations = new Operations([$operation]);
-
-        $apiResource = (new ApiResource())
-            ->withOperations($operations);
-
-        $collection = new ResourceMetadataCollection(User::class, [$apiResource]);
-
-        $factory = $this->createMock(ResourceMetadataCollectionFactoryInterface::class);
-        $factory->method('create')->willReturn($collection);
-
-        $provider = new AllowedMethodsProvider($factory);
+        $provider = $this->createProviderWithOperations([
+            new Patch(uriTemplate: 'users/confirm'),
+        ]);
 
         $result = $provider->getAllowedMethods('/api/users/confirm');
 
@@ -79,18 +53,7 @@ final class AllowedMethodsProviderTest extends UnitTestCase
 
     public function testGetAllowedMethodsHandlesOperationWithoutUriTemplate(): void
     {
-        $operation = new Post();
-        $operations = new Operations([$operation]);
-
-        $apiResource = (new ApiResource())
-            ->withOperations($operations);
-
-        $collection = new ResourceMetadataCollection(User::class, [$apiResource]);
-
-        $factory = $this->createMock(ResourceMetadataCollectionFactoryInterface::class);
-        $factory->method('create')->willReturn($collection);
-
-        $provider = new AllowedMethodsProvider($factory);
+        $provider = $this->createProviderWithOperations([new Post()]);
 
         $result = $provider->getAllowedMethods('/api/users/batch');
 
@@ -99,18 +62,9 @@ final class AllowedMethodsProviderTest extends UnitTestCase
 
     public function testGetAllowedMethodsHandlesPathWithLeadingSlash(): void
     {
-        $operation = new Post(uriTemplate: '/api/users/batch');
-        $operations = new Operations([$operation]);
-
-        $apiResource = (new ApiResource())
-            ->withOperations($operations);
-
-        $collection = new ResourceMetadataCollection(User::class, [$apiResource]);
-
-        $factory = $this->createMock(ResourceMetadataCollectionFactoryInterface::class);
-        $factory->method('create')->willReturn($collection);
-
-        $provider = new AllowedMethodsProvider($factory);
+        $provider = $this->createProviderWithOperations([
+            new Post(uriTemplate: '/api/users/batch'),
+        ]);
 
         $result = $provider->getAllowedMethods('/api/users/batch');
 
@@ -119,18 +73,9 @@ final class AllowedMethodsProviderTest extends UnitTestCase
 
     public function testGetAllowedMethodsHandlesPathWithoutApiPrefix(): void
     {
-        $operation = new Post(uriTemplate: 'users/batch');
-        $operations = new Operations([$operation]);
-
-        $apiResource = (new ApiResource())
-            ->withOperations($operations);
-
-        $collection = new ResourceMetadataCollection(User::class, [$apiResource]);
-
-        $factory = $this->createMock(ResourceMetadataCollectionFactoryInterface::class);
-        $factory->method('create')->willReturn($collection);
-
-        $provider = new AllowedMethodsProvider($factory);
+        $provider = $this->createProviderWithOperations([
+            new Post(uriTemplate: 'users/batch'),
+        ]);
 
         $result = $provider->getAllowedMethods('users/batch');
 
@@ -139,23 +84,55 @@ final class AllowedMethodsProviderTest extends UnitTestCase
 
     public function testGetAllowedMethodsIgnoresNonHttpOperations(): void
     {
-        $httpOperation = new Post(uriTemplate: 'users/batch');
-        $graphQlOperation = new Query();
-        $operations = new Operations([$httpOperation, $graphQlOperation]);
-
-        $apiResource = (new ApiResource())
-            ->withOperations($operations);
-
-        $collection = new ResourceMetadataCollection(User::class, [$apiResource]);
-
-        $factory = $this->createMock(ResourceMetadataCollectionFactoryInterface::class);
-        $factory->method('create')->willReturn($collection);
-
-        $provider = new AllowedMethodsProvider($factory);
+        $provider = $this->createProviderWithOperations([
+            new Post(uriTemplate: 'users/batch'),
+            new Query(),
+        ]);
 
         $result = $provider->getAllowedMethods('/api/users/batch');
 
         $this->assertCount(1, $result);
         $this->assertContains('POST', $result);
+    }
+
+    public function testGetAllowedMethodsReturnsMultipleMethods(): void
+    {
+        $provider = $this->createProviderWithOperations([
+            new Post(uriTemplate: 'users'),
+            new Get(uriTemplate: 'users'),
+        ]);
+
+        $result = $provider->getAllowedMethods('/api/users');
+
+        $this->assertCount(2, $result);
+        $this->assertContains('POST', $result);
+        $this->assertContains('GET', $result);
+    }
+
+    public function testGetAllowedMethodsConvertsToUpperCase(): void
+    {
+        $provider = $this->createProviderWithOperations([
+            new Post(uriTemplate: 'users/batch'),
+        ]);
+
+        $result = $provider->getAllowedMethods('/api/users/batch');
+
+        $this->assertSame('POST', $result[0]);
+        $this->assertNotSame('post', $result[0]);
+    }
+
+    /**
+     * @param array<\ApiPlatform\Metadata\Operation> $operations
+     */
+    private function createProviderWithOperations(array $operations): AllowedMethodsProvider
+    {
+        $operationsObj = new Operations($operations);
+        $apiResource = (new ApiResource())->withOperations($operationsObj);
+        $collection = new ResourceMetadataCollection(User::class, [$apiResource]);
+
+        $factory = $this->createMock(ResourceMetadataCollectionFactoryInterface::class);
+        $factory->method('create')->willReturn($collection);
+
+        return new AllowedMethodsProvider($factory);
     }
 }

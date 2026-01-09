@@ -29,7 +29,7 @@ parameters:
         - type: className
           regex: '.*App\\User\\Infrastructure\\(Factory|Repository|Service|Decoder|Extractor|Evaluator|EventListener).*'
         - type: className
-          regex: '.*App\\Shared\\Infrastructure\\(Bus\\(Command|Event|MessageBusFactory|CallableFirstParameterExtractor)|DoctrineType|RetryStrategy|Transformer|Factory|Command|Seeder).*'
+          regex: '.*App\\Shared\\Infrastructure\\(Bus\\(Command|Event|MessageBusFactory|CallableFirstParameterExtractor)|DoctrineType|RetryStrategy|Transformer|Factory|Command|Fixture).*'
         - type: className
           regex: '.*App\\Internal\\HealthCheck\\Infrastructure\\.*'
     - name: Symfony
