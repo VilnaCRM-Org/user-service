@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Infrastructure\Command\Seeder;
+namespace App\Tests\Unit\Shared\Infrastructure\Seeder;
 
 use App\Shared\Application\Fixture\SchemathesisFixtures;
-use App\Shared\Infrastructure\Command\Seeder\SchemathesisUserSeeder;
 use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Seeder\SchemathesisUserSeeder;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\Shared\Application\Command\Fixture\HashingPasswordHasherFactory;
 use App\Tests\Unit\Shared\Application\Command\Fixture\InMemoryUserRepository;

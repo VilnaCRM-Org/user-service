@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\EventListener;
 
 use App\Shared\Application\EventListener\MethodNotAllowedListener;
+use App\Shared\Application\Provider\Http\AllowedMethodsProvider;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -14,7 +15,13 @@ final class MethodNotAllowedListenerTest extends UnitTestCase
 {
     public function testAllowedMethodDoesNotSetResponse(): void
     {
-        $listener = new MethodNotAllowedListener();
+        $provider = $this->createMock(AllowedMethodsProvider::class);
+        $provider->expects($this->once())
+            ->method('getAllowedMethods')
+            ->with('/api/users/batch')
+            ->willReturn(['POST']);
+
+        $listener = new MethodNotAllowedListener($provider);
         $request = Request::create('/api/users/batch', 'POST');
 
         $event = new RequestEvent(
@@ -30,7 +37,13 @@ final class MethodNotAllowedListenerTest extends UnitTestCase
 
     public function testDisallowedMethodSetsProblemJsonResponse(): void
     {
-        $listener = new MethodNotAllowedListener();
+        $provider = $this->createMock(AllowedMethodsProvider::class);
+        $provider->expects($this->once())
+            ->method('getAllowedMethods')
+            ->with('/api/users/batch')
+            ->willReturn(['POST']);
+
+        $listener = new MethodNotAllowedListener($provider);
         $request = Request::create('/api/users/batch', 'PUT');
 
         $event = new RequestEvent(
@@ -54,7 +67,11 @@ final class MethodNotAllowedListenerTest extends UnitTestCase
 
     public function testIgnoresSubRequest(): void
     {
-        $listener = new MethodNotAllowedListener();
+        $provider = $this->createMock(AllowedMethodsProvider::class);
+        $provider->expects($this->never())
+            ->method('getAllowedMethods');
+
+        $listener = new MethodNotAllowedListener($provider);
         $request = Request::create('/api/users/batch', 'PUT');
 
         $event = new RequestEvent(
@@ -70,7 +87,13 @@ final class MethodNotAllowedListenerTest extends UnitTestCase
 
     public function testUntrackedPathIsIgnored(): void
     {
-        $listener = new MethodNotAllowedListener();
+        $provider = $this->createMock(AllowedMethodsProvider::class);
+        $provider->expects($this->once())
+            ->method('getAllowedMethods')
+            ->with('/api/users')
+            ->willReturn([]);
+
+        $listener = new MethodNotAllowedListener($provider);
         $request = Request::create('/api/users', 'DELETE');
 
         $event = new RequestEvent(

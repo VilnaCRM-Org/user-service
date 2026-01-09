@@ -4,50 +4,39 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\EventListener;
 
+use App\Shared\Application\Provider\Http\AllowedMethodsProvider;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 
-final class MethodNotAllowedListener
+final readonly class MethodNotAllowedListener
 {
     private const ERROR_TYPE = '/errors/405';
     private const ERROR_TITLE = 'Method Not Allowed';
     private const ERROR_DETAIL =
         'The requested HTTP method is not allowed on this resource.';
 
-    /**
-     * @var array<string, array<int, string>>
-     */
-    private array $restrictions = [
-        '/api/users/batch' => ['POST'],
-        '/api/users/confirm' => ['PATCH'],
-    ];
+    public function __construct(
+        private AllowedMethodsProvider $allowedMethodsProvider
+    ) {
+    }
 
     public function __invoke(RequestEvent $event): void
     {
-        $path = $this->resolveRestrictedPath($event);
-        if ($path === null) {
+        if (!$event->isMainRequest()) {
             return;
         }
 
-        $allowed = $this->restrictions[$path];
-        if (!$this->isAllowed($event->getRequest()->getMethod(), $allowed)) {
-            $event->setResponse($this->buildProblemResponse($allowed));
-        }
-    }
-
-    private function resolveRestrictedPath(RequestEvent $event): ?string
-    {
-        if (!$event->isMainRequest()) {
-            return null;
-        }
-
         $path = $event->getRequest()->getPathInfo();
+        $allowedMethods = $this->allowedMethodsProvider->getAllowedMethods($path);
 
-        if (!array_key_exists($path, $this->restrictions)) {
-            return null;
+        if (empty($allowedMethods)) {
+            return;
         }
 
-        return $path;
+        $requestMethod = $event->getRequest()->getMethod();
+        if (!$this->isAllowed($requestMethod, $allowedMethods)) {
+            $event->setResponse($this->buildProblemResponse($allowedMethods));
+        }
     }
 
     /**
