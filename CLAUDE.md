@@ -260,21 +260,22 @@ Key variables in `.env`/`.env.test`:
 
 Place files in directories that match their class type. Each directory should contain ONLY the class type indicated by its name.
 
-| Directory Name     | Must Contain                 | Example Files                              |
-| ------------------ | ---------------------------- | ------------------------------------------ |
-| `Command/`         | Symfony Console Commands     | `SeedDataCommand.php`                      |
-| `Factory/`         | Factory classes              | `UserFactory.php`, `OpenApiFactory.php`    |
-| `Validator/`       | Validator classes            | `EmailValidator.php`                       |
-| `Provider/`        | Provider classes             | `UserProvider.php`                         |
-| `EventListener/`   | Event Listeners              | `ExceptionListener.php`                    |
-| `Enum/`            | PHP Enums                    | `Requirement.php`, `AllowEmptyValue.php`   |
-| `ValueObject/`     | Value Objects                | `Header.php`, `Parameter.php`              |
-| `Builder/`         | Builder classes              | `QueryParameterBuilder.php`                |
-| `Seeder/`          | Seeder classes               | `UserSeeder.php`, `OAuthSeeder.php`        |
+| Directory Name   | Must Contain             | Example Files                            |
+| ---------------- | ------------------------ | ---------------------------------------- |
+| `Command/`       | Symfony Console Commands | `SeedDataCommand.php`                    |
+| `Factory/`       | Factory classes          | `UserFactory.php`, `OpenApiFactory.php`  |
+| `Validator/`     | Validator classes        | `EmailValidator.php`                     |
+| `Provider/`      | Provider classes         | `UserProvider.php`                       |
+| `EventListener/` | Event Listeners          | `ExceptionListener.php`                  |
+| `Enum/`          | PHP Enums                | `Requirement.php`, `AllowEmptyValue.php` |
+| `ValueObject/`   | Value Objects            | `Header.php`, `Parameter.php`            |
+| `Builder/`       | Builder classes          | `QueryParameterBuilder.php`              |
+| `Seeder/`        | Seeder classes           | `UserSeeder.php`, `OAuthSeeder.php`      |
 
 **Event Listener Registration**: Register event listeners in `config/services.yaml` using tags, NOT via PHP attributes.
 
 **Rules**:
+
 - Never mix class types in a directory
 - Create new directories when introducing new class types
 - Use subdirectories for logical grouping (e.g., `Validator/Http/`, `Provider/Http/`)

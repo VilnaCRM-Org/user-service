@@ -1330,20 +1330,20 @@ The directory name must reflect the type of classes it contains. Each directory 
 
 **Directory-to-Class Type Mapping:**
 
-| Directory Name     | Must Contain          | Examples                                        |
-| ------------------ | --------------------- | ----------------------------------------------- |
+| Directory Name     | Must Contain             | Examples                                       |
+| ------------------ | ------------------------ | ---------------------------------------------- |
 | `Command/`         | Symfony Console Commands | `SeedDataCommand.php`, `CacheClearCommand.php` |
-| `Factory/`         | Factory classes       | `UserFactory.php`, `TokenFactory.php`          |
-| `Validator/`       | Validator classes     | `EmailValidator.php`, `PasswordValidator.php`  |
-| `Provider/`        | Provider classes      | `UserProvider.php`, `TokenProvider.php`        |
-| `EventListener/`   | Event Listeners       | `ExceptionListener.php`, `RequestListener.php` |
-| `EventSubscriber/` | Event Subscribers     | `UserEventSubscriber.php`                       |
-| `Enum/`            | PHP Enums             | `Status.php`, `Permission.php`                  |
-| `ValueObject/`     | Value Objects         | `Email.php`, `Password.php`                     |
-| `Builder/`         | Builder classes       | `QueryBuilder.php`, `ResponseBuilder.php`       |
-| `Seeder/`          | Seeder classes        | `UserSeeder.php`, `OAuthSeeder.php`             |
-| `Decoder/`         | Decoder classes       | `JsonDecoder.php`, `XmlDecoder.php`             |
-| `Checker/`         | Checker classes       | `PermissionChecker.php`, `UniqueChecker.php`    |
+| `Factory/`         | Factory classes          | `UserFactory.php`, `TokenFactory.php`          |
+| `Validator/`       | Validator classes        | `EmailValidator.php`, `PasswordValidator.php`  |
+| `Provider/`        | Provider classes         | `UserProvider.php`, `TokenProvider.php`        |
+| `EventListener/`   | Event Listeners          | `ExceptionListener.php`, `RequestListener.php` |
+| `EventSubscriber/` | Event Subscribers        | `UserEventSubscriber.php`                      |
+| `Enum/`            | PHP Enums                | `Status.php`, `Permission.php`                 |
+| `ValueObject/`     | Value Objects            | `Email.php`, `Password.php`                    |
+| `Builder/`         | Builder classes          | `QueryBuilder.php`, `ResponseBuilder.php`      |
+| `Seeder/`          | Seeder classes           | `UserSeeder.php`, `OAuthSeeder.php`            |
+| `Decoder/`         | Decoder classes          | `JsonDecoder.php`, `XmlDecoder.php`            |
+| `Checker/`         | Checker classes          | `PermissionChecker.php`, `UniqueChecker.php`   |
 
 **Event Listener Registration:**
 
