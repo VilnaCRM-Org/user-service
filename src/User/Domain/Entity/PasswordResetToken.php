@@ -61,4 +61,16 @@ final class PasswordResetToken implements PasswordResetTokenInterface
     {
         $this->isUsed = true;
     }
+
+    #[\Override]
+    public function extendExpiration(DateTimeImmutable $newExpiresAt): void
+    {
+        $this->expiresAt = $newExpiresAt;
+    }
+
+    #[\Override]
+    public function resetUsage(): void
+    {
+        $this->isUsed = false;
+    }
 }

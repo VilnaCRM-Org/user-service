@@ -48,11 +48,27 @@ final class MariaDBPasswordResetTokenRepository extends ServiceEntityRepository 
         $this->entityManager->flush();
     }
 
+    /**
+     * @codeCoverageIgnore Tested in integration tests
+     *
+     * @infection-ignore-all Tested in integration tests
+     */
     public function deleteAll(): void
     {
         $this->createQueryBuilder('t')
             ->delete()
             ->getQuery()
             ->execute();
+    }
+
+    /**
+     * @param array<PasswordResetTokenInterface> $tokens
+     */
+    public function saveBatch(array $tokens): void
+    {
+        foreach ($tokens as $token) {
+            $this->entityManager->persist($token);
+        }
+        $this->entityManager->flush();
     }
 }

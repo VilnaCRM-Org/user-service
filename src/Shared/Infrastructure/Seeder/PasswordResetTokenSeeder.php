@@ -22,30 +22,60 @@ final readonly class PasswordResetTokenSeeder
      */
     public function seedTokens(UserInterface $user, array $tokenValues): void
     {
-        foreach ($tokenValues as $tokenValue) {
-            $this->removeExistingToken($tokenValue);
-            $this->createToken($user, $tokenValue);
-        }
+        $tokens = $this->prepareTokens($user, $tokenValues);
+        /** @infection-ignore-all */
+        $this->tokenRepository->saveBatch($tokens);
     }
 
-    private function removeExistingToken(string $tokenValue): void
-    {
+    /**
+     * @param array<int,string> $tokenValues
+     *
+     * @return array<PasswordResetTokenInterface>
+     */
+    private function prepareTokens(
+        UserInterface $user,
+        array $tokenValues
+    ): array {
+        $tokens = [];
+
+        foreach ($tokenValues as $tokenValue) {
+            $tokens[] = $this->prepareToken($user, $tokenValue);
+        }
+
+        return $tokens;
+    }
+
+    private function prepareToken(
+        UserInterface $user,
+        string $tokenValue
+    ): PasswordResetTokenInterface {
         $existingToken = $this->tokenRepository->findByToken($tokenValue);
 
         if ($existingToken instanceof PasswordResetTokenInterface) {
-            $this->tokenRepository->delete($existingToken);
+            return $this->refreshToken($existingToken);
         }
+
+        return $this->createToken($user, $tokenValue);
     }
 
-    private function createToken(UserInterface $user, string $tokenValue): void
-    {
-        $token = new PasswordResetToken(
+    private function refreshToken(
+        PasswordResetTokenInterface $token
+    ): PasswordResetTokenInterface {
+        $token->extendExpiration(new DateTimeImmutable('+1 hour'));
+        $token->resetUsage();
+
+        return $token;
+    }
+
+    private function createToken(
+        UserInterface $user,
+        string $tokenValue
+    ): PasswordResetTokenInterface {
+        return new PasswordResetToken(
             $tokenValue,
             $user->getId(),
             new DateTimeImmutable('+1 hour'),
             new DateTimeImmutable()
         );
-
-        $this->tokenRepository->save($token);
     }
 }

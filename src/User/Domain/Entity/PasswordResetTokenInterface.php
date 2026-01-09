@@ -19,4 +19,8 @@ interface PasswordResetTokenInterface
     public function isExpired(?\DateTimeImmutable $currentTime = null): bool;
 
     public function markAsUsed(): void;
+
+    public function extendExpiration(\DateTimeImmutable $newExpiresAt): void;
+
+    public function resetUsage(): void;
 }

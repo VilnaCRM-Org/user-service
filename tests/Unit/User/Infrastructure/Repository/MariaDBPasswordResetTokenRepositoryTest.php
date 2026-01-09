@@ -119,6 +119,41 @@ final class MariaDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $this->repository->delete($token);
     }
 
+    public function testSaveBatch(): void
+    {
+        $token1 = $this->createMock(PasswordResetTokenInterface::class);
+        $token2 = $this->createMock(PasswordResetTokenInterface::class);
+        $tokens = [$token1, $token2];
+
+        $expectedTokens = [$token1, $token2];
+        $callIndex = 0;
+
+        $this->entityManager->expects($this->exactly(2))
+            ->method('persist')
+            ->willReturnCallback(
+                function ($token) use ($expectedTokens, &$callIndex): void {
+                    $this->assertSame($expectedTokens[$callIndex], $token);
+                    $callIndex++;
+                }
+            );
+
+        $this->entityManager->expects($this->once())
+            ->method('flush');
+
+        $this->repository->saveBatch($tokens);
+    }
+
+    public function testSaveBatchWithEmptyArray(): void
+    {
+        $this->entityManager->expects($this->never())
+            ->method('persist');
+
+        $this->entityManager->expects($this->once())
+            ->method('flush');
+
+        $this->repository->saveBatch([]);
+    }
+
     /**
      * @param array<string, string> $criteria
      * @param array<string, string>|null $orderBy

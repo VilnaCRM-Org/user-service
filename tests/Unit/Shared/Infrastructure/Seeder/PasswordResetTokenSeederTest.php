@@ -30,24 +30,31 @@ final class PasswordResetTokenSeederTest extends UnitTestCase
         $this->assertArrayHasKey('token2', $tokens);
     }
 
-    public function testSeedTokensRemovesExistingTokenBeforeCreating(): void
+    public function testSeedTokensUpdatesExistingTokenInsteadOfDeleting(): void
     {
         $repository = new InMemoryPasswordResetTokenRepository();
         $user = $this->createTestUser();
 
+        $expiredTime = new DateTimeImmutable('-1 hour');
         $existingToken = new PasswordResetToken(
             'existing-token',
             $user->getId(),
-            new DateTimeImmutable('+1 hour'),
-            new DateTimeImmutable()
+            $expiredTime,
+            new DateTimeImmutable('-2 hours')
         );
+        $existingToken->markAsUsed();
         $repository->save($existingToken);
 
         $seeder = new PasswordResetTokenSeeder($repository);
         $seeder->seedTokens($user, ['existing-token']);
 
-        $this->assertSame(1, $repository->deleteCount());
+        $this->assertSame(0, $repository->deleteCount());
         $this->assertCount(1, $repository->all());
+
+        $updatedToken = $repository->findByToken('existing-token');
+        $this->assertNotNull($updatedToken);
+        $this->assertFalse($updatedToken->isExpired());
+        $this->assertFalse($updatedToken->isUsed());
     }
 
     public function testSeedTokensDoesNotDeleteWhenNoExistingToken(): void
@@ -73,6 +80,82 @@ final class PasswordResetTokenSeederTest extends UnitTestCase
         $token = $repository->findByToken('test-token');
         $this->assertNotNull($token);
         $this->assertSame($user->getId(), $token->getUserID());
+    }
+
+    public function testSeedTokensExtendsExpirationForExistingToken(): void
+    {
+        $repository = new InMemoryPasswordResetTokenRepository();
+        $user = $this->createTestUser();
+
+        $expiredTime = new DateTimeImmutable('-2 hours');
+        $existingToken = new PasswordResetToken(
+            'test-token',
+            $user->getId(),
+            $expiredTime,
+            new DateTimeImmutable('-3 hours')
+        );
+        $repository->save($existingToken);
+
+        $this->assertTrue($existingToken->isExpired());
+
+        $seeder = new PasswordResetTokenSeeder($repository);
+        $seeder->seedTokens($user, ['test-token']);
+
+        $refreshedToken = $repository->findByToken('test-token');
+        $this->assertNotNull($refreshedToken);
+        $this->assertFalse($refreshedToken->isExpired());
+    }
+
+    public function testSeedTokensResetsUsageForExistingToken(): void
+    {
+        $repository = new InMemoryPasswordResetTokenRepository();
+        $user = $this->createTestUser();
+
+        $existingToken = new PasswordResetToken(
+            'used-token',
+            $user->getId(),
+            new DateTimeImmutable('+1 hour'),
+            new DateTimeImmutable()
+        );
+        $existingToken->markAsUsed();
+        $repository->save($existingToken);
+
+        $this->assertTrue($existingToken->isUsed());
+
+        $seeder = new PasswordResetTokenSeeder($repository);
+        $seeder->seedTokens($user, ['used-token']);
+
+        $refreshedToken = $repository->findByToken('used-token');
+        $this->assertNotNull($refreshedToken);
+        $this->assertFalse($refreshedToken->isUsed());
+    }
+
+    public function testSeedTokensReturnsRefreshedTokenNotNewOne(): void
+    {
+        $repository = new InMemoryPasswordResetTokenRepository();
+        $user = $this->createTestUser();
+
+        $originalCreatedAt = new DateTimeImmutable('-1 day');
+        $existingToken = new PasswordResetToken(
+            'existing-token',
+            $user->getId(),
+            new DateTimeImmutable('-1 hour'),
+            $originalCreatedAt
+        );
+        $repository->save($existingToken);
+
+        $seeder = new PasswordResetTokenSeeder($repository);
+        $seeder->seedTokens($user, ['existing-token']);
+
+        $savedTokens = $repository->getSavedBatchTokens();
+        $this->assertCount(1, $savedTokens);
+
+        $savedToken = $savedTokens[0];
+        $this->assertSame($existingToken, $savedToken);
+        $this->assertSame(
+            $originalCreatedAt->getTimestamp(),
+            $savedToken->getCreatedAt()->getTimestamp()
+        );
     }
 
     private function createTestUser(): \App\User\Domain\Entity\UserInterface

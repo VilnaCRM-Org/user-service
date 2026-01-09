@@ -148,6 +148,37 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
         $this->assertNull($this->repository->findByToken($token2->getTokenValue()));
     }
 
+    public function testSaveBatch(): void
+    {
+        $user = $this->createAndPersistUser();
+
+        $tokens = [];
+        for ($i = 0; $i < 3; $i++) {
+            $createdAt = new \DateTimeImmutable();
+            $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
+            $tokens[] = new PasswordResetToken(
+                $this->faker->lexify('??????????'),
+                $user->getId(),
+                $expiresAt,
+                $createdAt
+            );
+        }
+
+        $this->repository->saveBatch($tokens);
+
+        foreach ($tokens as $token) {
+            $found = $this->repository->findByToken($token->getTokenValue());
+            $this->assertNotNull($found);
+            $this->assertSame($token->getTokenValue(), $found->getTokenValue());
+        }
+    }
+
+    public function testSaveBatchWithEmptyArray(): void
+    {
+        $this->repository->saveBatch([]);
+        $this->assertTrue(true);
+    }
+
     private function createAndPersistUser(): User
     {
         $user = $this->userFactory->create(

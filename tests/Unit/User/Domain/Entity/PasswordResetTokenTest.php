@@ -190,4 +190,59 @@ final class PasswordResetTokenTest extends UnitTestCase
         $this->assertInstanceOf(\DateTimeImmutable::class, $token->getExpiresAt());
         $this->assertTrue($token->getExpiresAt() > $token->getCreatedAt());
     }
+
+    public function testExtendExpiration(): void
+    {
+        $originalExpiration = new \DateTimeImmutable('+1 hour');
+        $newExpiration = new \DateTimeImmutable('+2 hours');
+
+        $token = new PasswordResetToken(
+            'test-token',
+            $this->faker->uuid(),
+            $originalExpiration,
+            new \DateTimeImmutable()
+        );
+
+        $this->assertSame($originalExpiration, $token->getExpiresAt());
+
+        $token->extendExpiration($newExpiration);
+
+        $this->assertSame($newExpiration, $token->getExpiresAt());
+    }
+
+    public function testResetUsage(): void
+    {
+        $token = new PasswordResetToken(
+            'test-token',
+            $this->faker->uuid(),
+            new \DateTimeImmutable('+1 hour'),
+            new \DateTimeImmutable()
+        );
+
+        $this->assertFalse($token->isUsed());
+
+        $token->markAsUsed();
+        $this->assertTrue($token->isUsed());
+
+        $token->resetUsage();
+        $this->assertFalse($token->isUsed());
+    }
+
+    public function testExtendExpirationMakesExpiredTokenValid(): void
+    {
+        $expiredTime = new \DateTimeImmutable('-1 hour');
+        $token = new PasswordResetToken(
+            'expired-token',
+            $this->faker->uuid(),
+            $expiredTime,
+            new \DateTimeImmutable('-2 hours')
+        );
+
+        $this->assertTrue($token->isExpired());
+
+        $newExpiration = new \DateTimeImmutable('+1 hour');
+        $token->extendExpiration($newExpiration);
+
+        $this->assertFalse($token->isExpired());
+    }
 }

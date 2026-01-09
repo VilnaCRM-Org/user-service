@@ -23,4 +23,9 @@ interface PasswordResetTokenRepositoryInterface
     ): void;
 
     public function deleteAll(): void;
+
+    /**
+     * @param array<PasswordResetTokenInterface> $tokens
+     */
+    public function saveBatch(array $tokens): void;
 }

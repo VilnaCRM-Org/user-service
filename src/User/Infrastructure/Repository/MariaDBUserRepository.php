@@ -56,6 +56,8 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
 
     /**
      * @codeCoverageIgnore Tested in integration tests
+     *
+     * @infection-ignore-all Tested in integration tests
      */
     public function deleteAll(): void
     {
