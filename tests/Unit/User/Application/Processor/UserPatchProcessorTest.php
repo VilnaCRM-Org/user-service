@@ -341,9 +341,13 @@ final class UserPatchProcessorTest extends UnitTestCase
     private function initializePayloadProviderAndResolver(): void
     {
         $this->requestStack = new RequestStack();
+        $serializer = new \Symfony\Component\Serializer\Serializer(
+            [],
+            [new \Symfony\Component\Serializer\Encoder\JsonEncoder()]
+        );
         $this->payloadProvider = new JsonRequestPayloadProvider(
             new JsonRequestContentProvider($this->requestStack),
-            new JsonBodyDecoder()
+            new JsonBodyDecoder($serializer)
         );
         $this->updateResolver = new UserPatchUpdateResolver(
             new UserPatchEmailResolver(),

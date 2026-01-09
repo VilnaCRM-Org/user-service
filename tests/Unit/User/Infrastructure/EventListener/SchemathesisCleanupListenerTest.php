@@ -17,6 +17,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Serializer;
 
 final class SchemathesisCleanupListenerTest extends UnitTestCase
 {
@@ -29,7 +31,8 @@ final class SchemathesisCleanupListenerTest extends UnitTestCase
         parent::setUp();
 
         $this->evaluator = new SchemathesisCleanupEvaluator();
-        $decoder = new SchemathesisPayloadDecoder();
+        $serializer = new Serializer([], [new JsonEncoder()]);
+        $decoder = new SchemathesisPayloadDecoder($serializer);
         $singleExtractor = new SchemathesisSingleUserEmailExtractor();
         $batchExtractor = new SchemathesisBatchUsersEmailExtractor();
 

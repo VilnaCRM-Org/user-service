@@ -7,12 +7,15 @@ namespace App\Tests\Unit\User\Infrastructure\Decoder;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Infrastructure\Decoder\SchemathesisPayloadDecoder;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Serializer;
 
 final class SchemathesisPayloadDecoderTest extends UnitTestCase
 {
     public function testDecodeReturnsAllKeysForValidPayload(): void
     {
-        $decoder = new SchemathesisPayloadDecoder();
+        $serializer = new Serializer([], [new JsonEncoder()]);
+        $decoder = new SchemathesisPayloadDecoder($serializer);
         $request = Request::create(
             uri: '/api/users',
             content: json_encode([

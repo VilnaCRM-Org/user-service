@@ -25,43 +25,59 @@ final class AllowedParametersRule implements QueryParameterRule
     }
 
     /**
-     * @param array<string, array|string|int|float|bool|null> $query
+     * @param array<string, array|string|int|float|bool|null> $queryParameters
      */
     #[\Override]
     public function validate(
         string $path,
-        array $query
+        array $queryParameters
     ): ?QueryParameterViolation {
-        if (!$this->hasAllowedParametersForPath($path)) {
+        $pathHasNoRestrictions = !$this->pathHasAllowedParametersDefined($path);
+        if ($pathHasNoRestrictions) {
             return null;
         }
 
-        $unknownParameters = $this->findUnknownParameters($path, $query);
-
-        if ($unknownParameters === []) {
-            return null;
-        }
-
-        return $this->violationFactory->unknownParameters(
-            implode(', ', $unknownParameters)
+        $unknownParameters = $this->extractUnknownParameters(
+            $path,
+            $queryParameters
         );
+
+        $allParametersAreValid = $unknownParameters === [];
+        if ($allParametersAreValid) {
+            return null;
+        }
+
+        return $this->createViolationForUnknownParameters($unknownParameters);
     }
 
-    private function hasAllowedParametersForPath(string $path): bool
+    private function pathHasAllowedParametersDefined(string $path): bool
     {
         return isset($this->allowedParameters[$path]);
     }
 
     /**
-     * @param array<string, array|string|int|float|bool|null> $query
+     * @param array<string, array|string|int|float|bool|null> $queryParameters
      *
      * @return array<int, string>
      */
-    private function findUnknownParameters(string $path, array $query): array
-    {
+    private function extractUnknownParameters(
+        string $path,
+        array $queryParameters
+    ): array {
         $allowedForPath = $this->allowedParameters[$path];
-        $providedParameters = array_keys($query);
+        $providedParameters = array_keys($queryParameters);
 
         return array_diff($providedParameters, $allowedForPath);
+    }
+
+    /**
+     * @param array<int, string> $unknownParameters
+     */
+    private function createViolationForUnknownParameters(
+        array $unknownParameters
+    ): QueryParameterViolation {
+        $parameterNames = implode(', ', $unknownParameters);
+
+        return $this->violationFactory->unknownParameters($parameterNames);
     }
 }

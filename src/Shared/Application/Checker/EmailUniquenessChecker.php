@@ -18,27 +18,35 @@ final readonly class EmailUniquenessChecker
 
     public function isUnique(string $email): bool
     {
-        $existingUser = $this->userRepository->findByEmail($email);
+        $existingUserWithEmail = $this->userRepository->findByEmail($email);
 
-        if (!$existingUser instanceof UserInterface) {
+        $emailNotUsed = !$existingUserWithEmail instanceof UserInterface;
+        if ($emailNotUsed) {
             return true;
         }
 
-        return $this->isUpdatingSameUser($existingUser);
+        return $this->isCurrentUserUpdatingOwnEmail($existingUserWithEmail);
     }
 
-    private function isUpdatingSameUser(UserInterface $existingUser): bool
-    {
-        $routeUserId = $this->routeIdentifierProvider->identifier('id');
-
-        if ($routeUserId === null) {
+    private function isCurrentUserUpdatingOwnEmail(
+        UserInterface $userWithEmail
+    ): bool {
+        $currentUserId = $this->getCurrentUserIdFromRoute();
+        if ($currentUserId === null) {
             return false;
         }
 
-        $normalizedRouteId = $this->normalizeUuid($routeUserId);
-        $normalizedExistingId = $this->normalizeUuid($existingUser->getId());
+        return $this->isSameUser($currentUserId, $userWithEmail->getId());
+    }
 
-        return $normalizedRouteId === $normalizedExistingId;
+    private function getCurrentUserIdFromRoute(): ?string
+    {
+        return $this->routeIdentifierProvider->identifier('id');
+    }
+
+    private function isSameUser(string $firstId, string $secondId): bool
+    {
+        return $this->normalizeUuid($firstId) === $this->normalizeUuid($secondId);
     }
 
     private function normalizeUuid(string $uuid): string

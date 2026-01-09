@@ -4,11 +4,18 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Decoder;
 
-use JsonException;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
+use Symfony\Component\Serializer\SerializerInterface;
 
-final class SchemathesisPayloadDecoder
+final readonly class SchemathesisPayloadDecoder
 {
+    public function __construct(
+        private SerializerInterface $serializer
+    ) {
+    }
+
     /**
      * @return array{email?: string|null, users?: array<int, array{email?: string|null}|scalar|null>}
      */
@@ -30,8 +37,8 @@ final class SchemathesisPayloadDecoder
     private function tryDecode(string $content): mixed
     {
         try {
-            return json_decode($content, true, flags: JSON_THROW_ON_ERROR);
-        } catch (JsonException) {
+            return $this->serializer->decode($content, JsonEncoder::FORMAT);
+        } catch (NotEncodableValueException) {
             return null;
         }
     }

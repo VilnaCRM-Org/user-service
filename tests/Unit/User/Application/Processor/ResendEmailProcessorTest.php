@@ -299,9 +299,13 @@ final class ResendEmailProcessorTest extends UnitTestCase
     private function initRequestHandlers(): void
     {
         $this->requestStack = new RequestStack();
+        $serializer = new \Symfony\Component\Serializer\Serializer(
+            [],
+            [new \Symfony\Component\Serializer\Encoder\JsonEncoder()]
+        );
         $this->jsonRequestValidator = new JsonRequestValidator(
             new JsonRequestContentProvider($this->requestStack),
-            new JsonBodyDecoder()
+            new JsonBodyDecoder($serializer)
         );
     }
 

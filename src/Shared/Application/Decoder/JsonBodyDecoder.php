@@ -4,23 +4,22 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Decoder;
 
-use JsonException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
+use Symfony\Component\Serializer\SerializerInterface;
 
 final readonly class JsonBodyDecoder
 {
-    /**
-     * @return array<int|string, array|scalar|null>
-     */
-    public function decodeToArray(string $content, string $errorMessage): array
-    {
-        return $this->decodeContent($content, $errorMessage);
+    public function __construct(
+        private SerializerInterface $serializer
+    ) {
     }
 
     /**
      * @return array<int|string, array|scalar|null>
      */
-    private function decodeContent(string $content, string $errorMessage): array
+    public function decodeToArray(string $content, string $errorMessage): array
     {
         $decoded = $this->tryDecode($content, $errorMessage);
 
@@ -34,8 +33,8 @@ final readonly class JsonBodyDecoder
     private function tryDecode(string $content, string $errorMessage): mixed
     {
         try {
-            return json_decode($content, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $exception) {
+            return $this->serializer->decode($content, JsonEncoder::FORMAT);
+        } catch (NotEncodableValueException $exception) {
             throw new BadRequestHttpException($errorMessage, $exception);
         }
     }
