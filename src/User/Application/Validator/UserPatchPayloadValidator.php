@@ -25,17 +25,24 @@ final readonly class UserPatchPayloadValidator
 
     private function findInvalidField(?array $payload): ?string
     {
-        return match (true) {
-            $payload === null => null,
-            ($field = array_search(
-                null,
-                array_intersect_key(
-                    $payload,
-                    array_flip(self::IMMUTABLE_FIELDS)
-                ),
-                true
-            )) === false => null,
-            default => (string) $field,
-        };
+        if ($payload === null) {
+            return null;
+        }
+
+        foreach (self::IMMUTABLE_FIELDS as $field) {
+            if ($this->fieldIsExplicitlyNull($payload, $field)) {
+                return $field;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<string, scalar|array|null> $payload
+     */
+    private function fieldIsExplicitlyNull(array $payload, string $field): bool
+    {
+        return array_key_exists($field, $payload) && $payload[$field] === null;
     }
 }

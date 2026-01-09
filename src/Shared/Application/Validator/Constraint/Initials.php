@@ -30,7 +30,11 @@ final class Initials extends Compound
                 maxMessage: 'initials.invalid.length'
             ),
             new Regex(
-                pattern: '/^\S+$/',
+                pattern: '/^(?!\d)/',
+                message: 'initials.starts_with_number'
+            ),
+            new Regex(
+                pattern: '/\S/',
                 message: 'initials.spaces'
             ),
         ];

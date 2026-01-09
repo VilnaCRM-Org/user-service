@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\OpenApi\Builder;
 
 use App\Shared\Application\Fixture\SchemathesisFixtures;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Extractor\ArrayExampleValueExtractor;
 use App\Shared\Application\OpenApi\Factory\Schema\ArraySchemaFactory;
 use App\Shared\Application\OpenApi\Factory\Schema\ParameterSchemaFactory;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 
 final class ParameterSchemaFactoryTest extends UnitTestCase
@@ -44,7 +44,7 @@ final class ParameterSchemaFactoryTest extends UnitTestCase
         $parameter = new Parameter(
             'initials',
             'string',
-            'NameSurname',
+            'Name Surname',
             pattern: '^\\S+$'
         );
 

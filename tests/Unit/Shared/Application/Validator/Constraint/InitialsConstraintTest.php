@@ -23,15 +23,28 @@ final class InitialsConstraintTest extends UnitTestCase
         $this->assertSame(255, $lengthConstraint->max);
     }
 
-    public function testGetConstraintsReturnsNoSpacesRegexPattern(): void
+    public function testGetConstraintsReturnsNoStartWithNumberRegexPattern(): void
     {
         $initialsConstraint = new Initials();
-        $regexConstraint = $this->findRegexConstraint(
+        $regexConstraints = $this->findAllRegexConstraints(
             $this->getConstraintsFromInitials($initialsConstraint)
         );
-        $this->assertInstanceOf(Regex::class, $regexConstraint);
-        $this->assertSame('/^\S+$/', $regexConstraint->pattern);
-        $this->assertSame('initials.spaces', $regexConstraint->message);
+        $this->assertCount(2, $regexConstraints);
+
+        $this->assertSame('/^(?!\d)/', $regexConstraints[0]->pattern);
+        $this->assertSame('initials.starts_with_number', $regexConstraints[0]->message);
+    }
+
+    public function testGetConstraintsReturnsNotOnlySpacesRegexPattern(): void
+    {
+        $initialsConstraint = new Initials();
+        $regexConstraints = $this->findAllRegexConstraints(
+            $this->getConstraintsFromInitials($initialsConstraint)
+        );
+        $this->assertCount(2, $regexConstraints);
+
+        $this->assertSame('/\S/', $regexConstraints[1]->pattern);
+        $this->assertSame('initials.spaces', $regexConstraints[1]->message);
     }
 
     public function testMaxLengthBoundaryExactly255Characters(): void
@@ -93,13 +106,19 @@ final class InitialsConstraintTest extends UnitTestCase
 
     /**
      * @param iterable<Constraint> $constraints
+     *
+     * @return array<int, Regex>
      */
-    private function findRegexConstraint(iterable $constraints): ?Regex
+    private function findAllRegexConstraints(iterable $constraints): array
     {
-        return $this->findConstraint(
-            $constraints,
-            static fn (Constraint $constraint) => $constraint instanceof Regex
-        );
+        $result = [];
+        foreach ($constraints as $constraint) {
+            if ($constraint instanceof Regex) {
+                $result[] = $constraint;
+            }
+        }
+
+        return $result;
     }
 
     /**

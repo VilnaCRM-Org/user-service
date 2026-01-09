@@ -7,35 +7,35 @@ Feature: User GraphQL Operations Localization
     Given requesting to return user's id and email
     And with graphql language "uk"
     And user with email "graphqltest@mail.com2" exists
-    And creating user with email "graphqltest@mail.com2" initials "namesurname" password "passWORD1"
+    And creating user with email "graphqltest@mail.com2" initials "name surname" password "passWORD1"
     When graphQL request is send
     Then graphql error message should be "email: Ця email-адреса вже зареєстрована"
 
   Scenario: Creating a user with invalid email and Ukrainian language
     Given requesting to return user's id and email
     And with graphql language "uk"
-    And creating user with email "graphqlTest" initials "namesurname" password "passWORD1"
+    And creating user with email "graphqlTest" initials "name surname" password "passWORD1"
     When graphQL request is send
     Then graphql error message should be "email: Це значення не є дійсною електронною адресою."
 
   Scenario: Creating a user with password with no uppercase letters and Ukrainian language
     Given requesting to return user's id and email
     And with graphql language "uk"
-    And creating user with email "graphqlTest@mail.com" initials "namesurname" password "password1"
+    And creating user with email "graphqlTest@mail.com" initials "name surname" password "password1"
     When graphQL request is send
     Then graphql error message should be "password: Пароль має містити принаймні одну велику літеру"
 
   Scenario: Creating a user with password with no numbers and Ukrainian language
     Given requesting to return user's id and email
     And with graphql language "uk"
-    And creating user with email "graphqlTest@mail.com" initials "namesurname" password "passWORD"
+    And creating user with email "graphqlTest@mail.com" initials "name surname" password "passWORD"
     When graphQL request is send
     Then graphql error message should be "password: Пароль повинен містити хоча б одне число"
 
   Scenario: Creating a user with too short password and Ukrainian language
     Given requesting to return user's id and email
     And with graphql language "uk"
-    And creating user with email "graphqlTest@mail.com" initials "namesurname" password "WORD1"
+    And creating user with email "graphqlTest@mail.com" initials "name surname" password "WORD1"
     When graphQL request is send
     Then graphql error message should be "password: Пароль має містити від 8 до 64 символів"
 

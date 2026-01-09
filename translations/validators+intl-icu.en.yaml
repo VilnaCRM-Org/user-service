@@ -5,7 +5,8 @@ email:
   not:
     unique: 'This email address is already registered'
 initials:
-  spaces: 'Initials can not consist only of spaces'
+  spaces: 'Initials cannot consist only of spaces'
+  starts_with_number: 'Initials cannot start with a number'
   invalid:
     length: 'This value is too long. It should have {limit} character or less.|This value is too long. It should have {limit} characters or less.'
     type: 'Initials must be a string.'

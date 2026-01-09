@@ -61,8 +61,8 @@ return [
         ],
         ForbiddenDefineFunctions::class => [
             'exclude' => [
-                'src/Shared/Application/OpenApi/Builder/AllowEmptyValue',
-                'src/Shared/Application/OpenApi/Builder/Requirement',
+                'src/Shared/Application/OpenApi/Enum/AllowEmptyValue',
+                'src/Shared/Application/OpenApi/Enum/Requirement',
             ],
         ],
         UnnecessaryStringConcatSniff::class => [

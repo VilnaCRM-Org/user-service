@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model\Response;
+use App\Shared\Application\OpenApi\ValueObject\Header;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use ArrayObject;
 
 final class ResponseBuilder

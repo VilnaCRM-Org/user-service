@@ -19,18 +19,30 @@ final readonly class EmailUniquenessChecker
     public function isUnique(string $email): bool
     {
         $existingUser = $this->userRepository->findByEmail($email);
-        $identifier = $this->routeIdentifierProvider->identifier('id');
 
-        return match (true) {
-            !$existingUser instanceof UserInterface => true,
-            $identifier === null => false,
-            default => $this->normalize($identifier)
-                === $this->normalize($existingUser->getId()),
-        };
+        if (!$existingUser instanceof UserInterface) {
+            return true;
+        }
+
+        return $this->isUpdatingSameUser($existingUser);
     }
 
-    private function normalize(string $value): string
+    private function isUpdatingSameUser(UserInterface $existingUser): bool
     {
-        return strtolower(str_replace('-', '', $value));
+        $routeUserId = $this->routeIdentifierProvider->identifier('id');
+
+        if ($routeUserId === null) {
+            return false;
+        }
+
+        $normalizedRouteId = $this->normalizeUuid($routeUserId);
+        $normalizedExistingId = $this->normalizeUuid($existingUser->getId());
+
+        return $normalizedRouteId === $normalizedExistingId;
+    }
+
+    private function normalizeUuid(string $uuid): string
+    {
+        return strtolower(str_replace('-', '', $uuid));
     }
 }

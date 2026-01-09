@@ -15,8 +15,8 @@ api_platform:
       url: 'https://vilnacrm.com'
       email: 'support@vilnacrm.com'
     license:
-      name: 'VilnaCRM Proprietary'
-      url: 'https://vilnacrm.com/legal/license'
+      name: 'CC0-1.0'
+      url: 'https://creativecommons.org/publicdomain/zero/1.0/'
 
   defaults:
     extra_properties:

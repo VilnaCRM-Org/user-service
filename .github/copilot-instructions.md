@@ -1321,3 +1321,69 @@ $password = $this->faker->password(12);
 - **Time units**: Use correct singular/plural forms (1 hour vs 2 hours)
 - **Dynamic pluralization**: Implement logic to handle both singular and plural forms
 - **Consistent messaging**: Ensure all user-facing text follows proper grammar rules
+
+### Directory Organization Conventions
+
+**MANDATORY: Place files in directories that match their class type:**
+
+The directory name must reflect the type of classes it contains. Each directory should contain ONLY the class type indicated by its name.
+
+**Directory-to-Class Type Mapping:**
+
+| Directory Name     | Must Contain          | Examples                                        |
+| ------------------ | --------------------- | ----------------------------------------------- |
+| `Command/`         | Symfony Console Commands | `SeedDataCommand.php`, `CacheClearCommand.php` |
+| `Factory/`         | Factory classes       | `UserFactory.php`, `TokenFactory.php`          |
+| `Validator/`       | Validator classes     | `EmailValidator.php`, `PasswordValidator.php`  |
+| `Provider/`        | Provider classes      | `UserProvider.php`, `TokenProvider.php`        |
+| `EventListener/`   | Event Listeners       | `ExceptionListener.php`, `RequestListener.php` |
+| `EventSubscriber/` | Event Subscribers     | `UserEventSubscriber.php`                       |
+| `Enum/`            | PHP Enums             | `Status.php`, `Permission.php`                  |
+| `ValueObject/`     | Value Objects         | `Email.php`, `Password.php`                     |
+| `Builder/`         | Builder classes       | `QueryBuilder.php`, `ResponseBuilder.php`       |
+| `Seeder/`          | Seeder classes        | `UserSeeder.php`, `OAuthSeeder.php`             |
+| `Decoder/`         | Decoder classes       | `JsonDecoder.php`, `XmlDecoder.php`             |
+| `Checker/`         | Checker classes       | `PermissionChecker.php`, `UniqueChecker.php`    |
+
+**Event Listener Registration:**
+
+- Register event listeners in `config/services.yaml` using tags, NOT via PHP attributes
+- This provides a centralized view of all event listeners in one file
+
+**Examples:**
+
+```php
+// ❌ BAD: Enum placed in Builder directory
+namespace App\Shared\Application\OpenApi\Builder;
+enum AllowEmptyValue { ... }
+
+// ✅ GOOD: Enum placed in Enum directory
+namespace App\Shared\Application\OpenApi\Enum;
+enum AllowEmptyValue { ... }
+
+// ❌ BAD: Factory placed in EventListener directory
+namespace App\Shared\Application\EventListener;
+class QueryParameterViolationFactory { ... }
+
+// ✅ GOOD: Factory placed in Factory directory
+namespace App\Shared\Application\Factory;
+class QueryParameterViolationFactory { ... }
+
+// ❌ BAD: Using attribute for event listener
+#[AsEventListener(event: KernelEvents::EXCEPTION)]
+class OAuthExceptionListener { ... }
+
+// ✅ GOOD: Register in services.yaml
+# config/services.yaml
+App\Shared\Application\EventListener\OAuthExceptionListener:
+  tags:
+    - { name: kernel.event_listener, event: kernel.exception, priority: 0 }
+```
+
+**Directory Convention Rules:**
+
+1. **Never mix class types** in a directory
+2. **Create new directories** when introducing new class types
+3. **Use subdirectories** for logical grouping (e.g., `Validator/Http/`, `Provider/Http/`)
+4. **Respect Deptrac rules** - never modify architecture configuration to accommodate misplaced files
+5. **Update namespaces** when moving files to new directories

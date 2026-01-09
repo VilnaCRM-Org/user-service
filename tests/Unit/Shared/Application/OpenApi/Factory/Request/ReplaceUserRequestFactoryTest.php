@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Request;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\RequestBuilder;
-use App\Shared\Application\OpenApi\Builder\Requirement;
+use App\Shared\Application\OpenApi\Enum\Requirement;
 use App\Shared\Application\OpenApi\Factory\Request\ReplaceUserRequestFactory;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 
 final class ReplaceUserRequestFactoryTest extends UnitTestCase
@@ -60,11 +60,11 @@ final class ReplaceUserRequestFactoryTest extends UnitTestCase
         return new Parameter(
             'initials',
             'string',
-            'UpdateUser',
+            'Update User',
             255,
             null,
             Requirement::REQUIRED,
-            '^\\S+$'
+            '^(?!\\d).*\\S.*$'
         );
     }
 

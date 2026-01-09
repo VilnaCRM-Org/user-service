@@ -6,9 +6,9 @@ namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Application\Fixture\SchemathesisFixtures;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\UserCreatedResponseFactory;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 
 final class UserCreatedResponseFactoryTest extends UnitTestCase

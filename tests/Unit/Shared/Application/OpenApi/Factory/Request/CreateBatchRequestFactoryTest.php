@@ -85,7 +85,7 @@ final class CreateBatchRequestFactoryTest extends UnitTestCase
         $this->assertSame(255, $itemProperties['email']['maxLength']);
         $this->assertSame('string', $itemProperties['initials']['type']);
         $this->assertSame(255, $itemProperties['initials']['maxLength']);
-        $this->assertSame('^\\S+$', $itemProperties['initials']['pattern']);
+        $this->assertSame('^(?!\\d).*\\S.*$', $itemProperties['initials']['pattern']);
         $this->assertSame('string', $itemProperties['password']['type']);
         $this->assertSame(8, $itemProperties['password']['minLength']);
         $this->assertSame(64, $itemProperties['password']['maxLength']);

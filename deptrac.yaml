@@ -13,7 +13,7 @@ parameters:
         - type: className
           regex: '.*App\\Shared\\Application\\(Validator|Transformer|Provider|Checker|Collector|Decoder|DTO|Evaluator|EventListener|Fixture|Normalizer|QueryParameter|Resolver|Finder|Factory).*'
         - type: className
-          regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|Processor|Extractor|Cleaner|Sanitizer|Augmenter|OpenApiFactory).*'
+          regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|Processor|Extractor|Cleaner|Sanitizer|Augmenter|OpenApiFactory|Enum|ValueObject).*'
         - type: className
           regex: '.*App\\Internal\\HealthCheck\\Application\\.*'
     - name: Domain
@@ -29,7 +29,7 @@ parameters:
         - type: className
           regex: '.*App\\User\\Infrastructure\\(Factory|Repository|Service|Decoder|Extractor|Evaluator|EventListener).*'
         - type: className
-          regex: '.*App\\Shared\\Infrastructure\\(Bus\\(Command|Event|MessageBusFactory|CallableFirstParameterExtractor)|DoctrineType|RetryStrategy|Transformer|Factory|Command).*'
+          regex: '.*App\\Shared\\Infrastructure\\(Bus\\(Command|Event|MessageBusFactory|CallableFirstParameterExtractor)|DoctrineType|RetryStrategy|Transformer|Factory|Command|Seeder).*'
         - type: className
           regex: '.*App\\Internal\\HealthCheck\\Infrastructure\\.*'
     - name: Symfony

@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\Command;
 
 use App\Shared\Application\Fixture\SchemathesisFixtures;
-use App\Shared\Infrastructure\Command\Seeder\PasswordResetTokenSeeder;
-use App\Shared\Infrastructure\Command\Seeder\SchemathesisOAuthSeeder;
-use App\Shared\Infrastructure\Command\Seeder\SchemathesisUserSeeder;
-use App\User\Domain\Entity\ConfirmationToken;
-use App\User\Domain\Entity\UserInterface;
-use App\User\Domain\Repository\TokenRepositoryInterface;
-use DateTimeImmutable;
-use Doctrine\DBAL\Connection;
+use App\Shared\Infrastructure\Seeder\PasswordResetTokenSeeder;
+use App\Shared\Infrastructure\Seeder\SchemathesisConfirmationTokenSeeder;
+use App\Shared\Infrastructure\Seeder\SchemathesisOAuthSeeder;
+use App\Shared\Infrastructure\Seeder\SchemathesisUserSeeder;
+use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -31,8 +29,9 @@ final class SeedSchemathesisDataCommand extends Command
         private readonly SchemathesisUserSeeder $userSeeder,
         private readonly PasswordResetTokenSeeder $passwordResetTokenSeeder,
         private readonly SchemathesisOAuthSeeder $oauthSeeder,
-        private readonly TokenRepositoryInterface $tokenRepository,
-        private readonly Connection $connection,
+        private readonly SchemathesisConfirmationTokenSeeder $confirmationTokenSeeder,
+        private readonly PasswordResetTokenRepositoryInterface $passwordResetTokenRepository,
+        private readonly UserRepositoryInterface $userRepository,
     ) {
         parent::__construct();
     }
@@ -50,7 +49,7 @@ final class SeedSchemathesisDataCommand extends Command
         $primaryUser = $seededUsers['primary'];
         $passwordResetConfirmUser = $seededUsers['password_reset_confirm'];
 
-        $this->seedConfirmationToken($primaryUser);
+        $this->confirmationTokenSeeder->seedToken($primaryUser);
         $this->passwordResetTokenSeeder->seedTokens(
             $passwordResetConfirmUser,
             [
@@ -68,20 +67,7 @@ final class SeedSchemathesisDataCommand extends Command
 
     private function resetPersistentState(): void
     {
-        $this->connection->executeStatement(
-            'DELETE FROM password_reset_tokens'
-        );
-        $this->connection->executeStatement('DELETE FROM `user`');
-    }
-
-    private function seedConfirmationToken(UserInterface $user): void
-    {
-        $token = new ConfirmationToken(
-            SchemathesisFixtures::CONFIRMATION_TOKEN,
-            $user->getId()
-        );
-        $token->setAllowedToSendAfter(new DateTimeImmutable('-1 minute'));
-
-        $this->tokenRepository->save($token);
+        $this->passwordResetTokenRepository->deleteAll();
+        $this->userRepository->deleteAll();
     }
 }

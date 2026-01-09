@@ -7,8 +7,8 @@ info:
     url: 'https://vilnacrm.com'
     email: support@vilnacrm.com
   license:
-    name: 'VilnaCRM Proprietary'
-    url: 'https://vilnacrm.com/legal/license'
+    name: CC0-1.0
+    url: 'https://creativecommons.org/publicdomain/zero/1.0/'
   version: 1.0.0
 servers:
   -
@@ -390,7 +390,7 @@ paths:
                 -
                   confirmed: false
                   email: user@example.com
-                  initials: NameSurname
+                  initials: 'Name Surname'
                   id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
           headers: {  }
         '500':
@@ -468,7 +468,7 @@ paths:
               example:
                 confirmed: false
                 email: create-user@example.com
-                initials: CreateUser
+                initials: 'Create User'
                 id: 018dd6ba-e901-7a8c-b27d-65d122caca70
           headers: {  }
         '400':
@@ -561,7 +561,7 @@ paths:
                 initials:
                   type: string
                   maxLength: 255
-                  pattern: ^\S+$
+                  pattern: '^(?!\d).*\S.*$'
                 password:
                   type: string
                   minLength: 8
@@ -571,7 +571,7 @@ paths:
               unevaluatedProperties: false
             example:
               email: create-user@example.com
-              initials: CreateUser
+              initials: 'Create User'
               password: CreatePass1!
         required: true
   /api/users/batch:
@@ -594,7 +594,7 @@ paths:
                 -
                   confirmed: false
                   email: batch-user-one@example.com
-                  initials: BatchUserOne
+                  initials: 'Batch User One'
                   id: 018dd6ba-e901-7a8c-b27d-65d122caca71
           headers: {  }
         '400':
@@ -682,16 +682,16 @@ paths:
                   type: array
                   minItems: 1
                   uniqueItems: true
-                  items: { type: object, required: [email, initials, password], properties: { email: { type: string, format: email, maxLength: 255 }, initials: { type: string, maxLength: 255, pattern: ^\S+$ }, password: { type: string, minLength: 8, maxLength: 64, pattern: '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$' } }, additionalProperties: false, unevaluatedProperties: false }
+                  items: { type: object, required: [email, initials, password], properties: { email: { type: string, format: email, maxLength: 255 }, initials: { type: string, maxLength: 255, pattern: '^(?!\d).*\S.*$' }, password: { type: string, minLength: 8, maxLength: 64, pattern: '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$' } }, additionalProperties: false, unevaluatedProperties: false }
             example:
               users:
                 -
                   email: batch-user-one@example.com
-                  initials: BatchUserOne
+                  initials: 'Batch User One'
                   password: BatchPass1!
                 -
                   email: batch-user-two@example.com
-                  initials: BatchUserTwo
+                  initials: 'Batch User Two'
                   password: BatchPass2!
         required: true
   /api/users/confirm:
@@ -846,7 +846,7 @@ paths:
               example:
                 confirmed: false
                 email: user@example.com
-                initials: NameSurname
+                initials: 'Name Surname'
                 id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
           headers: {  }
         '500':
@@ -912,7 +912,7 @@ paths:
               example:
                 confirmed: false
                 email: update-user@example.com
-                initials: UpdateUser
+                initials: 'Update User'
                 id: 018dd6ba-e901-7a8c-b27d-65d122caca6c
           headers: {  }
         '400':
@@ -1037,7 +1037,7 @@ paths:
                 initials:
                   type: string
                   maxLength: 255
-                  pattern: ^\S+$
+                  pattern: '^(?!\d).*\S.*$'
                 oldPassword:
                   type: string
                   maxLength: 64
@@ -1053,7 +1053,7 @@ paths:
                 - newPassword
             example:
               email: update-user@example.com
-              initials: UpdateUser
+              initials: 'Update User'
               oldPassword: Password1!
               newPassword: Password1!
         required: true
@@ -1151,7 +1151,7 @@ paths:
               example:
                 confirmed: false
                 email: update-user@example.com
-                initials: UpdateUser
+                initials: 'Update User'
                 id: 018dd6ba-e901-7a8c-b27d-65d122caca6c
           headers: {  }
         '400':
@@ -1276,7 +1276,7 @@ paths:
                 initials:
                   type: string
                   maxLength: 255
-                  pattern: ^\S+$
+                  pattern: '^(?!\d).*\S.*$'
                 oldPassword:
                   type: string
                   maxLength: 64
@@ -1289,7 +1289,7 @@ paths:
                 - oldPassword
             example:
               email: update-user@example.com
-              initials: UpdateUser
+              initials: 'Update User'
               oldPassword: Password1!
               newPassword: Password1!
         required: true
@@ -1805,7 +1805,7 @@ components:
             - 'null'
         initials:
           maxLength: 255
-          pattern: ^(\S+)$
+          pattern: '^(.*\S.*)$'
           type:
             - string
             - 'null'
@@ -1841,7 +1841,7 @@ components:
             - 'null'
         initials:
           maxLength: 255
-          pattern: ^(\S+)$
+          pattern: '^(.*\S.*)$'
           type:
             - string
             - 'null'
@@ -1885,7 +1885,7 @@ components:
           type: string
         initials:
           maxLength: 255
-          pattern: ^(\S+)$
+          pattern: '^(.*\S.*)$'
           type: string
         password:
           maxLength: 64

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\OpenApi\Factory\Schema;
 
-use App\Shared\Application\OpenApi\Builder\Parameter;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 
 final readonly class ParameterSchemaFactory
 {

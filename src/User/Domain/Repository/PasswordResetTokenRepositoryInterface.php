@@ -21,4 +21,6 @@ interface PasswordResetTokenRepositoryInterface
     public function delete(
         PasswordResetTokenInterface $passwordResetToken
     ): void;
+
+    public function deleteAll(): void;
 }

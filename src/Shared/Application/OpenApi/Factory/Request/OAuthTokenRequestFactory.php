@@ -6,9 +6,9 @@ namespace App\Shared\Application\OpenApi\Factory\Request;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Shared\Application\Fixture\SchemathesisFixtures;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\RequestBuilder;
-use App\Shared\Application\OpenApi\Builder\Requirement;
+use App\Shared\Application\OpenApi\Enum\Requirement;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 
 final class OAuthTokenRequestFactory implements AbstractRequestFactory
 {

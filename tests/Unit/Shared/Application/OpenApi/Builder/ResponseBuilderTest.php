@@ -6,9 +6,9 @@ namespace App\Tests\Unit\Shared\Application\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Application\OpenApi\Builder\ContextBuilder;
-use App\Shared\Application\OpenApi\Builder\Header;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
+use App\Shared\Application\OpenApi\ValueObject\Header;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 
 final class ResponseBuilderTest extends UnitTestCase

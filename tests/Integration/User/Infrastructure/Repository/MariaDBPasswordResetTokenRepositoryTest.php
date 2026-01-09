@@ -133,6 +133,21 @@ final class MariaDBPasswordResetTokenRepositoryTest extends IntegrationTestCase
         $this->assertNull($found);
     }
 
+    public function testDeleteAll(): void
+    {
+        $user = $this->createAndPersistUser();
+        $token1 = $this->createAndSaveToken($user->getId());
+        $token2 = $this->createAndSaveToken($user->getId());
+
+        $this->assertNotNull($this->repository->findByToken($token1->getTokenValue()));
+        $this->assertNotNull($this->repository->findByToken($token2->getTokenValue()));
+
+        $this->repository->deleteAll();
+
+        $this->assertNull($this->repository->findByToken($token1->getTokenValue()));
+        $this->assertNull($this->repository->findByToken($token2->getTokenValue()));
+    }
+
     private function createAndPersistUser(): User
     {
         $user = $this->userFactory->create(

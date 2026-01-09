@@ -32,17 +32,36 @@ final class AllowedParametersRule implements QueryParameterRule
         string $path,
         array $query
     ): ?QueryParameterViolation {
-        $allowed = $this->allowedParameters[$path] ?? null;
+        if (!$this->hasAllowedParametersForPath($path)) {
+            return null;
+        }
 
-        return match (true) {
-            $allowed === null => null,
-            ($unknown = array_diff(
-                array_keys($query),
-                $allowed
-            )) === [] => null,
-            default => $this->violationFactory->unknownParameters(
-                implode(', ', $unknown)
-            ),
-        };
+        $unknownParameters = $this->findUnknownParameters($path, $query);
+
+        if ($unknownParameters === []) {
+            return null;
+        }
+
+        return $this->violationFactory->unknownParameters(
+            implode(', ', $unknownParameters)
+        );
+    }
+
+    private function hasAllowedParametersForPath(string $path): bool
+    {
+        return isset($this->allowedParameters[$path]);
+    }
+
+    /**
+     * @param array<string, array|string|int|float|bool|null> $query
+     *
+     * @return array<int, string>
+     */
+    private function findUnknownParameters(string $path, array $query): array
+    {
+        $allowedForPath = $this->allowedParameters[$path];
+        $providedParameters = array_keys($query);
+
+        return array_diff($providedParameters, $allowedForPath);
     }
 }

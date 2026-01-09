@@ -52,10 +52,10 @@ services:
 
   Ramsey\Uuid\Validator\GenericValidator: ~
 
-  App\Shared\Application\OpenApi\OpenApiFactory:
+  App\Shared\Application\OpenApi\Factory\OpenApiFactory:
     decorates: 'api_platform.openapi.factory'
     arguments:
-      - '@App\Shared\Application\OpenApi\OpenApiFactory.inner'
+      - '@App\Shared\Application\OpenApi\Factory\OpenApiFactory.inner'
       - !tagged_iterator 'app.openapi_endpoint_factory'
       - '%env(API_URL)%'
     autoconfigure: false
@@ -67,6 +67,10 @@ services:
   App\Shared\Application\EventListener\InvalidUuidRequestListener:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 10 }
+
+  App\Shared\Application\EventListener\OAuthAuthorizationExceptionListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.exception, priority: 0 }
 
   App\Shared\Application\QueryParameter\AllowedParametersRule:
     arguments:

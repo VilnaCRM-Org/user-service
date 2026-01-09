@@ -14,6 +14,8 @@ final class InMemoryUserRepository implements UserRepositoryInterface
      */
     private array $users = [];
 
+    private int $deleteAllCount = 0;
+
     public function __construct(UserInterface ...$users)
     {
         array_map(fn (UserInterface $user) => $this->save($user), $users);
@@ -69,6 +71,18 @@ final class InMemoryUserRepository implements UserRepositoryInterface
     public function all(): array
     {
         return $this->users;
+    }
+
+    #[\Override]
+    public function deleteAll(): void
+    {
+        ++$this->deleteAllCount;
+        $this->users = [];
+    }
+
+    public function deleteAllCount(): int
+    {
+        return $this->deleteAllCount;
     }
 
     private function findUserBy(callable $predicate): ?UserInterface

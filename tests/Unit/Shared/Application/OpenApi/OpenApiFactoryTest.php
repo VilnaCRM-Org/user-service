@@ -14,7 +14,7 @@ use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Augmenter\ServerErrorResponseAugmenter;
 use App\Shared\Application\OpenApi\Cleaner\NoContentResponseCleaner;
 use App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface;
-use App\Shared\Application\OpenApi\OpenApiFactory;
+use App\Shared\Application\OpenApi\Factory\OpenApiFactory;
 use App\Shared\Application\OpenApi\Sanitizer\PaginationQueryParametersSanitizer;
 use App\Shared\Application\OpenApi\Sanitizer\PathParametersSanitizer;
 use App\Tests\Unit\UnitTestCase;

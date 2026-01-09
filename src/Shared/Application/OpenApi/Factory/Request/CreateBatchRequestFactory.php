@@ -82,7 +82,7 @@ final class CreateBatchRequestFactory implements AbstractRequestFactory
         $schema = new Schema();
         $schema['type'] = 'string';
         $schema['maxLength'] = 255;
-        $schema['pattern'] = '^\\S+$';
+        $schema['pattern'] = '^(?!\\d).*\\S.*$';
 
         return $schema;
     }

@@ -55,6 +55,17 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
     }
 
     /**
+     * @codeCoverageIgnore Tested in integration tests
+     */
+    public function deleteAll(): void
+    {
+        $this->createQueryBuilder('u')
+            ->delete()
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
      * @param array<User> $users
      */
     private function persistUsersInBatch(array $users): void

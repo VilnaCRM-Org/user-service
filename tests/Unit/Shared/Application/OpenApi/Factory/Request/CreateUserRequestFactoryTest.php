@@ -61,7 +61,7 @@ final class CreateUserRequestFactoryTest extends UnitTestCase
         $this->assertSame(255, $properties['email']['maxLength']);
         $this->assertSame('string', $properties['initials']['type']);
         $this->assertSame(255, $properties['initials']['maxLength']);
-        $this->assertSame('^\\S+$', $properties['initials']['pattern']);
+        $this->assertSame('^(?!\\d).*\\S.*$', $properties['initials']['pattern']);
         $this->assertSame('string', $properties['password']['type']);
         $this->assertSame(8, $properties['password']['minLength']);
         $this->assertSame(64, $properties['password']['maxLength']);

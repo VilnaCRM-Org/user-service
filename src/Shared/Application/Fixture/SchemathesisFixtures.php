@@ -8,46 +8,46 @@ final class SchemathesisFixtures
 {
     public const USER_ID = '018dd6ba-e901-7a8c-b27d-65d122caca6b';
     public const USER_EMAIL = 'user@example.com';
-    public const USER_INITIALS = 'NameSurname';
+    public const USER_INITIALS = 'Name Surname';
     public const USER_PASSWORD = 'Password1!';
 
     public const UPDATE_USER_ID = '018dd6ba-e901-7a8c-b27d-65d122caca6c';
     public const UPDATE_USER_EMAIL = 'update-user@example.com';
-    public const UPDATE_USER_INITIALS = 'UpdateUser';
+    public const UPDATE_USER_INITIALS = 'Update User';
 
     public const CREATE_USER_ID = '018dd6ba-e901-7a8c-b27d-65d122caca70';
     public const CREATE_USER_EMAIL = 'create-user@example.com';
-    public const CREATE_USER_INITIALS = 'CreateUser';
+    public const CREATE_USER_INITIALS = 'Create User';
     public const CREATE_USER_PASSWORD = 'CreatePass1!';
 
     public const CREATE_BATCH_FIRST_USER_ID =
         '018dd6ba-e901-7a8c-b27d-65d122caca71';
     public const CREATE_BATCH_FIRST_USER_EMAIL =
         'batch-user-one@example.com';
-    public const CREATE_BATCH_FIRST_USER_INITIALS = 'BatchUserOne';
+    public const CREATE_BATCH_FIRST_USER_INITIALS = 'Batch User One';
     public const CREATE_BATCH_FIRST_USER_PASSWORD = 'BatchPass1!';
 
     public const CREATE_BATCH_SECOND_USER_ID =
         '018dd6ba-e901-7a8c-b27d-65d122caca72';
     public const CREATE_BATCH_SECOND_USER_EMAIL =
         'batch-user-two@example.com';
-    public const CREATE_BATCH_SECOND_USER_INITIALS = 'BatchUserTwo';
+    public const CREATE_BATCH_SECOND_USER_INITIALS = 'Batch User Two';
     public const CREATE_BATCH_SECOND_USER_PASSWORD = 'BatchPass2!';
 
     public const DELETE_USER_ID = '018dd6ba-e901-7a8c-b27d-65d122caca6d';
     public const DELETE_USER_EMAIL = 'delete-user@example.com';
-    public const DELETE_USER_INITIALS = 'DeleteUser';
+    public const DELETE_USER_INITIALS = 'Delete User';
 
     public const PASSWORD_RESET_REQUEST_USER_ID =
         '018dd6ba-e901-7a8c-b27d-65d122caca6e';
     public const PASSWORD_RESET_REQUEST_EMAIL = 'password-reset@example.com';
-    public const PASSWORD_RESET_REQUEST_INITIALS = 'PasswordReset';
+    public const PASSWORD_RESET_REQUEST_INITIALS = 'Password Reset';
 
     public const PASSWORD_RESET_CONFIRM_USER_ID =
         '018dd6ba-e901-7a8c-b27d-65d122caca6f';
     public const PASSWORD_RESET_CONFIRM_EMAIL =
         'password-reset-confirm@example.com';
-    public const PASSWORD_RESET_CONFIRM_INITIALS = 'PasswordResetConfirm';
+    public const PASSWORD_RESET_CONFIRM_INITIALS = 'Password Reset Confirm';
     public const PASSWORD_RESET_CONFIRM_TOKEN = 'reset-confirm-token';
     public const PASSWORD_RESET_CONFIRM_TOKEN_LD = 'reset-confirm-token-ld';
 

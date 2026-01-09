@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\OpenApi\Builder;
 
 use App\Shared\Application\OpenApi\Builder\ArrayContextBuilder;
-use App\Shared\Application\OpenApi\Builder\Parameter;
-use App\Shared\Application\OpenApi\Builder\Requirement;
+use App\Shared\Application\OpenApi\Enum\Requirement;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 use ArrayObject;
 

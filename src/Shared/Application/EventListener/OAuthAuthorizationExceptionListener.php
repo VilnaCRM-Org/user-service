@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace App\Shared\Application\EventListener;
 
 use RuntimeException;
-use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
-use Symfony\Component\HttpKernel\KernelEvents;
 use Throwable;
 
-#[AsEventListener(event: KernelEvents::EXCEPTION, priority: 0)]
 final class OAuthAuthorizationExceptionListener
 {
     private const EXPECTED_MESSAGE =

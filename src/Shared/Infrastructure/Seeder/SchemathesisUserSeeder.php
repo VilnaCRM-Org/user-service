@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Infrastructure\Command\Seeder;
+namespace App\Shared\Infrastructure\Seeder;
 
 use App\Shared\Application\Fixture\SchemathesisFixtures;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
@@ -60,10 +60,22 @@ final readonly class SchemathesisUserSeeder
      */
     public function seedUsers(): array
     {
-        $results = [];
+        $users = $this->prepareUsers();
+        /** @infection-ignore-all */
+        $this->userRepository->saveBatch(array_values($users));
+
+        return $users;
+    }
+
+    /**
+     * @return array<string,UserInterface>
+     */
+    private function prepareUsers(): array
+    {
+        $users = [];
 
         foreach (self::USER_DEFINITIONS as $key => $definition) {
-            $results[$key] = $this->seedUser(
+            $users[$key] = $this->prepareUser(
                 $definition['id'],
                 $definition['email'],
                 $definition['initials'],
@@ -71,10 +83,10 @@ final readonly class SchemathesisUserSeeder
             );
         }
 
-        return $results;
+        return $users;
     }
 
-    private function seedUser(
+    private function prepareUser(
         string $id,
         string $email,
         string $initials,
@@ -83,7 +95,7 @@ final readonly class SchemathesisUserSeeder
         $user = $this->userRepository->findById($id)
             ?? $this->createUser($id, $email, $initials);
 
-        $this->updateUser($user, $email, $initials, $confirmed);
+        $this->updateUserFields($user, $email, $initials, $confirmed);
 
         return $user;
     }
@@ -103,7 +115,7 @@ final readonly class SchemathesisUserSeeder
         );
     }
 
-    private function updateUser(
+    private function updateUserFields(
         UserInterface $user,
         string $email,
         string $initials,
@@ -115,7 +127,5 @@ final readonly class SchemathesisUserSeeder
         $user->setInitials($initials);
         $user->setPassword($hasher->hash(SchemathesisFixtures::USER_PASSWORD));
         $user->setConfirmed($confirmed);
-
-        $this->userRepository->save($user);
     }
 }

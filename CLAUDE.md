@@ -256,6 +256,30 @@ Key variables in `.env`/`.env.test`:
 | `DB_URL`    | Database connection string   | `mysql://root:root@database:3306/db` |
 | `AWS_SQS_*` | AWS SQS message queue config | Various                              |
 
+## 📂 Directory Organization Conventions
+
+Place files in directories that match their class type. Each directory should contain ONLY the class type indicated by its name.
+
+| Directory Name     | Must Contain                 | Example Files                              |
+| ------------------ | ---------------------------- | ------------------------------------------ |
+| `Command/`         | Symfony Console Commands     | `SeedDataCommand.php`                      |
+| `Factory/`         | Factory classes              | `UserFactory.php`, `OpenApiFactory.php`    |
+| `Validator/`       | Validator classes            | `EmailValidator.php`                       |
+| `Provider/`        | Provider classes             | `UserProvider.php`                         |
+| `EventListener/`   | Event Listeners              | `ExceptionListener.php`                    |
+| `Enum/`            | PHP Enums                    | `Requirement.php`, `AllowEmptyValue.php`   |
+| `ValueObject/`     | Value Objects                | `Header.php`, `Parameter.php`              |
+| `Builder/`         | Builder classes              | `QueryParameterBuilder.php`                |
+| `Seeder/`          | Seeder classes               | `UserSeeder.php`, `OAuthSeeder.php`        |
+
+**Event Listener Registration**: Register event listeners in `config/services.yaml` using tags, NOT via PHP attributes.
+
+**Rules**:
+- Never mix class types in a directory
+- Create new directories when introducing new class types
+- Use subdirectories for logical grouping (e.g., `Validator/Http/`, `Provider/Http/`)
+- Respect Deptrac rules—never modify architecture config to accommodate misplaced files
+
 ## 📚 Additional Resources
 
 - Skills decision guide: `.claude/skills/SKILL-DECISION-GUIDE.md`

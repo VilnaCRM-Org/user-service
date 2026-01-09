@@ -14,6 +14,10 @@ final class InMemoryPasswordResetTokenRepository implements PasswordResetTokenRe
      */
     private array $tokens = [];
 
+    private int $deleteCount = 0;
+
+    private int $deleteAllCount = 0;
+
     #[\Override]
     public function save(PasswordResetTokenInterface $passwordResetToken): void
     {
@@ -41,7 +45,13 @@ final class InMemoryPasswordResetTokenRepository implements PasswordResetTokenRe
     #[\Override]
     public function delete(PasswordResetTokenInterface $passwordResetToken): void
     {
+        ++$this->deleteCount;
         unset($this->tokens[$passwordResetToken->getTokenValue()]);
+    }
+
+    public function deleteCount(): int
+    {
+        return $this->deleteCount;
     }
 
     /**
@@ -50,5 +60,18 @@ final class InMemoryPasswordResetTokenRepository implements PasswordResetTokenRe
     public function all(): array
     {
         return $this->tokens;
+    }
+
+    #[\Override]
+    public function deleteAll(): void
+    {
+        ++$this->deleteAllCount;
+        $this->deleteCount += count($this->tokens);
+        $this->tokens = [];
+    }
+
+    public function deleteAllCount(): int
+    {
+        return $this->deleteAllCount;
     }
 }

@@ -6,6 +6,8 @@ namespace App\Shared\Application\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Response;
+use App\Shared\Application\OpenApi\ValueObject\Header;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use ArrayObject;
 
 final class ArrayResponseBuilder

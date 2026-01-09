@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
+use App\Shared\Application\OpenApi\Enum\Requirement;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 
 final class RequestBuilder
 {

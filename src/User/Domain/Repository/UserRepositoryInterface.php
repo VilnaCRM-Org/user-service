@@ -38,4 +38,6 @@ interface UserRepositoryInterface
         ?int $lockMode = null,
         ?int $lockVersion = null
     ): ?object;
+
+    public function deleteAll(): void;
 }

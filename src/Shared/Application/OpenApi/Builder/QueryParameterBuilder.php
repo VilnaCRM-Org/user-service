@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model\Parameter;
+use App\Shared\Application\OpenApi\Enum\AllowEmptyValue;
+use App\Shared\Application\OpenApi\Enum\Requirement;
 
 final class QueryParameterBuilder
 {

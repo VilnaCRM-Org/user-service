@@ -7,8 +7,8 @@ namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Response;
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Application\Fixture\SchemathesisFixtures;
 use App\Shared\Application\OpenApi\Builder\ArrayResponseBuilder;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Factory\Response\UsersBatchCreatedResponseFactory;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 
 final class UsersBatchCreatedResponseFactoryTest extends UnitTestCase

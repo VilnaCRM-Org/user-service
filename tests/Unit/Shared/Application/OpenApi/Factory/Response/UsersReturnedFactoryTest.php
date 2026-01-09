@@ -6,8 +6,8 @@ namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Application\OpenApi\Builder\ArrayResponseBuilder;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Factory\Response\UsersReturnedFactory;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 
 final class UsersReturnedFactoryTest extends UnitTestCase
@@ -58,7 +58,7 @@ final class UsersReturnedFactoryTest extends UnitTestCase
         return new Parameter(
             'initials',
             'string',
-            'NameSurname'
+            'Name Surname'
         );
     }
 

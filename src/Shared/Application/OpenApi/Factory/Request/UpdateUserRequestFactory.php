@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Factory\Request;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\RequestBuilder;
-use App\Shared\Application\OpenApi\Builder\Requirement;
+use App\Shared\Application\OpenApi\Enum\Requirement;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 
 final class UpdateUserRequestFactory implements AbstractRequestFactory
 {
@@ -46,9 +46,9 @@ final class UpdateUserRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'initials',
             'string',
-            'UpdateUser',
+            'Update User',
             255,
-            pattern: '^\\S+$',
+            pattern: '^(?!\\d).*\\S.*$',
             requirement: Requirement::OPTIONAL
         );
     }

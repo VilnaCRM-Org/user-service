@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\UserReturnedResponseFactory;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 
 final class UserReturnedResponseFactoryTest extends UnitTestCase
@@ -58,7 +58,7 @@ final class UserReturnedResponseFactoryTest extends UnitTestCase
         return new Parameter(
             'initials',
             'string',
-            'NameSurname'
+            'Name Surname'
         );
     }
 

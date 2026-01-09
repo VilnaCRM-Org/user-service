@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Infrastructure\Command\Seeder;
+namespace App\Shared\Infrastructure\Seeder;
 
 use App\Shared\Application\Fixture\SchemathesisFixtures;
 use App\User\Domain\Entity\UserInterface;

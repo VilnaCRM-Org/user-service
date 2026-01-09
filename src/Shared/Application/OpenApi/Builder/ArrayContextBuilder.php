@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\OpenApi\Builder;
 
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
+
 use function array_filter;
 use function array_values;
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Builder;
 
 use App\Shared\Application\OpenApi\Factory\Schema\ParameterSchemaFactory;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 
 use function array_combine;
 use function array_filter;

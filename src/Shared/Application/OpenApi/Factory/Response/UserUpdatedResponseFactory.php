@@ -6,8 +6,8 @@ namespace App\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Application\Fixture\SchemathesisFixtures;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 
 final class UserUpdatedResponseFactory implements AbstractResponseFactory
 {

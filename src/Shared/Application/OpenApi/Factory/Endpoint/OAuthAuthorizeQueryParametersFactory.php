@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Factory\Endpoint;
 
 use ApiPlatform\OpenApi\Model\Parameter;
-use App\Shared\Application\OpenApi\Builder\AllowEmptyValue;
 use App\Shared\Application\OpenApi\Builder\QueryParameterBuilder;
-use App\Shared\Application\OpenApi\Builder\Requirement;
+use App\Shared\Application\OpenApi\Enum\AllowEmptyValue;
+use App\Shared\Application\OpenApi\Enum\Requirement;
 
 final class OAuthAuthorizeQueryParametersFactory
 {

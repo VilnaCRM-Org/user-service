@@ -26,13 +26,31 @@ final class InitialsConstraintIntegrationTest extends IntegrationTestCase
         $this->assertCount(0, $violations);
     }
 
-    public function testInitialsWithSpaces(): void
+    public function testInitialsWithSpacesAreValid(): void
     {
         $violations = $this->validator->validate('name surname', [new Initials()]);
 
+        $this->assertCount(0, $violations);
+    }
+
+    public function testInitialsOnlySpacesAreInvalid(): void
+    {
+        $violations = $this->validator->validate('   ', [new Initials()]);
+
         $this->assertCount(1, $violations);
         $this->assertEquals(
-            'Initials can not consist only of spaces',
+            'Initials cannot consist only of spaces',
+            $violations[0]->getMessage()
+        );
+    }
+
+    public function testInitialsStartingWithNumberAreInvalid(): void
+    {
+        $violations = $this->validator->validate('123John', [new Initials()]);
+
+        $this->assertCount(1, $violations);
+        $this->assertEquals(
+            'Initials cannot start with a number',
             $violations[0]->getMessage()
         );
     }

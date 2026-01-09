@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Application\OpenApi\Builder;
+namespace App\Shared\Application\OpenApi\ValueObject;
 
 final readonly class Header
 {

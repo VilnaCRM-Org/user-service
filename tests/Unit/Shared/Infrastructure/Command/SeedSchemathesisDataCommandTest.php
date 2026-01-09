@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Infrastructure\Command;
 
 use App\Shared\Application\Fixture\SchemathesisFixtures;
-use App\Shared\Infrastructure\Command\Seeder\PasswordResetTokenSeeder;
-use App\Shared\Infrastructure\Command\Seeder\SchemathesisOAuthSeeder;
-use App\Shared\Infrastructure\Command\Seeder\SchemathesisUserSeeder;
 use App\Shared\Infrastructure\Command\SeedSchemathesisDataCommand;
 use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Seeder\PasswordResetTokenSeeder;
+use App\Shared\Infrastructure\Seeder\SchemathesisConfirmationTokenSeeder;
+use App\Shared\Infrastructure\Seeder\SchemathesisOAuthSeeder;
+use App\Shared\Infrastructure\Seeder\SchemathesisUserSeeder;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\Shared\Application\Command\Fixture\HashingPasswordHasherFactory;
 use App\Tests\Unit\Shared\Application\Command\Fixture\InMemoryConfirmationTokenRepository;
@@ -35,18 +36,26 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         $deps = $this->createSeedCommandDependencies();
         $this->executeCommandAndAssertSuccess($deps['command']);
 
-        $this->assertUsersWereSeeded($deps['userRepository'], $deps['existingUpdateUser']);
-        $this->assertTokensWereSeeded(
-            $deps['tokenRepository'],
-            $deps['passwordResetTokenRepository']
-        );
-        $this->assertOAuthDataWasSeeded($deps['clientManager'], $deps['authorizationCodeManager']);
+        $this->assertUsersWereSeeded($deps['userRepository']);
+        $this->assertConfirmationToken($deps['tokenRepository']);
+        $this->assertPasswordResetTokens($deps['passwordResetTokenRepository']);
+        $this->assertOAuthClient($deps['clientManager']);
+        $this->assertAuthorizationCode($deps['authorizationCodeManager']);
+    }
+
+    public function testExecuteCallsResetPersistentState(): void
+    {
+        $deps = $this->createSeedCommandDependencies();
+        $this->executeCommandAndAssertSuccess($deps['command']);
+
+        $this->assertSame(1, $deps['userRepository']->deleteAllCount());
+        $this->assertSame(1, $deps['passwordResetTokenRepository']->deleteAllCount());
     }
 
     public function testExecuteDoesNotRemoveMissingClient(): void
     {
         $deps = $this->createMissingClientTestDependencies();
-        $command = $this->buildCommandForMissingClientTest($deps);
+        $command = $this->buildCommandFromDeps($deps);
 
         $tester = new CommandTester($command);
         $status = $tester->execute([]);
@@ -56,6 +65,24 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         $this->assertNotNull($deps['clientManager']->savedClient());
     }
 
+    public function testExecuteRemovesExistingPasswordResetToken(): void
+    {
+        $deps = $this->createExistingPasswordResetTokenDependencies();
+        $command = $this->buildCommandFromDeps($deps);
+
+        $tester = new CommandTester($command);
+        $status = $tester->execute([]);
+
+        $this->assertSame(Command::SUCCESS, $status);
+        $storedTokens = $deps['passwordResetTokenRepository']->all();
+        $this->assertCount(2, $storedTokens);
+        $this->assertArrayHasKey(
+            SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN,
+            $storedTokens
+        );
+        $this->assertSame(1, $deps['passwordResetTokenRepository']->deleteCount());
+    }
+
     /**
      * @return array{
      *     clientManager: RecordingClientManager,
@@ -63,6 +90,7 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
      *     tokenRepository: InMemoryConfirmationTokenRepository,
      *     passwordResetTokenRepository: InMemoryPasswordResetTokenRepository,
      *     userSeeder: SchemathesisUserSeeder,
+     *     userRepository: InMemoryUserRepository,
      *     authorizationCodeManager: RecordingAuthorizationCodeManager
      * }
      */
@@ -70,7 +98,8 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     {
         $uuidTransformer = new UuidTransformer(new UuidFactory());
         $clientManager = new RecordingClientManager(null);
-        $connection = $this->createMissingClientConnectionMock();
+        $connection = $this->createConnectionMockForOAuth();
+        $userRepository = new InMemoryUserRepository();
 
         return [
             'clientManager' => $clientManager,
@@ -78,27 +107,20 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
             'tokenRepository' => new InMemoryConfirmationTokenRepository(),
             'passwordResetTokenRepository' => new InMemoryPasswordResetTokenRepository(),
             'userSeeder' => $this->buildUserSeeder(
-                new InMemoryUserRepository(),
+                $userRepository,
                 new UserFactory(),
                 new HashingPasswordHasherFactory(),
                 $uuidTransformer
             ),
+            'userRepository' => $userRepository,
             'authorizationCodeManager' => new RecordingAuthorizationCodeManager(),
         ];
     }
 
-    private function createMissingClientConnectionMock(): Connection
+    private function createConnectionMockForOAuth(): Connection
     {
         $connection = $this->createMock(Connection::class);
-        $connection->expects($this->exactly(2))
-            ->method('executeStatement')
-            ->willReturnCallback(
-                $this->expectSequential(
-                    [['DELETE FROM password_reset_tokens'], ['DELETE FROM `user`']],
-                    1
-                )
-            );
-        $connection->expects($this->exactly(3))->method('delete')->willReturn(1);
+        $connection->expects($this->once())->method('delete')->willReturn(1);
 
         return $connection;
     }
@@ -110,10 +132,11 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
      *     tokenRepository: InMemoryConfirmationTokenRepository,
      *     passwordResetTokenRepository: InMemoryPasswordResetTokenRepository,
      *     userSeeder: SchemathesisUserSeeder,
+     *     userRepository: InMemoryUserRepository,
      *     authorizationCodeManager: RecordingAuthorizationCodeManager
      * } $deps
      */
-    private function buildCommandForMissingClientTest(array $deps): SeedSchemathesisDataCommand
+    private function buildCommandFromDeps(array $deps): SeedSchemathesisDataCommand
     {
         $oauthSeeder = new SchemathesisOAuthSeeder(
             $deps['clientManager'],
@@ -121,16 +144,19 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
             $deps['authorizationCodeManager']
         );
         $passwordSeeder = new PasswordResetTokenSeeder(
-            $deps['connection'],
             $deps['passwordResetTokenRepository']
+        );
+        $confirmationTokenSeeder = new SchemathesisConfirmationTokenSeeder(
+            $deps['tokenRepository']
         );
 
         return new SeedSchemathesisDataCommand(
             $deps['userSeeder'],
             $passwordSeeder,
             $oauthSeeder,
-            $deps['tokenRepository'],
-            $deps['connection']
+            $confirmationTokenSeeder,
+            $deps['passwordResetTokenRepository'],
+            $deps['userRepository']
         );
     }
 
@@ -259,42 +285,13 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     private function createConnectionMockForSeeding(): Connection
     {
         $connection = $this->createMock(Connection::class);
-        $this->configureExecuteStatementExpectations($connection);
-        $this->configureDeleteExpectations($connection);
+        $authCode = SchemathesisFixtures::AUTHORIZATION_CODE;
+        $connection->expects($this->once())
+            ->method('delete')
+            ->with('oauth2_authorization_code', ['identifier' => $authCode])
+            ->willReturn(1);
 
         return $connection;
-    }
-
-    private function configureExecuteStatementExpectations(Connection $connection): void
-    {
-        $connection->expects($this->exactly(2))
-            ->method('executeStatement')
-            ->willReturnCallback(
-                $this->expectSequential(
-                    [['DELETE FROM password_reset_tokens'], ['DELETE FROM `user`']],
-                    1
-                )
-            );
-    }
-
-    private function configureDeleteExpectations(Connection $connection): void
-    {
-        $tokenLd = SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN_LD;
-        $token = SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN;
-        $authCode = SchemathesisFixtures::AUTHORIZATION_CODE;
-
-        $connection->expects($this->exactly(3))
-            ->method('delete')
-            ->willReturnCallback(
-                $this->expectSequential(
-                    [
-                        ['password_reset_tokens', ['token_value' => $token]],
-                        ['password_reset_tokens', ['token_value' => $tokenLd]],
-                        ['oauth2_authorization_code', ['identifier' => $authCode]],
-                    ],
-                    1
-                )
-            );
     }
 
     private function createSeedCommand(
@@ -310,10 +307,11 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     ): SeedSchemathesisDataCommand {
         return new SeedSchemathesisDataCommand(
             $this->buildUserSeeder($userRepository, $userFactory, $hasherFactory, $uuidTransformer),
-            new PasswordResetTokenSeeder($connection, $passwordResetTokenRepository),
+            new PasswordResetTokenSeeder($passwordResetTokenRepository),
             new SchemathesisOAuthSeeder($clientManager, $connection, $authorizationCodeManager),
-            $tokenRepository,
-            $connection
+            new SchemathesisConfirmationTokenSeeder($tokenRepository),
+            $passwordResetTokenRepository,
+            $userRepository
         );
     }
 
@@ -345,8 +343,7 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     }
 
     private function assertUsersWereSeeded(
-        InMemoryUserRepository $userRepository,
-        UserInterface $existingUpdateUser
+        InMemoryUserRepository $userRepository
     ): void {
         $users = $userRepository->all();
 
@@ -356,17 +353,15 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         $this->assertArrayHasKey(SchemathesisFixtures::PASSWORD_RESET_REQUEST_USER_ID, $users);
         $this->assertArrayHasKey(SchemathesisFixtures::PASSWORD_RESET_CONFIRM_USER_ID, $users);
 
-        $this->assertMainAndUpdateUserStates($users, $existingUpdateUser);
+        $this->assertMainAndUpdateUserStates($users);
         $this->assertConfirmedUsersState($users);
     }
 
     /**
      * @param array<string, UserInterface> $users
      */
-    private function assertMainAndUpdateUserStates(
-        array $users,
-        UserInterface $existingUpdateUser
-    ): void {
+    private function assertMainAndUpdateUserStates(array $users): void
+    {
         $mainUser = $users[SchemathesisFixtures::USER_ID];
         $this->assertFalse($mainUser->isConfirmed());
         $this->assertSame('hashed-'.SchemathesisFixtures::USER_PASSWORD, $mainUser->getPassword());
@@ -375,7 +370,6 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         $this->assertSame(SchemathesisFixtures::UPDATE_USER_EMAIL, $updateUser->getEmail());
         $this->assertSame(SchemathesisFixtures::UPDATE_USER_INITIALS, $updateUser->getInitials());
         $this->assertFalse($updateUser->isConfirmed());
-        $this->assertSame($existingUpdateUser, $updateUser);
     }
 
     /**
@@ -390,14 +384,6 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         $this->assertTrue($deleteUser->isConfirmed());
         $this->assertTrue($resetRequestUser->isConfirmed());
         $this->assertTrue($resetConfirmUser->isConfirmed());
-    }
-
-    private function assertTokensWereSeeded(
-        InMemoryConfirmationTokenRepository $tokenRepository,
-        InMemoryPasswordResetTokenRepository $passwordResetTokenRepository
-    ): void {
-        $this->assertConfirmationToken($tokenRepository);
-        $this->assertPasswordResetTokens($passwordResetTokenRepository);
     }
 
     private function assertConfirmationToken(
@@ -437,14 +423,6 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         );
     }
 
-    private function assertOAuthDataWasSeeded(
-        RecordingClientManager $clientManager,
-        RecordingAuthorizationCodeManager $authorizationCodeManager
-    ): void {
-        $this->assertOAuthClient($clientManager);
-        $this->assertAuthorizationCode($authorizationCodeManager);
-    }
-
     private function assertOAuthClient(RecordingClientManager $clientManager): void
     {
         $this->assertNotNull($clientManager->removedClient());
@@ -480,5 +458,58 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
                 $savedCode->getScopes()
             )
         );
+    }
+
+    /**
+     * @return array{
+     *     clientManager: RecordingClientManager,
+     *     connection: Connection,
+     *     tokenRepository: InMemoryConfirmationTokenRepository,
+     *     passwordResetTokenRepository: InMemoryPasswordResetTokenRepository,
+     *     userSeeder: SchemathesisUserSeeder,
+     *     userRepository: InMemoryUserRepository,
+     *     authorizationCodeManager: RecordingAuthorizationCodeManager
+     * }
+     */
+    private function createExistingPasswordResetTokenDependencies(): array
+    {
+        $uuidTransformer = new UuidTransformer(new UuidFactory());
+        $userFactory = new UserFactory();
+        $hasherFactory = new HashingPasswordHasherFactory();
+        $repo = new InMemoryPasswordResetTokenRepository();
+        $userRepository = new InMemoryUserRepository();
+        $this->seedExistingToken($repo, $userFactory, $uuidTransformer);
+
+        return [
+            'clientManager' => new RecordingClientManager(null),
+            'connection' => $this->createConnectionMockForOAuth(),
+            'tokenRepository' => new InMemoryConfirmationTokenRepository(),
+            'passwordResetTokenRepository' => $repo,
+            'userSeeder' => $this->buildUserSeeder(
+                $userRepository,
+                $userFactory,
+                $hasherFactory,
+                $uuidTransformer
+            ),
+            'userRepository' => $userRepository,
+            'authorizationCodeManager' => new RecordingAuthorizationCodeManager(),
+        ];
+    }
+
+    private function seedExistingToken(
+        InMemoryPasswordResetTokenRepository $repo,
+        UserFactory $userFactory,
+        UuidTransformer $uuidTransformer
+    ): void {
+        $userId = $uuidTransformer->transformFromString(
+            SchemathesisFixtures::PASSWORD_RESET_CONFIRM_USER_ID
+        );
+        $user = $userFactory->create('test@example.com', 'Test User', 'Password1!', $userId);
+        $repo->save(new \App\User\Domain\Entity\PasswordResetToken(
+            SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN,
+            $user->getId(),
+            new DateTimeImmutable('+1 hour'),
+            new DateTimeImmutable()
+        ));
     }
 }
