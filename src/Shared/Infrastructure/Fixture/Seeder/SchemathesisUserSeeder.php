@@ -11,6 +11,7 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
+use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 
 final readonly class SchemathesisUserSeeder
 {
@@ -47,12 +48,15 @@ final readonly class SchemathesisUserSeeder
         ],
     ];
 
+    private readonly PasswordHasherInterface $passwordHasher;
+
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private UserFactoryInterface $userFactory,
-        private PasswordHasherFactoryInterface $hasherFactory,
+        PasswordHasherFactoryInterface $hasherFactory,
         private UuidTransformer $uuidTransformer
     ) {
+        $this->passwordHasher = $hasherFactory->getPasswordHasher(User::class);
     }
 
     /**
@@ -92,40 +96,53 @@ final readonly class SchemathesisUserSeeder
         string $initials,
         bool $confirmed
     ): UserInterface {
-        $user = $this->userRepository->findById($id)
-            ?? $this->createUser($id, $email, $initials);
+        $existingUser = $this->userRepository->findById($id);
 
-        $this->updateUserFields($user, $email, $initials, $confirmed);
+        if ($existingUser instanceof UserInterface) {
+            return $this->updateExistingUser($existingUser, $email, $initials, $confirmed);
+        }
 
-        return $user;
+        return $this->createUser($id, $email, $initials, $confirmed);
     }
 
     private function createUser(
         string $id,
         string $email,
-        string $initials
+        string $initials,
+        bool $confirmed
     ): UserInterface {
         $uuid = $this->uuidTransformer->transformFromString($id);
-
-        return $this->userFactory->create(
+        $user = $this->userFactory->create(
             $email,
             $initials,
             SchemathesisFixtures::USER_PASSWORD,
             $uuid
         );
+
+        $this->setUserPassword($user);
+        $user->setConfirmed($confirmed);
+
+        return $user;
     }
 
-    private function updateUserFields(
+    private function updateExistingUser(
         UserInterface $user,
         string $email,
         string $initials,
         bool $confirmed
-    ): void {
-        $hasher = $this->hasherFactory->getPasswordHasher(User::class);
-
+    ): UserInterface {
         $user->setEmail($email);
         $user->setInitials($initials);
-        $user->setPassword($hasher->hash(SchemathesisFixtures::USER_PASSWORD));
+        $this->setUserPassword($user);
         $user->setConfirmed($confirmed);
+
+        return $user;
+    }
+
+    private function setUserPassword(UserInterface $user): void
+    {
+        $user->setPassword(
+            $this->passwordHasher->hash(SchemathesisFixtures::USER_PASSWORD)
+        );
     }
 }
