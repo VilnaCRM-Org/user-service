@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\ValueObject\Parameter;
+use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 
 final class UserCreatedResponseFactory implements AbstractResponseFactory
 {

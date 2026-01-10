@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\DataFixtures\Command;
 
+use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Fixture\Command\SeedSchemathesisDataCommand;
 use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
-use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Fixture\Seeder\PasswordResetTokenSeeder;
 use App\Shared\Infrastructure\Fixture\Seeder\SchemathesisConfirmationTokenSeeder;
 use App\Shared\Infrastructure\Fixture\Seeder\SchemathesisOAuthSeeder;

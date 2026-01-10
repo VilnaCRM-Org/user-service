@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\DataFixtures\Seeder;
 
-use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Infrastructure\Fixture\Seeder\PasswordResetTokenSeeder;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\Shared\Application\Command\Fixture\InMemoryPasswordResetTokenRepository;

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Request;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
-use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Application\OpenApi\Builder\RequestBuilder;
 use App\Shared\Application\OpenApi\Enum\Requirement;
 use App\Shared\Application\OpenApi\Factory\Request\OAuthTokenRequestFactory;
 use App\Shared\Application\OpenApi\ValueObject\Parameter;
+use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Tests\Unit\UnitTestCase;
 
 final class OAuthTokenRequestFactoryTest extends UnitTestCase

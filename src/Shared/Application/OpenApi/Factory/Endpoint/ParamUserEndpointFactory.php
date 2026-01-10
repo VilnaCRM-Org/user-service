@@ -8,11 +8,11 @@ use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Application\OpenApi\Factory\Request\ReplaceUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Request\UpdateUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
 use App\Shared\Application\Provider\OpenApi\ParamUserResponseProvider;
+use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class ParamUserEndpointFactory implements EndpointFactoryInterface

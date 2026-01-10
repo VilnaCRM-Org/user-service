@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Application\OpenApi\Builder\ArrayResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\UsersBatchCreatedResponseFactory;
 use App\Shared\Application\OpenApi\ValueObject\Parameter;
+use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Tests\Unit\UnitTestCase;
 
 final class UsersBatchCreatedResponseFactoryTest extends UnitTestCase

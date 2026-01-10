@@ -7,8 +7,8 @@ namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Request;
 use ApiPlatform\OpenApi\Model\MediaType;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Schema;
-use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Application\OpenApi\Factory\Request\RequestPasswordResetRequestFactory;
+use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Tests\Unit\UnitTestCase;
 
 final class RequestPasswordResetRequestFactoryTest extends UnitTestCase

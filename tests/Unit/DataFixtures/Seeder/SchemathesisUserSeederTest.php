@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\DataFixtures\Seeder;
 
-use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Infrastructure\Fixture\Seeder\SchemathesisUserSeeder;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\Shared\Application\Command\Fixture\HashingPasswordHasherFactory;
@@ -39,6 +39,7 @@ final class SchemathesisUserSeederTest extends UnitTestCase
             'OldPassword1!',
             $uuidTransformer->transformFromString(SchemathesisFixtures::UPDATE_USER_ID)
         );
+        $existingUser->setConfirmed(true);
         $repository = new InMemoryUserRepository($existingUser);
         $seeder = $this->createSeeder($repository, $uuidTransformer, $userFactory);
 
@@ -48,6 +49,8 @@ final class SchemathesisUserSeederTest extends UnitTestCase
         $this->assertSame($existingUser, $updateUser);
         $this->assertSame(SchemathesisFixtures::UPDATE_USER_EMAIL, $updateUser->getEmail());
         $this->assertSame(SchemathesisFixtures::UPDATE_USER_INITIALS, $updateUser->getInitials());
+        $this->assertSame('hashed-'.SchemathesisFixtures::USER_PASSWORD, $updateUser->getPassword());
+        $this->assertFalse($updateUser->isConfirmed());
     }
 
     public function testSeedUsersUpdatesEmailOnExistingUser(): void
