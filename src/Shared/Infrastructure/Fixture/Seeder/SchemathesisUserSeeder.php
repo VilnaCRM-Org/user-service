@@ -48,7 +48,7 @@ final readonly class SchemathesisUserSeeder
         ],
     ];
 
-    private readonly PasswordHasherInterface $passwordHasher;
+    private PasswordHasherInterface $passwordHasher;
 
     public function __construct(
         private UserRepositoryInterface $userRepository,
