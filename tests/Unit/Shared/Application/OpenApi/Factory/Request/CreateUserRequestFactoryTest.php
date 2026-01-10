@@ -6,7 +6,7 @@ namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Request;
 
 use ApiPlatform\OpenApi\Model\MediaType;
 use ApiPlatform\OpenApi\Model\RequestBody;
-use App\Shared\Application\Fixture\SchemathesisFixtures;
+use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Application\OpenApi\Factory\Request\CreateUserRequestFactory;
 use App\Tests\Unit\UnitTestCase;
 

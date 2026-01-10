@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Application\Fixture\Command;
+namespace App\Shared\Infrastructure\Fixture\Command;
 
-use App\Shared\Application\Fixture\SchemathesisFixtures;
+use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Infrastructure\Fixture\Seeder\PasswordResetTokenSeeder;
 use App\Shared\Infrastructure\Fixture\Seeder\SchemathesisConfirmationTokenSeeder;
 use App\Shared\Infrastructure\Fixture\Seeder\SchemathesisOAuthSeeder;

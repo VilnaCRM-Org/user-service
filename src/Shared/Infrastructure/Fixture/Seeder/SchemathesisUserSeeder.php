@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Fixture\Seeder;
 
-use App\Shared\Application\Fixture\SchemathesisFixtures;
+use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;

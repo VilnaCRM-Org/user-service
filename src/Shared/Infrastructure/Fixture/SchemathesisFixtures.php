@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Application\Fixture;
+namespace App\Shared\Infrastructure\Fixture;
 
 final class SchemathesisFixtures
 {

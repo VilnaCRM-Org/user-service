@@ -7,7 +7,7 @@ namespace App\Shared\Application\OpenApi\Factory\Request;
 use ApiPlatform\OpenApi\Model\MediaType;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use ApiPlatform\OpenApi\Model\Schema;
-use App\Shared\Application\Fixture\SchemathesisFixtures;
+use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use ArrayObject;
 
 final class ConfirmPasswordResetRequestFactory implements AbstractRequestFactory
