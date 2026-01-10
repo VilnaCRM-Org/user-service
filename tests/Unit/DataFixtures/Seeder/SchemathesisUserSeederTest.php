@@ -31,25 +31,20 @@ final class SchemathesisUserSeederTest extends UnitTestCase
 
     public function testSeedUsersUpdatesExistingUser(): void
     {
-        $uuidTransformer = new UuidTransformer(new UuidFactory());
-        $userFactory = new UserFactory();
-        $existingUser = $userFactory->create(
-            'old-email@example.com',
-            'OldInitials',
-            'OldPassword1!',
-            $uuidTransformer->transformFromString(SchemathesisFixtures::UPDATE_USER_ID)
-        );
-        $existingUser->setConfirmed(true);
-        $repository = new InMemoryUserRepository($existingUser);
-        $seeder = $this->createSeeder($repository, $uuidTransformer, $userFactory);
-
-        $users = $seeder->seedUsers();
+        $dependencies = $this->createSeederWithExistingUpdateUser();
+        $users = $dependencies['seeder']->seedUsers();
 
         $updateUser = $users['update'];
-        $this->assertSame($existingUser, $updateUser);
+        $this->assertSame($dependencies['existingUser'], $updateUser);
         $this->assertSame(SchemathesisFixtures::UPDATE_USER_EMAIL, $updateUser->getEmail());
-        $this->assertSame(SchemathesisFixtures::UPDATE_USER_INITIALS, $updateUser->getInitials());
-        $this->assertSame('hashed-'.SchemathesisFixtures::USER_PASSWORD, $updateUser->getPassword());
+        $this->assertSame(
+            SchemathesisFixtures::UPDATE_USER_INITIALS,
+            $updateUser->getInitials()
+        );
+        $this->assertSame(
+            'hashed-' . SchemathesisFixtures::USER_PASSWORD,
+            $updateUser->getPassword()
+        );
         $this->assertFalse($updateUser->isConfirmed());
     }
 
@@ -113,5 +108,27 @@ final class SchemathesisUserSeederTest extends UnitTestCase
             new HashingPasswordHasherFactory(),
             $uuidTransformer ?? new UuidTransformer(new UuidFactory())
         );
+    }
+
+    /**
+     * @return array{seeder: SchemathesisUserSeeder, existingUser: \App\User\Domain\Entity\UserInterface}
+     */
+    private function createSeederWithExistingUpdateUser(): array
+    {
+        $uuidTransformer = new UuidTransformer(new UuidFactory());
+        $userFactory = new UserFactory();
+        $existingUser = $userFactory->create(
+            'old-email@example.com',
+            'OldInitials',
+            'OldPassword1!',
+            $uuidTransformer->transformFromString(SchemathesisFixtures::UPDATE_USER_ID)
+        );
+        $existingUser->setConfirmed(true);
+        $repository = new InMemoryUserRepository($existingUser);
+
+        return [
+            'seeder' => $this->createSeeder($repository, $uuidTransformer, $userFactory),
+            'existingUser' => $existingUser,
+        ];
     }
 }
