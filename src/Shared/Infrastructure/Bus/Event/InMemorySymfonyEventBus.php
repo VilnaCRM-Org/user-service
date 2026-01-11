@@ -27,9 +27,13 @@ readonly class InMemorySymfonyEventBus implements EventBusInterface
         $this->bus = $this->initializeBus($busFactory, $subscribers);
     }
 
+    #[\Override]
     public function publish(DomainEvent ...$events): void
     {
-        array_walk($events, [$this, 'dispatchEvent']);
+        array_walk(
+            $events,
+            [$this, 'dispatchEvent']
+        );
     }
 
     /**
@@ -46,10 +50,37 @@ readonly class InMemorySymfonyEventBus implements EventBusInterface
     {
         try {
             $this->bus->dispatch($event);
-        } catch (NoHandlerForMessageException) {
-            throw new EventNotRegisteredException($event);
-        } catch (HandlerFailedException $exception) {
-            throw $exception->getPrevious() ?? $exception;
+        } catch (
+            NoHandlerForMessageException|HandlerFailedException $exception
+        ) {
+            $this->handleDispatchException($exception, $event);
         }
+    }
+
+    private function handleDispatchException(
+        \Throwable $exception,
+        DomainEvent $event
+    ): never {
+        if ($exception instanceof NoHandlerForMessageException) {
+            throw $this->eventNotRegistered($event);
+        }
+
+        if ($exception instanceof HandlerFailedException) {
+            throw $this->unwrapHandlerFailure($exception);
+        }
+
+        throw $exception;
+    }
+
+    private function eventNotRegistered(
+        DomainEvent $event
+    ): EventNotRegisteredException {
+        return new EventNotRegisteredException($event);
+    }
+
+    private function unwrapHandlerFailure(
+        HandlerFailedException $exception
+    ): \Throwable {
+        return $exception->getPrevious() ?? $exception;
     }
 }

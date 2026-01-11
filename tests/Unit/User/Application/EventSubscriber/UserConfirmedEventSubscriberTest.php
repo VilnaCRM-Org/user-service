@@ -20,6 +20,7 @@ final class UserConfirmedEventSubscriberTest extends UnitTestCase
     private TokenRepositoryInterface $tokenRepository;
     private UserConfirmedEventSubscriber $subscriber;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

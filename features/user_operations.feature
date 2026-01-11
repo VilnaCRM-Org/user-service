@@ -4,9 +4,14 @@ Feature: User Operations
   I want to perform CRUD operations on user records
 
   Scenario: Retrieving the list of users
-    When GET request is send to "/api/users?page=1&itemsPerPage="
+    When GET request is send to "/api/users?page=1&itemsPerPage=10"
     Then the response status code should be 200
     And the response should contain a list of users
+
+  Scenario: Retrieving the list of users with missing pagination value
+    When GET request is send to "/api/users?page=1&itemsPerPage="
+    Then the response status code should be 400
+    And the error message should be "Page and itemsPerPage must be greater than or equal to 1."
 
   Scenario: Retrieving the list of users with wrong params
     When GET request is send to "/api/users?page=1&itemsPerPage=-100"
@@ -53,7 +58,7 @@ Feature: User Operations
     Given creating user with email "testPass3@mail.com", initials " ", password "passWORD1"
     When POST request is send to "/api/users"
     Then the response status code should be 422
-    And violation should be "Initials can not consist only of spaces"
+    And violation should be "Initials cannot consist only of spaces"
 
   Scenario: Creating a user with no input
     Given sending empty body
@@ -112,7 +117,7 @@ Feature: User Operations
     And with user with email "test@mail.com", initials " ", password "pAss1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
-    And violation should be "Initials can not consist only of spaces"
+    And violation should be "Initials cannot consist only of spaces"
 
   Scenario: Creating a batch of users with an empty batch
     Given sending a batch of users
@@ -286,4 +291,3 @@ Feature: User Operations
     When PATCH request is send to "/api/users/confirm"
     Then the response status code should be 422
     And violation should be "This value should not be blank."
-

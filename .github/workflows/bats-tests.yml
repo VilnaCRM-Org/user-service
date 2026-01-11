@@ -2,7 +2,6 @@ name: CLI testing
 
 on:
   pull_request:
-    branches: ['main']
 
 jobs:
   bats_core_tests:

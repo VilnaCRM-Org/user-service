@@ -10,6 +10,7 @@ use App\User\Domain\Event\UserConfirmedEvent;
 final class UserConfirmedEventFactory implements
     UserConfirmedEventFactoryInterface
 {
+    #[\Override]
     public function create(
         ConfirmationToken $token,
         string $eventId

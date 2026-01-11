@@ -19,6 +19,7 @@ final class ConfirmationEmail extends AggregateRoot implements
     ) {
     }
 
+    #[\Override]
     public function send(string $eventID): void
     {
         $this->token->send();

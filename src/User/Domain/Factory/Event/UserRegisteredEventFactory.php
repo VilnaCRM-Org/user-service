@@ -10,6 +10,7 @@ use App\User\Domain\Event\UserRegisteredEvent;
 final class UserRegisteredEventFactory implements
     UserRegisteredEventFactoryInterface
 {
+    #[\Override]
     public function create(
         UserInterface $user,
         string $eventId

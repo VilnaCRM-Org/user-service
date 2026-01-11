@@ -6,11 +6,11 @@ namespace App\Tests\Unit\User\Application\EventSubscriber;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\EventSubscriber\PasswordChangedEventSubscriber;
+use App\User\Application\Factory\EmailFactoryInterface;
 use App\User\Domain\Event\PasswordChangedEvent;
 use App\User\Domain\Factory\Event\PasswordChangedEventFactory;
 use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Infrastructure\Factory\EmailFactory;
-use App\User\Infrastructure\Factory\EmailFactoryInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -23,6 +23,7 @@ final class PasswordChangedEventSubscriberTest extends UnitTestCase
     private TranslatorInterface $translator;
     private PasswordChangedEventSubscriber $subscriber;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

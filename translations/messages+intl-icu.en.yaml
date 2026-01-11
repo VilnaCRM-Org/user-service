@@ -5,9 +5,16 @@ email:
       text: 'Your account password has been updated. If you made this change, no
         action is needed. If not, or if you have concerns, contact our support
         team '
+    reset:
+      confirmed:
+        subject: 'Password Reset Confirmed'
+        text: 'Your password has been successfully reset. If you did not make this change, please contact our support team immediately.'
   confirm:
     subject: 'VilnaCRM email confirmation'
     text: 'Your email confirmation token - { tokenValue }'
+  password_reset:
+    subject: 'VilnaCRM Password Reset'
+    text: 'Your password reset token - { tokenValue }'
 error:
   internal: 'Something went wrong'
   not:
@@ -18,3 +25,14 @@ error:
   token-not-found: 'Token not found'
   user-not-found: 'User not found'
   user-timed-out: 'Cannot send new email till { datetime }'
+  password-reset-token-not-found: 'Password reset token not found'
+  password-reset-token-expired: 'Password reset token has expired'
+  password-reset-token-already-used: 'Password reset token has already been used'
+  password-reset-token-mismatch: 'Password reset token does not belong to the specified user'
+  password-reset-rate-limit-exceeded: 'Password reset rate limit exceeded. Please try again later.'
+password_reset:
+  title: 'Password Reset Request'
+  message: 'You have requested a password reset. Click the button below to reset your password.'
+  button: 'Reset Password'
+  token_info: 'Token'
+  expires_info: 'This link will expire in 1 hour.'

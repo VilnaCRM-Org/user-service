@@ -1,5 +1,4 @@
 import http from 'k6/http';
-import exec from 'k6/x/exec';
 
 export default class InsertUsersUtils {
   constructor(utils, scenarioName) {
@@ -11,21 +10,6 @@ export default class InsertUsersUtils {
     this.averageConfig = this.config.endpoints[scenarioName].average;
     this.stressConfig = this.config.endpoints[scenarioName].stress;
     this.spikeConfig = this.config.endpoints[scenarioName].spike;
-  }
-
-  execInsertUsersCommand() {
-    const runSmoke = this.utils.getCLIVariable('run_smoke') || 'true';
-    const runAverage = this.utils.getCLIVariable('run_average') || 'true';
-    const runStress = this.utils.getCLIVariable('run_stress') || 'true';
-    const runSpike = this.utils.getCLIVariable('run_spike') || 'true';
-    exec.command('make', [
-      `SCENARIO_NAME=${this.scenarioName}`,
-      `RUN_SMOKE=${runSmoke}`,
-      `RUN_AVERAGE=${runAverage}`,
-      `RUN_STRESS=${runStress}`,
-      `RUN_SPIKE=${runSpike}`,
-      `load-tests-prepare-users`,
-    ]);
   }
 
   loadInsertedUsers() {
@@ -97,19 +81,24 @@ export default class InsertUsersUtils {
 
     const [requestBatch, userPasswords] = this.prepareRequestBatch(numberOfUsers, batchSize);
 
-    try {
-      const responses = http.batch(requestBatch);
-      responses.forEach(response => {
+    const responses = http.batch(requestBatch);
+    responses.forEach((response, index) => {
+      if (response.status !== 200 && response.status !== 201) {
+        console.log(
+          `Batch request ${index} failed with status ${response.status}: ${response.body}`
+        );
+        throw new Error(`Batch request failed with status ${response.status}: ${response.body}`);
+      }
+      try {
         JSON.parse(response.body).forEach(user => {
           user.password = userPasswords[user.email];
           users.push(user);
         });
-      });
-    } catch (error) {
-      throw new Error(
-        'Error occurred during user insertion, try to lower batchSize in a config file'
-      );
-    }
+      } catch (parseError) {
+        console.log(`Failed to parse response body for batch ${index}: ${response.body}`);
+        throw new Error(`Failed to parse batch response: ${response.body}`);
+      }
+    });
 
     return users;
   }

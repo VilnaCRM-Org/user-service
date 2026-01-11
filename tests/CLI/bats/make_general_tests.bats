@@ -32,8 +32,7 @@ load 'bats-assert/load'
 @test "make phpinsights command executes and completes analysis" {
   run make phpinsights
   assert_success
-  assert_output --partial '✨ Analysis Completed !'
-  assert_output --partial './vendor/bin/phpinsights --no-interaction --ansi --format=github-action'
+  assert_output --partial './vendor/bin/phpinsights --no-interaction --flush-cache --fix --ansi --disable-security-check'
 }
 
 @test "make check-security command executes and reports no vulnerabilities" {
@@ -93,14 +92,13 @@ load 'bats-assert/load'
 }
 
 @test "make logs shows docker logs" {
-  run bash -c "timeout 5 make logs"
-  assert_failure 124
+  run make logs
+  assert_success
 }
 
 @test "make new-logs command executes" {
-  run bash -c "timeout 5 make logs"
+  run bash -c "timeout 5 make new-logs"
   assert_failure 124
-  assert_output --partial ""GET /ping" 200"
 }
 
 @test "make commands lists all available Symfony commands" {

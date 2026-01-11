@@ -13,6 +13,10 @@ use App\User\Domain\ValueObject\UserUpdate;
 
 interface UserInterface
 {
+    public function getId(): string;
+
+    public function getEmail(): string;
+
     public function confirm(
         ConfirmationToken $token,
         string $eventID,

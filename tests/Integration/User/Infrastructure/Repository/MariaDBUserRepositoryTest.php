@@ -19,6 +19,7 @@ final class MariaDBUserRepositoryTest extends IntegrationTestCase
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -101,5 +102,63 @@ final class MariaDBUserRepositoryTest extends IntegrationTestCase
         $foundUser = $this->repository->findByEmail($this->faker->email());
 
         $this->assertNull($foundUser);
+    }
+
+    public function testFindById(): void
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+        $userId = $this->faker->uuid();
+
+        $user = $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->transformer->transformFromString($userId)
+        );
+
+        $this->repository->save($user);
+
+        $foundUser = $this->repository->findById($userId);
+
+        $this->assertInstanceOf(User::class, $foundUser);
+        $this->assertSame($initials, $foundUser->getInitials());
+        $this->assertSame($password, $foundUser->getPassword());
+        $this->assertSame($email, $foundUser->getEmail());
+    }
+
+    public function testFindByIdNotFound(): void
+    {
+        $foundUser = $this->repository->findById($this->faker->uuid());
+
+        $this->assertNull($foundUser);
+    }
+
+    public function testDeleteAll(): void
+    {
+        $email1 = $this->faker->email();
+        $email2 = $this->faker->email();
+
+        $user1 = $this->userFactory->create(
+            $email1,
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->transformer->transformFromString($this->faker->uuid())
+        );
+        $user2 = $this->userFactory->create(
+            $email2,
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->transformer->transformFromString($this->faker->uuid())
+        );
+
+        $this->repository->save($user1);
+        $this->repository->save($user2);
+
+        $this->repository->deleteAll();
+
+        $this->assertNull($this->repository->findByEmail($email1));
+        $this->assertNull($this->repository->findByEmail($email2));
     }
 }

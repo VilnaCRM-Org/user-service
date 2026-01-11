@@ -11,6 +11,7 @@ use App\User\Domain\Event\ConfirmationEmailSentEvent;
 final class ConfirmationEmailSendEventFactory implements
     ConfirmationEmailSendEventFactoryInterface
 {
+    #[\Override]
     public function create(
         ConfirmationTokenInterface $token,
         UserInterface $user,

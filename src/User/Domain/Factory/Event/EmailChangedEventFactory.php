@@ -10,6 +10,7 @@ use App\User\Domain\Event\EmailChangedEvent;
 final class EmailChangedEventFactory implements
     EmailChangedEventFactoryInterface
 {
+    #[\Override]
     public function create(
         UserInterface $user,
         string $eventId

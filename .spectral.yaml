@@ -1,0 +1,139 @@
+extends:
+  - spectral:oas
+
+rules:
+  api-info-requires-contact:
+    description: 'The `info` object must define a contact for support and accountability.'
+    severity: error
+    given: $.info
+    then:
+      field: contact
+      function: truthy
+
+  api-info-requires-license:
+    description: 'The `info` object must declare a license to clarify usage terms.'
+    severity: error
+    given: $.info
+    then:
+      field: license
+      function: truthy
+
+  api-info-requires-description:
+    description: 'Provide a high-level description for the API.'
+    severity: error
+    given: $.info
+    then:
+      field: description
+      function: truthy
+
+  api-tags-require-description:
+    description: 'Each tag should document its purpose to aid discoverability.'
+    severity: error
+    given: $.tags[*]
+    then:
+      field: description
+      function: truthy
+
+  operation-must-have-summary:
+    description: 'Operations must provide a succinct summary.'
+    severity: error
+    given: $.paths[*][get,put,post,delete,patch,options,head,trace]
+    then:
+      field: summary
+      function: truthy
+
+  operation-must-have-description:
+    description: 'Operations must describe their behaviour for consumers.'
+    severity: error
+    given: $.paths[*][get,put,post,delete,patch,options,head,trace]
+    then:
+      field: description
+      function: truthy
+
+  operation-must-have-tags:
+    description: 'Operations must be assigned at least one tag for grouping in documentation.'
+    severity: error
+    given: $.paths[*][get,put,post,delete,patch,options,head,trace]
+    then:
+      field: tags
+      function: truthy
+
+  operation-operationId-pattern:
+    description: 'Operation IDs must use descriptive lowercase tokens separated by underscores.'
+    severity: error
+    given: $.paths[*][get,put,post,delete,patch,options,head,trace]
+    then:
+      field: operationId
+      function: pattern
+      functionOptions:
+        match: '^[a-z0-9]+(?:[\-_][a-z0-9]+)*$'
+
+  operation-requires-2xx-response:
+    description: 'Operations must define at least one success (2xx) response.'
+    severity: error
+    given: $.paths[*][get,put,post,delete,patch,options,head,trace]
+    then:
+      field: responses
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          additionalProperties: true
+          patternProperties:
+            '^2\\d{2}$':
+              type: object
+          minProperties: 1
+
+  operation-requires-problem-response:
+    description: 'Operations must document at least one client error response (4xx) to set expectations.'
+    severity: error
+    given: $.paths[*][get,put,post,delete,patch,options,head,trace]
+    then:
+      field: responses
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          additionalProperties: true
+          patternProperties:
+            '^4\\d{2}$':
+              type: object
+          minProperties: 1
+
+  parameter-description-required:
+    description: 'All parameters must include a description.'
+    severity: error
+    given: $.paths[*][get,put,post,delete,patch,options,head,trace].parameters[*]
+    then:
+      field: description
+      function: truthy
+
+  security-schemes-require-description:
+    description: 'Security schemes must document authentication expectations.'
+    severity: error
+    given: $.components.securitySchemes.*
+    then:
+      field: description
+      function: truthy
+
+  enum-values-require-description:
+    description: 'Enumerated values should include human readable descriptions via x-enumDescriptions.'
+    severity: error
+    given: $.components.schemas.*.enum
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: array
+          items:
+            type: string
+
+  enum-descriptions-required:
+    description: 'Enumerations must define `x-enumDescriptions` alongside the enum to clarify each value.'
+    severity: error
+    given: $.components.schemas.*[?(@.enum)]
+    then:
+      field: x-enumDescriptions
+      function: truthy
+
+  oas3-unused-component: false

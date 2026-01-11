@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserContext;
 
+use App\Tests\Behat\UserContext\Input\ConfirmPasswordResetInput;
 use App\Tests\Behat\UserContext\Input\ConfirmUserInput;
 use App\Tests\Behat\UserContext\Input\CreateUserBatchInput;
 use App\Tests\Behat\UserContext\Input\CreateUserInput;
 use App\Tests\Behat\UserContext\Input\EmptyInput;
 use App\Tests\Behat\UserContext\Input\RequestInput;
+use App\Tests\Behat\UserContext\Input\RequestPasswordResetInput;
 use App\Tests\Behat\UserContext\Input\UpdateUserInput;
 use Behat\Behat\Context\Context;
 use PHPUnit\Framework\Assert;
@@ -17,11 +19,18 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @psalm-suppress UnusedClass
+ * @psalm-suppress PossiblyUnusedMethod
+ */
 final class UserOperationsContext implements Context
 {
     private ?RequestInput $requestBody;
     private int $violationNum;
     private string $language;
+    private string $currentUserEmail = '';
+    private UrlResolver $urlResolver;
+    private RequestBodySerializer $bodySerializer;
 
     public function __construct(
         private readonly KernelInterface $kernel,
@@ -31,6 +40,8 @@ final class UserOperationsContext implements Context
         $this->requestBody = null;
         $this->violationNum = 0;
         $this->language = 'en';
+        $this->urlResolver = new UrlResolver();
+        $this->bodySerializer = new RequestBodySerializer($serializer);
     }
 
     /**
@@ -125,24 +136,22 @@ final class UserOperationsContext implements Context
 
     /**
      * @When :method request is send to :path
+     * @When :method request is sent to :path
      */
     public function requestSendTo(string $method, string $path): void
     {
-        $contentType = 'application/json';
-        if ($method === 'PATCH') {
-            $contentType = 'application/merge-patch+json';
-        }
+        $processedPath = $this->processRequestPath($path);
+        $headers = $this->buildRequestHeaders($method);
+        $requestBody = $this->bodySerializer->serialize($this->requestBody, $method);
+
         $this->response = $this->kernel->handle(Request::create(
-            $path,
+            $processedPath,
             $method,
             [],
             [],
             [],
-            ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => $contentType,
-                'HTTP_ACCEPT_LANGUAGE' => $this->language,
-            ],
-            $this->serializer->serialize($this->requestBody, 'json')
+            $headers,
+            $requestBody
         ));
     }
 
@@ -173,6 +182,15 @@ final class UserOperationsContext implements Context
     public function theResponseStatusCodeShouldBe(string $statusCode): void
     {
         Assert::assertEquals($statusCode, $this->response->getStatusCode());
+    }
+
+    /**
+     * @Then the response body should contain :text
+     */
+    public function theResponseBodyShouldContain(string $text): void
+    {
+        Assert::assertNotNull($this->response);
+        Assert::assertStringContainsString($text, (string) $this->response->getContent());
     }
 
     /**
@@ -226,5 +244,77 @@ final class UserOperationsContext implements Context
         Assert::assertArrayHasKey('initials', $data);
         Assert::assertArrayHasKey('confirmed', $data);
         Assert::assertArrayNotHasKey('password', $data);
+    }
+
+    /**
+     * @Given requesting password reset for email :email
+     */
+    public function requestingPasswordResetForEmail(string $email): void
+    {
+        $this->currentUserEmail = $email;
+        $this->requestBody = new RequestPasswordResetInput($email);
+    }
+
+    /**
+     * @Given confirming password reset with valid token and password :password
+     */
+    public function confirmingPasswordResetWithValidTokenAndPassword(
+        string $password
+    ): void {
+        // Use the actual token that was created in the previous step
+        $token = UserContext::getLastPasswordResetToken();
+        $this->currentUserEmail = UserContext::getCurrentTokenUserEmail();
+        $this->requestBody = new ConfirmPasswordResetInput($token, $password);
+    }
+
+    /**
+     * @Given confirming password reset with token :token and password :password
+     */
+    public function confirmingPasswordResetWithTokenAndPassword(
+        string $token,
+        string $password
+    ): void {
+        // For invalid token tests, we need a fallback email or handle it differently
+        // Since this is an invalid token test, we don't have a valid user email
+        // We'll handle this case by using a placeholder that the URL replacement
+        // will skip
+        $this->currentUserEmail = '';
+        $this->requestBody = new ConfirmPasswordResetInput($token, $password);
+    }
+
+    /**
+     * @Then the response should contain :text
+     */
+    public function theResponseShouldContain(string $text): void
+    {
+        $responseContent = $this->response->getContent();
+        Assert::assertStringContainsString(
+            $text,
+            $responseContent,
+            "The response does not contain the expected text: '{$text}'."
+        );
+    }
+
+    private function processRequestPath(string $path): string
+    {
+        $this->urlResolver->setCurrentUserEmail($this->currentUserEmail);
+        return $this->urlResolver->resolve($path);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function buildRequestHeaders(string $method): array
+    {
+        return [
+            'HTTP_ACCEPT' => 'application/json',
+            'CONTENT_TYPE' => $this->getContentTypeForMethod($method),
+            'HTTP_ACCEPT_LANGUAGE' => $this->language,
+        ];
+    }
+
+    private function getContentTypeForMethod(string $method): string
+    {
+        return $method === 'PATCH' ? 'application/merge-patch+json' : 'application/json';
     }
 }

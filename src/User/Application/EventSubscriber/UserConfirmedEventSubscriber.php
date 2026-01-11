@@ -25,6 +25,7 @@ final readonly class UserConfirmedEventSubscriber implements
     /**
      * @return array<DomainEvent>
      */
+    #[\Override]
     public function subscribedTo(): array
     {
         return [UserConfirmedEvent::class];

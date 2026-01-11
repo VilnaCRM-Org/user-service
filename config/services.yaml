@@ -30,10 +30,13 @@ services:
     App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface:
       tags: ['app.event_subscriber']
 
-    App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory:
+    App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface:
       bind:
         $apiPrefix: '%api_url_prefix%'
       tags: ['app.openapi_endpoint_factory']
+
+    App\Shared\Application\QueryParameter\QueryParameterRule:
+      tags: ['app.query_parameter_rule']
 
   App\Shared\Infrastructure\Bus\Command\InMemorySymfonyCommandBus:
     arguments:
@@ -47,26 +50,62 @@ services:
       - !tagged_iterator 'app.event_subscriber'
     lazy: true
 
-  App\Shared\Application\OpenApi\OpenApiFactory:
+  Ramsey\Uuid\Validator\GenericValidator: ~
+
+  App\Shared\Application\OpenApi\Factory\OpenApiFactory:
     decorates: 'api_platform.openapi.factory'
     arguments:
-      - '@App\Shared\Application\OpenApi\OpenApiFactory.inner'
+      - '@App\Shared\Application\OpenApi\Factory\OpenApiFactory.inner'
       - !tagged_iterator 'app.openapi_endpoint_factory'
-      - '@App\Shared\Application\OpenApi\Factory\Response\InternalErrorFactory'
       - '%env(API_URL)%'
     autoconfigure: false
 
+  App\Shared\Application\EventListener\MethodNotAllowedListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, priority: 120 }
+
+  App\Shared\Application\EventListener\InvalidUuidRequestListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, priority: 10 }
+
+  App\Shared\Application\EventListener\OAuthAuthorizationExceptionListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.exception, priority: 0 }
+
+  App\Shared\Application\QueryParameter\AllowedParametersRule:
+    arguments:
+      $allowedParameters:
+        '/api/users': ['page', 'itemsPerPage']
+
+  App\Shared\Application\EventListener\QueryParameterValidationListener:
+    arguments:
+      $rules: !tagged_iterator app.query_parameter_rule
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, priority: 5 }
+
   api_platform.state.error_provider:
-    arguments: ['@Symfony\Contracts\Translation\TranslatorInterface']
-    class: 'App\Shared\Application\ErrorProvider'
+    class: 'App\Shared\Application\Provider\ErrorProvider'
+    arguments:
+      - '@Symfony\Contracts\Translation\TranslatorInterface'
+      - '@request_stack'
+      - '@App\Shared\Application\Resolver\HttpExceptionHeadersResolver'
 
   App\User\Domain\Factory\ConfirmationTokenFactory:
     arguments:
       $tokenLength: '%env(int:CONFIRMATION_TOKEN_LENGTH)%'
 
+  App\User\Domain\Factory\PasswordResetTokenFactory:
+    arguments:
+      $tokenLength: '%env(int:PASSWORD_RESET_TOKEN_LENGTH)%'
+      $expirationTimeInHours: '%env(int:PASSWORD_RESET_TOKEN_EXPIRATION_HOURS)%'
+
   App\User\Infrastructure\Repository\MariaDBUserRepository:
     arguments:
       $batchSize: '%env(int:USER_INSERT_BATCH_SIZE)%'
+
+  App\User\Application\EventSubscriber\PasswordResetEmailSentEventSubscriber:
+    arguments:
+      $apiBaseUrl: '%env(API_BASE_URL)%'
 
   # Event listener for OAuth2 password grant
   App\User\Application\EventListener\UserResolveListener:
@@ -76,6 +115,23 @@ services:
           event: league.oauth2_server.event.user_resolve,
           method: onUserResolve,
         }
+
+  App\User\Application\Validator\CompositePasswordResetTokenValidator:
+    arguments:
+      $validators:
+        - '@App\User\Application\Validator\TokenExistenceValidator'
+        - '@App\User\Application\Validator\TokenExpirationValidator'
+        - '@App\User\Application\Validator\TokenUsageValidator'
+
+  App\User\Domain\Contract\PasswordResetTokenValidatorInterface: '@App\User\Application\Validator\CompositePasswordResetTokenValidator'
+  App\User\Domain\Contract\PasswordHasherInterface: '@App\User\Infrastructure\Service\SymfonyPasswordHasher'
+  App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface: '@App\User\Application\CommandHandler\RequestPasswordResetCommandHandler'
+
+  App\User\Infrastructure\Decorator\RateLimitedRequestPasswordResetHandler:
+    decorates: App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface
+    arguments:
+      $inner: '@.inner'
+      $rateLimiter: '@limiter.password_reset'
 
   Aws\Sqs\SqsClient:
     arguments:

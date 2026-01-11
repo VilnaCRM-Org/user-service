@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\OpenApi\Builder;
 
-use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Response;
+use App\Shared\Application\OpenApi\ValueObject\Header;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
+use ArrayObject;
 
 final class ResponseBuilder
 {
@@ -20,28 +22,42 @@ final class ResponseBuilder
     public function build(
         string $description,
         array $params,
-        array $headers
+        array $headers,
+        string $contentType = 'application/json'
     ): Response {
-        $content = $this->contextBuilder->build($params);
-        $headersArray = new \ArrayObject();
-
-        if (count($headers) > 0) {
-            foreach ($headers as $header) {
-                $headersArray[$header->name] = new Model\Header(
-                    description: $header->description,
-                    schema: [
-                        'type' => $header->type,
-                        'format' => $header->format,
-                        'example' => $header->example,
-                    ]
-                );
-            }
-        }
-
         return new Response(
             description: $description,
-            content: $content,
-            headers: $headersArray
+            content: $this->contextBuilder->build($params, $contentType),
+            headers: $this->buildHeaders($headers)
         );
+    }
+
+    /**
+     * @param array<Header> $headers
+     */
+    private function buildHeaders(array $headers): ArrayObject
+    {
+        $headersArray = new ArrayObject();
+
+        foreach ($headers as $header) {
+            $schema = array_filter(
+                [
+                    'type' => $header->type,
+                    'format' => $header->format,
+                ],
+                static fn ($value): bool => $value !== null
+            );
+
+            $headersArray[$header->name] = array_filter(
+                [
+                    'description' => $header->description,
+                    'schema' => $schema,
+                    'example' => $header->example,
+                ],
+                static fn ($value): bool => $value !== null
+            );
+        }
+
+        return $headersArray;
     }
 }

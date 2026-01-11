@@ -27,6 +27,7 @@ final class ConfirmUserProcessorTest extends UnitTestCase
     private ConfirmUserCommandFactoryInterface $mockConfirmUserCommandFactory;
     private ConfirmUserProcessor $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

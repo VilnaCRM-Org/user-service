@@ -21,6 +21,7 @@ final class EmailChangedEvent extends DomainEvent
     /**
      * @param array<string, User> $body
      */
+    #[\Override]
     public static function fromPrimitives(
         array $body,
         string $eventId,
@@ -29,6 +30,7 @@ final class EmailChangedEvent extends DomainEvent
         return new self($body['user'], $eventId, $occurredOn);
     }
 
+    #[\Override]
     public static function eventName(): string
     {
         return 'email.changed';
@@ -37,6 +39,7 @@ final class EmailChangedEvent extends DomainEvent
     /**
      * @return array<string, User>
      */
+    #[\Override]
     public function toPrimitives(): array
     {
         return [

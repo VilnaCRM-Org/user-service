@@ -24,6 +24,7 @@ final class SignUpTransformerTest extends UnitTestCase
     private UserFactoryInterface $userFactoryMock;
     private SignUpTransformer $signUpTransformer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

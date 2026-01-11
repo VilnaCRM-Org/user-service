@@ -14,28 +14,31 @@ use App\Shared\Application\OpenApi\Factory\Response\OAuthTokenResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UnsupportedTypeFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-final class OAuthTokenEndpointFactory implements AbstractEndpointFactory
+final class OAuthTokenEndpointFactory implements EndpointFactoryInterface
 {
     private string $endpointUri = '/oauth/token';
 
     private Response $tokenResponse;
     private Response $invalidResponse;
     private Response $unsupportedResponse;
+    private OAuthTokenRequestFactory $tokenRequestFactory;
 
     public function __construct(
         string $apiPrefix,
-        private UnsupportedTypeFactory $unsupportedFactory,
-        private InvalidCredentialsFactory $invalidCredsFactory,
-        private OAuthTokenResponseFactory $tokenReturnedResponseFactory,
-        private OAuthTokenRequestFactory $tokenRequestFactory
+        UnsupportedTypeFactory $unsupportedFactory,
+        InvalidCredentialsFactory $invalidCredsFactory,
+        OAuthTokenResponseFactory $tokenReturnedResponseFactory,
+        OAuthTokenRequestFactory $tokenRequestFactory
     ) {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
         $this->tokenResponse =
-            $this->tokenReturnedResponseFactory->getResponse();
-        $this->invalidResponse = $this->invalidCredsFactory->getResponse();
-        $this->unsupportedResponse = $this->unsupportedFactory->getResponse();
+            $tokenReturnedResponseFactory->getResponse();
+        $this->invalidResponse = $invalidCredsFactory->getResponse();
+        $this->unsupportedResponse = $unsupportedFactory->getResponse();
+        $this->tokenRequestFactory = $tokenRequestFactory;
     }
 
+    #[\Override]
     public function createEndpoint(OpenApi $openApi): void
     {
         $openApi->getPaths()->addPath(
@@ -44,9 +47,13 @@ final class OAuthTokenEndpointFactory implements AbstractEndpointFactory
                 summary: 'Requests for access token',
                 description: 'Requests for access token',
                 post: new Operation(
+                    operationId: 'oauth_token_post',
+                    summary: 'Exchange authorization data for tokens',
+                    description: $this->tokenDescription(),
                     tags: ['OAuth'],
                     responses: $this->getResponses(),
                     requestBody: $this->tokenRequestFactory->getRequest(),
+                    security: []
                 )
             )
         );
@@ -62,5 +69,16 @@ final class OAuthTokenEndpointFactory implements AbstractEndpointFactory
             HttpResponse::HTTP_BAD_REQUEST => $this->unsupportedResponse,
             HttpResponse::HTTP_UNAUTHORIZED => $this->invalidResponse,
         ];
+    }
+
+    private function tokenDescription(): string
+    {
+        return implode(
+            ' ',
+            [
+                'Exchanges an authorization code, password credentials,',
+                'or refresh token for OAuth access and refresh tokens.',
+            ]
+        );
     }
 }

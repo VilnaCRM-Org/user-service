@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserGraphQLContext;
 
+use App\Tests\Behat\UserGraphQLContext\Input\ConfirmPasswordResetGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\ConfirmUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\CreateUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\DeleteUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\GraphQLMutationInput;
+use App\Tests\Behat\UserGraphQLContext\Input\RequestPasswordResetGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\ResendEmailGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\UpdateUserGraphQLMutationInput;
 use Behat\Behat\Context\Context;
@@ -19,6 +21,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 
+/**
+ * @psalm-suppress UnusedClass
+ * @psalm-suppress PossiblyUnusedMethod
+ */
 final class UserGraphQLContext implements Context
 {
     private string $GRAPHQL_ENDPOINT_URI = '/api/graphql';
@@ -36,6 +42,7 @@ final class UserGraphQLContext implements Context
     private int $errorNum;
 
     private GraphQLMutationInput $graphQLInput;
+    private ResponseValidator $responseValidator;
 
     public function __construct(
         private readonly KernelInterface $kernel,
@@ -44,6 +51,7 @@ final class UserGraphQLContext implements Context
         $this->responseContent = [];
         $this->errorNum = 0;
         $this->language = 'en';
+        $this->responseValidator = new ResponseValidator();
     }
 
     /**
@@ -187,6 +195,52 @@ final class UserGraphQLContext implements Context
     }
 
     /**
+     * @Given requesting password reset for :email via graphQL
+     */
+    public function requestPasswordResetViaGraphQL(string $email): void
+    {
+        $this->queryName = 'requestPasswordResetUser';
+        $this->graphQLInput = new RequestPasswordResetGraphQLMutationInput($email);
+
+        $mutation = (string) (new RootType($this->queryName))->addArgument(
+            new Argument('input', $this->graphQLInput->toGraphQLArguments())
+        )->addSubType((new Type('user'))->addSubType(new Type('id')));
+
+        $this->query = 'mutation' . $mutation;
+    }
+
+    /**
+     * @Given confirming password reset with token :token and new password :newPassword via graphQL
+     */
+    public function confirmPasswordResetViaGraphQL(string $token, string $newPassword): void
+    {
+        $this->queryName = 'confirmPasswordResetUser';
+        $this->graphQLInput = new ConfirmPasswordResetGraphQLMutationInput($token, $newPassword);
+
+        $mutation = (string) (new RootType($this->queryName))->addArgument(
+            new Argument('input', $this->graphQLInput->toGraphQLArguments())
+        )->addSubType((new Type('user'))->addSubType(new Type('id')));
+
+        $this->query = 'mutation' . $mutation;
+    }
+
+    /**
+     * @Given confirming password reset with valid token and new password :newPassword via graphQL
+     */
+    public function confirmPasswordResetWithValidTokenViaGraphQL(string $newPassword): void
+    {
+        $token = \App\Tests\Behat\UserContext\UserContext::getLastPasswordResetToken();
+        $this->queryName = 'confirmPasswordResetUser';
+        $this->graphQLInput = new ConfirmPasswordResetGraphQLMutationInput($token, $newPassword);
+
+        $mutation = (string) (new RootType($this->queryName))->addArgument(
+            new Argument('input', $this->graphQLInput->toGraphQLArguments())
+        )->addSubType((new Type('user'))->addSubType(new Type('id')));
+
+        $this->query = 'mutation' . $mutation;
+    }
+
+    /**
      * @Given with graphql language :lang
      */
     public function setLanguage(string $lang): void
@@ -218,20 +272,12 @@ final class UserGraphQLContext implements Context
      */
     public function mutationResponseShouldContainRequestedFields(): void
     {
-        $userData = json_decode(
-            $this->response->getContent(),
-            true
-        )['data'][$this->queryName]['user'];
-
-        foreach ($this->responseContent as $fieldName) {
-            Assert::assertArrayHasKey($fieldName, $userData);
-            if (property_exists($this->graphQLInput, $fieldName)) {
-                Assert::assertEquals(
-                    $this->graphQLInput->$fieldName,
-                    $userData[$fieldName]
-                );
-            }
-        }
+        $userData = $this->extractMutationUserData();
+        $this->responseValidator->validateFields(
+            $this->responseContent,
+            $userData,
+            $this->graphQLInput
+        );
     }
 
     /**
@@ -239,14 +285,8 @@ final class UserGraphQLContext implements Context
      */
     public function queryResponseShouldContainRequestedFields(): void
     {
-        $userData = json_decode(
-            $this->response->getContent(),
-            true
-        )['data'][$this->queryName];
-
-        foreach ($this->responseContent as $item) {
-            Assert::assertArrayHasKey($item, $userData);
-        }
+        $userData = $this->extractQueryUserData();
+        $this->responseValidator->validateFields($this->responseContent, $userData);
     }
 
     /**
@@ -263,6 +303,32 @@ final class UserGraphQLContext implements Context
     }
 
     /**
+     * @Then graphQL password reset mutation should succeed
+     */
+    public function graphQLPasswordResetMutationShouldSucceed(): void
+    {
+        $responseData = json_decode(
+            $this->response->getContent(),
+            true
+        );
+
+        // Debug: dump response if there are errors
+        if (!isset($responseData['data'])) {
+            throw new \RuntimeException('GraphQL response: ' . $this->response->getContent());
+        }
+
+        Assert::assertArrayHasKey('data', $responseData);
+        Assert::assertArrayHasKey($this->queryName, $responseData['data']);
+
+        $mutationData = $responseData['data'][$this->queryName];
+        Assert::assertArrayHasKey('user', $mutationData);
+        Assert::assertNull(
+            $mutationData['user'],
+            'Password reset mutations should return an empty payload for security'
+        );
+    }
+
+    /**
      * @Then collection of users should be returned
      */
     public function collectionOfUsersShouldBeReturned(): void
@@ -274,9 +340,7 @@ final class UserGraphQLContext implements Context
 
         Assert::assertIsArray($userData);
         foreach ($userData as $user) {
-            foreach ($this->responseContent as $item) {
-                Assert::assertArrayHasKey($item, $user['node']);
-            }
+            $this->assertUserNodeContainsExpectedFields($user['node']);
         }
     }
 
@@ -292,6 +356,63 @@ final class UserGraphQLContext implements Context
             $data['errors'][$this->errorNum]['message']
         );
         $this->errorNum++;
+    }
+
+    /**
+     * @return array<string, string|bool|int|null>
+     */
+    private function extractMutationUserData(): array
+    {
+        $data = $this->parseAndValidateResponse();
+        $this->assertQueryNameExists($data);
+        $msg = 'Missing "user" in GraphQL data node.';
+        Assert::assertArrayHasKey('user', $data['data'][$this->queryName], $msg);
+        return $data['data'][$this->queryName]['user'];
+    }
+
+    /**
+     * @return array<string, array<string, array<string, string|bool|int|null>|null>>
+     */
+    private function parseAndValidateResponse(): array
+    {
+        $msg = 'Response is null; did you call sendGraphQlRequest()?';
+        Assert::assertNotNull($this->response, $msg);
+        $data = json_decode($this->response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        Assert::assertIsArray($data, 'GraphQL response is not a JSON object.');
+        Assert::assertArrayHasKey('data', $data, 'Missing "data" in GraphQL response.');
+        return $data;
+    }
+
+    /**
+     * @param array<string, array<string, array<string, string|bool|int|null>>> $data
+     */
+    private function assertQueryNameExists(array $data): void
+    {
+        Assert::assertArrayHasKey(
+            $this->queryName,
+            $data['data'],
+            sprintf('Missing "%s" in GraphQL data.', $this->queryName)
+        );
+    }
+
+    /**
+     * @return array<string, string|bool|int|null>
+     */
+    private function extractQueryUserData(): array
+    {
+        $data = $this->parseAndValidateResponse();
+        $this->assertQueryNameExists($data);
+        return $data['data'][$this->queryName];
+    }
+
+    /**
+     * @param array<string, string> $userNode
+     */
+    private function assertUserNodeContainsExpectedFields(array $userNode): void
+    {
+        foreach ($this->responseContent as $item) {
+            Assert::assertArrayHasKey($item, $userNode);
+        }
     }
 
     /**

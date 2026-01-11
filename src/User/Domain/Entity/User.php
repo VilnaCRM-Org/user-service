@@ -25,21 +25,35 @@ class User implements UserInterface
         $this->confirmed = false;
     }
 
+    #[\Override]
     public function getId(): string
     {
         return (string) $this->id;
     }
 
+    /**
+     * @internal For Doctrine ORM hydration and test fixtures only.
+     *
+     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     */
     public function setId(UuidInterface $id): void
     {
         $this->id = $id;
     }
 
+    #[\Override]
     public function getEmail(): string
     {
         return $this->email;
     }
 
+    /**
+     * @internal For Doctrine ORM hydration and test fixtures only. Use update() for business logic.
+     *
+     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     *
+     * @see User::update()
+     */
     public function setEmail(string $email): void
     {
         $this->email = $email;
@@ -50,6 +64,13 @@ class User implements UserInterface
         return $this->initials;
     }
 
+    /**
+     * @internal For Doctrine ORM hydration and test fixtures only. Use update() for business logic.
+     *
+     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     *
+     * @see User::update()
+     */
     public function setInitials(string $initials): void
     {
         $this->initials = $initials;
@@ -60,11 +81,15 @@ class User implements UserInterface
         return $this->password;
     }
 
+    /**
+     * @internal For Doctrine ORM hydration only. Use update() for business logic.
+     */
     public function setPassword(string $password): void
     {
         $this->password = $password;
     }
 
+    #[\Override]
     public function confirm(
         ConfirmationToken $token,
         string $eventID,
@@ -78,6 +103,7 @@ class User implements UserInterface
     /**
      * @return array<DomainEvent>
      */
+    #[\Override]
     public function update(
         UserUpdate $updateData,
         string $hashedNewPassword,
@@ -105,11 +131,19 @@ class User implements UserInterface
         return $events;
     }
 
+    /** @psalm-suppress PossiblyUnusedMethod API Platform serialization */
     public function isConfirmed(): bool
     {
         return $this->confirmed;
     }
 
+    /**
+     * @internal For Doctrine ORM hydration and test fixtures only. Use confirm() for business logic.
+     *
+     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     *
+     * @see User::confirm()
+     */
     public function setConfirmed(bool $confirmed): void
     {
         $this->confirmed = $confirmed;

@@ -24,6 +24,7 @@ final class DomainUuidType extends Type
     /**
      * @param array<string|object> $column
      */
+    #[\Override]
     public function getSQLDeclaration(
         array $column,
         AbstractPlatform $platform
@@ -33,6 +34,7 @@ final class DomainUuidType extends Type
         return $symfonyType->getSQLDeclaration($column, $platform);
     }
 
+    #[\Override]
     public function convertToDatabaseValue(
         mixed $value,
         AbstractPlatform $platform
@@ -46,6 +48,7 @@ final class DomainUuidType extends Type
         return $uuid->toBinary();
     }
 
+    #[\Override]
     public function convertToPHPValue(
         mixed $value,
         AbstractPlatform $platform

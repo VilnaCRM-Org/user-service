@@ -13,6 +13,7 @@ final class PasswordChangedEventFactoryTest extends UnitTestCase
 {
     private PasswordChangedEventFactoryInterface $factory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

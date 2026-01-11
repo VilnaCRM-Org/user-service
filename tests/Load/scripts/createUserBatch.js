@@ -17,9 +17,29 @@ export const options = scenarioUtils.getOptions();
 export default function createUser() {
   const generator = insertUsersUtils.usersGenerator(batchSize);
   const batch = [];
+  const usedEmails = new Set();
+  const maxRetries = 5;
 
   for (let userIndex = 0; userIndex < batchSize; userIndex++) {
-    batch.push(generator.next().value);
+    let user;
+    let retryCount = 0;
+
+    do {
+      user = generator.next().value;
+      retryCount++;
+
+      if (retryCount > maxRetries) {
+        console.error(
+          `Failed to generate unique email after ${maxRetries} attempts for user ${userIndex}`
+        );
+        const fallbackEmail = `user_fallback_${userIndex}_${Date.now()}_${Math.random().toString(36).substring(2)}@example.com`;
+        user.email = fallbackEmail;
+        break;
+      }
+    } while (usedEmails.has(user.email));
+
+    usedEmails.add(user.email);
+    batch.push(user);
   }
 
   const payload = JSON.stringify({

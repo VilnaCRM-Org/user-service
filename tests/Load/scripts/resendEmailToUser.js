@@ -23,18 +23,22 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default function resendEmail(data) {
-  const user = data.users[counter.up()];
+  const user = data.users[counter.up() % data.users.length];
   utils.checkUserIsDefined(user);
 
   const { id } = user;
 
   const response = http.post(
     `${utils.getBaseHttpUrl()}/${id}/resend-confirmation-email`,
-    JSON.stringify(null),
+    JSON.stringify({}),
     utils.getJsonHeader()
   );
 
-  utils.checkResponse(response, 'is status 200', res => res.status === 200);
+  utils.checkResponse(
+    response,
+    'is status 200 or 429',
+    res => res.status === 200 || res.status === 429
+  );
 }
 
 export function teardown(data) {

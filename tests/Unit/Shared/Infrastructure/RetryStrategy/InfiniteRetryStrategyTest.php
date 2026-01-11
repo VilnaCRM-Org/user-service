@@ -13,6 +13,7 @@ final class InfiniteRetryStrategyTest extends UnitTestCase
 {
     private InfiniteRetryStrategy $retryStrategy;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

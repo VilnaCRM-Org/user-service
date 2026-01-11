@@ -12,6 +12,7 @@ final class RedisTokenRepositoryTest extends IntegrationTestCase
 {
     private TokenRepositoryInterface $tokenRepository;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -34,6 +34,7 @@ final class UserEndpointFactoryTest extends UnitTestCase
     private CreateUserRequestFactory $createUserRequestFactory;
     private UsersReturnedFactory $usersReturnedResponseFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

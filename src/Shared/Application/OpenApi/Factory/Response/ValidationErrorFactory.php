@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class ValidationErrorFactory implements AbstractResponseFactory
@@ -15,6 +15,7 @@ final class ValidationErrorFactory implements AbstractResponseFactory
     {
     }
 
+    #[\Override]
     public function getResponse(): Response
     {
         return $this->responseBuilder->build(
@@ -26,17 +27,24 @@ final class ValidationErrorFactory implements AbstractResponseFactory
                 $this->getViolationsParam(),
                 $this->getStatusParam(),
             ],
-            []
+            [],
+            'application/problem+json'
         );
     }
 
     public function getViolationsParam(): Parameter
     {
-        return new Parameter('violations', 'array', [
-            'propertyPath' => 'some_property',
-            'message' => 'This value should not be blank.',
-            'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
-        ]);
+        return new Parameter(
+            'violations',
+            'array',
+            [
+                [
+                    'propertyPath' => 'some_property',
+                    'message' => 'This value should not be blank.',
+                    'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+                ],
+            ]
+        );
     }
 
     public function getTypeParam(): Parameter

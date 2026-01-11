@@ -22,6 +22,7 @@ final class ConfirmationEmailSendEventFactoryTest extends UnitTestCase
     private UuidTransformer $transformer;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

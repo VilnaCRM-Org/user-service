@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 
 final class InvalidCredentialsFactory implements
     AbstractResponseFactory
@@ -15,6 +15,7 @@ final class InvalidCredentialsFactory implements
     {
     }
 
+    #[\Override]
     public function getResponse(): Response
     {
         return $this->responseBuilder->build(
@@ -22,7 +23,6 @@ final class InvalidCredentialsFactory implements
             [
                 $this->getErrorParam(),
                 $this->getErrorDescriptionParam(),
-                $this->getMessageParam(),
             ],
             []
         );
@@ -41,15 +41,6 @@ final class InvalidCredentialsFactory implements
     {
         return new Parameter(
             'error_description',
-            'string',
-            'Client authentication failed'
-        );
-    }
-
-    private function getMessageParam(): Parameter
-    {
-        return new Parameter(
-            'message',
             'string',
             'Client authentication failed'
         );

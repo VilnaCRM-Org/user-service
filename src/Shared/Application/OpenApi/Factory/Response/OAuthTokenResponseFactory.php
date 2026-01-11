@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 
 final class OAuthTokenResponseFactory implements AbstractResponseFactory
 {
@@ -14,10 +14,11 @@ final class OAuthTokenResponseFactory implements AbstractResponseFactory
     {
     }
 
+    #[\Override]
     public function getResponse(): Response
     {
         return $this->responseBuilder->build(
-            'Unsupported grant type',
+            'OAuth access token response',
             [
                 $this->getTokenTypeParam(),
                 $this->getExpiresInParam(),

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
+use App\Shared\Application\OpenApi\Enum\Requirement;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 
 final class RequestBuilder
 {
@@ -17,14 +19,14 @@ final class RequestBuilder
      */
     public function build(
         array $params,
-        bool $required = true,
+        Requirement $requirement = Requirement::REQUIRED,
         string $contentType = 'application/json'
     ): RequestBody {
         $content = $this->contextBuilder->build($params, $contentType);
 
         return new RequestBody(
             content: $content,
-            required: $required
+            required: $requirement->toBool()
         );
     }
 }

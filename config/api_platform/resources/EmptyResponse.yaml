@@ -1,0 +1,62 @@
+resources:
+  App\Shared\Application\DTO\EmptyResponse:
+    exceptionToStatus:
+      'App\User\Domain\Exception\UserTimedOutException': 429
+      'App\User\Domain\Exception\UserNotFoundException': 404
+      'App\User\Domain\Exception\InvalidPasswordException': 400
+      'App\User\Domain\Exception\TokenNotFoundException': 404
+      'App\User\Domain\Exception\DuplicateEmailException': 409
+      'App\User\Domain\Exception\PasswordResetTokenNotFoundException': 404
+      'App\User\Domain\Exception\PasswordResetTokenExpiredException': 400
+      'App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException': 400
+      'App\User\Domain\Exception\PasswordResetTokenMismatchException': 400
+      'App\User\Domain\Exception\PasswordResetRateLimitExceededException': 429
+    operations:
+      request_password_reset:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        status: 204
+        uriTemplate: '/reset-password'
+        input: 'App\User\Application\DTO\RequestPasswordResetDto'
+        controller: 'App\User\Application\Controller\RequestPasswordResetController'
+        output: false
+        read: false
+        openapi:
+          summary: 'Request a password reset'
+          description: 'Initiates a password reset process by sending a reset token to the provided email address.'
+          tags:
+            - 'User reset password'
+          responses:
+            204:
+              description: 'Password reset request accepted'
+            400:
+              description: 'Invalid request payload'
+            404:
+              description: 'User not found'
+            422:
+              description: 'Validation error'
+            429:
+              description: 'Password reset rate limit exceeded'
+      confirm_password_reset:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        status: 204
+        uriTemplate: '/reset-password/confirm'
+        input: 'App\User\Application\DTO\ConfirmPasswordResetDto'
+        controller: 'App\User\Application\Controller\ConfirmPasswordResetController'
+        output: false
+        read: false
+        openapi:
+          summary: 'Confirm a password reset'
+          description: 'Completes the password reset process by validating the reset token and setting a new password.'
+          tags:
+            - 'User reset password'
+          responses:
+            204:
+              description: 'Password reset confirmed'
+            400:
+              description: 'Invalid or expired password reset token'
+            404:
+              description: 'Password reset token not found'
+            422:
+              description: 'Validation error'

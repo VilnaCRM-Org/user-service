@@ -16,6 +16,7 @@ final class UserConfirmedEventFactoryTest extends UnitTestCase
     private UserConfirmedEventFactoryInterface $factory;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

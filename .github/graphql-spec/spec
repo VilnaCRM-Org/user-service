@@ -1,7 +1,7 @@
 type Query {
   node(id: ID!): Node
-  user(id: ID!): User
-  users(
+  emptyResponse(id: ID!): EmptyResponse
+  emptyResponses(
     "Returns the first n elements from the list."
     first: Int
 
@@ -13,7 +13,7 @@ type Query {
 
     "Returns the elements in the list that come after the specified cursor."
     after: String
-  ): UserCursorConnection
+  ): EmptyResponseCursorConnection
   healthCheck(id: ID!): HealthCheck
   healthChecks(
     "Returns the first n elements from the list."
@@ -28,6 +28,20 @@ type Query {
     "Returns the elements in the list that come after the specified cursor."
     after: String
   ): HealthCheckCursorConnection
+  user(id: ID!): User
+  users(
+    "Returns the first n elements from the list."
+    first: Int
+
+    "Returns the last n elements from the list."
+    last: Int
+
+    "Returns the elements in the list that come before the specified cursor."
+    before: String
+
+    "Returns the elements in the list that come after the specified cursor."
+    after: String
+  ): UserCursorConnection
 }
 
 "A node, according to the Relay specification."
@@ -36,28 +50,25 @@ interface Node {
   id: ID!
 }
 
-type User implements Node {
+type EmptyResponse implements Node {
   id: ID!
-  confirmed: Boolean!
-  email: String!
-  initials: String!
 }
 
-"Cursor connection for User."
-type UserCursorConnection {
-  edges: [UserEdge]
-  pageInfo: UserPageInfo!
+"Cursor connection for EmptyResponse."
+type EmptyResponseCursorConnection {
+  edges: [EmptyResponseEdge]
+  pageInfo: EmptyResponsePageInfo!
   totalCount: Int!
 }
 
-"Edge of User."
-type UserEdge {
-  node: User
+"Edge of EmptyResponse."
+type EmptyResponseEdge {
+  node: EmptyResponse
   cursor: String!
 }
 
 "Information about the current page."
-type UserPageInfo {
+type EmptyResponsePageInfo {
   endCursor: String
   startCursor: String
   hasNextPage: Boolean!
@@ -89,7 +100,53 @@ type HealthCheckPageInfo {
   hasPreviousPage: Boolean!
 }
 
+type User implements Node {
+  id: ID!
+  confirmed: Boolean!
+  email: String!
+  initials: String!
+}
+
+"Cursor connection for User."
+type UserCursorConnection {
+  edges: [UserEdge]
+  pageInfo: UserPageInfo!
+  totalCount: Int!
+}
+
+"Edge of User."
+type UserEdge {
+  node: User
+  cursor: String!
+}
+
+"Information about the current page."
+type UserPageInfo {
+  endCursor: String
+  startCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
 type Mutation {
+  "Updates a EmptyResponse."
+  updateEmptyResponse(input: updateEmptyResponseInput!): updateEmptyResponsePayload
+
+  "Deletes a EmptyResponse."
+  deleteEmptyResponse(input: deleteEmptyResponseInput!): deleteEmptyResponsePayload
+
+  "Creates a EmptyResponse."
+  createEmptyResponse(input: createEmptyResponseInput!): createEmptyResponsePayload
+
+  "Updates a HealthCheck."
+  updateHealthCheck(input: updateHealthCheckInput!): updateHealthCheckPayload
+
+  "Deletes a HealthCheck."
+  deleteHealthCheck(input: deleteHealthCheckInput!): deleteHealthCheckPayload
+
+  "Creates a HealthCheck."
+  createHealthCheck(input: createHealthCheckInput!): createHealthCheckPayload
+
   "Deletes a User."
   deleteUser(input: deleteUserInput!): deleteUserPayload
 
@@ -105,14 +162,81 @@ type Mutation {
   "ResendEmailTos a User."
   resendEmailToUser(input: resendEmailToUserInput!): resendEmailToUserPayload
 
-  "Updates a HealthCheck."
-  updateHealthCheck(input: updateHealthCheckInput!): updateHealthCheckPayload
+  "RequestPasswordResets a User."
+  requestPasswordResetUser(input: requestPasswordResetUserInput!): requestPasswordResetUserPayload
 
-  "Deletes a HealthCheck."
-  deleteHealthCheck(input: deleteHealthCheckInput!): deleteHealthCheckPayload
+  "ConfirmPasswordResets a User."
+  confirmPasswordResetUser(input: confirmPasswordResetUserInput!): confirmPasswordResetUserPayload
+}
 
-  "Creates a HealthCheck."
-  createHealthCheck(input: createHealthCheckInput!): createHealthCheckPayload
+"Updates a EmptyResponse."
+input updateEmptyResponseInput {
+  id: ID!
+  clientMutationId: String
+}
+
+"Updates a EmptyResponse."
+type updateEmptyResponsePayload {
+  emptyResponse: EmptyResponse
+  clientMutationId: String
+}
+
+"Deletes a EmptyResponse."
+input deleteEmptyResponseInput {
+  id: ID!
+  clientMutationId: String
+}
+
+"Deletes a EmptyResponse."
+type deleteEmptyResponsePayload {
+  emptyResponse: EmptyResponse
+  clientMutationId: String
+}
+
+"Creates a EmptyResponse."
+input createEmptyResponseInput {
+  clientMutationId: String
+}
+
+"Creates a EmptyResponse."
+type createEmptyResponsePayload {
+  emptyResponse: EmptyResponse
+  clientMutationId: String
+}
+
+"Updates a HealthCheck."
+input updateHealthCheckInput {
+  id: ID!
+  clientMutationId: String
+}
+
+"Updates a HealthCheck."
+type updateHealthCheckPayload {
+  healthCheck: HealthCheck
+  clientMutationId: String
+}
+
+"Deletes a HealthCheck."
+input deleteHealthCheckInput {
+  id: ID!
+  clientMutationId: String
+}
+
+"Deletes a HealthCheck."
+type deleteHealthCheckPayload {
+  healthCheck: HealthCheck
+  clientMutationId: String
+}
+
+"Creates a HealthCheck."
+input createHealthCheckInput {
+  clientMutationId: String
+}
+
+"Creates a HealthCheck."
+type createHealthCheckPayload {
+  healthCheck: HealthCheck
+  clientMutationId: String
 }
 
 "Deletes a User."
@@ -186,37 +310,27 @@ type resendEmailToUserPayload {
   clientMutationId: String
 }
 
-"Updates a HealthCheck."
-input updateHealthCheckInput {
-  id: ID!
+"RequestPasswordResets a User."
+input requestPasswordResetUserInput {
+  clientMutationId: String
+  email: String!
+}
+
+"RequestPasswordResets a User."
+type requestPasswordResetUserPayload {
+  user: User
   clientMutationId: String
 }
 
-"Updates a HealthCheck."
-type updateHealthCheckPayload {
-  healthCheck: HealthCheck
+"ConfirmPasswordResets a User."
+input confirmPasswordResetUserInput {
   clientMutationId: String
+  token: String!
+  newPassword: String!
 }
 
-"Deletes a HealthCheck."
-input deleteHealthCheckInput {
-  id: ID!
-  clientMutationId: String
-}
-
-"Deletes a HealthCheck."
-type deleteHealthCheckPayload {
-  healthCheck: HealthCheck
-  clientMutationId: String
-}
-
-"Creates a HealthCheck."
-input createHealthCheckInput {
-  clientMutationId: String
-}
-
-"Creates a HealthCheck."
-type createHealthCheckPayload {
-  healthCheck: HealthCheck
+"ConfirmPasswordResets a User."
+type confirmPasswordResetUserPayload {
+  user: User
   clientMutationId: String
 }

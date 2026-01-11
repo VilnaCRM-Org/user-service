@@ -6,59 +6,20 @@ namespace App\Tests\Behat\HealthCheckContext;
 
 use Aws\Sqs\SqsClient;
 use Behat\Behat\Context\Context;
-use Doctrine\Common\EventManager;
-use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver;
-use PHPUnit\Framework\Assert;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\TraceableAdapter;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
-final class HealthCheckContext extends KernelTestCase implements Context
+final class HealthCheckContext implements Context
 {
-    private KernelInterface $kernelInterface;
-    private Response $response;
+    private bool $kernelDirty = false;
+    private KernelInterface $kernel;
 
-    public function __construct(
-        KernelInterface $kernel
-    ) {
-        parent::__construct();
-        $this->kernelInterface = $kernel;
-    }
-
-    /**
-     * @When :method request is sent to :path
-     */
-    public function sendRequestTo(string $method, string $path): void
+    public function __construct(KernelInterface $kernel)
     {
-        $this->response = $this->kernelInterface->handle(Request::create(
-            $path,
-            $method,
-        ));
-    }
-
-    /**
-     * @Then the response status code should be :statusCode
-     */
-    public function theResponseStatusCodeShouldBe(string $statusCode): void
-    {
-        Assert::assertEquals($statusCode, $this->response->getStatusCode());
-    }
-
-    /**
-     * @Then the response body should contain :text
-     */
-    public function theResponseBodyShouldContain(string $text): void
-    {
-        $responseContent = $this->response->getContent();
-        Assert::assertStringContainsString(
-            $text,
-            $responseContent,
-            "The response body does not contain the expected text: '{$text}'."
-        );
+        $this->kernel = $kernel;
     }
 
     /**
@@ -66,16 +27,20 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theCacheIsNotWorking(): void
     {
-        $traceableCacheMock = $this->createMock(TraceableAdapter::class);
+        $failingPool = new class() extends ArrayAdapter {
+            public function get(
+                string $key,
+                callable $callback,
+                ?float $beta = null,
+                ?array &$metadata = null
+            ): mixed {
+                throw new \RuntimeException('Cache is not working');
+            }
+        };
 
-        $traceableCacheMock->method('get')
-            ->willThrowException(new \Exception('Cache is not working'));
+        $failingCache = new TraceableAdapter($failingPool);
 
-        $container = $this->kernelInterface
-            ->getContainer()
-            ->get('test.service_container');
-
-        $container->set('cache.app', $traceableCacheMock);
+        $this->replaceService('cache.app', $failingCache);
     }
 
     /**
@@ -83,25 +48,8 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theDatabaseIsNotAvailable(): void
     {
-        $driverMock = $this->createMock(Driver::class);
-
-        $connectionMock = $this->getMockBuilder(Connection::class)
-            ->setConstructorArgs([
-                [],
-                $driverMock,
-                new Configuration(),
-                new EventManager(),
-            ])
-            ->onlyMethods(['executeQuery'])
-            ->getMock();
-
-        $connectionMock->method('executeQuery')
-            ->willThrowException(new \Exception('Database is not available'));
-
-        $container = $this->kernelInterface
-            ->getContainer()
-            ->get('test.service_container');
-        $container->set(Connection::class, $connectionMock);
+        $failingConnection = $this->createFailingConnection();
+        $this->replaceService(Connection::class, $failingConnection);
     }
 
     /**
@@ -109,18 +57,72 @@ final class HealthCheckContext extends KernelTestCase implements Context
      */
     public function theMessageBrokerIsNotAvailable(): void
     {
-        $sqsClientMock = $this->createMock(SqsClient::class);
+        $failingSqsClient = $this->createFailingSqsClient();
+        $this->replaceService(SqsClient::class, $failingSqsClient);
+    }
 
-        $sqsClientMock->method('__call')
-            ->willThrowException(
-                new \Exception(
-                    'Message broker is not available'
-                )
-            );
+    /**
+     * @AfterScenario
+     */
+    public function restoreMockedServices(): void
+    {
+        if ($this->kernelDirty === false) {
+            return;
+        }
 
-        $container = $this->kernelInterface
-            ->getContainer()
-            ->get('test.service_container');
-        $container->set(SqsClient::class, $sqsClientMock);
+        $this->kernel->reboot(null);
+        $this->kernelDirty = false;
+    }
+
+    private function createFailingSqsClient(): SqsClient
+    {
+        return new class() extends SqsClient {
+            public function __construct()
+            {
+                parent::__construct([
+                    'service' => 'sqs',
+                    'version' => 'latest',
+                    'region' => 'us-east-1',
+                    'credentials' => ['key' => 'invalid', 'secret' => 'invalid'],
+                ]);
+            }
+
+            public function __call($name, array $args): void
+            {
+                throw new \RuntimeException('Message broker is not available');
+            }
+        };
+    }
+
+    private function createFailingConnection(): FailingConnection
+    {
+        $connection = $this->container()->get(Connection::class);
+        assert($connection instanceof Connection);
+        $params = $connection->getParams();
+        $driver = $connection->getDriver();
+        $config = $connection->getConfiguration();
+
+        return new FailingConnection($params, $driver, $config);
+    }
+
+    private function replaceService(string $serviceId, object $service): void
+    {
+        if ($this->kernelDirty === false) {
+            $this->kernel->reboot(null);
+            $this->kernelDirty = true;
+        }
+
+        $this->container()->set($serviceId, $service);
+    }
+
+    private function container(): ContainerInterface
+    {
+        $container = $this->kernel->getContainer()->get('test.service_container');
+
+        if (!$container instanceof ContainerInterface) {
+            throw new \RuntimeException('Test container is not available');
+        }
+
+        return $container;
     }
 }

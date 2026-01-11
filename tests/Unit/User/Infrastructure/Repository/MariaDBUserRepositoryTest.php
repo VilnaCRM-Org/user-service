@@ -33,6 +33,7 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
     private UuidTransformer $transformer;
     private Connection $connection;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -66,6 +67,55 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
         $user = $this->userRepository->findByEmail($email);
 
         $this->assertSame($expectedUser, $user);
+    }
+
+    public function testFindById(): void
+    {
+        $id = $this->faker->uuid();
+        $expectedUser = $this->createMock(UserInterface::class);
+
+        // Create a mock repository that overrides just the find method
+        $repository = $this->getMockBuilder(MariaDBUserRepository::class)
+            ->setConstructorArgs([
+                $this->entityManager,
+                $this->registry,
+                self::BATCH_SIZE,
+            ])
+            ->onlyMethods(['find'])
+            ->getMock();
+
+        $repository->expects($this->once())
+            ->method('find')
+            ->with($id)
+            ->willReturn($expectedUser);
+
+        $result = $repository->findById($id);
+
+        $this->assertSame($expectedUser, $result);
+    }
+
+    public function testFindByIdReturnsNull(): void
+    {
+        $id = $this->faker->uuid();
+
+        // Create a mock repository that overrides just the find method
+        $repository = $this->getMockBuilder(MariaDBUserRepository::class)
+            ->setConstructorArgs([
+                $this->entityManager,
+                $this->registry,
+                self::BATCH_SIZE,
+            ])
+            ->onlyMethods(['find'])
+            ->getMock();
+
+        $repository->expects($this->once())
+            ->method('find')
+            ->with($id)
+            ->willReturn(null);
+
+        $result = $repository->findById($id);
+
+        $this->assertNull($result);
     }
 
     public function testSaveBatchSetsMiddleware(): void
@@ -207,7 +257,7 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
     }
 
     private function getRepository(
-        int $batchSize = self::BATCH_SIZE
+        int $batchSize = self::BATCH_SIZE,
     ): UserRepositoryInterface {
         return new MariaDBUserRepository(
             $this->entityManager,
@@ -230,12 +280,12 @@ final class MariaDBUserRepositoryTest extends UnitTestCase
             ->willReturn($this->createMock(Configuration::class));
         $this->entityManager->expects($this->exactly(self::BATCH_SIZE))
             ->method('persist')
-            ->withConsecutive(
-                ...array_map(
-                    static function ($user) {
-                        return [$user];
-                    },
-                    $users
+            ->willReturnCallback(
+                $this->expectSequential(
+                    array_map(
+                        static fn ($user) => [$user],
+                        $users
+                    )
                 )
             );
     }

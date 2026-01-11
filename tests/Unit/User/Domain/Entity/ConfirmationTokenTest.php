@@ -15,6 +15,7 @@ final class ConfirmationTokenTest extends UnitTestCase
     private ConfirmationToken $confirmationToken;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

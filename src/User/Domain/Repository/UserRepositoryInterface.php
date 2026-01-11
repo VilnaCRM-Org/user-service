@@ -16,6 +16,8 @@ interface UserRepositoryInterface
 
     public function findByEmail(string $email): ?UserInterface;
 
+    public function findById(string $id): ?UserInterface;
+
     /**
      * @param User $user
      */
@@ -36,4 +38,6 @@ interface UserRepositoryInterface
         ?int $lockMode = null,
         ?int $lockVersion = null
     ): ?object;
+
+    public function deleteAll(): void;
 }

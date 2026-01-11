@@ -25,6 +25,7 @@ final class UserRegisteredBatchMessageHandlerTest extends UnitTestCase
     private UserRegisteredBatchMessageHandler $handler;
     private Acknowledger $ack;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->userRepository =
@@ -34,7 +35,11 @@ final class UserRegisteredBatchMessageHandlerTest extends UnitTestCase
             $this->createMock(UserRegisteredEventFactoryInterface::class);
         $this->mockUuidFactory = $this->createMock(UuidFactory::class);
         $this->uuidFactory = new UuidFactory();
-        $this->ack = $this->createMock(Acknowledger::class);
+        $this->ack = new Acknowledger(
+            UserRegisteredBatchMessageHandler::class,
+            static function (): void {
+            }
+        );
 
         $this->handler = new UserRegisteredBatchMessageHandler(
             $this->userRepository,
@@ -56,6 +61,9 @@ final class UserRegisteredBatchMessageHandlerTest extends UnitTestCase
         $reflection = new \ReflectionClass($this->handler);
         $method = $reflection->getMethod('process');
         $method->invokeArgs($this->handler, [$jobs]);
+
+        self::assertTrue($this->ack->isAcknowledged());
+        self::assertSame($user, $this->ack->getResult());
     }
 
     public function testProcessFailure(): void
@@ -69,15 +77,14 @@ final class UserRegisteredBatchMessageHandlerTest extends UnitTestCase
             ->with($user)
             ->will($this->throwException(new \Exception()));
 
-        $this->ack->expects($this->once())
-            ->method('nack')
-            ->with($this->isInstanceOf(\Exception::class));
-
         $jobs = [[$message, $this->ack]];
 
         $reflection = new \ReflectionClass($this->handler);
         $method = $reflection->getMethod('process');
         $method->invokeArgs($this->handler, [$jobs]);
+
+        self::assertTrue($this->ack->isAcknowledged());
+        self::assertInstanceOf(\Exception::class, $this->ack->getError());
     }
 
     public function testInvoke(): void
@@ -95,6 +102,7 @@ final class UserRegisteredBatchMessageHandlerTest extends UnitTestCase
         $result = $handlerMock->__invoke($message, $this->ack);
 
         $this->assertSame(1, $result);
+        $this->ack->ack();
     }
 
     private function testProcessSetExpectations(
@@ -121,9 +129,5 @@ final class UserRegisteredBatchMessageHandlerTest extends UnitTestCase
             ->expects($this->once())
             ->method('publish')
             ->with($event);
-
-        $this->ack->expects($this->once())
-            ->method('ack')
-            ->with($user);
     }
 }

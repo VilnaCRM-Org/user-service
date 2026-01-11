@@ -44,7 +44,7 @@ Feature: User GraphQL Operations
     Given requesting to return user's id and email
     And creating user with email "graphqlTest@mail.com" initials " " password "passWORD1"
     When graphQL request is send
-    Then graphql error message should be "initials: Initials can not consist only of spaces"
+    Then graphql error message should be "initials: Initials cannot consist only of spaces"
 
   Scenario: Updating user
     Given requesting to return user's id and email

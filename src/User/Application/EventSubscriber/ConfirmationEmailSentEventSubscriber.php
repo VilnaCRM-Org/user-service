@@ -6,9 +6,9 @@ namespace App\User\Application\EventSubscriber;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
+use App\User\Application\Factory\EmailFactoryInterface;
 use App\User\Domain\Event\ConfirmationEmailSentEvent;
 use App\User\Domain\Repository\TokenRepositoryInterface;
-use App\User\Infrastructure\Factory\EmailFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -51,6 +51,7 @@ final readonly class ConfirmationEmailSentEventSubscriber implements
     /**
      * @return array<DomainEvent>
      */
+    #[\Override]
     public function subscribedTo(): array
     {
         return [ConfirmationEmailSentEvent::class];

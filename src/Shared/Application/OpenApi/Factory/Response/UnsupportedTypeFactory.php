@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 
 final class UnsupportedTypeFactory implements
     AbstractResponseFactory
@@ -15,6 +15,7 @@ final class UnsupportedTypeFactory implements
     {
     }
 
+    #[\Override]
     public function getResponse(): Response
     {
         return $this->responseBuilder->build(
@@ -23,7 +24,6 @@ final class UnsupportedTypeFactory implements
                 $this->getErrorParam(),
                 $this->getErrorDescriptionParam(),
                 $this->getHintParam(),
-                $this->getMessageParam(),
             ],
             []
         );
@@ -54,16 +54,6 @@ final class UnsupportedTypeFactory implements
             'hint',
             'string',
             'Check that all required parameters have been provided'
-        );
-    }
-
-    private function getMessageParam(): Parameter
-    {
-        return new Parameter(
-            'message',
-            'string',
-            'The authorization grant type is not '.
-            'supported by the authorization server.'
         );
     }
 }

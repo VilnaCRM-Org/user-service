@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Factory\Request;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\RequestBuilder;
+use App\Shared\Application\OpenApi\Enum\Requirement;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 
 final class UpdateUserRequestFactory implements AbstractRequestFactory
 {
@@ -14,6 +15,7 @@ final class UpdateUserRequestFactory implements AbstractRequestFactory
     {
     }
 
+    #[\Override]
     public function getRequest(): RequestBody
     {
         return $this->requestBuilder->build(
@@ -32,10 +34,10 @@ final class UpdateUserRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'email',
             'string',
-            'user@example.com',
+            'update-user@example.com',
             255,
             'email',
-            required: false
+            requirement: Requirement::OPTIONAL
         );
     }
 
@@ -44,9 +46,10 @@ final class UpdateUserRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'initials',
             'string',
-            'Name Surname',
+            'Update User',
             255,
-            required: false
+            pattern: '^(?!\\d).*\\S.*$',
+            requirement: Requirement::OPTIONAL
         );
     }
 
@@ -55,8 +58,11 @@ final class UpdateUserRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'oldPassword',
             'string',
-            'passWORD1',
-            255
+            'Password1!',
+            64,
+            null,
+            Requirement::REQUIRED,
+            '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
         );
     }
 
@@ -65,9 +71,11 @@ final class UpdateUserRequestFactory implements AbstractRequestFactory
         return new Parameter(
             'newPassword',
             'string',
-            'PASSword2',
-            255,
-            required: false
+            'Password1!',
+            64,
+            null,
+            requirement: Requirement::OPTIONAL,
+            pattern: '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
         );
     }
 }

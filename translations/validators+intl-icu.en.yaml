@@ -5,7 +5,11 @@ email:
   not:
     unique: 'This email address is already registered'
 initials:
-  spaces: 'Initials can not consist only of spaces'
+  spaces: 'Initials cannot consist only of spaces'
+  starts_with_number: 'Initials cannot start with a number'
+  invalid:
+    length: 'This value is too long. It should have {limit} character or less.|This value is too long. It should have {limit} characters or less.'
+    type: 'Initials must be a string.'
 password:
   invalid:
     length: 'Password must be between 8 and 64 characters long'
@@ -16,3 +20,4 @@ batch:
   empty: 'Batch should have at least one user'
   email:
     duplicate: 'Duplicate email in a batch'
+    missing: 'Each batch entry must contain a valid email address'

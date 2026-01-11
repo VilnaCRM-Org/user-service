@@ -6,11 +6,14 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Shared\Application\Provider\Http\JsonRequestPayloadProvider;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\UserPatchDto;
 use App\User\Application\DTO\UserPutDto;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\Query\GetUserQueryHandler;
+use App\User\Application\Resolver\UserPatchUpdateResolver;
+use App\User\Application\Validator\UserPatchPayloadValidator;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\ValueObject\UserUpdate;
@@ -20,10 +23,15 @@ use App\User\Domain\ValueObject\UserUpdate;
  */
 final readonly class UserPatchProcessor implements ProcessorInterface
 {
+    private const INVALID_JSON_MESSAGE = 'Invalid JSON body.';
+
     public function __construct(
         private CommandBusInterface $commandBus,
         private UpdateUserCommandFactoryInterface $updateUserCommandFactory,
-        private GetUserQueryHandler $getUserQueryHandler
+        private GetUserQueryHandler $getUserQueryHandler,
+        private JsonRequestPayloadProvider $payloadProvider,
+        private UserPatchUpdateResolver $updateResolver,
+        private UserPatchPayloadValidator $payloadValidator
     ) {
     }
 
@@ -32,72 +40,35 @@ final readonly class UserPatchProcessor implements ProcessorInterface
      * @param array<string,string> $context
      * @param array<string,string> $uriVariables
      */
+    #[\Override]
     public function process(
         mixed $data,
         Operation $operation,
         array $uriVariables = [],
         array $context = []
     ): User {
+        $payload = $this->payloadProvider->getPayload(
+            self::INVALID_JSON_MESSAGE
+        );
+
+        $this->payloadValidator->ensureNoExplicitNulls($payload);
+
         $user = $this->getUserQueryHandler->handle($uriVariables['id']);
+        $update = $this->updateResolver->resolve($data, $user, $payload);
 
-        $newEmail = $this->getNewEmailValue($data->email, $user->getEmail());
-        $newInitials = $this->getNewValue(
-            $data->initials,
-            $user->getInitials()
-        );
-        $newPassword = $this->getNewValue(
-            $data->newPassword,
-            $data->oldPassword
-        );
-
-        $this->dispatchCommand(
-            $user,
-            $newEmail,
-            $newInitials,
-            $newPassword,
-            $data->oldPassword
-        );
+        $this->dispatchCommand($user, $update);
 
         return $user;
     }
 
-    private function getNewValue(string $newValue, string $defaultValue): string
-    {
-        $trimmedValue = trim($newValue);
-        return strlen($trimmedValue) === 0 ? $defaultValue : $trimmedValue;
-    }
-
-    private function getNewEmailValue(
-        string $newValue,
-        string $defaultValue
-    ): string {
-        $trimmedValue = trim($newValue);
-        if (strlen($trimmedValue) === 0) {
-            return $defaultValue;
-        }
-
-        if (filter_var($trimmedValue, FILTER_VALIDATE_EMAIL)) {
-            return strtolower($trimmedValue);
-        }
-        return $trimmedValue;
-    }
-
     private function dispatchCommand(
         UserInterface $user,
-        string $newEmail,
-        string $newInitials,
-        string $newPassword,
-        string $oldPassword
+        UserUpdate $update
     ): void {
         $this->commandBus->dispatch(
             $this->updateUserCommandFactory->create(
                 $user,
-                new UserUpdate(
-                    $newEmail,
-                    $newInitials,
-                    $newPassword,
-                    $oldPassword
-                )
+                $update
             )
         );
     }
