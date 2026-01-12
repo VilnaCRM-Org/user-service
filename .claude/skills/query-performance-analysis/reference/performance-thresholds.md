@@ -55,7 +55,7 @@ Acceptable performance limits for database operations.
 
 **Example**:
 
-```
+```text
 Rows_sent: 10
 Rows_examined: 100
 Ratio: 100/10 = 10:1 (Poor - review index)

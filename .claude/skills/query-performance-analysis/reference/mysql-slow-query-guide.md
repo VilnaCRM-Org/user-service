@@ -6,18 +6,23 @@ The slow query log records all queries that exceed a specified execution time. E
 
 ## Configuration Levels
 
-| Setting                       | Development | Staging     | Production  |
-| ----------------------------- | ----------- | ----------- | ----------- |
-| slow_query_log                | ON          | ON          | ON          |
-| long_query_time               | 0.1 (100ms) | 0.2 (200ms) | 0.5 (500ms) |
-| log_queries_not_using_indexes | ON          | ON          | OFF         |
+> **Note**: These are starting recommendations. Adjust based on your MySQL/MariaDB version and workload (OLTP vs batch/analytical). MariaDB 10.11+/11.0 renamed some variables (e.g., `slow_query_log` → `log_slow_query`, `long_query_time` → `log_slow_query_time`). Monitor and adjust based on actual load and storage/monitoring capacity.
+
+| Setting                       | Development          | Staging              | Production           |
+| ----------------------------- | -------------------- | -------------------- | -------------------- |
+| slow_query_log                | ON                   | ON                   | ON                   |
+| long_query_time               | 0.1 (100ms, example) | 0.2 (200ms, example) | 0.5 (500ms, example) |
+| log_queries_not_using_indexes | ON                   | ON                   | OFF                  |
+
+> **Warning**: Do not enable `log_queries_not_using_indexes` permanently without pairing it with `min_examined_row_limit` (e.g., 1000) and `log_throttle_queries_not_using_indexes` to avoid logging/I/O storms on busy servers.
 
 ## Enable Slow Query Log
 
 ### Development (All Slow Queries)
 
 ```bash
-docker compose exec database mariadb -u root -proot db
+# Use -p flag to prompt for password (avoid embedding passwords in shell history)
+docker compose exec database mariadb -u root -p db
 ```
 
 ```sql
@@ -69,8 +74,8 @@ LIMIT 10;
 ### Method 2: Read Log File
 
 ```bash
-# Find log file location
-docker compose exec database mariadb -u root -proot -e "SHOW VARIABLES LIKE 'slow_query_log_file';"
+# Find log file location (use -p to prompt for password)
+docker compose exec database mariadb -u root -p -e "SHOW VARIABLES LIKE 'slow_query_log_file';"
 
 # View log file
 docker compose exec database tail -100 /var/lib/mysql/slow-query.log
@@ -212,17 +217,17 @@ TRUNCATE mysql.slow_log;
 ### Rotate Log Files
 
 ```bash
-# Flush logs to create new file
-docker compose exec database mysqladmin -u root -proot flush-logs
+# Flush logs to create new file (use -p to prompt for password)
+docker compose exec database mysqladmin -u root -p flush-logs
 ```
 
 ### Limit Log Size
 
-```sql
--- Set maximum log file size (requires restart)
--- In my.cnf:
--- max_binlog_size = 100M
-```
+Prefer external rotation (e.g., logrotate / sidecar) for FILE output, and periodic truncation for TABLE output.
+
+For FILE output, rotate by renaming the log file then running `FLUSH LOGS;` (requires RELOAD privilege) so MySQL reopens a fresh file.
+
+For Percona Server, set `max_slowlog_size` and `max_slowlog_files` in my.cnf for automatic rotation.
 
 ## Integration with PHP
 

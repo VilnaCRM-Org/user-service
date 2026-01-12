@@ -75,8 +75,8 @@ EXPLAIN ANALYZE SELECT ...;
 ```
 
 ```bash
-# Test endpoint
-curl https://localhost/api/your-endpoint
+# Test endpoint (adjust scheme/port for your local setup; HTTPS requires TLS)
+curl http://localhost:8080/api/your-endpoint
 ```
 
 Check Symfony Profiler for query count and timing.
