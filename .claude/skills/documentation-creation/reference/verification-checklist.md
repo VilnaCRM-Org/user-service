@@ -87,11 +87,14 @@ ls tests/Load 2>/dev/null || echo "No tests/Load"
 Ensure every required file exists:
 
 ```bash
-# Core documentation files
-for doc in main getting-started design-and-architecture developer-guide \
+# NOTE: Customize CORE_DOCS based on your project's documentation plan.
+# Example format: "doc1 doc2 doc3" (space-separated, no .md extension)
+CORE_DOCS="main getting-started design-and-architecture developer-guide \
            api-endpoints testing glossary user-guide advanced-configuration \
            performance security operational onboarding community-and-support \
-           legal-and-licensing release-notes versioning; do
+           legal-and-licensing release-notes versioning"
+
+for doc in $CORE_DOCS; do
   ls docs/$doc.md 2>/dev/null && echo "✓ $doc.md" || echo "✗ $doc.md MISSING"
 done
 ```

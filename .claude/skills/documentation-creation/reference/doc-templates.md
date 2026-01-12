@@ -194,6 +194,7 @@ Replace these placeholders in all templates:
 | Placeholder      | Description                          |
 | ---------------- | ------------------------------------ |
 | `{Project Name}` | e.g., "User Service", "Core Service" |
+| `{project-name}` | Repository name (lowercase-hyphenated) |
 | `{X.Y}`          | Version number from composer.json    |
 | `{Runtime}`      | PHP-FPM, FrankenPHP, etc.            |
 | `{Database}`     | MySQL, MongoDB, PostgreSQL, etc.     |
@@ -201,3 +202,5 @@ Replace these placeholders in all templates:
 | `{Context2}`     | Second bounded context name          |
 | `{Purpose}`      | Brief description of context purpose |
 | `{Auth}`         | OAuth, JWT, etc.                     |
+| `{bounded contexts list}` | Comma-separated list of bounded contexts |
+| `{Title}`        | Document title for additional templates |

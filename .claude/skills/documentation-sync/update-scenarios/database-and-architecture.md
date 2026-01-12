@@ -17,8 +17,9 @@
 
 - `id`: UUID (primary key)
 - `email`: Unique, indexed
+- `initials`: User initials
 - `password`: Hashed password
-- `confirmedAt`: Nullable datetime for confirmation status
+- `confirmed`: Boolean confirmation status
 ```
 
 **Update**: `docs/developer-guide.md` with repository usage patterns
