@@ -379,6 +379,79 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
+### 13. Query Performance Analysis (`query-performance-analysis/`)
+
+**Purpose**: Analyze and optimize database query performance using MySQL/MariaDB slow query log and Doctrine ORM patterns
+
+**When activated**:
+
+- Investigating slow API responses
+- Optimizing database queries
+- Detecting N+1 query problems
+- Creating indexes for better performance
+- Analyzing slow query logs
+
+**What it does**:
+
+- Guides slow query log configuration and analysis
+- Provides N+1 detection strategies for Doctrine ORM
+- Documents MySQL EXPLAIN output interpretation
+- Explains index strategies and creation patterns
+- Covers performance thresholds and monitoring
+
+**Key commands**: `docker compose exec database mariadb -u root -proot db`
+
+**Structure**: Multi-file with comprehensive guides:
+
+- `SKILL.md` (Core workflow and analysis patterns)
+- `examples/n-plus-one-detection.md` (Doctrine ORM N+1 patterns)
+- `examples/slow-query-analysis.md` (MySQL EXPLAIN usage)
+- `reference/index-strategies.md` (MySQL index types)
+- `reference/mysql-slow-query-guide.md` (Slow query log configuration)
+- `reference/performance-thresholds.md` (Performance limits)
+
+---
+
+### 14. Structurizr Architecture Sync (`structurizr-architecture-sync/`)
+
+**Purpose**: Maintain Structurizr C4 architecture diagrams in sync with code changes
+
+**When activated**:
+
+- Adding new components (controllers, handlers, services, repositories)
+- Creating new entities or aggregates
+- Modifying component relationships or dependencies
+- Implementing new architectural patterns (CQRS, events, subscribers)
+- Adding infrastructure components (databases, caches, message brokers)
+- Refactoring that changes component structure
+- After fixing Deptrac violations
+
+**What it does**:
+
+- Guides workspace.dsl updates for architectural changes
+- Documents C4 model component identification
+- Provides relationship patterns and DSL syntax reference
+- Ensures diagrams stay synchronized with code
+- Covers manual positioning and committing both workspace.dsl and workspace.json
+
+**Key commands**: Access Structurizr at `http://localhost:${STRUCTURIZR_PORT:-8080}`
+
+**Structure**: Multi-file with comprehensive guides:
+
+- `SKILL.md` (Core workflow and 5-step quick start)
+- `examples/cqrs-pattern.md` (CQRS documentation patterns)
+- `examples/api-endpoint.md` (API endpoint documentation)
+- `examples/domain-entity.md` (Entity documentation)
+- `examples/refactoring.md` (Refactoring diagram updates)
+- `reference/c4-model-guide.md` (C4 model fundamentals)
+- `reference/component-identification.md` (What to document)
+- `reference/dsl-syntax.md` (Structurizr DSL syntax)
+- `reference/relationship-patterns.md` (Common relationships)
+- `reference/workspace-template.md` (Complete template)
+- `reference/common-mistakes.md` (Pitfalls and solutions)
+
+---
+
 ## How Skills Work
 
 ### Cross-Platform Compatibility

@@ -12,6 +12,7 @@ What are you trying to do?
 │   ├─ High complexity → complexity-management
 │   ├─ Test failures → testing-workflow
 │   ├─ PHPInsights fails → complexity-management
+│   ├─ Slow database queries → query-performance-analysis
 │   └─ CI checks failing → ci-workflow
 │
 ├─ Create something new
@@ -26,8 +27,11 @@ What are you trying to do?
 │   ├─ PR feedback → code-review
 │   └─ Quality thresholds → quality-standards
 │
-└─ Update documentation
-    └─ Any code change → documentation-sync
+├─ Update documentation
+│   └─ Any code change → documentation-sync
+│
+└─ Architecture diagrams
+    └─ Update workspace.dsl → structurizr-architecture-sync
 ```
 
 ## Scenario-Based Guide
@@ -141,6 +145,28 @@ This skill covers processor patterns for OpenAPI.
 
 ---
 
+### "Database queries are slow"
+
+**Use**: [query-performance-analysis](query-performance-analysis/SKILL.md)
+
+This skill guides slow query analysis with MySQL EXPLAIN and Doctrine ORM optimization.
+
+**NOT**: load-testing (that's for K6 performance tests)
+**NOT**: testing-workflow (that's for functional tests)
+
+---
+
+### "I need to update architecture diagrams"
+
+**Use**: [structurizr-architecture-sync](structurizr-architecture-sync/SKILL.md)
+
+This skill guides updating workspace.dsl when adding components or changing architecture.
+
+**ALSO**: Use after [implementing-ddd-architecture](implementing-ddd-architecture/SKILL.md) when creating new domain models.
+**ALSO**: Use after [deptrac-fixer](deptrac-fixer/SKILL.md) when fixing layer violations.
+
+---
+
 ## Skill Relationship Map
 
 ```
@@ -150,14 +176,15 @@ This skill covers processor patterns for OpenAPI.
                     ┌────────────┼────────────┐
                     ▼            ▼            ▼
            complexity-    deptrac-fixer   testing-workflow
-           management                            │
-                              │                  │
-                              ▼                  ▼
-                    implementing-ddd-      load-testing
-                      architecture         (performance)
-                              │
-                              ▼
-                    database-migrations
+           management           │               │
+                                ▼               ▼
+                      implementing-ddd-   load-testing
+                        architecture      (performance)
+                              │                │
+              ┌───────────────┼───────────────┐
+              ▼               ▼               ▼
+       database-      structurizr-     query-performance-
+        migrations    architecture-sync    analysis
 ```
 
 ## Common Confusions
@@ -168,6 +195,8 @@ This skill covers processor patterns for OpenAPI.
 | testing-workflow vs load-testing               | **Functional tests** (unit, integration, E2E) → testing-workflow<br>**Performance tests** (K6) → load-testing |
 | quality-standards vs complexity-management     | **Overview of all metrics** → quality-standards<br>**Fix complexity specifically** → complexity-management    |
 | ci-workflow vs testing-workflow                | **Run all CI checks** → ci-workflow<br>**Debug specific test issues** → testing-workflow                      |
+| load-testing vs query-performance-analysis     | **K6 HTTP load tests** → load-testing<br>**Database query optimization** → query-performance-analysis         |
+| implementing-ddd vs structurizr-architecture   | **Create code** → implementing-ddd-architecture<br>**Document diagrams** → structurizr-architecture-sync      |
 
 ## Multiple Skills for One Task
 
@@ -178,17 +207,20 @@ Some tasks benefit from multiple skills:
 1. **implementing-ddd-architecture** - Design domain model
 2. **database-migrations** - Configure persistence
 3. **testing-workflow** - Write tests
-4. **documentation-sync** - Update docs
-5. **ci-workflow** - Validate everything
+4. **structurizr-architecture-sync** - Update architecture diagrams
+5. **documentation-sync** - Update docs
+6. **ci-workflow** - Validate everything
 
 ### Fixing architecture issues:
 
 1. **deptrac-fixer** - Fix the violations
 2. **implementing-ddd-architecture** - Understand why (if needed)
-3. **ci-workflow** - Verify fix
+3. **structurizr-architecture-sync** - Update diagrams to match
+4. **ci-workflow** - Verify fix
 
 ### Performance optimization:
 
-1. **load-testing** - Create performance tests
-2. **complexity-management** - Reduce code complexity
-3. **ci-workflow** - Ensure quality maintained
+1. **query-performance-analysis** - Analyze slow database queries
+2. **load-testing** - Create performance tests
+3. **complexity-management** - Reduce code complexity
+4. **ci-workflow** - Ensure quality maintained
