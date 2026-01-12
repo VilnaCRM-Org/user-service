@@ -102,7 +102,7 @@ database = component "Database" "MariaDB instance" "MariaDB" {
 }
 
 messageBroker = component "Message Broker" "AWS SQS for async messaging" "AWS SQS" {
-    tags "Database"
+    tags "MessageBroker"
 }
 ```
 
