@@ -1,45 +1,45 @@
-# [0.1.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.8.0...v0.1.0) (2026-01-11)
+# [1.10.0](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.9.0...v1.10.0) (2025-07-10)
 
 
 ### Features
 
-* **#45:** add user reset password feature ([#215](https://github.com/VilnaCRM-Org/user-service/issues/215)) ([63041e4](https://github.com/VilnaCRM-Org/user-service/commit/63041e4a65bbb5c44426bdb1b41f484f667d56f5)), closes [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45)
+* **deps:** bump the all-deps group across 1 directory with 15 updates ([#149](https://github.com/VilnaCRM-Org/php-service-template/issues/149)) ([3cb2b30](https://github.com/VilnaCRM-Org/php-service-template/commit/3cb2b306cf307fb80dbb1557aa337949d5629212))
 
 
 
-# [2.8.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.7.1...v2.8.0) (2025-08-23)
+# [1.9.0](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.8.1...v1.9.0) (2025-07-08)
 
 
 ### Features
 
-* **#210:** add GitHub Copilot instructions ([#211](https://github.com/VilnaCRM-Org/user-service/issues/211)) ([28e8ba9](https://github.com/VilnaCRM-Org/user-service/commit/28e8ba93fe32d55db719678cda90231c34f0795b)), closes [#210](https://github.com/VilnaCRM-Org/user-service/issues/210) [#210](https://github.com/VilnaCRM-Org/user-service/issues/210)
+* **deps:** bump brace-expansion from 1.1.11 to 1.1.12 in /tests/Load in the npm_and_yarn group ([#143](https://github.com/VilnaCRM-Org/php-service-template/issues/143)) ([39338b8](https://github.com/VilnaCRM-Org/php-service-template/commit/39338b889b5a638eecb0df7dac6abf42e8b2cfd2))
 
 
 
-## [2.7.1](https://github.com/VilnaCRM-Org/user-service/compare/v2.7.0...v2.7.1) (2025-07-07)
+## [1.8.1](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.8.0...v1.8.1) (2025-07-07)
 
 
 ### Bug Fixes
 
-* **#204:** Update dependabot.yml ([#204](https://github.com/VilnaCRM-Org/user-service/issues/204)) ([aebc727](https://github.com/VilnaCRM-Org/user-service/commit/aebc727f5cf5b5a1c98d921c7d504690a5e3d7e2))
+* **#146:** Update dependabot.yml ([#146](https://github.com/VilnaCRM-Org/php-service-template/issues/146)) ([4eaf3e7](https://github.com/VilnaCRM-Org/php-service-template/commit/4eaf3e7a4d56758db04368703095660733893ab9))
 
 
 
-# [2.7.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.6.0...v2.7.0) (2025-06-25)
-
-
-### Features
-
-* **deps:** bump brace-expansion from 1.1.11 to 1.1.12 in /tests/Load in the npm_and_yarn group ([#196](https://github.com/VilnaCRM-Org/user-service/issues/196)) ([07efad3](https://github.com/VilnaCRM-Org/user-service/commit/07efad31bb5f92e8dbeb9697917e2acc1a05add8))
-
-
-
-# [2.6.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.5.0...v2.6.0) (2025-05-28)
+# [1.8.0](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.7.0...v1.8.0) (2025-07-02)
 
 
 ### Features
 
-* **deps:** bump the all-deps group across 1 directory with 5 updates ([#189](https://github.com/VilnaCRM-Org/user-service/issues/189)) ([c800529](https://github.com/VilnaCRM-Org/user-service/commit/c80052918cfbd1404ee77b0ef84d1dc4a3c96b97))
+* **#135:** add rector php ([#135](https://github.com/VilnaCRM-Org/php-service-template/issues/135)) ([10c34b4](https://github.com/VilnaCRM-Org/php-service-template/commit/10c34b4be0c8cda8cf3c4eadf84c172bfa5abc21)), closes [#126](https://github.com/VilnaCRM-Org/php-service-template/issues/126)
+
+
+
+# [1.7.0](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.6.1...v1.7.0) (2025-05-26)
+
+
+### Features
+
+* **deps:** bump the all-deps group across 1 directory with 11 updates ([#136](https://github.com/VilnaCRM-Org/php-service-template/issues/136)) ([9e631ee](https://github.com/VilnaCRM-Org/php-service-template/commit/9e631ee0732cfd6cfe9cccc5d546fe3d929b10aa))
 
 
 

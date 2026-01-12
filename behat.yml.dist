@@ -1,25 +1,13 @@
 default:
     suites:
         default:
-            paths:
-                - features
             contexts:
-                - App\Tests\Behat\UserGraphQLContext\UserGraphQLContext
-                - App\Tests\Behat\UserContext\UserContext
-                - App\Tests\Behat\UserContext\UserOperationsContext
-                - App\Tests\Behat\OAuthContext\OAuthContext
+                - App\Tests\Behat\DemoContext
         health_check:
-            paths:
-                - features/health_check.feature
             contexts:
                 - App\Tests\Behat\HealthCheckContext\HealthCheckContext
-                - App\Tests\Behat\UserContext\UserOperationsContext
-
-
     extensions:
-        DAMA\DoctrineTestBundle\Behat\ServiceContainer\DoctrineExtension: ~
         FriendsOfBehat\SymfonyExtension:
             bootstrap: 'tests/bootstrap.php'
             kernel:
-                environment: test
                 class: App\Shared\Kernel

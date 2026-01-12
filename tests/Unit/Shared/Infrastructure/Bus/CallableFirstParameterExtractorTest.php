@@ -14,7 +14,6 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
 {
     private CallableFirstParameterExtractor $extractor;
 
-    #[\Override]
     protected function setUp(): void
     {
         $this->extractor = new CallableFirstParameterExtractor();
@@ -26,7 +25,6 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
             /**
              * @return array<string>
              */
-            #[\Override]
             public function subscribedTo(): array
             {
                 return ['MyEvent'];
@@ -73,7 +71,6 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
                 /**
                  * @return array<string>
                  */
-                #[\Override]
                 public function subscribedTo(): array
                 {
                     return [DomainEvent::class];
@@ -97,7 +94,6 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
                 /**
                  * @return array<string>
                  */
-                #[\Override]
                 public function subscribedTo(): array
                 {
                     return ['MyEvent'];
@@ -125,7 +121,6 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
             /**
              * @return array<string>
              */
-            #[\Override]
             public function subscribedTo(): array
             {
                 return [$this->subscribedTo];

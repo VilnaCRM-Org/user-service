@@ -19,7 +19,7 @@ load 'bats-assert/load'
 @test "make composer-validate command executes and reports validity with warnings" {
   run make composer-validate
   assert_success
-  [[ "$output" == *"./composer.json is valid, but with a few warnings"* || "$output" == *"./composer.json is valid"* ]]
+  assert_output --partial "./composer.json is valid, but with a few warnings"
 }
 
 @test "make check-requirements command executes and passes" {
@@ -32,7 +32,8 @@ load 'bats-assert/load'
 @test "make phpinsights command executes and completes analysis" {
   run make phpinsights
   assert_success
-  assert_output --partial './vendor/bin/phpinsights --no-interaction --flush-cache --fix --ansi --disable-security-check'
+  assert_output --partial '✨ Analysis Completed !'
+  assert_output --partial './vendor/bin/phpinsights --no-interaction --ansi --format=github-action'
 }
 
 @test "make check-security command executes and reports no vulnerabilities" {
@@ -75,11 +76,6 @@ load 'bats-assert/load'
   assert_success
 }
 
-@test "make update command executes" {
-  run make update
-  assert_success
-}
-
 @test "make load-fixtures command executes" {
    run bash -c "make load-fixtures & sleep 2; kill $!"
    assert_failure
@@ -91,14 +87,21 @@ load 'bats-assert/load'
   assert_success
 }
 
-@test "make logs shows docker logs" {
-  run make logs
+@test "make purge command executes" {
+  run make purge
   assert_success
 }
 
-@test "make new-logs command executes" {
-  run bash -c "timeout 5 make new-logs"
+@test "make logs shows docker logs" {
+  run bash -c "timeout 5 make logs"
   assert_failure 124
+  assert_output --partial "GET /ping" 200
+}
+
+@test "make new-logs command executes" {
+  run bash -c "timeout 5 make logs"
+  assert_failure 124
+  assert_output --partial ""GET /ping" 200"
 }
 
 @test "make commands lists all available Symfony commands" {

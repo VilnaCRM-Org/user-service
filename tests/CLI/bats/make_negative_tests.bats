@@ -31,14 +31,14 @@ load 'bats-assert/load'
 
   mv src/Shared/Infrastructure/Bus/Event/PartlyCoveredEventBus.php tests/CLI/bats/php/
 
-  assert_output --partial "6 mutants were not covered by tests"
+  assert_output --partial "8 mutants were not covered by tests"
 }
 
 @test "make behat should fail when scenarios fail" {
-    mv tests/Behat/HealthCheckContext/HealthCheckContext.php tests/
-    run make behat
-    mv tests/HealthCheckContext.php tests/Behat/HealthCheckContext
-    assert_failure
+  mv tests/Behat/DemoContext.php tests/
+  run make behat
+  mv tests/DemoContext.php tests/Behat/
+  assert_failure
 }
 
 @test "make psalm should fail when there are errors" {
@@ -53,33 +53,33 @@ load 'bats-assert/load'
 }
 
 @test "make deptrac should fail when there are dependency violations" {
-  mkdir src/Internal/HealthCheck/Domain/Entity/
-  mv tests/CLI/bats/php/SomeEntity.php src/Internal/HealthCheck/Domain/Entity/
+  mkdir src/CompanySubdomain/SomeModule/Domain/Entity/
+  mv tests/CLI/bats/php/SomeEntity.php src/CompanySubdomain/SomeModule/Domain/Entity/
 
   run make deptrac
 
-  mv src/Internal/HealthCheck/Domain/Entity/SomeEntity.php tests/CLI/bats/php/
-  rmdir src/Internal/HealthCheck/Domain/Entity/
-  assert_output --partial "SomeEntity.php"
+  mv src/CompanySubdomain/SomeModule/Domain/Entity/SomeEntity.php tests/CLI/bats/php/
+  rmdir src/CompanySubdomain/SomeModule/Domain/Entity/
+  assert_output --partial "App\CompanySubdomain\SomeModule\Domain\Entity\SomeEntity must not depend on App\CompanySubdomain\SomeModule\Application\Command\SomeCommand"
   assert_failure
 }
 
 @test "make e2e-tests should fail when scenarios fail" {
-    mv tests/Behat/HealthCheckContext/HealthCheckContext.php tests/
+  mv tests/Behat/DemoContext.php tests/
     run make behat
-    mv tests/HealthCheckContext.php tests/Behat/HealthCheckContext
+    mv tests/DemoContext.php tests/Behat/
     assert_failure
 }
 
 @test "make phpinsights should fail when code quality is low" {
-  mv tests/CLI/bats/php/temp_bad_code.php src/Shared/Application/TempBadCode.php
+  mv tests/CLI/bats/php/temp_bad_code.php temp_bad_code.php
 
   run make phpinsights
 
-  mv src/Shared/Application/TempBadCode.php tests/CLI/bats/php/temp_bad_code.php
+  mv temp_bad_code.php tests/CLI/bats/php/
 
   assert_failure
-  assert_output --partial "Cyclomatic Complexity"
+  assert_output --partial "The style score is too low"
 }
 
 @test "make unit-tests should fail if tests fail" {
@@ -110,4 +110,9 @@ load 'bats-assert/load'
 
   assert_failure
   assert_output --partial "does not contain valid JSON"
+}
+
+@test "make aws-lod-tests without config should fail" {
+  run make aws-load-tests
+  assert_failure
 }
