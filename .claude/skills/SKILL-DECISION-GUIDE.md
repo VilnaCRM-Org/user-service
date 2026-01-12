@@ -27,6 +27,7 @@ What are you trying to do?
 │   └─ Quality thresholds → quality-standards
 │
 └─ Update documentation
+    ├─ New project needs docs → documentation-creation
     └─ Any code change → documentation-sync
 ```
 
@@ -120,6 +121,16 @@ This skill runs comprehensive CI checks.
 **Use**: [documentation-sync](documentation-sync/SKILL.md)
 
 This skill identifies which documentation files need updating.
+
+---
+
+### "I need to create documentation for a new project"
+
+**Use**: [documentation-creation](documentation-creation/SKILL.md)
+
+This skill guides creating a complete documentation suite from scratch.
+
+**NOT**: documentation-sync (that's for updating existing docs)
 
 ---
 
