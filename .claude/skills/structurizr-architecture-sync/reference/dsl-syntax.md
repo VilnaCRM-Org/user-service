@@ -217,6 +217,7 @@ styles {
 - `Ellipse`
 - `Hexagon`
 - `Cylinder` (for databases)
+- `Pipe`
 - `Component` (UML component shape)
 - `Person` (stick figure)
 - `Robot`
