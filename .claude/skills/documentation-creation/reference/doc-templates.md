@@ -20,15 +20,15 @@ Use these scaffolds when authoring each documentation file. Replace every placeh
 
 ## Technology Stack
 
-| Component  | Technology          | Version |
-| ---------- | ------------------- | ------- |
-| Language   | PHP                 | {X.Y}   |
-| Runtime    | {Runtime}           | latest  |
-| Framework  | Symfony             | {X.Y}   |
-| API Layer  | API Platform        | {X.Y}   |
-| Database   | {Database}          | {X.Y}   |
-| Messaging  | Symfony Messenger   | {X.Y}   |
-| Cache      | Redis               | {X.Y}   |
+| Component | Technology        | Version |
+| --------- | ----------------- | ------- |
+| Language  | PHP               | {X.Y}   |
+| Runtime   | {Runtime}         | latest  |
+| Framework | Symfony           | {X.Y}   |
+| API Layer | API Platform      | {X.Y}   |
+| Database  | {Database}        | {X.Y}   |
+| Messaging | Symfony Messenger | {X.Y}   |
+| Cache     | Redis             | {X.Y}   |
 
 ## Quick Links
 
@@ -87,9 +87,9 @@ curl https://localhost/api/health
 \`\`\`text
 src/
 ├── {Context1}/
-│   ├── Application/
-│   ├── Domain/
-│   └── Infrastructure/
+│ ├── Application/
+│ ├── Domain/
+│ └── Infrastructure/
 ├── {Context2}/
 ├── Shared/
 └── Internal/HealthCheck/
@@ -103,12 +103,12 @@ Domain ← Application ← Infrastructure
 
 ## Bounded Contexts
 
-| Context  | Purpose |
-| -------- | ------- |
-| {Context1} | {Purpose} |
-| {Context2} | {Purpose} |
-| Shared   | Cross-cutting concerns |
-| Internal | Health checks |
+| Context    | Purpose                |
+| ---------- | ---------------------- |
+| {Context1} | {Purpose}              |
+| {Context2} | {Purpose}              |
+| Shared     | Cross-cutting concerns |
+| Internal   | Health checks          |
 ```
 
 ## developer-guide.md
@@ -122,16 +122,16 @@ Domain ← Application ← Infrastructure
 
 ## Make Commands
 
-| Command | Description |
-| ------- | ----------- |
-| `make build` | Build containers |
-| `make start` | Start stack |
-| `make stop` | Stop stack |
-| `make unit-tests` | PHPUnit unit suite |
-| `make integration-tests` | Integration suite |
-| `make behat` | Behat scenarios |
-| `make load-tests` | K6 scenarios |
-| `make ci` | Full pipeline |
+| Command                  | Description        |
+| ------------------------ | ------------------ |
+| `make build`             | Build containers   |
+| `make start`             | Start stack        |
+| `make stop`              | Stop stack         |
+| `make unit-tests`        | PHPUnit unit suite |
+| `make integration-tests` | Integration suite  |
+| `make behat`             | Behat scenarios    |
+| `make load-tests`        | K6 scenarios       |
+| `make ci`                | Full pipeline      |
 
 ## Quality Gates
 
@@ -161,13 +161,13 @@ Include sample queries and mutations.
 ```markdown
 # Testing Strategy
 
-| Suite              | Command               | Location            |
-| ------------------ | --------------------- | ------------------- |
-| Unit               | `make unit-tests`     | `tests/Unit/`       |
-| Integration        | `make integration-tests` | `tests/Integration/` |
-| Behat              | `make behat`          | `tests/Behat/`      |
-| Load (K6)          | `make load-tests`     | `tests/Load/`       |
-| Mutation (Infection)| `make infection`     | N/A                 |
+| Suite                | Command                  | Location             |
+| -------------------- | ------------------------ | -------------------- |
+| Unit                 | `make unit-tests`        | `tests/Unit/`        |
+| Integration          | `make integration-tests` | `tests/Integration/` |
+| Behat                | `make behat`             | `tests/Behat/`       |
+| Load (K6)            | `make load-tests`        | `tests/Load/`        |
+| Mutation (Infection) | `make infection`         | N/A                  |
 
 Note Faker usage requirement, coverage thresholds, etc.
 ```
@@ -191,13 +191,13 @@ Replicate structure for: glossary, user-guide, advanced-configuration, performan
 
 Replace these placeholders in all templates:
 
-| Placeholder     | Description                          |
-| --------------- | ------------------------------------ |
+| Placeholder      | Description                          |
+| ---------------- | ------------------------------------ |
 | `{Project Name}` | e.g., "User Service", "Core Service" |
-| `{X.Y}`         | Version number from composer.json    |
-| `{Runtime}`     | PHP-FPM, FrankenPHP, etc.           |
-| `{Database}`    | MySQL, MongoDB, PostgreSQL, etc.    |
-| `{Context1}`    | First bounded context name          |
-| `{Context2}`    | Second bounded context name         |
-| `{Purpose}`     | Brief description of context purpose|
-| `{Auth}`        | OAuth, JWT, etc.                    |
+| `{X.Y}`          | Version number from composer.json    |
+| `{Runtime}`      | PHP-FPM, FrankenPHP, etc.            |
+| `{Database}`     | MySQL, MongoDB, PostgreSQL, etc.     |
+| `{Context1}`     | First bounded context name           |
+| `{Context2}`     | Second bounded context name          |
+| `{Purpose}`      | Brief description of context purpose |
+| `{Auth}`         | OAuth, JWT, etc.                     |
