@@ -31,14 +31,14 @@ grep -i "mysql" docker-compose.yml
 
 **Technology Stack Identified**:
 
-| Component  | Technology | Version |
-| ---------- | ---------- | ------- |
-| Language   | PHP        | 8.3     |
-| Runtime    | FrankenPHP | latest  |
-| Framework  | Symfony    | 7.3     |
-| API Layer  | API Platform | 4.1   |
-| Database   | MySQL      | 8.x     |
-| Cache      | Redis      | 7.x     |
+| Component | Technology   | Version |
+| --------- | ------------ | ------- |
+| Language  | PHP          | 8.3     |
+| Runtime   | FrankenPHP   | latest  |
+| Framework | Symfony      | 7.3     |
+| API Layer | API Platform | 4.1     |
+| Database  | MySQL        | 8.x     |
+| Cache     | Redis        | 7.x     |
 
 ### 2. Bounded Context Analysis
 
