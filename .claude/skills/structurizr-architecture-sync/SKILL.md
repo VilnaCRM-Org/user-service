@@ -291,5 +291,5 @@ Use this skill **before**:
 
 - **Structurizr DSL Documentation**: <https://docs.structurizr.com/dsl>
 - **C4 Model**: <https://c4model.com/>
-- **Structurizr Lite**: <https://structurizr.com/help/lite>
+- **Structurizr Lite**: <https://docs.structurizr.com/lite>
 - **User Service Example** (VilnaCRM organization reference): <https://github.com/VilnaCRM-Org/user-service/wiki/Design-and-Architecture-Documentation>

@@ -482,4 +482,4 @@ structurizr-cli validate workspace.dsl
 
 - **Structurizr DSL Documentation**: <https://docs.structurizr.com/dsl>
 - **Language Reference**: <https://github.com/structurizr/dsl/blob/master/docs/language-reference.md>
-- **Cookbook**: <https://github.com/structurizr/dsl/blob/master/docs/cookbook/README.md>
+- **Cookbook**: <https://docs.structurizr.com/dsl/cookbook/>

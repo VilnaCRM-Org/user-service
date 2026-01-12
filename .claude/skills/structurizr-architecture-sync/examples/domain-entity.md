@@ -8,12 +8,13 @@ Implementing a new domain entity: **Order** with value objects and business logi
 
 ### Components Implemented
 
+**Note**: This lists all components in the code. Not all require documentation (see Step 1 for guidance).
+
 **Domain Layer**:
 
 - `Order` (aggregate root)
 - `OrderId` (value object)
 - `OrderStatus` (value object/enum)
-- `OrderLine` (value object)
 - `Money` (value object)
 - `OrderCreatedEvent` (domain event)
 - `OrderConfirmedEvent` (domain event)
