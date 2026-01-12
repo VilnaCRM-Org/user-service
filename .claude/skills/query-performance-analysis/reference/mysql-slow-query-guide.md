@@ -6,11 +6,11 @@ The slow query log records all queries that exceed a specified execution time. E
 
 ## Configuration Levels
 
-| Setting               | Development      | Staging          | Production       |
-| --------------------- | ---------------- | ---------------- | ---------------- |
-| slow_query_log        | ON               | ON               | ON               |
-| long_query_time       | 0.1 (100ms)      | 0.2 (200ms)      | 0.5 (500ms)      |
-| log_queries_not_using_indexes | ON       | ON               | OFF              |
+| Setting                       | Development | Staging     | Production  |
+| ----------------------------- | ----------- | ----------- | ----------- |
+| slow_query_log                | ON          | ON          | ON          |
+| long_query_time               | 0.1 (100ms) | 0.2 (200ms) | 0.5 (500ms) |
+| log_queries_not_using_indexes | ON          | ON          | OFF         |
 
 ## Enable Slow Query Log
 
@@ -53,7 +53,7 @@ SHOW VARIABLES LIKE 'slow_query_log_file';
 
 ```sql
 -- View recent slow queries
-SELECT 
+SELECT
     start_time,
     user_host,
     query_time,
@@ -61,8 +61,8 @@ SELECT
     rows_sent,
     rows_examined,
     sql_text
-FROM mysql.slow_log 
-ORDER BY start_time DESC 
+FROM mysql.slow_log
+ORDER BY start_time DESC
 LIMIT 10;
 ```
 
@@ -95,51 +95,51 @@ SELECT * FROM users WHERE email LIKE '%john%';
 
 ### Key Fields
 
-| Field         | Description                        | Concern Threshold |
-| ------------- | ---------------------------------- | ----------------- |
-| Query_time    | Total execution time (seconds)     | >0.5s             |
-| Lock_time     | Time waiting for locks             | >0.1s             |
-| Rows_sent     | Rows returned to client            | Compare to examined |
-| Rows_examined | Rows scanned by query              | >>Rows_sent       |
+| Field         | Description                    | Concern Threshold   |
+| ------------- | ------------------------------ | ------------------- |
+| Query_time    | Total execution time (seconds) | >0.5s               |
+| Lock_time     | Time waiting for locks         | >0.1s               |
+| Rows_sent     | Rows returned to client        | Compare to examined |
+| Rows_examined | Rows scanned by query          | >>Rows_sent         |
 
 ## Common Analysis Queries
 
 ### Find Slowest Queries
 
 ```sql
-SELECT 
+SELECT
     sql_text,
     query_time,
     rows_examined,
     rows_sent
-FROM mysql.slow_log 
-ORDER BY query_time DESC 
+FROM mysql.slow_log
+ORDER BY query_time DESC
 LIMIT 10;
 ```
 
 ### Find Queries Examining Many Rows
 
 ```sql
-SELECT 
+SELECT
     sql_text,
     rows_examined,
     rows_sent,
     rows_examined / GREATEST(rows_sent, 1) AS ratio
-FROM mysql.slow_log 
+FROM mysql.slow_log
 WHERE rows_examined > 1000
-ORDER BY rows_examined DESC 
+ORDER BY rows_examined DESC
 LIMIT 10;
 ```
 
 ### Find Repeated Slow Queries
 
 ```sql
-SELECT 
+SELECT
     LEFT(sql_text, 100) AS query_pattern,
     COUNT(*) AS occurrences,
     AVG(query_time) AS avg_time,
     MAX(query_time) AS max_time
-FROM mysql.slow_log 
+FROM mysql.slow_log
 GROUP BY LEFT(sql_text, 100)
 HAVING COUNT(*) > 5
 ORDER BY occurrences DESC;
@@ -148,12 +148,12 @@ ORDER BY occurrences DESC;
 ### Find Queries Not Using Indexes
 
 ```sql
-SELECT 
+SELECT
     sql_text,
     query_time,
     rows_examined
-FROM mysql.slow_log 
-WHERE rows_examined > 100 
+FROM mysql.slow_log
+WHERE rows_examined > 100
   AND rows_sent < 10
 ORDER BY query_time DESC;
 ```
@@ -165,11 +165,11 @@ ORDER BY query_time DESC;
 ```yaml
 # config/packages/dev/web_profiler.yaml
 web_profiler:
-    toolbar: true
-    intercept_redirects: false
+  toolbar: true
+  intercept_redirects: false
 
 framework:
-    profiler: { only_exceptions: false }
+  profiler: { only_exceptions: false }
 ```
 
 ### View Query Information
@@ -191,10 +191,10 @@ public function testQueryCount(): void
 {
     $this->client->enableProfiler();
     $this->client->request('GET', '/api/users');
-    
+
     $profile = $this->client->getProfile();
     $collector = $profile->getCollector('db');
-    
+
     $queryCount = $collector->getQueryCount();
     $this->assertLessThan(10, $queryCount);
 }
@@ -392,9 +392,9 @@ SHOW VARIABLES LIKE 'log_output';
 # Ensure profiler is enabled for API requests
 # config/packages/dev/web_profiler.yaml
 framework:
-    profiler:
-        only_exceptions: false
-        collect: true
+  profiler:
+    only_exceptions: false
+    collect: true
 ```
 
 ## External Resources

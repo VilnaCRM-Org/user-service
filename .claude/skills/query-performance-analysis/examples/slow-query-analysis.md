@@ -183,7 +183,7 @@ public function searchUsersByPrefix(string $term): array
 
 ```sql
 -- If searching by email domain is common
-ALTER TABLE users ADD COLUMN email_domain VARCHAR(255) 
+ALTER TABLE users ADD COLUMN email_domain VARCHAR(255)
     GENERATED ALWAYS AS (SUBSTRING_INDEX(email, '@', -1)) STORED;
 
 CREATE INDEX idx_email_domain ON users (email_domain);
@@ -231,25 +231,25 @@ EXPLAIN SELECT * FROM users WHERE MATCH(email) AGAINST('john*' IN BOOLEAN MODE);
 
 ## EXPLAIN Key Columns Reference
 
-| Column          | Good Value                   | Bad Value       | Meaning                    |
-| --------------- | ---------------------------- | --------------- | -------------------------- |
-| `type`          | `const`, `eq_ref`, `ref`, `range` | `ALL`      | Access method              |
-| `possible_keys` | Index names                  | `NULL`          | Potentially usable indexes |
-| `key`           | Index name                   | `NULL`          | Actually used index        |
-| `rows`          | Low number                   | High (>1000)    | Estimated rows to examine  |
-| `Extra`         | `Using index`                | `Using filesort`, `Using temporary` | Additional info |
+| Column          | Good Value                        | Bad Value                           | Meaning                    |
+| --------------- | --------------------------------- | ----------------------------------- | -------------------------- |
+| `type`          | `const`, `eq_ref`, `ref`, `range` | `ALL`                               | Access method              |
+| `possible_keys` | Index names                       | `NULL`                              | Potentially usable indexes |
+| `key`           | Index name                        | `NULL`                              | Actually used index        |
+| `rows`          | Low number                        | High (>1000)                        | Estimated rows to examine  |
+| `Extra`         | `Using index`                     | `Using filesort`, `Using temporary` | Additional info            |
 
 ### Type Values (Best to Worst)
 
-| Type     | Description                          |
-| -------- | ------------------------------------ |
-| `system` | Single row table                     |
-| `const`  | Single row match (primary/unique)    |
-| `eq_ref` | One row per combination (JOIN)       |
-| `ref`    | Multiple rows from index             |
-| `range`  | Index range scan                     |
-| `index`  | Full index scan                      |
-| `ALL`    | Full table scan 🚨                   |
+| Type     | Description                       |
+| -------- | --------------------------------- |
+| `system` | Single row table                  |
+| `const`  | Single row match (primary/unique) |
+| `eq_ref` | One row per combination (JOIN)    |
+| `ref`    | Multiple rows from index          |
+| `range`  | Index range scan                  |
+| `index`  | Full index scan                   |
+| `ALL`    | Full table scan 🚨                |
 
 ---
 
@@ -330,7 +330,7 @@ SELECT * FROM users WHERE LOWER(email) = 'john@example.com';
 **Fix**: Store normalized data or use generated column
 
 ```sql
-ALTER TABLE users ADD COLUMN email_lower VARCHAR(255) 
+ALTER TABLE users ADD COLUMN email_lower VARCHAR(255)
     GENERATED ALWAYS AS (LOWER(email)) STORED;
 CREATE INDEX idx_email_lower ON users (email_lower);
 ```

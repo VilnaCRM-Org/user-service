@@ -83,9 +83,9 @@ Check Symfony Profiler for query count and timing.
 
 ## Quick Reference
 
-| Problem            | Example             | Key Tool              |
-| ------------------ | ------------------- | --------------------- |
-| Many queries (N+1) | N+1 Detection       | Symfony Profiler      |
+| Problem            | Example             | Key Tool                  |
+| ------------------ | ------------------- | ------------------------- |
+| Many queries (N+1) | N+1 Detection       | Symfony Profiler          |
 | Slow query         | Slow Query Analysis | EXPLAIN / EXPLAIN ANALYZE |
 
 ## Combining Examples

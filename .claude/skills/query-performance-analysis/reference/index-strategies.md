@@ -219,7 +219,7 @@ SELECT * FROM users WHERE status = 'active' AND type = 'premium';
 **Query**: Recent users from last week
 
 ```sql
-SELECT * FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) 
+SELECT * FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
 ORDER BY created_at DESC;
 ```
 

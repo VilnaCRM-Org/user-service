@@ -76,21 +76,21 @@ EXPLAIN SELECT * FROM users WHERE email = 'test@example.com';
 
 ### Ideal Index Characteristics
 
-| Metric            | Target                  | Notes                                 |
-| ----------------- | ----------------------- | ------------------------------------- |
-| Index selectivity | >10% unique values      | High cardinality = better selectivity |
-| Index size        | <30% of table size      | Compact indexes are efficient         |
-| Index usage       | Used by queries         | Unused indexes should be dropped      |
+| Metric            | Target             | Notes                                 |
+| ----------------- | ------------------ | ------------------------------------- |
+| Index selectivity | >10% unique values | High cardinality = better selectivity |
+| Index size        | <30% of table size | Compact indexes are efficient         |
+| Index usage       | Used by queries    | Unused indexes should be dropped      |
 
 ## Table Size Guidelines
 
-| Table Size         | Max Query Time | Strategy                                   |
-| ------------------ | -------------- | ------------------------------------------ |
-| <1,000 rows        | 50ms           | Indexes optional for simple queries        |
-| 1,000-10,000 rows  | 100ms          | Index frequently queried fields            |
-| 10,000-100,000     | 200ms          | Composite indexes, careful query design    |
-| 100,000-1M rows    | 300ms          | Aggressive indexing, query optimization    |
-| >1M rows           | 500ms          | Partitioning, caching, read replicas       |
+| Table Size        | Max Query Time | Strategy                                |
+| ----------------- | -------------- | --------------------------------------- |
+| <1,000 rows       | 50ms           | Indexes optional for simple queries     |
+| 1,000-10,000 rows | 100ms          | Index frequently queried fields         |
+| 10,000-100,000    | 200ms          | Composite indexes, careful query design |
+| 100,000-1M rows   | 300ms          | Aggressive indexing, query optimization |
+| >1M rows          | 500ms          | Partitioning, caching, read replicas    |
 
 ## MySQL/MariaDB-Specific Thresholds
 
@@ -217,10 +217,10 @@ public function testQueryCount(): void
 {
     $this->client->enableProfiler();
     $this->client->request('GET', '/api/users');
-    
+
     $collector = $this->client->getProfile()->getCollector('db');
     $queryCount = $collector->getQueryCount();
-    
+
     // Use threshold from table: GET collection = <5 target
     $this->assertLessThan(5, $queryCount);
 }

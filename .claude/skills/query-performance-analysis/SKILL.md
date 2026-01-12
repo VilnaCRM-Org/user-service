@@ -358,13 +358,13 @@ docker compose exec php bin/console doctrine:schema:validate
 
 ## Comparison: This Skill vs database-migrations
 
-| Aspect      | query-performance-analysis | database-migrations            |
-| ----------- | -------------------------- | ------------------------------ |
-| **Purpose** | **WHAT** indexes to add    | **HOW** to create indexes      |
-| **Focus**   | Performance analysis       | Schema definition              |
-| **Tools**   | EXPLAIN, slow query log    | Doctrine migrations, XML       |
-| **When**    | Debugging slow queries     | Creating entities/migrations   |
-| **Output**  | Performance insights       | Migration files, XML config    |
+| Aspect      | query-performance-analysis | database-migrations          |
+| ----------- | -------------------------- | ---------------------------- |
+| **Purpose** | **WHAT** indexes to add    | **HOW** to create indexes    |
+| **Focus**   | Performance analysis       | Schema definition            |
+| **Tools**   | EXPLAIN, slow query log    | Doctrine migrations, XML     |
+| **When**    | Debugging slow queries     | Creating entities/migrations |
+| **Output**  | Performance insights       | Migration files, XML config  |
 
 **Workflow**: Use this skill to **identify** needed indexes, then use database-migrations for **migration syntax**.
 
@@ -407,8 +407,8 @@ docker compose exec mysql mariadb -u root -proot     # ❌ Wrong
 ```yaml
 # config/packages/dev/web_profiler.yaml
 web_profiler:
-    toolbar: true
-    intercept_redirects: false
+  toolbar: true
+  intercept_redirects: false
 ```
 
 ---

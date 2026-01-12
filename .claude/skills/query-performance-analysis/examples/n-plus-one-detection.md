@@ -43,6 +43,7 @@ open https://localhost/_profiler
 ### Step 2: Identify Repeated Queries
 
 In Symfony Profiler, look for:
+
 - **Duplicate queries section** - shows identical queries
 - **Query timeline** - shows queries executed in sequence
 - **Similar queries** - queries with same structure, different parameters
@@ -126,8 +127,8 @@ public function findAllWithTokensBatch(): array
 // ✅ ALTERNATIVE: DQL fetch join
 public function findAllWithTokensDQL(): array
 {
-    $dql = 'SELECT u, t 
-            FROM App\User\Domain\Entity\User u 
+    $dql = 'SELECT u, t
+            FROM App\User\Domain\Entity\User u
             LEFT JOIN u.confirmationToken t';
 
     return $this->getEntityManager()
