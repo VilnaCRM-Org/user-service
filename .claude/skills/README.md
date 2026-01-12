@@ -345,7 +345,47 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-### 12. API Platform CRUD (`api-platform-crud/`)
+### 12. Query Performance Analysis (`query-performance-analysis/`)
+
+**Purpose**: Detect N+1 queries, analyze slow queries with EXPLAIN, identify missing indexes, and ensure safe index migrations
+
+**When activated**:
+
+- New or modified endpoints are slow
+- Profiler shows many database queries for single operation
+- Need to detect N+1 query problems
+- Query execution time is high
+- Planning safe index migrations for production
+- Need to verify index effectiveness
+
+**What it does**:
+
+- Detects and fixes N+1 query problems using eager loading
+- Analyzes slow queries with EXPLAIN and EXPLAIN ANALYZE
+- Identifies missing indexes based on query patterns
+- Guides safe online index migrations with ALGORITHM=INPLACE
+- Provides performance thresholds and testing strategies
+
+**Key commands**: `docker compose exec database mariadb -u root -proot db`, `EXPLAIN`, `EXPLAIN ANALYZE`
+
+**Structure**: Multi-file with comprehensive guides:
+
+- `SKILL.md` - Core workflow and quick reference
+- `examples/n-plus-one-detection.md` - Complete N+1 detection and fix guide
+- `examples/slow-query-analysis.md` - EXPLAIN analysis walkthrough
+- `reference/index-strategies.md` - When to use which index type
+- `reference/mysql-slow-query-guide.md` - Slow query log documentation
+- `reference/performance-thresholds.md` - Acceptable performance limits
+
+**Performance thresholds**:
+
+- GET single: <50ms target, 100ms max
+- GET collection (100 items): <200ms target, 500ms max
+- Query count per endpoint: <5 target, 10 max
+
+---
+
+### 13. API Platform CRUD (`api-platform-crud/`)
 
 **Purpose**: Create complete REST API CRUD operations using API Platform 4 with DDD and CQRS patterns
 

@@ -12,6 +12,8 @@ What are you trying to do?
 │   ├─ High complexity → complexity-management
 │   ├─ Test failures → testing-workflow
 │   ├─ PHPInsights fails → complexity-management
+│   ├─ N+1 queries → query-performance-analysis
+│   ├─ Slow queries → query-performance-analysis
 │   └─ CI checks failing → ci-workflow
 │
 ├─ Create something new
@@ -24,7 +26,8 @@ What are you trying to do?
 ├─ Review/validate work
 │   ├─ Before committing → ci-workflow
 │   ├─ PR feedback → code-review
-│   └─ Quality thresholds → quality-standards
+│   ├─ Quality thresholds → quality-standards
+│   └─ Query performance → query-performance-analysis
 │
 └─ Update documentation
     └─ Any code change → documentation-sync
@@ -95,6 +98,17 @@ This skill documents all thresholds and directs to specialized skills.
 
 ---
 
+### "Endpoint is slow or making too many queries"
+
+**Use**: [query-performance-analysis](query-performance-analysis/SKILL.md)
+
+This skill detects N+1 queries, analyzes slow queries with EXPLAIN, and identifies missing indexes.
+
+**NOT**: load-testing (that's for performance under concurrent load)
+**NOT**: testing-workflow (that's for functional tests)
+
+---
+
 ### "I'm addressing PR review comments"
 
 **Use**: [code-review](code-review/SKILL.md)
@@ -155,19 +169,21 @@ This skill covers processor patterns for OpenAPI.
                               ▼                  ▼
                     implementing-ddd-      load-testing
                       architecture         (performance)
-                              │
-                              ▼
-                    database-migrations
+                              │                  ▲
+                              ▼                  │
+                    database-migrations ──► query-performance-
+                                               analysis
 ```
 
 ## Common Confusions
 
-| Confusion                                      | Clarification                                                                                                 |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| deptrac-fixer vs implementing-ddd-architecture | **Fix violations** → deptrac-fixer<br>**Design new patterns** → implementing-ddd-architecture                 |
-| testing-workflow vs load-testing               | **Functional tests** (unit, integration, E2E) → testing-workflow<br>**Performance tests** (K6) → load-testing |
-| quality-standards vs complexity-management     | **Overview of all metrics** → quality-standards<br>**Fix complexity specifically** → complexity-management    |
-| ci-workflow vs testing-workflow                | **Run all CI checks** → ci-workflow<br>**Debug specific test issues** → testing-workflow                      |
+| Confusion                                          | Clarification                                                                                                  |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| deptrac-fixer vs implementing-ddd-architecture     | **Fix violations** → deptrac-fixer<br>**Design new patterns** → implementing-ddd-architecture                  |
+| testing-workflow vs load-testing                   | **Functional tests** (unit, integration, E2E) → testing-workflow<br>**Performance tests** (K6) → load-testing  |
+| quality-standards vs complexity-management         | **Overview of all metrics** → quality-standards<br>**Fix complexity specifically** → complexity-management     |
+| ci-workflow vs testing-workflow                    | **Run all CI checks** → ci-workflow<br>**Debug specific test issues** → testing-workflow                       |
+| query-performance-analysis vs load-testing         | **Query optimization** (N+1, indexes) → query-performance-analysis<br>**Concurrent load** (K6) → load-testing  |
 
 ## Multiple Skills for One Task
 
@@ -189,6 +205,7 @@ Some tasks benefit from multiple skills:
 
 ### Performance optimization:
 
-1. **load-testing** - Create performance tests
-2. **complexity-management** - Reduce code complexity
-3. **ci-workflow** - Ensure quality maintained
+1. **query-performance-analysis** - Fix N+1 queries, add indexes
+2. **load-testing** - Create performance tests
+3. **complexity-management** - Reduce code complexity
+4. **ci-workflow** - Ensure quality maintained

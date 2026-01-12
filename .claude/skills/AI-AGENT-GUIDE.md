@@ -33,6 +33,7 @@ Quick Decision Tree:
 │   ├─ Deptrac violation → deptrac-fixer
 │   ├─ High complexity → complexity-management
 │   ├─ Test failures → testing-workflow
+│   ├─ N+1 queries or slow queries → query-performance-analysis
 │   └─ CI checks failing → ci-workflow
 │
 ├─ Create something new
@@ -43,7 +44,8 @@ Quick Decision Tree:
 │
 ├─ Review/validate work
 │   ├─ Before committing → ci-workflow
-│   └─ PR feedback → code-review
+│   ├─ PR feedback → code-review
+│   └─ Query performance → query-performance-analysis
 │
 └─ Update documentation
     └─ Any code change → documentation-sync
