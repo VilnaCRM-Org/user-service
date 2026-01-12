@@ -61,13 +61,13 @@ A component is architecturally significant if:
 
 ### ✅ INCLUDE: Application Layer
 
-| Component Type       | Reasoning                           | Example                     |
-| -------------------- | ----------------------------------- | --------------------------- |
-| **Controllers**      | Entry points for requests           | `HealthCheckController`     |
-| **Command Handlers** | CQRS pattern, orchestrate use cases | `RegisterUserHandler`       |
-| **Query Handlers**   | CQRS read side                      | `GetUserQueryHandler`       |
-| **API Processors**   | API Platform state processors       | `UserStateProcessor`        |
-| **API Resolvers**    | GraphQL resolvers                   | `UserResolver`              |
+| Component Type       | Reasoning                           | Example                 |
+| -------------------- | ----------------------------------- | ----------------------- |
+| **Controllers**      | Entry points for requests           | `HealthCheckController` |
+| **Command Handlers** | CQRS pattern, orchestrate use cases | `RegisterUserHandler`   |
+| **Query Handlers**   | CQRS read side                      | `GetUserQueryHandler`   |
+| **API Processors**   | API Platform state processors       | `UserStateProcessor`    |
+| **API Resolvers**    | GraphQL resolvers                   | `UserResolver`          |
 
 **Why**: These represent the application's entry points and use case orchestration.
 
@@ -87,28 +87,28 @@ A component is architecturally significant if:
 
 ### ✅ INCLUDE: Infrastructure Layer
 
-| Component Type        | Reasoning                                           | Example                          |
-| --------------------- | --------------------------------------------------- | -------------------------------- |
-| **Repositories**      | Data access implementations                         | `UserRepository`                 |
-| **Event Subscribers** | React to domain events                              | `SendConfirmationEmailSubscriber`|
-| **Event Buses**       | Event publishing mechanism                          | `InMemorySymfonyEventBus`        |
-| **Command Buses**     | Command dispatching mechanism                       | `SymfonyCommandBus`              |
-| **Factories**         | Factory implementations                             | `UuidFactory`                    |
-| **Transformers**      | Data transformation (API Platform)                  | `UuidTransformer`                |
-| **External Adapters** | Integrations with external services                 | `StripePaymentAdapter`           |
-| **Doctrine Types**    | Custom field types (if architecturally significant) | `UuidType`                       |
+| Component Type        | Reasoning                                           | Example                           |
+| --------------------- | --------------------------------------------------- | --------------------------------- |
+| **Repositories**      | Data access implementations                         | `UserRepository`                  |
+| **Event Subscribers** | React to domain events                              | `SendConfirmationEmailSubscriber` |
+| **Event Buses**       | Event publishing mechanism                          | `InMemorySymfonyEventBus`         |
+| **Command Buses**     | Command dispatching mechanism                       | `SymfonyCommandBus`               |
+| **Factories**         | Factory implementations                             | `UuidFactory`                     |
+| **Transformers**      | Data transformation (API Platform)                  | `UuidTransformer`                 |
+| **External Adapters** | Integrations with external services                 | `StripePaymentAdapter`            |
+| **Doctrine Types**    | Custom field types (if architecturally significant) | `UuidType`                        |
 
 **Why**: These implement infrastructure concerns and adapt external services.
 
 ### ✅ INCLUDE: External Dependencies
 
-| Component Type      | Reasoning                | Example                 |
-| ------------------- | ------------------------ | ----------------------- |
-| **Databases**       | Persistence layer        | MariaDB, PostgreSQL     |
-| **Caches**          | Caching layer            | Redis                   |
-| **Message Brokers** | Asynchronous messaging   | AWS SQS, RabbitMQ       |
-| **External APIs**   | Third-party integrations | Stripe API              |
-| **Search Engines**  | Search capabilities      | Elasticsearch           |
+| Component Type      | Reasoning                | Example             |
+| ------------------- | ------------------------ | ------------------- |
+| **Databases**       | Persistence layer        | MariaDB, PostgreSQL |
+| **Caches**          | Caching layer            | Redis               |
+| **Message Brokers** | Asynchronous messaging   | AWS SQS, RabbitMQ   |
+| **External APIs**   | Third-party integrations | Stripe API          |
+| **Search Engines**  | Search capabilities      | Elasticsearch       |
 
 **Why**: These are critical infrastructure dependencies.
 
