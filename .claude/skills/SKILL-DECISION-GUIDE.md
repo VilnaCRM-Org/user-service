@@ -16,7 +16,7 @@ What are you trying to do?
 │
 ├─ Create something new
 │   ├─ New entity/value object → implementing-ddd-architecture
-│   ├─ New API endpoint → developing-openapi-specs
+│   ├─ New API endpoint → openapi-development
 │   ├─ New load test → load-testing
 │   ├─ New database entity → database-migrations
 │   └─ New test cases → testing-workflow
@@ -146,9 +146,11 @@ This skill guides entity modification with Doctrine ODM.
 
 ### "I'm adding OpenAPI endpoint documentation"
 
-**Use**: [developing-openapi-specs](developing-openapi-specs/SKILL.md)
+**Use**: [openapi-development](openapi-development/SKILL.md)
 
-This skill covers processor patterns for OpenAPI.
+This skill covers OpenAPI factories/sanitizers/augmenters/cleaners and the repo’s validation commands.
+
+**Also**: [developing-openapi-specs](developing-openapi-specs/SKILL.md) for deeper processor-pattern reference.
 
 ---
 
