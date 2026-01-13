@@ -33,7 +33,6 @@ Quick Decision Tree:
 │   ├─ Deptrac violation → deptrac-fixer
 │   ├─ High complexity → complexity-management
 │   ├─ Test failures → testing-workflow
-│   ├─ Slow database queries → query-performance-analysis
 │   └─ CI checks failing → ci-workflow
 │
 ├─ Create something new
@@ -130,11 +129,10 @@ Complex skills have multi-file structure:
 
 ### 💾 Database & Documentation Skills
 
-| Skill                          | File                                  | When to Use                                       |
-| ------------------------------ | ------------------------------------- | ------------------------------------------------- |
-| **Database Migrations**        | `database-migrations/SKILL.md`        | Create/modify entities with Doctrine ORM (MySQL)  |
-| **Documentation Sync**         | `documentation-sync/SKILL.md`         | Keep docs synchronized with code changes          |
-| **Query Performance Analysis** | `query-performance-analysis/SKILL.md` | Optimize slow MySQL queries and detect N+1 issues |
+| Skill                   | File                           | When to Use                                      |
+| ----------------------- | ------------------------------ | ------------------------------------------------ |
+| **Database Migrations** | `database-migrations/SKILL.md` | Create/modify entities with Doctrine ORM (MySQL) |
+| **Documentation Sync**  | `documentation-sync/SKILL.md`  | Keep docs synchronized with code changes         |
 
 ### 🚀 API & Performance Skills
 
@@ -284,11 +282,6 @@ Complex skills have multi-file structure:
 │
 ├── developing-openapi-specs/
 │   └── SKILL.md                # OpenAPI processor patterns
-│
-├── query-performance-analysis/
-│   ├── SKILL.md                # Core query analysis workflow
-│   ├── examples/               # N+1 detection, slow query analysis
-│   └── reference/              # Index strategies, MySQL slow query guide
 │
 ├── structurizr-architecture-sync/
 │   ├── SKILL.md                # Core architecture sync workflow
