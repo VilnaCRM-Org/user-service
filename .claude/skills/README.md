@@ -391,7 +391,9 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 - Guides safe online index migrations with ALGORITHM=INPLACE
 - Provides performance thresholds and testing strategies
 
-**Key commands**: `docker compose exec database mariadb -u root -proot db`, `EXPLAIN`, `EXPLAIN ANALYZE`
+**Key commands**: `docker compose exec database mariadb -u root -p$DB_PASSWORD db`, `EXPLAIN`, `EXPLAIN ANALYZE`
+
+> **Note**: `DB_PASSWORD` is sourced from the `.env` file or environment variables. Default value in development is `root` (see `docker-compose.yml`).
 
 **Structure**: Multi-file with comprehensive guides:
 
