@@ -282,6 +282,7 @@ Complex skills have multi-file structure:
 │
 ├── openapi-development/
 │   ├── SKILL.md                # OpenAPI factories & transformers
+│   ├── examples/               # Complete real-world examples
 │   └── reference/              # Sanitizers/augmenters/cleaners patterns
 │
 ├── structurizr-architecture-sync/
