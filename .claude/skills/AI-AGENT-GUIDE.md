@@ -45,8 +45,11 @@ Quick Decision Tree:
 │   ├─ Before committing → ci-workflow
 │   └─ PR feedback → code-review
 │
-└─ Update documentation
-    └─ Any code change → documentation-sync
+├─ Update documentation
+│   └─ Any code change → documentation-sync
+│
+└─ Architecture diagrams
+    └─ Update workspace.dsl → structurizr-architecture-sync
 ```
 
 ### Step 3: Read the Skill File
@@ -103,7 +106,7 @@ Complex skills have multi-file structure:
 - Need detailed patterns → `reference/*.md`
 - Want complete examples → `examples/*.md`
 
-## Available Skills (12 Total)
+## Available Skills (14 Total)
 
 ### 🔧 Workflow Skills
 
@@ -115,13 +118,14 @@ Complex skills have multi-file structure:
 
 ### 🏗️ Architecture & Quality Skills
 
-| Skill                     | File                                     | When to Use                                      |
-| ------------------------- | ---------------------------------------- | ------------------------------------------------ |
-| **Implementing DDD**      | `implementing-ddd-architecture/SKILL.md` | Create entities, value objects, aggregates, CQRS |
-| **Deptrac Fixer**         | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations            |
-| **Quality Standards**     | `quality-standards/SKILL.md`             | Overview of protected quality thresholds         |
-| **Complexity Management** | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code             |
-| **OpenAPI Specs**         | `developing-openapi-specs/SKILL.md`      | Add OpenAPI documentation with processor pattern |
+| Skill                        | File                                     | When to Use                                      |
+| ---------------------------- | ---------------------------------------- | ------------------------------------------------ |
+| **Implementing DDD**         | `implementing-ddd-architecture/SKILL.md` | Create entities, value objects, aggregates, CQRS |
+| **Deptrac Fixer**            | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations            |
+| **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds         |
+| **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code             |
+| **OpenAPI Specs**            | `developing-openapi-specs/SKILL.md`      | Add OpenAPI documentation with processor pattern |
+| **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl |
 
 ### 💾 Database & Documentation Skills
 
@@ -213,8 +217,9 @@ Complex skills have multi-file structure:
 2. Read: `database-migrations/SKILL.md` - Configure persistence
 3. Read: `api-platform-crud/SKILL.md` - Add API endpoints
 4. Read: `testing-workflow/SKILL.md` - Write tests
-5. Read: `documentation-sync/SKILL.md` - Update docs
-6. Read: `ci-workflow/SKILL.md` - Validate everything
+5. Read: `structurizr-architecture-sync/SKILL.md` - Update architecture diagrams
+6. Read: `documentation-sync/SKILL.md` - Update docs
+7. Read: `ci-workflow/SKILL.md` - Validate everything
 
 ### Fixing Quality Issues
 
@@ -277,6 +282,11 @@ Complex skills have multi-file structure:
 │
 ├── developing-openapi-specs/
 │   └── SKILL.md                # OpenAPI processor patterns
+│
+├── structurizr-architecture-sync/
+│   ├── SKILL.md                # Core architecture sync workflow
+│   ├── examples/               # CQRS, API, entity, refactoring examples
+│   └── reference/              # C4 model, DSL syntax, templates
 │
 ├── documentation-sync/
 │   └── SKILL.md                # Doc synchronization workflow

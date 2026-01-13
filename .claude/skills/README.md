@@ -404,6 +404,46 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
+### 14. Structurizr Architecture Sync (`structurizr-architecture-sync/`)
+
+**Purpose**: Maintain Structurizr C4 architecture diagrams in sync with code changes
+
+**When activated**:
+
+- Adding new components (controllers, handlers, services, repositories)
+- Creating new entities or aggregates
+- Modifying component relationships or dependencies
+- Implementing new architectural patterns (CQRS, events, subscribers)
+- Adding infrastructure components (databases, caches, message brokers)
+- Refactoring that changes component structure
+- After fixing Deptrac violations
+
+**What it does**:
+
+- Guides workspace.dsl updates for architectural changes
+- Documents C4 model component identification
+- Provides relationship patterns and DSL syntax reference
+- Ensures diagrams stay synchronized with code
+- Covers manual positioning and committing both workspace.dsl and workspace.json
+
+**Key commands**: Access Structurizr at `http://localhost:${STRUCTURIZR_PORT:-8080}`
+
+**Structure**: Multi-file with comprehensive guides:
+
+- `SKILL.md` (Core workflow and 5-step quick start)
+- `examples/cqrs-pattern.md` (CQRS documentation patterns)
+- `examples/api-endpoint.md` (API endpoint documentation)
+- `examples/domain-entity.md` (Entity documentation)
+- `examples/refactoring.md` (Refactoring diagram updates)
+- `reference/c4-model-guide.md` (C4 model fundamentals)
+- `reference/component-identification.md` (What to document)
+- `reference/dsl-syntax.md` (Structurizr DSL syntax)
+- `reference/relationship-patterns.md` (Common relationships)
+- `reference/workspace-template.md` (Complete template)
+- `reference/common-mistakes.md` (Pitfalls and solutions)
+
+---
+
 ## How Skills Work
 
 ### Cross-Platform Compatibility
