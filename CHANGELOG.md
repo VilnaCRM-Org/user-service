@@ -1,3 +1,12 @@
+# [0.3.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.2.0...v0.3.0) (2026-01-13)
+
+
+### Features
+
+* add structurizr-architecture-sync skill ([#234](https://github.com/VilnaCRM-Org/user-service/issues/234)) ([e16d043](https://github.com/VilnaCRM-Org/user-service/commit/e16d043ab98414aa89d97fb594662b519a6795e8))
+
+
+
 # [0.2.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.1.0...v0.2.0) (2026-01-12)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * **#204:** Update dependabot.yml ([#204](https://github.com/VilnaCRM-Org/user-service/issues/204)) ([aebc727](https://github.com/VilnaCRM-Org/user-service/commit/aebc727f5cf5b5a1c98d921c7d504690a5e3d7e2))
-
-
-
-# [2.7.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.6.0...v2.7.0) (2025-06-25)
-
-
-### Features
-
-* **deps:** bump brace-expansion from 1.1.11 to 1.1.12 in /tests/Load in the npm_and_yarn group ([#196](https://github.com/VilnaCRM-Org/user-service/issues/196)) ([07efad3](https://github.com/VilnaCRM-Org/user-service/commit/07efad31bb5f92e8dbeb9697917e2acc1a05add8))
 
 
 
