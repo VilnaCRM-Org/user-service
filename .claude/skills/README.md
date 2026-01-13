@@ -361,28 +361,6 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-### 13. Developing OpenAPI Specs (`developing-openapi-specs/`)
-
-**Purpose**: Guide for contributing to the OpenAPI layer using processor pattern
-
-**When activated**:
-
-- Adding endpoint factories or processors
-- Writing parameter descriptions
-- Reducing cyclomatic complexity in OpenAPI code
-- Fixing OpenAPI validation errors
-
-**What it does**:
-
-- Documents processor pattern architecture
-- Guides functional programming approach for OpenAPI
-- Covers endpoint factories and builders
-- Ensures OpenAPI spec validation passes
-
-**Key commands**: `make generate-openapi-spec`, `./scripts/validate-openapi-spec.sh`
-
----
-
 ### 13. API Platform CRUD (`api-platform-crud/`)
 
 **Purpose**: Create complete REST API CRUD operations using API Platform 4 with DDD and CQRS patterns

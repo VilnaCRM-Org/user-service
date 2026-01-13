@@ -103,7 +103,7 @@ Complex skills have multi-file structure:
 - Need detailed patterns → `reference/*.md`
 - Want complete examples → `examples/*.md`
 
-## Available Skills (12 Total)
+## Available Skills (14 Total)
 
 ### 🔧 Workflow Skills
 
@@ -121,7 +121,7 @@ Complex skills have multi-file structure:
 | **Deptrac Fixer**         | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations            |
 | **Quality Standards**     | `quality-standards/SKILL.md`             | Overview of protected quality thresholds         |
 | **Complexity Management** | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code             |
-| **OpenAPI Specs**         | `developing-openapi-specs/SKILL.md`      | Add OpenAPI documentation with processor pattern |
+| **OpenAPI Development**   | `openapi-development/SKILL.md`           | Add OpenAPI documentation with processor pattern |
 
 ### 💾 Database & Documentation Skills
 
@@ -275,8 +275,9 @@ Complex skills have multi-file structure:
 │   ├── examples/               # Complete K6 examples
 │   └── reference/              # Config, utils, troubleshooting
 │
-├── developing-openapi-specs/
-│   └── SKILL.md                # OpenAPI processor patterns
+├── openapi-development/
+│   ├── SKILL.md                # OpenAPI factories & transformers
+│   └── reference/              # Sanitizers/augmenters/cleaners patterns
 │
 ├── documentation-sync/
 │   └── SKILL.md                # Doc synchronization workflow

@@ -150,8 +150,6 @@ This skill guides entity modification with Doctrine ODM.
 
 This skill covers OpenAPI factories/sanitizers/augmenters/cleaners and the repo’s validation commands.
 
-**Also**: [developing-openapi-specs](developing-openapi-specs/SKILL.md) for deeper processor-pattern reference.
-
 ---
 
 ## Skill Relationship Map

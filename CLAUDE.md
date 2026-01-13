@@ -24,7 +24,7 @@ Skills live in `.claude/skills/` and are auto-discovered. Use the decision tree 
 | **Add CRUD endpoints**      | `api-platform-crud`             | New API resources with full CRUD          |
 | **Create load tests**       | `load-testing`                  | K6 performance tests (REST/GraphQL)       |
 | **Update entity schema**    | `database-migrations`           | Modifying entities, adding fields         |
-| **Document APIs**           | `developing-openapi-specs`      | OpenAPI endpoint factories                |
+| **Document APIs**           | `openapi-development`           | OpenAPI endpoint factories                |
 | **Sync documentation**      | `documentation-sync`            | After any code changes                    |
 | **Quality overview**        | `quality-standards`             | Understanding protected thresholds        |
 
@@ -68,7 +68,7 @@ Never reduce thresholds—fix code instead.
 |                  | `make load-tests`            | All load tests          | `load-testing`             |
 | **CI**           | `make ci`                    | Run all CI checks       | `ci-workflow`              |
 | **Database**     | `make setup-test-db`         | Reset test database     | `database-migrations`      |
-| **API Docs**     | `make generate-openapi-spec` | Export OpenAPI          | `developing-openapi-specs` |
+| **API Docs**     | `make generate-openapi-spec` | Export OpenAPI          | `openapi-development` |
 
 ### Detailed Commands
 

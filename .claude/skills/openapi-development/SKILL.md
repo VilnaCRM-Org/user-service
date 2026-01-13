@@ -106,5 +106,4 @@ Notes:
 ## Related Skills
 
 - `complexity-management` for refactoring when PHPInsights/PHPMD fails
-- `developing-openapi-specs` for deeper processor-pattern reference specific to this repo
 - `documentation-sync` when spec changes require docs updates

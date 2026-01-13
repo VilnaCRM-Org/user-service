@@ -234,7 +234,7 @@ After implementation:
 - [implementing-ddd-architecture](../implementing-ddd-architecture/SKILL.md) - DDD patterns and CQRS
 - [deptrac-fixer](../deptrac-fixer/SKILL.md) - Fix architectural violations
 - [database-migrations](../database-migrations/SKILL.md) - MongoDB entity management
-- [developing-openapi-specs](../developing-openapi-specs/SKILL.md) - OpenAPI documentation
+- [openapi-development](../openapi-development/SKILL.md) - OpenAPI documentation
 - [testing-workflow](../testing-workflow/SKILL.md) - Write E2E tests for endpoints
 
 ---
