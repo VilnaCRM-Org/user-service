@@ -404,38 +404,6 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-### 13. Query Performance Analysis (`query-performance-analysis/`)
-
-**Purpose**: Analyze and optimize database query performance using MySQL/MariaDB slow query log and Doctrine ORM patterns
-
-**When activated**:
-
-- Investigating slow API responses
-- Optimizing database queries
-- Detecting N+1 query problems
-- Creating indexes for better performance
-- Analyzing slow query logs
-
-**What it does**:
-
-- Guides slow query log configuration and analysis
-- Provides N+1 detection strategies for Doctrine ORM
-- Documents MySQL EXPLAIN output interpretation
-- Explains index strategies and creation patterns
-- Covers performance thresholds and monitoring
-
-**Key commands**: `docker compose exec database mariadb -u root -proot db`
-
-**Structure**: Multi-file with comprehensive guides:
-
-- `SKILL.md` (Core workflow and analysis patterns)
-- `examples/n-plus-one-detection.md` (Doctrine ORM N+1 patterns)
-- `examples/slow-query-analysis.md` (MySQL EXPLAIN usage)
-- `reference/index-strategies.md` (MySQL index types)
-- `reference/mysql-slow-query-guide.md` (Slow query log configuration)
-- `reference/performance-thresholds.md` (Performance limits)
-
----
 
 ### 14. Structurizr Architecture Sync (`structurizr-architecture-sync/`)
 
