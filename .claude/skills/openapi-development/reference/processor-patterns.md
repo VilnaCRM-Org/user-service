@@ -78,4 +78,3 @@ Use explicit checks for type safety and to satisfy PHPInsights rules.
 
 - Arrays: `$array === []`
 - Strings: `$value === ''` (and handle `null` explicitly)
-
