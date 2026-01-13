@@ -155,7 +155,6 @@ This skill covers processor patterns for OpenAPI.
 
 ---
 
-
 ### "I need to update architecture diagrams"
 
 **Use**: [structurizr-architecture-sync](structurizr-architecture-sync/SKILL.md)
