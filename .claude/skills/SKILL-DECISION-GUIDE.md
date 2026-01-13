@@ -27,17 +27,12 @@ What are you trying to do?
 │   ├─ PR feedback → code-review
 │   └─ Quality thresholds → quality-standards
 │
-<<<<<<< HEAD
 ├─ Update documentation
+│   ├─ New project needs docs → documentation-creation
 │   └─ Any code change → documentation-sync
 │
 └─ Architecture diagrams
     └─ Update workspace.dsl → structurizr-architecture-sync
-=======
-└─ Update documentation
-    ├─ New project needs docs → documentation-creation
-    └─ Any code change → documentation-sync
->>>>>>> origin/main
 ```
 
 ## Scenario-Based Guide
