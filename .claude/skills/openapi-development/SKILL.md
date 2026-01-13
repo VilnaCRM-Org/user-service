@@ -34,7 +34,7 @@ Develop and maintain OpenAPI specification generation in a way that:
 
 This service uses a layered OpenAPI customization approach:
 
-```
+```text
 src/Shared/Application/OpenApi/
 ├── Augmenter/             # Add extra metadata/responses to operations
 ├── Builder/               # Build common OpenAPI pieces

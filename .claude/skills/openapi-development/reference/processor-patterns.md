@@ -64,7 +64,7 @@ Avoid nested loops with mutable intermediate arrays when a map/filter works.
 Common thresholds in this repo:
 
 - Method length: ~20 lines
-- Cyclomatic complexity per method: <= 10
+- Cyclomatic complexity per method: < 5
 
 When a method grows, extract helpers that:
 

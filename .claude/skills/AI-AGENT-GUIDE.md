@@ -124,7 +124,7 @@ Complex skills have multi-file structure:
 | **Deptrac Fixer**            | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations            |
 | **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds         |
 | **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code             |
-| **OpenAPI Development**      | `openapi-development/SKILL.md`           | Add OpenAPI documentation with processor pattern |
+| **OpenAPI Development**      | `openapi-development/SKILL.md`           | OpenAPI factories, sanitizers, augmenters & validation |
 | **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl |
 
 ### 💾 Database & Documentation Skills
