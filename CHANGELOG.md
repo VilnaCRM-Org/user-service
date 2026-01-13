@@ -1,11 +1,8 @@
 # [0.2.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.1.0...v0.2.0) (2026-01-12)
 
-
 ### Features
 
-*  add documentation creation skill ([#232](https://github.com/VilnaCRM-Org/user-service/issues/232)) ([af38932](https://github.com/VilnaCRM-Org/user-service/commit/af389324c220bdc5aa4258deec2bfce0e4f22724))
-
-
+- add documentation creation skill ([#232](https://github.com/VilnaCRM-Org/user-service/issues/232)) ([af38932](https://github.com/VilnaCRM-Org/user-service/commit/af389324c220bdc5aa4258deec2bfce0e4f22724))
 
 # [0.1.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.8.0...v0.1.0) (2026-01-11)
 
