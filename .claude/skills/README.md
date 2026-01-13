@@ -404,7 +404,6 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-
 ### 14. Structurizr Architecture Sync (`structurizr-architecture-sync/`)
 
 **Purpose**: Maintain Structurizr C4 architecture diagrams in sync with code changes
