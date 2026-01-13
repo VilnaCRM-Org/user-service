@@ -118,7 +118,32 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-### 5. Documentation Synchronization (`documentation-sync/`)
+### 5. Documentation Creation (`documentation-creation/`)
+
+**Purpose**: Create comprehensive documentation suite from scratch for new projects
+
+**When activated**:
+
+- Setting up initial documentation for a new project
+- Building complete documentation suite
+- Major documentation rewrite
+- Bootstrapping documentation for new services
+
+**What it does**:
+
+- Analyzes project structure and technology stack
+- Creates all required `docs/*.md` files
+- Provides templates for each documentation type
+- Verifies all references against actual codebase
+- Ensures consistent style and cross-linking
+
+**Key files created**: `docs/main.md`, `docs/getting-started.md`, `docs/design-and-architecture.md`, `docs/developer-guide.md`, `docs/api-endpoints.md`, `docs/testing.md`, and 11+ more
+
+**Note**: Use documentation-sync for updating existing docs
+
+---
+
+### 6. Documentation Synchronization (`documentation-sync/`)
 
 **Purpose**: Keep `docs/` directory synchronized with code changes
 
@@ -143,7 +168,7 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-### 6. Database Migrations (`database-migrations/`)
+### 7. Database Migrations (`database-migrations/`)
 
 **Purpose**: Create and manage database migrations using Doctrine ORM (MySQL in this service)
 
@@ -174,7 +199,7 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-### 7. Load Testing (`load-testing/`)
+### 8. Load Testing (`load-testing/`)
 
 **Purpose**: Create and manage K6 load tests for REST and GraphQL APIs
 
@@ -208,7 +233,7 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-### 8. Implementing DDD Architecture (`implementing-ddd-architecture/`)
+### 9. Implementing DDD Architecture (`implementing-ddd-architecture/`)
 
 **Purpose**: Design and implement DDD patterns (entities, value objects, aggregates, CQRS)
 
@@ -247,7 +272,7 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-### 9. Deptrac Fixer (`deptrac-fixer/`)
+### 10. Deptrac Fixer (`deptrac-fixer/`)
 
 **Purpose**: Diagnose and fix Deptrac architectural violations automatically
 
@@ -292,7 +317,7 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-### 10. Complexity Management (`complexity-management/`)
+### 11. Complexity Management (`complexity-management/`)
 
 **Purpose**: Maintain and improve code quality using PHPInsights without decreasing thresholds
 
@@ -323,7 +348,7 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-### 11. Developing OpenAPI Specs (`developing-openapi-specs/`)
+### 12. Developing OpenAPI Specs (`developing-openapi-specs/`)
 
 **Purpose**: Guide for contributing to the OpenAPI layer using processor pattern
 
@@ -345,7 +370,7 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-### 12. Query Performance Analysis (`query-performance-analysis/`)
+### 13. Query Performance Analysis (`query-performance-analysis/`)
 
 **Purpose**: Detect N+1 queries, analyze slow queries with EXPLAIN, identify missing indexes, and ensure safe index migrations
 
@@ -385,7 +410,7 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-### 13. API Platform CRUD (`api-platform-crud/`)
+### 14. API Platform CRUD (`api-platform-crud/`)
 
 **Purpose**: Create complete REST API CRUD operations using API Platform 4 with DDD and CQRS patterns
 

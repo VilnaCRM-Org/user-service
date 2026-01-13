@@ -2,98 +2,100 @@
 
 ## Database Schema Changes
 
-**Update if**: you add or modify collections, fields, indexes, or entity relationships.
+**Update if**: you add or modify tables, fields, indexes, or entity relationships.
 
-**Update**: [`AGENTS.md`](../../../../AGENTS.md) (Architecture overview section)
+**Update**: `docs/design-and-architecture.md`
 
 1. Entity relationships
-1. New fields and their purpose
-1. Migration notes
+2. New fields and their purpose
+3. Migration notes
 
 **Example**:
 
 ```markdown
-#### Customer Entity
+#### User Entity
 
-- `id`: ULID (primary key)
+- `id`: UUID (primary key)
 - `email`: Unique, indexed
-- `type`: Reference to CustomerType (IRI)
-- `status`: Reference to CustomerStatus (IRI)
+- `initials`: User initials
+- `password`: Hashed password
+- `confirmed`: Boolean confirmation status
 ```
 
-**Update**: [`README.md`](../../../../README.md) with repository usage patterns
+**Update**: `docs/developer-guide.md` with repository usage patterns
 
 ## Domain Model Changes
 
 **Update if**: you introduce new aggregates, commands, events, or change bounded context boundaries.
 
-**Update**: [`AGENTS.md`](../../../../AGENTS.md) (Domain design section)
+**Update**: `docs/design-and-architecture.md` (Domain design section)
 
 1. **Aggregates**: New domain aggregates
-1. **Commands**: Command handlers
-1. **Events**: Domain events
-1. **Bounded Contexts**: Context interactions
+2. **Commands**: Command handlers
+3. **Events**: Domain events
+4. **Bounded Contexts**: Context interactions
 
-**Update**: [`README.md`](../../../../README.md) or team knowledge base with new domain terms
+**Update**: `docs/glossary.md` with new domain terms
 
 **Example**:
 
 ```markdown
-## Customer Management Context
+## User Management Context
 
 ### Aggregates
 
-- **Customer**: Root aggregate for customer data
+- **User**: Root aggregate for user data
 
 ### Commands
 
-- `CreateCustomerCommand`: Create new customer
-- `UpdateCustomerCommand`: Update customer details
+- `RegisterUserCommand`: Register new user
+- `UpdateUserCommand`: Update user details
+- `ConfirmUserCommand`: Confirm user email
 
 ### Events
 
-- `CustomerCreatedEvent`: Emitted when customer created
-- `CustomerUpdatedEvent`: Emitted when customer updated
+- `UserRegisteredEvent`: Emitted when user registered
+- `UserConfirmedEvent`: Emitted when user confirmed
+- `EmailChangedEvent`: Emitted when email changed
 ```
 
 ## Architecture Pattern Changes
 
 **Update if**: you adopt new architectural patterns, refactor cross-cutting concerns, or deprecate existing approaches.
 
-**Update**: [`AGENTS.md`](../../../../AGENTS.md) (Architecture patterns section)
+**Update**: `docs/design-and-architecture.md` (Architecture patterns section)
 
 1. Pattern description
-1. Implementation examples
-1. Benefits and trade-offs
-1. Migration path from old pattern
+2. Implementation examples
+3. Benefits and trade-offs
+4. Migration path from old pattern
 
 **Example**:
 
 ```markdown
-### Domain-Driven Design with Event Sourcing
+### Domain-Driven Design with CQRS
 
 #### Pattern Description
 
-Migrated the Customer bounded context from CRUD repositories to event-sourced aggregates to unlock audit trails and replay.
+The User bounded context uses CQRS to separate read and write operations.
 
 #### Implementation
 
-- Customer aggregate publishes `CustomerCreatedEvent` and `CustomerUpdatedEvent`
-- Repository coordinates between event store and projection layer
-- Snapshot strategy reduces replay time for high-frequency aggregates
+- Commands are dispatched via Symfony Messenger
+- Query handlers return DTOs for read operations
+- Domain events are published for side effects
 
 #### Benefits & Trade-offs
 
-- **Benefits**: Full audit trail, temporal queries, event-driven integrations
-- **Trade-offs**: Increased complexity, eventual consistency in projections, additional storage overhead
+- **Benefits**: Clear separation of concerns, optimized read/write paths
+- **Trade-offs**: Increased complexity, additional handler classes
 
 #### Migration Path
 
-1. Implement event-sourced aggregate alongside existing CRUD repository
-1. Dual-write to both systems during transition period
-1. Backfill historical data as events
-1. Switch read models to projections
-1. Retire legacy CRUD repository once projections are stable
+1. Implement new command/query handlers
+2. Update controllers to use new handlers
+3. Remove direct repository calls from controllers
+4. Update tests to use new patterns
 ```
 
 ## Documentation Standards
@@ -102,3 +104,4 @@ Migrated the Customer bounded context from CRUD repositories to event-sourced ag
 - Include code blocks with language hints and blank lines before/after fences
 - Provide concise but complete examples covering purpose, implementation, benefits, and migration guidance
 - Reference repository files with relative links so documentation stays navigable
+- Always update `docs/glossary.md` when introducing new domain terms
