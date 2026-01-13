@@ -218,7 +218,8 @@ This repository includes **AI-agnostic Skills** in `.claude/skills/`. Always use
 - **complexity-management**: Reduce cyclomatic complexity
 - **developing-openapi-specs**: OpenAPI processor patterns
 - **database-migrations**: Doctrine ORM/MySQL migrations
-- **documentation-sync**: Keep docs synchronized
+- **documentation-creation**: Create initial documentation suite from scratch
+- **documentation-sync**: Keep docs synchronized with code changes
 - **api-platform-crud**: Add REST resources with CRUD
 - **load-testing**: Create/manage K6 load tests
 
