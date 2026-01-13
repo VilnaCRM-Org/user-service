@@ -118,14 +118,14 @@ Complex skills have multi-file structure:
 
 ### 🏗️ Architecture & Quality Skills
 
-| Skill                        | File                                     | When to Use                                      |
-| ---------------------------- | ---------------------------------------- | ------------------------------------------------ |
-| **Implementing DDD**         | `implementing-ddd-architecture/SKILL.md` | Create entities, value objects, aggregates, CQRS |
-| **Deptrac Fixer**            | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations            |
-| **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds         |
-| **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code             |
+| Skill                        | File                                     | When to Use                                            |
+| ---------------------------- | ---------------------------------------- | ------------------------------------------------------ |
+| **Implementing DDD**         | `implementing-ddd-architecture/SKILL.md` | Create entities, value objects, aggregates, CQRS       |
+| **Deptrac Fixer**            | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations                  |
+| **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds               |
+| **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code                   |
 | **OpenAPI Development**      | `openapi-development/SKILL.md`           | OpenAPI factories, sanitizers, augmenters & validation |
-| **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl |
+| **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl       |
 
 ### 💾 Database & Documentation Skills
 
