@@ -51,24 +51,24 @@ Never reduce thresholds—fix code instead.
 
 ### Quick Reference Table
 
-| Category         | Command                      | Description             | Related Skill              |
-| ---------------- | ---------------------------- | ----------------------- | -------------------------- |
-| **Docker**       | `make start`                 | Start containers        | -                          |
-|                  | `make sh`                    | Access PHP container    | -                          |
-| **Quality**      | `make phpcsfixer`            | Fix code style          | -                          |
-|                  | `make psalm`                 | Static analysis         | -                          |
-|                  | `make phpinsights`           | Quality checks          | `complexity-management`    |
-|                  | `make deptrac`               | Architecture validation | `deptrac-fixer`            |
-| **Testing**      | `make unit-tests`            | Unit tests              | `testing-workflow`         |
-|                  | `make integration-tests`     | Integration tests       | `testing-workflow`         |
-|                  | `make behat`                 | Behat E2E tests         | `testing-workflow`         |
-|                  | `make all-tests`             | All functional tests    | `testing-workflow`         |
-|                  | `make infection`             | Mutation testing        | `testing-workflow`         |
-| **Load Testing** | `make smoke-load-tests`      | Minimal load test       | `load-testing`             |
-|                  | `make load-tests`            | All load tests          | `load-testing`             |
-| **CI**           | `make ci`                    | Run all CI checks       | `ci-workflow`              |
-| **Database**     | `make setup-test-db`         | Reset test database     | `database-migrations`      |
-| **API Docs**     | `make generate-openapi-spec` | Export OpenAPI          | `openapi-development` |
+| Category         | Command                      | Description             | Related Skill           |
+| ---------------- | ---------------------------- | ----------------------- | ----------------------- |
+| **Docker**       | `make start`                 | Start containers        | -                       |
+|                  | `make sh`                    | Access PHP container    | -                       |
+| **Quality**      | `make phpcsfixer`            | Fix code style          | -                       |
+|                  | `make psalm`                 | Static analysis         | -                       |
+|                  | `make phpinsights`           | Quality checks          | `complexity-management` |
+|                  | `make deptrac`               | Architecture validation | `deptrac-fixer`         |
+| **Testing**      | `make unit-tests`            | Unit tests              | `testing-workflow`      |
+|                  | `make integration-tests`     | Integration tests       | `testing-workflow`      |
+|                  | `make behat`                 | Behat E2E tests         | `testing-workflow`      |
+|                  | `make all-tests`             | All functional tests    | `testing-workflow`      |
+|                  | `make infection`             | Mutation testing        | `testing-workflow`      |
+| **Load Testing** | `make smoke-load-tests`      | Minimal load test       | `load-testing`          |
+|                  | `make load-tests`            | All load tests          | `load-testing`          |
+| **CI**           | `make ci`                    | Run all CI checks       | `ci-workflow`           |
+| **Database**     | `make setup-test-db`         | Reset test database     | `database-migrations`   |
+| **API Docs**     | `make generate-openapi-spec` | Export OpenAPI          | `openapi-development`   |
 
 ### Detailed Commands
 
