@@ -57,12 +57,14 @@ Implement production-ready caching with proper key design, TTL management, event
 ## CAP Theorem: Why We Choose AP (Availability + Partition Tolerance)
 
 Cache invalidation follows **AP from CAP theorem** - we prioritize:
+
 - **Availability**: Business operations never fail due to cache issues
 - **Partition Tolerance**: System works even when cache is unavailable
 
 **Trade-off**: Brief staleness is acceptable over blocking writes.
 
 **Implementation**:
+
 - Cache errors fallback to database (try/catch everywhere)
 - Invalidation processed asynchronously via message queue
 - Exceptions in subscribers are logged + emit metrics (self-healing)
@@ -85,19 +87,19 @@ Cache invalidation follows **AP from CAP theorem** - we prioritize:
 > These are **example** locations based on the Codely/Hexagonal structure used in VilnaCRM services.
 > Adapt the bounded context (`User`, `OAuth`, etc.) to your feature.
 
-| Component                     | Typical Location |
-| ---------------------------- | ---------------- |
-| CacheKeyBuilder              | `src/Shared/Infrastructure/Cache/CacheKeyBuilder.php` |
-| CachedXxxRepository          | `src/{Context}/{Bounded}/Infrastructure/Repository/CachedXxxRepository.php` |
-| Base repository (inner)      | `src/{Context}/{Bounded}/Infrastructure/Repository/*Repository.php` |
+| Component                    | Typical Location                                                                                |
+| ---------------------------- | ----------------------------------------------------------------------------------------------- |
+| CacheKeyBuilder              | `src/Shared/Infrastructure/Cache/CacheKeyBuilder.php`                                           |
+| CachedXxxRepository          | `src/{Context}/{Bounded}/Infrastructure/Repository/CachedXxxRepository.php`                     |
+| Base repository (inner)      | `src/{Context}/{Bounded}/Infrastructure/Repository/*Repository.php`                             |
 | Marker interface             | `src/{Context}/{Bounded}/Application/EventSubscriber/*CacheInvalidationSubscriberInterface.php` |
-| Invalidation subscriber      | `src/{Context}/{Bounded}/Application/EventSubscriber/*CacheInvalidationSubscriber.php` |
-| Cache pool config            | `config/packages/cache.yaml` |
-| Test cache config            | `config/packages/test/cache.yaml` |
-| Service wiring / aliases     | `config/services.yaml` |
-| HTTP cache tests             | `tests/Integration/*HttpCacheTest.php` |
-| Unit tests                   | `tests/Unit/**` |
-| Integration tests (optional) | `tests/Integration/**` |
+| Invalidation subscriber      | `src/{Context}/{Bounded}/Application/EventSubscriber/*CacheInvalidationSubscriber.php`          |
+| Cache pool config            | `config/packages/cache.yaml`                                                                    |
+| Test cache config            | `config/packages/test/cache.yaml`                                                               |
+| Service wiring / aliases     | `config/services.yaml`                                                                          |
+| HTTP cache tests             | `tests/Integration/*HttpCacheTest.php`                                                          |
+| Unit tests                   | `tests/Unit/**`                                                                                 |
+| Integration tests (optional) | `tests/Integration/**`                                                                          |
 
 ---
 
@@ -468,15 +470,16 @@ App\Core\Customer\Domain\Entity\Customer:
 
 **HTTP Cache Headers Explained**:
 
-| Header | Single Resource | Collection | Purpose |
-|--------|-----------------|------------|---------|
-| `max-age` | 600s (10 min) | 300s (5 min) | Browser cache TTL |
-| `s-maxage` | 600s | 600s | CDN/proxy cache TTL |
-| `public` | true | true | Allow shared caching |
-| `Vary` | Accept, Accept-Language | Accept, Accept-Language | Cache key variants |
-| `ETag` | Auto-generated | Auto-generated | Conditional requests |
+| Header     | Single Resource         | Collection              | Purpose              |
+| ---------- | ----------------------- | ----------------------- | -------------------- |
+| `max-age`  | 600s (10 min)           | 300s (5 min)            | Browser cache TTL    |
+| `s-maxage` | 600s                    | 600s                    | CDN/proxy cache TTL  |
+| `public`   | true                    | true                    | Allow shared caching |
+| `Vary`     | Accept, Accept-Language | Accept, Accept-Language | Cache key variants   |
+| `ETag`     | Auto-generated          | Auto-generated          | Conditional requests |
 
 **ETag Behavior**:
+
 - ETag is automatically generated based on resource content
 - ETag changes after resource modification
 - Clients can use `If-None-Match` for conditional requests
@@ -570,6 +573,7 @@ Cache invalidation is processed asynchronously for resilience:
 ```
 
 **Resilience Layers**:
+
 1. **Layer 1**: `ResilientAsyncEventDispatcher` catches SQS send failures
 2. **Layer 2**: `DomainEventMessageHandler` catches subscriber failures
 3. **All failures**: Logged + emit metrics (self-healing pipeline)

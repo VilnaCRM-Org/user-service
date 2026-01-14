@@ -101,7 +101,7 @@ Provide a console command or admin-only endpoint for bulk/operational invalidati
 
 ## Anti-Patterns
 
-- Clearing *all* cache without reason (`$cache->clear()`)
+- Clearing _all_ cache without reason (`$cache->clear()`)
 - Over-invalidation (`invalidateTags(['customer'])` for single update)
 - Invalidating inside repositories' `save()` when you already have domain events
 
