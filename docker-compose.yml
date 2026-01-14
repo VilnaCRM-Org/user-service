@@ -80,7 +80,7 @@ services:
       test: ['CMD', 'mariadb', '-h', 'localhost', '-u', 'root', '-proot', '-e', 'SELECT 1']
 
   redis:
-    image: redis:7.2.5-alpine
+    image: redis:8.0.0-alpine
     ports:
       - '6379:6379'
 

@@ -17,7 +17,17 @@ resources:
     operations:
       ApiPlatform\Metadata\GetCollection:
         paginationClientItemsPerPage: true
-      ApiPlatform\Metadata\Get: ~
+        cacheHeaders:
+          max_age: 300
+          shared_max_age: 600
+          public: true
+          vary: ['Accept', 'Accept-Language']
+      ApiPlatform\Metadata\Get:
+        cacheHeaders:
+          max_age: 600
+          shared_max_age: 600
+          public: true
+          vary: ['Accept', 'Accept-Language']
       create_http:
         class: 'ApiPlatform\Metadata\Post'
         input: 'App\User\Application\DTO\UserRegisterDto'
