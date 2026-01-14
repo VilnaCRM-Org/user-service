@@ -1,17 +1,14 @@
 # [0.3.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.2.0...v0.3.0) (2026-01-13)
 
-
 ### Features
 
-* add structurizr-architecture-sync skill ([#234](https://github.com/VilnaCRM-Org/user-service/issues/234)) ([e16d043](https://github.com/VilnaCRM-Org/user-service/commit/e16d043ab98414aa89d97fb594662b519a6795e8))
-
-
+- add structurizr-architecture-sync skill ([#234](https://github.com/VilnaCRM-Org/user-service/issues/234)) ([e16d043](https://github.com/VilnaCRM-Org/user-service/commit/e16d043ab98414aa89d97fb594662b519a6795e8))
 
 # [0.2.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.1.0...v0.2.0) (2026-01-12)
 
 ### Features
 
-*  add documentation creation skill ([#232](https://github.com/VilnaCRM-Org/user-service/issues/232)) ([af38932](https://github.com/VilnaCRM-Org/user-service/commit/af389324c220bdc5aa4258deec2bfce0e4f22724))
+- add documentation creation skill ([#232](https://github.com/VilnaCRM-Org/user-service/issues/232)) ([af38932](https://github.com/VilnaCRM-Org/user-service/commit/af389324c220bdc5aa4258deec2bfce0e4f22724))
 
 # [0.1.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.8.0...v0.1.0) (2026-01-11)
 
@@ -30,4 +27,3 @@
 ### Bug Fixes
 
 - **#204:** Update dependabot.yml ([#204](https://github.com/VilnaCRM-Org/user-service/issues/204)) ([aebc727](https://github.com/VilnaCRM-Org/user-service/commit/aebc727f5cf5b5a1c98d921c7d504690a5e3d7e2))
-
