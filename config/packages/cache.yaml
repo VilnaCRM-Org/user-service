@@ -14,4 +14,3 @@ framework:
         default_lifetime: 600
         provider: '%env(resolve:REDIS_URL)%'
         tags: true
-
