@@ -19,6 +19,7 @@ What are you trying to do?
 │   ├─ New API endpoint → developing-openapi-specs
 │   ├─ New load test → load-testing
 │   ├─ New database entity → database-migrations
+│   ├─ Add caching / invalidation → cache-management
 │   └─ New test cases → testing-workflow
 │
 ├─ Review/validate work
@@ -75,6 +76,16 @@ This skill provides refactoring strategies to reduce complexity.
 This skill has REST and GraphQL load test patterns.
 
 **NOT**: testing-workflow (that's for functional tests only)
+
+---
+
+### "I need to add caching / cache invalidation"
+
+**Use**: [cache-management](cache-management/SKILL.md)
+
+This skill covers cache key design, TTLs, tag-based invalidation, decorator-based cached repositories, and best-effort event-driven invalidation.
+
+**NOT**: complexity-management (that’s for cyclomatic complexity)
 
 ---
 
