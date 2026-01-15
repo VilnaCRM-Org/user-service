@@ -200,7 +200,11 @@ final class CachedUserRepository implements UserRepositoryInterface
             ->getUnitOfWork()
             ->tryGetById($cached->getId(), User::class);
 
-        return $managed instanceof User ? $managed : $cached;
+        if ($managed instanceof User) {
+            return $managed;
+        }
+
+        return $this->inner->findById($cached->getId()) ?? $cached;
     }
 
     private function invalidateUserCache(User $user): void

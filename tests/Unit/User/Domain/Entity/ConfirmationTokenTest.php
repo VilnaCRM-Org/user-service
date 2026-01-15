@@ -30,7 +30,6 @@ final class ConfirmationTokenTest extends UnitTestCase
     public function testSend(): void
     {
         $this->confirmationToken->send();
-        $this->confirmationToken->send();
         $this->expectException(UserTimedOutException::class);
         $this->confirmationToken->send();
     }
@@ -65,6 +64,50 @@ final class ConfirmationTokenTest extends UnitTestCase
         $this->confirmationToken->setUserID($userId);
 
         $this->assertEquals($userId, $this->confirmationToken->getUserID());
+    }
+
+    public function testSendIncrementsTimesSent(): void
+    {
+        $this->assertEquals(0, $this->confirmationToken->getTimesSent());
+        $this->confirmationToken->send();
+        $this->assertEquals(1, $this->confirmationToken->getTimesSent());
+    }
+
+    public function testSendSetsAllowedToSendAfterInFuture(): void
+    {
+        $beforeSend = new \DateTimeImmutable();
+        $this->confirmationToken->send();
+        $afterSend = new \DateTimeImmutable();
+
+        $allowedToSendAfter = $this->confirmationToken->getAllowedToSendAfter();
+
+        $this->assertGreaterThan(
+            $beforeSend,
+            $allowedToSendAfter,
+            'allowedToSendAfter should be in the future after first send'
+        );
+        $this->assertGreaterThanOrEqual(
+            $afterSend->modify('+1 minute'),
+            $allowedToSendAfter->modify('+1 second'),
+            'allowedToSendAfter should be at least 1 minute in the future'
+        );
+    }
+
+    public function testSendBeyondDefinedRateLimitsUsesNoDelay(): void
+    {
+        $this->confirmationToken->setTimesSent(10);
+        $beforeSend = new \DateTimeImmutable();
+        $this->confirmationToken->setAllowedToSendAfter(
+            new \DateTimeImmutable('1970-01-01')
+        );
+
+        $this->confirmationToken->send($beforeSend);
+
+        $this->assertEquals(
+            $beforeSend,
+            $this->confirmationToken->getAllowedToSendAfter(),
+            'When beyond defined rate limits, no delay should be added'
+        );
     }
 
     public function testSetAllowedToSendAfter(): void

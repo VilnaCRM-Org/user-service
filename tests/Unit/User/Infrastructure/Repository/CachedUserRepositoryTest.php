@@ -52,19 +52,47 @@ final class CachedUserRepositoryTest extends UnitTestCase
         );
     }
 
-    public function testFindReturnsCachedUserOnCacheHit(): void
+    public function testFindReturnsFreshEntityFromDatabaseWhenCacheHitButEntityNotManaged(): void
     {
         $userId = $this->faker->uuid();
         $cacheKey = 'user.' . $userId;
-        $user = $this->createUserMock($userId);
+        $cachedUser = $this->createUserMock($userId);
+        $freshUser = $this->createUserMock($userId);
 
         $this->setupCacheKeyBuilder($userId);
-        $this->setupCacheHit($cacheKey, $user);
+        $this->setupCacheHit($cacheKey, $cachedUser);
         $this->setupUnitOfWorkWithNoManagedEntity($userId);
+
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($userId)
+            ->willReturn($freshUser);
 
         $result = $this->repository->find($userId);
 
-        self::assertSame($user, $result);
+        self::assertSame($freshUser, $result);
+    }
+
+    public function testFindReturnsCachedEntityWhenDatabaseFetchFails(): void
+    {
+        $userId = $this->faker->uuid();
+        $cacheKey = 'user.' . $userId;
+        $cachedUser = $this->createUserMock($userId);
+
+        $this->setupCacheKeyBuilder($userId);
+        $this->setupCacheHit($cacheKey, $cachedUser);
+        $this->setupUnitOfWorkWithNoManagedEntity($userId);
+
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($userId)
+            ->willReturn(null);
+
+        $result = $this->repository->find($userId);
+
+        self::assertSame($cachedUser, $result);
     }
 
     public function testFindReturnsManagedEntityWhenCacheHitButEntityIsManaged(): void
@@ -165,20 +193,41 @@ final class CachedUserRepositoryTest extends UnitTestCase
         self::assertSame($user, $result);
     }
 
-    public function testFindByIdReturnsCachedUserOnCacheHit(): void
+    public function testFindByIdReattachesDetachedEntityFromCache(): void
     {
         $userId = $this->faker->uuid();
         $cacheKey = 'user.' . $userId;
-        $user = $this->createMock(UserInterface::class);
-        $user->method('getId')->willReturn($userId);
+        $cachedUser = $this->createMock(UserInterface::class);
+        $cachedUser->method('getId')->willReturn($userId);
+        $freshUser = $this->createMock(UserInterface::class);
 
         $this->setupCacheKeyBuilder($userId);
-        $this->setupCacheHit($cacheKey, $user);
+        $this->setupCacheHit($cacheKey, $cachedUser);
         $this->setupUnitOfWorkWithNoManagedEntity($userId);
+
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($userId)
+            ->willReturn($freshUser);
 
         $result = $this->repository->findById($userId);
 
-        self::assertSame($user, $result);
+        self::assertSame($freshUser, $result);
+    }
+
+    public function testFindByIdReturnsNullWhenCacheContainsNonUserValue(): void
+    {
+        $userId = $this->faker->uuid();
+        $cacheKey = 'user.' . $userId;
+        $cachedValue = false;
+
+        $this->setupCacheKeyBuilder($userId);
+        $this->setupCacheHit($cacheKey, $cachedValue);
+
+        $result = $this->repository->findById($userId);
+
+        self::assertNull($result);
     }
 
     public function testFindByIdCacheMissLoadsFromDatabase(): void
@@ -229,13 +278,14 @@ final class CachedUserRepositoryTest extends UnitTestCase
         self::assertSame($user, $result);
     }
 
-    public function testFindByEmailReturnsCachedUserOnCacheHit(): void
+    public function testFindByEmailReattachesDetachedEntityFromCache(): void
     {
         $email = $this->faker->email();
         $userId = $this->faker->uuid();
         $cacheKey = 'user.email.hash123';
-        $user = $this->createMock(UserInterface::class);
-        $user->method('getId')->willReturn($userId);
+        $cachedUser = $this->createMock(UserInterface::class);
+        $cachedUser->method('getId')->willReturn($userId);
+        $freshUser = $this->createMock(UserInterface::class);
 
         $this->cacheKeyBuilder
             ->expects($this->once())
@@ -243,12 +293,18 @@ final class CachedUserRepositoryTest extends UnitTestCase
             ->with($email)
             ->willReturn($cacheKey);
 
-        $this->setupCacheHit($cacheKey, $user);
+        $this->setupCacheHit($cacheKey, $cachedUser);
         $this->setupUnitOfWorkWithNoManagedEntity($userId);
+
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($userId)
+            ->willReturn($freshUser);
 
         $result = $this->repository->findByEmail($email);
 
-        self::assertSame($user, $result);
+        self::assertSame($freshUser, $result);
     }
 
     public function testFindByEmailCacheMissLoadsFromDatabase(): void

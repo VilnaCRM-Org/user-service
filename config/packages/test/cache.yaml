@@ -1,12 +1,13 @@
 framework:
   cache:
-    app: cache.adapter.array
-    default_redis_provider: null
+    app: cache.adapter.redis
+    default_redis_provider: '%env(resolve:REDIS_URL)%'
 
     pools:
       app:
-        adapter: cache.adapter.array
-        provider: null
+        adapter: cache.adapter.redis
+        default_lifetime: 86400
+        provider: '%env(resolve:REDIS_URL)%'
 
       cache.user:
         adapter: cache.adapter.array

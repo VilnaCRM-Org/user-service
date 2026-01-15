@@ -7,6 +7,10 @@ services:
     arguments:
       $tokenStorage: '@security.token_storage'
 
+  App\Tests\Behat\UserContext\UserContext:
+    arguments:
+      $cachePool: '@cache.user'
+
   _defaults:
     autowire: true
     autoconfigure: true
