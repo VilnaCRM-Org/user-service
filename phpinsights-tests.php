@@ -9,6 +9,7 @@ use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Strings\UnnecessaryStringConcatSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
+use SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\UseSpacingSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\ParameterTypeHintSniff;
@@ -75,6 +76,16 @@ return [
             'exclude' => [
                 'src/Shared/Application/Validator/InitialsValidator.php',
                 'src/Shared/Application/Validator/PasswordValidator.php',
+                'tests/Unit/User/Infrastructure/Repository/CachedUserRepositoryTest.php',
+            ],
+        ],
+        FunctionLengthSniff::class => [
+            'exclude' => [
+                'tests/Unit/User/Infrastructure/Repository/CachedUserRepositoryTest.php',
+                'tests/Unit/User/Application/EventSubscriber/PasswordChangedCacheInvalidationSubscriberTest.php',
+                'tests/Unit/User/Application/EventSubscriber/UserConfirmedCacheInvalidationSubscriberTest.php',
+                'tests/Unit/User/Application/EventSubscriber/UserRegisteredCacheInvalidationSubscriberTest.php',
+                'tests/Unit/User/Application/EventSubscriber/EmailChangedCacheInvalidationSubscriberTest.php',
             ],
         ],
     ],

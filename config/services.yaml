@@ -30,6 +30,10 @@ services:
     App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface:
       tags: ['app.event_subscriber']
 
+    App\User\Application\EventSubscriber\UserCacheInvalidationSubscriberInterface:
+      bind:
+        $cache: '@cache.user'
+
     App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface:
       bind:
         $apiPrefix: '%api_url_prefix%'
@@ -102,6 +106,16 @@ services:
   App\User\Infrastructure\Repository\MariaDBUserRepository:
     arguments:
       $batchSize: '%env(int:USER_INSERT_BATCH_SIZE)%'
+    public: true
+
+  App\User\Infrastructure\Repository\CachedUserRepository:
+    arguments:
+      $inner: '@App\User\Infrastructure\Repository\MariaDBUserRepository'
+      $cache: '@cache.user'
+
+  App\User\Domain\Repository\UserRepositoryInterface:
+    alias: App\User\Infrastructure\Repository\CachedUserRepository
+    public: true
 
   App\User\Application\EventSubscriber\PasswordResetEmailSentEventSubscriber:
     arguments:

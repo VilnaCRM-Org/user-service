@@ -41,6 +41,7 @@ final class EmailChangedEventSubscriberTest extends IntegrationTestCase
         );
         $event = new EmailChangedEvent(
             $user,
+            $this->faker->email(),
             $this->faker->uuid()
         );
 

@@ -68,4 +68,23 @@ final class RedisTokenRepositoryTest extends IntegrationTestCase
         $foundTokenByUserId = $this->tokenRepository->findByUserId($userId);
         $this->assertNull($foundTokenByUserId);
     }
+
+    public function testTokenRateLimitingSurvivesSerialization(): void
+    {
+        $tokenValue = $this->faker->uuid();
+        $userId = $this->faker->uuid();
+        $token = new ConfirmationToken($tokenValue, $userId);
+
+        $token->send();
+
+        $this->tokenRepository->save($token);
+
+        $foundToken = $this->tokenRepository->findByUserId($userId);
+
+        $this->assertInstanceOf(ConfirmationToken::class, $foundToken);
+        $this->assertSame(1, $foundToken->getTimesSent());
+
+        $this->expectException(\App\User\Domain\Exception\UserTimedOutException::class);
+        $foundToken->send();
+    }
 }

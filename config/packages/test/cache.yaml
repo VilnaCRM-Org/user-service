@@ -10,7 +10,6 @@ framework:
         provider: '%env(resolve:REDIS_URL)%'
 
       cache.user:
-        adapter: cache.adapter.redis
-        default_lifetime: 600
-        provider: '%env(resolve:REDIS_URL)%'
+        adapter: cache.adapter.array
+        provider: null
         tags: true

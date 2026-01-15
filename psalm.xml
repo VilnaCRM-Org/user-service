@@ -42,10 +42,5 @@
                 <directory name="tests/Behat"/>
             </errorLevel>
         </UnusedParam>
-        <MissingOverrideAttribute>
-            <errorLevel type="suppress">
-                <directory name="tests/Behat"/>
-            </errorLevel>
-        </MissingOverrideAttribute>
     </issueHandlers>
 </psalm>

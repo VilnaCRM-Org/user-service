@@ -22,12 +22,12 @@ final class ConfirmationToken implements ConfirmationTokenInterface
         private string $userID
     ) {
         $this->timesSent = 0;
-        $this->allowedToSendAfter = new DateTimeImmutable();
+        $this->allowedToSendAfter = new DateTimeImmutable('1970-01-01');
         $this->sendEmailAttemptsTimeInMinutes = [
-            1 => 1,
-            2 => 3,
-            3 => 4,
-            4 => 1440,
+            0 => 1,
+            1 => 3,
+            2 => 4,
+            3 => 1440,
         ];
     }
 

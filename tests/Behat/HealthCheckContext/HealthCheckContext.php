@@ -28,6 +28,7 @@ final class HealthCheckContext implements Context
     public function theCacheIsNotWorking(): void
     {
         $failingPool = new class() extends ArrayAdapter {
+            #[\Override]
             public function get(
                 string $key,
                 callable $callback,
@@ -87,6 +88,7 @@ final class HealthCheckContext implements Context
                 ]);
             }
 
+            #[\Override]
             public function __call($name, array $args): void
             {
                 throw new \RuntimeException('Message broker is not available');
