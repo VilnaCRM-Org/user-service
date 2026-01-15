@@ -361,7 +361,7 @@ After documenting the API endpoint:
 
 3. **Review API request flow**: Ensure clear path from controller to database
 
-4. **Update API documentation**: Use [developing-openapi-specs](../../developing-openapi-specs/SKILL.md) skill
+4. **Update API documentation**: Use [openapi-development](../../openapi-development/SKILL.md) skill
 
 5. **Update documentation**: Use [documentation-sync](../../documentation-sync/SKILL.md) skill
 

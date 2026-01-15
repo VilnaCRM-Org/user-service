@@ -216,7 +216,7 @@ This repository includes **AI-agnostic Skills** in `.claude/skills/`. Always use
 - **deptrac-fixer**: Diagnose and fix Deptrac violations
 - **quality-standards**: Protected thresholds overview
 - **complexity-management**: Reduce cyclomatic complexity
-- **developing-openapi-specs**: OpenAPI processor patterns
+- **openapi-development**: OpenAPI endpoint factories / transformers
 - **database-migrations**: Doctrine ORM/MySQL migrations
 - **documentation-creation**: Create initial documentation suite from scratch
 - **documentation-sync**: Keep docs synchronized with code changes

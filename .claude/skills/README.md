@@ -348,25 +348,16 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-### 12. Developing OpenAPI Specs (`developing-openapi-specs/`)
+### 12. OpenAPI Development (`openapi-development/`)
 
-**Purpose**: Guide for contributing to the OpenAPI layer using processor pattern
+**Purpose**: Guide for contributing to the OpenAPI layer (factories/sanitizers/augmenters/cleaners)
 
 **When activated**:
 
-- Adding endpoint factories or processors
-- Writing parameter descriptions
-- Reducing cyclomatic complexity in OpenAPI code
-- Fixing OpenAPI validation errors
+- Adding endpoint factories or OpenAPI transformers
+- Fixing OpenAPI validation errors (Spectral, OpenAPI diff, Schemathesis)
 
-**What it does**:
-
-- Documents processor pattern architecture
-- Guides functional programming approach for OpenAPI
-- Covers endpoint factories and builders
-- Ensures OpenAPI spec validation passes
-
-**Key commands**: `make generate-openapi-spec`, `./scripts/validate-openapi-spec.sh`
+**Key commands**: `make generate-openapi-spec`, `make validate-openapi-spec`, `make openapi-diff`, `make schemathesis-validate`
 
 ---
 

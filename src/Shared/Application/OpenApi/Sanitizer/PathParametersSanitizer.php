@@ -11,6 +11,8 @@ use App\Shared\Application\OpenApi\Cleaner\PathParameterCleaner;
 
 final class PathParametersSanitizer
 {
+    private const OPERATIONS = ['Get', 'Post', 'Put', 'Patch', 'Delete'];
+
     private readonly PathParameterCleaner $parameterCleaner;
 
     public function __construct(
@@ -34,27 +36,35 @@ final class PathParametersSanitizer
 
     private function sanitizePathItem(PathItem $pathItem): PathItem
     {
-        return $pathItem
-            ->withGet($this->sanitizeOperation($pathItem->getGet()))
-            ->withPost($this->sanitizeOperation($pathItem->getPost()))
-            ->withPut($this->sanitizeOperation($pathItem->getPut()))
-            ->withPatch($this->sanitizeOperation($pathItem->getPatch()))
-            ->withDelete($this->sanitizeOperation($pathItem->getDelete()));
+        foreach (self::OPERATIONS as $operation) {
+            $getter = 'get' . $operation;
+            $with = 'with' . $operation;
+
+            $pathItem = $pathItem->$with(
+                $this->sanitizeOperation($pathItem->$getter())
+            );
+        }
+
+        return $pathItem;
     }
 
     private function sanitizeOperation(?Operation $operation): ?Operation
     {
-        return match (true) {
-            $operation === null => null,
-            !\is_array($operation->getParameters()) => $operation,
-            default => $operation->withParameters(
-                array_map(
-                    fn (mixed $parameter) => $this->parameterCleaner->clean(
-                        $parameter
-                    ),
-                    $operation->getParameters()
-                )
-            ),
-        };
+        if ($operation === null) {
+            return null;
+        }
+
+        $parameters = $operation->getParameters();
+
+        if (!\is_array($parameters)) {
+            return $operation;
+        }
+
+        return $operation->withParameters(
+            array_map(
+                fn (mixed $parameter) => $this->parameterCleaner->clean($parameter),
+                $parameters
+            )
+        );
     }
 }
