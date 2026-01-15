@@ -12,8 +12,10 @@ What are you trying to do?
 │   ├─ High complexity → complexity-management
 │   ├─ Test failures → testing-workflow
 │   ├─ PHPInsights fails → complexity-management
+│   ├─ N+1 queries → query-performance-analysis
+│   ├─ Slow queries → query-performance-analysis
 │   └─ CI checks failing → ci-workflow
-│
+
 ├─ Create something new
 │   ├─ New entity/value object → implementing-ddd-architecture
 │   ├─ New API endpoint → developing-openapi-specs
@@ -21,11 +23,12 @@ What are you trying to do?
 │   ├─ New database entity → database-migrations
 │   ├─ Add caching / invalidation → cache-management
 │   └─ New test cases → testing-workflow
-│
+
 ├─ Review/validate work
 │   ├─ Before committing → ci-workflow
 │   ├─ PR feedback → code-review
-│   └─ Quality thresholds → quality-standards
+│   ├─ Quality thresholds → quality-standards
+│   └─ Query performance → query-performance-analysis
 │
 ├─ Update documentation
 │   ├─ New project needs docs → documentation-creation
@@ -107,6 +110,17 @@ This skill covers PHPUnit, Behat, and Infection debugging.
 This skill documents all thresholds and directs to specialized skills.
 
 **NOT**: complexity-management (that's specifically for complexity)
+
+---
+
+### "Endpoint is slow or making too many queries"
+
+**Use**: [query-performance-analysis](query-performance-analysis/SKILL.md)
+
+This skill detects N+1 queries, analyzes slow queries with EXPLAIN, and identifies missing indexes.
+
+**NOT**: load-testing (that's for performance under concurrent load)
+**NOT**: testing-workflow (that's for functional tests)
 
 ---
 
@@ -205,6 +219,7 @@ This skill guides updating workspace.dsl when adding components or changing arch
 | testing-workflow vs load-testing               | **Functional tests** (unit, integration, E2E) → testing-workflow<br>**Performance tests** (K6) → load-testing |
 | quality-standards vs complexity-management     | **Overview of all metrics** → quality-standards<br>**Fix complexity specifically** → complexity-management    |
 | ci-workflow vs testing-workflow                | **Run all CI checks** → ci-workflow<br>**Debug specific test issues** → testing-workflow                      |
+| query-performance-analysis vs load-testing     | **Query optimization** (N+1, indexes) → query-performance-analysis<br>**Concurrent load** (K6) → load-testing |
 | implementing-ddd vs structurizr-architecture   | **Create code** → implementing-ddd-architecture<br>**Document diagrams** → structurizr-architecture-sync      |
 
 ## Multiple Skills for One Task
@@ -229,6 +244,7 @@ Some tasks benefit from multiple skills:
 
 ### Performance optimization:
 
-1. **load-testing** - Create performance tests
-2. **complexity-management** - Reduce code complexity
-3. **ci-workflow** - Ensure quality maintained
+1. **query-performance-analysis** - Fix N+1 queries, add indexes
+2. **load-testing** - Create performance tests
+3. **complexity-management** - Reduce code complexity
+4. **ci-workflow** - Ensure quality maintained
