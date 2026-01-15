@@ -1,3 +1,12 @@
+# [0.4.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.3.0...v0.4.0) (2026-01-14)
+
+
+### Features
+
+* add Query Performance Analysis skill with examples and documentation updates ([#233](https://github.com/VilnaCRM-Org/user-service/issues/233)) ([4c6ab14](https://github.com/VilnaCRM-Org/user-service/commit/4c6ab144ee474f0a1cba59f2a2914752d44c6fa2))
+
+
+
 # [0.3.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.2.0...v0.3.0) (2026-01-13)
 
 ### Features
@@ -21,9 +30,3 @@
 ### Features
 
 - **#210:** add GitHub Copilot instructions ([#211](https://github.com/VilnaCRM-Org/user-service/issues/211)) ([28e8ba9](https://github.com/VilnaCRM-Org/user-service/commit/28e8ba93fe32d55db719678cda90231c34f0795b)), closes [#210](https://github.com/VilnaCRM-Org/user-service/issues/210) [#210](https://github.com/VilnaCRM-Org/user-service/issues/210)
-
-## [2.7.1](https://github.com/VilnaCRM-Org/user-service/compare/v2.7.0...v2.7.1) (2025-07-07)
-
-### Bug Fixes
-
-- **#204:** Update dependabot.yml ([#204](https://github.com/VilnaCRM-Org/user-service/issues/204)) ([aebc727](https://github.com/VilnaCRM-Org/user-service/commit/aebc727f5cf5b5a1c98d921c7d504690a5e3d7e2))
