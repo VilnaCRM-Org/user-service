@@ -80,14 +80,13 @@ final class UserTest extends UnitTestCase
 
     public function testUpdate(): void
     {
-        $updateData = new UserUpdate(
-            $this->faker->email(),
-            $this->faker->password(),
-            $this->faker->password(),
-            $this->faker->name()
-        );
+        $oldEmail = $this->user->getEmail();
+        $updateData = $this->createUpdateData();
         $hashedNewPassword = $this->faker->password();
         $eventID = $this->faker->uuid();
+
+        $this->emailChangedEventFactory->expects($this->once())
+            ->method('create')->with($this->user, $oldEmail, $eventID);
 
         $events = $this->user->update(
             $updateData,
@@ -97,11 +96,7 @@ final class UserTest extends UnitTestCase
             $this->passwordChangedEventFactory
         );
 
-        $this->testUpdateMakeAssertions(
-            $events,
-            $updateData,
-            $hashedNewPassword
-        );
+        $this->testUpdateMakeAssertions($events, $updateData, $hashedNewPassword);
     }
 
     public function testSetId(): void
@@ -152,5 +147,15 @@ final class UserTest extends UnitTestCase
             $this->user->getInitials()
         );
         $this->assertEquals($hashedNewPassword, $this->user->getPassword());
+    }
+
+    private function createUpdateData(): UserUpdate
+    {
+        return new UserUpdate(
+            $this->faker->email(),
+            $this->faker->password(),
+            $this->faker->password(),
+            $this->faker->name()
+        );
     }
 }

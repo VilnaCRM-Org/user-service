@@ -13,20 +13,23 @@ final class EmailChangedEventTest extends UnitTestCase
     public function testCreateEvent(): void
     {
         $user = $this->createMock(User::class);
+        $oldEmail = $this->faker->email();
         $eventId = $this->faker->uuid();
 
-        $event = new EmailChangedEvent($user, $eventId);
+        $event = new EmailChangedEvent($user, $oldEmail, $eventId);
 
         $this->assertEquals($user, $event->user);
+        $this->assertEquals($oldEmail, $event->oldEmail);
     }
 
     public function testFromPrimitivesAndToPrimitives(): void
     {
         $user = $this->createMock(User::class);
+        $oldEmail = $this->faker->email();
         $eventId = $this->faker->uuid();
         $occurredOn = $this->faker->date();
 
-        $event = new EmailChangedEvent($user, $eventId, $occurredOn);
+        $event = new EmailChangedEvent($user, $oldEmail, $eventId, $occurredOn);
 
         $serializedEvent = $event->toPrimitives();
         $deserializedEvent = EmailChangedEvent::fromPrimitives(
@@ -46,10 +49,11 @@ final class EmailChangedEventTest extends UnitTestCase
     public function testOccurredOn(): void
     {
         $user = $this->createMock(User::class);
+        $oldEmail = $this->faker->email();
         $eventId = $this->faker->uuid();
         $occurredOn = $this->faker->date();
 
-        $event = new EmailChangedEvent($user, $eventId, $occurredOn);
+        $event = new EmailChangedEvent($user, $oldEmail, $eventId, $occurredOn);
 
         $this->assertEquals($occurredOn, $event->occurredOn());
     }
@@ -57,10 +61,11 @@ final class EmailChangedEventTest extends UnitTestCase
     public function testEventId(): void
     {
         $user = $this->createMock(User::class);
+        $oldEmail = $this->faker->email();
         $eventId = $this->faker->uuid();
         $occurredOn = $this->faker->date();
 
-        $event = new EmailChangedEvent($user, $eventId, $occurredOn);
+        $event = new EmailChangedEvent($user, $oldEmail, $eventId, $occurredOn);
 
         $this->assertEquals($eventId, $event->eventId());
     }

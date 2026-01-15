@@ -450,11 +450,43 @@ final class CachedUserRepositoryTest extends UnitTestCase
         $this->repository->saveBatch($users);
     }
 
-    public function testDeleteAllDelegatesToInnerRepository(): void
+    public function testDeleteAllDelegatesToInnerRepositoryAndInvalidatesCache(): void
     {
         $this->innerRepository
             ->expects($this->once())
             ->method('deleteAll');
+
+        $this->cache
+            ->expects($this->once())
+            ->method('invalidateTags')
+            ->with(['user']);
+
+        $this->repository->deleteAll();
+    }
+
+    public function testDeleteAllHandlesCacheInvalidationError(): void
+    {
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('deleteAll');
+
+        $this->cache
+            ->expects($this->once())
+            ->method('invalidateTags')
+            ->with(['user'])
+            ->willThrowException(new \RuntimeException('Cache error'));
+
+        $this->logger
+            ->expects($this->once())
+            ->method('warning')
+            ->with(
+                'Failed to invalidate cache after deleteAll',
+                $this->callback(
+                    static fn ($context) => isset($context['error'])
+                        && isset($context['operation'])
+                        && $context['operation'] === 'cache.invalidation.error'
+                )
+            );
 
         $this->repository->deleteAll();
     }

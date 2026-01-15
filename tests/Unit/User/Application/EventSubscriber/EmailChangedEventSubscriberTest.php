@@ -75,6 +75,7 @@ final class EmailChangedEventSubscriberTest extends UnitTestCase
 
         $event = $this->emailChangedEventFactory->create(
             $user,
+            $this->faker->email(),
             $this->faker->uuid()
         );
         $token = $this->confirmationTokenFactory->create($this->faker->uuid());

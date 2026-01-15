@@ -77,7 +77,6 @@ final class ConfirmationTokenTest extends UnitTestCase
     {
         $beforeSend = new \DateTimeImmutable();
         $this->confirmationToken->send();
-        $afterSend = new \DateTimeImmutable();
 
         $allowedToSendAfter = $this->confirmationToken->getAllowedToSendAfter();
 
@@ -87,9 +86,9 @@ final class ConfirmationTokenTest extends UnitTestCase
             'allowedToSendAfter should be in the future after first send'
         );
         $this->assertGreaterThanOrEqual(
-            $afterSend->modify('+1 minute'),
-            $allowedToSendAfter->modify('+1 second'),
-            'allowedToSendAfter should be at least 1 minute in the future'
+            $beforeSend->modify('+1 minute'),
+            $allowedToSendAfter,
+            'allowedToSendAfter should be at least 1 minute after send time'
         );
     }
 

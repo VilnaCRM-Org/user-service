@@ -122,6 +122,14 @@ final class CachedUserRepository implements UserRepositoryInterface
     public function deleteAll(): void
     {
         $this->inner->deleteAll();
+        try {
+            $this->cache->invalidateTags(['user']);
+        } catch (\Throwable $e) {
+            $this->logger->warning('Failed to invalidate cache after deleteAll', [
+                'error' => $e->getMessage(),
+                'operation' => 'cache.invalidation.error',
+            ]);
+        }
     }
 
     /**

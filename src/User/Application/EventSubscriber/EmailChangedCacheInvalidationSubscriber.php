@@ -25,6 +25,7 @@ final readonly class EmailChangedCacheInvalidationSubscriber implements
         $this->cache->invalidateTags([
             'user.' . $user->getId(),
             'user.email.' . $this->cacheKeyBuilder->hashEmail($user->getEmail()),
+            'user.email.' . $this->cacheKeyBuilder->hashEmail($event->oldEmail),
             'user.email',
         ]);
 

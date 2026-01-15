@@ -45,33 +45,42 @@ final class EmailChangedCacheInvalidationSubscriberTest extends UnitTestCase
         self::assertContains(EmailChangedEvent::class, $subscribedEvents);
     }
 
-    public function testInvokeInvalidatesCache(): void
+    public function testInvokeInvalidatesCacheForBothOldAndNewEmail(): void
     {
         $userId = $this->faker->uuid();
-        $email = $this->faker->email();
-        $emailHash = 'email_hash_456';
+        $newEmail = $this->faker->email();
+        $oldEmail = $this->faker->email();
+        $newEmailHash = 'new_email_hash_123';
+        $oldEmailHash = 'old_email_hash_456';
 
         $user = $this->createMock(UserInterface::class);
         $user->method('getId')->willReturn($userId);
-        $user->method('getEmail')->willReturn($email);
+        $user->method('getEmail')->willReturn($newEmail);
 
         $event = new EmailChangedEvent(
             $user,
+            $oldEmail,
             $this->faker->uuid()
         );
 
         $this->cacheKeyBuilder
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('hashEmail')
-            ->with($email)
-            ->willReturn($emailHash);
+            ->willReturnCallback(
+                static fn (string $email) => match ($email) {
+                    $newEmail => $newEmailHash,
+                    $oldEmail => $oldEmailHash,
+                    default => throw new \InvalidArgumentException('Unexpected email')
+                }
+            );
 
         $this->cache
             ->expects($this->once())
             ->method('invalidateTags')
             ->with([
                 'user.' . $userId,
-                'user.email.' . $emailHash,
+                'user.email.' . $newEmailHash,
+                'user.email.' . $oldEmailHash,
                 'user.email',
             ]);
 
