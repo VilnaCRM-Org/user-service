@@ -120,14 +120,14 @@ Complex skills have multi-file structure:
 
 ### 🏗️ Architecture & Quality Skills
 
-| Skill                        | File                                     | When to Use                                      |
-| ---------------------------- | ---------------------------------------- | ------------------------------------------------ |
-| **Implementing DDD**         | `implementing-ddd-architecture/SKILL.md` | Create entities, value objects, aggregates, CQRS |
-| **Deptrac Fixer**            | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations            |
-| **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds         |
-| **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code             |
-| **OpenAPI Specs**            | `developing-openapi-specs/SKILL.md`      | Add OpenAPI documentation with processor pattern |
-| **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl |
+| Skill                        | File                                     | When to Use                                            |
+| ---------------------------- | ---------------------------------------- | ------------------------------------------------------ |
+| **Implementing DDD**         | `implementing-ddd-architecture/SKILL.md` | Create entities, value objects, aggregates, CQRS       |
+| **Deptrac Fixer**            | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations                  |
+| **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds               |
+| **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code                   |
+| **OpenAPI Development**      | `openapi-development/SKILL.md`           | OpenAPI factories, sanitizers, augmenters & validation |
+| **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl       |
 
 ### 💾 Database & Documentation Skills
 
@@ -282,8 +282,10 @@ Complex skills have multi-file structure:
 │   ├── examples/               # Complete K6 examples
 │   └── reference/              # Config, utils, troubleshooting
 │
-├── developing-openapi-specs/
-│   └── SKILL.md                # OpenAPI processor patterns
+├── openapi-development/
+│   ├── SKILL.md                # OpenAPI factories & transformers
+│   ├── examples/               # Complete real-world examples
+│   └── reference/              # Sanitizers/augmenters/cleaners patterns
 │
 ├── structurizr-architecture-sync/
 │   ├── SKILL.md                # Core architecture sync workflow
