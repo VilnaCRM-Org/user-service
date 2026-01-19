@@ -24,6 +24,7 @@ final readonly class MessengerAsyncEventDispatcher implements AsyncEventDispatch
     ) {
     }
 
+    #[\Override]
     public function dispatch(DomainEvent ...$events): bool
     {
         $allSucceeded = true;

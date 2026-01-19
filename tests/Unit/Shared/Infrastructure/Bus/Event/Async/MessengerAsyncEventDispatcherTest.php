@@ -33,7 +33,7 @@ final class MessengerAsyncEventDispatcherTest extends UnitTestCase
 
     public function testDispatchSingleEventSuccess(): void
     {
-        $event = new TestEvent();
+        $event = new TestEvent($this->faker->uuid());
 
         $this->messageBus
             ->expects($this->once())
@@ -61,8 +61,8 @@ final class MessengerAsyncEventDispatcherTest extends UnitTestCase
 
     public function testDispatchMultipleEventsSuccess(): void
     {
-        $event1 = new TestEvent();
-        $event2 = new TestEvent();
+        $event1 = new TestEvent($this->faker->uuid());
+        $event2 = new TestEvent($this->faker->uuid());
 
         $this->messageBus
             ->expects($this->exactly(2))
@@ -79,7 +79,7 @@ final class MessengerAsyncEventDispatcherTest extends UnitTestCase
 
     public function testDispatchHandlesExceptionAndReturnsFalse(): void
     {
-        $event = new TestEvent();
+        $event = new TestEvent($this->faker->uuid());
         $exception = new TestMessengerException('Queue unavailable');
 
         $this->messageBus
@@ -115,8 +115,8 @@ final class MessengerAsyncEventDispatcherTest extends UnitTestCase
 
     public function testDispatchPartialFailureReturnsFalse(): void
     {
-        $event1 = new TestEvent();
-        $event2 = new TestEvent();
+        $event1 = new TestEvent($this->faker->uuid());
+        $event2 = new TestEvent($this->faker->uuid());
         $exception = new TestMessengerException('Queue full');
         $envelope = $this->createMock(Envelope::class);
 
@@ -142,7 +142,7 @@ final class MessengerAsyncEventDispatcherTest extends UnitTestCase
 
     public function testDispatchLogsCorrectEventMetadata(): void
     {
-        $event = new TestEvent();
+        $event = new TestEvent($this->faker->uuid());
 
         $this->messageBus->method('dispatch');
 
@@ -175,21 +175,24 @@ final class MessengerAsyncEventDispatcherTest extends UnitTestCase
 
 final class TestEvent extends DomainEvent
 {
-    public function __construct(?string $eventId = null, ?string $occurredOn = null)
+    public function __construct(string $eventId, ?string $occurredOn = null)
     {
-        parent::__construct($eventId ?? 'test-id-' . uniqid(), $occurredOn);
+        parent::__construct($eventId, $occurredOn);
     }
 
+    #[\Override]
     public static function eventName(): string
     {
         return 'test.event';
     }
 
+    #[\Override]
     public function toPrimitives(): array
     {
         return [];
     }
 
+    #[\Override]
     public static function fromPrimitives(
         array $body,
         string $eventId,

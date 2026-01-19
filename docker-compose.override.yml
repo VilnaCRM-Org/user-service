@@ -23,6 +23,10 @@ services:
         published: 8081
         protocol: tcp
 
+  app-prod:
+    networks:
+      - user-service
+
   ###> symfony/mailer ###
   mailer:
     image: schickling/mailcatcher

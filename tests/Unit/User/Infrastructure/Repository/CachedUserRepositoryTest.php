@@ -133,7 +133,7 @@ final class CachedUserRepositoryTest extends UnitTestCase
                 $this->callback(fn ($callback) => is_callable($callback)),
                 1.0
             )
-            ->willReturnCallback(function ($key, $callback) use ($user, $userId) {
+            ->willReturnCallback(function ($key, $callback) use ($userId) {
                 $item = $this->createMock(ItemInterface::class);
                 $item->expects($this->once())->method('expiresAfter')->with(600);
                 $item->expects($this->once())->method('tag')->with(['user', "user.{$userId}"]);
@@ -270,7 +270,7 @@ final class CachedUserRepositoryTest extends UnitTestCase
                 $this->callback(fn ($callback) => is_callable($callback)),
                 1.0
             )
-            ->willReturnCallback(function ($key, $callback) use ($user) {
+            ->willReturnCallback(function ($key, $callback) {
                 $item = $this->createMock(ItemInterface::class);
                 return $callback($item);
             });
@@ -379,6 +379,25 @@ final class CachedUserRepositoryTest extends UnitTestCase
         $result = $this->repository->findByEmail($email);
 
         self::assertSame($user, $result);
+    }
+
+    public function testFindByEmailReturnsNullWhenCacheContainsNonUserValue(): void
+    {
+        $email = $this->faker->email();
+        $cacheKey = 'user.email.hash123';
+        $cachedValue = false;
+
+        $this->cacheKeyBuilder
+            ->expects($this->once())
+            ->method('buildUserEmailKey')
+            ->with($email)
+            ->willReturn($cacheKey);
+
+        $this->setupCacheHit($cacheKey, $cachedValue);
+
+        $result = $this->repository->findByEmail($email);
+
+        self::assertNull($result);
     }
 
     public function testFindByEmailFallsBackToDatabaseOnCacheError(): void
@@ -552,22 +571,6 @@ final class CachedUserRepositoryTest extends UnitTestCase
                 $this->anything()
             )
             ->willReturn($value);
-    }
-
-    private function setupCacheMiss(string $cacheKey): void
-    {
-        $this->cache
-            ->expects($this->once())
-            ->method('get')
-            ->with(
-                $cacheKey,
-                $this->callback(fn ($callback) => is_callable($callback)),
-                $this->anything()
-            )
-            ->willReturnCallback(function ($key, $callback) {
-                $item = $this->createMock(ItemInterface::class);
-                return $callback($item);
-            });
     }
 
     private function setupUnitOfWorkWithNoManagedEntity(string $userId): void

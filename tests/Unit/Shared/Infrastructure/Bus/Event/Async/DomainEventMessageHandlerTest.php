@@ -26,7 +26,7 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
 
     public function testInvokeDispatchesEventToMatchingSubscriber(): void
     {
-        $event = new TestDomainEvent();
+        $event = new TestDomainEvent($this->faker->uuid());
         $envelope = DomainEventEnvelope::fromEvent($event);
 
         $subscriber = new TestDomainEventSubscriber([TestDomainEvent::class]);
@@ -47,7 +47,7 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
 
     public function testInvokeSkipsNonMatchingSubscriber(): void
     {
-        $event = new TestDomainEvent();
+        $event = new TestDomainEvent($this->faker->uuid());
         $envelope = DomainEventEnvelope::fromEvent($event);
 
         $subscriber = new TestDomainEventSubscriber(['SomeOtherEvent']);
@@ -67,7 +67,7 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
 
     public function testInvokeLogsSuccessfulExecution(): void
     {
-        $event = new TestDomainEvent();
+        $event = new TestDomainEvent($this->faker->uuid());
         $envelope = DomainEventEnvelope::fromEvent($event);
 
         $subscriber = new TestDomainEventSubscriber([TestDomainEvent::class]);
@@ -77,14 +77,52 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
             $this->logger
         );
 
-        $this->logger->expects($this->exactly(2))->method('debug');
+        $callIndex = 0;
+        $this->logger
+            ->expects($this->exactly(2))
+            ->method('debug')
+            ->willReturnCallback(function (string $message, array $context) use (&$callIndex, $event): void {
+                if ($callIndex === 0) {
+                    self::assertSame('Processing domain event from queue', $message);
+                    self::assertSame($event->eventId(), $context['event_id']);
+                    self::assertSame(TestDomainEvent::class, $context['event_type']);
+                    self::assertSame(TestDomainEvent::eventName(), $context['event_name']);
+                }
+
+                if ($callIndex === 1) {
+                    self::assertSame('Subscriber executed successfully', $message);
+                    self::assertSame(TestDomainEventSubscriber::class, $context['subscriber']);
+                    self::assertSame($event->eventId(), $context['event_id']);
+                }
+
+                $callIndex++;
+            });
 
         $this->handler->__invoke($envelope);
     }
 
+    public function testInvokeContinuesAfterNonMatchingSubscriber(): void
+    {
+        $event = new TestDomainEvent($this->faker->uuid());
+        $envelope = DomainEventEnvelope::fromEvent($event);
+
+        $nonMatchingSubscriber = new TestDomainEventSubscriber(['SomeOtherEvent']);
+        $matchingSubscriber = new TestDomainEventSubscriber([TestDomainEvent::class]);
+
+        $this->handler = new DomainEventMessageHandler(
+            [$nonMatchingSubscriber, $matchingSubscriber],
+            $this->logger
+        );
+
+        $this->handler->__invoke($envelope);
+
+        self::assertSame(0, $nonMatchingSubscriber->callCount);
+        self::assertSame(1, $matchingSubscriber->callCount);
+    }
+
     public function testInvokeHandlesSubscriberException(): void
     {
-        $event = new TestDomainEvent();
+        $event = new TestDomainEvent($this->faker->uuid());
         $envelope = DomainEventEnvelope::fromEvent($event);
         $exception = new \RuntimeException('Subscriber failed');
 
@@ -117,7 +155,7 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
 
     public function testInvokeProcessesMultipleSubscribers(): void
     {
-        $event = new TestDomainEvent();
+        $event = new TestDomainEvent($this->faker->uuid());
         $envelope = DomainEventEnvelope::fromEvent($event);
 
         $subscriber1 = new TestDomainEventSubscriber([TestDomainEvent::class]);
@@ -139,21 +177,24 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
 
 final class TestDomainEvent extends DomainEvent
 {
-    public function __construct(?string $eventId = null, ?string $occurredOn = null)
+    public function __construct(string $eventId, ?string $occurredOn = null)
     {
-        parent::__construct($eventId ?? 'test-event-id-' . uniqid(), $occurredOn);
+        parent::__construct($eventId, $occurredOn);
     }
 
+    #[\Override]
     public static function eventName(): string
     {
         return 'test.event';
     }
 
+    #[\Override]
     public function toPrimitives(): array
     {
         return ['data' => 'test'];
     }
 
+    #[\Override]
     public static function fromPrimitives(
         array $body,
         string $eventId,
@@ -177,6 +218,7 @@ final class TestDomainEventSubscriber implements DomainEventSubscriberInterface
     ) {
     }
 
+    #[\Override]
     public function subscribedTo(): array
     {
         return $this->subscribedEvents;

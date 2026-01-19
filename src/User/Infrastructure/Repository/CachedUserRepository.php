@@ -272,12 +272,8 @@ final class CachedUserRepository implements UserRepositoryInterface
         return $this->inner->findByEmail($email);
     }
 
-    private function getManagedEntityIfExists(mixed $cached): ?UserInterface
+    private function getManagedEntityIfExists(UserInterface $cached): ?UserInterface
     {
-        if (!$cached instanceof User && !$cached instanceof UserInterface) {
-            return null;
-        }
-
         $managed = $this->entityManager
             ->getUnitOfWork()
             ->tryGetById($cached->getId(), User::class);

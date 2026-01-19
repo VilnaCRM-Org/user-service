@@ -39,7 +39,6 @@ final readonly class DomainEventEnvelope
 
     public function toEvent(): DomainEvent
     {
-        /** @var class-string<DomainEvent> $eventClass */
         $eventClass = $this->eventClass;
 
         return $eventClass::fromPrimitives(
@@ -47,31 +46,5 @@ final readonly class DomainEventEnvelope
             $this->eventId,
             $this->occurredOn
         );
-    }
-
-    /**
-     * @return class-string<DomainEvent>
-     */
-    public function eventClass(): string
-    {
-        return $this->eventClass;
-    }
-
-    /**
-     * @return array<string, string|object>
-     */
-    public function body(): array
-    {
-        return $this->body;
-    }
-
-    public function eventId(): string
-    {
-        return $this->eventId;
-    }
-
-    public function occurredOn(): string
-    {
-        return $this->occurredOn;
     }
 }
