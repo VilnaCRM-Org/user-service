@@ -54,6 +54,27 @@ services:
       - !tagged_iterator 'app.event_subscriber'
     lazy: true
 
+  # Async Event Dispatcher - sends domain events to message queue
+  App\Shared\Application\Bus\Event\AsyncEventDispatcherInterface:
+    class: App\Shared\Infrastructure\Bus\Event\Async\MessengerAsyncEventDispatcher
+    arguments:
+      $messageBus: '@messenger.bus.default'
+
+  # Resilient Async Event Bus for domain events (cache invalidation, etc.)
+  # Processes events via message queue (AP from CAP theorem)
+  App\Shared\Infrastructure\Bus\Event\Async\ResilientAsyncEventBus: ~
+
+  # Domain Event Message Handler - processes events from queue
+  App\Shared\Infrastructure\Bus\Event\Async\DomainEventMessageHandler:
+    arguments:
+      $subscribers: !tagged_iterator 'app.event_subscriber'
+    tags:
+      - { name: 'messenger.message_handler', bus: 'messenger.bus.default' }
+
+  # Use resilient async event bus for domain events (enables async cache invalidation)
+  App\Shared\Domain\Bus\Event\EventBusInterface:
+    alias: App\Shared\Infrastructure\Bus\Event\Async\ResilientAsyncEventBus
+
   Ramsey\Uuid\Validator\GenericValidator: ~
 
   App\Shared\Application\OpenApi\Factory\OpenApiFactory:

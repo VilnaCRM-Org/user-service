@@ -10,9 +10,28 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Cache\Adapter\TagAwareAdapterInterface;
-use Symfony\Component\Cache\CacheItem;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
+/**
+ * Cached User Repository Decorator
+ *
+ * Responsibilities:
+ * - Read-through caching with Stale-While-Revalidate (SWR)
+ * - Cache key management via CacheKeyBuilder
+ * - Cache hit/miss logging for observability
+ * - Graceful fallback to database on cache errors
+ * - Delegates ALL persistence operations to inner repository
+ *
+ * Decorator Pattern:
+ * - Wraps MariaDBUserRepository
+ * - Adds caching layer without modifying persistence logic
+ * - Transparent to consumers (implements same interface)
+ *
+ * Cache Invalidation:
+ * - Handled by UserCacheInvalidationSubscriber via domain events
+ * - This class only reads from cache, never invalidates
+ */
 final class CachedUserRepository implements UserRepositoryInterface
 {
     private const int TTL_BY_ID = 600;
@@ -20,7 +39,7 @@ final class CachedUserRepository implements UserRepositoryInterface
 
     public function __construct(
         private UserRepositoryInterface $inner,
-        private TagAwareAdapterInterface $cache,
+        private TagAwareCacheInterface $cache,
         private CacheKeyBuilder $cacheKeyBuilder,
         private LoggerInterface $logger,
         private EntityManagerInterface $entityManager
@@ -28,6 +47,11 @@ final class CachedUserRepository implements UserRepositoryInterface
     }
 
     /**
+     * Proxy all other method calls to inner repository
+     *
+     * This ensures compatibility with API Platform's collection provider
+     * which may call Doctrine repository methods not in our interface.
+     *
      * @param array<int, mixed> $arguments
      */
     public function __call(string $method, array $arguments): mixed
@@ -35,6 +59,16 @@ final class CachedUserRepository implements UserRepositoryInterface
         return $this->inner->{$method}(...$arguments);
     }
 
+    /**
+     * Cache Policy: find by ID
+     *
+     * Key Pattern: user.{id}
+     * TTL: 600s (10 minutes)
+     * Consistency: Stale-While-Revalidate (beta: 1.0)
+     * Invalidation: Via UserCacheInvalidationSubscriber on update/delete
+     * Tags: [user, user.{id}]
+     * Notes: Read-heavy operation, tolerates brief staleness
+     */
     #[\Override]
     public function find(
         mixed $id,
@@ -42,80 +76,126 @@ final class CachedUserRepository implements UserRepositoryInterface
         ?int $lockVersion = null
     ): ?object {
         $cacheKey = $this->cacheKeyBuilder->buildUserKey((string) $id);
-        $tags = ['user', "user.{$id}"];
 
-        return $this->getFromCacheOrLoad(
-            $cacheKey,
-            fn () => $this->inner->find($id, $lockMode, $lockVersion),
-            self::TTL_BY_ID,
-            $tags,
-            true
-        );
+        try {
+            $user = $this->cache->get(
+                $cacheKey,
+                fn (ItemInterface $item) => $this->loadUserFromDb($id, $lockMode, $lockVersion, $cacheKey, $item),
+                beta: 1.0  // Enable Stale-While-Revalidate
+            );
+
+            // Check if entity is already managed by Doctrine
+            if ($user instanceof User || $user instanceof UserInterface) {
+                return $this->getManagedEntityIfExists($user) ?? $user;
+            }
+
+            return $user;
+        } catch (\Throwable $e) {
+            $this->logCacheError($cacheKey, $e);
+            return $this->inner->find($id, $lockMode, $lockVersion);
+        }
     }
 
+    /**
+     * Cache Policy: findById
+     *
+     * Key Pattern: user.{id}
+     * TTL: 600s (10 minutes)
+     * Consistency: Stale-While-Revalidate (beta: 1.0)
+     * Invalidation: Via UserCacheInvalidationSubscriber on update/delete
+     * Tags: [user, user.{id}]
+     * Notes: Read-heavy operation, tolerates brief staleness
+     */
     #[\Override]
     public function findById(string $id): ?UserInterface
     {
         $cacheKey = $this->cacheKeyBuilder->buildUserKey($id);
-        $tags = ['user', "user.{$id}"];
 
-        $result = $this->getFromCacheOrLoad(
-            $cacheKey,
-            fn () => $this->inner->findById($id),
-            self::TTL_BY_ID,
-            $tags,
-            true
-        );
+        try {
+            $user = $this->cache->get(
+                $cacheKey,
+                fn (ItemInterface $item) => $this->loadUserByIdFromDb($id, $cacheKey, $item),
+                beta: 1.0  // Enable Stale-While-Revalidate
+            );
 
-        return $result instanceof UserInterface ? $result : null;
+            if (!($user instanceof UserInterface)) {
+                return null;
+            }
+
+            // Check if entity is already managed by Doctrine
+            return $this->getManagedEntityIfExists($user) ?? $user;
+        } catch (\Throwable $e) {
+            $this->logCacheError($cacheKey, $e);
+            return $this->inner->findById($id);
+        }
     }
 
+    /**
+     * Cache Policy: findByEmail
+     *
+     * Key Pattern: user.email.{hash}
+     * TTL: 300s (5 minutes)
+     * Consistency: Eventual
+     * Invalidation: Via UserCacheInvalidationSubscriber on email change
+     * Tags: [user, user.email, user.email.{hash}]
+     * Notes: Common authentication/lookup operation
+     */
     #[\Override]
     public function findByEmail(string $email): ?UserInterface
     {
         $cacheKey = $this->cacheKeyBuilder->buildUserEmailKey($email);
-        $emailHash = $this->cacheKeyBuilder->hashEmail($email);
-        $tags = ['user', 'user.email', "user.email.{$emailHash}"];
 
-        $result = $this->getFromCacheOrLoad(
-            $cacheKey,
-            fn () => $this->inner->findByEmail($email),
-            self::TTL_BY_EMAIL,
-            $tags,
-            true
-        );
+        try {
+            $user = $this->cache->get(
+                $cacheKey,
+                fn (ItemInterface $item) => $this->loadUserByEmailFromDb($email, $cacheKey, $item)
+            );
 
-        return $result instanceof UserInterface ? $result : null;
+            if (!($user instanceof UserInterface)) {
+                return null;
+            }
+
+            // Check if entity is already managed by Doctrine
+            return $this->getManagedEntityIfExists($user) ?? $user;
+        } catch (\Throwable $e) {
+            $this->logCacheError($cacheKey, $e);
+            return $this->inner->findByEmail($email);
+        }
     }
 
     /**
+     * Delegate persistence to inner repository (no caching on writes)
+     *
      * @param User $user
      */
     #[\Override]
     public function save(object $user): void
     {
         $this->inner->save($user);
-        $this->invalidateUserCache($user);
     }
 
     /**
+     * Delegate deletion to inner repository (no invalidation here)
+     *
+     * Cache invalidation is handled via UserDeletedEvent subscribers.
+     *
      * @param User $user
      */
     #[\Override]
     public function delete(object $user): void
     {
         $this->inner->delete($user);
-        $this->invalidateUserCache($user);
     }
 
     /**
+     * Delegate batch save to inner repository (no caching on writes)
+     *
      * @param array<User> $users
      */
     #[\Override]
     public function saveBatch(array $users): void
     {
         $this->inner->saveBatch($users);
-        array_walk($users, fn (User $user) => $this->invalidateUserCache($user));
     }
 
     #[\Override]
@@ -133,75 +213,69 @@ final class CachedUserRepository implements UserRepositoryInterface
     }
 
     /**
-     * @param array<string> $tags
+     * Load user from database and configure cache item
      */
-    private function getFromCacheOrLoad(
+    private function loadUserFromDb(
+        mixed $id,
+        ?int $lockMode,
+        ?int $lockVersion,
         string $cacheKey,
-        callable $loader,
-        int $ttl,
-        array $tags,
-        bool $checkManagedEntity
-    ): mixed {
-        try {
-            $item = $this->cache->getItem($cacheKey);
+        ItemInterface $item
+    ): ?object {
+        $item->expiresAfter(self::TTL_BY_ID);  // 10 minutes TTL
+        $item->tag(['user', "user.{$id}"]);
 
-            if ($item->isHit()) {
-                return $this->handleCacheHit($cacheKey, $item, $checkManagedEntity);
-            }
+        $this->logger->info('Cache miss - loading user from database', [
+            'cache_key' => $cacheKey,
+            'user_id' => $id,
+            'operation' => 'cache.miss',
+        ]);
 
-            return $this->handleCacheMiss($cacheKey, $item, $loader, $ttl, $tags);
-        } catch (\Throwable $e) {
-            $this->logCacheError($cacheKey, $e);
-            return $loader();
-        }
-    }
-
-    private function handleCacheHit(
-        string $cacheKey,
-        CacheItem $item,
-        bool $checkManagedEntity
-    ): mixed {
-        $this->logCacheHit($cacheKey);
-        $cached = $item->get();
-
-        return $checkManagedEntity ? $this->getManagedEntityIfExists($cached) : $cached;
+        return $this->inner->find($id, $lockMode, $lockVersion);
     }
 
     /**
-     * @param array<string> $tags
+     * Load user by ID from database and configure cache item
      */
-    private function handleCacheMiss(
-        string $cacheKey,
-        CacheItem $item,
-        callable $loader,
-        int $ttl,
-        array $tags
-    ): mixed {
-        $value = $loader();
-
-        if ($value !== null) {
-            $this->saveToCache($item, $value, $ttl, $tags);
-        }
-
-        $this->logCacheMiss($cacheKey, $value !== null);
-        return $value;
-    }
-
-    /**
-     * @param array<string> $tags
-     */
-    private function saveToCache(CacheItem $item, mixed $value, int $ttl, array $tags): void
+    private function loadUserByIdFromDb(string $id, string $cacheKey, ItemInterface $item): ?UserInterface
     {
-        $item->set($value);
-        $item->expiresAfter($ttl);
-        $item->tag($tags);
-        $this->cache->save($item);
+        $item->expiresAfter(self::TTL_BY_ID);  // 10 minutes TTL
+        $item->tag(['user', "user.{$id}"]);
+
+        $this->logger->info('Cache miss - loading user by ID from database', [
+            'cache_key' => $cacheKey,
+            'user_id' => $id,
+            'operation' => 'cache.miss',
+        ]);
+
+        return $this->inner->findById($id);
     }
 
-    private function getManagedEntityIfExists(mixed $cached): mixed
+    /**
+     * Load user by email from database and configure cache item
+     */
+    private function loadUserByEmailFromDb(string $email, string $cacheKey, ItemInterface $item): ?UserInterface
+    {
+        $item->expiresAfter(self::TTL_BY_EMAIL);  // 5 minutes TTL
+        $emailHash = $this->cacheKeyBuilder->hashEmail($email);
+        $item->tag([
+            'user',
+            'user.email',
+            "user.email.{$emailHash}",
+        ]);
+
+        $this->logger->info('Cache miss - loading user by email', [
+            'cache_key' => $cacheKey,
+            'operation' => 'cache.miss',
+        ]);
+
+        return $this->inner->findByEmail($email);
+    }
+
+    private function getManagedEntityIfExists(mixed $cached): ?UserInterface
     {
         if (!$cached instanceof User && !$cached instanceof UserInterface) {
-            return $cached;
+            return null;
         }
 
         $managed = $this->entityManager
@@ -212,53 +286,18 @@ final class CachedUserRepository implements UserRepositoryInterface
             return $managed;
         }
 
-        return $this->inner->findById($cached->getId()) ?? $cached;
+        return $this->inner->findById($cached->getId());
     }
 
-    private function invalidateUserCache(User $user): void
-    {
-        try {
-            $this->cache->invalidateTags([
-                'user.' . $user->getId(),
-                'user.email.' . $this->cacheKeyBuilder->hashEmail($user->getEmail()),
-            ]);
-        } catch (\Throwable $e) {
-            $this->logCacheInvalidationError($user->getId(), $e);
-        }
-    }
-
-    private function logCacheHit(string $cacheKey): void
-    {
-        $this->logger->info('Cache hit', [
-            'cache_key' => $cacheKey,
-            'operation' => 'cache.hit',
-        ]);
-    }
-
-    private function logCacheMiss(string $cacheKey, bool $found): void
-    {
-        $this->logger->info('Cache miss - loaded from database', [
-            'cache_key' => $cacheKey,
-            'found' => $found,
-            'operation' => 'cache.miss',
-        ]);
-    }
-
+    /**
+     * Log cache errors for observability
+     */
     private function logCacheError(string $cacheKey, \Throwable $e): void
     {
         $this->logger->error('Cache error - falling back to database', [
             'cache_key' => $cacheKey,
             'error' => $e->getMessage(),
             'operation' => 'cache.error',
-        ]);
-    }
-
-    private function logCacheInvalidationError(string $userId, \Throwable $e): void
-    {
-        $this->logger->warning('Failed to invalidate cache after save/delete', [
-            'user_id' => $userId,
-            'error' => $e->getMessage(),
-            'operation' => 'cache.invalidation.error',
         ]);
     }
 }

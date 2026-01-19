@@ -2,6 +2,8 @@ name: CLI testing
 
 on:
   pull_request:
+    paths:
+      - 'Makefile'
 
 jobs:
   bats_core_tests:

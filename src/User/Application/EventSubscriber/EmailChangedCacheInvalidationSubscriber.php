@@ -9,6 +9,17 @@ use App\User\Domain\Event\EmailChangedEvent;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
+/**
+ * Email Changed Event Cache Invalidation Subscriber
+ *
+ * Invalidates cache when a user changes their email.
+ * Handles email change edge case (both old and new email caches).
+ *
+ * ARCHITECTURAL DECISION: Processed via async queue (AsyncSymfonyEventBus)
+ * This subscriber runs in Symfony Messenger workers. Exceptions propagate to
+ * DomainEventMessageHandler which catches, logs, and emits failure metrics.
+ * We follow AP from CAP theorem (Availability + Partition tolerance over Consistency).
+ */
 final readonly class EmailChangedCacheInvalidationSubscriber implements
     UserCacheInvalidationSubscriberInterface
 {

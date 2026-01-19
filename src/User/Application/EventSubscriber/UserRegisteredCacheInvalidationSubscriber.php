@@ -9,6 +9,16 @@ use App\User\Domain\Event\UserRegisteredEvent;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
+/**
+ * User Registered Event Cache Invalidation Subscriber
+ *
+ * Invalidates cache when a user is registered.
+ *
+ * ARCHITECTURAL DECISION: Processed via async queue (AsyncSymfonyEventBus)
+ * This subscriber runs in Symfony Messenger workers. Exceptions propagate to
+ * DomainEventMessageHandler which catches, logs, and emits failure metrics.
+ * We follow AP from CAP theorem (Availability + Partition tolerance over Consistency).
+ */
 final readonly class UserRegisteredCacheInvalidationSubscriber implements
     UserCacheInvalidationSubscriberInterface
 {

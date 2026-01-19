@@ -22,16 +22,30 @@ framework:
       insert-user-batch:
         dsn: '%env(INSERT_USER_BATCH_TRANSPORT_DSN)%'
 
+      domain-events:
+        dsn: '%env(DOMAIN_EVENTS_TRANSPORT_DSN)%'
+
+        retry_strategy:
+          max_retries: 3
+          delay: 1000
+          multiplier: 2
+          max_delay: 0
+
     routing:
       # Route your messages to the transports
       'Symfony\Component\Mailer\Messenger\SendEmailMessage': send-email
       'App\User\Application\Message\UserRegisteredMessage': insert-user-batch
+      'App\Shared\Infrastructure\Bus\Event\Async\DomainEventEnvelope': domain-events
 
 when@test:
   framework:
     messenger:
       transports:
         send-email:
+          dsn: '%env(REDIS_URL)%'
+          options:
+            consumer: '%env(MESSENGER_CONSUMER_NAME)%'
+        domain-events:
           dsn: '%env(REDIS_URL)%'
           options:
             consumer: '%env(MESSENGER_CONSUMER_NAME)%'

@@ -14,13 +14,13 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\UnitOfWork;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Cache\Adapter\TagAwareAdapterInterface;
-use Symfony\Component\Cache\CacheItem;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 final class CachedUserRepositoryTest extends UnitTestCase
 {
     private MariaDBUserRepository&MockObject $innerRepository;
-    private TagAwareAdapterInterface&MockObject $cache;
+    private TagAwareCacheInterface&MockObject $cache;
     private CacheKeyBuilder&MockObject $cacheKeyBuilder;
     private LoggerInterface&MockObject $logger;
     private EntityManagerInterface&MockObject $entityManager;
@@ -33,7 +33,7 @@ final class CachedUserRepositoryTest extends UnitTestCase
         parent::setUp();
 
         $this->innerRepository = $this->createMock(MariaDBUserRepository::class);
-        $this->cache = $this->createMock(TagAwareAdapterInterface::class);
+        $this->cache = $this->createMock(TagAwareCacheInterface::class);
         $this->cacheKeyBuilder = $this->createMock(CacheKeyBuilder::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
@@ -118,7 +118,6 @@ final class CachedUserRepositoryTest extends UnitTestCase
         $user = $this->createUserMock($userId);
 
         $this->setupCacheKeyBuilder($userId);
-        $cacheItem = $this->setupCacheMiss($cacheKey);
 
         $this->innerRepository
             ->expects($this->once())
@@ -126,11 +125,20 @@ final class CachedUserRepositoryTest extends UnitTestCase
             ->with($userId, null, null)
             ->willReturn($user);
 
-        $cacheItem->expects($this->once())->method('set')->with($user);
-        $cacheItem->expects($this->once())->method('expiresAfter')->with(600);
-        $cacheItem->expects($this->once())->method('tag')->with(['user', "user.{$userId}"]);
-
-        $this->cache->expects($this->once())->method('save')->with($cacheItem);
+        $this->cache
+            ->expects($this->once())
+            ->method('get')
+            ->with(
+                $cacheKey,
+                $this->callback(fn ($callback) => is_callable($callback)),
+                1.0
+            )
+            ->willReturnCallback(function ($key, $callback) use ($user, $userId) {
+                $item = $this->createMock(ItemInterface::class);
+                $item->expects($this->once())->method('expiresAfter')->with(600);
+                $item->expects($this->once())->method('tag')->with(['user', "user.{$userId}"]);
+                return $callback($item);
+            });
 
         $result = $this->repository->find($userId);
 
@@ -143,7 +151,6 @@ final class CachedUserRepositoryTest extends UnitTestCase
         $cacheKey = 'user.' . $userId;
 
         $this->setupCacheKeyBuilder($userId);
-        $cacheItem = $this->setupCacheMiss($cacheKey);
 
         $this->innerRepository
             ->expects($this->once())
@@ -151,8 +158,18 @@ final class CachedUserRepositoryTest extends UnitTestCase
             ->with($userId, null, null)
             ->willReturn(null);
 
-        $cacheItem->expects($this->never())->method('set');
-        $this->cache->expects($this->never())->method('save');
+        $this->cache
+            ->expects($this->once())
+            ->method('get')
+            ->with(
+                $cacheKey,
+                $this->callback(fn ($callback) => is_callable($callback)),
+                1.0
+            )
+            ->willReturnCallback(function ($key, $callback) {
+                $item = $this->createMock(ItemInterface::class);
+                return $callback($item);
+            });
 
         $result = $this->repository->find($userId);
 
@@ -169,8 +186,8 @@ final class CachedUserRepositoryTest extends UnitTestCase
 
         $this->cache
             ->expects($this->once())
-            ->method('getItem')
-            ->with($cacheKey)
+            ->method('get')
+            ->with($cacheKey, $this->anything(), $this->anything())
             ->willThrowException(new \RuntimeException('Cache unavailable'));
 
         $this->logger
@@ -234,10 +251,10 @@ final class CachedUserRepositoryTest extends UnitTestCase
     {
         $userId = $this->faker->uuid();
         $cacheKey = 'user.' . $userId;
-        $user = $this->createMock(UserInterface::class);
+        $user = $this->createUserMock($userId);
 
         $this->setupCacheKeyBuilder($userId);
-        $cacheItem = $this->setupCacheMiss($cacheKey);
+        $this->setupUnitOfWorkWithManagedEntity($userId, $user);
 
         $this->innerRepository
             ->expects($this->once())
@@ -245,8 +262,18 @@ final class CachedUserRepositoryTest extends UnitTestCase
             ->with($userId)
             ->willReturn($user);
 
-        $cacheItem->expects($this->once())->method('set')->with($user);
-        $this->cache->expects($this->once())->method('save')->with($cacheItem);
+        $this->cache
+            ->expects($this->once())
+            ->method('get')
+            ->with(
+                $cacheKey,
+                $this->callback(fn ($callback) => is_callable($callback)),
+                1.0
+            )
+            ->willReturnCallback(function ($key, $callback) use ($user) {
+                $item = $this->createMock(ItemInterface::class);
+                return $callback($item);
+            });
 
         $result = $this->repository->findById($userId);
 
@@ -256,13 +283,15 @@ final class CachedUserRepositoryTest extends UnitTestCase
     public function testFindByIdFallsBackToDatabaseOnCacheError(): void
     {
         $userId = $this->faker->uuid();
+        $cacheKey = 'user.' . $userId;
         $user = $this->createMock(UserInterface::class);
 
         $this->setupCacheKeyBuilder($userId);
 
         $this->cache
             ->expects($this->once())
-            ->method('getItem')
+            ->method('get')
+            ->with($cacheKey, $this->anything(), $this->anything())
             ->willThrowException(new \RuntimeException('Cache unavailable'));
 
         $this->logger->expects($this->once())->method('error');
@@ -326,19 +355,26 @@ final class CachedUserRepositoryTest extends UnitTestCase
             ->with($email)
             ->willReturn($emailHash);
 
-        $cacheItem = $this->setupCacheMiss($cacheKey);
-
         $this->innerRepository
             ->expects($this->once())
             ->method('findByEmail')
             ->with($email)
             ->willReturn($user);
 
-        $cacheItem->expects($this->once())->method('set')->with($user);
-        $cacheItem->expects($this->once())->method('expiresAfter')->with(300);
-        $cacheItem->expects($this->once())->method('tag')
-            ->with(['user', 'user.email', "user.email.{$emailHash}"]);
-        $this->cache->expects($this->once())->method('save')->with($cacheItem);
+        $this->cache
+            ->expects($this->once())
+            ->method('get')
+            ->with(
+                $cacheKey,
+                $this->callback(fn ($callback) => is_callable($callback))
+            )
+            ->willReturnCallback(function ($key, $callback) use ($emailHash) {
+                $item = $this->createMock(ItemInterface::class);
+                $item->expects($this->once())->method('expiresAfter')->with(300);
+                $item->expects($this->once())->method('tag')
+                    ->with(['user', 'user.email', "user.email.{$emailHash}"]);
+                return $callback($item);
+            });
 
         $result = $this->repository->findByEmail($email);
 
@@ -359,7 +395,8 @@ final class CachedUserRepositoryTest extends UnitTestCase
 
         $this->cache
             ->expects($this->once())
-            ->method('getItem')
+            ->method('get')
+            ->with($cacheKey, $this->anything(), $this->anything())
             ->willThrowException(new \RuntimeException('Cache unavailable'));
 
         $this->logger->expects($this->once())->method('error');
@@ -375,76 +412,58 @@ final class CachedUserRepositoryTest extends UnitTestCase
         self::assertSame($user, $result);
     }
 
-    public function testSaveDelegatesToInnerRepositoryAndInvalidatesCache(): void
+    public function testSaveDelegatesToInnerRepository(): void
     {
         $userId = $this->faker->uuid();
         $email = $this->faker->email();
-        $emailHash = 'hash123';
         $user = $this->createUserMock($userId, $email);
-
-        $this->cacheKeyBuilder
-            ->expects($this->once())
-            ->method('hashEmail')
-            ->with($email)
-            ->willReturn($emailHash);
 
         $this->innerRepository
             ->expects($this->once())
             ->method('save')
             ->with($user);
 
+        // Cache invalidation is handled by domain event subscribers, not here
         $this->cache
-            ->expects($this->once())
-            ->method('invalidateTags')
-            ->with(["user.{$userId}", "user.email.{$emailHash}"]);
+            ->expects($this->never())
+            ->method('invalidateTags');
 
         $this->repository->save($user);
     }
 
-    public function testDeleteDelegatesToInnerRepositoryAndInvalidatesCache(): void
+    public function testDeleteDelegatesToInnerRepository(): void
     {
         $userId = $this->faker->uuid();
         $email = $this->faker->email();
-        $emailHash = 'hash123';
         $user = $this->createUserMock($userId, $email);
-
-        $this->cacheKeyBuilder
-            ->expects($this->once())
-            ->method('hashEmail')
-            ->with($email)
-            ->willReturn($emailHash);
 
         $this->innerRepository
             ->expects($this->once())
             ->method('delete')
             ->with($user);
 
+        // Cache invalidation is handled by domain event subscribers, not here
         $this->cache
-            ->expects($this->once())
-            ->method('invalidateTags')
-            ->with(["user.{$userId}", "user.email.{$emailHash}"]);
+            ->expects($this->never())
+            ->method('invalidateTags');
 
         $this->repository->delete($user);
     }
 
-    public function testSaveBatchDelegatesToInnerRepositoryAndInvalidatesCacheForEachUser(): void
+    public function testSaveBatchDelegatesToInnerRepository(): void
     {
         $user1 = $this->createUserMock($this->faker->uuid(), $this->faker->email());
         $user2 = $this->createUserMock($this->faker->uuid(), $this->faker->email());
         $users = [$user1, $user2];
-
-        $this->cacheKeyBuilder
-            ->expects($this->exactly(2))
-            ->method('hashEmail')
-            ->willReturn('hash1', 'hash2');
 
         $this->innerRepository
             ->expects($this->once())
             ->method('saveBatch')
             ->with($users);
 
+        // Cache invalidation is handled by domain event subscribers, not here
         $this->cache
-            ->expects($this->exactly(2))
+            ->expects($this->never())
             ->method('invalidateTags');
 
         $this->repository->saveBatch($users);
@@ -505,38 +524,6 @@ final class CachedUserRepositoryTest extends UnitTestCase
         self::assertSame($className, $result);
     }
 
-    public function testSaveHandlesCacheInvalidationError(): void
-    {
-        $userId = $this->faker->uuid();
-        $email = $this->faker->email();
-        $user = $this->createUserMock($userId, $email);
-
-        $this->cacheKeyBuilder
-            ->method('hashEmail')
-            ->willReturn('hash123');
-
-        $this->innerRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($user);
-
-        $this->cache
-            ->expects($this->once())
-            ->method('invalidateTags')
-            ->willThrowException(new \RuntimeException('Cache invalidation failed'));
-
-        $this->logger
-            ->expects($this->once())
-            ->method('warning')
-            ->with(
-                'Failed to invalidate cache after save/delete',
-                $this->callback(static fn ($context) => $context['user_id'] === $userId
-                    && str_contains($context['error'], 'Cache invalidation failed'))
-            );
-
-        $this->repository->save($user);
-    }
-
     private function createUserMock(string $userId, ?string $email = null): User&MockObject
     {
         $user = $this->createMock(User::class);
@@ -556,29 +543,31 @@ final class CachedUserRepositoryTest extends UnitTestCase
 
     private function setupCacheHit(string $cacheKey, mixed $value): void
     {
-        $cacheItem = $this->createMock(CacheItem::class);
-        $cacheItem->method('isHit')->willReturn(true);
-        $cacheItem->method('get')->willReturn($value);
-
         $this->cache
             ->expects($this->once())
-            ->method('getItem')
-            ->with($cacheKey)
-            ->willReturn($cacheItem);
+            ->method('get')
+            ->with(
+                $cacheKey,
+                $this->callback(fn ($callback) => is_callable($callback)),
+                $this->anything()
+            )
+            ->willReturn($value);
     }
 
-    private function setupCacheMiss(string $cacheKey): CacheItem&MockObject
+    private function setupCacheMiss(string $cacheKey): void
     {
-        $cacheItem = $this->createMock(CacheItem::class);
-        $cacheItem->method('isHit')->willReturn(false);
-
         $this->cache
             ->expects($this->once())
-            ->method('getItem')
-            ->with($cacheKey)
-            ->willReturn($cacheItem);
-
-        return $cacheItem;
+            ->method('get')
+            ->with(
+                $cacheKey,
+                $this->callback(fn ($callback) => is_callable($callback)),
+                $this->anything()
+            )
+            ->willReturnCallback(function ($key, $callback) {
+                $item = $this->createMock(ItemInterface::class);
+                return $callback($item);
+            });
     }
 
     private function setupUnitOfWorkWithNoManagedEntity(string $userId): void
