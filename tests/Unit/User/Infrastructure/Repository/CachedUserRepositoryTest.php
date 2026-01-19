@@ -523,7 +523,7 @@ final class CachedUserRepositoryTest extends UnitTestCase
         $this->cache
             ->expects($this->once())
             ->method('invalidateTags')
-            ->with(['user']);
+            ->with(['user', 'user.collection']);
 
         $this->repository->deleteAll();
     }
@@ -537,7 +537,7 @@ final class CachedUserRepositoryTest extends UnitTestCase
         $this->cache
             ->expects($this->once())
             ->method('invalidateTags')
-            ->with(['user'])
+            ->with(['user', 'user.collection'])
             ->willThrowException(new \RuntimeException('Cache error'));
 
         $this->logger

@@ -21,13 +21,15 @@ resources:
           max_age: 300
           shared_max_age: 600
           public: true
-          vary: ['Accept', 'Accept-Language']
+          vary: ['Accept', 'Accept-Language', 'Authorization']
+        etag: true
       ApiPlatform\Metadata\Get:
         cacheHeaders:
           max_age: 600
           shared_max_age: 600
           public: true
-          vary: ['Accept', 'Accept-Language']
+          vary: ['Accept', 'Accept-Language', 'Authorization']
+        etag: true
       create_http:
         class: 'ApiPlatform\Metadata\Post'
         input: 'App\User\Application\DTO\UserRegisterDto'
@@ -52,7 +54,9 @@ resources:
       ApiPlatform\Metadata\Put:
         input: 'App\User\Application\DTO\UserPutDto'
         processor: 'App\User\Application\Processor\UserPutProcessor'
-      ApiPlatform\Metadata\Delete: ~
+      ApiPlatform\Metadata\Delete:
+        processor: 'App\User\Application\Processor\UserDeleteProcessor'
+        output: false
       ApiPlatform\Metadata\Post:
         uriTemplate: '/users/{id}/resend-confirmation-email'
         input: 'App\User\Application\DTO\RetryDto'
@@ -65,6 +69,7 @@ resources:
         normalizationContext:
           groups: ['deleteMutationOutput']
         name: 'delete'
+        processor: 'App\User\Application\Processor\UserDeleteProcessor'
       - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
         name: 'confirm'
         resolver: 'App\User\Application\Resolver\ConfirmUserMutationResolver'

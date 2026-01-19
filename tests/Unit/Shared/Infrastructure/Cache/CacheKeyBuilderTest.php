@@ -30,6 +30,17 @@ final class CacheKeyBuilderTest extends TestCase
         self::assertSame('user.email.' . $expectedHash, $key);
     }
 
+    public function testBuildUserCollectionKeyNormalizesAndHashesFilters(): void
+    {
+        $key = $this->builder->buildUserCollectionKey(['b' => 2, 'a' => 1]);
+        $expected = 'user.collection.' . hash(
+            'sha256',
+            json_encode(['a' => 1, 'b' => 2], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertSame($expected, $key);
+    }
+
     public function testBuildSupportsCustomNamespaces(): void
     {
         self::assertSame('foo.bar.baz', $this->builder->build('foo', 'bar', 'baz'));

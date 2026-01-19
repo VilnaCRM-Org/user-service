@@ -11,6 +11,7 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Exception\InvalidPasswordException;
 use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
+use App\User\Domain\Factory\Event\UserUpdatedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
@@ -24,6 +25,7 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
         private UuidFactory $uuidFactory,
         private EmailChangedEventFactoryInterface $emailChangedEventFactory,
         private PasswordChangedEventFactoryInterface $passwordChangedFactory,
+        private UserUpdatedEventFactoryInterface $userUpdatedEventFactory,
     ) {
     }
 
@@ -41,16 +43,23 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
             throw new InvalidPasswordException();
         }
 
+        $eventId = (string) $this->uuidFactory->create();
+        $previousEmail = $user->getEmail();
         $hashedPassword = $hasher->hash($command->updateData->newPassword);
 
         $events = $user->update(
             $command->updateData,
             $hashedPassword,
-            (string) $this->uuidFactory->create(),
+            $eventId,
             $this->emailChangedEventFactory,
             $this->passwordChangedFactory
         );
         $this->userRepository->save($user);
+        $events[] = $this->userUpdatedEventFactory->create(
+            $user,
+            $previousEmail,
+            $eventId
+        );
         $this->eventBus->publish(...$events);
     }
 }

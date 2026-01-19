@@ -15,6 +15,7 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\InvalidPasswordException;
 use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
+use App\User\Domain\Factory\Event\UserUpdatedEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -32,6 +33,7 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
     private UuidFactory $uuidFactory;
     private EmailChangedEventFactoryInterface $emailChangedEventFactory;
     private PasswordChangedEventFactoryInterface $passwordChangedFactory;
+    private UserUpdatedEventFactoryInterface $userUpdatedEventFactory;
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;
     private UpdateUserCommandFactoryInterface $updateUserCommandFactory;
@@ -52,6 +54,9 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         );
         $this->passwordChangedFactory = $this->createMock(
             PasswordChangedEventFactoryInterface::class
+        );
+        $this->userUpdatedEventFactory = $this->createMock(
+            UserUpdatedEventFactoryInterface::class
         );
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(
@@ -154,6 +159,16 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         $this->passwordChangedFactory->expects($this->once())
             ->method('create');
 
+        $this->userUpdatedEventFactory->expects($this->once())
+            ->method('create')
+            ->with($user, $user->getEmail(), $this->anything())
+            ->willReturn(new \App\User\Domain\Event\UserUpdatedEvent(
+                $user->getId(),
+                $user->getEmail(),
+                $user->getEmail(),
+                $this->faker->uuid()
+            ));
+
         $this->eventBus->expects($this->once())
             ->method('publish');
     }
@@ -166,7 +181,8 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
             $this->userRepository,
             $this->uuidFactory,
             $this->emailChangedEventFactory,
-            $this->passwordChangedFactory
+            $this->passwordChangedFactory,
+            $this->userUpdatedEventFactory
         );
     }
 }

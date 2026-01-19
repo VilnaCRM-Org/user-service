@@ -212,7 +212,7 @@ final class CachedUserRepository implements UserRepositoryInterface
     {
         $this->inner->deleteAll();
         try {
-            $this->cache->invalidateTags(['user']);
+            $this->cache->invalidateTags(['user', 'user.collection']);
         } catch (\Throwable $e) {
             $this->logger->warning('Failed to invalidate cache after deleteAll', [
                 'error' => $e->getMessage(),

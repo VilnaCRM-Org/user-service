@@ -33,6 +33,7 @@ final readonly class UserRegisteredCacheInvalidationSubscriber implements
     {
         $user = $event->user;
         $this->cache->invalidateTags([
+            'user.collection',
             'user.' . $user->getId(),
             'user.email.' . $this->cacheKeyBuilder->hashEmail($user->getEmail()),
         ]);

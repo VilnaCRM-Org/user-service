@@ -15,11 +15,13 @@ use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
+use App\User\Domain\Event\UserUpdatedEvent;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactory;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
+use App\User\Domain\Factory\Event\UserUpdatedEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -31,6 +33,7 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
     private EventBusInterface $eventBus;
     private UuidFactory $mockUuidFactory;
     private UserConfirmedEventFactoryInterface $mockUserConfirmedEventFactory;
+    private UserUpdatedEventFactoryInterface $mockUserUpdatedEventFactory;
     private UuidFactory $uuidFactory;
     private UserConfirmedEventFactoryInterface $userConfirmedEventFactory;
     private ConfirmUserCommandFactoryInterface $confirmUserCommandFactory;
@@ -50,6 +53,9 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
         $this->mockUuidFactory = $this->createMock(UuidFactory::class);
         $this->mockUserConfirmedEventFactory = $this->createMock(
             UserConfirmedEventFactoryInterface::class
+        );
+        $this->mockUserUpdatedEventFactory = $this->createMock(
+            UserUpdatedEventFactoryInterface::class
         );
         $this->uuidFactory = new UuidFactory();
         $this->userConfirmedEventFactory = new UserConfirmedEventFactory();
@@ -106,7 +112,8 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
             $this->userRepository,
             $this->eventBus,
             $this->mockUuidFactory,
-            $this->mockUserConfirmedEventFactory
+            $this->mockUserConfirmedEventFactory,
+            $this->mockUserUpdatedEventFactory
         );
     }
 
@@ -120,7 +127,10 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
 
         $this->eventBus->expects($this->once())
             ->method('publish')
-            ->with($this->isInstanceOf(UserConfirmedEvent::class));
+            ->with(
+                $this->isInstanceOf(UserConfirmedEvent::class),
+                $this->isInstanceOf(UserUpdatedEvent::class)
+            );
 
         $this->mockUuidFactory->expects($this->once())
             ->method('create')
@@ -134,5 +144,15 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
                     $this->faker->uuid()
                 )
             );
+
+        $this->mockUserUpdatedEventFactory->expects($this->once())
+            ->method('create')
+            ->with($user, null, $this->anything())
+            ->willReturn(new UserUpdatedEvent(
+                $user->getId(),
+                $user->getEmail(),
+                null,
+                $this->faker->uuid()
+            ));
     }
 }

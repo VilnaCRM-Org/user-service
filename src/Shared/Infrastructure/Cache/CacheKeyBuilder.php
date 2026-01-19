@@ -44,6 +44,17 @@ final readonly class CacheKeyBuilder
         return $this->build('user', 'email', $emailHash);
     }
 
+    public function buildUserCollectionKey(array $filters): string
+    {
+        ksort($filters);
+
+        return $this->build(
+            'user',
+            'collection',
+            hash('sha256', json_encode($filters, JSON_THROW_ON_ERROR))
+        );
+    }
+
     /**
      * Hash email consistently (lowercase + SHA256)
      *

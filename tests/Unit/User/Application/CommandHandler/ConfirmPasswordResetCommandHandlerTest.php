@@ -14,11 +14,13 @@ use App\User\Domain\Contract\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Event\PasswordResetConfirmedEvent;
+use App\User\Domain\Event\UserUpdatedEvent;
 use App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException;
 use App\User\Domain\Exception\PasswordResetTokenExpiredException;
 use App\User\Domain\Exception\PasswordResetTokenNotFoundException;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\Event\PasswordResetConfirmedEventFactoryInterface;
+use App\User\Domain\Factory\Event\UserUpdatedEventFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -34,6 +36,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     private UuidFactory&MockObject $uuidFactory;
     private PasswordResetTokenValidatorInterface&MockObject $tokenValidator;
     private PasswordResetConfirmedEventFactoryInterface&MockObject $eventFactory;
+    private UserUpdatedEventFactoryInterface&MockObject $userUpdatedEventFactory;
     private ConfirmPasswordResetCommandHandler $handler;
 
     #[\Override]
@@ -48,6 +51,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $this->uuidFactory = $this->createMock(UuidFactory::class);
         $this->tokenValidator = $this->createMock(PasswordResetTokenValidatorInterface::class);
         $this->eventFactory = $this->createMock(PasswordResetConfirmedEventFactoryInterface::class);
+        $this->userUpdatedEventFactory = $this->createMock(UserUpdatedEventFactoryInterface::class);
 
         $this->handler = new ConfirmPasswordResetCommandHandler(
             $this->tokenRepository,
@@ -57,6 +61,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             $this->uuidFactory,
             $this->tokenValidator,
             $this->eventFactory,
+            $this->userUpdatedEventFactory,
         );
     }
 
@@ -236,7 +241,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     /**
      * @param array<string, string|Uuid> $testData
      *
-     * @return array<string, PasswordResetTokenInterface|User|PasswordResetConfirmedEvent>
+     * @return array<string, PasswordResetTokenInterface|User|PasswordResetConfirmedEvent|UserUpdatedEvent>
      */
     private function createConfirmPasswordResetMocks(array $testData): array
     {
@@ -250,11 +255,13 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $user->expects($this->once())->method('getId')->willReturn($testData['userId']);
 
         $event = $this->createMock(PasswordResetConfirmedEvent::class);
+        $userUpdatedEvent = $this->createMock(UserUpdatedEvent::class);
 
         return [
             'passwordResetToken' => $passwordResetToken,
             'user' => $user,
             'event' => $event,
+            'userUpdatedEvent' => $userUpdatedEvent,
         ];
     }
 
@@ -304,7 +311,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
     /**
      * @param array<string, string|Uuid> $testData
-     * @param array<string, PasswordResetTokenInterface|User|PasswordResetConfirmedEvent> $mocks
+     * @param array<string, PasswordResetTokenInterface|User|PasswordResetConfirmedEvent|UserUpdatedEvent> $mocks
      */
     private function setupEventPublishingExpectations(array $testData, array $mocks): void
     {
@@ -321,6 +328,13 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             ->with($testData['userId'], (string) $testData['eventId'])
             ->willReturn($mocks['event']);
 
-        $this->eventBus->expects($this->once())->method('publish')->with($mocks['event']);
+        $this->userUpdatedEventFactory->expects($this->once())
+            ->method('create')
+            ->with($mocks['user'], null, (string) $testData['eventId'])
+            ->willReturn($mocks['userUpdatedEvent']);
+
+        $this->eventBus->expects($this->once())
+            ->method('publish')
+            ->with($mocks['event'], $mocks['userUpdatedEvent']);
     }
 }
