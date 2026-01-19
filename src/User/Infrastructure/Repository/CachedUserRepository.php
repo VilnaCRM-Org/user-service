@@ -34,8 +34,8 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
  */
 final class CachedUserRepository implements UserRepositoryInterface
 {
-    private const int TTL_BY_ID = 600;
-    private const int TTL_BY_EMAIL = 300;
+    private const TTL_BY_ID = 600;
+    private const TTL_BY_EMAIL = 300;
 
     public function __construct(
         private UserRepositoryInterface $inner,
@@ -80,7 +80,13 @@ final class CachedUserRepository implements UserRepositoryInterface
         try {
             $user = $this->cache->get(
                 $cacheKey,
-                fn (ItemInterface $item) => $this->loadUserFromDb($id, $lockMode, $lockVersion, $cacheKey, $item),
+                fn (ItemInterface $item) => $this->loadUserFromDb(
+                    $id,
+                    $lockMode,
+                    $lockVersion,
+                    $cacheKey,
+                    $item
+                ),
                 beta: 1.0  // Enable Stale-While-Revalidate
             );
 
@@ -89,7 +95,8 @@ final class CachedUserRepository implements UserRepositoryInterface
                 return $this->getManagedEntityIfExists($user) ?? $user;
             }
 
-            return $user;
+            $this->cache->delete($cacheKey);
+            return $this->inner->find($id, $lockMode, $lockVersion);
         } catch (\Throwable $e) {
             $this->logCacheError($cacheKey, $e);
             return $this->inner->find($id, $lockMode, $lockVersion);
@@ -119,7 +126,8 @@ final class CachedUserRepository implements UserRepositoryInterface
             );
 
             if (!($user instanceof UserInterface)) {
-                return null;
+                $this->cache->delete($cacheKey);
+                return $this->inner->findById($id);
             }
 
             // Check if entity is already managed by Doctrine
@@ -152,7 +160,8 @@ final class CachedUserRepository implements UserRepositoryInterface
             );
 
             if (!($user instanceof UserInterface)) {
-                return null;
+                $this->cache->delete($cacheKey);
+                return $this->inner->findByEmail($email);
             }
 
             // Check if entity is already managed by Doctrine
@@ -237,8 +246,11 @@ final class CachedUserRepository implements UserRepositoryInterface
     /**
      * Load user by ID from database and configure cache item
      */
-    private function loadUserByIdFromDb(string $id, string $cacheKey, ItemInterface $item): ?UserInterface
-    {
+    private function loadUserByIdFromDb(
+        string $id,
+        string $cacheKey,
+        ItemInterface $item
+    ): ?UserInterface {
         $item->expiresAfter(self::TTL_BY_ID);  // 10 minutes TTL
         $item->tag(['user', "user.{$id}"]);
 
@@ -254,8 +266,11 @@ final class CachedUserRepository implements UserRepositoryInterface
     /**
      * Load user by email from database and configure cache item
      */
-    private function loadUserByEmailFromDb(string $email, string $cacheKey, ItemInterface $item): ?UserInterface
-    {
+    private function loadUserByEmailFromDb(
+        string $email,
+        string $cacheKey,
+        ItemInterface $item
+    ): ?UserInterface {
         $item->expiresAfter(self::TTL_BY_EMAIL);  // 5 minutes TTL
         $emailHash = $this->cacheKeyBuilder->hashEmail($email);
         $item->tag([

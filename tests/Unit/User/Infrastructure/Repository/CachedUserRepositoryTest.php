@@ -153,7 +153,7 @@ final class CachedUserRepositoryTest extends UnitTestCase
         $this->setupCacheKeyBuilder($userId);
 
         $this->innerRepository
-            ->expects($this->once())
+            ->expects($this->exactly(2))
             ->method('find')
             ->with($userId, null, null)
             ->willReturn(null);
@@ -170,6 +170,11 @@ final class CachedUserRepositoryTest extends UnitTestCase
                 $item = $this->createMock(ItemInterface::class);
                 return $callback($item);
             });
+
+        $this->cache
+            ->expects($this->once())
+            ->method('delete')
+            ->with($cacheKey);
 
         $result = $this->repository->find($userId);
 
@@ -241,6 +246,16 @@ final class CachedUserRepositoryTest extends UnitTestCase
 
         $this->setupCacheKeyBuilder($userId);
         $this->setupCacheHit($cacheKey, $cachedValue);
+        $this->cache
+            ->expects($this->once())
+            ->method('delete')
+            ->with($cacheKey);
+
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($userId)
+            ->willReturn(null);
 
         $result = $this->repository->findById($userId);
 
@@ -394,6 +409,17 @@ final class CachedUserRepositoryTest extends UnitTestCase
             ->willReturn($cacheKey);
 
         $this->setupCacheHit($cacheKey, $cachedValue);
+
+        $this->cache
+            ->expects($this->once())
+            ->method('delete')
+            ->with($cacheKey);
+
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn(null);
 
         $result = $this->repository->findByEmail($email);
 

@@ -13,6 +13,8 @@ parameters:
         - type: className
           regex: '.*App\\Shared\\Application\\(Validator|Transformer|Provider|Checker|Collector|Decoder|DTO|Evaluator|EventListener|Normalizer|QueryParameter|Resolver|Finder|Factory).*'
         - type: className
+          regex: '.*App\\Shared\\Application\\Bus\\(Command|Event).*'
+        - type: className
           regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|Processor|Extractor|Cleaner|Sanitizer|Augmenter|OpenApiFactory|Enum|ValueObject).*'
         - type: className
           regex: '.*App\\Internal\\HealthCheck\\Application\\.*'

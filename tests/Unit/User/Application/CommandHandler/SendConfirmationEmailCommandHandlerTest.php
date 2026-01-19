@@ -19,6 +19,7 @@ use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactory;
 use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
+use App\User\Domain\Repository\TokenRepositoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 final class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
@@ -33,6 +34,7 @@ final class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
     private ConfirmationEmailFactoryInterface $confirmationEmailFactory;
     private UuidTransformer $uuidTransformer;
     private SendConfirmationEmailCommandFactoryInterface $commandFactory;
+    private TokenRepositoryInterface $tokenRepository;
 
     #[\Override]
     protected function setUp(): void
@@ -52,9 +54,12 @@ final class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
         $this->uuidTransformer =
             new UuidTransformer(new UuidFactoryInterface());
         $this->commandFactory = new SendConfirmationEmailCommandFactory();
+        $this->tokenRepository =
+            $this->createMock(TokenRepositoryInterface::class);
 
         $this->handler = new SendConfirmationEmailCommandHandler(
             $this->eventBus,
+            $this->tokenRepository,
             $this->mockUuidFactory
         );
     }
@@ -81,6 +86,9 @@ final class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
 
         $this->eventBus->expects($this->once())
             ->method('publish');
+        $this->tokenRepository->expects($this->once())
+            ->method('save')
+            ->with($token);
 
         $this->handler->__invoke($command);
     }

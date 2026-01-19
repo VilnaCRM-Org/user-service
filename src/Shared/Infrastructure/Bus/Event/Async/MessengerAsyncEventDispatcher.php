@@ -41,7 +41,12 @@ final readonly class MessengerAsyncEventDispatcher implements AsyncEventDispatch
     private function dispatchSingle(DomainEvent $event): bool
     {
         try {
-            $envelope = DomainEventEnvelope::fromEvent($event);
+            $envelope = new DomainEventEnvelope(
+                eventClass: $event::class,
+                body: $event->toPrimitives(),
+                eventId: $event->eventId(),
+                occurredOn: $event->occurredOn()
+            );
             $this->messageBus->dispatch($envelope);
 
             $this->logger->debug('Domain event dispatched to queue', [
