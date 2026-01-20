@@ -146,7 +146,11 @@ final class AllowedMethodsProviderTest extends UnitTestCase
         $collection = new ResourceMetadataCollection(User::class, [$apiResource]);
 
         $factory = $this->createMock(ResourceMetadataCollectionFactoryInterface::class);
-        $factory->method('create')->willReturn($collection);
+        $factory->method('create')->willReturnCallback(
+            static fn (string $resourceClass) => $resourceClass === User::class
+                ? $collection
+                : new ResourceMetadataCollection($resourceClass, [])
+        );
 
         $pathNormalizer = new AllowedMethodsPathNormalizer();
         $matcher = new AllowedMethodsOperationMatcher($pathNormalizer);

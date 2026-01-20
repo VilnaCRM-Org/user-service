@@ -137,6 +137,8 @@ services:
   App\User\Infrastructure\EventListener\SchemathesisCleanupListener:
     arguments:
       $cache: '@cache.user'
+    tags:
+      - { name: kernel.event_listener, event: kernel.terminate }
 
   App\User\Domain\Repository\UserRepositoryInterface:
     alias: App\User\Infrastructure\Repository\CachedUserRepository

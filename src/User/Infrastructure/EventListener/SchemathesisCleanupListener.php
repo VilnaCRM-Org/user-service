@@ -11,13 +11,10 @@ use App\User\Domain\Factory\Event\UserDeletedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Evaluator\SchemathesisCleanupEvaluator;
 use App\User\Infrastructure\Extractor\SchemathesisEmailExtractor;
-use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
-use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Uid\Factory\UuidFactory;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
-#[AsEventListener(event: KernelEvents::TERMINATE)]
 final class SchemathesisCleanupListener
 {
     public function __construct(

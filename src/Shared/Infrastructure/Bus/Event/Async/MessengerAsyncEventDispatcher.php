@@ -45,7 +45,7 @@ final readonly class MessengerAsyncEventDispatcher implements AsyncEventDispatch
             $this->logDispatchSuccess($event);
 
             return true;
-        } catch (ExceptionInterface $exception) {
+        } catch (\Throwable $exception) {
             $this->logDispatchFailure($event, $exception);
 
             return false;

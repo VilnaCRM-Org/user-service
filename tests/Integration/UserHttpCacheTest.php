@@ -103,7 +103,7 @@ final class UserHttpCacheTest extends ApiTestCase
 
         self::assertNotSame('', $etag);
         self::assertStringContainsString('max-age=600', $cacheControl);
-        self::assertStringContainsString('s-maxage=600', $cacheControl);
+        self::assertStringContainsString('private', $cacheControl);
         self::assertStringContainsString('accept', $vary);
         self::assertStringContainsString('accept-language', $vary);
         self::assertStringContainsString('authorization', $vary);

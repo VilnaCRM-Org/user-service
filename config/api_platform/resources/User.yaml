@@ -19,15 +19,13 @@ resources:
         paginationClientItemsPerPage: true
         cacheHeaders:
           max_age: 300
-          shared_max_age: 600
-          public: true
+          public: false
           vary: ['Accept', 'Accept-Language', 'Authorization']
         etag: true
       ApiPlatform\Metadata\Get:
         cacheHeaders:
           max_age: 600
-          shared_max_age: 600
-          public: true
+          public: false
           vary: ['Accept', 'Accept-Language', 'Authorization']
         etag: true
       create_http:

@@ -90,7 +90,7 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
 
         $events[] = $this->userUpdatedEventFactory->create(
             $user,
-            $previousEmail,
+            $previousEmail !== $user->getEmail() ? $previousEmail : null,
             $eventId
         );
 

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Integration\User\Infrastructure\Repository;
 
 use App\Shared\Domain\ValueObject\Uuid;
+use App\Tests\Integration\IntegrationTestCase;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Uid\Uuid as SymfonyUuid;
 
 /**
@@ -17,7 +17,7 @@ use Symfony\Component\Uid\Uuid as SymfonyUuid;
  * These tests measure actual latency differences between cache hits and misses
  * to ensure the caching implementation provides real performance benefits.
  */
-final class CachePerformanceTest extends KernelTestCase
+final class CachePerformanceTest extends IntegrationTestCase
 {
     private const PERFORMANCE_ITERATIONS = 10;
     private const MAX_CACHE_HIT_LATENCY_MS = 10;
@@ -29,7 +29,7 @@ final class CachePerformanceTest extends KernelTestCase
     #[\Override]
     protected function setUp(): void
     {
-        self::bootKernel();
+        parent::setUp();
 
         $this->repository = self::getContainer()->get(UserRepositoryInterface::class);
         $this->cachePool = self::getContainer()->get('cache.user');
@@ -39,10 +39,7 @@ final class CachePerformanceTest extends KernelTestCase
 
     public function testCacheHitIsSignificantlyFasterThanMiss(): void
     {
-        $user = $this->createTestUser(
-            'Performance Test',
-            sprintf('perf+%s@example.com', (string) $this->generateUuid())
-        );
+        $user = $this->createTestUser();
         $userId = $user->getId();
         $this->cachePool->clear();
 
@@ -54,10 +51,7 @@ final class CachePerformanceTest extends KernelTestCase
 
     public function testAverageCacheHitLatencyIsAcceptable(): void
     {
-        $user = $this->createTestUser(
-            'Latency Test',
-            sprintf('latency+%s@example.com', (string) $this->generateUuid())
-        );
+        $user = $this->createTestUser();
         $userId = $user->getId();
 
         $this->repository->find($userId);
@@ -78,8 +72,8 @@ final class CachePerformanceTest extends KernelTestCase
 
     public function testEmailLookupCachePerformance(): void
     {
-        $email = sprintf('email-perf+%s@example.com', (string) $this->generateUuid());
-        $this->createTestUser('Email Perf Test', $email);
+        $email = $this->faker->unique()->safeEmail();
+        $this->createTestUserWithEmail($email);
         $this->cachePool->clear();
 
         $cacheMissLatencyNs = $this->measureEmailLookupLatency($email);
@@ -91,10 +85,7 @@ final class CachePerformanceTest extends KernelTestCase
 
     public function testCacheRecoveryAfterInvalidation(): void
     {
-        $user = $this->createTestUser(
-            'Invalidation Perf',
-            sprintf('invalidation+%s@example.com', (string) $this->generateUuid())
-        );
+        $user = $this->createTestUser();
         $userId = $user->getId();
 
         $this->assertCachePopulatesOnFirstQuery($userId);
@@ -181,10 +172,7 @@ final class CachePerformanceTest extends KernelTestCase
     {
         $users = [];
         for ($i = 0; $i < $count; $i++) {
-            $users[] = $this->createTestUser(
-                sprintf('User %d', $i),
-                sprintf('user%d+%s@example.com', $i, (string) $this->generateUuid())
-            );
+            $users[] = $this->createTestUser();
         }
 
         return $users;
@@ -306,18 +294,30 @@ final class CachePerformanceTest extends KernelTestCase
         );
     }
 
-    private function createTestUser(string $initials, string $email): User
+    private function createTestUser(): User
     {
         $user = new User(
-            email: $email,
-            initials: $initials,
-            password: password_hash('test_password', PASSWORD_BCRYPT),
+            email: $this->faker->unique()->safeEmail(),
+            initials: $this->faker->name(),
+            password: password_hash($this->faker->password(12), PASSWORD_BCRYPT),
             id: $this->generateUuid()
         );
 
         $this->repository->save($user);
 
         return $user;
+    }
+
+    private function createTestUserWithEmail(string $email): void
+    {
+        $user = new User(
+            email: $email,
+            initials: $this->faker->name(),
+            password: password_hash($this->faker->password(12), PASSWORD_BCRYPT),
+            id: $this->generateUuid()
+        );
+
+        $this->repository->save($user);
     }
 
     private function generateUuid(): Uuid

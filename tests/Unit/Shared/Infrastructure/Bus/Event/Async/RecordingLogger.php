@@ -13,7 +13,7 @@ final class RecordingLogger implements LoggerInterface
     use LoggerTrait;
 
     /**
-     * @var array<int, array{string, array<string, string>}>
+     * @var array<int, array{string, array<string, mixed>}>
      */
     private array $debugCalls = [];
 
@@ -24,14 +24,12 @@ final class RecordingLogger implements LoggerInterface
     public function log(mixed $level, string|\Stringable $message, array $context = []): void
     {
         if ($level === LogLevel::DEBUG) {
-            /** @var array<string, string> $debugContext */
-            $debugContext = $context;
-            $this->debugCalls[] = [$message, $debugContext];
+            $this->debugCalls[] = [(string) $message, $context];
         }
     }
 
     /**
-     * @return array<int, array{string, array<string, string>}>
+     * @return array<int, array{string, array<string, mixed>}>
      */
     public function getDebugCalls(): array
     {
