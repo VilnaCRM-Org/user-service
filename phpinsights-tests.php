@@ -85,11 +85,6 @@ return [
         FunctionLengthSniff::class => [
             'exclude' => [
                 'tests/Unit/User/Infrastructure/Repository/CachedUserRepositoryTest.php',
-                'tests/Unit/User/Application/EventSubscriber/PasswordChangedCacheInvalidationSubscriberTest.php',
-                'tests/Unit/User/Application/EventSubscriber/UserConfirmedCacheInvalidationSubscriberTest.php',
-                'tests/Unit/User/Application/EventSubscriber/UserRegisteredCacheInvalidationSubscriberTest.php',
-                'tests/Unit/User/Application/EventSubscriber/EmailChangedCacheInvalidationSubscriberTest.php',
-                'tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php',
             ],
         ],
         UselessOverridingMethodSniff::class => [

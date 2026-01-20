@@ -50,22 +50,38 @@ final class UserRegisteredCacheInvalidationSubscriberTest extends UnitTestCase
         $userId = $this->faker->uuid();
         $email = $this->faker->email();
         $emailHash = 'email_hash_123';
+        $event = $this->createEvent($userId, $email);
 
+        $this->expectEmailHash($email, $emailHash);
+        $this->assertCacheInvalidation($event, $userId, $emailHash);
+    }
+
+    private function createEvent(string $userId, string $email): UserRegisteredEvent
+    {
         $user = $this->createMock(UserInterface::class);
         $user->method('getId')->willReturn($userId);
         $user->method('getEmail')->willReturn($email);
 
-        $event = new UserRegisteredEvent(
+        return new UserRegisteredEvent(
             $user,
             $this->faker->uuid()
         );
+    }
 
+    private function expectEmailHash(string $email, string $emailHash): void
+    {
         $this->cacheKeyBuilder
             ->expects($this->once())
             ->method('hashEmail')
             ->with($email)
             ->willReturn($emailHash);
+    }
 
+    private function assertCacheInvalidation(
+        UserRegisteredEvent $event,
+        string $userId,
+        string $emailHash
+    ): void {
         $this->cache
             ->expects($this->once())
             ->method('invalidateTags')
@@ -75,18 +91,24 @@ final class UserRegisteredCacheInvalidationSubscriberTest extends UnitTestCase
                 'user.email.' . $emailHash,
             ]);
 
+        $this->expectInvalidationLog();
+        ($this->subscriber)($event);
+    }
+
+    private function expectInvalidationLog(): void
+    {
         $this->logger
             ->expects($this->once())
             ->method('info')
             ->with(
                 'Cache invalidated after user registration',
                 $this->callback(
-                    static fn ($context) => $context['operation'] === 'cache.invalidation'
-                        && $context['reason'] === 'user_registered'
-                        && isset($context['event_id'])
+                    static function (array $context): bool {
+                        return $context['operation'] === 'cache.invalidation'
+                            && $context['reason'] === 'user_registered'
+                            && isset($context['event_id']);
+                    }
                 )
             );
-
-        ($this->subscriber)($event);
     }
 }

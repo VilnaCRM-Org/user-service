@@ -43,19 +43,77 @@ final class CachePerformanceTest extends KernelTestCase
             'Performance Test',
             sprintf('perf+%s@example.com', (string) $this->generateUuid())
         );
-
+        $userId = $user->getId();
         $this->cachePool->clear();
 
-        $cacheMissStart = hrtime(true);
-        $this->repository->find($user->getId());
-        $cacheMissEnd = hrtime(true);
-        $cacheMissLatencyNs = $cacheMissEnd - $cacheMissStart;
+        $cacheMissLatencyNs = $this->measureFindLatency($userId);
+        $cacheHitLatencyNs = $this->measureFindLatency($userId);
 
-        $cacheHitStart = hrtime(true);
-        $this->repository->find($user->getId());
-        $cacheHitEnd = hrtime(true);
-        $cacheHitLatencyNs = $cacheHitEnd - $cacheHitStart;
+        $this->assertCacheHitFasterThanMiss($cacheMissLatencyNs, $cacheHitLatencyNs);
+    }
 
+    public function testAverageCacheHitLatencyIsAcceptable(): void
+    {
+        $user = $this->createTestUser(
+            'Latency Test',
+            sprintf('latency+%s@example.com', (string) $this->generateUuid())
+        );
+        $userId = $user->getId();
+
+        $this->repository->find($userId);
+        $averageLatencyMs = $this->measureAverageCacheHitLatency($userId);
+
+        $this->assertAverageLatencyIsAcceptable($averageLatencyMs);
+    }
+
+    public function testCacheHitRatioAfterWarmup(): void
+    {
+        $users = $this->createTestUsers(5);
+        $this->warmupCache($users);
+
+        $hitRatio = $this->calculateCacheHitRatio($users);
+
+        $this->assertMinimumHitRatio($hitRatio);
+    }
+
+    public function testEmailLookupCachePerformance(): void
+    {
+        $email = sprintf('email-perf+%s@example.com', (string) $this->generateUuid());
+        $this->createTestUser('Email Perf Test', $email);
+        $this->cachePool->clear();
+
+        $cacheMissLatencyNs = $this->measureEmailLookupLatency($email);
+        $cacheHitLatencyNs = $this->measureEmailLookupLatency($email);
+
+        $this->assertCacheHitIsFaster($cacheMissLatencyNs, $cacheHitLatencyNs);
+        $this->assertEmailLookupIsCached($email);
+    }
+
+    public function testCacheRecoveryAfterInvalidation(): void
+    {
+        $user = $this->createTestUser(
+            'Invalidation Perf',
+            sprintf('invalidation+%s@example.com', (string) $this->generateUuid())
+        );
+        $userId = $user->getId();
+
+        $this->assertCachePopulatesOnFirstQuery($userId);
+        $this->assertCacheClearsCorrectly($userId);
+        $this->assertCacheRepopulatesAfterClear($userId);
+        $this->assertCacheHitLatencyAfterReWarmup($userId);
+    }
+
+    private function measureFindLatency(string $userId): int
+    {
+        $start = hrtime(true);
+        $this->repository->find($userId);
+        $end = hrtime(true);
+
+        return $end - $start;
+    }
+
+    private function assertCacheHitFasterThanMiss(int $cacheMissLatencyNs, int $cacheHitLatencyNs): void
+    {
         $cacheMissLatencyMs = $cacheMissLatencyNs / 1_000_000;
         $cacheHitLatencyMs = $cacheHitLatencyNs / 1_000_000;
 
@@ -69,6 +127,11 @@ final class CachePerformanceTest extends KernelTestCase
             )
         );
 
+        $this->assertMinimumSpeedupFactor($cacheMissLatencyMs, $cacheHitLatencyMs);
+    }
+
+    private function assertMinimumSpeedupFactor(float $cacheMissLatencyMs, float $cacheHitLatencyMs): void
+    {
         if ($cacheMissLatencyMs > 0) {
             $speedupFactor = $cacheMissLatencyMs / max($cacheHitLatencyMs, 0.001);
             self::assertGreaterThanOrEqual(
@@ -85,25 +148,21 @@ final class CachePerformanceTest extends KernelTestCase
         }
     }
 
-    public function testAverageCacheHitLatencyIsAcceptable(): void
+    private function measureAverageCacheHitLatency(string $userId): float
     {
-        $user = $this->createTestUser(
-            'Latency Test',
-            sprintf('latency+%s@example.com', (string) $this->generateUuid())
-        );
-
-        $this->repository->find($user->getId());
-
         $totalLatencyNs = 0;
         for ($i = 0; $i < self::PERFORMANCE_ITERATIONS; $i++) {
             $start = hrtime(true);
-            $this->repository->find($user->getId());
+            $this->repository->find($userId);
             $end = hrtime(true);
             $totalLatencyNs += $end - $start;
         }
 
-        $averageLatencyMs = $totalLatencyNs / self::PERFORMANCE_ITERATIONS / 1_000_000;
+        return $totalLatencyNs / self::PERFORMANCE_ITERATIONS / 1_000_000;
+    }
 
+    private function assertAverageLatencyIsAcceptable(float $averageLatencyMs): void
+    {
         self::assertLessThanOrEqual(
             self::MAX_CACHE_HIT_LATENCY_MS,
             $averageLatencyMs,
@@ -115,27 +174,44 @@ final class CachePerformanceTest extends KernelTestCase
         );
     }
 
-    public function testCacheHitRatioAfterWarmup(): void
+    /**
+     * @return array<int, User>
+     */
+    private function createTestUsers(int $count): array
     {
         $users = [];
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < $count; $i++) {
             $users[] = $this->createTestUser(
                 sprintf('User %d', $i),
                 sprintf('user%d+%s@example.com', $i, (string) $this->generateUuid())
             );
         }
 
+        return $users;
+    }
+
+    /**
+     * @param array<int, User> $users
+     */
+    private function warmupCache(array $users): void
+    {
         foreach ($users as $user) {
             $this->repository->find($user->getId());
         }
+    }
 
+    /**
+     * @param array<int, User> $users
+     */
+    private function calculateCacheHitRatio(array $users): float
+    {
         $hits = 0;
         $total = 0;
+
         foreach ($users as $user) {
             for ($j = 0; $j < 3; $j++) {
                 $cacheKey = 'user.' . $user->getId();
-                $isHit = $this->cachePool->getItem($cacheKey)->isHit();
-                if ($isHit) {
+                if ($this->cachePool->getItem($cacheKey)->isHit()) {
                     $hits++;
                 }
                 $total++;
@@ -143,8 +219,11 @@ final class CachePerformanceTest extends KernelTestCase
             }
         }
 
-        $hitRatio = $hits / $total;
+        return $hits / $total;
+    }
 
+    private function assertMinimumHitRatio(float $hitRatio): void
+    {
         self::assertGreaterThanOrEqual(
             0.9,
             $hitRatio,
@@ -155,29 +234,26 @@ final class CachePerformanceTest extends KernelTestCase
         );
     }
 
-    public function testEmailLookupCachePerformance(): void
+    private function measureEmailLookupLatency(string $email): int
     {
-        $email = sprintf('email-perf+%s@example.com', (string) $this->generateUuid());
-        $this->createTestUser('Email Perf Test', $email);
-
-        $this->cachePool->clear();
-
-        $cacheMissStart = hrtime(true);
+        $start = hrtime(true);
         $this->repository->findByEmail($email);
-        $cacheMissEnd = hrtime(true);
-        $cacheMissLatencyNs = $cacheMissEnd - $cacheMissStart;
+        $end = hrtime(true);
 
-        $cacheHitStart = hrtime(true);
-        $this->repository->findByEmail($email);
-        $cacheHitEnd = hrtime(true);
-        $cacheHitLatencyNs = $cacheHitEnd - $cacheHitStart;
+        return $end - $start;
+    }
 
+    private function assertCacheHitIsFaster(int $cacheMissLatencyNs, int $cacheHitLatencyNs): void
+    {
         self::assertLessThan(
             $cacheMissLatencyNs,
             $cacheHitLatencyNs,
             'Email lookup cache hit should be faster than cache miss'
         );
+    }
 
+    private function assertEmailLookupIsCached(string $email): void
+    {
         $emailHash = hash('sha256', strtolower($email));
         self::assertTrue(
             $this->cachePool->getItem('user.email.' . $emailHash)->isHit(),
@@ -185,33 +261,37 @@ final class CachePerformanceTest extends KernelTestCase
         );
     }
 
-    public function testCacheRecoveryAfterInvalidation(): void
+    private function assertCachePopulatesOnFirstQuery(string $userId): void
     {
-        $user = $this->createTestUser(
-            'Invalidation Perf',
-            sprintf('invalidation+%s@example.com', (string) $this->generateUuid())
-        );
-
-        $this->repository->find($user->getId());
+        $this->repository->find($userId);
         self::assertTrue(
-            $this->cachePool->getItem('user.' . $user->getId())->isHit(),
+            $this->cachePool->getItem('user.' . $userId)->isHit(),
             'Cache should be populated after first query'
         );
+    }
 
+    private function assertCacheClearsCorrectly(string $userId): void
+    {
         $this->cachePool->clear();
         self::assertFalse(
-            $this->cachePool->getItem('user.' . $user->getId())->isHit(),
+            $this->cachePool->getItem('user.' . $userId)->isHit(),
             'Cache should be empty after clear'
         );
+    }
 
-        $this->repository->find($user->getId());
+    private function assertCacheRepopulatesAfterClear(string $userId): void
+    {
+        $this->repository->find($userId);
         self::assertTrue(
-            $this->cachePool->getItem('user.' . $user->getId())->isHit(),
+            $this->cachePool->getItem('user.' . $userId)->isHit(),
             'Cache should be repopulated after query following clear'
         );
+    }
 
+    private function assertCacheHitLatencyAfterReWarmup(string $userId): void
+    {
         $cacheHitStart = hrtime(true);
-        $this->repository->find($user->getId());
+        $this->repository->find($userId);
         $cacheHitEnd = hrtime(true);
         $cacheHitLatencyMs = ($cacheHitEnd - $cacheHitStart) / 1_000_000;
 
