@@ -9,11 +9,13 @@
 ## Architecture Overview
 
 ### Domain Events
+
 - Introduce `UserUpdatedEvent` with `userId`, `currentEmail`, and optional `previousEmail`.
 - Introduce `UserDeletedEvent` with `userId` and `userEmail`.
 - Continue emitting existing `EmailChangedEvent` and `PasswordChangedEvent` for notification workflows.
 
 ### Event Publication Points
+
 - `UpdateUserCommandHandler` captures previous email, updates user, saves, and publishes `UserUpdatedEvent`.
 - `ConfirmUserCommandHandler` publishes `UserUpdatedEvent` after confirmation and save.
 - `ConfirmPasswordResetCommandHandler` publishes `UserUpdatedEvent` after password change and save.
@@ -21,6 +23,7 @@
 - Registration remains unchanged and still publishes `UserRegisteredEvent`.
 
 ### Cache Invalidation Subscribers
+
 - Keep `UserRegisteredCacheInvalidationSubscriber` but include `user.collection` tag in invalidation.
 - Add `UserUpdatedCacheInvalidationSubscriber` to invalidate:
   - `user.{id}`
@@ -36,6 +39,7 @@
 ## Cache Policy and Keys
 
 ### Read Cache Policy
+
 - `find` / `findById`:
   - Key: `user.{id}`
   - TTL: 600s
@@ -48,6 +52,7 @@
   - Tags: `user`, `user.email`, `user.email.{hash}`
 
 ### Collection Key
+
 - Add `buildUserCollectionKey(array $filters)` to `CacheKeyBuilder`:
   - Sort filters by key
   - Hash JSON-encoded filters
@@ -57,6 +62,7 @@
 ## HTTP Cache Headers
 
 Update `config/api_platform/resources/User.yaml` to match core-service:
+
 - `GetCollection`:
   - `cacheHeaders`: `max_age: 300`, `shared_max_age: 600`
   - `vary`: `Accept`, `Authorization`, `Accept-Language`
@@ -81,6 +87,7 @@ Update `config/api_platform/resources/User.yaml` to match core-service:
 ## Test Plan
 
 ### Unit Tests
+
 - `CacheKeyBuilderTest`: add coverage for `buildUserCollectionKey`.
 - Add tests for:
   - `UserUpdatedCacheInvalidationSubscriber`
@@ -88,6 +95,7 @@ Update `config/api_platform/resources/User.yaml` to match core-service:
 - Remove tests for removed invalidation subscribers.
 
 ### Integration Tests
+
 - Add `UserHttpCacheTest` (ApiPlatform `ApiTestCase`):
   - `GET /api/users/{id}` returns `Cache-Control` and `ETag`.
   - `GET /api/users` returns collection cache headers.

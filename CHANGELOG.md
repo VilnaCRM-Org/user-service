@@ -1,3 +1,9 @@
+# [0.5.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.4.0...v0.5.0) (2026-01-18)
+
+### Features
+
+- add openapi development skill ([#235](https://github.com/VilnaCRM-Org/user-service/issues/235)) ([ec4c922](https://github.com/VilnaCRM-Org/user-service/commit/ec4c922f8adb72899a1c702455887e55ac40a6a7))
+
 # [0.4.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.3.0...v0.4.0) (2026-01-14)
 
 ### Features

@@ -11,6 +11,7 @@
 ### Task 1: CacheKeyBuilder Collection Key
 
 **Files:**
+
 - Modify: `src/Shared/Infrastructure/Cache/CacheKeyBuilder.php`
 - Modify: `tests/Unit/Shared/Infrastructure/Cache/CacheKeyBuilderTest.php`
 
@@ -61,6 +62,7 @@ git commit -m "feat: add user collection cache key builder"
 ### Task 2: User Updated/Deleted Domain Events
 
 **Files:**
+
 - Create: `src/User/Domain/Event/UserUpdatedEvent.php`
 - Create: `src/User/Domain/Event/UserDeletedEvent.php`
 - Create: `tests/Unit/User/Domain/Event/UserUpdatedEventTest.php`
@@ -240,6 +242,7 @@ git commit -m "feat: add user updated/deleted domain events"
 ### Task 3: Cache Invalidation Subscribers
 
 **Files:**
+
 - Modify: `src/User/Application/EventSubscriber/UserRegisteredCacheInvalidationSubscriber.php`
 - Create: `src/User/Application/EventSubscriber/UserUpdatedCacheInvalidationSubscriber.php`
 - Create: `src/User/Application/EventSubscriber/UserDeletedCacheInvalidationSubscriber.php`
@@ -345,6 +348,7 @@ git commit -m "feat: align user cache invalidation subscribers"
 ### Task 4: Update/Delete Commands and Schemathesis Cleanup
 
 **Files:**
+
 - Modify: `src/User/Application/CommandHandler/UpdateUserCommandHandler.php`
 - Modify: `src/User/Application/CommandHandler/ConfirmUserCommandHandler.php`
 - Modify: `src/User/Application/CommandHandler/ConfirmPasswordResetCommandHandler.php`
@@ -492,6 +496,7 @@ git commit -m "feat: publish user update/delete events and delete command"
 ### Task 5: HTTP Cache Integration Test and Cache Headers
 
 **Files:**
+
 - Create: `tests/Integration/UserHttpCacheTest.php`
 - Modify: `config/api_platform/resources/User.yaml`
 
@@ -635,6 +640,7 @@ git commit -m "feat: align user http cache headers and etag"
 ### Task 6: Test Cache Configuration
 
 **Files:**
+
 - Modify: `config/packages/test/cache.yaml`
 
 **Step 1: Write the failing test**
@@ -683,6 +689,7 @@ git commit -m "chore: use array cache pools in tests"
 ### Task 7: Update CachedUserRepository deleteAll Tags
 
 **Files:**
+
 - Modify: `src/User/Infrastructure/Repository/CachedUserRepository.php`
 - Modify: `tests/Unit/User/Infrastructure/Repository/CachedUserRepositoryTest.php`
 
@@ -725,6 +732,7 @@ git commit -m "feat: invalidate collection tag on user deleteAll"
 ### Task 8: Full Verification
 
 **Files:**
+
 - N/A
 
 **Step 1: Run targeted tests**
