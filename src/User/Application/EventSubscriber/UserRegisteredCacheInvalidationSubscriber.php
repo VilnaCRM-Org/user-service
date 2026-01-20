@@ -31,11 +31,10 @@ final readonly class UserRegisteredCacheInvalidationSubscriber implements
 
     public function __invoke(UserRegisteredEvent $event): void
     {
-        $user = $event->user;
         $this->cache->invalidateTags([
             'user.collection',
-            'user.' . $user->getId(),
-            'user.email.' . $this->cacheKeyBuilder->hashEmail($user->getEmail()),
+            'user.' . $event->userId,
+            'user.email.' . $this->cacheKeyBuilder->hashEmail($event->email),
         ]);
 
         $this->logger->info('Cache invalidated after user registration', [

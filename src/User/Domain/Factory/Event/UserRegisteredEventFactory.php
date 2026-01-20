@@ -15,6 +15,6 @@ final class UserRegisteredEventFactory implements
         UserInterface $user,
         string $eventId
     ): UserRegisteredEvent {
-        return new UserRegisteredEvent($user, $eventId);
+        return new UserRegisteredEvent($user->getId(), $user->getEmail(), $eventId);
     }
 }

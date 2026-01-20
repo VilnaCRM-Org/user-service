@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
-use App\User\Domain\Entity\PasswordResetTokenInterface;
-use RuntimeException;
 
 final class PasswordResetEmailSentEvent extends DomainEvent
 {
     public function __construct(
-        public readonly PasswordResetTokenInterface $token,
+        public readonly string $tokenValue,
+        public readonly string $userId,
         public readonly string $email,
         string $eventId,
         ?string $occurredOn = null
@@ -21,8 +20,6 @@ final class PasswordResetEmailSentEvent extends DomainEvent
 
     /**
      * @param array<string, string> $body
-     *
-     * @psalm-return never
      */
     #[\Override]
     public static function fromPrimitives(
@@ -30,8 +27,12 @@ final class PasswordResetEmailSentEvent extends DomainEvent
         string $eventId,
         string $occurredOn
     ): DomainEvent {
-        throw new RuntimeException(
-            'Cannot reconstruct PasswordResetEmailSentEvent from primitives.'
+        return new self(
+            $body['tokenValue'],
+            $body['userId'],
+            $body['email'],
+            $eventId,
+            $occurredOn
         );
     }
 
@@ -48,8 +49,8 @@ final class PasswordResetEmailSentEvent extends DomainEvent
     public function toPrimitives(): array
     {
         return [
-            'tokenValue' => $this->token->getTokenValue(),
-            'userId' => $this->token->getUserID(),
+            'tokenValue' => $this->tokenValue,
+            'userId' => $this->userId,
             'email' => $this->email,
         ];
     }

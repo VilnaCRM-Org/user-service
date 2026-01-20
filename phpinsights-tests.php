@@ -13,6 +13,7 @@ use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
 use SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\UseSpacingSniff;
+use SlevomatCodingStandard\Sniffs\TypeHints\DisallowMixedTypeHintSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\ParameterTypeHintSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\ReturnTypeHintSniff;
 
@@ -42,6 +43,11 @@ return [
             'exclude' => [
                 'tests/Unit/Shared/Infrastructure/Bus/CallableFirstParameterExtractorTest',
                 'tests/Behat/HealthCheckContext/HealthCheckContext.php',
+            ],
+        ],
+        DisallowMixedTypeHintSniff::class => [
+            'exclude' => [
+                'tests/Unit/Shared/Infrastructure/Bus/Event/Async/RecordingLogger.php',
             ],
         ],
         LineLengthSniff::class => [
@@ -85,6 +91,9 @@ return [
         FunctionLengthSniff::class => [
             'exclude' => [
                 'tests/Unit/User/Infrastructure/Repository/CachedUserRepositoryTest.php',
+                'tests/Unit/User/Application/EventSubscriber/ConfirmationEmailSendEventSubscriberTest.php',
+                'tests/Unit/User/Application/EventSubscriber/EmailChangedEventSubscriberTest.php',
+                'tests/Unit/User/Application/EventSubscriber/UserRegisteredEventSubscriberTest.php',
             ],
         ],
         UselessOverridingMethodSniff::class => [

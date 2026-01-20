@@ -63,7 +63,7 @@ final class UserTest extends UnitTestCase
         $this->userConfirmedEventFactory->expects($this->once())
             ->method('create')
             ->with($token, $eventID)
-            ->willReturn(new UserConfirmedEvent($token, $eventID));
+            ->willReturn(new UserConfirmedEvent($token->getTokenValue(), $eventID));
 
         $confirmedEvent = $this->user->confirm(
             $token,

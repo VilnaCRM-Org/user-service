@@ -23,7 +23,8 @@ final class PasswordResetEmailSendEventFactoryTest extends UnitTestCase
         $event = $factory->create($token, $user, $eventId);
 
         $this->assertInstanceOf(PasswordResetEmailSentEvent::class, $event);
-        $this->assertSame($token, $event->token);
+        $this->assertSame($token->getTokenValue(), $event->tokenValue);
+        $this->assertSame($token->getUserID(), $event->userId);
         $this->assertSame($user->getEmail(), $event->email);
         $this->assertSame($eventId, $event->eventId());
     }

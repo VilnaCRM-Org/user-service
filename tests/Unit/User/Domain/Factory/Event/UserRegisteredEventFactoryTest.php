@@ -48,6 +48,7 @@ final class UserRegisteredEventFactoryTest extends UnitTestCase
         $event = $this->factory->create($user, $eventId);
 
         $this->assertInstanceOf(UserRegisteredEvent::class, $event);
-        $this->assertEquals($user, $event->user);
+        $this->assertEquals($userId, $event->userId);
+        $this->assertEquals($email, $event->email);
     }
 }

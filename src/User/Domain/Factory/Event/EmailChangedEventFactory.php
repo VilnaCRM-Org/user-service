@@ -16,6 +16,11 @@ final class EmailChangedEventFactory implements
         string $oldEmail,
         string $eventId
     ): EmailChangedEvent {
-        return new EmailChangedEvent($user, $oldEmail, $eventId);
+        return new EmailChangedEvent(
+            $user->getId(),
+            $user->getEmail(),
+            $oldEmail,
+            $eventId
+        );
     }
 }

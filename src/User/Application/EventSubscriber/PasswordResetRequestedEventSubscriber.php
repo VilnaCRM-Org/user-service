@@ -12,6 +12,7 @@ use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Event\PasswordResetRequestedEvent;
 use App\User\Domain\Factory\PasswordResetEmailFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
 
 final readonly class PasswordResetRequestedEventSubscriber implements
     DomainEventSubscriberInterface
@@ -20,17 +21,17 @@ final readonly class PasswordResetRequestedEventSubscriber implements
         private CommandBusInterface $commandBus,
         private PasswordResetTokenRepositoryInterface $tokenRepository,
         private PasswordResetEmailFactoryInterface $emailFactory,
-        private SendPasswordResetEmailCommandFactoryInterface $cmdFactory
+        private SendPasswordResetEmailCommandFactoryInterface $cmdFactory,
+        private UserRepositoryInterface $userRepository
     ) {
     }
 
     public function __invoke(PasswordResetRequestedEvent $event): void
     {
-        $user = $event->user;
-
+        $user = $this->userRepository->findById($event->userId);
         $token = $this->tokenRepository->findByToken($event->token);
 
-        if (!$token instanceof PasswordResetTokenInterface) {
+        if (!$token instanceof PasswordResetTokenInterface || $user === null) {
             return;
         }
 

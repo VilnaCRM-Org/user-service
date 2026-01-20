@@ -27,11 +27,14 @@ final readonly class ConfirmationEmailSentEventSubscriber implements
 
     public function __invoke(ConfirmationEmailSentEvent $event): void
     {
-        $token = $event->token;
-        $tokenValue = $token->getTokenValue();
+        $tokenValue = $event->tokenValue;
         $emailAddress = $event->emailAddress;
 
-        $this->tokenRepository->save($token);
+        $token = $this->tokenRepository->find($tokenValue);
+
+        if ($token !== null) {
+            $this->tokenRepository->save($token);
+        }
 
         $email = $this->emailFactory->create(
             $emailAddress,

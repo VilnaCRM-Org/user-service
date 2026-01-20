@@ -11,6 +11,7 @@ use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
 use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Factory\ConfirmationEmailFactoryInterface;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
 
 final readonly class EmailChangedEventSubscriber implements
     DomainEventSubscriberInterface
@@ -19,14 +20,19 @@ final readonly class EmailChangedEventSubscriber implements
         private CommandBusInterface $commandBus,
         private ConfirmationTokenFactoryInterface $tokenFactory,
         private ConfirmationEmailFactoryInterface $confirmationEmailFactory,
-        private SendConfirmationEmailCommandFactoryInterface $emailCmdFactory
+        private SendConfirmationEmailCommandFactoryInterface $emailCmdFactory,
+        private UserRepositoryInterface $userRepository
     ) {
     }
 
     public function __invoke(EmailChangedEvent $event): void
     {
-        $user = $event->user;
-        $token = $this->tokenFactory->create($user->getId());
+        $user = $this->userRepository->findById($event->userId);
+        $token = $this->tokenFactory->create($event->userId);
+
+        if ($user === null) {
+            return;
+        }
 
         $this->commandBus->dispatch(
             $this->emailCmdFactory->create(

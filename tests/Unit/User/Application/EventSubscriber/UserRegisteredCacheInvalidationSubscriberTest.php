@@ -8,7 +8,6 @@ use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\EventSubscriber\UserCacheInvalidationSubscriberInterface;
 use App\User\Application\EventSubscriber\UserRegisteredCacheInvalidationSubscriber;
-use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserRegisteredEvent;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
@@ -58,12 +57,9 @@ final class UserRegisteredCacheInvalidationSubscriberTest extends UnitTestCase
 
     private function createEvent(string $userId, string $email): UserRegisteredEvent
     {
-        $user = $this->createMock(UserInterface::class);
-        $user->method('getId')->willReturn($userId);
-        $user->method('getEmail')->willReturn($email);
-
         return new UserRegisteredEvent(
-            $user,
+            $userId,
+            $email,
             $this->faker->uuid()
         );
     }

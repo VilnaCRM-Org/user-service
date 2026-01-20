@@ -49,7 +49,8 @@ final class EmailChangedEventFactoryTest extends UnitTestCase
         $event = $this->factory->create($user, $oldEmail, $eventId);
 
         $this->assertInstanceOf(EmailChangedEvent::class, $event);
-        $this->assertEquals($user, $event->user);
+        $this->assertEquals($userId, $event->userId);
+        $this->assertEquals($email, $event->newEmail);
         $this->assertEquals($oldEmail, $event->oldEmail);
     }
 }
