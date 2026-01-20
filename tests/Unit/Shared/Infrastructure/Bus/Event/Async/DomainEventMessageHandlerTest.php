@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Infrastructure\Bus\Event\Async;
 
-use App\Shared\Domain\Bus\Event\DomainEvent;
-use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\Shared\Infrastructure\Bus\Event\Async\DomainEventEnvelope;
 use App\Shared\Infrastructure\Bus\Event\Async\DomainEventMessageHandler;
 use App\Tests\Unit\UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerTrait;
+use Psr\Log\LogLevel;
 
 final class DomainEventMessageHandlerTest extends UnitTestCase
 {
@@ -40,9 +40,9 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
 
         $this->handler->__invoke($envelope);
 
-        self::assertSame(1, $subscriber->callCount);
-        self::assertInstanceOf(TestDomainEvent::class, $subscriber->lastEvent);
-        self::assertSame($event->eventId(), $subscriber->lastEvent->eventId());
+        self::assertSame(1, $subscriber->getCallCount());
+        self::assertInstanceOf(TestDomainEvent::class, $subscriber->getLastEvent());
+        self::assertSame($event->eventId(), $subscriber->getLastEvent()?->eventId());
     }
 
     public function testInvokeSkipsNonMatchingSubscriber(): void
@@ -50,7 +50,7 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
         $event = new TestDomainEvent($this->faker->uuid());
         $envelope = DomainEventEnvelope::fromEvent($event);
 
-        $subscriber = new TestDomainEventSubscriber(['SomeOtherEvent']);
+        $subscriber = new TestDomainEventSubscriber([TestOtherDomainEvent::class]);
 
         $this->handler = new DomainEventMessageHandler(
             [$subscriber],
@@ -62,7 +62,7 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
 
         $this->handler->__invoke($envelope);
 
-        self::assertSame(0, $subscriber->callCount);
+        self::assertSame(0, $subscriber->getCallCount());
     }
 
     public function testInvokeLogsSuccessfulExecution(): void
@@ -77,26 +77,14 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
             $this->logger
         );
 
-        $callIndex = 0;
         $this->logger
             ->expects($this->exactly(2))
             ->method('debug')
-            ->willReturnCallback(function (string $message, array $context) use (&$callIndex, $event): void {
-                if ($callIndex === 0) {
-                    self::assertSame('Processing domain event from queue', $message);
-                    self::assertSame($event->eventId(), $context['event_id']);
-                    self::assertSame(TestDomainEvent::class, $context['event_type']);
-                    self::assertSame(TestDomainEvent::eventName(), $context['event_name']);
-                }
-
-                if ($callIndex === 1) {
-                    self::assertSame('Subscriber executed successfully', $message);
-                    self::assertSame(TestDomainEventSubscriber::class, $context['subscriber']);
-                    self::assertSame($event->eventId(), $context['event_id']);
-                }
-
-                $callIndex++;
-            });
+            ->willReturnCallback(
+                $this->expectSequential(
+                    $this->expectedDebugCalls($event)
+                )
+            );
 
         $this->handler->__invoke($envelope);
     }
@@ -106,7 +94,7 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
         $event = new TestDomainEvent($this->faker->uuid());
         $envelope = DomainEventEnvelope::fromEvent($event);
 
-        $nonMatchingSubscriber = new TestDomainEventSubscriber(['SomeOtherEvent']);
+        $nonMatchingSubscriber = new TestDomainEventSubscriber([TestOtherDomainEvent::class]);
         $matchingSubscriber = new TestDomainEventSubscriber([TestDomainEvent::class]);
 
         $this->handler = new DomainEventMessageHandler(
@@ -116,8 +104,8 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
 
         $this->handler->__invoke($envelope);
 
-        self::assertSame(0, $nonMatchingSubscriber->callCount);
-        self::assertSame(1, $matchingSubscriber->callCount);
+        self::assertSame(0, $nonMatchingSubscriber->getCallCount());
+        self::assertSame(1, $matchingSubscriber->getCallCount());
     }
 
     public function testInvokeHandlesSubscriberException(): void
@@ -137,20 +125,16 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
             ->with(
                 'Domain event subscriber execution failed in worker',
                 $this->callback(
-                    fn ($context) =>
-                    isset($context['subscriber']) &&
-                    isset($context['event_id']) &&
-                    isset($context['event_type']) &&
-                    isset($context['event_name']) &&
-                    isset($context['error']) &&
-                    isset($context['exception_class']) &&
-                    $context['error'] === 'Subscriber failed'
+                    fn (array $context) => $this->hasErrorContext(
+                        $context,
+                        'Subscriber failed'
+                    )
                 )
             );
 
         $this->handler->__invoke($envelope);
 
-        self::assertSame(1, $subscriber->callCount);
+        self::assertSame(1, $subscriber->getCallCount());
     }
 
     public function testInvokeProcessesMultipleSubscribers(): void
@@ -160,7 +144,7 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
 
         $subscriber1 = new TestDomainEventSubscriber([TestDomainEvent::class]);
         $subscriber2 = new TestDomainEventSubscriber([TestDomainEvent::class]);
-        $subscriber3 = new TestDomainEventSubscriber(['SomeOtherEvent']);
+        $subscriber3 = new TestDomainEventSubscriber([TestOtherDomainEvent::class]);
 
         $this->handler = new DomainEventMessageHandler(
             [$subscriber1, $subscriber2, $subscriber3],
@@ -169,68 +153,99 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
 
         $this->handler->__invoke($envelope);
 
-        self::assertSame(1, $subscriber1->callCount);
-        self::assertSame(1, $subscriber2->callCount);
-        self::assertSame(0, $subscriber3->callCount);
+        self::assertSame(1, $subscriber1->getCallCount());
+        self::assertSame(1, $subscriber2->getCallCount());
+        self::assertSame(0, $subscriber3->getCallCount());
     }
-}
 
-final class TestDomainEvent extends DomainEvent
-{
-    public function __construct(string $eventId, ?string $occurredOn = null)
+    public function testInvokeLogsSubscriberContext(): void
     {
-        parent::__construct($eventId, $occurredOn);
-    }
+        $logger = new RecordingLogger();
+        $event = new TestDomainEvent($this->faker->uuid());
+        $envelope = DomainEventEnvelope::fromEvent($event);
+        $subscriber = new TestDomainEventSubscriber([TestDomainEvent::class]);
 
-    #[\Override]
-    public static function eventName(): string
-    {
-        return 'test.event';
-    }
+        $handler = new DomainEventMessageHandler([$subscriber], $logger);
+        $handler->__invoke($envelope);
 
-    #[\Override]
-    public function toPrimitives(): array
-    {
-        return ['data' => 'test'];
-    }
+        $successContext = null;
 
-    #[\Override]
-    public static function fromPrimitives(
-        array $body,
-        string $eventId,
-        string $occurredOn
-    ): DomainEvent {
-        return new self($eventId, $occurredOn);
-    }
-}
+        foreach ($logger->debugCalls as [$message, $context]) {
+            if ($message === 'Subscriber executed successfully') {
+                $successContext = $context;
+                break;
+            }
+        }
 
-final class TestDomainEventSubscriber implements DomainEventSubscriberInterface
-{
-    public int $callCount = 0;
-    public ?DomainEvent $lastEvent = null;
+        $this->assertNotNull($successContext);
+        $this->assertSame([
+            'subscriber' => TestDomainEventSubscriber::class,
+            'event_id' => $event->eventId(),
+        ], $successContext);
+    }
 
     /**
-     * @param array<string> $subscribedEvents
+     * @param array<string, string> $context
      */
-    public function __construct(
-        private array $subscribedEvents,
-        private ?\Throwable $exceptionToThrow = null
-    ) {
+    private function hasErrorContext(array $context, string $message): bool
+    {
+        $requiredKeys = [
+            'subscriber',
+            'event_id',
+            'event_type',
+            'event_name',
+            'error',
+            'exception_class',
+        ];
+
+        foreach ($requiredKeys as $key) {
+            if (!array_key_exists($key, $context)) {
+                return false;
+            }
+        }
+
+        return $context['error'] === $message;
     }
+
+    /**
+     * @return array<int, array<int, array<string, string>|string>>
+     */
+    private function expectedDebugCalls(TestDomainEvent $event): array
+    {
+        return [
+            [
+                'Processing domain event from queue',
+                [
+                    'event_id' => $event->eventId(),
+                    'event_type' => TestDomainEvent::class,
+                    'event_name' => TestDomainEvent::eventName(),
+                ],
+            ],
+            [
+                'Subscriber executed successfully',
+                [
+                    'subscriber' => TestDomainEventSubscriber::class,
+                    'event_id' => $event->eventId(),
+                ],
+            ],
+        ];
+    }
+}
+
+final class RecordingLogger implements LoggerInterface
+{
+    use LoggerTrait;
+
+    /**
+     * @var array<int, array{string, array<string, string>}>
+     */
+    public array $debugCalls = [];
 
     #[\Override]
-    public function subscribedTo(): array
+    public function log($level, string|\Stringable $message, array $context = []): void
     {
-        return $this->subscribedEvents;
-    }
-
-    public function __invoke(DomainEvent $event): void
-    {
-        $this->callCount++;
-        $this->lastEvent = $event;
-
-        if ($this->exceptionToThrow !== null) {
-            throw $this->exceptionToThrow;
+        if ($level === LogLevel::DEBUG) {
+            $this->debugCalls[] = [$message, $context];
         }
     }
 }

@@ -130,7 +130,7 @@ final class CachedUserRepositoryTest extends UnitTestCase
             ->method('get')
             ->with(
                 $cacheKey,
-                $this->callback(fn ($callback) => is_callable($callback)),
+                $this->callback(static fn ($callback) => is_callable($callback)),
                 1.0
             )
             ->willReturnCallback(function ($key, $callback) use ($userId) {
@@ -163,7 +163,7 @@ final class CachedUserRepositoryTest extends UnitTestCase
             ->method('get')
             ->with(
                 $cacheKey,
-                $this->callback(fn ($callback) => is_callable($callback)),
+                $this->callback(static fn ($callback) => is_callable($callback)),
                 1.0
             )
             ->willReturnCallback(function ($key, $callback) {
@@ -282,7 +282,7 @@ final class CachedUserRepositoryTest extends UnitTestCase
             ->method('get')
             ->with(
                 $cacheKey,
-                $this->callback(fn ($callback) => is_callable($callback)),
+                $this->callback(static fn ($callback) => is_callable($callback)),
                 1.0
             )
             ->willReturnCallback(function ($key, $callback) {
@@ -381,7 +381,8 @@ final class CachedUserRepositoryTest extends UnitTestCase
             ->method('get')
             ->with(
                 $cacheKey,
-                $this->callback(fn ($callback) => is_callable($callback))
+                $this->callback(static fn ($callback) => is_callable($callback)),
+                null
             )
             ->willReturnCallback(function ($key, $callback) use ($emailHash) {
                 $item = $this->createMock(ItemInterface::class);
@@ -612,7 +613,7 @@ final class CachedUserRepositoryTest extends UnitTestCase
             ->method('get')
             ->with(
                 $cacheKey,
-                $this->callback(fn ($callback) => is_callable($callback)),
+                $this->callback(static fn ($callback) => is_callable($callback)),
                 $this->anything()
             )
             ->willReturn($value);

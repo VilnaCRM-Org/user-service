@@ -12,48 +12,59 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserDeletedEvent;
 use App\User\Domain\Factory\Event\UserDeletedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Uid\Factory\UuidFactory;
 use Symfony\Component\Uid\Uuid;
 
 final class DeleteUserCommandHandlerTest extends UnitTestCase
 {
+    private UserRepositoryInterface&MockObject $userRepository;
+    private EventBusInterface&MockObject $eventBus;
+    private UuidFactory&MockObject $uuidFactory;
+    private UserDeletedEventFactoryInterface&MockObject $eventFactory;
+    private DeleteUserCommandHandler $handler;
+
+    #[\Override]
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->eventBus = $this->createMock(EventBusInterface::class);
+        $this->uuidFactory = $this->createMock(UuidFactory::class);
+        $this->eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
+        $this->handler = new DeleteUserCommandHandler(
+            $this->userRepository,
+            $this->eventBus,
+            $this->uuidFactory,
+            $this->eventFactory
+        );
+    }
+
     public function testInvokeDeletesUserAndPublishesEvent(): void
     {
         $user = $this->createMock(UserInterface::class);
         $command = new DeleteUserCommand($user);
 
-        $userRepository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-
         $eventId = Uuid::v4();
         $event = $this->createMock(UserDeletedEvent::class);
 
-        $userRepository->expects($this->once())
+        $this->userRepository->expects($this->once())
             ->method('delete')
             ->with($user);
 
-        $uuidFactory->expects($this->once())
+        $this->uuidFactory->expects($this->once())
             ->method('create')
             ->willReturn($eventId);
 
-        $eventFactory->expects($this->once())
+        $this->eventFactory->expects($this->once())
             ->method('create')
             ->with($user, (string) $eventId)
             ->willReturn($event);
 
-        $eventBus->expects($this->once())
+        $this->eventBus->expects($this->once())
             ->method('publish')
             ->with($event);
 
-        $handler = new DeleteUserCommandHandler(
-            $userRepository,
-            $eventBus,
-            $uuidFactory,
-            $eventFactory
-        );
-
-        $handler->__invoke($command);
+        $this->handler->__invoke($command);
     }
 }

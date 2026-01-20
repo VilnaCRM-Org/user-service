@@ -44,6 +44,9 @@ final readonly class CacheKeyBuilder
         return $this->build('user', 'email', $emailHash);
     }
 
+    /**
+     * @param array<string, scalar|array|null> $filters
+     */
     public function buildUserCollectionKey(array $filters): string
     {
         ksort($filters);

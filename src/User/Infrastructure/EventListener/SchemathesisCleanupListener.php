@@ -6,6 +6,7 @@ namespace App\User\Infrastructure\EventListener;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\UserDeletedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Evaluator\SchemathesisCleanupEvaluator;
@@ -51,8 +52,7 @@ final class SchemathesisCleanupListener
         $users = array_values(
             array_filter(
                 array_map(
-                    fn (string $email) => $this->userRepository
-                        ->findByEmail($email),
+                    fn (string $email) => $this->userRepository->findByEmail($email),
                     array_unique($emails)
                 )
             )
@@ -63,14 +63,16 @@ final class SchemathesisCleanupListener
         }
 
         $this->userRepository->deleteBatch($users);
+        $this->publishUserDeletedEvents($users);
+        $this->cache->invalidateTags($this->buildInvalidationTags($users));
+    }
 
-        // Invalidate cache synchronously for immediate cleanup (Schemathesis tests need this)
-        $tagsToInvalidate = ['user.collection'];
+    /**
+     * @param array<int, UserInterface> $users
+     */
+    private function publishUserDeletedEvents(array $users): void
+    {
         foreach ($users as $user) {
-            $tagsToInvalidate[] = 'user.' . $user->getId();
-            $tagsToInvalidate[] = 'user.email.' . $this->cacheKeyBuilder->hashEmail($user->getEmail());
-
-            // Publish events asynchronously for other subscribers
             $this->eventBus->publish(
                 $this->eventFactory->create(
                     $user,
@@ -78,7 +80,24 @@ final class SchemathesisCleanupListener
                 )
             );
         }
+    }
 
-        $this->cache->invalidateTags($tagsToInvalidate);
+    /**
+     * @param array<int, UserInterface> $users
+     *
+     * @return array<int, string>
+     */
+    private function buildInvalidationTags(array $users): array
+    {
+        $tagsToInvalidate = ['user.collection'];
+
+        foreach ($users as $user) {
+            $tagsToInvalidate[] = 'user.' . $user->getId();
+            $tagsToInvalidate[] = 'user.email.' . $this->cacheKeyBuilder->hashEmail(
+                $user->getEmail()
+            );
+        }
+
+        return $tagsToInvalidate;
     }
 }

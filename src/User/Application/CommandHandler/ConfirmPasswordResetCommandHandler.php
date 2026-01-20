@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
-use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\ConfirmPasswordResetCommandResponse;
 use App\User\Domain\Contract\PasswordHasherInterface;
@@ -13,11 +12,9 @@ use App\User\Domain\Contract\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\UserNotFoundException;
-use App\User\Domain\Factory\Event\PasswordResetConfirmedEventFactoryInterface;
-use App\User\Domain\Factory\Event\UserUpdatedEventFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use Symfony\Component\Uid\Factory\UuidFactory;
+use App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisher;
 
 final readonly class ConfirmPasswordResetCommandHandler implements
     CommandHandlerInterface
@@ -26,11 +23,8 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         private PasswordResetTokenRepositoryInterface $tokenRepository,
         private UserRepositoryInterface $userRepository,
         private PasswordHasherInterface $passwordHasher,
-        private EventBusInterface $eventBus,
-        private UuidFactory $uuidFactory,
         private PasswordResetTokenValidatorInterface $tokenValidator,
-        private PasswordResetConfirmedEventFactoryInterface $eventFactory,
-        private UserUpdatedEventFactoryInterface $userUpdatedEventFactory,
+        private PasswordResetConfirmationPublisher $publisher,
     ) {
     }
 
@@ -78,15 +72,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements
 
     private function publishEvent(UserInterface $user): void
     {
-        $eventId = (string) $this->uuidFactory->create();
-
-        $this->eventBus->publish(
-            $this->eventFactory->create(
-                $user->getId(),
-                $eventId
-            ),
-            $this->userUpdatedEventFactory->create($user, null, $eventId)
-        );
+        $this->publisher->publish($user);
     }
 
     private function updateUserPassword(

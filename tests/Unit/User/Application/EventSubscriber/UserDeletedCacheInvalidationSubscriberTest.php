@@ -49,19 +49,35 @@ final class UserDeletedCacheInvalidationSubscriberTest extends UnitTestCase
         $userId = $this->faker->uuid();
         $email = $this->faker->email();
         $emailHash = 'email_hash_123';
+        $event = $this->createEvent($userId, $email);
 
-        $event = new UserDeletedEvent(
+        $this->expectEmailHash($email, $emailHash);
+        $this->assertCacheInvalidation($event, $userId, $emailHash);
+    }
+
+    private function createEvent(string $userId, string $email): UserDeletedEvent
+    {
+        return new UserDeletedEvent(
             $userId,
             $email,
             $this->faker->uuid()
         );
+    }
 
+    private function expectEmailHash(string $email, string $emailHash): void
+    {
         $this->cacheKeyBuilder
             ->expects($this->once())
             ->method('hashEmail')
             ->with($email)
             ->willReturn($emailHash);
+    }
 
+    private function assertCacheInvalidation(
+        UserDeletedEvent $event,
+        string $userId,
+        string $emailHash
+    ): void {
         $this->cache
             ->expects($this->once())
             ->method('invalidateTags')
@@ -71,18 +87,24 @@ final class UserDeletedCacheInvalidationSubscriberTest extends UnitTestCase
                 'user.email.' . $emailHash,
             ]);
 
+        $this->expectInvalidationLog();
+        ($this->subscriber)($event);
+    }
+
+    private function expectInvalidationLog(): void
+    {
         $this->logger
             ->expects($this->once())
             ->method('info')
             ->with(
                 'Cache invalidated after user deletion',
                 $this->callback(
-                    static fn ($context) => $context['operation'] === 'cache.invalidation'
-                        && $context['reason'] === 'user_deleted'
-                        && isset($context['event_id'])
+                    static function (array $context): bool {
+                        return $context['operation'] === 'cache.invalidation'
+                            && $context['reason'] === 'user_deleted'
+                            && isset($context['event_id']);
+                    }
                 )
             );
-
-        ($this->subscriber)($event);
     }
 }

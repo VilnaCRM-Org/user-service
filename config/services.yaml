@@ -134,6 +134,10 @@ services:
       $inner: '@App\User\Infrastructure\Repository\MariaDBUserRepository'
       $cache: '@cache.user'
 
+  App\User\Infrastructure\EventListener\SchemathesisCleanupListener:
+    arguments:
+      $cache: '@cache.user'
+
   App\User\Domain\Repository\UserRepositoryInterface:
     alias: App\User\Infrastructure\Repository\CachedUserRepository
     public: true

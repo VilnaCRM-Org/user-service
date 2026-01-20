@@ -51,47 +51,17 @@ final class UserUpdatedCacheInvalidationSubscriberTest extends UnitTestCase
         $previousEmail = $this->faker->email();
         $emailHash = 'email_hash_1';
         $previousHash = 'email_hash_2';
-
-        $event = new UserUpdatedEvent(
-            $userId,
-            $email,
-            $previousEmail,
-            $this->faker->uuid()
+        $event = $this->createEvent($userId, $email, $previousEmail);
+        $this->expectEmailHashes(
+            [$email, $previousEmail],
+            [$emailHash, $previousHash]
         );
-
-        $this->cacheKeyBuilder
-            ->expects($this->exactly(2))
-            ->method('hashEmail')
-            ->willReturnCallback(
-                $this->expectSequential(
-                    [[$email], [$previousEmail]],
-                    [$emailHash, $previousHash]
-                )
-            );
-
-        $this->cache
-            ->expects($this->once())
-            ->method('invalidateTags')
-            ->with([
-                'user.collection',
-                'user.' . $userId,
-                'user.email.' . $emailHash,
-                'user.email.' . $previousHash,
-            ]);
-
-        $this->logger
-            ->expects($this->once())
-            ->method('info')
-            ->with(
-                'Cache invalidated after user update',
-                $this->callback(
-                    static fn ($context) => $context['operation'] === 'cache.invalidation'
-                        && $context['reason'] === 'user_updated'
-                        && isset($context['event_id'])
-                )
-            );
-
-        ($this->subscriber)($event);
+        $this->assertCacheInvalidation($event, [
+            'user.collection',
+            'user.' . $userId,
+            'user.email.' . $emailHash,
+            'user.email.' . $previousHash,
+        ]);
     }
 
     public function testInvokeInvalidatesCacheWithoutPreviousEmail(): void
@@ -99,41 +69,82 @@ final class UserUpdatedCacheInvalidationSubscriberTest extends UnitTestCase
         $userId = $this->faker->uuid();
         $email = $this->faker->email();
         $emailHash = 'email_hash_1';
+        $event = $this->createEvent($userId, $email, null);
+        $this->expectEmailHash($email, $emailHash);
+        $this->assertCacheInvalidation($event, [
+            'user.collection',
+            'user.' . $userId,
+            'user.email.' . $emailHash,
+        ]);
+    }
 
-        $event = new UserUpdatedEvent(
-            $userId,
-            $email,
-            null,
-            $this->faker->uuid()
-        );
-
-        $this->cacheKeyBuilder
-            ->expects($this->once())
-            ->method('hashEmail')
-            ->with($email)
-            ->willReturn($emailHash);
-
-        $this->cache
-            ->expects($this->once())
-            ->method('invalidateTags')
-            ->with([
-                'user.collection',
-                'user.' . $userId,
-                'user.email.' . $emailHash,
-            ]);
-
+    private function expectCacheInvalidationLog(): void
+    {
         $this->logger
             ->expects($this->once())
             ->method('info')
             ->with(
                 'Cache invalidated after user update',
                 $this->callback(
-                    static fn ($context) => $context['operation'] === 'cache.invalidation'
-                        && $context['reason'] === 'user_updated'
-                        && isset($context['event_id'])
+                    static function (array $context): bool {
+                        return $context['operation'] === 'cache.invalidation'
+                            && $context['reason'] === 'user_updated'
+                            && isset($context['event_id']);
+                    }
                 )
             );
+    }
 
+    private function createEvent(
+        string $userId,
+        string $email,
+        ?string $previousEmail
+    ): UserUpdatedEvent {
+        return new UserUpdatedEvent(
+            $userId,
+            $email,
+            $previousEmail,
+            $this->faker->uuid()
+        );
+    }
+
+    /**
+     * @param array<int, string> $emails
+     * @param array<int, string> $hashes
+     */
+    private function expectEmailHashes(array $emails, array $hashes): void
+    {
+        $expectedCalls = array_map(
+            static fn (string $email): array => [$email],
+            $emails
+        );
+
+        $this->cacheKeyBuilder
+            ->expects($this->exactly(count($emails)))
+            ->method('hashEmail')
+            ->willReturnCallback($this->expectSequential($expectedCalls, $hashes));
+    }
+
+    private function expectEmailHash(string $email, string $hash): void
+    {
+        $this->cacheKeyBuilder
+            ->expects($this->once())
+            ->method('hashEmail')
+            ->with($email)
+            ->willReturn($hash);
+    }
+
+    /**
+     * @param array<int, string> $tags
+     */
+    private function assertCacheInvalidation(UserUpdatedEvent $event, array $tags): void
+    {
+        $this->cache
+            ->expects($this->once())
+            ->method('invalidateTags')
+            ->with($tags);
+
+        $this->expectCacheInvalidationLog();
         ($this->subscriber)($event);
     }
 }

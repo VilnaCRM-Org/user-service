@@ -77,30 +77,18 @@ final class CachedUserRepository implements UserRepositoryInterface
     ): ?object {
         $cacheKey = $this->cacheKeyBuilder->buildUserKey((string) $id);
 
-        try {
-            $user = $this->cache->get(
+        return $this->fetchUser(
+            $cacheKey,
+            fn (ItemInterface $item) => $this->loadUserFromDb(
+                $id,
+                $lockMode,
+                $lockVersion,
                 $cacheKey,
-                fn (ItemInterface $item) => $this->loadUserFromDb(
-                    $id,
-                    $lockMode,
-                    $lockVersion,
-                    $cacheKey,
-                    $item
-                ),
-                beta: 1.0  // Enable Stale-While-Revalidate
-            );
-
-            // Check if entity is already managed by Doctrine
-            if ($user instanceof User || $user instanceof UserInterface) {
-                return $this->getManagedEntityIfExists($user) ?? $user;
-            }
-
-            $this->cache->delete($cacheKey);
-            return $this->inner->find($id, $lockMode, $lockVersion);
-        } catch (\Throwable $e) {
-            $this->logCacheError($cacheKey, $e);
-            return $this->inner->find($id, $lockMode, $lockVersion);
-        }
+                $item
+            ),
+            fn () => $this->inner->find($id, $lockMode, $lockVersion),
+            1.0
+        );
     }
 
     /**
@@ -118,24 +106,12 @@ final class CachedUserRepository implements UserRepositoryInterface
     {
         $cacheKey = $this->cacheKeyBuilder->buildUserKey($id);
 
-        try {
-            $user = $this->cache->get(
-                $cacheKey,
-                fn (ItemInterface $item) => $this->loadUserByIdFromDb($id, $cacheKey, $item),
-                beta: 1.0  // Enable Stale-While-Revalidate
-            );
-
-            if (!($user instanceof UserInterface)) {
-                $this->cache->delete($cacheKey);
-                return $this->inner->findById($id);
-            }
-
-            // Check if entity is already managed by Doctrine
-            return $this->getManagedEntityIfExists($user) ?? $user;
-        } catch (\Throwable $e) {
-            $this->logCacheError($cacheKey, $e);
-            return $this->inner->findById($id);
-        }
+        return $this->fetchUser(
+            $cacheKey,
+            fn (ItemInterface $item) => $this->loadUserByIdFromDb($id, $cacheKey, $item),
+            fn () => $this->inner->findById($id),
+            1.0
+        );
     }
 
     /**
@@ -153,23 +129,11 @@ final class CachedUserRepository implements UserRepositoryInterface
     {
         $cacheKey = $this->cacheKeyBuilder->buildUserEmailKey($email);
 
-        try {
-            $user = $this->cache->get(
-                $cacheKey,
-                fn (ItemInterface $item) => $this->loadUserByEmailFromDb($email, $cacheKey, $item)
-            );
-
-            if (!($user instanceof UserInterface)) {
-                $this->cache->delete($cacheKey);
-                return $this->inner->findByEmail($email);
-            }
-
-            // Check if entity is already managed by Doctrine
-            return $this->getManagedEntityIfExists($user) ?? $user;
-        } catch (\Throwable $e) {
-            $this->logCacheError($cacheKey, $e);
-            return $this->inner->findByEmail($email);
-        }
+        return $this->fetchUser(
+            $cacheKey,
+            fn (ItemInterface $item) => $this->loadUserByEmailFromDb($email, $cacheKey, $item),
+            fn () => $this->inner->findByEmail($email)
+        );
     }
 
     /**
@@ -298,6 +262,44 @@ final class CachedUserRepository implements UserRepositoryInterface
         ]);
 
         return $this->inner->findByEmail($email);
+    }
+
+    /**
+     * @param callable(ItemInterface): mixed $cacheLoader
+     * @param callable(): mixed $fallback
+     */
+    private function fetchUser(
+        string $cacheKey,
+        callable $cacheLoader,
+        callable $fallback,
+        ?float $beta = null
+    ): ?UserInterface {
+        try {
+            $user = $this->cache->get($cacheKey, $cacheLoader, $beta);
+
+            return $this->normalizeCachedUser($user, $cacheKey, $fallback);
+        } catch (\Throwable $e) {
+            $this->logCacheError($cacheKey, $e);
+
+            return $fallback();
+        }
+    }
+
+    /**
+     * @param callable(): mixed $fallback
+     */
+    private function normalizeCachedUser(
+        mixed $user,
+        string $cacheKey,
+        callable $fallback
+    ): ?UserInterface {
+        if (!$user instanceof UserInterface) {
+            $this->cache->delete($cacheKey);
+
+            return $fallback();
+        }
+
+        return $this->getManagedEntityIfExists($user) ?? $user;
     }
 
     private function getManagedEntityIfExists(UserInterface $cached): ?UserInterface

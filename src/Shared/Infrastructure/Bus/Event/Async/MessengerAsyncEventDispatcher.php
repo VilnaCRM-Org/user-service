@@ -41,31 +41,46 @@ final readonly class MessengerAsyncEventDispatcher implements AsyncEventDispatch
     private function dispatchSingle(DomainEvent $event): bool
     {
         try {
-            $envelope = new DomainEventEnvelope(
-                eventClass: $event::class,
-                body: $event->toPrimitives(),
-                eventId: $event->eventId(),
-                occurredOn: $event->occurredOn()
-            );
-            $this->messageBus->dispatch($envelope);
-
-            $this->logger->debug('Domain event dispatched to queue', [
-                'event_id' => $event->eventId(),
-                'event_type' => $event::class,
-                'event_name' => $event::eventName(),
-            ]);
+            $this->messageBus->dispatch($this->buildEnvelope($event));
+            $this->logDispatchSuccess($event);
 
             return true;
         } catch (ExceptionInterface $exception) {
-            $this->logger->error('Failed to dispatch domain event to queue (Layer 1)', [
-                'event_id' => $event->eventId(),
-                'event_type' => $event::class,
-                'event_name' => $event::eventName(),
-                'error' => $exception->getMessage(),
-                'exception_class' => $exception::class,
-            ]);
+            $this->logDispatchFailure($event, $exception);
 
             return false;
         }
+    }
+
+    private function buildEnvelope(DomainEvent $event): DomainEventEnvelope
+    {
+        return new DomainEventEnvelope(
+            eventClass: $event::class,
+            body: $event->toPrimitives(),
+            eventId: $event->eventId(),
+            occurredOn: $event->occurredOn()
+        );
+    }
+
+    private function logDispatchSuccess(DomainEvent $event): void
+    {
+        $this->logger->debug('Domain event dispatched to queue', [
+            'event_id' => $event->eventId(),
+            'event_type' => $event::class,
+            'event_name' => $event::eventName(),
+        ]);
+    }
+
+    private function logDispatchFailure(
+        DomainEvent $event,
+        ExceptionInterface $exception
+    ): void {
+        $this->logger->error('Failed to dispatch domain event to queue (Layer 1)', [
+            'event_id' => $event->eventId(),
+            'event_type' => $event::class,
+            'event_name' => $event::eventName(),
+            'error' => $exception->getMessage(),
+            'exception_class' => $exception::class,
+        ]);
     }
 }

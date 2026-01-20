@@ -8,7 +8,6 @@ use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
-use App\User\Domain\Event\UserDeletedEvent;
 use App\User\Domain\Factory\Event\UserDeletedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Decoder\SchemathesisPayloadDecoder;
@@ -24,41 +23,36 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Uid\Factory\UuidFactory;
-use Symfony\Component\Uid\Uuid;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 final class SchemathesisCleanupListenerTest extends UnitTestCase
 {
     private SchemathesisCleanupEvaluator $evaluator;
     private SchemathesisEmailExtractor $emailExtractor;
+    private SchemathesisCleanupListener $listener;
+    private UserRepositoryInterface $repository;
+    private EventBusInterface $eventBus;
+    private UuidFactory $uuidFactory;
+    private UserDeletedEventFactoryInterface $eventFactory;
+    private SchemathesisCleanupListenerTestExpectations $expectations;
 
     #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->evaluator = new SchemathesisCleanupEvaluator();
-        $serializer = new Serializer([], [new JsonEncoder()]);
-        $decoder = new SchemathesisPayloadDecoder($serializer);
-        $singleExtractor = new SchemathesisSingleUserEmailExtractor();
-        $batchExtractor = new SchemathesisBatchUsersEmailExtractor();
-
-        $this->emailExtractor = new SchemathesisEmailExtractor(
-            $this->evaluator,
-            $decoder,
-            $singleExtractor,
-            $batchExtractor
-        );
+        $this->emailExtractor = $this->createEmailExtractor();
+        $this->repository = $this->createMock(UserRepositoryInterface::class);
+        $this->eventBus = $this->createMock(EventBusInterface::class);
+        $this->uuidFactory = $this->createMock(UuidFactory::class);
+        $this->eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
+        $this->listener = $this->createListener();
+        $this->expectations = $this->createExpectations();
     }
 
     public function testListenerRemovesCreatedUserAfterSchemathesisRequest(): void
     {
         $email = $this->faker->email();
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
 
         $request = $this->schemathesisRequest('/api/users', [
             'email' => $email,
@@ -67,48 +61,36 @@ final class SchemathesisCleanupListenerTest extends UnitTestCase
         ]);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $user = $this->createMock(UserInterface::class);
-        $user->method('getId')->willReturn($this->faker->uuid());
-        $user->method('getEmail')->willReturn($email);
+        $user = $this->userWithEmail($email);
 
-        $repository->expects($this->once())
+        $this->repository->expects($this->once())
             ->method('findByEmail')
             ->with($email)
             ->willReturn($user);
 
-        $this->expectBatchDeleteAndEvents($repository, $eventBus, $uuidFactory, $eventFactory, [$user]);
+        $this->expectations->expectBatchDeleteAndEvents([$user]);
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerSkipsWhenHeaderMissing(): void
     {
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
-
+        $payload = ['email' => $this->faker->email()];
         $request = Request::create(
             '/api/users',
             Request::METHOD_POST,
-            content: $this->content(['email' => $this->faker->email()])
+            content: json_encode($payload, JSON_THROW_ON_ERROR)
         );
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $this->expectNoRepositoryCalls($repository, $eventBus, $eventFactory);
+        $this->expectations->expectNoRepositoryCalls();
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerRemovesBatchUsers(): void
     {
         $emails = [$this->faker->email(), $this->faker->email()];
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
 
         $request = $this->schemathesisRequest('/api/users/batch', [
             'users' => [
@@ -118,84 +100,57 @@ final class SchemathesisCleanupListenerTest extends UnitTestCase
         ]);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $user1 = $this->createMock(UserInterface::class);
-        $user1->method('getId')->willReturn($this->faker->uuid());
-        $user1->method('getEmail')->willReturn($emails[0]);
+        $users = [
+            $this->userWithEmail($emails[0]),
+            $this->userWithEmail($emails[1]),
+        ];
+        $this->expectations->expectBatchFindByEmail($emails, $users);
+        $this->expectations->expectBatchDeleteAndEvents($users);
 
-        $user2 = $this->createMock(UserInterface::class);
-        $user2->method('getId')->willReturn($this->faker->uuid());
-        $user2->method('getEmail')->willReturn($emails[1]);
-
-        $users = [$user1, $user2];
-        $this->expectBatchFindByEmail($repository, $emails, $users);
-        $this->expectBatchDeleteAndEvents($repository, $eventBus, $uuidFactory, $eventFactory, $users);
-
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerSkipsWhenResponseStatusIsNotSuccessful(): void
     {
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
-
         $request = $this->schemathesisRequest('/api/users', ['email' => $this->faker->email()]);
         $event = $this->terminateEvent($request, Response::HTTP_BAD_REQUEST);
 
-        $this->expectNoRepositoryCalls($repository, $eventBus, $eventFactory);
+        $this->expectations->expectNoRepositoryCalls();
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerSkipsWhenBodyIsEmpty(): void
     {
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
-
         $request = $this->schemathesisRequest('/api/users', null);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $this->expectNoRepositoryCalls($repository, $eventBus, $eventFactory);
+        $this->expectations->expectNoRepositoryCalls();
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerSkipsWhenUserNotFound(): void
     {
         $email = $this->faker->email();
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
 
         $request = $this->schemathesisRequest('/api/users', ['email' => $email]);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $repository->expects($this->once())
+        $this->repository->expects($this->once())
             ->method('findByEmail')
             ->with($email)
             ->willReturn(null);
-        $repository->expects($this->never())->method('deleteBatch');
-        $eventFactory->expects($this->never())->method('create');
-        $eventBus->expects($this->never())->method('publish');
+        $this->repository->expects($this->never())->method('deleteBatch');
+        $this->eventFactory->expects($this->never())->method('create');
+        $this->eventBus->expects($this->never())->method('publish');
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerContinuesWhenUserMissing(): void
     {
         $emails = [$this->faker->email(), $this->faker->email()];
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
 
         $request = $this->schemathesisRequest('/api/users/batch', [
             'users' => [
@@ -205,105 +160,67 @@ final class SchemathesisCleanupListenerTest extends UnitTestCase
         ]);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $existingUser = $this->createMock(UserInterface::class);
-        $existingUser->method('getId')->willReturn($this->faker->uuid());
-        $existingUser->method('getEmail')->willReturn($emails[1]);
+        $existingUser = $this->userWithEmail($emails[1]);
 
-        $this->expectBatchFindByEmail($repository, $emails, [null, $existingUser]);
-        $this->expectBatchDeleteAndEvents($repository, $eventBus, $uuidFactory, $eventFactory, [$existingUser]);
+        $this->expectations->expectBatchFindByEmail($emails, [null, $existingUser]);
+        $this->expectations->expectBatchDeleteAndEvents([$existingUser]);
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerSkipsWhenJsonIsMalformed(): void
     {
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
-
         $request = $this->schemathesisRequest('/api/users', '{invalid');
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $this->expectNoRepositoryCalls($repository, $eventBus, $eventFactory);
+        $this->expectations->expectNoRepositoryCalls();
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerSkipsWhenPayloadIsNotArray(): void
     {
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
-
         $payload = json_encode('string', JSON_THROW_ON_ERROR);
         $request = $this->schemathesisRequest('/api/users', $payload);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $this->expectNoRepositoryCalls($repository, $eventBus, $eventFactory);
+        $this->expectations->expectNoRepositoryCalls();
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerSkipsWhenBatchUsersNotArray(): void
     {
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
-
         $request = $this->schemathesisRequest('/api/users/batch', ['users' => 'string']);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $this->expectNoRepositoryCalls($repository, $eventBus, $eventFactory);
+        $this->expectations->expectNoRepositoryCalls();
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerSkipsWhenBatchEntriesKeyMissing(): void
     {
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
-
         $request = $this->schemathesisRequest('/api/users/batch', ['something' => 'else']);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $this->expectNoRepositoryCalls($repository, $eventBus, $eventFactory);
+        $this->expectations->expectNoRepositoryCalls();
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerSkipsWhenBatchEntriesNotArray(): void
     {
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
-
         $request = $this->schemathesisRequest('/api/users/batch', ['users' => ['string']]);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $this->expectNoRepositoryCalls($repository, $eventBus, $eventFactory);
+        $this->expectations->expectNoRepositoryCalls();
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerSkipsWhenHeaderValueIsNotCleanupUsers(): void
     {
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
-
         $request = $this->schemathesisRequest(
             '/api/users',
             ['email' => $this->faker->email()],
@@ -311,52 +228,35 @@ final class SchemathesisCleanupListenerTest extends UnitTestCase
         );
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $this->expectNoRepositoryCalls($repository, $eventBus, $eventFactory);
+        $this->expectations->expectNoRepositoryCalls();
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerSkipsWhenEmailIsMissing(): void
     {
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
-
         $payload = ['initials' => $this->faker->lexify('????????')];
         $request = $this->schemathesisRequest('/api/users', $payload);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $this->expectNoRepositoryCalls($repository, $eventBus, $eventFactory);
+        $this->expectations->expectNoRepositoryCalls();
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerSkipsWhenEmailIsNotString(): void
     {
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
-
         $request = $this->schemathesisRequest('/api/users', ['email' => ['value']]);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $this->expectNoRepositoryCalls($repository, $eventBus, $eventFactory);
+        $this->expectations->expectNoRepositoryCalls();
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerSkipsInvalidEntriesInsideBatch(): void
     {
         $emails = [$this->faker->email(), $this->faker->email()];
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
 
         $request = $this->schemathesisRequest('/api/users/batch', [
             'users' => [
@@ -368,45 +268,29 @@ final class SchemathesisCleanupListenerTest extends UnitTestCase
         ]);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $user1 = $this->createMock(UserInterface::class);
-        $user1->method('getId')->willReturn($this->faker->uuid());
-        $user1->method('getEmail')->willReturn($emails[0]);
+        $users = [
+            $this->userWithEmail($emails[0]),
+            $this->userWithEmail($emails[1]),
+        ];
+        $this->expectations->expectBatchFindByEmail($emails, $users);
+        $this->expectations->expectBatchDeleteAndEvents($users);
 
-        $user2 = $this->createMock(UserInterface::class);
-        $user2->method('getId')->willReturn($this->faker->uuid());
-        $user2->method('getEmail')->willReturn($emails[1]);
-
-        $users = [$user1, $user2];
-        $this->expectBatchFindByEmail($repository, $emails, $users);
-        $this->expectBatchDeleteAndEvents($repository, $eventBus, $uuidFactory, $eventFactory, $users);
-
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerSkipsWhenPathIsNotHandled(): void
     {
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
-
         $request = $this->schemathesisRequest('/api/health', ['email' => $this->faker->email()]);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $this->expectNoRepositoryCalls($repository, $eventBus, $eventFactory);
+        $this->expectations->expectNoRepositoryCalls();
 
-        $listener($event);
+        ($this->listener)($event);
     }
 
     public function testListenerDeletesEachEmailOnlyOnce(): void
     {
         $emails = [$this->faker->email(), $this->faker->email()];
-        $repository = $this->createMock(UserRepositoryInterface::class);
-        $eventBus = $this->createMock(EventBusInterface::class);
-        $uuidFactory = $this->createMock(UuidFactory::class);
-        $eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
-        $listener = $this->createListener($repository, $eventBus, $uuidFactory, $eventFactory);
 
         $request = $this->schemathesisRequest('/api/users/batch', [
             'users' => [
@@ -417,43 +301,79 @@ final class SchemathesisCleanupListenerTest extends UnitTestCase
         ]);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
-        $user1 = $this->createMock(UserInterface::class);
-        $user1->method('getId')->willReturn($this->faker->uuid());
-        $user1->method('getEmail')->willReturn($emails[0]);
+        $users = [
+            $this->userWithEmail($emails[0]),
+            $this->userWithEmail($emails[1]),
+        ];
+        $this->expectations->expectBatchFindByEmail([$emails[0], $emails[1]], $users);
+        $this->expectations->expectBatchDeleteAndEvents($users);
 
-        $user2 = $this->createMock(UserInterface::class);
-        $user2->method('getId')->willReturn($this->faker->uuid());
-        $user2->method('getEmail')->willReturn($emails[1]);
-
-        $users = [$user1, $user2];
-        $this->expectBatchFindByEmail($repository, [$emails[0], $emails[1]], $users);
-        $this->expectBatchDeleteAndEvents($repository, $eventBus, $uuidFactory, $eventFactory, $users);
-
-        $listener($event);
+        ($this->listener)($event);
     }
 
-    private function createListener(
-        UserRepositoryInterface $repository,
-        EventBusInterface $eventBus,
-        UuidFactory $uuidFactory,
-        UserDeletedEventFactoryInterface $eventFactory
-    ): SchemathesisCleanupListener {
+    private function createEmailExtractor(): SchemathesisEmailExtractor
+    {
+        $serializer = new Serializer([], [new JsonEncoder()]);
+        $decoder = new SchemathesisPayloadDecoder($serializer);
+        $singleExtractor = new SchemathesisSingleUserEmailExtractor();
+        $batchExtractor = new SchemathesisBatchUsersEmailExtractor();
+
+        return new SchemathesisEmailExtractor(
+            $this->evaluator,
+            $decoder,
+            $singleExtractor,
+            $batchExtractor
+        );
+    }
+
+    private function createExpectations(): SchemathesisCleanupListenerTestExpectations
+    {
+        $eventId = $this->faker->uuid();
+
+        return new SchemathesisCleanupListenerTestExpectations(
+            $this,
+            $this->repository,
+            $this->eventBus,
+            $this->uuidFactory,
+            $this->eventFactory,
+            $eventId,
+            function (array $expectedCalls, $returnValue = null): callable {
+                return $this->expectSequential($expectedCalls, $returnValue);
+            }
+        );
+    }
+
+    private function createListener(): SchemathesisCleanupListener
+    {
         $cache = $this->createMock(TagAwareCacheInterface::class);
         $cache->method('invalidateTags')->willReturn(true);
 
         $cacheKeyBuilder = $this->createMock(CacheKeyBuilder::class);
-        $cacheKeyBuilder->method('hashEmail')->willReturnCallback(fn (string $email) => md5($email));
+        $cacheKeyBuilder
+            ->method('hashEmail')
+            ->willReturnCallback(
+                static fn (string $email): string => md5($email)
+            );
 
         return new SchemathesisCleanupListener(
-            $repository,
-            $eventBus,
-            $uuidFactory,
-            $eventFactory,
+            $this->repository,
+            $this->eventBus,
+            $this->uuidFactory,
+            $this->eventFactory,
             $this->evaluator,
             $this->emailExtractor,
             $cache,
             $cacheKeyBuilder
         );
+    }
+
+    private function userWithEmail(string $email): UserInterface
+    {
+        $user = $this->createMock(UserInterface::class);
+        $user->method('getId')->willReturn($this->faker->uuid());
+        $user->method('getEmail')->willReturn($email);
+
+        return $user;
     }
 
     private function terminateEvent(Request $request, int $status): TerminateEvent
@@ -469,101 +389,18 @@ final class SchemathesisCleanupListenerTest extends UnitTestCase
         string|array|null $payload,
         string $headerValue = 'cleanup-users'
     ): Request {
+        $content = null;
+        if ($payload !== null) {
+            $content = is_string($payload)
+                ? $payload
+                : json_encode($payload, JSON_THROW_ON_ERROR);
+        }
+
         return Request::create(
             $path,
             Request::METHOD_POST,
             server: ['HTTP_X_SCHEMATHESIS_TEST' => $headerValue],
-            content: $this->content($payload)
+            content: $content
         );
-    }
-
-    private function content(string|array|null $payload): ?string
-    {
-        if ($payload === null) {
-            return null;
-        }
-
-        if (is_string($payload)) {
-            return $payload;
-        }
-
-        return json_encode($payload, JSON_THROW_ON_ERROR);
-    }
-
-    private function expectNoRepositoryCalls(
-        UserRepositoryInterface $repository,
-        EventBusInterface $eventBus,
-        UserDeletedEventFactoryInterface $eventFactory
-    ): void {
-        $repository->expects($this->never())->method('findByEmail');
-        $repository->expects($this->never())->method('deleteBatch');
-        $eventFactory->expects($this->never())->method('create');
-        $eventBus->expects($this->never())->method('publish');
-    }
-
-    /**
-     * @param array<int, string> $emails
-     * @param array<int, UserInterface|null> $users
-     */
-    private function expectBatchFindByEmail(
-        UserRepositoryInterface $repository,
-        array $emails,
-        array $users
-    ): void {
-        $repository->expects($this->exactly(count($emails)))
-            ->method('findByEmail')
-            ->willReturnCallback(
-                $this->expectSequential(
-                    array_map(static fn (string $email): array => [$email], $emails),
-                    $users
-                )
-            );
-    }
-
-    /**
-     * @param array<int, UserInterface> $users
-     */
-    private function expectBatchDeleteAndEvents(
-        UserRepositoryInterface $repository,
-        EventBusInterface $eventBus,
-        UuidFactory $uuidFactory,
-        UserDeletedEventFactoryInterface $eventFactory,
-        array $users
-    ): void {
-        $repository->expects($this->once())
-            ->method('deleteBatch')
-            ->with($users);
-
-        $uuid = $this->createMock(Uuid::class);
-        $uuid->method('__toString')->willReturn('test-uuid');
-
-        $uuidFactory->expects($this->exactly(count($users)))
-            ->method('create')
-            ->willReturn($uuid);
-
-        $events = array_map(
-            fn (): UserDeletedEvent => $this->createMock(UserDeletedEvent::class),
-            $users
-        );
-
-        $eventFactory->expects($this->exactly(count($users)))
-            ->method('create')
-            ->willReturnCallback(
-                $this->expectSequential(
-                    array_map(
-                        static fn (UserInterface $user): array => [$user, 'test-uuid'],
-                        $users
-                    ),
-                    $events
-                )
-            );
-
-        $eventBus->expects($this->exactly(count($events)))
-            ->method('publish')
-            ->willReturnCallback(
-                $this->expectSequential(
-                    array_map(static fn (UserDeletedEvent $event): array => [$event], $events)
-                )
-            );
     }
 }
