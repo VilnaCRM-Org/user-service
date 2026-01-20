@@ -98,7 +98,7 @@ psalm-security-report: ## Psalm security analysis with SARIF output
 
 phpmd: ## Instant PHP MD quality checks, static analysis, and complexity insights
 	$(EXEC_ENV) ./vendor/bin/phpmd src ansi codesize,design,cleancode --exclude vendor
-	$(EXEC_ENV) ./vendor/bin/phpmd tests ansi phpmd.tests.xml --exclude vendor,tests/CLI/bats/php,tests/Load/node_modules
+	$(EXEC_ENV) ./vendor/bin/phpmd tests ansi phpmd.tests.xml --exclude vendor,tests/CLI/bats/php
 
 phpinsights: phpmd ## Instant PHP quality checks, static analysis, and complexity insights
 	$(EXEC_ENV) ./vendor/bin/phpinsights --no-interaction --flush-cache --fix --ansi --disable-security-check
