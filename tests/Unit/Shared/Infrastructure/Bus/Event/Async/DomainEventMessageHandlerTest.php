@@ -9,8 +9,6 @@ use App\Shared\Infrastructure\Bus\Event\Async\DomainEventMessageHandler;
 use App\Tests\Unit\UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
-use Psr\Log\LoggerTrait;
-use Psr\Log\LogLevel;
 
 final class DomainEventMessageHandlerTest extends UnitTestCase
 {
@@ -170,7 +168,7 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
 
         $successContext = null;
 
-        foreach ($logger->debugCalls as [$message, $context]) {
+        foreach ($logger->getDebugCalls() as [$message, $context]) {
             if ($message === 'Subscriber executed successfully') {
                 $successContext = $context;
                 break;
@@ -229,23 +227,5 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
                 ],
             ],
         ];
-    }
-}
-
-final class RecordingLogger implements LoggerInterface
-{
-    use LoggerTrait;
-
-    /**
-     * @var array<int, array{string, array<string, string>}>
-     */
-    public array $debugCalls = [];
-
-    #[\Override]
-    public function log($level, string|\Stringable $message, array $context = []): void
-    {
-        if ($level === LogLevel::DEBUG) {
-            $this->debugCalls[] = [$message, $context];
-        }
     }
 }
