@@ -207,6 +207,19 @@ final class CachedUserRepository implements UserRepositoryInterface
         $this->inner->saveBatch($users);
     }
 
+    /**
+     * Delegate batch delete to inner repository (no invalidation here)
+     *
+     * Cache invalidation is handled via UserDeletedEvent subscribers.
+     *
+     * @param array<User> $users
+     */
+    #[\Override]
+    public function deleteBatch(array $users): void
+    {
+        $this->inner->deleteBatch($users);
+    }
+
     #[\Override]
     public function deleteAll(): void
     {

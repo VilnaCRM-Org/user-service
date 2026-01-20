@@ -514,6 +514,25 @@ final class CachedUserRepositoryTest extends UnitTestCase
         $this->repository->saveBatch($users);
     }
 
+    public function testDeleteBatchDelegatesToInnerRepository(): void
+    {
+        $user1 = $this->createUserMock($this->faker->uuid(), $this->faker->email());
+        $user2 = $this->createUserMock($this->faker->uuid(), $this->faker->email());
+        $users = [$user1, $user2];
+
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('deleteBatch')
+            ->with($users);
+
+        // Cache invalidation is handled by domain event subscribers, not here
+        $this->cache
+            ->expects($this->never())
+            ->method('invalidateTags');
+
+        $this->repository->deleteBatch($users);
+    }
+
     public function testDeleteAllDelegatesToInnerRepositoryAndInvalidatesCache(): void
     {
         $this->innerRepository
