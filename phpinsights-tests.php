@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use NunoMaduro\PhpInsights\Domain\Insights\CyclomaticComplexityIsHigh;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
+use PHP_CodeSniffer\Standards\Generic\Sniffs\CodeAnalysis\UselessOverridingMethodSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Strings\UnnecessaryStringConcatSniff;
@@ -48,6 +49,7 @@ return [
                 'phpinsights',
                 'tests/Behat/OAuthContext/OAuthContext.php',
                 'src/User/Infrastructure/Repository/MariaDBPasswordResetTokenRepository.php',
+                'tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php',
             ],
             'ignoreComments' => true,
             'lineLimit' => 100,
@@ -77,6 +79,7 @@ return [
                 'src/Shared/Application/Validator/InitialsValidator.php',
                 'src/Shared/Application/Validator/PasswordValidator.php',
                 'tests/Unit/User/Infrastructure/Repository/CachedUserRepositoryTest.php',
+                'tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php',
             ],
         ],
         FunctionLengthSniff::class => [
@@ -86,6 +89,15 @@ return [
                 'tests/Unit/User/Application/EventSubscriber/UserConfirmedCacheInvalidationSubscriberTest.php',
                 'tests/Unit/User/Application/EventSubscriber/UserRegisteredCacheInvalidationSubscriberTest.php',
                 'tests/Unit/User/Application/EventSubscriber/EmailChangedCacheInvalidationSubscriberTest.php',
+                'tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php',
+            ],
+        ],
+        UselessOverridingMethodSniff::class => [
+            'exclude' => [
+                'tests/Unit/Shared/Infrastructure/Bus/Event/Async/TestDomainEvent.php',
+                'tests/Unit/Shared/Infrastructure/Bus/Event/Async/TestEvent.php',
+                'tests/Unit/Shared/Infrastructure/Bus/Event/Async/TestOtherDomainEvent.php',
+                'tests/Unit/Shared/Infrastructure/Bus/Event/Async/ResilientAsyncEventBusTestEvent.php',
             ],
         ],
     ],

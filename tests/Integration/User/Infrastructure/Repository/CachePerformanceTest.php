@@ -26,6 +26,7 @@ final class CachePerformanceTest extends KernelTestCase
     private UserRepositoryInterface $repository;
     private CacheItemPoolInterface $cachePool;
 
+    #[\Override]
     protected function setUp(): void
     {
         self::bootKernel();
