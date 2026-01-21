@@ -499,6 +499,15 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 **Key commands**: `make ci`, `make unit-tests`, `make integration-tests`
 
+**Structure**: Multi-file with comprehensive guides:
+
+- `SKILL.md` - Core workflow and quick reference
+- `examples/cache-implementation.md` - Complete cache decorator implementation
+- `examples/cache-testing.md` - Cache testing patterns and scenarios
+- `reference/cache-policies.md` - Cache policy components and TTL guidance
+- `reference/invalidation-strategies.md` - Invalidation strategies (event-driven, tag-based, time-based)
+- `reference/swr-pattern.md` - Stale-while-revalidate pattern guide
+
 ---
 
 ## How Skills Work
