@@ -55,18 +55,8 @@ final class PasswordResetRequestedMetricsSubscriberTest extends UnitTestCase
 
     public function testThrowsWhenEmitterFails(): void
     {
-        $user = new User(
-            email: $this->faker->email(),
-            initials: 'JD',
-            password: 'secret',
-            id: new Uuid((string) $this->faker->uuid())
-        );
-
-        $event = new PasswordResetRequestedEvent(
-            user: $user,
-            token: $this->faker->uuid(),
-            eventId: (string) $this->faker->uuid()
-        );
+        $user = $this->createTestUser();
+        $event = $this->createPasswordResetRequestedEvent($user);
 
         $failingEmitter = $this->createMock(BusinessMetricsEmitterInterface::class);
         $failingEmitter
@@ -82,5 +72,24 @@ final class PasswordResetRequestedMetricsSubscriberTest extends UnitTestCase
         $this->expectExceptionMessage('Connection failed');
 
         ($subscriber)($event);
+    }
+
+    private function createTestUser(): User
+    {
+        return new User(
+            email: $this->faker->email(),
+            initials: 'JD',
+            password: 'secret',
+            id: new Uuid((string) $this->faker->uuid())
+        );
+    }
+
+    private function createPasswordResetRequestedEvent(User $user): PasswordResetRequestedEvent
+    {
+        return new PasswordResetRequestedEvent(
+            user: $user,
+            token: $this->faker->uuid(),
+            eventId: (string) $this->faker->uuid()
+        );
     }
 }

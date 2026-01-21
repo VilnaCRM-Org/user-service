@@ -29,16 +29,11 @@ final class EmfPayloadFactoryTest extends UnitTestCase
         $metric = new EndpointInvocationsMetric('Customer', 'create');
 
         $payload = $factory->createFromMetric($metric);
-
         $json = json_decode(json_encode($payload), true);
 
-        self::assertSame(self::FIXED_TIMESTAMP, $json['_aws']['Timestamp']);
-        self::assertSame(self::NAMESPACE, $json['_aws']['CloudWatchMetrics'][0]['Namespace']);
-        self::assertSame([['Endpoint', 'Operation']], $json['_aws']['CloudWatchMetrics'][0]['Dimensions']);
-        self::assertSame('EndpointInvocations', $json['_aws']['CloudWatchMetrics'][0]['Metrics'][0]['Name']);
-        self::assertSame('Count', $json['_aws']['CloudWatchMetrics'][0]['Metrics'][0]['Unit']);
-        self::assertSame('Customer', $json['Endpoint']);
-        self::assertSame('create', $json['Operation']);
+        $this->assertPayloadTimestampAndNamespace($json);
+        $this->assertSingleMetricStructure($json);
+        $this->assertEndpointDimensions($json, 'Customer', 'create');
         self::assertSame(1, $json['EndpointInvocations']);
     }
 
@@ -58,8 +53,14 @@ final class EmfPayloadFactoryTest extends UnitTestCase
         self::assertSame(self::FIXED_TIMESTAMP, $json['_aws']['Timestamp']);
         self::assertSame(self::NAMESPACE, $json['_aws']['CloudWatchMetrics'][0]['Namespace']);
         self::assertCount(2, $json['_aws']['CloudWatchMetrics'][0]['Metrics']);
-        self::assertSame('OrdersPlaced', $json['_aws']['CloudWatchMetrics'][0]['Metrics'][0]['Name']);
-        self::assertSame('OrderValue', $json['_aws']['CloudWatchMetrics'][0]['Metrics'][1]['Name']);
+        self::assertSame(
+            'OrdersPlaced',
+            $json['_aws']['CloudWatchMetrics'][0]['Metrics'][0]['Name']
+        );
+        self::assertSame(
+            'OrderValue',
+            $json['_aws']['CloudWatchMetrics'][0]['Metrics'][1]['Name']
+        );
         self::assertSame(5, $json['OrdersPlaced']);
         self::assertSame(199.99, $json['OrderValue']);
     }
@@ -139,6 +140,46 @@ final class EmfPayloadFactoryTest extends UnitTestCase
         $factory = $this->createFactoryWithNamespace('ABC-123.abc_xyz/test#v1:prod');
 
         self::assertInstanceOf(EmfPayloadFactory::class, $factory);
+    }
+
+    /**
+     * @param array<array-key, string|int|float|array<array-key, string|int|float|array>> $json
+     */
+    private function assertPayloadTimestampAndNamespace(array $json): void
+    {
+        self::assertSame(self::FIXED_TIMESTAMP, $json['_aws']['Timestamp']);
+        self::assertSame(self::NAMESPACE, $json['_aws']['CloudWatchMetrics'][0]['Namespace']);
+    }
+
+    /**
+     * @param array<array-key, string|int|float|array<array-key, string|int|float|array>> $json
+     */
+    private function assertSingleMetricStructure(array $json): void
+    {
+        self::assertSame(
+            [['Endpoint', 'Operation']],
+            $json['_aws']['CloudWatchMetrics'][0]['Dimensions']
+        );
+        self::assertSame(
+            'EndpointInvocations',
+            $json['_aws']['CloudWatchMetrics'][0]['Metrics'][0]['Name']
+        );
+        self::assertSame(
+            'Count',
+            $json['_aws']['CloudWatchMetrics'][0]['Metrics'][0]['Unit']
+        );
+    }
+
+    /**
+     * @param array<array-key, string|int|float|array<array-key, string|int|float|array>> $json
+     */
+    private function assertEndpointDimensions(
+        array $json,
+        string $endpoint,
+        string $operation
+    ): void {
+        self::assertSame($endpoint, $json['Endpoint']);
+        self::assertSame($operation, $json['Operation']);
     }
 
     private function createFactory(): EmfPayloadFactory

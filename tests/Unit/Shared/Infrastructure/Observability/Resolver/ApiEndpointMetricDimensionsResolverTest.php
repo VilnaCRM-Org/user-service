@@ -25,8 +25,14 @@ final class ApiEndpointMetricDimensionsResolverTest extends UnitTestCase
     public function testDimensionsReturnsEndpointAndOperation(): void
     {
         $request = Request::create('/api/customers', 'GET');
-        $request->attributes->set('_api_resource_class', 'App\\Core\\Customer\\Domain\\Entity\\Customer');
-        $request->attributes->set('_api_operation_name', '_api_/customers_get_collection');
+        $request->attributes->set(
+            '_api_resource_class',
+            'App\\Core\\Customer\\Domain\\Entity\\Customer'
+        );
+        $request->attributes->set(
+            '_api_operation_name',
+            '_api_/customers_get_collection'
+        );
 
         $dimensions = $this->resolver->dimensions($request);
 
@@ -37,7 +43,10 @@ final class ApiEndpointMetricDimensionsResolverTest extends UnitTestCase
     public function testEndpointExtractsClassNameFromResourceClass(): void
     {
         $request = Request::create('/api/customer-types', 'POST');
-        $request->attributes->set('_api_resource_class', 'App\\Core\\Customer\\Domain\\Entity\\CustomerType');
+        $request->attributes->set(
+            '_api_resource_class',
+            'App\\Core\\Customer\\Domain\\Entity\\CustomerType'
+        );
         $request->attributes->set('_api_operation_name', '_api_/customer-types_post');
 
         $dimensions = $this->resolver->dimensions($request);
@@ -120,8 +129,14 @@ final class ApiEndpointMetricDimensionsResolverTest extends UnitTestCase
     public function testHandlesNestedResourceClass(): void
     {
         $request = Request::create('/api/customer-statuses', 'GET');
-        $request->attributes->set('_api_resource_class', 'App\\Core\\Customer\\Domain\\Entity\\CustomerStatus');
-        $request->attributes->set('_api_operation_name', '_api_/customer-statuses_get_collection');
+        $request->attributes->set(
+            '_api_resource_class',
+            'App\\Core\\Customer\\Domain\\Entity\\CustomerStatus'
+        );
+        $request->attributes->set(
+            '_api_operation_name',
+            '_api_/customer-statuses_get_collection'
+        );
 
         $dimensions = $this->resolver->dimensions($request);
 

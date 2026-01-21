@@ -43,7 +43,10 @@ final class EmfDimensionValueTest extends UnitTestCase
         $violations = $this->validator->validate($dimension->key(), new EmfKey());
 
         self::assertCount(1, $violations);
-        self::assertStringContainsString('non-whitespace character', $violations->get(0)->getMessage());
+        self::assertStringContainsString(
+            'non-whitespace character',
+            $violations->get(0)->getMessage()
+        );
     }
 
     public function testValidatesWhitespaceOnlyKey(): void
@@ -52,7 +55,10 @@ final class EmfDimensionValueTest extends UnitTestCase
         $violations = $this->validator->validate($dimension->key(), new EmfKey());
 
         self::assertGreaterThan(0, $violations->count());
-        self::assertStringContainsString('non-whitespace character', $violations->get(0)->getMessage());
+        self::assertStringContainsString(
+            'non-whitespace character',
+            $violations->get(0)->getMessage()
+        );
     }
 
     public function testValidatesKeyExceeding255Characters(): void
@@ -61,7 +67,10 @@ final class EmfDimensionValueTest extends UnitTestCase
         $violations = $this->validator->validate($dimension->key(), new EmfKey());
 
         self::assertGreaterThan(0, $violations->count());
-        self::assertStringContainsString('must not exceed 255 characters', $violations->get(0)->getMessage());
+        self::assertStringContainsString(
+            'must not exceed 255 characters',
+            $violations->get(0)->getMessage()
+        );
     }
 
     public function testValidatesNonAsciiKey(): void
@@ -97,7 +106,10 @@ final class EmfDimensionValueTest extends UnitTestCase
         $violations = $this->validator->validate($dimension->value(), new EmfValue());
 
         self::assertGreaterThan(0, $violations->count());
-        self::assertStringContainsString('non-whitespace character', $violations->get(0)->getMessage());
+        self::assertStringContainsString(
+            'non-whitespace character',
+            $violations->get(0)->getMessage()
+        );
     }
 
     public function testValidatesWhitespaceOnlyValue(): void
@@ -106,7 +118,10 @@ final class EmfDimensionValueTest extends UnitTestCase
         $violations = $this->validator->validate($dimension->value(), new EmfValue());
 
         self::assertGreaterThan(0, $violations->count());
-        self::assertStringContainsString('non-whitespace character', $violations->get(0)->getMessage());
+        self::assertStringContainsString(
+            'non-whitespace character',
+            $violations->get(0)->getMessage()
+        );
     }
 
     public function testValidatesValueExceeding1024Characters(): void
@@ -115,7 +130,10 @@ final class EmfDimensionValueTest extends UnitTestCase
         $violations = $this->validator->validate($dimension->value(), new EmfValue());
 
         self::assertGreaterThan(0, $violations->count());
-        self::assertStringContainsString('must not exceed 1024 characters', $violations->get(0)->getMessage());
+        self::assertStringContainsString(
+            'must not exceed 1024 characters',
+            $violations->get(0)->getMessage()
+        );
     }
 
     public function testValidatesNonAsciiValue(): void

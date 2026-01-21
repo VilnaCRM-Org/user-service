@@ -359,7 +359,7 @@ final class UserGraphQLContext implements Context
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, string|int|bool|null>
      */
     private function extractMutationUserData(): array
     {

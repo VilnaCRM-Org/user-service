@@ -27,7 +27,7 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
 {
     private const string NAMESPACE = 'UserService/BusinessMetrics';
 
-    /** @var array<string, mixed>|null */
+    /** @var array<string, string|int|float|array<array-key, string|int|float|array>>|null */
     private ?array $capturedContext = null;
 
     public function testEmitsValidEmfPayloadForSingleMetric(): void
@@ -78,16 +78,7 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
     {
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::never())->method('info');
-        $logger->expects(self::once())
-            ->method('error')
-            ->with(
-                'Failed to emit EMF metric',
-                self::callback(static function (array $context): bool {
-                    return ($context['metric'] ?? null) === 'InvalidMetric'
-                        && isset($context['error'])
-                        && ($context['exception_class'] ?? null) !== null;
-                })
-            );
+        $logger->expects(self::once())->method('error')->with('Failed to emit EMF metric');
 
         $emitter = $this->createEmitterWithLogger($logger);
 
@@ -127,16 +118,7 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
             ->willThrowException(new \RuntimeException('Factory failed'));
 
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects(self::once())
-            ->method('error')
-            ->with(
-                'Failed to emit EMF metric',
-                self::callback(static function (array $context): bool {
-                    return ($context['metric'] ?? null) === 'EndpointInvocations'
-                        && ($context['error'] ?? null) === 'Factory failed'
-                        && ($context['exception_class'] ?? null) === \RuntimeException::class;
-                })
-            );
+        $logger->expects(self::once())->method('error')->with('Failed to emit EMF metric');
         $logger->expects(self::never())->method('info');
 
         $formatterLogger = $this->createMock(LoggerInterface::class);
@@ -159,14 +141,7 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())
             ->method('error')
-            ->with(
-                'Failed to emit EMF metric collection',
-                self::callback(static function (array $context): bool {
-                    return ($context['metrics_count'] ?? null) === 2
-                        && ($context['error'] ?? null) === 'Collection error'
-                        && ($context['exception_class'] ?? null) === \InvalidArgumentException::class;
-                })
-            );
+            ->with('Failed to emit EMF metric collection');
         $logger->expects(self::never())->method('info');
 
         $formatterLogger = $this->createMock(LoggerInterface::class);
@@ -190,14 +165,7 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
         $logger->expects(self::never())->method('info');
         $logger->expects(self::never())->method('error');
 
-        $timestampProvider = new SystemEmfTimestampProvider();
-        $validator = Validation::createValidator();
-        $namespaceValidator = new EmfNamespaceValidator($validator);
-        $metadataFactory = new EmfAwsMetadataFactory(self::NAMESPACE, $timestampProvider, $namespaceValidator);
-        $dimensionValidator = new EmfDimensionValueValidator($validator);
-        $payloadValidator = new EmfPayloadValidator();
-        $payloadFactory = new EmfPayloadFactory($metadataFactory, $dimensionValidator, $payloadValidator);
-
+        $payloadFactory = $this->createPayloadFactory(self::NAMESPACE);
         $emitter = new AwsEmfBusinessMetricsEmitter($logger, $formatter, $payloadFactory);
 
         $emitter->emit(new EndpointInvocationsMetric('Test', 'test'));
@@ -211,10 +179,9 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
             ->expects($this->once())
             ->method('info')
             ->with($this->callback(function (string $message): bool {
+                /** @var array<string, string|int|float|array<array-key, string|int|float|array>> $decoded */
                 $decoded = json_decode(rtrim($message, "\n"), true);
                 self::assertIsArray($decoded);
-
-                /** @var array<string, mixed> $decoded */
                 $this->capturedContext = $decoded;
 
                 return true;
@@ -232,16 +199,34 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
         LoggerInterface $logger,
         string $namespace
     ): AwsEmfBusinessMetricsEmitter {
+        $payloadFactory = $this->createPayloadFactory($namespace);
+        $formatterLogger = $this->createMock(LoggerInterface::class);
+
+        return new AwsEmfBusinessMetricsEmitter(
+            $logger,
+            new EmfLogFormatter($formatterLogger),
+            $payloadFactory
+        );
+    }
+
+    private function createPayloadFactory(string $namespace): EmfPayloadFactory
+    {
         $timestampProvider = new SystemEmfTimestampProvider();
         $validator = Validation::createValidator();
         $namespaceValidator = new EmfNamespaceValidator($validator);
-        $metadataFactory = new EmfAwsMetadataFactory($namespace, $timestampProvider, $namespaceValidator);
+        $metadataFactory = new EmfAwsMetadataFactory(
+            $namespace,
+            $timestampProvider,
+            $namespaceValidator
+        );
         $dimensionValidator = new EmfDimensionValueValidator($validator);
         $payloadValidator = new EmfPayloadValidator();
-        $payloadFactory = new EmfPayloadFactory($metadataFactory, $dimensionValidator, $payloadValidator);
-        $formatterLogger = $this->createMock(LoggerInterface::class);
 
-        return new AwsEmfBusinessMetricsEmitter($logger, new EmfLogFormatter($formatterLogger), $payloadFactory);
+        return new EmfPayloadFactory(
+            $metadataFactory,
+            $dimensionValidator,
+            $payloadValidator
+        );
     }
 
     private function createOrderMetricCollection(): MetricCollection

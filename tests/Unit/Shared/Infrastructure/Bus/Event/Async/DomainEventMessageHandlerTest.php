@@ -25,7 +25,9 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
     {
         parent::setUp();
         $this->metricsEmitter = new BusinessMetricsEmitterSpy();
-        $this->metricFactory = new EventSubscriberFailureMetricFactory(new MetricDimensionsFactory());
+        $this->metricFactory = new EventSubscriberFailureMetricFactory(
+            new MetricDimensionsFactory()
+        );
     }
 
     public function testExecutesSubscriberForMatchingEvent(): void
@@ -205,25 +207,14 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
         $subscriber = new TestDomainEventSubscriber();
         $capturedContext = [];
 
-        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
-        $logger->method('debug')
-            ->willReturnCallback(static function (string $message, array $context) use (&$capturedContext): void {
-                if ($message === 'Processing domain event from queue') {
-                    $capturedContext = $context;
-                }
-            });
-
-        $event = new TestDomainEvent('aggregate-123', 'event-456');
-        $envelope = DomainEventEnvelope::fromEvent($event);
-
-        $handler = new DomainEventMessageHandler(
-            [$subscriber],
-            $logger,
-            $this->metricsEmitter,
-            $this->metricFactory
+        $logger = $this->createDebugLoggerForMessage(
+            'Processing domain event from queue',
+            $capturedContext
         );
+        $event = new TestDomainEvent('aggregate-123', 'event-456');
 
-        $handler($envelope);
+        $handler = $this->createHandlerWithLogger([$subscriber], $logger);
+        $handler(DomainEventEnvelope::fromEvent($event));
 
         self::assertSame($event->eventId(), $capturedContext['event_id']);
         self::assertSame(TestDomainEvent::class, $capturedContext['event_type']);
@@ -260,25 +251,14 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
         $subscriber = new TestDomainEventSubscriber();
         $capturedContext = [];
 
-        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
-        $logger->method('debug')
-            ->willReturnCallback(static function (string $message, array $context) use (&$capturedContext): void {
-                if ($message === 'Subscriber executed successfully') {
-                    $capturedContext = $context;
-                }
-            });
-
-        $event = new TestDomainEvent('aggregate-123', 'event-456');
-        $envelope = DomainEventEnvelope::fromEvent($event);
-
-        $handler = new DomainEventMessageHandler(
-            [$subscriber],
-            $logger,
-            $this->metricsEmitter,
-            $this->metricFactory
+        $logger = $this->createDebugLoggerForMessage(
+            'Subscriber executed successfully',
+            $capturedContext
         );
+        $event = new TestDomainEvent('aggregate-123', 'event-456');
 
-        $handler($envelope);
+        $handler = $this->createHandlerWithLogger([$subscriber], $logger);
+        $handler(DomainEventEnvelope::fromEvent($event));
 
         self::assertSame(TestDomainEventSubscriber::class, $capturedContext['subscriber']);
         self::assertSame($event->eventId(), $capturedContext['event_id']);
@@ -290,24 +270,14 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
         $subscriber->failOnNextCall();
         $capturedContext = [];
 
-        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
-        $logger->method('error')
-            ->willReturnCallback(static function (string $message, array $context) use (&$capturedContext): void {
-                if ($message === 'Domain event subscriber execution failed in worker') {
-                    $capturedContext = $context;
-                }
-            });
-        $event = new TestDomainEvent('aggregate-123', 'event-456');
-        $envelope = DomainEventEnvelope::fromEvent($event);
-
-        $handler = new DomainEventMessageHandler(
-            [$subscriber],
-            $logger,
-            $this->metricsEmitter,
-            $this->metricFactory
+        $logger = $this->createErrorLoggerForMessage(
+            'Domain event subscriber execution failed in worker',
+            $capturedContext
         );
+        $event = new TestDomainEvent('aggregate-123', 'event-456');
 
-        $handler($envelope);
+        $handler = $this->createHandlerWithLogger([$subscriber], $logger);
+        $handler(DomainEventEnvelope::fromEvent($event));
 
         self::assertSame(TestDomainEventSubscriber::class, $capturedContext['subscriber']);
         self::assertSame($event->eventId(), $capturedContext['event_id']);
@@ -324,26 +294,97 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
         $this->metricsEmitter->failOnNextCall();
         $capturedContext = [];
 
+        $logger = $this->createWarningLoggerForMessage(
+            'Failed to emit subscriber failure metric',
+            $capturedContext
+        );
+
+        $handler = $this->createHandlerWithLogger([$subscriber], $logger);
+        $event = new TestDomainEvent('aggregate-123', 'event-456');
+        $handler(DomainEventEnvelope::fromEvent($event));
+
+        self::assertArrayHasKey('error', $capturedContext);
+        self::assertSame('Metric emission failed', $capturedContext['error']);
+    }
+
+    /**
+     * @param array<string, string> &$capturedContext
+     */
+    private function createDebugLoggerForMessage(
+        string $expectedMessage,
+        array &$capturedContext
+    ): \Psr\Log\LoggerInterface {
+        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
+        $logger->method('debug')
+            ->willReturnCallback(
+                static function (string $message, array $context) use (
+                    $expectedMessage,
+                    &$capturedContext
+                ): void {
+                    if ($message === $expectedMessage) {
+                        $capturedContext = $context;
+                    }
+                }
+            );
+        return $logger;
+    }
+
+    /**
+     * @param array<string, string> &$capturedContext
+     */
+    private function createErrorLoggerForMessage(
+        string $expectedMessage,
+        array &$capturedContext
+    ): \Psr\Log\LoggerInterface {
+        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
+        $logger->method('error')
+            ->willReturnCallback(
+                static function (string $message, array $context) use (
+                    $expectedMessage,
+                    &$capturedContext
+                ): void {
+                    if ($message === $expectedMessage) {
+                        $capturedContext = $context;
+                    }
+                }
+            );
+        return $logger;
+    }
+
+    /**
+     * @param array<string, string> &$capturedContext
+     */
+    private function createWarningLoggerForMessage(
+        string $expectedMessage,
+        array &$capturedContext
+    ): \Psr\Log\LoggerInterface {
         $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
         $logger->method('warning')
-            ->willReturnCallback(static function (string $message, array $context) use (&$capturedContext): void {
-                if ($message === 'Failed to emit subscriber failure metric') {
-                    $capturedContext = $context;
+            ->willReturnCallback(
+                static function (string $message, array $context) use (
+                    $expectedMessage,
+                    &$capturedContext
+                ): void {
+                    if ($message === $expectedMessage) {
+                        $capturedContext = $context;
+                    }
                 }
-            });
-        $event = new TestDomainEvent('aggregate-123', 'event-456');
-        $envelope = DomainEventEnvelope::fromEvent($event);
+            );
+        return $logger;
+    }
 
-        $handler = new DomainEventMessageHandler(
-            [$subscriber],
+    /**
+     * @param array<int, TestDomainEventSubscriber> $subscribers
+     */
+    private function createHandlerWithLogger(
+        array $subscribers,
+        \Psr\Log\LoggerInterface $logger
+    ): DomainEventMessageHandler {
+        return new DomainEventMessageHandler(
+            $subscribers,
             $logger,
             $this->metricsEmitter,
             $this->metricFactory
         );
-
-        $handler($envelope);
-
-        self::assertArrayHasKey('error', $capturedContext);
-        self::assertSame('Metric emission failed', $capturedContext['error']);
     }
 }

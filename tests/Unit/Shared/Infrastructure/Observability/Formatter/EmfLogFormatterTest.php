@@ -48,22 +48,7 @@ final class EmfLogFormatterTest extends UnitTestCase
         self::assertStringEndsWith("}\n", $formatted);
 
         $decoded = json_decode(rtrim($formatted, "\n"), true);
-        $expected = [
-            '_aws' => [
-                'Timestamp' => 1702425600000,
-                'CloudWatchMetrics' => [
-                    [
-                        'Namespace' => 'UserService/BusinessMetrics',
-                        'Dimensions' => [['Endpoint', 'Operation']],
-                        'Metrics' => [['Name' => 'CustomersCreated', 'Unit' => 'Count']],
-                    ],
-                ],
-            ],
-            'Endpoint' => 'Customer',
-            'Operation' => 'create',
-            'CustomersCreated' => 1,
-        ];
-        self::assertSame($expected, $decoded);
+        self::assertSame($this->getExpectedFormattedPayload(), $decoded);
     }
 
     public function testFormatsPayloadWithProperStructure(): void
@@ -100,6 +85,28 @@ final class EmfLogFormatterTest extends UnitTestCase
         $formatted = $this->formatter->format($payload);
 
         self::assertSame('', $formatted);
+    }
+
+    /**
+     * @return array<string, array<string, array<array<string, array<int, array<int, string>|string>|int|string>>|int>|int|string>
+     */
+    private function getExpectedFormattedPayload(): array
+    {
+        return [
+            '_aws' => [
+                'Timestamp' => 1702425600000,
+                'CloudWatchMetrics' => [
+                    [
+                        'Namespace' => 'UserService/BusinessMetrics',
+                        'Dimensions' => [['Endpoint', 'Operation']],
+                        'Metrics' => [['Name' => 'CustomersCreated', 'Unit' => 'Count']],
+                    ],
+                ],
+            ],
+            'Endpoint' => 'Customer',
+            'Operation' => 'create',
+            'CustomersCreated' => 1,
+        ];
     }
 
     private function createTestPayload(): EmfPayload

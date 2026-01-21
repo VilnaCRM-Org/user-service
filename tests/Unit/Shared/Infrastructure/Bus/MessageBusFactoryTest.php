@@ -9,6 +9,7 @@ use App\Shared\Infrastructure\Bus\CallableFirstParameterExtractor;
 use App\Shared\Infrastructure\Bus\MessageBusFactory;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestCommand;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestEvent;
+use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestEventSubscriber;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\Messenger\Handler\HandlersLocator;
 use Symfony\Component\Messenger\MessageBus;
@@ -47,6 +48,9 @@ final class MessageBusFactoryTest extends UnitTestCase
         };
 
         $subscriber = new class() implements DomainEventSubscriberInterface {
+            /**
+             * @return array<class-string>
+             */
             #[\Override]
             public function subscribedTo(): array
             {
@@ -69,35 +73,8 @@ final class MessageBusFactoryTest extends UnitTestCase
 
     public function testCreateWithOnlySubscribers(): void
     {
-        $subscriber1 = new class() implements DomainEventSubscriberInterface {
-            /**
-             * @return array<string>
-             */
-            #[\Override]
-            public function subscribedTo(): array
-            {
-                return [TestEvent::class];
-            }
-
-            public function __invoke(TestEvent $event): void
-            {
-            }
-        };
-
-        $subscriber2 = new class() implements DomainEventSubscriberInterface {
-            /**
-             * @return array<string>
-             */
-            #[\Override]
-            public function subscribedTo(): array
-            {
-                return [TestEvent::class];
-            }
-
-            public function __invoke(TestEvent $event): void
-            {
-            }
-        };
+        $subscriber1 = new TestEventSubscriber();
+        $subscriber2 = new TestEventSubscriber();
 
         $handlers = [$subscriber1, $subscriber2];
 

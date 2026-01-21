@@ -25,7 +25,9 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
     {
         parent::setUp();
         $this->metricsEmitter = new BusinessMetricsEmitterSpy();
-        $this->metricFactory = new SqsDispatchFailureMetricFactory(new MetricDimensionsFactory());
+        $this->metricFactory = new SqsDispatchFailureMetricFactory(
+            new MetricDimensionsFactory()
+        );
     }
 
     public function testDispatchesEventToMessageBus(): void
@@ -162,17 +164,7 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
 
     public function testReturnsFalseIfAnyEventFailsToDispatch(): void
     {
-        $callCount = 0;
-        $messageBus = $this->createMock(MessageBusInterface::class);
-        $messageBus->method('dispatch')
-            ->willReturnCallback(static function ($message) use (&$callCount) {
-                $callCount++;
-                if ($callCount === 2) {
-                    throw new \RuntimeException('Second event failed');
-                }
-
-                return new Envelope($message);
-            });
+        $messageBus = $this->createMessageBusThatFailsOnSecondCall();
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
@@ -213,18 +205,9 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
 
     public function testLogsDebugMessageOnSuccessfulDispatch(): void
     {
-        $messageBus = $this->createMock(MessageBusInterface::class);
-        $messageBus->method('dispatch')
-            ->willReturnCallback(static fn ($message) => new Envelope($message));
-
+        $messageBus = $this->createSuccessfulMessageBus();
         $capturedContext = [];
-        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
-        $logger->method('debug')
-            ->willReturnCallback(static function (string $message, array $context) use (&$capturedContext): void {
-                if ($message === 'Domain event dispatched to async queue') {
-                    $capturedContext = $context;
-                }
-            });
+        $logger = $this->createLoggerWithContextCapture($capturedContext, 'debug');
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
@@ -236,25 +219,14 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
         $event = new TestDomainEvent('aggregate-123', 'event-456');
         $dispatcher->dispatch($event);
 
-        self::assertSame($event->eventId(), $capturedContext['event_id']);
-        self::assertSame(TestDomainEvent::class, $capturedContext['event_type']);
-        self::assertSame(TestDomainEvent::eventName(), $capturedContext['event_name']);
+        $this->assertDebugContextMatchesEvent($capturedContext, $event);
     }
 
     public function testLogsErrorWithContextOnDispatchFailure(): void
     {
-        $messageBus = $this->createMock(MessageBusInterface::class);
-        $messageBus->method('dispatch')
-            ->willThrowException(new \RuntimeException('SQS unavailable'));
-
+        $messageBus = $this->createFailingMessageBus();
         $capturedContext = [];
-        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
-        $logger->method('error')
-            ->willReturnCallback(static function (string $message, array $context) use (&$capturedContext): void {
-                if ($message === 'Failed to dispatch domain event to async queue') {
-                    $capturedContext = $context;
-                }
-            });
+        $logger = $this->createLoggerWithContextCapture($capturedContext, 'error');
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
@@ -266,29 +238,16 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
         $event = new TestDomainEvent('aggregate-123', 'event-456');
         $dispatcher->dispatch($event);
 
-        self::assertSame($event->eventId(), $capturedContext['event_id']);
-        self::assertSame(TestDomainEvent::class, $capturedContext['event_type']);
-        self::assertSame(TestDomainEvent::eventName(), $capturedContext['event_name']);
-        self::assertSame('SQS unavailable', $capturedContext['error']);
-        self::assertSame(\RuntimeException::class, $capturedContext['exception_class']);
+        $this->assertErrorContextMatchesEvent($capturedContext, $event);
     }
 
     public function testLogsWarningWhenMetricEmissionFails(): void
     {
-        $messageBus = $this->createMock(MessageBusInterface::class);
-        $messageBus->method('dispatch')
-            ->willThrowException(new \RuntimeException('SQS unavailable'));
-
+        $messageBus = $this->createFailingMessageBus();
         $this->metricsEmitter->failOnNextCall();
 
         $capturedContext = [];
-        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
-        $logger->method('warning')
-            ->willReturnCallback(static function (string $message, array $context) use (&$capturedContext): void {
-                if ($message === 'Failed to emit SQS dispatch failure metric') {
-                    $capturedContext = $context;
-                }
-            });
+        $logger = $this->createLoggerWithContextCapture($capturedContext, 'warning');
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
@@ -302,5 +261,75 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
 
         self::assertArrayHasKey('error', $capturedContext);
         self::assertSame('Metric emission failed', $capturedContext['error']);
+    }
+
+    private function createFailingMessageBus(): MessageBusInterface
+    {
+        $messageBus = $this->createMock(MessageBusInterface::class);
+        $messageBus->method('dispatch')
+            ->willThrowException(new \RuntimeException('SQS unavailable'));
+        return $messageBus;
+    }
+
+    /**
+     * @param array<string, string> &$capturedContext
+     */
+    private function createLoggerWithContextCapture(
+        array &$capturedContext,
+        string $level
+    ): \Psr\Log\LoggerInterface {
+        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
+        $logger->method($level)
+            ->willReturnCallback(
+                static function (string $message, array $context) use (&$capturedContext): void {
+                    $capturedContext = $context;
+                }
+            );
+        return $logger;
+    }
+
+    /**
+     * @param array<string, string> $context
+     */
+    private function assertErrorContextMatchesEvent(array $context, TestDomainEvent $event): void
+    {
+        self::assertSame($event->eventId(), $context['event_id']);
+        self::assertSame(TestDomainEvent::class, $context['event_type']);
+        self::assertSame(TestDomainEvent::eventName(), $context['event_name']);
+        self::assertSame('SQS unavailable', $context['error']);
+        self::assertSame(\RuntimeException::class, $context['exception_class']);
+    }
+
+    private function createMessageBusThatFailsOnSecondCall(): MessageBusInterface
+    {
+        $callCount = 0;
+        $messageBus = $this->createMock(MessageBusInterface::class);
+        $messageBus->method('dispatch')
+            ->willReturnCallback(static function ($message) use (&$callCount) {
+                $callCount++;
+                if ($callCount === 2) {
+                    throw new \RuntimeException('Second event failed');
+                }
+                return new Envelope($message);
+            });
+        return $messageBus;
+    }
+
+    private function createSuccessfulMessageBus(): MessageBusInterface
+    {
+        $messageBus = $this->createMock(MessageBusInterface::class);
+        $messageBus->method('dispatch')
+            ->willReturnCallback(static fn ($message) => new Envelope($message));
+        return $messageBus;
+    }
+
+    /**
+     * @param array<string, string> $context
+     */
+    private function assertDebugContextMatchesEvent(array $context, TestDomainEvent $event): void
+    {
+        self::assertSame($event->eventId(), $context['event_id']);
+        self::assertSame(TestDomainEvent::class, $context['event_type']);
+        self::assertSame(TestDomainEvent::eventName(), $context['event_name']);
     }
 }

@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Shared\Infrastructure\Bus;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Infrastructure\Bus\InvokeParameterExtractor;
+use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\HandlerWithoutTypeHint;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestOtherEvent;
 use App\Tests\Unit\UnitTestCase;
 use LogicException;
@@ -53,11 +54,7 @@ final class InvokeParameterExtractorTest extends UnitTestCase
 
     public function testThrowsWhenMissingTypeHint(): void
     {
-        $handler = new class() {
-            public function __invoke($event): void
-            {
-            }
-        };
+        $handler = new HandlerWithoutTypeHint();
 
         $this->expectException(LogicException::class);
         $this->extractor->extract($handler);

@@ -29,7 +29,10 @@ final class EmfNamespaceValidatorTest extends UnitTestCase
         $violations = $this->validator->validate('', new EmfNamespace());
 
         self::assertCount(1, $violations);
-        self::assertStringContainsString('non-whitespace character', $violations->get(0)->getMessage());
+        self::assertStringContainsString(
+            'non-whitespace character',
+            $violations->get(0)->getMessage()
+        );
     }
 
     public function testValidatesWhitespaceOnlyNamespace(): void
@@ -37,7 +40,10 @@ final class EmfNamespaceValidatorTest extends UnitTestCase
         $violations = $this->validator->validate('   ', new EmfNamespace());
 
         self::assertGreaterThan(0, $violations->count());
-        self::assertStringContainsString('non-whitespace character', $violations->get(0)->getMessage());
+        self::assertStringContainsString(
+            'non-whitespace character',
+            $violations->get(0)->getMessage()
+        );
     }
 
     public function testValidatesNamespaceExceeding256Characters(): void
@@ -45,7 +51,10 @@ final class EmfNamespaceValidatorTest extends UnitTestCase
         $violations = $this->validator->validate(str_repeat('a', 257), new EmfNamespace());
 
         self::assertGreaterThan(0, $violations->count());
-        self::assertStringContainsString('must not exceed 256 characters', $violations->get(0)->getMessage());
+        self::assertStringContainsString(
+            'must not exceed 256 characters',
+            $violations->get(0)->getMessage()
+        );
     }
 
     public function testValidatesNamespaceWithInvalidCharacters(): void
@@ -53,7 +62,10 @@ final class EmfNamespaceValidatorTest extends UnitTestCase
         $violations = $this->validator->validate('MyApp@Metrics', new EmfNamespace());
 
         self::assertGreaterThan(0, $violations->count());
-        self::assertStringContainsString('alphanumeric characters', $violations->get(0)->getMessage());
+        self::assertStringContainsString(
+            'alphanumeric characters',
+            $violations->get(0)->getMessage()
+        );
     }
 
     public function testValidatesNamespaceWithUnicodeCharacters(): void
@@ -61,7 +73,10 @@ final class EmfNamespaceValidatorTest extends UnitTestCase
         $violations = $this->validator->validate('МоеПриложение/Метрики', new EmfNamespace());
 
         self::assertGreaterThan(0, $violations->count());
-        self::assertStringContainsString('alphanumeric characters', $violations->get(0)->getMessage());
+        self::assertStringContainsString(
+            'alphanumeric characters',
+            $violations->get(0)->getMessage()
+        );
     }
 
     public function testAcceptsValidNamespaceWithSlashes(): void
@@ -108,7 +123,10 @@ final class EmfNamespaceValidatorTest extends UnitTestCase
 
     public function testAcceptsValidNamespaceWithAllAllowedCharacters(): void
     {
-        $violations = $this->validator->validate('ABC-123.abc_xyz/test#v1:prod', new EmfNamespace());
+        $violations = $this->validator->validate(
+            'ABC-123.abc_xyz/test#v1:prod',
+            new EmfNamespace()
+        );
 
         self::assertCount(0, $violations);
     }

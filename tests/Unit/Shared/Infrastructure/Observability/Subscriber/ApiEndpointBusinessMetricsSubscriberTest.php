@@ -28,50 +28,29 @@ final class ApiEndpointBusinessMetricsSubscriberTest extends UnitTestCase
     public function testEmitsMetricForApiPlatformRequest(): void
     {
         $spy = new BusinessMetricsEmitterSpy();
-        $subscriber = new ApiEndpointBusinessMetricsSubscriber(
-            new NullLogger(),
-            $spy,
-            new ApiEndpointMetricDimensionsResolver(new MetricDimensionsFactory()),
-            new MetricDimensionsFactory()
-        );
+        $subscriber = $this->createSubscriberWithSpy($spy);
 
-        $request = Request::create('/api/customers', 'GET');
-        $request->attributes->set('_api_resource_class', 'App\\Core\\Customer\\Domain\\Entity\\Customer');
-        $request->attributes->set('_api_operation_name', '_api_/customers_get_collection');
-
-        $event = new ResponseEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST,
-            new Response('', 200)
-        );
+        $request = $this->createApiPlatformRequest();
+        $event = $this->createResponseEvent($request);
 
         $subscriber->onResponse($event);
 
         self::assertSame(1, $spy->count());
-
-        foreach ($spy->emitted() as $metric) {
-            self::assertSame('EndpointInvocations', $metric->name());
-            self::assertSame(1, $metric->value());
-            self::assertSame('Customer', $metric->dimensions()->values()->get('Endpoint'));
-            self::assertSame('_api_/customers_get_collection', $metric->dimensions()->values()->get('Operation'));
-        }
+        $this->assertMetricMatches(
+            $spy->emitted()->all()[0],
+            'EndpointInvocations',
+            1,
+            'Customer',
+            '_api_/customers_get_collection'
+        );
     }
 
     public function testDoesNotEmitMetricForHealthCheckEndpoint(): void
     {
         $spy = new BusinessMetricsEmitterSpy();
-        $subscriber = new ApiEndpointBusinessMetricsSubscriber(
-            new NullLogger(),
-            $spy,
-            new ApiEndpointMetricDimensionsResolver(new MetricDimensionsFactory()),
-            new MetricDimensionsFactory()
-        );
+        $subscriber = $this->createSubscriberWithSpy($spy);
 
-        $request = Request::create('/api/health', 'GET');
-        $request->attributes->set('_api_resource_class', 'App\\Internal\\HealthCheck\\Domain\\ValueObject\\HealthCheck');
-        $request->attributes->set('_api_operation_name', '_api_/health_get');
-
+        $request = $this->createHealthCheckRequest();
         $event = new ResponseEvent(
             $this->createMock(HttpKernelInterface::class),
             $request,
@@ -111,52 +90,32 @@ final class ApiEndpointBusinessMetricsSubscriberTest extends UnitTestCase
     public function testEmitsMetricForGraphqlEndpoint(): void
     {
         $spy = new BusinessMetricsEmitterSpy();
-        $subscriber = new ApiEndpointBusinessMetricsSubscriber(
-            new NullLogger(),
-            $spy,
-            new ApiEndpointMetricDimensionsResolver(new MetricDimensionsFactory()),
-            new MetricDimensionsFactory()
-        );
+        $subscriber = $this->createSubscriberWithSpy($spy);
 
         $request = Request::create('/api/graphql', 'POST');
-
-        $event = new ResponseEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST,
-            new Response('', 200)
-        );
+        $event = $this->createResponseEvent($request);
 
         $subscriber->onResponse($event);
 
         self::assertSame(1, $spy->count());
-
-        foreach ($spy->emitted() as $metric) {
-            self::assertSame(1, $metric->value());
-            self::assertSame('/api/graphql', $metric->dimensions()->values()->get('Endpoint'));
-            self::assertSame('post', $metric->dimensions()->values()->get('Operation'));
-        }
+        $metric = $spy->emitted()->all()[0];
+        self::assertSame(1, $metric->value());
+        self::assertSame('/api/graphql', $metric->dimensions()->values()->get('Endpoint'));
+        self::assertSame('post', $metric->dimensions()->values()->get('Operation'));
     }
 
     public function testEmitsMetricWithoutOperationNameUsesMethod(): void
     {
         $spy = new BusinessMetricsEmitterSpy();
-        $subscriber = new ApiEndpointBusinessMetricsSubscriber(
-            new NullLogger(),
-            $spy,
-            new ApiEndpointMetricDimensionsResolver(new MetricDimensionsFactory()),
-            new MetricDimensionsFactory()
-        );
+        $subscriber = $this->createSubscriberWithSpy($spy);
 
         $request = Request::create('/api/something', 'PATCH');
-        $request->attributes->set('_api_resource_class', 'App\\Core\\Customer\\Domain\\Entity\\Customer');
-
-        $event = new ResponseEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST,
-            new Response('', 200)
+        $request->attributes->set(
+            '_api_resource_class',
+            'App\\Core\\Customer\\Domain\\Entity\\Customer'
         );
+
+        $event = $this->createResponseEvent($request);
 
         $subscriber->onResponse($event);
 
@@ -245,8 +204,11 @@ final class ApiEndpointBusinessMetricsSubscriberTest extends UnitTestCase
 
     public function testMetricEmissionErrorDoesNotBreakResponse(): void
     {
-        $emitter = $this->createMock(\App\Shared\Application\Observability\Emitter\BusinessMetricsEmitterInterface::class);
-        $emitter->method('emit')->willThrowException(new \RuntimeException('Metrics emission failed'));
+        $emitter = $this->createMock(
+            \App\Shared\Application\Observability\Emitter\BusinessMetricsEmitterInterface::class
+        );
+        $emitter->method('emit')
+            ->willThrowException(new \RuntimeException('Metrics emission failed'));
 
         $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
         $logger->expects(self::once())
@@ -258,25 +220,82 @@ final class ApiEndpointBusinessMetricsSubscriberTest extends UnitTestCase
                 })
             );
 
-        $subscriber = new ApiEndpointBusinessMetricsSubscriber(
+        $subscriber = $this->createSubscriberWithLoggerAndEmitter($logger, $emitter);
+
+        $request = $this->createApiPlatformRequest();
+        $event = $this->createResponseEvent($request);
+
+        $subscriber->onResponse($event);
+    }
+
+    private function createSubscriberWithSpy(
+        BusinessMetricsEmitterSpy $spy
+    ): ApiEndpointBusinessMetricsSubscriber {
+        return new ApiEndpointBusinessMetricsSubscriber(
+            new NullLogger(),
+            $spy,
+            new ApiEndpointMetricDimensionsResolver(new MetricDimensionsFactory()),
+            new MetricDimensionsFactory()
+        );
+    }
+
+    private function createSubscriberWithLoggerAndEmitter(
+        \Psr\Log\LoggerInterface $logger,
+        \App\Shared\Application\Observability\Emitter\BusinessMetricsEmitterInterface $emitter
+    ): ApiEndpointBusinessMetricsSubscriber {
+        return new ApiEndpointBusinessMetricsSubscriber(
             $logger,
             $emitter,
             new ApiEndpointMetricDimensionsResolver(new MetricDimensionsFactory()),
             new MetricDimensionsFactory()
         );
+    }
 
-        $request = Request::create('/api/customers', 'GET');
-        $request->attributes->set('_api_resource_class', 'App\\Core\\Customer\\Domain\\Entity\\Customer');
-        $request->attributes->set('_api_operation_name', '_api_/customers_get_collection');
-
-        $event = new ResponseEvent(
+    private function createResponseEvent(Request $request): ResponseEvent
+    {
+        return new ResponseEvent(
             $this->createMock(HttpKernelInterface::class),
             $request,
             HttpKernelInterface::MAIN_REQUEST,
             new Response('', 200)
         );
+    }
 
-        // Should not throw - error is caught and logged
-        $subscriber->onResponse($event);
+    private function createApiPlatformRequest(): Request
+    {
+        $request = Request::create('/api/customers', 'GET');
+        $request->attributes->set(
+            '_api_resource_class',
+            'App\\Core\\Customer\\Domain\\Entity\\Customer'
+        );
+        $request->attributes->set(
+            '_api_operation_name',
+            '_api_/customers_get_collection'
+        );
+        return $request;
+    }
+
+    private function createHealthCheckRequest(): Request
+    {
+        $request = Request::create('/api/health', 'GET');
+        $request->attributes->set(
+            '_api_resource_class',
+            'App\\Internal\\HealthCheck\\Domain\\ValueObject\\HealthCheck'
+        );
+        $request->attributes->set('_api_operation_name', '_api_/health_get');
+        return $request;
+    }
+
+    private function assertMetricMatches(
+        \App\Shared\Application\Observability\Metric\BusinessMetric $metric,
+        string $expectedName,
+        int $expectedValue,
+        string $expectedEndpoint,
+        string $expectedOperation
+    ): void {
+        self::assertSame($expectedName, $metric->name());
+        self::assertSame($expectedValue, $metric->value());
+        self::assertSame($expectedEndpoint, $metric->dimensions()->values()->get('Endpoint'));
+        self::assertSame($expectedOperation, $metric->dimensions()->values()->get('Operation'));
     }
 }
