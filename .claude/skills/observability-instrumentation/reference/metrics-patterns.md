@@ -8,7 +8,7 @@ Business metrics track domain events and business value - things that matter to 
 
 | Business Metrics (Track These) | Infrastructure Metrics (AWS Provides) |
 | ------------------------------ | ------------------------------------- |
-| UsersCreated               | Request latency (p50, p95, p99)       |
+| UsersCreated                   | Request latency (p50, p95, p99)       |
 | OrdersPlaced                   | Error rates                           |
 | PaymentsProcessed              | Requests per second                   |
 | OrderValue (amount)            | CPU/Memory usage                      |
@@ -166,7 +166,7 @@ $this->metricsEmitter->emitCollection(new MetricCollection(
 
 | Good                | Bad                    |
 | ------------------- | ---------------------- |
-| `UsersCreated`  | `user_created`     |
+| `UsersCreated`      | `user_created`         |
 | `OrdersPlaced`      | `orders.placed.count`  |
 | `PaymentsProcessed` | `payment-processed`    |
 | `LoginAttempts`     | `login_attempts_total` |
@@ -189,7 +189,7 @@ $this->metricsEmitter->emitCollection(new MetricCollection(
 | `Endpoint`      | API resource name | Low         |
 | `Operation`     | CRUD action       | Very Low    |
 | `PaymentMethod` | Payment type      | Low         |
-| `UserType`  | User segment  | Low         |
+| `UserType`      | User segment      | Low         |
 
 ### Avoid High-Cardinality Dimensions
 

@@ -52,12 +52,12 @@ Business metrics follow these patterns:
 
 Each class has ONE responsibility:
 
-| Class                              | Responsibility                           |
-| ---------------------------------- | ---------------------------------------- |
+| Class                          | Responsibility                           |
+| ------------------------------ | ---------------------------------------- |
 | `UsersCreatedMetric`           | Define metric name, value, dimensions    |
 | `UserCreatedMetricsSubscriber` | Listen to event, emit metric             |
-| `AwsEmfBusinessMetricsEmitter`     | Format and write EMF logs                |
-| `MetricCollection`                 | Hold multiple metrics for batch emission |
+| `AwsEmfBusinessMetricsEmitter` | Format and write EMF logs                |
+| `MetricCollection`             | Hold multiple metrics for batch emission |
 
 **Anti-pattern**: Metrics emitted directly in command handlers (violates SRP - handler should only handle commands)
 
@@ -380,7 +380,7 @@ $this->metricsEmitter->emitCollection(new MetricCollection(
 | `Endpoint`      | API resource name | Low         |
 | `Operation`     | CRUD action       | Very Low    |
 | `PaymentMethod` | Payment type      | Low         |
-| `UserType`  | User segment  | Low         |
+| `UserType`      | User segment      | Low         |
 
 ### Avoid High-Cardinality Dimensions
 
@@ -407,7 +407,7 @@ These create too many unique metric streams and increase CloudWatch costs.
 
 | Good                | Bad                   |
 | ------------------- | --------------------- |
-| `UsersCreated`  | `user_created`    |
+| `UsersCreated`      | `user_created`        |
 | `OrdersPlaced`      | `orders.placed.count` |
 | `PaymentsProcessed` | `payment-processed`   |
 

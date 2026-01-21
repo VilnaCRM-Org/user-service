@@ -203,7 +203,7 @@ Your job is to add **domain-specific business metrics** that track business even
 
 | Pattern             | Example                                       |
 | ------------------- | --------------------------------------------- |
-| `{Entity}{Action}`  | `UsersCreated`, `OrdersPlaced`            |
+| `{Entity}{Action}`  | `UsersCreated`, `OrdersPlaced`                |
 | PascalCase          | `PaymentsProcessed`, not `payments_processed` |
 | Plural + Past tense | `LoginAttempts`, not `LoginAttempt`           |
 
@@ -211,10 +211,10 @@ Your job is to add **domain-specific business metrics** that track business even
 
 | Good Dimensions | Bad Dimensions (Avoid!) |
 | --------------- | ----------------------- |
-| `Endpoint`      | `UserId`            |
+| `Endpoint`      | `UserId`                |
 | `Operation`     | `OrderId`               |
 | `PaymentMethod` | `SessionId`             |
-| `UserType`  | `Timestamp`             |
+| `UserType`      | `Timestamp`             |
 
 ---
 

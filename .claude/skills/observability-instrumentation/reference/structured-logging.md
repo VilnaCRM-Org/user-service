@@ -39,7 +39,7 @@ Use appropriate log levels following PSR-3:
 | Level       | When to Use               | Example                              |
 | ----------- | ------------------------- | ------------------------------------ |
 | **debug**   | Detailed diagnostic info  | Variable values, method entry/exit   |
-| **info**    | Important business events | User created, order placed       |
+| **info**    | Important business events | User created, order placed           |
 | **warning** | Non-critical issues       | Email failed (retryable), cache miss |
 | **error**   | Critical failures         | Database down, API call failed       |
 
@@ -192,15 +192,15 @@ $this->logger->info('Payment processed', [
 
 ### Sensitive Data Types to Avoid
 
-| Type           | Examples              | Safe Alternative           |
-| -------------- | --------------------- | -------------------------- |
-| **Entity IDs** | user_id, order_id | event_id (correlation ID)  |
-| Passwords      | Plain text passwords  | Password length, hash type |
-| Tokens         | API keys, JWT tokens  | Token prefix, expiry time  |
-| Credit Cards   | Full card numbers     | Last 4 digits              |
-| SSN/Tax IDs    | Full identifiers      | Last 4 digits              |
-| API Keys       | Secret keys           | Key ID, key type           |
-| Personal Email | Full addresses        | Email domain               |
+| Type           | Examples             | Safe Alternative           |
+| -------------- | -------------------- | -------------------------- |
+| **Entity IDs** | user_id, order_id    | event_id (correlation ID)  |
+| Passwords      | Plain text passwords | Password length, hash type |
+| Tokens         | API keys, JWT tokens | Token prefix, expiry time  |
+| Credit Cards   | Full card numbers    | Last 4 digits              |
+| SSN/Tax IDs    | Full identifiers     | Last 4 digits              |
+| API Keys       | Secret keys          | Key ID, key type           |
+| Personal Email | Full addresses       | Email domain               |
 
 > **IMPORTANT**: Entity IDs (user_id, order_id, user_id) are PII under GDPR/SOC2. Always use event_id for log correlation instead.
 

@@ -54,11 +54,11 @@ Added business metrics for [feature description].
 
 ## Business Metrics Added
 
-| Metric Name        | Dimensions              | Purpose                      |
-| ------------------ | ----------------------- | ---------------------------- |
+| Metric Name    | Dimensions              | Purpose                  |
+| -------------- | ----------------------- | ------------------------ |
 | `UsersCreated` | Endpoint, Operation     | Track user registrations |
-| `OrdersPlaced`     | Endpoint, PaymentMethod | Track order volume           |
-| `OrderValue`       | Endpoint, PaymentMethod | Track order amounts          |
+| `OrdersPlaced` | Endpoint, PaymentMethod | Track order volume       |
+| `OrderValue`   | Endpoint, PaymentMethod | Track order amounts      |
 
 ## EMF Output Example
 
