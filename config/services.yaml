@@ -60,10 +60,6 @@ services:
     arguments:
       $messageBus: '@messenger.bus.default'
 
-  # Resilient Async Event Bus for domain events (cache invalidation, etc.)
-  # Processes events via message queue (AP from CAP theorem)
-  App\Shared\Infrastructure\Bus\Event\Async\ResilientAsyncEventBus: ~
-
   # Domain Event Message Handler - processes events from queue
   App\Shared\Infrastructure\Bus\Event\Async\DomainEventMessageHandler:
     arguments:
@@ -127,7 +123,6 @@ services:
   App\User\Infrastructure\Repository\MariaDBUserRepository:
     arguments:
       $batchSize: '%env(int:USER_INSERT_BATCH_SIZE)%'
-    public: true
 
   App\User\Infrastructure\Repository\CachedUserRepository:
     arguments:

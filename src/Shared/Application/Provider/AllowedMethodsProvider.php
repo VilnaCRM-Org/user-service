@@ -6,12 +6,13 @@ namespace App\Shared\Application\Provider;
 
 use App\Shared\Application\Collector\AllowedMethodsCollector;
 use App\Shared\Application\Normalizer\AllowedMethodsPathNormalizer;
+use App\Shared\Application\ValueObject\ResourceClassAllowlist;
 
 final readonly class AllowedMethodsProvider
 {
     public function __construct(
         private AllowedMethodsCollector $collector,
-        private AllowedMethodsResourceClassProvider $resourceClassProvider,
+        private ResourceClassAllowlist $resourceClassAllowlist,
         private AllowedMethodsPathNormalizer $pathNormalizer
     ) {
     }
@@ -24,7 +25,7 @@ final readonly class AllowedMethodsProvider
         $normalizedPath = $this->pathNormalizer->normalize($path);
         $methods = [];
 
-        foreach ($this->resourceClassProvider->all() as $resourceClass) {
+        foreach ($this->resourceClassAllowlist->all() as $resourceClass) {
             $methods = array_merge(
                 $methods,
                 $this->collector->collect($resourceClass, $normalizedPath)

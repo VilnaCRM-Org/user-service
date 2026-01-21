@@ -18,7 +18,7 @@ use App\Shared\Application\Collector\AllowedMethodsCollector;
 use App\Shared\Application\Matcher\AllowedMethodsOperationMatcher;
 use App\Shared\Application\Normalizer\AllowedMethodsPathNormalizer;
 use App\Shared\Application\Provider\AllowedMethodsProvider;
-use App\Shared\Application\Provider\AllowedMethodsResourceClassProvider;
+use App\Shared\Application\ValueObject\ResourceClassAllowlist;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\User;
 
@@ -155,11 +155,11 @@ final class AllowedMethodsProviderTest extends UnitTestCase
         $pathNormalizer = new AllowedMethodsPathNormalizer();
         $matcher = new AllowedMethodsOperationMatcher($pathNormalizer);
         $collector = new AllowedMethodsCollector($factory, $matcher);
-        $resourceClassProvider = new AllowedMethodsResourceClassProvider();
+        $resourceClassAllowlist = new ResourceClassAllowlist();
 
         return new AllowedMethodsProvider(
             $collector,
-            $resourceClassProvider,
+            $resourceClassAllowlist,
             $pathNormalizer
         );
     }
@@ -190,11 +190,11 @@ final class AllowedMethodsProviderTest extends UnitTestCase
         $pathNormalizer = new AllowedMethodsPathNormalizer();
         $matcher = new AllowedMethodsOperationMatcher($pathNormalizer);
         $collector = new AllowedMethodsCollector($factory, $matcher);
-        $resourceClassProvider = new AllowedMethodsResourceClassProvider();
+        $resourceClassAllowlist = new ResourceClassAllowlist();
 
         return new AllowedMethodsProvider(
             $collector,
-            $resourceClassProvider,
+            $resourceClassAllowlist,
             $pathNormalizer
         );
     }
