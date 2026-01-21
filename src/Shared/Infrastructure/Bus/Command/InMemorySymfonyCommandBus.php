@@ -12,7 +12,7 @@ use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Messenger\Exception\NoHandlerForMessageException;
 use Symfony\Component\Messenger\MessageBus;
 
-class InMemorySymfonyCommandBus implements CommandBusInterface
+readonly class InMemorySymfonyCommandBus implements CommandBusInterface
 {
     private MessageBus $bus;
 
@@ -29,53 +29,14 @@ class InMemorySymfonyCommandBus implements CommandBusInterface
     /**
      * @throws \Throwable
      */
-    #[\Override]
     public function dispatch(CommandInterface $command): void
-    {
-        $this->dispatchCommand($command);
-    }
-
-    /**
-     * @throws \Throwable
-     */
-    private function dispatchCommand(CommandInterface $command): void
     {
         try {
             $this->bus->dispatch($command);
-        } catch (
-            NoHandlerForMessageException|HandlerFailedException $error
-        ) {
-            $this->handleDispatchException($error, $command);
+        } catch (NoHandlerForMessageException) {
+            throw new CommandNotRegisteredException($command);
+        } catch (HandlerFailedException $error) {
+            throw $error->getPrevious() ?? $error;
         }
-    }
-
-    /**
-     * @throws \Throwable
-     */
-    private function handleDispatchException(
-        \Throwable $error,
-        CommandInterface $command
-    ): never {
-        if ($error instanceof NoHandlerForMessageException) {
-            throw $this->commandNotRegistered($command);
-        }
-
-        if ($error instanceof HandlerFailedException) {
-            throw $this->unwrapHandlerFailure($error);
-        }
-
-        throw $error;
-    }
-
-    private function commandNotRegistered(
-        CommandInterface $command
-    ): CommandNotRegisteredException {
-        return new CommandNotRegisteredException($command);
-    }
-
-    private function unwrapHandlerFailure(
-        HandlerFailedException $error
-    ): \Throwable {
-        return $error->getPrevious() ?? $error;
     }
 }

@@ -11,23 +11,27 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 final class InfiniteRetryStrategy implements RetryStrategyInterface
 {
+    public function __construct(
+        private readonly int $delayMs,
+    ) {
+    }
+
     public function shouldRetry(
-        AsyncContext $_context,
-        ?string $_responseContent,
-        ?TransportExceptionInterface $_exception
+        AsyncContext $context,
+        ?string $responseContent,
+        ?TransportExceptionInterface $exception
     ): ?bool {
         return true;
     }
 
     public function getDelay(
-        AsyncContext $_context,
-        ?string $_responseContent,
-        ?TransportExceptionInterface $_exception
+        AsyncContext $context,
+        ?string $responseContent,
+        ?TransportExceptionInterface $exception
     ): int {
-        return 60000;
+        return $this->delayMs;
     }
 
-    #[\Override]
     public function isRetryable(
         Envelope $message,
         ?\Throwable $throwable = null
@@ -35,11 +39,10 @@ final class InfiniteRetryStrategy implements RetryStrategyInterface
         return true;
     }
 
-    #[\Override]
     public function getWaitingTime(
         Envelope $message,
         ?\Throwable $throwable = null
     ): int {
-        return 60000;
+        return $this->delayMs;
     }
 }

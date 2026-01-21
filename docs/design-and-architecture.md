@@ -90,6 +90,13 @@ This is the list of currently available Domain Events, which can be found in `Us
 
 Also, you can find Subscribers for these events in `src/User/Application/EventSubscriber`, and a Message Bus for them in `Shared/Infrastructure/Bus/Event`.
 
+## Observability
+
+- Business metrics are emitted in AWS Embedded Metric Format (EMF) via `App\Shared\Application\Observability` value objects and the `AwsEmfBusinessMetricsEmitter` logger. Set the namespace with `AWS_EMF_NAMESPACE` (default `UserService/BusinessMetrics`).
+- HTTP responses publish endpoint-level metrics through `ApiEndpointBusinessMetricsSubscriber`, which records `EndpointInvocations` with `Endpoint` and `Operation` dimensions.
+- User domain events emit User-specific metrics: `UsersRegistered` (registration), `UsersUpdated` (email/password changes), and `PasswordResetRequests` (reset flow entry). Metrics live in `User/Application/Metric/*` with dedicated subscribers under `User/Application/EventSubscriber/*MetricsSubscriber`.
+- Domain-event infrastructure now includes resilient async components (envelope, dispatcher, handler) and failure metrics for queue/subscriber issues; the default bus remains in-memory, keeping metrics best-effort and non-blocking.
+
 ## Architecture Diagram
 
 This is the architecture diagram of User Service. When running the service locally, you can view interactive diagrams at [http://localhost:8080/workspace/diagrams](http://localhost:8080/workspace/diagrams).
