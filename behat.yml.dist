@@ -8,12 +8,7 @@ default:
                 - App\Tests\Behat\UserContext\UserContext
                 - App\Tests\Behat\UserContext\UserOperationsContext
                 - App\Tests\Behat\OAuthContext\OAuthContext
-        health_check:
-            paths:
-                - features/health_check.feature
-            contexts:
                 - App\Tests\Behat\HealthCheckContext\HealthCheckContext
-                - App\Tests\Behat\UserContext\UserOperationsContext
 
 
     extensions:
