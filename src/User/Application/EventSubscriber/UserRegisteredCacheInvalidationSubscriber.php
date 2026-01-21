@@ -14,10 +14,7 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
  *
  * Invalidates cache when a user is registered.
  *
- * ARCHITECTURAL DECISION: Processed via async queue (AsyncSymfonyEventBus)
- * This subscriber runs in Symfony Messenger workers. Exceptions propagate to
- * DomainEventMessageHandler which catches, logs, and emits failure metrics.
- * We follow AP from CAP theorem (Availability + Partition tolerance over Consistency).
+ * @see docs/ADR/0001-async-cache-invalidation.md for architectural decisions
  */
 final readonly class UserRegisteredCacheInvalidationSubscriber implements
     UserCacheInvalidationSubscriberInterface

@@ -477,7 +477,7 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
-### 15. Cache Management (`cache-management/`)
+### 16. Cache Management (`cache-management/`)
 
 **Purpose**: Implement production-grade caching with cache keys/TTLs/consistency classes per query, SWR (stale-while-revalidate), explicit invalidation, and tests for stale reads and cache warmup.
 

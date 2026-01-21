@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\User\Domain\Factory\Event;
+namespace App\User\Application\Factory\Event;
 
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetEmailSentEvent;
+use App\User\Domain\Factory\Event\PasswordResetEmailSendEventFactoryInterface;
 
 final class PasswordResetEmailSendEventFactory implements
     PasswordResetEmailSendEventFactoryInterface

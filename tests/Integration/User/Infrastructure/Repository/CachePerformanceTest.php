@@ -41,10 +41,9 @@ final class CachePerformanceTest extends IntegrationTestCase
     {
         $user = $this->createTestUser();
         $userId = $user->getId();
-        $this->cachePool->clear();
 
-        $cacheMissLatencyNs = $this->measureFindLatency($userId);
-        $cacheHitLatencyNs = $this->measureFindLatency($userId);
+        $cacheMissLatencyNs = $this->measureAverageLatency($userId, true);
+        $cacheHitLatencyNs = $this->measureAverageLatency($userId, false);
 
         $this->assertCacheHitFasterThanMiss($cacheMissLatencyNs, $cacheHitLatencyNs);
     }
@@ -55,7 +54,7 @@ final class CachePerformanceTest extends IntegrationTestCase
         $userId = $user->getId();
 
         $this->repository->find($userId);
-        $averageLatencyMs = $this->measureAverageCacheHitLatency($userId);
+        $averageLatencyMs = $this->measureAverageLatency($userId, false) / 1_000_000;
 
         $this->assertAverageLatencyIsAcceptable($averageLatencyMs);
     }
@@ -94,13 +93,26 @@ final class CachePerformanceTest extends IntegrationTestCase
         $this->assertCacheHitLatencyAfterReWarmup($userId);
     }
 
-    private function measureFindLatency(string $userId): int
+    private function measureAverageLatency(string $userId, bool $clearCacheEachTime): int
     {
-        $start = hrtime(true);
-        $this->repository->find($userId);
-        $end = hrtime(true);
+        if (!$clearCacheEachTime) {
+            $this->repository->find($userId);
+        }
 
-        return $end - $start;
+        $totalLatencyNs = 0;
+        for ($i = 0; $i < self::PERFORMANCE_ITERATIONS; $i++) {
+            if ($clearCacheEachTime) {
+                $this->cachePool->clear();
+            }
+
+            $start = hrtime(true);
+            $this->repository->find($userId);
+            $end = hrtime(true);
+
+            $totalLatencyNs += $end - $start;
+        }
+
+        return (int) ($totalLatencyNs / self::PERFORMANCE_ITERATIONS);
     }
 
     private function assertCacheHitFasterThanMiss(int $cacheMissLatencyNs, int $cacheHitLatencyNs): void
@@ -137,19 +149,6 @@ final class CachePerformanceTest extends IntegrationTestCase
                 )
             );
         }
-    }
-
-    private function measureAverageCacheHitLatency(string $userId): float
-    {
-        $totalLatencyNs = 0;
-        for ($i = 0; $i < self::PERFORMANCE_ITERATIONS; $i++) {
-            $start = hrtime(true);
-            $this->repository->find($userId);
-            $end = hrtime(true);
-            $totalLatencyNs += $end - $start;
-        }
-
-        return $totalLatencyNs / self::PERFORMANCE_ITERATIONS / 1_000_000;
     }
 
     private function assertAverageLatencyIsAcceptable(float $averageLatencyMs): void

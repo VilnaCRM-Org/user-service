@@ -47,10 +47,10 @@ final class UserUpdatedCacheInvalidationSubscriberTest extends UnitTestCase
     public function testInvokeInvalidatesCacheWithPreviousEmail(): void
     {
         $userId = $this->faker->uuid();
-        $email = $this->faker->email();
-        $previousEmail = $this->faker->email();
-        $emailHash = 'email_hash_1';
-        $previousHash = 'email_hash_2';
+        $email = $this->faker->unique()->email();
+        $previousEmail = $this->faker->unique()->email();
+        $emailHash = $this->faker->sha256();
+        $previousHash = $this->faker->sha256();
         $event = $this->createEvent($userId, $email, $previousEmail);
         $this->expectEmailHashes(
             [$email, $previousEmail],
@@ -67,8 +67,8 @@ final class UserUpdatedCacheInvalidationSubscriberTest extends UnitTestCase
     public function testInvokeInvalidatesCacheWithoutPreviousEmail(): void
     {
         $userId = $this->faker->uuid();
-        $email = $this->faker->email();
-        $emailHash = 'email_hash_1';
+        $email = $this->faker->unique()->email();
+        $emailHash = $this->faker->sha256();
         $event = $this->createEvent($userId, $email, null);
         $this->expectEmailHash($email, $emailHash);
         $this->assertCacheInvalidation($event, [
