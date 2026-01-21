@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Application\ValueObject;
+namespace App\Shared\Domain\ValueObject;
 
 use App\Internal\HealthCheck\Domain\ValueObject\HealthCheck;
 use App\User\Domain\Entity\User;

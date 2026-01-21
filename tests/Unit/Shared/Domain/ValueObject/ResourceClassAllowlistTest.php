@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Application\ValueObject;
+namespace App\Tests\Unit\Shared\Domain\ValueObject;
 
 use App\Internal\HealthCheck\Domain\ValueObject\HealthCheck;
-use App\Shared\Application\ValueObject\ResourceClassAllowlist;
+use App\Shared\Domain\ValueObject\ResourceClassAllowlist;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\User;
 

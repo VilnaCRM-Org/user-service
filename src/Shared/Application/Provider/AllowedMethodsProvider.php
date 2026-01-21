@@ -6,7 +6,7 @@ namespace App\Shared\Application\Provider;
 
 use App\Shared\Application\Collector\AllowedMethodsCollector;
 use App\Shared\Application\Normalizer\AllowedMethodsPathNormalizer;
-use App\Shared\Application\ValueObject\ResourceClassAllowlist;
+use App\Shared\Domain\ValueObject\ResourceClassAllowlist;
 
 final readonly class AllowedMethodsProvider
 {

@@ -9,7 +9,12 @@ default:
                 - App\Tests\Behat\UserContext\UserOperationsContext
                 - App\Tests\Behat\OAuthContext\OAuthContext
                 - App\Tests\Behat\HealthCheckContext\HealthCheckContext
-
+        health_check:
+            paths:
+                - features/health_check.feature
+            contexts:
+                - App\Tests\Behat\HealthCheckContext\HealthCheckContext
+                - App\Tests\Behat\UserContext\UserOperationsContext
 
     extensions:
         DAMA\DoctrineTestBundle\Behat\ServiceContainer\DoctrineExtension: ~
