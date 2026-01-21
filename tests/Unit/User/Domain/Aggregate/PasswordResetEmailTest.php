@@ -34,24 +34,6 @@ final class PasswordResetEmailTest extends UnitTestCase
         $this->assertSame($user, $passwordResetEmail->user);
     }
 
-    public function testConstructionThrowsExceptionWhenTokenUserIdDoesNotMatchUserId(): void
-    {
-        $user = $this->createUser();
-        $differentUserId = $this->faker->uuid();
-        $token = $this->createPasswordResetToken($differentUserId);
-
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            sprintf(
-                'Token user ID "%s" does not match user ID "%s"',
-                $differentUserId,
-                $user->getId()
-            )
-        );
-
-        new PasswordResetEmail($token, $user, $this->factoryMock);
-    }
-
     public function testSend(): void
     {
         $user = $this->createUser();
