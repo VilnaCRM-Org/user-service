@@ -22,6 +22,7 @@ final class OtherDomainEvent extends DomainEvent
     /**
      * @param array<string, mixed> $body
      */
+    #[\Override]
     public static function fromPrimitives(
         array $body,
         string $eventId,
@@ -40,6 +41,7 @@ final class OtherDomainEvent extends DomainEvent
         );
     }
 
+    #[\Override]
     public static function eventName(): string
     {
         return 'test.other_domain_event';
@@ -48,6 +50,7 @@ final class OtherDomainEvent extends DomainEvent
     /**
      * @return array<string, string>
      */
+    #[\Override]
     public function toPrimitives(): array
     {
         return ['data' => $this->data];

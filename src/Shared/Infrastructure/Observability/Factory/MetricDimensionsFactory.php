@@ -10,11 +10,13 @@ use App\Shared\Application\Observability\Metric\ValueObject\MetricDimension;
 
 final class MetricDimensionsFactory implements MetricDimensionsFactoryInterface
 {
+    #[\Override]
     public function endpointOperation(string $endpoint, string $operation): MetricDimensions
     {
         return $this->endpointOperationWith($endpoint, $operation);
     }
 
+    #[\Override]
     public function endpointOperationWith(
         string $endpoint,
         string $operation,

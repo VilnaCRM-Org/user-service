@@ -39,6 +39,7 @@ final readonly class EmfAwsMetadata implements \JsonSerializable
     /**
      * @return array{Timestamp: int, CloudWatchMetrics: array<int, array{Namespace: string, Dimensions: array<int, array<int, string>>, Metrics: array<int, array{Name: string, Unit: string}>}>}
      */
+    #[\Override]
     public function jsonSerialize(): array
     {
         return [

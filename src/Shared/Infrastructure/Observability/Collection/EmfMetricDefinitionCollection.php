@@ -36,11 +36,13 @@ final readonly class EmfMetricDefinitionCollection implements
     /**
      * @return Traversable<int, EmfMetricDefinition>
      */
+    #[\Override]
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->definitions);
     }
 
+    #[\Override]
     public function count(): int
     {
         return count($this->definitions);
@@ -62,6 +64,7 @@ final readonly class EmfMetricDefinitionCollection implements
     /**
      * @return array<int, array{Name: string, Unit: string}>
      */
+    #[\Override]
     public function jsonSerialize(): array
     {
         return array_map(

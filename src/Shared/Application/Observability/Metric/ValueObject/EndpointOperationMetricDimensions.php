@@ -29,6 +29,7 @@ final readonly class EndpointOperationMetricDimensions implements MetricDimensio
         return $this->operation;
     }
 
+    #[\Override]
     public function values(): MetricDimensions
     {
         return new MetricDimensions(

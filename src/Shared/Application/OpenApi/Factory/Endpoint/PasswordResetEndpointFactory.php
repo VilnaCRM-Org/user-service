@@ -69,7 +69,7 @@ final class PasswordResetEndpointFactory implements EndpointFactoryInterface
         );
     }
 
-    private function getPathItem(OpenApi $openApi, string $endpoint): PathItem
+    private function getPathItem(OpenApi $openApi, string $endpoint): ?PathItem
     {
         return $openApi->getPaths()->getPath($endpoint);
     }

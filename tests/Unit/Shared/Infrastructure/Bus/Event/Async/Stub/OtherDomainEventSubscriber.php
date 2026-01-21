@@ -23,16 +23,9 @@ final class OtherDomainEventSubscriber implements DomainEventSubscriberInterface
     /**
      * @return array<class-string>
      */
+    #[\Override]
     public function subscribedTo(): array
     {
         return [OtherDomainEvent::class];
-    }
-
-    /**
-     * @return array<DomainEvent>
-     */
-    public function handled(): array
-    {
-        return $this->handled;
     }
 }

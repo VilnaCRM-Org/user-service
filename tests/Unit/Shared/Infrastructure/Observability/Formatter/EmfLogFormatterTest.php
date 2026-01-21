@@ -28,6 +28,7 @@ final class EmfLogFormatterTest extends UnitTestCase
     private EmfLogFormatter $formatter;
     private EmfDimensionValueValidatorInterface $dimensionValidator;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

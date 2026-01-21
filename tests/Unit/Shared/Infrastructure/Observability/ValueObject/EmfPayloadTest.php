@@ -23,6 +23,7 @@ final class EmfPayloadTest extends UnitTestCase
 {
     private EmfDimensionValueValidatorInterface $dimensionValidator;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

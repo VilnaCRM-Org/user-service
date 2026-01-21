@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\User\Application\EventSubscriber;
 
-use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Application\Factory\EmailFactoryInterface;
 use App\User\Domain\Event\ConfirmationEmailSentEvent;
@@ -49,7 +48,9 @@ final readonly class ConfirmationEmailSentEventSubscriber implements
     }
 
     /**
-     * @return array<DomainEvent>
+     * @return array<string>
+     *
+     * @psalm-return list{ConfirmationEmailSentEvent::class}
      */
     #[\Override]
     public function subscribedTo(): array

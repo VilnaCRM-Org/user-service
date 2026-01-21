@@ -359,7 +359,7 @@ final class UserGraphQLContext implements Context
     }
 
     /**
-     * @return array<string, string|bool|int|null>
+     * @return array<string, mixed>
      */
     private function extractMutationUserData(): array
     {
@@ -396,9 +396,11 @@ final class UserGraphQLContext implements Context
     }
 
     /**
-     * @return array<string, string|bool|int|null>
+     * @return array<bool|int|string|null>|null
+     *
+     * @psalm-return array<string, bool|int|string|null>|null
      */
-    private function extractQueryUserData(): array
+    private function extractQueryUserData(): ?array
     {
         $data = $this->parseAndValidateResponse();
         $this->assertQueryNameExists($data);

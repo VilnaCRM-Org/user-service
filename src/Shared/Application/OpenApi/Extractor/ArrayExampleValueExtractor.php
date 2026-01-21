@@ -6,7 +6,12 @@ namespace App\Shared\Application\OpenApi\Extractor;
 
 final class ArrayExampleValueExtractor
 {
-    public function extract(mixed $example): array|string|int|bool|null
+    /**
+     * @param array<string|array<true>>|string $example
+     *
+     * @psalm-param 'string'|array{0?: 'first', 1?: 'second', a?: array{nested: true}} $example
+     */
+    public function extract(array|string $example): array|string|int|bool|null
     {
         return match (true) {
             !is_array($example),

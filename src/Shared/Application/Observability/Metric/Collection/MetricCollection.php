@@ -28,11 +28,13 @@ final readonly class MetricCollection implements IteratorAggregate, Countable
     /**
      * @return Traversable<int, BusinessMetric>
      */
+    #[\Override]
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->metrics);
     }
 
+    #[\Override]
     public function count(): int
     {
         return count($this->metrics);

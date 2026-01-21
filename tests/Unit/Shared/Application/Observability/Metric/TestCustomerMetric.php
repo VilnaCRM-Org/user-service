@@ -19,11 +19,13 @@ final readonly class TestCustomerMetric extends BusinessMetric
         parent::__construct($value, new MetricUnit(MetricUnit::COUNT));
     }
 
+    #[\Override]
     public function name(): string
     {
         return 'CustomersCreated';
     }
 
+    #[\Override]
     public function dimensions(): MetricDimensionsInterface
     {
         return new EndpointOperationMetricDimensions(

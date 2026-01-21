@@ -31,6 +31,7 @@ final readonly class EmfMetricDefinition implements \JsonSerializable
     /**
      * @return array{Name: string, Unit: string}
      */
+    #[\Override]
     public function jsonSerialize(): array
     {
         return [

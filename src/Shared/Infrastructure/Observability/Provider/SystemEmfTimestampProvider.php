@@ -9,6 +9,7 @@ namespace App\Shared\Infrastructure\Observability\Provider;
  */
 final readonly class SystemEmfTimestampProvider implements EmfTimestampProvider
 {
+    #[\Override]
     public function currentTimestamp(): int
     {
         return (int) (microtime(true) * 1000);

@@ -14,16 +14,19 @@ final readonly class UsersRegisteredMetric extends EndpointOperationBusinessMetr
         parent::__construct($value, new MetricUnit(MetricUnit::COUNT));
     }
 
+    #[\Override]
     public function name(): string
     {
         return 'UsersRegistered';
     }
 
+    #[\Override]
     protected function endpoint(): string
     {
         return 'User';
     }
 
+    #[\Override]
     protected function operation(): string
     {
         return 'create';

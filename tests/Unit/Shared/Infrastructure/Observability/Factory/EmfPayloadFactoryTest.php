@@ -166,6 +166,7 @@ final class EmfPayloadFactoryTest extends UnitTestCase
     private function createTimestampProvider(): EmfTimestampProvider
     {
         return new class() implements EmfTimestampProvider {
+            #[\Override]
             public function currentTimestamp(): int
             {
                 return EmfPayloadFactoryTest::FIXED_TIMESTAMP;

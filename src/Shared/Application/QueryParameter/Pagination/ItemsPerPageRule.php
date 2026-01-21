@@ -20,6 +20,9 @@ final class ItemsPerPageRule
     ) {
     }
 
+    /**
+     * @param array<string, scalar|null>|scalar|null $value
+     */
     public function evaluate(mixed $value): ?QueryParameterViolation
     {
         if (!$this->valueEvaluator->wasParameterSent($value)) {

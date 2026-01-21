@@ -13,6 +13,7 @@ use App\Shared\Application\Observability\Metric\ValueObject\MetricDimensionsInte
  */
 final readonly class TestInvalidUtf8Dimensions implements MetricDimensionsInterface
 {
+    #[\Override]
     public function values(): MetricDimensions
     {
         return new MetricDimensions(

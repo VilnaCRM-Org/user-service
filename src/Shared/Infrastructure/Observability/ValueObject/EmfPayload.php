@@ -53,8 +53,11 @@ final readonly class EmfPayload implements \JsonSerializable
     }
 
     /**
-     * @return array<string, string|int|float|array<string, int|array<int, array<string, string|array<int, array<int, string>|array<int, array<string, string>>>>>>>
+     * @return array<array<array<array<string|array<array<string>>>>|int>|float|int|string>
+     *
+     * @psalm-return array{_aws: array{Timestamp: int, CloudWatchMetrics: array<int, array{Namespace: string, Dimensions: array<int, array<int, string>>, Metrics: array<int, array{Name: string, Unit: string}>}>}|float|int|string,...}
      */
+    #[\Override]
     public function jsonSerialize(): array
     {
         return array_merge(

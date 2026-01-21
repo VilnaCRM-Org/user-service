@@ -26,6 +26,7 @@ final readonly class EmfDimensionValueValidator implements EmfDimensionValueVali
     ) {
     }
 
+    #[\Override]
     public function validate(EmfDimensionValue $dimensionValue): void
     {
         $this->validateKey($dimensionValue->key());

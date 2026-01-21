@@ -21,6 +21,7 @@ final class EmfNamespaceValidatorTest extends UnitTestCase
 {
     private EmfNamespaceValidator $service;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

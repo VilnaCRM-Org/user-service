@@ -17,6 +17,9 @@ final readonly class UserRegisteredMetricsSubscriber implements DomainEventSubsc
     ) {
     }
 
+    /**
+     * @psalm-suppress UnusedParam Event parameter required by interface but not used
+     */
     public function __invoke(UserRegisteredEvent $event): void
     {
         $this->metricsEmitter->emit($this->metricFactory->create());
@@ -25,6 +28,7 @@ final readonly class UserRegisteredMetricsSubscriber implements DomainEventSubsc
     /**
      * @return array<class-string>
      */
+    #[\Override]
     public function subscribedTo(): array
     {
         return [UserRegisteredEvent::class];

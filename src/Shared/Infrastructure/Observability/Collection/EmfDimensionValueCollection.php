@@ -40,11 +40,13 @@ final readonly class EmfDimensionValueCollection implements IteratorAggregate, C
     /**
      * @return Traversable<int, EmfDimensionValue>
      */
+    #[\Override]
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->dimensions);
     }
 
+    #[\Override]
     public function count(): int
     {
         return count($this->dimensions);

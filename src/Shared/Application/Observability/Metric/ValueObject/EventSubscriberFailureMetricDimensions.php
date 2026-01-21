@@ -20,6 +20,7 @@ final readonly class EventSubscriberFailureMetricDimensions implements MetricDim
     ) {
     }
 
+    #[\Override]
     public function values(): MetricDimensions
     {
         return new MetricDimensions(

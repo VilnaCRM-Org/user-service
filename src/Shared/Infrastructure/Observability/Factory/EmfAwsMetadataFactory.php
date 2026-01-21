@@ -30,6 +30,7 @@ final readonly class EmfAwsMetadataFactory implements EmfAwsMetadataFactoryInter
         $namespaceValidator->validate(new EmfNamespaceValue($namespace));
     }
 
+    #[\Override]
     public function createWithMetric(
         EmfDimensionKeys $dimensionKeys,
         EmfMetricDefinition $definition
@@ -46,6 +47,7 @@ final readonly class EmfAwsMetadataFactory implements EmfAwsMetadataFactoryInter
         );
     }
 
+    #[\Override]
     public function createEmpty(EmfDimensionKeys $dimensionKeys): EmfAwsMetadata
     {
         $cloudWatchConfig = new EmfCloudWatchMetricConfig(

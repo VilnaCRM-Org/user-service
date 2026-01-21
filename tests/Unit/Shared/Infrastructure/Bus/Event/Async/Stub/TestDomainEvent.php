@@ -19,6 +19,7 @@ final class TestDomainEvent extends DomainEvent
     /**
      * @param array<string, string|object> $body
      */
+    #[\Override]
     public static function fromPrimitives(
         array $body,
         string $eventId,
@@ -31,6 +32,7 @@ final class TestDomainEvent extends DomainEvent
         );
     }
 
+    #[\Override]
     public static function eventName(): string
     {
         return 'test.domain_event';
@@ -39,6 +41,7 @@ final class TestDomainEvent extends DomainEvent
     /**
      * @return array<string, string>
      */
+    #[\Override]
     public function toPrimitives(): array
     {
         return ['aggregateId' => $this->aggregateId];

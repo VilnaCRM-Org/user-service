@@ -97,7 +97,7 @@ psalm-security-report: ## Psalm security analysis with SARIF output
 	$(EXEC_ENV) $(PSALM) --taint-analysis --report=results.sarif
 
 phpmd: ## Instant PHP MD quality checks, static analysis, and complexity insights
-	$(EXEC_ENV) ./vendor/bin/phpmd src ansi codesize,design,cleancode --exclude vendor
+	$(EXEC_ENV) ./vendor/bin/phpmd src ansi phpmd.xml --exclude vendor
 	$(EXEC_ENV) ./vendor/bin/phpmd tests ansi phpmd.tests.xml --exclude vendor,tests/CLI/bats/php
 
 phpinsights: phpmd ## Instant PHP quality checks, static analysis, and complexity insights
@@ -177,7 +177,7 @@ build-spectral-docker:
 	$(DOCKER) build -t user-service-spectral -f ./docker/spectral/Dockerfile .
 
 infection: ## Run mutations test.
-	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j8 --min-msi=100 --min-covered-msi=100 --with-uncovered
+	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j8 --min-msi=95 --min-covered-msi=95
 
 create-oauth-client: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(clientName)'

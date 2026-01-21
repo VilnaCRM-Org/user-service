@@ -7,6 +7,9 @@ namespace App\Tests\Unit\Shared\Infrastructure\Bus\Event\Stub;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 
+/**
+ * @psalm-suppress UnusedClass Test stub used by reflection/factory in tests
+ */
 final readonly class TestDomainEventSubscriber implements DomainEventSubscriberInterface
 {
     public function __construct(private ?\Closure $handler = null)
@@ -23,6 +26,7 @@ final readonly class TestDomainEventSubscriber implements DomainEventSubscriberI
     /**
      * @return array<class-string>
      */
+    #[\Override]
     public function subscribedTo(): array
     {
         return [TestDomainEvent::class];

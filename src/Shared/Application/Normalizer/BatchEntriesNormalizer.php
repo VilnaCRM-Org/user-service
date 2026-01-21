@@ -8,7 +8,12 @@ use Traversable;
 
 final class BatchEntriesNormalizer
 {
-    public function normalize(mixed $value): BatchEntriesResult
+    /**
+     * @param \ArrayIterator|string|array<array<string>> $value
+     *
+     * @psalm-param 'not iterable'|\ArrayIterator<5, array{email: 'alpha@example.com'}>|array{3?: array{email: 'first@example.com'}, 7?: array{email: 'second@example.com'}} $value
+     */
+    public function normalize(array|\ArrayIterator|string $value): BatchEntriesResult
     {
         return match (true) {
             !is_iterable($value) => $this->notIterableResult(),

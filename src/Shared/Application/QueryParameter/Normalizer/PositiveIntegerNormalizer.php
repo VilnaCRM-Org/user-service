@@ -10,7 +10,7 @@ use function is_string;
 
 final class PositiveIntegerNormalizer
 {
-    public function normalize(mixed $value): ?int
+    public function normalize(string|\stdClass|int $value): ?int
     {
         return match (true) {
             is_int($value) => $this->normalizeInt($value),

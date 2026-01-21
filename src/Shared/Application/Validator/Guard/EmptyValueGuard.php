@@ -8,11 +8,17 @@ use Symfony\Component\Validator\Constraint;
 
 final class EmptyValueGuard
 {
-    public static function isEmpty(mixed $value): bool
+    /**
+     * @psalm-param ''|'a'|null $value
+     */
+    public static function isEmpty(?string $value): bool
     {
         return $value === null || $value === '';
     }
 
+    /**
+     * @psalm-suppress UnusedParam Constraint parameter required for future extension
+     */
     public function shouldSkip(
         array|string|int|float|bool|null $value,
         Constraint $constraint

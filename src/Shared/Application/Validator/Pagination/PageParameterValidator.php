@@ -36,6 +36,9 @@ final class PageParameterValidator
         };
     }
 
+    /**
+     * @param array<string, scalar|null>|scalar|null $value
+     */
     private function violationForExplicit(
         mixed $value
     ): ?QueryParameterViolation {
@@ -46,6 +49,9 @@ final class PageParameterValidator
         return $this->violationFactory->invalidPagination();
     }
 
+    /**
+     * @param array<string, scalar|null>|scalar|null $value
+     */
     private function violationForImplicit(
         mixed $value
     ): ?QueryParameterViolation {

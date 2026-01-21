@@ -16,6 +16,9 @@ final class InfiniteRetryStrategy implements RetryStrategyInterface
     ) {
     }
 
+    /**
+     * @psalm-suppress UnusedParam Parameters required by interface but not used (always retry)
+     */
     public function shouldRetry(
         AsyncContext $context,
         ?string $responseContent,
@@ -24,6 +27,9 @@ final class InfiniteRetryStrategy implements RetryStrategyInterface
         return true;
     }
 
+    /**
+     * @psalm-suppress UnusedParam Parameters required by interface but not used (fixed delay)
+     */
     public function getDelay(
         AsyncContext $context,
         ?string $responseContent,
@@ -32,6 +38,7 @@ final class InfiniteRetryStrategy implements RetryStrategyInterface
         return $this->delayMs;
     }
 
+    #[\Override]
     public function isRetryable(
         Envelope $message,
         ?\Throwable $throwable = null
@@ -39,6 +46,7 @@ final class InfiniteRetryStrategy implements RetryStrategyInterface
         return true;
     }
 
+    #[\Override]
     public function getWaitingTime(
         Envelope $message,
         ?\Throwable $throwable = null

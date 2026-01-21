@@ -13,6 +13,7 @@ final class AsyncEventDispatcherSpy implements AsyncEventDispatcherInterface
     private array $dispatched = [];
     private bool $shouldFail = false;
 
+    #[\Override]
     public function dispatch(DomainEvent ...$events): bool
     {
         if ($this->shouldFail) {
@@ -37,11 +38,5 @@ final class AsyncEventDispatcherSpy implements AsyncEventDispatcherInterface
     public function dispatched(): array
     {
         return $this->dispatched;
-    }
-
-    public function clear(): void
-    {
-        $this->dispatched = [];
-        $this->shouldFail = false;
     }
 }

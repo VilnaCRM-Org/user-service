@@ -34,7 +34,9 @@ final class MessageBusFactory
     /**
      * @param iterable<object> $callables
      *
-     * @return array<string, array<object>>
+     * @return array<array<DomainEventSubscriberInterface>>
+     *
+     * @psalm-return array<int|string, array<DomainEventSubscriberInterface>>
      */
     private function buildHandlersMap(iterable $callables): array
     {

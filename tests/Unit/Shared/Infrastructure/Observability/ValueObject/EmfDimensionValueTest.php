@@ -21,6 +21,7 @@ final class EmfDimensionValueTest extends UnitTestCase
 {
     private ValidatorInterface $validator;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

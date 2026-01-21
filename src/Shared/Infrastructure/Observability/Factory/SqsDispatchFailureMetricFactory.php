@@ -15,6 +15,7 @@ use App\Shared\Application\Observability\Metric\SqsDispatchFailureMetric;
 final readonly class SqsDispatchFailureMetricFactory implements
     SqsDispatchFailureMetricFactoryInterface
 {
+    #[\Override]
     public function create(string $eventType): SqsDispatchFailureMetric
     {
         return new SqsDispatchFailureMetric(eventType: $eventType);

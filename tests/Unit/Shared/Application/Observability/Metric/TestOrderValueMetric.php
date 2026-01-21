@@ -19,11 +19,13 @@ final readonly class TestOrderValueMetric extends BusinessMetric
         parent::__construct($value, new MetricUnit(MetricUnit::NONE));
     }
 
+    #[\Override]
     public function name(): string
     {
         return 'OrderValue';
     }
 
+    #[\Override]
     public function dimensions(): MetricDimensionsInterface
     {
         return new EndpointOperationMetricDimensions(

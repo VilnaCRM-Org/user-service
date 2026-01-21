@@ -15,6 +15,7 @@ use App\Shared\Application\Observability\Metric\EventSubscriberFailureMetric;
 final readonly class EventSubscriberFailureMetricFactory implements
     EventSubscriberFailureMetricFactoryInterface
 {
+    #[\Override]
     public function create(
         string $subscriberClass,
         string $eventType

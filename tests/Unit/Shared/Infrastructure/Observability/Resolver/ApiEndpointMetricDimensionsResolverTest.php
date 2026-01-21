@@ -13,6 +13,7 @@ final class ApiEndpointMetricDimensionsResolverTest extends UnitTestCase
 {
     private ApiEndpointMetricDimensionsResolver $resolver;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

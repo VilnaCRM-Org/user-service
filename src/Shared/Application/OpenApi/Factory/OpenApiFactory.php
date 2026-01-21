@@ -93,7 +93,9 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     }
 
     /**
-     * @return array<string>
+     * @return array<array<array<string|array<string>>>|string>
+     *
+     * @psalm-return array{type: 'oauth2', description: 'OAuth2 Authorization Code flow securing VilnaCRM API.', flows: array{authorizationCode: array{authorizationUrl: 'https://localhost/api/oauth/dialog', tokenUrl: 'https://localhost/api/oauth/token', scopes: array{'write:pets': 'modify pets in your account', 'read:pets': 'read your pets'}}}}
      */
     private function createOAuth2Scheme(): array
     {
@@ -107,7 +109,9 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     }
 
     /**
-     * @return array<string>
+     * @return array<string|array<string>>
+     *
+     * @psalm-return array{authorizationUrl: 'https://localhost/api/oauth/dialog', tokenUrl: 'https://localhost/api/oauth/token', scopes: array{'write:pets': 'modify pets in your account', 'read:pets': 'read your pets'}}
      */
     private function createOAuth2CodeFlow(): array
     {

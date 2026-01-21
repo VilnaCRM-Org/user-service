@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Infrastructure\Bus\Event\Stub;
+namespace App\Tests\Unit\Shared\Infrastructure\Bus\Stub;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 
-final class TestDomainEvent extends DomainEvent
+final class TestOtherEvent extends DomainEvent
 {
     public function __construct(
         private readonly string $id,
@@ -23,7 +23,7 @@ final class TestDomainEvent extends DomainEvent
     #[\Override]
     public static function eventName(): string
     {
-        return 'test.domain_event';
+        return 'test.other_event';
     }
 
     #[\Override]
@@ -51,6 +51,6 @@ final class TestDomainEvent extends DomainEvent
 
     private function generateEventId(): string
     {
-        return uniqid('test_domain_event_', true);
+        return uniqid('test_other_event_', true);
     }
 }

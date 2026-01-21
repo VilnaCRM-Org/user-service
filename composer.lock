@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "407e001912a3459f44cf50bdc2b21d8b",
+    "content-hash": "1fec2f0bb692885f8937adb6bb64014c",
     "packages": [
         {
             "name": "api-platform/core",
@@ -230,23 +230,23 @@
         },
         {
             "name": "async-aws/core",
-            "version": "1.27.1",
+            "version": "1.28.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/async-aws/core.git",
-                "reference": "5b8e35c8df94990161e2c9750c9ba1683d0b48b8"
+                "reference": "0d5f4d650b74a8366bca1fb400b6cfb694c3b217"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/async-aws/core/zipball/5b8e35c8df94990161e2c9750c9ba1683d0b48b8",
-                "reference": "5b8e35c8df94990161e2c9750c9ba1683d0b48b8",
+                "url": "https://api.github.com/repos/async-aws/core/zipball/0d5f4d650b74a8366bca1fb400b6cfb694c3b217",
+                "reference": "0d5f4d650b74a8366bca1fb400b6cfb694c3b217",
                 "shasum": ""
             },
             "require": {
                 "ext-hash": "*",
                 "ext-json": "*",
                 "ext-simplexml": "*",
-                "php": "^7.2.5 || ^8.0",
+                "php": "^8.2",
                 "psr/cache": "^1.0 || ^2.0 || ^3.0",
                 "psr/log": "^1.0 || ^2.0 || ^3.0",
                 "symfony/deprecation-contracts": "^2.1 || ^3.0",
@@ -258,10 +258,15 @@
                 "async-aws/s3": "<1.1",
                 "symfony/http-client": "5.2.0"
             },
+            "require-dev": {
+                "phpunit/phpunit": "^11.5.42",
+                "symfony/error-handler": "^7.3.2 || ^8.0",
+                "symfony/phpunit-bridge": "^7.3.2 || ^8.0"
+            },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.27-dev"
+                    "dev-master": "1.28-dev"
                 }
             },
             "autoload": {
@@ -282,7 +287,7 @@
                 "sts"
             ],
             "support": {
-                "source": "https://github.com/async-aws/core/tree/1.27.1"
+                "source": "https://github.com/async-aws/core/tree/1.28.0"
             },
             "funding": [
                 {
@@ -294,32 +299,37 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-09-08T07:05:54+00:00"
+            "time": "2026-01-16T22:28:05+00:00"
         },
         {
             "name": "async-aws/sqs",
-            "version": "2.7.1",
+            "version": "2.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/async-aws/sqs.git",
-                "reference": "6f5780a221e433cf4cc477c69b131825bc9d8d71"
+                "reference": "737c13f4ecba7b5d773f02c171329ddfabd0f767"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/async-aws/sqs/zipball/6f5780a221e433cf4cc477c69b131825bc9d8d71",
-                "reference": "6f5780a221e433cf4cc477c69b131825bc9d8d71",
+                "url": "https://api.github.com/repos/async-aws/sqs/zipball/737c13f4ecba7b5d773f02c171329ddfabd0f767",
+                "reference": "737c13f4ecba7b5d773f02c171329ddfabd0f767",
                 "shasum": ""
             },
             "require": {
                 "async-aws/core": "^1.9",
                 "ext-filter": "*",
                 "ext-json": "*",
-                "php": "^7.2.5 || ^8.0"
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^11.5.42",
+                "symfony/error-handler": "^7.3.2 || ^8.0",
+                "symfony/phpunit-bridge": "^7.3.2 || ^8.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.7-dev"
+                    "dev-master": "2.8-dev"
                 }
             },
             "autoload": {
@@ -340,7 +350,7 @@
                 "sqs"
             ],
             "support": {
-                "source": "https://github.com/async-aws/sqs/tree/2.7.1"
+                "source": "https://github.com/async-aws/sqs/tree/2.8.0"
             },
             "funding": [
                 {
@@ -352,7 +362,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-09-08T07:05:54+00:00"
+            "time": "2026-01-16T22:28:05+00:00"
         },
         {
             "name": "aws/aws-crt-php",
@@ -410,16 +420,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.369.13",
+            "version": "3.369.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "bedc36250c92b8287be855a2d25427fb0e065483"
+                "reference": "f7ae10a0b691d40075c801e3ae8735a722debfac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/bedc36250c92b8287be855a2d25427fb0e065483",
-                "reference": "bedc36250c92b8287be855a2d25427fb0e065483",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/f7ae10a0b691d40075c801e3ae8735a722debfac",
+                "reference": "f7ae10a0b691d40075c801e3ae8735a722debfac",
                 "shasum": ""
             },
             "require": {
@@ -501,9 +511,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.13"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.369.16"
             },
-            "time": "2026-01-14T19:13:46+00:00"
+            "time": "2026-01-20T19:44:30+00:00"
         },
         {
             "name": "blackbonjour/stdlib",
@@ -747,16 +757,16 @@
         },
         {
             "name": "doctrine/collections",
-            "version": "2.5.1",
+            "version": "2.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/collections.git",
-                "reference": "171e68db4b9aca9dc1f5d49925762f3d53d248c5"
+                "reference": "7713da39d8e237f28411d6a616a3dce5e20d5de2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/collections/zipball/171e68db4b9aca9dc1f5d49925762f3d53d248c5",
-                "reference": "171e68db4b9aca9dc1f5d49925762f3d53d248c5",
+                "url": "https://api.github.com/repos/doctrine/collections/zipball/7713da39d8e237f28411d6a616a3dce5e20d5de2",
+                "reference": "7713da39d8e237f28411d6a616a3dce5e20d5de2",
                 "shasum": ""
             },
             "require": {
@@ -813,7 +823,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/collections/issues",
-                "source": "https://github.com/doctrine/collections/tree/2.5.1"
+                "source": "https://github.com/doctrine/collections/tree/2.6.0"
             },
             "funding": [
                 {
@@ -829,7 +839,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-01-12T20:53:55+00:00"
+            "time": "2026-01-15T10:01:58+00:00"
         },
         {
             "name": "doctrine/dbal",
@@ -1193,16 +1203,16 @@
         },
         {
             "name": "doctrine/event-manager",
-            "version": "2.0.1",
+            "version": "2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/event-manager.git",
-                "reference": "b680156fa328f1dfd874fd48c7026c41570b9c6e"
+                "reference": "c07799fcf5ad362050960a0fd068dded40b1e312"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/event-manager/zipball/b680156fa328f1dfd874fd48c7026c41570b9c6e",
-                "reference": "b680156fa328f1dfd874fd48c7026c41570b9c6e",
+                "url": "https://api.github.com/repos/doctrine/event-manager/zipball/c07799fcf5ad362050960a0fd068dded40b1e312",
+                "reference": "c07799fcf5ad362050960a0fd068dded40b1e312",
                 "shasum": ""
             },
             "require": {
@@ -1212,10 +1222,10 @@
                 "doctrine/common": "<2.9"
             },
             "require-dev": {
-                "doctrine/coding-standard": "^12",
-                "phpstan/phpstan": "^1.8.8",
-                "phpunit/phpunit": "^10.5",
-                "vimeo/psalm": "^5.24"
+                "doctrine/coding-standard": "^14",
+                "phpdocumentor/guides-cli": "^1.4",
+                "phpstan/phpstan": "^2.1.32",
+                "phpunit/phpunit": "^10.5.58"
             },
             "type": "library",
             "autoload": {
@@ -1264,7 +1274,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/event-manager/issues",
-                "source": "https://github.com/doctrine/event-manager/tree/2.0.1"
+                "source": "https://github.com/doctrine/event-manager/tree/2.1.0"
             },
             "funding": [
                 {
@@ -1280,7 +1290,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-05-22T20:47:39+00:00"
+            "time": "2026-01-17T22:40:21+00:00"
         },
         {
             "name": "doctrine/inflector",
@@ -2883,20 +2893,20 @@
         },
         {
             "name": "league/uri",
-            "version": "7.7.0",
+            "version": "7.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/uri.git",
-                "reference": "8d587cddee53490f9b82bf203d3a9aa7ea4f9807"
+                "reference": "4436c6ec8d458e4244448b069cc572d088230b76"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/uri/zipball/8d587cddee53490f9b82bf203d3a9aa7ea4f9807",
-                "reference": "8d587cddee53490f9b82bf203d3a9aa7ea4f9807",
+                "url": "https://api.github.com/repos/thephpleague/uri/zipball/4436c6ec8d458e4244448b069cc572d088230b76",
+                "reference": "4436c6ec8d458e4244448b069cc572d088230b76",
                 "shasum": ""
             },
             "require": {
-                "league/uri-interfaces": "^7.7",
+                "league/uri-interfaces": "^7.8",
                 "php": "^8.1",
                 "psr/http-factory": "^1"
             },
@@ -2910,11 +2920,11 @@
                 "ext-gmp": "to improve IPV4 host parsing",
                 "ext-intl": "to handle IDN host with the best performance",
                 "ext-uri": "to use the PHP native URI class",
-                "jeremykendall/php-domain-parser": "to resolve Public Suffix and Top Level Domain",
-                "league/uri-components": "Needed to easily manipulate URI objects components",
-                "league/uri-polyfill": "Needed to backport the PHP URI extension for older versions of PHP",
+                "jeremykendall/php-domain-parser": "to further parse the URI host and resolve its Public Suffix and Top Level Domain",
+                "league/uri-components": "to provide additional tools to manipulate URI objects components",
+                "league/uri-polyfill": "to backport the PHP URI extension for older versions of PHP",
                 "php-64bit": "to improve IPV4 host parsing",
-                "rowbot/url": "to handle WHATWG URL",
+                "rowbot/url": "to handle URLs using the WHATWG URL Living Standard specification",
                 "symfony/polyfill-intl-idn": "to handle IDN host via the Symfony polyfill if ext-intl is not present"
             },
             "type": "library",
@@ -2969,7 +2979,7 @@
                 "docs": "https://uri.thephpleague.com",
                 "forum": "https://thephpleague.slack.com",
                 "issues": "https://github.com/thephpleague/uri-src/issues",
-                "source": "https://github.com/thephpleague/uri/tree/7.7.0"
+                "source": "https://github.com/thephpleague/uri/tree/7.8.0"
             },
             "funding": [
                 {
@@ -2977,20 +2987,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-12-07T16:02:06+00:00"
+            "time": "2026-01-14T17:24:56+00:00"
         },
         {
             "name": "league/uri-interfaces",
-            "version": "7.7.0",
+            "version": "7.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/uri-interfaces.git",
-                "reference": "62ccc1a0435e1c54e10ee6022df28d6c04c2946c"
+                "reference": "c5c5cd056110fc8afaba29fa6b72a43ced42acd4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/uri-interfaces/zipball/62ccc1a0435e1c54e10ee6022df28d6c04c2946c",
-                "reference": "62ccc1a0435e1c54e10ee6022df28d6c04c2946c",
+                "url": "https://api.github.com/repos/thephpleague/uri-interfaces/zipball/c5c5cd056110fc8afaba29fa6b72a43ced42acd4",
+                "reference": "c5c5cd056110fc8afaba29fa6b72a43ced42acd4",
                 "shasum": ""
             },
             "require": {
@@ -3003,7 +3013,7 @@
                 "ext-gmp": "to improve IPV4 host parsing",
                 "ext-intl": "to handle IDN host with the best performance",
                 "php-64bit": "to improve IPV4 host parsing",
-                "rowbot/url": "to handle WHATWG URL",
+                "rowbot/url": "to handle URLs using the WHATWG URL Living Standard specification",
                 "symfony/polyfill-intl-idn": "to handle IDN host via the Symfony polyfill if ext-intl is not present"
             },
             "type": "library",
@@ -3053,7 +3063,7 @@
                 "docs": "https://uri.thephpleague.com",
                 "forum": "https://thephpleague.slack.com",
                 "issues": "https://github.com/thephpleague/uri-src/issues",
-                "source": "https://github.com/thephpleague/uri-interfaces/tree/7.7.0"
+                "source": "https://github.com/thephpleague/uri-interfaces/tree/7.8.0"
             },
             "funding": [
                 {
@@ -3061,7 +3071,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-12-07T16:03:21+00:00"
+            "time": "2026-01-15T06:54:53+00:00"
         },
         {
             "name": "lexik/jwt-authentication-bundle",
@@ -10328,16 +10338,16 @@
         },
         {
             "name": "webonyx/graphql-php",
-            "version": "v15.29.4",
+            "version": "v15.30.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webonyx/graphql-php.git",
-                "reference": "7ae6371184a1909822916ff101eab7e6e070c656"
+                "reference": "eb3b86e3c1034055972ec2685f13b34c660d8844"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webonyx/graphql-php/zipball/7ae6371184a1909822916ff101eab7e6e070c656",
-                "reference": "7ae6371184a1909822916ff101eab7e6e070c656",
+                "url": "https://api.github.com/repos/webonyx/graphql-php/zipball/eb3b86e3c1034055972ec2685f13b34c660d8844",
+                "reference": "eb3b86e3c1034055972ec2685f13b34c660d8844",
                 "shasum": ""
             },
             "require": {
@@ -10350,12 +10360,12 @@
                 "amphp/http-server": "^2.1",
                 "dms/phpunit-arraysubset-asserts": "dev-master",
                 "ergebnis/composer-normalize": "^2.28",
-                "friendsofphp/php-cs-fixer": "3.92.4",
-                "mll-lab/php-cs-fixer-config": "5.11.0",
+                "friendsofphp/php-cs-fixer": "3.92.5",
+                "mll-lab/php-cs-fixer-config": "5.13.0",
                 "nyholm/psr7": "^1.5",
                 "phpbench/phpbench": "^1.2",
                 "phpstan/extension-installer": "^1.1",
-                "phpstan/phpstan": "2.1.33",
+                "phpstan/phpstan": "2.1.34",
                 "phpstan/phpstan-phpunit": "2.0.11",
                 "phpstan/phpstan-strict-rules": "2.0.7",
                 "phpunit/phpunit": "^9.5 || ^10.5.21 || ^11",
@@ -10391,7 +10401,7 @@
             ],
             "support": {
                 "issues": "https://github.com/webonyx/graphql-php/issues",
-                "source": "https://github.com/webonyx/graphql-php/tree/v15.29.4"
+                "source": "https://github.com/webonyx/graphql-php/tree/v15.30.0"
             },
             "funding": [
                 {
@@ -10399,7 +10409,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2026-01-05T16:06:25+00:00"
+            "time": "2026-01-20T07:10:44+00:00"
         },
         {
             "name": "willdurand/negotiation",
@@ -13392,23 +13402,23 @@
         },
         {
             "name": "marcocesarato/php-conventional-changelog",
-            "version": "1.17.2",
+            "version": "1.17.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/marcocesarato/php-conventional-changelog.git",
-                "reference": "2a153727bab28c85d54184975292a468fac269f7"
+                "reference": "c49b4a69ddf9ecbf055e8029c65e54a956d7ffa2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/marcocesarato/php-conventional-changelog/zipball/2a153727bab28c85d54184975292a468fac269f7",
-                "reference": "2a153727bab28c85d54184975292a468fac269f7",
+                "url": "https://api.github.com/repos/marcocesarato/php-conventional-changelog/zipball/c49b4a69ddf9ecbf055e8029c65e54a956d7ffa2",
+                "reference": "c49b4a69ddf9ecbf055e8029c65e54a956d7ffa2",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "ext-mbstring": "*",
                 "php": ">=7.1.3",
-                "symfony/console": "^4 || ^5 || ^6 || ^7"
+                "symfony/console": "^4 || ^5 || ^6 || ^7 || ^8"
             },
             "require-dev": {
                 "brainmaestro/composer-git-hooks": "^2.8",
@@ -13464,9 +13474,9 @@
             ],
             "support": {
                 "issues": "https://github.com/marcocesarato/php-conventional-changelog/issues",
-                "source": "https://github.com/marcocesarato/php-conventional-changelog/tree/v1.17.2"
+                "source": "https://github.com/marcocesarato/php-conventional-changelog/tree/v1.17.3"
             },
-            "time": "2024-05-19T14:35:27+00:00"
+            "time": "2026-01-21T11:40:14+00:00"
         },
         {
             "name": "masterminds/html5",
@@ -14214,16 +14224,16 @@
         },
         {
             "name": "phpdocumentor/reflection-docblock",
-            "version": "6.0.0",
+            "version": "6.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpDocumentor/ReflectionDocBlock.git",
-                "reference": "02600c041e7d0f4b7d1fe1d260565ec525472fa9"
+                "reference": "2f5cbed597cb261d1ea458f3da3a9ad32e670b1e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpDocumentor/ReflectionDocBlock/zipball/02600c041e7d0f4b7d1fe1d260565ec525472fa9",
-                "reference": "02600c041e7d0f4b7d1fe1d260565ec525472fa9",
+                "url": "https://api.github.com/repos/phpDocumentor/ReflectionDocBlock/zipball/2f5cbed597cb261d1ea458f3da3a9ad32e670b1e",
+                "reference": "2f5cbed597cb261d1ea458f3da3a9ad32e670b1e",
                 "shasum": ""
             },
             "require": {
@@ -14273,9 +14283,9 @@
             "description": "With this component, a library can provide support for annotations via DocBlocks or otherwise retrieve information that is embedded in a DocBlock.",
             "support": {
                 "issues": "https://github.com/phpDocumentor/ReflectionDocBlock/issues",
-                "source": "https://github.com/phpDocumentor/ReflectionDocBlock/tree/6.0.0"
+                "source": "https://github.com/phpDocumentor/ReflectionDocBlock/tree/6.0.1"
             },
-            "time": "2026-01-07T20:22:53+00:00"
+            "time": "2026-01-20T15:30:42+00:00"
         },
         {
             "name": "phpdocumentor/type-resolver",
@@ -15936,16 +15946,16 @@
         },
         {
             "name": "sanmai/pipeline",
-            "version": "7.7",
+            "version": "7.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sanmai/pipeline.git",
-                "reference": "9341ac243258ff16259b0edc6654af5583fa8743"
+                "reference": "d7046ecce91ae57fca403be694888371a21250eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sanmai/pipeline/zipball/9341ac243258ff16259b0edc6654af5583fa8743",
-                "reference": "9341ac243258ff16259b0edc6654af5583fa8743",
+                "url": "https://api.github.com/repos/sanmai/pipeline/zipball/d7046ecce91ae57fca403be694888371a21250eb",
+                "reference": "d7046ecce91ae57fca403be694888371a21250eb",
                 "shasum": ""
             },
             "require": {
@@ -15955,7 +15965,7 @@
                 "ergebnis/composer-normalize": "^2.8",
                 "esi/phpunit-coverage-check": ">2",
                 "friendsofphp/php-cs-fixer": "^3.17",
-                "infection/infection": ">=0.30.3",
+                "infection/infection": ">=0.32.3",
                 "league/pipeline": "^0.3 || ^1.0",
                 "php-coveralls/php-coveralls": "^2.4.1",
                 "phpstan/extension-installer": "^1.4",
@@ -15992,7 +16002,7 @@
             "description": "General-purpose collections pipeline",
             "support": {
                 "issues": "https://github.com/sanmai/pipeline/issues",
-                "source": "https://github.com/sanmai/pipeline/tree/7.7"
+                "source": "https://github.com/sanmai/pipeline/tree/7.9"
             },
             "funding": [
                 {
@@ -16000,7 +16010,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-01-09T10:16:17+00:00"
+            "time": "2026-01-16T11:54:05+00:00"
         },
         {
             "name": "sebastian/cli-parser",

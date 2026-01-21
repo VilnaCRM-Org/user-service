@@ -21,15 +21,15 @@ use Symfony\Component\Validator\Constraints\Regex;
  */
 final class EmfValue extends Compound
 {
-    public const int MAX_LENGTH = 1024;
+    public const MAX_LENGTH = 1024;
 
-    public const string EMPTY_MESSAGE =
+    public const EMPTY_MESSAGE =
         'EMF dimension value must contain at least one non-whitespace character';
-    public const string TOO_LONG_MESSAGE =
+    public const TOO_LONG_MESSAGE =
         'EMF dimension value must not exceed 1024 characters';
-    public const string NON_ASCII_MESSAGE =
+    public const NON_ASCII_MESSAGE =
         'EMF dimension value must contain only ASCII characters';
-    public const string CONTROL_CHARS_MESSAGE =
+    public const CONTROL_CHARS_MESSAGE =
         'EMF dimension value must not contain ASCII control characters';
 
     /**
@@ -37,6 +37,7 @@ final class EmfValue extends Compound
      *
      * @return array<Constraint>
      */
+    #[\Override]
     protected function getConstraints(array $options): array
     {
         return [

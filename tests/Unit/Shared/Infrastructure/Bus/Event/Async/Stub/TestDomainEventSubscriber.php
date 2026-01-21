@@ -25,6 +25,7 @@ final class TestDomainEventSubscriber implements DomainEventSubscriberInterface
     /**
      * @return array<class-string>
      */
+    #[\Override]
     public function subscribedTo(): array
     {
         return [TestDomainEvent::class];
@@ -41,11 +42,5 @@ final class TestDomainEventSubscriber implements DomainEventSubscriberInterface
     public function handled(): array
     {
         return $this->handled;
-    }
-
-    public function clear(): void
-    {
-        $this->handled = [];
-        $this->shouldFail = false;
     }
 }

@@ -50,13 +50,19 @@ final class BatchEmailCollector
     /**
      * @param array<int, array|object|string|int|float|bool|null> $entries
      *
-     * @return array{0: array<string>, 1: bool}
+     * @return array{0: list<string>, 1: bool}
      */
     private function splitEmails(array $entries): array
     {
         return array_reduce(
             $entries,
-            function (array $carry, mixed $entry): array {
+            function (array $carry, array|object|string|int|float|bool|null $entry): array {
+                if (!is_array($entry)) {
+                    $carry[1] = true;
+
+                    return $carry;
+                }
+
                 $normalizedEmail = $this->resolver->resolve($entry);
 
                 if ($normalizedEmail === null) {

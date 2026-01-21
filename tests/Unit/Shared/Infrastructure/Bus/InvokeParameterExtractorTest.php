@@ -14,6 +14,7 @@ final class InvokeParameterExtractorTest extends UnitTestCase
 {
     private InvokeParameterExtractor $extractor;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

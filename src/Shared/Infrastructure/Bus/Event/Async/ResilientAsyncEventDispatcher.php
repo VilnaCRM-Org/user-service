@@ -27,6 +27,7 @@ final readonly class ResilientAsyncEventDispatcher implements AsyncEventDispatch
     ) {
     }
 
+    #[\Override]
     public function dispatch(DomainEvent ...$events): bool
     {
         $allSucceeded = true;

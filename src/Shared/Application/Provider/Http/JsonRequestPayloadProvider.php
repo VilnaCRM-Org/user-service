@@ -15,7 +15,9 @@ final readonly class JsonRequestPayloadProvider
     }
 
     /**
-     * @return array<string, array|string|int|float|bool|null>|null
+     * @return array<array|scalar|null>|null
+     *
+     * @psalm-return array<int|string, array|scalar|null>|null
      */
     public function getPayload(string $invalidJsonMessage): ?array
     {

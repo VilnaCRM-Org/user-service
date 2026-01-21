@@ -24,6 +24,7 @@ final readonly class EmfNamespaceValidator implements EmfNamespaceValidatorInter
     ) {
     }
 
+    #[\Override]
     public function validate(EmfNamespaceValue $namespace): void
     {
         $violations = $this->validator->validate($namespace->value(), new EmfNamespace());

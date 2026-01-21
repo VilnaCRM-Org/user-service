@@ -23,6 +23,7 @@ final readonly class ResilientAsyncEventBus implements EventBusInterface
     ) {
     }
 
+    #[\Override]
     public function publish(DomainEvent ...$events): void
     {
         $this->dispatcher->dispatch(...$events);

@@ -10,6 +10,11 @@ final class ObjectPropertyEmailSource implements BatchEmailSource
     {
     }
 
+    /**
+     * @param object|array<string> $entry
+     *
+     * @psalm-param array{email: 'value'}|object $entry
+     */
     #[\Override]
     public function extract(mixed $entry): ?string
     {

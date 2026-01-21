@@ -20,6 +20,7 @@ final class DomainEventMessageHandlerTest extends UnitTestCase
     private BusinessMetricsEmitterSpy $metricsEmitter;
     private EventSubscriberFailureMetricFactory $metricFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

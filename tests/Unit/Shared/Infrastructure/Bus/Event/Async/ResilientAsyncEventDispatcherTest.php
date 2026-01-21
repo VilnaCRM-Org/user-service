@@ -20,6 +20,7 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
     private BusinessMetricsEmitterSpy $metricsEmitter;
     private SqsDispatchFailureMetricFactory $metricFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

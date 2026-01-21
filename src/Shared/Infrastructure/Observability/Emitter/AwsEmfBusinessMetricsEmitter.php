@@ -27,6 +27,7 @@ final readonly class AwsEmfBusinessMetricsEmitter implements BusinessMetricsEmit
     ) {
     }
 
+    #[\Override]
     public function emit(BusinessMetric $metric): void
     {
         try {
@@ -41,6 +42,7 @@ final readonly class AwsEmfBusinessMetricsEmitter implements BusinessMetricsEmit
         }
     }
 
+    #[\Override]
     public function emitCollection(MetricCollection $metrics): void
     {
         if ($metrics->isEmpty()) {

@@ -19,6 +19,7 @@ final readonly class SqsDispatchFailureMetricDimensions implements MetricDimensi
     ) {
     }
 
+    #[\Override]
     public function values(): MetricDimensions
     {
         return new MetricDimensions(

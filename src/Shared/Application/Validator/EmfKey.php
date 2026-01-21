@@ -22,17 +22,17 @@ use Symfony\Component\Validator\Constraints\Regex;
  */
 final class EmfKey extends Compound
 {
-    public const int MAX_LENGTH = 255;
+    public const MAX_LENGTH = 255;
 
-    public const string EMPTY_MESSAGE =
+    public const EMPTY_MESSAGE =
         'EMF dimension key must contain at least one non-whitespace character';
-    public const string TOO_LONG_MESSAGE =
+    public const TOO_LONG_MESSAGE =
         'EMF dimension key must not exceed 255 characters';
-    public const string NON_ASCII_MESSAGE =
+    public const NON_ASCII_MESSAGE =
         'EMF dimension key must contain only ASCII characters';
-    public const string CONTROL_CHARS_MESSAGE =
+    public const CONTROL_CHARS_MESSAGE =
         'EMF dimension key must not contain ASCII control characters';
-    public const string STARTS_WITH_COLON_MESSAGE =
+    public const STARTS_WITH_COLON_MESSAGE =
         'EMF dimension key must not start with colon (:)';
 
     /**
@@ -40,6 +40,7 @@ final class EmfKey extends Compound
      *
      * @return array<Constraint>
      */
+    #[\Override]
     protected function getConstraints(array $options): array
     {
         return [

@@ -23,11 +23,13 @@ final readonly class SqsDispatchFailureMetric extends BusinessMetric
         parent::__construct($value, new MetricUnit(MetricUnit::COUNT));
     }
 
+    #[\Override]
     public function name(): string
     {
         return 'SqsDispatchFailures';
     }
 
+    #[\Override]
     public function dimensions(): MetricDimensionsInterface
     {
         return new SqsDispatchFailureMetricDimensions(

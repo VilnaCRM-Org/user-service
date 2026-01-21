@@ -18,6 +18,9 @@ final readonly class UserUpdatedMetricsSubscriber implements DomainEventSubscrib
     ) {
     }
 
+    /**
+     * @psalm-suppress UnusedParam Event parameter required by interface but not used
+     */
     public function __invoke(EmailChangedEvent|PasswordChangedEvent $event): void
     {
         $this->metricsEmitter->emit($this->metricFactory->create());
@@ -26,6 +29,7 @@ final readonly class UserUpdatedMetricsSubscriber implements DomainEventSubscrib
     /**
      * @return array<class-string>
      */
+    #[\Override]
     public function subscribedTo(): array
     {
         return [EmailChangedEvent::class, PasswordChangedEvent::class];

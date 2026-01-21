@@ -11,7 +11,9 @@ final class CallableFirstParameterExtractor
     /**
      * @param iterable<DomainEventSubscriberInterface> $callables
      *
-     * @return array<int, string|null>
+     * @return array<array<DomainEventSubscriberInterface>>
+     *
+     * @psalm-return array<string, list{DomainEventSubscriberInterface}>
      */
     public static function forCallables(iterable $callables): array
     {
@@ -63,7 +65,9 @@ final class CallableFirstParameterExtractor
     /**
      * @param array<DomainEventSubscriberInterface> $subscribers
      *
-     * @return array<int, array<DomainEventSubscriberInterface>>
+     * @return array<DomainEventSubscriberInterface>
+     *
+     * @psalm-return array<DomainEventSubscriberInterface>
      */
     private static function addSubscriberToEvent(
         array $subscribers,
