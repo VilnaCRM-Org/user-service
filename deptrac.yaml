@@ -11,7 +11,7 @@ parameters:
         - type: className
           regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Controller|Sanitizer|Validator).*'
         - type: className
-          regex: '.*App\\Shared\\Application\\(Validator|Transformer|Provider|Checker|Collector|Decoder|DTO|Evaluator|EventListener|Matcher|Normalizer|QueryParameter|Resolver|Finder|Factory).*'
+          regex: '.*App\\Shared\\Application\\(Validator|Transformer|Provider|Checker|Collector|Decoder|DTO|Evaluator|EventListener|Matcher|Normalizer|QueryParameter|Resolver|Finder|Factory|ValueObject).*'
         - type: className
           regex: '.*App\\Shared\\Application\\Bus\\(Command|Event).*'
         - type: className

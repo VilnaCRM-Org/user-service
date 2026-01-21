@@ -17,6 +17,15 @@ final class PasswordResetEmail extends AggregateRoot implements
         public readonly UserInterface $user,
         private readonly PasswordResetEmailSendEventFactoryInterface $factory,
     ) {
+        if ($token->getUserID() !== $user->getId()) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'Token user ID "%s" does not match user ID "%s"',
+                    $token->getUserID(),
+                    $user->getId()
+                )
+            );
+        }
     }
 
     #[\Override]
