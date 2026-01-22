@@ -10,6 +10,17 @@ use App\User\Application\Factory\UsersUpdatedMetricFactoryInterface;
 use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Event\PasswordChangedEvent;
 
+/**
+ * Emits business metrics when a user is updated
+ *
+ * This subscriber listens to EmailChangedEvent and PasswordChangedEvent
+ * and emits the UsersUpdated metric for CloudWatch dashboards.
+ *
+ * ARCHITECTURAL DECISION: Processed via async queue (ResilientAsyncEventBus)
+ * This subscriber runs in Symfony Messenger workers, wrapped with Layer 2 resilience.
+ * DomainEventMessageHandler catches all failures, logs them, and emits metrics.
+ * We follow AP from CAP theorem (Availability + Partition tolerance over Consistency).
+ */
 final readonly class UserUpdatedMetricsSubscriber implements DomainEventSubscriberInterface
 {
     public function __construct(

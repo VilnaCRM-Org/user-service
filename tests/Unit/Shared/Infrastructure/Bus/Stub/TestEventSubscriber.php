@@ -15,6 +15,7 @@ final class TestEventSubscriber implements DomainEventSubscriberInterface
     {
         // Test subscriber
     }
+
     /**
      * @return array<class-string>
      */

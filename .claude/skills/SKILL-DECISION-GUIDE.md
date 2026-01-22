@@ -18,10 +18,11 @@ What are you trying to do?
 
 ├─ Create something new
 │   ├─ New entity/value object → implementing-ddd-architecture
-│   ├─ New API endpoint → openapi-development
+│   ├─ New API endpoint → api-platform-crud
 │   ├─ New load test → load-testing
 │   ├─ New database entity → database-migrations
-│   └─ New test cases → testing-workflow
+│   ├─ New test cases → testing-workflow
+│   └─ Add business metrics → observability-instrumentation
 
 ├─ Review/validate work
 │   ├─ Before committing → ci-workflow
@@ -165,7 +166,18 @@ This skill guides entity modification with Doctrine ODM.
 
 **Use**: [openapi-development](openapi-development/SKILL.md)
 
-This skill covers OpenAPI factories/sanitizers/augmenters/cleaners and the repo’s validation commands.
+This skill covers OpenAPI factories/sanitizers/augmenters/cleaners and the repo's validation commands.
+
+---
+
+### "I need to add business metrics to track domain events"
+
+**Use**: [observability-instrumentation](observability-instrumentation/SKILL.md)
+
+This skill guides adding AWS EMF business metrics via event subscribers for CloudWatch dashboards.
+
+**NOT**: load-testing (that's for performance under load)
+**NOT**: testing-workflow (that's for functional tests)
 
 ---
 
@@ -218,11 +230,13 @@ Some tasks benefit from multiple skills:
 ### Creating a complete new feature:
 
 1. **implementing-ddd-architecture** - Design domain model
-2. **database-migrations** - Configure persistence
-3. **testing-workflow** - Write tests
-4. **structurizr-architecture-sync** - Update architecture diagrams
-5. **documentation-sync** - Update docs
-6. **ci-workflow** - Validate everything
+2. **api-platform-crud** - Create API endpoints
+3. **database-migrations** - Configure persistence
+4. **observability-instrumentation** - Add business metrics
+5. **testing-workflow** - Write tests
+6. **structurizr-architecture-sync** - Update architecture diagrams
+7. **documentation-sync** - Update docs
+8. **ci-workflow** - Validate everything
 
 ### Fixing architecture issues:
 

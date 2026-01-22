@@ -9,6 +9,17 @@ use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Application\Factory\PasswordResetRequestsMetricFactoryInterface;
 use App\User\Domain\Event\PasswordResetRequestedEvent;
 
+/**
+ * Emits business metrics when a password reset is requested
+ *
+ * This subscriber listens to PasswordResetRequestedEvent and emits
+ * the PasswordResetRequests metric for CloudWatch dashboards.
+ *
+ * ARCHITECTURAL DECISION: Processed via async queue (ResilientAsyncEventBus)
+ * This subscriber runs in Symfony Messenger workers, wrapped with Layer 2 resilience.
+ * DomainEventMessageHandler catches all failures, logs them, and emits metrics.
+ * We follow AP from CAP theorem (Availability + Partition tolerance over Consistency).
+ */
 final readonly class PasswordResetRequestedMetricsSubscriber implements
     DomainEventSubscriberInterface
 {

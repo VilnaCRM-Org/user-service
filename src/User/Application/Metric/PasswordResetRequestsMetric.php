@@ -7,8 +7,16 @@ namespace App\User\Application\Metric;
 use App\Shared\Application\Observability\Metric\EndpointOperationBusinessMetric;
 use App\Shared\Application\Observability\Metric\ValueObject\MetricUnit;
 
+/**
+ * Metric for tracking password reset request events.
+ *
+ * Uses pure Value Objects without service dependencies (DDD compliant).
+ */
 final readonly class PasswordResetRequestsMetric extends EndpointOperationBusinessMetric
 {
+    private const ENDPOINT = 'User';
+    private const OPERATION = 'request-password-reset';
+
     public function __construct(float|int $value = 1)
     {
         parent::__construct($value, new MetricUnit(MetricUnit::COUNT));
@@ -23,12 +31,12 @@ final readonly class PasswordResetRequestsMetric extends EndpointOperationBusine
     #[\Override]
     protected function endpoint(): string
     {
-        return 'User';
+        return self::ENDPOINT;
     }
 
     #[\Override]
     protected function operation(): string
     {
-        return 'request-password-reset';
+        return self::OPERATION;
     }
 }

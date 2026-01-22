@@ -15,6 +15,7 @@ final class HandlerWithoutTypeHint
 {
     /**
      * @param object $event
+     *
      * @psalm-suppress UnusedParam
      */
     public function __invoke($event): void

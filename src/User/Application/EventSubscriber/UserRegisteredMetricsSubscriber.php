@@ -9,6 +9,17 @@ use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Application\Factory\UsersRegisteredMetricFactoryInterface;
 use App\User\Domain\Event\UserRegisteredEvent;
 
+/**
+ * Emits business metrics when a user is registered
+ *
+ * This subscriber listens to UserRegisteredEvent and emits
+ * the UsersRegistered metric for CloudWatch dashboards.
+ *
+ * ARCHITECTURAL DECISION: Processed via async queue (ResilientAsyncEventBus)
+ * This subscriber runs in Symfony Messenger workers, wrapped with Layer 2 resilience.
+ * DomainEventMessageHandler catches all failures, logs them, and emits metrics.
+ * We follow AP from CAP theorem (Availability + Partition tolerance over Consistency).
+ */
 final readonly class UserRegisteredMetricsSubscriber implements DomainEventSubscriberInterface
 {
     public function __construct(
