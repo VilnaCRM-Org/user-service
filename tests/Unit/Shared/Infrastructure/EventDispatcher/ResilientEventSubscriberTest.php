@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Infrastructure\EventDispatcher;
 
-use App\Shared\Infrastructure\EventDispatcher\ResilientEventSubscriber;
+use App\Tests\Unit\Shared\Infrastructure\EventDispatcher\Stub\TestResilientEventSubscriber;
 use App\Tests\Unit\UnitTestCase;
 use Psr\Log\LoggerInterface;
 
@@ -77,21 +77,9 @@ final class ResilientEventSubscriberTest extends UnitTestCase
         };
     }
 
-    private function createTestSubscriber(LoggerInterface $logger): object
+    private function createTestSubscriber(LoggerInterface $logger): TestResilientEventSubscriber
     {
-        return new class($logger) extends ResilientEventSubscriber {
-            /** @return array<string, array|string> */
-            #[\Override]
-            public static function getSubscribedEvents(): array
-            {
-                return [];
-            }
-
-            public function testSafeExecute(callable $handler, string $eventName): void
-            {
-                $this->safeExecute($handler, $eventName);
-            }
-        };
+        return new TestResilientEventSubscriber($logger);
     }
 
     private function createContextValidator(string $exceptionMessage): callable

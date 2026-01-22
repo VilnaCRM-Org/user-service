@@ -8,6 +8,7 @@ use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\Shared\Infrastructure\Bus\CallableFirstParameterExtractor;
 use App\Shared\Infrastructure\Bus\InvokeParameterExtractor;
 use App\Shared\Infrastructure\Bus\MessageBusFactory;
+use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\MultiEventTestSubscriber;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestCommand;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestEvent;
 use App\Tests\Unit\UnitTestCase;
@@ -19,7 +20,9 @@ final class MessageBusFactoryTest extends UnitTestCase
     {
         $commandHandlers = [];
 
-        $factory = new MessageBusFactory(new CallableFirstParameterExtractor(new InvokeParameterExtractor()));
+        $factory = new MessageBusFactory(
+            new CallableFirstParameterExtractor(new InvokeParameterExtractor())
+        );
 
         $messageBus = $factory->create($commandHandlers);
 
@@ -65,7 +68,9 @@ final class MessageBusFactoryTest extends UnitTestCase
 
         $handlers = [$regularHandler, $subscriber];
 
-        $factory = new MessageBusFactory(new CallableFirstParameterExtractor(new InvokeParameterExtractor()));
+        $factory = new MessageBusFactory(
+            new CallableFirstParameterExtractor(new InvokeParameterExtractor())
+        );
 
         $messageBus = $factory->create($handlers);
 
@@ -121,7 +126,9 @@ final class MessageBusFactoryTest extends UnitTestCase
 
         $handlers = [$subscriber1, $subscriber2];
 
-        $factory = new MessageBusFactory(new CallableFirstParameterExtractor(new InvokeParameterExtractor()));
+        $factory = new MessageBusFactory(
+            new CallableFirstParameterExtractor(new InvokeParameterExtractor())
+        );
 
         $messageBus = $factory->create($handlers);
 
@@ -164,32 +171,7 @@ final class MessageBusFactoryTest extends UnitTestCase
         $event1Called = false;
         $event2Called = false;
 
-        $subscriber = new class(
-            $event1Called,
-            $event2Called
-        ) implements DomainEventSubscriberInterface {
-            public function __construct(
-                private bool &$event1Called,
-                private bool &$event2Called
-            ) {
-            }
-
-            /** @return array<int, class-string> */
-            #[\Override]
-            public function subscribedTo(): array
-            {
-                return [TestEvent::class, TestCommand::class];
-            }
-
-            public function __invoke(TestEvent|TestCommand $message): void
-            {
-                if ($message instanceof TestEvent) {
-                    $this->event1Called = true;
-                } elseif ($message instanceof TestCommand) {
-                    $this->event2Called = true;
-                }
-            }
-        };
+        $subscriber = new MultiEventTestSubscriber($event1Called, $event2Called);
 
         $factory = new MessageBusFactory(
             new CallableFirstParameterExtractor(new InvokeParameterExtractor())
