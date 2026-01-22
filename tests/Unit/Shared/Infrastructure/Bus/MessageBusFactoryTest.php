@@ -8,7 +8,9 @@ use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\Shared\Infrastructure\Bus\CallableFirstParameterExtractor;
 use App\Shared\Infrastructure\Bus\InvokeParameterExtractor;
 use App\Shared\Infrastructure\Bus\MessageBusFactory;
+use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\FirstTestEventSubscriber;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\MultiEventTestSubscriber;
+use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\SecondTestEventSubscriber;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestCommand;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestEvent;
 use App\Tests\Unit\UnitTestCase;
@@ -55,50 +57,15 @@ final class MessageBusFactoryTest extends UnitTestCase
         $subscriber1Called = false;
         $subscriber2Called = false;
 
-        $subscriber1 = new class($subscriber1Called) implements DomainEventSubscriberInterface {
-            public function __construct(private bool &$called)
-            {
-            }
-
-            /** @return array<int, class-string> */
-            #[\Override]
-            public function subscribedTo(): array
-            {
-                return [TestEvent::class];
-            }
-
-            public function __invoke(TestEvent $event): void
-            {
-                $this->called = true;
-            }
-        };
-
-        $subscriber2 = new class($subscriber2Called) implements DomainEventSubscriberInterface {
-            public function __construct(private bool &$called)
-            {
-            }
-
-            /** @return array<int, class-string> */
-            #[\Override]
-            public function subscribedTo(): array
-            {
-                return [TestEvent::class];
-            }
-
-            public function __invoke(TestEvent $event): void
-            {
-                $this->called = true;
-            }
-        };
-
-        $handlers = [$subscriber1, $subscriber2];
+        $subscriber1 = new FirstTestEventSubscriber($subscriber1Called);
+        $subscriber2 = new SecondTestEventSubscriber($subscriber2Called);
 
         $factory = new MessageBusFactory(
             new CallableFirstParameterExtractor(new InvokeParameterExtractor())
         );
-        $messageBus = $factory->create($handlers);
+        $messageBus = $factory->create([$subscriber1, $subscriber2]);
 
-        $messageBus->dispatch(new TestEvent('event-id', '2024-01-01 00:00:00'));
+        $messageBus->dispatch(new TestEvent('event-id', '2024-01-22 00:00:00'));
         self::assertTrue($subscriber1Called, 'Subscriber 1 should be called');
         self::assertTrue($subscriber2Called, 'Subscriber 2 should be called');
     }
