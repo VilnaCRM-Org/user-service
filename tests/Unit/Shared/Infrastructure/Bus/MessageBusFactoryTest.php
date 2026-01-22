@@ -34,51 +34,18 @@ final class MessageBusFactoryTest extends UnitTestCase
         $regularHandlerCalled = false;
         $subscriberCalled = false;
 
-        $regularHandler = new class($regularHandlerCalled) {
-            public function __construct(private bool &$called)
-            {
-            }
-
-            public function __invoke(TestCommand $command): void
-            {
-                $this->called = true;
-            }
-        };
-
-        $subscriber = new class($subscriberCalled) implements DomainEventSubscriberInterface {
-            public function __construct(private bool &$called)
-            {
-            }
-
-            /**
-             * @return array<class-string>
-             */
-            /** @return array<int, class-string> */
-            #[\Override]
-            public function subscribedTo(): array
-            {
-                return [TestEvent::class];
-            }
-
-            public function __invoke(TestEvent $event): void
-            {
-                $this->called = true;
-            }
-        };
-
+        $regularHandler = $this->createRegularHandler($regularHandlerCalled);
+        $subscriber = $this->createEventSubscriber($subscriberCalled);
         $handlers = [$regularHandler, $subscriber];
 
         $factory = new MessageBusFactory(
             new CallableFirstParameterExtractor(new InvokeParameterExtractor())
         );
-
         $messageBus = $factory->create($handlers);
 
-        // Dispatch command to regular handler
         $messageBus->dispatch(new TestCommand());
         self::assertTrue($regularHandlerCalled, 'Regular handler should be called');
 
-        // Dispatch event to subscriber
         $messageBus->dispatch(new TestEvent('event-id', '2024-01-01 00:00:00'));
         self::assertTrue($subscriberCalled, 'Subscriber should be called');
     }
@@ -129,10 +96,8 @@ final class MessageBusFactoryTest extends UnitTestCase
         $factory = new MessageBusFactory(
             new CallableFirstParameterExtractor(new InvokeParameterExtractor())
         );
-
         $messageBus = $factory->create($handlers);
 
-        // Dispatch event should call both subscribers
         $messageBus->dispatch(new TestEvent('event-id', '2024-01-01 00:00:00'));
         self::assertTrue($subscriber1Called, 'Subscriber 1 should be called');
         self::assertTrue($subscriber2Called, 'Subscriber 2 should be called');
@@ -213,5 +178,40 @@ final class MessageBusFactoryTest extends UnitTestCase
         self::assertArrayHasKey(TestEvent::class, $handlersMap);
         self::assertCount(1, $handlersMap[TestEvent::class]);
         self::assertSame($subscriber, $handlersMap[TestEvent::class][0]);
+    }
+
+    private function createRegularHandler(bool &$called): object
+    {
+        return new class($called) {
+            public function __construct(private bool &$called)
+            {
+            }
+
+            public function __invoke(TestCommand $command): void
+            {
+                $this->called = true;
+            }
+        };
+    }
+
+    private function createEventSubscriber(bool &$called): DomainEventSubscriberInterface
+    {
+        return new class($called) implements DomainEventSubscriberInterface {
+            public function __construct(private bool &$called)
+            {
+            }
+
+            /** @return array<int, class-string> */
+            #[\Override]
+            public function subscribedTo(): array
+            {
+                return [TestEvent::class];
+            }
+
+            public function __invoke(TestEvent $event): void
+            {
+                $this->called = true;
+            }
+        };
     }
 }

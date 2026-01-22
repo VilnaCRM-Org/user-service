@@ -54,21 +54,24 @@ abstract class UnitTestCase extends TestCase
         callable|array|bool|float|int|object|string|null $returnValue = null
     ): callable {
         $callIndex = 0;
-        $returnValues = $this->prepareReturnValues($returnValue);
+        $returnValues = is_array($returnValue) ? $returnValue : null;
 
         return function (...$args) use (&$callIndex, $expectedCalls, $returnValue, &$returnValues) {
             $this->validateSequentialCall($callIndex, $expectedCalls, $args);
             $callIndex++;
 
-            return $this->getSequentialReturnValue($returnValue, $returnValues, $args);
-        };
-    }
+            if (is_callable($returnValue)) {
+                return $returnValue(...$args);
+            }
 
-    /** @return array<int, array|bool|float|int|object|string|null>|null */
-    private function prepareReturnValues(
-        callable|array|bool|float|int|object|string|null $returnValue
-    ): ?array {
-        return is_array($returnValue) ? $returnValue : null;
+            if ($returnValues === null) {
+                return $returnValue;
+            }
+
+            $this->assertNotEmpty($returnValues, 'No more return values available');
+
+            return array_shift($returnValues);
+        };
     }
 
     private function setupErrorHandler(): ?callable
@@ -107,54 +110,5 @@ abstract class UnitTestCase extends TestCase
         foreach ($expectedArgs as $index => $expected) {
             $this->assertEquals($expected, $args[$index]);
         }
-    }
-
-    /**
-     * @param array<int, array|bool|float|int|object|string|null>|null $returnValues
-     * @param array<int, array|bool|float|int|object|string|null> $args
-     *
-     * @return array<int, array|bool|float|int|object|string|null>|bool|float|int|object|string|null
-     */
-    private function getSequentialReturnValue(
-        callable|array|bool|float|int|object|string|null $returnValue,
-        ?array &$returnValues,
-        array $args
-    ): array|bool|float|int|object|string|null {
-        if (is_callable($returnValue)) {
-            return $this->executeCallableReturn($returnValue, $args);
-        }
-
-        return $this->extractArrayReturn($returnValues, $returnValue);
-    }
-
-    /**
-     * @param array<int, array|bool|float|int|object|string|null> $args
-     *
-     * @return array<int, array|bool|float|int|object|string|null>
-     *         |bool|float|int|object|string|null
-     */
-    private function executeCallableReturn(
-        callable $returnValue,
-        array $args
-    ): array|bool|float|int|object|string|null {
-        return $returnValue(...$args);
-    }
-
-    /**
-     * @param array<int, array|bool|float|int|object|string|null>|null $returnValues
-     *
-     * @return array<int, array|bool|float|int|object|string|null>|bool|float|int|object|string|null
-     */
-    private function extractArrayReturn(
-        ?array &$returnValues,
-        array|bool|float|int|object|string|null $defaultValue
-    ): array|bool|float|int|object|string|null {
-        if ($returnValues === null) {
-            return $defaultValue;
-        }
-
-        $this->assertNotEmpty($returnValues, 'No more return values available');
-
-        return array_shift($returnValues);
     }
 }

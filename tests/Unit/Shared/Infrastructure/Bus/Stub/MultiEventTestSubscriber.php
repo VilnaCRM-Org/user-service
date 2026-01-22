@@ -6,6 +6,9 @@ namespace App\Tests\Unit\Shared\Infrastructure\Bus\Stub;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 
+/**
+ * @psalm-suppress UnusedProperty
+ */
 final class MultiEventTestSubscriber implements DomainEventSubscriberInterface
 {
     public function __construct(
