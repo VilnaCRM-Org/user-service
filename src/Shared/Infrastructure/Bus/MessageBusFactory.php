@@ -9,8 +9,13 @@ use Symfony\Component\Messenger\Handler\HandlersLocator;
 use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 
-final class MessageBusFactory
+final readonly class MessageBusFactory
 {
+    public function __construct(
+        private CallableFirstParameterExtractor $extractor
+    ) {
+    }
+
     /**
      * @param iterable<object> $callables
      */
@@ -53,12 +58,12 @@ final class MessageBusFactory
         );
 
         // DomainEventSubscribers use subscribedTo() for routing
-        $subscriberMap = CallableFirstParameterExtractor::forPipedCallables($subscribers);
+        $subscriberMap = $this->extractor->forPipedCallables($subscribers);
 
         // Regular handlers use __invoke parameter type for routing
         // Note: Unmappable handlers get null keys, but Symfony's HandlersLocator
         // never looks up by null, so they're effectively ignored
-        $handlerMap = CallableFirstParameterExtractor::forCallables($regularHandlers);
+        $handlerMap = $this->extractor->forCallables($regularHandlers);
 
         return array_merge_recursive($subscriberMap, $handlerMap);
     }

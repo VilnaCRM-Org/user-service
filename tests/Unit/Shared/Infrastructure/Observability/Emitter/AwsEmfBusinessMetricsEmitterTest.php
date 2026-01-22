@@ -8,6 +8,8 @@ use App\Shared\Application\Observability\Metric\Collection\MetricCollection;
 use App\Shared\Application\Observability\Metric\EndpointInvocationsMetric;
 use App\Shared\Infrastructure\Observability\Emitter\AwsEmfBusinessMetricsEmitter;
 use App\Shared\Infrastructure\Observability\Factory\EmfAwsMetadataFactory;
+use App\Shared\Infrastructure\Observability\Factory\EmfDimensionCollectionFactory;
+use App\Shared\Infrastructure\Observability\Factory\EmfMetricFactory;
 use App\Shared\Infrastructure\Observability\Factory\EmfPayloadFactory;
 use App\Shared\Infrastructure\Observability\Factory\EmfPayloadFactoryInterface;
 use App\Shared\Infrastructure\Observability\Formatter\EmfLogFormatter;
@@ -224,7 +226,8 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
 
         return new EmfPayloadFactory(
             $metadataFactory,
-            $dimensionValidator,
+            new EmfDimensionCollectionFactory($dimensionValidator),
+            new EmfMetricFactory(),
             $payloadValidator
         );
     }

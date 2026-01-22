@@ -29,6 +29,10 @@ final class Uuid implements UuidInterface
             return null;
         }
 
+        if (!ctype_xdigit($normalized)) {
+            return null;
+        }
+
         $binary = hex2bin($normalized);
 
         return $binary !== false ? $binary : null;

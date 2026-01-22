@@ -8,6 +8,7 @@ use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
@@ -75,6 +76,18 @@ final class UserTest extends UnitTestCase
         $property->setAccessible(true);
         $this->assertFalse($property->getValue($user), 'Confirmed property must be false after construction');
         $this->assertSame(false, $property->getValue($user), 'Confirmed must be exactly false (not null or other)');
+    }
+
+    public function testDirectConstructionStartsUnconfirmed(): void
+    {
+        $user = new User(
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+
+        $this->assertFalse($user->isConfirmed());
     }
 
     public function testConfirm(): void

@@ -21,6 +21,7 @@ final readonly class ResilientAsyncEventDispatcher implements AsyncEventDispatch
 {
     public function __construct(
         private MessageBusInterface $messageBus,
+        private DomainEventEnvelopeFactory $envelopeFactory,
         private LoggerInterface $logger,
         private BusinessMetricsEmitterInterface $metricsEmitter,
         private SqsDispatchFailureMetricFactoryInterface $metricFactory
@@ -44,7 +45,7 @@ final readonly class ResilientAsyncEventDispatcher implements AsyncEventDispatch
     private function dispatchSingle(DomainEvent $event): bool
     {
         try {
-            $envelope = DomainEventEnvelope::fromEvent($event);
+            $envelope = $this->envelopeFactory->createFromEvent($event);
             $this->messageBus->dispatch($envelope);
 
             $this->logger->debug('Domain event dispatched to async queue', [

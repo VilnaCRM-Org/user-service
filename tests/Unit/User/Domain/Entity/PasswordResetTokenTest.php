@@ -118,6 +118,24 @@ final class PasswordResetTokenTest extends UnitTestCase
         }
     }
 
+    public function testIsExpiredUsesProvidedCurrentTimeWhenEarlierThanExpiration(): void
+    {
+        $expirationTime = new \DateTimeImmutable('2024-01-01 12:00:00');
+        $providedCurrentTime = new \DateTimeImmutable('2023-12-31 12:00:00');
+
+        $token = new PasswordResetToken(
+            $this->faker->sha256(),
+            $this->faker->uuid(),
+            $expirationTime,
+            $providedCurrentTime->modify('-1 hour')
+        );
+
+        $this->assertFalse(
+            $token->isExpired($providedCurrentTime),
+            'Provided current time before expiration must keep token valid'
+        );
+    }
+
     public function testIsExpiredGreaterThanVsGreaterEqualBoundary(): void
     {
         // With the updated isExpired method that accepts a currentTime parameter,
@@ -297,6 +315,18 @@ final class PasswordResetTokenTest extends UnitTestCase
 
         // Without parameter, should use current time and be expired
         $this->assertTrue($pastToken->isExpired());
+    }
+
+    public function testManualCreationStartsUnused(): void
+    {
+        $token = new PasswordResetToken(
+            $this->faker->sha256(),
+            $this->faker->uuid(),
+            new \DateTimeImmutable('+1 hour'),
+            new \DateTimeImmutable()
+        );
+
+        $this->assertFalse($token->isUsed());
     }
 
     public function testNewTokenIsNotUsedByDefault(): void

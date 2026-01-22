@@ -29,12 +29,9 @@ final readonly class DomainEventEnvelope
 
     public static function fromEvent(DomainEvent $event): self
     {
-        return new self(
-            eventClass: $event::class,
-            body: $event->toPrimitives(),
-            eventId: $event->eventId(),
-            occurredOn: $event->occurredOn()
-        );
+        $factory = new DomainEventEnvelopeFactory();
+
+        return $factory->createFromEvent($event);
     }
 
     public function toEvent(): DomainEvent

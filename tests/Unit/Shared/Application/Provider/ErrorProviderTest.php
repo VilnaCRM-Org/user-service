@@ -261,6 +261,7 @@ final class ErrorProviderTest extends UnitTestCase
         // Set up request stack with a different request
         $stackRequest = new Request(attributes: ['exception' => $stackException]);
         $this->requestStack->push($stackRequest);
+        self::assertSame($stackRequest, $this->requestStack->getCurrentRequest());
 
         $context = ['request' => $contextRequest];
 

@@ -97,10 +97,12 @@ final class EmfDimensionValueCollectionTest extends UnitTestCase
         $this->expectException(EmfKeyCollisionException::class);
         $this->expectExceptionMessage('Duplicate dimension keys detected');
 
-        new EmfDimensionValueCollection(
-            $this->dimensionValidator,
-            new EmfDimensionValue('Endpoint', 'Customer'),
-            new EmfDimensionValue('Endpoint', 'Order')
+        $this->withoutPhpWarnings(
+            fn () => new EmfDimensionValueCollection(
+                $this->dimensionValidator,
+                new EmfDimensionValue('Endpoint', 'Customer'),
+                new EmfDimensionValue('Endpoint', 'Order')
+            )
         );
     }
 }

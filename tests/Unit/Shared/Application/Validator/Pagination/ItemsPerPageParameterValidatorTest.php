@@ -18,7 +18,7 @@ final class ItemsPerPageParameterValidatorTest extends UnitTestCase
 
         $validator = new ItemsPerPageParameterValidator($rule);
 
-        $result = $validator->validate([]);
+        $result = $this->withoutPhpWarnings(fn () => $validator->validate([]));
 
         self::assertNull($result);
     }
@@ -30,7 +30,9 @@ final class ItemsPerPageParameterValidatorTest extends UnitTestCase
 
         $validator = new ItemsPerPageParameterValidator($rule);
 
-        $result = $validator->validate(['page' => 1, 'order' => 'asc']);
+        $result = $this->withoutPhpWarnings(
+            fn () => $validator->validate(['page' => 1, 'order' => 'asc'])
+        );
 
         self::assertNull($result);
     }
@@ -76,9 +78,25 @@ final class ItemsPerPageParameterValidatorTest extends UnitTestCase
 
         // This test ensures the method returns null (not void/no return)
         // If the return statement is removed, this would fail
-        $result = $validator->validate(['someOtherKey' => 'value']);
+        $result = $this->withoutPhpWarnings(
+            fn () => $validator->validate(['someOtherKey' => 'value'])
+        );
 
         self::assertNull($result);
         self::assertTrue($result === null); // Extra assertion to catch void return
+    }
+
+    public function testMissingItemsPerPageDoesNotEmitWarningsOrCallRule(): void
+    {
+        $rule = $this->createMock(ItemsPerPageRule::class);
+        $rule->expects(self::never())->method('evaluate');
+
+        $validator = new ItemsPerPageParameterValidator($rule);
+
+        $result = $this->withoutPhpWarnings(
+            fn () => $validator->validate(['page' => $this->faker->numberBetween(1, 5)])
+        );
+
+        self::assertNull($result);
     }
 }

@@ -8,6 +8,8 @@ use App\Shared\Application\Observability\Metric\Collection\MetricCollection;
 use App\Shared\Application\Observability\Metric\EndpointInvocationsMetric;
 use App\Shared\Infrastructure\Observability\Exception\InvalidEmfNamespaceException;
 use App\Shared\Infrastructure\Observability\Factory\EmfAwsMetadataFactory;
+use App\Shared\Infrastructure\Observability\Factory\EmfDimensionCollectionFactory;
+use App\Shared\Infrastructure\Observability\Factory\EmfMetricFactory;
 use App\Shared\Infrastructure\Observability\Factory\EmfPayloadFactory;
 use App\Shared\Infrastructure\Observability\Provider\EmfTimestampProvider;
 use App\Shared\Infrastructure\Observability\Validator\EmfDimensionValueValidator;
@@ -199,7 +201,10 @@ final class EmfPayloadFactoryTest extends UnitTestCase
 
         return new EmfPayloadFactory(
             $metadataFactory,
-            new EmfDimensionValueValidator($validator),
+            new EmfDimensionCollectionFactory(
+                new EmfDimensionValueValidator($validator)
+            ),
+            new EmfMetricFactory(),
             new EmfPayloadValidator()
         );
     }

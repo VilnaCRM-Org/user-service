@@ -25,7 +25,7 @@ final class PageParameterValidatorTest extends UnitTestCase
 
         $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
 
-        $result = $validator->validate([]);
+        $result = $this->withoutPhpWarnings(fn () => $validator->validate([]));
 
         self::assertNull($result);
     }
@@ -40,7 +40,27 @@ final class PageParameterValidatorTest extends UnitTestCase
 
         $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
 
-        $result = $validator->validate(['itemsPerPage' => 10, 'order' => 'asc']);
+        $result = $this->withoutPhpWarnings(
+            fn () => $validator->validate(['itemsPerPage' => 10, 'order' => 'asc'])
+        );
+
+        self::assertNull($result);
+    }
+
+    public function testMissingPageDoesNotEmitWarningsOrInvokeEvaluators(): void
+    {
+        $valueEvaluator = $this->createMock(ExplicitValueEvaluator::class);
+        $valueEvaluator->expects(self::never())->method('isExplicitlyProvided');
+        $valueEvaluator->expects(self::never())->method('wasParameterSent');
+
+        $normalizer = $this->createMock(PositiveIntegerNormalizer::class);
+        $violationFactory = $this->createMock(QueryParameterViolationFactory::class);
+
+        $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
+
+        $result = $this->withoutPhpWarnings(
+            fn () => $validator->validate(['itemsPerPage' => $this->faker->numberBetween(2, 20)])
+        );
 
         self::assertNull($result);
     }
@@ -136,7 +156,7 @@ final class PageParameterValidatorTest extends UnitTestCase
         $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
 
         // When page key is missing, should return null
-        $result = $validator->validate(['someOtherKey' => 'value']);
+        $result = $this->withoutPhpWarnings(fn () => $validator->validate(['someOtherKey' => 'value']));
 
         self::assertNull($result);
         self::assertTrue($result === null); // Ensure explicit null return, not void

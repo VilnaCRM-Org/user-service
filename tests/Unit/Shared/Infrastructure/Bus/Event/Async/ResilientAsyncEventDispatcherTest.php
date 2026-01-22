@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Infrastructure\Bus\Event\Async;
 
 use App\Shared\Application\Observability\Metric\SqsDispatchFailureMetric;
+use App\Shared\Infrastructure\Bus\Event\Async\DomainEventEnvelopeFactory;
 use App\Shared\Infrastructure\Bus\Event\Async\ResilientAsyncEventDispatcher;
 use App\Shared\Infrastructure\Observability\Factory\MetricDimensionsFactory;
 use App\Shared\Infrastructure\Observability\Factory\SqsDispatchFailureMetricFactory;
@@ -44,6 +45,7 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
+            new DomainEventEnvelopeFactory(),
             new NullLogger(),
             $this->metricsEmitter,
             $this->metricFactory
@@ -64,6 +66,7 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
+            new DomainEventEnvelopeFactory(),
             new NullLogger(),
             $this->metricsEmitter,
             $this->metricFactory
@@ -83,6 +86,7 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
+            new DomainEventEnvelopeFactory(),
             new NullLogger(),
             $this->metricsEmitter,
             $this->metricFactory
@@ -102,6 +106,7 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
+            new DomainEventEnvelopeFactory(),
             new NullLogger(),
             $this->metricsEmitter,
             $this->metricFactory
@@ -122,6 +127,7 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
+            new DomainEventEnvelopeFactory(),
             new NullLogger(),
             $this->metricsEmitter,
             $this->metricFactory
@@ -149,6 +155,7 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
+            new DomainEventEnvelopeFactory(),
             new NullLogger(),
             $this->metricsEmitter,
             $this->metricFactory
@@ -168,6 +175,7 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
+            new DomainEventEnvelopeFactory(),
             new NullLogger(),
             $this->metricsEmitter,
             $this->metricFactory
@@ -191,6 +199,7 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
+            new DomainEventEnvelopeFactory(),
             new NullLogger(),
             $this->metricsEmitter,
             $this->metricFactory
@@ -211,6 +220,7 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
+            new DomainEventEnvelopeFactory(),
             $logger,
             $this->metricsEmitter,
             $this->metricFactory
@@ -230,6 +240,7 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
+            new DomainEventEnvelopeFactory(),
             $logger,
             $this->metricsEmitter,
             $this->metricFactory
@@ -251,6 +262,7 @@ final class ResilientAsyncEventDispatcherTest extends UnitTestCase
 
         $dispatcher = new ResilientAsyncEventDispatcher(
             $messageBus,
+            new DomainEventEnvelopeFactory(),
             $logger,
             $this->metricsEmitter,
             $this->metricFactory

@@ -87,9 +87,11 @@ final class EmfMetricValueCollectionTest extends UnitTestCase
         $this->expectException(EmfKeyCollisionException::class);
         $this->expectExceptionMessage('Duplicate metric names detected');
 
-        new EmfMetricValueCollection(
-            new EmfMetricValue('Metric1', 10),
-            new EmfMetricValue('Metric1', 20)
+        $this->withoutPhpWarnings(
+            fn () => new EmfMetricValueCollection(
+                new EmfMetricValue('Metric1', 10),
+                new EmfMetricValue('Metric1', 20)
+            )
         );
     }
 }

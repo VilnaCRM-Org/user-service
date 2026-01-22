@@ -6,8 +6,13 @@ namespace App\Shared\Infrastructure\Bus;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 
-final class CallableFirstParameterExtractor
+final readonly class CallableFirstParameterExtractor
 {
+    public function __construct(
+        private InvokeParameterExtractor $extractor
+    ) {
+    }
+
     /**
      * @param iterable<DomainEventSubscriberInterface> $callables
      *
@@ -15,13 +20,12 @@ final class CallableFirstParameterExtractor
      *
      * @psalm-return array<string, list{DomainEventSubscriberInterface}>
      */
-    public static function forCallables(iterable $callables): array
+    public function forCallables(iterable $callables): array
     {
         $callableArray = iterator_to_array($callables);
-        $extractor = new InvokeParameterExtractor();
 
         $keys = array_map(
-            static fn (object $handler): ?string => $extractor->extract($handler),
+            fn (object $handler): ?string => $this->extractor->extract($handler),
             $callableArray
         );
 
@@ -38,16 +42,16 @@ final class CallableFirstParameterExtractor
      *
      * @return array<int, array<DomainEventSubscriberInterface>>
      */
-    public static function forPipedCallables(iterable $callables): array
+    public function forPipedCallables(iterable $callables): array
     {
         return array_reduce(
             iterator_to_array($callables),
-            self::pipedCallablesReducer(),
+            $this->pipedCallablesReducer(),
             []
         );
     }
 
-    private static function pipedCallablesReducer(): callable
+    private function pipedCallablesReducer(): callable
     {
         return static fn (
             array $subscribers,

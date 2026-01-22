@@ -6,14 +6,12 @@ namespace App\Tests\Unit\Shared\Infrastructure\Bus;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\Shared\Infrastructure\Bus\CallableFirstParameterExtractor;
+use App\Shared\Infrastructure\Bus\InvokeParameterExtractor;
 use App\Shared\Infrastructure\Bus\MessageBusFactory;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestCommand;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestEvent;
-use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestEventSubscriber;
 use App\Tests\Unit\UnitTestCase;
-use Symfony\Component\Messenger\Handler\HandlersLocator;
 use Symfony\Component\Messenger\MessageBus;
-use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 
 final class MessageBusFactoryTest extends UnitTestCase
 {
@@ -21,7 +19,7 @@ final class MessageBusFactoryTest extends UnitTestCase
     {
         $commandHandlers = [];
 
-        $factory = new MessageBusFactory();
+        $factory = new MessageBusFactory(new CallableFirstParameterExtractor(new InvokeParameterExtractor()));
 
         $messageBus = $factory->create($commandHandlers);
 
@@ -66,7 +64,7 @@ final class MessageBusFactoryTest extends UnitTestCase
 
         $handlers = [$regularHandler, $subscriber];
 
-        $factory = new MessageBusFactory();
+        $factory = new MessageBusFactory(new CallableFirstParameterExtractor(new InvokeParameterExtractor()));
 
         $messageBus = $factory->create($handlers);
 
@@ -120,7 +118,7 @@ final class MessageBusFactoryTest extends UnitTestCase
 
         $handlers = [$subscriber1, $subscriber2];
 
-        $factory = new MessageBusFactory();
+        $factory = new MessageBusFactory(new CallableFirstParameterExtractor(new InvokeParameterExtractor()));
 
         $messageBus = $factory->create($handlers);
 
@@ -147,7 +145,7 @@ final class MessageBusFactoryTest extends UnitTestCase
 
         $handlers = [$handler1];
 
-        $factory = new MessageBusFactory();
+        $factory = new MessageBusFactory(new CallableFirstParameterExtractor(new InvokeParameterExtractor()));
 
         $messageBus = $factory->create($handlers);
 
@@ -184,7 +182,7 @@ final class MessageBusFactoryTest extends UnitTestCase
             }
         };
 
-        $factory = new MessageBusFactory();
+        $factory = new MessageBusFactory(new CallableFirstParameterExtractor(new InvokeParameterExtractor()));
         $messageBus = $factory->create([$subscriber]);
 
         // Subscriber should handle both event types
@@ -195,4 +193,32 @@ final class MessageBusFactoryTest extends UnitTestCase
         self::assertTrue($event2Called, 'Subscriber should handle TestCommand');
     }
 
+    public function testSubscriberRegisteredOnceInHandlersMap(): void
+    {
+        $subscriber = new class() implements DomainEventSubscriberInterface {
+            #[\Override]
+            public function subscribedTo(): array
+            {
+                return [TestEvent::class];
+            }
+
+            public function __invoke(TestEvent $event): void
+            {
+            }
+        };
+
+        $factory = new MessageBusFactory(
+            new CallableFirstParameterExtractor(new InvokeParameterExtractor())
+        );
+
+        $reflection = new \ReflectionMethod(MessageBusFactory::class, 'buildHandlersMap');
+        $this->makeAccessible($reflection);
+
+        /** @var array<string, array<DomainEventSubscriberInterface>> $handlersMap */
+        $handlersMap = $reflection->invoke($factory, [$subscriber]);
+
+        self::assertArrayHasKey(TestEvent::class, $handlersMap);
+        self::assertCount(1, $handlersMap[TestEvent::class]);
+        self::assertSame($subscriber, $handlersMap[TestEvent::class][0]);
+    }
 }

@@ -39,7 +39,10 @@ final readonly class EmfPayloadValidator implements EmfPayloadValidatorInterface
         $collisions = array_intersect($dimensionKeys, $metricNames);
 
         if ($collisions !== []) {
-            throw EmfKeyCollisionException::dimensionMetricCollision($collisions);
+            throw new EmfKeyCollisionException(sprintf(
+                'Key collision detected between dimensions and metrics: %s',
+                implode(', ', $collisions)
+            ));
         }
     }
 
@@ -52,7 +55,10 @@ final readonly class EmfPayloadValidator implements EmfPayloadValidatorInterface
         $allKeys = [...$dimensionKeys, ...$metricNames];
 
         if (in_array(self::RESERVED_AWS_KEY, $allKeys, true)) {
-            throw EmfKeyCollisionException::reservedKeyUsed(self::RESERVED_AWS_KEY);
+            throw new EmfKeyCollisionException(sprintf(
+                'Key "%s" is reserved for metadata and cannot be used as a dimension or metric name',
+                self::RESERVED_AWS_KEY
+            ));
         }
     }
 }

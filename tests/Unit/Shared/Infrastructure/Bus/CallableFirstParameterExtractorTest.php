@@ -7,17 +7,26 @@ namespace App\Tests\Unit\Shared\Infrastructure\Bus;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\Shared\Infrastructure\Bus\CallableFirstParameterExtractor;
+use App\Shared\Infrastructure\Bus\InvokeParameterExtractor;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestOtherEvent;
 use App\Tests\Unit\UnitTestCase;
 use PHPUnit\Framework\Assert;
 
 final class CallableFirstParameterExtractorTest extends UnitTestCase
 {
+    private CallableFirstParameterExtractor $extractor;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->extractor = new CallableFirstParameterExtractor(new InvokeParameterExtractor());
+    }
+
     public function testForCallablesReturnsCorrectMapping(): void
     {
         $subscriber = $this->createDomainEventSubscriber();
 
-        $result = CallableFirstParameterExtractor::forCallables([$subscriber]);
+        $result = $this->extractor->forCallables([$subscriber]);
 
         self::assertArrayHasKey(DomainEvent::class, $result);
         self::assertIsArray($result[DomainEvent::class]);
@@ -28,7 +37,7 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
     {
         $subscriber = $this->createMultiEventSubscriber();
 
-        $result = CallableFirstParameterExtractor::forPipedCallables([$subscriber]);
+        $result = $this->extractor->forPipedCallables([$subscriber]);
 
         self::assertArrayHasKey(DomainEvent::class, $result);
         self::assertArrayHasKey(TestOtherEvent::class, $result);

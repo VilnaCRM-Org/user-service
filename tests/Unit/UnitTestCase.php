@@ -33,6 +33,37 @@ abstract class UnitTestCase extends TestCase
     }
 
     /**
+     * Execute a callback while converting PHP warnings/notices into exceptions.
+     */
+    protected function withoutPhpWarnings(callable $callback): mixed
+    {
+        $previousHandler = set_error_handler(
+            static function (
+                int $severity,
+                string $message,
+                string $file,
+                int $line
+            ): bool {
+                if (!(error_reporting() & $severity)) {
+                    return false;
+                }
+
+                throw new \ErrorException($message, 0, $severity, $file, $line);
+            }
+        );
+
+        try {
+            return $callback();
+        } finally {
+            if ($previousHandler !== null) {
+                set_error_handler($previousHandler);
+            } else {
+                restore_error_handler();
+            }
+        }
+    }
+
+    /**
      * @param array<int, array<int, array|bool|float|int|object|string|null>> $expectedCalls
      */
     protected function expectSequential(

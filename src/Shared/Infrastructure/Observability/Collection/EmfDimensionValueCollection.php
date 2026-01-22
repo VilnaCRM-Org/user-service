@@ -97,7 +97,10 @@ final readonly class EmfDimensionValueCollection implements IteratorAggregate, C
         ));
 
         if ($duplicates !== []) {
-            throw EmfKeyCollisionException::duplicateDimensionKeys($duplicates);
+            throw new EmfKeyCollisionException(sprintf(
+                'Duplicate dimension keys detected: %s',
+                implode(', ', $duplicates)
+            ));
         }
     }
 

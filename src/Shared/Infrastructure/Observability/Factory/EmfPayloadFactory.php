@@ -6,14 +6,8 @@ namespace App\Shared\Infrastructure\Observability\Factory;
 
 use App\Shared\Application\Observability\Metric\BusinessMetric;
 use App\Shared\Application\Observability\Metric\Collection\MetricCollection;
-use App\Shared\Application\Observability\Metric\ValueObject\MetricDimensionsInterface;
-use App\Shared\Infrastructure\Observability\Collection\EmfDimensionValueCollection;
 use App\Shared\Infrastructure\Observability\Collection\EmfMetricValueCollection;
-use App\Shared\Infrastructure\Observability\Validator\EmfDimensionValueValidatorInterface;
 use App\Shared\Infrastructure\Observability\Validator\EmfPayloadValidatorInterface;
-use App\Shared\Infrastructure\Observability\ValueObject\EmfDimensionValue;
-use App\Shared\Infrastructure\Observability\ValueObject\EmfMetricDefinition;
-use App\Shared\Infrastructure\Observability\ValueObject\EmfMetricValue;
 use App\Shared\Infrastructure\Observability\ValueObject\EmfPayload;
 use InvalidArgumentException;
 
@@ -28,7 +22,8 @@ final readonly class EmfPayloadFactory implements EmfPayloadFactoryInterface
 {
     public function __construct(
         private EmfAwsMetadataFactoryInterface $metadataFactory,
-        private EmfDimensionValueValidatorInterface $dimensionValidator,
+        private EmfDimensionCollectionFactory $dimensionFactory,
+        private EmfMetricFactory $metricFactory,
         private EmfPayloadValidatorInterface $payloadValidator
     ) {
     }
@@ -36,8 +31,10 @@ final readonly class EmfPayloadFactory implements EmfPayloadFactoryInterface
     #[\Override]
     public function createFromMetric(BusinessMetric $metric): EmfPayload
     {
-        $dimensionValueCollection = $this->createDimensionValueCollection($metric->dimensions());
-        $metricDefinition = $this->createMetricDefinition($metric);
+        $dimensionValueCollection = $this->dimensionFactory->createFromDimensions(
+            $metric->dimensions()
+        );
+        $metricDefinition = $this->metricFactory->createDefinition($metric);
         $awsMetadata = $this->metadataFactory->createWithMetric(
             $dimensionValueCollection->keys(),
             $metricDefinition
@@ -46,7 +43,7 @@ final readonly class EmfPayloadFactory implements EmfPayloadFactoryInterface
         $payload = new EmfPayload(
             $awsMetadata,
             $dimensionValueCollection,
-            new EmfMetricValueCollection($this->createMetricValue($metric))
+            new EmfMetricValueCollection($this->metricFactory->createValue($metric))
         );
 
         $this->payloadValidator->validate($payload);
@@ -64,7 +61,9 @@ final readonly class EmfPayloadFactory implements EmfPayloadFactoryInterface
         }
 
         $allMetrics = $metrics->all();
-        $dimensions = $this->createDimensionValueCollection($allMetrics[0]->dimensions());
+        $dimensions = $this->dimensionFactory->createFromDimensions(
+            $allMetrics[0]->dimensions()
+        );
         $awsMetadata = $this->metadataFactory->createEmpty($dimensions->keys());
         $payload = new EmfPayload($awsMetadata, $dimensions, new EmfMetricValueCollection());
         $payload = $this->addMetricsToPayload($payload, $allMetrics);
@@ -81,32 +80,11 @@ final readonly class EmfPayloadFactory implements EmfPayloadFactoryInterface
     {
         foreach ($metrics as $metric) {
             $payload = $payload->withAddedMetric(
-                $this->createMetricDefinition($metric),
-                $this->createMetricValue($metric)
+                $this->metricFactory->createDefinition($metric),
+                $this->metricFactory->createValue($metric)
             );
         }
 
         return $payload;
-    }
-
-    private function createMetricDefinition(BusinessMetric $metric): EmfMetricDefinition
-    {
-        return new EmfMetricDefinition($metric->name(), $metric->unit()->value());
-    }
-
-    private function createMetricValue(BusinessMetric $metric): EmfMetricValue
-    {
-        return new EmfMetricValue($metric->name(), $metric->value());
-    }
-
-    private function createDimensionValueCollection(
-        MetricDimensionsInterface $dimensions
-    ): EmfDimensionValueCollection {
-        $dimensionValues = [];
-        foreach ($dimensions->values() as $dimension) {
-            $dimensionValues[] = new EmfDimensionValue($dimension->key(), $dimension->value());
-        }
-
-        return new EmfDimensionValueCollection($this->dimensionValidator, ...$dimensionValues);
     }
 }
