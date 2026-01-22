@@ -155,11 +155,12 @@ final class PageParameterValidatorTest extends UnitTestCase
 
         $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
 
-        // When page key is missing, should return null
-        $result = $this->withoutPhpWarnings(static fn () => $validator->validate(['someOtherKey' => 'value']));
+        $result = $this->withoutPhpWarnings(
+            static fn () => $validator->validate(['someOtherKey' => 'value'])
+        );
 
         self::assertNull($result);
-        self::assertTrue($result === null); // Ensure explicit null return, not void
+        self::assertTrue($result === null);
     }
 
     public function testReturnsNullWhenPageKeyPresentMatchesFirstArm(): void

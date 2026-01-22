@@ -347,15 +347,19 @@ final class PasswordResetTokenTest extends UnitTestCase
         // Use reflection to verify the property was set correctly in the constructor
         $reflection = new \ReflectionClass($token);
         $property = $reflection->getProperty('isUsed');
-        $property->setAccessible(true);
-        $this->assertFalse($property->getValue($token), 'isUsed property must be false after construction');
-        $this->assertSame(false, $property->getValue($token), 'isUsed must be exactly false (not null or other)');
+        $this->assertFalse(
+            $property->getValue($token),
+            'isUsed property must be false after construction'
+        );
+        $this->assertSame(
+            false,
+            $property->getValue($token),
+            'isUsed must be exactly false (not null or other)'
+        );
     }
 
     public function testIsExpiredStrictGreaterThan(): void
     {
-        // Test the GreaterThan mutant on line 56
-        // Mutation: currentTime > expiresAt => currentTime >= expiresAt
         $expireTime = new \DateTimeImmutable('2024-06-15 14:30:00');
         $token = new PasswordResetToken(
             'strict-boundary-token',
@@ -364,20 +368,36 @@ final class PasswordResetTokenTest extends UnitTestCase
             $expireTime->modify('-1 hour')
         );
 
-        // At EXACTLY the expiration time, token should NOT be expired (> not >=)
+        $this->assertNotExpiredAtExactTime($token, $expireTime);
+        $this->assertExpiredAfterTime($token, $expireTime);
+        $this->assertNotExpiredBeforeTime($token, $expireTime);
+    }
+
+    private function assertNotExpiredAtExactTime(
+        PasswordResetToken $token,
+        \DateTimeImmutable $expireTime
+    ): void {
         $this->assertFalse(
             $token->isExpired($expireTime),
             'Token at exact expiration time should not be expired (strict >)'
         );
+    }
 
-        // One nanosecond after expiration, should be expired
+    private function assertExpiredAfterTime(
+        PasswordResetToken $token,
+        \DateTimeImmutable $expireTime
+    ): void {
         $justAfter = $expireTime->modify('+1 microsecond');
         $this->assertTrue(
             $token->isExpired($justAfter),
             'Token one microsecond after expiration should be expired'
         );
+    }
 
-        // One nanosecond before expiration, should not be expired
+    private function assertNotExpiredBeforeTime(
+        PasswordResetToken $token,
+        \DateTimeImmutable $expireTime
+    ): void {
         $justBefore = $expireTime->modify('-1 microsecond');
         $this->assertFalse(
             $token->isExpired($justBefore),

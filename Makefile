@@ -70,7 +70,7 @@ export SYMFONY
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
-	@grep -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-15s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-25s\033[0m %s\n", $$1, $$2}'
 
 bats: ## Run tests for bash commands
 	bats tests/CLI/bats/
@@ -88,13 +88,28 @@ check-security: ## Checks security issues in project dependencies. Without argum
 	$(EXEC_ENV) $(SYMFONY_BIN) security:check
 
 psalm: ## A static analysis tool for finding errors in PHP applications
-	$(EXEC_ENV) $(PSALM)
+	$(EXEC_ENV) $(PSALM) --show-info=true --no-progress
+
+psalm-info: ## Run psalm showing all info-level issues
+	$(EXEC_ENV) $(PSALM) --show-info=true
+
+psalm-stats: ## Show psalm statistics
+	$(EXEC_ENV) $(PSALM) --stats --no-progress
 
 psalm-security: ## Psalm security analysis
-	$(EXEC_ENV) $(PSALM) --taint-analysis
+	$(EXEC_ENV) $(PSALM) --taint-analysis --no-progress
 
 psalm-security-report: ## Psalm security analysis with SARIF output
-	$(EXEC_ENV) $(PSALM) --taint-analysis --report=results.sarif
+	$(EXEC_ENV) $(PSALM) --taint-analysis --report=results.sarif --no-progress
+
+psalm-cache-clear: ## Clear Psalm cache
+	$(EXEC_ENV) $(PSALM) --clear-cache
+
+psalm-baseline: ## Generate psalm baseline for existing issues
+	$(EXEC_ENV) $(PSALM) --set-baseline=psalm-baseline.xml
+
+psalm-update-baseline: ## Update existing psalm baseline
+	$(EXEC_ENV) $(PSALM) --update-baseline --no-progress
 
 phpmd: ## Instant PHP MD quality checks, static analysis, and complexity insights
 	$(EXEC_ENV) ./vendor/bin/phpmd src ansi codesize,design,cleancode --exclude vendor
@@ -177,7 +192,7 @@ build-spectral-docker:
 	$(DOCKER) build -t user-service-spectral -f ./docker/spectral/Dockerfile .
 
 infection: ## Run mutations test.
-	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j8 --min-msi=100 --min-covered-msi=100
+	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j8 --min-msi=100 --min-covered-msi=100 --with-uncovered
 
 create-oauth-client: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(clientName)'

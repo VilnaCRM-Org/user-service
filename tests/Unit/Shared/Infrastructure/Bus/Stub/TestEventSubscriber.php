@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Shared\Infrastructure\Bus\Stub;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 
+/** @psalm-suppress UnusedClass */
 final class TestEventSubscriber implements DomainEventSubscriberInterface
 {
     /**

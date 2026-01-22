@@ -50,6 +50,7 @@ final class MessageBusFactoryTest extends UnitTestCase
             /**
              * @return array<class-string>
              */
+            /** @return array<int, class-string> */
             #[\Override]
             public function subscribedTo(): array
             {
@@ -87,6 +88,7 @@ final class MessageBusFactoryTest extends UnitTestCase
             {
             }
 
+            /** @return array<int, class-string> */
             #[\Override]
             public function subscribedTo(): array
             {
@@ -104,6 +106,7 @@ final class MessageBusFactoryTest extends UnitTestCase
             {
             }
 
+            /** @return array<int, class-string> */
             #[\Override]
             public function subscribedTo(): array
             {
@@ -145,7 +148,9 @@ final class MessageBusFactoryTest extends UnitTestCase
 
         $handlers = [$handler1];
 
-        $factory = new MessageBusFactory(new CallableFirstParameterExtractor(new InvokeParameterExtractor()));
+        $factory = new MessageBusFactory(
+            new CallableFirstParameterExtractor(new InvokeParameterExtractor())
+        );
 
         $messageBus = $factory->create($handlers);
 
@@ -159,13 +164,17 @@ final class MessageBusFactoryTest extends UnitTestCase
         $event1Called = false;
         $event2Called = false;
 
-        $subscriber = new class($event1Called, $event2Called) implements DomainEventSubscriberInterface {
+        $subscriber = new class(
+            $event1Called,
+            $event2Called
+        ) implements DomainEventSubscriberInterface {
             public function __construct(
                 private bool &$event1Called,
                 private bool &$event2Called
             ) {
             }
 
+            /** @return array<int, class-string> */
             #[\Override]
             public function subscribedTo(): array
             {
@@ -182,20 +191,22 @@ final class MessageBusFactoryTest extends UnitTestCase
             }
         };
 
-        $factory = new MessageBusFactory(new CallableFirstParameterExtractor(new InvokeParameterExtractor()));
+        $factory = new MessageBusFactory(
+            new CallableFirstParameterExtractor(new InvokeParameterExtractor())
+        );
         $messageBus = $factory->create([$subscriber]);
 
-        // Subscriber should handle both event types
         $messageBus->dispatch(new TestEvent('event-id', '2024-01-01 00:00:00'));
-        self::assertTrue($event1Called, 'Subscriber should handle TestEvent');
+        self::assertTrue($event1Called);
 
         $messageBus->dispatch(new TestCommand());
-        self::assertTrue($event2Called, 'Subscriber should handle TestCommand');
+        self::assertTrue($event2Called);
     }
 
     public function testSubscriberRegisteredOnceInHandlersMap(): void
     {
         $subscriber = new class() implements DomainEventSubscriberInterface {
+            /** @return array<int, class-string> */
             #[\Override]
             public function subscribedTo(): array
             {

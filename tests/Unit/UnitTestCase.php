@@ -37,29 +37,12 @@ abstract class UnitTestCase extends TestCase
      */
     protected function withoutPhpWarnings(callable $callback): mixed
     {
-        $previousHandler = set_error_handler(
-            static function (
-                int $severity,
-                string $message,
-                string $file,
-                int $line
-            ): bool {
-                if (!(error_reporting() & $severity)) {
-                    return false;
-                }
-
-                throw new \ErrorException($message, 0, $severity, $file, $line);
-            }
-        );
+        $previousHandler = $this->setupErrorHandler();
 
         try {
             return $callback();
         } finally {
-            if ($previousHandler !== null) {
-                set_error_handler($previousHandler);
-            } else {
-                restore_error_handler();
-            }
+            $this->restoreErrorHandler($previousHandler);
         }
     }
 
@@ -71,7 +54,7 @@ abstract class UnitTestCase extends TestCase
         callable|array|bool|float|int|object|string|null $returnValue = null
     ): callable {
         $callIndex = 0;
-        $returnValues = is_array($returnValue) ? $returnValue : null;
+        $returnValues = $this->prepareReturnValues($returnValue);
 
         return function (...$args) use (&$callIndex, $expectedCalls, $returnValue, &$returnValues) {
             $this->validateSequentialCall($callIndex, $expectedCalls, $args);
@@ -79,6 +62,35 @@ abstract class UnitTestCase extends TestCase
 
             return $this->getSequentialReturnValue($returnValue, $returnValues, $args);
         };
+    }
+
+    /** @return array<int, array|bool|float|int|object|string|null>|null */
+    private function prepareReturnValues(
+        callable|array|bool|float|int|object|string|null $returnValue
+    ): ?array {
+        return is_array($returnValue) ? $returnValue : null;
+    }
+
+    private function setupErrorHandler(): ?callable
+    {
+        return set_error_handler($this->createErrorHandlerCallback());
+    }
+
+    private function createErrorHandlerCallback(): callable
+    {
+        return static function (
+            int $severity,
+            string $message,
+            string $file,
+            int $line
+        ): bool {
+            throw new \ErrorException($message, 0, $severity, $file, $line);
+        };
+    }
+
+    private function restoreErrorHandler(?callable $previousHandler): void
+    {
+        $previousHandler ? set_error_handler($previousHandler) : restore_error_handler();
     }
 
     /**
@@ -109,15 +121,40 @@ abstract class UnitTestCase extends TestCase
         array $args
     ): array|bool|float|int|object|string|null {
         if (is_callable($returnValue)) {
-            return $returnValue(...$args);
+            return $this->executeCallableReturn($returnValue, $args);
         }
 
-        if ($returnValues !== null) {
-            $this->assertNotEmpty($returnValues, 'No more return values available');
+        return $this->extractArrayReturn($returnValues, $returnValue);
+    }
 
-            return array_shift($returnValues);
+    /**
+     * @param array<int, array|bool|float|int|object|string|null> $args
+     *
+     * @return array<int, array|bool|float|int|object|string|null>
+     *         |bool|float|int|object|string|null
+     */
+    private function executeCallableReturn(
+        callable $returnValue,
+        array $args
+    ): array|bool|float|int|object|string|null {
+        return $returnValue(...$args);
+    }
+
+    /**
+     * @param array<int, array|bool|float|int|object|string|null>|null $returnValues
+     *
+     * @return array<int, array|bool|float|int|object|string|null>|bool|float|int|object|string|null
+     */
+    private function extractArrayReturn(
+        ?array &$returnValues,
+        array|bool|float|int|object|string|null $defaultValue
+    ): array|bool|float|int|object|string|null {
+        if ($returnValues === null) {
+            return $defaultValue;
         }
 
-        return $returnValue;
+        $this->assertNotEmpty($returnValues, 'No more return values available');
+
+        return array_shift($returnValues);
     }
 }

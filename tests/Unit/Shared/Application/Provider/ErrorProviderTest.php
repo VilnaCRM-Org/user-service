@@ -247,35 +247,50 @@ final class ErrorProviderTest extends UnitTestCase
         $contextErrorMessage = 'Error from context request';
         $stackErrorMessage = 'Error from stack request';
 
-        $this->operation
-            ->method('getStatus')
-            ->willReturn($status);
+        $this->operation->method('getStatus')->willReturn($status);
 
-        // Create two different exceptions
+        $context = $this->setupRequestsWithDifferentExceptions(
+            $status,
+            $contextErrorMessage,
+            $stackErrorMessage
+        );
+
+        $this->translator->method('trans')->with('error.internal')->willReturn('');
+
+        $errorProvider = $this->errorProvider();
+        $error = $errorProvider->provide($this->operation, [], $context);
+
+        $this->assertContextRequestTakesPrecedence(
+            $error,
+            $contextErrorMessage,
+            $stackErrorMessage
+        );
+    }
+
+    /** @return array<string, Request> */
+    private function setupRequestsWithDifferentExceptions(
+        int $status,
+        string $contextErrorMessage,
+        string $stackErrorMessage
+    ): array {
         $contextException = new HttpException($status, $contextErrorMessage);
         $stackException = new HttpException($status, $stackErrorMessage);
 
-        // Set up context request with its exception
         $contextRequest = new Request(attributes: ['exception' => $contextException]);
-
-        // Set up request stack with a different request
         $stackRequest = new Request(attributes: ['exception' => $stackException]);
+
         $this->requestStack->push($stackRequest);
         self::assertSame($stackRequest, $this->requestStack->getCurrentRequest());
 
-        $context = ['request' => $contextRequest];
+        return ['request' => $contextRequest];
+    }
 
-        $this->translator
-            ->method('trans')
-            ->with('error.internal')
-            ->willReturn('');
-
-        $errorProvider = $this->errorProvider();
-
-        $error = $errorProvider->provide($this->operation, [], $context);
-
+    private function assertContextRequestTakesPrecedence(
+        Error $error,
+        string $contextErrorMessage,
+        string $stackErrorMessage
+    ): void {
         $this->assertInstanceOf(Error::class, $error);
-        // Verify that the context request's exception is used, not the stack's
         $this->assertSame($contextErrorMessage, $error->getDetail());
         $this->assertNotSame($stackErrorMessage, $error->getDetail());
     }

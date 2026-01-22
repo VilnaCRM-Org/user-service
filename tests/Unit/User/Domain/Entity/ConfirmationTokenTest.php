@@ -84,7 +84,9 @@ final class ConfirmationTokenTest extends UnitTestCase
 
         // timesSent = 0, lookup key 0 => not found => defaults to 0 minutes
         $this->confirmationToken->setTimesSent(0);
-        $this->confirmationToken->setAllowedToSendAfter(new \DateTimeImmutable('2024-01-01 11:00:00'));
+        $this->confirmationToken->setAllowedToSendAfter(new \DateTimeImmutable(
+            '2024-01-01 11:00:00'
+        ));
         $this->confirmationToken->send($sendAt);
 
         // Should be allowed immediately (0 minutes)
@@ -98,7 +100,9 @@ final class ConfirmationTokenTest extends UnitTestCase
 
         // After first send: timesSent = 1, lookup key 1 => 1 minute
         $this->confirmationToken->setTimesSent(1);
-        $this->confirmationToken->setAllowedToSendAfter(new \DateTimeImmutable('2024-01-01 11:00:00'));
+        $this->confirmationToken->setAllowedToSendAfter(new \DateTimeImmutable(
+            '2024-01-01 11:00:00'
+        ));
         $this->confirmationToken->send($sendAt);
 
         // Should wait 1 minute
@@ -112,7 +116,9 @@ final class ConfirmationTokenTest extends UnitTestCase
 
         // After second send: timesSent = 2, lookup key 2 => 3 minutes
         $this->confirmationToken->setTimesSent(2);
-        $this->confirmationToken->setAllowedToSendAfter(new \DateTimeImmutable('2024-01-01 11:00:00'));
+        $this->confirmationToken->setAllowedToSendAfter(new \DateTimeImmutable(
+            '2024-01-01 11:00:00'
+        ));
         $this->confirmationToken->send($sendAt);
 
         // Should wait 3 minutes
@@ -126,7 +132,9 @@ final class ConfirmationTokenTest extends UnitTestCase
 
         // After third send: timesSent = 3, lookup key 3 => 4 minutes
         $this->confirmationToken->setTimesSent(3);
-        $this->confirmationToken->setAllowedToSendAfter(new \DateTimeImmutable('2024-01-01 11:00:00'));
+        $this->confirmationToken->setAllowedToSendAfter(new \DateTimeImmutable(
+            '2024-01-01 11:00:00'
+        ));
         $this->confirmationToken->send($sendAt);
 
         // Should wait 4 minutes
@@ -140,7 +148,9 @@ final class ConfirmationTokenTest extends UnitTestCase
 
         // After fourth send: timesSent = 4, lookup key 4 => 1440 minutes
         $this->confirmationToken->setTimesSent(4);
-        $this->confirmationToken->setAllowedToSendAfter(new \DateTimeImmutable('2024-01-01 11:00:00'));
+        $this->confirmationToken->setAllowedToSendAfter(new \DateTimeImmutable(
+            '2024-01-01 11:00:00'
+        ));
         $this->confirmationToken->send($sendAt);
 
         // Should wait 1440 minutes (24 hours)
@@ -154,7 +164,11 @@ final class ConfirmationTokenTest extends UnitTestCase
 
         // timesSent = 5, lookup key 5 => not found => defaults to 0
         $this->confirmationToken->setTimesSent(5);
-        $this->confirmationToken->setAllowedToSendAfter(new \DateTimeImmutable('2024-01-01 11:00:00'));
+        $this->confirmationToken->setAllowedToSendAfter(
+            new \DateTimeImmutable(
+                '2024-01-01 11:00:00'
+            )
+        );
         $this->confirmationToken->send($sendAt);
 
         // Should be allowed immediately
