@@ -83,4 +83,60 @@ final class UserPatchPayloadValidatorTest extends UnitTestCase
 
         $this->assertTrue(true);
     }
+
+    public function testDoesNotThrowWhenFieldMissing(): void
+    {
+        // When field is not present at all (not null, just missing)
+        // should not throw exception
+        $this->validator->ensureNoExplicitNulls([
+            'initials' => 'AB',
+            // email is missing - this is OK
+            // newPassword is missing - this is OK
+        ]);
+
+        $this->assertTrue(true);
+    }
+
+    public function testDoesNotThrowForMissingEmailField(): void
+    {
+        $this->validator->ensureNoExplicitNulls([
+            'newPassword' => 'password123',
+            // email field is completely absent
+        ]);
+
+        $this->assertTrue(true);
+    }
+
+    public function testThrowsOnlyWhenFieldExistsAndIsNull(): void
+    {
+        // Test that BOTH conditions must be true: key exists AND value is null
+
+        // Case 1: Key exists but value is NOT null - should not throw
+        $this->validator->ensureNoExplicitNulls([
+            'email' => 'test@example.com', // exists and not null
+        ]);
+
+        // Case 2: Key does NOT exist - should not throw
+        $this->validator->ensureNoExplicitNulls([
+            'otherField' => 'value', // email key doesn't exist
+        ]);
+
+        // Case 3: Both conditions true - should throw
+        $this->expectException(BadRequestHttpException::class);
+        $this->validator->ensureNoExplicitNulls([
+            'email' => null, // exists AND is null
+        ]);
+    }
+
+    public function testDoesNotThrowWhenEmailHasNonNullValue(): void
+    {
+        // Verify that having the key present with a non-null value doesn't throw
+        $this->validator->ensureNoExplicitNulls([
+            'email' => '',  // empty string is not null
+            'initials' => 'AB',
+            'newPassword' => 'test',
+        ]);
+
+        $this->assertTrue(true);
+    }
 }

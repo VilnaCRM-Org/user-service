@@ -54,6 +54,22 @@ final class UserTest extends UnitTestCase
         );
     }
 
+    public function testNewUserIsNotConfirmedByDefault(): void
+    {
+        // Test the FalseValue mutant on line 25: $this->confirmed = false;
+        // If changed to true, this test will fail
+        $user = $this->userFactory->create(
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+
+        // A newly created user must NOT be confirmed
+        $this->assertFalse($user->isConfirmed(), 'New user must not be confirmed');
+        $this->assertNotTrue($user->isConfirmed(), 'Double-check: new user is definitely not confirmed');
+    }
+
     public function testConfirm(): void
     {
         $token =

@@ -181,25 +181,28 @@ final class ApiEndpointBusinessMetricsSubscriberTest extends UnitTestCase
     public function testDoesNotEmitMetricForSubRequest(): void
     {
         $spy = new BusinessMetricsEmitterSpy();
-        $subscriber = new ApiEndpointBusinessMetricsSubscriber(
-            new NullLogger(),
-            $spy,
-            new ApiEndpointMetricDimensionsResolver(new MetricDimensionsFactory()),
-            new MetricDimensionsFactory()
-        );
+        $subscriber = $this->createSubscriberWithSpy($spy);
 
-        $request = Request::create('/api/health', 'GET');
+        $request = Request::create('/api/customers', 'GET');
+        $request->attributes->set(
+            '_api_resource_class',
+            'App\\Core\\Customer\\Domain\\Entity\\Customer'
+        );
+        $request->attributes->set(
+            '_api_operation_name',
+            '_api_/customers_get_collection'
+        );
 
         $event = new ResponseEvent(
             $this->createMock(HttpKernelInterface::class),
             $request,
             HttpKernelInterface::SUB_REQUEST,
-            new Response('', 204)
+            new Response('', 200)
         );
 
         $subscriber->onResponse($event);
 
-        self::assertSame(0, $spy->count());
+        self::assertSame(0, $spy->count(), 'Sub-requests should not emit metrics');
     }
 
     public function testMetricEmissionErrorDoesNotBreakResponse(): void

@@ -245,4 +245,106 @@ final class PasswordResetTokenTest extends UnitTestCase
 
         $this->assertFalse($token->isExpired());
     }
+
+    public function testIsExpiredRespectsProvidedCurrentTimeParameter(): void
+    {
+        // Token expires at 2024-01-01 12:00:00
+        $expirationTime = new \DateTimeImmutable('2024-01-01 12:00:00');
+        $token = new PasswordResetToken(
+            'param-test-token',
+            $this->faker->uuid(),
+            $expirationTime,
+            $expirationTime->modify('-1 hour')
+        );
+
+        // Pass a time BEFORE expiration - should not be expired
+        $beforeTime = new \DateTimeImmutable('2024-01-01 11:00:00');
+        $this->assertFalse(
+            $token->isExpired($beforeTime),
+            'Token should not be expired when current time is before expiration'
+        );
+
+        // Pass a time AFTER expiration - should be expired
+        $afterTime = new \DateTimeImmutable('2024-01-01 13:00:00');
+        $this->assertTrue(
+            $token->isExpired($afterTime),
+            'Token should be expired when current time is after expiration'
+        );
+    }
+
+    public function testIsExpiredWithoutParameterUsesCurrentTime(): void
+    {
+        // Create a token that expires in the future
+        $futureExpiration = new \DateTimeImmutable('+10 years');
+        $futureToken = new PasswordResetToken(
+            'future-token',
+            $this->faker->uuid(),
+            $futureExpiration,
+            new \DateTimeImmutable()
+        );
+
+        // Without parameter, should use current time and not be expired
+        $this->assertFalse($futureToken->isExpired());
+
+        // Create a token that expired in the past
+        $pastExpiration = new \DateTimeImmutable('-10 years');
+        $pastToken = new PasswordResetToken(
+            'past-token',
+            $this->faker->uuid(),
+            $pastExpiration,
+            $pastExpiration->modify('-1 hour')
+        );
+
+        // Without parameter, should use current time and be expired
+        $this->assertTrue($pastToken->isExpired());
+    }
+
+    public function testNewTokenIsNotUsedByDefault(): void
+    {
+        // Test the FalseValue mutant on line 19: $this->isUsed = false;
+        // If changed to true, this test will fail
+        $token = new PasswordResetToken(
+            'new-token',
+            $this->faker->uuid(),
+            new \DateTimeImmutable('+1 hour'),
+            new \DateTimeImmutable()
+        );
+
+        // A newly created token must be NOT used
+        $this->assertFalse($token->isUsed(), 'New token must not be used');
+        $this->assertNotTrue($token->isUsed(), 'Double-check: new token is definitely not used');
+    }
+
+    public function testIsExpiredStrictGreaterThan(): void
+    {
+        // Test the GreaterThan mutant on line 56
+        // Mutation: currentTime > expiresAt => currentTime >= expiresAt
+        $expireTime = new \DateTimeImmutable('2024-06-15 14:30:00');
+        $token = new PasswordResetToken(
+            'strict-boundary-token',
+            $this->faker->uuid(),
+            $expireTime,
+            $expireTime->modify('-1 hour')
+        );
+
+        // At EXACTLY the expiration time, token should NOT be expired (> not >=)
+        $this->assertFalse(
+            $token->isExpired($expireTime),
+            'Token at exact expiration time should not be expired (strict >)'
+        );
+
+        // One nanosecond after expiration, should be expired
+        $justAfter = $expireTime->modify('+1 microsecond');
+        $this->assertTrue(
+            $token->isExpired($justAfter),
+            'Token one microsecond after expiration should be expired'
+        );
+
+        // One nanosecond before expiration, should not be expired
+        $justBefore = $expireTime->modify('-1 microsecond');
+        $this->assertFalse(
+            $token->isExpired($justBefore),
+            'Token one microsecond before expiration should not be expired'
+        );
+    }
 }

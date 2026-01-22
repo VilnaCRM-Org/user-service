@@ -21,33 +21,34 @@ final class MessageBusFactoryTest extends UnitTestCase
     {
         $commandHandlers = [];
 
-        $extractor = new CallableFirstParameterExtractor();
-        $factory = new MessageBusFactory($extractor);
+        $factory = new MessageBusFactory();
 
         $messageBus = $factory->create($commandHandlers);
-        $expectedMessageBus = new MessageBus(
-            [
-                new HandleMessageMiddleware(
-                    new HandlersLocator(
-                        $extractor->forCallables($commandHandlers)
-                    )
-                ),
-            ]
-        );
 
         $this->assertInstanceOf(MessageBus::class, $messageBus);
-        $this->assertEquals($expectedMessageBus, $messageBus);
     }
 
     public function testCreateWithMixedHandlers(): void
     {
-        $regularHandler = new class() {
+        $regularHandlerCalled = false;
+        $subscriberCalled = false;
+
+        $regularHandler = new class($regularHandlerCalled) {
+            public function __construct(private bool &$called)
+            {
+            }
+
             public function __invoke(TestCommand $command): void
             {
+                $this->called = true;
             }
         };
 
-        $subscriber = new class() implements DomainEventSubscriberInterface {
+        $subscriber = new class($subscriberCalled) implements DomainEventSubscriberInterface {
+            public function __construct(private bool &$called)
+            {
+            }
+
             /**
              * @return array<class-string>
              */
@@ -59,52 +60,139 @@ final class MessageBusFactoryTest extends UnitTestCase
 
             public function __invoke(TestEvent $event): void
             {
+                $this->called = true;
             }
         };
 
         $handlers = [$regularHandler, $subscriber];
 
-        $factory = new MessageBusFactory(new CallableFirstParameterExtractor());
+        $factory = new MessageBusFactory();
 
         $messageBus = $factory->create($handlers);
 
-        $this->assertInstanceOf(MessageBus::class, $messageBus);
+        // Dispatch command to regular handler
+        $messageBus->dispatch(new TestCommand());
+        self::assertTrue($regularHandlerCalled, 'Regular handler should be called');
+
+        // Dispatch event to subscriber
+        $messageBus->dispatch(new TestEvent('event-id', '2024-01-01 00:00:00'));
+        self::assertTrue($subscriberCalled, 'Subscriber should be called');
     }
 
     public function testCreateWithOnlySubscribers(): void
     {
-        $subscriber1 = new TestEventSubscriber();
-        $subscriber2 = new TestEventSubscriber();
+        $subscriber1Called = false;
+        $subscriber2Called = false;
+
+        $subscriber1 = new class($subscriber1Called) implements DomainEventSubscriberInterface {
+            public function __construct(private bool &$called)
+            {
+            }
+
+            #[\Override]
+            public function subscribedTo(): array
+            {
+                return [TestEvent::class];
+            }
+
+            public function __invoke(TestEvent $event): void
+            {
+                $this->called = true;
+            }
+        };
+
+        $subscriber2 = new class($subscriber2Called) implements DomainEventSubscriberInterface {
+            public function __construct(private bool &$called)
+            {
+            }
+
+            #[\Override]
+            public function subscribedTo(): array
+            {
+                return [TestEvent::class];
+            }
+
+            public function __invoke(TestEvent $event): void
+            {
+                $this->called = true;
+            }
+        };
 
         $handlers = [$subscriber1, $subscriber2];
 
-        $factory = new MessageBusFactory(new CallableFirstParameterExtractor());
+        $factory = new MessageBusFactory();
 
         $messageBus = $factory->create($handlers);
 
-        $this->assertInstanceOf(MessageBus::class, $messageBus);
+        // Dispatch event should call both subscribers
+        $messageBus->dispatch(new TestEvent('event-id', '2024-01-01 00:00:00'));
+        self::assertTrue($subscriber1Called, 'Subscriber 1 should be called');
+        self::assertTrue($subscriber2Called, 'Subscriber 2 should be called');
     }
 
     public function testCreateWithOnlyRegularHandlers(): void
     {
-        $handler1 = new class() {
+        $handler1Called = false;
+
+        $handler1 = new class($handler1Called) {
+            public function __construct(private bool &$called)
+            {
+            }
+
             public function __invoke(TestCommand $command): void
             {
+                $this->called = true;
             }
         };
 
-        $handler2 = new class() {
-            public function __invoke(TestCommand $command): void
-            {
-            }
-        };
+        $handlers = [$handler1];
 
-        $handlers = [$handler1, $handler2];
-
-        $factory = new MessageBusFactory(new CallableFirstParameterExtractor());
+        $factory = new MessageBusFactory();
 
         $messageBus = $factory->create($handlers);
 
-        $this->assertInstanceOf(MessageBus::class, $messageBus);
+        // Dispatch command to regular handler
+        $messageBus->dispatch(new TestCommand());
+        self::assertTrue($handler1Called, 'Regular handler should be called');
     }
+
+    public function testSubscriberHandlesMultipleEventTypes(): void
+    {
+        $event1Called = false;
+        $event2Called = false;
+
+        $subscriber = new class($event1Called, $event2Called) implements DomainEventSubscriberInterface {
+            public function __construct(
+                private bool &$event1Called,
+                private bool &$event2Called
+            ) {
+            }
+
+            #[\Override]
+            public function subscribedTo(): array
+            {
+                return [TestEvent::class, TestCommand::class];
+            }
+
+            public function __invoke(TestEvent|TestCommand $message): void
+            {
+                if ($message instanceof TestEvent) {
+                    $this->event1Called = true;
+                } elseif ($message instanceof TestCommand) {
+                    $this->event2Called = true;
+                }
+            }
+        };
+
+        $factory = new MessageBusFactory();
+        $messageBus = $factory->create([$subscriber]);
+
+        // Subscriber should handle both event types
+        $messageBus->dispatch(new TestEvent('event-id', '2024-01-01 00:00:00'));
+        self::assertTrue($event1Called, 'Subscriber should handle TestEvent');
+
+        $messageBus->dispatch(new TestCommand());
+        self::assertTrue($event2Called, 'Subscriber should handle TestCommand');
+    }
+
 }
