@@ -66,7 +66,7 @@ final class UserBatchEndpointFactory implements EndpointFactoryInterface
         ];
     }
 
-    private function getPathItem(OpenApi $openApi): PathItem
+    private function getPathItem(OpenApi $openApi): ?PathItem
     {
         return $openApi->getPaths()->getPath($this->endpointUri);
     }

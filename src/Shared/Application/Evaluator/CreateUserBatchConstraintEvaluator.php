@@ -22,8 +22,12 @@ final class CreateUserBatchConstraintEvaluator
 
     /**
      * @return array<string>
+     *
+     * @param string|array<array<string>> $value
+     *
+     * @psalm-param 'invalid'|list{0?: array{email?: 'user1@example.com'|'user@example.com', name?: 'Missing email'}, 1?: array{email: 'USER@example.com'|'user2@example.com'|'user@example.com'}, 2?: array{name: 'Missing'}} $value
      */
-    public function evaluate(mixed $value): array
+    public function evaluate(array|string $value): array
     {
         $result = $this->normalizer->normalize($value);
         $state = $result->state();

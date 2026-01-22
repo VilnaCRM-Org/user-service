@@ -24,7 +24,9 @@ final class UserTimedOutException extends DomainException
     }
 
     /**
-     * @return array<string, DateTimeInterface>
+     * @return array<string>
+     *
+     * @psalm-return array{datetime: string}
      */
     #[\Override]
     public function getTranslationArgs(): array

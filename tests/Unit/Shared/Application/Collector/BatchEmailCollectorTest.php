@@ -85,6 +85,25 @@ final class BatchEmailCollectorTest extends UnitTestCase
         );
     }
 
+    public function testCollectsWithNonArrayEntries(): void
+    {
+        $entries = [
+            ['email' => 'first@example.com'],
+            '',
+            ['email' => 'second@example.com'],
+            123,
+        ];
+
+        $collection = $this->collector->collect($entries);
+
+        self::assertInstanceOf(BatchEmailCollection::class, $collection);
+        self::assertTrue($collection->hasMissing());
+        self::assertSame(
+            ['first@example.com', 'second@example.com'],
+            $collection->emails()
+        );
+    }
+
     public function testToArrayPreservesArrayKeys(): void
     {
         $entries = [

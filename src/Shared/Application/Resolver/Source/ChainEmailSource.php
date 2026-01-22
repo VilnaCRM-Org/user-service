@@ -12,6 +12,9 @@ final class ChainEmailSource implements BatchEmailSource
     ) {
     }
 
+    /**
+     * @param array<string, mixed> $entry
+     */
     #[\Override]
     public function extract(mixed $entry): ?string
     {

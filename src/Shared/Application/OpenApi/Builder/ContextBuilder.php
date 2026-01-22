@@ -90,7 +90,9 @@ final readonly class ContextBuilder
     /**
      * @param array<Parameter> $params
      *
-     * @return array<string, array<string, string|int>>
+     * @return array<array<int|string|array<string>>>
+     *
+     * @psalm-return array<string, array<string, array<string, string>|int|string>>
      */
     private function collectProperties(array $params): array
     {

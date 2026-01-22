@@ -20,6 +20,10 @@ final class UniqueEmailValidator extends ConstraintValidator
     #[\Override]
     public function validate(mixed $value, Constraint $constraint): void
     {
+        if (!is_string($value)) {
+            return;
+        }
+
         $candidate = $this->normalizedCandidate($value);
 
         if ($this->shouldSkipUniquenessCheck($candidate)) {
@@ -31,13 +35,15 @@ final class UniqueEmailValidator extends ConstraintValidator
         )->addViolation();
     }
 
-    private function normalizedCandidate(mixed $value): ?string
+    private function normalizedCandidate(string $value): ?string
     {
-        return match (true) {
-            !is_string($value) => null,
-            ($candidate = trim($value)) === '' => null,
-            default => $candidate,
-        };
+        $trimmed = trim($value);
+
+        if ($trimmed === '') {
+            return null;
+        }
+
+        return $trimmed;
     }
 
     private function shouldSkipUniquenessCheck(?string $candidate): bool

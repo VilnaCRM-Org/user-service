@@ -102,7 +102,9 @@ final class ArrayContextBuilderTest extends UnitTestCase
     }
 
     /**
-     * @return  array<string,string|array<string>>
+     * @return array<array<array<array<int|string>|string>|string>|string>
+     *
+     * @psalm-return array{type: 'array', items: array{type: 'object', properties: array{name: array{type: 'string', maxLength: 255, format: 'uuid'}, age: array{type: 'integer'}}, required: list{'name', 'age'}}}
      */
     private function buildWithSimpleParamsGetExpectedSchema(): array
     {
@@ -126,7 +128,9 @@ final class ArrayContextBuilderTest extends UnitTestCase
     }
 
     /**
-     * @return  array<string,string|array<string>>
+     * @return array<array<array<string|array<string>>|string>|string>
+     *
+     * @psalm-return array{type: 'array', items: array{type: 'object', properties: array{address: array{type: 'object'}}, required: list{'address'}}}
      */
     private function buildWithNestedArraysGetExpectedSchema(): array
     {

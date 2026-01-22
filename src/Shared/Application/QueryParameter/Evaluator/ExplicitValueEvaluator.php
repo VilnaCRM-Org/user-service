@@ -10,6 +10,9 @@ use function trim;
 
 final class ExplicitValueEvaluator
 {
+    /**
+     * @param array<string, scalar|null>|scalar|null $value
+     */
     public function isExplicitlyProvided(mixed $value): bool
     {
         return match (true) {
@@ -20,6 +23,9 @@ final class ExplicitValueEvaluator
         };
     }
 
+    /**
+     * @param array<string, scalar|null>|scalar|null $value
+     */
     public function wasParameterSent(mixed $value): bool
     {
         return $value !== null;

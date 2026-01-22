@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\User\Application\EventSubscriber;
 
-use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Repository\TokenRepositoryInterface;
@@ -23,7 +22,9 @@ final readonly class UserConfirmedEventSubscriber implements
     }
 
     /**
-     * @return array<DomainEvent>
+     * @return array<string>
+     *
+     * @psalm-return list{UserConfirmedEvent::class}
      */
     #[\Override]
     public function subscribedTo(): array

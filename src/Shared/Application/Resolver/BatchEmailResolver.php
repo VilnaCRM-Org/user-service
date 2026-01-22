@@ -28,7 +28,12 @@ final class BatchEmailResolver
         ];
     }
 
-    public function resolve(mixed $entry): ?string
+    /**
+     * @param array<string|null> $entry
+     *
+     * @psalm-param array{email?: 'ÜSER@Example.com'|null} $entry
+     */
+    public function resolve(array $entry): ?string
     {
         $candidates = array_filter(
             array_map(

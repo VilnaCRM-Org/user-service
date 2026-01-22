@@ -21,7 +21,9 @@ final readonly class DomainExceptionNormalizer implements NormalizerInterface
      * @param string|null $format
      * @param array<string,array<string>> $context
      *
-     * @return array<string,array<string>>
+     * @return array<string>
+     *
+     * @psalm-return array{message: string}
      */
     #[\Override]
     public function normalize(

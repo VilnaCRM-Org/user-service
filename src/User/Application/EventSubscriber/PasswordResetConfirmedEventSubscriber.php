@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\User\Application\EventSubscriber;
 
-use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Application\Factory\EmailFactoryInterface;
 use App\User\Domain\Entity\UserInterface;
@@ -54,7 +53,9 @@ final readonly class PasswordResetConfirmedEventSubscriber implements
     }
 
     /**
-     * @return array<DomainEvent>
+     * @return array<string>
+     *
+     * @psalm-return list{PasswordResetConfirmedEvent::class}
      */
     #[\Override]
     public function subscribedTo(): array
