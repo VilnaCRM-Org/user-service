@@ -11,6 +11,7 @@
 ### Task 1: Reproduce Mutation Failures
 
 **Files:**
+
 - Review logs only (no code changes yet).
 
 **Step 1: Run infection**
@@ -30,6 +31,7 @@ make infection
 ### Task 2: Strengthen Tests for Each Escaped Mutant
 
 **Files:**
+
 - Modify: `tests/Unit/<context>/<target_test>.php` (or closest existing test file identified in Task 1).
 - If missing, create: `tests/Unit/<context>/<new_test>.php`.
 
@@ -54,6 +56,7 @@ make unit-tests
 ### Task 3: Validate Full Mutation Suite
 
 **Files:**
+
 - None beyond those updated in Task 2.
 
 **Step 1: Re-run infection**
