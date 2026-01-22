@@ -21,17 +21,16 @@ final class Uuid implements UuidInterface
     #[\Override]
     public function toBinary(): ?string
     {
-        if (!$this->isConvertableToBinary($this->uid)) {
+        $normalized = str_replace('-', '', $this->uid);
+        $length = strlen($normalized);
+
+        // Validate even length required for hex2bin
+        if ($length === 0 || $length % 2 !== 0) {
             return null;
         }
 
-        $binary = hex2bin(str_replace('-', '', $this->uid));
+        $binary = hex2bin($normalized);
 
         return $binary !== false ? $binary : null;
-    }
-
-    private function isConvertableToBinary(string $uid): bool
-    {
-        return strlen($uid) % 2 === 0;
     }
 }

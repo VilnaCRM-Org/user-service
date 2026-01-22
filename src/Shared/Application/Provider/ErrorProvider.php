@@ -41,7 +41,13 @@ final readonly class ErrorProvider implements ProviderInterface
         array $context = []
     ): object|array|null {
         $internalErrorText = $this->translator->trans('error.internal');
-        $request = $context['request'] ?? $this->requestStack->getCurrentRequest();
+
+        // Priority: explicit context request over request stack
+        if (isset($context['request'])) {
+            $request = $context['request'];
+        } else {
+            $request = $this->requestStack->getCurrentRequest();
+        }
 
         $status = $operation->getStatus() ??
             HttpResponse::HTTP_INTERNAL_SERVER_ERROR;

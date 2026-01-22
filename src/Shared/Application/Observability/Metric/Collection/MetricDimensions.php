@@ -76,15 +76,25 @@ final readonly class MetricDimensions implements IteratorAggregate, Countable
 
     private function assertUniqueKeys(MetricDimension ...$dimensions): void
     {
-        $keys = array_map(
-            static fn (MetricDimension $dimension): string => $dimension->key(),
-            $dimensions
-        );
+        // Extract all dimension keys
+        $keys = [];
+        foreach ($dimensions as $dimension) {
+            $keys[] = $dimension->key();
+        }
 
-        $duplicates = array_keys(array_filter(
-            array_count_values($keys),
-            static fn (int $count): bool => $count > 1
-        ));
+        // Count occurrences of each key
+        $keyCounts = [];
+        foreach ($keys as $key) {
+            $keyCounts[$key] = ($keyCounts[$key] ?? 0) + 1;
+        }
+
+        // Find keys that appear more than once
+        $duplicates = [];
+        foreach ($keyCounts as $key => $count) {
+            if ($count > 1) {
+                $duplicates[] = $key;
+            }
+        }
 
         if ($duplicates !== []) {
             throw new InvalidArgumentException(sprintf(

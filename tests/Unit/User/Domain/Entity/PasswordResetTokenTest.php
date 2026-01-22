@@ -313,6 +313,13 @@ final class PasswordResetTokenTest extends UnitTestCase
         // A newly created token must be NOT used
         $this->assertFalse($token->isUsed(), 'New token must not be used');
         $this->assertNotTrue($token->isUsed(), 'Double-check: new token is definitely not used');
+
+        // Use reflection to verify the property was set correctly in the constructor
+        $reflection = new \ReflectionClass($token);
+        $property = $reflection->getProperty('isUsed');
+        $property->setAccessible(true);
+        $this->assertFalse($property->getValue($token), 'isUsed property must be false after construction');
+        $this->assertSame(false, $property->getValue($token), 'isUsed must be exactly false (not null or other)');
     }
 
     public function testIsExpiredStrictGreaterThan(): void

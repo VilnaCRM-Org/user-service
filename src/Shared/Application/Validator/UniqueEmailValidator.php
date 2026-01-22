@@ -37,10 +37,13 @@ final class UniqueEmailValidator extends ConstraintValidator
 
     private function normalizedCandidate(string $value): ?string
     {
-        return match (true) {
-            ($candidate = trim($value)) === '' => null,
-            default => $candidate,
-        };
+        $trimmed = trim($value);
+
+        if ($trimmed === '') {
+            return null;
+        }
+
+        return $trimmed;
     }
 
     private function shouldSkipUniquenessCheck(?string $candidate): bool

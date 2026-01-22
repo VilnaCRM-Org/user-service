@@ -68,6 +68,13 @@ final class UserTest extends UnitTestCase
         // A newly created user must NOT be confirmed
         $this->assertFalse($user->isConfirmed(), 'New user must not be confirmed');
         $this->assertNotTrue($user->isConfirmed(), 'Double-check: new user is definitely not confirmed');
+
+        // Use reflection to verify the property was set correctly in the constructor
+        $reflection = new \ReflectionClass($user);
+        $property = $reflection->getProperty('confirmed');
+        $property->setAccessible(true);
+        $this->assertFalse($property->getValue($user), 'Confirmed property must be false after construction');
+        $this->assertSame(false, $property->getValue($user), 'Confirmed must be exactly false (not null or other)');
     }
 
     public function testConfirm(): void
