@@ -88,7 +88,7 @@ final class EmfMetricValueCollectionTest extends UnitTestCase
         $this->expectExceptionMessage('Duplicate metric names detected');
 
         $this->withoutPhpWarnings(
-            fn () => new EmfMetricValueCollection(
+            static fn () => new EmfMetricValueCollection(
                 new EmfMetricValue('Metric1', 10),
                 new EmfMetricValue('Metric1', 20)
             )

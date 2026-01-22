@@ -25,7 +25,7 @@ final class PageParameterValidatorTest extends UnitTestCase
 
         $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
 
-        $result = $this->withoutPhpWarnings(fn () => $validator->validate([]));
+        $result = $this->withoutPhpWarnings(static fn () => $validator->validate([]));
 
         self::assertNull($result);
     }
@@ -41,7 +41,7 @@ final class PageParameterValidatorTest extends UnitTestCase
         $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
 
         $result = $this->withoutPhpWarnings(
-            fn () => $validator->validate(['itemsPerPage' => 10, 'order' => 'asc'])
+            static fn () => $validator->validate(['itemsPerPage' => 10, 'order' => 'asc'])
         );
 
         self::assertNull($result);
@@ -156,7 +156,7 @@ final class PageParameterValidatorTest extends UnitTestCase
         $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
 
         // When page key is missing, should return null
-        $result = $this->withoutPhpWarnings(fn () => $validator->validate(['someOtherKey' => 'value']));
+        $result = $this->withoutPhpWarnings(static fn () => $validator->validate(['someOtherKey' => 'value']));
 
         self::assertNull($result);
         self::assertTrue($result === null); // Ensure explicit null return, not void

@@ -55,10 +55,8 @@ final readonly class EmfPayloadValidator implements EmfPayloadValidatorInterface
         $allKeys = [...$dimensionKeys, ...$metricNames];
 
         if (in_array(self::RESERVED_AWS_KEY, $allKeys, true)) {
-            throw new EmfKeyCollisionException(sprintf(
-                'Key "%s" is reserved for metadata and cannot be used as a dimension or metric name',
-                self::RESERVED_AWS_KEY
-            ));
+            $message = 'Key "%s" is reserved and cannot be used as dimension or metric name';
+            throw new EmfKeyCollisionException(sprintf($message, self::RESERVED_AWS_KEY));
         }
     }
 }

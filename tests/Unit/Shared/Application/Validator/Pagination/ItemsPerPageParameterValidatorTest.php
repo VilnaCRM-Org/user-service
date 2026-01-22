@@ -18,7 +18,7 @@ final class ItemsPerPageParameterValidatorTest extends UnitTestCase
 
         $validator = new ItemsPerPageParameterValidator($rule);
 
-        $result = $this->withoutPhpWarnings(fn () => $validator->validate([]));
+        $result = $this->withoutPhpWarnings(static fn () => $validator->validate([]));
 
         self::assertNull($result);
     }
@@ -31,7 +31,7 @@ final class ItemsPerPageParameterValidatorTest extends UnitTestCase
         $validator = new ItemsPerPageParameterValidator($rule);
 
         $result = $this->withoutPhpWarnings(
-            fn () => $validator->validate(['page' => 1, 'order' => 'asc'])
+            static fn () => $validator->validate(['page' => 1, 'order' => 'asc'])
         );
 
         self::assertNull($result);
@@ -79,7 +79,7 @@ final class ItemsPerPageParameterValidatorTest extends UnitTestCase
         // This test ensures the method returns null (not void/no return)
         // If the return statement is removed, this would fail
         $result = $this->withoutPhpWarnings(
-            fn () => $validator->validate(['someOtherKey' => 'value'])
+            static fn () => $validator->validate(['someOtherKey' => 'value'])
         );
 
         self::assertNull($result);

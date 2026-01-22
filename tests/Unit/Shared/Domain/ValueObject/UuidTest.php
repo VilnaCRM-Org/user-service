@@ -79,14 +79,14 @@ final class UuidTest extends UnitTestCase
         // Single character - odd length
         $uuid = new Uuid('a');
 
-        $this->assertNull($this->withoutPhpWarnings(fn () => $uuid->toBinary()));
+        $this->assertNull($this->withoutPhpWarnings(static fn () => $uuid->toBinary()));
     }
 
     public function testToBinaryReturnsNullForEmptyString(): void
     {
         $uuid = new Uuid('');
 
-        $this->assertNull($this->withoutPhpWarnings(fn () => $uuid->toBinary()));
+        $this->assertNull($this->withoutPhpWarnings(static fn () => $uuid->toBinary()));
     }
 
     public function testToBinaryWorksForEvenLengthNonUuidString(): void
@@ -129,7 +129,7 @@ final class UuidTest extends UnitTestCase
         // but should be caught by the isConvertableToBinary check
         $uuid = new Uuid('abc'); // 3 characters - odd length
 
-        $result = $this->withoutPhpWarnings(fn () => $uuid->toBinary());
+        $result = $this->withoutPhpWarnings(static fn () => $uuid->toBinary());
 
         // Should return null because of odd length, not because hex2bin failed
         $this->assertNull($result);
@@ -140,7 +140,7 @@ final class UuidTest extends UnitTestCase
         $oddHex = $this->faker->regexify('[a-f0-9]{7}');
         $uuid = new Uuid($oddHex);
 
-        $result = $this->withoutPhpWarnings(fn () => $uuid->toBinary());
+        $result = $this->withoutPhpWarnings(static fn () => $uuid->toBinary());
 
         $this->assertNull($result);
     }
@@ -150,7 +150,7 @@ final class UuidTest extends UnitTestCase
         // Even length but invalid hex characters
         $uuid = new Uuid('ghij'); // 4 characters, even length, but invalid hex
 
-        $result = $this->withoutPhpWarnings(fn () => $uuid->toBinary());
+        $result = $this->withoutPhpWarnings(static fn () => $uuid->toBinary());
 
         // hex2bin should fail and return null
         $this->assertNull($result);

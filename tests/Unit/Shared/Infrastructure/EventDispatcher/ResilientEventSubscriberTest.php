@@ -28,7 +28,7 @@ final class ResilientEventSubscriberTest extends UnitTestCase
         };
 
         $called = false;
-        $handler = function () use (&$called): void {
+        $handler = static function () use (&$called): void {
             $called = true;
         };
 

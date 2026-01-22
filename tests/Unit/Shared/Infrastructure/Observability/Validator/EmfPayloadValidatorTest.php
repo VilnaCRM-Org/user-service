@@ -57,7 +57,7 @@ final class EmfPayloadValidatorTest extends UnitTestCase
     public function testThrowsExceptionWhenReservedAwsKeyIsUsedAsDimension(): void
     {
         $this->expectException(EmfKeyCollisionException::class);
-        $this->expectExceptionMessage('reserved for metadata');
+        $this->expectExceptionMessage('is reserved and cannot');
 
         $payload = $this->createPayloadWithReservedKeyAsDimension();
 
@@ -67,7 +67,7 @@ final class EmfPayloadValidatorTest extends UnitTestCase
     public function testThrowsExceptionWhenReservedAwsKeyIsUsedAsMetric(): void
     {
         $this->expectException(EmfKeyCollisionException::class);
-        $this->expectExceptionMessage('reserved for metadata');
+        $this->expectExceptionMessage('is reserved and cannot');
 
         $payload = $this->createPayloadWithReservedKeyAsMetric();
 

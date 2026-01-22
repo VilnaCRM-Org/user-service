@@ -16,6 +16,7 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
 {
     private CallableFirstParameterExtractor $extractor;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
