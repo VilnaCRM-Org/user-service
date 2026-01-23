@@ -10,6 +10,7 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
@@ -111,8 +112,12 @@ final class UserTest extends UnitTestCase
         $hashedNewPassword = $this->faker->password();
         $eventID = $this->faker->uuid();
 
+        $expectedEmailChangedEvent = $this->createMock(EmailChangedEvent::class);
+
         $this->emailChangedEventFactory->expects($this->once())
-            ->method('create')->with($this->user, $oldEmail, $eventID);
+            ->method('create')
+            ->with($this->user, $oldEmail, $eventID)
+            ->willReturn($expectedEmailChangedEvent);
 
         $events = $this->user->update(
             $updateData,
@@ -122,7 +127,12 @@ final class UserTest extends UnitTestCase
             $this->passwordChangedEventFactory
         );
 
-        $this->testUpdateMakeAssertions($events, $updateData, $hashedNewPassword);
+        $this->testUpdateMakeAssertions(
+            $events,
+            $updateData,
+            $hashedNewPassword,
+            $expectedEmailChangedEvent
+        );
     }
 
     public function testSetId(): void
@@ -190,10 +200,16 @@ final class UserTest extends UnitTestCase
     private function testUpdateMakeAssertions(
         array $events,
         UserUpdate $updateData,
-        string $hashedNewPassword
+        string $hashedNewPassword,
+        EmailChangedEvent $expectedEmailChangedEvent
     ): void {
         $this->assertIsArray($events);
         $this->assertNotEmpty($events);
+        $this->assertContains(
+            $expectedEmailChangedEvent,
+            $events,
+            'EmailChangedEvent should be present in the events array'
+        );
         $this->assertEquals($updateData->newEmail, $this->user->getEmail());
         $this->assertEquals(
             $updateData->newInitials,
