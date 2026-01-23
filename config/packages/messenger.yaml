@@ -44,7 +44,6 @@ framework:
         retry_strategy:
           service: 'App\Shared\Infrastructure\RetryStrategy\InfiniteRetryStrategy'
 
-
     routing:
       # Route your messages to the transports
       'Symfony\Component\Mailer\Messenger\SendEmailMessage': send-email
