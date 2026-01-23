@@ -50,7 +50,12 @@ final class UserUpdatedMetricsSubscriberTest extends UnitTestCase
             id: new Uuid((string) $this->faker->uuid())
         );
 
-        ($this->subscriber)(new EmailChangedEvent($user, (string) $this->faker->uuid()));
+        ($this->subscriber)(new EmailChangedEvent(
+            userId: $user->getId(),
+            newEmail: $this->faker->email(),
+            oldEmail: $user->getEmail(),
+            eventId: (string) $this->faker->uuid()
+        ));
 
         self::assertSame(1, $this->metricsEmitterSpy->count());
     }
@@ -74,7 +79,12 @@ final class UserUpdatedMetricsSubscriberTest extends UnitTestCase
             id: new Uuid((string) $this->faker->uuid())
         );
 
-        $event = new EmailChangedEvent($user, (string) $this->faker->uuid());
+        $event = new EmailChangedEvent(
+            userId: $user->getId(),
+            newEmail: $this->faker->email(),
+            oldEmail: $user->getEmail(),
+            eventId: (string) $this->faker->uuid()
+        );
 
         $failingEmitter = $this->createMock(BusinessMetricsEmitterInterface::class);
         $failingEmitter

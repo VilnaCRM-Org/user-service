@@ -47,7 +47,11 @@ final class UserRegisteredMetricsSubscriberTest extends UnitTestCase
             id: new Uuid((string) $this->faker->uuid())
         );
 
-        $event = new UserRegisteredEvent($user, (string) $this->faker->uuid());
+        $event = new UserRegisteredEvent(
+            userId: $user->getId(),
+            email: $user->getEmail(),
+            eventId: (string) $this->faker->uuid()
+        );
 
         ($this->subscriber)($event);
 
@@ -70,7 +74,11 @@ final class UserRegisteredMetricsSubscriberTest extends UnitTestCase
             id: new Uuid((string) $this->faker->uuid())
         );
 
-        $event = new UserRegisteredEvent($user, (string) $this->faker->uuid());
+        $event = new UserRegisteredEvent(
+            userId: $user->getId(),
+            email: $user->getEmail(),
+            eventId: (string) $this->faker->uuid()
+        );
 
         $failingEmitter = $this->createMock(BusinessMetricsEmitterInterface::class);
         $failingEmitter

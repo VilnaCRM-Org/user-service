@@ -120,19 +120,19 @@ final class ConfirmationTokenTest extends UnitTestCase
         );
     }
 
-    public function testFirstSendWithTimesZeroDefaultsToZeroMinutes(): void
+    public function testFirstSendWithTimesZeroDefaultsToOneMinute(): void
     {
         $sendAt = new \DateTimeImmutable('2024-01-01 12:00:00');
 
-        // timesSent = 0, lookup key 0 => not found => defaults to 0 minutes
+        // timesSent = 0, lookup key 0 => 1 minute
         $this->confirmationToken->setTimesSent(0);
         $this->confirmationToken->setAllowedToSendAfter(new \DateTimeImmutable(
             '2024-01-01 11:00:00'
         ));
         $this->confirmationToken->send($sendAt);
 
-        // Should be allowed immediately (0 minutes)
-        $expected = new \DateTimeImmutable('2024-01-01 12:00:00');
+        // Should wait 1 minute
+        $expected = new \DateTimeImmutable('2024-01-01 12:01:00');
         $this->assertEquals($expected, $this->confirmationToken->getAllowedToSendAfter());
     }
 
@@ -226,14 +226,16 @@ final class ConfirmationTokenTest extends UnitTestCase
 
         // Verify exact configuration
         $this->assertIsArray($constant);
-        $this->assertCount(4, $constant);
+        $this->assertCount(5, $constant);
 
         // Verify exact keys and values
+        $this->assertArrayHasKey(0, $constant);
         $this->assertArrayHasKey(1, $constant);
         $this->assertArrayHasKey(2, $constant);
         $this->assertArrayHasKey(3, $constant);
         $this->assertArrayHasKey(4, $constant);
 
+        $this->assertSame(1, $constant[0]);
         $this->assertSame(1, $constant[1]);
         $this->assertSame(3, $constant[2]);
         $this->assertSame(4, $constant[3]);
@@ -241,6 +243,7 @@ final class ConfirmationTokenTest extends UnitTestCase
 
         // Verify complete array equality
         $this->assertSame([
+            0 => 1,
             1 => 1,
             2 => 3,
             3 => 4,

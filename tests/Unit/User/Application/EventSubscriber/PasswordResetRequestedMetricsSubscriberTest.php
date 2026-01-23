@@ -45,7 +45,8 @@ final class PasswordResetRequestedMetricsSubscriberTest extends UnitTestCase
         );
 
         ($this->subscriber)(new PasswordResetRequestedEvent(
-            user: $user,
+            userId: $user->getId(),
+            userEmail: $user->getEmail(),
             token: $this->faker->uuid(),
             eventId: (string) $this->faker->uuid()
         ));
@@ -87,7 +88,8 @@ final class PasswordResetRequestedMetricsSubscriberTest extends UnitTestCase
     private function createPasswordResetRequestedEvent(User $user): PasswordResetRequestedEvent
     {
         return new PasswordResetRequestedEvent(
-            user: $user,
+            userId: $user->getId(),
+            userEmail: $user->getEmail(),
             token: $this->faker->uuid(),
             eventId: (string) $this->faker->uuid()
         );
