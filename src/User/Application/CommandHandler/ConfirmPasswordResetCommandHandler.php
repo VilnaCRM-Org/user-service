@@ -44,7 +44,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements
 
     private function getValidatedToken(
         string $token
-    ): PasswordResetTokenInterface {
+    ): ?PasswordResetTokenInterface {
         $passwordResetToken = $this->tokenRepository->findByToken($token);
         $this->tokenValidator->validate($passwordResetToken);
 

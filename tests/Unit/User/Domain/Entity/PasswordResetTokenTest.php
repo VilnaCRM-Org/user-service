@@ -118,6 +118,24 @@ final class PasswordResetTokenTest extends UnitTestCase
         }
     }
 
+    public function testIsExpiredUsesProvidedCurrentTimeWhenEarlierThanExpiration(): void
+    {
+        $expirationTime = new \DateTimeImmutable('2024-01-01 12:00:00');
+        $providedCurrentTime = new \DateTimeImmutable('2023-12-31 12:00:00');
+
+        $token = new PasswordResetToken(
+            $this->faker->sha256(),
+            $this->faker->uuid(),
+            $expirationTime,
+            $providedCurrentTime->modify('-1 hour')
+        );
+
+        $this->assertFalse(
+            $token->isExpired($providedCurrentTime),
+            'Provided current time before expiration must keep token valid'
+        );
+    }
+
     public function testIsExpiredGreaterThanVsGreaterEqualBoundary(): void
     {
         // With the updated isExpired method that accepts a currentTime parameter,
@@ -244,5 +262,146 @@ final class PasswordResetTokenTest extends UnitTestCase
         $token->extendExpiration($newExpiration);
 
         $this->assertFalse($token->isExpired());
+    }
+
+    public function testIsExpiredRespectsProvidedCurrentTimeParameter(): void
+    {
+        // Token expires at 2024-01-01 12:00:00
+        $expirationTime = new \DateTimeImmutable('2024-01-01 12:00:00');
+        $token = new PasswordResetToken(
+            'param-test-token',
+            $this->faker->uuid(),
+            $expirationTime,
+            $expirationTime->modify('-1 hour')
+        );
+
+        // Pass a time BEFORE expiration - should not be expired
+        $beforeTime = new \DateTimeImmutable('2024-01-01 11:00:00');
+        $this->assertFalse(
+            $token->isExpired($beforeTime),
+            'Token should not be expired when current time is before expiration'
+        );
+
+        // Pass a time AFTER expiration - should be expired
+        $afterTime = new \DateTimeImmutable('2024-01-01 13:00:00');
+        $this->assertTrue(
+            $token->isExpired($afterTime),
+            'Token should be expired when current time is after expiration'
+        );
+    }
+
+    public function testIsExpiredWithoutParameterUsesCurrentTime(): void
+    {
+        // Create a token that expires in the future
+        $futureExpiration = new \DateTimeImmutable('+10 years');
+        $futureToken = new PasswordResetToken(
+            'future-token',
+            $this->faker->uuid(),
+            $futureExpiration,
+            new \DateTimeImmutable()
+        );
+
+        // Without parameter, should use current time and not be expired
+        $this->assertFalse($futureToken->isExpired());
+
+        // Create a token that expired in the past
+        $pastExpiration = new \DateTimeImmutable('-10 years');
+        $pastToken = new PasswordResetToken(
+            'past-token',
+            $this->faker->uuid(),
+            $pastExpiration,
+            $pastExpiration->modify('-1 hour')
+        );
+
+        // Without parameter, should use current time and be expired
+        $this->assertTrue($pastToken->isExpired());
+    }
+
+    public function testManualCreationStartsUnused(): void
+    {
+        $token = new PasswordResetToken(
+            $this->faker->sha256(),
+            $this->faker->uuid(),
+            new \DateTimeImmutable('+1 hour'),
+            new \DateTimeImmutable()
+        );
+
+        $this->assertFalse($token->isUsed());
+    }
+
+    public function testNewTokenIsNotUsedByDefault(): void
+    {
+        // Test the FalseValue mutant on line 19: $this->isUsed = false;
+        // If changed to true, this test will fail
+        $token = new PasswordResetToken(
+            'new-token',
+            $this->faker->uuid(),
+            new \DateTimeImmutable('+1 hour'),
+            new \DateTimeImmutable()
+        );
+
+        // A newly created token must be NOT used
+        $this->assertFalse($token->isUsed(), 'New token must not be used');
+        $this->assertNotTrue($token->isUsed(), 'Double-check: new token is definitely not used');
+
+        // Use reflection to verify the property was set correctly in the constructor
+        $reflection = new \ReflectionClass($token);
+        $property = $reflection->getProperty('isUsed');
+        $this->assertFalse(
+            $property->getValue($token),
+            'isUsed property must be false after construction'
+        );
+        $this->assertSame(
+            false,
+            $property->getValue($token),
+            'isUsed must be exactly false (not null or other)'
+        );
+    }
+
+    public function testIsExpiredStrictGreaterThan(): void
+    {
+        $expireTime = new \DateTimeImmutable('2024-06-15 14:30:00');
+        $token = new PasswordResetToken(
+            'strict-boundary-token',
+            $this->faker->uuid(),
+            $expireTime,
+            $expireTime->modify('-1 hour')
+        );
+
+        $this->assertNotExpiredAtExactTime($token, $expireTime);
+        $this->assertExpiredAfterTime($token, $expireTime);
+        $this->assertNotExpiredBeforeTime($token, $expireTime);
+    }
+
+    private function assertNotExpiredAtExactTime(
+        PasswordResetToken $token,
+        \DateTimeImmutable $expireTime
+    ): void {
+        $this->assertFalse(
+            $token->isExpired($expireTime),
+            'Token at exact expiration time should not be expired (strict >)'
+        );
+    }
+
+    private function assertExpiredAfterTime(
+        PasswordResetToken $token,
+        \DateTimeImmutable $expireTime
+    ): void {
+        $justAfter = $expireTime->modify('+1 microsecond');
+        $this->assertTrue(
+            $token->isExpired($justAfter),
+            'Token one microsecond after expiration should be expired'
+        );
+    }
+
+    private function assertNotExpiredBeforeTime(
+        PasswordResetToken $token,
+        \DateTimeImmutable $expireTime
+    ): void {
+        $justBefore = $expireTime->modify('-1 microsecond');
+        $this->assertFalse(
+            $token->isExpired($justBefore),
+            'Token one microsecond before expiration should not be expired'
+        );
     }
 }

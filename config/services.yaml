@@ -54,22 +54,17 @@ services:
       - !tagged_iterator 'app.event_subscriber'
     lazy: true
 
-  # Async Event Dispatcher - sends domain events to message queue
-  App\Shared\Application\Bus\Event\AsyncEventDispatcherInterface:
-    class: App\Shared\Infrastructure\Bus\Event\Async\MessengerAsyncEventDispatcher
+  App\Shared\Infrastructure\Bus\Event\Async\ResilientAsyncEventDispatcher:
     arguments:
       $messageBus: '@messenger.bus.default'
 
-  # Domain Event Message Handler - processes events from queue
   App\Shared\Infrastructure\Bus\Event\Async\DomainEventMessageHandler:
+    tags: ['messenger.message_handler']
     arguments:
       $subscribers: !tagged_iterator 'app.event_subscriber'
-    tags:
-      - { name: 'messenger.message_handler', bus: 'messenger.bus.default' }
 
-  # Use resilient async event bus for domain events (enables async cache invalidation)
   App\Shared\Domain\Bus\Event\EventBusInterface:
-    alias: App\Shared\Infrastructure\Bus\Event\Async\ResilientAsyncEventBus
+    alias: App\Shared\Infrastructure\Bus\Event\InMemorySymfonyEventBus
 
   Ramsey\Uuid\Validator\GenericValidator: ~
 
@@ -98,11 +93,25 @@ services:
       $allowedParameters:
         '/api/users': ['page', 'itemsPerPage']
 
+  App\Shared\Infrastructure\Observability\Factory\EmfAwsMetadataFactory:
+    arguments:
+      $namespace: '%env(AWS_EMF_NAMESPACE)%'
+
   App\Shared\Application\EventListener\QueryParameterValidationListener:
     arguments:
       $rules: !tagged_iterator app.query_parameter_rule
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 5 }
+
+  App\Shared\Application\Observability\Emitter\BusinessMetricsEmitterInterface:
+    alias: App\Shared\Infrastructure\Observability\Emitter\AwsEmfBusinessMetricsEmitter
+
+  App\Shared\Application\Observability\Factory\MetricDimensionsFactoryInterface:
+    alias: App\Shared\Infrastructure\Observability\Factory\MetricDimensionsFactory
+
+  App\Shared\Infrastructure\RetryStrategy\InfiniteRetryStrategy:
+    arguments:
+      $delayMs: '%env(int:MESSENGER_RETRY_DELAY_MS)%'
 
   api_platform.state.error_provider:
     class: 'App\Shared\Application\Provider\ErrorProvider'

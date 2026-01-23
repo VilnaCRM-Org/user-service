@@ -236,6 +236,60 @@ final class ErrorProviderTest extends UnitTestCase
         $this->assertSame($internalError, $error->getDetail());
     }
 
+    public function testContextRequestTakesPrecedenceOverRequestStack(): void
+    {
+        $status = Response::HTTP_BAD_REQUEST;
+        $contextErrorMessage = 'Error from context request';
+        $stackErrorMessage = 'Error from stack request';
+
+        $this->operation->method('getStatus')->willReturn($status);
+
+        $context = $this->setupRequestsWithDifferentExceptions(
+            $status,
+            $contextErrorMessage,
+            $stackErrorMessage
+        );
+
+        $this->translator->method('trans')->with('error.internal')->willReturn('');
+
+        $errorProvider = $this->errorProvider();
+        $error = $errorProvider->provide($this->operation, [], $context);
+
+        $this->assertContextRequestTakesPrecedence(
+            $error,
+            $contextErrorMessage,
+            $stackErrorMessage
+        );
+    }
+
+    /** @return array<string, Request> */
+    private function setupRequestsWithDifferentExceptions(
+        int $status,
+        string $contextErrorMessage,
+        string $stackErrorMessage
+    ): array {
+        $contextException = new HttpException($status, $contextErrorMessage);
+        $stackException = new HttpException($status, $stackErrorMessage);
+
+        $contextRequest = new Request(attributes: ['exception' => $contextException]);
+        $stackRequest = new Request(attributes: ['exception' => $stackException]);
+
+        $this->requestStack->push($stackRequest);
+        self::assertSame($stackRequest, $this->requestStack->getCurrentRequest());
+
+        return ['request' => $contextRequest];
+    }
+
+    private function assertContextRequestTakesPrecedence(
+        Error $error,
+        string $contextErrorMessage,
+        string $stackErrorMessage
+    ): void {
+        $this->assertInstanceOf(Error::class, $error);
+        $this->assertSame($contextErrorMessage, $error->getDetail());
+        $this->assertNotSame($stackErrorMessage, $error->getDetail());
+    }
+
     private function setUpDomainExceptionMocks(): void
     {
         $this->status = Response::HTTP_BAD_REQUEST;

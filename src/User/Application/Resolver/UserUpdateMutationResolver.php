@@ -26,7 +26,7 @@ final readonly class UserUpdateMutationResolver implements
      * @param array<string,string> $context
      */
     #[\Override]
-    public function __invoke(?object $item, array $context): object
+    public function __invoke(?object $item, array $context): ?object
     {
         $args = $context['args']['input'];
 

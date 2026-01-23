@@ -20,5 +20,10 @@ services:
     autowire: true
     autoconfigure: true
 
+  App\Shared\Application\Observability\Emitter\BusinessMetricsEmitterInterface: '@App\Tests\Unit\Shared\Infrastructure\Observability\BusinessMetricsEmitterSpy'
+
+  App\Tests\Unit\Shared\Infrastructure\Observability\BusinessMetricsEmitterSpy:
+    public: true
+
   App\Tests\Behat\:
     resource: '../tests/Behat/*'

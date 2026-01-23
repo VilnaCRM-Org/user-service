@@ -82,4 +82,38 @@ final class SchemathesisBatchUsersEmailExtractorTest extends UnitTestCase
 
         $this->assertSame(['valid@example.com'], $emails);
     }
+
+    public function testExtractSkipsScalarUsers(): void
+    {
+        $extractor = new SchemathesisBatchUsersEmailExtractor();
+
+        $emails = $extractor->extract([
+            'users' => [
+                'string-value',
+                123,
+                45.67,
+                true,
+                ['email' => 'valid@example.com'],
+            ],
+        ]);
+
+        $this->assertSame(['valid@example.com'], $emails);
+    }
+
+    public function testExtractRequiresBothArrayAndStringEmail(): void
+    {
+        $extractor = new SchemathesisBatchUsersEmailExtractor();
+
+        $emails = $extractor->extract([
+            'users' => [
+                ['email' => 123],           // array but email is integer
+                ['email' => ['nested']],    // array but email is array
+                ['email' => true],          // array but email is boolean
+                ['email' => 'valid@example.com'],  // both conditions met
+            ],
+        ]);
+
+        // Only the last one should be extracted
+        $this->assertSame(['valid@example.com'], $emails);
+    }
 }

@@ -125,6 +125,24 @@ final class UniqueEmailValidatorTest extends UnitTestCase
         $this->validator->validate('   ', new UniqueEmail());
     }
 
+    public function testEmptyStringSkipsValidation(): void
+    {
+        $this->translator->expects($this->never())->method('trans');
+        $this->context->expects($this->never())->method('buildViolation');
+        $this->userRepository->expects($this->never())->method('findByEmail');
+
+        $this->validator->validate('', new UniqueEmail());
+    }
+
+    public function testWhitespaceOnlyStringSkipsValidation(): void
+    {
+        $this->translator->expects($this->never())->method('trans');
+        $this->context->expects($this->never())->method('buildViolation');
+        $this->userRepository->expects($this->never())->method('findByEmail');
+
+        $this->validator->validate("\t\n  \r", new UniqueEmail());
+    }
+
     public function testDuplicateEmailWithoutRequestStackTriggersViolation(): void
     {
         $email = $this->faker->email();

@@ -22,6 +22,7 @@ Skills live in `.claude/skills/` and are auto-discovered. Use the decision tree 
 | **Organize code structure** | `code-organization`             | Directory placement, naming, type safety  |
 | **Create DDD patterns**     | `implementing-ddd-architecture` | New entities, value objects, aggregates   |
 | **Add CRUD endpoints**      | `api-platform-crud`             | New API resources with full CRUD          |
+| **Add business metrics**    | `observability-instrumentation` | AWS EMF metrics for domain events         |
 | **Create load tests**       | `load-testing`                  | K6 performance tests (REST/GraphQL)       |
 | **Update entity schema**    | `database-migrations`           | Modifying entities, adding fields         |
 | **Document APIs**           | `openapi-development`           | OpenAPI endpoint factories                |
@@ -231,9 +232,10 @@ The codebase enforces strict architectural boundaries via Deptrac:
 1. **Design Domain Model** → `implementing-ddd-architecture`
 2. **Create API Endpoint** → `api-platform-crud`
 3. **Configure Database** → `database-migrations`
-4. **Write Tests** → `testing-workflow`
-5. **Update Docs** → `documentation-sync`
-6. **Run CI Validation** → `ci-workflow`
+4. **Add Business Metrics** → `observability-instrumentation`
+5. **Write Tests** → `testing-workflow`
+6. **Update Docs** → `documentation-sync`
+7. **Run CI Validation** → `ci-workflow`
 
 ## 📐 Patterns
 

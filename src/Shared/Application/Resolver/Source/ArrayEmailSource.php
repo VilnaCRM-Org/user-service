@@ -6,6 +6,11 @@ namespace App\Shared\Application\Resolver\Source;
 
 final class ArrayEmailSource implements BatchEmailSource
 {
+    /**
+     * @param array<int|string>|string $entry
+     *
+     * @psalm-param 'not an array'|array{email: 'array@example.com'|123} $entry
+     */
     #[\Override]
     public function extract(mixed $entry): ?string
     {

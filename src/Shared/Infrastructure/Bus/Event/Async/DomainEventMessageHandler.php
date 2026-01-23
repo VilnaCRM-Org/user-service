@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Bus\Event\Async;
 
+use App\Shared\Application\Observability\Emitter\BusinessMetricsEmitterInterface;
+use App\Shared\Application\Observability\Factory\EventSubscriberFailureMetricFactoryInterface;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use Psr\Log\LoggerInterface;
@@ -11,7 +13,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Handles domain events from async queue
  *
- * Layer 2 Resilience: If any subscriber fails, log error and continue with others.
+ * Layer 2 Resilience: If any subscriber fails, log + emit metric, continue with others.
  * Message is acknowledged after processing all subscribers (no retry to avoid loops).
  */
 final readonly class DomainEventMessageHandler
@@ -21,7 +23,9 @@ final readonly class DomainEventMessageHandler
      */
     public function __construct(
         private iterable $subscribers,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private BusinessMetricsEmitterInterface $metricsEmitter,
+        private EventSubscriberFailureMetricFactoryInterface $metricFactory
     ) {
     }
 
@@ -85,5 +89,14 @@ final readonly class DomainEventMessageHandler
             'error' => $exception->getMessage(),
             'exception_class' => $exception::class,
         ]);
+
+        try {
+            $metric = $this->metricFactory->create($subscriber::class, $event::class);
+            $this->metricsEmitter->emit($metric);
+        } catch (\Throwable $metricException) {
+            $this->logger->warning('Failed to emit subscriber failure metric', [
+                'error' => $metricException->getMessage(),
+            ]);
+        }
     }
 }

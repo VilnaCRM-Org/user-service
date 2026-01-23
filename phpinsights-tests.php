@@ -42,6 +42,7 @@ return [
         ParameterTypeHintSniff::class => [
             'exclude' => [
                 'tests/Unit/Shared/Infrastructure/Bus/CallableFirstParameterExtractorTest',
+                'tests/Unit/Shared/Infrastructure/Bus/Stub/HandlerWithoutTypeHint',
                 'tests/Behat/HealthCheckContext/HealthCheckContext.php',
             ],
         ],

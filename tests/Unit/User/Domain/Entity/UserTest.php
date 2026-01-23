@@ -8,6 +8,7 @@ use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
@@ -52,6 +53,31 @@ final class UserTest extends UnitTestCase
             $this->faker->password(),
             $this->uuidTransformer->transformFromString($this->faker->uuid())
         );
+    }
+
+    public function testNewUserIsNotConfirmedByDefault(): void
+    {
+        $user = $this->userFactory->create(
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+
+        $this->assertUserNotConfirmed($user);
+        $this->assertConfirmedPropertyIsFalse($user);
+    }
+
+    public function testDirectConstructionStartsUnconfirmed(): void
+    {
+        $user = new User(
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+
+        $this->assertFalse($user->isConfirmed());
     }
 
     public function testConfirm(): void
@@ -129,6 +155,33 @@ final class UserTest extends UnitTestCase
         $this->user->setConfirmed(true);
 
         $this->assertEquals($confirmed, $this->user->isConfirmed());
+    }
+
+    private function assertUserNotConfirmed(User $user): void
+    {
+        $this->assertFalse(
+            $user->isConfirmed(),
+            'New user must not be confirmed'
+        );
+        $this->assertNotTrue(
+            $user->isConfirmed(),
+            'Double-check: new user is definitely not confirmed'
+        );
+    }
+
+    private function assertConfirmedPropertyIsFalse(User $user): void
+    {
+        $reflection = new \ReflectionClass($user);
+        $property = $reflection->getProperty('confirmed');
+        $this->assertFalse(
+            $property->getValue($user),
+            'Confirmed property must be false after construction'
+        );
+        $this->assertSame(
+            false,
+            $property->getValue($user),
+            'Confirmed must be exactly false (not null or other)'
+        );
     }
 
     /**

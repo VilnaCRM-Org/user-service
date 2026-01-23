@@ -1,3 +1,12 @@
+# [0.6.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.5.0...v0.6.0) (2026-01-22)
+
+
+### Features
+
+* add observability metrics and AWS EMF integration ([#240](https://github.com/VilnaCRM-Org/user-service/issues/240)) ([9a95f49](https://github.com/VilnaCRM-Org/user-service/commit/9a95f490380ad7d2f5d8bdfe4ebd6ae6a0505604))
+
+
+
 # [0.5.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.4.0...v0.5.0) (2026-01-18)
 
 ### Features
@@ -21,15 +30,3 @@
 ### Features
 
 - add documentation creation skill ([#232](https://github.com/VilnaCRM-Org/user-service/issues/232)) ([af38932](https://github.com/VilnaCRM-Org/user-service/commit/af389324c220bdc5aa4258deec2bfce0e4f22724))
-
-# [0.1.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.8.0...v0.1.0) (2026-01-11)
-
-### Features
-
-- **#45:** add user reset password feature ([#215](https://github.com/VilnaCRM-Org/user-service/issues/215)) ([63041e4](https://github.com/VilnaCRM-Org/user-service/commit/63041e4a65bbb5c44426bdb1b41f484f667d56f5)), closes [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45) [#45](https://github.com/VilnaCRM-Org/user-service/issues/45)
-
-# [2.8.0](https://github.com/VilnaCRM-Org/user-service/compare/v2.7.1...v2.8.0) (2025-08-23)
-
-### Features
-
-- **#210:** add GitHub Copilot instructions ([#211](https://github.com/VilnaCRM-Org/user-service/issues/211)) ([28e8ba9](https://github.com/VilnaCRM-Org/user-service/commit/28e8ba93fe32d55db719678cda90231c34f0795b)), closes [#210](https://github.com/VilnaCRM-Org/user-service/issues/210) [#210](https://github.com/VilnaCRM-Org/user-service/issues/210)

@@ -8,7 +8,12 @@ use ApiPlatform\OpenApi\Model;
 
 final class PathParameterCleaner
 {
-    public function clean(mixed $parameter): mixed
+    /**
+     * @param Model\Parameter|array<string> $parameter
+     *
+     * @psalm-param Model\Parameter|list{'not-a-parameter'} $parameter
+     */
+    public function clean(array|Model\Parameter $parameter): mixed
     {
         if (!$parameter instanceof Model\Parameter) {
             return $parameter;

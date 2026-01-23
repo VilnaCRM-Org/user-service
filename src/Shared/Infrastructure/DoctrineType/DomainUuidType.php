@@ -38,7 +38,7 @@ final class DomainUuidType extends Type
     public function convertToDatabaseValue(
         mixed $value,
         AbstractPlatform $platform
-    ): ?string {
+    ): string|false|null {
         if ($value instanceof UuidInterface) {
             return $value->toBinary();
         }

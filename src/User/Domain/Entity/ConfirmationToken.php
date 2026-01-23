@@ -9,6 +9,13 @@ use DateTimeImmutable;
 
 final class ConfirmationToken implements ConfirmationTokenInterface
 {
+    private const SEND_EMAIL_ATTEMPTS_TIME_IN_MINUTES = [
+        1 => 1,
+        2 => 3,
+        3 => 4,
+        4 => 1440,
+    ];
+
     private int $timesSent;
     private DateTimeImmutable $allowedToSendAfter;
 
@@ -22,13 +29,8 @@ final class ConfirmationToken implements ConfirmationTokenInterface
         private string $userID
     ) {
         $this->timesSent = 0;
-        $this->allowedToSendAfter = new DateTimeImmutable('1970-01-01');
-        $this->sendEmailAttemptsTimeInMinutes = [
-            0 => 1,
-            1 => 3,
-            2 => 4,
-            3 => 1440,
-        ];
+        $this->allowedToSendAfter = new DateTimeImmutable();
+        $this->sendEmailAttemptsTimeInMinutes = self::SEND_EMAIL_ATTEMPTS_TIME_IN_MINUTES;
     }
 
     public function getTimesSent(): int

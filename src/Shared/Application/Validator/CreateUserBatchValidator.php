@@ -17,6 +17,9 @@ final class CreateUserBatchValidator extends ConstraintValidator
     ) {
     }
 
+    /**
+     * @psalm-param 'value' $value
+     */
     #[\Override]
     public function validate(mixed $value, Constraint $constraint): void
     {

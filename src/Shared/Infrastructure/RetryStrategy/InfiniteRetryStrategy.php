@@ -11,20 +11,31 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 final class InfiniteRetryStrategy implements RetryStrategyInterface
 {
+    public function __construct(
+        private readonly int $delayMs,
+    ) {
+    }
+
+    /**
+     * @psalm-suppress UnusedParam Parameters required by interface but not used (always retry)
+     */
     public function shouldRetry(
-        AsyncContext $_context,
-        ?string $_responseContent,
-        ?TransportExceptionInterface $_exception
+        AsyncContext $context,
+        ?string $responseContent,
+        ?TransportExceptionInterface $exception
     ): ?bool {
         return true;
     }
 
+    /**
+     * @psalm-suppress UnusedParam Parameters required by interface but not used (fixed delay)
+     */
     public function getDelay(
-        AsyncContext $_context,
-        ?string $_responseContent,
-        ?TransportExceptionInterface $_exception
+        AsyncContext $context,
+        ?string $responseContent,
+        ?TransportExceptionInterface $exception
     ): int {
-        return 60000;
+        return $this->delayMs;
     }
 
     #[\Override]
@@ -40,6 +51,6 @@ final class InfiniteRetryStrategy implements RetryStrategyInterface
         Envelope $message,
         ?\Throwable $throwable = null
     ): int {
-        return 60000;
+        return $this->delayMs;
     }
 }
