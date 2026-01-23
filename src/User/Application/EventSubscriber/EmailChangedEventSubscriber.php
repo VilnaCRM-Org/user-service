@@ -27,11 +27,12 @@ final readonly class EmailChangedEventSubscriber implements
     public function __invoke(EmailChangedEvent $event): void
     {
         $user = $this->userRepository->findById($event->userId);
-        $token = $this->tokenFactory->create($event->userId);
 
         if ($user === null) {
             return;
         }
+
+        $token = $this->tokenFactory->create($event->userId);
 
         $this->commandBus->dispatch(
             $this->emailCmdFactory->create(
