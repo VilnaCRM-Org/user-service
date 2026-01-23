@@ -206,9 +206,9 @@ final class UserTest extends UnitTestCase
     {
         return new UserUpdate(
             $this->faker->email(),
+            $this->faker->name(),
             $this->faker->password(),
-            $this->faker->password(),
-            $this->faker->name()
+            $this->faker->password()
         );
     }
 }
