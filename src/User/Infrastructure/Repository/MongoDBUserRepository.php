@@ -7,17 +7,15 @@ namespace App\User\Infrastructure\Repository;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\DBAL\Logging\Middleware;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
-use Psr\Log\NullLogger;
+use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
+use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
+use Doctrine\ODM\MongoDB\DocumentManager;
 
-final class MariaDBUserRepository extends ServiceEntityRepository implements
+final class MongoDBUserRepository extends ServiceDocumentRepository implements
     UserRepositoryInterface
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
+        private readonly DocumentManager $documentManager,
         private readonly ManagerRegistry $registry,
         private readonly int $batchSize,
     ) {
@@ -26,14 +24,14 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
 
     public function save(object $user): void
     {
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+        $this->documentManager->persist($user);
+        $this->documentManager->flush();
     }
 
     public function delete(object $user): void
     {
-        $this->entityManager->remove($user);
-        $this->entityManager->flush();
+        $this->documentManager->remove($user);
+        $this->documentManager->flush();
     }
 
     public function findByEmail(string $email): ?UserInterface
@@ -61,8 +59,8 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
      */
     public function deleteAll(): void
     {
-        $this->createQueryBuilder('u')
-            ->delete()
+        $this->createQueryBuilder()
+            ->remove()
             ->getQuery()
             ->execute();
     }
@@ -72,25 +70,21 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
      */
     private function persistUsersInBatch(array $users): void
     {
-        $this->entityManager->getConnection()
-            ->getConfiguration()
-            ->setMiddlewares([new Middleware(new NullLogger())]);
-
         $usersForPersistence = array_values($users);
 
         array_walk(
             $usersForPersistence,
             function (User $user, int $index): void {
                 $position = $index + 1;
-                $this->entityManager->persist($user);
+                $this->documentManager->persist($user);
 
                 if ($position % $this->batchSize === 0) {
-                    $this->entityManager->flush();
-                    $this->entityManager->clear();
+                    $this->documentManager->flush();
+                    $this->documentManager->clear();
                 }
             }
         );
-        $this->entityManager->flush();
-        $this->entityManager->clear();
+        $this->documentManager->flush();
+        $this->documentManager->clear();
     }
 }

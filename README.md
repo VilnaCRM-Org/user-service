@@ -13,7 +13,8 @@
 
 ## Possibilities
 
-- Modern PHP stack for services: [API Platform 3](https://api-platform.com/), PHP 8, [Symfony 7](https://symfony.com/)
+- Modern PHP stack for services: [API Platform 4](https://api-platform.com/), PHP 8.3+, [Symfony 7](https://symfony.com/)
+- [MongoDB](https://www.mongodb.com/) with [Doctrine MongoDB ODM](https://www.doctrine-project.org/projects/mongodb-odm.html) for flexible, schemaless data persistence
 - [Hexagonal Architecture, DDD & CQRS in PHP](https://github.com/CodelyTV/php-ddd-example)
 - Built-in docker environment and convenient `make` cli command
 - A lot of CI checks to ensure the highest code quality that can be ([Psalm](https://psalm.dev/), [PHPInsights](https://phpinsights.com/), Security checks, Code style fixer)
@@ -41,10 +42,6 @@ Use `make` command to set up project
 Use `make` command to automatically install all needed dependencies
 
 > make install
-
-Use `make` command to run migrations
-
-> make doctrine-migrations-migrate
 
 Go to browser and open the link below to access REST API docs
 
@@ -82,9 +79,7 @@ check-security               Checks security issues in project dependencies. Wit
 commands                     List all Symfony commands
 composer-validate            The validate command validates a given composer.json and composer.lock
 coverage                     Create the code coverage report with PHPUnit
-create-oauth-client          Run mutation testing
-doctrine-migrations-generate Generates a blank migration class
-doctrine-migrations-migrate  Executes a migration to a specified version or the latest available version
+create-oauth-client          Create OAuth client for testing
 e2e-tests                  Run end-to-end tests
 down                         Stop the docker hub
 infection                  Run mutation testing

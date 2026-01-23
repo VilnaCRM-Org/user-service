@@ -1,52 +1,17 @@
+# Minimal Doctrine ORM configuration for OAuth2 bundle support
+# User entities use MongoDB ODM (see doctrine_mongodb.yaml)
+# OAuth2 entities use Doctrine ORM (league/oauth2-server-bundle requirement)
 doctrine:
   dbal:
-    connections:
-      default:
-        url: '%env(resolve:DATABASE_URL)%'
-        use_savepoints: true
-    types:
-      domain_uuid: 'App\Shared\Infrastructure\DoctrineType\DomainUuidType'
-
-      # IMPORTANT: You MUST configure your server version,
-      # either here or in the DATABASE_URL env var (see .env file)
-      #server_version: '15'
+    url: '%env(resolve:DATABASE_URL)%'
+    driver: pdo_mysql
   orm:
-    enable_lazy_ghost_objects: true
     auto_generate_proxy_classes: true
+    enable_lazy_ghost_objects: true
     naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
-    auto_mapping: true
-    controller_resolver:
-      auto_mapping: true
-    mappings:
-      App:
-        is_bundle: false
-        type: xml
-        dir: '%kernel.project_dir%/config/doctrine'
-        prefix: 'App\User\Domain\Entity'
-        alias: App
+    auto_mapping: false
 
 when@test:
   doctrine:
     dbal:
-      # "TEST_TOKEN" is typically set by ParaTest
-      dbname_suffix: '_test%env(default::TEST_TOKEN)%'
-
-when@prod:
-  doctrine:
-    orm:
-      auto_generate_proxy_classes: false
-      proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'
-      query_cache_driver:
-        type: pool
-        pool: doctrine.system_cache_pool
-      result_cache_driver:
-        type: pool
-        pool: doctrine.result_cache_pool
-
-  framework:
-    cache:
-      pools:
-        doctrine.result_cache_pool:
-          adapter: cache.app
-        doctrine.system_cache_pool:
-          adapter: cache.system
+      url: '%env(resolve:DATABASE_URL_TEST)%'

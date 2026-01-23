@@ -17,7 +17,7 @@ final class GetUserQueryHandler
 
     public function handle(string $id): User
     {
-        return $this->userRepository->find($id)
+        return $this->userRepository->findById($id)
             ?? throw new UserNotFoundException();
     }
 }

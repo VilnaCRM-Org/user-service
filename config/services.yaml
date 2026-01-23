@@ -125,9 +125,15 @@ services:
       $tokenLength: '%env(int:PASSWORD_RESET_TOKEN_LENGTH)%'
       $expirationTimeInHours: '%env(int:PASSWORD_RESET_TOKEN_EXPIRATION_HOURS)%'
 
-  App\User\Infrastructure\Repository\MariaDBUserRepository:
+  App\User\Infrastructure\Repository\MongoDBUserRepository:
     arguments:
       $batchSize: '%env(int:USER_INSERT_BATCH_SIZE)%'
+
+  App\User\Domain\Repository\UserRepositoryInterface:
+    alias: App\User\Infrastructure\Repository\MongoDBUserRepository
+
+  App\User\Domain\Repository\PasswordResetTokenRepositoryInterface:
+    alias: App\User\Infrastructure\Repository\MongoDBPasswordResetTokenRepository
 
   App\User\Application\EventSubscriber\PasswordResetEmailSentEventSubscriber:
     arguments:

@@ -6,9 +6,9 @@ mkdir -p var/cache var/log
 
 if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 	if [ "$APP_ENV" != 'prod' ]; then
-		composer install --prefer-dist --no-progress --no-interaction
+		composer install --prefer-dist --no-progress --no-interaction --ignore-platform-reqs
 	else
-	  composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
+	  composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
 	fi
 
 	if grep -q ^DATABASE_URL= .env; then

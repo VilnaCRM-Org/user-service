@@ -12,7 +12,7 @@ use App\Tests\Behat\OAuthContext\Input\ObtainAuthorizeCodeInput;
 use App\Tests\Behat\OAuthContext\Input\PasswordGrantInput;
 use App\User\Application\DTO\AuthorizationUserDto;
 use Behat\Behat\Context\Context;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Faker\Factory;
 use Faker\Generator;
 use League\Bundle\OAuth2ServerBundle\Event\AuthorizationRequestResolveEvent;
@@ -41,7 +41,7 @@ final class OAuthContext implements Context
         private readonly KernelInterface $kernel,
         private SerializerInterface $serializer,
         private ?Response $response,
-        private EntityManagerInterface $entityManager,
+        private DocumentManager $documentManager,
         private TokenStorageInterface $tokenStorage
     ) {
         $this->faker = Factory::create();
@@ -113,8 +113,8 @@ final class OAuthContext implements Context
     {
         $client = new Client($this->faker->name, $id, $secret);
         $client->setRedirectUris(new RedirectUri($uri));
-        $this->entityManager->persist($client);
-        $this->entityManager->flush();
+        $this->documentManager->persist($client);
+        $this->documentManager->flush();
     }
 
     /**

@@ -182,12 +182,6 @@ infection: ## Run mutations test.
 create-oauth-client: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(clientName)'
 
-doctrine-migrations-migrate: ## Executes a migration to a specified version or the latest available version
-	$(SYMFONY) d:m:m --no-interaction
-
-doctrine-migrations-generate: ## Generates a blank migration class
-	$(SYMFONY) d:m:g
-
 cache-clear: ## Clears and warms up the application cache for a given environment and debug mode
 	$(SYMFONY) c:c
 
@@ -222,7 +216,7 @@ logs: ## Show all logs
 new-logs: ## Show live logs
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
-start: up doctrine-migrations-migrate build-k6-docker build-spectral-docker ## Start docker
+start: up build-k6-docker build-spectral-docker ## Start docker
 
 ps: ## Check docker containers
 	$(DOCKER_COMPOSE) ps

@@ -9,6 +9,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      mariadb:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       interval: 10s
@@ -44,6 +46,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      mariadb:
+        condition: service_healthy
     restart: unless-stopped
     environment:
       SERVER_NAME: ${SERVER_NAME:-:80}
@@ -65,19 +69,34 @@ services:
       - ./:/srv/app
 
   database:
+    image: mongo:6.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-secret}
+    ports:
+      - '${MONGODB_PORT:-27017}:27017'
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', 'db.runCommand({ ping: 1 }).ok']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mariadb:
     image: mariadb:11.4
     environment:
-      MYSQL_DATABASE: db
-      MYSQL_ROOT_PASSWORD: root
-      hostname: database
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MARIADB_DATABASE: ${DB_NAME:-oauth}
     ports:
-      - '3306:3306'
+      - '${DB_PORT:-3306}:3306'
     volumes:
-      - db_data:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
     healthcheck:
+      test: ['CMD', 'mariadb-admin', 'ping', '-h', 'localhost', '-u', 'root', '-p${DB_PASSWORD:-root}']
       interval: 10s
+      timeout: 5s
       retries: 10
-      test: ['CMD', 'mariadb', '-h', 'localhost', '-u', 'root', '-proot', '-e', 'SELECT 1']
 
   redis:
     image: redis:7.2.5-alpine
@@ -87,4 +106,5 @@ services:
 volumes:
   caddy_data:
   caddy_config:
-  db_data:
+  mongodb_data:
+  mariadb_data:

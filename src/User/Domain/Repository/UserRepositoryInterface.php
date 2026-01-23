@@ -28,16 +28,5 @@ interface UserRepositoryInterface
      */
     public function saveBatch(array $users): void;
 
-    /**
-     * @param string $id
-     *
-     * @return User
-     */
-    public function find(
-        mixed $id,
-        ?int $lockMode = null,
-        ?int $lockVersion = null
-    ): ?object;
-
     public function deleteAll(): void;
 }

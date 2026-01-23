@@ -33,7 +33,7 @@ As you will see, we use Make commands to manage the project. Run `make help` aft
    Here's an example configuration:
 
    ```bash
-   DATABASE_URL="mysql://root:root@database:3306/db?serverVersion=11.4"
+   DB_URL="mongodb://user:password@database:27017/db"
    REDIS_URL=redis://redis:6379/0
    MAILER_DSN=smtp://mailer:1025
    API_BASE_URL=https://localhost
@@ -66,12 +66,13 @@ As you will see, we use Make commands to manage the project. Run `make help` aft
 
 5. **FAQ**
 
+   MongoDB is schemaless, so no migrations are needed. Document structures are defined in XML mappings in `config/doctrine/*.mongodb.xml`.
+
    If something goes wrong, try executing this sequence of commands:
 
    ```bash
    make cache-clear
    make install
-   make doctrine-migrations-migrate
    ```
 
 Learn more about [Design and Architecture Documentation](design-and-architecture.md).

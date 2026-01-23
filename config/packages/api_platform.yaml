@@ -25,6 +25,11 @@ api_platform:
   mapping:
     paths: ['%kernel.project_dir%/config/api_platform/resources']
 
+  # Tell API Platform where your domain classes live
+  resource_class_directories:
+    - '%kernel.project_dir%/src/User/Domain/Entity'
+    - '%kernel.project_dir%/src/OAuth/Domain/Entity'
+
   formats:
     json: ['application/json']
     graphql: ['application/graphql']

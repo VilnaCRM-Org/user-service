@@ -81,6 +81,19 @@
             "migrations/.gitignore"
         ]
     },
+    "doctrine/mongodb-odm-bundle": {
+        "version": "5.5",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "5.0",
+            "ref": "2bbccc6ecb92903494e4c6291255014a32c59fad"
+        },
+        "files": [
+            "config/packages/doctrine_mongodb.yaml",
+            "src/Document/.gitignore"
+        ]
+    },
     "friends-of-behat/symfony-extension": {
         "version": "2.4",
         "recipe": {

@@ -11,18 +11,22 @@
     "ext-dom": "*",
     "ext-iconv": "*",
     "ext-mbstring": "*",
+    "ext-mongodb": "*",
     "ext-simplexml": "*",
     "ext-xml": "*",
     "api-platform/core": "^4.1",
+    "api-platform/doctrine-odm": "*",
     "aws/aws-sdk-php": "^3.343",
     "cfpinto/graphql": "^2.0",
-    "doctrine/doctrine-bundle": "^2.12",
-    "doctrine/doctrine-migrations-bundle": "^3.3",
-    "doctrine/orm": "^3.3",
+    "doctrine/doctrine-bundle": "^2.11",
+    "doctrine/mongodb-odm": "^2.10",
+    "doctrine/mongodb-odm-bundle": "^5.3",
+    "doctrine/orm": "^3.0",
     "dpauli/graphql-request-builder": "^1.8",
     "fakerphp/faker": "^1.23.0",
     "league/oauth2-server-bundle": "^1.0",
     "lexik/jwt-authentication-bundle": "^3.0.0",
+    "mongodb/mongodb": "^1.21",
     "nelmio/cors-bundle": "^2.4",
     "phpmailer/phpmailer": "^6.6",
     "ramsey/uuid": "^4.7",
@@ -31,7 +35,6 @@
     "symfony/asset": "7.3.*",
     "symfony/cache": "7.3.*",
     "symfony/console": "7.3.*",
-    "symfony/doctrine-messenger": "7.3.*",
     "symfony/dotenv": "7.3.*",
     "symfony/flex": "^2.7",
     "symfony/framework-bundle": "7.3.*",
@@ -69,7 +72,11 @@
     "preferred-install": {
       "*": "dist"
     },
-    "sort-packages": true
+    "sort-packages": true,
+    "platform": {
+      "php": "8.3.17",
+      "ext-mongodb": "1.21.1"
+    }
   },
   "autoload": {
     "psr-4": {
@@ -116,9 +123,8 @@
   "require-dev": {
     "behat/behat": "^3.12",
     "behat/gherkin": "4.12.0",
-    "dama/doctrine-test-bundle": "^8.2",
     "dg/bypass-finals": "^1.5",
-    "doctrine/doctrine-fixtures-bundle": "^4.0",
+    "doctrine/data-fixtures": "^2.0",
     "friends-of-behat/symfony-extension": "^2.6",
     "friendsofphp/php-cs-fixer": "^3.14",
     "infection/infection": "^0.32",

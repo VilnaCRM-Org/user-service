@@ -7,14 +7,14 @@ namespace App\User\Infrastructure\Repository;
 use App\User\Domain\Entity\PasswordResetToken;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
+use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
+use Doctrine\ODM\MongoDB\DocumentManager;
 
-final class MariaDBPasswordResetTokenRepository extends ServiceEntityRepository implements PasswordResetTokenRepositoryInterface
+final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepository implements PasswordResetTokenRepositoryInterface
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
+        private readonly DocumentManager $documentManager,
         private readonly ManagerRegistry $registry,
     ) {
         parent::__construct($this->registry, PasswordResetToken::class);
@@ -23,8 +23,8 @@ final class MariaDBPasswordResetTokenRepository extends ServiceEntityRepository 
     public function save(
         PasswordResetTokenInterface $passwordResetToken
     ): void {
-        $this->entityManager->persist($passwordResetToken);
-        $this->entityManager->flush();
+        $this->documentManager->persist($passwordResetToken);
+        $this->documentManager->flush();
     }
 
     public function findByToken(string $token): ?PasswordResetTokenInterface
@@ -44,8 +44,8 @@ final class MariaDBPasswordResetTokenRepository extends ServiceEntityRepository 
     public function delete(
         PasswordResetTokenInterface $passwordResetToken
     ): void {
-        $this->entityManager->remove($passwordResetToken);
-        $this->entityManager->flush();
+        $this->documentManager->remove($passwordResetToken);
+        $this->documentManager->flush();
     }
 
     /**
@@ -55,8 +55,8 @@ final class MariaDBPasswordResetTokenRepository extends ServiceEntityRepository 
      */
     public function deleteAll(): void
     {
-        $this->createQueryBuilder('t')
-            ->delete()
+        $this->createQueryBuilder()
+            ->remove()
             ->getQuery()
             ->execute();
     }
@@ -67,8 +67,8 @@ final class MariaDBPasswordResetTokenRepository extends ServiceEntityRepository 
     public function saveBatch(array $tokens): void
     {
         foreach ($tokens as $token) {
-            $this->entityManager->persist($token);
+            $this->documentManager->persist($token);
         }
-        $this->entityManager->flush();
+        $this->documentManager->flush();
     }
 }
