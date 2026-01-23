@@ -183,10 +183,10 @@ src/
 
 The codebase enforces strict architectural boundaries via Deptrac:
 
-| Layer              | Purpose                   | Contains                                                                                                   | Dependencies            |
-| ------------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------- |
-| **Domain**         | Pure business logic       | Entities, Value Objects, Aggregates, Events, Commands (interfaces), Repository interfaces                  | None (isolated)         |
-| **Application**    | Use cases & orchestration | Command Handlers, Event Subscribers, DTOs, Transformers, Processors, Resolvers                             | Domain + Infrastructure |
+| Layer              | Purpose                   | Contains                                                                                                     | Dependencies            |
+| ------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------- |
+| **Domain**         | Pure business logic       | Entities, Value Objects, Aggregates, Events, Commands (interfaces), Repository interfaces                    | None (isolated)         |
+| **Application**    | Use cases & orchestration | Command Handlers, Event Subscribers, DTOs, Transformers, Processors, Resolvers                               | Domain + Infrastructure |
 | **Infrastructure** | External concerns         | Repository implementations (MongoDB/Doctrine ODM), Message buses (Symfony), Doctrine types, Retry strategies | Domain + Application    |
 
 **Rules**: Domain must stay framework-free. Application can use Symfony/API Platform. Infrastructure implements persistence/adapters.
@@ -252,11 +252,11 @@ Run `make ci` before finishing any task. Checks include PHP CS Fixer, Psalm (+ s
 
 Key variables in `.env`/`.env.test`:
 
-| Variable    | Purpose                      | Example                              |
-| ----------- | ---------------------------- | ------------------------------------ |
-| `APP_ENV`   | Application environment      | `dev`, `test`, `prod`                |
+| Variable    | Purpose                      | Example                                     |
+| ----------- | ---------------------------- | ------------------------------------------- |
+| `APP_ENV`   | Application environment      | `dev`, `test`, `prod`                       |
 | `DB_URL`    | Database connection string   | `mongodb://user:password@database:27017/db` |
-| `AWS_SQS_*` | AWS SQS message queue config | Various                              |
+| `AWS_SQS_*` | AWS SQS message queue config | Various                                     |
 
 ## 📂 Directory Organization Conventions
 
