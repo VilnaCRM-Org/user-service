@@ -112,12 +112,7 @@ final class UserTest extends UnitTestCase
         $hashedNewPassword = $this->faker->password();
         $eventID = $this->faker->uuid();
 
-        $expectedEmailChangedEvent = $this->createMock(EmailChangedEvent::class);
-
-        $this->emailChangedEventFactory->expects($this->once())
-            ->method('create')
-            ->with($this->user, $oldEmail, $eventID)
-            ->willReturn($expectedEmailChangedEvent);
+        $expectedEvent = $this->setupEmailChangedEventFactoryMock($oldEmail, $eventID);
 
         $events = $this->user->update(
             $updateData,
@@ -127,12 +122,7 @@ final class UserTest extends UnitTestCase
             $this->passwordChangedEventFactory
         );
 
-        $this->testUpdateMakeAssertions(
-            $events,
-            $updateData,
-            $hashedNewPassword,
-            $expectedEmailChangedEvent
-        );
+        $this->testUpdateMakeAssertions($events, $updateData, $hashedNewPassword, $expectedEvent);
     }
 
     public function testSetId(): void
@@ -226,5 +216,18 @@ final class UserTest extends UnitTestCase
             $this->faker->password(),
             $this->faker->password()
         );
+    }
+
+    private function setupEmailChangedEventFactoryMock(
+        string $oldEmail,
+        string $eventID
+    ): EmailChangedEvent {
+        $expectedEvent = $this->createMock(EmailChangedEvent::class);
+        $this->emailChangedEventFactory->expects($this->once())
+            ->method('create')
+            ->with($this->user, $oldEmail, $eventID)
+            ->willReturn($expectedEvent);
+
+        return $expectedEvent;
     }
 }
