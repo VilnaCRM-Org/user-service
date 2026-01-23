@@ -224,30 +224,15 @@ final class ConfirmationTokenTest extends UnitTestCase
         $reflection = new \ReflectionClass(ConfirmationToken::class);
         $constant = $reflection->getConstant('SEND_EMAIL_ATTEMPTS_TIME_IN_MINUTES');
 
-        // Verify exact configuration
+        $expected = [0 => 1, 1 => 1, 2 => 3, 3 => 4, 4 => 1440];
+
         $this->assertIsArray($constant);
         $this->assertCount(5, $constant);
+        $this->assertSame($expected, $constant);
 
-        // Verify exact keys and values
-        $this->assertArrayHasKey(0, $constant);
-        $this->assertArrayHasKey(1, $constant);
-        $this->assertArrayHasKey(2, $constant);
-        $this->assertArrayHasKey(3, $constant);
-        $this->assertArrayHasKey(4, $constant);
-
-        $this->assertSame(1, $constant[0]);
-        $this->assertSame(1, $constant[1]);
-        $this->assertSame(3, $constant[2]);
-        $this->assertSame(4, $constant[3]);
-        $this->assertSame(1440, $constant[4]);
-
-        // Verify complete array equality
-        $this->assertSame([
-            0 => 1,
-            1 => 1,
-            2 => 3,
-            3 => 4,
-            4 => 1440,
-        ], $constant);
+        // Verify all expected keys exist
+        foreach (array_keys($expected) as $key) {
+            $this->assertArrayHasKey($key, $constant);
+        }
     }
 }
