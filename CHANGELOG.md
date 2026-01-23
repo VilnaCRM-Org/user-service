@@ -1,11 +1,8 @@
 # [0.6.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.5.0...v0.6.0) (2026-01-22)
 
-
 ### Features
 
-* add observability metrics and AWS EMF integration ([#240](https://github.com/VilnaCRM-Org/user-service/issues/240)) ([9a95f49](https://github.com/VilnaCRM-Org/user-service/commit/9a95f490380ad7d2f5d8bdfe4ebd6ae6a0505604))
-
-
+- add observability metrics and AWS EMF integration ([#240](https://github.com/VilnaCRM-Org/user-service/issues/240)) ([9a95f49](https://github.com/VilnaCRM-Org/user-service/commit/9a95f490380ad7d2f5d8bdfe4ebd6ae6a0505604))
 
 # [0.5.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.4.0...v0.5.0) (2026-01-18)
 
