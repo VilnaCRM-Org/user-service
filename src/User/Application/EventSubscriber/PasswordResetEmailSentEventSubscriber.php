@@ -26,8 +26,7 @@ final readonly class PasswordResetEmailSentEventSubscriber implements
 
     public function __invoke(PasswordResetEmailSentEvent $event): void
     {
-        $token = $event->token;
-        $tokenValue = $token->getTokenValue();
+        $tokenValue = $event->tokenValue;
         $emailAddress = $event->email;
 
         $resetUrl = $this->createResetUrl($tokenValue);

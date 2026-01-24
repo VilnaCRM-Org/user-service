@@ -4,27 +4,21 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Domain\Event;
 
-use App\Shared\Domain\ValueObject\Uuid;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Event\PasswordResetRequestedEvent;
-use App\User\Domain\Factory\UserFactory;
 
 final class PasswordResetRequestedEventTest extends UnitTestCase
 {
     public function testConstruction(): void
     {
-        $userFactory = new UserFactory();
-        $user = $userFactory->create(
-            $this->faker->safeEmail(),
-            $this->faker->lexify('??'),
-            $this->faker->password(),
-            new Uuid($this->faker->uuid())
-        );
+        $userId = $this->faker->uuid();
+        $userEmail = $this->faker->safeEmail();
         $token = $this->faker->sha256();
         $eventId = $this->faker->uuid();
-        $event = new PasswordResetRequestedEvent($user, $token, $eventId);
+        $event = new PasswordResetRequestedEvent($userId, $userEmail, $token, $eventId);
 
-        $this->assertSame($user, $event->user);
+        $this->assertSame($userId, $event->userId);
+        $this->assertSame($userEmail, $event->userEmail);
         $this->assertSame($token, $event->token);
         $this->assertSame($eventId, $event->eventId());
     }
@@ -38,40 +32,45 @@ final class PasswordResetRequestedEventTest extends UnitTestCase
 
     public function testToPrimitives(): void
     {
-        $userFactory = new UserFactory();
-        $uuid = new Uuid($this->faker->uuid());
-        $user = $userFactory->create(
-            $this->faker->safeEmail(),
-            $this->faker->lexify('??'),
-            $this->faker->password(),
-            $uuid
-        );
+        $userId = $this->faker->uuid();
+        $userEmail = $this->faker->safeEmail();
         $token = $this->faker->sha256();
         $eventId = $this->faker->uuid();
-        $event = new PasswordResetRequestedEvent($user, $token, $eventId);
+        $event = new PasswordResetRequestedEvent($userId, $userEmail, $token, $eventId);
         $primitives = $event->toPrimitives();
 
         $this->assertIsArray($primitives);
         $this->assertArrayHasKey('userId', $primitives);
         $this->assertArrayHasKey('userEmail', $primitives);
         $this->assertArrayHasKey('token', $primitives);
-        $this->assertSame($user->getId(), $primitives['userId']);
-        $this->assertSame($user->getEmail(), $primitives['userEmail']);
+        $this->assertSame($userId, $primitives['userId']);
+        $this->assertSame($userEmail, $primitives['userEmail']);
         $this->assertSame($token, $primitives['token']);
     }
 
-    public function testFromPrimitivesThrowsException(): void
+    public function testFromPrimitivesAndToPrimitives(): void
     {
-        $body = [
-            'userId' => $this->faker->uuid(),
-            'userEmail' => $this->faker->safeEmail(),
-            'token' => $this->faker->sha256(),
-        ];
+        $userId = $this->faker->uuid();
+        $userEmail = $this->faker->safeEmail();
+        $token = $this->faker->sha256();
         $eventId = $this->faker->uuid();
         $occurredOn = $this->faker->dateTime()->format('Y-m-d H:i:s');
 
-        $this->expectException(\RuntimeException::class);
+        $event = new PasswordResetRequestedEvent(
+            $userId,
+            $userEmail,
+            $token,
+            $eventId,
+            $occurredOn
+        );
 
-        PasswordResetRequestedEvent::fromPrimitives($body, $eventId, $occurredOn);
+        $serializedEvent = $event->toPrimitives();
+        $deserializedEvent = PasswordResetRequestedEvent::fromPrimitives(
+            $serializedEvent,
+            $eventId,
+            $occurredOn
+        );
+
+        $this->assertEquals($event, $deserializedEvent);
     }
 }

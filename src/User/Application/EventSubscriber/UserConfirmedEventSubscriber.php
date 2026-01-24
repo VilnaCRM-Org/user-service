@@ -18,7 +18,11 @@ final readonly class UserConfirmedEventSubscriber implements
 
     public function __invoke(UserConfirmedEvent $userConfirmedEvent): void
     {
-        $this->tokenRepository->delete($userConfirmedEvent->token);
+        $token = $this->tokenRepository->find($userConfirmedEvent->tokenValue);
+
+        if ($token !== null) {
+            $this->tokenRepository->delete($token);
+        }
     }
 
     /**

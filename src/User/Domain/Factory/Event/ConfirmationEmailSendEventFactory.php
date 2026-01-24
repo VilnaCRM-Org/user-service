@@ -18,7 +18,7 @@ final class ConfirmationEmailSendEventFactory implements
         string $eventID,
     ): ConfirmationEmailSentEvent {
         return new ConfirmationEmailSentEvent(
-            $token,
+            $token->getTokenValue(),
             $user->getEmail(),
             $eventID,
         );

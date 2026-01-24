@@ -10,6 +10,7 @@ use DateTimeImmutable;
 final class ConfirmationToken implements ConfirmationTokenInterface
 {
     private const SEND_EMAIL_ATTEMPTS_TIME_IN_MINUTES = [
+        0 => 1,
         1 => 1,
         2 => 3,
         3 => 4,

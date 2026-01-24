@@ -44,6 +44,11 @@ final class UserConfirmedEventSubscriberTest extends UnitTestCase
         );
 
         $this->tokenRepository->expects($this->once())
+            ->method('find')
+            ->with($token->getTokenValue())
+            ->willReturn($token);
+
+        $this->tokenRepository->expects($this->once())
             ->method('delete')
             ->with($this->equalTo($token));
 

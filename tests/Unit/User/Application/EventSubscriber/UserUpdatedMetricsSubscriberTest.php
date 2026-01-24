@@ -50,7 +50,12 @@ final class UserUpdatedMetricsSubscriberTest extends UnitTestCase
             id: new Uuid((string) $this->faker->uuid())
         );
 
-        ($this->subscriber)(new EmailChangedEvent($user, (string) $this->faker->uuid()));
+        ($this->subscriber)(new EmailChangedEvent(
+            userId: $user->getId(),
+            newEmail: $this->faker->email(),
+            oldEmail: $user->getEmail(),
+            eventId: (string) $this->faker->uuid()
+        ));
 
         self::assertSame(1, $this->metricsEmitterSpy->count());
     }
@@ -67,19 +72,8 @@ final class UserUpdatedMetricsSubscriberTest extends UnitTestCase
 
     public function testThrowsWhenEmitterFails(): void
     {
-        $user = new User(
-            email: $this->faker->email(),
-            initials: 'JD',
-            password: 'secret',
-            id: new Uuid((string) $this->faker->uuid())
-        );
-
-        $event = new EmailChangedEvent($user, (string) $this->faker->uuid());
-
-        $failingEmitter = $this->createMock(BusinessMetricsEmitterInterface::class);
-        $failingEmitter
-            ->method('emit')
-            ->willThrowException(new \RuntimeException('Connection failed'));
+        $event = $this->createEmailChangedEvent();
+        $failingEmitter = $this->createFailingEmitter();
 
         $subscriber = new UserUpdatedMetricsSubscriber(
             $failingEmitter,
@@ -90,5 +84,32 @@ final class UserUpdatedMetricsSubscriberTest extends UnitTestCase
         $this->expectExceptionMessage('Connection failed');
 
         ($subscriber)($event);
+    }
+
+    private function createEmailChangedEvent(): EmailChangedEvent
+    {
+        $user = new User(
+            email: $this->faker->email(),
+            initials: 'JD',
+            password: 'secret',
+            id: new Uuid((string) $this->faker->uuid())
+        );
+
+        return new EmailChangedEvent(
+            userId: $user->getId(),
+            newEmail: $this->faker->email(),
+            oldEmail: $user->getEmail(),
+            eventId: (string) $this->faker->uuid()
+        );
+    }
+
+    private function createFailingEmitter(): BusinessMetricsEmitterInterface
+    {
+        $failingEmitter = $this->createMock(BusinessMetricsEmitterInterface::class);
+        $failingEmitter
+            ->method('emit')
+            ->willThrowException(new \RuntimeException('Connection failed'));
+
+        return $failingEmitter;
     }
 }

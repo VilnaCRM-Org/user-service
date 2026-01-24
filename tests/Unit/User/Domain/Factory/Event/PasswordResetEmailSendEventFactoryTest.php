@@ -6,9 +6,9 @@ namespace App\Tests\Unit\User\Domain\Factory\Event;
 
 use App\Shared\Domain\ValueObject\Uuid;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Factory\Event\PasswordResetEmailSendEventFactory;
 use App\User\Domain\Entity\PasswordResetToken;
 use App\User\Domain\Event\PasswordResetEmailSentEvent;
-use App\User\Domain\Factory\Event\PasswordResetEmailSendEventFactory;
 use App\User\Domain\Factory\UserFactory;
 
 final class PasswordResetEmailSendEventFactoryTest extends UnitTestCase
@@ -23,7 +23,8 @@ final class PasswordResetEmailSendEventFactoryTest extends UnitTestCase
         $event = $factory->create($token, $user, $eventId);
 
         $this->assertInstanceOf(PasswordResetEmailSentEvent::class, $event);
-        $this->assertSame($token, $event->token);
+        $this->assertSame($token->getTokenValue(), $event->tokenValue);
+        $this->assertSame($token->getUserID(), $event->userId);
         $this->assertSame($user->getEmail(), $event->email);
         $this->assertSame($eventId, $event->eventId());
     }

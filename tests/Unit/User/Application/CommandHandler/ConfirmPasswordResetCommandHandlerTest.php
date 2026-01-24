@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
-use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\ConfirmPasswordResetCommandResponse;
@@ -13,27 +12,22 @@ use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Contract\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Event\PasswordResetConfirmedEvent;
 use App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException;
 use App\User\Domain\Exception\PasswordResetTokenExpiredException;
 use App\User\Domain\Exception\PasswordResetTokenNotFoundException;
 use App\User\Domain\Exception\UserNotFoundException;
-use App\User\Domain\Factory\Event\PasswordResetConfirmedEventFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisher;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\Uid\Factory\UuidFactory;
-use Symfony\Component\Uid\Uuid;
 
 final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
     private PasswordResetTokenRepositoryInterface&MockObject $tokenRepository;
     private PasswordHasherInterface&MockObject $passwordHasher;
-    private EventBusInterface&MockObject $eventBus;
-    private UuidFactory&MockObject $uuidFactory;
     private PasswordResetTokenValidatorInterface&MockObject $tokenValidator;
-    private PasswordResetConfirmedEventFactoryInterface&MockObject $eventFactory;
+    private PasswordResetConfirmationPublisher&MockObject $publisher;
     private ConfirmPasswordResetCommandHandler $handler;
 
     #[\Override]
@@ -44,19 +38,15 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->tokenRepository = $this->createMock(PasswordResetTokenRepositoryInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
-        $this->eventBus = $this->createMock(EventBusInterface::class);
-        $this->uuidFactory = $this->createMock(UuidFactory::class);
         $this->tokenValidator = $this->createMock(PasswordResetTokenValidatorInterface::class);
-        $this->eventFactory = $this->createMock(PasswordResetConfirmedEventFactoryInterface::class);
+        $this->publisher = $this->createMock(PasswordResetConfirmationPublisher::class);
 
         $this->handler = new ConfirmPasswordResetCommandHandler(
             $this->tokenRepository,
             $this->userRepository,
             $this->passwordHasher,
-            $this->eventBus,
-            $this->uuidFactory,
             $this->tokenValidator,
-            $this->eventFactory,
+            $this->publisher,
         );
     }
 
@@ -220,7 +210,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, string|Uuid>
+     * @return array<string, string>
      */
     private function createConfirmPasswordResetTestData(): array
     {
@@ -228,15 +218,14 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             'token' => $this->faker->lexify('??????????'),
             'newPassword' => $this->faker->password(12),
             'userId' => $this->faker->uuid(),
-            'eventId' => Uuid::v4(),
             'hashedPassword' => $this->faker->sha256(),
         ];
     }
 
     /**
-     * @param array<string, string|Uuid> $testData
+     * @param array<string, string> $testData
      *
-     * @return array<string, PasswordResetTokenInterface|User|PasswordResetConfirmedEvent>
+     * @return array<string, PasswordResetTokenInterface|User>
      */
     private function createConfirmPasswordResetMocks(array $testData): array
     {
@@ -247,20 +236,17 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             ->willReturn($testData['userId']);
 
         $user = $this->createMock(User::class);
-        $user->expects($this->once())->method('getId')->willReturn($testData['userId']);
-
-        $event = $this->createMock(PasswordResetConfirmedEvent::class);
+        $user->method('getId')->willReturn($testData['userId']);
 
         return [
             'passwordResetToken' => $passwordResetToken,
             'user' => $user,
-            'event' => $event,
         ];
     }
 
     /**
-     * @param array<string, string|Uuid> $testData
-     * @param array<string, PasswordResetTokenInterface|User|PasswordResetConfirmedEvent> $mocks
+     * @param array<string, string> $testData
+     * @param array<string, PasswordResetTokenInterface|User> $mocks
      */
     private function setupConfirmPasswordResetExpectations(array $testData, array $mocks): void
     {
@@ -284,7 +270,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @param array<string, string|Uuid> $testData
+     * @param array<string, string> $testData
      */
     private function setupUserUpdateExpectations(array $testData, User $user): void
     {
@@ -303,8 +289,8 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @param array<string, string|Uuid> $testData
-     * @param array<string, PasswordResetTokenInterface|User|PasswordResetConfirmedEvent> $mocks
+     * @param array<string, string> $testData
+     * @param array<string, PasswordResetTokenInterface|User> $mocks
      */
     private function setupEventPublishingExpectations(array $testData, array $mocks): void
     {
@@ -312,15 +298,8 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             ->method('save')
             ->with($mocks['passwordResetToken']);
 
-        $this->uuidFactory->expects($this->once())
-            ->method('create')
-            ->willReturn($testData['eventId']);
-
-        $this->eventFactory->expects($this->once())
-            ->method('create')
-            ->with($testData['userId'], (string) $testData['eventId'])
-            ->willReturn($mocks['event']);
-
-        $this->eventBus->expects($this->once())->method('publish')->with($mocks['event']);
+        $this->publisher->expects($this->once())
+            ->method('publish')
+            ->with($mocks['user']);
     }
 }

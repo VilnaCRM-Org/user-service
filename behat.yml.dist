@@ -15,7 +15,6 @@ default:
                 - App\Tests\Behat\HealthCheckContext\HealthCheckContext
                 - App\Tests\Behat\UserContext\UserOperationsContext
 
-
     extensions:
         DAMA\DoctrineTestBundle\Behat\ServiceContainer\DoctrineExtension: ~
         FriendsOfBehat\SymfonyExtension:

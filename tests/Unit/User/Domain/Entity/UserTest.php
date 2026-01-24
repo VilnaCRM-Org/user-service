@@ -10,6 +10,7 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
@@ -89,7 +90,7 @@ final class UserTest extends UnitTestCase
         $this->userConfirmedEventFactory->expects($this->once())
             ->method('create')
             ->with($token, $eventID)
-            ->willReturn(new UserConfirmedEvent($token, $eventID));
+            ->willReturn(new UserConfirmedEvent($token->getTokenValue(), $eventID));
 
         $confirmedEvent = $this->user->confirm(
             $token,
@@ -106,14 +107,12 @@ final class UserTest extends UnitTestCase
 
     public function testUpdate(): void
     {
-        $updateData = new UserUpdate(
-            $this->faker->email(),
-            $this->faker->password(),
-            $this->faker->password(),
-            $this->faker->name()
-        );
+        $oldEmail = $this->user->getEmail();
+        $updateData = $this->createUpdateData();
         $hashedNewPassword = $this->faker->password();
         $eventID = $this->faker->uuid();
+
+        $expectedEvent = $this->setupEmailChangedEventFactoryMock($oldEmail, $eventID);
 
         $events = $this->user->update(
             $updateData,
@@ -123,11 +122,7 @@ final class UserTest extends UnitTestCase
             $this->passwordChangedEventFactory
         );
 
-        $this->testUpdateMakeAssertions(
-            $events,
-            $updateData,
-            $hashedNewPassword
-        );
+        $this->testUpdateMakeAssertions($events, $updateData, $hashedNewPassword, $expectedEvent);
     }
 
     public function testSetId(): void
@@ -195,15 +190,44 @@ final class UserTest extends UnitTestCase
     private function testUpdateMakeAssertions(
         array $events,
         UserUpdate $updateData,
-        string $hashedNewPassword
+        string $hashedNewPassword,
+        EmailChangedEvent $expectedEmailChangedEvent
     ): void {
         $this->assertIsArray($events);
         $this->assertNotEmpty($events);
+        $this->assertContains(
+            $expectedEmailChangedEvent,
+            $events,
+            'EmailChangedEvent should be present in the events array'
+        );
         $this->assertEquals($updateData->newEmail, $this->user->getEmail());
         $this->assertEquals(
             $updateData->newInitials,
             $this->user->getInitials()
         );
         $this->assertEquals($hashedNewPassword, $this->user->getPassword());
+    }
+
+    private function createUpdateData(): UserUpdate
+    {
+        return new UserUpdate(
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->faker->password()
+        );
+    }
+
+    private function setupEmailChangedEventFactoryMock(
+        string $oldEmail,
+        string $eventID
+    ): EmailChangedEvent {
+        $expectedEvent = $this->createMock(EmailChangedEvent::class);
+        $this->emailChangedEventFactory->expects($this->once())
+            ->method('create')
+            ->with($this->user, $oldEmail, $eventID)
+            ->willReturn($expectedEvent);
+
+        return $expectedEvent;
     }
 }

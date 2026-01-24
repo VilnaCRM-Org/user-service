@@ -12,8 +12,10 @@ use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Behat\Behat\Context\Context;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Faker\Factory;
 use Faker\Generator;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
@@ -40,8 +42,17 @@ final class UserContext implements Context
         private UuidFactory $uuidFactory,
         private PasswordResetTokenRepositoryInterface $passwordResetTokenRepository,
         private PasswordResetTokenFactoryInterface $passwordResetTokenFactory,
+        private CacheItemPoolInterface $cachePool,
     ) {
         $this->faker = Factory::create();
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function clearCacheBeforeScenario(BeforeScenarioScope $scope): void
+    {
+        $this->cachePool->clear();
     }
 
     /**

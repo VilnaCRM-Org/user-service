@@ -30,7 +30,6 @@ final class ConfirmationTokenTest extends UnitTestCase
     public function testSend(): void
     {
         $this->confirmationToken->send();
-        $this->confirmationToken->send();
         $this->expectException(UserTimedOutException::class);
         $this->confirmationToken->send();
     }
@@ -67,6 +66,49 @@ final class ConfirmationTokenTest extends UnitTestCase
         $this->assertEquals($userId, $this->confirmationToken->getUserID());
     }
 
+    public function testSendIncrementsTimesSent(): void
+    {
+        $this->assertEquals(0, $this->confirmationToken->getTimesSent());
+        $this->confirmationToken->send();
+        $this->assertEquals(1, $this->confirmationToken->getTimesSent());
+    }
+
+    public function testSendSetsAllowedToSendAfterInFuture(): void
+    {
+        $beforeSend = new \DateTimeImmutable();
+        $this->confirmationToken->send();
+
+        $allowedToSendAfter = $this->confirmationToken->getAllowedToSendAfter();
+
+        $this->assertGreaterThan(
+            $beforeSend,
+            $allowedToSendAfter,
+            'allowedToSendAfter should be in the future after first send'
+        );
+        $this->assertGreaterThanOrEqual(
+            $beforeSend->modify('+1 minute'),
+            $allowedToSendAfter,
+            'allowedToSendAfter should be at least 1 minute after send time'
+        );
+    }
+
+    public function testSendBeyondDefinedRateLimitsUsesNoDelay(): void
+    {
+        $this->confirmationToken->setTimesSent(10);
+        $beforeSend = new \DateTimeImmutable();
+        $this->confirmationToken->setAllowedToSendAfter(
+            new \DateTimeImmutable('1970-01-01')
+        );
+
+        $this->confirmationToken->send($beforeSend);
+
+        $this->assertEquals(
+            $beforeSend,
+            $this->confirmationToken->getAllowedToSendAfter(),
+            'When beyond defined rate limits, no delay should be added'
+        );
+    }
+
     public function testSetAllowedToSendAfter(): void
     {
         $allowedToSendAfter = new \DateTimeImmutable();
@@ -78,19 +120,19 @@ final class ConfirmationTokenTest extends UnitTestCase
         );
     }
 
-    public function testFirstSendWithTimesZeroDefaultsToZeroMinutes(): void
+    public function testFirstSendWithTimesZeroDefaultsToOneMinute(): void
     {
         $sendAt = new \DateTimeImmutable('2024-01-01 12:00:00');
 
-        // timesSent = 0, lookup key 0 => not found => defaults to 0 minutes
+        // timesSent = 0, lookup key 0 => 1 minute
         $this->confirmationToken->setTimesSent(0);
         $this->confirmationToken->setAllowedToSendAfter(new \DateTimeImmutable(
             '2024-01-01 11:00:00'
         ));
         $this->confirmationToken->send($sendAt);
 
-        // Should be allowed immediately (0 minutes)
-        $expected = new \DateTimeImmutable('2024-01-01 12:00:00');
+        // Should wait 1 minute
+        $expected = new \DateTimeImmutable('2024-01-01 12:01:00');
         $this->assertEquals($expected, $this->confirmationToken->getAllowedToSendAfter());
     }
 
@@ -182,27 +224,15 @@ final class ConfirmationTokenTest extends UnitTestCase
         $reflection = new \ReflectionClass(ConfirmationToken::class);
         $constant = $reflection->getConstant('SEND_EMAIL_ATTEMPTS_TIME_IN_MINUTES');
 
-        // Verify exact configuration
+        $expected = [0 => 1, 1 => 1, 2 => 3, 3 => 4, 4 => 1440];
+
         $this->assertIsArray($constant);
-        $this->assertCount(4, $constant);
+        $this->assertCount(5, $constant);
+        $this->assertSame($expected, $constant);
 
-        // Verify exact keys and values
-        $this->assertArrayHasKey(1, $constant);
-        $this->assertArrayHasKey(2, $constant);
-        $this->assertArrayHasKey(3, $constant);
-        $this->assertArrayHasKey(4, $constant);
-
-        $this->assertSame(1, $constant[1]);
-        $this->assertSame(3, $constant[2]);
-        $this->assertSame(4, $constant[3]);
-        $this->assertSame(1440, $constant[4]);
-
-        // Verify complete array equality
-        $this->assertSame([
-            1 => 1,
-            2 => 3,
-            3 => 4,
-            4 => 1440,
-        ], $constant);
+        // Verify all expected keys exist
+        foreach (array_keys($expected) as $key) {
+            $this->assertArrayHasKey($key, $constant);
+        }
     }
 }
