@@ -141,9 +141,10 @@ tests-with-coverage: ## Run tests with coverage
 
 setup-test-db: ## Create database for testing purposes
 	$(SYMFONY_TEST_ENV) c:c
-	$(SYMFONY_TEST_ENV) doctrine:database:drop --force --if-exists
-	$(SYMFONY_TEST_ENV) doctrine:database:create
-	$(SYMFONY_TEST_ENV) doctrine:migrations:migrate --no-interaction
+	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop || true
+	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:create
+	$(SYMFONY_TEST_ENV) doctrine:schema:drop --force --full-database || true
+	$(SYMFONY_TEST_ENV) doctrine:schema:create
 
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 

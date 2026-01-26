@@ -40,3 +40,6 @@ api_platform:
 
   oauth:
     enabled: false
+
+  # Disable Doctrine ORM support (using MongoDB ODM only)
+  doctrine: false

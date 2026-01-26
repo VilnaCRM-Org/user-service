@@ -61,13 +61,12 @@ league_oauth2_server:
   # Configures different persistence methods that can be used by the bundle for saving client and token data.
   # Only one persistence method can be configured at a time.
   persistence: # Required
-    doctrine:
-      # Name of the entity manager that you wish to use for managing clients and tokens.
-      entity_manager: default
-
-      # Table name prefix.
-      table_prefix: oauth2_
-    # in_memory:            ~
+    custom:
+      client_manager: App\OAuth\Infrastructure\Manager\ClientManager
+      access_token_manager: App\OAuth\Infrastructure\Manager\AccessTokenManager
+      refresh_token_manager: App\OAuth\Infrastructure\Manager\RefreshTokenManager
+      authorization_code_manager: App\OAuth\Infrastructure\Manager\AuthorizationCodeManager
+      credentials_revoker: App\OAuth\Infrastructure\Service\CredentialsRevoker
 
   # Set a custom prefix that replaces the default 'ROLE_OAUTH2_' role prefix
   role_prefix: ROLE_OAUTH2_

@@ -17,7 +17,6 @@ default:
 
 
     extensions:
-        DAMA\DoctrineTestBundle\Behat\ServiceContainer\DoctrineExtension: ~
         FriendsOfBehat\SymfonyExtension:
             bootstrap: 'tests/bootstrap.php'
             kernel:

@@ -22,7 +22,8 @@ final class MongoDBDomainUuidTypeTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->domainUuidType = new DomainUuidType();
+        $reflection = new \ReflectionClass(DomainUuidType::class);
+        $this->domainUuidType = $reflection->newInstanceWithoutConstructor();
         $this->symfonyUuidFactory = new UuidFactory();
         $this->transformer = new UuidTransformer(new UuidFactoryInterface());
     }
@@ -53,6 +54,26 @@ final class MongoDBDomainUuidTypeTest extends UnitTestCase
         $dbValue = $this->domainUuidType->convertToDatabaseValue(null);
 
         $this->assertNull($dbValue);
+    }
+
+    public function testConvertToDatabaseValueWithOtherType(): void
+    {
+        $uuidString = $this->faker->uuid();
+        $objectWithToString = new class($uuidString) {
+            public function __construct(private string $uuid)
+            {
+            }
+
+            public function __toString(): string
+            {
+                return $this->uuid;
+            }
+        };
+
+        $dbValue = $this->domainUuidType->convertToDatabaseValue($objectWithToString);
+
+        $this->assertIsString($dbValue);
+        $this->assertSame($uuidString, $dbValue);
     }
 
     public function testConvertToPHPValueWithString(): void

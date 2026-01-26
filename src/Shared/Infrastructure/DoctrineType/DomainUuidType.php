@@ -29,7 +29,7 @@ final class DomainUuidType extends Type
             return $value;
         }
 
-        return (string) new Uuid($value);
+        return (string) new Uuid((string) $value);
     }
 
     public function convertToPHPValue(mixed $value): ?Uuid

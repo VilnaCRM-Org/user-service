@@ -34,6 +34,8 @@
         </include>
         <exclude>
             <directory>src/DataFixtures</directory>
+            <file>src/User/Infrastructure/Repository/MongoDBUserRepository.php</file>
+            <file>src/User/Infrastructure/Repository/MongoDBPasswordResetTokenRepository.php</file>
         </exclude>
     </source>
 </phpunit>

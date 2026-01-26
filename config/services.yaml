@@ -173,3 +173,19 @@ services:
         credentials:
           key: '%env(AWS_SQS_KEY)%'
           secret: '%env(AWS_SQS_SECRET)%'
+
+  # OAuth ODM Persistence Managers
+  League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface:
+    alias: App\OAuth\Infrastructure\Manager\ClientManager
+
+  League\Bundle\OAuth2ServerBundle\Manager\AccessTokenManagerInterface:
+    alias: App\OAuth\Infrastructure\Manager\AccessTokenManager
+
+  League\Bundle\OAuth2ServerBundle\Manager\RefreshTokenManagerInterface:
+    alias: App\OAuth\Infrastructure\Manager\RefreshTokenManager
+
+  League\Bundle\OAuth2ServerBundle\Manager\AuthorizationCodeManagerInterface:
+    alias: App\OAuth\Infrastructure\Manager\AuthorizationCodeManager
+
+  League\Bundle\OAuth2ServerBundle\Service\CredentialsRevokerInterface:
+    alias: App\OAuth\Infrastructure\Service\CredentialsRevoker
