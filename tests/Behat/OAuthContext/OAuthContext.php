@@ -10,6 +10,7 @@ use App\Tests\Behat\OAuthContext\Input\ClientCredentialsGrantInput;
 use App\Tests\Behat\OAuthContext\Input\ObtainAccessTokenInput;
 use App\Tests\Behat\OAuthContext\Input\ObtainAuthorizeCodeInput;
 use App\Tests\Behat\OAuthContext\Input\PasswordGrantInput;
+use App\Tests\Behat\OAuthContext\Input\RefreshTokenGrantInput;
 use App\User\Application\DTO\AuthorizationUserDto;
 use Behat\Behat\Context\Context;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -36,6 +37,8 @@ final class OAuthContext implements Context
     private string $authCode;
     private ?string $clientId = null;
     private ?string $clientSecret = null;
+    private ?string $refreshToken = null;
+    private ?string $username = null;
 
     public function __construct(
         private readonly KernelInterface $kernel,
@@ -107,6 +110,19 @@ final class OAuthContext implements Context
     }
 
     /**
+     * @Given passing client id :id, client secret :secret and email :email
+     */
+    public function passingIdSecretAndEmail(
+        string $id,
+        string $secret,
+        string $email
+    ): void {
+        $this->clientId = $id;
+        $this->clientSecret = $secret;
+        $this->username = $email;
+    }
+
+    /**
      * @Given client with id :id, secret :secret and redirect uri :uri exists
      */
     public function clientExists(string $id, string $secret, string $uri): void
@@ -115,6 +131,54 @@ final class OAuthContext implements Context
         $client->setRedirectUris(new RedirectUri($uri));
         $this->documentManager->persist($client);
         $this->documentManager->flush();
+    }
+
+    /**
+     * @Given public client with id :id and redirect uri :uri exists
+     */
+    public function publicClientExists(string $id, string $uri): void
+    {
+        $client = new Client($this->faker->name, $id, null);
+        $client->setRedirectUris(new RedirectUri($uri));
+        $this->documentManager->persist($client);
+        $this->documentManager->flush();
+    }
+
+    /**
+     * @Given using response type :responseType
+     */
+    public function usingResponseType(string $responseType): void
+    {
+        $this->obtainAuthorizeCodeInput->setResponseType($responseType);
+    }
+
+    /**
+     * @Given requesting scope :scope
+     */
+    public function requestingScope(string $scope): void
+    {
+        $this->obtainAuthorizeCodeInput->setScope($scope);
+    }
+
+    /**
+     * @Given using code challenge :codeChallenge
+     */
+    public function usingCodeChallenge(string $codeChallenge): void
+    {
+        $this->obtainAuthorizeCodeInput->setCodeChallenge($codeChallenge);
+    }
+
+    /**
+     * @Given using code challenge :codeChallenge and method :method
+     */
+    public function usingCodeChallengeWithMethod(
+        string $codeChallenge,
+        string $method
+    ): void {
+        $this->obtainAuthorizeCodeInput->setCodeChallenge(
+            $codeChallenge,
+            $method
+        );
     }
 
     /**
@@ -132,12 +196,73 @@ final class OAuthContext implements Context
     }
 
     /**
+     * @Given passing client id :id, client secret :secret, redirect_uri :uri and auth code :code
+     */
+    public function passingIdSecretUriAndCustomAuthCode(
+        string $id,
+        string $secret,
+        string $uri,
+        string $code
+    ): void {
+        $this->authCode = $code;
+        $this->clientId = $id;
+        $this->clientSecret = $secret;
+        $this->obtainAccessTokenInput = new AuthorizationCodeGrantInput(
+            $id,
+            $secret,
+            $uri,
+            $this->authCode
+        );
+    }
+
+    /**
+     * @Given passing client id :id, client secret :secret and refresh token
+     */
+    public function passingIdSecretAndRefreshToken(
+        string $id,
+        string $secret
+    ): void {
+        $this->clientId = $id;
+        $this->clientSecret = $secret;
+        $this->obtainAccessTokenInput = new RefreshTokenGrantInput(
+            $id,
+            $secret,
+            $this->refreshToken ?? ''
+        );
+    }
+
+    /**
+     * @Given passing client id :id, client secret :secret and refresh token :token
+     */
+    public function passingIdSecretAndCustomRefreshToken(
+        string $id,
+        string $secret,
+        string $token
+    ): void {
+        $this->clientId = $id;
+        $this->clientSecret = $secret;
+        $this->obtainAccessTokenInput = new RefreshTokenGrantInput(
+            $id,
+            $secret,
+            $token
+        );
+    }
+
+    /**
      * @Given I request the authorization endpoint
      */
     public function requestAuthorizationEndpoint(): void
     {
         $this->approveAuthorization();
 
+        $this->sendAuthorizationRequest();
+    }
+
+    /**
+     * @When I request the authorization endpoint without approval
+     */
+    public function requestAuthorizationEndpointWithoutApproval(): void
+    {
         $this->sendAuthorizationRequest();
     }
 
@@ -162,6 +287,28 @@ final class OAuthContext implements Context
     }
 
     /**
+     * @When obtaining access token without grant type
+     */
+    public function obtainingAccessTokenWithoutGrantType(): void
+    {
+        $this->sendTokenRequest([
+            'client_id' => $this->clientId,
+            'client_secret' => $this->clientSecret,
+        ]);
+    }
+
+    /**
+     * @When obtaining access token with password grant without password
+     */
+    public function obtainingAccessTokenWithPasswordGrantWithoutPassword(): void
+    {
+        $this->sendTokenRequest([
+            'grant_type' => 'password',
+            'username' => $this->username,
+        ]);
+    }
+
+    /**
      * @Then access token should be provided
      */
     public function accessTokenShouldBeProvided(): void
@@ -178,6 +325,44 @@ final class OAuthContext implements Context
         Assert::assertGreaterThan(0, $data['expires_in']);
 
         Assert::assertArrayHasKey('access_token', $data);
+
+        if (array_key_exists('refresh_token', $data)) {
+            $this->refreshToken = $data['refresh_token'];
+        }
+    }
+
+    /**
+     * @Then implicit access token should be provided
+     */
+    public function implicitAccessTokenShouldBeProvided(): void
+    {
+        Assert::assertSame(
+            Response::HTTP_FOUND,
+            $this->response->getStatusCode()
+        );
+
+        $params = $this->getRedirectParams();
+
+        Assert::assertArrayHasKey('token_type', $params);
+        Assert::assertEquals('Bearer', $params['token_type']);
+
+        Assert::assertArrayHasKey('expires_in', $params);
+        Assert::assertGreaterThan(0, (int) $params['expires_in']);
+
+        Assert::assertArrayHasKey('access_token', $params);
+    }
+
+    /**
+     * @Then refresh token should be provided
+     */
+    public function refreshTokenShouldBeProvided(): void
+    {
+        $data = json_decode($this->response->getContent(), true);
+
+        Assert::assertSame(200, $this->response->getStatusCode());
+        Assert::assertArrayHasKey('refresh_token', $data);
+
+        $this->refreshToken = $data['refresh_token'];
     }
 
     /**
@@ -223,6 +408,140 @@ final class OAuthContext implements Context
             'Client authentication failed',
             $data['error_description']
         );
+    }
+
+    /**
+     * @Then invalid request error should be returned
+     */
+    public function invalidRequestError(): void
+    {
+        $data = json_decode($this->response->getContent(), true);
+
+        Assert::assertSame(
+            Response::HTTP_BAD_REQUEST,
+            $this->response->getStatusCode()
+        );
+
+        Assert::assertArrayHasKey('error', $data);
+        Assert::assertEquals('invalid_request', $data['error']);
+
+        Assert::assertArrayHasKey('error_description', $data);
+        Assert::assertEquals(
+            'The request is missing a required parameter, includes an invalid parameter value, ' .
+            'includes a parameter more than once, or is otherwise malformed.',
+            $data['error_description']
+        );
+    }
+
+    /**
+     * @Then invalid grant error should be returned
+     */
+    public function invalidGrantErrorShouldBeReturned(): void
+    {
+        $data = json_decode($this->response->getContent(), true);
+
+        Assert::assertSame(
+            Response::HTTP_BAD_REQUEST,
+            $this->response->getStatusCode()
+        );
+
+        Assert::assertArrayHasKey('error', $data);
+        Assert::assertEquals('invalid_grant', $data['error']);
+
+        Assert::assertArrayHasKey('error_description', $data);
+        Assert::assertEquals(
+            'The provided authorization grant (e.g., authorization code, resource owner credentials) or refresh token ' .
+            'is invalid, expired, revoked, does not match the redirection URI used in the authorization request, ' .
+            'or was issued to another client.',
+            $data['error_description']
+        );
+    }
+
+    /**
+     * @Then invalid user credentials error should be returned
+     */
+    public function invalidUserCredentialsErrorShouldBeReturned(): void
+    {
+        $data = json_decode($this->response->getContent(), true);
+
+        Assert::assertSame(
+            Response::HTTP_BAD_REQUEST,
+            $this->response->getStatusCode()
+        );
+
+        Assert::assertArrayHasKey('error', $data);
+        Assert::assertEquals('invalid_grant', $data['error']);
+
+        Assert::assertArrayHasKey('error_description', $data);
+        Assert::assertEquals(
+            'The user credentials were incorrect.',
+            $data['error_description']
+        );
+    }
+
+    /**
+     * @Then invalid refresh token error should be returned
+     */
+    public function invalidRefreshTokenErrorShouldBeReturned(): void
+    {
+        $data = json_decode($this->response->getContent(), true);
+
+        Assert::assertSame(
+            Response::HTTP_BAD_REQUEST,
+            $this->response->getStatusCode()
+        );
+
+        Assert::assertArrayHasKey('error', $data);
+        Assert::assertEquals('invalid_grant', $data['error']);
+
+        Assert::assertArrayHasKey('error_description', $data);
+        Assert::assertEquals(
+            'The refresh token is invalid.',
+            $data['error_description']
+        );
+    }
+
+    /**
+     * @Then invalid scope error should be returned
+     */
+    public function invalidScopeErrorShouldBeReturned(): void
+    {
+        $data = json_decode($this->response->getContent(), true);
+
+        Assert::assertSame(
+            Response::HTTP_BAD_REQUEST,
+            $this->response->getStatusCode()
+        );
+
+        Assert::assertArrayHasKey('error', $data);
+        Assert::assertEquals('invalid_scope', $data['error']);
+
+        Assert::assertArrayHasKey('error_description', $data);
+        Assert::assertEquals(
+            'The requested scope is invalid, unknown, or malformed',
+            $data['error_description']
+        );
+    }
+
+    /**
+     * @Then authorization redirect error :error with description :description should be returned
+     */
+    public function authorizationRedirectErrorShouldBeReturned(
+        string $error,
+        string $description
+    ): void {
+        Assert::assertSame(
+            Response::HTTP_FOUND,
+            $this->response->getStatusCode()
+        );
+
+        $params = $this->getRedirectParams();
+
+        Assert::assertArrayHasKey('error', $params);
+        Assert::assertEquals($error, $params['error']);
+
+        Assert::assertArrayHasKey('error_description', $params);
+        Assert::assertEquals($description, $params['error_description']);
     }
 
     /**
@@ -298,6 +617,33 @@ final class OAuthContext implements Context
         ));
     }
 
+    private function sendTokenRequest(array $payload): void
+    {
+        $this->response = $this->kernel->handle(Request::create(
+            '/api/oauth/token',
+            'POST',
+            [],
+            [],
+            [],
+            $this->buildRequestHeaders(),
+            json_encode($payload)
+        ));
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function getRedirectParams(): array
+    {
+        $location = (string) $this->response->headers->get('location');
+        $fragment = parse_url($location, PHP_URL_FRAGMENT);
+        $query = parse_url($location, PHP_URL_QUERY);
+        $params = $fragment ?? $query ?? '';
+        parse_str($params, $parsed);
+
+        return $parsed;
+    }
+
     /**
      * @return array<string, string>
      */
@@ -310,8 +656,8 @@ final class OAuthContext implements Context
 
         if ($this->clientId !== null && $this->clientSecret !== null) {
             $headers['HTTP_AUTHORIZATION'] = 'Basic ' . base64_encode(
-                $this->clientId . ':' . $this->clientSecret
-            );
+                    $this->clientId . ':' . $this->clientSecret
+                );
         }
 
         return $headers;
