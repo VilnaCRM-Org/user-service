@@ -1,45 +1,45 @@
-# [0.7.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.6.0...v0.7.0) (2026-01-24)
+# [1.10.0](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.9.0...v1.10.0) (2025-07-10)
 
 
 ### Features
 
-* add cache-management Skill Production-Grade Caching with Policies, Invalidation & Testing ([#236](https://github.com/VilnaCRM-Org/user-service/issues/236)) ([9cf4450](https://github.com/VilnaCRM-Org/user-service/commit/9cf445050f25a91ce62e3a306da8bc141e4cf05d))
+* **deps:** bump the all-deps group across 1 directory with 15 updates ([#149](https://github.com/VilnaCRM-Org/php-service-template/issues/149)) ([3cb2b30](https://github.com/VilnaCRM-Org/php-service-template/commit/3cb2b306cf307fb80dbb1557aa337949d5629212))
 
 
 
-# [0.6.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.5.0...v0.6.0) (2026-01-22)
-
-
-### Features
-
-* add observability metrics and AWS EMF integration ([#240](https://github.com/VilnaCRM-Org/user-service/issues/240)) ([9a95f49](https://github.com/VilnaCRM-Org/user-service/commit/9a95f490380ad7d2f5d8bdfe4ebd6ae6a0505604))
-
-
-
-# [0.5.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.4.0...v0.5.0) (2026-01-18)
+# [1.9.0](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.8.1...v1.9.0) (2025-07-08)
 
 
 ### Features
 
-* add openapi development skill  ([#235](https://github.com/VilnaCRM-Org/user-service/issues/235)) ([ec4c922](https://github.com/VilnaCRM-Org/user-service/commit/ec4c922f8adb72899a1c702455887e55ac40a6a7))
+* **deps:** bump brace-expansion from 1.1.11 to 1.1.12 in /tests/Load in the npm_and_yarn group ([#143](https://github.com/VilnaCRM-Org/php-service-template/issues/143)) ([39338b8](https://github.com/VilnaCRM-Org/php-service-template/commit/39338b889b5a638eecb0df7dac6abf42e8b2cfd2))
 
 
 
-# [0.4.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.3.0...v0.4.0) (2026-01-14)
+## [1.8.1](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.8.0...v1.8.1) (2025-07-07)
+
+
+### Bug Fixes
+
+* **#146:** Update dependabot.yml ([#146](https://github.com/VilnaCRM-Org/php-service-template/issues/146)) ([4eaf3e7](https://github.com/VilnaCRM-Org/php-service-template/commit/4eaf3e7a4d56758db04368703095660733893ab9))
+
+
+
+# [1.8.0](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.7.0...v1.8.0) (2025-07-02)
 
 
 ### Features
 
-* add Query Performance Analysis skill with examples and documentation updates ([#233](https://github.com/VilnaCRM-Org/user-service/issues/233)) ([4c6ab14](https://github.com/VilnaCRM-Org/user-service/commit/4c6ab144ee474f0a1cba59f2a2914752d44c6fa2))
+* **#135:** add rector php ([#135](https://github.com/VilnaCRM-Org/php-service-template/issues/135)) ([10c34b4](https://github.com/VilnaCRM-Org/php-service-template/commit/10c34b4be0c8cda8cf3c4eadf84c172bfa5abc21)), closes [#126](https://github.com/VilnaCRM-Org/php-service-template/issues/126)
 
 
 
-# [0.3.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.2.0...v0.3.0) (2026-01-13)
+# [1.7.0](https://github.com/VilnaCRM-Org/php-service-template/compare/v1.6.1...v1.7.0) (2025-05-26)
 
 
 ### Features
 
-* add structurizr-architecture-sync skill ([#234](https://github.com/VilnaCRM-Org/user-service/issues/234)) ([e16d043](https://github.com/VilnaCRM-Org/user-service/commit/e16d043ab98414aa89d97fb594662b519a6795e8))
+* **deps:** bump the all-deps group across 1 directory with 11 updates ([#136](https://github.com/VilnaCRM-Org/php-service-template/issues/136)) ([9e631ee](https://github.com/VilnaCRM-Org/php-service-template/commit/9e631ee0732cfd6cfe9cccc5d546fe3d929b10aa))
 
 
 
