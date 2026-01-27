@@ -67,7 +67,7 @@ final class HealthCheckContext implements Context
             }
 
             #[\Override]
-            public function selectDatabase(string $databaseName, array $options = [])
+            public function selectDatabase(string $databaseName, array $options = []): void
             {
                 throw new \RuntimeException('Database is not available');
             }

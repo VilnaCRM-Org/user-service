@@ -29,6 +29,9 @@ final class OAuth2RedirectUriType extends Type
         return $this->normalizeToStrings($value);
     }
 
+    /**
+     * @return array<int, RedirectUri>
+     */
     #[\Override]
     public function convertToPHPValue(mixed $value): array
     {

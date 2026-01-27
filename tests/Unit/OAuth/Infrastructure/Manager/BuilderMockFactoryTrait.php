@@ -17,56 +17,56 @@ trait BuilderMockFactoryTrait
         $builder = $this->createMock(Builder::class);
         $currentField = null;
 
-        $builder->method('field')->willReturnCallback(function (string $field) use (&$currentField, $builder, &$captures): Builder {
+        $builder->method('field')->willReturnCallback(static function (string $field) use (&$currentField, $builder, &$captures): Builder {
             $currentField = $field;
             $captures['fields'][] = $field;
 
             return $builder;
         });
 
-        $builder->method('all')->willReturnCallback(function (array $values) use (&$currentField, $builder, &$captures): Builder {
+        $builder->method('all')->willReturnCallback(static function (array $values) use (&$currentField, $builder, &$captures): Builder {
             $captures['all'][$currentField] = $values;
 
             return $builder;
         });
 
-        $builder->method('equals')->willReturnCallback(function (mixed $value) use (&$currentField, $builder, &$captures): Builder {
+        $builder->method('equals')->willReturnCallback(static function (mixed $value) use (&$currentField, $builder, &$captures): Builder {
             $captures['equals'][$currentField] = $value;
 
             return $builder;
         });
 
-        $builder->method('in')->willReturnCallback(function (array $values) use (&$currentField, $builder, &$captures): Builder {
+        $builder->method('in')->willReturnCallback(static function (array $values) use (&$currentField, $builder, &$captures): Builder {
             $captures['in'][$currentField] = $values;
 
             return $builder;
         });
 
-        $builder->method('set')->willReturnCallback(function (mixed $value) use (&$currentField, $builder, &$captures): Builder {
+        $builder->method('set')->willReturnCallback(static function (mixed $value) use (&$currentField, $builder, &$captures): Builder {
             $captures['set'][$currentField] = $value;
 
             return $builder;
         });
 
-        $builder->method('lt')->willReturnCallback(function (mixed $value) use (&$currentField, $builder, &$captures): Builder {
+        $builder->method('lt')->willReturnCallback(static function (mixed $value) use (&$currentField, $builder, &$captures): Builder {
             $captures['lt'][$currentField] = $value;
 
             return $builder;
         });
 
-        $builder->method('references')->willReturnCallback(function (object $document) use (&$currentField, $builder, &$captures): Builder {
+        $builder->method('references')->willReturnCallback(static function (object $document) use (&$currentField, $builder, &$captures): Builder {
             $captures['references'][$currentField] = $document;
 
             return $builder;
         });
 
-        $builder->method('updateMany')->willReturnCallback(function () use ($builder, &$captures): Builder {
+        $builder->method('updateMany')->willReturnCallback(static function () use ($builder, &$captures): Builder {
             $captures['updateMany'] = true;
 
             return $builder;
         });
 
-        $builder->method('remove')->willReturnCallback(function () use ($builder, &$captures): Builder {
+        $builder->method('remove')->willReturnCallback(static function () use ($builder, &$captures): Builder {
             $captures['remove'] = true;
 
             return $builder;

@@ -15,6 +15,9 @@ final class OAuth2ScopeType extends Type
 
     public const NAME = 'oauth2_scope';
 
+    /**
+     * @return array<int, string>|null
+     */
     #[\Override]
     public function convertToDatabaseValue(mixed $value): ?array
     {
@@ -29,6 +32,9 @@ final class OAuth2ScopeType extends Type
         return $this->normalizeToStrings($value);
     }
 
+    /**
+     * @return array<int, Scope>
+     */
     #[\Override]
     public function convertToPHPValue(mixed $value): array
     {

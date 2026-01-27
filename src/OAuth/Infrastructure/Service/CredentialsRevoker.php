@@ -113,6 +113,9 @@ final class CredentialsRevoker implements CredentialsRevokerInterface
         $this->revokeRefreshTokensByAccessTokens($accessTokens);
     }
 
+    /**
+     * @param iterable<AccessToken> $accessTokens
+     */
     private function revokeRefreshTokensByAccessTokens(iterable $accessTokens): void
     {
         $accessTokenIds = [];

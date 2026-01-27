@@ -110,7 +110,7 @@ final class AccessTokenManagerTest extends UnitTestCase
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->exactly(3))
             ->method('createQueryBuilder')
-            ->willReturnCallback(function (?string $documentName = null) use (&$builders, &$calls): \Doctrine\ODM\MongoDB\Query\Builder|null {
+            ->willReturnCallback(static function (?string $documentName = null) use (&$builders, &$calls): \Doctrine\ODM\MongoDB\Query\Builder|null {
                 $calls[] = $documentName;
 
                 return array_shift($builders);

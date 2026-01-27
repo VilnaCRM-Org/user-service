@@ -461,7 +461,7 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     }
 
     /**
-     * @return (DocumentManager|InMemoryConfirmationTokenRepository|InMemoryPasswordResetTokenRepository|InMemoryUserRepository|RecordingAuthorizationCodeManager|RecordingClientManager|SchemathesisUserSeeder)[]
+     * @return array<DocumentManager|InMemoryConfirmationTokenRepository|InMemoryPasswordResetTokenRepository|InMemoryUserRepository|RecordingAuthorizationCodeManager|RecordingClientManager|SchemathesisUserSeeder>
      *
      * @psalm-return array{clientManager: RecordingClientManager, documentManager: DocumentManager, tokenRepository: InMemoryConfirmationTokenRepository, passwordResetTokenRepository: InMemoryPasswordResetTokenRepository, userSeeder: SchemathesisUserSeeder, userRepository: InMemoryUserRepository, authorizationCodeManager: RecordingAuthorizationCodeManager}
      */

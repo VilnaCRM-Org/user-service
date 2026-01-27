@@ -46,9 +46,7 @@ final class RefreshTokenManager implements RefreshTokenManagerInterface
     }
 
     /**
-     * @param array|int|null|object $result
-     *
-     * @psalm-param array<string, mixed>|int|null|object $result
+     * @psalm-param array<string, mixed>|int|object|null $result
      */
     private function deletedCount(array|object|int|null $result): int
     {

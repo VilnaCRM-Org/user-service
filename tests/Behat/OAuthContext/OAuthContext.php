@@ -16,10 +16,8 @@ use Behat\Behat\Context\Context;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Faker\Factory;
 use Faker\Generator;
-use League\Bundle\OAuth2ServerBundle\Event\AuthorizationRequestResolveEvent;
 use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
 use League\Bundle\OAuth2ServerBundle\Model\Client;
-use League\Bundle\OAuth2ServerBundle\OAuth2Events;
 use League\Bundle\OAuth2ServerBundle\ValueObject\RedirectUri;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,6 +32,7 @@ final class OAuthContext implements Context
     private Generator $faker;
     private ObtainAccessTokenInput $obtainAccessTokenInput;
     private ObtainAuthorizeCodeInput $obtainAuthorizeCodeInput;
+    private OAuthRequestHelper $requestHelper;
 
     private string $authCode;
     private ?string $clientId = null;
@@ -51,6 +50,7 @@ final class OAuthContext implements Context
         private ClientManagerInterface $clientManager
     ) {
         $this->faker = Factory::create();
+        $this->requestHelper = new OAuthRequestHelper($kernel, $serializer);
     }
 
     /**
@@ -205,9 +205,11 @@ final class OAuthContext implements Context
      */
     public function obtainAuthCode(): void
     {
-        $this->approveAuthorization();
+        $this->requestHelper->approveAuthorization();
 
-        $this->sendAuthorizationRequest();
+        $this->response = $this->requestHelper->sendAuthorizationRequest(
+            $this->obtainAuthorizeCodeInput
+        );
 
         $this->authCode = Request::create(
             $this->response->headers->get('location')
@@ -316,9 +318,11 @@ final class OAuthContext implements Context
      */
     public function requestAuthorizationEndpoint(): void
     {
-        $this->approveAuthorization();
+        $this->requestHelper->approveAuthorization();
 
-        $this->sendAuthorizationRequest();
+        $this->response = $this->requestHelper->sendAuthorizationRequest(
+            $this->obtainAuthorizeCodeInput
+        );
     }
 
     /**
@@ -326,7 +330,9 @@ final class OAuthContext implements Context
      */
     public function requestAuthorizationEndpointWithoutApproval(): void
     {
-        $this->sendAuthorizationRequest();
+        $this->response = $this->requestHelper->sendAuthorizationRequest(
+            $this->obtainAuthorizeCodeInput
+        );
     }
 
     /**
@@ -335,18 +341,11 @@ final class OAuthContext implements Context
     public function obtainingAccessToken(string $grantType): void
     {
         $this->obtainAccessTokenInput->grant_type = $grantType;
-        $this->response = $this->kernel->handle(Request::create(
-            '/api/oauth/token',
-            'POST',
-            [],
-            [],
-            [],
-            $this->buildRequestHeaders(),
-            $this->serializer->serialize(
-                $this->obtainAccessTokenInput,
-                'json'
-            )
-        ));
+        $this->response = $this->requestHelper->sendTokenRequest(
+            $this->obtainAccessTokenInput,
+            $this->clientId,
+            $this->clientSecret
+        );
     }
 
     /**
@@ -354,10 +353,14 @@ final class OAuthContext implements Context
      */
     public function obtainingAccessTokenWithoutGrantType(): void
     {
-        $this->sendTokenRequest([
-            'client_id' => $this->clientId,
-            'client_secret' => $this->clientSecret,
-        ]);
+        $this->response = $this->requestHelper->sendTokenRequestWithPayload(
+            [
+                'client_id' => $this->clientId,
+                'client_secret' => $this->clientSecret,
+            ],
+            $this->clientId,
+            $this->clientSecret
+        );
     }
 
     /**
@@ -365,10 +368,14 @@ final class OAuthContext implements Context
      */
     public function obtainingAccessTokenWithPasswordGrantWithoutPassword(): void
     {
-        $this->sendTokenRequest([
-            'grant_type' => 'password',
-            'username' => $this->username,
-        ]);
+        $this->response = $this->requestHelper->sendTokenRequestWithPayload(
+            [
+                'grant_type' => 'password',
+                'username' => $this->username,
+            ],
+            $this->clientId,
+            $this->clientSecret
+        );
     }
 
     /**
@@ -404,7 +411,7 @@ final class OAuthContext implements Context
             $this->response->getStatusCode()
         );
 
-        $params = $this->getRedirectParams();
+        $params = $this->requestHelper->getRedirectParams($this->response);
 
         Assert::assertArrayHasKey('token_type', $params);
         Assert::assertEquals('Bearer', $params['token_type']);
@@ -598,7 +605,7 @@ final class OAuthContext implements Context
             $this->response->getStatusCode()
         );
 
-        $params = $this->getRedirectParams();
+        $params = $this->requestHelper->getRedirectParams($this->response);
 
         Assert::assertArrayHasKey('error', $params);
         Assert::assertEquals($error, $params['error']);
@@ -650,79 +657,5 @@ final class OAuthContext implements Context
             'not supported by the authorization server.',
             $data['error_description']
         );
-    }
-
-    private function approveAuthorization(): void
-    {
-        $this->kernel->getContainer()->get('event_dispatcher')
-            ->addListener(
-                OAuth2Events::AUTHORIZATION_REQUEST_RESOLVE,
-                static function (AuthorizationRequestResolveEvent $event): void {
-                    $event->resolveAuthorization(
-                        AuthorizationRequestResolveEvent::AUTHORIZATION_APPROVED
-                    );
-                }
-            );
-    }
-
-    private function sendAuthorizationRequest(): void
-    {
-        $this->response = $this->kernel->handle(Request::create(
-            '/api/oauth/authorize?' .
-            $this->obtainAuthorizeCodeInput->toUriParams(),
-            'GET',
-            [],
-            [],
-            [],
-            ['HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-            ]
-        ));
-    }
-
-    private function sendTokenRequest(array $payload): void
-    {
-        $this->response = $this->kernel->handle(Request::create(
-            '/api/oauth/token',
-            'POST',
-            [],
-            [],
-            [],
-            $this->buildRequestHeaders(),
-            json_encode($payload)
-        ));
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function getRedirectParams(): array
-    {
-        $location = (string) $this->response->headers->get('location');
-        $fragment = parse_url($location, PHP_URL_FRAGMENT);
-        $query = parse_url($location, PHP_URL_QUERY);
-        $params = $fragment ?? $query ?? '';
-        parse_str($params, $parsed);
-
-        return $parsed;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function buildRequestHeaders(): array
-    {
-        $headers = [
-            'HTTP_ACCEPT' => 'application/json',
-            'CONTENT_TYPE' => 'application/json',
-        ];
-
-        if ($this->clientId !== null && $this->clientSecret !== null) {
-            $headers['HTTP_AUTHORIZATION'] = 'Basic ' . base64_encode(
-                $this->clientId . ':' . $this->clientSecret
-            );
-        }
-
-        return $headers;
     }
 }

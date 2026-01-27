@@ -50,7 +50,7 @@ final class BatchEmailCollector
     /**
      * @param array<int, array|object|string|int|float|bool|null> $entries
      *
-     * @return (bool|mixed|string[])[]
+     * @return array<bool|mixed|array<string>>
      *
      * @psalm-return array{0?: list<string>|mixed, 1?: bool|mixed,...}
      */
