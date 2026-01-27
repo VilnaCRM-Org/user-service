@@ -260,6 +260,25 @@ final class OAuthContext implements Context
     }
 
     /**
+     * @Given passing client id :id, redirect_uri :uri, auth code and wrong code verifier
+     */
+    public function passingIdUriAuthCodeAndWrongVerifier(
+        string $id,
+        string $uri
+    ): void {
+        $this->clientId = $id;
+        // Generate a different verifier than the one used for the challenge
+        $wrongVerifier = bin2hex(random_bytes(64));
+        $this->obtainAccessTokenInput = new AuthorizationCodeGrantInput(
+            $id,
+            '',
+            $uri,
+            $this->authCode,
+            $wrongVerifier
+        );
+    }
+
+    /**
      * @Given passing client id :id, client secret :secret and refresh token
      */
     public function passingIdSecretAndRefreshToken(

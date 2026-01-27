@@ -164,3 +164,13 @@ Feature: OAuth authorization
     Then access token should be provided
     When obtaining access token with "authorization_code" grant-type
     Then invalid grant error should be returned
+
+  Scenario: PKCE code verifier mismatch is rejected
+    Given public client with id "PkceMismatchId" and redirect uri "https://example.com" exists
+    And passing client id "PkceMismatchId" and redirect_uri "https://example.com"
+    And using PKCE with S256 method
+    And authenticating user with email "pkcemismatch@example.com" and password "password"
+    And obtaining auth code with PKCE
+    And passing client id "PkceMismatchId", redirect_uri "https://example.com", auth code and wrong code verifier
+    When obtaining access token with "authorization_code" grant-type
+    Then invalid grant error should be returned
