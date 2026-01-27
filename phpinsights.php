@@ -7,10 +7,8 @@ use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Strings\UnnecessaryStringConcatSniff;
-use SlevomatCodingStandard\Sniffs\Classes\ForbiddenPublicPropertySniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
-use SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\AlphabeticallySortedUsesSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\UseSpacingSniff;
@@ -60,11 +58,6 @@ return [
                 'src/Shared/Infrastructure/Bus/Command/InMemorySymfonyCommandBus',
                 'src/Shared/Infrastructure/Bus/Event/InMemorySymfonyEventBus',
                 'src/User/Domain/Entity/User',
-                // OAuth DTOs cannot be final - Doctrine ODM needs non-final classes for proxy generation
-                'src/OAuth/Domain/Entity/AccessTokenDocument',
-                'src/OAuth/Domain/Entity/AuthorizationCodeDocument',
-                'src/OAuth/Domain/Entity/ClientDocument',
-                'src/OAuth/Domain/Entity/RefreshTokenDocument',
                 'src/User/Domain/Entity/PasswordResetToken',
             ],
         ],
@@ -82,24 +75,6 @@ return [
                 'tests/Unit/Shared/Application/OpenApi/Factory/Response/OAuthRedirectResponseFactoryTest',
                 'tests/Unit/Shared/Application/OpenApi/Factory/Response/UnsupportedGrantTypeResponseFactoryTest',
                 'tests/Behat/OAuthContext/OAuthContext',
-            ],
-        ],
-        ForbiddenPublicPropertySniff::class => [
-            'exclude' => [
-                // OAuth DTOs must have public properties - Doctrine ODM PropertyAccessor requires public access
-                'src/OAuth/Domain/Entity/AccessTokenDocument',
-                'src/OAuth/Domain/Entity/AuthorizationCodeDocument',
-                'src/OAuth/Domain/Entity/ClientDocument',
-                'src/OAuth/Domain/Entity/RefreshTokenDocument',
-            ],
-        ],
-        FunctionLengthSniff::class => [
-            'exclude' => [
-                // DTO conversion methods legitimately exceed 20 lines due to value object conversions
-                'src/OAuth/Infrastructure/Manager/AccessTokenManager',
-                'src/OAuth/Infrastructure/Manager/AuthorizationCodeManager',
-                'src/OAuth/Infrastructure/Manager/ClientManager',
-                'src/OAuth/Infrastructure/Service/CredentialsRevoker',
             ],
         ],
     ],

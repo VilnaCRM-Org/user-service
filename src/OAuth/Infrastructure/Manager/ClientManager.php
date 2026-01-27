@@ -56,33 +56,57 @@ final class ClientManager implements ClientManagerInterface
         $queryBuilder = $this->documentManager->createQueryBuilder(Client::class);
 
         if ($clientFilter !== null && $clientFilter->hasFilters()) {
-            if (!empty($clientFilter->getGrants())) {
-                $grantStrings = array_map(
-                    static fn (Grant $grant): string => (string) $grant,
-                    $clientFilter->getGrants()
-                );
-                $queryBuilder->field('grants')->all($grantStrings);
-            }
-
-            if (!empty($clientFilter->getRedirectUris())) {
-                $redirectUriStrings = array_map(
-                    static fn (RedirectUri $uri): string => (string) $uri,
-                    $clientFilter->getRedirectUris()
-                );
-                $queryBuilder->field('redirectUris')->all($redirectUriStrings);
-            }
-
-            if (!empty($clientFilter->getScopes())) {
-                $scopeStrings = array_map(
-                    static fn (Scope $scope): string => (string) $scope,
-                    $clientFilter->getScopes()
-                );
-                $queryBuilder->field('scopes')->all($scopeStrings);
-            }
+            $this->applyFilterToQueryBuilder($queryBuilder, $clientFilter);
         }
 
         $documents = $queryBuilder->getQuery()->execute()->toArray();
 
         return array_values($documents);
+    }
+
+    private function applyFilterToQueryBuilder(object $queryBuilder, ClientFilter $filter): void
+    {
+        $this->applyGrantsFilter($queryBuilder, $filter);
+        $this->applyRedirectUrisFilter($queryBuilder, $filter);
+        $this->applyScopesFilter($queryBuilder, $filter);
+    }
+
+    private function applyGrantsFilter(object $queryBuilder, ClientFilter $filter): void
+    {
+        if (empty($filter->getGrants())) {
+            return;
+        }
+
+        $grantStrings = array_map(
+            static fn (Grant $grant): string => (string) $grant,
+            $filter->getGrants()
+        );
+        $queryBuilder->field('grants')->all($grantStrings);
+    }
+
+    private function applyRedirectUrisFilter(object $queryBuilder, ClientFilter $filter): void
+    {
+        if (empty($filter->getRedirectUris())) {
+            return;
+        }
+
+        $redirectUriStrings = array_map(
+            static fn (RedirectUri $uri): string => (string) $uri,
+            $filter->getRedirectUris()
+        );
+        $queryBuilder->field('redirectUris')->all($redirectUriStrings);
+    }
+
+    private function applyScopesFilter(object $queryBuilder, ClientFilter $filter): void
+    {
+        if (empty($filter->getScopes())) {
+            return;
+        }
+
+        $scopeStrings = array_map(
+            static fn (Scope $scope): string => (string) $scope,
+            $filter->getScopes()
+        );
+        $queryBuilder->field('scopes')->all($scopeStrings);
     }
 }

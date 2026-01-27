@@ -50,6 +50,23 @@ final class AccessTokenManager implements AccessTokenManagerInterface
             return 0;
         }
 
+        $identifiers = $this->findExpiredTokenIdentifiers();
+
+        if ($identifiers === []) {
+            return 0;
+        }
+
+        $this->unlinkRefreshTokens($identifiers);
+        $this->removeAccessTokens($identifiers);
+
+        return count($identifiers);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function findExpiredTokenIdentifiers(): array
+    {
         $expiredTokens = $this->documentManager->createQueryBuilder(AccessToken::class)
             ->field('expiry')->lt(new DateTimeImmutable())
             ->getQuery()
@@ -60,23 +77,31 @@ final class AccessTokenManager implements AccessTokenManagerInterface
             $identifiers[] = $token->getIdentifier();
         }
 
-        if ($identifiers === []) {
-            return 0;
-        }
+        return $identifiers;
+    }
 
+    /**
+     * @param list<string> $identifiers
+     */
+    private function unlinkRefreshTokens(array $identifiers): void
+    {
         $this->documentManager->createQueryBuilder(RefreshToken::class)
             ->updateMany()
             ->field('accessToken')->in($identifiers)
             ->field('accessToken')->set(null)
             ->getQuery()
             ->execute();
+    }
 
+    /**
+     * @param list<string> $identifiers
+     */
+    private function removeAccessTokens(array $identifiers): void
+    {
         $this->documentManager->createQueryBuilder(AccessToken::class)
             ->remove()
             ->field('identifier')->in($identifiers)
             ->getQuery()
             ->execute();
-
-        return count($identifiers);
     }
 }
