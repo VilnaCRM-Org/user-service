@@ -40,6 +40,7 @@ final class OAuthContext implements Context
     private ?string $clientSecret = null;
     private ?string $refreshToken = null;
     private ?string $username = null;
+    private ?string $codeVerifier = null;
 
     public function __construct(
         private readonly KernelInterface $kernel,
@@ -182,6 +183,24 @@ final class OAuthContext implements Context
     }
 
     /**
+     * @Given using PKCE with S256 method
+     */
+    public function usingPkceWithS256(): void
+    {
+        // Generate a random 128-character code verifier
+        $this->codeVerifier = bin2hex(random_bytes(64));
+
+        // Generate S256 code challenge
+        $hash = hash('sha256', $this->codeVerifier, true);
+        $codeChallenge = rtrim(strtr(base64_encode($hash), '+/', '-_'), '=');
+
+        $this->obtainAuthorizeCodeInput->setCodeChallenge(
+            $codeChallenge,
+            'S256'
+        );
+    }
+
+    /**
      * @Given obtaining auth code
      */
     public function obtainAuthCode(): void
@@ -193,6 +212,14 @@ final class OAuthContext implements Context
         $this->authCode = Request::create(
             $this->response->headers->get('location')
         )->query->get('code');
+    }
+
+    /**
+     * @Given obtaining auth code with PKCE
+     */
+    public function obtainAuthCodeWithPkce(): void
+    {
+        $this->obtainAuthCode();
     }
 
     /**
@@ -212,6 +239,23 @@ final class OAuthContext implements Context
             $secret,
             $uri,
             $this->authCode
+        );
+    }
+
+    /**
+     * @Given passing client id :id, redirect_uri :uri, auth code and code verifier
+     */
+    public function passingIdUriAuthCodeAndVerifier(
+        string $id,
+        string $uri
+    ): void {
+        $this->clientId = $id;
+        $this->obtainAccessTokenInput = new AuthorizationCodeGrantInput(
+            $id,
+            '',
+            $uri,
+            $this->authCode,
+            $this->codeVerifier
         );
     }
 

@@ -11,6 +11,7 @@ final class AuthorizationCodeGrantInput extends ObtainAccessTokenInput
         public string $client_secret,
         public string $redirect_uri,
         public string $code,
+        public ?string $code_verifier = null,
         ?string $grant_type = null
     ) {
         parent::__construct($grant_type);

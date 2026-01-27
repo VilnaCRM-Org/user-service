@@ -143,3 +143,13 @@ Feature: OAuth authorization
     And passing client id "MissingPassId", client secret "MissingPassSecret" and email "missingpass@mail.com"
     When obtaining access token with password grant without password
     Then invalid request error should be returned
+
+  Scenario: Public client PKCE S256 authorization code flow with valid code verifier
+    Given public client with id "PublicPkceId" and redirect uri "https://example.com" exists
+    And passing client id "PublicPkceId" and redirect_uri "https://example.com"
+    And using PKCE with S256 method
+    And authenticating user with email "pkceuser@example.com" and password "password"
+    And obtaining auth code with PKCE
+    And passing client id "PublicPkceId", redirect_uri "https://example.com", auth code and code verifier
+    When obtaining access token with "authorization_code" grant-type
+    Then access token should be provided
