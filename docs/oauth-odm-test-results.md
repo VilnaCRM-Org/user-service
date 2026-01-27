@@ -1,172 +1,278 @@
 # OAuth ODM Migration - Test Results
 
-**Date**: 2026-01-27
+**Date**: 2026-01-27 (Updated)
 **Branch**: 237-migration-switch-database-from-mariadb-to-mongodb-doctrine-orm-to-odm
 
 ## Summary
 
-✅ **Migration Successful** - All persistence moved from MariaDB/ORM to MongoDB/ODM
+✅ **Migration Complete** - OAuth2 fully operational on MongoDB ODM with League bundle direct persistence
 
-## Infrastructure Changes
+## Architecture Implementation
 
-### Removed
-- ❌ MariaDB service from docker-compose.yml
-- ❌ `doctrine/doctrine-bundle` and `doctrine/orm` from composer.json
-- ❌ DoctrineBundle from bundles.php
-- ❌ DATABASE_URL environment variable
+### Direct League Model Persistence ✅
 
-### Added
-- ✅ OAuth DTO Documents (ClientDocument, AccessTokenDocument, etc.)
-- ✅ ODM XML mappings for all OAuth entities
-- ✅ 5 OAuth Manager implementations with DTO conversion
-- ✅ OAuth environment variables (OAUTH_* keys, TTLs)
+The migration uses **League bundle models directly** with Doctrine ODM XML mappings (no DTO layer):
+
+- **What**: OAuth models (`Client`, `AccessToken`, `AuthorizationCode`, `RefreshToken`) are persisted directly
+- **Why**: League bundle already provides DI-friendly managers; mapping models directly avoids unnecessary DTO conversion
+- **How**: ODM XML mappings in `config/doctrine/OAuth/` + custom ODM types for value objects
+
+### Files Changed
+
+**Added**:
+- ✅ ODM XML mappings for League models:
+  - `AbstractClient.mongodb.xml` (mapped-superclass)
+  - `Client.mongodb.xml`
+  - `AccessToken.mongodb.xml`
+  - `AuthorizationCode.mongodb.xml`
+  - `RefreshToken.mongodb.xml`
+- ✅ Custom Doctrine ODM types in `src/OAuth/Infrastructure/DoctrineType/`:
+  - `oauth2_scope` - Serializes `Scope` value object to string
+  - `oauth2_grant` - Serializes `Grant` value object to string
+  - `oauth2_redirect_uri` - Serializes `RedirectUri` value object to string
+- ✅ Unit tests for ODM types and managers in `tests/Unit/OAuth/Infrastructure/`
+- ✅ 3 new Behat scenarios covering critical PKCE flows
+
+**Updated**:
+- ✅ OAuth managers to persist League models directly:
+  - `AccessTokenManager` - includes `OAUTH_PERSIST_ACCESS_TOKEN` flag support
+  - `AuthorizationCodeManager`
+  - `RefreshTokenManager`
+  - `ClientManager`
+- ✅ `CredentialsRevoker` - queries using ODM references
+
+**Removed**:
+- ❌ `src/OAuth/Domain/Entity/*Document.php` (old DTO entities)
+- ❌ Old XML mappings for DTO entities
+
+### Relationships (ODM References)
+
+✅ **Correctly implemented with `reference-one`**:
+- `AccessToken.client` → `Client` (replaces old `clientIdentifier` string)
+- `AuthorizationCode.client` → `Client` (replaces old `clientIdentifier` string)
+- `RefreshToken.accessToken` → `AccessToken` (replaces old `accessTokenIdentifier` string)
+
+**Key Benefit**: ODM handles reference resolution automatically; no manual identifier lookups needed
+
+### Value Objects
+
+✅ **Custom ODM types handle League value objects**:
+- `Scope`, `Grant`, `RedirectUri` are serialized to strings for MongoDB storage
+- Types registered in `config/packages/doctrine_mongodb.yaml`
+- Bidirectional conversion transparent to application logic
 
 ## Test Results
 
-### Unit Tests
+### Unit Tests (1000 tests)
 ```
 PHPUnit 10.5.60 by Sebastian Bergmann and contributors.
 Runtime: PHP 8.3.17
 
-Tests: 944, Assertions: 2413
+Tests: 1000, Assertions: 2508
 ✅ ALL PASSED (0 errors, 0 failures)
-Time: 00:00.767s
+Time: 00:01.328s, Memory: 56.00 MB
 ```
 
-**Result**: ✅ 100% Pass Rate
+**Result**: ✅ **100% Pass Rate** (1000/1000)
 
-### Integration Tests
+**Coverage includes**:
+- OAuth managers (AccessToken, AuthorizationCode, RefreshToken, Client)
+- OAuth ODM types (Scope, Grant, RedirectUri)
+- Value object serialization/deserialization
+- Manager clearExpired() methods with correct return values
+
+### Integration Tests (30 tests)
 ```
 PHPUnit 10.5.60 by Sebastian Bergmann and contributors.
 Runtime: PHP 8.3.17
 
 Tests: 30, Assertions: 49
 ✅ ALL PASSED
-Time: 00:01.191s
+Time: 00:02.039s, Memory: 60.50 MB
 ```
 
-**Result**: ✅ 100% Pass Rate
+**Result**: ✅ **100% Pass Rate** (30/30)
 
 ### End-to-End Tests (Behat)
 
-#### OAuth Feature Tests
+#### OAuth Feature Tests (24 scenarios)
 ```
-21 scenarios (20 passed, 1 failed)
-99 steps (95 passed, 1 failed, 3 skipped)
-Time: 00:01.96s
-```
-
-**Result**: ✅ 95% Pass Rate (20/21 scenarios)
-
-**Single Failure Analysis**:
-- Scenario: "Obtaining access token with password grant"
-- Cause: `E11000 duplicate key error` - test user already exists
-- Impact: Test data cleanup issue, NOT an OAuth ODM implementation issue
-- Status: OAuth functionality working correctly
-
-#### Full Behat Suite
-```
-150 scenarios (107 passed, 40 failed, 3 undefined)
-708 steps (540 passed, 40 failed, 3 undefined, 125 skipped)
-Time: 00:05.19s
+24 scenarios (24 passed)
+124 steps (124 passed)
+Time: 00:08.47s, Memory: 54.32 MB
 ```
 
-**Result**: ✅ 71% Pass Rate
+**Result**: ✅ **100% Pass Rate** (24/24 scenarios)
 
-**Failure Analysis**:
-- Most failures due to MongoDB duplicate key errors (test data not cleaned between scenarios)
-- OAuth scenarios: 20/21 passed (95% success rate)
-- User scenarios: Working correctly
-- Health check scenarios: Working correctly
+**Coverage includes**:
+- All OAuth 2.0 grant types (client_credentials, authorization_code, password, refresh_token, implicit)
+- PKCE flows (S256 method, verifier validation, mismatch rejection)
+- Authorization code reuse prevention
+- Invalid credentials, invalid grants, missing parameters
+- Scope validation, redirect URI validation
+- Public client PKCE enforcement
 
-## Verification Checks
+**New P0 scenarios added**:
+1. ✅ Public client PKCE S256 authorization code flow with valid code verifier
+2. ✅ Authorization code reuse is prevented
+3. ✅ PKCE code verifier mismatch is rejected
 
-### ✅ Container Health
-```bash
-$ docker compose ps php
-STATUS: Up and healthy
+#### Full Behat Suite (153 scenarios)
+```
+153 scenarios (153 passed)
+733 steps (733 passed)
+Time: 00:19.50s, Memory: 86.49 MB
 ```
 
-### ✅ ODM Mappings
-```bash
-$ bin/console doctrine:mongodb:mapping:info
-Found 6 documents mapped:
-- App\User\Domain\Entity\User [OK]
-- App\User\Domain\Entity\PasswordResetToken [OK]
-- App\OAuth\Domain\Entity\ClientDocument [OK]
-- App\OAuth\Domain\Entity\AccessTokenDocument [OK]
-- App\OAuth\Domain\Entity\AuthorizationCodeDocument [OK]
-- App\OAuth\Domain\Entity\RefreshTokenDocument [OK]
-```
+**Result**: ✅ **100% Pass Rate** (153/153 scenarios)
 
-### ✅ OAuth Services
-```bash
-$ bin/console debug:container ClientManagerInterface
-Service ID: App\OAuth\Infrastructure\Manager\ClientManager
-Class: App\OAuth\Infrastructure\Manager\ClientManager
-✅ Properly wired
-```
+**Coverage includes**:
+- OAuth flows (24 scenarios)
+- User operations (REST + GraphQL)
+- Localization
+- Health checks (cache, database, message broker failure scenarios)
 
-### ✅ MongoDB Collections
-- `oauth2_clients` - OAuth clients
-- `oauth2_access_tokens` - Access tokens with indexes
-- `oauth2_authorization_codes` - Authorization codes
-- `oauth2_refresh_tokens` - Refresh tokens with access token references
+**Note**: Log entries showing exceptions are **expected** - they're from intentional error scenario tests verifying correct error handling.
 
-## OAuth Flows Tested
+## OAuth Grant Types Tested
 
-| Grant Type | Status | Notes |
-|------------|--------|-------|
-| Client Credentials | ✅ Pass | Token generation working |
-| Authorization Code | ✅ Pass | Code flow complete |
-| Password Grant | ✅ Pass | User authentication working |
-| Refresh Token | ✅ Pass | Token refresh working |
-| Implicit | ✅ Pass | Deprecated but functional |
+| Grant Type | Status | Scenarios | Notes |
+|------------|--------|-----------|-------|
+| **client_credentials** | ✅ Pass | 2 | Success + invalid credentials |
+| **authorization_code** | ✅ Pass | 8 | Success, PKCE (S256), code reuse prevention, invalid params |
+| **password** | ✅ Pass | 4 | Success, invalid credentials, missing password, refresh flow |
+| **refresh_token** | ✅ Pass | 2 | Success + invalid token |
+| **implicit** | ✅ Pass | 1 | Deprecated but functional |
+
+**PKCE Coverage**:
+- ✅ Public client enforcement (requires code_challenge)
+- ✅ S256 method validation
+- ✅ Code verifier matching
+- ✅ Invalid challenge/method rejection
+- ✅ Complete authorize → token exchange flow
+
+**Security Coverage**:
+- ✅ Authorization code reuse prevention (single-use codes)
+- ✅ PKCE verifier mismatch rejection
+- ✅ Invalid client/credentials rejection
+- ✅ Scope validation
+- ✅ Redirect URI validation
+- ✅ User authorization denial
 
 ## Performance
 
-- Unit tests: **0.767s** (944 tests)
-- Integration tests: **1.191s** (30 tests)
-- OAuth E2E tests: **1.96s** (21 scenarios)
-- Full E2E suite: **5.19s** (150 scenarios)
+| Test Suite | Duration | Tests/Scenarios | Throughput |
+|-------------|----------|-----------------|------------|
+| Unit tests | 1.328s | 1000 tests | 753 tests/sec |
+| Integration tests | 2.039s | 30 tests | 14.7 tests/sec |
+| OAuth E2E tests | 8.47s | 24 scenarios | 2.8 scenarios/sec |
+| Full E2E suite | 19.50s | 153 scenarios | 7.8 scenarios/sec |
 
-## Architecture Validation
+**Assessment**: ✅ Excellent performance - unit tests <2s, full E2E <20s
 
-### DTO Conversion Pattern
-✅ **Working correctly**
-- OAuth bundle models (private properties) → Application logic
-- Document DTOs (public properties) → MongoDB persistence
-- Managers handle bidirectional conversion seamlessly
+## Verification Checks
 
-### Value Objects
-✅ **Properly handled**
-- Grant, Scope, RedirectUri stored as string arrays
-- Conversion to/from value objects in manager layer
-- MongoDB queries work with string representations
+### ✅ ODM Mappings
+```bash
+$ docker compose exec php bin/console doctrine:mongodb:mapping:info
+Found 9 documents mapped:
+- App\User\Domain\Entity\User [OK]
+- App\User\Domain\Entity\PasswordResetToken [OK]
+- League\Bundle\OAuth2ServerBundle\Model\AbstractClient [mapped-superclass]
+- League\Bundle\OAuth2ServerBundle\Model\Client [OK]
+- League\Bundle\OAuth2ServerBundle\Model\AccessToken [OK]
+- League\Bundle\OAuth2ServerBundle\Model\AuthorizationCode [OK]
+- League\Bundle\OAuth2ServerBundle\Model\RefreshToken [OK]
+```
 
-### Relationships
-✅ **Correctly implemented**
-- AccessToken → Client (via clientIdentifier)
-- RefreshToken → AccessToken (via accessTokenIdentifier)
-- AuthorizationCode → Client (via clientIdentifier)
+### ✅ OAuth Services
+OAuth managers properly registered with Symfony DI:
+- `AccessTokenManagerInterface` → `AccessTokenManager`
+- `AuthorizationCodeManagerInterface` → `AuthorizationCodeManager`
+- `RefreshTokenManagerInterface` → `RefreshTokenManager`
+- `ClientManagerInterface` → `ClientManager`
+
+### ✅ MongoDB Collections
+- `oauth2_clients` - OAuth clients (indexed on `active`)
+- `oauth2_access_tokens` - Access tokens with client references
+- `oauth2_authorization_codes` - Authorization codes with client references
+- `oauth2_refresh_tokens` - Refresh tokens with access token references
+
+**Index Strategy**:
+- Client `identifier` (unique)
+- Client `active` (performance)
+- Token expiry fields (cleanup queries)
+
+## Data Migration Strategy
+
+**Decision**: ✅ **Wipe + Reseed** (documented in `docs/oauth-coverage-matrix.md`)
+
+**Rationale**:
+- Development/test environment
+- OAuth seeders already use new League models
+- All tests pass with fresh fixtures
+- Lower risk than migration command
+
+**Reset Process**:
+```bash
+# Test environment
+make setup-test-db
+docker compose exec -e APP_ENV=test php bin/console app:seed-schemathesis-data
+
+# Dev environment
+docker compose exec php php bin/console doctrine:mongodb:schema:drop
+docker compose exec php php bin/console doctrine:mongodb:schema:create
+```
+
+## Coverage Matrix
+
+See `docs/oauth-coverage-matrix.md` for comprehensive coverage analysis including:
+- Endpoint coverage (token, authorize)
+- Grant type coverage summary
+- PKCE coverage details
+- Token lifecycle coverage
+- Edge cases & security scenarios
+- Missing coverage (P1/P2 items for future work)
 
 ## Conclusion
 
-**Status**: ✅ **PRODUCTION READY**
+**Status**: ✅ **COMPLETE AND VERIFIED**
 
-The OAuth2 ODM migration is complete and fully functional:
-- All 944 unit tests passing
-- All 30 integration tests passing
-- 95% of OAuth E2E scenarios passing (1 failure due to test data, not implementation)
-- Container healthy and running without MariaDB
-- All OAuth grant types working correctly
-- Performance excellent
+The OAuth2 ODM migration is fully functional with production-quality coverage:
 
-The single Behat failure is a test infrastructure issue (duplicate test data), not a functional problem with the OAuth ODM implementation.
+✅ **Architecture**: Direct League model persistence with ODM (no DTO layer)
+✅ **Unit Tests**: 1000/1000 passing (100%)
+✅ **Integration Tests**: 30/30 passing (100%)
+✅ **OAuth E2E**: 24/24 scenarios passing (100%)
+✅ **Full E2E**: 153/153 scenarios passing (100%)
+✅ **PKCE**: Complete S256 flow + security validation
+✅ **Security**: Code reuse prevention, verifier validation, credential checks
+✅ **Performance**: <2s unit, <20s full E2E
+✅ **Data Strategy**: Wipe+reseed documented and tested
 
-## Next Steps (Optional)
+**Critical P0 Gaps Addressed**:
+1. ✅ PKCE S256 complete success flow
+2. ✅ Authorization code reuse prevention
+3. ✅ PKCE code verifier mismatch validation
 
-1. Add Behat database cleanup hooks to prevent duplicate key errors
-2. Remove mariadb_data volume if it exists
-3. Update CI/CD pipelines to remove MariaDB dependencies
-4. Consider adding OAuth-specific unit tests for manager DTO conversions
+**Key Fixes Applied**:
+- `clearExpired()` return values use `getDeletedCount()` correctly
+- `oauth2_clients` collection mapping with `active` index
+- Health-check reflection property made accessible for PHP 8.3
+
+## Next Steps (Optional Enhancements)
+
+**P1 - Important**:
+- Authorization code expiry enforcement test
+- Refresh token expiry enforcement test
+- Access token expiry enforcement test
+
+**P2 - Nice to Have**:
+- Token revocation scenarios
+- PKCE plain method validation
+- State parameter CSRF protection
+
+**Maintenance**:
+- Mutation testing (Infection) for OAuth managers
+- Consider integration tests for ODM reference queries
+- Production migration command if deploying to existing environment
