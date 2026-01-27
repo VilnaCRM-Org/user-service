@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\OAuth\Infrastructure\Manager;
 
-use Doctrine\ODM\MongoDB\DocumentManager;
+use App\OAuth\Domain\Entity\ClientDocument;
 use League\Bundle\OAuth2ServerBundle\Manager\ClientFilter;
 use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
+use League\Bundle\OAuth2ServerBundle\Model\Client;
 use League\Bundle\OAuth2ServerBundle\Model\ClientInterface;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Grant;
 use League\Bundle\OAuth2ServerBundle\ValueObject\RedirectUri;
@@ -14,157 +15,162 @@ use League\Bundle\OAuth2ServerBundle\ValueObject\Scope;
 
 final class ClientManager implements ClientManagerInterface
 {
-    public function __construct(
-        private readonly DocumentManager $documentManager,
-    ) {
-    }
-
+    #[\Override]
     public function save(ClientInterface $client): void
     {
-        // Convert value objects to strings before persisting
-        $this->prepareForPersistence($client);
+        $document = $this->toDocument($client);
 
-        $this->documentManager->persist($client);
+        $this->documentManager->persist($document);
         $this->documentManager->flush();
     }
 
+    #[\Override]
     public function remove(ClientInterface $client): void
     {
-        $this->documentManager->remove($client);
-        $this->documentManager->flush();
+        $document = $this->documentManager->find(
+            ClientDocument::class,
+            $client->getIdentifier()
+        );
+
+        if ($document !== null) {
+            $this->documentManager->remove($document);
+            $this->documentManager->flush();
+        }
     }
 
+    #[\Override]
     public function find(string $identifier): ?ClientInterface
     {
-        $client = $this->documentManager->find(
-            \League\Bundle\OAuth2ServerBundle\Model\Client::class,
+        $document = $this->documentManager->find(
+            ClientDocument::class,
             $identifier
         );
 
-        if ($client instanceof ClientInterface) {
-            $this->hydrateFromPersistence($client);
+        if ($document === null) {
+            return null;
         }
 
-        return $client;
+        return $this->toModel($document);
     }
 
     /**
      * @return list<ClientInterface>
      */
+    #[\Override]
     public function list(?ClientFilter $clientFilter): array
     {
-        $queryBuilder = $this->documentManager->createQueryBuilder(
-            \League\Bundle\OAuth2ServerBundle\Model\Client::class
-        );
+        $queryBuilder = $this->documentManager->createQueryBuilder(ClientDocument::class);
 
         if ($clientFilter !== null && $clientFilter->hasFilters()) {
-            $criteria = [];
-
             // Filter by grants using $all operator (all specified grants must be present)
             if (!empty($clientFilter->getGrants())) {
                 $grantStrings = array_map(
-                    static fn(Grant $grant): string => (string) $grant,
+                    static fn (Grant $grant): string => (string) $grant,
                     $clientFilter->getGrants()
                 );
-                $criteria['grants'] = ['$all' => $grantStrings];
+                $queryBuilder->field('grants')->all($grantStrings);
             }
 
             // Filter by redirect URIs using $all operator
             if (!empty($clientFilter->getRedirectUris())) {
                 $redirectUriStrings = array_map(
-                    static fn(RedirectUri $uri): string => (string) $uri,
+                    static fn (RedirectUri $uri): string => (string) $uri,
                     $clientFilter->getRedirectUris()
                 );
-                $criteria['redirectUris'] = ['$all' => $redirectUriStrings];
+                $queryBuilder->field('redirectUris')->all($redirectUriStrings);
             }
 
             // Filter by scopes using $all operator
             if (!empty($clientFilter->getScopes())) {
                 $scopeStrings = array_map(
-                    static fn(Scope $scope): string => (string) $scope,
+                    static fn (Scope $scope): string => (string) $scope,
                     $clientFilter->getScopes()
                 );
-                $criteria['scopes'] = ['$all' => $scopeStrings];
-            }
-
-            foreach ($criteria as $field => $value) {
-                $queryBuilder->field($field)->equals($value);
+                $queryBuilder->field('scopes')->all($scopeStrings);
             }
         }
 
-        $clients = $queryBuilder->getQuery()->execute()->toArray();
+        $documents = $queryBuilder->getQuery()->execute()->toArray();
 
-        // Hydrate value objects from strings
-        foreach ($clients as $client) {
-            if ($client instanceof ClientInterface) {
-                $this->hydrateFromPersistence($client);
-            }
-        }
-
-        return array_values($clients);
+        return array_map(
+            fn (ClientDocument $document): ClientInterface => $this->toModel($document),
+            array_values($documents)
+        );
     }
 
     /**
-     * Convert value objects to strings before persisting.
+     * Convert bundle Client model to ClientDocument DTO.
      */
-    private function prepareForPersistence(ClientInterface $client): void
+    private function toDocument(ClientInterface $client): ClientDocument
     {
-        $reflection = new \ReflectionClass($client);
+        $document = new ClientDocument();
+        $document->identifier = $client->getIdentifier();
+        $document->name = $client->getName();
+        $document->secret = $client->getSecret();
+        $document->active = $client->isActive();
+        $document->allowPlainTextPkce = $client->isPlainTextPkceAllowed();
 
-        // Convert grants to strings
-        $grantsProperty = $reflection->getProperty('grants');
-        $grantsProperty->setAccessible(true);
-        $grants = $grantsProperty->getValue($client);
-        $grantStrings = array_map(static fn(Grant $grant): string => (string) $grant, $grants);
-        $grantsProperty->setValue($client, $grantStrings);
+        // Convert value objects to strings
+        $document->redirectUris = array_map(
+            static fn (RedirectUri $uri): string => (string) $uri,
+            $client->getRedirectUris()
+        );
 
-        // Convert redirect URIs to strings
-        $redirectUrisProperty = $reflection->getProperty('redirectUris');
-        $redirectUrisProperty->setAccessible(true);
-        $redirectUris = $redirectUrisProperty->getValue($client);
-        $redirectUriStrings = array_map(static fn(RedirectUri $uri): string => (string) $uri, $redirectUris);
-        $redirectUrisProperty->setValue($client, $redirectUriStrings);
+        $document->grants = array_map(
+            static fn (Grant $grant): string => (string) $grant,
+            $client->getGrants()
+        );
 
-        // Convert scopes to strings
-        $scopesProperty = $reflection->getProperty('scopes');
-        $scopesProperty->setAccessible(true);
-        $scopes = $scopesProperty->getValue($client);
-        $scopeStrings = array_map(static fn(Scope $scope): string => (string) $scope, $scopes);
-        $scopesProperty->setValue($client, $scopeStrings);
+        $document->scopes = array_map(
+            static fn (Scope $scope): string => (string) $scope,
+            $client->getScopes()
+        );
+
+        return $document;
     }
 
     /**
-     * Convert strings back to value objects after loading from database.
+     * Convert ClientDocument DTO to bundle Client model.
      */
-    private function hydrateFromPersistence(ClientInterface $client): void
+    private function toModel(ClientDocument $document): Client
     {
-        $reflection = new \ReflectionClass($client);
+        $client = new Client(
+            $document->name,
+            $document->identifier,
+            $document->secret
+        );
 
-        // Convert grant strings back to Grant objects
-        $grantsProperty = $reflection->getProperty('grants');
-        $grantsProperty->setAccessible(true);
-        $grantStrings = $grantsProperty->getValue($client);
-        if (is_array($grantStrings) && !empty($grantStrings) && !$grantStrings[0] instanceof Grant) {
-            $grants = array_map(static fn(string $grant): Grant => new Grant($grant), $grantStrings);
-            $grantsProperty->setValue($client, $grants);
+        // Convert string arrays back to value objects
+        $redirectUris = array_map(
+            static fn (string $uri): RedirectUri => new RedirectUri($uri),
+            $document->redirectUris
+        );
+
+        $grants = array_map(
+            static fn (string $grant): Grant => new Grant($grant),
+            $document->grants
+        );
+
+        $scopes = array_map(
+            static fn (string $scope): Scope => new Scope($scope),
+            $document->scopes
+        );
+
+        if (!empty($redirectUris)) {
+            $client->setRedirectUris(...$redirectUris);
         }
 
-        // Convert redirect URI strings back to RedirectUri objects
-        $redirectUrisProperty = $reflection->getProperty('redirectUris');
-        $redirectUrisProperty->setAccessible(true);
-        $redirectUriStrings = $redirectUrisProperty->getValue($client);
-        if (is_array($redirectUriStrings) && !empty($redirectUriStrings) && !$redirectUriStrings[0] instanceof RedirectUri) {
-            $redirectUris = array_map(static fn(string $uri): RedirectUri => new RedirectUri($uri), $redirectUriStrings);
-            $redirectUrisProperty->setValue($client, $redirectUris);
+        if (!empty($grants)) {
+            $client->setGrants(...$grants);
         }
 
-        // Convert scope strings back to Scope objects
-        $scopesProperty = $reflection->getProperty('scopes');
-        $scopesProperty->setAccessible(true);
-        $scopeStrings = $scopesProperty->getValue($client);
-        if (is_array($scopeStrings) && !empty($scopeStrings) && !$scopeStrings[0] instanceof Scope) {
-            $scopes = array_map(static fn(string $scope): Scope => new Scope($scope), $scopeStrings);
-            $scopesProperty->setValue($client, $scopes);
+        if (!empty($scopes)) {
+            $client->setScopes(...$scopes);
         }
+
+        $client->setActive($document->active);
+        $client->setAllowPlainTextPkce($document->allowPlainTextPkce);
+
+        return $client;
     }
 }

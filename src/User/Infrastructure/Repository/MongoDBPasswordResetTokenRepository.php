@@ -11,6 +11,11 @@ use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
 
+/**
+ * @extends ServiceDocumentRepository<PasswordResetToken>
+ *
+ * @psalm-suppress UnusedClass - Used via dependency injection
+ */
 final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepository implements PasswordResetTokenRepositoryInterface
 {
     public function __construct(
@@ -20,6 +25,7 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
         parent::__construct($this->registry, PasswordResetToken::class);
     }
 
+    #[\Override]
     public function save(
         PasswordResetTokenInterface $passwordResetToken
     ): void {
@@ -27,11 +33,13 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
         $this->documentManager->flush();
     }
 
+    #[\Override]
     public function findByToken(string $token): ?PasswordResetTokenInterface
     {
         return $this->findOneBy(['tokenValue' => $token]);
     }
 
+    #[\Override]
     public function findByUserID(
         string $userID
     ): ?PasswordResetTokenInterface {
@@ -41,6 +49,7 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
         );
     }
 
+    #[\Override]
     public function delete(
         PasswordResetTokenInterface $passwordResetToken
     ): void {
@@ -53,6 +62,7 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
      *
      * @infection-ignore-all Tested in integration tests
      */
+    #[\Override]
     public function deleteAll(): void
     {
         $this->createQueryBuilder()
@@ -64,6 +74,7 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
     /**
      * @param array<PasswordResetTokenInterface> $tokens
      */
+    #[\Override]
     public function saveBatch(array $tokens): void
     {
         foreach ($tokens as $token) {

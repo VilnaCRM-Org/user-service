@@ -4,60 +4,68 @@ declare(strict_types=1);
 
 namespace App\OAuth\Infrastructure\Manager;
 
+use App\OAuth\Domain\Entity\AccessTokenDocument;
+use DateTimeImmutable;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use League\Bundle\OAuth2ServerBundle\Manager\AccessTokenManagerInterface;
+use League\Bundle\OAuth2ServerBundle\Model\AccessToken;
 use League\Bundle\OAuth2ServerBundle\Model\AccessTokenInterface;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Scope;
+use RuntimeException;
 
+/**
+ * @psalm-suppress UnusedClass - Used via dependency injection
+ */
 final class AccessTokenManager implements AccessTokenManagerInterface
 {
     public function __construct(
         private readonly DocumentManager $documentManager,
+        private readonly ClientManager $clientManager,
     ) {
     }
 
+    #[\Override]
     public function find(string $identifier): ?AccessTokenInterface
     {
-        $accessToken = $this->documentManager->find(
-            \League\Bundle\OAuth2ServerBundle\Model\AccessToken::class,
+        $document = $this->documentManager->find(
+            AccessTokenDocument::class,
             $identifier
         );
 
-        if ($accessToken instanceof AccessTokenInterface) {
-            $this->hydrateFromPersistence($accessToken);
+        if ($document === null) {
+            return null;
         }
 
-        return $accessToken;
+        return $this->toModel($document);
     }
 
+    #[\Override]
     public function save(AccessTokenInterface $accessToken): void
     {
-        // Convert value objects to strings before persisting
-        $this->prepareForPersistence($accessToken);
+        $document = $this->toDocument($accessToken);
 
-        $this->documentManager->persist($accessToken);
+        $this->documentManager->persist($document);
         $this->documentManager->flush();
     }
 
+    #[\Override]
     public function clearExpired(): int
     {
-        $queryBuilder = $this->documentManager->createQueryBuilder(
-            \League\Bundle\OAuth2ServerBundle\Model\AccessToken::class
-        );
-
-        $queryBuilder
-            ->remove()
-            ->field('expiry')->lt(new \DateTimeImmutable())
+        // Count expired tokens first
+        $countQuery = $this->documentManager->createQueryBuilder(
+            AccessTokenDocument::class
+        )
+            ->field('expiry')->lt(new DateTimeImmutable())
+            ->count()
             ->getQuery()
             ->execute();
 
-        // MongoDB doesn't return the count of deleted documents in the same way as SQL
-        // We'll need to count first, then delete
-        $countQuery = $this->documentManager->createQueryBuilder(
-            \League\Bundle\OAuth2ServerBundle\Model\AccessToken::class
+        // Remove expired tokens
+        $this->documentManager->createQueryBuilder(
+            AccessTokenDocument::class
         )
-            ->field('expiry')->lt(new \DateTimeImmutable())
-            ->count()
+            ->remove()
+            ->field('expiry')->lt(new DateTimeImmutable())
             ->getQuery()
             ->execute();
 
@@ -65,34 +73,58 @@ final class AccessTokenManager implements AccessTokenManagerInterface
     }
 
     /**
-     * Convert value objects to strings before persisting.
+     * Convert bundle AccessToken model to AccessTokenDocument DTO.
      */
-    private function prepareForPersistence(AccessTokenInterface $accessToken): void
+    private function toDocument(AccessTokenInterface $accessToken): AccessTokenDocument
     {
-        $reflection = new \ReflectionClass($accessToken);
+        $document = new AccessTokenDocument();
+        $document->identifier = $accessToken->getIdentifier();
+        $document->expiry = $accessToken->getExpiry();
+        $document->userIdentifier = $accessToken->getUserIdentifier();
+        $document->clientIdentifier = $accessToken->getClient()->getIdentifier();
+        $document->revoked = $accessToken->isRevoked();
 
         // Convert scopes to strings
-        $scopesProperty = $reflection->getProperty('scopes');
-        $scopesProperty->setAccessible(true);
-        $scopes = $scopesProperty->getValue($accessToken);
-        $scopeStrings = array_map(static fn(Scope $scope): string => (string) $scope, $scopes);
-        $scopesProperty->setValue($accessToken, $scopeStrings);
+        $document->scopes = array_map(
+            static fn (Scope $scope): string => (string) $scope,
+            $accessToken->getScopes()
+        );
+
+        return $document;
     }
 
     /**
-     * Convert strings back to value objects after loading from database.
+     * Convert AccessTokenDocument DTO to bundle AccessToken model.
      */
-    private function hydrateFromPersistence(AccessTokenInterface $accessToken): void
+    private function toModel(AccessTokenDocument $document): AccessToken
     {
-        $reflection = new \ReflectionClass($accessToken);
+        // Load the client
+        $client = $this->clientManager->find($document->clientIdentifier);
+
+        if ($client === null) {
+            throw new RuntimeException(
+                sprintf('Client with identifier "%s" not found', $document->clientIdentifier)
+            );
+        }
 
         // Convert scope strings back to Scope objects
-        $scopesProperty = $reflection->getProperty('scopes');
-        $scopesProperty->setAccessible(true);
-        $scopeStrings = $scopesProperty->getValue($accessToken);
-        if (is_array($scopeStrings) && !empty($scopeStrings) && !$scopeStrings[0] instanceof Scope) {
-            $scopes = array_map(static fn(string $scope): Scope => new Scope($scope), $scopeStrings);
-            $scopesProperty->setValue($accessToken, $scopes);
+        $scopes = array_map(
+            static fn (string $scope): Scope => new Scope($scope),
+            $document->scopes
+        );
+
+        $accessToken = new AccessToken(
+            $document->identifier,
+            $document->expiry,
+            $client,
+            $document->userIdentifier,
+            $scopes
+        );
+
+        if ($document->revoked) {
+            $accessToken->revoke();
         }
+
+        return $accessToken;
     }
 }

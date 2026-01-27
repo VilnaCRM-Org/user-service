@@ -4,58 +4,68 @@ declare(strict_types=1);
 
 namespace App\OAuth\Infrastructure\Manager;
 
+use App\OAuth\Domain\Entity\AuthorizationCodeDocument;
+use DateTimeImmutable;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use League\Bundle\OAuth2ServerBundle\Manager\AuthorizationCodeManagerInterface;
+use League\Bundle\OAuth2ServerBundle\Model\AuthorizationCode;
 use League\Bundle\OAuth2ServerBundle\Model\AuthorizationCodeInterface;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Scope;
+use RuntimeException;
 
+/**
+ * @psalm-suppress UnusedClass - Used via dependency injection
+ */
 final class AuthorizationCodeManager implements AuthorizationCodeManagerInterface
 {
     public function __construct(
         private readonly DocumentManager $documentManager,
+        private readonly ClientManager $clientManager,
     ) {
     }
 
+    #[\Override]
     public function find(string $identifier): ?AuthorizationCodeInterface
     {
-        $authCode = $this->documentManager->find(
-            \League\Bundle\OAuth2ServerBundle\Model\AuthorizationCode::class,
+        $document = $this->documentManager->find(
+            AuthorizationCodeDocument::class,
             $identifier
         );
 
-        if ($authCode instanceof AuthorizationCodeInterface) {
-            $this->hydrateFromPersistence($authCode);
+        if ($document === null) {
+            return null;
         }
 
-        return $authCode;
+        return $this->toModel($document);
     }
 
+    #[\Override]
     public function save(AuthorizationCodeInterface $authCode): void
     {
-        // Convert value objects to strings before persisting
-        $this->prepareForPersistence($authCode);
+        $document = $this->toDocument($authCode);
 
-        $this->documentManager->persist($authCode);
+        $this->documentManager->persist($document);
         $this->documentManager->flush();
     }
 
+    #[\Override]
     public function clearExpired(): int
     {
         // Count expired codes first
         $countQuery = $this->documentManager->createQueryBuilder(
-            \League\Bundle\OAuth2ServerBundle\Model\AuthorizationCode::class
+            AuthorizationCodeDocument::class
         )
-            ->field('expiry')->lt(new \DateTimeImmutable())
+            ->field('expiry')->lt(new DateTimeImmutable())
             ->count()
             ->getQuery()
             ->execute();
 
         // Remove expired codes
         $this->documentManager->createQueryBuilder(
-            \League\Bundle\OAuth2ServerBundle\Model\AuthorizationCode::class
+            AuthorizationCodeDocument::class
         )
             ->remove()
-            ->field('expiry')->lt(new \DateTimeImmutable())
+            ->field('expiry')->lt(new DateTimeImmutable())
             ->getQuery()
             ->execute();
 
@@ -63,34 +73,58 @@ final class AuthorizationCodeManager implements AuthorizationCodeManagerInterfac
     }
 
     /**
-     * Convert value objects to strings before persisting.
+     * Convert bundle AuthorizationCode model to AuthorizationCodeDocument DTO.
      */
-    private function prepareForPersistence(AuthorizationCodeInterface $authCode): void
+    private function toDocument(AuthorizationCodeInterface $authCode): AuthorizationCodeDocument
     {
-        $reflection = new \ReflectionClass($authCode);
+        $document = new AuthorizationCodeDocument();
+        $document->identifier = $authCode->getIdentifier();
+        $document->expiry = $authCode->getExpiryDateTime();
+        $document->userIdentifier = $authCode->getUserIdentifier();
+        $document->clientIdentifier = $authCode->getClient()->getIdentifier();
+        $document->revoked = $authCode->isRevoked();
 
         // Convert scopes to strings
-        $scopesProperty = $reflection->getProperty('scopes');
-        $scopesProperty->setAccessible(true);
-        $scopes = $scopesProperty->getValue($authCode);
-        $scopeStrings = array_map(static fn(Scope $scope): string => (string) $scope, $scopes);
-        $scopesProperty->setValue($authCode, $scopeStrings);
+        $document->scopes = array_map(
+            static fn (Scope $scope): string => (string) $scope,
+            $authCode->getScopes()
+        );
+
+        return $document;
     }
 
     /**
-     * Convert strings back to value objects after loading from database.
+     * Convert AuthorizationCodeDocument DTO to bundle AuthorizationCode model.
      */
-    private function hydrateFromPersistence(AuthorizationCodeInterface $authCode): void
+    private function toModel(AuthorizationCodeDocument $document): AuthorizationCode
     {
-        $reflection = new \ReflectionClass($authCode);
+        // Load the client
+        $client = $this->clientManager->find($document->clientIdentifier);
+
+        if ($client === null) {
+            throw new RuntimeException(
+                sprintf('Client with identifier "%s" not found', $document->clientIdentifier)
+            );
+        }
 
         // Convert scope strings back to Scope objects
-        $scopesProperty = $reflection->getProperty('scopes');
-        $scopesProperty->setAccessible(true);
-        $scopeStrings = $scopesProperty->getValue($authCode);
-        if (is_array($scopeStrings) && !empty($scopeStrings) && !$scopeStrings[0] instanceof Scope) {
-            $scopes = array_map(static fn(string $scope): Scope => new Scope($scope), $scopeStrings);
-            $scopesProperty->setValue($authCode, $scopes);
+        $scopes = array_map(
+            static fn (string $scope): Scope => new Scope($scope),
+            $document->scopes
+        );
+
+        $authCode = new AuthorizationCode(
+            $document->identifier,
+            $document->expiry,
+            $client,
+            $document->userIdentifier,
+            $scopes
+        );
+
+        if ($document->revoked) {
+            $authCode->revoke();
         }
+
+        return $authCode;
     }
 }

@@ -37,10 +37,6 @@ services:
     networks:
       - user-service
 
-  mariadb:
-    networks:
-      - user-service
-
   workers:
     networks:
       - user-service

@@ -17,6 +17,7 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 use Faker\Factory;
 use Faker\Generator;
 use League\Bundle\OAuth2ServerBundle\Event\AuthorizationRequestResolveEvent;
+use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
 use League\Bundle\OAuth2ServerBundle\Model\Client;
 use League\Bundle\OAuth2ServerBundle\OAuth2Events;
 use League\Bundle\OAuth2ServerBundle\ValueObject\RedirectUri;
@@ -45,7 +46,8 @@ final class OAuthContext implements Context
         private SerializerInterface $serializer,
         private ?Response $response,
         private DocumentManager $documentManager,
-        private TokenStorageInterface $tokenStorage
+        private TokenStorageInterface $tokenStorage,
+        private ClientManagerInterface $clientManager
     ) {
         $this->faker = Factory::create();
     }
@@ -129,8 +131,7 @@ final class OAuthContext implements Context
     {
         $client = new Client($this->faker->name, $id, $secret);
         $client->setRedirectUris(new RedirectUri($uri));
-        $this->documentManager->persist($client);
-        $this->documentManager->flush();
+        $this->clientManager->save($client);
     }
 
     /**
@@ -140,8 +141,7 @@ final class OAuthContext implements Context
     {
         $client = new Client($this->faker->name, $id, null);
         $client->setRedirectUris(new RedirectUri($uri));
-        $this->documentManager->persist($client);
-        $this->documentManager->flush();
+        $this->clientManager->save($client);
     }
 
     /**
@@ -656,8 +656,8 @@ final class OAuthContext implements Context
 
         if ($this->clientId !== null && $this->clientSecret !== null) {
             $headers['HTTP_AUTHORIZATION'] = 'Basic ' . base64_encode(
-                    $this->clientId . ':' . $this->clientSecret
-                );
+                $this->clientId . ':' . $this->clientSecret
+            );
         }
 
         return $headers;

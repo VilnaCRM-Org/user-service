@@ -9,8 +9,6 @@ services:
     depends_on:
       database:
         condition: service_healthy
-      mariadb:
-        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       interval: 10s
@@ -45,8 +43,6 @@ services:
         STABILITY: ${STABILITY:-stable}
     depends_on:
       database:
-        condition: service_healthy
-      mariadb:
         condition: service_healthy
     restart: unless-stopped
     environment:
@@ -83,22 +79,6 @@ services:
       timeout: 5s
       retries: 10
 
-  mariadb:
-    image: mariadb:11.4
-    environment:
-      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD:-root}
-      MARIADB_DATABASE: ${DB_NAME:-oauth}
-    ports:
-      - '${DB_PORT:-3306}:3306'
-    volumes:
-      - mariadb_data:/var/lib/mysql
-    healthcheck:
-      test:
-        ['CMD', 'mariadb-admin', 'ping', '-h', 'localhost', '-u', 'root', '-p${DB_PASSWORD:-root}']
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
   redis:
     image: redis:7.2.5-alpine
     ports:
@@ -108,4 +88,3 @@ volumes:
   caddy_data:
   caddy_config:
   mongodb_data:
-  mariadb_data:

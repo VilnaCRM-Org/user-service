@@ -15,6 +15,7 @@ final class DomainUuidType extends Type
 
     public const NAME = 'domain_uuid';
 
+    #[\Override]
     public function convertToDatabaseValue(mixed $value): ?string
     {
         if ($value === null) {
@@ -32,6 +33,7 @@ final class DomainUuidType extends Type
         return (string) new Uuid((string) $value);
     }
 
+    #[\Override]
     public function convertToPHPValue(mixed $value): ?Uuid
     {
         if ($value === null) {
@@ -45,11 +47,13 @@ final class DomainUuidType extends Type
         return new Uuid((string) $value);
     }
 
+    #[\Override]
     public function closureToMongo(): string
     {
         return 'if ($value === null) { $return = null; } else { $return = (string) $value; }';
     }
 
+    #[\Override]
     public function closureToPHP(): string
     {
         return 'if ($value === null) { $return = null; } '

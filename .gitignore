@@ -35,6 +35,7 @@ summary.log
 /phpcs.xml
 ###< squizlabs/php_codesniffer ###
 /config/keys
+/config/jwt
 supervisord.*
 
 ###> qossmic/deptrac-shim ###

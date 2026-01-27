@@ -14,12 +14,12 @@ doctrine_mongodb:
         User:
           is_bundle: false
           type: xml
-          dir: '%kernel.project_dir%/config/doctrine'
+          dir: '%kernel.project_dir%/config/doctrine/User'
           prefix: 'App\User\Domain\Entity'
           alias: User
-        OAuth2ServerBundle:
+        OAuth:
           is_bundle: false
           type: xml
-          dir: '%kernel.project_dir%/config/doctrine'
-          prefix: 'League\Bundle\OAuth2ServerBundle\Model'
-          alias: OAuth2ServerBundle
+          dir: '%kernel.project_dir%/config/doctrine/OAuth'
+          prefix: 'App\OAuth\Domain\Entity'
+          alias: OAuth

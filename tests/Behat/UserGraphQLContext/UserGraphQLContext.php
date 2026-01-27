@@ -359,9 +359,9 @@ final class UserGraphQLContext implements Context
     }
 
     /**
-     * @return array<string, string|int|bool|null>
+     * @return bool|int|null|string
      */
-    private function extractMutationUserData(): array
+    private function extractMutationUserData(): string|bool|int|null
     {
         $data = $this->parseAndValidateResponse();
         $this->assertQueryNameExists($data);

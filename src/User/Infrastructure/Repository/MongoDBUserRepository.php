@@ -11,6 +11,11 @@ use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
 
+/**
+ * @extends ServiceDocumentRepository<User>
+ *
+ * @psalm-suppress UnusedClass - Used via dependency injection
+ */
 final class MongoDBUserRepository extends ServiceDocumentRepository implements
     UserRepositoryInterface
 {
@@ -22,23 +27,27 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         parent::__construct($this->registry, User::class);
     }
 
+    #[\Override]
     public function save(object $user): void
     {
         $this->documentManager->persist($user);
         $this->documentManager->flush();
     }
 
+    #[\Override]
     public function delete(object $user): void
     {
         $this->documentManager->remove($user);
         $this->documentManager->flush();
     }
 
+    #[\Override]
     public function findByEmail(string $email): ?UserInterface
     {
         return $this->findOneBy(['email' => $email]);
     }
 
+    #[\Override]
     public function findById(string $id): ?UserInterface
     {
         return $this->find($id);
@@ -47,6 +56,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     /**
      * @param array<User> $users
      */
+    #[\Override]
     public function saveBatch(array $users): void
     {
         $this->persistUsersInBatch($users);
@@ -57,6 +67,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
      *
      * @infection-ignore-all Tested in integration tests
      */
+    #[\Override]
     public function deleteAll(): void
     {
         $this->createQueryBuilder()
