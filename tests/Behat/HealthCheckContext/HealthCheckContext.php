@@ -6,7 +6,8 @@ namespace App\Tests\Behat\HealthCheckContext;
 
 use Aws\Sqs\SqsClient;
 use Behat\Behat\Context\Context;
-use Doctrine\DBAL\Connection;
+use Doctrine\ODM\MongoDB\DocumentManager;
+use MongoDB\Client;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\TraceableAdapter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -49,8 +50,31 @@ final class HealthCheckContext implements Context
      */
     public function theDatabaseIsNotAvailable(): void
     {
-        $failingConnection = $this->createFailingConnection();
-        $this->replaceService(Connection::class, $failingConnection);
+        if ($this->kernelDirty === false) {
+            $this->kernel->reboot(null);
+            $this->kernelDirty = true;
+        }
+
+        $documentManager = $this->container()->get(DocumentManager::class);
+        if (!$documentManager instanceof DocumentManager) {
+            throw new \RuntimeException('Document manager is not available');
+        }
+
+        $failingClient = new class() extends Client {
+            public function __construct()
+            {
+                parent::__construct('mongodb://127.0.0.1');
+            }
+
+            public function selectDatabase(string $databaseName, array $options = [])
+            {
+                throw new \RuntimeException('Database is not available');
+            }
+        };
+
+        $reflection = new \ReflectionProperty($documentManager, 'client');
+        $reflection->setAccessible(true);
+        $reflection->setValue($documentManager, $failingClient);
     }
 
     /**
@@ -94,17 +118,6 @@ final class HealthCheckContext implements Context
                 throw new \RuntimeException('Message broker is not available');
             }
         };
-    }
-
-    private function createFailingConnection(): FailingConnection
-    {
-        $connection = $this->container()->get(Connection::class);
-        assert($connection instanceof Connection);
-        $params = $connection->getParams();
-        $driver = $connection->getDriver();
-        $config = $connection->getConfiguration();
-
-        return new FailingConnection($params, $driver, $config);
     }
 
     private function replaceService(string $serviceId, object $service): void

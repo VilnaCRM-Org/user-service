@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\OAuth\Infrastructure\Service;
 
-use App\OAuth\Domain\Entity\AccessTokenDocument;
-use App\OAuth\Domain\Entity\AuthorizationCodeDocument;
-use App\OAuth\Domain\Entity\RefreshTokenDocument;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
 use League\Bundle\OAuth2ServerBundle\Model\AbstractClient;
+use League\Bundle\OAuth2ServerBundle\Model\AccessToken;
+use League\Bundle\OAuth2ServerBundle\Model\AuthorizationCode;
+use League\Bundle\OAuth2ServerBundle\Model\RefreshToken;
 use League\Bundle\OAuth2ServerBundle\Service\CredentialsRevokerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -19,6 +20,7 @@ final class CredentialsRevoker implements CredentialsRevokerInterface
 {
     public function __construct(
         private readonly DocumentManager $documentManager,
+        private readonly ClientManagerInterface $clientManager,
     ) {
     }
 
@@ -27,39 +29,35 @@ final class CredentialsRevoker implements CredentialsRevokerInterface
     {
         $userIdentifier = $user->getUserIdentifier();
 
-        // Revoke access tokens for user
-        $this->documentManager->createQueryBuilder(AccessTokenDocument::class)
-            ->update()
+        $this->documentManager->createQueryBuilder(AccessToken::class)
+            ->updateMany()
             ->field('revoked')->set(true)
             ->field('userIdentifier')->equals($userIdentifier)
             ->getQuery()
             ->execute();
 
-        // Revoke authorization codes for user
-        $this->documentManager->createQueryBuilder(AuthorizationCodeDocument::class)
-            ->update()
+        $this->documentManager->createQueryBuilder(AuthorizationCode::class)
+            ->updateMany()
             ->field('revoked')->set(true)
             ->field('userIdentifier')->equals($userIdentifier)
             ->getQuery()
             ->execute();
 
-        // Revoke refresh tokens - find access tokens for user first
-        $accessTokens = $this->documentManager->createQueryBuilder(AccessTokenDocument::class)
+        $accessTokens = $this->documentManager->createQueryBuilder(AccessToken::class)
             ->field('userIdentifier')->equals($userIdentifier)
-            ->select('identifier')
             ->getQuery()
             ->execute();
 
         $accessTokenIds = [];
         foreach ($accessTokens as $token) {
-            $accessTokenIds[] = $token->identifier;
+            $accessTokenIds[] = $token->getIdentifier();
         }
 
         if (!empty($accessTokenIds)) {
-            $this->documentManager->createQueryBuilder(RefreshTokenDocument::class)
-                ->update()
+            $this->documentManager->createQueryBuilder(RefreshToken::class)
+                ->updateMany()
                 ->field('revoked')->set(true)
-                ->field('accessTokenIdentifier')->in($accessTokenIds)
+                ->field('accessToken')->in($accessTokenIds)
                 ->getQuery()
                 ->execute();
         }
@@ -70,41 +68,41 @@ final class CredentialsRevoker implements CredentialsRevokerInterface
     #[\Override]
     public function revokeCredentialsForClient(AbstractClient $client): void
     {
-        $clientIdentifier = $client->getIdentifier();
+        $storedClient = $this->clientManager->find($client->getIdentifier());
 
-        // Revoke access tokens for client
-        $this->documentManager->createQueryBuilder(AccessTokenDocument::class)
-            ->update()
+        if ($storedClient === null) {
+            return;
+        }
+
+        $this->documentManager->createQueryBuilder(AccessToken::class)
+            ->updateMany()
             ->field('revoked')->set(true)
-            ->field('clientIdentifier')->equals($clientIdentifier)
+            ->field('client')->references($storedClient)
             ->getQuery()
             ->execute();
 
-        // Revoke authorization codes for client
-        $this->documentManager->createQueryBuilder(AuthorizationCodeDocument::class)
-            ->update()
+        $this->documentManager->createQueryBuilder(AuthorizationCode::class)
+            ->updateMany()
             ->field('revoked')->set(true)
-            ->field('clientIdentifier')->equals($clientIdentifier)
+            ->field('client')->references($storedClient)
             ->getQuery()
             ->execute();
 
-        // Revoke refresh tokens - find access tokens for client first
-        $accessTokens = $this->documentManager->createQueryBuilder(AccessTokenDocument::class)
-            ->field('clientIdentifier')->equals($clientIdentifier)
-            ->select('identifier')
+        $accessTokens = $this->documentManager->createQueryBuilder(AccessToken::class)
+            ->field('client')->references($storedClient)
             ->getQuery()
             ->execute();
 
         $accessTokenIds = [];
         foreach ($accessTokens as $token) {
-            $accessTokenIds[] = $token->identifier;
+            $accessTokenIds[] = $token->getIdentifier();
         }
 
         if (!empty($accessTokenIds)) {
-            $this->documentManager->createQueryBuilder(RefreshTokenDocument::class)
-                ->update()
+            $this->documentManager->createQueryBuilder(RefreshToken::class)
+                ->updateMany()
                 ->field('revoked')->set(true)
-                ->field('accessTokenIdentifier')->in($accessTokenIds)
+                ->field('accessToken')->in($accessTokenIds)
                 ->getQuery()
                 ->execute();
         }

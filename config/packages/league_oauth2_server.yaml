@@ -42,7 +42,7 @@ league_oauth2_server:
     require_code_challenge_for_public_clients: true
 
     # Whether to enable access token saving to persistence layer (default to true)
-    persist_access_token: true
+    persist_access_token: '%env(bool:OAUTH_PERSIST_ACCESS_TOKEN)%'
 
   resource_server: # Required
     # Full path to the public key file

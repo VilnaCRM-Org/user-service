@@ -3,6 +3,9 @@ doctrine_mongodb:
   auto_generate_hydrator_classes: true
   types:
     domain_uuid: 'App\Shared\Infrastructure\DoctrineType\DomainUuidType'
+    oauth2_scope: 'App\OAuth\Infrastructure\DoctrineType\OAuth2ScopeType'
+    oauth2_grant: 'App\OAuth\Infrastructure\DoctrineType\OAuth2GrantType'
+    oauth2_redirect_uri: 'App\OAuth\Infrastructure\DoctrineType\OAuth2RedirectUriType'
   connections:
     default:
       server: '%env(MONGODB_URL)%'
@@ -21,5 +24,5 @@ doctrine_mongodb:
           is_bundle: false
           type: xml
           dir: '%kernel.project_dir%/config/doctrine/OAuth'
-          prefix: 'App\OAuth\Domain\Entity'
+          prefix: 'League\Bundle\OAuth2ServerBundle\Model'
           alias: OAuth

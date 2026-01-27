@@ -175,6 +175,10 @@ services:
           secret: '%env(AWS_SQS_SECRET)%'
 
   # OAuth ODM Persistence Managers
+  App\OAuth\Infrastructure\Manager\AccessTokenManager:
+    arguments:
+      $persistAccessToken: '%env(bool:OAUTH_PERSIST_ACCESS_TOKEN)%'
+
   League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface:
     alias: App\OAuth\Infrastructure\Manager\ClientManager
 

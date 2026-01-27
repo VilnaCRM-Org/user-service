@@ -39,7 +39,6 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
         return $this->findOneBy(['tokenValue' => $token]);
     }
 
-    #[\Override]
     public function findByUserID(
         string $userID
     ): ?PasswordResetTokenInterface {
@@ -49,7 +48,6 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
         );
     }
 
-    #[\Override]
     public function delete(
         PasswordResetTokenInterface $passwordResetToken
     ): void {

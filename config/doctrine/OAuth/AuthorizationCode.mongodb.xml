@@ -5,23 +5,25 @@
                                             http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd"
 >
 
-    <document name="App\OAuth\Domain\Entity\RefreshTokenDocument" db="user_service" collection="oauth2_refresh_tokens">
-
+    <document name="League\Bundle\OAuth2ServerBundle\Model\AuthorizationCode" db="user_service" collection="oauth2_authorization_codes">
         <id field-name="identifier" type="string" strategy="NONE" />
 
         <field field-name="expiry" type="date" />
+        <field field-name="userIdentifier" type="string" nullable="true" />
         <field field-name="revoked" type="boolean" />
-        <field field-name="accessTokenIdentifier" type="string" nullable="true" />
+        <field field-name="scopes" type="oauth2_scope" nullable="true" />
+
+        <reference-one field="client" target-document="League\Bundle\OAuth2ServerBundle\Model\Client" store-as="id" />
 
         <indexes>
-            <!-- Index for expiry queries (cleanup) -->
             <index>
                 <key name="expiry" order="asc" />
             </index>
-
-            <!-- Index for access token queries -->
             <index>
-                <key name="accessTokenIdentifier" order="asc" />
+                <key name="userIdentifier" order="asc" />
+            </index>
+            <index>
+                <key name="client" order="asc" />
             </index>
         </indexes>
     </document>

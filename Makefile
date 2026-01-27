@@ -143,8 +143,10 @@ setup-test-db: ## Create database for testing purposes
 	$(SYMFONY_TEST_ENV) c:c
 	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop || true
 	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:create
-	$(SYMFONY_TEST_ENV) doctrine:schema:drop --force --full-database || true
-	$(SYMFONY_TEST_ENV) doctrine:schema:create
+	@if $(SYMFONY_TEST_ENV) list doctrine:schema:create > /dev/null 2>&1; then \
+		$(SYMFONY_TEST_ENV) doctrine:schema:drop --force --full-database || true; \
+		$(SYMFONY_TEST_ENV) doctrine:schema:create; \
+	fi
 
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 

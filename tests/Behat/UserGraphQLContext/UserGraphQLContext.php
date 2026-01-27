@@ -312,7 +312,6 @@ final class UserGraphQLContext implements Context
             true
         );
 
-        // Debug: dump response if there are errors
         if (!isset($responseData['data'])) {
             throw new \RuntimeException('GraphQL response: ' . $this->response->getContent());
         }
@@ -359,9 +358,9 @@ final class UserGraphQLContext implements Context
     }
 
     /**
-     * @return bool|int|null|string
+     * @return array<string, bool|int|string|null>|bool|int|string|null
      */
-    private function extractMutationUserData(): string|bool|int|null
+    private function extractMutationUserData(): array|string|bool|int|null
     {
         $data = $this->parseAndValidateResponse();
         $this->assertQueryNameExists($data);

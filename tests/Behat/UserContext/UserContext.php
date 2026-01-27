@@ -60,6 +60,15 @@ final class UserContext implements Context
         string $email,
         string $password
     ): void {
+        $existingUser = $this->userRepository->findByEmail($email);
+        if ($existingUser !== null) {
+            $hasher = $this->hasherFactory->getPasswordHasher($existingUser::class);
+            $hashedPassword = $hasher->hash($password, null);
+            $existingUser->setPassword($hashedPassword);
+            $this->userRepository->save($existingUser);
+            return;
+        }
+
         $user = $this->userFactory->create(
             $email,
             $this->faker->name,
@@ -81,6 +90,12 @@ final class UserContext implements Context
      */
     public function userWithEmailExists(string $email): void
     {
+        $existingUser = $this->userRepository->findByEmail($email);
+        if ($existingUser !== null) {
+            self::$userIdsByEmail[$email] = $existingUser->getId();
+            return;
+        }
+
         $password = $this->faker->password;
         $userId = $this->transformer->transformFromSymfonyUuid(
             $this->uuidFactory->create()
@@ -98,7 +113,6 @@ final class UserContext implements Context
 
         $this->userRepository->save($user);
 
-        // Track the user ID for later use in password reset tests
         self::$userIdsByEmail[$email] = (string) $userId;
     }
 
@@ -151,7 +165,6 @@ final class UserContext implements Context
         $token = $this->passwordResetTokenFactory->create($user->getId());
         $this->passwordResetTokenRepository->save($token);
 
-        // Store the token value for use in other step definitions
         self::$lastPasswordResetToken = $token->getTokenValue();
         self::$currentTokenUserEmail = $email;
     }
