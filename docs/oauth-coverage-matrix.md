@@ -199,15 +199,41 @@ These must be covered by Behat scenarios.
 
 ---
 
-## Data Migration Risk
+## Data Migration Decision
 
 **CRITICAL**: Old OAuth documents used `clientIdentifier`/`accessTokenIdentifier` string fields. New ODM mappings use references (`client` → `Client`, `accessToken` → `AccessToken`).
 
 **Impact**: Existing OAuth data will NOT hydrate unless migrated.
 
-**Decision Required**: Choose one:
-- **Option A**: Migration command to convert legacy fields to references
-- **Option B**: Wipe oauth2_* collections and reseed
+### Decision: Option B - Wipe + Reseed ✅
+
+**Rationale**:
+- Development/test environment (branch 237-migration...)
+- OAuth seeders already compatible with new League ODM mappings
+- All Behat tests pass with fresh fixtures
+- Lower complexity and risk than migration command
+- Test suite verifies correct behavior with new mappings
+
+**Implementation**:
+- OAuth collections are reset via `make setup-test-db`
+- Fresh data seeded via `app:seed-schemathesis-data` command
+- Existing `SchemathesisOAuthSeeder` already uses League models directly
+- No migration command needed
+
+**Reset Process**:
+```bash
+# For test environment
+make setup-test-db
+docker compose exec -e APP_ENV=test php bin/console app:seed-schemathesis-data
+
+# For dev environment
+docker compose exec php php bin/console doctrine:mongodb:schema:drop
+docker compose exec php php bin/console doctrine:mongodb:schema:create
+docker compose exec php php bin/console app:seed-schemathesis-data
+```
+
+**Production Consideration**:
+If this migration reaches production with existing OAuth tokens, a migration command would be required. For now, wipe+reseed is sufficient for dev/test.
 
 **Related Config**:
 - `OAUTH_PERSIST_ACCESS_TOKEN` flag (if false, refresh token queries by user/client will fail)
