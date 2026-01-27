@@ -40,7 +40,7 @@ final class CredentialsRevokerTest extends UnitTestCase
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->exactly(4))
             ->method('createQueryBuilder')
-            ->willReturnCallback(function (?string $documentName = null) use (&$builders, &$calls): object {
+            ->willReturnCallback(function (?string $documentName = null) use (&$builders, &$calls): \Doctrine\ODM\MongoDB\Query\Builder|null {
                 $calls[] = $documentName;
 
                 return array_shift($builders);
@@ -70,7 +70,7 @@ final class CredentialsRevokerTest extends UnitTestCase
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->exactly(3))
             ->method('createQueryBuilder')
-            ->willReturnCallback(function (?string $documentName = null) use (&$builders): object {
+            ->willReturnCallback(function (?string $documentName = null) use (&$builders): \Doctrine\ODM\MongoDB\Query\Builder|null {
                 return array_shift($builders);
             });
         $documentManager->expects($this->once())->method('flush');
@@ -116,7 +116,7 @@ final class CredentialsRevokerTest extends UnitTestCase
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->exactly(4))
             ->method('createQueryBuilder')
-            ->willReturnCallback(function (?string $documentName = null) use (&$builders): object {
+            ->willReturnCallback(function (?string $documentName = null) use (&$builders): \Doctrine\ODM\MongoDB\Query\Builder|null {
                 return array_shift($builders);
             });
         $documentManager->expects($this->once())->method('flush');
@@ -161,21 +161,24 @@ final class CredentialsRevokerTest extends UnitTestCase
     {
         $identifier = $this->faker->userName();
 
-        return new class ($identifier) implements UserInterface {
+        return new class($identifier) implements UserInterface {
             public function __construct(private readonly string $identifier)
             {
             }
 
+            #[\Override]
             public function getUserIdentifier(): string
             {
                 return $this->identifier;
             }
 
+            #[\Override]
             public function getRoles(): array
             {
                 return [];
             }
 
+            #[\Override]
             public function eraseCredentials(): void
             {
             }

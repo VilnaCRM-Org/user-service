@@ -42,23 +42,26 @@ final class SchemathesisOAuthSeederTest extends UnitTestCase
         $documentManager->expects($this->once())->method('remove')->with($existingCode);
         $documentManager->expects($this->once())->method('flush');
 
-        $authorizationCodeManager = new class ($existingCode) implements AuthorizationCodeManagerInterface {
+        $authorizationCodeManager = new class($existingCode) implements AuthorizationCodeManagerInterface {
             private ?AuthorizationCodeInterface $savedCode = null;
 
             public function __construct(private readonly AuthorizationCodeInterface $existingCode)
             {
             }
 
+            #[\Override]
             public function find(string $identifier): ?AuthorizationCodeInterface
             {
                 return $this->existingCode;
             }
 
+            #[\Override]
             public function save(AuthorizationCodeInterface $authCode): void
             {
                 $this->savedCode = $authCode;
             }
 
+            #[\Override]
             public function clearExpired(): int
             {
                 return 0;

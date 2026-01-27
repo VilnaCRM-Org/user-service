@@ -63,7 +63,7 @@ final class OAuth2ScopeTypeTest extends UnitTestCase
     {
         $type = $this->getType();
         $value = $this->faker->lexify('scope_????');
-        $object = new class ($value) {
+        $object = new class($value) {
             public function __construct(private readonly string $value)
             {
             }

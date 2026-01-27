@@ -17,8 +17,11 @@ final class UniqueEmailValidator extends ConstraintValidator
     ) {
     }
 
+    /**
+     * @param null|string $value
+     */
     #[\Override]
-    public function validate(mixed $value, Constraint $constraint): void
+    public function validate(?string $value, Constraint $constraint): void
     {
         if (!is_string($value)) {
             return;

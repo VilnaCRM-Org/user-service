@@ -28,7 +28,7 @@ final class ObjectMethodEmailSourceTest extends UnitTestCase
     public function testReturnsNullWhenMethodDoesNotReturnString(): void
     {
         $source = new ObjectMethodEmailSource('getEmail');
-        $entry = new class () {
+        $entry = new class() {
             public function getEmail(): int
             {
                 return 123;
@@ -42,7 +42,7 @@ final class ObjectMethodEmailSourceTest extends UnitTestCase
     {
         $email = $this->faker->email();
         $source = new ObjectMethodEmailSource('getEmail');
-        $entry = new class ($email) {
+        $entry = new class($email) {
             public function __construct(private readonly string $email)
             {
             }

@@ -66,6 +66,7 @@ final class HealthCheckContext implements Context
                 parent::__construct('mongodb://127.0.0.1');
             }
 
+            #[\Override]
             public function selectDatabase(string $databaseName, array $options = [])
             {
                 throw new \RuntimeException('Database is not available');

@@ -15,6 +15,7 @@ final class OAuth2GrantType extends Type
 
     public const NAME = 'oauth2_grant';
 
+    #[\Override]
     public function convertToDatabaseValue(mixed $value): ?array
     {
         if ($value === null) {
@@ -28,6 +29,7 @@ final class OAuth2GrantType extends Type
         return $this->normalizeToStrings($value);
     }
 
+    #[\Override]
     public function convertToPHPValue(mixed $value): array
     {
         if ($value === null) {
@@ -44,6 +46,7 @@ final class OAuth2GrantType extends Type
         );
     }
 
+    #[\Override]
     public function closureToMongo(): string
     {
         return 'if ($value === null) { $return = null; }'

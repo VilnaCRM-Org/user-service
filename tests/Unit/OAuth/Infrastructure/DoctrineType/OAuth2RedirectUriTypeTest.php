@@ -63,7 +63,7 @@ final class OAuth2RedirectUriTypeTest extends UnitTestCase
     {
         $type = $this->getType();
         $value = $this->faker->url();
-        $object = new class ($value) {
+        $object = new class($value) {
             public function __construct(private readonly string $value)
             {
             }

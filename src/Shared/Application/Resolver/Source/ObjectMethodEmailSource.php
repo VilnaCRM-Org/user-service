@@ -10,8 +10,11 @@ final class ObjectMethodEmailSource implements BatchEmailSource
     {
     }
 
+    /**
+     * @param \stdClass|object|string $entry
+     */
     #[\Override]
-    public function extract(mixed $entry): ?string
+    public function extract(string|\stdClass|object $entry): ?string
     {
         if (!is_object($entry)) {
             return null;

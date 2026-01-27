@@ -72,7 +72,7 @@ final class ClientManagerTest extends UnitTestCase
     public function testListAppliesFiltersAndReturnsClients(): void
     {
         $client = $this->makeClient();
-        $result = new class ([5 => $client]) {
+        $result = new class([5 => $client]) {
             public function __construct(private readonly array $items)
             {
             }

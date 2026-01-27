@@ -45,7 +45,12 @@ final class RefreshTokenManager implements RefreshTokenManagerInterface
         return $this->deletedCount($result);
     }
 
-    private function deletedCount(mixed $result): int
+    /**
+     * @param array|int|null|object $result
+     *
+     * @psalm-param array<string, mixed>|int|null|object $result
+     */
+    private function deletedCount(array|object|int|null $result): int
     {
         if (is_int($result)) {
             return $result;
