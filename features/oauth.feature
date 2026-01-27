@@ -153,3 +153,14 @@ Feature: OAuth authorization
     And passing client id "PublicPkceId", redirect_uri "https://example.com", auth code and code verifier
     When obtaining access token with "authorization_code" grant-type
     Then access token should be provided
+
+  Scenario: Authorization code reuse is prevented
+    Given client with id "CodeReuseId", secret "CodeReuseSecret" and redirect uri "https://example.com" exists
+    And passing client id "CodeReuseId" and redirect_uri "https://example.com"
+    And authenticating user with email "codereuseuser@example.com" and password "password"
+    And obtaining auth code
+    And passing client id "CodeReuseId", client secret "CodeReuseSecret", redirect_uri "https://example.com" and auth code
+    When obtaining access token with "authorization_code" grant-type
+    Then access token should be provided
+    When obtaining access token with "authorization_code" grant-type
+    Then invalid grant error should be returned
