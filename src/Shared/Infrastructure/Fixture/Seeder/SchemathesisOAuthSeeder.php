@@ -37,11 +37,11 @@ final readonly class SchemathesisOAuthSeeder
 
     public function seedAuthorizationCode(
         Client $client,
-        UserInterface $user
+        UserInterface $user,
+        ?string $authorizationCodeId = null
     ): void {
-        $existingAuthCode = $this->authorizationCodeManager->find(
-            SchemathesisFixtures::AUTHORIZATION_CODE
-        );
+        $authorizationCodeId ??= SchemathesisFixtures::AUTHORIZATION_CODE;
+        $existingAuthCode = $this->authorizationCodeManager->find($authorizationCodeId);
 
         if ($existingAuthCode !== null) {
             $this->documentManager->remove($existingAuthCode);
@@ -49,7 +49,7 @@ final readonly class SchemathesisOAuthSeeder
         }
 
         $authorizationCode = new AuthorizationCode(
-            SchemathesisFixtures::AUTHORIZATION_CODE,
+            $authorizationCodeId,
             new DateTimeImmutable('+15 minutes'),
             $client,
             $user->getId(),

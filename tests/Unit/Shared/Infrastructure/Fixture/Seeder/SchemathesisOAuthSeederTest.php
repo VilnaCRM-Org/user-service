@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Infrastructure\Fixture\Seeder;
 
-use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Infrastructure\Fixture\Seeder\SchemathesisOAuthSeeder;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
@@ -24,7 +23,12 @@ final class SchemathesisOAuthSeederTest extends UnitTestCase
         $client = $this->createTestClient();
         $user = $this->createTestUser();
         $userId = $user->getId();
-        $existingCode = $this->createExistingAuthorizationCode($client, $userId);
+        $authorizationCodeId = $this->faker->lexify('auth_code_????????');
+        $existingCode = $this->createExistingAuthorizationCode(
+            $client,
+            $userId,
+            $authorizationCodeId
+        );
 
         $documentManager = $this->createDocumentManagerMock($existingCode);
         $authorizationCodeManager = $this->createAuthCodeManager($existingCode);
@@ -35,9 +39,14 @@ final class SchemathesisOAuthSeederTest extends UnitTestCase
             $documentManager,
             $authorizationCodeManager
         );
-        $seeder->seedAuthorizationCode($client, $user);
+        $seeder->seedAuthorizationCode($client, $user, $authorizationCodeId);
 
-        $this->assertNewCodeCreated($authorizationCodeManager, $existingCode, $userId);
+        $this->assertNewCodeCreated(
+            $authorizationCodeManager,
+            $existingCode,
+            $userId,
+            $authorizationCodeId
+        );
     }
 
     private function createTestClient(): Client
@@ -60,10 +69,11 @@ final class SchemathesisOAuthSeederTest extends UnitTestCase
 
     private function createExistingAuthorizationCode(
         Client $client,
-        string $userId
+        string $userId,
+        string $authorizationCodeId
     ): AuthorizationCode {
         return new AuthorizationCode(
-            SchemathesisFixtures::AUTHORIZATION_CODE,
+            $authorizationCodeId,
             new DateTimeImmutable('+10 minutes'),
             $client,
             $userId,
@@ -122,15 +132,13 @@ final class SchemathesisOAuthSeederTest extends UnitTestCase
     private function assertNewCodeCreated(
         AuthorizationCodeManagerInterface $manager,
         AuthorizationCode $existingCode,
-        string $userId
+        string $userId,
+        string $authorizationCodeId
     ): void {
         $savedCode = $manager->savedCode();
         $this->assertNotNull($savedCode);
         $this->assertNotSame($existingCode, $savedCode);
-        $this->assertSame(
-            SchemathesisFixtures::AUTHORIZATION_CODE,
-            $savedCode->getIdentifier()
-        );
+        $this->assertSame($authorizationCodeId, $savedCode->getIdentifier());
         $this->assertSame($userId, $savedCode->getUserIdentifier());
     }
 }
