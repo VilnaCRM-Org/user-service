@@ -8,6 +8,7 @@ use Aws\Sqs\SqsClient;
 use Behat\Behat\Context\Context;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use MongoDB\Client;
+use MongoDB\Database;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\TraceableAdapter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -60,14 +61,9 @@ final class HealthCheckContext implements Context
             throw new \RuntimeException('Document manager is not available');
         }
 
-        $failingClient = new class() extends Client {
-            public function __construct()
-            {
-                parent::__construct('mongodb://127.0.0.1');
-            }
-
+        $failingClient = new class('mongodb://127.0.0.1') extends Client {
             #[\Override]
-            public function selectDatabase(string $databaseName, array $options = []): void
+            public function selectDatabase(string $databaseName, array $options = []): Database
             {
                 throw new \RuntimeException('Database is not available');
             }
