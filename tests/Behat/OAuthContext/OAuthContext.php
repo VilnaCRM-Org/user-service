@@ -637,6 +637,22 @@ final class OAuthContext implements Context
     }
 
     /**
+     * @Then unsupported response type error should be returned
+     */
+    public function unsupportedResponseTypeError(): void
+    {
+        Assert::assertSame(
+            Response::HTTP_FOUND,
+            $this->response->getStatusCode()
+        );
+
+        $params = $this->requestHelper->getRedirectParams($this->response);
+
+        Assert::assertArrayHasKey('error', $params);
+        Assert::assertSame('unsupported_response_type', $params['error']);
+    }
+
+    /**
      * @Then unsupported grant type error should be returned
      */
     public function unsupportedGrantTypeError(): void

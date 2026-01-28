@@ -66,7 +66,7 @@ Feature: OAuth authorization
     And passing client id "BadResponseId" and redirect_uri "https://example.com"
     And using response type "invalid"
     When I request the authorization endpoint
-    Then unsupported grant type error should be returned
+    Then unsupported response type error should be returned
 
   Scenario: Failing to obtain authorization code with invalid scope
     Given client with id "BadScopeId", secret "BadScopeSecret" and redirect uri "https://example.com" exists
