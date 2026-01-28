@@ -88,10 +88,6 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.exception, priority: 0 }
 
-  App\Shared\Application\EventListener\OAuthUnsupportedResponseTypeListener:
-    tags:
-      - { name: kernel.event_listener, event: kernel.response, priority: 0 }
-
   App\Shared\Application\QueryParameter\AllowedParametersRule:
     arguments:
       $allowedParameters:
