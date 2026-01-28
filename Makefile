@@ -237,18 +237,15 @@ commands: ## List all Symfony commands
 	@$(SYMFONY) list
 
 load-fixtures: ## Build the DB, control the schema validity, load fixtures and check the migration status
-	@$(SYMFONY) doctrine:cache:clear-metadata
-	@$(SYMFONY) doctrine:database:create --if-not-exists
-	@$(SYMFONY) doctrine:schema:drop --force
-	@$(SYMFONY) doctrine:schema:create
-	@$(SYMFONY) doctrine:schema:validate
-	@$(SYMFONY) d:f:l
+	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata
+	@$(SYMFONY) doctrine:mongodb:schema:drop
+	@$(SYMFONY) doctrine:mongodb:schema:create
+	@$(SYMFONY) doctrine:mongodb:fixtures:load --no-interaction
 
 reset-db: ## Recreate the database schema for ephemeral test runs
-	@$(SYMFONY) doctrine:cache:clear-metadata
-	@$(SYMFONY) doctrine:database:create --if-not-exists
-	@$(SYMFONY) doctrine:schema:drop --force
-	@$(SYMFONY) doctrine:schema:create
+	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata
+	@$(SYMFONY) doctrine:mongodb:schema:drop
+	@$(SYMFONY) doctrine:mongodb:schema:create
 	@$(EXEC_PHP) php bin/console app:seed-schemathesis-data
 
 coverage-html: ## Create the code coverage report with PHPUnit

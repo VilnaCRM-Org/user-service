@@ -49,6 +49,8 @@ return [
         DisallowMixedTypeHintSniff::class => [
             'exclude' => [
                 'tests/Unit/Shared/Infrastructure/Bus/Event/Async/RecordingLogger.php',
+                'tests/Unit/OAuth/Infrastructure/Service/CredentialsRevokerTest.php',
+                'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactory.php',
             ],
         ],
         LineLengthSniff::class => [
@@ -60,6 +62,8 @@ return [
                 'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactory.php',
                 'src/User/Infrastructure/Repository/MariaDBPasswordResetTokenRepository.php',
                 'tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php',
+                'tests/Integration/Internal/HealthCheck/Infrastructure/EventSubscriber/DBCheckSubscriberTest.php',
+                'tests/Unit/DataFixtures/Command/SeedSchemathesisDataCommandTest.php',
             ],
             'ignoreComments' => true,
             'lineLimit' => 100,
@@ -98,6 +102,9 @@ return [
                 'tests/Unit/User/Application/EventSubscriber/ConfirmationEmailSendEventSubscriberTest.php',
                 'tests/Unit/User/Application/EventSubscriber/EmailChangedEventSubscriberTest.php',
                 'tests/Unit/User/Application/EventSubscriber/UserRegisteredEventSubscriberTest.php',
+                'tests/Unit/OAuth/Infrastructure/Manager/ClientManagerTest.php',
+                'tests/Unit/OAuth/Infrastructure/Service/CredentialsRevokerTest.php',
+                'tests/Unit/Shared/Infrastructure/Fixture/Seeder/SchemathesisOAuthSeederTest.php',
             ],
         ],
         UselessOverridingMethodSniff::class => [

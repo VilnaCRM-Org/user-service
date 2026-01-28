@@ -21,34 +21,77 @@ final class SchemathesisOAuthSeederTest extends UnitTestCase
 {
     public function testSeedAuthorizationCodeRemovesExistingAuthorizationCode(): void
     {
-        $client = new Client(
+        $client = $this->createTestClient();
+        $user = $this->createTestUser();
+        $userId = $user->getId();
+        $existingCode = $this->createExistingAuthorizationCode($client, $userId);
+
+        $documentManager = $this->createDocumentManagerMock($existingCode);
+        $authorizationCodeManager = $this->createAuthCodeManager($existingCode);
+        $clientManager = $this->createMock(ClientManagerInterface::class);
+
+        $seeder = new SchemathesisOAuthSeeder(
+            $clientManager,
+            $documentManager,
+            $authorizationCodeManager
+        );
+        $seeder->seedAuthorizationCode($client, $user);
+
+        $this->assertNewCodeCreated($authorizationCodeManager, $existingCode, $userId);
+    }
+
+    private function createTestClient(): Client
+    {
+        return new Client(
             $this->faker->company(),
             $this->faker->lexify('client_????????'),
             $this->faker->optional()->sha1()
         );
+    }
+
+    private function createTestUser(): UserInterface
+    {
         $userId = $this->faker->uuid();
         $user = $this->createMock(UserInterface::class);
         $user->method('getId')->willReturn($userId);
 
-        $existingCode = new AuthorizationCode(
+        return $user;
+    }
+
+    private function createExistingAuthorizationCode(
+        Client $client,
+        string $userId
+    ): AuthorizationCode {
+        return new AuthorizationCode(
             SchemathesisFixtures::AUTHORIZATION_CODE,
             new DateTimeImmutable('+10 minutes'),
             $client,
             $userId,
             [new Scope($this->faker->lexify('scope_????'))]
         );
+    }
 
+    private function createDocumentManagerMock(
+        AuthorizationCode $existingCode
+    ): DocumentManager {
         $documentManager = $this->createMock(DocumentManager::class);
-        $documentManager->expects($this->once())->method('remove')->with($existingCode);
+        $documentManager->expects($this->once())
+            ->method('remove')
+            ->with($existingCode);
         $documentManager->expects($this->once())->method('flush');
 
-        $authorizationCodeManager = new class($existingCode) implements
-            AuthorizationCodeManagerInterface
-{
+        return $documentManager;
+    }
+
+    private function createAuthCodeManager(
+        AuthorizationCode $existingCode
+    ): AuthorizationCodeManagerInterface {
+        return new class($existingCode) implements AuthorizationCodeManagerInterface {
             private ?AuthorizationCodeInterface $savedCode = null;
 
-            public function __construct(private readonly AuthorizationCodeInterface $existingCode)
-            {
+            public function __construct(
+                private readonly AuthorizationCodeInterface $existingCode
+            ) {
             }
 
             #[\Override]
@@ -74,20 +117,20 @@ final class SchemathesisOAuthSeederTest extends UnitTestCase
                 return $this->savedCode;
             }
         };
+    }
 
-        $clientManager = $this->createMock(ClientManagerInterface::class);
-
-        $seeder = new SchemathesisOAuthSeeder(
-            $clientManager,
-            $documentManager,
-            $authorizationCodeManager
-        );
-        $seeder->seedAuthorizationCode($client, $user);
-
-        $savedCode = $authorizationCodeManager->savedCode();
+    private function assertNewCodeCreated(
+        AuthorizationCodeManagerInterface $manager,
+        AuthorizationCode $existingCode,
+        string $userId
+    ): void {
+        $savedCode = $manager->savedCode();
         $this->assertNotNull($savedCode);
         $this->assertNotSame($existingCode, $savedCode);
-        $this->assertSame(SchemathesisFixtures::AUTHORIZATION_CODE, $savedCode->getIdentifier());
+        $this->assertSame(
+            SchemathesisFixtures::AUTHORIZATION_CODE,
+            $savedCode->getIdentifier()
+        );
         $this->assertSame($userId, $savedCode->getUserIdentifier());
     }
 }

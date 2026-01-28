@@ -54,7 +54,9 @@ final class OAuth2RedirectUriTypeTest extends UnitTestCase
     {
         $type = $this->getType();
 
-        $this->expectExceptionMessage('OAuth2RedirectUriType expects an array of stringable values.');
+        $this->expectExceptionMessage(
+            'OAuth2RedirectUriType expects an array of stringable values.'
+        );
 
         $type->convertToDatabaseValue($this->faker->word());
     }
@@ -83,7 +85,9 @@ final class OAuth2RedirectUriTypeTest extends UnitTestCase
     {
         $type = $this->getType();
 
-        $this->expectExceptionMessage('OAuth2RedirectUriType expects an array of stringable values.');
+        $this->expectExceptionMessage(
+            'OAuth2RedirectUriType expects an array of stringable values.'
+        );
 
         $type->convertToDatabaseValue([new stdClass()]);
     }

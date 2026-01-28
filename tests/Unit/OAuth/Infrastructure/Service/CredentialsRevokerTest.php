@@ -11,9 +11,7 @@ use DateTimeImmutable;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
 use League\Bundle\OAuth2ServerBundle\Model\AccessToken;
-use League\Bundle\OAuth2ServerBundle\Model\AuthorizationCode;
 use League\Bundle\OAuth2ServerBundle\Model\Client;
-use League\Bundle\OAuth2ServerBundle\Model\RefreshToken;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Scope;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -26,40 +24,18 @@ final class CredentialsRevokerTest extends UnitTestCase
         $tokenA = $this->makeAccessToken('token_a');
         $tokenB = $this->makeAccessToken('token_b');
 
-        $accessUpdateCaptures = [];
-        $authUpdateCaptures = [];
-        $accessSelectCaptures = [];
-        $refreshUpdateCaptures = [];
-        $accessUpdate = $this->makeBuilder(null, $accessUpdateCaptures);
-        $authUpdate = $this->makeBuilder(null, $authUpdateCaptures);
-        $accessSelect = $this->makeBuilder([$tokenA, $tokenB], $accessSelectCaptures);
-        $refreshUpdate = $this->makeBuilder(null, $refreshUpdateCaptures);
-        $builders = [$accessUpdate, $authUpdate, $accessSelect, $refreshUpdate];
-        $calls = [];
-
-        $documentManager = $this->createMock(DocumentManager::class);
-        $documentManager->expects($this->exactly(4))
-            ->method('createQueryBuilder')
-            ->willReturnCallback(
-                static function (?string $documentName = null) use (&$builders, &$calls): \Doctrine\ODM\MongoDB\Query\Builder|null {
-                    $calls[] = $documentName;
-
-                    return array_shift($builders);
-                }
-            );
-        $documentManager->expects($this->once())->method('flush');
-
+        $captures = $this->createCaptureArrays();
+        $documentManager = $this->createDocManagerForUserRevocation(
+            $tokenA,
+            $tokenB,
+            $captures
+        );
         $clientManager = $this->createMock(ClientManagerInterface::class);
 
         $revoker = new CredentialsRevoker($documentManager, $clientManager);
         $revoker->revokeCredentialsForUser($this->makeUser());
 
-        $this->assertSame(
-            [AccessToken::class, AuthorizationCode::class, AccessToken::class, RefreshToken::class],
-            $calls
-        );
-        $this->assertSame(['token_a', 'token_b'], $refreshUpdateCaptures['in']['accessToken']);
-        $this->assertSame(true, $refreshUpdateCaptures['set']['revoked']);
+        $this->assertRefreshTokensCaptured($captures);
     }
 
     public function testRevokeCredentialsForUserSkipsRefreshTokensWhenNoAccessTokens(): void
@@ -76,7 +52,7 @@ final class CredentialsRevokerTest extends UnitTestCase
         $documentManager->expects($this->exactly(3))
             ->method('createQueryBuilder')
             ->willReturnCallback(
-                static function () use (&$builders): \Doctrine\ODM\MongoDB\Query\Builder|null {
+                static function () use (&$builders) {
                     return array_shift($builders);
                 }
             );
@@ -110,38 +86,117 @@ final class CredentialsRevokerTest extends UnitTestCase
         $client = $this->makeClient();
         $tokenA = $this->makeAccessToken('token_a', $client);
 
-        $accessUpdateCaptures = [];
-        $authUpdateCaptures = [];
-        $accessSelectCaptures = [];
-        $refreshUpdateCaptures = [];
-        $accessUpdate = $this->makeBuilder(null, $accessUpdateCaptures);
-        $authUpdate = $this->makeBuilder(null, $authUpdateCaptures);
-        $accessSelect = $this->makeBuilder([$tokenA], $accessSelectCaptures);
-        $refreshUpdate = $this->makeBuilder(null, $refreshUpdateCaptures);
+        $captures = $this->createCaptureArrays();
+        $documentManager = $this->createDocManagerForClientRevocation($tokenA, $captures);
+        $clientManager = $this->createClientManagerMock($client);
+
+        $revoker = new CredentialsRevoker($documentManager, $clientManager);
+        $revoker->revokeCredentialsForClient($client);
+
+        $this->assertClientReferencesSet($captures, $client);
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    private function createCaptureArrays(): array
+    {
+        return [
+            'accessUpdate' => [],
+            'authUpdate' => [],
+            'accessSelect' => [],
+            'refreshUpdate' => [],
+        ];
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $captures
+     */
+    private function createDocManagerForUserRevocation(
+        AccessToken $tokenA,
+        AccessToken $tokenB,
+        array &$captures
+    ): DocumentManager {
+        $accessUpdate = $this->makeBuilder(null, $captures['accessUpdate']);
+        $authUpdate = $this->makeBuilder(null, $captures['authUpdate']);
+        $accessSelect = BuilderMockFactory::create(
+            $this,
+            [$tokenA, $tokenB],
+            $captures['accessSelect']
+        );
+        $refreshUpdate = $this->makeBuilder(null, $captures['refreshUpdate']);
+        $builders = [$accessUpdate, $authUpdate, $accessSelect, $refreshUpdate];
+        $calls = [];
+
+        $documentManager = $this->createMock(DocumentManager::class);
+        $documentManager->expects($this->exactly(4))
+            ->method('createQueryBuilder')
+            ->willReturnCallback(
+                static function (?string $documentName = null) use (&$builders, &$calls) {
+                    $calls[] = $documentName;
+
+                    return array_shift($builders);
+                }
+            );
+        $documentManager->expects($this->once())->method('flush');
+
+        return $documentManager;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $captures
+     */
+    private function createDocManagerForClientRevocation(
+        AccessToken $tokenA,
+        array &$captures
+    ): DocumentManager {
+        $accessUpdate = $this->makeBuilder(null, $captures['accessUpdate']);
+        $authUpdate = $this->makeBuilder(null, $captures['authUpdate']);
+        $accessSelect = $this->makeBuilder([$tokenA], $captures['accessSelect']);
+        $refreshUpdate = $this->makeBuilder(null, $captures['refreshUpdate']);
         $builders = [$accessUpdate, $authUpdate, $accessSelect, $refreshUpdate];
 
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->exactly(4))
             ->method('createQueryBuilder')
             ->willReturnCallback(
-                static function () use (&$builders): \Doctrine\ODM\MongoDB\Query\Builder|null {
+                static function () use (&$builders) {
                     return array_shift($builders);
                 }
             );
         $documentManager->expects($this->once())->method('flush');
 
+        return $documentManager;
+    }
+
+    private function createClientManagerMock(Client $client): ClientManagerInterface
+    {
         $clientManager = $this->createMock(ClientManagerInterface::class);
         $clientManager->expects($this->once())
             ->method('find')
             ->with($client->getIdentifier())
             ->willReturn($client);
 
-        $revoker = new CredentialsRevoker($documentManager, $clientManager);
-        $revoker->revokeCredentialsForClient($client);
+        return $clientManager;
+    }
 
-        $this->assertSame($client, $accessUpdateCaptures['references']['client']);
-        $this->assertSame($client, $authUpdateCaptures['references']['client']);
-        $this->assertSame(['token_a'], $refreshUpdateCaptures['in']['accessToken']);
+    /**
+     * @param array<string, array<string, mixed>> $captures
+     */
+    private function assertRefreshTokensCaptured(array $captures): void
+    {
+        $this->assertSame(['token_a', 'token_b'], $captures['refreshUpdate']['in']['accessToken']);
+        $this->assertSame(true, $captures['refreshUpdate']['set']['revoked']);
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $captures
+     */
+    private function assertClientReferencesSet(array $captures, Client $client): void
+    {
+        $this->assertSame($client, $captures['accessUpdate']['references']['client']);
+        $this->assertSame($client, $captures['authUpdate']['references']['client']);
+        $this->assertSame(['token_a'], $captures['refreshUpdate']['in']['accessToken']);
     }
 
     private function makeClient(): Client

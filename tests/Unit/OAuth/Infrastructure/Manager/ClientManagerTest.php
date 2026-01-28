@@ -285,7 +285,8 @@ final class ClientManagerTest extends UnitTestCase
             ->with(Client::class)
             ->willReturn($builder);
 
-        $filter = ClientFilter::create()->addRedirectUriCriteria(new RedirectUri('https://test.com'));
+        $filter = ClientFilter::create()
+            ->addRedirectUriCriteria(new RedirectUri('https://test.com'));
 
         $manager = new ClientManager($documentManager, $dispatcher);
 

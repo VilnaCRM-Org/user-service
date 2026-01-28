@@ -69,6 +69,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
      *
      * @param array<User> $users
      */
+    #[\Override]
     public function deleteBatch(array $users): void
     {
         $this->removeUsersInBatch($users);
