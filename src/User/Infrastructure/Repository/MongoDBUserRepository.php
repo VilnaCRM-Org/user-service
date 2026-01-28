@@ -120,25 +120,21 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
      */
     private function removeUsersInBatch(array $users): void
     {
-        $this->entityManager->getConnection()
-            ->getConfiguration()
-            ->setMiddlewares([new Middleware(new NullLogger())]);
-
         $usersForRemoval = array_values($users);
 
         array_walk(
             $usersForRemoval,
             function (User $user, int $index): void {
                 $position = $index + 1;
-                $this->entityManager->remove($user);
+                $this->documentManager->remove($user);
 
                 if ($position % $this->batchSize === 0) {
-                    $this->entityManager->flush();
-                    $this->entityManager->clear();
+                    $this->documentManager->flush();
+                    $this->documentManager->clear();
                 }
             }
         );
-        $this->entityManager->flush();
-        $this->entityManager->clear();
+        $this->documentManager->flush();
+        $this->documentManager->clear();
     }
 }
