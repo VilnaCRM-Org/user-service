@@ -120,19 +120,23 @@ final class ClientManagerTest extends UnitTestCase
             ->with(Client::class)
             ->willReturn($builder);
 
+        $grant = $this->faker->lexify('grant_????????');
+        $redirectUri = $this->faker->url();
+        $scope = $this->faker->lexify('scope_????????');
+
         $filter = ClientFilter::create()
-            ->addGrantCriteria(new Grant('authorization_code'))
-            ->addRedirectUriCriteria(new RedirectUri('https://example.com/callback'))
-            ->addScopeCriteria(new Scope('email'));
+            ->addGrantCriteria(new Grant($grant))
+            ->addRedirectUriCriteria(new RedirectUri($redirectUri))
+            ->addScopeCriteria(new Scope($scope));
 
         $manager = new ClientManager($documentManager, $dispatcher);
 
         $resultClients = $manager->list($filter);
 
         $this->assertSame([$client], $resultClients);
-        $this->assertSame(['authorization_code'], $captures['all']['grants']);
-        $this->assertSame(['https://example.com/callback'], $captures['all']['redirectUris']);
-        $this->assertSame(['email'], $captures['all']['scopes']);
+        $this->assertSame([$grant], $captures['all']['grants']);
+        $this->assertSame([$redirectUri], $captures['all']['redirectUris']);
+        $this->assertSame([$scope], $captures['all']['scopes']);
     }
 
     public function testListWithNullFilterReturnsAllClients(): void
