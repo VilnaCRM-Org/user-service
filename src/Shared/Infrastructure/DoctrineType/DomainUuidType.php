@@ -38,7 +38,7 @@ final class DomainUuidType extends Type
     #[\Override]
     public function closureToMongo(): string
     {
-        return 'if ($value === null) { $return = null; } else { $return = (string) $value; }';
+        return 'if ($value === null) { $return = null; } elseif ($value instanceof \App\Shared\Domain\ValueObject\Uuid) { $return = (string) $value; } else { $return = (string) new \App\Shared\Domain\ValueObject\Uuid((string) $value); }';
     }
 
     #[\Override]
