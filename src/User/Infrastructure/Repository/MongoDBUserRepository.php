@@ -10,6 +10,7 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use InvalidArgumentException;
 
 /**
  * @extends ServiceDocumentRepository<User>
@@ -25,7 +26,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         private readonly int $batchSize,
     ) {
         if ($batchSize <= 0) {
-            throw new \InvalidArgumentException('Batch size must be greater than zero.');
+            throw new InvalidArgumentException('Batch size must be greater than zero.');
         }
         parent::__construct($this->registry, User::class);
     }

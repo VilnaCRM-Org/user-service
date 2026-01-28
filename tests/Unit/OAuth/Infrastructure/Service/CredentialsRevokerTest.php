@@ -120,8 +120,7 @@ final class CredentialsRevokerTest extends UnitTestCase
     ): DocumentManager {
         $accessUpdate = $this->makeBuilder(null, $captures['accessUpdate']);
         $authUpdate = $this->makeBuilder(null, $captures['authUpdate']);
-        $accessSelect = BuilderMockFactory::create(
-            $this,
+        $accessSelect = $this->makeBuilder(
             [$tokenA, $tokenB],
             $captures['accessSelect']
         );
@@ -197,8 +196,7 @@ final class CredentialsRevokerTest extends UnitTestCase
         array $captures,
         Client $client,
         string $accessTokenIdentifier
-    ): void
-    {
+    ): void {
         $this->assertSame($client, $captures['accessUpdate']['references']['client']);
         $this->assertSame($client, $captures['authUpdate']['references']['client']);
         $this->assertSame([$accessTokenIdentifier], $captures['refreshUpdate']['in']['accessToken']);

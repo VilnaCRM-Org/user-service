@@ -6,6 +6,9 @@ namespace App\Shared\Application\EventListener;
 
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 
+/**
+ * @psalm-suppress UnusedClass - registered via services.yaml
+ */
 final class OAuthUnsupportedResponseTypeListener
 {
     private const UNSUPPORTED_GRANT_TYPE = 'error=unsupported_grant_type';
