@@ -108,7 +108,7 @@ Feature: User Operations Localization
   Scenario: Creating a batch of users with initials that contains only spaces and Ukrainian language
     Given sending a batch of users
     And with language "uk"
-    And with user with email "testBatchSpaces@mail.com", initials " ", password "pAss1"
+    And with user with email "testBatchSpaces@mail.com", initials " ", password "pAssWORD1"
     When POST request is send to "/api/users/batch"
     Then the response status code should be 422
     And violation should be "Ім'я та прізвище не можуть складатися лише з пробілів"
