@@ -247,14 +247,15 @@ final class ClientManagerTest extends UnitTestCase
             ->with(Client::class)
             ->willReturn($builder);
 
-        $filter = ClientFilter::create()->addGrantCriteria(new Grant('client_credentials'));
+        $grant = $this->faker->lexify('grant_????????');
+        $filter = ClientFilter::create()->addGrantCriteria(new Grant($grant));
 
         $manager = new ClientManager($documentManager, $dispatcher);
 
         $resultClients = $manager->list($filter);
 
         $this->assertSame([$client], $resultClients);
-        $this->assertSame(['client_credentials'], $captures['all']['grants']);
+        $this->assertSame([$grant], $captures['all']['grants']);
         $this->assertArrayNotHasKey('redirectUris', $captures['all'] ?? []);
         $this->assertArrayNotHasKey('scopes', $captures['all'] ?? []);
     }
@@ -289,15 +290,16 @@ final class ClientManagerTest extends UnitTestCase
             ->with(Client::class)
             ->willReturn($builder);
 
+        $redirectUri = $this->faker->url();
         $filter = ClientFilter::create()
-            ->addRedirectUriCriteria(new RedirectUri('https://test.com'));
+            ->addRedirectUriCriteria(new RedirectUri($redirectUri));
 
         $manager = new ClientManager($documentManager, $dispatcher);
 
         $resultClients = $manager->list($filter);
 
         $this->assertSame([$client], $resultClients);
-        $this->assertSame(['https://test.com'], $captures['all']['redirectUris']);
+        $this->assertSame([$redirectUri], $captures['all']['redirectUris']);
     }
 
     private function makeClient(): Client
