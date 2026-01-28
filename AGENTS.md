@@ -327,7 +327,7 @@ Quick reference:
 
 - Database: MongoDB via Doctrine ODM
 - Custom Types: ULID, Domain UUID (`Shared/Infrastructure/DoctrineType`)
-- Mappings: XML in `config/doctrine/*.orm.xml`
+- Mappings: XML in `config/doctrine/*.mongodb.xml`
 - Resource discovery: Entities in `src/{Context}/Domain/Entity`
 - Filters: Order, Search, Range, Date, Boolean (see `services.yaml`)
 - Formats: JSON-LD, JSON Problem (RFC 7807), GraphQL
