@@ -13,6 +13,7 @@
 ### Task 1: Build OAuth Coverage Matrix and Identify Gaps
 
 **Files:**
+
 - Create: `docs/oauth-coverage-matrix.md`
 - Read: `features/oauth.feature`, `tests/Behat/OAuthContext/OAuthContext.php`, `docs/api-endpoints.md`, `config/routes.yaml`
 
@@ -48,6 +49,7 @@ git commit -m "docs: add oauth coverage matrix"
 ### Task 2: Add Behat Scenarios for Missing OAuth Edge Cases
 
 **Files:**
+
 - Modify: `features/oauth.feature`
 - Modify: `tests/Behat/OAuthContext/OAuthContext.php`
 - Modify/Create (if needed): `tests/Behat/OAuthContext/Input/AuthorizationCodeGrantInput.php`
@@ -96,6 +98,7 @@ Repeat Steps 1–4 for each remaining gap from Task 1. Keep each scenario in its
 ### Task 3: Decide and Implement OAuth Data Strategy (Migration vs. Wipe)
 
 **Files (Migration path):**
+
 - Create: `src/OAuth/Infrastructure/Command/MigrateOauthDocumentsCommand.php`
 - Create: `tests/Integration/OAuth/Infrastructure/Command/MigrateOauthDocumentsCommandTest.php`
 - Modify: `config/services.yaml` (service registration)
@@ -103,8 +106,9 @@ Repeat Steps 1–4 for each remaining gap from Task 1. Keep each scenario in its
 **Step 1: Confirm strategy**
 
 Decide with the team:
-- **A) Migration**: Convert existing oauth2_* documents to new reference-based fields.
-- **B) Wipe + Reseed**: Drop oauth2_* collections and re-seed via fixtures.
+
+- **A) Migration**: Convert existing oauth2\_\* documents to new reference-based fields.
+- **B) Wipe + Reseed**: Drop oauth2\_\* collections and re-seed via fixtures.
 
 If **B**, document this in `docs/oauth-coverage-matrix.md` under “Data Strategy” and skip Steps 2–4.
 
@@ -113,14 +117,17 @@ If **B**, document this in `docs/oauth-coverage-matrix.md` under “Data Strateg
 Create `MigrateOauthDocumentsCommandTest.php` that seeds a legacy document (with `clientIdentifier` / `accessTokenIdentifier`) and expects the command to rewrite to `client` / `accessToken` references.
 
 Run:
+
 ```
 make integration-tests
 ```
+
 Expect FAIL until command exists.
 
 **Step 3: Implement minimal command (GREEN)**
 
 Command should:
+
 - Load legacy docs by collection
 - Resolve client/access token references
 - Write new fields (`client`, `accessToken`) and remove legacy identifier fields
@@ -131,6 +138,7 @@ Command should:
 ```
 make integration-tests
 ```
+
 Expect PASS.
 
 **Step 5: Commit**
@@ -145,6 +153,7 @@ git commit -m "feat: migrate legacy oauth documents to odm references"
 ### Task 4: Update OAuth ODM Test Results and Run Full Verification
 
 **Files:**
+
 - Modify: `docs/oauth-odm-test-results.md`
 
 **Step 1: Update the document**
@@ -197,10 +206,10 @@ make ci
 **Step 3: Announce completion**
 
 Summarize:
+
 - Coverage matrix status (100% or documented gaps)
 - Data strategy chosen (migration vs. wipe)
 - Test status from latest runs
-
 
 ---
 
@@ -209,6 +218,7 @@ Summarize:
 ## What was done (high level)
 
 - Replaced custom OAuth ODM “Document” entities with direct ODM mapping of League bundle models.
+
   - **Why:** the bundle already uses models + DI-friendly managers; mapping the bundle models avoids DTO conversion and removes an extra abstraction layer.
   - Removed `src/OAuth/Domain/Entity/*Document.php` and old XML mappings.
   - Added new ODM XML mappings for League models in `config/doctrine/OAuth/`:
@@ -223,17 +233,20 @@ Summarize:
     - `RefreshToken.accessToken` → `AccessToken`
 
 - Added custom Doctrine ODM types for League value objects:
+
   - `oauth2_scope`, `oauth2_grant`, `oauth2_redirect_uri`
   - Implemented in `src/OAuth/Infrastructure/DoctrineType/` and registered in `config/packages/doctrine_mongodb.yaml`.
   - **Why:** League models store `Scope`, `Grant`, `RedirectUri` value objects; ODM needs stable serialization to strings.
 
 - Updated OAuth managers to persist bundle models directly (no DTO conversion):
+
   - `AccessTokenManager`, `AuthorizationCodeManager`, `RefreshTokenManager`, `ClientManager`.
   - **Why:** DI hooks already allow swapping managers; ODM can persist bundle model objects.
 
 - Updated `CredentialsRevoker` to query ODM references (client/access token relationships).
 
 - Introduced `OAUTH_PERSIST_ACCESS_TOKEN` env flag and injected it into `AccessTokenManager`.
+
   - **Why:** League bundle supports disabling access-token persistence; we preserve the flag, and skip DB operations when false.
 
 - Behat + test stabilization:
@@ -245,9 +258,11 @@ Summarize:
 ## Additional fixes applied after review
 
 - Fixed `clearExpired()` return values in `AuthorizationCodeManager` and `RefreshTokenManager` to correctly use `getDeletedCount()` when ODM returns `DeleteResult`.
+
   - **Why:** casting `DeleteResult` to int always yields `1`, which is incorrect and breaks expectations in tests.
 
 - Restored `oauth2_clients` mapping with index on `active` in `Client.mongodb.xml`.
+
   - **Why:** without collection/index mapping, ODM defaults to `clients` collection and breaks existing data visibility.
 
 - Health-check context now marks reflection property accessible before injecting failing Mongo client.
@@ -263,11 +278,13 @@ Summarize:
 ## Known risks / pending decisions
 
 1. **Data migration risk (critical):**
+
    - Old OAuth documents used `clientIdentifier`/`accessTokenIdentifier` fields, but new mapping uses ODM references (`client`, `accessToken`).
    - Existing data will not hydrate unless migrated.
    - **Decision needed:** migrate legacy OAuth documents or wipe + reseed collections.
 
 2. **Persist access token flag:**
+
    - If `OAUTH_PERSIST_ACCESS_TOKEN=0`, `CredentialsRevoker` cannot revoke refresh tokens by user/client because access tokens won’t exist in DB.
    - **Decision needed:** keep flag always on in production or adjust revoker logic.
 
@@ -278,18 +295,22 @@ Summarize:
 ## What should be done next
 
 1. **Create a coverage matrix**
+
    - Add `docs/oauth-coverage-matrix.md` summarizing Behat scenarios + Schemathesis coverage.
    - Identify any missing OAuth edge cases.
 
 2. **Fill coverage gaps with Behat scenarios (TDD)**
+
    - Add missing scenarios one-by-one in `features/oauth.feature`.
    - Update `OAuthContext` and inputs only as needed for each gap.
 
 3. **Choose data strategy and implement**
+
    - **Option A: Migration command** to translate legacy fields to new ODM references.
    - **Option B: Wipe + reseed** OAuth collections and document the decision.
 
 4. **Refresh `docs/oauth-odm-test-results.md`**
+
    - The current document references the old DTO conversion pattern and is outdated.
    - Update to reflect ODM mappings + value-object types + references.
 
@@ -308,4 +329,3 @@ Summarize:
 - Config: `config/packages/doctrine_mongodb.yaml`, `config/packages/league_oauth2_server.yaml`, `config/services.yaml`, `.env`, `.env.test`
 - Behat features and contexts: `features/*.feature`, `tests/Behat/*`
 - Unit tests: `tests/Unit/OAuth/Infrastructure/*`
-

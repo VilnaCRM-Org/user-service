@@ -1,11 +1,8 @@
 # [0.7.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.6.0...v0.7.0) (2026-01-24)
 
-
 ### Features
 
-* add cache-management Skill Production-Grade Caching with Policies, Invalidation & Testing ([#236](https://github.com/VilnaCRM-Org/user-service/issues/236)) ([9cf4450](https://github.com/VilnaCRM-Org/user-service/commit/9cf445050f25a91ce62e3a306da8bc141e4cf05d))
-
-
+- add cache-management Skill Production-Grade Caching with Policies, Invalidation & Testing ([#236](https://github.com/VilnaCRM-Org/user-service/issues/236)) ([9cf4450](https://github.com/VilnaCRM-Org/user-service/commit/9cf445050f25a91ce62e3a306da8bc141e4cf05d))
 
 # [0.6.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.5.0...v0.6.0) (2026-01-22)
 
