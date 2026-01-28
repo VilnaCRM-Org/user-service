@@ -76,7 +76,7 @@ final class ClientManagerTest extends UnitTestCase
 
     public function testFindReturnsNullWhenNotFound(): void
     {
-        $identifier = 'nonexistent';
+        $identifier = $this->faker->lexify('missing_????????');
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
 
         $documentManager = $this->createMock(DocumentManager::class);
