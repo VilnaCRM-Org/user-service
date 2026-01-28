@@ -12,6 +12,7 @@ use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\AlphabeticallySortedUsesSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\UseSpacingSniff;
+use SlevomatCodingStandard\Sniffs\TypeHints\DisallowMixedTypeHintSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\ParameterTypeHintSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\ReturnTypeHintSniff;
 
@@ -38,8 +39,14 @@ return [
                 'src/User/Domain/Repository/UserRepositoryInterface',
             ],
         ],
+        DisallowMixedTypeHintSniff::class => [
+            'exclude' => [
+                'src/User/Infrastructure/Repository/CachedUserRepository',
+            ],
+        ],
         ParameterTypeHintSniff::class => [
             'exclude' => [
+                // Doctrine ODM requires mixed $id in find() method signature
                 'tests/Unit/Shared/Infrastructure/Bus/CallableFirstParameterExtractorTest',
             ],
         ],

@@ -7,7 +7,6 @@ namespace App\Tests\Unit\User\Application\EventSubscriber;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\EventSubscriber\PasswordResetEmailSentEventSubscriber;
 use App\User\Application\Factory\EmailFactoryInterface;
-use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Event\PasswordResetEmailSentEvent;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -46,11 +45,11 @@ final class PasswordResetEmailSentEventSubscriberTest extends UnitTestCase
     public function testInvokeSuccessfully(): void
     {
         $tokenValue = $this->faker->sha256();
+        $userId = $this->faker->uuid();
         $emailAddress = $this->faker->safeEmail();
         $eventId = $this->faker->uuid();
 
-        $token = $this->createPasswordResetTokenMock($tokenValue);
-        $event = new PasswordResetEmailSentEvent($token, $emailAddress, $eventId);
+        $event = new PasswordResetEmailSentEvent($tokenValue, $userId, $emailAddress, $eventId);
         $email = $this->createMock(Email::class);
 
         $this->expectEmailCreation($tokenValue, $emailAddress, $email);
@@ -67,16 +66,6 @@ final class PasswordResetEmailSentEventSubscriberTest extends UnitTestCase
         $this->assertIsArray($subscribedEvents);
         $this->assertContains(PasswordResetEmailSentEvent::class, $subscribedEvents);
         $this->assertCount(1, $subscribedEvents);
-    }
-
-    private function createPasswordResetTokenMock(string $tokenValue): PasswordResetTokenInterface
-    {
-        $token = $this->createMock(PasswordResetTokenInterface::class);
-        $token->expects($this->once())
-            ->method('getTokenValue')
-            ->willReturn($tokenValue);
-
-        return $token;
     }
 
     private function expectEmailCreation(

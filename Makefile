@@ -136,6 +136,9 @@ behat: setup-test-db ## A php framework for autotesting business expectations
 integration-tests: setup-test-db ## Run integration tests
 	$(RUN_TESTS_COVERAGE) --testsuite=Integration
 
+cache-performance-tests: setup-test-db ## Run cache performance integration tests
+	$(EXEC_ENV) $(PHPUNIT) tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php --testdox
+
 tests-with-coverage: ## Run tests with coverage
 	$(RUN_TESTS_COVERAGE) --coverage-clover /coverage/coverage.xml
 
@@ -172,6 +175,9 @@ load-tests: build-k6-docker ## Run load tests
 
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
 	tests/Load/execute-load-test.sh $(scenario) $(or $(runSmoke),true) $(or $(runAverage),true) $(or $(runStress),true) $(or $(runSpike),true)
+
+cache-performance-load-tests: build-k6-docker ## Run cache performance K6 load tests
+	tests/Load/execute-load-test.sh cachePerformance true false false false
 
 build-k6-docker:
 	$(DOCKER) build -t k6 -f ./tests/Load/Dockerfile .

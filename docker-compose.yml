@@ -80,7 +80,7 @@ services:
       retries: 10
 
   redis:
-    image: redis:7.2.5-alpine
+    image: redis:8.0.0-alpine
     ports:
       - '6379:6379'
 

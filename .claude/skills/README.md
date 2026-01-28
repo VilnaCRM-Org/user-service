@@ -477,6 +477,39 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ---
 
+### 16. Cache Management (`cache-management/`)
+
+**Purpose**: Implement production-grade caching with cache keys/TTLs/consistency classes per query, SWR (stale-while-revalidate), explicit invalidation, and tests for stale reads and cache warmup.
+
+**When activated**:
+
+- Adding caching to repositories or expensive queries
+- Implementing cache invalidation via domain events
+- Defining cache keys, TTLs, and consistency requirements
+- Implementing SWR pattern
+- Testing cache behavior (stale reads, cold start, invalidation)
+
+**What it does**:
+
+- Enforces Decorator pattern (`CachedXxxRepository` wraps inner repository)
+- Introduces centralized `CacheKeyBuilder` to prevent key drift
+- Uses `TagAwareCacheInterface` and tag-based invalidation
+- Implements best-effort invalidation (never fail business ops)
+- Provides example implementations and cache test patterns
+
+**Key commands**: `make ci`, `make unit-tests`, `make integration-tests`
+
+**Structure**: Multi-file with comprehensive guides:
+
+- `SKILL.md` - Core workflow and quick reference
+- `examples/cache-implementation.md` - Complete cache decorator implementation
+- `examples/cache-testing.md` - Cache testing patterns and scenarios
+- `reference/cache-policies.md` - Cache policy components and TTL guidance
+- `reference/invalidation-strategies.md` - Invalidation strategies (event-driven, tag-based, time-based)
+- `reference/swr-pattern.md` - Stale-while-revalidate pattern guide
+
+---
+
 ## How Skills Work
 
 ### Cross-Platform Compatibility

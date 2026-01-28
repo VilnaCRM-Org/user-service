@@ -11,7 +11,7 @@ parameters:
         - type: className
           regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Controller|Sanitizer|Validator|Metric).*'
         - type: className
-          regex: '.*App\\Shared\\Application\\(Validator|Transformer|Provider|Checker|Collector|Decoder|DTO|Evaluator|EventListener|Normalizer|QueryParameter|Resolver|Finder|Factory|Observability|Bus).*'
+          regex: '.*App\\Shared\\Application\\(Validator|Transformer|Provider|Checker|Collector|Decoder|DTO|Evaluator|EventListener|Normalizer|QueryParameter|Resolver|Finder|Factory|Observability|Bus|Matcher).*'
         - type: className
           regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|Processor|Extractor|Cleaner|Sanitizer|Augmenter|OpenApiFactory|Enum|ValueObject).*'
         - type: className
@@ -27,9 +27,9 @@ parameters:
     - name: Infrastructure
       collectors:
         - type: className
-          regex: '.*App\\User\\Infrastructure\\(Factory|Repository|Service|Decoder|Extractor|Evaluator|EventListener).*'
+          regex: '.*App\\User\\Infrastructure\\(Factory|Repository|Service|Decoder|Extractor|Evaluator|EventListener|Publisher).*'
         - type: className
-          regex: '.*App\\Shared\\Infrastructure\\(Bus|DoctrineType|RetryStrategy|Transformer|Factory|Command|Fixture|Observability|EventDispatcher).*'
+          regex: '.*App\\Shared\\Infrastructure\\(Bus|DoctrineType|RetryStrategy|Transformer|Factory|Command|Fixture|Observability|EventDispatcher|Cache).*'
         - type: className
           regex: '.*App\\Internal\\HealthCheck\\Infrastructure\\.*'
     - name: Symfony

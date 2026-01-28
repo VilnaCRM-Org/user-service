@@ -23,6 +23,7 @@ use App\User\Domain\Factory\Event\UserRegisteredEventFactory;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
 
 final class UserRegisteredEventSubscriberTest extends UnitTestCase
 {
@@ -36,6 +37,7 @@ final class UserRegisteredEventSubscriberTest extends UnitTestCase
     private ConfirmationTokenFactoryInterface $tokenFactory;
     private ConfirmationEmailFactoryInterface $mockConfirmationEmailFactory;
     private SendConfirmationEmailCommandFactoryInterface $emailCmdFactory;
+    private UserRepositoryInterface $userRepository;
 
     #[\Override]
     protected function setUp(): void
@@ -60,22 +62,31 @@ final class UserRegisteredEventSubscriberTest extends UnitTestCase
         $this->emailCmdFactory = $this->createMock(
             SendConfirmationEmailCommandFactoryInterface::class
         );
+        $this->userRepository = $this->createMock(
+            UserRepositoryInterface::class
+        );
     }
 
     public function testInvoke(): void
     {
         $emailAddress = $this->faker->email();
+        $userId = $this->faker->uuid();
         $user = $this->userFactory->create(
             $emailAddress,
             $this->faker->name(),
             $this->faker->password(),
-            $this->uuidTransformer->transformFromString($this->faker->uuid())
+            $this->uuidTransformer->transformFromString($userId)
         );
         $token = $this->confirmationTokenFactory->create($user->getId());
         $event = $this->userRegisteredEventFactory->create(
             $user,
             $this->faker->uuid()
         );
+
+        $this->userRepository->expects($this->once())
+            ->method('findById')
+            ->with($userId)
+            ->willReturn($user);
 
         $this->testInvokeSetExpectations($user, $token);
 
@@ -96,7 +107,8 @@ final class UserRegisteredEventSubscriberTest extends UnitTestCase
             $this->commandBus,
             $this->tokenFactory,
             $this->mockConfirmationEmailFactory,
-            $this->emailCmdFactory
+            $this->emailCmdFactory,
+            $this->userRepository
         );
     }
 

@@ -7,6 +7,15 @@ services:
     arguments:
       $tokenStorage: '@security.token_storage'
 
+  App\Tests\Behat\UserContext\UserContext:
+    arguments:
+      $cachePool: '@cache.user'
+
+  # Use synchronous event bus for integration tests
+  # This ensures events are processed immediately during tests
+  App\Shared\Domain\Bus\Event\EventBusInterface:
+    alias: App\Shared\Infrastructure\Bus\Event\InMemorySymfonyEventBus
+
   _defaults:
     autowire: true
     autoconfigure: true

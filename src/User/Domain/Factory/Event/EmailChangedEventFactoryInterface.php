@@ -11,6 +11,7 @@ interface EmailChangedEventFactoryInterface
 {
     public function create(
         UserInterface $user,
+        string $oldEmail,
         string $eventId
     ): EmailChangedEvent;
 }

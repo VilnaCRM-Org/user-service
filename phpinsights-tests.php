@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 use NunoMaduro\PhpInsights\Domain\Insights\CyclomaticComplexityIsHigh;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
-use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
+use PHP_CodeSniffer\Standards\Generic\Sniffs\CodeAnalysis\UselessOverridingMethodSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Strings\UnnecessaryStringConcatSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
-use SlevomatCodingStandard\Sniffs\Classes\SuperfluousTraitNamingSniff;
+use SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\UseSpacingSniff;
+use SlevomatCodingStandard\Sniffs\TypeHints\DisallowMixedTypeHintSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\ParameterTypeHintSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\ReturnTypeHintSniff;
 
@@ -45,6 +46,11 @@ return [
                 'tests/Behat/HealthCheckContext/HealthCheckContext.php',
             ],
         ],
+        DisallowMixedTypeHintSniff::class => [
+            'exclude' => [
+                'tests/Unit/Shared/Infrastructure/Bus/Event/Async/RecordingLogger.php',
+            ],
+        ],
         LineLengthSniff::class => [
             'exclude' => [
                 'phpinsights',
@@ -53,6 +59,7 @@ return [
                 'tests/Unit/OAuth/Infrastructure/Manager/AccessTokenManagerTest.php',
                 'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactory.php',
                 'src/User/Infrastructure/Repository/MariaDBPasswordResetTokenRepository.php',
+                'tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php',
             ],
             'ignoreComments' => true,
             'lineLimit' => 100,
@@ -81,16 +88,24 @@ return [
             'exclude' => [
                 'src/Shared/Application/Validator/InitialsValidator.php',
                 'src/Shared/Application/Validator/PasswordValidator.php',
+                'tests/Unit/User/Infrastructure/Repository/CachedUserRepositoryTest.php',
+                'tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php',
             ],
         ],
-        ForbiddenTraits::class => [
+        FunctionLengthSniff::class => [
             'exclude' => [
-                'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactoryTrait.php',
+                'tests/Unit/User/Infrastructure/Repository/CachedUserRepositoryTest.php',
+                'tests/Unit/User/Application/EventSubscriber/ConfirmationEmailSendEventSubscriberTest.php',
+                'tests/Unit/User/Application/EventSubscriber/EmailChangedEventSubscriberTest.php',
+                'tests/Unit/User/Application/EventSubscriber/UserRegisteredEventSubscriberTest.php',
             ],
         ],
-        SuperfluousTraitNamingSniff::class => [
+        UselessOverridingMethodSniff::class => [
             'exclude' => [
-                'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactoryTrait.php',
+                'tests/Unit/Shared/Infrastructure/Bus/Event/Async/TestDomainEvent.php',
+                'tests/Unit/Shared/Infrastructure/Bus/Event/Async/TestEvent.php',
+                'tests/Unit/Shared/Infrastructure/Bus/Event/Async/TestOtherDomainEvent.php',
+                'tests/Unit/Shared/Infrastructure/Bus/Event/Async/ResilientAsyncEventBusTestEvent.php',
             ],
         ],
     ],

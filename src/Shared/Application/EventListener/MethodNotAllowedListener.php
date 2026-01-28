@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\EventListener;
 
-use App\Shared\Application\Provider\Http\AllowedMethodsProvider;
+use App\Shared\Application\Provider\AllowedMethodsProvider;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 

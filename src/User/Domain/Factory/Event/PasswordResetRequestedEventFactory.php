@@ -16,6 +16,11 @@ final class PasswordResetRequestedEventFactory implements
         string $token,
         string $eventId
     ): PasswordResetRequestedEvent {
-        return new PasswordResetRequestedEvent($user, $token, $eventId);
+        return new PasswordResetRequestedEvent(
+            $user->getId(),
+            $user->getEmail(),
+            $token,
+            $eventId
+        );
     }
 }

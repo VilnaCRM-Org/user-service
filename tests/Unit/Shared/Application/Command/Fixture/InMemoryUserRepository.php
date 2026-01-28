@@ -60,6 +60,15 @@ final class InMemoryUserRepository implements UserRepositoryInterface
     }
 
     /**
+     * @param array<UserInterface> $users
+     */
+    #[\Override]
+    public function deleteBatch(array $users): void
+    {
+        array_map(fn (UserInterface $user) => $this->delete($user), $users);
+    }
+
+    /**
      * @return array<string, UserInterface>
      */
     public function all(): array

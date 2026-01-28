@@ -30,6 +30,10 @@ services:
     App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface:
       tags: ['app.event_subscriber']
 
+    App\User\Application\EventSubscriber\UserCacheInvalidationSubscriberInterface:
+      bind:
+        $cache: '@cache.user'
+
     App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface:
       bind:
         $apiPrefix: '%api_url_prefix%'
@@ -128,6 +132,12 @@ services:
   App\User\Infrastructure\Repository\MongoDBUserRepository:
     arguments:
       $batchSize: '%env(int:USER_INSERT_BATCH_SIZE)%'
+
+  App\User\Infrastructure\EventListener\SchemathesisCleanupListener:
+    arguments:
+      $cache: '@cache.user'
+    tags:
+      - { name: kernel.event_listener, event: kernel.terminate }
 
   App\User\Domain\Repository\UserRepositoryInterface:
     alias: App\User\Infrastructure\Repository\MongoDBUserRepository

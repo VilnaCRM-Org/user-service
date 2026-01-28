@@ -13,8 +13,14 @@ final class EmailChangedEventFactory implements
     #[\Override]
     public function create(
         UserInterface $user,
+        string $oldEmail,
         string $eventId
     ): EmailChangedEvent {
-        return new EmailChangedEvent($user, $eventId);
+        return new EmailChangedEvent(
+            $user->getId(),
+            $user->getEmail(),
+            $oldEmail,
+            $eventId
+        );
     }
 }

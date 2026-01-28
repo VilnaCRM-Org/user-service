@@ -159,12 +159,13 @@ class User implements UserInterface
     ): array {
         $events = [];
         if ($newEmail !== $this->email) {
+            $oldEmail = $this->email;
+            $this->email = $newEmail;
             $this->confirmed = false;
             $events[] =
-                $emailChangedEventFactory->create($this, $eventID);
+                $emailChangedEventFactory->create($this, $oldEmail, $eventID);
         }
 
-        $this->email = $newEmail;
         return $events;
     }
 

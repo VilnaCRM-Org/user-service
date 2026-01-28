@@ -66,6 +66,18 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
      * @codeCoverageIgnore Tested in integration tests
      *
      * @infection-ignore-all Tested in integration tests
+     *
+     * @param array<User> $users
+     */
+    public function deleteBatch(array $users): void
+    {
+        $this->removeUsersInBatch($users);
+    }
+
+    /**
+     * @codeCoverageIgnore Tested in integration tests
+     *
+     * @infection-ignore-all Tested in integration tests
      */
     #[\Override]
     public function deleteAll(): void
@@ -97,5 +109,36 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         );
         $this->documentManager->flush();
         $this->documentManager->clear();
+    }
+
+    /**
+     * @codeCoverageIgnore Tested in integration tests
+     *
+     * @infection-ignore-all Tested in integration tests
+     *
+     * @param array<User> $users
+     */
+    private function removeUsersInBatch(array $users): void
+    {
+        $this->entityManager->getConnection()
+            ->getConfiguration()
+            ->setMiddlewares([new Middleware(new NullLogger())]);
+
+        $usersForRemoval = array_values($users);
+
+        array_walk(
+            $usersForRemoval,
+            function (User $user, int $index): void {
+                $position = $index + 1;
+                $this->entityManager->remove($user);
+
+                if ($position % $this->batchSize === 0) {
+                    $this->entityManager->flush();
+                    $this->entityManager->clear();
+                }
+            }
+        );
+        $this->entityManager->flush();
+        $this->entityManager->clear();
     }
 }

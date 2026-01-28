@@ -16,7 +16,6 @@ default:
                 - App\Tests\Behat\HealthCheckContext\HealthCheckContext
                 - App\Tests\Behat\UserContext\UserOperationsContext
 
-
     extensions:
         FriendsOfBehat\SymfonyExtension:
             bootstrap: 'tests/bootstrap.php'

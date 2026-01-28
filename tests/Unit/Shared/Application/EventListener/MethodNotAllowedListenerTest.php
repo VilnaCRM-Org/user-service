@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\EventListener;
 
 use App\Shared\Application\EventListener\MethodNotAllowedListener;
-use App\Shared\Application\Provider\Http\AllowedMethodsProvider;
+use App\Shared\Application\Provider\AllowedMethodsProvider;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;

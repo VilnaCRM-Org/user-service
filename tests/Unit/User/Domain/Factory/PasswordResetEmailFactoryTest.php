@@ -53,6 +53,25 @@ final class PasswordResetEmailFactoryTest extends UnitTestCase
         $this->assertSame($user, $passwordResetEmail->user);
     }
 
+    public function testCreateThrowsExceptionWhenTokenUserIdDoesNotMatchUserId(): void
+    {
+        $user = $this->createTestUser();
+        $differentUserId = '456e7890-e89b-12d3-a456-426614174001';
+        $token = $this->createTokenWithDifferentUserId($differentUserId);
+        $factory = new PasswordResetEmailFactory($this->eventFactoryMock);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            sprintf(
+                'Token user ID "%s" does not match user ID "%s"',
+                $differentUserId,
+                $user->getId()
+            )
+        );
+
+        $factory->create($token, $user);
+    }
+
     private function createTestUser(): User
     {
         $userFactory = new UserFactory();
@@ -100,6 +119,19 @@ final class PasswordResetEmailFactoryTest extends UnitTestCase
         return new PasswordResetToken(
             'xyz789token',
             $user->getId(),
+            $expiresAt,
+            $createdAt
+        );
+    }
+
+    private function createTokenWithDifferentUserId(string $userId): PasswordResetToken
+    {
+        $createdAt = new \DateTimeImmutable();
+        $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
+
+        return new PasswordResetToken(
+            'mismatched-token',
+            $userId,
             $expiresAt,
             $createdAt
         );

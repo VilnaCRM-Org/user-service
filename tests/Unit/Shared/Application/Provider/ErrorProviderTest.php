@@ -76,12 +76,10 @@ final class ErrorProviderTest extends UnitTestCase
         $this->operation->expects($this->once())
             ->method('getStatus')->willReturn(null);
 
-        $errorText = $this->faker->word();
+        $errorText = $this->faker->unique()->word();
+        $exceptionMessage = $this->faker->unique()->word();
 
-        $exception = new HttpException(
-            Response::HTTP_INTERNAL_SERVER_ERROR,
-            $this->faker->word()
-        );
+        $exception = new HttpException(Response::HTTP_INTERNAL_SERVER_ERROR, $exceptionMessage);
         $request = new Request(attributes: ['exception' => $exception]);
         $context = ['request' => $request];
 
@@ -91,14 +89,11 @@ final class ErrorProviderTest extends UnitTestCase
 
         $errorProvider = $this->errorProvider();
         $error = $errorProvider->provide($this->operation, [], $context);
-
         $this->assertInstanceOf(Error::class, $error);
-
         $this->assertEquals(
             Response::HTTP_INTERNAL_SERVER_ERROR,
             $error->getStatusCode()
         );
-
         $this->assertEquals($errorText, $error->getDetail());
     }
 

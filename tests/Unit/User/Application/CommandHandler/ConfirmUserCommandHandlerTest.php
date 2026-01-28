@@ -15,11 +15,13 @@ use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
+use App\User\Domain\Event\UserUpdatedEvent;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactory;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
+use App\User\Domain\Factory\Event\UserUpdatedEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -31,6 +33,7 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
     private EventBusInterface $eventBus;
     private UuidFactory $mockUuidFactory;
     private UserConfirmedEventFactoryInterface $mockUserConfirmedEventFactory;
+    private UserUpdatedEventFactoryInterface $mockUserUpdatedEventFactory;
     private UuidFactory $uuidFactory;
     private UserConfirmedEventFactoryInterface $userConfirmedEventFactory;
     private ConfirmUserCommandFactoryInterface $confirmUserCommandFactory;
@@ -43,38 +46,14 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->userRepository =
-            $this->createMock(UserRepositoryInterface::class);
-        $this->eventBus = $this->createMock(EventBusInterface::class);
-        $this->mockUuidFactory = $this->createMock(UuidFactory::class);
-        $this->mockUserConfirmedEventFactory = $this->createMock(
-            UserConfirmedEventFactoryInterface::class
-        );
-        $this->uuidFactory = new UuidFactory();
-        $this->userConfirmedEventFactory = new UserConfirmedEventFactory();
-        $this->uuidTransformer = new UuidTransformer(
-            new UuidFactoryInterface()
-        );
-        $this->userFactory = new UserFactory();
-        $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
-            $this->faker->numberBetween(1, 10)
-        );
-        $this->getUserQueryHandler =
-        $this->createMock(GetUserQueryHandler::class);
+        $this->initMocks();
+        $this->initFactories();
     }
 
     public function testInvoke(): void
     {
-        $email = $this->faker->email();
-        $name = $this->faker->name();
-        $password = $this->faker->password();
-        $userId =
-            $this->uuidTransformer->transformFromString($this->faker->uuid());
-
-        $user = $this->userFactory->create($email, $name, $password, $userId);
-        $token = $this->confirmationTokenFactory->create($user->getId());
+        $user = $this->createUser();
+        $token = $this->createToken($user);
 
         $this->testInvokeSetExpectations($user, $token);
 
@@ -106,7 +85,8 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
             $this->userRepository,
             $this->eventBus,
             $this->mockUuidFactory,
-            $this->mockUserConfirmedEventFactory
+            $this->mockUserConfirmedEventFactory,
+            $this->mockUserUpdatedEventFactory
         );
     }
 
@@ -114,18 +94,82 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
         UserInterface $user,
         ConfirmationTokenInterface $token
     ): void {
+        $this->expectUserQuery($user);
+        $this->expectEventBusPublish();
+        $this->expectUuidFactory();
+        $this->expectUserConfirmedEvent($token);
+        $this->expectUserUpdatedEvent($user);
+    }
+
+    private function createUser(): UserInterface
+    {
+        $email = $this->faker->email();
+        $name = $this->faker->name();
+        $password = $this->faker->password();
+        $userId = $this->uuidTransformer->transformFromString($this->faker->uuid());
+
+        return $this->userFactory->create($email, $name, $password, $userId);
+    }
+
+    private function createToken(UserInterface $user): ConfirmationTokenInterface
+    {
+        return $this->confirmationTokenFactory->create($user->getId());
+    }
+
+    private function initMocks(): void
+    {
+        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->eventBus = $this->createMock(EventBusInterface::class);
+        $this->mockUuidFactory = $this->createMock(UuidFactory::class);
+        $this->mockUserConfirmedEventFactory = $this->createMock(
+            UserConfirmedEventFactoryInterface::class
+        );
+        $this->mockUserUpdatedEventFactory = $this->createMock(
+            UserUpdatedEventFactoryInterface::class
+        );
+        $this->getUserQueryHandler = $this->createMock(GetUserQueryHandler::class);
+    }
+
+    private function initFactories(): void
+    {
+        $this->uuidFactory = new UuidFactory();
+        $this->userConfirmedEventFactory = new UserConfirmedEventFactory();
+        $this->uuidTransformer = new UuidTransformer(
+            new UuidFactoryInterface()
+        );
+        $this->userFactory = new UserFactory();
+        $this->confirmUserCommandFactory = new ConfirmUserCommandFactory();
+        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
+            $this->faker->numberBetween(1, 10)
+        );
+    }
+
+    private function expectUserQuery(UserInterface $user): void
+    {
         $this->getUserQueryHandler->expects($this->once())
             ->method('handle')
             ->willReturn($user);
+    }
 
+    private function expectEventBusPublish(): void
+    {
         $this->eventBus->expects($this->once())
             ->method('publish')
-            ->with($this->isInstanceOf(UserConfirmedEvent::class));
+            ->with(
+                $this->isInstanceOf(UserConfirmedEvent::class),
+                $this->isInstanceOf(UserUpdatedEvent::class)
+            );
+    }
 
+    private function expectUuidFactory(): void
+    {
         $this->mockUuidFactory->expects($this->once())
             ->method('create')
             ->willReturn($this->uuidFactory->create());
+    }
 
+    private function expectUserConfirmedEvent(ConfirmationTokenInterface $token): void
+    {
         $this->mockUserConfirmedEventFactory->expects($this->once())
             ->method('create')
             ->willReturn(
@@ -134,5 +178,18 @@ final class ConfirmUserCommandHandlerTest extends UnitTestCase
                     $this->faker->uuid()
                 )
             );
+    }
+
+    private function expectUserUpdatedEvent(UserInterface $user): void
+    {
+        $this->mockUserUpdatedEventFactory->expects($this->once())
+            ->method('create')
+            ->with($user, null, $this->anything())
+            ->willReturn(new UserUpdatedEvent(
+                $user->getId(),
+                $user->getEmail(),
+                null,
+                $this->faker->uuid()
+            ));
     }
 }
