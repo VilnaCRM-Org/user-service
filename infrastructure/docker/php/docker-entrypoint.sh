@@ -12,7 +12,7 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 	fi
 
 	# Check MongoDB connection (used for all persistence including OAuth2)
-	if grep -q ^MONGODB_URL= .env; then
+	if [ -n "${MONGODB_URL:-}" ] || grep -q '^MONGODB_URL=' .env 2>/dev/null; then
 		echo "Waiting for MongoDB to be ready..."
 		ATTEMPTS_LEFT_TO_REACH_MONGO=60
 		until [ $ATTEMPTS_LEFT_TO_REACH_MONGO -eq 0 ]; do
