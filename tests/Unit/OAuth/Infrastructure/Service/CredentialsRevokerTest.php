@@ -21,8 +21,10 @@ final class CredentialsRevokerTest extends UnitTestCase
 
     public function testRevokeCredentialsForUserUpdatesAllTokens(): void
     {
-        $tokenA = $this->makeAccessToken($this->faker->lexify('token_????'));
-        $tokenB = $this->makeAccessToken($this->faker->lexify('token_????'));
+        $tokenAId = $this->faker->lexify('token_????');
+        $tokenBId = $this->faker->lexify('token_????');
+        $tokenA = $this->makeAccessToken($tokenAId);
+        $tokenB = $this->makeAccessToken($tokenBId);
 
         $captures = $this->createCaptureArrays();
         $documentManager = $this->createDocManagerForUserRevocation(
@@ -35,7 +37,7 @@ final class CredentialsRevokerTest extends UnitTestCase
         $revoker = new CredentialsRevoker($documentManager, $clientManager);
         $revoker->revokeCredentialsForUser($this->makeUser());
 
-        $this->assertRefreshTokensCaptured($captures);
+        $this->assertRefreshTokensCaptured($captures, [$tokenAId, $tokenBId]);
     }
 
     public function testRevokeCredentialsForUserSkipsRefreshTokensWhenNoAccessTokens(): void
@@ -183,9 +185,13 @@ final class CredentialsRevokerTest extends UnitTestCase
     /**
      * @param array<string, array<string, mixed>> $captures
      */
-    private function assertRefreshTokensCaptured(array $captures): void
+    /**
+     * @param array<string, array<string, mixed>> $captures
+     * @param list<string> $expectedTokenIds
+     */
+    private function assertRefreshTokensCaptured(array $captures, array $expectedTokenIds): void
     {
-        $this->assertSame(['token_a', 'token_b'], $captures['refreshUpdate']['in']['accessToken']);
+        $this->assertSame($expectedTokenIds, $captures['refreshUpdate']['in']['accessToken']);
         $this->assertSame(true, $captures['refreshUpdate']['set']['revoked']);
     }
 
