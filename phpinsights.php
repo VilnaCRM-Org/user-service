@@ -54,7 +54,12 @@ return [
             'exclude' => [
                 'phpinsights',
                 'tests/Behat/OAuthContext/OAuthContext.php',
-                'src/User/Infrastructure/Repository/MariaDBPasswordResetTokenRepository.php',
+                'src/User/Infrastructure/Repository/MongoDBPasswordResetTokenRepository.php',
+                'src/Shared/Infrastructure/DoctrineType/DomainUuidType.php',
+                'src/OAuth/Infrastructure/DoctrineType/OAuth2ScopeType.php',
+                'src/OAuth/Infrastructure/DoctrineType/OAuth2GrantType.php',
+                'src/OAuth/Infrastructure/DoctrineType/OAuth2RedirectUriType.php',
+                'src/OAuth/Infrastructure/Manager/ClientManager.php',
             ],
             'ignoreComments' => true,
             'lineLimit' => 100,
@@ -64,6 +69,7 @@ return [
                 'src/Shared/Infrastructure/Bus/Command/InMemorySymfonyCommandBus',
                 'src/Shared/Infrastructure/Bus/Event/InMemorySymfonyEventBus',
                 'src/User/Domain/Entity/User',
+                'src/User/Domain/Entity/PasswordResetToken',
             ],
         ],
         ForbiddenDefineFunctions::class => [

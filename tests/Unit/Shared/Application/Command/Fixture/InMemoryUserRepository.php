@@ -50,12 +50,6 @@ final class InMemoryUserRepository implements UserRepositoryInterface
         return $this->users[$id] ?? null;
     }
 
-    #[\Override]
-    public function find(mixed $id, ?int $lockMode = null, ?int $lockVersion = null): ?object
-    {
-        return $this->findById((string) $id);
-    }
-
     /**
      * @param array<UserInterface> $users
      */

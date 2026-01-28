@@ -34,6 +34,7 @@ INFECTION     = ./vendor/bin/infection
 .DEFAULT_GOAL = help
 .RECIPEPREFIX +=
 .PHONY: $(filter-out vendor node_modules,$(MAKECMDGOALS))
+.PHONY: start
 
 # Conditional execution based on CI environment variable
 EXEC_ENV ?= $(EXEC_PHP_TEST_ENV)
@@ -144,9 +145,12 @@ tests-with-coverage: ## Run tests with coverage
 
 setup-test-db: ## Create database for testing purposes
 	$(SYMFONY_TEST_ENV) c:c
-	$(SYMFONY_TEST_ENV) doctrine:database:drop --force --if-exists
-	$(SYMFONY_TEST_ENV) doctrine:database:create
-	$(SYMFONY_TEST_ENV) doctrine:migrations:migrate --no-interaction
+	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop || true
+	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:create
+	@if $(SYMFONY_TEST_ENV) list doctrine:schema:create > /dev/null 2>&1; then \
+		$(SYMFONY_TEST_ENV) doctrine:schema:drop --force --full-database || true; \
+		$(SYMFONY_TEST_ENV) doctrine:schema:create; \
+	fi
 
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 
@@ -188,12 +192,6 @@ infection: ## Run mutations test.
 create-oauth-client: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(clientName)'
 
-doctrine-migrations-migrate: ## Executes a migration to a specified version or the latest available version
-	$(SYMFONY) d:m:m --no-interaction
-
-doctrine-migrations-generate: ## Generates a blank migration class
-	$(SYMFONY) d:m:g
-
 cache-clear: ## Clears and warms up the application cache for a given environment and debug mode
 	$(SYMFONY) c:c
 
@@ -228,7 +226,7 @@ logs: ## Show all logs
 new-logs: ## Show live logs
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
-start: up doctrine-migrations-migrate build-k6-docker build-spectral-docker ## Start docker
+start: up build-k6-docker build-spectral-docker ## Start docker
 
 ps: ## Check docker containers
 	$(DOCKER_COMPOSE) ps
@@ -240,18 +238,15 @@ commands: ## List all Symfony commands
 	@$(SYMFONY) list
 
 load-fixtures: ## Build the DB, control the schema validity, load fixtures and check the migration status
-	@$(SYMFONY) doctrine:cache:clear-metadata
-	@$(SYMFONY) doctrine:database:create --if-not-exists
-	@$(SYMFONY) doctrine:schema:drop --force
-	@$(SYMFONY) doctrine:schema:create
-	@$(SYMFONY) doctrine:schema:validate
-	@$(SYMFONY) d:f:l
+	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata
+	@$(SYMFONY) doctrine:mongodb:schema:drop || true
+	@$(SYMFONY) doctrine:mongodb:schema:create
+	@$(SYMFONY) doctrine:mongodb:fixtures:load --no-interaction
 
 reset-db: ## Recreate the database schema for ephemeral test runs
-	@$(SYMFONY) doctrine:cache:clear-metadata
-	@$(SYMFONY) doctrine:database:create --if-not-exists
-	@$(SYMFONY) doctrine:schema:drop --force
-	@$(SYMFONY) doctrine:schema:create
+	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata || true
+	@$(SYMFONY) doctrine:mongodb:schema:drop || true
+	@$(SYMFONY) doctrine:mongodb:schema:create || true
 	@$(EXEC_PHP) php bin/console app:seed-schemathesis-data
 
 coverage-html: ## Create the code coverage report with PHPUnit

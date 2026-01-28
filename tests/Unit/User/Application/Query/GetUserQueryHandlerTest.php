@@ -16,7 +16,7 @@ final class GetUserQueryHandlerTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $repo = $this->createMock(UserRepositoryInterface::class);
-        $repo->method('find')->with('123')->willReturn($user);
+        $repo->method('findById')->with('123')->willReturn($user);
 
         $handler = new GetUserQueryHandler($repo);
 
@@ -28,7 +28,7 @@ final class GetUserQueryHandlerTest extends TestCase
     public function testThrowsExceptionIfUserNotFound(): void
     {
         $repo = $this->createMock(UserRepositoryInterface::class);
-        $repo->method('find')->with('not-exist')->willReturn(null);
+        $repo->method('findById')->with('not-exist')->willReturn(null);
 
         $handler = new GetUserQueryHandler($repo);
 

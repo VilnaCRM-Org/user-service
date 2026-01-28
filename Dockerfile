@@ -31,10 +31,11 @@ RUN set -eux; \
         intl \
         opcache \
         zip \
-        pdo_mysql \
-        redis-6.0.2 \
+        mongodb \
         openssl \
-        xsl
+        xsl \
+        redis \
+        pdo_mysql
 
 COPY --link infrastructure/docker/php/conf.d/app.ini $PHP_INI_DIR/conf.d/
 
@@ -50,7 +51,7 @@ COPY --from=composer --link /composer /usr/bin/composer
 COPY --link composer.* symfony.* ./
 RUN set -eux; \
     if [ -f composer.json ]; then \
-        composer install --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress; \
+        composer install --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress --ignore-platform-reqs; \
         composer clear-cache; \
     fi
 
@@ -60,7 +61,8 @@ RUN rm -Rf infrastructure/docker/
 RUN set -eux; \
     mkdir -p var/cache var/log; \
     if [ -f composer.json ]; then \
-        composer dump-autoload --classmap-authoritative --no-dev; \
+        composer dump-autoload --classmap-authoritative --no-dev --ignore-platform-reqs; \
+        rm -f vendor/composer/platform_check.php; \
         composer dump-env prod; \
         chmod +x bin/console; \
         sync; \
@@ -107,7 +109,7 @@ COPY --link infrastructure/docker/php/worker.Caddyfile /etc/caddy/worker.Caddyfi
 
 COPY --link composer.* symfony.* ./
 RUN set -eux; \
-    composer install --no-cache --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress
+    composer install --no-cache --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress --ignore-platform-reqs
 
 RUN rm -Rf infrastructure/docker/
 

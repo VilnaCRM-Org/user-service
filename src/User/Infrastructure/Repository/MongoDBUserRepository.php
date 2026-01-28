@@ -7,40 +7,51 @@ namespace App\User\Infrastructure\Repository;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\DBAL\Logging\Middleware;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
-use Psr\Log\NullLogger;
+use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
+use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
+use Doctrine\ODM\MongoDB\DocumentManager;
+use InvalidArgumentException;
 
-final class MariaDBUserRepository extends ServiceEntityRepository implements
+/**
+ * @extends ServiceDocumentRepository<User>
+ *
+ * @psalm-suppress UnusedClass - Used via dependency injection
+ */
+final class MongoDBUserRepository extends ServiceDocumentRepository implements
     UserRepositoryInterface
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
+        private readonly DocumentManager $documentManager,
         private readonly ManagerRegistry $registry,
         private readonly int $batchSize,
     ) {
+        if ($batchSize <= 0) {
+            throw new InvalidArgumentException('Batch size must be greater than zero.');
+        }
         parent::__construct($this->registry, User::class);
     }
 
+    #[\Override]
     public function save(object $user): void
     {
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+        $this->documentManager->persist($user);
+        $this->documentManager->flush();
     }
 
+    #[\Override]
     public function delete(object $user): void
     {
-        $this->entityManager->remove($user);
-        $this->entityManager->flush();
+        $this->documentManager->remove($user);
+        $this->documentManager->flush();
     }
 
+    #[\Override]
     public function findByEmail(string $email): ?UserInterface
     {
         return $this->findOneBy(['email' => $email]);
     }
 
+    #[\Override]
     public function findById(string $id): ?UserInterface
     {
         return $this->find($id);
@@ -49,6 +60,7 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
     /**
      * @param array<User> $users
      */
+    #[\Override]
     public function saveBatch(array $users): void
     {
         $this->persistUsersInBatch($users);
@@ -61,6 +73,7 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
      *
      * @param array<User> $users
      */
+    #[\Override]
     public function deleteBatch(array $users): void
     {
         $this->removeUsersInBatch($users);
@@ -71,10 +84,11 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
      *
      * @infection-ignore-all Tested in integration tests
      */
+    #[\Override]
     public function deleteAll(): void
     {
-        $this->createQueryBuilder('u')
-            ->delete()
+        $this->createQueryBuilder()
+            ->remove()
             ->getQuery()
             ->execute();
     }
@@ -84,26 +98,22 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
      */
     private function persistUsersInBatch(array $users): void
     {
-        $this->entityManager->getConnection()
-            ->getConfiguration()
-            ->setMiddlewares([new Middleware(new NullLogger())]);
-
         $usersForPersistence = array_values($users);
 
         array_walk(
             $usersForPersistence,
             function (User $user, int $index): void {
                 $position = $index + 1;
-                $this->entityManager->persist($user);
+                $this->documentManager->persist($user);
 
                 if ($position % $this->batchSize === 0) {
-                    $this->entityManager->flush();
-                    $this->entityManager->clear();
+                    $this->documentManager->flush();
+                    $this->documentManager->clear();
                 }
             }
         );
-        $this->entityManager->flush();
-        $this->entityManager->clear();
+        $this->documentManager->flush();
+        $this->documentManager->clear();
     }
 
     /**
@@ -115,25 +125,21 @@ final class MariaDBUserRepository extends ServiceEntityRepository implements
      */
     private function removeUsersInBatch(array $users): void
     {
-        $this->entityManager->getConnection()
-            ->getConfiguration()
-            ->setMiddlewares([new Middleware(new NullLogger())]);
-
         $usersForRemoval = array_values($users);
 
         array_walk(
             $usersForRemoval,
             function (User $user, int $index): void {
                 $position = $index + 1;
-                $this->entityManager->remove($user);
+                $this->documentManager->remove($user);
 
                 if ($position % $this->batchSize === 0) {
-                    $this->entityManager->flush();
-                    $this->entityManager->clear();
+                    $this->documentManager->flush();
+                    $this->documentManager->clear();
                 }
             }
         );
-        $this->entityManager->flush();
-        $this->entityManager->clear();
+        $this->documentManager->flush();
+        $this->documentManager->clear();
     }
 }

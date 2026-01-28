@@ -50,7 +50,7 @@ final class BatchEmailCollector
     /**
      * @param array<int, array|object|string|int|float|bool|null> $entries
      *
-     * @return array{0: list<string>, 1: bool}
+     * @return array{0?: list<string>, 1?: bool}
      */
     private function splitEmails(array $entries): array
     {

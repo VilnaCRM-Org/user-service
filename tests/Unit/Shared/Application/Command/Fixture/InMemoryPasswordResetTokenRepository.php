@@ -35,25 +35,6 @@ final class InMemoryPasswordResetTokenRepository implements PasswordResetTokenRe
         return $this->tokens[$token] ?? null;
     }
 
-    #[\Override]
-    public function findByUserID(string $userID): ?PasswordResetTokenInterface
-    {
-        foreach ($this->tokens as $token) {
-            if ($token->getUserID() === $userID) {
-                return $token;
-            }
-        }
-
-        return null;
-    }
-
-    #[\Override]
-    public function delete(PasswordResetTokenInterface $passwordResetToken): void
-    {
-        ++$this->deleteCount;
-        unset($this->tokens[$passwordResetToken->getTokenValue()]);
-    }
-
     public function deleteCount(): int
     {
         return $this->deleteCount;
