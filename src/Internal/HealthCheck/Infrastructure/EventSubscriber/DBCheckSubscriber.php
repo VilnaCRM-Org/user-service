@@ -16,6 +16,7 @@ final class DBCheckSubscriber extends BaseHealthCheckSubscriber
     #[\Override]
     public function onHealthCheck(HealthCheckEvent $event): void
     {
-        $this->documentManager->getClient()->selectDatabase('admin')->command(['ping' => 1]);
+        $dbName = $this->documentManager->getConfiguration()->getDefaultDB();
+        $this->documentManager->getClient()->selectDatabase($dbName)->command(['ping' => 1]);
     }
 }
