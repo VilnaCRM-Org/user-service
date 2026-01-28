@@ -24,6 +24,9 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         private readonly ManagerRegistry $registry,
         private readonly int $batchSize,
     ) {
+        if ($batchSize <= 0) {
+            throw new \InvalidArgumentException('Batch size must be greater than zero.');
+        }
         parent::__construct($this->registry, User::class);
     }
 
