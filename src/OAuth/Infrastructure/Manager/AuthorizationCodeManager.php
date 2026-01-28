@@ -31,6 +31,7 @@ final class AuthorizationCodeManager implements AuthorizationCodeManagerInterfac
     {
         $this->documentManager->persist($authCode);
         $this->documentManager->flush();
+        $this->documentManager->refresh($authCode);
     }
 
     #[\Override]
@@ -45,9 +46,6 @@ final class AuthorizationCodeManager implements AuthorizationCodeManagerInterfac
         return $this->deletedCount($result);
     }
 
-    /**
-     * @param array<string, int>|object|int|null $result
-     */
     private function deletedCount(array|object|int|null $result): int
     {
         if (is_int($result)) {
