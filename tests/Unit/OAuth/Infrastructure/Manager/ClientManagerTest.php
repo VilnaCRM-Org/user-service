@@ -26,8 +26,13 @@ final class ClientManagerTest extends UnitTestCase
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
         $dispatcher->expects($this->once())
             ->method('dispatch')
-            ->with($this->isInstanceOf(PreSaveClientEvent::class), OAuth2Events::PRE_SAVE_CLIENT)
-            ->willReturnCallback(static fn (PreSaveClientEvent $event): PreSaveClientEvent => $event);
+            ->with(
+                $this->isInstanceOf(PreSaveClientEvent::class),
+                OAuth2Events::PRE_SAVE_CLIENT
+            )
+            ->willReturnCallback(
+                static fn (PreSaveClientEvent $event): PreSaveClientEvent => $event
+            );
 
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->once())->method('persist')->with($client);
@@ -69,14 +74,36 @@ final class ClientManagerTest extends UnitTestCase
         $this->assertSame($client, $manager->find($identifier));
     }
 
+    public function testFindReturnsNullWhenNotFound(): void
+    {
+        $identifier = 'nonexistent';
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $documentManager = $this->createMock(DocumentManager::class);
+        $documentManager->expects($this->once())
+            ->method('find')
+            ->with(Client::class, $identifier)
+            ->willReturn(null);
+
+        $manager = new ClientManager($documentManager, $dispatcher);
+
+        $this->assertNull($manager->find($identifier));
+    }
+
     public function testListAppliesFiltersAndReturnsClients(): void
     {
         $client = $this->makeClient();
         $result = new class([5 => $client]) {
+            /**
+             * @param array<int, Client> $items
+             */
             public function __construct(private readonly array $items)
             {
             }
 
+            /**
+             * @return array<int, Client>
+             */
             public function toArray(): array
             {
                 return $this->items;
@@ -106,6 +133,166 @@ final class ClientManagerTest extends UnitTestCase
         $this->assertSame(['authorization_code'], $captures['all']['grants']);
         $this->assertSame(['https://example.com/callback'], $captures['all']['redirectUris']);
         $this->assertSame(['email'], $captures['all']['scopes']);
+    }
+
+    public function testListWithNullFilterReturnsAllClients(): void
+    {
+        $client = $this->makeClient();
+        $result = new class([$client]) {
+            /**
+             * @param array<int, Client> $items
+             */
+            public function __construct(private readonly array $items)
+            {
+            }
+
+            /**
+             * @return array<int, Client>
+             */
+            public function toArray(): array
+            {
+                return $this->items;
+            }
+        };
+        $captures = [];
+        $builder = $this->makeBuilder($result, $captures);
+
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $documentManager = $this->createMock(DocumentManager::class);
+        $documentManager->expects($this->once())
+            ->method('createQueryBuilder')
+            ->with(Client::class)
+            ->willReturn($builder);
+
+        $manager = new ClientManager($documentManager, $dispatcher);
+
+        $resultClients = $manager->list(null);
+
+        $this->assertSame([$client], $resultClients);
+        $this->assertArrayNotHasKey('all', $captures);
+    }
+
+    public function testListWithEmptyFilterReturnsAllClients(): void
+    {
+        $client = $this->makeClient();
+        $result = new class([$client]) {
+            /**
+             * @param array<int, Client> $items
+             */
+            public function __construct(private readonly array $items)
+            {
+            }
+
+            /**
+             * @return array<int, Client>
+             */
+            public function toArray(): array
+            {
+                return $this->items;
+            }
+        };
+        $captures = [];
+        $builder = $this->makeBuilder($result, $captures);
+
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $documentManager = $this->createMock(DocumentManager::class);
+        $documentManager->expects($this->once())
+            ->method('createQueryBuilder')
+            ->with(Client::class)
+            ->willReturn($builder);
+
+        $filter = ClientFilter::create();
+
+        $manager = new ClientManager($documentManager, $dispatcher);
+
+        $resultClients = $manager->list($filter);
+
+        $this->assertSame([$client], $resultClients);
+        $this->assertArrayNotHasKey('all', $captures);
+    }
+
+    public function testListWithPartialFilterOnlyAppliesSetCriteria(): void
+    {
+        $client = $this->makeClient();
+        $result = new class([$client]) {
+            /**
+             * @param array<int, Client> $items
+             */
+            public function __construct(private readonly array $items)
+            {
+            }
+
+            /**
+             * @return array<int, Client>
+             */
+            public function toArray(): array
+            {
+                return $this->items;
+            }
+        };
+        $captures = [];
+        $builder = $this->makeBuilder($result, $captures);
+
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $documentManager = $this->createMock(DocumentManager::class);
+        $documentManager->expects($this->once())
+            ->method('createQueryBuilder')
+            ->with(Client::class)
+            ->willReturn($builder);
+
+        $filter = ClientFilter::create()->addGrantCriteria(new Grant('client_credentials'));
+
+        $manager = new ClientManager($documentManager, $dispatcher);
+
+        $resultClients = $manager->list($filter);
+
+        $this->assertSame([$client], $resultClients);
+        $this->assertSame(['client_credentials'], $captures['all']['grants']);
+        $this->assertArrayNotHasKey('redirectUris', $captures['all'] ?? []);
+        $this->assertArrayNotHasKey('scopes', $captures['all'] ?? []);
+    }
+
+    public function testListWithRedirectUriFilterOnly(): void
+    {
+        $client = $this->makeClient();
+        $result = new class([$client]) {
+            /**
+             * @param array<int, Client> $items
+             */
+            public function __construct(private readonly array $items)
+            {
+            }
+
+            /**
+             * @return array<int, Client>
+             */
+            public function toArray(): array
+            {
+                return $this->items;
+            }
+        };
+        $captures = [];
+        $builder = $this->makeBuilder($result, $captures);
+
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $documentManager = $this->createMock(DocumentManager::class);
+        $documentManager->expects($this->once())
+            ->method('createQueryBuilder')
+            ->with(Client::class)
+            ->willReturn($builder);
+
+        $filter = ClientFilter::create()->addRedirectUriCriteria(new RedirectUri('https://test.com'));
+
+        $manager = new ClientManager($documentManager, $dispatcher);
+
+        $resultClients = $manager->list($filter);
+
+        $this->assertSame([$client], $resultClients);
+        $this->assertSame(['https://test.com'], $captures['all']['redirectUris']);
     }
 
     private function makeClient(): Client

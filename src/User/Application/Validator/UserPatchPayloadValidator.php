@@ -31,19 +31,11 @@ final readonly class UserPatchPayloadValidator
     private function findFirstExplicitlyNullField(array $payload): ?string
     {
         foreach (self::IMMUTABLE_FIELDS as $field) {
-            if ($this->fieldIsExplicitlyNull($payload, $field)) {
+            if (array_key_exists($field, $payload) && $payload[$field] === null) {
                 return $field;
             }
         }
 
         return null;
-    }
-
-    /**
-     * @param array<string, scalar|array|null> $payload
-     */
-    private function fieldIsExplicitlyNull(array $payload, string $field): bool
-    {
-        return array_key_exists($field, $payload) && $payload[$field] === null;
     }
 }

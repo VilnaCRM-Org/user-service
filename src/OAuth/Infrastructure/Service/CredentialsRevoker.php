@@ -123,7 +123,7 @@ final class CredentialsRevoker implements CredentialsRevokerInterface
             $accessTokenIds[] = $token->getIdentifier();
         }
 
-        if (empty($accessTokenIds)) {
+        if ($accessTokenIds === []) {
             return;
         }
 

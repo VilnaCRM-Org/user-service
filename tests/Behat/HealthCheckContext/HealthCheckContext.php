@@ -74,7 +74,6 @@ final class HealthCheckContext implements Context
         };
 
         $reflection = new \ReflectionProperty($documentManager, 'client');
-        $reflection->setAccessible(true);
         $reflection->setValue($documentManager, $failingClient);
     }
 

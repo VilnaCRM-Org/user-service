@@ -74,6 +74,38 @@ final class RefreshTokenManagerTest extends UnitTestCase
         $this->assertNotEmpty($captures['lt']);
     }
 
+    public function testClearExpiredReturnsIntDirectly(): void
+    {
+        $captures = [];
+        $builder = $this->makeBuilder(7, $captures);
+
+        $documentManager = $this->createMock(DocumentManager::class);
+        $documentManager->expects($this->once())
+            ->method('createQueryBuilder')
+            ->with(RefreshToken::class)
+            ->willReturn($builder);
+
+        $manager = new RefreshTokenManager($documentManager);
+
+        $this->assertSame(7, $manager->clearExpired());
+    }
+
+    public function testClearExpiredReturnsZeroForNullResult(): void
+    {
+        $captures = [];
+        $builder = $this->makeBuilder(null, $captures);
+
+        $documentManager = $this->createMock(DocumentManager::class);
+        $documentManager->expects($this->once())
+            ->method('createQueryBuilder')
+            ->with(RefreshToken::class)
+            ->willReturn($builder);
+
+        $manager = new RefreshTokenManager($documentManager);
+
+        $this->assertSame(0, $manager->clearExpired());
+    }
+
     private function makeRefreshToken(string $identifier): RefreshToken
     {
         $client = new Client(

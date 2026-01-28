@@ -73,6 +73,38 @@ final class AuthorizationCodeManagerTest extends UnitTestCase
         $this->assertNotEmpty($captures['lt']);
     }
 
+    public function testClearExpiredReturnsIntDirectly(): void
+    {
+        $captures = [];
+        $builder = $this->makeBuilder(5, $captures);
+
+        $documentManager = $this->createMock(DocumentManager::class);
+        $documentManager->expects($this->once())
+            ->method('createQueryBuilder')
+            ->with(AuthorizationCode::class)
+            ->willReturn($builder);
+
+        $manager = new AuthorizationCodeManager($documentManager);
+
+        $this->assertSame(5, $manager->clearExpired());
+    }
+
+    public function testClearExpiredReturnsZeroForNullResult(): void
+    {
+        $captures = [];
+        $builder = $this->makeBuilder(null, $captures);
+
+        $documentManager = $this->createMock(DocumentManager::class);
+        $documentManager->expects($this->once())
+            ->method('createQueryBuilder')
+            ->with(AuthorizationCode::class)
+            ->willReturn($builder);
+
+        $manager = new AuthorizationCodeManager($documentManager);
+
+        $this->assertSame(0, $manager->clearExpired());
+    }
+
     private function makeAuthorizationCode(string $identifier): AuthorizationCode
     {
         $client = new Client(

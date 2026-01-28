@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use NunoMaduro\PhpInsights\Domain\Insights\CyclomaticComplexityIsHigh;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
+use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Strings\UnnecessaryStringConcatSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
+use SlevomatCodingStandard\Sniffs\Classes\SuperfluousTraitNamingSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\UseSpacingSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\ParameterTypeHintSniff;
@@ -47,6 +49,9 @@ return [
             'exclude' => [
                 'phpinsights',
                 'tests/Behat/OAuthContext/OAuthContext.php',
+                'tests/Unit/OAuth/Infrastructure/Service/CredentialsRevokerTest.php',
+                'tests/Unit/OAuth/Infrastructure/Manager/AccessTokenManagerTest.php',
+                'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactory.php',
                 'src/User/Infrastructure/Repository/MariaDBPasswordResetTokenRepository.php',
             ],
             'ignoreComments' => true,
@@ -76,6 +81,16 @@ return [
             'exclude' => [
                 'src/Shared/Application/Validator/InitialsValidator.php',
                 'src/Shared/Application/Validator/PasswordValidator.php',
+            ],
+        ],
+        ForbiddenTraits::class => [
+            'exclude' => [
+                'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactoryTrait.php',
+            ],
+        ],
+        SuperfluousTraitNamingSniff::class => [
+            'exclude' => [
+                'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactoryTrait.php',
             ],
         ],
     ],

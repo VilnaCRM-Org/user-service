@@ -46,7 +46,7 @@ final class AuthorizationCodeManager implements AuthorizationCodeManagerInterfac
     }
 
     /**
-     * @psalm-param array<string, mixed>|int|object|null $result
+     * @param array<string, int>|object|int|null $result
      */
     private function deletedCount(array|object|int|null $result): int
     {

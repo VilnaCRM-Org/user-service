@@ -40,11 +40,13 @@ final class CredentialsRevokerTest extends UnitTestCase
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->exactly(4))
             ->method('createQueryBuilder')
-            ->willReturnCallback(static function (?string $documentName = null) use (&$builders, &$calls): \Doctrine\ODM\MongoDB\Query\Builder|null {
-                $calls[] = $documentName;
+            ->willReturnCallback(
+                static function (?string $documentName = null) use (&$builders, &$calls): \Doctrine\ODM\MongoDB\Query\Builder|null {
+                    $calls[] = $documentName;
 
-                return array_shift($builders);
-            });
+                    return array_shift($builders);
+                }
+            );
         $documentManager->expects($this->once())->method('flush');
 
         $clientManager = $this->createMock(ClientManagerInterface::class);
@@ -52,7 +54,10 @@ final class CredentialsRevokerTest extends UnitTestCase
         $revoker = new CredentialsRevoker($documentManager, $clientManager);
         $revoker->revokeCredentialsForUser($this->makeUser());
 
-        $this->assertSame([AccessToken::class, AuthorizationCode::class, AccessToken::class, RefreshToken::class], $calls);
+        $this->assertSame(
+            [AccessToken::class, AuthorizationCode::class, AccessToken::class, RefreshToken::class],
+            $calls
+        );
         $this->assertSame(['token_a', 'token_b'], $refreshUpdateCaptures['in']['accessToken']);
         $this->assertSame(true, $refreshUpdateCaptures['set']['revoked']);
     }
@@ -70,9 +75,11 @@ final class CredentialsRevokerTest extends UnitTestCase
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->exactly(3))
             ->method('createQueryBuilder')
-            ->willReturnCallback(static function (?string $documentName = null) use (&$builders): \Doctrine\ODM\MongoDB\Query\Builder|null {
-                return array_shift($builders);
-            });
+            ->willReturnCallback(
+                static function () use (&$builders): \Doctrine\ODM\MongoDB\Query\Builder|null {
+                    return array_shift($builders);
+                }
+            );
         $documentManager->expects($this->once())->method('flush');
 
         $clientManager = $this->createMock(ClientManagerInterface::class);
@@ -116,9 +123,11 @@ final class CredentialsRevokerTest extends UnitTestCase
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->exactly(4))
             ->method('createQueryBuilder')
-            ->willReturnCallback(static function (?string $documentName = null) use (&$builders): \Doctrine\ODM\MongoDB\Query\Builder|null {
-                return array_shift($builders);
-            });
+            ->willReturnCallback(
+                static function () use (&$builders): \Doctrine\ODM\MongoDB\Query\Builder|null {
+                    return array_shift($builders);
+                }
+            );
         $documentManager->expects($this->once())->method('flush');
 
         $clientManager = $this->createMock(ClientManagerInterface::class);
@@ -172,6 +181,9 @@ final class CredentialsRevokerTest extends UnitTestCase
                 return $this->identifier;
             }
 
+            /**
+             * @return list<string>
+             */
             #[\Override]
             public function getRoles(): array
             {

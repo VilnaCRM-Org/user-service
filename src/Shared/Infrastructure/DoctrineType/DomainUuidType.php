@@ -22,15 +22,7 @@ final class DomainUuidType extends Type
             return null;
         }
 
-        if ($value instanceof UuidInterface) {
-            return (string) $value;
-        }
-
-        if (is_string($value)) {
-            return $value;
-        }
-
-        return (string) new Uuid((string) $value);
+        return $this->normalizeToString($value);
     }
 
     #[\Override]
@@ -40,11 +32,7 @@ final class DomainUuidType extends Type
             return null;
         }
 
-        if ($value instanceof Uuid) {
-            return $value;
-        }
-
-        return new Uuid((string) $value);
+        return $this->createUuid($value);
     }
 
     #[\Override]
@@ -56,8 +44,28 @@ final class DomainUuidType extends Type
     #[\Override]
     public function closureToPHP(): string
     {
-        return 'if ($value === null) { $return = null; } '
-            . 'elseif ($value instanceof \App\Shared\Domain\ValueObject\Uuid) { $return = $value; } '
-            . 'else { $return = new \App\Shared\Domain\ValueObject\Uuid((string) $value); }';
+        return 'if ($value === null) { $return = null; } elseif ($value instanceof \App\Shared\Domain\ValueObject\Uuid) { $return = $value; } else { $return = new \App\Shared\Domain\ValueObject\Uuid((string) $value); }';
+    }
+
+    private function normalizeToString(mixed $value): string
+    {
+        if ($value instanceof UuidInterface) {
+            return (string) $value;
+        }
+
+        if (is_string($value)) {
+            return $value;
+        }
+
+        return (string) new Uuid((string) $value);
+    }
+
+    private function createUuid(mixed $value): Uuid
+    {
+        if ($value instanceof Uuid) {
+            return $value;
+        }
+
+        return new Uuid((string) $value);
     }
 }

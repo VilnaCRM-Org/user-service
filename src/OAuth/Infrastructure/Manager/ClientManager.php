@@ -73,39 +73,42 @@ final class ClientManager implements ClientManagerInterface
 
     private function applyGrantsFilter(object $queryBuilder, ClientFilter $filter): void
     {
-        if (empty($filter->getGrants())) {
+        $grants = $filter->getGrants();
+        if ($grants === [] || $grants === null) {
             return;
         }
 
         $grantStrings = array_map(
             static fn (Grant $grant): string => (string) $grant,
-            $filter->getGrants()
+            $grants
         );
         $queryBuilder->field('grants')->all($grantStrings);
     }
 
     private function applyRedirectUrisFilter(object $queryBuilder, ClientFilter $filter): void
     {
-        if (empty($filter->getRedirectUris())) {
+        $redirectUris = $filter->getRedirectUris();
+        if ($redirectUris === [] || $redirectUris === null) {
             return;
         }
 
         $redirectUriStrings = array_map(
             static fn (RedirectUri $uri): string => (string) $uri,
-            $filter->getRedirectUris()
+            $redirectUris
         );
         $queryBuilder->field('redirectUris')->all($redirectUriStrings);
     }
 
     private function applyScopesFilter(object $queryBuilder, ClientFilter $filter): void
     {
-        if (empty($filter->getScopes())) {
+        $scopes = $filter->getScopes();
+        if ($scopes === [] || $scopes === null) {
             return;
         }
 
         $scopeStrings = array_map(
             static fn (Scope $scope): string => (string) $scope,
-            $filter->getScopes()
+            $scopes
         );
         $queryBuilder->field('scopes')->all($scopeStrings);
     }

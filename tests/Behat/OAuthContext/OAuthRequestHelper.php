@@ -64,6 +64,9 @@ final class OAuthRequestHelper
         ));
     }
 
+    /**
+     * @param array<string, string|int|bool|null> $payload
+     */
     public function sendTokenRequestWithPayload(
         array $payload,
         ?string $clientId = null,

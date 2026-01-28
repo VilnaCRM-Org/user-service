@@ -87,19 +87,31 @@ final readonly class AllowedMethodsProvider
         \ApiPlatform\Metadata\Operation $operation,
         string $normalizedPath
     ): ?string {
-        if (!$operation instanceof HttpOperation) {
+        if (!$this->isValidHttpOperation($operation, $normalizedPath)) {
             return null;
+        }
+
+        return $this->extractMethodFromOperation($operation);
+    }
+
+    private function isValidHttpOperation(
+        \ApiPlatform\Metadata\Operation $operation,
+        string $normalizedPath
+    ): bool {
+        if (!$operation instanceof HttpOperation) {
+            return false;
         }
 
         $operationPath = $this->getOperationPath($operation);
         if ($operationPath === null) {
-            return null;
+            return false;
         }
 
-        if ($this->normalizePath($operationPath) !== $normalizedPath) {
-            return null;
-        }
+        return $this->normalizePath($operationPath) === $normalizedPath;
+    }
 
+    private function extractMethodFromOperation(HttpOperation $operation): ?string
+    {
         $method = $operation->getMethod();
         /** @infection-ignore-all */
         return $method !== null ? strtoupper($method) : null;

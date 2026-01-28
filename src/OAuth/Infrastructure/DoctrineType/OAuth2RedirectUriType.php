@@ -15,6 +15,9 @@ final class OAuth2RedirectUriType extends Type
 
     public const NAME = 'oauth2_redirect_uri';
 
+    /**
+     * @return array<int, string>|null
+     */
     #[\Override]
     public function convertToDatabaseValue(mixed $value): ?array
     {
@@ -52,18 +55,11 @@ final class OAuth2RedirectUriType extends Type
     #[\Override]
     public function closureToMongo(): string
     {
-        return 'if ($value === null) { $return = null; }'
-            . 'elseif (is_array($value)) {'
-            . '$return = [];'
-            . 'foreach ($value as $item) {'
-            . 'if (is_string($item) || (is_object($item) && method_exists($item, "__toString"))) { $return[] = (string) $item; }'
-            . 'else { throw new \InvalidArgumentException("OAuth2RedirectUriType expects an array of stringable values."); }'
-            . '}'
-            . '} else { throw new \InvalidArgumentException("OAuth2RedirectUriType expects an array of stringable values."); }';
+        return 'if ($value === null) { $return = null; } elseif (is_array($value)) { $return = []; foreach ($value as $item) { if (is_string($item) || (is_object($item) && method_exists($item, "__toString"))) { $return[] = (string) $item; } else { throw new \InvalidArgumentException("OAuth2RedirectUriType expects an array of stringable values."); } } } else { throw new \InvalidArgumentException("OAuth2RedirectUriType expects an array of stringable values."); }';
     }
 
     /**
-     * @param array<int, mixed> $values
+     * @param array<int, string|object> $values
      *
      * @return list<string>
      */

@@ -42,7 +42,9 @@ final class SchemathesisOAuthSeederTest extends UnitTestCase
         $documentManager->expects($this->once())->method('remove')->with($existingCode);
         $documentManager->expects($this->once())->method('flush');
 
-        $authorizationCodeManager = new class($existingCode) implements AuthorizationCodeManagerInterface {
+        $authorizationCodeManager = new class($existingCode) implements
+            AuthorizationCodeManagerInterface
+{
             private ?AuthorizationCodeInterface $savedCode = null;
 
             public function __construct(private readonly AuthorizationCodeInterface $existingCode)
@@ -75,7 +77,11 @@ final class SchemathesisOAuthSeederTest extends UnitTestCase
 
         $clientManager = $this->createMock(ClientManagerInterface::class);
 
-        $seeder = new SchemathesisOAuthSeeder($clientManager, $documentManager, $authorizationCodeManager);
+        $seeder = new SchemathesisOAuthSeeder(
+            $clientManager,
+            $documentManager,
+            $authorizationCodeManager
+        );
         $seeder->seedAuthorizationCode($client, $user);
 
         $savedCode = $authorizationCodeManager->savedCode();
