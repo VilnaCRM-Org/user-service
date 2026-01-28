@@ -70,7 +70,7 @@ The migration uses **League bundle models directly** with Doctrine ODM XML mappi
 
 ### Unit Tests (1000 tests)
 
-```text
+````text
 PHPUnit 10.5.60 by Sebastian Bergmann and contributors.
 Runtime: PHP 8.3.17
 
@@ -105,10 +105,12 @@ Time: 00:02.039s, Memory: 60.50 MB
 
 #### OAuth Feature Tests (24 scenarios)
 
-```
+````
+
 24 scenarios (24 passed)
 124 steps (124 passed)
 Time: 00:08.47s, Memory: 54.32 MB
+
 ```
 
 **Result**: ✅ **100% Pass Rate** (24/24 scenarios)
@@ -131,10 +133,12 @@ Time: 00:08.47s, Memory: 54.32 MB
 #### Full Behat Suite (153 scenarios)
 
 ```
+
 153 scenarios (153 passed)
 733 steps (733 passed)
 Time: 00:19.50s, Memory: 86.49 MB
-```
+
+````
 
 **Result**: ✅ **100% Pass Rate** (153/153 scenarios)
 
@@ -199,7 +203,7 @@ Found 9 documents mapped:
 - League\Bundle\OAuth2ServerBundle\Model\AccessToken [OK]
 - League\Bundle\OAuth2ServerBundle\Model\AuthorizationCode [OK]
 - League\Bundle\OAuth2ServerBundle\Model\RefreshToken [OK]
-```
+````
 
 ### ✅ OAuth Services
 
