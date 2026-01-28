@@ -63,7 +63,7 @@ Map bundle model classes as ODM documents in `config/doctrine/`:
 
 - Managers follow ORM manager behavior: return `null` for missing entities, no framework exceptions.
 - Honor `persist_access_token` (no-op when false).
-- `ClientManager::list()` uses ODM `$in`/`$all` filters instead of ORM `LIKE` on string fields.
+- `ClientManager::list()` uses MongoDB `$all` for exact array matching on `grants`, `redirectUris`, and `scopes` (covered by `testListAppliesFiltersAndReturnsClients`).
 - Credentials revocation updates tokens by `userIdentifier`/`client` consistently.
 - Keep error payloads (`error`, `error_description`) to match existing Behat/Schemathesis expectations.
 
