@@ -39,7 +39,6 @@ final readonly class SchemathesisOAuthSeeder
         Client $client,
         UserInterface $user
     ): void {
-        // Remove existing authorization code if it exists
         $existingAuthCode = $this->authorizationCodeManager->find(
             SchemathesisFixtures::AUTHORIZATION_CODE
         );
