@@ -33,7 +33,7 @@ As you will see, we use Make commands to manage the project. Run `make help` aft
    Here's an example configuration:
 
    ```bash
-   DB_URL="mongodb://user:password@database:27017/db"
+MONGODB_URL="mongodb://user:password@database:27017/db"
    REDIS_URL=redis://redis:6379/0
    MAILER_DSN=smtp://mailer:1025
    API_BASE_URL=https://localhost
