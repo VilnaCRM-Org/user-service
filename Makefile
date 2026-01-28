@@ -244,9 +244,9 @@ load-fixtures: ## Build the DB, control the schema validity, load fixtures and c
 	@$(SYMFONY) doctrine:mongodb:fixtures:load --no-interaction
 
 reset-db: ## Recreate the database schema for ephemeral test runs
-	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata
-	@$(SYMFONY) doctrine:mongodb:schema:drop
-	@$(SYMFONY) doctrine:mongodb:schema:create
+	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata || true
+	@$(SYMFONY) doctrine:mongodb:schema:drop || true
+	@$(SYMFONY) doctrine:mongodb:schema:create || true
 	@$(EXEC_PHP) php bin/console app:seed-schemathesis-data
 
 coverage-html: ## Create the code coverage report with PHPUnit
