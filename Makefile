@@ -238,7 +238,7 @@ commands: ## List all Symfony commands
 
 load-fixtures: ## Build the DB, control the schema validity, load fixtures and check the migration status
 	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata
-	@$(SYMFONY) doctrine:mongodb:schema:drop
+	@$(SYMFONY) doctrine:mongodb:schema:drop || true
 	@$(SYMFONY) doctrine:mongodb:schema:create
 	@$(SYMFONY) doctrine:mongodb:fixtures:load --no-interaction
 
