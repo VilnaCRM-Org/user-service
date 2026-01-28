@@ -21,8 +21,8 @@ final class CredentialsRevokerTest extends UnitTestCase
 
     public function testRevokeCredentialsForUserUpdatesAllTokens(): void
     {
-        $tokenA = $this->makeAccessToken('token_a');
-        $tokenB = $this->makeAccessToken('token_b');
+        $tokenA = $this->makeAccessToken($this->faker->lexify('token_????'));
+        $tokenB = $this->makeAccessToken($this->faker->lexify('token_????'));
 
         $captures = $this->createCaptureArrays();
         $documentManager = $this->createDocManagerForUserRevocation(
@@ -84,7 +84,8 @@ final class CredentialsRevokerTest extends UnitTestCase
     public function testRevokeCredentialsForClientUpdatesAllTokens(): void
     {
         $client = $this->makeClient();
-        $tokenA = $this->makeAccessToken('token_a', $client);
+        $tokenIdentifier = $this->faker->lexify('token_????');
+        $tokenA = $this->makeAccessToken($tokenIdentifier, $client);
 
         $captures = $this->createCaptureArrays();
         $documentManager = $this->createDocManagerForClientRevocation($tokenA, $captures);
@@ -93,7 +94,7 @@ final class CredentialsRevokerTest extends UnitTestCase
         $revoker = new CredentialsRevoker($documentManager, $clientManager);
         $revoker->revokeCredentialsForClient($client);
 
-        $this->assertClientReferencesSet($captures, $client);
+        $this->assertClientReferencesSet($captures, $client, $tokenIdentifier);
     }
 
     /**
@@ -192,11 +193,15 @@ final class CredentialsRevokerTest extends UnitTestCase
     /**
      * @param array<string, array<string, mixed>> $captures
      */
-    private function assertClientReferencesSet(array $captures, Client $client): void
+    private function assertClientReferencesSet(
+        array $captures,
+        Client $client,
+        string $accessTokenIdentifier
+    ): void
     {
         $this->assertSame($client, $captures['accessUpdate']['references']['client']);
         $this->assertSame($client, $captures['authUpdate']['references']['client']);
-        $this->assertSame(['token_a'], $captures['refreshUpdate']['in']['accessToken']);
+        $this->assertSame([$accessTokenIdentifier], $captures['refreshUpdate']['in']['accessToken']);
     }
 
     private function makeClient(): Client
