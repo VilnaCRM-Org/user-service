@@ -130,7 +130,7 @@ final class AccessTokenManagerTest extends UnitTestCase
         $client = new Client(
             $this->faker->company(),
             $this->faker->lexify('client_????????'),
-            $this->faker->optional()->sha1()
+            $this->faker->sha1()
         );
 
         return new AccessToken(
@@ -147,7 +147,7 @@ final class AccessTokenManagerTest extends UnitTestCase
         $client = new Client(
             $this->faker->company(),
             $this->faker->lexify('client_????????'),
-            $this->faker->optional()->sha1()
+            $this->faker->sha1()
         );
 
         return new AccessToken(

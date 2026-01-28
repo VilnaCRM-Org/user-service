@@ -110,7 +110,7 @@ final class AuthorizationCodeManagerTest extends UnitTestCase
         $client = new Client(
             $this->faker->company(),
             $this->faker->lexify('client_????????'),
-            $this->faker->optional()->sha1()
+            $this->faker->sha1()
         );
 
         return new AuthorizationCode(

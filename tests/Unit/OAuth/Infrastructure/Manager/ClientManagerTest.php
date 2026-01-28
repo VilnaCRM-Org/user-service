@@ -307,7 +307,7 @@ final class ClientManagerTest extends UnitTestCase
         return new Client(
             $this->faker->company(),
             $this->faker->lexify('client_????????'),
-            $this->faker->optional()->sha1()
+            $this->faker->sha1()
         );
     }
 }
