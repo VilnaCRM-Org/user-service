@@ -15,7 +15,7 @@
     "ext-simplexml": "*",
     "ext-xml": "*",
     "api-platform/core": "^4.1",
-    "api-platform/doctrine-odm": "*",
+    "api-platform/doctrine-odm": "^4.0",
     "aws/aws-sdk-php": "^3.343",
     "cfpinto/graphql": "^2.0",
     "doctrine/mongodb-odm": "^2.10",
