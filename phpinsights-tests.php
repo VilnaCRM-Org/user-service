@@ -50,7 +50,7 @@ return [
             'exclude' => [
                 'tests/Unit/Shared/Infrastructure/Bus/Event/Async/RecordingLogger.php',
                 'tests/Unit/OAuth/Infrastructure/Service/CredentialsRevokerTest.php',
-                'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactory.php',
+                'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactoryTrait.php',
             ],
         ],
         LineLengthSniff::class => [
@@ -59,7 +59,7 @@ return [
                 'tests/Behat/OAuthContext/OAuthContext.php',
                 'tests/Unit/OAuth/Infrastructure/Service/CredentialsRevokerTest.php',
                 'tests/Unit/OAuth/Infrastructure/Manager/AccessTokenManagerTest.php',
-                'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactory.php',
+                'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactoryTrait.php',
                 'src/User/Infrastructure/Repository/MariaDBPasswordResetTokenRepository.php',
                 'tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php',
                 'tests/Integration/Internal/HealthCheck/Infrastructure/EventSubscriber/DBCheckSubscriberTest.php',
