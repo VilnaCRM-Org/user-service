@@ -64,6 +64,7 @@ Map bundle model classes as ODM documents in `config/doctrine/`:
 - Managers follow ORM manager behavior: return `null` for missing entities, no framework exceptions.
 - Honor `persist_access_token` (no-op when false).
 - `ClientManager::list()` uses MongoDB `$all` for exact array matching on `grants`, `redirectUris`, and `scopes` (covered by `testListAppliesFiltersAndReturnsClients`).
+- `league/oauth2-server-bundle` pulls `doctrine/orm` transitively; we keep the package installed but do not configure ORM because OAuth persistence uses ODM managers only.
 - Credentials revocation updates tokens by `userIdentifier`/`client` consistently.
 - Keep error payloads (`error`, `error_description`) to match existing Behat/Schemathesis expectations.
 

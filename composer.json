@@ -20,6 +20,7 @@
     "cfpinto/graphql": "^2.0",
     "doctrine/mongodb-odm": "^2.10",
     "doctrine/mongodb-odm-bundle": "^5.3",
+    "doctrine/orm": "^3.0",
     "dpauli/graphql-request-builder": "^1.8",
     "fakerphp/faker": "^1.23.0",
     "league/oauth2-server-bundle": "^1.0",
