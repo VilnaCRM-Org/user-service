@@ -70,14 +70,14 @@ The migration uses **League bundle models directly** with Doctrine ODM XML mappi
 
 ### Unit Tests (1000 tests)
 
-```
+```text
 PHPUnit 10.5.60 by Sebastian Bergmann and contributors.
 Runtime: PHP 8.3.17
 
 Tests: 1000, Assertions: 2508
 ✅ ALL PASSED (0 errors, 0 failures)
 Time: 00:01.328s, Memory: 56.00 MB
-```
+```text
 
 **Result**: ✅ **100% Pass Rate** (1000/1000)
 
@@ -90,14 +90,14 @@ Time: 00:01.328s, Memory: 56.00 MB
 
 ### Integration Tests (30 tests)
 
-```
+```text
 PHPUnit 10.5.60 by Sebastian Bergmann and contributors.
 Runtime: PHP 8.3.17
 
 Tests: 30, Assertions: 49
 ✅ ALL PASSED
 Time: 00:02.039s, Memory: 60.50 MB
-```
+```text
 
 **Result**: ✅ **100% Pass Rate** (30/30)
 
