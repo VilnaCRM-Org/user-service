@@ -193,9 +193,8 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
     {
         $totalUsers = count($users);
         $fullBatches = (int) floor($totalUsers / self::BATCH_SIZE);
-        $hasPartialBatch = $totalUsers % self::BATCH_SIZE !== 0;
 
-        $expectedFlushCalls = $fullBatches + ($hasPartialBatch ? 1 : 0);
+        $expectedFlushCalls = $fullBatches + 1;
         $expectedClearCalls = $expectedFlushCalls;
 
         $this->documentManager

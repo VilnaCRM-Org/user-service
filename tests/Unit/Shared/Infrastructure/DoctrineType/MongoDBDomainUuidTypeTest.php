@@ -117,7 +117,7 @@ final class MongoDBDomainUuidTypeTest extends UnitTestCase
 
     public function testConvertToDatabaseValueWithCustomUuidInterface(): void
     {
-        $invalidUuidString = 'not-a-valid-uuid-format';
+        $invalidUuidString = $this->faker->uuid() . '-invalid';
         $customUuid = new class($invalidUuidString) implements UuidInterface {
             public function __construct(private readonly string $value)
             {

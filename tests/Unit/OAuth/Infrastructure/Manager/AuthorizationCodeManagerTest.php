@@ -116,7 +116,9 @@ final class AuthorizationCodeManagerTest extends UnitTestCase
 
         return new AuthorizationCode(
             $identifier,
-            new DateTimeImmutable('+1 hour'),
+            DateTimeImmutable::createFromMutable(
+                $this->faker->dateTimeBetween('+1 hour', '+2 hours')
+            ),
             $client,
             $this->faker->optional()->userName(),
             [new Scope($this->faker->lexify('scope_????'))]

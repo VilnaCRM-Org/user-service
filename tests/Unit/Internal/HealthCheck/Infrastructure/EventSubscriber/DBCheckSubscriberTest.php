@@ -32,6 +32,7 @@ final class DBCheckSubscriberTest extends UnitTestCase
         $client = $this->createMock(Client::class);
         $database = $this->createMock(Database::class);
         $configuration = $this->createMock(\Doctrine\ODM\MongoDB\Configuration::class);
+        $dbName = $this->faker->word();
 
         $this->documentManager->expects($this->once())
             ->method('getConfiguration')
@@ -39,7 +40,7 @@ final class DBCheckSubscriberTest extends UnitTestCase
 
         $configuration->expects($this->once())
             ->method('getDefaultDB')
-            ->willReturn('test_db');
+            ->willReturn($dbName);
 
         $this->documentManager->expects($this->once())
             ->method('getClient')
@@ -47,7 +48,7 @@ final class DBCheckSubscriberTest extends UnitTestCase
 
         $client->expects($this->once())
             ->method('selectDatabase')
-            ->with('test_db')
+            ->with($dbName)
             ->willReturn($database);
 
         $database->expects($this->once())->method('command')->with(['ping' => 1]);

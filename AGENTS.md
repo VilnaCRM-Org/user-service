@@ -1,6 +1,6 @@
 # Repository Guidelines
 
-VilnaCRM User Service is a PHP 8.3+ microservice built with Symfony 7.2, API Platform 4.1, MongoDB, and GraphQL. It manages user accounts and authentication (OAuth server, REST API, GraphQL) inside the VilnaCRM ecosystem. The project follows Hexagonal Architecture with DDD & CQRS patterns and includes comprehensive testing across unit, integration, E2E, and load suites.
+VilnaCRM User Service is a PHP 8.3+ microservice built with Symfony 7.3, API Platform 4.1, MongoDB, and GraphQL. It manages user accounts and authentication (OAuth server, REST API, GraphQL) inside the VilnaCRM ecosystem. The project follows Hexagonal Architecture with DDD & CQRS patterns and includes comprehensive testing across unit, integration, E2E, and load suites.
 
 **CRITICAL: Always use make commands or docker exec into the PHP container. Never run PHP commands directly on the host.**
 

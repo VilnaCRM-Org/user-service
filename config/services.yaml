@@ -139,8 +139,15 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.terminate }
 
+  # Cached User Repository (decorator with Redis caching)
+  App\User\Infrastructure\Repository\CachedUserRepository:
+    arguments:
+      $inner: '@App\User\Infrastructure\Repository\MongoDBUserRepository'
+      $cache: '@cache.user'
+
+  # Alias interface to cached repository
   App\User\Domain\Repository\UserRepositoryInterface:
-    alias: App\User\Infrastructure\Repository\MongoDBUserRepository
+    alias: App\User\Infrastructure\Repository\CachedUserRepository
 
   App\User\Domain\Repository\PasswordResetTokenRepositoryInterface:
     alias: App\User\Infrastructure\Repository\MongoDBPasswordResetTokenRepository
