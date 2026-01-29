@@ -111,7 +111,7 @@ Time: 00:02.039s, Memory: 60.50 MB
 124 steps (124 passed)
 Time: 00:08.47s, Memory: 54.32 MB
 
-```
+````
 
 **Result**: ✅ **100% Pass Rate** (24/24 scenarios)
 
@@ -203,7 +203,7 @@ Found 9 documents mapped:
 - League\Bundle\OAuth2ServerBundle\Model\AccessToken [OK]
 - League\Bundle\OAuth2ServerBundle\Model\AuthorizationCode [OK]
 - League\Bundle\OAuth2ServerBundle\Model\RefreshToken [OK]
-````
+```
 
 ### ✅ OAuth Services
 
