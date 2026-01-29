@@ -22,13 +22,13 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
 {
     public function __construct(
         private readonly DocumentManager $documentManager,
-        private readonly ManagerRegistry $registry,
+        ManagerRegistry $registry,
         private readonly int $batchSize,
     ) {
         if ($batchSize <= 0) {
             throw new InvalidArgumentException('Batch size must be greater than zero.');
         }
-        parent::__construct($this->registry, User::class);
+        parent::__construct($registry, User::class);
     }
 
     #[\Override]

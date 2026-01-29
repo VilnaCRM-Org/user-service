@@ -40,6 +40,7 @@ final class OAuth2GrantTypeTest extends UnitTestCase
         $result = $type->convertToPHPValue([$grantValue]);
 
         $this->assertCount(1, $result);
+        $this->assertInstanceOf(Grant::class, $result[0]);
         $this->assertSame($grantValue, (string) $result[0]);
     }
 
@@ -109,6 +110,66 @@ final class OAuth2GrantTypeTest extends UnitTestCase
         $type = $this->getType();
 
         $this->assertNotEmpty($type->closureToMongo());
+    }
+
+    public function testConvertsMultipleGrantsToDatabaseArray(): void
+    {
+        $type = $this->getType();
+        $grant1 = $this->faker->lexify('grant_????');
+        $grant2 = $this->faker->lexify('grant_????');
+        $grant3 = $this->faker->lexify('grant_????');
+
+        $result = $type->convertToDatabaseValue([
+            new Grant($grant1),
+            new Grant($grant2),
+            new Grant($grant3),
+        ]);
+
+        $this->assertSame([$grant1, $grant2, $grant3], $result);
+    }
+
+    public function testConvertsMultipleStringGrantsToDatabaseArray(): void
+    {
+        $type = $this->getType();
+        $grant1 = $this->faker->lexify('grant_????');
+        $grant2 = $this->faker->lexify('grant_????');
+
+        $result = $type->convertToDatabaseValue([$grant1, $grant2]);
+
+        $this->assertSame([$grant1, $grant2], $result);
+    }
+
+    public function testConvertsDatabaseArrayToMultipleGrants(): void
+    {
+        $type = $this->getType();
+        $grant1 = $this->faker->lexify('grant_????');
+        $grant2 = $this->faker->lexify('grant_????');
+        $grant3 = $this->faker->lexify('grant_????');
+
+        $result = $type->convertToPHPValue([$grant1, $grant2, $grant3]);
+
+        $this->assertCount(3, $result);
+        $this->assertInstanceOf(Grant::class, $result[0]);
+        $this->assertInstanceOf(Grant::class, $result[1]);
+        $this->assertInstanceOf(Grant::class, $result[2]);
+        $this->assertSame($grant1, (string) $result[0]);
+        $this->assertSame($grant2, (string) $result[1]);
+        $this->assertSame($grant3, (string) $result[2]);
+    }
+
+    public function testConvertsMixedStringableTypesToDatabaseArray(): void
+    {
+        $type = $this->getType();
+        $string1 = $this->faker->lexify('grant_????');
+        $grant = new Grant($this->faker->lexify('grant_????'));
+        $string2 = $this->faker->lexify('grant_????');
+
+        $result = $type->convertToDatabaseValue([$string1, $grant, $string2]);
+
+        $this->assertCount(3, $result);
+        $this->assertSame($string1, $result[0]);
+        $this->assertSame((string) $grant, $result[1]);
+        $this->assertSame($string2, $result[2]);
     }
 
     private function getType(): OAuth2GrantType

@@ -39,6 +39,7 @@ final class AuthorizationCodeManagerTest extends UnitTestCase
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->once())->method('persist')->with($authCode);
         $documentManager->expects($this->once())->method('flush');
+        $documentManager->expects($this->once())->method('refresh')->with($authCode);
 
         $manager = new AuthorizationCodeManager($documentManager);
 

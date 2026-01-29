@@ -10,38 +10,6 @@
     "summary": "summary.log",
   },
   "mutators": {
-    "@default": true,
-    "UnwrapArrayMap": {
-      "ignore": [
-        "App\\OAuth\\Infrastructure\\DoctrineType\\OAuth2GrantType::convertToPHPValue",
-        "App\\OAuth\\Infrastructure\\DoctrineType\\OAuth2RedirectUriType::convertToPHPValue",
-        "App\\OAuth\\Infrastructure\\DoctrineType\\OAuth2ScopeType::convertToPHPValue"
-      ]
-    },
-    "Continue_": {
-      "ignore": [
-        "App\\OAuth\\Infrastructure\\DoctrineType\\OAuth2GrantType::normalizeValues",
-        "App\\OAuth\\Infrastructure\\DoctrineType\\OAuth2RedirectUriType::normalizeValues",
-        "App\\OAuth\\Infrastructure\\DoctrineType\\OAuth2ScopeType::normalizeValues"
-      ]
-    },
-    "ArrayOneItem": {
-      "ignore": [
-        "App\\OAuth\\Infrastructure\\DoctrineType\\OAuth2GrantType::normalizeValues",
-        "App\\OAuth\\Infrastructure\\DoctrineType\\OAuth2RedirectUriType::normalizeValues",
-        "App\\OAuth\\Infrastructure\\DoctrineType\\OAuth2ScopeType::normalizeValues"
-      ]
-    },
-    "ReturnRemoval": {
-      "ignore": [
-        "App\\Shared\\Application\\Resolver\\Source\\ObjectMethodEmailSource::extract",
-        "App\\Shared\\Infrastructure\\DoctrineType\\DomainUuidType::normalizeToString"
-      ]
-    },
-    "InstanceOf_": {
-      "ignore": [
-        "App\\Shared\\Infrastructure\\DoctrineType\\DomainUuidType::normalizeToString"
-      ]
-    }
+    "@default": true
   }
 }

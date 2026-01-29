@@ -16,13 +16,14 @@ use Doctrine\ODM\MongoDB\DocumentManager;
  *
  * @psalm-suppress UnusedClass - Used via dependency injection
  */
-final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepository implements PasswordResetTokenRepositoryInterface
+final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepository implements
+    PasswordResetTokenRepositoryInterface
 {
     public function __construct(
         private readonly DocumentManager $documentManager,
-        private readonly ManagerRegistry $registry,
+        ManagerRegistry $registry,
     ) {
-        parent::__construct($this->registry, PasswordResetToken::class);
+        parent::__construct($registry, PasswordResetToken::class);
     }
 
     #[\Override]

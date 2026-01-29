@@ -27,7 +27,10 @@ final class ClientManager implements ClientManagerInterface
     #[\Override]
     public function save(ClientInterface $client): void
     {
-        $event = $this->dispatcher->dispatch(new PreSaveClientEvent($client), OAuth2Events::PRE_SAVE_CLIENT);
+        $event = $this->dispatcher->dispatch(
+            new PreSaveClientEvent($client),
+            OAuth2Events::PRE_SAVE_CLIENT
+        );
         $client = $event->getClient();
 
         $this->documentManager->persist($client);

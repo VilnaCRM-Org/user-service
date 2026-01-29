@@ -40,6 +40,7 @@ final class OAuth2RedirectUriTypeTest extends UnitTestCase
         $result = $type->convertToPHPValue([$uriValue]);
 
         $this->assertCount(1, $result);
+        $this->assertInstanceOf(RedirectUri::class, $result[0]);
         $this->assertSame($uriValue, (string) $result[0]);
     }
 
@@ -113,6 +114,66 @@ final class OAuth2RedirectUriTypeTest extends UnitTestCase
         $type = $this->getType();
 
         $this->assertNotEmpty($type->closureToMongo());
+    }
+
+    public function testConvertsMultipleRedirectUrisToDatabaseArray(): void
+    {
+        $type = $this->getType();
+        $uri1 = $this->faker->url();
+        $uri2 = $this->faker->url();
+        $uri3 = $this->faker->url();
+
+        $result = $type->convertToDatabaseValue([
+            new RedirectUri($uri1),
+            new RedirectUri($uri2),
+            new RedirectUri($uri3),
+        ]);
+
+        $this->assertSame([$uri1, $uri2, $uri3], $result);
+    }
+
+    public function testConvertsMultipleStringRedirectUrisToDatabaseArray(): void
+    {
+        $type = $this->getType();
+        $uri1 = $this->faker->url();
+        $uri2 = $this->faker->url();
+
+        $result = $type->convertToDatabaseValue([$uri1, $uri2]);
+
+        $this->assertSame([$uri1, $uri2], $result);
+    }
+
+    public function testConvertsDatabaseArrayToMultipleRedirectUris(): void
+    {
+        $type = $this->getType();
+        $uri1 = $this->faker->url();
+        $uri2 = $this->faker->url();
+        $uri3 = $this->faker->url();
+
+        $result = $type->convertToPHPValue([$uri1, $uri2, $uri3]);
+
+        $this->assertCount(3, $result);
+        $this->assertInstanceOf(RedirectUri::class, $result[0]);
+        $this->assertInstanceOf(RedirectUri::class, $result[1]);
+        $this->assertInstanceOf(RedirectUri::class, $result[2]);
+        $this->assertSame($uri1, (string) $result[0]);
+        $this->assertSame($uri2, (string) $result[1]);
+        $this->assertSame($uri3, (string) $result[2]);
+    }
+
+    public function testConvertsMixedStringableTypesToDatabaseArray(): void
+    {
+        $type = $this->getType();
+        $string1 = $this->faker->url();
+        $uri = new RedirectUri($this->faker->url());
+        $string2 = $this->faker->url();
+
+        $result = $type->convertToDatabaseValue([$string1, $uri, $string2]);
+
+        $this->assertCount(3, $result);
+        $this->assertSame($string1, $result[0]);
+        $this->assertSame((string) $uri, $result[1]);
+        $this->assertSame($string2, $result[2]);
     }
 
     private function getType(): OAuth2RedirectUriType

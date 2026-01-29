@@ -7,6 +7,8 @@ namespace App\Tests\Behat\HealthCheckContext;
 use Aws\Sqs\SqsClient;
 use Behat\Behat\Context\Context;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Faker\Factory;
+use Faker\Generator;
 use MongoDB\Client;
 use MongoDB\Database;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -18,10 +20,12 @@ final class HealthCheckContext implements Context
 {
     private bool $kernelDirty = false;
     private KernelInterface $kernel;
+    private Generator $faker;
 
     public function __construct(KernelInterface $kernel)
     {
         $this->kernel = $kernel;
+        $this->faker = Factory::create();
     }
 
     /**
@@ -61,7 +65,8 @@ final class HealthCheckContext implements Context
             throw new \RuntimeException('Document manager is not available');
         }
 
-        $failingClient = new class('mongodb://127.0.0.1') extends Client {
+        $mongoUri = sprintf('mongodb://%s', $this->faker->ipv4());
+        $failingClient = new class($mongoUri) extends Client {
             #[\Override]
             public function selectDatabase(string $databaseName, array $options = []): Database
             {

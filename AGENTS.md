@@ -126,7 +126,7 @@ The User Service handles user registration, authentication, password reset, and 
 1. `make build` (15-30 min, NEVER CANCEL)
 2. `make start` (5-10 min, includes database, Redis, LocalStack)
 3. `make install` (3-5 min, PHP dependencies)
-4. Verify: https://localhost/api/docs, https://localhost/api/graphql
+4. Verify: [https://localhost/api/docs](https://localhost/api/docs), [https://localhost/api/graphql](https://localhost/api/graphql)
 
 ### Essential Development Commands
 

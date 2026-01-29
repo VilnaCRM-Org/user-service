@@ -11,6 +11,7 @@
 
     <rule ref="rulesets/codesize.xml">
         <exclude name="TooManyPublicMethods"/>
+        <!-- Excluded: Behat contexts legitimately need many step definitions (e.g., 39 steps for OAuth testing) -->
         <exclude name="TooManyMethods"/>
         <exclude name="ExcessiveClassComplexity"/>
         <exclude name="ExcessiveMethodLength"/>

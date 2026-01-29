@@ -111,6 +111,8 @@ final class MongoDBDomainUuidTypeTest extends UnitTestCase
         $this->assertIsString($closure);
         $this->assertStringContainsString('$value', $closure);
         $this->assertStringContainsString('$return', $closure);
+        $this->assertStringContainsString('null', $closure);
+        $this->assertStringContainsString('App\Shared\Domain\ValueObject\Uuid', $closure);
     }
 
     public function testClosureToPHP(): void
@@ -120,6 +122,7 @@ final class MongoDBDomainUuidTypeTest extends UnitTestCase
         $this->assertIsString($closure);
         $this->assertStringContainsString('$value', $closure);
         $this->assertStringContainsString('$return', $closure);
+        $this->assertStringContainsString('null', $closure);
         $this->assertStringContainsString('App\Shared\Domain\ValueObject\Uuid', $closure);
     }
 }

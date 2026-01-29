@@ -77,7 +77,7 @@ Runtime: PHP 8.3.17
 Tests: 1000, Assertions: 2508
 ✅ ALL PASSED (0 errors, 0 failures)
 Time: 00:01.328s, Memory: 56.00 MB
-```text
+```
 
 **Result**: ✅ **100% Pass Rate** (1000/1000)
 
@@ -97,7 +97,7 @@ Runtime: PHP 8.3.17
 Tests: 30, Assertions: 49
 ✅ ALL PASSED
 Time: 00:02.039s, Memory: 60.50 MB
-```text
+```
 
 **Result**: ✅ **100% Pass Rate** (30/30)
 
@@ -132,7 +132,7 @@ Time: 00:08.47s, Memory: 54.32 MB
 
 #### Full Behat Suite (153 scenarios)
 
-```
+```text
 
 153 scenarios (153 passed)
 733 steps (733 passed)

@@ -95,8 +95,10 @@ final class AccessTokenManagerTest extends UnitTestCase
 
     public function testClearExpiredRemovesExpiredTokensAndUnlinksRefreshTokens(): void
     {
-        $tokenA = $this->makeAccessTokenWithIdentifier('token_a');
-        $tokenB = $this->makeAccessTokenWithIdentifier('token_b');
+        $tokenAId = $this->faker->uuid();
+        $tokenBId = $this->faker->uuid();
+        $tokenA = $this->makeAccessTokenWithIdentifier($tokenAId);
+        $tokenB = $this->makeAccessTokenWithIdentifier($tokenBId);
 
         $expiredCaptures = [];
         $refreshCaptures = [];
@@ -120,9 +122,9 @@ final class AccessTokenManagerTest extends UnitTestCase
 
         $this->assertSame(2, $manager->clearExpired());
         $this->assertSame([AccessToken::class, RefreshToken::class, AccessToken::class], $calls);
-        $this->assertSame(['token_a', 'token_b'], $refreshCaptures['in']['accessToken']);
+        $this->assertSame([$tokenAId, $tokenBId], $refreshCaptures['in']['accessToken']);
         $this->assertSame(null, $refreshCaptures['set']['accessToken']);
-        $this->assertSame(['token_a', 'token_b'], $removeCaptures['in']['identifier']);
+        $this->assertSame([$tokenAId, $tokenBId], $removeCaptures['in']['identifier']);
     }
 
     private function makeAccessToken(): AccessToken

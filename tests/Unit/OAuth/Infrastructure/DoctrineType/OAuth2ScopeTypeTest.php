@@ -40,6 +40,7 @@ final class OAuth2ScopeTypeTest extends UnitTestCase
         $result = $type->convertToPHPValue([$scopeValue]);
 
         $this->assertCount(1, $result);
+        $this->assertInstanceOf(Scope::class, $result[0]);
         $this->assertSame($scopeValue, (string) $result[0]);
     }
 
@@ -109,6 +110,66 @@ final class OAuth2ScopeTypeTest extends UnitTestCase
         $type = $this->getType();
 
         $this->assertNotEmpty($type->closureToMongo());
+    }
+
+    public function testConvertsMultipleScopesToDatabaseArray(): void
+    {
+        $type = $this->getType();
+        $scope1 = $this->faker->lexify('scope_????');
+        $scope2 = $this->faker->lexify('scope_????');
+        $scope3 = $this->faker->lexify('scope_????');
+
+        $result = $type->convertToDatabaseValue([
+            new Scope($scope1),
+            new Scope($scope2),
+            new Scope($scope3),
+        ]);
+
+        $this->assertSame([$scope1, $scope2, $scope3], $result);
+    }
+
+    public function testConvertsMultipleStringScopesToDatabaseArray(): void
+    {
+        $type = $this->getType();
+        $scope1 = $this->faker->lexify('scope_????');
+        $scope2 = $this->faker->lexify('scope_????');
+
+        $result = $type->convertToDatabaseValue([$scope1, $scope2]);
+
+        $this->assertSame([$scope1, $scope2], $result);
+    }
+
+    public function testConvertsDatabaseArrayToMultipleScopes(): void
+    {
+        $type = $this->getType();
+        $scope1 = $this->faker->lexify('scope_????');
+        $scope2 = $this->faker->lexify('scope_????');
+        $scope3 = $this->faker->lexify('scope_????');
+
+        $result = $type->convertToPHPValue([$scope1, $scope2, $scope3]);
+
+        $this->assertCount(3, $result);
+        $this->assertInstanceOf(Scope::class, $result[0]);
+        $this->assertInstanceOf(Scope::class, $result[1]);
+        $this->assertInstanceOf(Scope::class, $result[2]);
+        $this->assertSame($scope1, (string) $result[0]);
+        $this->assertSame($scope2, (string) $result[1]);
+        $this->assertSame($scope3, (string) $result[2]);
+    }
+
+    public function testConvertsMixedStringableTypesToDatabaseArray(): void
+    {
+        $type = $this->getType();
+        $string1 = $this->faker->lexify('scope_????');
+        $scope = new Scope($this->faker->lexify('scope_????'));
+        $string2 = $this->faker->lexify('scope_????');
+
+        $result = $type->convertToDatabaseValue([$string1, $scope, $string2]);
+
+        $this->assertCount(3, $result);
+        $this->assertSame($string1, $result[0]);
+        $this->assertSame((string) $scope, $result[1]);
+        $this->assertSame($string2, $result[2]);
     }
 
     private function getType(): OAuth2ScopeType

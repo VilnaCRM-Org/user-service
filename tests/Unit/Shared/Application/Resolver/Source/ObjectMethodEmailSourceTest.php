@@ -55,4 +55,34 @@ final class ObjectMethodEmailSourceTest extends UnitTestCase
 
         $this->assertSame($email, $source->extract($entry));
     }
+
+    public function testReturnsNullForArrayWithoutThrowing(): void
+    {
+        $source = new ObjectMethodEmailSource('someMethod');
+
+        // Arrays are not objects, should return null without errors
+        $result = $source->extract([]);
+
+        $this->assertNull($result);
+    }
+
+    public function testReturnsNullForNullWithoutThrowing(): void
+    {
+        $source = new ObjectMethodEmailSource('someMethod');
+
+        // null is not an object, should return null without errors
+        $result = $source->extract(null);
+
+        $this->assertNull($result);
+    }
+
+    public function testReturnsNullForIntegerWithoutThrowing(): void
+    {
+        $source = new ObjectMethodEmailSource('someMethod');
+
+        // Integers are not objects, should return null without errors
+        $result = $source->extract(123);
+
+        $this->assertNull($result);
+    }
 }

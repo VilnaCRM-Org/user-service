@@ -26,7 +26,9 @@ final class OAuth2RedirectUriType extends Type
         }
 
         if (!is_array($value)) {
-            throw new InvalidArgumentException('OAuth2RedirectUriType expects an array of stringable values.');
+            throw new InvalidArgumentException(
+                'OAuth2RedirectUriType expects an array of stringable values.'
+            );
         }
 
         return $this->normalizeToStrings($value);
@@ -43,7 +45,9 @@ final class OAuth2RedirectUriType extends Type
         }
 
         if (!is_array($value)) {
-            throw new InvalidArgumentException('OAuth2RedirectUriType expects an array of strings.');
+            throw new InvalidArgumentException(
+                'OAuth2RedirectUriType expects an array of strings.'
+            );
         }
 
         return array_map(
@@ -55,7 +59,14 @@ final class OAuth2RedirectUriType extends Type
     #[\Override]
     public function closureToMongo(): string
     {
-        return 'if ($value === null) { $return = null; } elseif (is_array($value)) { $return = []; foreach ($value as $item) { if (is_string($item) || (is_object($item) && method_exists($item, "__toString"))) { $return[] = (string) $item; } else { throw new \InvalidArgumentException("OAuth2RedirectUriType expects an array of stringable values."); } } } else { throw new \InvalidArgumentException("OAuth2RedirectUriType expects an array of stringable values."); }';
+        return 'if ($value === null) { $return = null; } '
+            . 'elseif (is_array($value)) { $return = []; foreach ($value as $item) { '
+            . 'if (is_string($item) || (is_object($item) && method_exists($item, "__toString"))) { '
+            . '$return[] = (string) $item; } '
+            . 'else { throw new \InvalidArgumentException('
+            . '"OAuth2RedirectUriType expects an array of stringable values."); } } } '
+            . 'else { throw new \InvalidArgumentException('
+            . '"OAuth2RedirectUriType expects an array of stringable values."); }';
     }
 
     /**
@@ -78,7 +89,9 @@ final class OAuth2RedirectUriType extends Type
                 continue;
             }
 
-            throw new InvalidArgumentException('OAuth2RedirectUriType expects an array of stringable values.');
+            throw new InvalidArgumentException(
+                'OAuth2RedirectUriType expects an array of stringable values.'
+            );
         }
 
         return $normalized;

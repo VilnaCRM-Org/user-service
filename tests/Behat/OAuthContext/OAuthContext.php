@@ -13,7 +13,6 @@ use App\Tests\Behat\OAuthContext\Input\PasswordGrantInput;
 use App\Tests\Behat\OAuthContext\Input\RefreshTokenGrantInput;
 use App\User\Application\DTO\AuthorizationUserDto;
 use Behat\Behat\Context\Context;
-use Doctrine\ODM\MongoDB\DocumentManager;
 use Faker\Factory;
 use Faker\Generator;
 use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
@@ -45,7 +44,6 @@ final class OAuthContext implements Context
         private readonly KernelInterface $kernel,
         private SerializerInterface $serializer,
         private ?Response $response,
-        private DocumentManager $documentManager,
         private TokenStorageInterface $tokenStorage,
         private ClientManagerInterface $clientManager
     ) {
@@ -440,12 +438,12 @@ final class OAuthContext implements Context
      */
     public function authenticatingUser(string $email, string $password): void
     {
-        $password = password_hash('password', PASSWORD_BCRYPT);
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
         $userDto = new AuthorizationUserDto(
-            'testuser@example.com',
-            'Test User',
-            $password,
+            $email,
+            $this->faker->name(),
+            $hashedPassword,
             new Uuid($this->faker->uuid()),
             true
         );
