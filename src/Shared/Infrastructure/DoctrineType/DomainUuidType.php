@@ -8,6 +8,7 @@ use App\Shared\Domain\ValueObject\Uuid;
 use App\Shared\Domain\ValueObject\UuidInterface;
 use Doctrine\ODM\MongoDB\Types\ClosureToPHP;
 use Doctrine\ODM\MongoDB\Types\Type;
+use InvalidArgumentException;
 
 final class DomainUuidType extends Type
 {
@@ -26,7 +27,13 @@ final class DomainUuidType extends Type
             return (string) $value;
         }
 
-        return (string) new Uuid((string) $value);
+        $uuid = new Uuid((string) $value);
+
+        if ($uuid->toBinary() === null) {
+            throw new InvalidArgumentException('DomainUuidType expects a valid UUID string.');
+        }
+
+        return (string) $uuid;
     }
 
     #[\Override]

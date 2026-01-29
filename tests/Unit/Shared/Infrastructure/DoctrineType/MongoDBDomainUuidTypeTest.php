@@ -50,6 +50,16 @@ final class MongoDBDomainUuidTypeTest extends UnitTestCase
         $this->assertSame($uuidString, $dbValue);
     }
 
+    public function testConvertToDatabaseValueRejectsInvalidString(): void
+    {
+        $invalidUuidString = $this->faker->uuid() . '-invalid';
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('DomainUuidType expects a valid UUID string.');
+
+        $this->domainUuidType->convertToDatabaseValue($invalidUuidString);
+    }
+
     public function testConvertToDatabaseValueWithNull(): void
     {
         $dbValue = $this->domainUuidType->convertToDatabaseValue(null);
@@ -107,82 +117,52 @@ final class MongoDBDomainUuidTypeTest extends UnitTestCase
 
     public function testConvertToDatabaseValueWithCustomUuidInterface(): void
     {
-        // Use an invalid UUID string that would throw if new Uuid() is called with it
         $invalidUuidString = 'not-a-valid-uuid-format';
         $customUuid = new class($invalidUuidString) implements UuidInterface {
             public function __construct(private readonly string $value)
             {
             }
 
+            #[\Override]
             public function __toString(): string
             {
                 return $this->value;
             }
 
+            #[\Override]
             public function toBinary(): ?string
             {
                 return null;
             }
         };
 
-        // If the code uses instanceof check correctly, it should cast to string directly
-        // If instanceof is mutated (!instanceof), it will try new Uuid($invalidUuidString) and throw
         $result = $this->domainUuidType->convertToDatabaseValue($customUuid);
 
         $this->assertSame($invalidUuidString, $result);
     }
 
-    public function testClosureToMongoExecutesCorrectly(): void
+    public function testClosureToMongoContainsExpectedLogic(): void
     {
-        $closureString = $this->domainUuidType->closureToMongo();
+        $expected = implode('', [
+            'if ($value === null) { $return = null; } ',
+            'elseif ($value instanceof \App\Shared\Domain\ValueObject\Uuid) { ',
+            '$return = (string) $value; } ',
+            'else { $return = (string) new \App\Shared\Domain\ValueObject\Uuid(',
+            '(string) $value); }',
+        ]);
 
-        // Test with null
-        $value = null;
-        $return = $this->executeClosure($closureString, $value);
-        $this->assertNull($return);
-
-        // Test with Uuid instance
-        $uuid = $this->transformer->transformFromSymfonyUuid($this->symfonyUuidFactory->create());
-        $value = $uuid;
-        $return = $this->executeClosure($closureString, $value);
-        $this->assertSame((string) $uuid, $return);
-
-        // Test with string
-        $uuidString = $this->faker->uuid();
-        $value = $uuidString;
-        $return = $this->executeClosure($closureString, $value);
-        $this->assertSame($uuidString, $return);
+        $this->assertSame($expected, $this->domainUuidType->closureToMongo());
     }
 
-    public function testClosureToPHPExecutesCorrectly(): void
+    public function testClosureToPHPContainsExpectedLogic(): void
     {
-        $closureString = $this->domainUuidType->closureToPHP();
+        $expected = implode('', [
+            'if ($value === null) { $return = null; } ',
+            'elseif ($value instanceof \App\Shared\Domain\ValueObject\Uuid) { ',
+            '$return = $value; } ',
+            'else { $return = new \App\Shared\Domain\ValueObject\Uuid((string) $value); }',
+        ]);
 
-        // Test with null
-        $value = null;
-        $return = $this->executeClosure($closureString, $value);
-        $this->assertNull($return);
-
-        // Test with Uuid instance
-        $uuid = $this->transformer->transformFromSymfonyUuid($this->symfonyUuidFactory->create());
-        $value = $uuid;
-        $return = $this->executeClosure($closureString, $value);
-        $this->assertSame($uuid, $return);
-
-        // Test with string
-        $uuidString = $this->faker->uuid();
-        $value = $uuidString;
-        $return = $this->executeClosure($closureString, $value);
-        $this->assertInstanceOf(Uuid::class, $return);
-        $this->assertSame($uuidString, (string) $return);
-    }
-
-    private function executeClosure(string $closureString, mixed $value): mixed
-    {
-        // Suppress code analysis warnings for eval usage in tests
-        /** @psalm-suppress ForbiddenCode */
-        eval($closureString);
-        /** @psalm-suppress UndefinedVariable */
-        return $return;
+        $this->assertSame($expected, $this->domainUuidType->closureToPHP());
     }
 }

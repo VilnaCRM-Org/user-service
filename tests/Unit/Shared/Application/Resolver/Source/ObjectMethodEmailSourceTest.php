@@ -38,6 +38,13 @@ final class ObjectMethodEmailSourceTest extends UnitTestCase
         $this->assertNull($source->extract($entry));
     }
 
+    public function testReturnsNullWhenEntryIsCallableClassString(): void
+    {
+        $source = new ObjectMethodEmailSource('createFromFormat');
+
+        $this->assertNull($source->extract(\DateTime::class));
+    }
+
     public function testReturnsEmailWhenMethodReturnsString(): void
     {
         $email = $this->faker->email();

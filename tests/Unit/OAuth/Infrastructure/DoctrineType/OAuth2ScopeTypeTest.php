@@ -112,41 +112,21 @@ final class OAuth2ScopeTypeTest extends UnitTestCase
         $this->assertNotEmpty($type->closureToMongo());
     }
 
-    public function testClosureToMongoExecutesCorrectly(): void
+    public function testClosureToMongoContainsExpectedLogic(): void
     {
         $type = $this->getType();
-        $closureString = $type->closureToMongo();
+        $expected = implode('', [
+            'if ($value === null) { $return = null; } ',
+            'elseif (is_array($value)) { $return = []; foreach ($value as $item) { ',
+            'if (is_string($item) || (is_object($item) && method_exists($item, "__toString"))) { ',
+            '$return[] = (string) $item; } ',
+            'else { throw new \InvalidArgumentException(',
+            '"OAuth2ScopeType expects an array of stringable values."); } } } ',
+            'else { throw new \InvalidArgumentException(',
+            '"OAuth2ScopeType expects an array of stringable values."); }',
+        ]);
 
-        // Test with null
-        $value = null;
-        $return = $this->executeClosure($closureString, $value);
-        $this->assertNull($return);
-
-        // Test with array of strings
-        $value = ['scope1', 'scope2'];
-        $return = $this->executeClosure($closureString, $value);
-        $this->assertSame(['scope1', 'scope2'], $return);
-
-        // Test with array of Scope objects
-        $scope1 = new Scope('read');
-        $scope2 = new Scope('write');
-        $value = [$scope1, $scope2];
-        $return = $this->executeClosure($closureString, $value);
-        $this->assertSame(['read', 'write'], $return);
-
-        // Test with invalid non-array value
-        $value = 'not-an-array';
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('OAuth2ScopeType expects an array of stringable values.');
-        $this->executeClosure($closureString, $value);
-    }
-
-    private function executeClosure(string $closureString, mixed $value): mixed
-    {
-        /** @psalm-suppress ForbiddenCode */
-        eval($closureString);
-        /** @psalm-suppress UndefinedVariable */
-        return $return;
+        $this->assertSame($expected, $type->closureToMongo());
     }
 
     public function testConvertsMultipleScopesToDatabaseArray(): void

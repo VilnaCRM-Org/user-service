@@ -10,21 +10,6 @@
     "summary": "summary.log",
   },
   "mutators": {
-    "@default": true,
-    // Equivalent mutations: Early return null vs. match fallthrough produce identical behavior
-    // Cannot be caught by tests as observable behavior is identical
-    "ReturnRemoval": {
-      "ignore": [
-        "App\\Shared\\Application\\Resolver\\Source\\ObjectMethodEmailSource::extract::17",
-        "App\\Shared\\Infrastructure\\DoctrineType\\DomainUuidType::convertToDatabaseValue::26",
-      ]
-    },
-    // Equivalent mutation: Inverting instanceof produces same string output via different code path
-    // Cannot be caught by tests as final return value is identical
-    "InstanceOf_": {
-      "ignore": [
-        "App\\Shared\\Infrastructure\\DoctrineType\\DomainUuidType::convertToDatabaseValue::25",
-      ]
-    },
+    "@default": true
   },
 }
