@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 use NunoMaduro\PhpInsights\Domain\Insights\CyclomaticComplexityIsHigh;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
+use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\CodeAnalysis\UselessOverridingMethodSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Strings\UnnecessaryStringConcatSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
+use SlevomatCodingStandard\Sniffs\Classes\SuperfluousTraitNamingSniff;
 use SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\UseSpacingSniff;
@@ -94,6 +96,10 @@ return [
                 'src/Shared/Application/Validator/PasswordValidator.php',
                 'tests/Unit/User/Infrastructure/Repository/CachedUserRepositoryTest.php',
                 'tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php',
+                // Behat contexts legitimately need many step definitions
+                'tests/Behat/HealthCheckContext/HealthCheckContext.php',
+                'tests/Behat/OAuthContext/Input/ObtainAuthorizeCodeInput.php',
+                'tests/Behat/OAuthContext/OAuthContext.php',
             ],
         ],
         FunctionLengthSniff::class => [
@@ -105,6 +111,8 @@ return [
                 'tests/Unit/OAuth/Infrastructure/Manager/ClientManagerTest.php',
                 'tests/Unit/OAuth/Infrastructure/Service/CredentialsRevokerTest.php',
                 'tests/Unit/Shared/Infrastructure/Fixture/Seeder/SchemathesisOAuthSeederTest.php',
+                // Complex test helper trait with 83-line mock builder setup
+                'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactoryTrait.php',
             ],
         ],
         UselessOverridingMethodSniff::class => [
@@ -113,6 +121,17 @@ return [
                 'tests/Unit/Shared/Infrastructure/Bus/Event/Async/TestEvent.php',
                 'tests/Unit/Shared/Infrastructure/Bus/Event/Async/TestOtherDomainEvent.php',
                 'tests/Unit/Shared/Infrastructure/Bus/Event/Async/ResilientAsyncEventBusTestEvent.php',
+            ],
+        ],
+        // Legitimate use of trait for test helper methods shared across multiple test classes
+        ForbiddenTraits::class => [
+            'exclude' => [
+                'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactoryTrait.php',
+            ],
+        ],
+        SuperfluousTraitNamingSniff::class => [
+            'exclude' => [
+                'tests/Unit/OAuth/Infrastructure/Manager/BuilderMockFactoryTrait.php',
             ],
         ],
     ],

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Infrastructure\DoctrineType;
 
 use App\Shared\Domain\ValueObject\Uuid;
+use App\Shared\Domain\ValueObject\UuidInterface;
 use App\Shared\Infrastructure\DoctrineType\DomainUuidType;
 use App\Shared\Infrastructure\Factory\UuidFactory as UuidFactoryInterface;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
@@ -104,25 +105,84 @@ final class MongoDBDomainUuidTypeTest extends UnitTestCase
         $this->assertSame($uuid, $phpValue);
     }
 
-    public function testClosureToMongo(): void
+    public function testConvertToDatabaseValueWithCustomUuidInterface(): void
     {
-        $closure = $this->domainUuidType->closureToMongo();
+        // Use an invalid UUID string that would throw if new Uuid() is called with it
+        $invalidUuidString = 'not-a-valid-uuid-format';
+        $customUuid = new class($invalidUuidString) implements UuidInterface {
+            public function __construct(private readonly string $value)
+            {
+            }
 
-        $this->assertIsString($closure);
-        $this->assertStringContainsString('$value', $closure);
-        $this->assertStringContainsString('$return', $closure);
-        $this->assertStringContainsString('null', $closure);
-        $this->assertStringContainsString('App\Shared\Domain\ValueObject\Uuid', $closure);
+            public function __toString(): string
+            {
+                return $this->value;
+            }
+
+            public function toBinary(): ?string
+            {
+                return null;
+            }
+        };
+
+        // If the code uses instanceof check correctly, it should cast to string directly
+        // If instanceof is mutated (!instanceof), it will try new Uuid($invalidUuidString) and throw
+        $result = $this->domainUuidType->convertToDatabaseValue($customUuid);
+
+        $this->assertSame($invalidUuidString, $result);
     }
 
-    public function testClosureToPHP(): void
+    public function testClosureToMongoExecutesCorrectly(): void
     {
-        $closure = $this->domainUuidType->closureToPHP();
+        $closureString = $this->domainUuidType->closureToMongo();
 
-        $this->assertIsString($closure);
-        $this->assertStringContainsString('$value', $closure);
-        $this->assertStringContainsString('$return', $closure);
-        $this->assertStringContainsString('null', $closure);
-        $this->assertStringContainsString('App\Shared\Domain\ValueObject\Uuid', $closure);
+        // Test with null
+        $value = null;
+        $return = $this->executeClosure($closureString, $value);
+        $this->assertNull($return);
+
+        // Test with Uuid instance
+        $uuid = $this->transformer->transformFromSymfonyUuid($this->symfonyUuidFactory->create());
+        $value = $uuid;
+        $return = $this->executeClosure($closureString, $value);
+        $this->assertSame((string) $uuid, $return);
+
+        // Test with string
+        $uuidString = $this->faker->uuid();
+        $value = $uuidString;
+        $return = $this->executeClosure($closureString, $value);
+        $this->assertSame($uuidString, $return);
+    }
+
+    public function testClosureToPHPExecutesCorrectly(): void
+    {
+        $closureString = $this->domainUuidType->closureToPHP();
+
+        // Test with null
+        $value = null;
+        $return = $this->executeClosure($closureString, $value);
+        $this->assertNull($return);
+
+        // Test with Uuid instance
+        $uuid = $this->transformer->transformFromSymfonyUuid($this->symfonyUuidFactory->create());
+        $value = $uuid;
+        $return = $this->executeClosure($closureString, $value);
+        $this->assertSame($uuid, $return);
+
+        // Test with string
+        $uuidString = $this->faker->uuid();
+        $value = $uuidString;
+        $return = $this->executeClosure($closureString, $value);
+        $this->assertInstanceOf(Uuid::class, $return);
+        $this->assertSame($uuidString, (string) $return);
+    }
+
+    private function executeClosure(string $closureString, mixed $value): mixed
+    {
+        // Suppress code analysis warnings for eval usage in tests
+        /** @psalm-suppress ForbiddenCode */
+        eval($closureString);
+        /** @psalm-suppress UndefinedVariable */
+        return $return;
     }
 }

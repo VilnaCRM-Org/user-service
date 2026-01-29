@@ -1,3 +1,6 @@
+parameters:
+  oauth.enable_implicit_grant: '%env(bool:OAUTH_ENABLE_IMPLICIT_GRANT)%'
+
 league_oauth2_server:
   authorization_server: # Required
     # Full path to the private key file.
@@ -39,7 +42,7 @@ league_oauth2_server:
     enable_auth_code_grant: true
 
     # Whether to enable the implicit grant (deprecated per OAuth 2.0 specs)
-    enable_implicit_grant: true
+    enable_implicit_grant: '%oauth.enable_implicit_grant%'
 
     # Whether to require code challenge for public clients for the auth code grant
     require_code_challenge_for_public_clients: true

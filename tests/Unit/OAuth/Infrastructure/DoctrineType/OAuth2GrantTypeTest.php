@@ -112,6 +112,43 @@ final class OAuth2GrantTypeTest extends UnitTestCase
         $this->assertNotEmpty($type->closureToMongo());
     }
 
+    public function testClosureToMongoExecutesCorrectly(): void
+    {
+        $type = $this->getType();
+        $closureString = $type->closureToMongo();
+
+        // Test with null
+        $value = null;
+        $return = $this->executeClosure($closureString, $value);
+        $this->assertNull($return);
+
+        // Test with array of strings
+        $value = ['authorization_code', 'client_credentials'];
+        $return = $this->executeClosure($closureString, $value);
+        $this->assertSame(['authorization_code', 'client_credentials'], $return);
+
+        // Test with array of Grant objects
+        $grant1 = new Grant('authorization_code');
+        $grant2 = new Grant('refresh_token');
+        $value = [$grant1, $grant2];
+        $return = $this->executeClosure($closureString, $value);
+        $this->assertSame(['authorization_code', 'refresh_token'], $return);
+
+        // Test with invalid non-array value
+        $value = 'not-an-array';
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('OAuth2GrantType expects an array of stringable values.');
+        $this->executeClosure($closureString, $value);
+    }
+
+    private function executeClosure(string $closureString, mixed $value): mixed
+    {
+        /** @psalm-suppress ForbiddenCode */
+        eval($closureString);
+        /** @psalm-suppress UndefinedVariable */
+        return $return;
+    }
+
     public function testConvertsMultipleGrantsToDatabaseArray(): void
     {
         $type = $this->getType();

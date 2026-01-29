@@ -95,31 +95,16 @@ final class AccessTokenManagerTest extends UnitTestCase
 
     public function testClearExpiredRemovesExpiredTokensAndUnlinksRefreshTokens(): void
     {
-        $tokenAId = $this->faker->uuid();
-        $tokenBId = $this->faker->uuid();
-        $tokenA = $this->makeAccessTokenWithIdentifier($tokenAId);
-        $tokenB = $this->makeAccessTokenWithIdentifier($tokenBId);
-
-        $expiredCaptures = [];
-        $refreshCaptures = [];
-        $removeCaptures = [];
-        $expiredBuilder = $this->makeBuilder([$tokenA, $tokenB], $expiredCaptures);
-        $refreshBuilder = $this->makeBuilder(null, $refreshCaptures);
-        $removeBuilder = $this->makeBuilder(null, $removeCaptures);
-        $builders = [$expiredBuilder, $refreshBuilder, $removeBuilder];
-        $calls = [];
-
+        [$tokenAId, $tokenBId] = [$this->faker->uuid(), $this->faker->uuid()];
+        [$tokenA, $tokenB] = [$this->makeAccessTokenWithIdentifier($tokenAId), $this->makeAccessTokenWithIdentifier($tokenBId)];
+        [$expiredCaptures, $refreshCaptures, $removeCaptures, $calls] = [[], [], [], []];
+        $builders = [$this->makeBuilder([$tokenA, $tokenB], $expiredCaptures), $this->makeBuilder(null, $refreshCaptures), $this->makeBuilder(null, $removeCaptures)];
         $documentManager = $this->createMock(DocumentManager::class);
-        $documentManager->expects($this->exactly(3))
-            ->method('createQueryBuilder')
-            ->willReturnCallback(static function (?string $documentName = null) use (&$builders, &$calls): \Doctrine\ODM\MongoDB\Query\Builder|null {
-                $calls[] = $documentName;
-
-                return array_shift($builders);
-            });
-
+        $documentManager->expects($this->exactly(3))->method('createQueryBuilder')->willReturnCallback(static function (?string $documentName = null) use (&$builders, &$calls) {
+            $calls[] = $documentName;
+            return array_shift($builders);
+        });
         $manager = new AccessTokenManager($documentManager, true);
-
         $this->assertSame(2, $manager->clearExpired());
         $this->assertSame([AccessToken::class, RefreshToken::class, AccessToken::class], $calls);
         $this->assertSame([$tokenAId, $tokenBId], $refreshCaptures['in']['accessToken']);

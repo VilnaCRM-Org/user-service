@@ -116,6 +116,43 @@ final class OAuth2RedirectUriTypeTest extends UnitTestCase
         $this->assertNotEmpty($type->closureToMongo());
     }
 
+    public function testClosureToMongoExecutesCorrectly(): void
+    {
+        $type = $this->getType();
+        $closureString = $type->closureToMongo();
+
+        // Test with null
+        $value = null;
+        $return = $this->executeClosure($closureString, $value);
+        $this->assertNull($return);
+
+        // Test with array of strings
+        $value = ['https://example.com/callback', 'https://example.com/auth'];
+        $return = $this->executeClosure($closureString, $value);
+        $this->assertSame(['https://example.com/callback', 'https://example.com/auth'], $return);
+
+        // Test with array of RedirectUri objects
+        $uri1 = new RedirectUri('https://example.com/callback1');
+        $uri2 = new RedirectUri('https://example.com/callback2');
+        $value = [$uri1, $uri2];
+        $return = $this->executeClosure($closureString, $value);
+        $this->assertSame(['https://example.com/callback1', 'https://example.com/callback2'], $return);
+
+        // Test with invalid non-array value
+        $value = 'not-an-array';
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('OAuth2RedirectUriType expects an array of stringable values.');
+        $this->executeClosure($closureString, $value);
+    }
+
+    private function executeClosure(string $closureString, mixed $value): mixed
+    {
+        /** @psalm-suppress ForbiddenCode */
+        eval($closureString);
+        /** @psalm-suppress UndefinedVariable */
+        return $return;
+    }
+
     public function testConvertsMultipleRedirectUrisToDatabaseArray(): void
     {
         $type = $this->getType();

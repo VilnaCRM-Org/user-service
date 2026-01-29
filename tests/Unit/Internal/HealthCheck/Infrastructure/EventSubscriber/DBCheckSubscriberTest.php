@@ -50,9 +50,7 @@ final class DBCheckSubscriberTest extends UnitTestCase
             ->with('test_db')
             ->willReturn($database);
 
-        $database->expects($this->once())
-            ->method('command')
-            ->with(['ping' => 1]);
+        $database->expects($this->once())->method('command')->with(['ping' => 1]);
 
         $event = new HealthCheckEvent();
         $this->subscriber->onHealthCheck($event);
