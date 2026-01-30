@@ -31,7 +31,12 @@ final class OAuth2GrantType extends Type
             );
         }
 
-        return $this->normalizeToStrings($value);
+        $normalizer = new StringableArrayNormalizer();
+
+        return $normalizer->normalize(
+            $value,
+            'OAuth2GrantType expects an array of stringable values.'
+        );
     }
 
     /**
@@ -57,41 +62,6 @@ final class OAuth2GrantType extends Type
     #[\Override]
     public function closureToMongo(): string
     {
-        return 'if ($value === null) { $return = null; } '
-            . 'elseif (is_array($value)) { $return = []; foreach ($value as $item) { '
-            . 'if (is_string($item) || (is_object($item) && method_exists($item, "__toString"))) { '
-            . '$return[] = (string) $item; } '
-            . 'else { throw new \InvalidArgumentException('
-            . '"OAuth2GrantType expects an array of stringable values."); } } } '
-            . 'else { throw new \InvalidArgumentException('
-            . '"OAuth2GrantType expects an array of stringable values."); }';
-    }
-
-    /**
-     * @param array<int, string|object> $values
-     *
-     * @return list<string>
-     */
-    private function normalizeToStrings(array $values): array
-    {
-        $normalized = [];
-
-        foreach ($values as $value) {
-            if (is_string($value)) {
-                $normalized[] = $value;
-                continue;
-            }
-
-            if (is_object($value) && method_exists($value, '__toString')) {
-                $normalized[] = (string) $value;
-                continue;
-            }
-
-            throw new InvalidArgumentException(
-                'OAuth2GrantType expects an array of stringable values.'
-            );
-        }
-
-        return $normalized;
+        return 'if ($value === null) { $return = null; } elseif (is_array($value)) { $return = []; foreach ($value as $item) { if (is_string($item) || (is_object($item) && method_exists($item, "__toString"))) { $return[] = (string) $item; } else { throw new \InvalidArgumentException("OAuth2GrantType expects an array of stringable values."); } } } else { throw new \InvalidArgumentException("OAuth2GrantType expects an array of stringable values."); }';
     }
 }

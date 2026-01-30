@@ -39,20 +39,16 @@ final class ObtainAuthorizeCodeInput
             'response_type' => $this->responseType,
             'client_id' => $this->client_id,
             'redirect_uri' => $this->redirect_uri,
+            'scope' => $this->scope,
+            'code_challenge' => $this->codeChallenge,
+            'code_challenge_method' => $this->codeChallengeMethod,
         ];
 
-        if ($this->scope !== null) {
-            $queryParams['scope'] = $this->scope;
-        }
-
-        if ($this->codeChallenge !== null) {
-            $queryParams['code_challenge'] = $this->codeChallenge;
-        }
-
-        if ($this->codeChallengeMethod !== null) {
-            $queryParams['code_challenge_method'] = $this->codeChallengeMethod;
-        }
-
-        return http_build_query($queryParams);
+        return http_build_query(
+            array_filter(
+                $queryParams,
+                static fn (?string $value): bool => $value !== null
+            )
+        );
     }
 }

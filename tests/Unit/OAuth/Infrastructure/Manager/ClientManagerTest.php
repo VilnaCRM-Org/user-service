@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\OAuth\Infrastructure\Manager;
 
 use App\OAuth\Infrastructure\Manager\ClientManager;
-use App\Tests\Unit\UnitTestCase;
+use App\Tests\Unit\OAuth\Infrastructure\OAuthInfrastructureTestCase;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use League\Bundle\OAuth2ServerBundle\Event\PreSaveClientEvent;
 use League\Bundle\OAuth2ServerBundle\Manager\ClientFilter;
@@ -16,10 +16,8 @@ use League\Bundle\OAuth2ServerBundle\ValueObject\RedirectUri;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Scope;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-final class ClientManagerTest extends UnitTestCase
+final class ClientManagerTest extends OAuthInfrastructureTestCase
 {
-    use BuilderMockFactoryTrait;
-
     public function testSaveDispatchesEventAndPersistsClient(): void
     {
         $client = $this->makeClient();

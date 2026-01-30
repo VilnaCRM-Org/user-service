@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\OAuth\Infrastructure\Manager;
 
 use App\OAuth\Infrastructure\Manager\AccessTokenManager;
-use App\Tests\Unit\UnitTestCase;
+use App\Tests\Unit\OAuth\Infrastructure\OAuthInfrastructureTestCase;
 use DateTimeImmutable;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use League\Bundle\OAuth2ServerBundle\Model\AccessToken;
@@ -13,10 +13,8 @@ use League\Bundle\OAuth2ServerBundle\Model\Client;
 use League\Bundle\OAuth2ServerBundle\Model\RefreshToken;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Scope;
 
-final class AccessTokenManagerTest extends UnitTestCase
+final class AccessTokenManagerTest extends OAuthInfrastructureTestCase
 {
-    use BuilderMockFactoryTrait;
-
     public function testFindReturnsNullWhenPersistenceDisabled(): void
     {
         $documentManager = $this->createMock(DocumentManager::class);

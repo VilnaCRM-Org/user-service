@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\DoctrineType;
 
 use App\Shared\Domain\ValueObject\Uuid;
-use App\Shared\Domain\ValueObject\UuidInterface;
 use Doctrine\ODM\MongoDB\Types\ClosureToPHP;
 use Doctrine\ODM\MongoDB\Types\Type;
-use InvalidArgumentException;
 
 final class DomainUuidType extends Type
 {
@@ -23,17 +21,9 @@ final class DomainUuidType extends Type
             return null;
         }
 
-        if ($value instanceof UuidInterface) {
-            return (string) $value;
-        }
+        $normalizer = new UuidNormalizer();
 
-        $uuid = new Uuid((string) $value);
-
-        if ($uuid->toBinary() === null) {
-            throw new InvalidArgumentException('DomainUuidType expects a valid UUID string.');
-        }
-
-        return (string) $uuid;
+        return $normalizer->toDatabaseValue($value);
     }
 
     #[\Override]
@@ -43,29 +33,20 @@ final class DomainUuidType extends Type
             return null;
         }
 
-        if ($value instanceof Uuid) {
-            return $value;
-        }
+        $normalizer = new UuidNormalizer();
 
-        return new Uuid((string) $value);
+        return $normalizer->toUuid($value);
     }
 
     #[\Override]
     public function closureToMongo(): string
     {
-        return 'if ($value === null) { $return = null; } '
-            . 'elseif ($value instanceof \App\Shared\Domain\ValueObject\Uuid) { '
-            . '$return = (string) $value; } '
-            . 'else { $return = (string) new \App\Shared\Domain\ValueObject\Uuid('
-            . '(string) $value); }';
+        return 'if ($value === null) { $return = null; } elseif ($value instanceof \App\Shared\Domain\ValueObject\Uuid) { $return = (string) $value; } else { $return = (string) new \App\Shared\Domain\ValueObject\Uuid((string) $value); }';
     }
 
     #[\Override]
     public function closureToPHP(): string
     {
-        return 'if ($value === null) { $return = null; } '
-            . 'elseif ($value instanceof \App\Shared\Domain\ValueObject\Uuid) { '
-            . '$return = $value; } '
-            . 'else { $return = new \App\Shared\Domain\ValueObject\Uuid((string) $value); }';
+        return 'if ($value === null) { $return = null; } elseif ($value instanceof \App\Shared\Domain\ValueObject\Uuid) { $return = $value; } else { $return = new \App\Shared\Domain\ValueObject\Uuid((string) $value); }';
     }
 }

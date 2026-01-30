@@ -55,15 +55,8 @@ final class HealthCheckContext implements Context
      */
     public function theDatabaseIsNotAvailable(): void
     {
-        if ($this->kernelDirty === false) {
-            $this->kernel->reboot(null);
-            $this->kernelDirty = true;
-        }
-
-        $documentManager = $this->container()->get(DocumentManager::class);
-        if (!$documentManager instanceof DocumentManager) {
-            throw new \RuntimeException('Document manager is not available');
-        }
+        $this->rebootKernelIfNeeded();
+        $documentManager = $this->getDocumentManager();
 
         $mongoUri = sprintf('mongodb://%s', $this->faker->ipv4());
         $failingClient = new class($mongoUri) extends Client {
@@ -123,12 +116,28 @@ final class HealthCheckContext implements Context
 
     private function replaceService(string $serviceId, object $service): void
     {
-        if ($this->kernelDirty === false) {
-            $this->kernel->reboot(null);
-            $this->kernelDirty = true;
+        $this->rebootKernelIfNeeded();
+        $this->container()->set($serviceId, $service);
+    }
+
+    private function rebootKernelIfNeeded(): void
+    {
+        if ($this->kernelDirty) {
+            return;
         }
 
-        $this->container()->set($serviceId, $service);
+        $this->kernel->reboot(null);
+        $this->kernelDirty = true;
+    }
+
+    private function getDocumentManager(): DocumentManager
+    {
+        $documentManager = $this->container()->get(DocumentManager::class);
+        if (!$documentManager instanceof DocumentManager) {
+            throw new \RuntimeException('Document manager is not available');
+        }
+
+        return $documentManager;
     }
 
     private function container(): ContainerInterface

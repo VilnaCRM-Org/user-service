@@ -36,7 +36,7 @@ final class OAuthContext implements Context
     private string $authCode;
     private ?string $clientId = null;
     private ?string $clientSecret = null;
-    private ?string $refreshToken = null;
+    private string $refreshToken = '';
     private ?string $username = null;
     private ?string $codeVerifier = null;
 
@@ -185,10 +185,8 @@ final class OAuthContext implements Context
      */
     public function usingPkceWithS256(): void
     {
-        // Generate a random 128-character code verifier
         $this->codeVerifier = bin2hex(random_bytes(64));
 
-        // Generate S256 code challenge
         $hash = hash('sha256', $this->codeVerifier, true);
         $codeChallenge = rtrim(strtr(base64_encode($hash), '+/', '-_'), '=');
 
@@ -267,7 +265,6 @@ final class OAuthContext implements Context
         string $uri
     ): void {
         $this->clientId = $id;
-        // Generate a different verifier than the one used for the challenge
         $wrongVerifier = bin2hex(random_bytes(64));
         $this->obtainAccessTokenInput = new AuthorizationCodeGrantInput(
             $id,
@@ -290,7 +287,7 @@ final class OAuthContext implements Context
         $this->obtainAccessTokenInput = new RefreshTokenGrantInput(
             $id,
             $secret,
-            $this->refreshToken ?? ''
+            $this->refreshToken
         );
     }
 
@@ -393,10 +390,8 @@ final class OAuthContext implements Context
         Assert::assertGreaterThan(0, $data['expires_in']);
 
         Assert::assertArrayHasKey('access_token', $data);
-
-        if (array_key_exists('refresh_token', $data)) {
-            $this->refreshToken = $data['refresh_token'];
-        }
+        $payload = array_replace(['refresh_token' => $this->refreshToken], $data);
+        $this->refreshToken = (string) $payload['refresh_token'];
     }
 
     /**

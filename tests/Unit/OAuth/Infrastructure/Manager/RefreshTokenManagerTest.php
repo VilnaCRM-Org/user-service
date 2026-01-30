@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\OAuth\Infrastructure\Manager;
 
 use App\OAuth\Infrastructure\Manager\RefreshTokenManager;
-use App\Tests\Unit\UnitTestCase;
+use App\Tests\Unit\OAuth\Infrastructure\OAuthInfrastructureTestCase;
 use DateTimeImmutable;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use League\Bundle\OAuth2ServerBundle\Model\AccessToken;
@@ -13,10 +13,8 @@ use League\Bundle\OAuth2ServerBundle\Model\Client;
 use League\Bundle\OAuth2ServerBundle\Model\RefreshToken;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Scope;
 
-final class RefreshTokenManagerTest extends UnitTestCase
+final class RefreshTokenManagerTest extends OAuthInfrastructureTestCase
 {
-    use BuilderMockFactoryTrait;
-
     public function testFindReturnsRefreshTokenWhenFound(): void
     {
         $identifier = $this->faker->lexify('refresh_????????');

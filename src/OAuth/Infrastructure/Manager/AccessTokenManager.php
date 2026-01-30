@@ -51,7 +51,6 @@ final class AccessTokenManager implements AccessTokenManagerInterface
         }
 
         $identifiers = $this->findExpiredTokenIdentifiers();
-
         if ($identifiers === []) {
             return 0;
         }

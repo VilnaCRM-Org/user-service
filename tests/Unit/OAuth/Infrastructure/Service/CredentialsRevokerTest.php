@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\OAuth\Infrastructure\Service;
 
 use App\OAuth\Infrastructure\Service\CredentialsRevoker;
-use App\Tests\Unit\OAuth\Infrastructure\Manager\BuilderMockFactoryTrait;
-use App\Tests\Unit\UnitTestCase;
+use App\Tests\Unit\OAuth\Infrastructure\OAuthInfrastructureTestCase;
 use DateTimeImmutable;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
@@ -15,10 +14,8 @@ use League\Bundle\OAuth2ServerBundle\Model\Client;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Scope;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-final class CredentialsRevokerTest extends UnitTestCase
+final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
 {
-    use BuilderMockFactoryTrait;
-
     public function testRevokeCredentialsForUserUpdatesAllTokens(): void
     {
         $tokenAId = $this->faker->lexify('token_????');

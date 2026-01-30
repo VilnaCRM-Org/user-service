@@ -57,62 +57,49 @@ final class ClientManager implements ClientManagerInterface
     public function list(?ClientFilter $clientFilter): array
     {
         $queryBuilder = $this->documentManager->createQueryBuilder(Client::class);
-
-        if ($clientFilter !== null && $clientFilter->hasFilters()) {
-            $this->applyFilterToQueryBuilder($queryBuilder, $clientFilter);
-        }
+        $this->applyFilterToQueryBuilder($queryBuilder, $clientFilter);
 
         $documents = $queryBuilder->getQuery()->execute()->toArray();
 
         return array_values($documents);
     }
 
-    private function applyFilterToQueryBuilder(object $queryBuilder, ClientFilter $filter): void
-    {
-        $this->applyGrantsFilter($queryBuilder, $filter);
-        $this->applyRedirectUrisFilter($queryBuilder, $filter);
-        $this->applyScopesFilter($queryBuilder, $filter);
+    private function applyFilterToQueryBuilder(
+        object $queryBuilder,
+        ?ClientFilter $filter
+    ): void {
+        $filters = $this->buildFilters($filter);
+
+        foreach ($filters as $field => $values) {
+            $queryBuilder->field($field)->all($values);
+        }
     }
 
-    private function applyGrantsFilter(object $queryBuilder, ClientFilter $filter): void
+    /**
+     * @return array<string, list<string>>
+     */
+    private function buildFilters(?ClientFilter $filter): array
     {
-        $grants = $filter->getGrants();
-        if ($grants === [] || $grants === null) {
-            return;
+        if ($filter === null) {
+            return [];
         }
 
-        $grantStrings = array_map(
-            static fn (Grant $grant): string => (string) $grant,
-            $grants
-        );
-        $queryBuilder->field('grants')->all($grantStrings);
+        $filters = [
+            'grants' => $this->stringifyValues($filter->getGrants()),
+            'redirectUris' => $this->stringifyValues($filter->getRedirectUris()),
+            'scopes' => $this->stringifyValues($filter->getScopes()),
+        ];
+
+        return array_filter($filters);
     }
 
-    private function applyRedirectUrisFilter(object $queryBuilder, ClientFilter $filter): void
+    /**
+     * @param array<int, Grant|RedirectUri|Scope> $values
+     *
+     * @return list<string>
+     */
+    private function stringifyValues(array $values): array
     {
-        $redirectUris = $filter->getRedirectUris();
-        if ($redirectUris === [] || $redirectUris === null) {
-            return;
-        }
-
-        $redirectUriStrings = array_map(
-            static fn (RedirectUri $uri): string => (string) $uri,
-            $redirectUris
-        );
-        $queryBuilder->field('redirectUris')->all($redirectUriStrings);
-    }
-
-    private function applyScopesFilter(object $queryBuilder, ClientFilter $filter): void
-    {
-        $scopes = $filter->getScopes();
-        if ($scopes === [] || $scopes === null) {
-            return;
-        }
-
-        $scopeStrings = array_map(
-            static fn (Scope $scope): string => (string) $scope,
-            $scopes
-        );
-        $queryBuilder->field('scopes')->all($scopeStrings);
+        return array_values(array_map('strval', $values));
     }
 }
