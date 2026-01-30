@@ -235,6 +235,16 @@ stop: ## Stop docker and the Symfony binary server
 commands: ## List all Symfony commands
 	@$(SYMFONY) list
 
+doctrine-migrations-migrate: ## Apply database migrations (MongoDB ODM uses schema management instead)
+	@echo "Note: MongoDB ODM does not use traditional migrations."
+	@echo "Schema is managed via doctrine:mongodb:schema:create/update commands."
+	@echo "For test database setup, use: make setup-test-db"
+
+doctrine-migrations-generate: ## Generate migration file (MongoDB ODM uses schema management instead)
+	@echo "Note: MongoDB ODM does not use traditional migrations."
+	@echo "Schema changes are managed automatically via Doctrine ODM mappings."
+	@echo "To update schema: make setup-test-db (for tests) or manually run doctrine:mongodb:schema:update"
+
 load-fixtures: ## Build the DB, control the schema validity, load fixtures and check the migration status
 	@echo "Clearing MongoDB metadata cache..."
 	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata
