@@ -252,19 +252,9 @@ load-fixtures: ## Build the DB, control the schema validity, load fixtures and c
 
 reset-db: ## Recreate the database schema for ephemeral test runs
 	@echo "Clearing MongoDB metadata cache..."
-	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata 2>/dev/null; \
-	exit_code=$$?; \
-	if [ $$exit_code -ne 0 ] && [ $$exit_code -ne 1 ]; then \
-		echo "❌ Failed to clear metadata cache (exit code: $$exit_code)"; \
-		exit $$exit_code; \
-	fi
+	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata 2>&1 || true
 	@echo "Recreating MongoDB schema..."
-	@$(SYMFONY) doctrine:mongodb:schema:drop 2>/dev/null; \
-	exit_code=$$?; \
-	if [ $$exit_code -ne 0 ] && [ $$exit_code -ne 1 ]; then \
-		echo "❌ Failed to drop schema (exit code: $$exit_code)"; \
-		exit $$exit_code; \
-	fi
+	@$(SYMFONY) doctrine:mongodb:schema:drop 2>&1 || true
 	@$(SYMFONY) doctrine:mongodb:schema:create
 	@echo "Seeding Schemathesis test data..."
 	@$(EXEC_PHP) php bin/console app:seed-schemathesis-data
