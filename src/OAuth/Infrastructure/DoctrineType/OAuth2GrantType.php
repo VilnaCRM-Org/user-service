@@ -63,6 +63,21 @@ final class OAuth2GrantType extends Type
     #[\Override]
     public function closureToMongo(): string
     {
-        return 'if ($value === null) { $return = null; } elseif (is_array($value)) { $return = []; foreach ($value as $item) { if (is_string($item) || (is_object($item) && method_exists($item, "__toString"))) { $return[] = (string) $item; } else { throw new \InvalidArgumentException("OAuth2GrantType expects an array of stringable values."); } } } else { throw new \InvalidArgumentException("OAuth2GrantType expects an array of stringable values."); }';
+        return 'if ($value === null) { $return = null; } '
+            . 'elseif (is_array($value)) { '
+            . '$return = []; '
+            . 'foreach ($value as $item) { '
+            . 'if (is_string($item) || '
+            . '(is_object($item) && method_exists($item, "__toString"))) { '
+            . '$return[] = (string) $item; '
+            . '} else { '
+            . 'throw new \InvalidArgumentException('
+            . '"OAuth2GrantType expects an array of stringable values."); '
+            . '} '
+            . '} '
+            . '} else { '
+            . 'throw new \InvalidArgumentException('
+            . '"OAuth2GrantType expects an array of stringable values."); '
+            . '}';
     }
 }

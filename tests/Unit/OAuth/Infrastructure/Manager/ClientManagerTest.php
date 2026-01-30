@@ -91,44 +91,18 @@ final class ClientManagerTest extends OAuthInfrastructureTestCase
     public function testListAppliesFiltersAndReturnsClients(): void
     {
         $client = $this->makeClient();
-        $result = new class([5 => $client]) {
-            /**
-             * @param array<int, Client> $items
-             */
-            public function __construct(private readonly array $items)
-            {
-            }
-
-            /**
-             * @return array<int, Client>
-             */
-            public function toArray(): array
-            {
-                return $this->items;
-            }
-        };
+        $result = $this->makeQueryResult([5 => $client]);
         $captures = [];
         $builder = $this->makeBuilder($result, $captures);
-
+        $documentManager = $this->createDocumentManagerMock($builder);
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
-
-        $documentManager = $this->createMock(DocumentManager::class);
-        $documentManager->expects($this->once())
-            ->method('createQueryBuilder')
-            ->with(Client::class)
-            ->willReturn($builder);
 
         $grant = $this->faker->lexify('grant_????????');
         $redirectUri = $this->faker->url();
         $scope = $this->faker->lexify('scope_????????');
-
-        $filter = ClientFilter::create()
-            ->addGrantCriteria(new Grant($grant))
-            ->addRedirectUriCriteria(new RedirectUri($redirectUri))
-            ->addScopeCriteria(new Scope($scope));
+        $filter = $this->createFullFilter($grant, $redirectUri, $scope);
 
         $manager = new ClientManager($documentManager, $dispatcher);
-
         $resultClients = $manager->list($filter);
 
         $this->assertSame([$client], $resultClients);
@@ -140,22 +114,7 @@ final class ClientManagerTest extends OAuthInfrastructureTestCase
     public function testListWithNullFilterReturnsAllClients(): void
     {
         $client = $this->makeClient();
-        $result = new class([$client]) {
-            /**
-             * @param array<int, Client> $items
-             */
-            public function __construct(private readonly array $items)
-            {
-            }
-
-            /**
-             * @return array<int, Client>
-             */
-            public function toArray(): array
-            {
-                return $this->items;
-            }
-        };
+        $result = $this->makeQueryResult([$client]);
         $captures = [];
         $builder = $this->makeBuilder($result, $captures);
 
@@ -178,22 +137,7 @@ final class ClientManagerTest extends OAuthInfrastructureTestCase
     public function testListWithEmptyFilterReturnsAllClients(): void
     {
         $client = $this->makeClient();
-        $result = new class([$client]) {
-            /**
-             * @param array<int, Client> $items
-             */
-            public function __construct(private readonly array $items)
-            {
-            }
-
-            /**
-             * @return array<int, Client>
-             */
-            public function toArray(): array
-            {
-                return $this->items;
-            }
-        };
+        $result = $this->makeQueryResult([$client]);
         $captures = [];
         $builder = $this->makeBuilder($result, $captures);
 
@@ -218,22 +162,7 @@ final class ClientManagerTest extends OAuthInfrastructureTestCase
     public function testListWithPartialFilterOnlyAppliesSetCriteria(): void
     {
         $client = $this->makeClient();
-        $result = new class([$client]) {
-            /**
-             * @param array<int, Client> $items
-             */
-            public function __construct(private readonly array $items)
-            {
-            }
-
-            /**
-             * @return array<int, Client>
-             */
-            public function toArray(): array
-            {
-                return $this->items;
-            }
-        };
+        $result = $this->makeQueryResult([$client]);
         $captures = [];
         $builder = $this->makeBuilder($result, $captures);
 
@@ -261,22 +190,7 @@ final class ClientManagerTest extends OAuthInfrastructureTestCase
     public function testListWithRedirectUriFilterOnly(): void
     {
         $client = $this->makeClient();
-        $result = new class([$client]) {
-            /**
-             * @param array<int, Client> $items
-             */
-            public function __construct(private readonly array $items)
-            {
-            }
-
-            /**
-             * @return array<int, Client>
-             */
-            public function toArray(): array
-            {
-                return $this->items;
-            }
-        };
+        $result = $this->makeQueryResult([$client]);
         $captures = [];
         $builder = $this->makeBuilder($result, $captures);
 
@@ -300,6 +214,29 @@ final class ClientManagerTest extends OAuthInfrastructureTestCase
         $this->assertSame([$redirectUri], $captures['all']['redirectUris']);
     }
 
+    /**
+     * @param array<int, Client> $clients
+     */
+    private function makeQueryResult(array $clients): object
+    {
+        return new class($clients) {
+            /**
+             * @param array<int, Client> $items
+             */
+            public function __construct(private readonly array $items)
+            {
+            }
+
+            /**
+             * @return array<int, Client>
+             */
+            public function toArray(): array
+            {
+                return $this->items;
+            }
+        };
+    }
+
     private function makeClient(): Client
     {
         return new Client(
@@ -307,5 +244,27 @@ final class ClientManagerTest extends OAuthInfrastructureTestCase
             $this->faker->lexify('client_????????'),
             $this->faker->sha1()
         );
+    }
+
+    private function createDocumentManagerMock(object $builder): DocumentManager
+    {
+        $documentManager = $this->createMock(DocumentManager::class);
+        $documentManager->expects($this->once())
+            ->method('createQueryBuilder')
+            ->with(Client::class)
+            ->willReturn($builder);
+
+        return $documentManager;
+    }
+
+    private function createFullFilter(
+        string $grant,
+        string $redirectUri,
+        string $scope
+    ): ClientFilter {
+        return ClientFilter::create()
+            ->addGrantCriteria(new Grant($grant))
+            ->addRedirectUriCriteria(new RedirectUri($redirectUri))
+            ->addScopeCriteria(new Scope($scope));
     }
 }

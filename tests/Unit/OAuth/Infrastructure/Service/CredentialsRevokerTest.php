@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\OAuth\Infrastructure\Service;
 
-use App\OAuth\Infrastructure\Service\CredentialsRevoker;
+use App\OAuth\Infrastructure\Revoker\CredentialsRevoker;
 use App\Tests\Unit\OAuth\Infrastructure\OAuthInfrastructureTestCase;
 use DateTimeImmutable;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -202,7 +202,10 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
     ): void {
         $this->assertSame($client, $captures['accessUpdate']['references']['client']);
         $this->assertSame($client, $captures['authUpdate']['references']['client']);
-        $this->assertSame([$accessTokenIdentifier], $captures['refreshUpdate']['in']['accessToken']);
+        $this->assertSame(
+            [$accessTokenIdentifier],
+            $captures['refreshUpdate']['in']['accessToken']
+        );
     }
 
     private function makeClient(): Client

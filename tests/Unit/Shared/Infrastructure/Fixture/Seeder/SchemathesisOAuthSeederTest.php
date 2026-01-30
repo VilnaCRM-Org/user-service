@@ -9,10 +9,8 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
 use DateTimeImmutable;
 use Doctrine\ODM\MongoDB\DocumentManager;
-use League\Bundle\OAuth2ServerBundle\Manager\AuthorizationCodeManagerInterface;
 use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
 use League\Bundle\OAuth2ServerBundle\Model\AuthorizationCode;
-use League\Bundle\OAuth2ServerBundle\Model\AuthorizationCodeInterface;
 use League\Bundle\OAuth2ServerBundle\Model\Client;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Scope;
 
@@ -29,16 +27,9 @@ final class SchemathesisOAuthSeederTest extends UnitTestCase
             $userId,
             $authorizationCodeId
         );
-
-        $documentManager = $this->createDocumentManagerMock($existingCode);
         $authorizationCodeManager = $this->createAuthCodeManager($existingCode);
-        $clientManager = $this->createMock(ClientManagerInterface::class);
+        $seeder = $this->createSeeder($existingCode, $authorizationCodeManager);
 
-        $seeder = new SchemathesisOAuthSeeder(
-            $clientManager,
-            $documentManager,
-            $authorizationCodeManager
-        );
         $seeder->seedAuthorizationCode($client, $user, $authorizationCodeId);
 
         $this->assertNewCodeCreated(
@@ -95,42 +86,26 @@ final class SchemathesisOAuthSeederTest extends UnitTestCase
 
     private function createAuthCodeManager(
         AuthorizationCode $existingCode
-    ): AuthorizationCodeManagerInterface {
-        return new class($existingCode) implements AuthorizationCodeManagerInterface {
-            private ?AuthorizationCodeInterface $savedCode = null;
+    ): TestAuthorizationCodeManager {
+        return new TestAuthorizationCodeManager($existingCode);
+    }
 
-            public function __construct(
-                private readonly AuthorizationCodeInterface $existingCode
-            ) {
-            }
+    private function createSeeder(
+        AuthorizationCode $existingCode,
+        TestAuthorizationCodeManager $authorizationCodeManager
+    ): SchemathesisOAuthSeeder {
+        $documentManager = $this->createDocumentManagerMock($existingCode);
+        $clientManager = $this->createMock(ClientManagerInterface::class);
 
-            #[\Override]
-            public function find(string $identifier): ?AuthorizationCodeInterface
-            {
-                return $this->existingCode;
-            }
-
-            #[\Override]
-            public function save(AuthorizationCodeInterface $authCode): void
-            {
-                $this->savedCode = $authCode;
-            }
-
-            #[\Override]
-            public function clearExpired(): int
-            {
-                return 0;
-            }
-
-            public function savedCode(): ?AuthorizationCodeInterface
-            {
-                return $this->savedCode;
-            }
-        };
+        return new SchemathesisOAuthSeeder(
+            $clientManager,
+            $documentManager,
+            $authorizationCodeManager
+        );
     }
 
     private function assertNewCodeCreated(
-        AuthorizationCodeManagerInterface $manager,
+        TestAuthorizationCodeManager $manager,
         AuthorizationCode $existingCode,
         string $userId,
         string $authorizationCodeId

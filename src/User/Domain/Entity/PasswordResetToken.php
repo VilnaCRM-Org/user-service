@@ -6,7 +6,7 @@ namespace App\User\Domain\Entity;
 
 use DateTimeImmutable;
 
-class PasswordResetToken implements PasswordResetTokenInterface
+final class PasswordResetToken implements PasswordResetTokenInterface
 {
     private bool $isUsed;
 

@@ -30,7 +30,9 @@ final class DBCheckSubscriberTest extends IntegrationTestCase
         $event = new HealthCheckEvent();
         $this->subscriber->onHealthCheck($event);
 
-        $result = $this->documentManager->getClient()->selectDatabase('admin')->command(['ping' => 1]);
+        $result = $this->documentManager->getClient()
+            ->selectDatabase('admin')
+            ->command(['ping' => 1]);
         $resultArray = $result->toArray()[0];
 
         $this->assertEquals(1, $resultArray['ok']);

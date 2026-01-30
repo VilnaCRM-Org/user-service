@@ -308,7 +308,11 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         return new SeedSchemathesisDataCommand(
             $this->buildUserSeeder($userRepository, $userFactory, $hasherFactory, $uuidTransformer),
             new PasswordResetTokenSeeder($passwordResetTokenRepository),
-            new SchemathesisOAuthSeeder($clientManager, $documentManager, $authorizationCodeManager),
+            new SchemathesisOAuthSeeder(
+                $clientManager,
+                $documentManager,
+                $authorizationCodeManager
+            ),
             new SchemathesisConfirmationTokenSeeder($tokenRepository),
             $passwordResetTokenRepository,
             $userRepository

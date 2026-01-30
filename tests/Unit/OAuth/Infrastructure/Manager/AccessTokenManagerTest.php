@@ -94,20 +94,27 @@ final class AccessTokenManagerTest extends OAuthInfrastructureTestCase
     public function testClearExpiredRemovesExpiredTokensAndUnlinksRefreshTokens(): void
     {
         [$tokenAId, $tokenBId] = [$this->faker->uuid(), $this->faker->uuid()];
-        [$tokenA, $tokenB] = [$this->makeAccessTokenWithIdentifier($tokenAId), $this->makeAccessTokenWithIdentifier($tokenBId)];
-        [$expiredCaptures, $refreshCaptures, $removeCaptures, $calls] = [[], [], [], []];
-        $builders = [$this->makeBuilder([$tokenA, $tokenB], $expiredCaptures), $this->makeBuilder(null, $refreshCaptures), $this->makeBuilder(null, $removeCaptures)];
-        $documentManager = $this->createMock(DocumentManager::class);
-        $documentManager->expects($this->exactly(3))->method('createQueryBuilder')->willReturnCallback(static function (?string $documentName = null) use (&$builders, &$calls) {
-            $calls[] = $documentName;
-            return array_shift($builders);
-        });
+        $tokenA = $this->makeAccessTokenWithIdentifier($tokenAId);
+        $tokenB = $this->makeAccessTokenWithIdentifier($tokenBId);
+        $captures = $this->createCaptureArrays();
+        $calls = [];
+        $documentManager = $this->createDocumentManagerForClearExpired(
+            $tokenA,
+            $tokenB,
+            $captures,
+            $calls
+        );
+
         $manager = new AccessTokenManager($documentManager, true);
+
         $this->assertSame(2, $manager->clearExpired());
-        $this->assertSame([AccessToken::class, RefreshToken::class, AccessToken::class], $calls);
-        $this->assertSame([$tokenAId, $tokenBId], $refreshCaptures['in']['accessToken']);
-        $this->assertSame(null, $refreshCaptures['set']['accessToken']);
-        $this->assertSame([$tokenAId, $tokenBId], $removeCaptures['in']['identifier']);
+        $this->assertSame(
+            [AccessToken::class, RefreshToken::class, AccessToken::class],
+            $calls
+        );
+        $this->assertSame([$tokenAId, $tokenBId], $captures['refresh']['in']['accessToken']);
+        $this->assertSame(null, $captures['refresh']['set']['accessToken']);
+        $this->assertSame([$tokenAId, $tokenBId], $captures['remove']['in']['identifier']);
     }
 
     private function makeAccessToken(): AccessToken
@@ -142,5 +149,41 @@ final class AccessTokenManagerTest extends OAuthInfrastructureTestCase
             $this->faker->optional()->userName(),
             [new Scope($this->faker->lexify('scope_????'))]
         );
+    }
+
+    /**
+     * @return array<string, array<string, array|bool|float|int|object|string|null>>
+     */
+    private function createCaptureArrays(): array
+    {
+        return ['expired' => [], 'refresh' => [], 'remove' => []];
+    }
+
+    /**
+     * @param array<string, array<string, array|bool|float|int|object|string|null>> $captures
+     * @param list<string|null> $calls
+     */
+    private function createDocumentManagerForClearExpired(
+        AccessToken $tokenA,
+        AccessToken $tokenB,
+        array &$captures,
+        array &$calls
+    ): DocumentManager {
+        $builders = [
+            $this->makeBuilder([$tokenA, $tokenB], $captures['expired']),
+            $this->makeBuilder(null, $captures['refresh']),
+            $this->makeBuilder(null, $captures['remove']),
+        ];
+        $documentManager = $this->createMock(DocumentManager::class);
+        $documentManager->expects($this->exactly(3))
+            ->method('createQueryBuilder')
+            ->willReturnCallback(
+                static function (?string $documentName = null) use (&$builders, &$calls) {
+                    $calls[] = $documentName;
+                    return array_shift($builders);
+                }
+            );
+
+        return $documentManager;
     }
 }
