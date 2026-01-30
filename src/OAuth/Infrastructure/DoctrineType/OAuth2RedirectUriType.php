@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\OAuth\Infrastructure\DoctrineType;
 
+use App\OAuth\Infrastructure\Serializer\StringableArrayNormalizer;
 use Doctrine\ODM\MongoDB\Types\ClosureToPHP;
 use Doctrine\ODM\MongoDB\Types\Type;
 use InvalidArgumentException;

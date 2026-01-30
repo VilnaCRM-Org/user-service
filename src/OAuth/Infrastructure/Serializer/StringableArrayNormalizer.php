@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\OAuth\Infrastructure\DoctrineType;
+namespace App\OAuth\Infrastructure\Serializer;
 
 use InvalidArgumentException;
 
