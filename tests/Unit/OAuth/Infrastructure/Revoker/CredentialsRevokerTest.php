@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\OAuth\Infrastructure\Service;
+namespace App\Tests\Unit\OAuth\Infrastructure\Revoker;
 
 use App\OAuth\Infrastructure\Revoker\CredentialsRevoker;
 use App\Tests\Unit\OAuth\Infrastructure\OAuthInfrastructureTestCase;
