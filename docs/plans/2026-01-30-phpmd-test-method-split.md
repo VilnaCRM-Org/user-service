@@ -13,6 +13,7 @@
 ### Task 1: Add shared state for OAuth Behat contexts
 
 **Files:**
+
 - Create: `tests/Behat/OAuthContext/OAuthContextState.php`
 - Create: `tests/Behat/OAuthContext/OAuthStateContext.php`
 - Modify: `behat.yml.dist`
@@ -86,6 +87,7 @@ final class OAuthStateContext implements Context
 ```
 
 **Step 3: Register new context in `behat.yml.dist`**
+
 - Add `App\Tests\Behat\OAuthContext\OAuthStateContext` to the `default` suite contexts.
 
 **Step 4: Run `make phpmd` (expect OAuthContext violations still present until split)**
@@ -95,6 +97,7 @@ final class OAuthStateContext implements Context
 ### Task 2: Split OAuthContext into focused contexts (≤10 public methods each)
 
 **Files:**
+
 - Create: `tests/Behat/OAuthContext/OAuthClientContext.php`
 - Create: `tests/Behat/OAuthContext/OAuthAuthorizationContext.php`
 - Create: `tests/Behat/OAuthContext/OAuthTokenContext.php`
@@ -217,6 +220,7 @@ final class OAuthAuthenticationContext implements Context
 ### Task 3: Add shared state for UserOperations Behat contexts
 
 **Files:**
+
 - Create: `tests/Behat/UserContext/UserOperationsState.php`
 - Create: `tests/Behat/UserContext/UserOperationsStateContext.php`
 - Modify: `behat.yml.dist`
@@ -276,6 +280,7 @@ final class UserOperationsStateContext implements Context
 ### Task 4: Split UserOperationsContext into focused contexts
 
 **Files:**
+
 - Create: `tests/Behat/UserContext/UserRequestContext.php`
 - Create: `tests/Behat/UserContext/UserResponseContext.php`
 - Create: `tests/Behat/UserContext/UserPasswordResetContext.php`
@@ -330,6 +335,7 @@ final class UserResponseContext implements Context
 ```
 
 **Step 3: If any class exceeds 10 public methods, split further**
+
 - Example: extract `UserPasswordResetContext` for password-reset related Given steps + assertions.
 
 **Step 4: Remove inline comments during moves (per repo rule)**
@@ -343,6 +349,7 @@ final class UserResponseContext implements Context
 ### Task 5: Add shared state for UserGraphQL contexts and split
 
 **Files:**
+
 - Create: `tests/Behat/UserGraphQLContext/UserGraphQLState.php`
 - Create: `tests/Behat/UserGraphQLContext/UserGraphQLStateContext.php`
 - Create: `tests/Behat/UserGraphQLContext/UserGraphQLQueryContext.php`
@@ -379,14 +386,17 @@ final class UserGraphQLState
 ```
 
 **Step 2: Create UserGraphQLQueryContext (query setup)**
+
 - Move: expectingToGetIdAndEmail, expectingToGetId, gettingUser, gettingCollectionOfUsers.
 
 **Step 3: Create UserGraphQLMutationContext (mutation setup)**
+
 - Move: creatingUser, updatingUser, confirmingUserWithToken, resendEmailToUser, deleteUser,
   requestPasswordResetViaGraphQL, confirmPasswordResetViaGraphQL,
   confirmPasswordResetWithValidTokenViaGraphQL, setLanguage, sendGraphQlRequest.
 
 **Step 4: Create UserGraphQLResponseContext (assertions)**
+
 - Move: mutationResponseShouldContainRequestedFields, queryResponseShouldContainRequestedFields,
   queryResponseShouldBeNull, graphQLPasswordResetMutationShouldSucceed,
   collectionOfUsersShouldBeReturned, graphQLErrorShouldBe.
@@ -398,10 +408,12 @@ final class UserGraphQLState
 ### Task 6: Split PHPUnit test classes (OAuth/Shared/User)
 
 **Files:**
+
 - Create new test classes, move methods, keep helpers protected.
 - Delete/trim old classes so each class has ≤10 public methods.
 
 **OAuth DoctrineType tests**
+
 - Split `tests/Unit/OAuth/Infrastructure/DoctrineType/OAuth2GrantTypeTest.php` into:
   - `OAuth2GrantTypeConversionTest.php`
   - `OAuth2GrantTypeDatabaseTest.php`
@@ -409,6 +421,7 @@ final class UserGraphQLState
 - Split `OAuth2ScopeTypeTest.php` into two files similarly.
 
 **Shared tests**
+
 - Split `QueryParameterValidationListenerTest.php` into two files by scenario type.
 - Split `ContextBuilderTest.php` into two files by request/response contexts.
 - Split `EmailSourcesTest.php` into two files by source type.
@@ -421,6 +434,7 @@ final class UserGraphQLState
 - Split `EmfDimensionValueTest.php` into two files.
 
 **User tests**
+
 - Split `UserPatchProcessorTest.php` into 2–3 files by operation.
 - Split `UserPatchResolversTest.php` into 2 files.
 - Split `UserPatchPayloadValidatorTest.php` into 2 files.
