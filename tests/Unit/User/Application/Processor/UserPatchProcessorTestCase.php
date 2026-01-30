@@ -97,12 +97,8 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
         );
     }
 
-    /**
-     * @psalm-suppress PossiblyUnusedParam
-     */
     protected function processWithInvalidInput(
         UserInterface $user,
-        string $email,
         string $initials,
         string $password,
         string $userId,
@@ -110,7 +106,7 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
         ?string $invalidInitials = null,
         ?string $invalidPassword = null
     ): UserInterface {
-        $invalidEmail = $invalidEmail ?? 'not-an-email';
+        $invalidEmail = $invalidEmail ?? $this->faker->word();
         $effectiveInitials = $invalidInitials ?? $initials;
         $effectivePassword = $invalidPassword ?? $password;
 

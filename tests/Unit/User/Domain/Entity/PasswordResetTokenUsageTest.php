@@ -43,7 +43,7 @@ final class PasswordResetTokenUsageTest extends UnitTestCase
     public function testResetUsage(): void
     {
         $token = new PasswordResetToken(
-            'test-token',
+            $this->faker->sha256(),
             $this->faker->uuid(),
             new \DateTimeImmutable('+1 hour'),
             new \DateTimeImmutable()
@@ -73,7 +73,7 @@ final class PasswordResetTokenUsageTest extends UnitTestCase
     public function testNewTokenIsNotUsedByDefault(): void
     {
         $token = new PasswordResetToken(
-            'new-token',
+            $this->faker->sha256(),
             $this->faker->uuid(),
             new \DateTimeImmutable('+1 hour'),
             new \DateTimeImmutable()
@@ -84,6 +84,8 @@ final class PasswordResetTokenUsageTest extends UnitTestCase
 
         $reflection = new \ReflectionClass($token);
         $property = $reflection->getProperty('isUsed');
+        /** @psalm-suppress UnusedMethodCall */
+        $property->setAccessible(true);
         $this->assertFalse(
             $property->getValue($token)
         );

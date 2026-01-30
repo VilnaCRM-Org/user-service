@@ -15,64 +15,57 @@ final class EmailSourceChainTest extends UnitTestCase
     {
         $source = new NullEmailSource();
 
-        self::assertNull($source->extract(['email' => 'ignored@example.com']));
+        self::assertNull($source->extract(['email' => $this->faker->email()]));
     }
 
     public function testChainEmailSourceReturnsValueFromFirstSource(): void
     {
-        $primary = new class() implements BatchEmailSource {
-            #[\Override]
-            /**
-             * @param array<string, string|null>|bool|float|int|object|string|null $entry
-             */
-            public function extract($entry): ?string
-            {
-                return 'primary@example.com';
-            }
-        };
+        $primaryEmail = $this->faker->email();
+        $fallbackEmail = $this->faker->email();
 
-        $fallback = new class() implements BatchEmailSource {
-            #[\Override]
-            /**
-             * @param array<string, string|null>|bool|float|int|object|string|null $entry
-             */
-            public function extract($entry): ?string
-            {
-                return 'fallback@example.com';
-            }
-        };
+        $source = new ChainEmailSource(
+            $this->createEmailSource($primaryEmail),
+            $this->createEmailSource($fallbackEmail)
+        );
 
-        $source = new ChainEmailSource($primary, $fallback);
-
-        self::assertSame('primary@example.com', $source->extract([]));
+        self::assertSame($primaryEmail, $source->extract([]));
     }
 
     public function testChainEmailSourceFallsBackWhenPrimaryReturnsNull(): void
     {
-        $primary = new class() implements BatchEmailSource {
+        $fallbackEmail = $this->faker->email();
+
+        $source = new ChainEmailSource(
+            $this->createNullSource(),
+            $this->createEmailSource($fallbackEmail)
+        );
+
+        self::assertSame($fallbackEmail, $source->extract([]));
+    }
+
+    private function createEmailSource(string $email): BatchEmailSource
+    {
+        return new class($email) implements BatchEmailSource {
+            public function __construct(private string $email)
+            {
+            }
+
             #[\Override]
-            /**
-             * @param array<string, string|null>|bool|float|int|object|string|null $entry
-             */
-            public function extract($entry): ?string
+            public function extract(mixed $entry): ?string
+            {
+                return $this->email;
+            }
+        };
+    }
+
+    private function createNullSource(): BatchEmailSource
+    {
+        return new class() implements BatchEmailSource {
+            #[\Override]
+            public function extract(mixed $entry): ?string
             {
                 return null;
             }
         };
-
-        $fallback = new class() implements BatchEmailSource {
-            #[\Override]
-            /**
-             * @param array<string, string|null>|bool|float|int|object|string|null $entry
-             */
-            public function extract($entry): ?string
-            {
-                return 'fallback@example.com';
-            }
-        };
-
-        $source = new ChainEmailSource($primary, $fallback);
-
-        self::assertSame('fallback@example.com', $source->extract([]));
     }
 }

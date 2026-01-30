@@ -53,7 +53,6 @@ final class UserPatchProcessorSuccessTest extends UserPatchProcessorTestCase
         $testData = $this->setupUserForPatchTest();
         $result = $this->processWithInvalidInput(
             $testData->user,
-            $testData->email,
             $testData->initials,
             $testData->password,
             $testData->userId

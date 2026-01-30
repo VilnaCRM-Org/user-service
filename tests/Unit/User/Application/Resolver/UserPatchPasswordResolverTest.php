@@ -21,34 +21,43 @@ final class UserPatchPasswordResolverTest extends UnitTestCase
 
     public function testPasswordResolverReturnsFallbackWhenNotProvided(): void
     {
+        $candidate = $this->faker->password();
+        $fallback = $this->faker->password();
+
         $result = $this->passwordResolver->resolve(
-            'candidate',
-            'fallback',
+            $candidate,
+            $fallback,
             false
         );
 
-        $this->assertSame('fallback', $result);
+        $this->assertSame($fallback, $result);
     }
 
     public function testPasswordResolverReturnsFallbackForNullCandidate(): void
     {
+        $fallback = $this->faker->password();
+
         $result = $this->passwordResolver->resolve(
             null,
-            'fallback',
+            $fallback,
             true
         );
 
-        $this->assertSame('fallback', $result);
+        $this->assertSame($fallback, $result);
     }
 
     public function testPasswordResolverTrimsValueWhenProvided(): void
     {
+        $password = $this->faker->password();
+        $rawPassword = '  ' . $password . '  ';
+        $fallback = $this->faker->password();
+
         $result = $this->passwordResolver->resolve(
-            '  new-password  ',
-            'fallback',
+            $rawPassword,
+            $fallback,
             true
         );
 
-        $this->assertSame('new-password', $result);
+        $this->assertSame($password, $result);
     }
 }

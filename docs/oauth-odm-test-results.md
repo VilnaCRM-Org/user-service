@@ -133,12 +133,10 @@ Time: 00:08.47s, Memory: 54.32 MB
 #### Full Behat Suite (153 scenarios)
 
 ```text
-
 153 scenarios (153 passed)
 733 steps (733 passed)
 Time: 00:19.50s, Memory: 86.49 MB
-
-````
+```
 
 **Result**: ✅ **100% Pass Rate** (153/153 scenarios)
 

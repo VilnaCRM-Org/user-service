@@ -20,21 +20,23 @@ final class EmailObjectSourceTest extends UnitTestCase
 
     public function testObjectPropertySourceExtractsPropertyValue(): void
     {
-        $entry = new class() {
-            public function __construct(public string $email = 'object@example.com')
+        $email = $this->faker->email();
+        $entry = new class($email) {
+            public function __construct(public string $email)
             {
             }
         };
 
         $source = new ObjectPropertyEmailSource('email');
 
-        self::assertSame('object@example.com', $source->extract($entry));
+        self::assertSame($email, $source->extract($entry));
     }
 
     public function testObjectPropertySourceReturnsNullForNonStringProperty(): void
     {
-        $entry = new class() {
-            public function __construct(public int $email = 123)
+        $email = $this->faker->numberBetween(1, 1000);
+        $entry = new class($email) {
+            public function __construct(public int $email)
             {
             }
         };
@@ -53,24 +55,34 @@ final class EmailObjectSourceTest extends UnitTestCase
 
     public function testObjectMethodSourceExtractsStringValue(): void
     {
-        $entry = new class() {
+        $email = $this->faker->email();
+        $entry = new class($email) {
+            public function __construct(private string $email)
+            {
+            }
+
             public function getEmail(): ?string
             {
-                return 'method@example.com';
+                return $this->email;
             }
         };
 
         $source = new ObjectMethodEmailSource('getEmail');
 
-        self::assertSame('method@example.com', $source->extract($entry));
+        self::assertSame($email, $source->extract($entry));
     }
 
     public function testObjectMethodSourceReturnsNullForNonStringValues(): void
     {
-        $entry = new class() {
+        $email = $this->faker->numberBetween(1, 1000);
+        $entry = new class($email) {
+            public function __construct(private int $email)
+            {
+            }
+
             public function getEmail(): int
             {
-                return 42;
+                return $this->email;
             }
         };
 

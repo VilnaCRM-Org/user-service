@@ -34,7 +34,11 @@ INFECTION     = ./vendor/bin/infection
 .DEFAULT_GOAL = help
 .RECIPEPREFIX +=
 .PHONY: $(filter-out vendor node_modules,$(MAKECMDGOALS))
-.PHONY: start
+.PHONY: start all clean test
+
+all: ci
+clean: purge
+test: all-tests
 
 # Conditional execution based on CI environment variable
 EXEC_ENV ?= $(EXEC_PHP_TEST_ENV)

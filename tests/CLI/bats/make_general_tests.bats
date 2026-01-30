@@ -54,7 +54,7 @@ load 'bats-assert/load'
   assert_output --partial "true true true true"
 }
 
-@test "make doctrine-migrations-migrate executes migrations" {
+@test "make doctrine-migrations-migrate displays MongoDB ODM migration note" {
   run bash -c "echo 'yes' | make doctrine-migrations-migrate"
   assert_success
   assert_output --partial 'MongoDB ODM'
