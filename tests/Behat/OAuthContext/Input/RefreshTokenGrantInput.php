@@ -14,4 +14,17 @@ final class RefreshTokenGrantInput extends ObtainAccessTokenInput
     ) {
         parent::__construct($grant_type);
     }
+
+    /**
+     * @return array<string, array|bool|float|int|object|string|null>
+     */
+    #[\Override]
+    public function toArray(): array
+    {
+        // Client credentials are sent via Authorization header, not in body
+        return [
+            'grant_type' => $this->getGrantType(),
+            'refresh_token' => $this->refresh_token,
+        ];
+    }
 }
