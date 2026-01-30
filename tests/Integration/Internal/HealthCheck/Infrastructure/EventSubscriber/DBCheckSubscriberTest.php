@@ -30,8 +30,9 @@ final class DBCheckSubscriberTest extends IntegrationTestCase
         $event = new HealthCheckEvent();
         $this->subscriber->onHealthCheck($event);
 
+        $dbName = $this->documentManager->getConfiguration()->getDefaultDB();
         $result = $this->documentManager->getClient()
-            ->selectDatabase('admin')
+            ->selectDatabase($dbName)
             ->command(['ping' => 1]);
         $resultArray = $result->toArray()[0];
 

@@ -19,6 +19,10 @@ final class TestAuthorizationCodeManager implements AuthorizationCodeManagerInte
     #[\Override]
     public function find(string $identifier): ?AuthorizationCodeInterface
     {
+        if ($this->existingCode->getIdentifier() !== $identifier) {
+            return null;
+        }
+
         return $this->existingCode;
     }
 

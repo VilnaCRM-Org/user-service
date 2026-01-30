@@ -63,6 +63,7 @@ return [
                 'src/Shared/Infrastructure/Bus/Command/InMemorySymfonyCommandBus',
                 'src/Shared/Infrastructure/Bus/Event/InMemorySymfonyEventBus',
                 'src/User/Domain/Entity/User',
+                'src/User/Domain/Entity/PasswordResetToken',
             ],
         ],
         ForbiddenDefineFunctions::class => [

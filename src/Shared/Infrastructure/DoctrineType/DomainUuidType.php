@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\DoctrineType;
 
 use App\Shared\Domain\ValueObject\Uuid;
-use App\Shared\Infrastructure\Serializer\UuidNormalizer;
+use App\Shared\Domain\ValueObject\UuidInterface;
 use Doctrine\ODM\MongoDB\Types\ClosureToPHP;
 use Doctrine\ODM\MongoDB\Types\Type;
+use InvalidArgumentException;
 
 final class DomainUuidType extends Type
 {
@@ -22,9 +23,18 @@ final class DomainUuidType extends Type
             return null;
         }
 
-        $normalizer = new UuidNormalizer();
+        if ($value instanceof UuidInterface) {
+            return (string) $value;
+        }
 
-        return $normalizer->toDatabaseValue($value);
+        $uuid = new Uuid((string) $value);
+        if ($uuid->toBinary() === null) {
+            throw new InvalidArgumentException(
+                'DomainUuidType expects a valid UUID string.'
+            );
+        }
+
+        return (string) $uuid;
     }
 
     #[\Override]
@@ -34,9 +44,11 @@ final class DomainUuidType extends Type
             return null;
         }
 
-        $normalizer = new UuidNormalizer();
+        if ($value instanceof Uuid) {
+            return $value;
+        }
 
-        return $normalizer->toUuid($value);
+        return new Uuid((string) $value);
     }
 
     #[\Override]
