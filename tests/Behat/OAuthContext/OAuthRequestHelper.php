@@ -11,13 +11,11 @@ use League\Bundle\OAuth2ServerBundle\OAuth2Events;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 
 final class OAuthRequestHelper
 {
     public function __construct(
         private readonly KernelInterface $kernel,
-        private readonly SerializerInterface $serializer,
     ) {
     }
 

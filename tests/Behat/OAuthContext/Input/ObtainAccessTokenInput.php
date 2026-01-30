@@ -29,7 +29,6 @@ abstract class ObtainAccessTokenInput implements \JsonSerializable
         $values = [];
 
         foreach ($reflection->getProperties() as $property) {
-            $property->setAccessible(true);
             $values[$property->getName()] = $property->getValue($this);
         }
 
@@ -39,6 +38,7 @@ abstract class ObtainAccessTokenInput implements \JsonSerializable
     /**
      * @return array<string, array|bool|float|int|object|string|null>
      */
+    #[\Override]
     public function jsonSerialize(): array
     {
         return $this->toArray();

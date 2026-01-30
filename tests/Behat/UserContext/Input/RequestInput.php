@@ -15,7 +15,6 @@ abstract class RequestInput
         $values = [];
 
         foreach ($reflection->getProperties() as $property) {
-            $property->setAccessible(true);
             $values[$property->getName()] = $property->getValue($this);
         }
 

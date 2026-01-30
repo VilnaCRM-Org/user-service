@@ -32,7 +32,6 @@ abstract readonly class GraphQLMutationInput
         $values = [];
 
         foreach ($reflection->getProperties() as $property) {
-            $property->setAccessible(true);
             $values[$property->getName()] = $property->getValue($this);
         }
 

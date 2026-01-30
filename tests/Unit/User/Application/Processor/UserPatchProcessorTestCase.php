@@ -97,6 +97,9 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
         );
     }
 
+    /**
+     * @psalm-suppress PossiblyUnusedParam
+     */
     protected function processWithInvalidInput(
         UserInterface $user,
         string $email,

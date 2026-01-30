@@ -146,12 +146,7 @@ tests-with-coverage: ## Run tests with coverage
 setup-test-db: ## Create database for testing purposes
 	$(SYMFONY_TEST_ENV) c:c
 	@echo "Recreating MongoDB schema for testing..."
-	@$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop 2>/dev/null; \
-	exit_code=$$?; \
-	if [ $$exit_code -ne 0 ] && [ $$exit_code -ne 1 ]; then \
-		echo "❌ Failed to drop schema (exit code: $$exit_code)"; \
-		exit $$exit_code; \
-	fi
+	@$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
 	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:create
 	@echo "✅ Test database ready"
 

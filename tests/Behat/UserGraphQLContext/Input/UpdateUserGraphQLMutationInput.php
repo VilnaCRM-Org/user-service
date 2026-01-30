@@ -6,7 +6,7 @@ namespace App\Tests\Behat\UserGraphQLContext\Input;
 
 /**
  * @psalm-suppress UnusedClass
- * @psalm-suppress PossiblyUnusedProperty
+ * @psalm-suppress UnusedProperty - Properties used via reflection in GraphQLMutationInput::toArray()
  */
 final readonly class UpdateUserGraphQLMutationInput extends GraphQLMutationInput
 {
