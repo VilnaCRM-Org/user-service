@@ -145,12 +145,15 @@ tests-with-coverage: ## Run tests with coverage
 
 setup-test-db: ## Create database for testing purposes
 	$(SYMFONY_TEST_ENV) c:c
-	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop || true
-	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:create
-	@if $(SYMFONY_TEST_ENV) list doctrine:schema:create > /dev/null 2>&1; then \
-		$(SYMFONY_TEST_ENV) doctrine:schema:drop --force --full-database || true; \
-		$(SYMFONY_TEST_ENV) doctrine:schema:create; \
+	@echo "Recreating MongoDB schema for testing..."
+	@$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop 2>/dev/null; \
+	exit_code=$$?; \
+	if [ $$exit_code -ne 0 ] && [ $$exit_code -ne 1 ]; then \
+		echo "❌ Failed to drop schema (exit code: $$exit_code)"; \
+		exit $$exit_code; \
 	fi
+	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:create
+	@echo "✅ Test database ready"
 
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 
@@ -238,16 +241,39 @@ commands: ## List all Symfony commands
 	@$(SYMFONY) list
 
 load-fixtures: ## Build the DB, control the schema validity, load fixtures and check the migration status
+	@echo "Clearing MongoDB metadata cache..."
 	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata
-	@$(SYMFONY) doctrine:mongodb:schema:drop || true
+	@echo "Recreating MongoDB schema..."
+	@$(SYMFONY) doctrine:mongodb:schema:drop 2>/dev/null; \
+	exit_code=$$?; \
+	if [ $$exit_code -ne 0 ] && [ $$exit_code -ne 1 ]; then \
+		echo "❌ Failed to drop schema (exit code: $$exit_code)"; \
+		exit $$exit_code; \
+	fi
 	@$(SYMFONY) doctrine:mongodb:schema:create
+	@echo "Loading fixtures..."
 	@$(SYMFONY) doctrine:mongodb:fixtures:load --no-interaction
+	@echo "✅ Fixtures loaded successfully"
 
 reset-db: ## Recreate the database schema for ephemeral test runs
-	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata || true
-	@$(SYMFONY) doctrine:mongodb:schema:drop || true
-	@$(SYMFONY) doctrine:mongodb:schema:create || true
+	@echo "Clearing MongoDB metadata cache..."
+	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata 2>/dev/null; \
+	exit_code=$$?; \
+	if [ $$exit_code -ne 0 ] && [ $$exit_code -ne 1 ]; then \
+		echo "❌ Failed to clear metadata cache (exit code: $$exit_code)"; \
+		exit $$exit_code; \
+	fi
+	@echo "Recreating MongoDB schema..."
+	@$(SYMFONY) doctrine:mongodb:schema:drop 2>/dev/null; \
+	exit_code=$$?; \
+	if [ $$exit_code -ne 0 ] && [ $$exit_code -ne 1 ]; then \
+		echo "❌ Failed to drop schema (exit code: $$exit_code)"; \
+		exit $$exit_code; \
+	fi
+	@$(SYMFONY) doctrine:mongodb:schema:create
+	@echo "Seeding Schemathesis test data..."
 	@$(EXEC_PHP) php bin/console app:seed-schemathesis-data
+	@echo "✅ Database reset complete"
 
 coverage-html: ## Create the code coverage report with PHPUnit
 	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php php -d memory_limit=-1 vendor/bin/phpunit --coverage-html=coverage/html
@@ -410,11 +436,17 @@ pr-comments-to-file: ## Fetch ALL unresolved PR comments and save to pr-comments
 		echo ""; \
 	} > "$$output_file"; \
 	if [ -n "$(PR)" ]; then \
-		GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="false" \
-			./scripts/get-pr-comments.sh "$(PR)" "text" >> "$$output_file" 2>&1 || true; \
+		if ! GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="false" \
+			./scripts/get-pr-comments.sh "$(PR)" "text" >> "$$output_file" 2>&1; then \
+			echo "⚠️  Warning: Failed to fetch PR comments, check error output above" >> "$$output_file"; \
+			echo "❌ Failed to fetch PR comments for PR #$(PR)"; \
+		fi; \
 	else \
-		GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="false" \
-			./scripts/get-pr-comments.sh "text" >> "$$output_file" 2>&1 || true; \
+		if ! GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="false" \
+			./scripts/get-pr-comments.sh "text" >> "$$output_file" 2>&1; then \
+			echo "⚠️  Warning: Failed to fetch PR comments, check error output above" >> "$$output_file"; \
+			echo "❌ Failed to fetch PR comments from current branch"; \
+		fi; \
 	fi; \
 	comment_count=$$(grep -c "^Comment ID:" "$$output_file" || echo "0"); \
 	echo "" >> "$$output_file"; \
