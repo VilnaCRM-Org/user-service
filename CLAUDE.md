@@ -273,6 +273,7 @@ Place files in directories that match their class type. Each directory should co
 | `ValueObject/`   | Value Objects            | `Header.php`, `Parameter.php`            |
 | `Builder/`       | Builder classes          | `QueryParameterBuilder.php`              |
 | `Seeder/`        | Seeder classes           | `UserSeeder.php`, `OAuthSeeder.php`      |
+| `DoctrineType/`  | Doctrine custom types    | `OAuth2ScopeType.php`, `DomainUuidType.php` |
 
 **Event Listener Registration**: Register event listeners in `config/services.yaml` using tags, NOT via PHP attributes.
 

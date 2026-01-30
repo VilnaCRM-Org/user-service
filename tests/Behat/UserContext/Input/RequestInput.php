@@ -19,6 +19,10 @@ abstract class RequestInput
                 /** @psalm-suppress UnusedMethodCall */
                 $property->setAccessible(true);
             }
+            if (!$property->isInitialized($this)) {
+                $values[$property->getName()] = null;
+                continue;
+            }
             $values[$property->getName()] = $property->getValue($this);
         }
 

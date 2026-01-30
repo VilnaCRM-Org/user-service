@@ -75,7 +75,7 @@ final class UserPatchProcessorSuccessTest extends UserPatchProcessorTestCase
         $this->setupProcessExpectations($testData->user, $userUpdate, $testData->userId);
 
         $result = $this->withRequest(
-            ['initials' => 'Provided Initials', 'oldPassword' => $testData->password],
+            ['initials' => $this->faker->name(), 'oldPassword' => $testData->password],
             fn () => $this->processor->process(
                 new UserPatchDto(null, null, $testData->password, null),
                 $this->mockOperation,
@@ -98,7 +98,7 @@ final class UserPatchProcessorSuccessTest extends UserPatchProcessorTestCase
         $this->setupProcessExpectations($testData->user, $userUpdate, $testData->userId);
 
         $result = $this->withRequest(
-            ['newPassword' => 'Provided New Password', 'oldPassword' => $testData->password],
+            ['newPassword' => $this->faker->password(), 'oldPassword' => $testData->password],
             fn () => $this->processor->process(
                 new UserPatchDto(null, null, $testData->password, null),
                 $this->mockOperation,

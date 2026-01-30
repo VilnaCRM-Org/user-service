@@ -10,7 +10,7 @@ LOAD_TEST_CONFIG = tests/Load/config.prod.json
 SYMFONY_BIN   = symfony
 DOCKER        = docker
 DOCKER_COMPOSE = docker compose
-SCHEMATHESIS_IMAGE = schemathesis/schemathesis:4.3.15
+SCHEMATHESIS_IMAGE = schemathesis/schemathesis:stable
 
 # Executables
 EXEC_PHP      = $(DOCKER_COMPOSE) exec php
