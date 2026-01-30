@@ -9,11 +9,16 @@ use App\User\Domain\Entity\UserInterface;
 final class UserPatchTestData
 {
     public function __construct(
-        public readonly UserInterface $user,
-        public readonly string $email,
-        public readonly string $initials,
-        public readonly string $password,
-        public readonly string $userId,
+        private readonly UserInterface $user,
+        private readonly string $email,
+        private readonly string $initials,
+        private readonly string $password,
+        private readonly string $userId,
     ) {
+    }
+
+    public function __get(string $name): UserInterface|string|null
+    {
+        return $this->$name ?? null;
     }
 }

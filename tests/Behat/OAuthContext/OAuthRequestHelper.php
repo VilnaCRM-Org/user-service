@@ -60,7 +60,7 @@ final class OAuthRequestHelper
             [],
             [],
             $this->buildRequestHeaders($clientId, $clientSecret),
-            $this->serializer->serialize($input, 'json')
+            json_encode($input->toArray(), JSON_THROW_ON_ERROR)
         ));
     }
 

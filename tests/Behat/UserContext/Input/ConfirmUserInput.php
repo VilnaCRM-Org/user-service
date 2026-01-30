@@ -6,7 +6,7 @@ namespace App\Tests\Behat\UserContext\Input;
 
 final class ConfirmUserInput extends RequestInput
 {
-    public function __construct(public readonly string $token)
+    public function __construct(private readonly string $token)
     {
     }
 }

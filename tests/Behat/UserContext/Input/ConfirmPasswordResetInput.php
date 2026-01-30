@@ -7,8 +7,8 @@ namespace App\Tests\Behat\UserContext\Input;
 final class ConfirmPasswordResetInput extends RequestInput
 {
     public function __construct(
-        public readonly string $token,
-        public readonly string $newPassword
+        private readonly string $token,
+        private readonly string $newPassword
     ) {
     }
 }

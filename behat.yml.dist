@@ -4,17 +4,31 @@ default:
             paths:
                 - features
             contexts:
-                - App\Tests\Behat\UserGraphQLContext\UserGraphQLContext
+                - App\Tests\Behat\OAuthContext\OAuthStateContext
+                - App\Tests\Behat\OAuthContext\OAuthClientContext
+                - App\Tests\Behat\OAuthContext\OAuthAuthorizationSetupContext
+                - App\Tests\Behat\OAuthContext\OAuthAuthorizationContext
+                - App\Tests\Behat\OAuthContext\OAuthTokenContext
+                - App\Tests\Behat\OAuthContext\OAuthErrorContext
+                - App\Tests\Behat\OAuthContext\OAuthAuthorizationErrorContext
+                - App\Tests\Behat\OAuthContext\OAuthAuthenticationContext
+                - App\Tests\Behat\UserGraphQLContext\UserGraphQLStateContext
+                - App\Tests\Behat\UserGraphQLContext\UserGraphQLQueryContext
+                - App\Tests\Behat\UserGraphQLContext\UserGraphQLMutationContext
+                - App\Tests\Behat\UserGraphQLContext\UserGraphQLResponseContext
+                - App\Tests\Behat\UserContext\UserOperationsStateContext
                 - App\Tests\Behat\UserContext\UserContext
-                - App\Tests\Behat\UserContext\UserOperationsContext
-                - App\Tests\Behat\OAuthContext\OAuthContext
+                - App\Tests\Behat\UserContext\UserRequestContext
+                - App\Tests\Behat\UserContext\UserPasswordResetRequestContext
+                - App\Tests\Behat\UserContext\UserResponseContext
                 - App\Tests\Behat\HealthCheckContext\HealthCheckContext
         health_check:
             paths:
                 - features/health_check.feature
             contexts:
                 - App\Tests\Behat\HealthCheckContext\HealthCheckContext
-                - App\Tests\Behat\UserContext\UserOperationsContext
+                - App\Tests\Behat\UserContext\UserRequestContext
+                - App\Tests\Behat\UserContext\UserResponseContext
 
     extensions:
         FriendsOfBehat\SymfonyExtension:

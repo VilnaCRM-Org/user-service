@@ -40,7 +40,7 @@ final class HealthCheckContext implements Context
                 callable $callback,
                 ?float $beta = null,
                 ?array &$metadata = null
-            ): mixed {
+            ): array|bool|float|int|object|string|null {
                 throw new \RuntimeException('Cache is not working');
             }
         };

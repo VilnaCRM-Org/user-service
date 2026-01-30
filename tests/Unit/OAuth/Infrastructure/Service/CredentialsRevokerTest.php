@@ -97,7 +97,7 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
     }
 
     /**
-     * @return array<string, array<string, mixed>>
+     * @return array<string, array<string, array|bool|float|int|object|string|null>>
      */
     private function createCaptureArrays(): array
     {
@@ -110,7 +110,7 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
     }
 
     /**
-     * @param array<string, array<string, mixed>> $captures
+     * @param array<string, array<string, array|bool|float|int|object|string|null>> $captures
      */
     private function createDocManagerForUserRevocation(
         AccessToken $tokenA,
@@ -143,7 +143,7 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
     }
 
     /**
-     * @param array<string, array<string, mixed>> $captures
+     * @param array<string, array<string, array|bool|float|int|object|string|null>> $captures
      */
     private function createDocManagerForClientRevocation(
         AccessToken $tokenA,
@@ -180,10 +180,10 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
     }
 
     /**
-     * @param array<string, array<string, mixed>> $captures
+     * @param array<string, array<string, array|bool|float|int|object|string|null>> $captures
      */
     /**
-     * @param array<string, array<string, mixed>> $captures
+     * @param array<string, array<string, array|bool|float|int|object|string|null>> $captures
      * @param list<string> $expectedTokenIds
      */
     private function assertRefreshTokensCaptured(array $captures, array $expectedTokenIds): void
@@ -193,7 +193,7 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
     }
 
     /**
-     * @param array<string, array<string, mixed>> $captures
+     * @param array<string, array<string, array|bool|float|int|object|string|null>> $captures
      */
     private function assertClientReferencesSet(
         array $captures,

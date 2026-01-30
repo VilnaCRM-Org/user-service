@@ -12,8 +12,8 @@ final readonly class ConfirmPasswordResetGraphQLMutationInput extends
     GraphQLMutationInput
 {
     public function __construct(
-        public string $token,
-        public string $newPassword
+        private string $token,
+        private string $newPassword
     ) {
     }
 }

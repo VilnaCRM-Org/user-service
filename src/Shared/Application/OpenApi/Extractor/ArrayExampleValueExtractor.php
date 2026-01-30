@@ -13,11 +13,12 @@ final class ArrayExampleValueExtractor
      */
     public function extract(array|string $example): array|string|int|bool|null
     {
-        return match (true) {
-            !is_array($example),
-            $example === [] => null,
-            array_is_list($example) => $example[0] ?? null,
-            default => reset($example),
-        };
+        if (!is_array($example)) {
+            return null;
+        }
+
+        return array_is_list($example)
+            ? ($example[0] ?? null)
+            : (array_values($example)[0] ?? null);
     }
 }

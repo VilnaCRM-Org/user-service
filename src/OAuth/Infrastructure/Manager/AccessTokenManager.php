@@ -71,12 +71,10 @@ final class AccessTokenManager implements AccessTokenManagerInterface
             ->getQuery()
             ->execute();
 
-        $identifiers = [];
-        foreach ($expiredTokens as $token) {
-            $identifiers[] = $token->getIdentifier();
-        }
-
-        return $identifiers;
+        return array_values(array_map(
+            static fn (AccessTokenInterface $token): string => $token->getIdentifier(),
+            iterator_to_array($expiredTokens, false)
+        ));
     }
 
     /**

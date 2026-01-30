@@ -14,7 +14,10 @@ final class BatchEmailResolverTest extends UnitTestCase
     {
         $source = new class() implements BatchEmailSource {
             #[\Override]
-            public function extract(mixed $entry): ?string
+            /**
+             * @param mixed $entry
+             */
+            public function extract($entry): ?string
             {
                 return null;
             }
@@ -29,7 +32,10 @@ final class BatchEmailResolverTest extends UnitTestCase
     {
         $source = new class() implements BatchEmailSource {
             #[\Override]
-            public function extract(mixed $entry): ?string
+            /**
+             * @param mixed $entry
+             */
+            public function extract($entry): ?string
             {
                 return 'ÜSER@Example.com';
             }
@@ -44,7 +50,10 @@ final class BatchEmailResolverTest extends UnitTestCase
     {
         $source = new class() implements BatchEmailSource {
             #[\Override]
-            public function extract(mixed $entry): ?string
+            /**
+             * @param mixed $entry
+             */
+            public function extract($entry): ?string
             {
                 return '  spaced@example.com  ';
             }
