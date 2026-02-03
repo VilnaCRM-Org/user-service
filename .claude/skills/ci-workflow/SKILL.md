@@ -99,7 +99,7 @@ Repeat Steps 2-4 until success message appears.
 | `make ci`              | Run parallel CI (default, faster)              |
 | `make ci-sequential`   | Run sequential CI (manual fallback)            |
 | `task --list`          | List all available Task targets                |
-| `task ci --dry`        | Dry run - shows execution plan without running |
+| `task --dry ci`        | Dry run - shows execution plan without running |
 | `task preflight`       | Run mutating preflight checks only             |
 | `task ci-parallel`     | Run only parallel stage groups                 |
 | `task static-analysis` | Run only static analysis group                 |
