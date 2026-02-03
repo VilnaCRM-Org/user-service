@@ -47,7 +47,7 @@ tasks:
   ci-parallel:
     desc: Run all CI groups in parallel
     cmds:
-      - task --parallel static-analysis deptrac tests mutation openapi
+      - task --parallel static-analysis deptrac mutation tests-and-openapi
 
   preflight:
     desc: Run mutating checks sequentially
@@ -133,6 +133,12 @@ tasks:
       - task: unit-tests
       - task: integration-tests
       - task: behat
+
+  tests-and-openapi:
+    desc: Run tests then OpenAPI validation (serializes DB usage)
+    cmds:
+      - task: tests
+      - task: openapi
 
   setup-test-db:
     desc: Setup test database
