@@ -28,17 +28,18 @@ Checks run in two stages:
 
 Parallel stage groups:
 
-| Group              | Tasks                                                                    | Dependency              |
-| ------------------ | ------------------------------------------------------------------------ | ----------------------- |
-| **Static Analysis**| composer-validate, check-requirements, check-security, psalm, psalm-security | None (fully parallel) |
-| **Architecture**   | deptrac                                                                  | None                    |
-| **Tests**          | unit-tests, integration-tests, behat                                     | setup-test-db first     |
-| **Mutation**       | infection                                                                | None                    |
-| **OpenAPI**        | openapi-diff, validate-openapi-spec, schemathesis-validate               | generate-openapi-spec first |
+| Group               | Tasks                                                                        | Dependency                  |
+| ------------------- | ---------------------------------------------------------------------------- | --------------------------- |
+| **Static Analysis** | composer-validate, check-requirements, check-security, psalm, psalm-security | None (fully parallel)       |
+| **Architecture**    | deptrac                                                                      | None                        |
+| **Tests**           | unit-tests, integration-tests, behat                                         | setup-test-db first         |
+| **Mutation**        | infection                                                                    | None                        |
+| **OpenAPI**         | openapi-diff, validate-openapi-spec, schemathesis-validate                   | generate-openapi-spec first |
 
 ### AI-Friendly Output
 
 The Taskfile uses `output: group` mode, which means:
+
 - Each task's complete output is displayed together after completion
 - No interleaving of output from parallel tasks
 - Error identification is straightforward - look for the failed task's grouped output
@@ -48,6 +49,7 @@ The Taskfile uses `output: group` mode, which means:
 Task must be installed on the host machine. If not installed, `make ci` fails fast and suggests `make ci-sequential`.
 
 **Install Task:**
+
 ```bash
 # Linux/macOS
 sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
@@ -92,16 +94,16 @@ Repeat Steps 2-4 until success message appears.
 
 ## Alternative Commands
 
-| Command              | Description                                           |
-| -------------------- | ----------------------------------------------------- |
-| `make ci`            | Run parallel CI (default, faster)                     |
-| `make ci-sequential` | Run sequential CI (manual fallback)                   |
-| `task --list`        | List all available Task targets                       |
-| `task ci --dry`      | Dry run - shows execution plan without running        |
-| `task preflight`     | Run mutating preflight checks only                    |
-| `task ci-parallel`   | Run only parallel stage groups                        |
-| `task static-analysis` | Run only static analysis group                      |
-| `task tests`         | Run only test group                                   |
+| Command                | Description                                    |
+| ---------------------- | ---------------------------------------------- |
+| `make ci`              | Run parallel CI (default, faster)              |
+| `make ci-sequential`   | Run sequential CI (manual fallback)            |
+| `task --list`          | List all available Task targets                |
+| `task ci --dry`        | Dry run - shows execution plan without running |
+| `task preflight`       | Run mutating preflight checks only             |
+| `task ci-parallel`     | Run only parallel stage groups                 |
+| `task static-analysis` | Run only static analysis group                 |
+| `task tests`           | Run only test group                            |
 
 ## Constraints (Parameters)
 

@@ -11,6 +11,7 @@
 ## Task 1: Update `make ci` to Require Task
 
 **Files:**
+
 - Modify: `Makefile`
 
 **Step 1: Verify current behavior (baseline)**
@@ -42,6 +43,7 @@ Expected: failure message with install instruction and fallback hint.
 ## Task 2: Rework Taskfile for Preflight + Parallel Stage
 
 **Files:**
+
 - Modify: `Taskfile.yaml`
 
 **Step 1: Dry-run current task graph**
@@ -67,30 +69,30 @@ Update `Taskfile.yaml` to:
 Example changes:
 
 ```yaml
-  ci:
-    cmds:
-      - echo "🚀 Starting parallel CI checks..."
-      - task preflight
-      - task --parallel ci-parallel
-      - echo ""
-      - echo "✅ CI checks successfully passed!"
+ci:
+  cmds:
+    - echo "🚀 Starting parallel CI checks..."
+    - task preflight
+    - task --parallel ci-parallel
+    - echo ""
+    - echo "✅ CI checks successfully passed!"
 
-  preflight:
-    desc: Run mutating checks sequentially
-    cmds:
-      - task phpcsfixer
-      - task phpmd
-      - task phpinsights
+preflight:
+  desc: Run mutating checks sequentially
+  cmds:
+    - task phpcsfixer
+    - task phpmd
+    - task phpinsights
 
-  ci-parallel:
-    desc: Run CI groups in parallel
-    cmds:
-      - task --parallel static-analysis deptrac tests mutation openapi
+ci-parallel:
+  desc: Run CI groups in parallel
+  cmds:
+    - task --parallel static-analysis deptrac tests mutation openapi
 
-  static-analysis:
-    desc: Run static checks in parallel
-    cmds:
-      - task --parallel composer-validate check-requirements check-security psalm psalm-security
+static-analysis:
+  desc: Run static checks in parallel
+  cmds:
+    - task --parallel composer-validate check-requirements check-security psalm psalm-security
 ```
 
 **Step 3: Dry-run to validate ordering**
@@ -102,6 +104,7 @@ Expected: `preflight` runs first, then the parallel stage with the listed groups
 ## Task 3: Align CI Skill Documentation
 
 **Files:**
+
 - Modify: `.claude/skills/ci-workflow/SKILL.md`
 
 **Step 1: Update success criteria and parallelization notes**
@@ -117,6 +120,7 @@ Check that the doc matches `Makefile` and `Taskfile.yaml` (commands, messages, a
 ## Task 4: Verification
 
 **Files:**
+
 - Modify: `Taskfile.yaml`
 - Modify: `Makefile`
 - Modify: `.claude/skills/ci-workflow/SKILL.md`
