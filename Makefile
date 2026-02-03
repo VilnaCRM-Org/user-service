@@ -70,7 +70,7 @@ export SYMFONY
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
-	@grep -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-15s\033[0m %s\n", $$1, $$2}'
+	@grep -h -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-15s\033[0m %s\n", $$1, $$2}'
 
 bats: ## Run tests for bash commands
 	bats tests/CLI/bats/
@@ -402,6 +402,9 @@ pr-comments-to-file: ## Fetch ALL unresolved PR comments and save to pr-comments
 		echo "Install via package manager (e.g., apt-get install jq, brew install jq)"; \
 		exit 1; \
 	fi
+
+ai-review-loop: ## Run local AI code review + fix loop (Codex default)
+	./scripts/ai-review-loop.sh
 	@output_file="$${OUTPUT_FILE:-pr-comments-errors.txt}"; \
 	if [ -f "$$output_file" ]; then \
 		echo "⚠️  File $$output_file already exists. Creating backup..."; \
