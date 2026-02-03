@@ -129,7 +129,10 @@ Check that the doc matches `Makefile` and `Taskfile.yaml` (commands, messages, a
 
 Run: `task --list`
 
-Expected: shows updated tasks and descriptions.
+Expected:
+```text
+shows updated tasks and descriptions.
+```
 
 **Step 2: Run full CI**
 
