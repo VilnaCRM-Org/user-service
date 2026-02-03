@@ -25,7 +25,8 @@ vars:
   PHP_CS_FIXER: ./vendor/bin/php-cs-fixer
   PHPMD: ./vendor/bin/phpmd
   PHPINSIGHTS: ./vendor/bin/phpinsights
-  SCHEMATHESIS_IMAGE: schemathesis/schemathesis:latest
+  # Pinned Schemathesis image to avoid CI drift.
+  SCHEMATHESIS_IMAGE: schemathesis/schemathesis:4.9.5
 
 tasks:
   # ============================================================================
