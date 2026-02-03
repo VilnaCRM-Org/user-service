@@ -13,6 +13,7 @@
 ### Task 1: Add Bats tests for the new review loop entry point
 
 **Files:**
+
 - Create: `tests/CLI/bats/make_ai_review_loop_tests.bats`
 
 **Step 1: Write the failing test**
@@ -53,6 +54,7 @@ git commit -m "test: add bats coverage for ai-review-loop"
 ### Task 2: Add AI review prompt templates
 
 **Files:**
+
 - Create: `scripts/ai-review-prompts/review.md`
 - Create: `scripts/ai-review-prompts/fix.md`
 
@@ -78,6 +80,7 @@ git commit -m "chore: add ai review prompt templates"
 ### Task 3: Implement the review loop orchestrator script
 
 **Files:**
+
 - Create: `scripts/ai-review-loop.sh`
 
 **Step 1: Write the failing test**
@@ -87,6 +90,7 @@ Covered by Task 1.
 **Step 2: Write minimal implementation**
 
 Key behaviors to implement:
+
 - Validate `codex` availability (configurable via `AI_REVIEW_CODEX_CMD`, default `codex`). Fail fast with a helpful message.
 - Optional Claude support via `AI_REVIEW_AGENT`/`AI_REVIEW_AGENTS` and `AI_REVIEW_CLAUDE_CMD`.
 - Detect PR base via `gh pr view --json baseRefName -q .baseRefName`. If missing/unavailable, fall back to `AI_REVIEW_BASE` or `origin/main` with a warning.
@@ -112,6 +116,7 @@ git commit -m "feat: add ai review loop script"
 ### Task 4: Wire the Makefile target
 
 **Files:**
+
 - Modify: `Makefile`
 
 **Step 1: Write the failing test**
@@ -121,6 +126,7 @@ Covered by Task 1 (make help must list `ai-review-loop`).
 **Step 2: Write minimal implementation**
 
 Add a new target:
+
 - `ai-review-loop: ## Run local AI code review + fix loop (Codex default)`
 - It should call `./scripts/ai-review-loop.sh`.
 
@@ -141,6 +147,7 @@ git commit -m "chore: add make ai-review-loop target"
 ### Task 5: Update documentation and agent rules
 
 **Files:**
+
 - Modify: `AGENTS.md`
 - Modify: `docs/onboarding.md`
 
@@ -166,6 +173,7 @@ git commit -m "docs: document ai review loop"
 ### Task 6: New Feature Verification Gate (MANDATORY)
 
 **Files:**
+
 - Follow `.claude/skills/` workflows after implementation.
 
 **Step 1: Execute every skill in `.claude/skills/`**
@@ -183,5 +191,6 @@ Do not mark the feature complete until all skills are executed and evidence is r
 ---
 
 **Notes:**
+
 - User explicitly requested working on the current branch without a worktree.
 - Use `make` or `docker compose exec php ...` for any PHP tooling; never run PHP directly on host.

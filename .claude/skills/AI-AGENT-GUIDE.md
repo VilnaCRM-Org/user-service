@@ -142,20 +142,20 @@ Complex skills have multi-file structure:
 
 ### 💾 Database & Documentation Skills
 
-| Skill                   | File                           | When to Use                                      |
-| ----------------------- | ------------------------------ | ------------------------------------------------ |
-| **Database Migrations** | `database-migrations/SKILL.md` | Create/modify entities with Doctrine ORM (MySQL) |
-| **Documentation Creation** | `documentation-creation/SKILL.md` | Create full docs suite for a new project     |
-| **Documentation Sync**  | `documentation-sync/SKILL.md`  | Keep docs synchronized with code changes         |
+| Skill                      | File                              | When to Use                                      |
+| -------------------------- | --------------------------------- | ------------------------------------------------ |
+| **Database Migrations**    | `database-migrations/SKILL.md`    | Create/modify entities with Doctrine ORM (MySQL) |
+| **Documentation Creation** | `documentation-creation/SKILL.md` | Create full docs suite for a new project         |
+| **Documentation Sync**     | `documentation-sync/SKILL.md`     | Keep docs synchronized with code changes         |
 
 ### 🚀 API & Performance Skills
 
-| Skill                 | File                         | When to Use                                  |
-| --------------------- | ---------------------------- | -------------------------------------------- |
-| **API Platform CRUD** | `api-platform-crud/SKILL.md` | Create complete REST API CRUD with DDD/CQRS  |
-| **Load Testing**      | `load-testing/SKILL.md`      | Create K6 performance tests for REST/GraphQL |
-| **Cache Management**  | `cache-management/SKILL.md`  | Cache keys, TTLs, invalidation, decorators   |
-| **Observability**     | `observability-instrumentation/SKILL.md` | Business metrics via EMF           |
+| Skill                 | File                                     | When to Use                                  |
+| --------------------- | ---------------------------------------- | -------------------------------------------- |
+| **API Platform CRUD** | `api-platform-crud/SKILL.md`             | Create complete REST API CRUD with DDD/CQRS  |
+| **Load Testing**      | `load-testing/SKILL.md`                  | Create K6 performance tests for REST/GraphQL |
+| **Cache Management**  | `cache-management/SKILL.md`              | Cache keys, TTLs, invalidation, decorators   |
+| **Observability**     | `observability-instrumentation/SKILL.md` | Business metrics via EMF                     |
 
 ## Practical Examples
 

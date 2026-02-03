@@ -12,26 +12,26 @@ Skills live in `.claude/skills/` and are auto-discovered. Use the decision tree 
 
 ### Quick Skill Guide
 
-| Task Type                   | Skill                           | When to Use                               |
-| --------------------------- | ------------------------------- | ----------------------------------------- |
-| **Fix Deptrac violations**  | `deptrac-fixer`                 | Architecture boundary violations detected |
-| **Fix complexity issues**   | `complexity-management`         | PHPInsights complexity score drops        |
-| **Run CI checks**           | `ci-workflow`                   | Before committing, validating changes     |
-| **Debug test failures**     | `testing-workflow`              | PHPUnit, Behat, or Infection issues       |
-| **Handle PR feedback**      | `code-review`                   | Processing code review comments           |
-| **Organize code structure** | `code-organization`             | Directory placement, naming, type safety  |
-| **Create DDD patterns**     | `implementing-ddd-architecture` | New entities, value objects, aggregates   |
-| **Add CRUD endpoints**      | `api-platform-crud`             | New API resources with full CRUD          |
-| **Add caching**             | `cache-management`              | Cache keys, TTLs, invalidation patterns   |
-| **Add business metrics**    | `observability-instrumentation` | AWS EMF metrics for domain events         |
-| **Create load tests**       | `load-testing`                  | K6 performance tests (REST/GraphQL)       |
-| **Update entity schema**    | `database-migrations`           | Modifying entities, adding fields         |
-| **Document APIs**           | `openapi-development`           | OpenAPI endpoint factories                |
-| **Create docs (new project)** | `documentation-creation`      | Initial documentation suite               |
-| **Sync documentation**      | `documentation-sync`            | After any code changes                    |
-| **Quality overview**        | `quality-standards`             | Understanding protected thresholds        |
-| **Query performance**       | `query-performance-analysis`    | N+1 detection, EXPLAIN, indexes           |
-| **Architecture diagrams**   | `structurizr-architecture-sync` | Update workspace.dsl (C4 model)           |
+| Task Type                     | Skill                           | When to Use                               |
+| ----------------------------- | ------------------------------- | ----------------------------------------- |
+| **Fix Deptrac violations**    | `deptrac-fixer`                 | Architecture boundary violations detected |
+| **Fix complexity issues**     | `complexity-management`         | PHPInsights complexity score drops        |
+| **Run CI checks**             | `ci-workflow`                   | Before committing, validating changes     |
+| **Debug test failures**       | `testing-workflow`              | PHPUnit, Behat, or Infection issues       |
+| **Handle PR feedback**        | `code-review`                   | Processing code review comments           |
+| **Organize code structure**   | `code-organization`             | Directory placement, naming, type safety  |
+| **Create DDD patterns**       | `implementing-ddd-architecture` | New entities, value objects, aggregates   |
+| **Add CRUD endpoints**        | `api-platform-crud`             | New API resources with full CRUD          |
+| **Add caching**               | `cache-management`              | Cache keys, TTLs, invalidation patterns   |
+| **Add business metrics**      | `observability-instrumentation` | AWS EMF metrics for domain events         |
+| **Create load tests**         | `load-testing`                  | K6 performance tests (REST/GraphQL)       |
+| **Update entity schema**      | `database-migrations`           | Modifying entities, adding fields         |
+| **Document APIs**             | `openapi-development`           | OpenAPI endpoint factories                |
+| **Create docs (new project)** | `documentation-creation`        | Initial documentation suite               |
+| **Sync documentation**        | `documentation-sync`            | After any code changes                    |
+| **Quality overview**          | `quality-standards`             | Understanding protected thresholds        |
+| **Query performance**         | `query-performance-analysis`    | N+1 detection, EXPLAIN, indexes           |
+| **Architecture diagrams**     | `structurizr-architecture-sync` | Update workspace.dsl (C4 model)           |
 
 > For detailed flows and cross-agent guidance see `.claude/skills/AI-AGENT-GUIDE.md`.
 
