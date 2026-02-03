@@ -27,6 +27,9 @@ vars:
   PHPINSIGHTS: ./vendor/bin/phpinsights
   # Pinned Schemathesis image to avoid CI drift.
   SCHEMATHESIS_IMAGE: schemathesis/schemathesis:4.9.5
+  SCHEMATHESIS_CLIENT_ID: 'dc0bc6323f16fecd4224a3860ca894c5'
+  SCHEMATHESIS_CLIENT_SECRET: '8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7'
+  SCHEMATHESIS_AUTH: '{{.SCHEMATHESIS_CLIENT_ID}}:{{.SCHEMATHESIS_CLIENT_SECRET}}'
 
 tasks:
   # ============================================================================
@@ -225,9 +228,9 @@ tasks:
       - echo "🧪 Running Schemathesis validation..."
       - task: reset-db
       - '{{.EXEC_PHP}} php bin/console app:seed-schemathesis-data'
-      - "docker run --rm --network=host -v {{.PWD}}/.github/openapi-spec:/data {{.SCHEMATHESIS_IMAGE}} run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth 'dc0bc6323f16fecd4224a3860ca894c5:8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7'"
+      - "docker run --rm --network=host -v {{.PWD}}/.github/openapi-spec:/data {{.SCHEMATHESIS_IMAGE}} run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '{{.SCHEMATHESIS_AUTH}}'"
       - '{{.EXEC_PHP}} php bin/console app:seed-schemathesis-data'
-      - "docker run --rm --network=host -v {{.PWD}}/.github/openapi-spec:/data {{.SCHEMATHESIS_IMAGE}} run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth 'dc0bc6323f16fecd4224a3860ca894c5:8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7'"
+      - "docker run --rm --network=host -v {{.PWD}}/.github/openapi-spec:/data {{.SCHEMATHESIS_IMAGE}} run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '{{.SCHEMATHESIS_AUTH}}'"
 
   reset-db:
     desc: Reset database for Schemathesis
