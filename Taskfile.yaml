@@ -233,9 +233,9 @@ tasks:
     cmds:
       - echo "🧪 Running Schemathesis validation..."
       - task: reset-db
-      - '{{.EXEC_PHP}} php bin/console app:seed-schemathesis-data'
+      - '{{.EXEC_PHP_TEST_ENV}} bin/console app:seed-schemathesis-data'
       - "docker run --rm --network=host -v {{.PWD}}/.github/openapi-spec:/data {{.SCHEMATHESIS_IMAGE}} run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '{{.SCHEMATHESIS_AUTH}}'"
-      - '{{.EXEC_PHP}} php bin/console app:seed-schemathesis-data'
+      - '{{.EXEC_PHP_TEST_ENV}} bin/console app:seed-schemathesis-data'
       - "docker run --rm --network=host -v {{.PWD}}/.github/openapi-spec:/data {{.SCHEMATHESIS_IMAGE}} run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '{{.SCHEMATHESIS_AUTH}}'"
 
   reset-db:
