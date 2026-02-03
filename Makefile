@@ -284,8 +284,16 @@ start-prod-loadtest: ## Start production environment with load testing capabilit
 stop-prod-loadtest: ## Stop production load testing environment
 	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml down --remove-orphans
 
-ci: ## Run comprehensive CI checks (excludes bats and load tests)
-	@echo "🚀 Running comprehensive CI checks..."
+ci: ## Run comprehensive CI checks with parallelization (excludes bats and load tests)
+	@if ! command -v task >/dev/null 2>&1; then \
+		echo "❌ Task is required for parallel CI. Install: sh -c \"\$$(curl --location https://taskfile.dev/install.sh)\" -- -d -b ~/.local/bin"; \
+		echo "➡️  Fallback: make ci-sequential"; \
+		exit 1; \
+	fi
+	@task ci
+
+ci-sequential: ## Run CI checks sequentially (fallback if parallel execution has issues)
+	@echo "🚀 Running comprehensive CI checks (sequential mode)..."
 	@failed_checks=""; \
 	echo "1️⃣  Validating composer.json and composer.lock..."; \
 	if ! make composer-validate; then failed_checks="$$failed_checks\n❌ composer validation"; fi; \

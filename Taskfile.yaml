@@ -1,0 +1,238 @@
+# Taskfile.yaml - Parallel CI execution using go-task/task
+# https://taskfile.dev
+#
+# This file parallelizes the CI checks that were previously sequential.
+# Use `output: group` to ensure each task's output is displayed together (AI-friendly).
+#
+# NOTE: This Taskfile runs on the HOST machine.
+# PHP commands use `docker compose exec php` to run inside the container.
+# Docker commands (schemathesis, spectral) run directly on the host.
+
+version: '3'
+
+output: group
+
+vars:
+  DOCKER_COMPOSE: docker compose
+  EXEC_PHP: "{{.DOCKER_COMPOSE}} exec php"
+  EXEC_PHP_TEST_ENV: "{{.DOCKER_COMPOSE}} exec -e APP_ENV=test php"
+  SYMFONY_BIN: symfony
+  PSALM: ./vendor/bin/psalm
+  DEPTRAC: ./vendor/bin/deptrac
+  INFECTION: ./vendor/bin/infection
+  BEHAT: ./vendor/bin/behat --stop-on-failure -n
+  PHPUNIT: ./vendor/bin/phpunit
+  PHP_CS_FIXER: ./vendor/bin/php-cs-fixer
+  PHPMD: ./vendor/bin/phpmd
+  PHPINSIGHTS: ./vendor/bin/phpinsights
+  SCHEMATHESIS_IMAGE: schemathesis/schemathesis:latest
+
+tasks:
+  # ============================================================================
+  # MAIN CI TASK - Orchestrates all parallel groups
+  # ============================================================================
+  ci:
+    desc: Run comprehensive CI checks with parallelization
+    cmds:
+      - echo "🚀 Starting parallel CI checks..."
+      - task: preflight
+      - task: ci-parallel
+      - echo ""
+      - echo "✅ CI checks successfully passed!"
+
+  ci-parallel:
+    desc: Run all CI groups in parallel
+    cmds:
+      - task --parallel static-analysis deptrac tests mutation openapi
+
+  preflight:
+    desc: Run mutating checks sequentially
+    cmds:
+      - task phpcsfixer
+      - task phpmd
+      - task phpinsights
+
+  # ============================================================================
+  # GROUP 1: STATIC ANALYSIS (fully parallel - no dependencies)
+  # ============================================================================
+  static-analysis:
+    desc: Run all static analysis checks in parallel
+    cmds:
+      - task --parallel composer-validate check-requirements check-security psalm psalm-security
+
+  composer-validate:
+    desc: Validate composer.json and composer.lock
+    cmds:
+      - echo "📦 Validating composer.json and composer.lock..."
+      - "{{.EXEC_PHP}} composer validate"
+
+  check-requirements:
+    desc: Check Symfony requirements
+    cmds:
+      - echo "🔍 Checking Symfony requirements..."
+      - "{{.EXEC_PHP_TEST_ENV}} {{.SYMFONY_BIN}} check:requirements"
+
+  check-security:
+    desc: Check security issues in dependencies
+    cmds:
+      - echo "🔒 Running security analysis..."
+      - "{{.EXEC_PHP_TEST_ENV}} {{.SYMFONY_BIN}} security:check"
+
+  phpcsfixer:
+    desc: Fix PHP code style
+    cmds:
+      - echo "🎨 Fixing code style with PHP CS Fixer..."
+      - "{{.DOCKER_COMPOSE}} exec -e PHP_CS_FIXER_IGNORE_ENV=1 php php {{.PHP_CS_FIXER}} fix $(git ls-files -om --exclude-standard) --allow-risky=yes --config .php-cs-fixer.dist.php"
+
+  psalm:
+    desc: Run Psalm static analysis
+    cmds:
+      - echo "🔬 Running static analysis with Psalm..."
+      - "{{.EXEC_PHP_TEST_ENV}} {{.PSALM}}"
+
+  psalm-security:
+    desc: Run Psalm security/taint analysis
+    cmds:
+      - echo "🛡️ Running security taint analysis..."
+      - "{{.EXEC_PHP_TEST_ENV}} {{.PSALM}} --taint-analysis"
+
+  # ============================================================================
+  # GROUP 2: CODE QUALITY (phpmd -> phpinsights in preflight; deptrac parallel)
+  # ============================================================================
+  phpmd:
+    desc: Run PHPMD analysis
+    cmds:
+      - echo "📊 Running code quality analysis with PHPMD..."
+      - "{{.EXEC_PHP_TEST_ENV}} {{.PHPMD}} src ansi codesize,design,cleancode --exclude vendor"
+      - "{{.EXEC_PHP_TEST_ENV}} {{.PHPMD}} tests ansi phpmd.tests.xml --exclude vendor,tests/CLI/bats/php"
+
+  phpinsights:
+    desc: Run PHPInsights quality checks
+    cmds:
+      - echo "💡 Running code quality analysis with PHPInsights..."
+      - "{{.EXEC_PHP_TEST_ENV}} {{.PHPINSIGHTS}} --no-interaction --flush-cache --fix --ansi --disable-security-check"
+      - "{{.EXEC_PHP_TEST_ENV}} {{.PHPINSIGHTS}} analyse tests --no-interaction --flush-cache --fix --disable-security-check --config-path=phpinsights-tests.php"
+
+  deptrac:
+    desc: Validate architecture with Deptrac
+    cmds:
+      - echo "🏗️ Validating architecture with Deptrac..."
+      - "{{.EXEC_PHP_TEST_ENV}} {{.DEPTRAC}} analyse --config-file=deptrac.yaml --report-uncovered --fail-on-uncovered"
+
+  # ============================================================================
+  # GROUP 3: TESTS (setup-test-db first, then sequential tests - they share DB)
+  # ============================================================================
+  tests:
+    desc: Run all tests
+    cmds:
+      - task: setup-test-db
+      - task: unit-tests
+      - task: integration-tests
+      - task: behat
+
+  setup-test-db:
+    desc: Setup test database
+    cmds:
+      - echo "🗄️ Setting up test database..."
+      - "{{.EXEC_PHP_TEST_ENV}} bin/console c:c"
+      - "{{.EXEC_PHP_TEST_ENV}} bin/console doctrine:database:drop --force --if-exists"
+      - "{{.EXEC_PHP_TEST_ENV}} bin/console doctrine:database:create"
+      - "{{.EXEC_PHP_TEST_ENV}} bin/console doctrine:migrations:migrate --no-interaction"
+
+  unit-tests:
+    desc: Run unit tests with coverage
+    cmds:
+      - echo "🧪 Running unit tests..."
+      - |
+        {{.DOCKER_COMPOSE}} exec -e APP_ENV=test -e XDEBUG_MODE=coverage php \
+          php -d memory_limit=-1 {{.PHPUNIT}} --coverage-text --testsuite=Unit 2>&1 | tee /tmp/phpunit_unit_output.txt
+        if grep -q "FAILURES!" /tmp/phpunit_unit_output.txt; then
+          echo "❌ TEST FAILURE: Some tests failed"
+          exit 1
+        fi
+        coverage=$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_unit_output.txt | grep "^  Lines:" | awk '{print $2}' | sed 's/%//' | head -1)
+        if [ -n "$coverage" ]; then
+          if [ $(echo "$coverage < 100" | bc -l) -eq 1 ]; then
+            echo "❌ COVERAGE FAILURE: Line coverage is $coverage%, but 100% is required"
+            exit 1
+          else
+            echo "✅ COVERAGE SUCCESS: Line coverage is $coverage%"
+          fi
+        else
+          echo "❌ ERROR: Could not parse coverage from output"
+          exit 1
+        fi
+
+  integration-tests:
+    desc: Run integration tests with coverage
+    cmds:
+      - echo "🔗 Running integration tests..."
+      - "{{.DOCKER_COMPOSE}} exec -e APP_ENV=test -e XDEBUG_MODE=coverage php php -d memory_limit=-1 {{.PHPUNIT}} --coverage-text --testsuite=Integration"
+
+  behat:
+    desc: Run Behat E2E tests
+    cmds:
+      - echo "🥒 Running Behat E2E tests..."
+      - "{{.EXEC_PHP_TEST_ENV}} {{.BEHAT}}"
+
+  # ============================================================================
+  # GROUP 4: MUTATION TESTING (runs parallel with other groups)
+  # ============================================================================
+  mutation:
+    desc: Run mutation testing with Infection
+    cmds:
+      - echo "🦠 Running mutation testing with Infection..."
+      - "{{.EXEC_PHP_TEST_ENV}} php -d memory_limit=-1 {{.INFECTION}} --test-framework-options=\"--testsuite=Unit\" --show-mutations --log-verbosity=all -j8 --min-msi=100 --min-covered-msi=100 --with-uncovered"
+
+  # ============================================================================
+  # GROUP 5: OPENAPI VALIDATION (generate spec first, then parallel checks)
+  # ============================================================================
+  openapi:
+    desc: Run OpenAPI validation checks
+    cmds:
+      - task: generate-openapi-spec
+      - task --parallel openapi-diff validate-openapi-spec schemathesis-validate
+
+  generate-openapi-spec:
+    desc: Generate OpenAPI specification
+    cmds:
+      - echo "📝 Generating OpenAPI specification..."
+      - "{{.EXEC_PHP}} php bin/console api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml"
+
+  build-spectral-docker:
+    desc: Build Spectral docker image
+    cmds:
+      - docker build -t user-service-spectral -f ./docker/spectral/Dockerfile .
+
+  openapi-diff:
+    desc: Check OpenAPI backward compatibility
+    cmds:
+      - echo "📊 Checking OpenAPI backward compatibility..."
+      - ./scripts/openapi-diff.sh origin/main
+
+  validate-openapi-spec:
+    desc: Validate OpenAPI spec with Spectral
+    deps:
+      - build-spectral-docker
+    cmds:
+      - echo "🔍 Validating OpenAPI specification with Spectral..."
+      - ./scripts/validate-openapi-spec.sh
+
+  schemathesis-validate:
+    desc: Validate API against OpenAPI spec with Schemathesis
+    cmds:
+      - echo "🧪 Running Schemathesis validation..."
+      - task: reset-db
+      - "{{.EXEC_PHP}} php bin/console app:seed-schemathesis-data"
+      - "docker run --rm --network=host -v {{.PWD}}/.github/openapi-spec:/data {{.SCHEMATHESIS_IMAGE}} run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth 'dc0bc6323f16fecd4224a3860ca894c5:8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7'"
+      - "{{.EXEC_PHP}} php bin/console app:seed-schemathesis-data"
+      - "docker run --rm --network=host -v {{.PWD}}/.github/openapi-spec:/data {{.SCHEMATHESIS_IMAGE}} run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth 'dc0bc6323f16fecd4224a3860ca894c5:8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7'"
+
+  reset-db:
+    desc: Reset database for Schemathesis
+    cmds:
+      - "{{.EXEC_PHP}} bin/console doctrine:cache:clear-metadata"
+      - "{{.EXEC_PHP}} bin/console doctrine:database:create --if-not-exists"
+      - "{{.EXEC_PHP}} bin/console doctrine:schema:drop --force"
+      - "{{.EXEC_PHP}} bin/console doctrine:schema:create"
+      - "{{.EXEC_PHP}} php bin/console app:seed-schemathesis-data"
