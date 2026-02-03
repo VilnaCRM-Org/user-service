@@ -137,7 +137,7 @@ Run: `make ci`
 
 Expected: grouped output by task, no interleaving, and final line:
 
-```
+```text
 ✅ CI checks successfully passed!
 ```
 
