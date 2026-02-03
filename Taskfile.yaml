@@ -232,8 +232,8 @@ tasks:
   reset-db:
     desc: Reset database for Schemathesis
     cmds:
-      - '{{.EXEC_PHP}} bin/console doctrine:cache:clear-metadata'
-      - '{{.EXEC_PHP}} bin/console doctrine:database:create --if-not-exists'
-      - '{{.EXEC_PHP}} bin/console doctrine:schema:drop --force'
-      - '{{.EXEC_PHP}} bin/console doctrine:schema:create'
-      - '{{.EXEC_PHP}} php bin/console app:seed-schemathesis-data'
+      - '{{.EXEC_PHP_TEST_ENV}} bin/console doctrine:cache:clear-metadata'
+      - '{{.EXEC_PHP_TEST_ENV}} bin/console doctrine:database:create --if-not-exists'
+      - '{{.EXEC_PHP_TEST_ENV}} bin/console doctrine:schema:drop --force'
+      - '{{.EXEC_PHP_TEST_ENV}} bin/console doctrine:schema:create'
+      - '{{.EXEC_PHP_TEST_ENV}} bin/console app:seed-schemathesis-data'
