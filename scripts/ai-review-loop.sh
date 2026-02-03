@@ -48,9 +48,18 @@ fix_agent="${AI_REVIEW_FIX_AGENT:-${agents_sanitized[0]}}"
 
 codex_cmd="${AI_REVIEW_CODEX_CMD:-codex}"
 claude_cmd="${AI_REVIEW_CLAUDE_CMD:-claude}"
+review_sandbox="${AI_REVIEW_REVIEW_SANDBOX:-read-only}"
+fix_sandbox="${AI_REVIEW_FIX_SANDBOX:-workspace-write}"
 
 read -r -a codex_flags <<< "${AI_REVIEW_CODEX_FLAGS:-}"
 read -r -a claude_flags <<< "${AI_REVIEW_CLAUDE_FLAGS:-}"
+
+ensure_codex_output_last_message() {
+  if ! "$codex_cmd" exec --help 2>/dev/null | grep -q -- '--output-last-message'; then
+    echo "Codex CLI is missing --output-last-message; update Codex CLI to run ai-review-loop." >&2
+    exit 1
+  fi
+}
 
 require_command() {
   local cmd="$1"
@@ -66,6 +75,7 @@ require_agent_command() {
   case "$agent" in
     codex)
       require_command "$codex_cmd" "Codex CLI (codex)" || exit 1
+      ensure_codex_output_last_message
       ;;
     claude)
       require_command "$claude_cmd" "Claude CLI (claude)" || exit 1
@@ -128,15 +138,37 @@ ensure_base_available() {
 ensure_base_available "$review_base"
 
 build_review_prompt() {
-  printf "%s\n%s\n" "$(cat "$review_prompt_file")" "$review_base"
+  local base_diff
+  local staged_diff
+  local worktree_diff
+  base_diff=$(git diff "$review_base"...HEAD)
+  staged_diff=$(git diff --staged)
+  worktree_diff=$(git diff)
+  printf "%s\n%s\n\nBASE_DIFF:\n%s\n\nSTAGED_DIFF:\n%s\n\nWORKTREE_DIFF:\n%s\n" \
+    "$(cat "$review_prompt_file")" \
+    "$review_base" \
+    "$base_diff" \
+    "$staged_diff" \
+    "$worktree_diff"
 }
 
 build_fix_prompt() {
   local review_log="$1"
   local ci_log="$2"
   local prompt_content
+  local base_diff
+  local staged_diff
+  local worktree_diff
   prompt_content="$(cat "$fix_prompt_file")"
-  printf "%s\n\nLATEST_REVIEW_OUTPUT:\n%s\n" "$prompt_content" "$(cat "$review_log")"
+  base_diff=$(git diff "$review_base"...HEAD)
+  staged_diff=$(git diff --staged)
+  worktree_diff=$(git diff)
+  printf "%s\n\nLATEST_REVIEW_OUTPUT:\n%s\n\nBASE_DIFF:\n%s\n\nSTAGED_DIFF:\n%s\n\nWORKTREE_DIFF:\n%s\n" \
+    "$prompt_content" \
+    "$(cat "$review_log")" \
+    "$base_diff" \
+    "$staged_diff" \
+    "$worktree_diff"
   if [[ -n "$ci_log" && -f "$ci_log" ]]; then
     printf "\nLATEST_CI_OUTPUT:\n%s\n" "$(cat "$ci_log")"
   fi
@@ -167,7 +199,9 @@ run_review() {
 
   case "$agent" in
     codex)
-      printf "%s" "$prompt" | "$codex_cmd" review --base "$review_base" "${codex_flags[@]}" - >"$output_file" 2>&1
+      local log_file
+      log_file="${output_file}.log"
+      printf "%s" "$prompt" | "$codex_cmd" exec "${codex_flags[@]}" --sandbox "$review_sandbox" --output-last-message "$output_file" - >"$log_file" 2>&1
       ;;
     claude)
       printf "%s" "$prompt" | "$claude_cmd" "${claude_flags[@]}" >"$output_file" 2>&1
@@ -190,7 +224,9 @@ run_fix() {
 
   case "$agent" in
     codex)
-      printf "%s" "$prompt" | "$codex_cmd" exec "${codex_flags[@]}" - >"$output_file" 2>&1
+      local log_file
+      log_file="${output_file}.log"
+      printf "%s" "$prompt" | "$codex_cmd" exec "${codex_flags[@]}" --sandbox "$fix_sandbox" --output-last-message "$output_file" - >"$log_file" 2>&1
       ;;
     claude)
       printf "%s" "$prompt" | "$claude_cmd" "${claude_flags[@]}" >"$output_file" 2>&1
@@ -213,6 +249,7 @@ while :; do
 
   all_pass=true
   last_review_log=""
+  fail_log=""
 
   for agent in "${agents_sanitized[@]}"; do
     timestamp=$(date +%Y%m%d_%H%M%S)
@@ -233,6 +270,14 @@ while :; do
     last_review_log="$review_log"
     if [[ "$status" == "FAIL" ]]; then
       all_pass=false
+      if [[ -z "$fail_log" ]]; then
+        fail_log="$log_dir/review-fail-iter${iter}-$timestamp.md"
+      fi
+      {
+        echo "=== Agent: $agent ==="
+        cat "$review_log"
+        echo ""
+      } >> "$fail_log"
     fi
   done
 
@@ -243,7 +288,10 @@ while :; do
 
   fix_timestamp=$(date +%Y%m%d_%H%M%S)
   fix_log="$log_dir/fix-${fix_agent}-iter${iter}-$fix_timestamp.md"
-  run_fix "$fix_agent" "$fix_log" "$last_review_log" "$ci_log"
+  if [[ -z "$fail_log" ]]; then
+    fail_log="$last_review_log"
+  fi
+  run_fix "$fix_agent" "$fix_log" "$fail_log" "$ci_log"
   cp "$fix_log" "$log_dir/fix-latest.md"
 
   ci_log="$log_dir/ci-iter${iter}-$fix_timestamp.log"

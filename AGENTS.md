@@ -22,6 +22,7 @@ After `make ci` and before committing/pushing or moving a PR from draft to ready
 1. Run `make ai-review-loop`.
 2. Default agent is Codex. To include Claude, set `AI_REVIEW_AGENTS=codex,claude` or use `AI_REVIEW_AGENT=claude`.
 3. If the loop applies fixes, re-run `make ci` and `make ai-review-loop` until it reports `PASS`.
+4. Requires Codex CLI support for `--output-last-message` (update Codex CLI if missing).
 
 ### ✅ Mandatory New Feature Verification Gate (ALL Skills)
 

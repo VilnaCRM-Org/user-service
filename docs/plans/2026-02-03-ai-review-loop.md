@@ -4,7 +4,7 @@
 
 **Goal:** Add a local `make ai-review-loop` command that runs an autonomous Codex (default) review+fix loop against the current PR diff, verifying with `make ci` after each fix, and optionally supports Claude.
 
-**Architecture:** A Make target calls a new bash orchestrator script that detects PR base via `gh`, runs `codex review` with strict PASS/FAIL prompts, iterates fixes with `codex exec`, and logs outputs. Prompts live in `scripts/ai-review-prompts/` to keep behavior consistent and reviewable.
+**Architecture:** A Make target calls a new bash orchestrator script that detects PR base via `gh`, runs `codex exec` with strict PASS/FAIL prompts, iterates fixes with `codex exec`, and logs outputs. Prompts live in `scripts/ai-review-prompts/` to keep behavior consistent and reviewable. The loop requires a Codex CLI that supports `--output-last-message`.
 
 **Tech Stack:** Bash, Make, GitHub CLI (`gh`), Codex CLI (`codex`), optional Claude CLI, Bats for CLI tests, existing Make-based CI.
 
@@ -91,7 +91,7 @@ Key behaviors to implement:
 - Optional Claude support via `AI_REVIEW_AGENT`/`AI_REVIEW_AGENTS` and `AI_REVIEW_CLAUDE_CMD`.
 - Detect PR base via `gh pr view --json baseRefName -q .baseRefName`. If missing/unavailable, fall back to `AI_REVIEW_BASE` or `origin/main` with a warning.
 - Fetch base branch if not present locally.
-- Run `codex review --base <base>` with prompt file, parse first line for `STATUS: PASS|FAIL`.
+- Run `codex exec` with the review prompt (diff embedded), parse first line for `STATUS: PASS|FAIL`.
 - On FAIL, run `codex exec` with fix prompt, then run `AI_REVIEW_VERIFY_CMD` (default `make ci`).
 - Loop until PASS or `AI_REVIEW_MAX_ITER` (default 3), logging to `var/ai-review/`.
 
