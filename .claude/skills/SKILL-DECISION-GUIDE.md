@@ -2,6 +2,39 @@
 
 **Choose the right skill for your task based on what you're trying to accomplish.**
 
+## 🚨 Mandatory New Feature Verification Gate (ALL Skills)
+
+If you created or modified a **NEW feature**, you MUST execute **every** skill in `.claude/skills/` **after implementation**. The decision tree below is for choosing the primary skill during the work. It does **not** replace this gate.
+
+**Execution rules:**
+
+1. Open each `SKILL.md` file listed below.
+2. Follow its steps exactly. If a skill is not applicable, explicitly record **"Not applicable"** with a concrete reason.
+3. Run required commands using `make` or `docker compose exec php ...` only.
+4. Provide evidence in your response: commands run and outcomes. If you cannot run a command, stop and explain why.
+5. Do not claim the feature is complete until this gate is finished.
+
+**Skills to execute for every new feature:**
+
+- `api-platform-crud`
+- `cache-management`
+- `ci-workflow`
+- `code-organization`
+- `code-review`
+- `complexity-management`
+- `database-migrations`
+- `deptrac-fixer`
+- `documentation-creation`
+- `documentation-sync`
+- `implementing-ddd-architecture`
+- `load-testing`
+- `observability-instrumentation`
+- `openapi-development`
+- `quality-standards`
+- `query-performance-analysis`
+- `structurizr-architecture-sync`
+- `testing-workflow`
+
 ## Quick Decision Tree
 
 ```
@@ -23,7 +56,8 @@ What are you trying to do?
 │   ├─ New database entity → database-migrations
 │   ├─ Add caching / invalidation → cache-management
 │   ├─ New test cases → testing-workflow
-│   └─ Add business metrics → observability-instrumentation
+│   ├─ Add business metrics → observability-instrumentation
+│   └─ Fix file placement / boundaries → code-organization
 
 ├─ Review/validate work
 │   ├─ Before committing → ci-workflow

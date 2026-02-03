@@ -15,6 +15,39 @@ VilnaCRM User Service is a PHP 8.3+ microservice built with Symfony 7.2, API Pla
 3. **EXECUTE** → Open the specific skill file (e.g., `.claude/skills/deptrac-fixer/SKILL.md`)
 4. **FOLLOW** → Execute the step-by-step instructions exactly as written
 
+### ✅ Mandatory New Feature Verification Gate (ALL Skills)
+
+For any **NEW feature** (new behavior, endpoint, domain model, schema change, or user-facing change), you MUST execute **every** skill in `.claude/skills/` **after implementation**.
+
+**Execution rules:**
+
+1. Open each `SKILL.md` file listed below.
+2. Follow its steps exactly. If a skill is not applicable, explicitly record **"Not applicable"** with a concrete reason.
+3. Run required commands using `make` or `docker compose exec php ...` only.
+4. Provide evidence in your response: commands run and outcomes. If you cannot run a command, stop and explain why.
+5. Do not claim the feature is complete until this gate is finished.
+
+**Skills to execute for every new feature:**
+
+- `api-platform-crud`
+- `cache-management`
+- `ci-workflow`
+- `code-organization`
+- `code-review`
+- `complexity-management`
+- `database-migrations`
+- `deptrac-fixer`
+- `documentation-creation`
+- `documentation-sync`
+- `implementing-ddd-architecture`
+- `load-testing`
+- `observability-instrumentation`
+- `openapi-development`
+- `quality-standards`
+- `query-performance-analysis`
+- `structurizr-architecture-sync`
+- `testing-workflow`
+
 ### ❌ DO NOT
 
 - Fix issues directly from AGENTS.md without reading the skills

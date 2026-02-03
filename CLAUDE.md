@@ -22,14 +22,51 @@ Skills live in `.claude/skills/` and are auto-discovered. Use the decision tree 
 | **Organize code structure** | `code-organization`             | Directory placement, naming, type safety  |
 | **Create DDD patterns**     | `implementing-ddd-architecture` | New entities, value objects, aggregates   |
 | **Add CRUD endpoints**      | `api-platform-crud`             | New API resources with full CRUD          |
+| **Add caching**             | `cache-management`              | Cache keys, TTLs, invalidation patterns   |
 | **Add business metrics**    | `observability-instrumentation` | AWS EMF metrics for domain events         |
 | **Create load tests**       | `load-testing`                  | K6 performance tests (REST/GraphQL)       |
 | **Update entity schema**    | `database-migrations`           | Modifying entities, adding fields         |
 | **Document APIs**           | `openapi-development`           | OpenAPI endpoint factories                |
+| **Create docs (new project)** | `documentation-creation`      | Initial documentation suite               |
 | **Sync documentation**      | `documentation-sync`            | After any code changes                    |
 | **Quality overview**        | `quality-standards`             | Understanding protected thresholds        |
+| **Query performance**       | `query-performance-analysis`    | N+1 detection, EXPLAIN, indexes           |
+| **Architecture diagrams**   | `structurizr-architecture-sync` | Update workspace.dsl (C4 model)           |
 
 > For detailed flows and cross-agent guidance see `.claude/skills/AI-AGENT-GUIDE.md`.
+
+### ✅ Mandatory New Feature Verification Gate (ALL Skills)
+
+For any **NEW feature** (new behavior, endpoint, domain model, schema change, or user-facing change), you MUST execute **every** skill in `.claude/skills/` **after implementation**.
+
+**Execution rules:**
+
+1. Open each `SKILL.md` file listed below.
+2. Follow its steps exactly. If a skill is not applicable, explicitly record **"Not applicable"** with a concrete reason.
+3. Run required commands using `make` or `docker compose exec php ...` only.
+4. Provide evidence in your response: commands run and outcomes. If you cannot run a command, stop and explain why.
+5. Do not claim the feature is complete until this gate is finished.
+
+**Skills to execute for every new feature:**
+
+- `api-platform-crud`
+- `cache-management`
+- `ci-workflow`
+- `code-organization`
+- `code-review`
+- `complexity-management`
+- `database-migrations`
+- `deptrac-fixer`
+- `documentation-creation`
+- `documentation-sync`
+- `implementing-ddd-architecture`
+- `load-testing`
+- `observability-instrumentation`
+- `openapi-development`
+- `quality-standards`
+- `query-performance-analysis`
+- `structurizr-architecture-sync`
+- `testing-workflow`
 
 ## 🛡️ Quality Standards (Protected Thresholds)
 
