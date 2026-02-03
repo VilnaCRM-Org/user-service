@@ -1,7 +1,7 @@
 FROM composer/composer:2-bin AS composer
 FROM mlocati/php-extension-installer:2.2 AS php_extension_installer
 
-FROM dunglas/frankenphp:1-php8.3.17-alpine AS frankenphp_base
+FROM dunglas/frankenphp:1-php8.4-alpine AS frankenphp_base
 
 WORKDIR /srv/app
 
@@ -34,8 +34,7 @@ RUN set -eux; \
         mongodb \
         openssl \
         xsl \
-        redis \
-        pdo_mysql
+        redis
 
 COPY --link infrastructure/docker/php/conf.d/app.ini $PHP_INI_DIR/conf.d/
 
@@ -51,7 +50,7 @@ COPY --from=composer --link /composer /usr/bin/composer
 COPY --link composer.* symfony.* ./
 RUN set -eux; \
     if [ -f composer.json ]; then \
-        composer install --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress --ignore-platform-reqs; \
+        composer install --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress; \
         composer clear-cache; \
     fi
 
@@ -61,8 +60,7 @@ RUN rm -Rf infrastructure/docker/
 RUN set -eux; \
     mkdir -p var/cache var/log; \
     if [ -f composer.json ]; then \
-        composer dump-autoload --classmap-authoritative --no-dev --ignore-platform-reqs; \
-        rm -f vendor/composer/platform_check.php; \
+        composer dump-autoload --classmap-authoritative --no-dev; \
         composer dump-env prod; \
         chmod +x bin/console; \
         sync; \
@@ -109,7 +107,7 @@ COPY --link infrastructure/docker/php/worker.Caddyfile /etc/caddy/worker.Caddyfi
 
 COPY --link composer.* symfony.* ./
 RUN set -eux; \
-    composer install --no-cache --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress --ignore-platform-reqs
+    composer install --no-cache --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress
 
 RUN rm -Rf infrastructure/docker/
 

@@ -65,7 +65,7 @@ services:
       - ./:/srv/app
 
   database:
-    image: mongo:6.0
+    image: mongo:8.0
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER:-root}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-secret}
