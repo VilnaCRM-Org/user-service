@@ -240,6 +240,8 @@ run_fix() {
 
 iter=1
 ci_log=""
+last_verify_success=true
+last_verify_success_set=false
 
 while :; do
   if [[ "$max_iter_raw" -ne 0 && "$iter" -gt "$max_iter_raw" ]]; then
@@ -251,13 +253,16 @@ while :; do
   last_review_log=""
   fail_log=""
 
+  last_agent_index=$((${#agents_sanitized[@]} - 1))
+  last_agent="${agents_sanitized[$last_agent_index]}"
+
   for agent in "${agents_sanitized[@]}"; do
     timestamp=$(date +%Y%m%d_%H%M%S)
     review_log="$log_dir/review-${agent}-iter${iter}-$timestamp.md"
     run_review "$agent" "$review_log"
 
     cp "$review_log" "$log_dir/review-latest-${agent}.md"
-    if [[ "$agent" == "${agents_sanitized[-1]}" ]]; then
+    if [[ "$agent" == "$last_agent" ]]; then
       cp "$review_log" "$log_dir/review-latest.md"
     fi
 
@@ -282,6 +287,10 @@ while :; do
   done
 
   if [[ "$all_pass" == true ]]; then
+    if [[ "$last_verify_success_set" == true && "$last_verify_success" != true ]]; then
+      echo "AI review PASS, but verification failed. Fix verification failures before proceeding." >&2
+      exit 1
+    fi
     echo "AI review PASS." >&2
     exit 0
   fi
@@ -297,6 +306,11 @@ while :; do
   ci_log="$log_dir/ci-iter${iter}-$fix_timestamp.log"
   if ! bash -c "$verify_cmd" >"$ci_log" 2>&1; then
     echo "Warning: Verification command failed (see $ci_log)." >&2
+    last_verify_success=false
+    last_verify_success_set=true
+  else
+    last_verify_success=true
+    last_verify_success_set=true
   fi
 
   iter=$((iter + 1))
