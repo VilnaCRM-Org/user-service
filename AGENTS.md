@@ -15,6 +15,14 @@ VilnaCRM User Service is a PHP 8.3+ microservice built with Symfony 7.2, API Pla
 3. **EXECUTE** → Open the specific skill file (e.g., `.claude/skills/deptrac-fixer/SKILL.md`)
 4. **FOLLOW** → Execute the step-by-step instructions exactly as written
 
+### ✅ Mandatory Local AI Review Loop (Before Push/Ready)
+
+After `make ci` and before committing/pushing or moving a PR from draft to ready:
+
+1. Run `make ai-review-loop`.
+2. Default agent is Codex. To include Claude, set `AI_REVIEW_AGENTS=codex,claude` or use `AI_REVIEW_AGENT=claude`.
+3. If the loop applies fixes, re-run `make ci` and `make ai-review-loop` until it reports `PASS`.
+
 ### ✅ Mandatory New Feature Verification Gate (ALL Skills)
 
 For any **NEW feature** (new behavior, endpoint, domain model, schema change, or user-facing change), you MUST execute **every** skill in `.claude/skills/` **after implementation**.

@@ -150,11 +150,13 @@ We use **GitHub Actions** with a variety of checks (17 CI checks, specifically),
 
 Additionally, we use:
 
-- **CodeRabbit** for code reviews and AI suggestions.
+- **Local AI review loop** (`make ai-review-loop`) for fast feedback after `make ci`.
+- **CodeRabbit** for code reviews and AI suggestions (final external check).
 - **Snyk** for security scanning.
 
 ### Code Reviews & Approvals
 
+- Before marking a PR ready, run `make ci` and then `make ai-review-loop`.
 - All PRs require approval from **@kravalg** and **coderabbit ai** before merging.
 
 ---
