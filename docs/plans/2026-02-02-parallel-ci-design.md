@@ -54,7 +54,7 @@ After preflight, run these in parallel:
 
 The CI run is successful only if the final output includes:
 
-```
+```text
 ✅ CI checks successfully passed!
 ```
 
