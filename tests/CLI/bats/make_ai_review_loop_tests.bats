@@ -3,6 +3,15 @@
 load 'bats-support/load'
 load 'bats-assert/load'
 
+setup() {
+  if project_root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+    cd "$project_root"
+    return
+  fi
+
+  cd "$BATS_TEST_DIRNAME/../../.."
+}
+
 @test "make help includes ai-review-loop" {
   run make help
   assert_success
