@@ -51,8 +51,14 @@ claude_cmd="${AI_REVIEW_CLAUDE_CMD:-claude}"
 review_sandbox="${AI_REVIEW_REVIEW_SANDBOX:-read-only}"
 fix_sandbox="${AI_REVIEW_FIX_SANDBOX:-workspace-write}"
 
-read -r -a codex_flags <<< "${AI_REVIEW_CODEX_FLAGS:-}"
-read -r -a claude_flags <<< "${AI_REVIEW_CLAUDE_FLAGS:-}"
+codex_flags=()
+if [[ -n "${AI_REVIEW_CODEX_FLAGS:-}" ]]; then
+  read -r -a codex_flags <<< "$AI_REVIEW_CODEX_FLAGS"
+fi
+claude_flags=()
+if [[ -n "${AI_REVIEW_CLAUDE_FLAGS:-}" ]]; then
+  read -r -a claude_flags <<< "$AI_REVIEW_CLAUDE_FLAGS"
+fi
 
 ensure_codex_output_last_message() {
   if ! "$codex_cmd" exec --help 2>/dev/null | grep -q -- '--output-last-message'; then
@@ -201,10 +207,10 @@ run_review() {
     codex)
       local log_file
       log_file="${output_file}.log"
-      printf "%s" "$prompt" | "$codex_cmd" exec "${codex_flags[@]}" --sandbox "$review_sandbox" --output-last-message "$output_file" - >"$log_file" 2>&1
+      printf "%s" "$prompt" | "$codex_cmd" exec ${codex_flags[@]+"${codex_flags[@]}"} --sandbox "$review_sandbox" --output-last-message "$output_file" - >"$log_file" 2>&1
       ;;
     claude)
-      printf "%s" "$prompt" | "$claude_cmd" "${claude_flags[@]}" >"$output_file" 2>&1
+      printf "%s" "$prompt" | "$claude_cmd" ${claude_flags[@]+"${claude_flags[@]}"} >"$output_file" 2>&1
       ;;
     *)
       echo "Unknown agent: $agent" >&2
@@ -226,10 +232,10 @@ run_fix() {
     codex)
       local log_file
       log_file="${output_file}.log"
-      printf "%s" "$prompt" | "$codex_cmd" exec "${codex_flags[@]}" --sandbox "$fix_sandbox" --output-last-message "$output_file" - >"$log_file" 2>&1
+      printf "%s" "$prompt" | "$codex_cmd" exec ${codex_flags[@]+"${codex_flags[@]}"} --sandbox "$fix_sandbox" --output-last-message "$output_file" - >"$log_file" 2>&1
       ;;
     claude)
-      printf "%s" "$prompt" | "$claude_cmd" "${claude_flags[@]}" >"$output_file" 2>&1
+      printf "%s" "$prompt" | "$claude_cmd" ${claude_flags[@]+"${claude_flags[@]}"} >"$output_file" 2>&1
       ;;
     *)
       echo "Unknown agent: $agent" >&2
