@@ -4,7 +4,7 @@ Guidance for Claude Code (claude.ai/code) and other AI agents when working in th
 
 ## Project Overview
 
-VilnaCRM User Service — PHP 8.3/Symfony 7.2 microservice for user registration, authentication, and account management. Uses API Platform 4.1, MySQL (Doctrine ORM), OAuth 2.0, REST, and GraphQL. Architecture: Hexagonal (Ports & Adapters), DDD, CQRS.
+VilnaCRM User Service — PHP 8.3/Symfony 7.2 microservice for user registration, authentication, and account management. Uses API Platform 4.1, MongoDB (Doctrine ODM), OAuth 2.0, REST, and GraphQL. Architecture: Hexagonal (Ports & Adapters), DDD, CQRS.
 
 ## 🎯 Skills & Workflows
 
@@ -183,11 +183,11 @@ src/
 
 The codebase enforces strict architectural boundaries via Deptrac:
 
-| Layer              | Purpose                   | Contains                                                                                                   | Dependencies            |
-| ------------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------- |
-| **Domain**         | Pure business logic       | Entities, Value Objects, Aggregates, Events, Commands (interfaces), Repository interfaces                  | None (isolated)         |
-| **Application**    | Use cases & orchestration | Command Handlers, Event Subscribers, DTOs, Transformers, Processors, Resolvers                             | Domain + Infrastructure |
-| **Infrastructure** | External concerns         | Repository implementations (MySQL/Doctrine ORM), Message buses (Symfony), Doctrine types, Retry strategies | Domain + Application    |
+| Layer              | Purpose                   | Contains                                                                                                     | Dependencies            |
+| ------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------- |
+| **Domain**         | Pure business logic       | Entities, Value Objects, Aggregates, Events, Commands (interfaces), Repository interfaces                    | None (isolated)         |
+| **Application**    | Use cases & orchestration | Command Handlers, Event Subscribers, DTOs, Transformers, Processors, Resolvers                               | Domain + Infrastructure |
+| **Infrastructure** | External concerns         | Repository implementations (MongoDB/Doctrine ODM), Message buses (Symfony), Doctrine types, Retry strategies | Domain + Application    |
 
 **Rules**: Domain must stay framework-free. Application can use Symfony/API Platform. Infrastructure implements persistence/adapters.
 
@@ -212,9 +212,9 @@ The codebase enforces strict architectural boundaries via Deptrac:
 
 | Component        | Technology   | Location                             | Notes                                |
 | ---------------- | ------------ | ------------------------------------ | ------------------------------------ |
-| **Database**     | MySQL        | -                                    | Doctrine ORM                         |
+| **Database**     | MongoDB      | -                                    | Doctrine ODM                         |
 | **Custom Types** | ULID, UUID   | `Shared/Infrastructure/DoctrineType` | Custom field types                   |
-| **Mappings**     | XML          | `config/doctrine/*.orm.xml`          | Keep Domain entities annotation-free |
+| **Mappings**     | XML          | `config/doctrine/*.mongodb.xml`      | Keep Domain entities annotation-free |
 | **Resources**    | API Platform | `src/{Context}/Domain/Entity`        | Resource discovery enabled           |
 | **Filters**      | API Platform | `services.yaml`                      | Order, Search, Range, Date, Boolean  |
 
@@ -239,7 +239,7 @@ The codebase enforces strict architectural boundaries via Deptrac:
 
 ## 📐 Patterns
 
-- Define entities in `{Context}/Domain/Entity/`, map via `config/doctrine/{Entity}.orm.xml`
+- Define entities in `{Context}/Domain/Entity/`, map via `config/doctrine/{Entity}.mongodb.xml`
 - Add command + handler (implements `CommandInterface`/`CommandHandlerInterface`); handlers are auto-tagged
 - Use `AggregateRoot` for domain events; dispatch via event bus
 - Define custom API filters in `config/services.yaml` and tag with `api_platform.filter`
@@ -252,27 +252,29 @@ Run `make ci` before finishing any task. Checks include PHP CS Fixer, Psalm (+ s
 
 Key variables in `.env`/`.env.test`:
 
-| Variable    | Purpose                      | Example                              |
-| ----------- | ---------------------------- | ------------------------------------ |
-| `APP_ENV`   | Application environment      | `dev`, `test`, `prod`                |
-| `DB_URL`    | Database connection string   | `mysql://root:root@database:3306/db` |
-| `AWS_SQS_*` | AWS SQS message queue config | Various                              |
+| Variable    | Purpose                      | Example                                     |
+| ----------- | ---------------------------- | ------------------------------------------- |
+| `APP_ENV`   | Application environment      | `dev`, `test`, `prod`                       |
+| `DB_URL`    | Database connection string   | `mongodb://user:password@database:27017/db` |
+| `AWS_SQS_*` | AWS SQS message queue config | Various                                     |
 
 ## 📂 Directory Organization Conventions
 
 Place files in directories that match their class type. Each directory should contain ONLY the class type indicated by its name.
 
-| Directory Name   | Must Contain             | Example Files                            |
-| ---------------- | ------------------------ | ---------------------------------------- |
-| `Command/`       | Symfony Console Commands | `SeedDataCommand.php`                    |
-| `Factory/`       | Factory classes          | `UserFactory.php`, `OpenApiFactory.php`  |
-| `Validator/`     | Validator classes        | `EmailValidator.php`                     |
-| `Provider/`      | Provider classes         | `UserProvider.php`                       |
-| `EventListener/` | Event Listeners          | `ExceptionListener.php`                  |
-| `Enum/`          | PHP Enums                | `Requirement.php`, `AllowEmptyValue.php` |
-| `ValueObject/`   | Value Objects            | `Header.php`, `Parameter.php`            |
-| `Builder/`       | Builder classes          | `QueryParameterBuilder.php`              |
-| `Seeder/`        | Seeder classes           | `UserSeeder.php`, `OAuthSeeder.php`      |
+| Directory Name   | Must Contain              | Example Files                                         |
+| ---------------- | ------------------------- | ----------------------------------------------------- |
+| `Command/`       | Symfony Console Commands  | `SeedDataCommand.php`                                 |
+| `Factory/`       | Factory classes           | `UserFactory.php`, `OpenApiFactory.php`               |
+| `Validator/`     | Validator classes         | `EmailValidator.php`                                  |
+| `Provider/`      | Provider classes          | `UserProvider.php`                                    |
+| `EventListener/` | Event Listeners           | `ExceptionListener.php`                               |
+| `Enum/`          | PHP Enums                 | `Requirement.php`, `AllowEmptyValue.php`              |
+| `ValueObject/`   | Value Objects             | `Header.php`, `Parameter.php`                         |
+| `Builder/`       | Builder classes           | `QueryParameterBuilder.php`                           |
+| `Seeder/`        | Seeder classes            | `UserSeeder.php`, `OAuthSeeder.php`                   |
+| `DoctrineType/`  | Doctrine custom types     | `OAuth2ScopeType.php`, `DomainUuidType.php`           |
+| `Serializer/`    | Serializers & Normalizers | `UuidNormalizer.php`, `StringableArrayNormalizer.php` |
 
 **Event Listener Registration**: Register event listeners in `config/services.yaml` using tags, NOT via PHP attributes.
 

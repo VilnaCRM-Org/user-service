@@ -7,7 +7,7 @@ namespace App\Shared\Infrastructure\Fixture\Seeder;
 use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\User\Domain\Entity\UserInterface;
 use DateTimeImmutable;
-use Doctrine\DBAL\Connection;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use League\Bundle\OAuth2ServerBundle\Manager;
 use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
 use League\Bundle\OAuth2ServerBundle\Model\AuthorizationCode;
@@ -20,7 +20,7 @@ final readonly class SchemathesisOAuthSeeder
 {
     public function __construct(
         private ClientManagerInterface $clientManager,
-        private Connection $connection,
+        private DocumentManager $documentManager,
         private Manager\AuthorizationCodeManagerInterface $authorizationCodeManager
     ) {
     }
@@ -37,15 +37,19 @@ final readonly class SchemathesisOAuthSeeder
 
     public function seedAuthorizationCode(
         Client $client,
-        UserInterface $user
+        UserInterface $user,
+        ?string $authorizationCodeId = null
     ): void {
-        $this->connection->delete(
-            'oauth2_authorization_code',
-            ['identifier' => SchemathesisFixtures::AUTHORIZATION_CODE]
-        );
+        $authorizationCodeId ??= SchemathesisFixtures::AUTHORIZATION_CODE;
+        $existingAuthCode = $this->authorizationCodeManager->find($authorizationCodeId);
+
+        if ($existingAuthCode !== null) {
+            $this->documentManager->remove($existingAuthCode);
+            $this->documentManager->flush();
+        }
 
         $authorizationCode = new AuthorizationCode(
-            SchemathesisFixtures::AUTHORIZATION_CODE,
+            $authorizationCodeId,
             new DateTimeImmutable('+15 minutes'),
             $client,
             $user->getId(),

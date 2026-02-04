@@ -6,15 +6,15 @@ namespace App\Tests\Behat\UserContext\Input;
 
 /**
  * @psalm-suppress UnusedClass
- * @psalm-suppress PossiblyUnusedProperty
+ * @psalm-suppress UnusedProperty - Properties used via reflection in RequestInput::toArray()
  */
 final class UpdateUserInput extends RequestInput
 {
     public function __construct(
-        public readonly ?string $email = null,
-        public readonly ?string $initials = null,
-        public readonly ?string $oldPassword = null,
-        public readonly ?string $newPassword = null
+        private readonly ?string $email = null,
+        private readonly ?string $initials = null,
+        private readonly ?string $oldPassword = null,
+        private readonly ?string $newPassword = null
     ) {
     }
 }

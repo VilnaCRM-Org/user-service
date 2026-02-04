@@ -1,6 +1,6 @@
 # Repository Guidelines
 
-VilnaCRM User Service is a PHP 8.3+ microservice built with Symfony 7.2, API Platform 4.1, MySQL, and GraphQL. It manages user accounts and authentication (OAuth server, REST API, GraphQL) inside the VilnaCRM ecosystem. The project follows Hexagonal Architecture with DDD & CQRS patterns and includes comprehensive testing across unit, integration, E2E, and load suites.
+VilnaCRM User Service is a PHP 8.3+ microservice built with Symfony 7.3, API Platform 4.1, MongoDB, and GraphQL. It manages user accounts and authentication (OAuth server, REST API, GraphQL) inside the VilnaCRM ecosystem. The project follows Hexagonal Architecture with DDD & CQRS patterns and includes comprehensive testing across unit, integration, E2E, and load suites.
 
 **CRITICAL: Always use make commands or docker exec into the PHP container. Never run PHP commands directly on the host.**
 
@@ -126,8 +126,7 @@ The User Service handles user registration, authentication, password reset, and 
 1. `make build` (15-30 min, NEVER CANCEL)
 2. `make start` (5-10 min, includes database, Redis, LocalStack)
 3. `make install` (3-5 min, PHP dependencies)
-4. `make doctrine-migrations-migrate` (1-2 min)
-5. Verify: https://localhost/api/docs, https://localhost/api/graphql
+4. Verify: [https://localhost/api/docs](https://localhost/api/docs), [https://localhost/api/graphql](https://localhost/api/graphql)
 
 ### Essential Development Commands
 
@@ -175,10 +174,8 @@ The User Service handles user registration, authentication, password reset, and 
 
 ### Database & OAuth Commands
 
-- `make doctrine-migrations-migrate`
-- `make doctrine-migrations-generate`
-- `make create-oauth-client CLIENT_NAME=<name>`
-- `make load-fixtures`
+- `make create-oauth-client CLIENT_NAME=<name>` -- Create OAuth client
+- `make load-fixtures` -- Load database fixtures
 
 ### Specification Generation
 
@@ -217,7 +214,7 @@ This repository includes **AI-agnostic Skills** in `.claude/skills/`. Always use
 - **quality-standards**: Protected thresholds overview
 - **complexity-management**: Reduce cyclomatic complexity
 - **openapi-development**: OpenAPI endpoint factories / transformers
-- **database-migrations**: Doctrine ORM/MySQL migrations
+- **database-migrations**: Create and manage database schema changes using Doctrine MongoDB ODM
 - **documentation-creation**: Create initial documentation suite from scratch
 - **documentation-sync**: Keep docs synchronized with code changes
 - **api-platform-crud**: Add REST resources with CRUD
@@ -251,7 +248,7 @@ Infrastructure → Application → Domain
 - **User Context**: User registration/update flows.
   - Application (can use Symfony/API Platform): Commands, Command Handlers (`CommandHandlerInterface`), DTOs with YAML validation, Processors/Resolvers, Event Subscribers (`DomainEventSubscriberInterface`).
   - Domain (NO framework imports): Entities (User), Value Objects (Email, Password), Domain Events, Repository interfaces, Domain exceptions.
-  - Infrastructure: MySQL repositories, XML mappings under `config/doctrine/`.
+  - Infrastructure: MongoDB repositories, XML mappings under `config/doctrine/`.
 - **OAuth Context**: OAuth client and token operations.
   - Application: Commands/Handlers, DTOs, validators, processors/resolvers.
   - Domain: Pure entities/value objects/events/exceptions.
@@ -328,9 +325,9 @@ Quick reference:
 
 ### API Platform & Database
 
-- Database: MySQL via Doctrine ORM
+- Database: MongoDB via Doctrine ODM
 - Custom Types: ULID, Domain UUID (`Shared/Infrastructure/DoctrineType`)
-- Mappings: XML in `config/doctrine/*.orm.xml`
+- Mappings: XML in `config/doctrine/*.mongodb.xml`
 - Resource discovery: Entities in `src/{Context}/Domain/Entity`
 - Filters: Order, Search, Range, Date, Boolean (see `services.yaml`)
 - Formats: JSON-LD, JSON Problem (RFC 7807), GraphQL
