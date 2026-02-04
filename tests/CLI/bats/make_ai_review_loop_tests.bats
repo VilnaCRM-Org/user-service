@@ -10,7 +10,7 @@ load 'bats-assert/load'
 }
 
 @test "ai-review-loop fails with helpful message when Codex command is missing" {
-  AI_REVIEW_CODEX_CMD=codex-missing run ./scripts/ai-review-loop.sh
+  AI_REVIEW_CODEX_CMD=codex-missing AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" run ./scripts/ai-review-loop.sh
   assert_failure
   assert_output --partial "Codex CLI (codex) is required"
 }
