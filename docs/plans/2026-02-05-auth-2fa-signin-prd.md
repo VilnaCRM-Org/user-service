@@ -54,7 +54,7 @@ We need to support cookie-based and JWT-based authentication while adding option
 
 - Session cookie uses `HttpOnly`, `Secure`, `SameSite=Lax`.
 - `remember_me=false` uses short fixed TTL; `remember_me=true` uses long TTL.
-- Refresh token rotation with one-time grace reuse (30–60 seconds).
+- Refresh token rotation with one-time grace reuse (default 60 seconds, configurable).
 - 2FA required for JWT issuance when 2FA is enabled.
 
 ### Reliability
@@ -90,5 +90,5 @@ We need to support cookie-based and JWT-based authentication while adding option
 
 ## Open Questions
 
-- Final grace window duration (default 60 seconds unless otherwise specified).
+- Grace window duration (default 60 seconds, configurable range if needed).
 - Default short TTL value for non-remembered sessions.
