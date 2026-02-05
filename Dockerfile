@@ -13,7 +13,8 @@ RUN apk add --no-cache \
     gettext \
     git \
     curl \
-    autoconf
+    autoconf \
+    cyrus-sasl-dev
 
 ARG STABILITY=stable
 ENV STABILITY=${STABILITY}
