@@ -76,25 +76,8 @@ final readonly class MetricDimensions implements IteratorAggregate, Countable
 
     private function assertUniqueKeys(MetricDimension ...$dimensions): void
     {
-        // Extract all dimension keys
-        $keys = [];
-        foreach ($dimensions as $dimension) {
-            $keys[] = $dimension->key();
-        }
-
-        // Count occurrences of each key
-        $keyCounts = [];
-        foreach ($keys as $key) {
-            $keyCounts[$key] = ($keyCounts[$key] ?? 0) + 1;
-        }
-
-        // Find keys that appear more than once
-        $duplicates = [];
-        foreach ($keyCounts as $key => $count) {
-            if ($count > 1) {
-                $duplicates[] = $key;
-            }
-        }
+        $keys = $this->extractKeys($dimensions);
+        $duplicates = $this->findDuplicateKeys($keys);
 
         if ($duplicates !== []) {
             throw new InvalidArgumentException(sprintf(
@@ -102,5 +85,33 @@ final readonly class MetricDimensions implements IteratorAggregate, Countable
                 implode(', ', $duplicates)
             ));
         }
+    }
+
+    /**
+     * @param array<int, MetricDimension> $dimensions
+     *
+     * @return list<string>
+     */
+    private function extractKeys(array $dimensions): array
+    {
+        return array_map(
+            static fn (MetricDimension $dimension): string => $dimension->key(),
+            $dimensions
+        );
+    }
+
+    /**
+     * @param list<string> $keys
+     *
+     * @return list<string>
+     */
+    private function findDuplicateKeys(array $keys): array
+    {
+        $keyCounts = array_count_values($keys);
+
+        return array_keys(array_filter(
+            $keyCounts,
+            static fn (int $count): bool => $count > 1
+        ));
     }
 }

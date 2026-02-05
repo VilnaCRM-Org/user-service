@@ -88,7 +88,9 @@ final class EmfLogFormatterTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, array<string, array<array<string, array<int, array<int, string>|string>|int|string>>|int>|int|string>
+     * @return array<array<array<array<string|array<array<string>>>>|int>|int|string>
+     *
+     * @psalm-return array{_aws: array{Timestamp: 1702425600000, CloudWatchMetrics: list{array{Namespace: 'UserService/BusinessMetrics', Dimensions: list{list{'Endpoint', 'Operation'}}, Metrics: list{array{Name: 'CustomersCreated', Unit: 'Count'}}}}}, Endpoint: 'Customer', Operation: 'create', CustomersCreated: 1}
      */
     private function getExpectedFormattedPayload(): array
     {

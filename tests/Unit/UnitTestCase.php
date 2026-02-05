@@ -83,7 +83,7 @@ abstract class UnitTestCase extends TestCase
         callable|array|bool|float|int|object|string|null $returnValue,
         ?array &$returnValues,
         array $args
-    ): mixed {
+    ): array|bool|float|int|object|string|null {
         if (is_callable($returnValue)) {
             return $returnValue(...$args);
         }

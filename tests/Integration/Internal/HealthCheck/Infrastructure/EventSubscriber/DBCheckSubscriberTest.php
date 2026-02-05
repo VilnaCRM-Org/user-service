@@ -7,11 +7,11 @@ namespace App\Tests\Integration\Internal\HealthCheck\Infrastructure\EventSubscri
 use App\Internal\HealthCheck\Domain\Event\HealthCheckEvent;
 use App\Internal\HealthCheck\Infrastructure\EventSubscriber\DBCheckSubscriber;
 use App\Tests\Integration\IntegrationTestCase;
-use Doctrine\DBAL\Connection;
+use Doctrine\ODM\MongoDB\DocumentManager;
 
 final class DBCheckSubscriberTest extends IntegrationTestCase
 {
-    private Connection $connection;
+    private DocumentManager $documentManager;
     private DBCheckSubscriber $subscriber;
 
     #[\Override]
@@ -19,10 +19,10 @@ final class DBCheckSubscriberTest extends IntegrationTestCase
     {
         parent::setUp();
 
-        $this->connection = $this->container->get(
-            'doctrine.dbal.default_connection'
+        $this->documentManager = $this->container->get(
+            'doctrine_mongodb.odm.default_document_manager'
         );
-        $this->subscriber = new DBCheckSubscriber($this->connection);
+        $this->subscriber = new DBCheckSubscriber($this->documentManager);
     }
 
     public function testOnHealthCheck(): void
@@ -30,10 +30,13 @@ final class DBCheckSubscriberTest extends IntegrationTestCase
         $event = new HealthCheckEvent();
         $this->subscriber->onHealthCheck($event);
 
-        $result = $this->connection->executeQuery('SELECT 1');
-        $fetched = $result->fetchOne();
+        $dbName = $this->documentManager->getConfiguration()->getDefaultDB();
+        $result = $this->documentManager->getClient()
+            ->selectDatabase($dbName)
+            ->command(['ping' => 1]);
+        $resultArray = $result->toArray()[0];
 
-        $this->assertEquals(1, $fetched);
+        $this->assertEquals(1, $resultArray['ok']);
     }
 
     public function testGetSubscribedEvents(): void

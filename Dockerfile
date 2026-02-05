@@ -1,7 +1,7 @@
 FROM composer/composer:2-bin AS composer
-FROM mlocati/php-extension-installer:2.2 AS php_extension_installer
+FROM mlocati/php-extension-installer:2.7 AS php_extension_installer
 
-FROM dunglas/frankenphp:1-php8.3.17-alpine AS frankenphp_base
+FROM dunglas/frankenphp:1-php8.4-alpine AS frankenphp_base
 
 WORKDIR /srv/app
 
@@ -12,7 +12,8 @@ RUN apk add --no-cache \
     file \
     gettext \
     git \
-    curl
+    curl \
+    autoconf
 
 ARG STABILITY=stable
 ENV STABILITY=${STABILITY}
@@ -27,14 +28,21 @@ ENV PATH="${PATH}:/root/.composer/vendor/bin"
 
 RUN set -eux; \
     install-php-extensions \
+        @composer \
         apcu \
         intl \
         opcache \
         zip \
-        pdo_mysql \
-        redis-6.0.2 \
+        mongodb \
         openssl \
-        xsl
+        xsl \
+        redis \
+    && apk add --no-cache \
+        icu-libs \
+        libzip \
+        libxslt \
+        libsasl \
+        snappy
 
 COPY --link infrastructure/docker/php/conf.d/app.ini $PHP_INI_DIR/conf.d/
 

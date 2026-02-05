@@ -3,7 +3,7 @@ services:
     alias: 'security.token_storage'
     public: true
 
-  App\Tests\Behat\OAuthContext\OAuthContext:
+  App\Tests\Behat\OAuthContext\OAuthAuthenticationContext:
     arguments:
       $tokenStorage: '@security.token_storage'
 

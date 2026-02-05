@@ -4,13 +4,26 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\OAuthContext\Input;
 
+/**
+ * @psalm-suppress UnusedProperty - Client credentials stored for Authorization header, not sent in request body
+ */
 final class ClientCredentialsGrantInput extends ObtainAccessTokenInput
 {
     public function __construct(
-        public string $client_id,
-        public string $client_secret,
+        private string $client_id,
+        private string $client_secret,
         ?string $grant_type = null
     ) {
         parent::__construct($grant_type);
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|object|string|null>
+     */
+    #[\Override]
+    public function toArray(): array
+    {
+        // Client credentials are sent via Authorization header, not in body
+        return ['grant_type' => $this->getGrantType()];
     }
 }

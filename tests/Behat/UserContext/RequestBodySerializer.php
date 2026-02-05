@@ -38,14 +38,14 @@ final class RequestBodySerializer
     private function serializeRequestInput(RequestInput $requestBody): string
     {
         $payload = array_filter(
-            get_object_vars($requestBody),
+            $requestBody->toArray(),
             static fn ($value): bool => self::isNonEmptyValue($value)
         );
 
         return json_encode((object) $payload, JSON_THROW_ON_ERROR);
     }
 
-    private static function isNonEmptyValue(mixed $value): bool
+    private static function isNonEmptyValue(array|bool|float|int|object|string|null $value): bool
     {
         return $value !== null && (!is_string($value) || $value !== '');
     }
