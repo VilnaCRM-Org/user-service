@@ -202,7 +202,7 @@ final class RedisTokenRepositoryTest extends UnitTestCase
         return $item;
     }
 
-    private function expiry(CacheItem $item): mixed
+    private function expiry(CacheItem $item): \DateTimeInterface|int|float|null
     {
         $expiry = new ReflectionProperty(CacheItem::class, 'expiry');
         $this->makeAccessible($expiry);

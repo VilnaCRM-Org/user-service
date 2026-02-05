@@ -20,7 +20,7 @@ final class OtherDomainEvent extends DomainEvent
     }
 
     /**
-     * @param array<string, mixed> $body
+     * @param array<string, array|bool|float|int|object|string|null> $body
      */
     #[\Override]
     public static function fromPrimitives(

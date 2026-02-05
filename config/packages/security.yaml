@@ -7,7 +7,7 @@ security:
 
   providers:
     app_user_provider:
-      entity:
+      mongodb:
         class: App\User\Domain\Entity\User
         property: email
 

@@ -6,14 +6,14 @@ namespace App\Tests\Behat\UserGraphQLContext\Input;
 
 /**
  * @psalm-suppress UnusedClass
- * @psalm-suppress PossiblyUnusedProperty
+ * @psalm-suppress UnusedProperty - Properties used via reflection in GraphQLMutationInput::toArray()
  */
 final readonly class ConfirmPasswordResetGraphQLMutationInput extends
     GraphQLMutationInput
 {
     public function __construct(
-        public string $token,
-        public string $newPassword
+        private string $token,
+        private string $newPassword
     ) {
     }
 }

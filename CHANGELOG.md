@@ -1,3 +1,12 @@
+# [0.8.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.7.0...v0.8.0) (2026-02-04)
+
+
+### Features
+
+* migrate database from MariaDB to MongoDB with Doctrine ODM ([#242](https://github.com/VilnaCRM-Org/user-service/issues/242)) ([73d0012](https://github.com/VilnaCRM-Org/user-service/commit/73d0012dc155c7bc4a3fab03589b114ead61159b))
+
+
+
 # [0.7.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.6.0...v0.7.0) (2026-01-24)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * add Query Performance Analysis skill with examples and documentation updates ([#233](https://github.com/VilnaCRM-Org/user-service/issues/233)) ([4c6ab14](https://github.com/VilnaCRM-Org/user-service/commit/4c6ab144ee474f0a1cba59f2a2914752d44c6fa2))
-
-
-
-# [0.3.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.2.0...v0.3.0) (2026-01-13)
-
-
-### Features
-
-* add structurizr-architecture-sync skill ([#234](https://github.com/VilnaCRM-Org/user-service/issues/234)) ([e16d043](https://github.com/VilnaCRM-Org/user-service/commit/e16d043ab98414aa89d97fb594662b519a6795e8))
 
 
 

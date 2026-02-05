@@ -14,14 +14,6 @@ interface PasswordResetTokenRepositoryInterface
 
     public function findByToken(string $token): ?PasswordResetTokenInterface;
 
-    public function findByUserID(
-        string $userID
-    ): ?PasswordResetTokenInterface;
-
-    public function delete(
-        PasswordResetTokenInterface $passwordResetToken
-    ): void;
-
     public function deleteAll(): void;
 
     /**

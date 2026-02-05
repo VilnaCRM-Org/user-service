@@ -8,7 +8,7 @@ use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
@@ -24,13 +24,15 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
  * - Delegates ALL persistence operations to inner repository
  *
  * Decorator Pattern:
- * - Wraps MariaDBUserRepository
+ * - Wraps MongoDBUserRepository
  * - Adds caching layer without modifying persistence logic
  * - Transparent to consumers (implements same interface)
  *
  * Cache Invalidation:
  * - Handled by UserCacheInvalidationSubscriber via domain events
  * - This class only reads from cache, never invalidates
+ *
+ * @psalm-suppress UnusedClass
  */
 final class CachedUserRepository implements UserRepositoryInterface
 {
@@ -42,7 +44,7 @@ final class CachedUserRepository implements UserRepositoryInterface
         private TagAwareCacheInterface $cache,
         private CacheKeyBuilder $cacheKeyBuilder,
         private LoggerInterface $logger,
-        private EntityManagerInterface $entityManager
+        private DocumentManager $documentManager
     ) {
     }
 
@@ -68,27 +70,18 @@ final class CachedUserRepository implements UserRepositoryInterface
      * Invalidation: Via UserCacheInvalidationSubscriber on update/delete
      * Tags: [user, user.{id}]
      * Notes: Read-heavy operation, tolerates brief staleness
+     * Note: This is a Doctrine method, not part of UserRepositoryInterface.
+     * MongoDB ODM doesn't support lock modes, so we delegate to findById for caching.
+     *
+     * @psalm-suppress UnusedParam
      */
-    #[\Override]
     public function find(
         mixed $id,
         ?int $lockMode = null,
         ?int $lockVersion = null
     ): ?object {
-        $cacheKey = $this->cacheKeyBuilder->buildUserKey((string) $id);
-
-        return $this->fetchUser(
-            $cacheKey,
-            fn (ItemInterface $item) => $this->loadUserFromDb(
-                $id,
-                $lockMode,
-                $lockVersion,
-                $cacheKey,
-                $item
-            ),
-            fn () => $this->inner->find($id, $lockMode, $lockVersion),
-            1.0
-        );
+        // MongoDB ODM doesn't support lock modes, use findById instead
+        return $this->findById((string) $id);
     }
 
     /**
@@ -199,28 +192,6 @@ final class CachedUserRepository implements UserRepositoryInterface
     }
 
     /**
-     * Load user from database and configure cache item
-     */
-    private function loadUserFromDb(
-        mixed $id,
-        ?int $lockMode,
-        ?int $lockVersion,
-        string $cacheKey,
-        ItemInterface $item
-    ): ?object {
-        $item->expiresAfter(self::TTL_BY_ID);  // 10 minutes TTL
-        $item->tag(['user', "user.{$id}"]);
-
-        $this->logger->info('Cache miss - loading user from database', [
-            'cache_key' => $cacheKey,
-            'user_id' => $id,
-            'operation' => 'cache.miss',
-        ]);
-
-        return $this->inner->find($id, $lockMode, $lockVersion);
-    }
-
-    /**
      * Load user by ID from database and configure cache item
      */
     private function loadUserByIdFromDb(
@@ -299,19 +270,22 @@ final class CachedUserRepository implements UserRepositoryInterface
             return $fallback();
         }
 
-        return $this->getManagedEntityIfExists($user) ?? $user;
+        return $this->getManagedDocumentIfExists($user) ?? $user;
     }
 
-    private function getManagedEntityIfExists(UserInterface $cached): ?UserInterface
+    /**
+     * Get managed MongoDB document if it exists in the DocumentManager's unit of work.
+     *
+     * MongoDB ODM doesn't have tryGetById like ORM, so we check if the document is managed.
+     */
+    private function getManagedDocumentIfExists(UserInterface $cached): ?UserInterface
     {
-        $managed = $this->entityManager
-            ->getUnitOfWork()
-            ->tryGetById($cached->getId(), User::class);
-
-        if ($managed instanceof User) {
-            return $managed;
+        // Check if document is already managed by DocumentManager
+        if ($this->documentManager->contains($cached)) {
+            return $cached;
         }
 
+        // Refresh from database to get managed instance
         return $this->inner->findById($cached->getId());
     }
 

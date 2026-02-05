@@ -442,6 +442,7 @@ paths:
             type: integer
             default: 30
             minimum: 1
+            maximum: 100
           style: form
           explode: false
     post:
@@ -1612,6 +1613,19 @@ components:
               message:
                 type: string
                 description: 'The message associated with the violation'
+              code:
+                type: string
+                description: 'The code of the violation'
+              hint:
+                type: string
+                description: 'An extra hint to understand the violation'
+              payload:
+                type: object
+                additionalProperties: true
+                description: 'The serialized payload of the violation'
+            required:
+              - propertyPath
+              - message
         detail:
           readOnly: true
           type: string
@@ -1660,13 +1674,19 @@ components:
         title:
           readOnly: true
           description: 'A short, human-readable summary of the problem.'
-          type: string
+          type:
+            - string
+            - 'null'
         detail:
           readOnly: true
           description: 'A human-readable explanation specific to this occurrence of the problem.'
-          type: string
+          type:
+            - string
+            - 'null'
         status:
-          type: number
+          type:
+            - number
+            - 'null'
           examples:
             - 404
           default: 400

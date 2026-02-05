@@ -6,12 +6,12 @@ namespace App\Tests\Behat\UserGraphQLContext\Input;
 
 /**
  * @psalm-suppress UnusedClass
- * @psalm-suppress PossiblyUnusedProperty
+ * @psalm-suppress UnusedProperty - Properties used via reflection in GraphQLMutationInput::toArray()
  */
 final readonly class ResendEmailGraphQLMutationInput extends
     GraphQLMutationInput
 {
-    public function __construct(public string $id)
+    public function __construct(private string $id)
     {
     }
 }

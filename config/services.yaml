@@ -129,14 +129,9 @@ services:
       $tokenLength: '%env(int:PASSWORD_RESET_TOKEN_LENGTH)%'
       $expirationTimeInHours: '%env(int:PASSWORD_RESET_TOKEN_EXPIRATION_HOURS)%'
 
-  App\User\Infrastructure\Repository\MariaDBUserRepository:
+  App\User\Infrastructure\Repository\MongoDBUserRepository:
     arguments:
       $batchSize: '%env(int:USER_INSERT_BATCH_SIZE)%'
-
-  App\User\Infrastructure\Repository\CachedUserRepository:
-    arguments:
-      $inner: '@App\User\Infrastructure\Repository\MariaDBUserRepository'
-      $cache: '@cache.user'
 
   App\User\Infrastructure\EventListener\SchemathesisCleanupListener:
     arguments:
@@ -144,9 +139,18 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.terminate }
 
+  # Cached User Repository (decorator with Redis caching)
+  App\User\Infrastructure\Repository\CachedUserRepository:
+    arguments:
+      $inner: '@App\User\Infrastructure\Repository\MongoDBUserRepository'
+      $cache: '@cache.user'
+
+  # Alias interface to cached repository
   App\User\Domain\Repository\UserRepositoryInterface:
     alias: App\User\Infrastructure\Repository\CachedUserRepository
-    public: true
+
+  App\User\Domain\Repository\PasswordResetTokenRepositoryInterface:
+    alias: App\User\Infrastructure\Repository\MongoDBPasswordResetTokenRepository
 
   App\User\Application\EventSubscriber\PasswordResetEmailSentEventSubscriber:
     arguments:
@@ -186,3 +190,23 @@ services:
         credentials:
           key: '%env(AWS_SQS_KEY)%'
           secret: '%env(AWS_SQS_SECRET)%'
+
+  # OAuth ODM Persistence Managers
+  App\OAuth\Infrastructure\Manager\AccessTokenManager:
+    arguments:
+      $persistAccessToken: '%env(bool:OAUTH_PERSIST_ACCESS_TOKEN)%'
+
+  League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface:
+    alias: App\OAuth\Infrastructure\Manager\ClientManager
+
+  League\Bundle\OAuth2ServerBundle\Manager\AccessTokenManagerInterface:
+    alias: App\OAuth\Infrastructure\Manager\AccessTokenManager
+
+  League\Bundle\OAuth2ServerBundle\Manager\RefreshTokenManagerInterface:
+    alias: App\OAuth\Infrastructure\Manager\RefreshTokenManager
+
+  League\Bundle\OAuth2ServerBundle\Manager\AuthorizationCodeManagerInterface:
+    alias: App\OAuth\Infrastructure\Manager\AuthorizationCodeManager
+
+  League\Bundle\OAuth2ServerBundle\Service\CredentialsRevokerInterface:
+    alias: App\OAuth\Infrastructure\Service\CredentialsRevoker
