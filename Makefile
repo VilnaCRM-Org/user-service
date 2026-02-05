@@ -265,12 +265,12 @@ load-fixtures: ## Build the DB, control the schema validity, load fixtures and c
 
 reset-db: ## Recreate the database schema for ephemeral test runs
 	@echo "Clearing MongoDB metadata cache..."
-	@$(SYMFONY_TEST_ENV) doctrine:mongodb:cache:clear-metadata 2>&1 || true
+	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata 2>&1 || true
 	@echo "Recreating MongoDB schema..."
-	@$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
-	@$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:create
+	@$(SYMFONY) doctrine:mongodb:schema:drop 2>&1 || true
+	@$(SYMFONY) doctrine:mongodb:schema:create
 	@echo "Seeding Schemathesis test data..."
-	@$(EXEC_PHP_TEST_ENV) php bin/console app:seed-schemathesis-data
+	@$(EXEC_PHP) php bin/console app:seed-schemathesis-data
 	@echo "✅ Database reset complete"
 
 coverage-html: ## Create the code coverage report with PHPUnit
@@ -289,10 +289,10 @@ openapi-diff: generate-openapi-spec ## Compare the generated OpenAPI spec agains
 	./scripts/openapi-diff.sh $(or $(base_ref),origin/main)
 
 schemathesis-validate: reset-db generate-openapi-spec ## Validate the running API against the OpenAPI spec with Schemathesis
-	$(EXEC_PHP_TEST_ENV) bin/console app:seed-schemathesis-data
+	$(EXEC_PHP) bin/console app:seed-schemathesis-data
 	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'
-	$(EXEC_PHP_TEST_ENV) bin/console app:seed-schemathesis-data
-	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --exclude-operation-id api_users_idresend-confirmation-email_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'
+	$(EXEC_PHP) bin/console app:seed-schemathesis-data
+	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'
 
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec
