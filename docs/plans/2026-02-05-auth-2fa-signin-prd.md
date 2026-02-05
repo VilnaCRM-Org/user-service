@@ -56,6 +56,8 @@ We need to support cookie-based and JWT-based authentication while adding option
 - `remember_me=false` uses short fixed TTL; `remember_me=true` uses long TTL.
 - Refresh token rotation with one-time grace reuse (default 60 seconds, configurable).
 - 2FA required for JWT issuance when 2FA is enabled.
+- Rate limit sign-in and 2FA verification endpoints (per IP and per account), with temporary lockout/backoff and audit logging.
+- Exempt health checks from authentication throttling.
 
 ### Reliability
 
