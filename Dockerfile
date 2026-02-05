@@ -80,9 +80,6 @@ RUN apk add --no-cache \
     bats \
     bc
 
-# Install go-task/task for parallel CI execution
-RUN sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
-
 RUN curl -sS https://get.symfony.com/cli/installer | bash \
  && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
 
