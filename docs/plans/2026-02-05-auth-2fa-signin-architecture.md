@@ -85,4 +85,4 @@ A kernel request listener:
 
 ## References
 
-- Existing sign-in design doc: `docs/plans/2026-02-04-auth-2fa-signin-design.md`.
+- Related specification: `docs/plans/2026-02-05-auth-2fa-signin-prd.md`.
