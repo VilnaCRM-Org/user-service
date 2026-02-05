@@ -28,12 +28,12 @@ Checks run in two stages:
 
 Parallel stage groups:
 
-| Group               | Tasks                                                                        | Dependency                  |
-| ------------------- | ---------------------------------------------------------------------------- | --------------------------- |
-| **Static Analysis** | composer-validate, check-requirements, check-security, psalm, psalm-security | None (fully parallel)       |
-| **Architecture**    | deptrac                                                                      | None                        |
-| **Tests + OpenAPI** | unit-tests, integration-tests, behat, openapi-diff, spectral, schemathesis   | setup-test-db first         |
-| **Mutation**        | infection                                                                    | None                        |
+| Group               | Tasks                                                                        | Dependency            |
+| ------------------- | ---------------------------------------------------------------------------- | --------------------- |
+| **Static Analysis** | composer-validate, check-requirements, check-security, psalm, psalm-security | None (fully parallel) |
+| **Architecture**    | deptrac                                                                      | None                  |
+| **Tests + OpenAPI** | unit-tests, integration-tests, behat, openapi-diff, spectral, schemathesis   | setup-test-db first   |
+| **Mutation**        | infection                                                                    | None                  |
 
 ### AI-Friendly Output
 
@@ -74,11 +74,11 @@ Repeat Steps 2-4 until success message appears.
 
 ## Alternative Commands
 
-| Command              | Description                                 |
-| -------------------- | ------------------------------------------- |
-| `make ci`            | Run parallel CI (default, faster)           |
-| `make ci-sequential` | Run sequential CI (fallback)                |
-| `make ci-preflight`  | Run mutating preflight checks only          |
+| Command              | Description                        |
+| -------------------- | ---------------------------------- |
+| `make ci`            | Run parallel CI (default, faster)  |
+| `make ci-sequential` | Run sequential CI (fallback)       |
+| `make ci-preflight`  | Run mutating preflight checks only |
 
 ## Constraints (Parameters)
 
