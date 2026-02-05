@@ -1,11 +1,8 @@
 # [0.8.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.7.0...v0.8.0) (2026-02-04)
 
-
 ### Features
 
-* migrate database from MariaDB to MongoDB with Doctrine ODM ([#242](https://github.com/VilnaCRM-Org/user-service/issues/242)) ([73d0012](https://github.com/VilnaCRM-Org/user-service/commit/73d0012dc155c7bc4a3fab03589b114ead61159b))
-
-
+- migrate database from MariaDB to MongoDB with Doctrine ODM ([#242](https://github.com/VilnaCRM-Org/user-service/issues/242)) ([73d0012](https://github.com/VilnaCRM-Org/user-service/commit/73d0012dc155c7bc4a3fab03589b114ead61159b))
 
 # [0.7.0](https://github.com/VilnaCRM-Org/user-service/compare/v0.6.0...v0.7.0) (2026-01-24)
 
