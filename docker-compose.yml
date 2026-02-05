@@ -65,19 +65,31 @@ services:
       - ./:/srv/app
 
   database:
-    image: mariadb:11.4
+    image: mongo:8.0
     environment:
-      MYSQL_DATABASE: db
-      MYSQL_ROOT_PASSWORD: root
-      hostname: database
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-secret}
     ports:
-      - '3306:3306'
+      - '${MONGODB_PORT:-27017}:27017'
     volumes:
-      - db_data:/var/lib/mysql
+      - mongodb_data:/data/db
     healthcheck:
+      test:
+        [
+          'CMD',
+          'mongosh',
+          '-u',
+          '${MONGODB_USER:-root}',
+          '-p',
+          '${MONGODB_PASSWORD:-secret}',
+          '--authenticationDatabase',
+          'admin',
+          '--eval',
+          'db.runCommand({ ping: 1 }).ok',
+        ]
       interval: 10s
+      timeout: 5s
       retries: 10
-      test: ['CMD', 'mariadb', '-h', 'localhost', '-u', 'root', '-proot', '-e', 'SELECT 1']
 
   redis:
     image: redis:8.0.0-alpine
@@ -87,4 +99,4 @@ services:
 volumes:
   caddy_data:
   caddy_config:
-  db_data:
+  mongodb_data:

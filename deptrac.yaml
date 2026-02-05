@@ -27,9 +27,11 @@ parameters:
     - name: Infrastructure
       collectors:
         - type: className
-          regex: '.*App\\User\\Infrastructure\\(Factory|Repository|Service|Decoder|Extractor|Evaluator|EventListener|Publisher).*'
+          regex: '.*App\\User\\Infrastructure\\(Factory|Repository|Decoder|Extractor|Evaluator|EventListener|Publisher).*'
         - type: className
-          regex: '.*App\\Shared\\Infrastructure\\(Bus|DoctrineType|RetryStrategy|Transformer|Factory|Command|Fixture|Observability|EventDispatcher|Cache).*'
+          regex: '.*App\\OAuth\\Infrastructure\\(DoctrineType|Manager|Revoker|Serializer).*'
+        - type: className
+          regex: '.*App\\Shared\\Infrastructure\\(Bus|DoctrineType|RetryStrategy|Transformer|Factory|Command|Fixture|Observability|EventDispatcher|Cache|Serializer).*'
         - type: className
           regex: '.*App\\Internal\\HealthCheck\\Infrastructure\\.*'
     - name: Symfony

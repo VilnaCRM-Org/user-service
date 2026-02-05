@@ -10,7 +10,7 @@ LOAD_TEST_CONFIG = tests/Load/config.prod.json
 SYMFONY_BIN   = symfony
 DOCKER        = docker
 DOCKER_COMPOSE = docker compose
-SCHEMATHESIS_IMAGE = schemathesis/schemathesis:latest
+SCHEMATHESIS_IMAGE = schemathesis/schemathesis:4.9.5
 
 # Executables
 EXEC_PHP      = $(DOCKER_COMPOSE) exec php
@@ -34,6 +34,11 @@ INFECTION     = ./vendor/bin/infection
 .DEFAULT_GOAL = help
 .RECIPEPREFIX +=
 .PHONY: $(filter-out vendor node_modules,$(MAKECMDGOALS))
+.PHONY: start all clean test
+
+all: ci
+clean: purge
+test: all-tests
 
 # Conditional execution based on CI environment variable
 EXEC_ENV ?= $(EXEC_PHP_TEST_ENV)
@@ -149,9 +154,10 @@ tests-with-coverage: ## Run tests with coverage
 
 setup-test-db: ## Create database for testing purposes
 	$(SYMFONY_TEST_ENV) c:c
-	$(SYMFONY_TEST_ENV) doctrine:database:drop --force --if-exists
-	$(SYMFONY_TEST_ENV) doctrine:database:create
-	$(SYMFONY_TEST_ENV) doctrine:migrations:migrate --no-interaction
+	@echo "Recreating MongoDB schema for testing..."
+	@$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
+	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:create
+	@echo "✅ Test database ready"
 
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 
@@ -193,12 +199,6 @@ infection: ## Run mutations test.
 create-oauth-client: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(clientName)'
 
-doctrine-migrations-migrate: ## Executes a migration to a specified version or the latest available version
-	$(SYMFONY) d:m:m --no-interaction
-
-doctrine-migrations-generate: ## Generates a blank migration class
-	$(SYMFONY) d:m:g
-
 cache-clear: ## Clears and warms up the application cache for a given environment and debug mode
 	$(SYMFONY) c:c
 
@@ -233,7 +233,7 @@ logs: ## Show all logs
 new-logs: ## Show live logs
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
-start: up doctrine-migrations-migrate build-k6-docker build-spectral-docker ## Start docker
+start: up build-k6-docker build-spectral-docker ## Start docker
 
 ps: ## Check docker containers
 	$(DOCKER_COMPOSE) ps
@@ -244,20 +244,35 @@ stop: ## Stop docker and the Symfony binary server
 commands: ## List all Symfony commands
 	@$(SYMFONY) list
 
+doctrine-migrations-migrate: ## Apply database migrations (MongoDB ODM uses schema management instead)
+	@echo "Note: MongoDB ODM does not use traditional migrations."
+	@echo "Schema is managed via doctrine:mongodb:schema:create/update commands."
+	@echo "For test database setup, use: make setup-test-db"
+
+doctrine-migrations-generate: ## Generate migration file (MongoDB ODM uses schema management instead)
+	@echo "Note: MongoDB ODM does not use traditional migrations."
+	@echo "Schema changes are managed automatically via Doctrine ODM mappings."
+	@echo "To update schema: make setup-test-db (for tests) or manually run doctrine:mongodb:schema:update"
+
 load-fixtures: ## Build the DB, control the schema validity, load fixtures and check the migration status
-	@$(SYMFONY) doctrine:cache:clear-metadata
-	@$(SYMFONY) doctrine:database:create --if-not-exists
-	@$(SYMFONY) doctrine:schema:drop --force
-	@$(SYMFONY) doctrine:schema:create
-	@$(SYMFONY) doctrine:schema:validate
-	@$(SYMFONY) d:f:l
+	@echo "Clearing MongoDB metadata cache..."
+	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata
+	@echo "Recreating MongoDB schema..."
+	@$(SYMFONY) doctrine:mongodb:schema:drop 2>&1 || true
+	@$(SYMFONY) doctrine:mongodb:schema:create
+	@echo "Loading fixtures..."
+	@$(SYMFONY) doctrine:mongodb:fixtures:load --no-interaction
+	@echo "✅ Fixtures loaded successfully"
 
 reset-db: ## Recreate the database schema for ephemeral test runs
-	@$(SYMFONY) doctrine:cache:clear-metadata
-	@$(SYMFONY) doctrine:database:create --if-not-exists
-	@$(SYMFONY) doctrine:schema:drop --force
-	@$(SYMFONY) doctrine:schema:create
+	@echo "Clearing MongoDB metadata cache..."
+	@$(SYMFONY) doctrine:mongodb:cache:clear-metadata 2>&1 || true
+	@echo "Recreating MongoDB schema..."
+	@$(SYMFONY) doctrine:mongodb:schema:drop 2>&1 || true
+	@$(SYMFONY) doctrine:mongodb:schema:create
+	@echo "Seeding Schemathesis test data..."
 	@$(EXEC_PHP) php bin/console app:seed-schemathesis-data
+	@echo "✅ Database reset complete"
 
 coverage-html: ## Create the code coverage report with PHPUnit
 	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php php -d memory_limit=-1 vendor/bin/phpunit --coverage-html=coverage/html
@@ -420,11 +435,17 @@ pr-comments-to-file: ## Fetch ALL unresolved PR comments and save to pr-comments
 		echo ""; \
 	} > "$$output_file"; \
 	if [ -n "$(PR)" ]; then \
-		GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="false" \
-			./scripts/get-pr-comments.sh "$(PR)" "text" >> "$$output_file" 2>&1 || true; \
+		if ! GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="false" \
+			./scripts/get-pr-comments.sh "$(PR)" "text" >> "$$output_file" 2>&1; then \
+			echo "⚠️  Warning: Failed to fetch PR comments, check error output above" >> "$$output_file"; \
+			echo "❌ Failed to fetch PR comments for PR #$(PR)"; \
+		fi; \
 	else \
-		GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="false" \
-			./scripts/get-pr-comments.sh "text" >> "$$output_file" 2>&1 || true; \
+		if ! GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="false" \
+			./scripts/get-pr-comments.sh "text" >> "$$output_file" 2>&1; then \
+			echo "⚠️  Warning: Failed to fetch PR comments, check error output above" >> "$$output_file"; \
+			echo "❌ Failed to fetch PR comments from current branch"; \
+		fi; \
 	fi; \
 	comment_count=$$(grep -c "^Comment ID:" "$$output_file" || echo "0"); \
 	echo "" >> "$$output_file"; \

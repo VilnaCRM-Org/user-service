@@ -17,6 +17,7 @@ resources:
     operations:
       ApiPlatform\Metadata\GetCollection:
         paginationClientItemsPerPage: true
+        paginationMaximumItemsPerPage: 100
         cacheHeaders:
           max_age: 300
           public: false
