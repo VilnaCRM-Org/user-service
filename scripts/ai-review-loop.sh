@@ -1,50 +1,59 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# ---------------------------------------------------------------------------
+# AI Review Loop — runs AI review agents, applies fixes, verifies with CI.
+#
+# Instead of embedding raw diffs into prompts (which can exceed context
+# windows and strips project context), this script gives agents short
+# task-oriented prompts and lets them use their built-in tooling (file
+# reads, git, CLAUDE.md awareness) to review the codebase directly.
+# ---------------------------------------------------------------------------
+
+# --- Configuration (all overridable via environment) ----------------------
+
 log_dir="${AI_REVIEW_LOG_DIR:-var/ai-review}"
 review_prompt_file="${AI_REVIEW_REVIEW_PROMPT:-scripts/ai-review-prompts/review.md}"
 fix_prompt_file="${AI_REVIEW_FIX_PROMPT:-scripts/ai-review-prompts/fix.md}"
+# NOTE: verify_cmd is evaluated via bash -c. Only set this to trusted values.
 verify_cmd="${AI_REVIEW_VERIFY_CMD:-make ci}"
-max_iter_raw="${AI_REVIEW_MAX_ITER:-3}"
+max_iter="${AI_REVIEW_MAX_ITER:-3}"
 
 mkdir -p "$log_dir"
 
-if [[ ! -f "$review_prompt_file" ]]; then
-  echo "Review prompt file not found: $review_prompt_file" >&2
-  exit 1
-fi
+# --- Validate inputs ------------------------------------------------------
 
-if [[ ! -f "$fix_prompt_file" ]]; then
-  echo "Fix prompt file not found: $fix_prompt_file" >&2
-  exit 1
-fi
-
-if [[ ! "$max_iter_raw" =~ ^[0-9]+$ ]]; then
-  echo "AI_REVIEW_MAX_ITER must be a non-negative integer (got: $max_iter_raw)" >&2
-  exit 1
-fi
-
-agents_raw="${AI_REVIEW_AGENTS:-${AI_REVIEW_AGENT:-codex}}"
-IFS=',' read -r -a agents <<< "$agents_raw"
-
-sanitize_agent() {
-  echo "$1" | tr -d '[:space:]'
-}
-
-agents_sanitized=()
-for agent in "${agents[@]}"; do
-  cleaned="$(sanitize_agent "$agent")"
-  if [[ -n "$cleaned" ]]; then
-    agents_sanitized+=("$cleaned")
+for f in "$review_prompt_file" "$fix_prompt_file"; do
+  if [[ ! -f "$f" ]]; then
+    echo "Prompt file not found: $f" >&2
+    exit 1
   fi
 done
 
-if [[ ${#agents_sanitized[@]} -eq 0 ]]; then
+if [[ ! "$max_iter" =~ ^[0-9]+$ ]]; then
+  echo "AI_REVIEW_MAX_ITER must be a non-negative integer (got: $max_iter)" >&2
+  exit 1
+fi
+
+# --- Parse agents ---------------------------------------------------------
+
+agents_raw="${AI_REVIEW_AGENTS:-${AI_REVIEW_AGENT:-codex}}"
+IFS=',' read -r -a agents_raw_arr <<< "$agents_raw"
+
+agents=()
+for agent in "${agents_raw_arr[@]}"; do
+  cleaned="$(echo "$agent" | tr -d '[:space:]')"
+  [[ -n "$cleaned" ]] && agents+=("$cleaned")
+done
+
+if [[ ${#agents[@]} -eq 0 ]]; then
   echo "No review agents configured. Set AI_REVIEW_AGENT or AI_REVIEW_AGENTS." >&2
   exit 1
 fi
 
-fix_agent="${AI_REVIEW_FIX_AGENT:-${agents_sanitized[0]}}"
+fix_agent="${AI_REVIEW_FIX_AGENT:-${agents[0]}}"
+
+# --- CLI configuration ----------------------------------------------------
 
 codex_cmd="${AI_REVIEW_CODEX_CMD:-codex}"
 claude_cmd="${AI_REVIEW_CLAUDE_CMD:-claude}"
@@ -52,57 +61,58 @@ review_sandbox="${AI_REVIEW_REVIEW_SANDBOX:-read-only}"
 fix_sandbox="${AI_REVIEW_FIX_SANDBOX:-workspace-write}"
 
 codex_flags=()
-if [[ -n "${AI_REVIEW_CODEX_FLAGS:-}" ]]; then
-  read -r -a codex_flags <<< "$AI_REVIEW_CODEX_FLAGS"
-fi
+[[ -n "${AI_REVIEW_CODEX_FLAGS:-}" ]] && read -r -a codex_flags <<< "$AI_REVIEW_CODEX_FLAGS"
 claude_flags=()
-if [[ -n "${AI_REVIEW_CLAUDE_FLAGS:-}" ]]; then
-  read -r -a claude_flags <<< "$AI_REVIEW_CLAUDE_FLAGS"
-fi
+[[ -n "${AI_REVIEW_CLAUDE_FLAGS:-}" ]] && read -r -a claude_flags <<< "$AI_REVIEW_CLAUDE_FLAGS"
+
+# --- Agent validation -----------------------------------------------------
 
 ensure_codex_output_last_message() {
   if ! "$codex_cmd" exec --help 2>/dev/null | grep -q -- '--output-last-message'; then
-    echo "Codex CLI is missing --output-last-message; update Codex CLI to run ai-review-loop." >&2
+    echo "Codex CLI is missing --output-last-message; update Codex CLI." >&2
+    exit 1
+  fi
+}
+
+ensure_codex_review_command() {
+  if ! "$codex_cmd" review --help >/dev/null 2>&1; then
+    echo "Codex CLI is missing review command; update Codex CLI." >&2
     exit 1
   fi
 }
 
 require_command() {
-  local cmd="$1"
-  local label="$2"
-  if ! command -v "$cmd" >/dev/null 2>&1; then
-    echo "$label is required but not installed: $cmd" >&2
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "$2 is required but not installed: $1" >&2
     return 1
   fi
 }
 
-require_agent_command() {
-  local agent="$1"
-  case "$agent" in
+validate_agent() {
+  case "$1" in
     codex)
       require_command "$codex_cmd" "Codex CLI (codex)" || exit 1
       ensure_codex_output_last_message
+      ensure_codex_review_command
       ;;
     claude)
       require_command "$claude_cmd" "Claude CLI (claude)" || exit 1
       ;;
     *)
-      echo "Unknown agent: $agent" >&2
+      echo "Unknown agent: $1 (supported: codex, claude)" >&2
       exit 1
       ;;
   esac
 }
 
-for agent in "${agents_sanitized[@]}"; do
-  require_agent_command "$agent"
-done
-require_agent_command "$fix_agent"
+for agent in "${agents[@]}"; do validate_agent "$agent"; done
+validate_agent "$fix_agent"
+
+# --- Base branch detection ------------------------------------------------
 
 base_branch="${AI_REVIEW_BASE:-}"
-if [[ -z "$base_branch" ]]; then
-  if command -v gh >/dev/null 2>&1; then
-    base_branch=$(gh pr view --json baseRefName -q .baseRefName 2>/dev/null || true)
-  fi
+if [[ -z "$base_branch" ]] && command -v gh >/dev/null 2>&1; then
+  base_branch=$(gh pr view --json baseRefName -q .baseRefName 2>/dev/null || true)
 fi
 
 if [[ -z "$base_branch" ]]; then
@@ -119,102 +129,87 @@ if [[ "$base_branch" != */* ]]; then
   fi
 fi
 
-ensure_base_available() {
-  local base="$1"
-  if git rev-parse --verify "$base" >/dev/null 2>&1; then
-    return 0
+# Ensure the base ref is available locally
+if ! git rev-parse --verify "$review_base" >/dev/null 2>&1; then
+  remote="origin"
+  branch="$review_base"
+  if [[ "$review_base" == */* ]]; then
+    remote="${review_base%%/*}"
+    branch="${review_base#*/}"
   fi
-
-  local remote="origin"
-  local branch="$base"
-  if [[ "$base" == */* ]]; then
-    remote="${base%%/*}"
-    branch="${base#*/}"
-  fi
-
-  echo "Fetching base branch $remote/$branch..." >&2
+  echo "Fetching $remote/$branch..." >&2
   git fetch "$remote" "$branch" >/dev/null 2>&1 || true
-
-  if ! git rev-parse --verify "$base" >/dev/null 2>&1; then
-    echo "Error: Base branch $base is not available locally." >&2
+  if ! git rev-parse --verify "$review_base" >/dev/null 2>&1; then
+    echo "Error: Base branch $review_base is not available." >&2
     exit 1
   fi
-}
+fi
 
-ensure_base_available "$review_base"
+# --- Prompt builders ------------------------------------------------------
+# Prompts use {BASE_REF} as a placeholder. Diffs are NOT embedded — agents
+# read the codebase directly using their built-in tools (git, file reads,
+# CLAUDE.md awareness), which gives better review quality than raw diffs.
 
 build_review_prompt() {
-  local base_diff
-  local staged_diff
-  local worktree_diff
-  base_diff=$(git diff "$review_base"...HEAD)
-  staged_diff=$(git diff --staged)
-  worktree_diff=$(git diff)
-  printf "%s\n%s\n\nBASE_DIFF:\n%s\n\nSTAGED_DIFF:\n%s\n\nWORKTREE_DIFF:\n%s\n" \
-    "$(cat "$review_prompt_file")" \
-    "$review_base" \
-    "$base_diff" \
-    "$staged_diff" \
-    "$worktree_diff"
+  local template
+  template="$(cat "$review_prompt_file")"
+  echo "${template//\{BASE_REF\}/$review_base}"
 }
 
 build_fix_prompt() {
   local review_log="$1"
-  local ci_log="$2"
-  local prompt_content
-  local base_diff
-  local staged_diff
-  local worktree_diff
-  prompt_content="$(cat "$fix_prompt_file")"
-  base_diff=$(git diff "$review_base"...HEAD)
-  staged_diff=$(git diff --staged)
-  worktree_diff=$(git diff)
-  printf "%s\n\nLATEST_REVIEW_OUTPUT:\n%s\n\nBASE_DIFF:\n%s\n\nSTAGED_DIFF:\n%s\n\nWORKTREE_DIFF:\n%s\n" \
-    "$prompt_content" \
-    "$(cat "$review_log")" \
-    "$base_diff" \
-    "$staged_diff" \
-    "$worktree_diff"
+  local ci_log="${2:-}"
+  local template
+  template="$(cat "$fix_prompt_file")"
+  template="${template//\{BASE_REF\}/$review_base}"
+  printf "%s\n\nREVIEW_OUTPUT:\n%s\n" "$template" "$(cat "$review_log")"
   if [[ -n "$ci_log" && -f "$ci_log" ]]; then
-    printf "\nLATEST_CI_OUTPUT:\n%s\n" "$(cat "$ci_log")"
+    printf "\nCI_OUTPUT:\n%s\n" "$(cat "$ci_log")"
   fi
 }
 
+# --- Status parsing -------------------------------------------------------
+# Scans the first 10 lines, strips markdown fences/whitespace. Returns
+# PASS, FAIL, or UNKNOWN. The caller decides how to handle UNKNOWN.
+
 parse_status_line() {
-  local output_file="$1"
-  local status_line
-  status_line=$(head -n 1 "$output_file" | tr -d '\r')
-  case "$status_line" in
-    "STATUS: PASS")
-      echo "PASS"
-      ;;
-    "STATUS: FAIL")
-      echo "FAIL"
-      ;;
-    *)
-      echo "UNKNOWN"
-      ;;
-  esac
+  local file="$1"
+  local line
+  while IFS= read -r line; do
+    line="$(echo "$line" | sed 's/^[[:space:]`#*-]*//' | tr -d '\r')"
+    case "$line" in
+      "STATUS: PASS"*) echo "PASS"; return ;;
+      "STATUS: FAIL"*) echo "FAIL"; return ;;
+    esac
+  done < <(head -n 10 "$file")
+  echo "UNKNOWN"
 }
+
+# --- Agent runners --------------------------------------------------------
 
 run_review() {
   local agent="$1"
   local output_file="$2"
   local prompt
-  prompt=$(build_review_prompt)
+  prompt="$(build_review_prompt)"
 
   case "$agent" in
     codex)
-      local log_file
-      log_file="${output_file}.log"
-      printf "%s" "$prompt" | "$codex_cmd" exec ${codex_flags[@]+"${codex_flags[@]}"} --sandbox "$review_sandbox" --output-last-message "$output_file" - >"$log_file" 2>&1
+      printf "%s" "$prompt" \
+        | "$codex_cmd" \
+            ${codex_flags[@]+"${codex_flags[@]}"} \
+            --sandbox "$review_sandbox" \
+            review \
+            --base "$review_base" \
+            --uncommitted \
+            - \
+          >"$output_file" 2>"${output_file}.log"
       ;;
     claude)
-      printf "%s" "$prompt" | "$claude_cmd" ${claude_flags[@]+"${claude_flags[@]}"} >"$output_file" 2>&1
-      ;;
-    *)
-      echo "Unknown agent: $agent" >&2
-      exit 1
+      "$claude_cmd" -p "$prompt" \
+        ${claude_flags[@]+"${claude_flags[@]}"} \
+        --output-format text \
+        >"$output_file" 2>&1
       ;;
   esac
 }
@@ -222,101 +217,88 @@ run_review() {
 run_fix() {
   local agent="$1"
   local output_file="$2"
-  local prompt
   local review_log="$3"
-  local ci_log="$4"
-
-  prompt=$(build_fix_prompt "$review_log" "$ci_log")
+  local ci_log="${4:-}"
+  local prompt
+  prompt="$(build_fix_prompt "$review_log" "$ci_log")"
 
   case "$agent" in
     codex)
-      local log_file
-      log_file="${output_file}.log"
-      printf "%s" "$prompt" | "$codex_cmd" exec ${codex_flags[@]+"${codex_flags[@]}"} --sandbox "$fix_sandbox" --output-last-message "$output_file" - >"$log_file" 2>&1
+      printf "%s" "$prompt" \
+        | "$codex_cmd" exec \
+            ${codex_flags[@]+"${codex_flags[@]}"} \
+            --sandbox "$fix_sandbox" \
+            --output-last-message "$output_file" - \
+          >"${output_file}.log" 2>&1
       ;;
     claude)
-      printf "%s" "$prompt" | "$claude_cmd" ${claude_flags[@]+"${claude_flags[@]}"} >"$output_file" 2>&1
-      ;;
-    *)
-      echo "Unknown agent: $agent" >&2
-      exit 1
+      "$claude_cmd" -p "$prompt" \
+        ${claude_flags[@]+"${claude_flags[@]}"} \
+        --output-format text \
+        >"$output_file" 2>&1
       ;;
   esac
 }
 
+# --- Main loop ------------------------------------------------------------
+
 iter=1
 ci_log=""
-last_verify_success=true
-last_verify_success_set=false
+last_verify_ok=true
 
 while :; do
-  if [[ "$max_iter_raw" -ne 0 && "$iter" -gt "$max_iter_raw" ]]; then
-    echo "Reached AI_REVIEW_MAX_ITER=$max_iter_raw without a PASS." >&2
+  if [[ "$max_iter" -ne 0 && "$iter" -gt "$max_iter" ]]; then
+    echo "Reached AI_REVIEW_MAX_ITER=$max_iter without PASS." >&2
     exit 1
   fi
 
   all_pass=true
-  last_review_log=""
   fail_log=""
 
-  last_agent_index=$((${#agents_sanitized[@]} - 1))
-  last_agent="${agents_sanitized[$last_agent_index]}"
-
-  for agent in "${agents_sanitized[@]}"; do
-    timestamp=$(date +%Y%m%d_%H%M%S)
-    review_log="$log_dir/review-${agent}-iter${iter}-$timestamp.md"
+  for agent in "${agents[@]}"; do
+    ts=$(date +%Y%m%d_%H%M%S)
+    review_log="$log_dir/review-${agent}-iter${iter}-${ts}.md"
     run_review "$agent" "$review_log"
-
     cp "$review_log" "$log_dir/review-latest-${agent}.md"
-    if [[ "$agent" == "$last_agent" ]]; then
-      cp "$review_log" "$log_dir/review-latest.md"
-    fi
 
     status=$(parse_status_line "$review_log")
-    if [[ "$status" != "PASS" && "$status" != "FAIL" ]]; then
-      echo "Error: Review output missing STATUS line for agent $agent." >&2
-      exit 1
+    if [[ "$status" == "UNKNOWN" ]]; then
+      echo "Warning: Agent $agent did not produce STATUS line; treating as FAIL." >&2
+      status="FAIL"
     fi
 
-    last_review_log="$review_log"
     if [[ "$status" == "FAIL" ]]; then
       all_pass=false
-      if [[ -z "$fail_log" ]]; then
-        fail_log="$log_dir/review-fail-iter${iter}-$timestamp.md"
-      fi
-      {
-        echo "=== Agent: $agent ==="
-        cat "$review_log"
-        echo ""
-      } >> "$fail_log"
+      fail_log="${fail_log:-$log_dir/review-fail-iter${iter}-${ts}.md}"
+      { echo "=== Agent: $agent ==="; cat "$review_log"; echo; } >> "$fail_log"
     fi
   done
 
+  cp "${fail_log:-$log_dir/review-latest-${agents[-1]}.md}" \
+    "$log_dir/review-latest.md" 2>/dev/null || true
+
   if [[ "$all_pass" == true ]]; then
-    if [[ "$last_verify_success_set" == true && "$last_verify_success" != true ]]; then
-      echo "AI review PASS, but verification failed. Fix verification failures before proceeding." >&2
+    if [[ "$last_verify_ok" != true ]]; then
+      echo "AI review PASS, but last verification failed. Fix verification failures first." >&2
       exit 1
     fi
     echo "AI review PASS." >&2
     exit 0
   fi
 
-  fix_timestamp=$(date +%Y%m%d_%H%M%S)
-  fix_log="$log_dir/fix-${fix_agent}-iter${iter}-$fix_timestamp.md"
-  if [[ -z "$fail_log" ]]; then
-    fail_log="$last_review_log"
-  fi
+  # --- Fix phase ---
+  fix_ts=$(date +%Y%m%d_%H%M%S)
+  fix_log="$log_dir/fix-${fix_agent}-iter${iter}-${fix_ts}.md"
   run_fix "$fix_agent" "$fix_log" "$fail_log" "$ci_log"
   cp "$fix_log" "$log_dir/fix-latest.md"
 
-  ci_log="$log_dir/ci-iter${iter}-$fix_timestamp.log"
+  # --- Verify phase ---
+  ci_log="$log_dir/ci-iter${iter}-${fix_ts}.log"
   if ! bash -c "$verify_cmd" >"$ci_log" 2>&1; then
-    echo "Warning: Verification command failed (see $ci_log)." >&2
-    last_verify_success=false
-    last_verify_success_set=true
+    echo "Warning: Verification failed (see $ci_log)." >&2
+    last_verify_ok=false
   else
-    last_verify_success=true
-    last_verify_success_set=true
+    last_verify_ok=true
   fi
 
   iter=$((iter + 1))
