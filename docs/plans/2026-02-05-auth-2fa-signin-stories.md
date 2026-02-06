@@ -1,6 +1,21 @@
 ---
-stepsCompleted: [init, story-details, task-breakdown, dev-notes, security-review, tea-party-challenge, tea-party-challenge-r2, tea-party-challenge-r3]
-inputDocuments: [docs/plans/2026-02-05-auth-2fa-signin-prd.md, docs/plans/2026-02-05-auth-2fa-signin-architecture.md, docs/plans/2026-02-05-auth-2fa-signin-epic.md]
+stepsCompleted:
+  [
+    init,
+    story-details,
+    task-breakdown,
+    dev-notes,
+    security-review,
+    tea-party-challenge,
+    tea-party-challenge-r2,
+    tea-party-challenge-r3,
+  ]
+inputDocuments:
+  [
+    docs/plans/2026-02-05-auth-2fa-signin-prd.md,
+    docs/plans/2026-02-05-auth-2fa-signin-architecture.md,
+    docs/plans/2026-02-05-auth-2fa-signin-epic.md,
+  ]
 workflowType: 'stories'
 project_name: 'VilnaCRM User Service — Auth Sign-in + 2FA'
 author: 'Valerii'

@@ -1,6 +1,26 @@
 ---
-stepsCompleted: [init, executive-summary, success-criteria, scope, journeys, domain-requirements, functional-requirements, non-functional-requirements, security-review, tea-party-challenge, tea-party-challenge-r2, tea-party-challenge-r3]
-inputDocuments: [CLAUDE.md, config/packages/security.yaml, config/packages/rate_limiter.yaml, config/api_platform/resources/User.yaml]
+stepsCompleted:
+  [
+    init,
+    executive-summary,
+    success-criteria,
+    scope,
+    journeys,
+    domain-requirements,
+    functional-requirements,
+    non-functional-requirements,
+    security-review,
+    tea-party-challenge,
+    tea-party-challenge-r2,
+    tea-party-challenge-r3,
+  ]
+inputDocuments:
+  [
+    CLAUDE.md,
+    config/packages/security.yaml,
+    config/packages/rate_limiter.yaml,
+    config/api_platform/resources/User.yaml,
+  ]
 workflowType: 'prd'
 project_name: 'VilnaCRM User Service — Auth Sign-in + 2FA'
 author: 'Valerii'
@@ -24,18 +44,18 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 
 ## Success Criteria
 
-| ID | Criterion | Measurement | Target |
-|----|-----------|-------------|--------|
-| SC-01 | Sign-in latency (no 2FA) | P95 response time measured by APM | < 300ms |
-| SC-02 | Sign-in latency (with 2FA completion) | P95 response time across both requests | < 500ms total |
-| SC-03 | Token refresh latency | P95 response time | < 100ms |
-| SC-04 | Auth gate rejection accuracy | Percentage of unauthenticated requests to protected endpoints returning 401 | 100% |
-| SC-05 | 2FA enforcement | Percentage of 2FA-enabled accounts that never receive tokens without code confirmation | 100% |
-| SC-06 | Rate limit effectiveness | Percentage of abusive requests (exceeding threshold) that receive 429 | 100% |
-| SC-07 | Test coverage | Line coverage for new auth flows (unit + integration + Behat) | >= 90% |
-| SC-08 | Mutation score | Infection MSI for new auth code | >= 80% |
-| SC-09 | CI pass | `make ci` completes with zero failures | Pass |
-| SC-10 | Audit logging coverage | Percentage of auth events (sign-in, 2FA, logout, token rotation) with structured log entries | 100% |
+| ID    | Criterion                             | Measurement                                                                                  | Target        |
+| ----- | ------------------------------------- | -------------------------------------------------------------------------------------------- | ------------- |
+| SC-01 | Sign-in latency (no 2FA)              | P95 response time measured by APM                                                            | < 300ms       |
+| SC-02 | Sign-in latency (with 2FA completion) | P95 response time across both requests                                                       | < 500ms total |
+| SC-03 | Token refresh latency                 | P95 response time                                                                            | < 100ms       |
+| SC-04 | Auth gate rejection accuracy          | Percentage of unauthenticated requests to protected endpoints returning 401                  | 100%          |
+| SC-05 | 2FA enforcement                       | Percentage of 2FA-enabled accounts that never receive tokens without code confirmation       | 100%          |
+| SC-06 | Rate limit effectiveness              | Percentage of abusive requests (exceeding threshold) that receive 429                        | 100%          |
+| SC-07 | Test coverage                         | Line coverage for new auth flows (unit + integration + Behat)                                | >= 90%        |
+| SC-08 | Mutation score                        | Infection MSI for new auth code                                                              | >= 80%        |
+| SC-09 | CI pass                               | `make ci` completes with zero failures                                                       | Pass          |
+| SC-10 | Audit logging coverage                | Percentage of auth events (sign-in, 2FA, logout, token rotation) with structured log entries | 100%          |
 
 ## Product Scope
 
@@ -189,213 +209,213 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 
 ## Functional Requirements
 
-| ID | Requirement | Source | Priority |
-|----|-------------|--------|----------|
-| FR-01 | Users can sign in with email and password, receiving an access token, refresh token, and session cookie | UJ-01 | P0 |
-| FR-02 | Users with 2FA enabled receive a `pending_session_id` instead of tokens on sign-in | UJ-02 | P0 |
-| FR-03 | Users can complete 2FA by submitting pending session ID and TOTP code (or recovery code), receiving tokens and cookie | UJ-02, UJ-10 | P0 |
-| FR-04 | Clients can exchange a valid refresh token for new access and refresh tokens | UJ-03 | P0 |
-| FR-05 | A rotated refresh token can be reused once within the grace window (configurable, default 60s) | UJ-03 | P0 |
-| FR-06 | Reuse of a rotated token after grace window (or second reuse within grace) revokes the session and returns 401 | UJ-03 | P0 |
-| FR-07 | Authenticated users can generate a TOTP secret and otpauth URI for 2FA setup | UJ-04 | P0 |
-| FR-08 | Authenticated users can confirm 2FA setup by submitting a valid TOTP code; system generates recovery codes | UJ-04 | P0 |
-| FR-09 | All protected endpoints reject unauthenticated requests with 401 problem+json | UJ-05 | P0 |
-| FR-10 | Sign-in, 2FA completion, token refresh, OAuth, health, registration, password reset, and email confirmation endpoints are publicly accessible | UJ-01, UJ-05 | P0 |
-| FR-11 | Batch user creation requires `ROLE_SERVICE` scope | DR-04 | P0 |
-| FR-12 | Write/delete operations on user resources enforce ownership on both REST and GraphQL | DR-01 | P0 |
-| FR-13 | Authenticated users can revoke their current session (logout), invalidating refresh tokens and session cookie | UJ-07 | P0 |
-| FR-14 | Authenticated users can revoke ALL their sessions (sign out everywhere) | UJ-08 | P0 |
-| FR-15 | Authenticated users can disable 2FA by confirming with a valid TOTP code or recovery code | UJ-09 | P0 |
-| FR-16 | When 2FA is confirmed, the system generates 8 single-use recovery codes returned to the user | UJ-04 | P0 |
-| FR-17 | Recovery codes can be used in place of TOTP codes during 2FA sign-in completion | UJ-10 | P0 |
-| FR-18 | Authenticated users can regenerate recovery codes, invalidating all previous codes | UJ-10 | P1 |
-| FR-19 | Password change revokes all sessions except the current one | UJ-11 | P0 |
-| FR-20 | 2FA enablement (confirmation) revokes all sessions except the current one | UJ-04 | P0 |
+| ID    | Requirement                                                                                                                                   | Source       | Priority |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------- |
+| FR-01 | Users can sign in with email and password, receiving an access token, refresh token, and session cookie                                       | UJ-01        | P0       |
+| FR-02 | Users with 2FA enabled receive a `pending_session_id` instead of tokens on sign-in                                                            | UJ-02        | P0       |
+| FR-03 | Users can complete 2FA by submitting pending session ID and TOTP code (or recovery code), receiving tokens and cookie                         | UJ-02, UJ-10 | P0       |
+| FR-04 | Clients can exchange a valid refresh token for new access and refresh tokens                                                                  | UJ-03        | P0       |
+| FR-05 | A rotated refresh token can be reused once within the grace window (configurable, default 60s)                                                | UJ-03        | P0       |
+| FR-06 | Reuse of a rotated token after grace window (or second reuse within grace) revokes the session and returns 401                                | UJ-03        | P0       |
+| FR-07 | Authenticated users can generate a TOTP secret and otpauth URI for 2FA setup                                                                  | UJ-04        | P0       |
+| FR-08 | Authenticated users can confirm 2FA setup by submitting a valid TOTP code; system generates recovery codes                                    | UJ-04        | P0       |
+| FR-09 | All protected endpoints reject unauthenticated requests with 401 problem+json                                                                 | UJ-05        | P0       |
+| FR-10 | Sign-in, 2FA completion, token refresh, OAuth, health, registration, password reset, and email confirmation endpoints are publicly accessible | UJ-01, UJ-05 | P0       |
+| FR-11 | Batch user creation requires `ROLE_SERVICE` scope                                                                                             | DR-04        | P0       |
+| FR-12 | Write/delete operations on user resources enforce ownership on both REST and GraphQL                                                          | DR-01        | P0       |
+| FR-13 | Authenticated users can revoke their current session (logout), invalidating refresh tokens and session cookie                                 | UJ-07        | P0       |
+| FR-14 | Authenticated users can revoke ALL their sessions (sign out everywhere)                                                                       | UJ-08        | P0       |
+| FR-15 | Authenticated users can disable 2FA by confirming with a valid TOTP code or recovery code                                                     | UJ-09        | P0       |
+| FR-16 | When 2FA is confirmed, the system generates 8 single-use recovery codes returned to the user                                                  | UJ-04        | P0       |
+| FR-17 | Recovery codes can be used in place of TOTP codes during 2FA sign-in completion                                                               | UJ-10        | P0       |
+| FR-18 | Authenticated users can regenerate recovery codes, invalidating all previous codes                                                            | UJ-10        | P1       |
+| FR-19 | Password change revokes all sessions except the current one                                                                                   | UJ-11        | P0       |
+| FR-20 | 2FA enablement (confirmation) revokes all sessions except the current one                                                                     | UJ-04        | P0       |
 
 ## Non-Functional Requirements
 
 ### Performance
 
-| ID | Requirement | Measurement |
-|----|-------------|-------------|
-| NFR-01 | Sign-in (no 2FA) responds in under 300ms for 95th percentile under normal load | APM P95 latency |
-| NFR-02 | Token refresh responds in under 100ms for 95th percentile | APM P95 latency |
-| NFR-03 | Auth gate adds less than 5ms overhead per request | APM middleware timing |
+| ID     | Requirement                                                                    | Measurement           |
+| ------ | ------------------------------------------------------------------------------ | --------------------- |
+| NFR-01 | Sign-in (no 2FA) responds in under 300ms for 95th percentile under normal load | APM P95 latency       |
+| NFR-02 | Token refresh responds in under 100ms for 95th percentile                      | APM P95 latency       |
+| NFR-03 | Auth gate adds less than 5ms overhead per request                              | APM middleware timing |
 
 ### Security — Authentication and Authorization
 
-| ID | Requirement | Measurement |
-|----|-------------|-------------|
-| NFR-04 | Symfony security firewall enabled with OAuth2 bearer token validation on all `/api/` and `/graphql` routes | Integration test: unauthenticated request to each protected endpoint returns 401 |
-| NFR-05 | Access tokens expire after 15 minutes (configurable via `OAUTH_ACCESS_TOKEN_TTL`); reduced from 1h to limit JWT revocation window | Token decode verification |
-| NFR-06 | Refresh tokens expire after 1 month (configurable via `OAUTH_REFRESH_TOKEN_TTL`) | Database TTL field validation |
-| NFR-07 | TOTP verification allows +/- 1 time window for clock skew tolerance | Unit test with time-shifted codes |
-| NFR-31 | Password change revokes all sessions except the current one | Integration test |
-| NFR-32 | Password hashing uses bcrypt with cost >= 12 (existing passwords re-hashed on next login via `migrate_from`) | Config validation |
-| NFR-38 | JWT validation pins the expected algorithm (RS256) and rejects tokens signed with any other algorithm | Unit test with HS256-signed token |
-| NFR-40 | CORS configured with `Access-Control-Allow-Credentials: true` and explicit origin (not wildcard) for cookie-based auth | Integration test |
-| NFR-41 | OAuth password grant type disabled after sign-in endpoint ships; clients must use `POST /api/signin` | Integration test: password grant returns error |
-| NFR-50 | JWT access tokens include claims: `sub`, `iss`, `aud`, `exp`, `iat`, `nbf`, `jti`, `sid` (session ID), `roles` | Unit test: decode JWT and verify all claims present |
-| NFR-51 | JWT validation verifies `iss` (single string, not array), `aud`, `nbf`, `exp` claims; rejects tokens with mismatched values | Unit test with forged claims |
-| NFR-52 | 2FA enablement (confirmation) revokes all sessions except the current one | Integration test |
-| NFR-53 | Sign-in response time must not vary based on whether the email exists; handler performs bcrypt hash for non-existent users (constant-time) | Timing analysis test |
-| NFR-54 | Session cookie uses `__Host-` prefix (`__Host-auth_token`) for subdomain attack prevention | Behat test for cookie name |
-| NFR-55 | Account locked for 15 minutes after 20 failed sign-in attempts within 1 hour for the same email | Integration test: 21st attempt returns 423 Locked |
-| NFR-56 | All 401 responses include `WWW-Authenticate: Bearer` header per RFC 7235 | Behat test for header presence |
-| NFR-57 | 2FA secrets encrypted with AES-256-GCM; encryption key from `TWO_FACTOR_ENCRYPTION_KEY` env var | Config validation + database inspection |
-| NFR-58 | Refresh token rotation uses atomic MongoDB operations (`findOneAndUpdate`) to prevent race conditions | Unit test with concurrent rotation |
+| ID     | Requirement                                                                                                                                | Measurement                                                                      |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| NFR-04 | Symfony security firewall enabled with OAuth2 bearer token validation on all `/api/` and `/graphql` routes                                 | Integration test: unauthenticated request to each protected endpoint returns 401 |
+| NFR-05 | Access tokens expire after 15 minutes (configurable via `OAUTH_ACCESS_TOKEN_TTL`); reduced from 1h to limit JWT revocation window          | Token decode verification                                                        |
+| NFR-06 | Refresh tokens expire after 1 month (configurable via `OAUTH_REFRESH_TOKEN_TTL`)                                                           | Database TTL field validation                                                    |
+| NFR-07 | TOTP verification allows +/- 1 time window for clock skew tolerance                                                                        | Unit test with time-shifted codes                                                |
+| NFR-31 | Password change revokes all sessions except the current one                                                                                | Integration test                                                                 |
+| NFR-32 | Password hashing uses bcrypt with cost >= 12 (existing passwords re-hashed on next login via `migrate_from`)                               | Config validation                                                                |
+| NFR-38 | JWT validation pins the expected algorithm (RS256) and rejects tokens signed with any other algorithm                                      | Unit test with HS256-signed token                                                |
+| NFR-40 | CORS configured with `Access-Control-Allow-Credentials: true` and explicit origin (not wildcard) for cookie-based auth                     | Integration test                                                                 |
+| NFR-41 | OAuth password grant type disabled after sign-in endpoint ships; clients must use `POST /api/signin`                                       | Integration test: password grant returns error                                   |
+| NFR-50 | JWT access tokens include claims: `sub`, `iss`, `aud`, `exp`, `iat`, `nbf`, `jti`, `sid` (session ID), `roles`                             | Unit test: decode JWT and verify all claims present                              |
+| NFR-51 | JWT validation verifies `iss` (single string, not array), `aud`, `nbf`, `exp` claims; rejects tokens with mismatched values                | Unit test with forged claims                                                     |
+| NFR-52 | 2FA enablement (confirmation) revokes all sessions except the current one                                                                  | Integration test                                                                 |
+| NFR-53 | Sign-in response time must not vary based on whether the email exists; handler performs bcrypt hash for non-existent users (constant-time) | Timing analysis test                                                             |
+| NFR-54 | Session cookie uses `__Host-` prefix (`__Host-auth_token`) for subdomain attack prevention                                                 | Behat test for cookie name                                                       |
+| NFR-55 | Account locked for 15 minutes after 20 failed sign-in attempts within 1 hour for the same email                                            | Integration test: 21st attempt returns 423 Locked                                |
+| NFR-56 | All 401 responses include `WWW-Authenticate: Bearer` header per RFC 7235                                                                   | Behat test for header presence                                                   |
+| NFR-57 | 2FA secrets encrypted with AES-256-GCM; encryption key from `TWO_FACTOR_ENCRYPTION_KEY` env var                                            | Config validation + database inspection                                          |
+| NFR-58 | Refresh token rotation uses atomic MongoDB operations (`findOneAndUpdate`) to prevent race conditions                                      | Unit test with concurrent rotation                                               |
 
 ### Security — GraphQL and API Protection (TEA R3)
 
-| ID | Requirement | Measurement |
-|----|-------------|-------------|
+| ID     | Requirement                                                                                                                           | Measurement                                                                         |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | NFR-59 | GraphQL batching must not bypass rate limiting — reject batch requests (JSON arrays) at `/graphql` or count each operation separately | Integration test: batch of 10 sign-in mutations receives 400 or triggers rate limit |
-| NFR-62 | Auth operations (sign-in, 2FA, token, sign-out) must not auto-expose via GraphQL mutations — `graphql: false` on all auth resources | Integration test: GraphQL introspection shows no sign-in/2FA mutations |
-| NFR-64 | Implicit OAuth grant disabled in ALL environments including test | Config validation: `OAUTH_ENABLE_IMPLICIT_GRANT=0` in `.env.test` |
-| NFR-65 | CORS `allow_credentials: true` with explicit origin (no wildcard `*`) in ALL environments including dev | Config validation + integration test |
-| NFR-66 | `Permissions-Policy` header (`camera=(), microphone=(), geolocation=(), payment=()`) on all responses | Behat test for header presence |
+| NFR-62 | Auth operations (sign-in, 2FA, token, sign-out) must not auto-expose via GraphQL mutations — `graphql: false` on all auth resources   | Integration test: GraphQL introspection shows no sign-in/2FA mutations              |
+| NFR-64 | Implicit OAuth grant disabled in ALL environments including test                                                                      | Config validation: `OAUTH_ENABLE_IMPLICIT_GRANT=0` in `.env.test`                   |
+| NFR-65 | CORS `allow_credentials: true` with explicit origin (no wildcard `*`) in ALL environments including dev                               | Config validation + integration test                                                |
+| NFR-66 | `Permissions-Policy` header (`camera=(), microphone=(), geolocation=(), payment=()`) on all responses                                 | Behat test for header presence                                                      |
 
 ### Security — Key Management and Token Binding (TEA R3)
 
-| ID | Requirement | Measurement |
-|----|-------------|-------------|
-| NFR-60 | Bearer token sidejack risk documented as accepted for MVP; token fingerprinting deferred to Growth | Architecture ADR-13 documents accepted risk |
-| NFR-61 | JWT private key permissions 600 (owner read/write only); not world-readable | CI check: `stat -c %a config/jwt/private.pem` returns 600 |
-| NFR-67 | (Growth) Password breach database check via Symfony `NotCompromisedPassword` constraint | Integration test with known-breached password |
-| NFR-68 | Recovery code exhaustion warning: response includes `recovery_codes_remaining` when count <= 2 | Behat test: use 7th code, verify warning in response |
+| ID     | Requirement                                                                                        | Measurement                                               |
+| ------ | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| NFR-60 | Bearer token sidejack risk documented as accepted for MVP; token fingerprinting deferred to Growth | Architecture ADR-13 documents accepted risk               |
+| NFR-61 | JWT private key permissions 600 (owner read/write only); not world-readable                        | CI check: `stat -c %a config/jwt/private.pem` returns 600 |
+| NFR-67 | (Growth) Password breach database check via Symfony `NotCompromisedPassword` constraint            | Integration test with known-breached password             |
+| NFR-68 | Recovery code exhaustion warning: response includes `recovery_codes_remaining` when count <= 2     | Behat test: use 7th code, verify warning in response      |
 
 ### Security — Rate Limiting
 
-| ID | Requirement | Measurement |
-|----|-------------|-------------|
-| NFR-08 | Global API: 100 requests/minute per IP (anonymous), 300 requests/minute per IP (authenticated) using sliding window | Load test: 101st anonymous request within 1 minute receives 429 |
-| NFR-09 | Registration (`POST /api/users`): 5 requests/minute per IP using token bucket | Load test: 6th registration from same IP within 1 minute receives 429 |
-| NFR-10 | OAuth token (`POST /token`): 10 requests/minute per client_id using sliding window | Load test: 11th token request from same client_id within 1 minute receives 429 |
-| NFR-11 | Sign-in (`POST /api/signin`): 10 requests/minute per IP, 5 requests/minute per email using sliding window | Load test verification |
-| NFR-12 | 2FA verification (`POST /api/signin/2fa`): 5 attempts/minute per pending session | Load test verification |
-| NFR-13 | Resend confirmation email: 3 requests/minute per IP + 3 requests/minute per target user ID using token bucket | Load test verification |
-| NFR-14 | All rate limit rejections include `Retry-After` header and RFC 7807 body with status 429 | Behat test for response format |
-| NFR-43 | `GET /api/users` collection: 30 requests/minute per IP (authenticated) | Load test verification |
-| NFR-44 | `POST /api/users/2fa/setup`: 5 requests/minute per user | Behat test |
-| NFR-45 | `POST /api/users/2fa/confirm`: 5 requests/minute per user | Behat test |
-| NFR-46 | `PATCH /api/users/confirm` (email confirmation): 10 requests/minute per IP | Load test verification |
-| NFR-47 | `PATCH/PUT /api/users/{id}`: 10 requests/minute per user | Behat test |
-| NFR-48 | `DELETE /api/users/{id}`: 3 requests/minute per user | Behat test |
-| NFR-49 | `POST /api/users/{id}/resend-confirmation-email`: also 3 requests/minute per target user ID | Behat test |
+| ID     | Requirement                                                                                                         | Measurement                                                                    |
+| ------ | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| NFR-08 | Global API: 100 requests/minute per IP (anonymous), 300 requests/minute per IP (authenticated) using sliding window | Load test: 101st anonymous request within 1 minute receives 429                |
+| NFR-09 | Registration (`POST /api/users`): 5 requests/minute per IP using token bucket                                       | Load test: 6th registration from same IP within 1 minute receives 429          |
+| NFR-10 | OAuth token (`POST /token`): 10 requests/minute per client_id using sliding window                                  | Load test: 11th token request from same client_id within 1 minute receives 429 |
+| NFR-11 | Sign-in (`POST /api/signin`): 10 requests/minute per IP, 5 requests/minute per email using sliding window           | Load test verification                                                         |
+| NFR-12 | 2FA verification (`POST /api/signin/2fa`): 5 attempts/minute per pending session                                    | Load test verification                                                         |
+| NFR-13 | Resend confirmation email: 3 requests/minute per IP + 3 requests/minute per target user ID using token bucket       | Load test verification                                                         |
+| NFR-14 | All rate limit rejections include `Retry-After` header and RFC 7807 body with status 429                            | Behat test for response format                                                 |
+| NFR-43 | `GET /api/users` collection: 30 requests/minute per IP (authenticated)                                              | Load test verification                                                         |
+| NFR-44 | `POST /api/users/2fa/setup`: 5 requests/minute per user                                                             | Behat test                                                                     |
+| NFR-45 | `POST /api/users/2fa/confirm`: 5 requests/minute per user                                                           | Behat test                                                                     |
+| NFR-46 | `PATCH /api/users/confirm` (email confirmation): 10 requests/minute per IP                                          | Load test verification                                                         |
+| NFR-47 | `PATCH/PUT /api/users/{id}`: 10 requests/minute per user                                                            | Behat test                                                                     |
+| NFR-48 | `DELETE /api/users/{id}`: 3 requests/minute per user                                                                | Behat test                                                                     |
+| NFR-49 | `POST /api/users/{id}/resend-confirmation-email`: also 3 requests/minute per target user ID                         | Behat test                                                                     |
 
 ### Security — Data Protection
 
-| ID | Requirement | Measurement |
-|----|-------------|-------------|
-| NFR-15 | Refresh tokens stored as SHA-256 hashes, never plaintext | Database inspection: no plaintext tokens |
-| NFR-16 | 2FA secrets encrypted at application level before MongoDB persistence | Database inspection: secrets not readable |
-| NFR-17 | MongoDB connections use TLS in production (`?tls=true`) | Production connection string validation |
-| NFR-18 | All external traffic uses TLS 1.2+ with HSTS (`max-age=31536000; includeSubDomains`) | SSL Labs scan grade A+ |
+| ID     | Requirement                                                                           | Measurement                                          |
+| ------ | ------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| NFR-15 | Refresh tokens stored as SHA-256 hashes, never plaintext                              | Database inspection: no plaintext tokens             |
+| NFR-16 | 2FA secrets encrypted at application level before MongoDB persistence                 | Database inspection: secrets not readable            |
+| NFR-17 | MongoDB connections use TLS in production (`?tls=true`)                               | Production connection string validation              |
+| NFR-18 | All external traffic uses TLS 1.2+ with HSTS (`max-age=31536000; includeSubDomains`)  | SSL Labs scan grade A+                               |
 | NFR-37 | Confirmation tokens are at least 32 characters (matching password reset token length) | Config validation: `CONFIRMATION_TOKEN_LENGTH >= 32` |
-| NFR-42 | Recovery codes stored as SHA-256 hashes, 8 codes generated per user, single-use | Database inspection + unit test |
+| NFR-42 | Recovery codes stored as SHA-256 hashes, 8 codes generated per user, single-use       | Database inspection + unit test                      |
 
 ### Security — Headers and GraphQL
 
-| ID | Requirement | Measurement |
-|----|-------------|-------------|
-| NFR-19 | `Strict-Transport-Security: max-age=31536000; includeSubDomains` on all responses | Behat test for header presence |
-| NFR-20 | `X-Content-Type-Options: nosniff` on all responses | Behat test |
-| NFR-21 | `X-Frame-Options: DENY` on all responses | Behat test |
-| NFR-22 | `Referrer-Policy: strict-origin-when-cross-origin` on all responses | Behat test |
-| NFR-23 | `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'` on API responses | Behat test |
-| NFR-24 | GraphQL introspection disabled in production environment | Integration test: introspection query returns error in prod |
-| NFR-35 | GraphQL max query depth: 20 | Integration test: deeply nested query returns error |
-| NFR-36 | GraphQL max query complexity: 500 | Integration test: complex query returns error |
-| NFR-39 | Request body size limited to 64KB at proxy level (Caddy) | Load test: oversized request returns 413 |
+| ID     | Requirement                                                                            | Measurement                                                 |
+| ------ | -------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| NFR-19 | `Strict-Transport-Security: max-age=31536000; includeSubDomains` on all responses      | Behat test for header presence                              |
+| NFR-20 | `X-Content-Type-Options: nosniff` on all responses                                     | Behat test                                                  |
+| NFR-21 | `X-Frame-Options: DENY` on all responses                                               | Behat test                                                  |
+| NFR-22 | `Referrer-Policy: strict-origin-when-cross-origin` on all responses                    | Behat test                                                  |
+| NFR-23 | `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'` on API responses | Behat test                                                  |
+| NFR-24 | GraphQL introspection disabled in production environment                               | Integration test: introspection query returns error in prod |
+| NFR-35 | GraphQL max query depth: 20                                                            | Integration test: deeply nested query returns error         |
+| NFR-36 | GraphQL max query complexity: 500                                                      | Integration test: complex query returns error               |
+| NFR-39 | Request body size limited to 64KB at proxy level (Caddy)                               | Load test: oversized request returns 413                    |
 
 ### Observability
 
-| ID | Requirement | Measurement |
-|----|-------------|-------------|
-| NFR-33 | All authentication events emit structured JSON log entries with IP, user-agent, user ID (if known), event type, and result | Log inspection in integration tests |
-| NFR-34 | Refresh token theft detection (grace window violation) emits a high-severity alert | Integration test: verify log level on theft detection |
+| ID     | Requirement                                                                                                                | Measurement                                           |
+| ------ | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| NFR-33 | All authentication events emit structured JSON log entries with IP, user-agent, user ID (if known), event type, and result | Log inspection in integration tests                   |
+| NFR-34 | Refresh token theft detection (grace window violation) emits a high-severity alert                                         | Integration test: verify log level on theft detection |
 
 ### Reliability
 
-| ID | Requirement | Measurement |
-|----|-------------|-------------|
-| NFR-25 | All error responses use RFC 7807 problem+json format with `type`, `title`, `status`, `detail` fields | Schema validation in Behat |
-| NFR-26 | Refresh token grace window survives Redis restart (fallback: reject and force re-login) | Integration test with Redis restart |
+| ID     | Requirement                                                                                          | Measurement                         |
+| ------ | ---------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| NFR-25 | All error responses use RFC 7807 problem+json format with `type`, `title`, `status`, `detail` fields | Schema validation in Behat          |
+| NFR-26 | Refresh token grace window survives Redis restart (fallback: reject and force re-login)              | Integration test with Redis restart |
 
 ### Quality
 
-| ID | Requirement | Measurement |
-|----|-------------|-------------|
-| NFR-27 | PHPInsights: Complexity >= 94%, Quality = 100%, Architecture = 100%, Style = 100% | `make phpinsights` |
-| NFR-28 | Deptrac: 0 violations | `make deptrac` |
-| NFR-29 | Psalm: 0 errors | `make psalm` |
-| NFR-30 | Test coverage >= 90% for new auth code | `make tests-with-coverage` |
+| ID     | Requirement                                                                       | Measurement                |
+| ------ | --------------------------------------------------------------------------------- | -------------------------- |
+| NFR-27 | PHPInsights: Complexity >= 94%, Quality = 100%, Architecture = 100%, Style = 100% | `make phpinsights`         |
+| NFR-28 | Deptrac: 0 violations                                                             | `make deptrac`             |
+| NFR-29 | Psalm: 0 errors                                                                   | `make psalm`               |
+| NFR-30 | Test coverage >= 90% for new auth code                                            | `make tests-with-coverage` |
 
 ## Spec Decisions and Deviations
 
-| Decision | Rationale |
-|----------|-----------|
-| `/api/token` is refresh-only (no password grant) | Separates sign-in from token exchange; cleaner CQRS |
-| Session cookie contains a signed JWT (same format as bearer token) | Works with `stateless: true` firewall — no server-side PHP sessions needed |
-| Session cookie uses `SameSite=Lax` (not `Strict`) | Allows legitimate top-level navigation from external links |
-| Grace window default 60s (configurable via env var) | Balances crash recovery vs. replay attack window |
-| Sliding window for global rate limit (not token bucket) | More predictable behavior under sustained load |
-| Token bucket for registration rate limit | Allows short bursts while enforcing long-term limits |
-| Password grant disabled after sign-in ships | Prevents 2FA bypass via legacy grant type |
-| Bcrypt cost >= 12 with `migrate_from` for existing hashes | Re-hashes transparently on next login; no mass migration needed |
-| 8 recovery codes per 2FA enable | Industry standard (GitHub uses 16, Google uses 10); balance UX vs. security |
-| Recovery codes accepted at `/api/signin/2fa` (same endpoint as TOTP) | Simpler client implementation; server detects code format |
-| Access token TTL reduced from 1h to 15min | Limits JWT revocation window; immediate revocation via jti denylist deferred to Growth |
-| JWT includes `sid` (session ID) claim | Required for logout to identify which session to revoke; minimal JWT size impact |
-| `__Host-` cookie prefix | Browser-enforced: Secure flag, no Domain attribute, prevents subdomain cookie attacks |
-| Account lockout (20 attempts/1h) vs rate limiting only | Rate limiting alone allows indefinite low-rate brute force; lockout adds cumulative protection |
-| 2FA enablement revokes sessions (same as password change) | Prevents pre-2FA compromised sessions from persisting after user enables 2FA |
-| Constant-time credential validation | Prevents email enumeration via response time analysis; bcrypt hash against dummy on non-existent users |
+| Decision                                                             | Rationale                                                                                              |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `/api/token` is refresh-only (no password grant)                     | Separates sign-in from token exchange; cleaner CQRS                                                    |
+| Session cookie contains a signed JWT (same format as bearer token)   | Works with `stateless: true` firewall — no server-side PHP sessions needed                             |
+| Session cookie uses `SameSite=Lax` (not `Strict`)                    | Allows legitimate top-level navigation from external links                                             |
+| Grace window default 60s (configurable via env var)                  | Balances crash recovery vs. replay attack window                                                       |
+| Sliding window for global rate limit (not token bucket)              | More predictable behavior under sustained load                                                         |
+| Token bucket for registration rate limit                             | Allows short bursts while enforcing long-term limits                                                   |
+| Password grant disabled after sign-in ships                          | Prevents 2FA bypass via legacy grant type                                                              |
+| Bcrypt cost >= 12 with `migrate_from` for existing hashes            | Re-hashes transparently on next login; no mass migration needed                                        |
+| 8 recovery codes per 2FA enable                                      | Industry standard (GitHub uses 16, Google uses 10); balance UX vs. security                            |
+| Recovery codes accepted at `/api/signin/2fa` (same endpoint as TOTP) | Simpler client implementation; server detects code format                                              |
+| Access token TTL reduced from 1h to 15min                            | Limits JWT revocation window; immediate revocation via jti denylist deferred to Growth                 |
+| JWT includes `sid` (session ID) claim                                | Required for logout to identify which session to revoke; minimal JWT size impact                       |
+| `__Host-` cookie prefix                                              | Browser-enforced: Secure flag, no Domain attribute, prevents subdomain cookie attacks                  |
+| Account lockout (20 attempts/1h) vs rate limiting only               | Rate limiting alone allows indefinite low-rate brute force; lockout adds cumulative protection         |
+| 2FA enablement revokes sessions (same as password change)            | Prevents pre-2FA compromised sessions from persisting after user enables 2FA                           |
+| Constant-time credential validation                                  | Prevents email enumeration via response time analysis; bcrypt hash against dummy on non-existent users |
 
 ## Risks
 
-| Risk | Mitigation |
-|------|------------|
-| Refresh rotation edge cases causing unexpected 401s | Grace window + comprehensive Behat scenarios for crash/retry patterns |
-| Allowlist mistakes exposing protected endpoints | Integration test that enumerates all routes and verifies auth requirement |
-| 2FA code verification drift due to clock skew | Allow +/- 1 time window in TOTP validation |
-| Rate limiter false positives for shared IPs (NAT/corporate) | Configurable limits via env vars; authenticated users get higher limits |
-| Redis failure breaking rate limiting | Fail-open with logging alert (rate limiting is defense-in-depth, not sole protection) |
-| Password grant used by existing clients | Announce deprecation; disable in same release as sign-in endpoint |
-| User locks themselves out of 2FA | Recovery codes provided on setup; regeneration endpoint available |
-| Bcrypt cost increase slows sign-in | Cost 12 adds ~250ms; within SC-01 budget of 300ms P95 |
-| Enabling firewall breaks all existing tests | Dedicated test infrastructure story (Story 4.0) before firewall story |
-| Access control patterns don't match actual routes | Route enumeration integration test verifies every route |
-| GraphQL mutations bypass REST-level ownership checks | GraphQL-specific security expressions on all write mutations |
-| JWT remains valid after session revocation | 15-min TTL limits window; immediate revocation (jti denylist) is Growth item |
-| Timing-based email enumeration | Constant-time validation: always hash even for non-existent users |
-| Concurrent refresh token rotation creates orphan tokens | Atomic MongoDB operations (findOneAndUpdate) with preconditions |
-| Account lockout false positives (attacker locks victim) | 15-min lockout duration is short; rate limiting still primary defense |
-| 2FA encryption key compromise | Key in env var (not code); rotation strategy is Growth item |
-| GraphQL batching bypasses rate limiting (OWASP API2:2023) | Reject batch requests at GraphQL endpoint; auth operations excluded from GraphQL |
-| Bearer token sidejacking (stolen JWT replayed from other device) | 15-min TTL limits window; token fingerprinting is Growth item |
-| Distributed credential stuffing across rotating IPs | Per-email rate limit + account lockout bounds total attempts; CAPTCHA is Growth item |
-| JWT private key compromise via file permissions | Enforce 600 permissions; migrate to env var/secret in Growth |
-| User exhausts all recovery codes without regenerating | Warning when remaining <= 2; email notification is Growth item |
+| Risk                                                             | Mitigation                                                                            |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Refresh rotation edge cases causing unexpected 401s              | Grace window + comprehensive Behat scenarios for crash/retry patterns                 |
+| Allowlist mistakes exposing protected endpoints                  | Integration test that enumerates all routes and verifies auth requirement             |
+| 2FA code verification drift due to clock skew                    | Allow +/- 1 time window in TOTP validation                                            |
+| Rate limiter false positives for shared IPs (NAT/corporate)      | Configurable limits via env vars; authenticated users get higher limits               |
+| Redis failure breaking rate limiting                             | Fail-open with logging alert (rate limiting is defense-in-depth, not sole protection) |
+| Password grant used by existing clients                          | Announce deprecation; disable in same release as sign-in endpoint                     |
+| User locks themselves out of 2FA                                 | Recovery codes provided on setup; regeneration endpoint available                     |
+| Bcrypt cost increase slows sign-in                               | Cost 12 adds ~250ms; within SC-01 budget of 300ms P95                                 |
+| Enabling firewall breaks all existing tests                      | Dedicated test infrastructure story (Story 4.0) before firewall story                 |
+| Access control patterns don't match actual routes                | Route enumeration integration test verifies every route                               |
+| GraphQL mutations bypass REST-level ownership checks             | GraphQL-specific security expressions on all write mutations                          |
+| JWT remains valid after session revocation                       | 15-min TTL limits window; immediate revocation (jti denylist) is Growth item          |
+| Timing-based email enumeration                                   | Constant-time validation: always hash even for non-existent users                     |
+| Concurrent refresh token rotation creates orphan tokens          | Atomic MongoDB operations (findOneAndUpdate) with preconditions                       |
+| Account lockout false positives (attacker locks victim)          | 15-min lockout duration is short; rate limiting still primary defense                 |
+| 2FA encryption key compromise                                    | Key in env var (not code); rotation strategy is Growth item                           |
+| GraphQL batching bypasses rate limiting (OWASP API2:2023)        | Reject batch requests at GraphQL endpoint; auth operations excluded from GraphQL      |
+| Bearer token sidejacking (stolen JWT replayed from other device) | 15-min TTL limits window; token fingerprinting is Growth item                         |
+| Distributed credential stuffing across rotating IPs              | Per-email rate limit + account lockout bounds total attempts; CAPTCHA is Growth item  |
+| JWT private key compromise via file permissions                  | Enforce 600 permissions; migrate to env var/secret in Growth                          |
+| User exhausts all recovery codes without regenerating            | Warning when remaining <= 2; email notification is Growth item                        |
 
 ## Closed Questions
 
-| Question | Decision | Rationale |
-|----------|----------|-----------|
-| Grace window duration | 60 seconds | Configurable via `REFRESH_TOKEN_GRACE_WINDOW_SECONDS` |
-| Short TTL for non-remembered sessions | 30 minutes | Standard for banking/sensitive apps; configurable via `SESSION_TTL_SHORT` |
-| Long TTL for remembered sessions | 30 days | Matches refresh token TTL; configurable via `SESSION_TTL_LONG` |
-| `ROLE_SERVICE` vs. specific OAuth scope for batch | `ROLE_SERVICE` | Simpler; service-to-service tokens get this role |
-| GraphQL max query depth | 20 | API Platform default; sufficient for current schema depth |
-| GraphQL max query complexity | 500 | API Platform default; prevents DoS while allowing normal queries |
-| Recovery code count | 8 | Industry standard range (8-16); balance usability vs. security |
-| Recovery code format | 8 alphanumeric characters, grouped as `xxxx-xxxx` | Easy to read/type; ~47 bits entropy per code |
-| Access token TTL | 15 minutes | Balances UX (less frequent refresh) vs. security (shorter revocation window); configurable via `OAUTH_ACCESS_TOKEN_TTL` |
-| JWT revocation strategy (MVP) | Reduced TTL (15 min) — accept revocation window | jti denylist adds Redis hard dependency on every request; not justified for MVP |
-| JWT issuer claim value | `vilnacrm-user-service` | Prevents token confusion between microservices |
-| JWT audience claim value | `vilnacrm-api` | Prevents cross-service token acceptance |
-| Account lockout threshold | 20 attempts / 1 hour / 15-min lockout | High enough to avoid false positives for legitimate users who forget passwords |
-| 2FA encryption algorithm | AES-256-GCM | Authenticated encryption (integrity + confidentiality); standard recommendation |
+| Question                                          | Decision                                          | Rationale                                                                                                               |
+| ------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Grace window duration                             | 60 seconds                                        | Configurable via `REFRESH_TOKEN_GRACE_WINDOW_SECONDS`                                                                   |
+| Short TTL for non-remembered sessions             | 30 minutes                                        | Standard for banking/sensitive apps; configurable via `SESSION_TTL_SHORT`                                               |
+| Long TTL for remembered sessions                  | 30 days                                           | Matches refresh token TTL; configurable via `SESSION_TTL_LONG`                                                          |
+| `ROLE_SERVICE` vs. specific OAuth scope for batch | `ROLE_SERVICE`                                    | Simpler; service-to-service tokens get this role                                                                        |
+| GraphQL max query depth                           | 20                                                | API Platform default; sufficient for current schema depth                                                               |
+| GraphQL max query complexity                      | 500                                               | API Platform default; prevents DoS while allowing normal queries                                                        |
+| Recovery code count                               | 8                                                 | Industry standard range (8-16); balance usability vs. security                                                          |
+| Recovery code format                              | 8 alphanumeric characters, grouped as `xxxx-xxxx` | Easy to read/type; ~47 bits entropy per code                                                                            |
+| Access token TTL                                  | 15 minutes                                        | Balances UX (less frequent refresh) vs. security (shorter revocation window); configurable via `OAUTH_ACCESS_TOKEN_TTL` |
+| JWT revocation strategy (MVP)                     | Reduced TTL (15 min) — accept revocation window   | jti denylist adds Redis hard dependency on every request; not justified for MVP                                         |
+| JWT issuer claim value                            | `vilnacrm-user-service`                           | Prevents token confusion between microservices                                                                          |
+| JWT audience claim value                          | `vilnacrm-api`                                    | Prevents cross-service token acceptance                                                                                 |
+| Account lockout threshold                         | 20 attempts / 1 hour / 15-min lockout             | High enough to avoid false positives for legitimate users who forget passwords                                          |
+| 2FA encryption algorithm                          | AES-256-GCM                                       | Authenticated encryption (integrity + confidentiality); standard recommendation                                         |
 
 ## References
 

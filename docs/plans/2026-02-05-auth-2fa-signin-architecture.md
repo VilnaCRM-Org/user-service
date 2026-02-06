@@ -1,6 +1,30 @@
 ---
-stepsCompleted: [init, context, decisions, data-model, api-design, auth-gate, rate-limiter, security-headers, diagrams, security-review, tea-party-challenge, tea-party-challenge-r2, tea-party-challenge-r3]
-inputDocuments: [docs/plans/2026-02-05-auth-2fa-signin-prd.md, CLAUDE.md, config/packages/security.yaml, config/packages/rate_limiter.yaml, config/api_platform/resources/User.yaml, config/services.yaml, infrastructure/docker/caddy/Caddyfile]
+stepsCompleted:
+  [
+    init,
+    context,
+    decisions,
+    data-model,
+    api-design,
+    auth-gate,
+    rate-limiter,
+    security-headers,
+    diagrams,
+    security-review,
+    tea-party-challenge,
+    tea-party-challenge-r2,
+    tea-party-challenge-r3,
+  ]
+inputDocuments:
+  [
+    docs/plans/2026-02-05-auth-2fa-signin-prd.md,
+    CLAUDE.md,
+    config/packages/security.yaml,
+    config/packages/rate_limiter.yaml,
+    config/api_platform/resources/User.yaml,
+    config/services.yaml,
+    infrastructure/docker/caddy/Caddyfile,
+  ]
 workflowType: 'architecture'
 project_name: 'VilnaCRM User Service — Auth Sign-in + 2FA'
 author: 'Valerii'
@@ -23,6 +47,7 @@ This design extends the VilnaCRM User Service with sign-in, 2FA (including recov
 **Critical finding:** The current Symfony firewall is disabled (`security: false`). This architecture explicitly addresses that gap.
 
 **Additional findings (TEA Party Mode R1):**
+
 - Bcrypt cost is 4 (must be >= 12)
 - Confirmation token length is 10 characters (must be >= 32)
 - Password grant bypasses 2FA (must be disabled)
@@ -33,6 +58,7 @@ This design extends the VilnaCRM User Service with sign-in, 2FA (including recov
 - No audit logging for auth events
 
 **Additional findings (TEA Party Mode R2 — OWASP 2025 cross-reference):**
+
 - JWT access token remains valid after session revocation (1h window → reduced to 15 min)
 - JWT claims structure not specified (missing iss, aud, nbf, jti, sid)
 - 2FA enablement doesn't invalidate existing sessions (stolen session persists)
@@ -56,27 +82,27 @@ This design extends the VilnaCRM User Service with sign-in, 2FA (including recov
 
 **Options considered:**
 
-| Option | Pros | Cons |
-|--------|------|------|
-| A. Bearer only | Simple, stateless | No cookie support for web; XSS risk if tokens stored in localStorage |
-| B. Cookie only | Secure for web | Mobile/API clients need bearer tokens |
-| **C. Dual (chosen)** | Both client types supported | Slightly more complex auth gate |
+| Option               | Pros                        | Cons                                                                 |
+| -------------------- | --------------------------- | -------------------------------------------------------------------- |
+| A. Bearer only       | Simple, stateless           | No cookie support for web; XSS risk if tokens stored in localStorage |
+| B. Cookie only       | Secure for web              | Mobile/API clients need bearer tokens                                |
+| **C. Dual (chosen)** | Both client types supported | Slightly more complex auth gate                                      |
 
 **Implementation:** Symfony security firewall with a custom authenticator that checks `Authorization: Bearer <token>` header first, then falls back to extracting the JWT from the session cookie. Both resolve to the same `User` entity. The firewall remains `stateless: true` because both methods use self-contained JWTs — no server-side PHP sessions are needed.
 
 **JWT claims structure:**
 
-| Claim | Type | Value | Purpose |
-|-------|------|-------|---------|
-| `sub` | string | User ULID | Subject (RFC 7519) |
-| `iss` | string | `vilnacrm-user-service` | Issuer — prevents token confusion between services |
-| `aud` | string | `vilnacrm-api` | Audience — rejects tokens intended for other services |
-| `exp` | int | Issue time + 15 min | Expiration (reduced from 1h to limit revocation window) |
-| `iat` | int | Current timestamp | Issued-at |
-| `nbf` | int | Current timestamp | Not-before — prevents premature token usage |
-| `jti` | string | Random UUID | JWT ID — enables future jti denylist for immediate revocation (Growth) |
-| `sid` | string | AuthSession ULID | Session ID — required for logout/session identification |
-| `roles` | string[] | `["ROLE_USER"]` or `["ROLE_SERVICE"]` | Symfony Security roles |
+| Claim   | Type     | Value                                 | Purpose                                                                |
+| ------- | -------- | ------------------------------------- | ---------------------------------------------------------------------- |
+| `sub`   | string   | User ULID                             | Subject (RFC 7519)                                                     |
+| `iss`   | string   | `vilnacrm-user-service`               | Issuer — prevents token confusion between services                     |
+| `aud`   | string   | `vilnacrm-api`                        | Audience — rejects tokens intended for other services                  |
+| `exp`   | int      | Issue time + 15 min                   | Expiration (reduced from 1h to limit revocation window)                |
+| `iat`   | int      | Current timestamp                     | Issued-at                                                              |
+| `nbf`   | int      | Current timestamp                     | Not-before — prevents premature token usage                            |
+| `jti`   | string   | Random UUID                           | JWT ID — enables future jti denylist for immediate revocation (Growth) |
+| `sid`   | string   | AuthSession ULID                      | Session ID — required for logout/session identification                |
+| `roles` | string[] | `["ROLE_USER"]` or `["ROLE_SERVICE"]` | Symfony Security roles                                                 |
 
 **Validation rules:** DualAuthenticator MUST verify: `iss` is a single string (not array) matching `vilnacrm-user-service`, `aud` matches `vilnacrm-api`, `nbf <= now`, `exp > now`, algorithm is RS256. Reject any token failing these checks.
 
@@ -84,15 +110,15 @@ This design extends the VilnaCRM User Service with sign-in, 2FA (including recov
 
 **Cookie specification:**
 
-| Attribute | Value | Notes |
-|-----------|-------|-------|
-| Name | `__Host-auth_token` | `__Host-` prefix enforces: Secure, no Domain attr, prevents subdomain attacks |
-| Value | Signed JWT (same as bearer token) | Self-contained; works with stateless firewall |
-| HttpOnly | true | Prevents JS access (XSS mitigation) |
-| Secure | true | HTTPS only (enforced by `__Host-` prefix) |
-| SameSite | Lax | Allows top-level navigation from external links |
-| Path | `/api` | Scoped to API routes only |
-| Max-Age | 900 (15 min) or 2592000 (30 days) | Based on `remember_me` flag; short session matches JWT TTL |
+| Attribute | Value                             | Notes                                                                         |
+| --------- | --------------------------------- | ----------------------------------------------------------------------------- |
+| Name      | `__Host-auth_token`               | `__Host-` prefix enforces: Secure, no Domain attr, prevents subdomain attacks |
+| Value     | Signed JWT (same as bearer token) | Self-contained; works with stateless firewall                                 |
+| HttpOnly  | true                              | Prevents JS access (XSS mitigation)                                           |
+| Secure    | true                              | HTTPS only (enforced by `__Host-` prefix)                                     |
+| SameSite  | Lax                               | Allows top-level navigation from external links                               |
+| Path      | `/api`                            | Scoped to API routes only                                                     |
+| Max-Age   | 900 (15 min) or 2592000 (30 days) | Based on `remember_me` flag; short session matches JWT TTL                    |
 
 **CORS requirement:** When cookie-based auth is used, CORS must be configured with `Access-Control-Allow-Credentials: true` and an explicit origin (not wildcard `*`). This is already correct in production config but must be enforced in development too.
 
@@ -106,32 +132,32 @@ This design extends the VilnaCRM User Service with sign-in, 2FA (including recov
 
 **Options considered:**
 
-| Option | Pros | Cons |
-|--------|------|------|
-| A. Single global limit | Simple | Doesn't protect sensitive endpoints adequately |
-| B. WAF/API Gateway only | No code changes | Doesn't integrate with app-level identity; vendor lock-in |
-| **C. Multi-tier app-level (chosen)** | Granular; uses existing Redis + Symfony RateLimiter | Requires a kernel listener and multiple limiter configs |
+| Option                               | Pros                                                | Cons                                                      |
+| ------------------------------------ | --------------------------------------------------- | --------------------------------------------------------- |
+| A. Single global limit               | Simple                                              | Doesn't protect sensitive endpoints adequately            |
+| B. WAF/API Gateway only              | No code changes                                     | Doesn't integrate with app-level identity; vendor lock-in |
+| **C. Multi-tier app-level (chosen)** | Granular; uses existing Redis + Symfony RateLimiter | Requires a kernel listener and multiple limiter configs   |
 
 **Rate limit tiers (complete — all endpoints):**
 
-| Tier | Endpoint | Policy | Limit | Key |
-|------|----------|--------|-------|-----|
-| Global (anonymous) | All `/api/` | Sliding window | 100/min | Client IP |
-| Global (authenticated) | All `/api/` | Sliding window | 300/min | Client IP |
-| Sign-in | `POST /api/signin` | Sliding window | 10/min per IP, 5/min per email | IP + email |
-| 2FA verification | `POST /api/signin/2fa` | Sliding window | 5/min | Pending session ID |
-| Registration | `POST /api/users` | Token bucket | 5/min | Client IP |
-| Token exchange | `POST /token` | Sliding window | 10/min | client_id |
-| Resend confirmation | `POST /api/users/{id}/resend-...` | Token bucket | 3/min per IP + 3/min per target | Client IP + target user ID |
-| Password reset | `POST /api/reset-password` | Token bucket | 1000/hr | Email (existing) |
-| Email confirmation | `PATCH /api/users/confirm` | Sliding window | 10/min | Client IP |
-| User collection | `GET /api/users` | Sliding window | 30/min | Client IP |
-| 2FA setup | `POST /api/users/2fa/setup` | Sliding window | 5/min | User ID |
-| 2FA confirm | `POST /api/users/2fa/confirm` | Sliding window | 5/min | User ID |
-| 2FA disable | `POST /api/users/2fa/disable` | Sliding window | 3/min | User ID |
-| User update | `PATCH/PUT /api/users/{id}` | Sliding window | 10/min | User ID |
-| User delete | `DELETE /api/users/{id}` | Sliding window | 3/min | User ID |
-| Recovery codes | `POST /api/users/2fa/recovery-codes` | Sliding window | 3/min | User ID |
+| Tier                   | Endpoint                             | Policy         | Limit                           | Key                        |
+| ---------------------- | ------------------------------------ | -------------- | ------------------------------- | -------------------------- |
+| Global (anonymous)     | All `/api/`                          | Sliding window | 100/min                         | Client IP                  |
+| Global (authenticated) | All `/api/`                          | Sliding window | 300/min                         | Client IP                  |
+| Sign-in                | `POST /api/signin`                   | Sliding window | 10/min per IP, 5/min per email  | IP + email                 |
+| 2FA verification       | `POST /api/signin/2fa`               | Sliding window | 5/min                           | Pending session ID         |
+| Registration           | `POST /api/users`                    | Token bucket   | 5/min                           | Client IP                  |
+| Token exchange         | `POST /token`                        | Sliding window | 10/min                          | client_id                  |
+| Resend confirmation    | `POST /api/users/{id}/resend-...`    | Token bucket   | 3/min per IP + 3/min per target | Client IP + target user ID |
+| Password reset         | `POST /api/reset-password`           | Token bucket   | 1000/hr                         | Email (existing)           |
+| Email confirmation     | `PATCH /api/users/confirm`           | Sliding window | 10/min                          | Client IP                  |
+| User collection        | `GET /api/users`                     | Sliding window | 30/min                          | Client IP                  |
+| 2FA setup              | `POST /api/users/2fa/setup`          | Sliding window | 5/min                           | User ID                    |
+| 2FA confirm            | `POST /api/users/2fa/confirm`        | Sliding window | 5/min                           | User ID                    |
+| 2FA disable            | `POST /api/users/2fa/disable`        | Sliding window | 3/min                           | User ID                    |
+| User update            | `PATCH/PUT /api/users/{id}`          | Sliding window | 10/min                          | User ID                    |
+| User delete            | `DELETE /api/users/{id}`             | Sliding window | 3/min                           | User ID                    |
+| Recovery codes         | `POST /api/users/2fa/recovery-codes` | Sliding window | 3/min                           | User ID                    |
 
 **Implementation:** A single `ApiRateLimitListener` registered at `kernel.request` priority 120 (before auth gate). Placed in `Shared/Application/EventListener/` alongside existing listeners. Resolves the appropriate limiter factory based on route + method. All limits configurable via env vars.
 
@@ -149,13 +175,13 @@ This design extends the VilnaCRM User Service with sign-in, 2FA (including recov
 firewalls:
   oauth:
     pattern: ^/(token|authorize|\.well-known)
-    security: false  # OAuth endpoints handle their own auth
+    security: false # OAuth endpoints handle their own auth
 
   api:
     pattern: ^/
     security: true
     stateless: true
-    oauth2: true  # League OAuth2 Server authenticator
+    oauth2: true # League OAuth2 Server authenticator
 ```
 
 **Access control rules (order matters):**
@@ -182,6 +208,7 @@ access_control:
 ```
 
 **Key corrections from TEA review:**
+
 1. Password reset route corrected from `^/api/users/password-reset` to `^/api/reset-password` (matching actual `EmptyResponse.yaml` resource routes)
 2. Health check route corrected to include both `/api/health` (API Platform) and `/healthz` (if Caddy-level)
 3. All routes verified against `bin/console debug:router` output
@@ -211,34 +238,34 @@ resendEmailTo:
 
 **Complete endpoint map:**
 
-| Route | Method | Auth Required | Rate Limit Tier |
-|-------|--------|---------------|-----------------|
-| `/api/users` | GET | ROLE_USER | 30/min per IP |
-| `/api/users/{id}` | GET | ROLE_USER | Global |
-| `/api/users` | POST | PUBLIC_ACCESS | 5/min per IP (registration) |
-| `/api/users/batch` | POST | ROLE_SERVICE | Global |
-| `/api/users/{id}` | PATCH | ROLE_USER + ownership | 10/min per user |
-| `/api/users/{id}` | PUT | ROLE_USER + ownership | 10/min per user |
-| `/api/users/{id}` | DELETE | ROLE_USER + ownership | 3/min per user |
-| `/api/users/confirm` | PATCH | PUBLIC_ACCESS | 10/min per IP |
-| `/api/users/{id}/resend-confirmation-email` | POST | ROLE_USER + ownership | 3/min per IP + 3/min per target |
-| `/api/reset-password` | POST | PUBLIC_ACCESS | 1000/hr per email |
-| `/api/reset-password/confirm` | POST | PUBLIC_ACCESS | 10/min per IP |
-| `/api/signin` | POST | PUBLIC_ACCESS | 10/min IP + 5/min email |
-| `/api/signin/2fa` | POST | PUBLIC_ACCESS | 5/min per session |
-| `/api/token` | POST | PUBLIC_ACCESS | 10/min per client_id |
-| `/api/signout` | POST | ROLE_USER | 10/min per user |
-| `/api/signout/all` | POST | ROLE_USER | 5/min per user |
-| `/api/users/2fa/setup` | POST | ROLE_USER | 5/min per user |
-| `/api/users/2fa/confirm` | POST | ROLE_USER | 5/min per user |
-| `/api/users/2fa/disable` | POST | ROLE_USER | 3/min per user |
-| `/api/users/2fa/recovery-codes` | POST | ROLE_USER | 3/min per user |
-| `/api/health` | GET | PUBLIC_ACCESS | Global |
-| `/api/docs` | GET | PUBLIC_ACCESS | Global |
-| `/token` | POST | Own auth (OAuth) | 10/min per client_id |
-| `/authorize` | GET | IS_AUTHENTICATED | Global |
-| `/.well-known/*` | GET | security: false | Global |
-| `/graphql` | POST | ROLE_USER + per-mutation ownership | Global + depth/complexity |
+| Route                                       | Method | Auth Required                      | Rate Limit Tier                 |
+| ------------------------------------------- | ------ | ---------------------------------- | ------------------------------- |
+| `/api/users`                                | GET    | ROLE_USER                          | 30/min per IP                   |
+| `/api/users/{id}`                           | GET    | ROLE_USER                          | Global                          |
+| `/api/users`                                | POST   | PUBLIC_ACCESS                      | 5/min per IP (registration)     |
+| `/api/users/batch`                          | POST   | ROLE_SERVICE                       | Global                          |
+| `/api/users/{id}`                           | PATCH  | ROLE_USER + ownership              | 10/min per user                 |
+| `/api/users/{id}`                           | PUT    | ROLE_USER + ownership              | 10/min per user                 |
+| `/api/users/{id}`                           | DELETE | ROLE_USER + ownership              | 3/min per user                  |
+| `/api/users/confirm`                        | PATCH  | PUBLIC_ACCESS                      | 10/min per IP                   |
+| `/api/users/{id}/resend-confirmation-email` | POST   | ROLE_USER + ownership              | 3/min per IP + 3/min per target |
+| `/api/reset-password`                       | POST   | PUBLIC_ACCESS                      | 1000/hr per email               |
+| `/api/reset-password/confirm`               | POST   | PUBLIC_ACCESS                      | 10/min per IP                   |
+| `/api/signin`                               | POST   | PUBLIC_ACCESS                      | 10/min IP + 5/min email         |
+| `/api/signin/2fa`                           | POST   | PUBLIC_ACCESS                      | 5/min per session               |
+| `/api/token`                                | POST   | PUBLIC_ACCESS                      | 10/min per client_id            |
+| `/api/signout`                              | POST   | ROLE_USER                          | 10/min per user                 |
+| `/api/signout/all`                          | POST   | ROLE_USER                          | 5/min per user                  |
+| `/api/users/2fa/setup`                      | POST   | ROLE_USER                          | 5/min per user                  |
+| `/api/users/2fa/confirm`                    | POST   | ROLE_USER                          | 5/min per user                  |
+| `/api/users/2fa/disable`                    | POST   | ROLE_USER                          | 3/min per user                  |
+| `/api/users/2fa/recovery-codes`             | POST   | ROLE_USER                          | 3/min per user                  |
+| `/api/health`                               | GET    | PUBLIC_ACCESS                      | Global                          |
+| `/api/docs`                                 | GET    | PUBLIC_ACCESS                      | Global                          |
+| `/token`                                    | POST   | Own auth (OAuth)                   | 10/min per client_id            |
+| `/authorize`                                | GET    | IS_AUTHENTICATED                   | Global                          |
+| `/.well-known/*`                            | GET    | security: false                    | Global                          |
+| `/graphql`                                  | POST   | ROLE_USER + per-mutation ownership | Global + depth/complexity       |
 
 ## ADR-04: Security Headers — Caddy + Request Body Size Limit
 
@@ -246,14 +273,14 @@ resendEmailTo:
 
 **Headers:**
 
-| Header | Value | Layer |
-|--------|-------|-------|
-| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Caddy (prod only) |
-| `X-Content-Type-Options` | `nosniff` | Caddy |
-| `X-Frame-Options` | `DENY` | Caddy |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` | Caddy |
-| `Content-Security-Policy` | `default-src 'none'; frame-ancestors 'none'` | Caddy |
-| `-Server` | (removed) | Caddy |
+| Header                      | Value                                        | Layer             |
+| --------------------------- | -------------------------------------------- | ----------------- |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains`        | Caddy (prod only) |
+| `X-Content-Type-Options`    | `nosniff`                                    | Caddy             |
+| `X-Frame-Options`           | `DENY`                                       | Caddy             |
+| `Referrer-Policy`           | `strict-origin-when-cross-origin`            | Caddy             |
+| `Content-Security-Policy`   | `default-src 'none'; frame-ancestors 'none'` | Caddy             |
+| `-Server`                   | (removed)                                    | Caddy             |
 
 **Caddy block (production):**
 
@@ -337,6 +364,7 @@ when@prod:
 OWASP API2:2023 documents that GraphQL batching bypasses per-request rate limiting. A single HTTP POST containing an array of 1,000 mutations counts as 1 request for the rate limiter.
 
 **Required defense — implement both:**
+
 1. Add `GraphQLBatchRejectListener` at `kernel.request` priority 130 (before rate limiter): if request path is `/graphql` and body is a JSON array (batch), reject with 400.
 2. In all auth-related API Platform resource configs, set `graphql: false` to prevent auto-exposure of sign-in, 2FA, token refresh, and sign-out operations via GraphQL mutations.
 
@@ -349,6 +377,7 @@ OWASP API2:2023 documents that GraphQL batching bypasses per-request rate limiti
 **Context (TEA R3 finding):** The current codebase has JWT key files at `config/jwt/private.pem` with 666 permissions (world-readable/writable). A compromised dependency or path traversal vulnerability could expose the signing key, allowing JWT forgery for any user/role.
 
 **Implementation:**
+
 - `config/jwt/private.pem`: permissions 600 (owner read/write only)
 - `config/jwt/public.pem`: permissions 644 (owner write, all read)
 - Dockerfile: `RUN chmod 600 /app/config/jwt/private.pem`
@@ -365,6 +394,7 @@ OWASP API2:2023 documents that GraphQL batching bypasses per-request rate limiti
 **MVP mitigation:** 15-minute access token TTL limits the theft window. Refresh token rotation detects concurrent usage (theft).
 
 **Growth implementation:**
+
 - On sign-in/refresh: generate random fingerprint, set as `__Secure-Fgp` cookie, embed `SHA-256(fingerprint)` as `fgp` claim in JWT
 - DualAuthenticator: if JWT contains `fgp` claim, verify `__Secure-Fgp` cookie matches
 - Trade-off: Only binds tokens for browser clients; API clients still use unbound bearer tokens
@@ -381,7 +411,7 @@ OWASP API2:2023 documents that GraphQL batching bypasses per-request rate limiti
 # config/packages/league_oauth2_server.yaml
 league_oauth2_server:
   authorization_server:
-    enable_password_grant: false  # was: true
+    enable_password_grant: false # was: true
 ```
 
 **Migration:** Existing clients using the password grant must migrate to `POST /api/signin`. This change ships in the same release as the sign-in endpoint.
@@ -392,19 +422,19 @@ league_oauth2_server:
 
 **Events logged:**
 
-| Event | Log Level | Fields |
-|-------|-----------|--------|
-| `UserSignedIn` | INFO | userId, ip, userAgent, twoFactorUsed |
-| `SignInFailed` | WARNING | attemptedEmail, ip, userAgent, reason |
-| `TwoFactorCompleted` | INFO | userId, ip, method (totp/recovery) |
-| `TwoFactorFailed` | WARNING | pendingSessionId, ip, reason |
-| `TwoFactorEnabled` | INFO | userId |
-| `TwoFactorDisabled` | INFO | userId |
-| `SessionRevoked` | INFO | sessionId, userId, reason (logout/password-change/theft) |
-| `AllSessionsRevoked` | INFO | userId, reason |
-| `RefreshTokenRotated` | DEBUG | sessionId |
-| `RefreshTokenTheftDetected` | CRITICAL | sessionId, userId, ip |
-| `RecoveryCodeUsed` | WARNING | userId, remainingCodes |
+| Event                       | Log Level | Fields                                                   |
+| --------------------------- | --------- | -------------------------------------------------------- |
+| `UserSignedIn`              | INFO      | userId, ip, userAgent, twoFactorUsed                     |
+| `SignInFailed`              | WARNING   | attemptedEmail, ip, userAgent, reason                    |
+| `TwoFactorCompleted`        | INFO      | userId, ip, method (totp/recovery)                       |
+| `TwoFactorFailed`           | WARNING   | pendingSessionId, ip, reason                             |
+| `TwoFactorEnabled`          | INFO      | userId                                                   |
+| `TwoFactorDisabled`         | INFO      | userId                                                   |
+| `SessionRevoked`            | INFO      | sessionId, userId, reason (logout/password-change/theft) |
+| `AllSessionsRevoked`        | INFO      | userId, reason                                           |
+| `RefreshTokenRotated`       | DEBUG     | sessionId                                                |
+| `RefreshTokenTheftDetected` | CRITICAL  | sessionId, userId, ip                                    |
+| `RecoveryCodeUsed`          | WARNING   | userId, remainingCodes                                   |
 
 **Implementation:** Domain events are already part of the CQRS pattern. New event classes extend `DomainEvent`. Event subscribers (auto-tagged via `_instanceof`) write to the Symfony logger with structured context arrays. No new infrastructure needed — leverages existing `monolog` configuration.
 
@@ -433,6 +463,7 @@ Existing passwords hashed at cost 4 will be re-hashed at cost 12 on next success
 **Context:** Rate limiting (5/min per email) resets each sliding window. A persistent attacker can sustain 5 attempts/minute indefinitely = 7,200 attempts/day. Account lockout adds cumulative protection.
 
 **Implementation:**
+
 - Redis counter per email: key `signin_lockout:{email}`, TTL 1 hour
 - Increment on each failed sign-in
 - At 20: reject with 423 Locked + `Retry-After: 900` for 15 minutes
@@ -463,55 +494,55 @@ TWO_FACTOR_ENCRYPTION_KEY=base64:... # 256-bit key, base64-encoded
 
 **AuthSession** (`User/Domain/Entity/AuthSession`):
 
-| Field | Type | Notes |
-|-------|------|-------|
-| id | ULID | Primary key |
-| userId | ULID | FK to User |
-| ipAddress | string | Client IP at session creation (audit trail) |
-| userAgent | string | Client user-agent at session creation (audit trail) |
-| createdAt | DateTimeImmutable | Session creation |
-| expiresAt | DateTimeImmutable | Absolute expiry |
-| revokedAt | DateTimeImmutable (nullable) | If session revoked |
-| rememberMe | bool | Long vs short TTL |
+| Field      | Type                         | Notes                                               |
+| ---------- | ---------------------------- | --------------------------------------------------- |
+| id         | ULID                         | Primary key                                         |
+| userId     | ULID                         | FK to User                                          |
+| ipAddress  | string                       | Client IP at session creation (audit trail)         |
+| userAgent  | string                       | Client user-agent at session creation (audit trail) |
+| createdAt  | DateTimeImmutable            | Session creation                                    |
+| expiresAt  | DateTimeImmutable            | Absolute expiry                                     |
+| revokedAt  | DateTimeImmutable (nullable) | If session revoked                                  |
+| rememberMe | bool                         | Long vs short TTL                                   |
 
 **AuthRefreshToken** (`User/Domain/Entity/AuthRefreshToken`):
 
-| Field | Type | Notes |
-|-------|------|-------|
-| id | ULID | Primary key |
-| sessionId | ULID | FK to AuthSession |
-| tokenHash | string | SHA-256 of plaintext token |
-| rotatedAt | DateTimeImmutable (nullable) | When this token was rotated |
-| graceUsed | bool | Whether grace reuse has been consumed (default false) |
-| revokedAt | DateTimeImmutable (nullable) | Explicit revocation |
-| expiresAt | DateTimeImmutable | Absolute expiry |
+| Field     | Type                         | Notes                                                 |
+| --------- | ---------------------------- | ----------------------------------------------------- |
+| id        | ULID                         | Primary key                                           |
+| sessionId | ULID                         | FK to AuthSession                                     |
+| tokenHash | string                       | SHA-256 of plaintext token                            |
+| rotatedAt | DateTimeImmutable (nullable) | When this token was rotated                           |
+| graceUsed | bool                         | Whether grace reuse has been consumed (default false) |
+| revokedAt | DateTimeImmutable (nullable) | Explicit revocation                                   |
+| expiresAt | DateTimeImmutable            | Absolute expiry                                       |
 
 **PendingTwoFactor** (`User/Domain/Entity/PendingTwoFactor`):
 
-| Field | Type | Notes |
-|-------|------|-------|
-| id | ULID | Primary key (= pending_session_id) |
-| userId | ULID | FK to User |
-| createdAt | DateTimeImmutable | TTL anchor (5 min default) |
+| Field     | Type              | Notes                                      |
+| --------- | ----------------- | ------------------------------------------ |
+| id        | ULID              | Primary key (= pending_session_id)         |
+| userId    | ULID              | FK to User                                 |
+| createdAt | DateTimeImmutable | TTL anchor (5 min default)                 |
 | expiresAt | DateTimeImmutable | Auto-expiry; MongoDB TTL index for cleanup |
 
 **RecoveryCode** (`User/Domain/Entity/RecoveryCode`):
 
-| Field | Type | Notes |
-|-------|------|-------|
-| id | ULID | Primary key |
-| userId | ULID | FK to User |
-| codeHash | string | SHA-256 of plaintext code |
-| usedAt | DateTimeImmutable (nullable) | When code was consumed |
+| Field    | Type                         | Notes                     |
+| -------- | ---------------------------- | ------------------------- |
+| id       | ULID                         | Primary key               |
+| userId   | ULID                         | FK to User                |
+| codeHash | string                       | SHA-256 of plaintext code |
+| usedAt   | DateTimeImmutable (nullable) | When code was consumed    |
 
 ### Modified Entity
 
 **User** — add fields:
 
-| Field | Type | Notes |
-|-------|------|-------|
-| twoFactorEnabled | bool | Default false |
-| twoFactorSecret | string (nullable) | Encrypted TOTP secret |
+| Field            | Type              | Notes                 |
+| ---------------- | ----------------- | --------------------- |
+| twoFactorEnabled | bool              | Default false         |
+| twoFactorSecret  | string (nullable) | Encrypted TOTP secret |
 
 ### Doctrine ODM Mappings
 
@@ -707,18 +738,18 @@ graph TB
 
 ## Deptrac Layer Compliance
 
-| Component | Layer | Allowed Dependencies |
-|-----------|-------|---------------------|
-| `SignInCommand`, `RefreshTokenCommand`, etc. | Domain | None (pure) |
-| `SignInCommandHandler`, etc. | Domain | Domain entities, repository interfaces |
-| `AuthSession`, `AuthRefreshToken`, `PendingTwoFactor`, `RecoveryCode` | Domain | Domain value objects only |
-| `SignInProcessor`, `CompleteTwoFactorProcessor`, etc. | Application | Domain + Infrastructure (via interfaces) |
-| `ApiRateLimitListener` | Shared/Application | Symfony RateLimiter (framework allowed in Application) |
-| `MongoDBAuthSessionRepository`, `DualAuthenticator` | Infrastructure | Domain + Application |
-| `TOTPService` | Infrastructure | Domain interfaces |
-| `AuthEventLogSubscriber` | Infrastructure | Domain events + PSR Logger |
-| `AccountLockoutService` | Infrastructure | Redis + Domain interface |
-| `TwoFactorSecretEncryptor` | Infrastructure | Domain interface + AES-256-GCM |
+| Component                                                             | Layer              | Allowed Dependencies                                   |
+| --------------------------------------------------------------------- | ------------------ | ------------------------------------------------------ |
+| `SignInCommand`, `RefreshTokenCommand`, etc.                          | Domain             | None (pure)                                            |
+| `SignInCommandHandler`, etc.                                          | Domain             | Domain entities, repository interfaces                 |
+| `AuthSession`, `AuthRefreshToken`, `PendingTwoFactor`, `RecoveryCode` | Domain             | Domain value objects only                              |
+| `SignInProcessor`, `CompleteTwoFactorProcessor`, etc.                 | Application        | Domain + Infrastructure (via interfaces)               |
+| `ApiRateLimitListener`                                                | Shared/Application | Symfony RateLimiter (framework allowed in Application) |
+| `MongoDBAuthSessionRepository`, `DualAuthenticator`                   | Infrastructure     | Domain + Application                                   |
+| `TOTPService`                                                         | Infrastructure     | Domain interfaces                                      |
+| `AuthEventLogSubscriber`                                              | Infrastructure     | Domain events + PSR Logger                             |
+| `AccountLockoutService`                                               | Infrastructure     | Redis + Domain interface                               |
+| `TwoFactorSecretEncryptor`                                            | Infrastructure     | Domain interface + AES-256-GCM                         |
 
 ## Security Checklist (TEA Validation)
 
@@ -778,60 +809,60 @@ graph TB
 
 ### OWASP Top 10 2025
 
-| OWASP 2025 | Coverage | Accepted Gaps |
-|------------|----------|---------------|
-| A01: Broken Access Control | Ownership enforcement REST + GraphQL | None |
-| A02: Security Misconfiguration | Firewall, headers, introspection disabled | None |
-| A03: Software Supply Chain | `make composer-validate` | No automated CVE scanning (Growth) |
-| A04: Injection | Doctrine ODM (parameterized), API Platform validation | None |
-| A05: Insecure Design | JWT 15-min TTL, revocation via refresh | Denylist deferred to Growth |
-| A06: Vulnerable Components | Bcrypt cost upgrade, 2FA encryption | None |
-| A07: Identity & Auth Failures | Constant-time validation, account lockout | None |
-| A08: Data Integrity Failures | JWT RS256, algorithm pinning, claims validation | None |
-| A09: Logging & Monitoring | Comprehensive audit logging (ADR-08) | None |
-| A10: SSRF | N/A (no outbound requests in auth flow) | N/A |
+| OWASP 2025                     | Coverage                                              | Accepted Gaps                      |
+| ------------------------------ | ----------------------------------------------------- | ---------------------------------- |
+| A01: Broken Access Control     | Ownership enforcement REST + GraphQL                  | None                               |
+| A02: Security Misconfiguration | Firewall, headers, introspection disabled             | None                               |
+| A03: Software Supply Chain     | `make composer-validate`                              | No automated CVE scanning (Growth) |
+| A04: Injection                 | Doctrine ODM (parameterized), API Platform validation | None                               |
+| A05: Insecure Design           | JWT 15-min TTL, revocation via refresh                | Denylist deferred to Growth        |
+| A06: Vulnerable Components     | Bcrypt cost upgrade, 2FA encryption                   | None                               |
+| A07: Identity & Auth Failures  | Constant-time validation, account lockout             | None                               |
+| A08: Data Integrity Failures   | JWT RS256, algorithm pinning, claims validation       | None                               |
+| A09: Logging & Monitoring      | Comprehensive audit logging (ADR-08)                  | None                               |
+| A10: SSRF                      | N/A (no outbound requests in auth flow)               | N/A                                |
 
 ### OWASP API Security Top 10 2023
 
-| OWASP API 2023 | Coverage | Accepted Gaps |
-|-----------------|----------|---------------|
-| API1: Broken Object Level Authorization | Ownership on REST + GraphQL | None |
-| API2: Broken Authentication | Rate limiting, 2FA, lockout, GraphQL batch defense | Distributed stuffing bounded (Growth: CAPTCHA) |
-| API3: Broken Object Property Level Auth | User can only modify own fields | None |
-| API4: Unrestricted Resource Consumption | Rate limiting, body size, batch rejection | None |
-| API5: Broken Function Level Authorization | ROLE_SERVICE for batch, ROLE_USER for auth | None |
-| API6: Unrestricted Access to Sensitive Flows | Account lockout | Distributed stuffing bounded (Growth: CAPTCHA) |
-| API7: SSRF | N/A | N/A |
-| API8: Security Misconfiguration | Headers, introspection, firewall, key permissions | None |
-| API9: Improper Inventory Management | Auth endpoints documented, `graphql: false` on auth ops | None |
-| API10: Unsafe Consumption of APIs | N/A | N/A |
+| OWASP API 2023                               | Coverage                                                | Accepted Gaps                                  |
+| -------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------- |
+| API1: Broken Object Level Authorization      | Ownership on REST + GraphQL                             | None                                           |
+| API2: Broken Authentication                  | Rate limiting, 2FA, lockout, GraphQL batch defense      | Distributed stuffing bounded (Growth: CAPTCHA) |
+| API3: Broken Object Property Level Auth      | User can only modify own fields                         | None                                           |
+| API4: Unrestricted Resource Consumption      | Rate limiting, body size, batch rejection               | None                                           |
+| API5: Broken Function Level Authorization    | ROLE_SERVICE for batch, ROLE_USER for auth              | None                                           |
+| API6: Unrestricted Access to Sensitive Flows | Account lockout                                         | Distributed stuffing bounded (Growth: CAPTCHA) |
+| API7: SSRF                                   | N/A                                                     | N/A                                            |
+| API8: Security Misconfiguration              | Headers, introspection, firewall, key permissions       | None                                           |
+| API9: Improper Inventory Management          | Auth endpoints documented, `graphql: false` on auth ops | None                                           |
+| API10: Unsafe Consumption of APIs            | N/A                                                     | N/A                                            |
 
 ### OWASP JWT Cheat Sheet
 
-| JWT Best Practice | Coverage | Accepted Gaps |
-|-------------------|----------|---------------|
-| Algorithm pinning (RS256) | ADR-01: pinned | None |
-| Claims validation (iss, aud, nbf, exp) | ADR-01: validated | None |
-| Short expiration (15 min) | NFR-05 | None |
-| Token fingerprinting | ADR-13: accepted risk for MVP | Growth: `__Secure-Fgp` cookie |
-| Denylist for revocation | Growth item (jti) | Accepted for MVP |
-| Secure storage (HttpOnly cookie) | ADR-01: cookie path | None |
-| Content-Security-Policy | ADR-04: CSP header | None |
-| Key rotation | Growth item | Accepted for MVP |
+| JWT Best Practice                      | Coverage                      | Accepted Gaps                 |
+| -------------------------------------- | ----------------------------- | ----------------------------- |
+| Algorithm pinning (RS256)              | ADR-01: pinned                | None                          |
+| Claims validation (iss, aud, nbf, exp) | ADR-01: validated             | None                          |
+| Short expiration (15 min)              | NFR-05                        | None                          |
+| Token fingerprinting                   | ADR-13: accepted risk for MVP | Growth: `__Secure-Fgp` cookie |
+| Denylist for revocation                | Growth item (jti)             | Accepted for MVP              |
+| Secure storage (HttpOnly cookie)       | ADR-01: cookie path           | None                          |
+| Content-Security-Policy                | ADR-04: CSP header            | None                          |
+| Key rotation                           | Growth item                   | Accepted for MVP              |
 
 ### Codebase Delta Audit
 
 Issues found in actual codebase requiring fixes during implementation:
 
-| # | Codebase Issue | Severity | Resolution |
-|---|---------------|----------|------------|
-| 1 | JWT keys 666 permissions | CRITICAL | ADR-12 / Story 5.8 |
-| 2 | Implicit grant in test env | HIGH | NFR-64 / Story 5.8 |
-| 3 | CORS `allow_origin: *` in dev | HIGH | NFR-65 / Story 5.8 |
-| 4 | CSRF disabled (commented out) | MODERATE | Documented safe: SameSite=Lax + JSON-only |
-| 5 | No `Permissions-Policy` header | MODERATE | NFR-66 / Story 5.3 |
-| 6 | No `NotCompromisedPassword` | MODERATE | NFR-67 (Growth) |
-| 7 | Password `max: 255` vs `max: 64` | LOW | Align during implementation |
+| #   | Codebase Issue                   | Severity | Resolution                                |
+| --- | -------------------------------- | -------- | ----------------------------------------- |
+| 1   | JWT keys 666 permissions         | CRITICAL | ADR-12 / Story 5.8                        |
+| 2   | Implicit grant in test env       | HIGH     | NFR-64 / Story 5.8                        |
+| 3   | CORS `allow_origin: *` in dev    | HIGH     | NFR-65 / Story 5.8                        |
+| 4   | CSRF disabled (commented out)    | MODERATE | Documented safe: SameSite=Lax + JSON-only |
+| 5   | No `Permissions-Policy` header   | MODERATE | NFR-66 / Story 5.3                        |
+| 6   | No `NotCompromisedPassword`      | MODERATE | NFR-67 (Growth)                           |
+| 7   | Password `max: 255` vs `max: 64` | LOW      | Align during implementation               |
 
 ## References
 

@@ -1,6 +1,21 @@
 ---
-stepsCompleted: [validate-prerequisites, requirements-inventory, coverage-map, epic-breakdown, story-details, security-review, tea-party-challenge, tea-party-challenge-r2, tea-party-challenge-r3]
-inputDocuments: [docs/plans/2026-02-05-auth-2fa-signin-prd.md, docs/plans/2026-02-05-auth-2fa-signin-architecture.md]
+stepsCompleted:
+  [
+    validate-prerequisites,
+    requirements-inventory,
+    coverage-map,
+    epic-breakdown,
+    story-details,
+    security-review,
+    tea-party-challenge,
+    tea-party-challenge-r2,
+    tea-party-challenge-r3,
+  ]
+inputDocuments:
+  [
+    docs/plans/2026-02-05-auth-2fa-signin-prd.md,
+    docs/plans/2026-02-05-auth-2fa-signin-architecture.md,
+  ]
 workflowType: 'epics'
 project_name: 'VilnaCRM User Service — Auth Sign-in + 2FA'
 author: 'Valerii'
@@ -22,158 +37,158 @@ This document provides the complete epic and story breakdown for the Auth Sign-i
 
 ### Functional Requirements
 
-| ID | Requirement | Priority |
-|----|-------------|----------|
-| FR-01 | Sign in with email/password, receive access token + refresh token + session cookie | P0 |
-| FR-02 | 2FA-enabled users receive `pending_session_id` instead of tokens on sign-in | P0 |
-| FR-03 | Complete 2FA with pending session ID + TOTP code (or recovery code), receive tokens and cookie | P0 |
-| FR-04 | Exchange valid refresh token for new access + refresh tokens | P0 |
-| FR-05 | Rotated refresh token reusable once within grace window (default 60s) | P0 |
-| FR-06 | Reuse after grace window (or second reuse within grace) revokes session and returns 401 | P0 |
-| FR-07 | Authenticated users can generate TOTP secret and otpauth URI | P0 |
-| FR-08 | Authenticated users can confirm 2FA setup with valid TOTP code; system generates recovery codes | P0 |
-| FR-09 | All protected endpoints reject unauthenticated requests with 401 | P0 |
-| FR-10 | Public endpoints (signin, registration, OAuth, health, password reset, email confirm) bypass auth | P0 |
-| FR-11 | Batch user creation requires `ROLE_SERVICE` scope | P0 |
-| FR-12 | Write/delete operations enforce ownership on both REST and GraphQL | P0 |
-| FR-13 | Authenticated users can revoke current session (logout) | P0 |
-| FR-14 | Authenticated users can revoke ALL sessions (sign out everywhere) | P0 |
-| FR-15 | Authenticated users can disable 2FA with valid TOTP/recovery code | P0 |
-| FR-16 | 8 single-use recovery codes generated on 2FA enable | P0 |
-| FR-17 | Recovery codes accepted in place of TOTP during 2FA sign-in | P0 |
-| FR-18 | Authenticated users can regenerate recovery codes | P1 |
-| FR-19 | Password change revokes all sessions except current | P0 |
-| FR-20 | 2FA enablement revokes all sessions except current | P0 |
+| ID    | Requirement                                                                                       | Priority |
+| ----- | ------------------------------------------------------------------------------------------------- | -------- |
+| FR-01 | Sign in with email/password, receive access token + refresh token + session cookie                | P0       |
+| FR-02 | 2FA-enabled users receive `pending_session_id` instead of tokens on sign-in                       | P0       |
+| FR-03 | Complete 2FA with pending session ID + TOTP code (or recovery code), receive tokens and cookie    | P0       |
+| FR-04 | Exchange valid refresh token for new access + refresh tokens                                      | P0       |
+| FR-05 | Rotated refresh token reusable once within grace window (default 60s)                             | P0       |
+| FR-06 | Reuse after grace window (or second reuse within grace) revokes session and returns 401           | P0       |
+| FR-07 | Authenticated users can generate TOTP secret and otpauth URI                                      | P0       |
+| FR-08 | Authenticated users can confirm 2FA setup with valid TOTP code; system generates recovery codes   | P0       |
+| FR-09 | All protected endpoints reject unauthenticated requests with 401                                  | P0       |
+| FR-10 | Public endpoints (signin, registration, OAuth, health, password reset, email confirm) bypass auth | P0       |
+| FR-11 | Batch user creation requires `ROLE_SERVICE` scope                                                 | P0       |
+| FR-12 | Write/delete operations enforce ownership on both REST and GraphQL                                | P0       |
+| FR-13 | Authenticated users can revoke current session (logout)                                           | P0       |
+| FR-14 | Authenticated users can revoke ALL sessions (sign out everywhere)                                 | P0       |
+| FR-15 | Authenticated users can disable 2FA with valid TOTP/recovery code                                 | P0       |
+| FR-16 | 8 single-use recovery codes generated on 2FA enable                                               | P0       |
+| FR-17 | Recovery codes accepted in place of TOTP during 2FA sign-in                                       | P0       |
+| FR-18 | Authenticated users can regenerate recovery codes                                                 | P1       |
+| FR-19 | Password change revokes all sessions except current                                               | P0       |
+| FR-20 | 2FA enablement revokes all sessions except current                                                | P0       |
 
 ### Non-Functional Requirements
 
-| ID | Requirement | Category |
-|----|-------------|----------|
-| NFR-04 | Firewall enabled with OAuth2 validation on all `/api/` and `/graphql` | Auth |
-| NFR-05 | Access token 15-min TTL (reduced from 1h to limit revocation window) | Auth |
-| NFR-06 | Refresh token 1m TTL | Auth |
-| NFR-07 | TOTP +/- 1 time window tolerance | Auth |
-| NFR-08 | Global rate limit: 100/min anon, 300/min auth | Rate Limiting |
-| NFR-09 | Registration: 5/min per IP | Rate Limiting |
-| NFR-10 | Token exchange: 10/min per client_id | Rate Limiting |
-| NFR-11 | Sign-in: 10/min per IP, 5/min per email | Rate Limiting |
-| NFR-12 | 2FA verification: 5 attempts/min per pending session | Rate Limiting |
-| NFR-13 | Resend confirmation: 3/min per IP + 3/min per target user | Rate Limiting |
-| NFR-14 | Rate limit rejections include `Retry-After` + RFC 7807 | Rate Limiting |
-| NFR-15 | Refresh tokens stored as SHA-256 hashes | Data Protection |
-| NFR-16 | 2FA secrets encrypted before persistence | Data Protection |
-| NFR-19-23 | Security headers (HSTS, XFO, XCTO, CSP, Referrer-Policy) | Headers |
-| NFR-24 | GraphQL introspection disabled in production | Headers |
-| NFR-25 | RFC 7807 error responses for all failures | Reliability |
-| NFR-26 | Grace window survives Redis restart | Reliability |
-| NFR-27-30 | Quality thresholds (PHPInsights, Deptrac, Psalm, coverage) | Quality |
-| NFR-31 | Password change revokes all other sessions | Auth |
-| NFR-32 | Bcrypt cost >= 12 with migrate_from | Auth |
-| NFR-33 | Structured audit logging for all auth events | Observability |
-| NFR-34 | Theft detection logs at CRITICAL level | Observability |
-| NFR-35 | GraphQL max query depth: 20 | Security |
-| NFR-36 | GraphQL max query complexity: 500 | Security |
-| NFR-37 | Confirmation token length >= 32 characters | Data Protection |
-| NFR-38 | JWT algorithm pinned to RS256 | Auth |
-| NFR-39 | Request body size limit: 64KB | Availability |
-| NFR-40 | CORS credentials: true with explicit origin | Auth |
-| NFR-41 | Password grant disabled | Auth |
-| NFR-42 | Recovery codes stored as SHA-256 hashes, 8 per user, single-use | Data Protection |
-| NFR-43-49 | Extended rate limiting (collection, 2FA, update, delete, etc.) | Rate Limiting |
-| NFR-50 | JWT includes claims: sub, iss, aud, exp, iat, nbf, jti, sid, roles | Auth |
-| NFR-51 | JWT validation verifies iss (single string), aud, nbf, exp | Auth |
-| NFR-52 | 2FA enablement revokes all sessions except current | Auth |
-| NFR-53 | Constant-time credential validation (timing-safe) | Auth |
-| NFR-54 | Cookie uses `__Host-` prefix | Data Protection |
-| NFR-55 | Account lockout: 20 attempts / 1h / 15-min lock | Auth |
-| NFR-56 | 401 responses include `WWW-Authenticate: Bearer` | Compliance |
-| NFR-57 | 2FA secrets encrypted with AES-256-GCM | Data Protection |
-| NFR-58 | Atomic MongoDB operations for refresh token rotation | Reliability |
-| NFR-59 | GraphQL batching must not bypass rate limiting | Security |
-| NFR-60 | Bearer token sidejack risk documented (accepted for MVP) | Auth |
-| NFR-61 | JWT private key permissions 600 (owner only) | Security |
-| NFR-62 | Auth operations excluded from GraphQL auto-exposure | Security |
-| NFR-64 | Implicit OAuth grant disabled in ALL environments | Security |
-| NFR-65 | CORS `credentials: true` + explicit origin in ALL envs | Auth |
-| NFR-66 | `Permissions-Policy` header on all responses | Headers |
-| NFR-67 | (Growth) Password breach database check | Auth |
-| NFR-68 | Recovery code exhaustion warning when remaining <= 2 | UX/Security |
+| ID        | Requirement                                                           | Category        |
+| --------- | --------------------------------------------------------------------- | --------------- |
+| NFR-04    | Firewall enabled with OAuth2 validation on all `/api/` and `/graphql` | Auth            |
+| NFR-05    | Access token 15-min TTL (reduced from 1h to limit revocation window)  | Auth            |
+| NFR-06    | Refresh token 1m TTL                                                  | Auth            |
+| NFR-07    | TOTP +/- 1 time window tolerance                                      | Auth            |
+| NFR-08    | Global rate limit: 100/min anon, 300/min auth                         | Rate Limiting   |
+| NFR-09    | Registration: 5/min per IP                                            | Rate Limiting   |
+| NFR-10    | Token exchange: 10/min per client_id                                  | Rate Limiting   |
+| NFR-11    | Sign-in: 10/min per IP, 5/min per email                               | Rate Limiting   |
+| NFR-12    | 2FA verification: 5 attempts/min per pending session                  | Rate Limiting   |
+| NFR-13    | Resend confirmation: 3/min per IP + 3/min per target user             | Rate Limiting   |
+| NFR-14    | Rate limit rejections include `Retry-After` + RFC 7807                | Rate Limiting   |
+| NFR-15    | Refresh tokens stored as SHA-256 hashes                               | Data Protection |
+| NFR-16    | 2FA secrets encrypted before persistence                              | Data Protection |
+| NFR-19-23 | Security headers (HSTS, XFO, XCTO, CSP, Referrer-Policy)              | Headers         |
+| NFR-24    | GraphQL introspection disabled in production                          | Headers         |
+| NFR-25    | RFC 7807 error responses for all failures                             | Reliability     |
+| NFR-26    | Grace window survives Redis restart                                   | Reliability     |
+| NFR-27-30 | Quality thresholds (PHPInsights, Deptrac, Psalm, coverage)            | Quality         |
+| NFR-31    | Password change revokes all other sessions                            | Auth            |
+| NFR-32    | Bcrypt cost >= 12 with migrate_from                                   | Auth            |
+| NFR-33    | Structured audit logging for all auth events                          | Observability   |
+| NFR-34    | Theft detection logs at CRITICAL level                                | Observability   |
+| NFR-35    | GraphQL max query depth: 20                                           | Security        |
+| NFR-36    | GraphQL max query complexity: 500                                     | Security        |
+| NFR-37    | Confirmation token length >= 32 characters                            | Data Protection |
+| NFR-38    | JWT algorithm pinned to RS256                                         | Auth            |
+| NFR-39    | Request body size limit: 64KB                                         | Availability    |
+| NFR-40    | CORS credentials: true with explicit origin                           | Auth            |
+| NFR-41    | Password grant disabled                                               | Auth            |
+| NFR-42    | Recovery codes stored as SHA-256 hashes, 8 per user, single-use       | Data Protection |
+| NFR-43-49 | Extended rate limiting (collection, 2FA, update, delete, etc.)        | Rate Limiting   |
+| NFR-50    | JWT includes claims: sub, iss, aud, exp, iat, nbf, jti, sid, roles    | Auth            |
+| NFR-51    | JWT validation verifies iss (single string), aud, nbf, exp            | Auth            |
+| NFR-52    | 2FA enablement revokes all sessions except current                    | Auth            |
+| NFR-53    | Constant-time credential validation (timing-safe)                     | Auth            |
+| NFR-54    | Cookie uses `__Host-` prefix                                          | Data Protection |
+| NFR-55    | Account lockout: 20 attempts / 1h / 15-min lock                       | Auth            |
+| NFR-56    | 401 responses include `WWW-Authenticate: Bearer`                      | Compliance      |
+| NFR-57    | 2FA secrets encrypted with AES-256-GCM                                | Data Protection |
+| NFR-58    | Atomic MongoDB operations for refresh token rotation                  | Reliability     |
+| NFR-59    | GraphQL batching must not bypass rate limiting                        | Security        |
+| NFR-60    | Bearer token sidejack risk documented (accepted for MVP)              | Auth            |
+| NFR-61    | JWT private key permissions 600 (owner only)                          | Security        |
+| NFR-62    | Auth operations excluded from GraphQL auto-exposure                   | Security        |
+| NFR-64    | Implicit OAuth grant disabled in ALL environments                     | Security        |
+| NFR-65    | CORS `credentials: true` + explicit origin in ALL envs                | Auth            |
+| NFR-66    | `Permissions-Policy` header on all responses                          | Headers         |
+| NFR-67    | (Growth) Password breach database check                               | Auth            |
+| NFR-68    | Recovery code exhaustion warning when remaining <= 2                  | UX/Security     |
 
 ## FR Coverage Map
 
-| FR | Epic 1 | Epic 2 | Epic 3 | Epic 4 | Epic 5 | Epic 6 |
-|----|--------|--------|--------|--------|--------|--------|
-| FR-01 | x | | | | | |
-| FR-02 | x | | | | | |
-| FR-03 | | x | | | | |
-| FR-04 | | | x | | | |
-| FR-05 | | | x | | | |
-| FR-06 | | | x | | | |
-| FR-07 | | x | | | | |
-| FR-08 | | x | | | | |
-| FR-09 | | | | x | | |
-| FR-10 | | | | x | | |
-| FR-11 | | | | x | | |
-| FR-12 | | | | x | | |
-| FR-13 | | | | | | x |
-| FR-14 | | | | | | x |
-| FR-15 | | x | | | | |
-| FR-16 | | x | | | | |
-| FR-17 | | x | | | | |
-| FR-18 | | x | | | | |
-| FR-19 | | | | x | | |
-| FR-20 | | x | | | | |
+| FR    | Epic 1 | Epic 2 | Epic 3 | Epic 4 | Epic 5 | Epic 6 |
+| ----- | ------ | ------ | ------ | ------ | ------ | ------ |
+| FR-01 | x      |        |        |        |        |        |
+| FR-02 | x      |        |        |        |        |        |
+| FR-03 |        | x      |        |        |        |        |
+| FR-04 |        |        | x      |        |        |        |
+| FR-05 |        |        | x      |        |        |        |
+| FR-06 |        |        | x      |        |        |        |
+| FR-07 |        | x      |        |        |        |        |
+| FR-08 |        | x      |        |        |        |        |
+| FR-09 |        |        |        | x      |        |        |
+| FR-10 |        |        |        | x      |        |        |
+| FR-11 |        |        |        | x      |        |        |
+| FR-12 |        |        |        | x      |        |        |
+| FR-13 |        |        |        |        |        | x      |
+| FR-14 |        |        |        |        |        | x      |
+| FR-15 |        | x      |        |        |        |        |
+| FR-16 |        | x      |        |        |        |        |
+| FR-17 |        | x      |        |        |        |        |
+| FR-18 |        | x      |        |        |        |        |
+| FR-19 |        |        |        | x      |        |        |
+| FR-20 |        | x      |        |        |        |        |
 
 ## NFR Coverage Map
 
-| NFR | Epic 1 | Epic 2 | Epic 3 | Epic 4 | Epic 5 | Epic 6 |
-|-----|--------|--------|--------|--------|--------|--------|
-| NFR-04 | | | | x | | |
-| NFR-05 | x | | | | | |
-| NFR-06 | | | x | | | |
-| NFR-07 | | x | | | | |
-| NFR-08 | | | | | x | |
-| NFR-09 | | | | | x | |
-| NFR-10 | | | | | x | |
-| NFR-11 | | | | | x | |
-| NFR-12 | | | | | x | |
-| NFR-13 | | | | | x | |
-| NFR-14 | | | | | x | |
-| NFR-15 | x | | x | | | |
-| NFR-16 | | x | | | | |
-| NFR-19-23 | | | | | x | |
-| NFR-24 | | | | | x | |
-| NFR-25 | All | All | All | All | All | All |
-| NFR-26 | | | x | | | |
-| NFR-27-30 | All | All | All | All | All | All |
-| NFR-31 | | | | x | | |
-| NFR-32 | | | | | x | |
-| NFR-33-34 | | | | | | x |
-| NFR-35-36 | | | | | x | |
-| NFR-37 | | | | | x | |
-| NFR-38 | | | | x | | |
-| NFR-39 | | | | | x | |
-| NFR-40 | | | | x | | |
-| NFR-41 | | | | x | | |
-| NFR-42 | | x | | | | |
-| NFR-43-49 | | | | | x | |
-| NFR-50 | x | | x | x | | |
-| NFR-51 | | | | x | | |
-| NFR-52 | | x | | | | |
-| NFR-53 | x | | | | | |
-| NFR-54 | x | | | x | | |
-| NFR-55 | | | | | x | |
-| NFR-56 | | | | x | | |
-| NFR-57 | | x | | | | |
-| NFR-58 | | | x | | | |
-| NFR-59 | | | | | x | |
-| NFR-60 | | | | x | | |
-| NFR-61 | | | | x | | |
-| NFR-62 | | | | | x | |
-| NFR-64 | | | | x | | |
-| NFR-65 | | | | x | | |
-| NFR-66 | | | | | x | |
-| NFR-68 | | x | | | | |
+| NFR       | Epic 1 | Epic 2 | Epic 3 | Epic 4 | Epic 5 | Epic 6 |
+| --------- | ------ | ------ | ------ | ------ | ------ | ------ |
+| NFR-04    |        |        |        | x      |        |        |
+| NFR-05    | x      |        |        |        |        |        |
+| NFR-06    |        |        | x      |        |        |        |
+| NFR-07    |        | x      |        |        |        |        |
+| NFR-08    |        |        |        |        | x      |        |
+| NFR-09    |        |        |        |        | x      |        |
+| NFR-10    |        |        |        |        | x      |        |
+| NFR-11    |        |        |        |        | x      |        |
+| NFR-12    |        |        |        |        | x      |        |
+| NFR-13    |        |        |        |        | x      |        |
+| NFR-14    |        |        |        |        | x      |        |
+| NFR-15    | x      |        | x      |        |        |        |
+| NFR-16    |        | x      |        |        |        |        |
+| NFR-19-23 |        |        |        |        | x      |        |
+| NFR-24    |        |        |        |        | x      |        |
+| NFR-25    | All    | All    | All    | All    | All    | All    |
+| NFR-26    |        |        | x      |        |        |        |
+| NFR-27-30 | All    | All    | All    | All    | All    | All    |
+| NFR-31    |        |        |        | x      |        |        |
+| NFR-32    |        |        |        |        | x      |        |
+| NFR-33-34 |        |        |        |        |        | x      |
+| NFR-35-36 |        |        |        |        | x      |        |
+| NFR-37    |        |        |        |        | x      |        |
+| NFR-38    |        |        |        | x      |        |        |
+| NFR-39    |        |        |        |        | x      |        |
+| NFR-40    |        |        |        | x      |        |        |
+| NFR-41    |        |        |        | x      |        |        |
+| NFR-42    |        | x      |        |        |        |        |
+| NFR-43-49 |        |        |        |        | x      |        |
+| NFR-50    | x      |        | x      | x      |        |        |
+| NFR-51    |        |        |        | x      |        |        |
+| NFR-52    |        | x      |        |        |        |        |
+| NFR-53    | x      |        |        |        |        |        |
+| NFR-54    | x      |        |        | x      |        |        |
+| NFR-55    |        |        |        |        | x      |        |
+| NFR-56    |        |        |        | x      |        |        |
+| NFR-57    |        | x      |        |        |        |        |
+| NFR-58    |        |        | x      |        |        |        |
+| NFR-59    |        |        |        |        | x      |        |
+| NFR-60    |        |        |        | x      |        |        |
+| NFR-61    |        |        |        | x      |        |        |
+| NFR-62    |        |        |        |        | x      |        |
+| NFR-64    |        |        |        | x      |        |        |
+| NFR-65    |        |        |        | x      |        |        |
+| NFR-66    |        |        |        |        | x      |        |
+| NFR-68    |        | x      |        |        |        |        |
 
 ## Epic List
 
@@ -921,19 +936,19 @@ So that security incidents can be investigated.
 
 ## Risks
 
-| Risk | Mitigation |
-|------|------------|
-| Refresh rotation edge cases | Grace window + `graceUsed` boolean + comprehensive Behat scenarios |
-| Allowlist mistakes in auth gate | Route enumeration integration test |
-| 2FA clock skew | +/- 1 time window tolerance |
-| Rate limit false positives (shared IPs) | Configurable limits; higher limits for authenticated users |
-| Redis failure breaking rate limiting | Fail-open with logging alert |
-| Enabling firewall breaks existing tests | Story 4.0 (test infrastructure) before Story 4.1 (firewall) |
-| Password grant bypass of 2FA | Disabled in same release (Story 4.4) |
-| User lockout from 2FA | Recovery codes (Story 2.5, 2.6) |
-| Bcrypt cost increase slows sign-in | Cost 12 within SC-01 P95 budget |
-| Access control patterns mismatch | Verified against actual routes in ADR-03 |
-| GraphQL mutations bypass ownership | Story 4.3 covers both REST and GraphQL |
+| Risk                                    | Mitigation                                                         |
+| --------------------------------------- | ------------------------------------------------------------------ |
+| Refresh rotation edge cases             | Grace window + `graceUsed` boolean + comprehensive Behat scenarios |
+| Allowlist mistakes in auth gate         | Route enumeration integration test                                 |
+| 2FA clock skew                          | +/- 1 time window tolerance                                        |
+| Rate limit false positives (shared IPs) | Configurable limits; higher limits for authenticated users         |
+| Redis failure breaking rate limiting    | Fail-open with logging alert                                       |
+| Enabling firewall breaks existing tests | Story 4.0 (test infrastructure) before Story 4.1 (firewall)        |
+| Password grant bypass of 2FA            | Disabled in same release (Story 4.4)                               |
+| User lockout from 2FA                   | Recovery codes (Story 2.5, 2.6)                                    |
+| Bcrypt cost increase slows sign-in      | Cost 12 within SC-01 P95 budget                                    |
+| Access control patterns mismatch        | Verified against actual routes in ADR-03                           |
+| GraphQL mutations bypass ownership      | Story 4.3 covers both REST and GraphQL                             |
 
 ## Definition of Done
 
