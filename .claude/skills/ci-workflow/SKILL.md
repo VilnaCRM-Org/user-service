@@ -23,7 +23,7 @@ The CI command uses Make's built-in parallelism (`make -j4 --output-sync=target`
 
 Checks run in two stages:
 
-1. **Preflight (sequential)**: `phpcsfixer → phpinsights` (phpinsights depends on phpmd)
+1. **Preflight (sequential)**: `phpcsfixer → phpmd → phpinsights`
 2. **Parallel stage**: static analysis, deptrac, tests+openapi, mutation
 
 Parallel stage groups:
