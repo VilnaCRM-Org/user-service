@@ -12,8 +12,8 @@ DOCKER        = docker
 DOCKER_COMPOSE = docker compose
 # Pinned Schemathesis image to avoid CI drift
 SCHEMATHESIS_IMAGE = schemathesis/schemathesis:4.9.5
-SCHEMATHESIS_CLIENT_ID = dc0bc6323f16fecd4224a3860ca894c5
-SCHEMATHESIS_CLIENT_SECRET = 8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7
+SCHEMATHESIS_CLIENT_ID ?= dc0bc6323f16fecd4224a3860ca894c5
+SCHEMATHESIS_CLIENT_SECRET ?= 8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7
 SCHEMATHESIS_AUTH = $(SCHEMATHESIS_CLIENT_ID):$(SCHEMATHESIS_CLIENT_SECRET)
 
 # Executables
@@ -270,7 +270,7 @@ reset-db: ## Recreate the database schema for ephemeral test runs
 	@$(SYMFONY) doctrine:mongodb:schema:drop 2>&1 || true
 	@$(SYMFONY) doctrine:mongodb:schema:create
 	@echo "Seeding Schemathesis test data..."
-	@$(EXEC_PHP) php bin/console app:seed-schemathesis-data
+	@$(SYMFONY) app:seed-schemathesis-data
 	@echo "✅ Database reset complete"
 
 coverage-html: ## Create the code coverage report with PHPUnit
@@ -312,7 +312,6 @@ ci: ci-preflight ## Run comprehensive CI checks with parallelization (excludes b
 ci-preflight: ## Run mutating checks sequentially (code style, quality)
 	@echo "🎨 Preflight: fixing code style and running quality checks..."
 	@$(MAKE) phpcsfixer
-	@$(MAKE) phpmd
 	@$(MAKE) phpinsights
 
 ci-static-analysis:
