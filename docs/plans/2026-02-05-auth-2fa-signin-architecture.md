@@ -1,18 +1,18 @@
 ---
-stepsCompleted: [init, context, decisions, data-model, api-design, auth-gate, rate-limiter, security-headers, diagrams, security-review, tea-party-challenge, tea-party-challenge-r2]
+stepsCompleted: [init, context, decisions, data-model, api-design, auth-gate, rate-limiter, security-headers, diagrams, security-review, tea-party-challenge, tea-party-challenge-r2, tea-party-challenge-r3]
 inputDocuments: [docs/plans/2026-02-05-auth-2fa-signin-prd.md, CLAUDE.md, config/packages/security.yaml, config/packages/rate_limiter.yaml, config/api_platform/resources/User.yaml, config/services.yaml, infrastructure/docker/caddy/Caddyfile]
 workflowType: 'architecture'
 project_name: 'VilnaCRM User Service — Auth Sign-in + 2FA'
 author: 'Valerii'
 date: '2026-02-05'
-revision: '4 — TEA Party Mode R2 Deep Security Pass'
+revision: '5 — TEA Party Mode R3 Multi-Model Adversarial Review'
 ---
 
 # Architecture Decision Document — Auth Sign-in + 2FA
 
 _This document builds collaboratively through step-by-step discovery. Sections are appended as we work through each architectural decision together._
 
-**Revision:** 4 — TEA Party Mode R2 Deep Security Pass (addresses R1 13 critical + R2 4 critical gaps)
+**Revision:** 5 — TEA Party Mode R3 Multi-Model Adversarial Review (addresses R1 13 + R2 4 + R3 3 critical gaps)
 
 ## Context and Constraints
 
@@ -331,6 +331,43 @@ when@prod:
     graphql:
       introspection: false
 ```
+
+**GraphQL batching defense (TEA R3):**
+
+OWASP API2:2023 documents that GraphQL batching bypasses per-request rate limiting. A single HTTP POST containing an array of 1,000 mutations counts as 1 request for the rate limiter.
+
+**Required defense — implement both:**
+1. Add `GraphQLBatchRejectListener` at `kernel.request` priority 130 (before rate limiter): if request path is `/graphql` and body is a JSON array (batch), reject with 400.
+2. In all auth-related API Platform resource configs, set `graphql: false` to prevent auto-exposure of sign-in, 2FA, token refresh, and sign-out operations via GraphQL mutations.
+
+**Auth operations excluded from GraphQL (explicit):** SignIn, CompleteTwoFactor, RefreshToken, SignOut, SignOutAll, SetupTwoFactor, ConfirmTwoFactor, DisableTwoFactor, RegenerateRecoveryCodes.
+
+## ADR-12: JWT Key Security
+
+**Decision:** JWT private key files must have restrictive permissions. Private key must not be accessible to non-owner processes.
+
+**Context (TEA R3 finding):** The current codebase has JWT key files at `config/jwt/private.pem` with 666 permissions (world-readable/writable). A compromised dependency or path traversal vulnerability could expose the signing key, allowing JWT forgery for any user/role.
+
+**Implementation:**
+- `config/jwt/private.pem`: permissions 600 (owner read/write only)
+- `config/jwt/public.pem`: permissions 644 (owner write, all read)
+- Dockerfile: `RUN chmod 600 /app/config/jwt/private.pem`
+- Pre-commit hook or CI check: verify private key permissions are not world-readable
+
+**Growth:** Migrate private key from file to environment variable or Docker/Kubernetes secret.
+
+## ADR-13: Bearer Token Sidejack Risk (Accepted for MVP)
+
+**Decision:** Accept that bearer tokens (used by mobile/API clients) have no client binding. Document as a known risk. Token fingerprinting deferred to Growth.
+
+**Context (TEA R3 finding):** The OWASP JWT Cheat Sheet recommends token fingerprinting (pairing JWT with a hardened cookie containing a random fingerprint, with SHA-256 hash in JWT claims). However, this only works for browser clients that support cookies — pure API clients cannot participate in fingerprinting.
+
+**MVP mitigation:** 15-minute access token TTL limits the theft window. Refresh token rotation detects concurrent usage (theft).
+
+**Growth implementation:**
+- On sign-in/refresh: generate random fingerprint, set as `__Secure-Fgp` cookie, embed `SHA-256(fingerprint)` as `fgp` claim in JWT
+- DualAuthenticator: if JWT contains `fgp` claim, verify `__Secure-Fgp` cookie matches
+- Trade-off: Only binds tokens for browser clients; API clients still use unbound bearer tokens
 
 ## ADR-07: Password Grant Deprecation
 
@@ -728,11 +765,76 @@ graph TB
 - [ ] 2FA secrets encrypted with AES-256-GCM, key from env var
 - [ ] Refresh token rotation uses atomic MongoDB findOneAndUpdate
 - [ ] User deletion cleans up auth artifacts (sessions, tokens, recovery codes)
+- [ ] JWT private key permissions are 600 (not 666/world-readable)
+- [ ] GraphQL batching rejected or counted per-operation for rate limiting
+- [ ] Auth operations (sign-in, 2FA, sign-out) have `graphql: false` in resource config
+- [ ] Implicit OAuth grant disabled in ALL environments (including test)
+- [ ] CORS `allow_credentials: true` with explicit origin in ALL environments (no wildcard)
+- [ ] `Permissions-Policy` header in Caddy config
+- [ ] Bearer token sidejack risk documented as accepted for MVP
+- [ ] Recovery code exhaustion warning when remaining codes <= 2
+
+## Security Standards Compliance
+
+### OWASP Top 10 2025
+
+| OWASP 2025 | Coverage | Accepted Gaps |
+|------------|----------|---------------|
+| A01: Broken Access Control | Ownership enforcement REST + GraphQL | None |
+| A02: Security Misconfiguration | Firewall, headers, introspection disabled | None |
+| A03: Software Supply Chain | `make composer-validate` | No automated CVE scanning (Growth) |
+| A04: Injection | Doctrine ODM (parameterized), API Platform validation | None |
+| A05: Insecure Design | JWT 15-min TTL, revocation via refresh | Denylist deferred to Growth |
+| A06: Vulnerable Components | Bcrypt cost upgrade, 2FA encryption | None |
+| A07: Identity & Auth Failures | Constant-time validation, account lockout | None |
+| A08: Data Integrity Failures | JWT RS256, algorithm pinning, claims validation | None |
+| A09: Logging & Monitoring | Comprehensive audit logging (ADR-08) | None |
+| A10: SSRF | N/A (no outbound requests in auth flow) | N/A |
+
+### OWASP API Security Top 10 2023
+
+| OWASP API 2023 | Coverage | Accepted Gaps |
+|-----------------|----------|---------------|
+| API1: Broken Object Level Authorization | Ownership on REST + GraphQL | None |
+| API2: Broken Authentication | Rate limiting, 2FA, lockout, GraphQL batch defense | Distributed stuffing bounded (Growth: CAPTCHA) |
+| API3: Broken Object Property Level Auth | User can only modify own fields | None |
+| API4: Unrestricted Resource Consumption | Rate limiting, body size, batch rejection | None |
+| API5: Broken Function Level Authorization | ROLE_SERVICE for batch, ROLE_USER for auth | None |
+| API6: Unrestricted Access to Sensitive Flows | Account lockout | Distributed stuffing bounded (Growth: CAPTCHA) |
+| API7: SSRF | N/A | N/A |
+| API8: Security Misconfiguration | Headers, introspection, firewall, key permissions | None |
+| API9: Improper Inventory Management | Auth endpoints documented, `graphql: false` on auth ops | None |
+| API10: Unsafe Consumption of APIs | N/A | N/A |
+
+### OWASP JWT Cheat Sheet
+
+| JWT Best Practice | Coverage | Accepted Gaps |
+|-------------------|----------|---------------|
+| Algorithm pinning (RS256) | ADR-01: pinned | None |
+| Claims validation (iss, aud, nbf, exp) | ADR-01: validated | None |
+| Short expiration (15 min) | NFR-05 | None |
+| Token fingerprinting | ADR-13: accepted risk for MVP | Growth: `__Secure-Fgp` cookie |
+| Denylist for revocation | Growth item (jti) | Accepted for MVP |
+| Secure storage (HttpOnly cookie) | ADR-01: cookie path | None |
+| Content-Security-Policy | ADR-04: CSP header | None |
+| Key rotation | Growth item | Accepted for MVP |
+
+### Codebase Delta Audit
+
+Issues found in actual codebase requiring fixes during implementation:
+
+| # | Codebase Issue | Severity | Resolution |
+|---|---------------|----------|------------|
+| 1 | JWT keys 666 permissions | CRITICAL | ADR-12 / Story 5.8 |
+| 2 | Implicit grant in test env | HIGH | NFR-64 / Story 5.8 |
+| 3 | CORS `allow_origin: *` in dev | HIGH | NFR-65 / Story 5.8 |
+| 4 | CSRF disabled (commented out) | MODERATE | Documented safe: SameSite=Lax + JSON-only |
+| 5 | No `Permissions-Policy` header | MODERATE | NFR-66 / Story 5.3 |
+| 6 | No `NotCompromisedPassword` | MODERATE | NFR-67 (Growth) |
+| 7 | Password `max: 255` vs `max: 64` | LOW | Align during implementation |
 
 ## References
 
 - PRD: `docs/plans/2026-02-05-auth-2fa-signin-prd.md`
 - Epic: `docs/plans/2026-02-05-auth-2fa-signin-epic.md`
 - Stories: `docs/plans/2026-02-05-auth-2fa-signin-stories.md`
-- TEA Challenge R1: `docs/plans/2026-02-06-tea-party-mode-challenge.md`
-- TEA Challenge R2: `docs/plans/2026-02-06-tea-party-mode-challenge-r2.md`

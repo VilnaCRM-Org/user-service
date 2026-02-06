@@ -1,11 +1,11 @@
 ---
-stepsCompleted: [init, executive-summary, success-criteria, scope, journeys, domain-requirements, functional-requirements, non-functional-requirements, security-review, tea-party-challenge, tea-party-challenge-r2]
+stepsCompleted: [init, executive-summary, success-criteria, scope, journeys, domain-requirements, functional-requirements, non-functional-requirements, security-review, tea-party-challenge, tea-party-challenge-r2, tea-party-challenge-r3]
 inputDocuments: [CLAUDE.md, config/packages/security.yaml, config/packages/rate_limiter.yaml, config/api_platform/resources/User.yaml]
 workflowType: 'prd'
 project_name: 'VilnaCRM User Service — Auth Sign-in + 2FA'
 author: 'Valerii'
 date: '2026-02-05'
-revision: '4 — TEA Party Mode R2 Deep Security Pass'
+revision: '5 — TEA Party Mode R3 Multi-Model Adversarial Review'
 ---
 
 # Product Requirements Document — Auth Sign-in + 2FA
@@ -74,6 +74,10 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 - Suspicious login detection and notification (enabled by IP tracking on sessions)
 - Adaptive rate limiting based on threat intelligence
 - 2FA encryption key rotation strategy
+- Token fingerprinting for bearer tokens (JWT `fgp` claim + `__Secure-Fgp` cookie) — prevents sidejacking
+- CAPTCHA/proof-of-work challenge for sign-in after 3 consecutive failures per email
+- Password breach database validation via Symfony `NotCompromisedPassword` constraint
+- Email notifications on security-sensitive actions (2FA, password change, recovery code used)
 
 ### Vision (Future)
 
@@ -241,6 +245,25 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 | NFR-57 | 2FA secrets encrypted with AES-256-GCM; encryption key from `TWO_FACTOR_ENCRYPTION_KEY` env var | Config validation + database inspection |
 | NFR-58 | Refresh token rotation uses atomic MongoDB operations (`findOneAndUpdate`) to prevent race conditions | Unit test with concurrent rotation |
 
+### Security — GraphQL and API Protection (TEA R3)
+
+| ID | Requirement | Measurement |
+|----|-------------|-------------|
+| NFR-59 | GraphQL batching must not bypass rate limiting — reject batch requests (JSON arrays) at `/graphql` or count each operation separately | Integration test: batch of 10 sign-in mutations receives 400 or triggers rate limit |
+| NFR-62 | Auth operations (sign-in, 2FA, token, sign-out) must not auto-expose via GraphQL mutations — `graphql: false` on all auth resources | Integration test: GraphQL introspection shows no sign-in/2FA mutations |
+| NFR-64 | Implicit OAuth grant disabled in ALL environments including test | Config validation: `OAUTH_ENABLE_IMPLICIT_GRANT=0` in `.env.test` |
+| NFR-65 | CORS `allow_credentials: true` with explicit origin (no wildcard `*`) in ALL environments including dev | Config validation + integration test |
+| NFR-66 | `Permissions-Policy` header (`camera=(), microphone=(), geolocation=(), payment=()`) on all responses | Behat test for header presence |
+
+### Security — Key Management and Token Binding (TEA R3)
+
+| ID | Requirement | Measurement |
+|----|-------------|-------------|
+| NFR-60 | Bearer token sidejack risk documented as accepted for MVP; token fingerprinting deferred to Growth | Architecture ADR-13 documents accepted risk |
+| NFR-61 | JWT private key permissions 600 (owner read/write only); not world-readable | CI check: `stat -c %a config/jwt/private.pem` returns 600 |
+| NFR-67 | (Growth) Password breach database check via Symfony `NotCompromisedPassword` constraint | Integration test with known-breached password |
+| NFR-68 | Recovery code exhaustion warning: response includes `recovery_codes_remaining` when count <= 2 | Behat test: use 7th code, verify warning in response |
+
 ### Security — Rate Limiting
 
 | ID | Requirement | Measurement |
@@ -349,6 +372,11 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 | Concurrent refresh token rotation creates orphan tokens | Atomic MongoDB operations (findOneAndUpdate) with preconditions |
 | Account lockout false positives (attacker locks victim) | 15-min lockout duration is short; rate limiting still primary defense |
 | 2FA encryption key compromise | Key in env var (not code); rotation strategy is Growth item |
+| GraphQL batching bypasses rate limiting (OWASP API2:2023) | Reject batch requests at GraphQL endpoint; auth operations excluded from GraphQL |
+| Bearer token sidejacking (stolen JWT replayed from other device) | 15-min TTL limits window; token fingerprinting is Growth item |
+| Distributed credential stuffing across rotating IPs | Per-email rate limit + account lockout bounds total attempts; CAPTCHA is Growth item |
+| JWT private key compromise via file permissions | Enforce 600 permissions; migrate to env var/secret in Growth |
+| User exhausts all recovery codes without regenerating | Warning when remaining <= 2; email notification is Growth item |
 
 ## Closed Questions
 
@@ -374,6 +402,4 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 - Architecture: `docs/plans/2026-02-05-auth-2fa-signin-architecture.md`
 - Epic: `docs/plans/2026-02-05-auth-2fa-signin-epic.md`
 - Stories: `docs/plans/2026-02-05-auth-2fa-signin-stories.md`
-- TEA Challenge R1: `docs/plans/2026-02-06-tea-party-mode-challenge.md`
-- TEA Challenge R2: `docs/plans/2026-02-06-tea-party-mode-challenge-r2.md`
 - BMAD Method: [bmad-code-org/BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD)

@@ -1,16 +1,16 @@
 ---
-stepsCompleted: [init, story-details, task-breakdown, dev-notes, security-review, tea-party-challenge, tea-party-challenge-r2]
+stepsCompleted: [init, story-details, task-breakdown, dev-notes, security-review, tea-party-challenge, tea-party-challenge-r2, tea-party-challenge-r3]
 inputDocuments: [docs/plans/2026-02-05-auth-2fa-signin-prd.md, docs/plans/2026-02-05-auth-2fa-signin-architecture.md, docs/plans/2026-02-05-auth-2fa-signin-epic.md]
 workflowType: 'stories'
 project_name: 'VilnaCRM User Service — Auth Sign-in + 2FA'
 author: 'Valerii'
 date: '2026-02-05'
-revision: '4 — TEA Party Mode R2 Deep Security Pass'
+revision: '5 — TEA Party Mode R3 Multi-Model Adversarial Review'
 ---
 
 # Auth Sign-in + 2FA — Implementation Stories
 
-**Revision:** 4 — TEA Party Mode R2 Deep Security Pass (addresses R1 13 critical + R2 4 critical gaps)
+**Revision:** 5 — TEA Party Mode R3 Multi-Model Adversarial Review (addresses R1 13 + R2 4 + R3 3 critical gaps)
 
 ---
 
@@ -395,18 +395,23 @@ so that I can access my account.
 3. Recovery code marked as used (usedAt set), cannot be reused (AC: FR-17)
 4. Used recovery code returns 401 (AC: FR-17)
 5. `RecoveryCodeUsed` domain event emitted with remaining code count (AC: NFR-33)
+6. When remaining recovery codes <= 2, response includes `recovery_codes_remaining` field and warning message (AC: NFR-68)
+7. When remaining recovery codes == 0, response includes prominent warning to regenerate codes (AC: NFR-68)
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Extend CompleteTwoFactorCommandHandler (AC: #1, #2, #3, #4)
+- [ ] Task 1: Extend CompleteTwoFactorCommandHandler (AC: #1, #2, #3, #4, #6, #7)
   - [ ] Add recovery code detection: if code matches `xxxx-xxxx` format, check RecoveryCode repo
   - [ ] Look up by SHA-256(code) + userId
   - [ ] Verify code not already used (usedAt is null)
   - [ ] On success: mark usedAt, proceed with session creation
+  - [ ] Count remaining unused codes; include in response if <= 2
   - [ ] Emit `RecoveryCodeUsed` event with remaining unused count
 - [ ] Task 2: Tests
   - [ ] Unit: recovery code validation, used code rejection
+  - [ ] Unit: verify warning when remaining codes <= 2
   - [ ] Behat: sign-in with recovery code
+  - [ ] Behat: use 7th code, verify `recovery_codes_remaining` in response
 
 ### References
 
@@ -915,13 +920,15 @@ so that the service passes security audits.
 4. Referrer-Policy: strict-origin-when-cross-origin (AC: NFR-22)
 5. Content-Security-Policy: default-src 'none'; frame-ancestors 'none' (AC: NFR-23)
 6. Server header removed (AC: ADR-04)
+7. `Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()` on all responses (AC: NFR-66)
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Update Caddyfile with `header` block (AC: #1-#6)
+- [ ] Task 1: Update Caddyfile with `header` block (AC: #1-#7)
   - [ ] Add headers to production server block
   - [ ] Remove Server header
-- [ ] Task 2: Behat tests for header presence (AC: #1-#6)
+  - [ ] Add Permissions-Policy header
+- [ ] Task 2: Behat tests for header presence (AC: #1-#7)
   - [ ] Verify each header on a standard API response
 
 ## Dev Notes
@@ -967,7 +974,66 @@ so that the API schema is not leaked and DoS via complex queries is prevented.
 ### References
 
 - [Source: Architecture ADR-06]
-- [Source: PRD NFR-24, NFR-35, NFR-36]
+- [Source: PRD NFR-24, NFR-35, NFR-36, NFR-59, NFR-62]
+
+---
+
+# Story 5.8: JWT key security hardening
+
+Status: ready-for-dev
+
+## Story
+
+As the system,
+I want JWT private key files to have restrictive permissions and auth operations excluded from GraphQL,
+so that key compromise and rate limit bypass attacks are prevented.
+
+## Acceptance Criteria
+
+1. JWT private key has 600 permissions (owner read/write only) (AC: NFR-61)
+2. JWT public key has 644 permissions (AC: NFR-61)
+3. Dockerfile enforces key permissions on build (AC: NFR-61)
+4. CI check verifies private key is not world-readable (AC: NFR-61)
+5. All auth-related API Platform resources have `graphql: false` (AC: NFR-62)
+6. GraphQL introspection shows no sign-in/2FA/sign-out mutations (AC: NFR-62)
+7. GraphQL batch requests (JSON arrays to /graphql) are rejected with 400 (AC: NFR-59)
+8. Implicit OAuth grant disabled in test environment (AC: NFR-64)
+9. CORS `allow_credentials: true` with explicit origin in all environments (AC: NFR-65)
+
+## Tasks / Subtasks
+
+- [ ] Task 1: Fix JWT key permissions (AC: #1, #2, #3, #4)
+  - [ ] `chmod 600 config/jwt/private.pem`
+  - [ ] `chmod 644 config/jwt/public.pem`
+  - [ ] Add to Dockerfile: `RUN chmod 600 /app/config/jwt/private.pem`
+  - [ ] Add CI check: verify permissions in `make ci` or pre-commit hook
+- [ ] Task 2: Exclude auth operations from GraphQL (AC: #5, #6)
+  - [ ] Add `graphql: false` to all sign-in, 2FA, token, sign-out resource configs
+  - [ ] Integration test: GraphQL introspection shows no auth mutations
+- [ ] Task 3: Add GraphQLBatchRejectListener (AC: #7)
+  - [ ] `src/Shared/Application/EventListener/GraphQLBatchRejectListener.php`
+  - [ ] Register at `kernel.request` priority 130 (before rate limiter at 120)
+  - [ ] If path is `/graphql` and body is JSON array → 400 Bad Request
+  - [ ] Integration test: batch request returns 400
+- [ ] Task 4: Disable implicit grant in test (AC: #8)
+  - [ ] Set `OAUTH_ENABLE_IMPLICIT_GRANT=0` in `.env.test`
+- [ ] Task 5: Fix CORS configuration (AC: #9)
+  - [ ] Add `allow_credentials: true` to `nelmio_cors` defaults
+  - [ ] Change dev `allow_origin` from `['*']` to explicit origin
+  - [ ] Integration test: verify CORS headers include `credentials: true`
+
+## Dev Notes
+
+- This story should be implemented EARLY — ideally before Story 4.1 (firewall)
+- JWT key permissions are the highest-priority fix (RC-03 in TEA R3)
+- GraphQL batch rejection is critical for rate limiting to be effective (RC-01 in TEA R3)
+- OWASP API2:2023 explicitly documents GraphQL batching as a rate limit bypass vector
+
+### References
+
+- [Source: TEA R3 RC-01, RC-03, RH-01, RH-02, RH-04]
+- [Source: OWASP API2:2023 Broken Authentication]
+- [Source: Architecture ADR-06, ADR-12]
 
 ---
 
@@ -1234,6 +1300,7 @@ so that security incidents can be investigated.
 5.5 (bcrypt cost)                                            │
 5.6 (confirmation token)                                     │
 5.7 (body size limit)                                        │
+5.8 (JWT key + GraphQL batch + CORS) ──────────────────────── │
                                                              │
 6.1 (logout) ◄────────────────────────────────────────────── │
 6.2 (sign-out-all) ◄──────────────────────────────────────── │
@@ -1248,13 +1315,17 @@ Claude Opus 4.6
 
 ### Completion Notes
 
-- All stories aligned with BMAD epic breakdown (6 epics, 25 stories)
+- All stories aligned with BMAD epic breakdown (6 epics, 26 stories)
 - Every acceptance criterion traced back to PRD FR/NFR or Architecture ADR
 - Stories expanded from 16 to 25 based on TEA Party Mode R1 (13 critical gaps addressed)
 - R2 updates: Stories 1.1, 2.2, 2.3, 3.1, 4.1, 5.2, 6.1, 6.3 updated with R2 findings (4 critical + 7 moderate gaps)
 - R2 key changes: JWT claims structure (NFR-50/51), constant-time validation (NFR-53), `__Host-` cookie (NFR-54), account lockout (NFR-55), `WWW-Authenticate` header (NFR-56), AES-256-GCM encryption (NFR-57), atomic refresh rotation (NFR-58), 2FA-enable session invalidation (FR-20/NFR-52)
+- R3 updates: New Story 5.8 (JWT key + GraphQL batch + CORS), Story 2.5 updated (recovery code warning), Story 5.3 updated (Permissions-Policy), Story 5.4 updated (GraphQL batching)
+- R3 key changes: GraphQL batching bypass defense (NFR-59), JWT key permissions (NFR-61), auth ops excluded from GraphQL (NFR-62), CORS fix (NFR-65), recovery code exhaustion warning (NFR-68), bearer token sidejack accepted risk (NFR-60)
 - New stories added (R1): 4.0, 2.4, 2.5, 2.6, 4.4, 4.5, 5.5, 5.6, 5.7, 6.1, 6.2, 6.3
+- New story added (R3): 5.8 (JWT key security + GraphQL batch defense + CORS + implicit grant)
 - Story dependency graph included for implementation ordering
-- Security hardening stories (Epic 5) expanded from 4 to 7 per TEA R1
+- Security hardening stories (Epic 5) expanded from 4 to 7 per TEA R1, then to 8 per TEA R3
 - New Epic 6 (Session Lifecycle and Observability) created per TEA R1
 - OWASP 2025 Top 10 cross-referenced in TEA R2
+- OWASP API Security Top 10 2023 + JWT Cheat Sheet cross-referenced in TEA R3

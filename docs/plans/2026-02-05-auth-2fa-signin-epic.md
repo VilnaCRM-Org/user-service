@@ -1,11 +1,11 @@
 ---
-stepsCompleted: [validate-prerequisites, requirements-inventory, coverage-map, epic-breakdown, story-details, security-review, tea-party-challenge, tea-party-challenge-r2]
+stepsCompleted: [validate-prerequisites, requirements-inventory, coverage-map, epic-breakdown, story-details, security-review, tea-party-challenge, tea-party-challenge-r2, tea-party-challenge-r3]
 inputDocuments: [docs/plans/2026-02-05-auth-2fa-signin-prd.md, docs/plans/2026-02-05-auth-2fa-signin-architecture.md]
 workflowType: 'epics'
 project_name: 'VilnaCRM User Service — Auth Sign-in + 2FA'
 author: 'Valerii'
 date: '2026-02-05'
-revision: '4 — TEA Party Mode R2 Deep Security Pass'
+revision: '5 — TEA Party Mode R3 Multi-Model Adversarial Review'
 ---
 
 # Auth Sign-in + 2FA — Epic Breakdown
@@ -89,6 +89,15 @@ This document provides the complete epic and story breakdown for the Auth Sign-i
 | NFR-56 | 401 responses include `WWW-Authenticate: Bearer` | Compliance |
 | NFR-57 | 2FA secrets encrypted with AES-256-GCM | Data Protection |
 | NFR-58 | Atomic MongoDB operations for refresh token rotation | Reliability |
+| NFR-59 | GraphQL batching must not bypass rate limiting | Security |
+| NFR-60 | Bearer token sidejack risk documented (accepted for MVP) | Auth |
+| NFR-61 | JWT private key permissions 600 (owner only) | Security |
+| NFR-62 | Auth operations excluded from GraphQL auto-exposure | Security |
+| NFR-64 | Implicit OAuth grant disabled in ALL environments | Security |
+| NFR-65 | CORS `credentials: true` + explicit origin in ALL envs | Auth |
+| NFR-66 | `Permissions-Policy` header on all responses | Headers |
+| NFR-67 | (Growth) Password breach database check | Auth |
+| NFR-68 | Recovery code exhaustion warning when remaining <= 2 | UX/Security |
 
 ## FR Coverage Map
 
@@ -157,6 +166,14 @@ This document provides the complete epic and story breakdown for the Auth Sign-i
 | NFR-56 | | | | x | | |
 | NFR-57 | | x | | | | |
 | NFR-58 | | | x | | | |
+| NFR-59 | | | | | x | |
+| NFR-60 | | | | x | | |
+| NFR-61 | | | | x | | |
+| NFR-62 | | | | | x | |
+| NFR-64 | | | | x | | |
+| NFR-65 | | | | x | | |
+| NFR-66 | | | | | x | |
+| NFR-68 | | x | | | | |
 
 ## Epic List
 
@@ -932,5 +949,3 @@ So that security incidents can be investigated.
 - PRD: `docs/plans/2026-02-05-auth-2fa-signin-prd.md`
 - Architecture: `docs/plans/2026-02-05-auth-2fa-signin-architecture.md`
 - Stories: `docs/plans/2026-02-05-auth-2fa-signin-stories.md`
-- TEA Challenge R1: `docs/plans/2026-02-06-tea-party-mode-challenge.md`
-- TEA Challenge R2: `docs/plans/2026-02-06-tea-party-mode-challenge-r2.md`
