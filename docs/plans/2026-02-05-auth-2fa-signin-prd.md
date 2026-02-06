@@ -9,10 +9,6 @@ stepsCompleted:
     domain-requirements,
     functional-requirements,
     non-functional-requirements,
-    security-review,
-    tea-party-challenge,
-    tea-party-challenge-r2,
-    tea-party-challenge-r3,
   ]
 inputDocuments:
   [

@@ -10,10 +10,6 @@ stepsCompleted:
     rate-limiter,
     security-headers,
     diagrams,
-    security-review,
-    tea-party-challenge,
-    tea-party-challenge-r2,
-    tea-party-challenge-r3,
   ]
 inputDocuments:
   [
@@ -174,8 +170,8 @@ This design extends the VilnaCRM User Service with sign-in, 2FA (including recov
 ```yaml
 firewalls:
   oauth:
-    pattern: ^/(token|authorize|\.well-known)
-    security: false # OAuth endpoints handle their own auth
+    pattern: ^/(token|\.well-known)
+    security: false # OAuth token/discovery endpoints handle their own auth
 
   api:
     pattern: ^/
@@ -284,7 +280,7 @@ resendEmailTo:
 
 **Caddy block (production):**
 
-```
+```caddyfile
 header {
     Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
     X-Content-Type-Options "nosniff"
@@ -297,7 +293,7 @@ header {
 
 **Request body size limit:**
 
-```
+```caddyfile
 request_body {
     max_size 64KB
 }
@@ -313,7 +309,7 @@ request_body {
 
 **Logic (corrected per TEA review):**
 
-```
+```text
 on refresh(token):
   record = find_by_hash(sha256(token))
   if not record: return 401

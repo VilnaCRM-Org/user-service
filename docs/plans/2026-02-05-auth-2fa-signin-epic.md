@@ -6,10 +6,6 @@ stepsCompleted:
     coverage-map,
     epic-breakdown,
     story-details,
-    security-review,
-    tea-party-challenge,
-    tea-party-challenge-r2,
-    tea-party-challenge-r3,
   ]
 inputDocuments:
   [
@@ -31,7 +27,7 @@ This document provides the complete epic and story breakdown for the Auth Sign-i
 
 **Epic Owner:** User Service
 **Date:** 2026-02-05
-**Revision:** 4 — TEA Party Mode R2 Deep Security Pass (addresses R1 13 critical + R2 4 critical gaps)
+**Revision:** 5 — TEA Party Mode R3 Multi-Model Adversarial Review (addresses R1 13 + R2 4 + R3 3 critical gaps)
 
 ## Requirements Inventory
 
@@ -518,7 +514,7 @@ So that all requests are authenticated before reaching controllers.
 **When** a request hits any `/api/` route without a valid bearer token or session cookie
 **Then** the response status is 401
 
-**Given** the `oauth` firewall covers `^/(token|authorize|\.well-known)`
+**Given** the `oauth` firewall covers `^/(token|\.well-known)`
 **When** a request hits these routes without auth
 **Then** the request proceeds (these endpoints handle their own auth)
 

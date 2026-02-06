@@ -5,10 +5,6 @@ stepsCompleted:
     story-details,
     task-breakdown,
     dev-notes,
-    security-review,
-    tea-party-challenge,
-    tea-party-challenge-r2,
-    tea-party-challenge-r3,
   ]
 inputDocuments:
   [
@@ -607,14 +603,14 @@ so that all requests are authenticated before reaching controllers.
 ## Acceptance Criteria
 
 1. `api` firewall has `security: true`, `stateless: true`, `oauth2: true` (AC: NFR-04)
-2. `oauth` firewall covers `^/(token|authorize|\.well-known)` with `security: false` (AC: ADR-03)
+2. `oauth` firewall covers `^/(token|\.well-known)` with `security: false` (AC: ADR-03)
 3. Unauthenticated requests to `/api/` routes return 401 (AC: FR-09)
 4. Existing tests continue to pass (no regression) (AC: Story 4.0 dependency)
 
 ## Tasks / Subtasks
 
 - [ ] Task 1: Update `config/packages/security.yaml` (AC: #1, #2)
-  - [ ] Add `oauth` firewall (pattern: `^/(token|authorize|\.well-known)`, security: false)
+  - [ ] Add `oauth` firewall (pattern: `^/(token|\.well-known)`, security: false)
   - [ ] Change `main` to `api` firewall with `security: true`, `stateless: true`, `oauth2: true`
 - [ ] Task 2: Implement DualAuthenticator (AC: #1)
   - [ ] `src/Shared/Infrastructure/Security/DualAuthenticator.php`
@@ -1288,7 +1284,7 @@ so that security incidents can be investigated.
 
 ## Story Dependency Order
 
-```
+```text
 1.3 (entities) ─────────────────────────────────────────────┐
                                                              │
 4.0 (test infra) ──► 4.1 (firewall) ──► 4.2 (access ctrl)  │
