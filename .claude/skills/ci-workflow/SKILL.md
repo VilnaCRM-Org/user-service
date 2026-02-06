@@ -19,7 +19,7 @@ Execute `make ci` and ensure ALL quality checks pass with success message.
 
 ## Parallel Execution
 
-The CI command uses Make's built-in parallelism (`make -j --output-sync=target`) for concurrent execution. No extra tools needed.
+The CI command uses Make's built-in parallelism (`make -j4 --output-sync=target`) for concurrent execution. No external tools are required beyond GNU Make.
 
 Checks run in two stages:
 
@@ -37,7 +37,7 @@ Parallel stage groups:
 
 ### AI-Friendly Output
 
-The `--output-sync=target` flag groups each target's output together after completion, preventing interleaved output from parallel tasks.
+Make's `--output-sync=target` flag groups each target's output together after completion, preventing interleaved output from parallel tasks.
 
 ## Execution Steps
 
