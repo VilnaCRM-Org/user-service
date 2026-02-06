@@ -448,7 +448,7 @@
             "usersToGetInOneRequest":50,
             "teardownTimeoutInMinutes":30,
             "smoke":{
-                "threshold":70,
+                "threshold":80,
                 "rps":10,
                 "vus":10,
                 "duration":10
