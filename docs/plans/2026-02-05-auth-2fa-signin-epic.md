@@ -1,12 +1,6 @@
 ---
 stepsCompleted:
-  [
-    validate-prerequisites,
-    requirements-inventory,
-    coverage-map,
-    epic-breakdown,
-    story-details,
-  ]
+  [validate-prerequisites, requirements-inventory, coverage-map, epic-breakdown, story-details]
 inputDocuments:
   [
     docs/plans/2026-02-05-auth-2fa-signin-prd.md,

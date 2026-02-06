@@ -1,11 +1,5 @@
 ---
-stepsCompleted:
-  [
-    init,
-    story-details,
-    task-breakdown,
-    dev-notes,
-  ]
+stepsCompleted: [init, story-details, task-breakdown, dev-notes]
 inputDocuments:
   [
     docs/plans/2026-02-05-auth-2fa-signin-prd.md,
