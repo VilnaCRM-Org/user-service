@@ -31,7 +31,7 @@ for f in "$review_prompt_file" "$fix_prompt_file"; do
 done
 
 if [[ ! "$max_iter" =~ ^[0-9]+$ ]]; then
-  echo "AI_REVIEW_MAX_ITER must be a non-negative integer (got: $max_iter)" >&2
+  echo "AI_REVIEW_MAX_ITER must be a non-negative integer, 0=unlimited (got: $max_iter)" >&2
   exit 1
 fi
 
@@ -68,7 +68,7 @@ claude_flags=()
 # --- Agent validation -----------------------------------------------------
 
 ensure_codex_output_last_message() {
-  if ! "$codex_cmd" exec --help 2>/dev/null | grep -q -- '--output-last-message'; then
+  if ! "$codex_cmd" exec --help 2>&1 | grep -q -- '--output-last-message'; then
     echo "Codex CLI is missing --output-last-message; update Codex CLI." >&2
     exit 1
   fi
@@ -191,10 +191,10 @@ run_review() {
   local agent="$1"
   local output_file="$2"
   local prompt
-  prompt="$(build_review_prompt)"
 
   case "$agent" in
     codex)
+      prompt="$(build_review_prompt)"
       printf "%s" "$prompt" \
         | "$codex_cmd" \
             ${codex_flags[@]+"${codex_flags[@]}"} \
@@ -206,10 +206,11 @@ run_review() {
           >"$output_file" 2>"${output_file}.log"
       ;;
     claude)
-      "$claude_cmd" -p "$prompt" \
+      "$claude_cmd" -p "/review" \
         ${claude_flags[@]+"${claude_flags[@]}"} \
+        --append-system-prompt "After completing the review, your FIRST line of output MUST be exactly STATUS: PASS or STATUS: FAIL. Then list any issues found." \
         --output-format text \
-        >"$output_file" 2>&1
+        >"$output_file" 2>"${output_file}.log"
       ;;
   esac
 }
@@ -235,7 +236,7 @@ run_fix() {
       "$claude_cmd" -p "$prompt" \
         ${claude_flags[@]+"${claude_flags[@]}"} \
         --output-format text \
-        >"$output_file" 2>&1
+        >"$output_file" 2>"${output_file}.log"
       ;;
   esac
 }

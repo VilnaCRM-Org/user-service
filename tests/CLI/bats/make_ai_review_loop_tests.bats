@@ -64,3 +64,65 @@ EOF
   assert_success
   assert_output --partial "AI review PASS."
 }
+
+@test "ai-review-loop claude agent uses built-in /review skill" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  mkdir -p "$bin_dir"
+
+  cat > "$bin_dir/claude" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Capture all args to verify /review is passed
+for arg in "$@"; do
+  if [[ "$arg" == "/review" ]]; then
+    echo "STATUS: PASS"
+    echo "0 issues."
+    exit 0
+  fi
+done
+
+echo "ERROR: /review not found in args: $*" >&2
+exit 2
+SCRIPT
+  chmod +x "$bin_dir/claude"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    AI_REVIEW_AGENT=claude \
+    AI_REVIEW_CLAUDE_CMD=claude \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+  assert_success
+  assert_output --partial "AI review PASS."
+}
+
+@test "ai-review-loop claude agent separates stderr from stdout" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  mkdir -p "$bin_dir"
+
+  cat > "$bin_dir/claude" <<'SCRIPT'
+#!/usr/bin/env bash
+echo "some warning" >&2
+echo "STATUS: PASS"
+echo "0 issues."
+SCRIPT
+  chmod +x "$bin_dir/claude"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    AI_REVIEW_AGENT=claude \
+    AI_REVIEW_CLAUDE_CMD=claude \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+  assert_success
+  assert_output --partial "AI review PASS."
+
+  # Verify stderr went to .log file, not to the review output
+  local review_file
+  review_file="${BATS_TEST_TMPDIR}/ai-review/review-latest-claude.md"
+  run cat "$review_file"
+  refute_output --partial "some warning"
+}
