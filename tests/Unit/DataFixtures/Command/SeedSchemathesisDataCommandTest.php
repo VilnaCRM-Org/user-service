@@ -400,7 +400,7 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
             - $token->getAllowedToSendAfter()->getTimestamp();
         $this->assertGreaterThanOrEqual(55, $deltaInSeconds);
         $this->assertLessThanOrEqual(65, $deltaInSeconds);
-        $this->assertSame(0, $token->getTimesSent());
+        $this->assertSame(5, $token->getTimesSent());
     }
 
     private function assertPasswordResetTokens(
