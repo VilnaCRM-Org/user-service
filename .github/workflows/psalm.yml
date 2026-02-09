@@ -2,6 +2,7 @@ name: code quality
 
 on:
   pull_request:
+    branches: ['main']
 
 jobs:
   psalm:
@@ -9,24 +10,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.1.1
 
-      - name: Start application
-        run: make start
+      - name: Psalm
+        uses: docker://ghcr.io/psalm/psalm-github-actions:5.26.1
+        with:
+          composer_require_dev: true
+          composer_ignore_platform_reqs: true
 
-      - name: Run Psalm
-        run: make psalm
-
-      - name: Psalm Security Analysis
-        run: make psalm-security-report
-
-      - name: Verify SARIF file exists
-        run: docker compose exec php test -f /srv/app/results.sarif || { echo "SARIF file not generated"; exit 1; }
-
-      - name: Copy SARIF file from container
-        run: docker compose cp php:/srv/app/results.sarif ./results.sarif
+      - name: Psalm Security
+        uses: docker://ghcr.io/psalm/psalm-github-actions:5.26.1
+        with:
+          composer_require_dev: true
+          composer_ignore_platform_reqs: true
+          security_analysis: true
+          report_file: results.sarif
 
       - name: Upload Security Analysis results to GitHub
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v3.25.4
         with:
           sarif_file: results.sarif

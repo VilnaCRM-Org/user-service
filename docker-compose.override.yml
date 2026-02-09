@@ -2,11 +2,10 @@
 services:
   php:
     build:
-      target: frankenphp_dev
+      target: app_php_dev
     volumes:
       - ./:/srv/app
       - ./infrastructure/docker/php/conf.d/app.dev.ini:/usr/local/etc/php/conf.d/app.dev.ini:ro
-      - ./infrastructure/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       # If you develop on Mac or Windows you can remove the vendor/ directory
       #  from the bind-mount for better performance by enabling the next line:
       #- /srv/app/vendor
@@ -16,38 +15,20 @@ services:
     extra_hosts:
       # Ensure that host.docker.internal is correctly defined on Linux
       - host.docker.internal:host-gateway
-    networks:
-      - user-service
+
+  caddy:
+    command:
+      ['caddy', 'run', '--config', '/etc/caddy/Caddyfile', '--adapter', 'caddyfile', '--watch']
+    volumes:
+      - ./public:/srv/app/public:ro
+      - ./infrastructure/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+
+  structurizr:
+    image: structurizr/lite:2024.07.02
     ports:
-      - target: 8081
-        published: 8081
-        protocol: tcp
-
-  app-prod:
-    networks:
-      - user-service
-
-  ###> symfony/mailer ###
-  mailer:
-    image: schickling/mailcatcher
-    ports:
-      - '${MAILCATCHER_SMTP_PORT}:1025'
-      - '${MAILCATCHER_HTTP_PORT}:1080'
-    networks:
-      - user-service
-  ###< symfony/mailer ###
-
-  database:
-    networks:
-      - user-service
-
-  workers:
-    networks:
-      - user-service
-
-  redis:
-    networks:
-      - user-service
+      - '${STRUCTURIZR_PORT}:8080'
+    volumes:
+      - ./:/usr/local/structurizr
 
   localstack:
     image: localstack/localstack:3.4.0
@@ -55,25 +36,10 @@ services:
     ports:
       - '${LOCALSTACK_PORT}:4566'
     environment:
-      - SERVICES=sqs
+      - SERVICES=sqs,ec2,s3,iam,sts
       - DEBUG=1
     volumes:
       - localstack_data:/var/lib/localstack
       - ./infrastructure/docker/php/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
-    networks:
-      - user-service
-
-  structurizr:
-    image: structurizr/lite
-    ports:
-      - '${STRUCTURIZR_PORT}:8080'
-    volumes:
-      - ./:/usr/local/structurizr
-    networks:
-      - user-service
-
-networks:
-  user-service:
-
 volumes:
   localstack_data:
