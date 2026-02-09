@@ -52,62 +52,62 @@ This document provides the complete epic and story breakdown for the Auth Sign-i
 
 ### Non-Functional Requirements
 
-| ID        | Requirement                                                           | Category        |
-| --------- | --------------------------------------------------------------------- | --------------- |
-| NFR-01    | Sign-in responds in under 300ms for 95th percentile under normal load | Performance     |
-| NFR-02    | Token refresh responds in under 100ms for 95th percentile             | Performance     |
-| NFR-03    | Auth gate adds less than 5ms overhead per request                     | Performance     |
+| ID        | Requirement                                                               | Category        |
+| --------- | ------------------------------------------------------------------------- | --------------- |
+| NFR-01    | Sign-in responds in under 300ms for 95th percentile under normal load     | Performance     |
+| NFR-02    | Token refresh responds in under 100ms for 95th percentile                 | Performance     |
+| NFR-03    | Auth gate adds less than 5ms overhead per request                         | Performance     |
 | NFR-04    | Firewall enabled with OAuth2 validation on all `/api/` and `/api/graphql` | Auth            |
-| NFR-05    | Access token 15-min TTL (reduced from 1h to limit revocation window)  | Auth            |
-| NFR-06    | Refresh token 1-month TTL                                             | Auth            |
-| NFR-07    | TOTP +/- 1 time window tolerance                                      | Auth            |
-| NFR-08    | Global rate limit: 100/min anon, 300/min auth                         | Rate Limiting   |
-| NFR-09    | Registration: 5/min per IP                                            | Rate Limiting   |
-| NFR-10    | Token exchange: 10/min per client_id                                  | Rate Limiting   |
-| NFR-11    | Sign-in: 10/min per IP, 5/min per email                               | Rate Limiting   |
-| NFR-12    | 2FA verification: 5 attempts/min per pending session                  | Rate Limiting   |
-| NFR-13    | Resend confirmation: 3/min per IP + 3/min per target user             | Rate Limiting   |
-| NFR-14    | Rate limit rejections include `Retry-After` + RFC 7807                | Rate Limiting   |
-| NFR-15    | Refresh tokens stored as SHA-256 hashes                               | Data Protection |
-| NFR-16    | 2FA secrets encrypted before persistence                              | Data Protection |
-| NFR-17    | MongoDB production connections use TLS (`?tls=true`)                  | Data Protection |
-| NFR-18    | External traffic uses TLS 1.2+ with HSTS                              | Headers         |
-| NFR-19-23 | Security headers (HSTS, XFO, XCTO, CSP, Referrer-Policy)              | Headers         |
-| NFR-24    | GraphQL introspection disabled in production                          | Headers         |
-| NFR-25    | RFC 7807 error responses for all failures                             | Reliability     |
-| NFR-26    | Grace window survives Redis restart                                   | Reliability     |
-| NFR-27-30 | Quality thresholds (PHPInsights, Deptrac, Psalm, coverage)            | Quality         |
-| NFR-31    | Password change revokes all other sessions                            | Auth            |
-| NFR-32    | Bcrypt cost >= 12 with migrate_from                                   | Auth            |
-| NFR-33    | Structured audit logging for all auth events                          | Observability   |
-| NFR-34    | Theft detection logs at CRITICAL level                                | Observability   |
-| NFR-35    | GraphQL max query depth: 20                                           | Security        |
-| NFR-36    | GraphQL max query complexity: 500                                     | Security        |
-| NFR-37    | Confirmation token length >= 32 characters                            | Data Protection |
-| NFR-38    | JWT algorithm pinned to RS256                                         | Auth            |
-| NFR-39    | Request body size limit: 64KB                                         | Availability    |
-| NFR-40    | CORS credentials: true with explicit origin                           | Auth            |
-| NFR-41    | Password grant disabled                                               | Auth            |
-| NFR-42    | Recovery codes stored as SHA-256 hashes, 8 per user, single-use       | Data Protection |
-| NFR-43-49 | Extended rate limiting (collection, 2FA, update, delete, etc.)        | Rate Limiting   |
-| NFR-50    | JWT includes claims: sub, iss, aud, exp, iat, nbf, jti, sid, roles    | Auth            |
-| NFR-51    | JWT validation verifies iss (single string), aud, nbf, exp            | Auth            |
-| NFR-52    | 2FA enablement revokes all sessions except current                    | Auth            |
-| NFR-53    | Constant-time credential validation (timing-safe)                     | Auth            |
-| NFR-54    | Cookie uses `__Host-` prefix                                          | Data Protection |
-| NFR-55    | Account lockout: 20 attempts / 1h / 15-min lock                       | Auth            |
-| NFR-56    | 401 responses include `WWW-Authenticate: Bearer`                      | Compliance      |
-| NFR-57    | 2FA secrets encrypted with AES-256-GCM                                | Data Protection |
-| NFR-58    | Atomic MongoDB operations for refresh token rotation                  | Reliability     |
-| NFR-59    | GraphQL batching must not bypass rate limiting                        | Security        |
-| NFR-60    | Bearer token sidejack risk documented (accepted for MVP)              | Auth            |
-| NFR-61    | JWT private key permissions 600 (owner only)                          | Security        |
-| NFR-62    | Auth operations excluded from GraphQL auto-exposure                   | Security        |
-| NFR-64    | Implicit OAuth grant disabled in ALL environments                     | Security        |
-| NFR-65    | CORS `credentials: true` + explicit origin in ALL envs                | Auth            |
-| NFR-66    | `Permissions-Policy` header on all responses                          | Headers         |
-| NFR-67    | (Growth) Password breach database check                               | Auth            |
-| NFR-68    | Recovery code exhaustion warning when remaining <= 2                  | UX/Security     |
+| NFR-05    | Access token 15-min TTL (reduced from 1h to limit revocation window)      | Auth            |
+| NFR-06    | Refresh token 1-month TTL                                                 | Auth            |
+| NFR-07    | TOTP +/- 1 time window tolerance                                          | Auth            |
+| NFR-08    | Global rate limit: 100/min anon, 300/min auth                             | Rate Limiting   |
+| NFR-09    | Registration: 5/min per IP                                                | Rate Limiting   |
+| NFR-10    | Token exchange: 10/min per client_id                                      | Rate Limiting   |
+| NFR-11    | Sign-in: 10/min per IP, 5/min per email                                   | Rate Limiting   |
+| NFR-12    | 2FA verification: 5 attempts/min per pending session                      | Rate Limiting   |
+| NFR-13    | Resend confirmation: 3/min per IP + 3/min per target user                 | Rate Limiting   |
+| NFR-14    | Rate limit rejections include `Retry-After` + RFC 7807                    | Rate Limiting   |
+| NFR-15    | Refresh tokens stored as SHA-256 hashes                                   | Data Protection |
+| NFR-16    | 2FA secrets encrypted before persistence                                  | Data Protection |
+| NFR-17    | MongoDB production connections use TLS (`?tls=true`)                      | Data Protection |
+| NFR-18    | External traffic uses TLS 1.2+ with HSTS                                  | Headers         |
+| NFR-19-23 | Security headers (HSTS, XFO, XCTO, CSP, Referrer-Policy)                  | Headers         |
+| NFR-24    | GraphQL introspection disabled in production                              | Headers         |
+| NFR-25    | RFC 7807 error responses for all failures                                 | Reliability     |
+| NFR-26    | Grace window survives Redis restart                                       | Reliability     |
+| NFR-27-30 | Quality thresholds (PHPInsights, Deptrac, Psalm, coverage)                | Quality         |
+| NFR-31    | Password change revokes all other sessions                                | Auth            |
+| NFR-32    | Bcrypt cost >= 12 with migrate_from                                       | Auth            |
+| NFR-33    | Structured audit logging for all auth events                              | Observability   |
+| NFR-34    | Theft detection logs at CRITICAL level                                    | Observability   |
+| NFR-35    | GraphQL max query depth: 20                                               | Security        |
+| NFR-36    | GraphQL max query complexity: 500                                         | Security        |
+| NFR-37    | Confirmation token length >= 32 characters                                | Data Protection |
+| NFR-38    | JWT algorithm pinned to RS256                                             | Auth            |
+| NFR-39    | Request body size limit: 64KB                                             | Availability    |
+| NFR-40    | CORS credentials: true with explicit origin                               | Auth            |
+| NFR-41    | Password grant disabled                                                   | Auth            |
+| NFR-42    | Recovery codes stored as SHA-256 hashes, 8 per user, single-use           | Data Protection |
+| NFR-43-49 | Extended rate limiting (collection, 2FA, update, delete, etc.)            | Rate Limiting   |
+| NFR-50    | JWT includes claims: sub, iss, aud, exp, iat, nbf, jti, sid, roles        | Auth            |
+| NFR-51    | JWT validation verifies iss (single string), aud, nbf, exp                | Auth            |
+| NFR-52    | 2FA enablement revokes all sessions except current                        | Auth            |
+| NFR-53    | Constant-time credential validation (timing-safe)                         | Auth            |
+| NFR-54    | Cookie uses `__Host-` prefix                                              | Data Protection |
+| NFR-55    | Account lockout: 20 attempts / 1h / 15-min lock                           | Auth            |
+| NFR-56    | 401 responses include `WWW-Authenticate: Bearer`                          | Compliance      |
+| NFR-57    | 2FA secrets encrypted with AES-256-GCM                                    | Data Protection |
+| NFR-58    | Atomic MongoDB operations for refresh token rotation                      | Reliability     |
+| NFR-59    | GraphQL batching must not bypass rate limiting                            | Security        |
+| NFR-60    | Bearer token sidejack risk documented (accepted for MVP)                  | Auth            |
+| NFR-61    | JWT private key permissions 600 (owner only)                              | Security        |
+| NFR-62    | Auth operations excluded from GraphQL auto-exposure                       | Security        |
+| NFR-64    | Implicit OAuth grant disabled in ALL environments                         | Security        |
+| NFR-65    | CORS `credentials: true` + explicit origin in ALL envs                    | Auth            |
+| NFR-66    | `Permissions-Policy` header on all responses                              | Headers         |
+| NFR-67    | (Growth) Password breach database check                                   | Auth            |
+| NFR-68    | Recovery code exhaustion warning when remaining <= 2                      | UX/Security     |
 
 ## FR Coverage Map
 

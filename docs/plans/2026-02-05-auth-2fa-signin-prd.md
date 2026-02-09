@@ -263,13 +263,13 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 
 ### Security — GraphQL and API Protection (TEA R3)
 
-| ID     | Requirement                                                                                                                           | Measurement                                                                         |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| ID     | Requirement                                                                                                                               | Measurement                                                                         |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | NFR-59 | GraphQL batching must not bypass rate limiting — reject batch requests (JSON arrays) at `/api/graphql` or count each operation separately | Integration test: batch of 10 sign-in mutations receives 400 or triggers rate limit |
-| NFR-62 | Auth operations (sign-in, 2FA, token, sign-out) must not auto-expose via GraphQL mutations — `graphql: false` on all auth resources   | Integration test: GraphQL introspection shows no sign-in/2FA mutations              |
-| NFR-64 | Implicit OAuth grant disabled in ALL environments including test                                                                      | Config validation: `OAUTH_ENABLE_IMPLICIT_GRANT=0` in `.env.test`                   |
-| NFR-65 | CORS `allow_credentials: true` with explicit origin (no wildcard `*`) in ALL environments including dev                               | Config validation + integration test                                                |
-| NFR-66 | `Permissions-Policy` header (`camera=(), microphone=(), geolocation=(), payment=()`) on all responses                                 | Behat test for header presence                                                      |
+| NFR-62 | Auth operations (sign-in, 2FA, token, sign-out) must not auto-expose via GraphQL mutations — `graphql: false` on all auth resources       | Integration test: GraphQL introspection shows no sign-in/2FA mutations              |
+| NFR-64 | Implicit OAuth grant disabled in ALL environments including test                                                                          | Config validation: `OAUTH_ENABLE_IMPLICIT_GRANT=0` in `.env.test`                   |
+| NFR-65 | CORS `allow_credentials: true` with explicit origin (no wildcard `*`) in ALL environments including dev                                   | Config validation + integration test                                                |
+| NFR-66 | `Permissions-Policy` header (`camera=(), microphone=(), geolocation=(), payment=()`) on all responses                                     | Behat test for header presence                                                      |
 
 ### Security — Key Management and Token Binding (TEA R3)
 
