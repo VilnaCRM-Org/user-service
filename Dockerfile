@@ -86,7 +86,8 @@ ENV APP_ENV=dev \
 RUN apk add --no-cache \
     bash \
     make \
-    bats
+    bats \
+    bc
 
 RUN curl -sS https://get.symfony.com/cli/installer | bash \
  && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
