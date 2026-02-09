@@ -18,6 +18,10 @@ You need to manually discover and read skill files, then follow their step-by-st
 
 ## Quick Start for OpenAI Agents
 
+### Step 0: New Feature Verification Gate (Mandatory)
+
+If you implement a **NEW feature**, you MUST execute **every** skill in `.claude/skills/` **after implementation**. If a skill is not applicable, explicitly record **"Not applicable"** with a concrete reason. Provide evidence (commands run and outcomes). Use `make` or `docker compose exec php ...` only. Do not claim the feature is complete until this gate is finished.
+
 ### Step 1: Understand Your Task
 
 When the user requests a task, first determine which skill is most relevant.
@@ -40,14 +44,19 @@ Quick Decision Tree:
 │   ├─ New entity/value object → implementing-ddd-architecture
 │   ├─ New API endpoint → api-platform-crud
 │   ├─ New load test → load-testing
-│   └─ New database entity → database-migrations
+│   ├─ New database entity → database-migrations
+│   ├─ Add caching / invalidation → cache-management
+│   ├─ Add business metrics → observability-instrumentation
+│   └─ Fix file placement / boundaries → code-organization
 │
 ├─ Review/validate work
 │   ├─ Before committing → ci-workflow
 │   ├─ PR feedback → code-review
-│   └─ Query performance → query-performance-analysis
+│   ├─ Query performance → query-performance-analysis
+│   └─ Quality thresholds → quality-standards
 │
 ├─ Update documentation
+│   ├─ New project needs docs → documentation-creation
 │   └─ Any code change → documentation-sync
 │
 └─ Architecture diagrams
@@ -108,7 +117,7 @@ Complex skills have multi-file structure:
 - Need detailed patterns → `reference/*.md`
 - Want complete examples → `examples/*.md`
 
-## Available Skills (14 Total)
+## Available Skills (18 Total)
 
 ### 🔧 Workflow Skills
 
@@ -127,21 +136,26 @@ Complex skills have multi-file structure:
 | **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds               |
 | **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code                   |
 | **OpenAPI Development**      | `openapi-development/SKILL.md`           | OpenAPI factories, sanitizers, augmenters & validation |
+| **Code Organization**        | `code-organization/SKILL.md`             | Placement, naming, boundaries, and type safety         |
+| **Query Performance**        | `query-performance-analysis/SKILL.md`    | N+1 detection, EXPLAIN analysis, indexing              |
 | **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl       |
 
 ### 💾 Database & Documentation Skills
 
-| Skill                   | File                           | When to Use                                      |
-| ----------------------- | ------------------------------ | ------------------------------------------------ |
-| **Database Migrations** | `database-migrations/SKILL.md` | Create/modify entities with Doctrine ORM (MySQL) |
-| **Documentation Sync**  | `documentation-sync/SKILL.md`  | Keep docs synchronized with code changes         |
+| Skill                      | File                              | When to Use                                      |
+| -------------------------- | --------------------------------- | ------------------------------------------------ |
+| **Database Migrations**    | `database-migrations/SKILL.md`    | Create/modify entities with Doctrine ORM (MySQL) |
+| **Documentation Creation** | `documentation-creation/SKILL.md` | Create full docs suite for a new project         |
+| **Documentation Sync**     | `documentation-sync/SKILL.md`     | Keep docs synchronized with code changes         |
 
 ### 🚀 API & Performance Skills
 
-| Skill                 | File                         | When to Use                                  |
-| --------------------- | ---------------------------- | -------------------------------------------- |
-| **API Platform CRUD** | `api-platform-crud/SKILL.md` | Create complete REST API CRUD with DDD/CQRS  |
-| **Load Testing**      | `load-testing/SKILL.md`      | Create K6 performance tests for REST/GraphQL |
+| Skill                 | File                                     | When to Use                                  |
+| --------------------- | ---------------------------------------- | -------------------------------------------- |
+| **API Platform CRUD** | `api-platform-crud/SKILL.md`             | Create complete REST API CRUD with DDD/CQRS  |
+| **Load Testing**      | `load-testing/SKILL.md`                  | Create K6 performance tests for REST/GraphQL |
+| **Cache Management**  | `cache-management/SKILL.md`              | Cache keys, TTLs, invalidation, decorators   |
+| **Observability**     | `observability-instrumentation/SKILL.md` | Business metrics via EMF                     |
 
 ## Practical Examples
 
@@ -169,6 +183,8 @@ Complex skills have multi-file structure:
 2. **Read each skill** in order and execute steps
 
 3. **Use examples**: Check `.claude/skills/api-platform-crud/examples/complete-customer-crud.md` for full example
+
+4. **After implementation**: Run the **New Feature Verification Gate** (execute every skill in `.claude/skills/`).
 
 ### Example 3: User asks to "run tests"
 
