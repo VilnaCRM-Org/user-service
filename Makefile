@@ -10,7 +10,11 @@ LOAD_TEST_CONFIG = tests/Load/config.prod.json
 SYMFONY_BIN   = symfony
 DOCKER        = docker
 DOCKER_COMPOSE = docker compose
+# Pinned Schemathesis image to avoid CI drift
 SCHEMATHESIS_IMAGE = schemathesis/schemathesis:4.9.5
+SCHEMATHESIS_CLIENT_ID ?= dc0bc6323f16fecd4224a3860ca894c5
+SCHEMATHESIS_CLIENT_SECRET ?= 8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7
+SCHEMATHESIS_AUTH = $(SCHEMATHESIS_CLIENT_ID):$(SCHEMATHESIS_CLIENT_SECRET)
 
 # Executables
 EXEC_PHP      = $(DOCKER_COMPOSE) exec php
@@ -266,7 +270,7 @@ reset-db: ## Recreate the database schema for ephemeral test runs
 	@$(SYMFONY) doctrine:mongodb:schema:drop 2>&1 || true
 	@$(SYMFONY) doctrine:mongodb:schema:create
 	@echo "Seeding Schemathesis test data..."
-	@$(EXEC_PHP) php bin/console app:seed-schemathesis-data
+	@$(SYMFONY) app:seed-schemathesis-data
 	@echo "✅ Database reset complete"
 
 coverage-html: ## Create the code coverage report with PHPUnit
@@ -285,10 +289,10 @@ openapi-diff: generate-openapi-spec ## Compare the generated OpenAPI spec agains
 	./scripts/openapi-diff.sh $(or $(base_ref),origin/main)
 
 schemathesis-validate: reset-db generate-openapi-spec ## Validate the running API against the OpenAPI spec with Schemathesis
-	$(EXEC_PHP) php bin/console app:seed-schemathesis-data
-	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth 'dc0bc6323f16fecd4224a3860ca894c5:8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7'
-	$(EXEC_PHP) php bin/console app:seed-schemathesis-data
-	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth 'dc0bc6323f16fecd4224a3860ca894c5:8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7'
+	$(EXEC_PHP) bin/console app:seed-schemathesis-data
+	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'
+	$(EXEC_PHP) bin/console app:seed-schemathesis-data
+	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'
 
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec
@@ -299,8 +303,42 @@ start-prod-loadtest: ## Start production environment with load testing capabilit
 stop-prod-loadtest: ## Stop production load testing environment
 	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml down --remove-orphans
 
-ci: ## Run comprehensive CI checks (excludes bats and load tests)
-	@echo "🚀 Running comprehensive CI checks..."
+ci: ci-preflight ## Run comprehensive CI checks with parallelization (excludes bats and load tests)
+	@echo "🚀 Running parallel CI checks..."
+	@$(MAKE) -j4 --output-sync=target ci-static-analysis ci-deptrac ci-mutation ci-tests-and-openapi
+	@echo ""
+	@echo "✅ CI checks successfully passed!"
+
+ci-preflight: ## Run mutating checks sequentially (code style, quality)
+	@echo "🎨 Preflight: fixing code style and running quality checks..."
+	@$(MAKE) phpcsfixer
+	@$(MAKE) phpinsights
+
+ci-static-analysis:
+	@$(MAKE) composer-validate
+	@$(MAKE) check-requirements
+	@$(MAKE) check-security
+	@$(MAKE) psalm
+	@$(MAKE) psalm-security
+
+ci-deptrac:
+	@$(MAKE) deptrac
+
+ci-mutation:
+	@$(MAKE) infection
+
+ci-tests-and-openapi:
+	@$(MAKE) setup-test-db
+	@$(MAKE) unit-tests
+	@$(MAKE) integration-tests
+	@$(MAKE) behat
+	@$(MAKE) generate-openapi-spec
+	@$(MAKE) openapi-diff
+	@$(MAKE) validate-openapi-spec
+	@$(MAKE) schemathesis-validate
+
+ci-sequential: ## Run CI checks sequentially (fallback if parallel execution has issues)
+	@echo "🚀 Running comprehensive CI checks (sequential mode)..."
 	@failed_checks=""; \
 	echo "1️⃣  Validating composer.json and composer.lock..."; \
 	if ! make composer-validate; then failed_checks="$$failed_checks\n❌ composer validation"; fi; \
@@ -316,21 +354,21 @@ ci: ## Run comprehensive CI checks (excludes bats and load tests)
 	if ! make psalm-security; then failed_checks="$$failed_checks\n❌ Psalm security analysis"; fi; \
 	echo "7️⃣  Running code quality analysis with PHPMD..."; \
 	if ! make phpmd; then failed_checks="$$failed_checks\n❌ PHPMD quality analysis"; fi; \
-	echo "7️⃣  Running code quality analysis with PHPInsights..."; \
+	echo "8️⃣  Running code quality analysis with PHPInsights..."; \
 	if ! make phpinsights; then failed_checks="$$failed_checks\n❌ PHPInsights quality analysis"; fi; \
-	echo "8️⃣  Validating architecture with Deptrac..."; \
+	echo "9️⃣  Validating architecture with Deptrac..."; \
 	if ! make deptrac; then failed_checks="$$failed_checks\n❌ Deptrac architecture validation"; fi; \
-	echo "9️⃣  Running complete test suite (unit, integration, e2e)..."; \
+	echo "🔟 Running complete test suite (unit, integration, e2e)..."; \
 	if ! make unit-tests; then failed_checks="$$failed_checks\n❌ unit tests"; fi; \
 	if ! make integration-tests; then failed_checks="$$failed_checks\n❌ integration tests"; fi; \
 	if ! make behat; then failed_checks="$$failed_checks\n❌ Behat e2e tests"; fi; \
-	echo "🔟 Running mutation testing with Infection..."; \
+	echo "1️⃣1️⃣ Running mutation testing with Infection..."; \
 	if ! make infection; then failed_checks="$$failed_checks\n❌ mutation testing"; fi; \
-	echo "1️⃣1️⃣ Checking OpenAPI backward compatibility..."; \
+	echo "1️⃣2️⃣ Checking OpenAPI backward compatibility..."; \
 	if ! make openapi-diff; then failed_checks="$$failed_checks\n❌ OpenAPI diff"; fi; \
-	echo "1️⃣2️⃣ Validating OpenAPI specification..."; \
+	echo "1️⃣3️⃣ Validating OpenAPI specification..."; \
 	if ! make validate-openapi-spec; then failed_checks="$$failed_checks\n❌ OpenAPI Spectral validation"; fi; \
-	echo "1️⃣3️⃣ Running Schemathesis validation..."; \
+	echo "1️⃣4️⃣ Running Schemathesis validation..."; \
 	if ! make schemathesis-validate; then failed_checks="$$failed_checks\n❌ Schemathesis validation"; fi; \
 	if [ -n "$$failed_checks" ]; then \
 		echo ""; \
