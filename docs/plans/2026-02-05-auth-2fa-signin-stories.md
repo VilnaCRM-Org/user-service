@@ -113,6 +113,7 @@ so that I receive a session cookie and tokens for API access.
 6. Refresh token is stored as SHA-256 hash (AC: NFR-15)
 7. AuthSession records ipAddress and userAgent (AC: ADR-01, NFR-33)
 8. After 20 failed attempts for the same email within 1h, account is locked for 15 min (AC: NFR-55)
+9. Sign-in latency remains under 300ms at p95 under normal load (AC: NFR-01)
 
 ## Tasks / Subtasks
 
@@ -131,24 +132,26 @@ so that I receive a session cookie and tokens for API access.
   - [ ] Emit `UserSignedIn` or `SignInFailed` domain events (on lockout: emit `AccountLockedOut`)
 - [ ] Task 3: Create SignInProcessor (AC: #1, #2, #3)
   - [ ] `src/User/Application/Processor/SignInProcessor.php`
-  - [ ] Set `__Host-auth_token` session cookie with JWT value on response
+  - [ ] Set `__Host-auth_token` session cookie with JWT value on response (`Path=/`)
   - [ ] On 401: include `WWW-Authenticate: Bearer` header
   - [ ] Return appropriate JSON body
 - [ ] Task 4: Register API Platform operation (AC: #1)
   - [ ] Add `signin_http` operation in `config/api_platform/resources/` (new resource or User.yaml)
   - [ ] Route: `POST /api/signin`, public access
-- [ ] Task 5: Tests (AC: #1-#8)
+- [ ] Task 5: Tests (AC: #1-#9)
   - [ ] Unit: SignInCommandHandler (valid, invalid, 2FA branch, event emission, constant-time, lockout)
   - [ ] Unit: Verify JWT contains all required claims (sub, iss, aud, exp, iat, nbf, jti, sid, roles)
   - [ ] Integration: full sign-in flow
   - [ ] Behat: E2E sign-in scenarios
   - [ ] Behat: account lockout scenario (20 failures → 423)
   - [ ] Timing test: response time for non-existent email ≈ response time for wrong password
+  - [ ] Performance test: sign-in p95 remains under 300ms under normal load profile
 
 ## Dev Notes
 
 - SignInCommandHandler should emit `UserSignedIn` (success), `SignInFailed` (failure), and `AccountLockedOut` domain events
 - Cookie name is `__Host-auth_token` (with `__Host-` prefix for subdomain attack prevention)
+- `__Host-` cookie prefix requires `Path=/` and no Domain attribute
 - Cookie value is a JWT (same as bearer token), not a PHP session ID — works with `stateless: true`
 - Cookie Max-Age: 900 (15 min) or 2592000 (30 days) based on `remember_me` flag
 - JWT TTL is 15 minutes (not 1 hour) — limits the revocation window after logout/session invalidation
@@ -162,7 +165,7 @@ so that I receive a session cookie and tokens for API access.
 ### References
 
 - [Source: Architecture POST /api/signin, ADR-01]
-- [Source: PRD FR-01, UJ-01]
+- [Source: PRD FR-01, NFR-01, UJ-01, UJ-05]
 
 ---
 
@@ -474,6 +477,7 @@ so that I can maintain my session without re-authenticating.
 1. POST `/api/token` with valid refresh_token returns 200 with new tokens (AC: FR-04)
 2. Old refresh token is marked as rotated with `rotatedAt` timestamp (AC: ADR-05)
 3. Invalid/expired/revoked tokens return 401 (AC: FR-04)
+4. Token refresh latency remains under 100ms at p95 under normal load (AC: NFR-02)
 
 ## Tasks / Subtasks
 
@@ -490,11 +494,12 @@ so that I can maintain my session without re-authenticating.
 - [ ] Task 3: Create RefreshTokenProcessor + API Platform operation
   - [ ] Route: `POST /api/token`, public access
 - [ ] Task 4: Tests
+  - [ ] Performance test: token refresh p95 remains under 100ms under normal load profile
 
 ### References
 
 - [Source: Architecture ADR-05, POST /api/token]
-- [Source: PRD FR-04, UJ-03]
+- [Source: PRD FR-04, NFR-02, UJ-03]
 
 ---
 
@@ -554,6 +559,8 @@ so that existing tests continue to pass after the firewall is enabled.
 1. Auth test helpers exist for Behat contexts and integration tests (AC: test infrastructure)
 2. Helpers can generate valid bearer tokens for a given user/role (AC: test infrastructure)
 3. All existing tests pass with helpers in place (firewall still disabled) (AC: no regression)
+4. `make psalm` reports 0 errors for auth-related changes (AC: NFR-29)
+5. `make tests-with-coverage` confirms >=90% coverage for new auth code (AC: NFR-30)
 
 ## Tasks / Subtasks
 
@@ -569,6 +576,9 @@ so that existing tests continue to pass after the firewall is enabled.
 - [ ] Task 4: Run existing test suite (AC: #3)
   - [ ] Verify all tests pass without modification
   - [ ] Inventory tests that will need auth after firewall is enabled
+- [ ] Task 5: Run quality gates for auth changes (AC: #4, #5)
+  - [ ] Run `make psalm`
+  - [ ] Run `make tests-with-coverage` and verify coverage >=90% for new auth code
 
 ## Dev Notes
 
@@ -581,6 +591,7 @@ so that existing tests continue to pass after the firewall is enabled.
 
 - [Source: TEA Challenge M-08]
 - [Source: Architecture ADR-03]
+- [Source: PRD NFR-29, NFR-30]
 
 ---
 
@@ -598,8 +609,9 @@ so that all requests are authenticated before reaching controllers.
 
 1. `api` firewall has `security: true`, `stateless: true`, `oauth2: true` (AC: NFR-04)
 2. `oauth` firewall covers `^/(token|\.well-known)` with `security: false` (AC: ADR-03)
-3. Unauthenticated requests to `/api/` routes return 401 (AC: FR-09)
+3. Unauthenticated requests to `/api/` routes return 401 (AC: FR-09, UJ-05)
 4. Existing tests continue to pass (no regression) (AC: Story 4.0 dependency)
+5. Auth gate overhead remains below 5ms per request under normal load (AC: NFR-03)
 
 ## Tasks / Subtasks
 
@@ -617,16 +629,18 @@ so that all requests are authenticated before reaching controllers.
 - [ ] Task 3: Update access_control rules (AC: #2)
   - [ ] Add public allowlist per Architecture ADR-03 (CORRECTED patterns)
   - [ ] Add `ROLE_SERVICE` for batch
-  - [ ] Add catch-all `ROLE_USER` for `/api/` and `/graphql`
+  - [ ] Add catch-all `ROLE_USER` for `/api/` and `/api/graphql`
 - [ ] Task 4: Update existing tests for auth changes (AC: #4)
   - [ ] Inject auth tokens via helpers from Story 4.0
   - [ ] Run full test suite
+- [ ] Task 5: Add auth-gate overhead verification (AC: #5)
+  - [ ] Add integration benchmark for middleware + authenticator overhead on protected routes
 
 ## Dev Notes
 
 - This is the highest-risk story — it changes auth for ALL existing endpoints
 - MUST depend on Story 4.0 (test infrastructure) being complete
-- The League OAuth2 bundle provides the `oauth2` authenticator — verify compatibility with Symfony 7.2
+- The League OAuth2 bundle provides the `oauth2` authenticator — verify compatibility with Symfony 7.4
 - DualAuthenticator reads JWT from `__Host-auth_token` cookie or `Authorization: Bearer` header — both paths go through the same validation
 - JWT claims validation is critical: the `fast-jwt` vulnerability showed that `iss` as array bypasses checks — must validate as single string
 - The `sid` claim in JWT is essential for Story 6.1 (logout) — without it, can't identify which session to revoke
@@ -635,7 +649,7 @@ so that all requests are authenticated before reaching controllers.
 ### References
 
 - [Source: Architecture ADR-03]
-- [Source: PRD FR-09, NFR-04]
+- [Source: PRD FR-09, NFR-03, NFR-04, UJ-05]
 
 ---
 
@@ -763,7 +777,7 @@ so that compromised sessions are terminated when the user changes their password
 
 ## Acceptance Criteria
 
-1. After password change, all other AuthSessions for the user are revoked (AC: FR-19, NFR-31)
+1. After password change, all other AuthSessions for the user are revoked (AC: FR-19, NFR-31, UJ-11)
 2. Current session remains valid (AC: FR-19)
 3. Revoked sessions' refresh tokens are also revoked (AC: NFR-31)
 4. Audit log emitted with reason "password_change" (AC: NFR-33)
@@ -788,7 +802,7 @@ so that compromised sessions are terminated when the user changes their password
 
 ### References
 
-- [Source: PRD FR-19, NFR-31]
+- [Source: PRD FR-19, NFR-31, UJ-11]
 - [Source: Architecture ADR-08]
 
 ---
@@ -873,7 +887,7 @@ so that credential stuffing and brute-force attacks are mitigated.
 5. 2FA disable: 3/min per user
 6. Resend confirmation: also 3/min per target user (AC: NFR-49)
 7. Account lockout: 20 failed sign-in attempts per email within 1h → 15-min lockout → 423 Locked (AC: NFR-55)
-8. 429 with `Retry-After` + RFC 7807 body on exceed; 423 with `Retry-After` on lockout (AC: NFR-14)
+8. 429 with `Retry-After` + RFC 7807 body on exceed; 423 with `Retry-After` on lockout (AC: NFR-14, UJ-06)
 
 ## Tasks / Subtasks
 
@@ -903,7 +917,7 @@ so that credential stuffing and brute-force attacks are mitigated.
 ### References
 
 - [Source: Architecture ADR-02, ADR-10]
-- [Source: PRD NFR-11, NFR-12, NFR-44, NFR-45, NFR-49, NFR-55]
+- [Source: PRD NFR-11, NFR-12, NFR-44, NFR-45, NFR-49, NFR-55, UJ-06]
 
 ---
 
@@ -926,14 +940,16 @@ so that the service passes security audits.
 5. Content-Security-Policy: default-src 'none'; frame-ancestors 'none' (AC: NFR-23)
 6. Server header removed (AC: ADR-04)
 7. `Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()` on all responses (AC: NFR-66)
+8. External traffic is served with TLS 1.2+ and HSTS in production (AC: NFR-18)
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Update Caddyfile with `header` block (AC: #1-#7)
+- [ ] Task 1: Update Caddyfile with `header` block (AC: #1-#8)
   - [ ] Add headers to production server block
   - [ ] Remove Server header
   - [ ] Add Permissions-Policy header
-- [ ] Task 2: Behat tests for header presence (AC: #1-#7)
+  - [ ] Ensure production TLS policy enforces TLS 1.2+ for external traffic
+- [ ] Task 2: Behat tests for header presence (AC: #1-#8)
   - [ ] Verify each header on a standard API response
 
 ## Dev Notes
@@ -944,7 +960,7 @@ so that the service passes security audits.
 ### References
 
 - [Source: Architecture ADR-04]
-- [Source: PRD NFR-19 through NFR-23]
+- [Source: PRD NFR-18 through NFR-23]
 
 ---
 
@@ -983,14 +999,14 @@ so that the API schema is not leaked and DoS via complex queries is prevented.
 
 ---
 
-# Story 5.8: JWT key security hardening
+# Story 5.8: JWT key security, GraphQL batch defense, and transport hardening
 
 Status: ready-for-dev
 
 ## Story
 
 As the system,
-I want JWT private key files to have restrictive permissions and auth operations excluded from GraphQL,
+I want key material, GraphQL entrypoint behavior, and transport settings hardened,
 so that key compromise and rate limit bypass attacks are prevented.
 
 ## Acceptance Criteria
@@ -1001,9 +1017,11 @@ so that key compromise and rate limit bypass attacks are prevented.
 4. CI check verifies private key is not world-readable (AC: NFR-61)
 5. All auth-related API Platform resources have `graphql: false` (AC: NFR-62)
 6. GraphQL introspection shows no sign-in/2FA/sign-out mutations (AC: NFR-62)
-7. GraphQL batch requests (JSON arrays to /graphql) are rejected with 400 (AC: NFR-59)
+7. GraphQL batch requests (JSON arrays to /api/graphql) are rejected with 400 (AC: NFR-59)
 8. Implicit OAuth grant disabled in test environment (AC: NFR-64)
 9. CORS `allow_credentials: true` with explicit origin in all environments (AC: NFR-65)
+10. MongoDB production connection string enables TLS (`?tls=true`) (AC: NFR-17)
+11. External traffic is served via TLS 1.2+ with HSTS in production (AC: NFR-18)
 
 ## Tasks / Subtasks
 
@@ -1018,7 +1036,7 @@ so that key compromise and rate limit bypass attacks are prevented.
 - [ ] Task 3: Add GraphQLBatchRejectListener (AC: #7)
   - [ ] `src/Shared/Application/EventListener/GraphQLBatchRejectListener.php`
   - [ ] Register at `kernel.request` priority 130 (before rate limiter at 120)
-  - [ ] If path is `/graphql` and body is JSON array → 400 Bad Request
+  - [ ] If path is `/api/graphql` and body is JSON array → 400 Bad Request
   - [ ] Integration test: batch request returns 400
 - [ ] Task 4: Disable implicit grant in test (AC: #8)
   - [ ] Set `OAUTH_ENABLE_IMPLICIT_GRANT=0` in `.env.test`
@@ -1026,6 +1044,10 @@ so that key compromise and rate limit bypass attacks are prevented.
   - [ ] Add `allow_credentials: true` to `nelmio_cors` defaults
   - [ ] Change dev `allow_origin` from `['*']` to explicit origin
   - [ ] Integration test: verify CORS headers include `credentials: true`
+- [ ] Task 6: Enforce transport hardening in production config (AC: #10, #11)
+  - [ ] Ensure production MongoDB DSN enables `tls=true`
+  - [ ] Validate external TLS policy (TLS 1.2+) and HSTS in production edge configuration
+  - [ ] Add config validation test for production environment parameters
 
 ## Dev Notes
 
@@ -1038,7 +1060,8 @@ so that key compromise and rate limit bypass attacks are prevented.
 
 - [Source: TEA R3 RC-01, RC-03, RH-01, RH-02, RH-04]
 - [Source: OWASP API2:2023 Broken Authentication]
-- [Source: Architecture ADR-06, ADR-12]
+- [Source: Architecture ADR-04, ADR-06, ADR-12]
+- [Source: PRD NFR-17, NFR-18, NFR-59, NFR-61, NFR-62, NFR-64, NFR-65]
 
 ---
 
@@ -1164,7 +1187,7 @@ so that my tokens are revoked and my session cookie is cleared.
   - [ ] Revoke all AuthRefreshTokens for session (set revokedAt)
   - [ ] Emit `SessionRevoked` domain event with reason "logout"
 - [ ] Task 2: Create SignOutProcessor (AC: #1, #2)
-  - [ ] Clear cookie: `Set-Cookie: __Host-auth_token=; Max-Age=0; Path=/api; HttpOnly; Secure; SameSite=Lax`
+  - [ ] Clear cookie: `Set-Cookie: __Host-auth_token=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`
   - [ ] Return 204
 - [ ] Task 3: Register API Platform operation
   - [ ] Route: `POST /api/signout`, security: `is_granted('ROLE_USER')`
@@ -1320,15 +1343,15 @@ Claude Opus 4.6
 
 ### Completion Notes
 
-- All stories aligned with BMAD epic breakdown (6 epics, 26 stories)
+- All stories aligned with BMAD epic breakdown (6 epics, 28 stories)
 - Every acceptance criterion traced back to PRD FR/NFR or Architecture ADR
-- Stories expanded from 16 to 25 based on TEA Party Mode R1 (13 critical gaps addressed)
+- Stories expanded substantially from the initial draft based on TEA Party Mode findings
 - R2 updates: Stories 1.1, 2.2, 2.3, 3.1, 4.1, 5.2, 6.1, 6.3 updated with R2 findings (4 critical + 7 moderate gaps)
 - R2 key changes: JWT claims structure (NFR-50/51), constant-time validation (NFR-53), `__Host-` cookie (NFR-54), account lockout (NFR-55), `WWW-Authenticate` header (NFR-56), AES-256-GCM encryption (NFR-57), atomic refresh rotation (NFR-58), 2FA-enable session invalidation (FR-20/NFR-52)
-- R3 updates: New Story 5.8 (JWT key + GraphQL batch + CORS), Story 2.5 updated (recovery code warning), Story 5.3 updated (Permissions-Policy), Story 5.4 updated (GraphQL batching)
+- R3 updates: New Story 5.8 (JWT key + GraphQL batch + transport + CORS), Story 2.5 updated (recovery code warning), Story 5.3 updated (Permissions-Policy), Story 5.4 updated (GraphQL batching)
 - R3 key changes: GraphQL batching bypass defense (NFR-59), JWT key permissions (NFR-61), auth ops excluded from GraphQL (NFR-62), CORS fix (NFR-65), recovery code exhaustion warning (NFR-68), bearer token sidejack accepted risk (NFR-60)
 - New stories added (R1): 4.0, 2.4, 2.5, 2.6, 4.4, 4.5, 5.5, 5.6, 5.7, 6.1, 6.2, 6.3
-- New story added (R3): 5.8 (JWT key security + GraphQL batch defense + CORS + implicit grant)
+- New story added (R3): 5.8 (JWT key security + GraphQL batch defense + transport + CORS + implicit grant)
 - Story dependency graph included for implementation ordering
 - Security hardening stories (Epic 5) expanded from 4 to 7 per TEA R1, then to 8 per TEA R3
 - New Epic 6 (Session Lifecycle and Observability) created per TEA R1

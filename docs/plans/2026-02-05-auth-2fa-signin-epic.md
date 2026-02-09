@@ -54,9 +54,12 @@ This document provides the complete epic and story breakdown for the Auth Sign-i
 
 | ID        | Requirement                                                           | Category        |
 | --------- | --------------------------------------------------------------------- | --------------- |
-| NFR-04    | Firewall enabled with OAuth2 validation on all `/api/` and `/graphql` | Auth            |
+| NFR-01    | Sign-in responds in under 300ms for 95th percentile under normal load | Performance     |
+| NFR-02    | Token refresh responds in under 100ms for 95th percentile             | Performance     |
+| NFR-03    | Auth gate adds less than 5ms overhead per request                     | Performance     |
+| NFR-04    | Firewall enabled with OAuth2 validation on all `/api/` and `/api/graphql` | Auth            |
 | NFR-05    | Access token 15-min TTL (reduced from 1h to limit revocation window)  | Auth            |
-| NFR-06    | Refresh token 1m TTL                                                  | Auth            |
+| NFR-06    | Refresh token 1-month TTL                                             | Auth            |
 | NFR-07    | TOTP +/- 1 time window tolerance                                      | Auth            |
 | NFR-08    | Global rate limit: 100/min anon, 300/min auth                         | Rate Limiting   |
 | NFR-09    | Registration: 5/min per IP                                            | Rate Limiting   |
@@ -67,6 +70,8 @@ This document provides the complete epic and story breakdown for the Auth Sign-i
 | NFR-14    | Rate limit rejections include `Retry-After` + RFC 7807                | Rate Limiting   |
 | NFR-15    | Refresh tokens stored as SHA-256 hashes                               | Data Protection |
 | NFR-16    | 2FA secrets encrypted before persistence                              | Data Protection |
+| NFR-17    | MongoDB production connections use TLS (`?tls=true`)                  | Data Protection |
+| NFR-18    | External traffic uses TLS 1.2+ with HSTS                              | Headers         |
 | NFR-19-23 | Security headers (HSTS, XFO, XCTO, CSP, Referrer-Policy)              | Headers         |
 | NFR-24    | GraphQL introspection disabled in production                          | Headers         |
 | NFR-25    | RFC 7807 error responses for all failures                             | Reliability     |
@@ -133,6 +138,9 @@ This document provides the complete epic and story breakdown for the Auth Sign-i
 
 | NFR       | Epic 1 | Epic 2 | Epic 3 | Epic 4 | Epic 5 | Epic 6 |
 | --------- | ------ | ------ | ------ | ------ | ------ | ------ |
+| NFR-01    | x      |        |        |        |        |        |
+| NFR-02    |        |        | x      |        |        |        |
+| NFR-03    |        |        |        | x      |        |        |
 | NFR-04    |        |        |        | x      |        |        |
 | NFR-05    | x      |        |        |        |        |        |
 | NFR-06    |        |        | x      |        |        |        |
@@ -146,6 +154,8 @@ This document provides the complete epic and story breakdown for the Auth Sign-i
 | NFR-14    |        |        |        |        | x      |        |
 | NFR-15    | x      |        | x      |        |        |        |
 | NFR-16    |        | x      |        |        |        |        |
+| NFR-17    |        |        |        |        | x      |        |
+| NFR-18    |        |        |        |        | x      |        |
 | NFR-19-23 |        |        |        |        | x      |        |
 | NFR-24    |        |        |        |        | x      |        |
 | NFR-25    | All    | All    | All    | All    | All    | All    |
@@ -173,10 +183,10 @@ This document provides the complete epic and story breakdown for the Auth Sign-i
 | NFR-58    |        |        | x      |        |        |        |
 | NFR-59    |        |        |        |        | x      |        |
 | NFR-60    |        |        |        | x      |        |        |
-| NFR-61    |        |        |        | x      |        |        |
+| NFR-61    |        |        |        |        | x      |        |
 | NFR-62    |        |        |        |        | x      |        |
-| NFR-64    |        |        |        | x      |        |        |
-| NFR-65    |        |        |        | x      |        |        |
+| NFR-64    |        |        |        |        | x      |        |
+| NFR-65    |        |        |        |        | x      |        |
 | NFR-66    |        |        |        |        | x      |        |
 | NFR-68    |        | x      |        |        |        |        |
 
@@ -207,6 +217,7 @@ So that I receive a session cookie and tokens for API access.
 **And** the body contains `{ 2fa_enabled: false, access_token, refresh_token }`
 **And** a `Set-Cookie` header is present with `HttpOnly`, `Secure`, `SameSite=Lax`
 **And** the cookie contains a signed JWT
+**And** sign-in latency remains under 300ms at p95 under normal load
 
 **Given** invalid credentials
 **When** I POST to `/api/signin` with wrong password
@@ -223,7 +234,7 @@ So that I receive a session cookie and tokens for API access.
 **When** I POST to `/api/signin` with that email
 **Then** the response status is 423 Locked with `Retry-After` header
 
-[Source: PRD FR-01, NFR-50, NFR-53, NFR-55, Architecture ADR-01, ADR-10]
+[Source: PRD FR-01, NFR-01, NFR-50, NFR-53, NFR-55, UJ-05, Architecture ADR-01, ADR-10]
 
 ### Story 1.2: Sign-in with 2FA detection
 
@@ -435,12 +446,13 @@ So that I can maintain my session without re-authenticating.
 **Then** the response status is 200
 **And** the body contains new `{ access_token, refresh_token }`
 **And** the old refresh token is marked as rotated
+**And** refresh latency remains under 100ms at p95 under normal load
 
 **Given** an invalid or expired refresh token
 **When** I POST to `/api/token`
 **Then** the response status is 401
 
-[Source: PRD FR-04, Architecture ADR-05]
+[Source: PRD FR-04, NFR-02, Architecture ADR-05]
 
 ### Story 3.2: Refresh token rotation grace window
 
@@ -524,7 +536,11 @@ So that all requests are authenticated before reaching controllers.
 **When** the DualAuthenticator validates the token
 **Then** the response status is 401 with `WWW-Authenticate: Bearer` header
 
-[Source: PRD FR-09, NFR-50, NFR-51, NFR-54, NFR-56, Architecture ADR-01, ADR-03]
+**Given** authenticated traffic to protected routes under normal load
+**When** requests pass through the auth firewall and authenticator
+**Then** additional auth-gate overhead remains below 5ms per request
+
+[Source: PRD FR-09, NFR-03, NFR-50, NFR-51, NFR-54, NFR-56, UJ-05, Architecture ADR-01, ADR-03]
 
 ### Story 4.2: Access control with public allowlist
 
@@ -626,7 +642,7 @@ So that compromised sessions are terminated when the user changes their password
 **When** the session revocation is complete
 **Then** an audit log entry is emitted with reason "password_change"
 
-[Source: PRD FR-19, NFR-31, Architecture ADR-08]
+[Source: PRD FR-19, NFR-31, UJ-11, Architecture ADR-08]
 
 ## Epic 5: Security Hardening
 
@@ -711,7 +727,7 @@ So that credential stuffing, brute-force, and abuse are mitigated.
 **Then** the response status is 423 Locked with `Retry-After: 900`
 **And** an `AccountLockedOut` audit log is emitted
 
-[Source: PRD NFR-11, NFR-12, NFR-44, NFR-45, NFR-49, NFR-55, Architecture ADR-02, ADR-10]
+[Source: PRD NFR-11, NFR-12, NFR-44, NFR-45, NFR-49, NFR-55, UJ-06, Architecture ADR-02, ADR-10]
 
 ### Story 5.3: Security headers
 
@@ -757,6 +773,40 @@ So that the API schema is not leaked and DoS via complex queries is prevented.
 **Then** the response contains a complexity-exceeded error
 
 [Source: PRD NFR-24, NFR-35, NFR-36, Architecture ADR-06]
+
+### Story 5.8: JWT key security, GraphQL batch defense, and transport hardening
+
+As the system,
+I want key material, GraphQL entrypoint behavior, and transport settings hardened,
+So that key compromise and rate-limit bypass vectors are closed.
+
+**Acceptance Criteria:**
+
+**Given** the JWT key files are provisioned
+**When** permissions are applied in build and runtime
+**Then** private key permissions are `600`, public key permissions are `644`, and CI enforces this check
+
+**Given** auth operations are defined in API Platform resources
+**When** GraphQL schema is introspected
+**Then** sign-in/2FA/sign-out operations are not exposed via GraphQL (`graphql: false`)
+
+**Given** a batch GraphQL payload is sent as a JSON array to `/api/graphql`
+**When** the request hits the API
+**Then** it is rejected with HTTP 400 before normal operation handling
+
+**Given** the test environment config
+**When** OAuth settings are loaded
+**Then** implicit grant is disabled
+
+**Given** CORS is enabled for cookie-based auth
+**When** responses are returned
+**Then** `allow_credentials` is true and origins are explicit (no wildcard)
+
+**Given** production runtime configuration
+**When** MongoDB connection settings and edge TLS are validated
+**Then** MongoDB TLS is enabled (`?tls=true`) and external traffic is served via TLS 1.2+ with HSTS
+
+[Source: PRD NFR-17, NFR-18, NFR-59, NFR-61, NFR-62, NFR-64, NFR-65, Architecture ADR-04, ADR-06, ADR-12]
 
 ### Story 5.5: Bcrypt cost upgrade
 
@@ -823,7 +873,8 @@ So that my tokens are revoked and my session cookie is cleared.
 **And** the `Set-Cookie` header clears the auth cookie (`Max-Age=0`)
 **And** my current AuthSession is revoked
 **And** all refresh tokens for this session are revoked
-**And** subsequent requests with my old token receive 401
+**And** refresh token reuse attempts fail immediately with 401
+**And** existing access tokens may remain valid for up to 15 minutes (accepted MVP tradeoff)
 
 [Source: PRD FR-13, Architecture POST /api/signout]
 
@@ -840,7 +891,8 @@ So that all devices/clients are logged out.
 **Then** the response status is 204
 **And** all 3 AuthSessions are revoked
 **And** all associated refresh tokens are revoked
-**And** all devices receive 401 on their next request
+**And** all devices fail refresh-token use immediately with 401
+**And** existing access tokens may remain valid for up to 15 minutes (accepted MVP tradeoff)
 
 [Source: PRD FR-14, Architecture POST /api/signout/all]
 
@@ -920,7 +972,7 @@ So that security incidents can be investigated.
 8. Ownership enforcement REST + GraphQL (Story 4.3)
 9. Password grant + password-change invalidation (Stories 4.4, 4.5)
 10. Logout + sign-out-everywhere (Stories 6.1, 6.2)
-11. Security hardening (Stories 5.1-5.7)
+11. Security hardening (Stories 5.1-5.8)
 12. Audit logging (Story 6.3)
 13. Full CI green (`make ci`)
 
@@ -945,6 +997,8 @@ So that security incidents can be investigated.
 - All stories accepted with documented BDD acceptance criteria
 - 100% unit/integration/Behat coverage for new flows
 - `make ci` passes: PHPInsights 94/100/100/100, Deptrac 0, Psalm 0
+- `make psalm` reports 0 errors for auth changes (NFR-29)
+- `make tests-with-coverage` confirms >=90% coverage for new auth code (NFR-30)
 - Security checklist in Architecture doc fully checked
 - Audit logging verified for all auth event types
 - Documentation synced via `documentation-sync` skill

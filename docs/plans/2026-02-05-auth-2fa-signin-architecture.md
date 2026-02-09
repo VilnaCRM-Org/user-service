@@ -38,7 +38,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 
 This design extends the VilnaCRM User Service with sign-in, 2FA (including recovery codes), session cookies, refresh token rotation, logout, and full security hardening. The architecture remains hexagonal: operations and DTOs in Application, pure entities in Domain, persistence in Infrastructure.
 
-**Existing stack:** PHP 8.3, Symfony 7.2, API Platform 4.1, MongoDB (Doctrine ODM), Redis, League OAuth2 Server, Caddy/FrankenPHP.
+**Existing stack:** PHP 8.4, Symfony 7.4, API Platform 4.1, MongoDB (Doctrine ODM), Redis, League OAuth2 Server, Caddy/FrankenPHP.
 
 **Critical finding:** The current Symfony firewall is disabled (`security: false`). This architecture explicitly addresses that gap.
 
@@ -69,6 +69,7 @@ This design extends the VilnaCRM User Service with sign-in, 2FA (including recov
 - All command/event patterns use existing CQRS bus infrastructure.
 - API Platform resource configuration via YAML (no PHP attributes on entities).
 - Quality thresholds: PHPInsights 94/100/100/100, Deptrac 0, Psalm 0.
+- Production transport security must enforce TLS end-to-end expectations: external traffic over TLS 1.2+ with HSTS, and MongoDB production connections with TLS enabled (`?tls=true`) (NFR-17, NFR-18).
 
 ## ADR-01: Authentication Strategy — Dual Bearer + Cookie (JWT)
 
@@ -113,7 +114,7 @@ This design extends the VilnaCRM User Service with sign-in, 2FA (including recov
 | HttpOnly  | true                              | Prevents JS access (XSS mitigation)                                           |
 | Secure    | true                              | HTTPS only (enforced by `__Host-` prefix)                                     |
 | SameSite  | Lax                               | Allows top-level navigation from external links                               |
-| Path      | `/api`                            | Scoped to API routes only                                                     |
+| Path      | `/`                               | Required by `__Host-` prefix semantics                                        |
 | Max-Age   | 900 (15 min) or 2592000 (30 days) | Based on `remember_me` flag; short session matches JWT TTL                    |
 
 **CORS requirement:** When cookie-based auth is used, CORS must be configured with `Access-Control-Allow-Credentials: true` and an explicit origin (not wildcard `*`). This is already correct in production config but must be enforced in development too.
@@ -199,7 +200,7 @@ access_control:
 
   # Authenticated (catch-all)
   - { path: ^/api/, roles: ROLE_USER }
-  - { path: ^/graphql, roles: ROLE_USER }
+  - { path: ^/api/graphql, roles: ROLE_USER }
   - { path: ^/authorize, roles: IS_AUTHENTICATED_REMEMBERED }
 ```
 
@@ -261,7 +262,7 @@ resendEmailTo:
 | `/token`                                    | POST   | Own auth (OAuth)                   | 10/min per client_id            |
 | `/authorize`                                | GET    | IS_AUTHENTICATED                   | Global                          |
 | `/.well-known/*`                            | GET    | security: false                    | Global                          |
-| `/graphql`                                  | POST   | ROLE_USER + per-mutation ownership | Global + depth/complexity       |
+| `/api/graphql`                              | POST   | ROLE_USER + per-mutation ownership | Global + depth/complexity       |
 
 ## ADR-04: Security Headers — Caddy + Request Body Size Limit
 
@@ -361,7 +362,7 @@ OWASP API2:2023 documents that GraphQL batching bypasses per-request rate limiti
 
 **Required defense — implement both:**
 
-1. Add `GraphQLBatchRejectListener` at `kernel.request` priority 130 (before rate limiter): if request path is `/graphql` and body is a JSON array (batch), reject with 400.
+1. Add `GraphQLBatchRejectListener` at `kernel.request` priority 130 (before rate limiter): if request path is `/api/graphql` and body is a JSON array (batch), reject with 400.
 2. In all auth-related API Platform resource configs, set `graphql: false` to prevent auto-exposure of sign-in, 2FA, token refresh, and sign-out operations via GraphQL mutations.
 
 **Auth operations excluded from GraphQL (explicit):** SignIn, CompleteTwoFactor, RefreshToken, SignOut, SignOutAll, SetupTwoFactor, ConfirmTwoFactor, DisableTwoFactor, RegenerateRecoveryCodes.
@@ -736,8 +737,8 @@ graph TB
 
 | Component                                                             | Layer              | Allowed Dependencies                                   |
 | --------------------------------------------------------------------- | ------------------ | ------------------------------------------------------ |
-| `SignInCommand`, `RefreshTokenCommand`, etc.                          | Domain             | None (pure)                                            |
-| `SignInCommandHandler`, etc.                                          | Domain             | Domain entities, repository interfaces                 |
+| `SignInCommand`, `RefreshTokenCommand`, etc.                          | Application        | Domain + shared bus contracts                          |
+| `SignInCommandHandler`, etc.                                          | Application        | Domain entities, repository interfaces, shared bus     |
 | `AuthSession`, `AuthRefreshToken`, `PendingTwoFactor`, `RecoveryCode` | Domain             | Domain value objects only                              |
 | `SignInProcessor`, `CompleteTwoFactorProcessor`, etc.                 | Application        | Domain + Infrastructure (via interfaces)               |
 | `ApiRateLimitListener`                                                | Shared/Application | Symfony RateLimiter (framework allowed in Application) |

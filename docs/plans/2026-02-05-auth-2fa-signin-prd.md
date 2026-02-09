@@ -77,7 +77,7 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 - 2FA enablement invalidates all other sessions
 - JWT claims validation (iss, aud, nbf, sid) and reduced access token TTL (15 min)
 - Constant-time credential validation (timing-safe email enumeration prevention)
-- `__Host-` cookie prefix for subdomain attack prevention
+- `__Host-` cookie prefix for subdomain attack prevention (`Path=/`, no `Domain` attribute)
 - Account lockout after repeated failed sign-in attempts
 
 ### Growth (Future)
@@ -107,7 +107,7 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 
 1. User submits email + password to `POST /api/signin`.
 2. System validates credentials against bcrypt hash.
-3. System issues access token (JWT), refresh token, and sets session cookie (`HttpOnly`, `Secure`, `SameSite=Lax`).
+3. System issues access token (JWT), refresh token, and sets session cookie (`__Host-auth_token`, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, no `Domain` attribute).
 4. User accesses protected endpoints using bearer token or session cookie.
 
 ### UJ-02: Login with 2FA
@@ -194,7 +194,7 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 
 - DR-06: Refresh tokens stored as hashed values (SHA-256), never plaintext.
 - DR-07: 2FA secrets encrypted at application level before persistence.
-- DR-08: Session cookies use `__Host-` prefix, `HttpOnly`, `Secure`, `SameSite=Lax`.
+- DR-08: Session cookies use `__Host-` prefix, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, and no `Domain` attribute.
 - DR-09: Recovery codes stored as hashed values (SHA-256), never plaintext.
 - DR-10: Confirmation tokens are at least 32 characters long.
 
@@ -242,7 +242,7 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 
 | ID     | Requirement                                                                                                                                | Measurement                                                                      |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| NFR-04 | Symfony security firewall enabled with OAuth2 bearer token validation on all `/api/` and `/graphql` routes                                 | Integration test: unauthenticated request to each protected endpoint returns 401 |
+| NFR-04 | Symfony security firewall enabled with OAuth2 bearer token validation on all `/api/` and `/api/graphql` routes                             | Integration test: unauthenticated request to each protected endpoint returns 401 |
 | NFR-05 | Access tokens expire after 15 minutes (configurable via `OAUTH_ACCESS_TOKEN_TTL`); reduced from 1h to limit JWT revocation window          | Token decode verification                                                        |
 | NFR-06 | Refresh tokens expire after 1 month (configurable via `OAUTH_REFRESH_TOKEN_TTL`)                                                           | Database TTL field validation                                                    |
 | NFR-07 | TOTP verification allows +/- 1 time window for clock skew tolerance                                                                        | Unit test with time-shifted codes                                                |
@@ -255,7 +255,7 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 | NFR-51 | JWT validation verifies `iss` (single string, not array), `aud`, `nbf`, `exp` claims; rejects tokens with mismatched values                | Unit test with forged claims                                                     |
 | NFR-52 | 2FA enablement (confirmation) revokes all sessions except the current one                                                                  | Integration test                                                                 |
 | NFR-53 | Sign-in response time must not vary based on whether the email exists; handler performs bcrypt hash for non-existent users (constant-time) | Timing analysis test                                                             |
-| NFR-54 | Session cookie uses `__Host-` prefix (`__Host-auth_token`) for subdomain attack prevention                                                 | Behat test for cookie name                                                       |
+| NFR-54 | Session cookie uses `__Host-` prefix (`__Host-auth_token`) with `Path=/` and no `Domain` attribute for subdomain attack prevention         | Behat test for cookie name + path + domain attributes                            |
 | NFR-55 | Account locked for 15 minutes after 20 failed sign-in attempts within 1 hour for the same email                                            | Integration test: 21st attempt returns 423 Locked                                |
 | NFR-56 | All 401 responses include `WWW-Authenticate: Bearer` header per RFC 7235                                                                   | Behat test for header presence                                                   |
 | NFR-57 | 2FA secrets encrypted with AES-256-GCM; encryption key from `TWO_FACTOR_ENCRYPTION_KEY` env var                                            | Config validation + database inspection                                          |
@@ -265,7 +265,7 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 
 | ID     | Requirement                                                                                                                           | Measurement                                                                         |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| NFR-59 | GraphQL batching must not bypass rate limiting — reject batch requests (JSON arrays) at `/graphql` or count each operation separately | Integration test: batch of 10 sign-in mutations receives 400 or triggers rate limit |
+| NFR-59 | GraphQL batching must not bypass rate limiting — reject batch requests (JSON arrays) at `/api/graphql` or count each operation separately | Integration test: batch of 10 sign-in mutations receives 400 or triggers rate limit |
 | NFR-62 | Auth operations (sign-in, 2FA, token, sign-out) must not auto-expose via GraphQL mutations — `graphql: false` on all auth resources   | Integration test: GraphQL introspection shows no sign-in/2FA mutations              |
 | NFR-64 | Implicit OAuth grant disabled in ALL environments including test                                                                      | Config validation: `OAUTH_ENABLE_IMPLICIT_GRANT=0` in `.env.test`                   |
 | NFR-65 | CORS `allow_credentials: true` with explicit origin (no wildcard `*`) in ALL environments including dev                               | Config validation + integration test                                                |
@@ -363,7 +363,7 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 | Recovery codes accepted at `/api/signin/2fa` (same endpoint as TOTP) | Simpler client implementation; server detects code format                                              |
 | Access token TTL reduced from 1h to 15min                            | Limits JWT revocation window; immediate revocation via jti denylist deferred to Growth                 |
 | JWT includes `sid` (session ID) claim                                | Required for logout to identify which session to revoke; minimal JWT size impact                       |
-| `__Host-` cookie prefix                                              | Browser-enforced: Secure flag, no Domain attribute, prevents subdomain cookie attacks                  |
+| `__Host-` cookie prefix                                              | Browser-enforced: Secure flag, `Path=/`, no Domain attribute, prevents subdomain cookie attacks        |
 | Account lockout (20 attempts/1h) vs rate limiting only               | Rate limiting alone allows indefinite low-rate brute force; lockout adds cumulative protection         |
 | 2FA enablement revokes sessions (same as password change)            | Prevents pre-2FA compromised sessions from persisting after user enables 2FA                           |
 | Constant-time credential validation                                  | Prevents email enumeration via response time analysis; bcrypt hash against dummy on non-existent users |
