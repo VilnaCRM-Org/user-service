@@ -491,16 +491,16 @@ TWO_FACTOR_ENCRYPTION_KEY=base64:... # 256-bit key, base64-encoded
 
 **AuthSession** (`User/Domain/Entity/AuthSession`):
 
-| Field      | Type                         | Notes                                               |
-| ---------- | ---------------------------- | --------------------------------------------------- |
-| id         | ULID                         | Primary key                                         |
-| userId     | ULID                         | FK to User                                          |
-| ipAddress  | string                       | Client IP at session creation (audit trail)         |
-| userAgent  | string                       | Client user-agent at session creation (audit trail) |
-| createdAt  | DateTimeImmutable            | Session creation                                    |
-| expiresAt  | DateTimeImmutable            | Absolute expiry                                     |
-| revokedAt  | DateTimeImmutable (nullable) | If session revoked                                  |
-| rememberMe | bool                         | Long vs short TTL                                   |
+| Field               | Type                         | Notes                                                     |
+| ------------------- | ---------------------------- | --------------------------------------------------------- |
+| id                  | ULID                         | Primary key                                               |
+| userId              | ULID                         | FK to User                                                |
+| ipAddress           | string                       | Client IP at session creation (audit trail)               |
+| userAgent           | string                       | Client user-agent at session creation (audit trail)       |
+| createdAt           | DateTimeImmutable            | Session creation                                          |
+| expiresAt           | DateTimeImmutable            | Absolute expiry                                           |
+| revokedAt           | DateTimeImmutable (nullable) | If session revoked                                        |
+| rememberMe          | bool                         | Long vs short TTL                                         |
 | highTrustVerifiedAt | DateTimeImmutable (nullable) | Last password/TOTP re-auth timestamp for sudo-mode checks |
 
 **AuthRefreshToken** (`User/Domain/Entity/AuthRefreshToken`):

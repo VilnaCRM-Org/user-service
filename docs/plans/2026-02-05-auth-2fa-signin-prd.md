@@ -205,28 +205,28 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 
 ## Functional Requirements
 
-| ID    | Requirement                                                                                                                                   | Source       | Priority |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------- |
-| FR-01 | Users can sign in with email and password, receiving an access token, refresh token, and session cookie                                       | UJ-01        | P0       |
-| FR-02 | Users with 2FA enabled receive a `pending_session_id` instead of tokens on sign-in                                                            | UJ-02        | P0       |
-| FR-03 | Users can complete 2FA by submitting pending session ID and TOTP code (or recovery code), receiving tokens and cookie                         | UJ-02, UJ-10 | P0       |
-| FR-04 | Clients can exchange a valid refresh token for new access and refresh tokens                                                                  | UJ-03        | P0       |
-| FR-05 | A rotated refresh token can be reused once within the grace window (configurable, default 60s)                                                | UJ-03        | P0       |
-| FR-06 | Reuse of a rotated token after grace window (or second reuse within grace) revokes the session and returns 401                                | UJ-03        | P0       |
-| FR-07 | Authenticated users can generate a TOTP secret and otpauth URI for 2FA setup                                                                  | UJ-04        | P0       |
-| FR-08 | Authenticated users can confirm 2FA setup by submitting a valid TOTP code; system generates recovery codes                                    | UJ-04        | P0       |
-| FR-09 | All protected endpoints reject unauthenticated requests with 401 problem+json                                                                 | UJ-05        | P0       |
-| FR-10 | Sign-in, 2FA completion, token refresh, OAuth, health, registration, password reset, and email confirmation endpoints are publicly accessible | UJ-01, UJ-05 | P0       |
-| FR-11 | Batch user creation requires `ROLE_SERVICE` scope                                                                                             | DR-04        | P0       |
-| FR-12 | Write/delete operations on user resources enforce ownership on both REST and GraphQL                                                          | DR-01        | P0       |
-| FR-13 | Authenticated users can revoke their current session (logout), invalidating refresh tokens and session cookie                                 | UJ-07        | P0       |
-| FR-14 | Authenticated users can revoke ALL their sessions (sign out everywhere)                                                                       | UJ-08        | P0       |
-| FR-15 | Authenticated users can disable 2FA by confirming with a valid TOTP code or recovery code                                                     | UJ-09        | P0       |
-| FR-16 | When 2FA is confirmed, the system generates 8 single-use recovery codes returned to the user                                                  | UJ-04        | P0       |
-| FR-17 | Recovery codes can be used in place of TOTP codes during 2FA sign-in completion                                                               | UJ-10        | P0       |
+| ID    | Requirement                                                                                                                                                 | Source       | Priority |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------- |
+| FR-01 | Users can sign in with email and password, receiving an access token, refresh token, and session cookie                                                     | UJ-01        | P0       |
+| FR-02 | Users with 2FA enabled receive a `pending_session_id` instead of tokens on sign-in                                                                          | UJ-02        | P0       |
+| FR-03 | Users can complete 2FA by submitting pending session ID and TOTP code (or recovery code), receiving tokens and cookie                                       | UJ-02, UJ-10 | P0       |
+| FR-04 | Clients can exchange a valid refresh token for new access and refresh tokens                                                                                | UJ-03        | P0       |
+| FR-05 | A rotated refresh token can be reused once within the grace window (configurable, default 60s)                                                              | UJ-03        | P0       |
+| FR-06 | Reuse of a rotated token after grace window (or second reuse within grace) revokes the session and returns 401                                              | UJ-03        | P0       |
+| FR-07 | Authenticated users can generate a TOTP secret and otpauth URI for 2FA setup                                                                                | UJ-04        | P0       |
+| FR-08 | Authenticated users can confirm 2FA setup by submitting a valid TOTP code; system generates recovery codes                                                  | UJ-04        | P0       |
+| FR-09 | All protected endpoints reject unauthenticated requests with 401 problem+json                                                                               | UJ-05        | P0       |
+| FR-10 | Sign-in, 2FA completion, token refresh, OAuth, health, registration, password reset, and email confirmation endpoints are publicly accessible               | UJ-01, UJ-05 | P0       |
+| FR-11 | Batch user creation requires `ROLE_SERVICE` scope                                                                                                           | DR-04        | P0       |
+| FR-12 | Write/delete operations on user resources enforce ownership on both REST and GraphQL                                                                        | DR-01        | P0       |
+| FR-13 | Authenticated users can revoke their current session (logout), invalidating refresh tokens and session cookie                                               | UJ-07        | P0       |
+| FR-14 | Authenticated users can revoke ALL their sessions (sign out everywhere)                                                                                     | UJ-08        | P0       |
+| FR-15 | Authenticated users can disable 2FA by confirming with a valid TOTP code or recovery code                                                                   | UJ-09        | P0       |
+| FR-16 | When 2FA is confirmed, the system generates 8 single-use recovery codes returned to the user                                                                | UJ-04        | P0       |
+| FR-17 | Recovery codes can be used in place of TOTP codes during 2FA sign-in completion                                                                             | UJ-10        | P0       |
 | FR-18 | Authenticated users can regenerate recovery codes only after recent high-trust re-auth (password or TOTP within 5 minutes), invalidating all previous codes | UJ-10        | P1       |
-| FR-19 | Password change revokes all sessions except the current one                                                                                   | UJ-11        | P0       |
-| FR-20 | 2FA enablement (confirmation) revokes all sessions except the current one                                                                     | UJ-04        | P0       |
+| FR-19 | Password change revokes all sessions except the current one                                                                                                 | UJ-11        | P0       |
+| FR-20 | 2FA enablement (confirmation) revokes all sessions except the current one                                                                                   | UJ-04        | P0       |
 
 ## Non-Functional Requirements
 
@@ -288,7 +288,7 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 | NFR-09 | Registration (`POST /api/users`): 5 requests/minute per IP using token bucket                                       | Load test: 6th registration from same IP within 1 minute receives 429          |
 | NFR-10 | OAuth token (`POST /token`): 10 requests/minute per client_id using sliding window                                  | Load test: 11th token request from same client_id within 1 minute receives 429 |
 | NFR-11 | Sign-in (`POST /api/signin`): 10 requests/minute per IP, 5 requests/minute per email using sliding window           | Load test verification                                                         |
-| NFR-12 | 2FA verification (`POST /api/signin/2fa`): 5 attempts/minute per user ID with secondary per-IP limiter              | Load test: user-bound limiter and IP limiter both enforced                    |
+| NFR-12 | 2FA verification (`POST /api/signin/2fa`): 5 attempts/minute per user ID with secondary per-IP limiter              | Load test: user-bound limiter and IP limiter both enforced                     |
 | NFR-13 | Resend confirmation email: 3 requests/minute per IP + 3 requests/minute per target user ID using token bucket       | Load test verification                                                         |
 | NFR-14 | All rate limit rejections include `Retry-After` header and RFC 7807 body with status 429                            | Behat test for response format                                                 |
 | NFR-43 | `GET /api/users` collection: 30 requests/minute per IP (authenticated)                                              | Load test verification                                                         |
@@ -361,7 +361,7 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 | Bcrypt cost >= 12 with `migrate_from` for existing hashes            | Re-hashes transparently on next login; no mass migration needed                                        |
 | 8 recovery codes per 2FA enable                                      | Industry standard (GitHub uses 16, Google uses 10); balance UX vs. security                            |
 | Recovery codes accepted at `/api/signin/2fa` (same endpoint as TOTP) | Simpler client implementation; server detects code format                                              |
-| Recovery code regeneration requires sudo mode                         | Mitigates session hijack risk: requires password/TOTP re-auth within 5 minutes before rotating codes   |
+| Recovery code regeneration requires sudo mode                        | Mitigates session hijack risk: requires password/TOTP re-auth within 5 minutes before rotating codes   |
 | Access token TTL reduced from 1h to 15min                            | Limits JWT revocation window; immediate revocation via jti denylist deferred to Growth                 |
 | JWT includes `sid` (session ID) claim                                | Required for logout to identify which session to revoke; minimal JWT size impact                       |
 | `__Host-` cookie prefix                                              | Browser-enforced: Secure flag, `Path=/`, no Domain attribute, prevents subdomain cookie attacks        |
@@ -400,7 +400,7 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 | Question                                          | Decision                                          | Rationale                                                                                                               |
 | ------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Grace window duration                             | 60 seconds                                        | Configurable via `REFRESH_TOKEN_GRACE_WINDOW_SECONDS`                                                                   |
-| Short TTL for non-remembered sessions             | 15 minutes                                        | Aligns with JWT TTL; reduces exposure window for token/session theft; configurable via `SESSION_TTL_SHORT`             |
+| Short TTL for non-remembered sessions             | 15 minutes                                        | Aligns with JWT TTL; reduces exposure window for token/session theft; configurable via `SESSION_TTL_SHORT`              |
 | Long TTL for remembered sessions                  | 30 days                                           | Matches refresh token TTL; configurable via `SESSION_TTL_LONG`                                                          |
 | `ROLE_SERVICE` vs. specific OAuth scope for batch | `ROLE_SERVICE`                                    | Simpler; service-to-service tokens get this role                                                                        |
 | GraphQL max query depth                           | 20                                                | API Platform default; sufficient for current schema depth                                                               |
