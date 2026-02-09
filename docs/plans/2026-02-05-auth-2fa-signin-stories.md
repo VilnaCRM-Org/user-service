@@ -443,17 +443,22 @@ so that I have fresh codes after using some.
 1. POST `/api/users/2fa/recovery-codes` returns 200 with `{ recovery_codes }` (8 new codes) (AC: FR-18)
 2. All previous recovery codes are invalidated (AC: FR-18)
 3. Requires authentication + 2FA enabled (403 if 2FA not enabled) (AC: FR-09)
+4. Requires recent high-trust re-auth (password or TOTP within 5 minutes); otherwise returns sudo-mode challenge response (AC: FR-18)
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create RegenerateRecoveryCodesCommand + Handler (AC: #1, #2, #3)
+- [ ] Task 1: Create RegenerateRecoveryCodesCommand + Handler (AC: #1, #2, #3, #4)
   - [ ] Verify 2FA is enabled (else 403)
+  - [ ] Verify high-trust re-auth window (<= 5 minutes) using session marker (e.g., `highTrustVerifiedAt`)
+  - [ ] If window missing/expired: return sudo-mode challenge and do not rotate codes
   - [ ] Delete all existing RecoveryCode records for user
   - [ ] Generate 8 new codes, store hashes
   - [ ] Return plaintext codes
 - [ ] Task 2: Create RegenerateRecoveryCodesProcessor + API Platform operation (AC: #1)
   - [ ] Route: `POST /api/users/2fa/recovery-codes`, security: `is_granted('ROLE_USER')`
 - [ ] Task 3: Tests
+  - [ ] Behat: regeneration succeeds after recent password/TOTP re-auth
+  - [ ] Behat: regeneration blocked with sudo-mode challenge when re-auth window expired
 
 ### References
 
@@ -881,7 +886,7 @@ so that credential stuffing and brute-force attacks are mitigated.
 ## Acceptance Criteria
 
 1. Sign-in: 10/min per IP, 5/min per email (AC: NFR-11)
-2. 2FA verification: 5/min per pending_session_id (AC: NFR-12)
+2. 2FA verification: 5/min per user ID + secondary per-IP limiter (AC: NFR-12)
 3. 2FA setup: 5/min per user (AC: NFR-44)
 4. 2FA confirm: 5/min per user (AC: NFR-45)
 5. 2FA disable: 3/min per user
@@ -894,14 +899,16 @@ so that credential stuffing and brute-force attacks are mitigated.
 - [ ] Task 1: Add rate limiter configs (AC: #1-#7)
   - [ ] `signin_ip`: sliding_window, 10/min
   - [ ] `signin_email`: sliding_window, 5/min
-  - [ ] `twofa_verification`: sliding_window, 5/min
+  - [ ] `twofa_verification_user`: sliding_window, 5/min
+  - [ ] `twofa_verification_ip`: sliding_window, configurable per-IP guard
   - [ ] `twofa_setup`: sliding_window, 5/min
   - [ ] `twofa_confirm`: sliding_window, 5/min
   - [ ] `twofa_disable`: sliding_window, 3/min
   - [ ] Account lockout: Redis counter `signin_lockout:{email}`, TTL 1h, threshold 20, lockout 15min
 - [ ] Task 2: Extend ApiRateLimitListener for sign-in and 2FA routes (AC: #1-#6)
   - [ ] Extract email from request body for per-email limiting
-  - [ ] Extract pending_session_id for 2FA limiting
+  - [ ] Resolve `pending_session_id` to user ID, then apply per-user 2FA limiter (`rate_limit:2fa:user:{user_id}`)
+  - [ ] Apply secondary per-IP 2FA limiter on the same request (`rate_limit:2fa:ip:{ip_address}`)
   - [ ] Extract user ID from token for authenticated 2FA endpoints
 - [ ] Task 3: Create AccountLockoutService (AC: #7)
   - [ ] `src/User/Domain/Contract/AccountLockoutServiceInterface.php`

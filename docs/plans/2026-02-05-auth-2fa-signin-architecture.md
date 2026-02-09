@@ -142,7 +142,7 @@ This design extends the VilnaCRM User Service with sign-in, 2FA (including recov
 | Global (anonymous)     | All `/api/`                          | Sliding window | 100/min                         | Client IP                  |
 | Global (authenticated) | All `/api/`                          | Sliding window | 300/min                         | Client IP                  |
 | Sign-in                | `POST /api/signin`                   | Sliding window | 10/min per IP, 5/min per email  | IP + email                 |
-| 2FA verification       | `POST /api/signin/2fa`               | Sliding window | 5/min                           | Pending session ID         |
+| 2FA verification       | `POST /api/signin/2fa`               | Sliding window | 5/min per user (+ per-IP guard) | User ID + client IP        |
 | Registration           | `POST /api/users`                    | Token bucket   | 5/min                           | Client IP                  |
 | Token exchange         | `POST /token`                        | Sliding window | 10/min                          | client_id                  |
 | Resend confirmation    | `POST /api/users/{id}/resend-...`    | Token bucket   | 3/min per IP + 3/min per target | Client IP + target user ID |
@@ -156,7 +156,7 @@ This design extends the VilnaCRM User Service with sign-in, 2FA (including recov
 | User delete            | `DELETE /api/users/{id}`             | Sliding window | 3/min                           | User ID                    |
 | Recovery codes         | `POST /api/users/2fa/recovery-codes` | Sliding window | 3/min                           | User ID                    |
 
-**Implementation:** A single `ApiRateLimitListener` registered at `kernel.request` priority 120 (before auth gate). Placed in `Shared/Application/EventListener/` alongside existing listeners. Resolves the appropriate limiter factory based on route + method. All limits configurable via env vars.
+**Implementation:** A single `ApiRateLimitListener` registered at `kernel.request` priority 120 (before auth gate). Placed in `Shared/Application/EventListener/` alongside existing listeners. Resolves the appropriate limiter factory based on route + method. For `POST /api/signin/2fa`, resolve the user from `pending_session_id` and apply both per-user and per-IP limiters (`rate_limit:2fa:user:{user_id}` and `rate_limit:2fa:ip:{ip_address}`). All limits configurable via env vars.
 
 **Trade-off:** Token bucket allows short bursts (good for UX on registration), sliding window provides smoother throttling (better for sign-in abuse prevention).
 
@@ -249,7 +249,7 @@ resendEmailTo:
 | `/api/reset-password`                       | POST   | PUBLIC_ACCESS                      | 1000/hr per email               |
 | `/api/reset-password/confirm`               | POST   | PUBLIC_ACCESS                      | 10/min per IP                   |
 | `/api/signin`                               | POST   | PUBLIC_ACCESS                      | 10/min IP + 5/min email         |
-| `/api/signin/2fa`                           | POST   | PUBLIC_ACCESS                      | 5/min per session               |
+| `/api/signin/2fa`                           | POST   | PUBLIC_ACCESS                      | 5/min per user + per-IP guard   |
 | `/api/token`                                | POST   | PUBLIC_ACCESS                      | 10/min per client_id            |
 | `/api/signout`                              | POST   | ROLE_USER                          | 10/min per user                 |
 | `/api/signout/all`                          | POST   | ROLE_USER                          | 5/min per user                  |
@@ -501,6 +501,7 @@ TWO_FACTOR_ENCRYPTION_KEY=base64:... # 256-bit key, base64-encoded
 | expiresAt  | DateTimeImmutable            | Absolute expiry                                     |
 | revokedAt  | DateTimeImmutable (nullable) | If session revoked                                  |
 | rememberMe | bool                         | Long vs short TTL                                   |
+| highTrustVerifiedAt | DateTimeImmutable (nullable) | Last password/TOTP re-auth timestamp for sudo-mode checks |
 
 **AuthRefreshToken** (`User/Domain/Entity/AuthRefreshToken`):
 
@@ -614,9 +615,9 @@ New XML mapping files in `config/doctrine/`:
 - **Auth:** Required (current user, 2FA must be enabled)
 - **Processor:** `RegenerateRecoveryCodesProcessor`
 - **Command:** `RegenerateRecoveryCodesCommand` -> `RegenerateRecoveryCodesCommandHandler`
-- **Logic:** Invalidate all existing recovery codes, generate 8 new ones.
+- **Logic:** Require high-trust auth in the last 5 minutes (`highTrustVerifiedAt` or equivalent session re-auth marker). If missing/expired, return sudo-mode challenge response and do not rotate codes. When satisfied, invalidate all existing recovery codes and generate 8 new ones.
 - **Response:** `200 { recovery_codes: ["xxxx-xxxx", ...] }`
-- **Errors:** 403 (2FA not enabled)
+- **Errors:** 401/403 (sudo-mode challenge required), 403 (2FA not enabled)
 
 ### POST /api/signout
 
@@ -756,7 +757,7 @@ graph TB
 - [ ] Ownership enforcement on PATCH, PUT, DELETE via API Platform `security` expressions (REST)
 - [ ] Ownership enforcement on `updateUser`, `deleteUser`, `resendEmailTo` GraphQL mutations
 - [ ] Batch endpoint requires `ROLE_SERVICE`
-- [ ] Rate limiters configured for ALL tiers (16 total)
+- [ ] Rate limiters configured for all defined tiers/endpoints
 - [ ] Rate limit listener registered at priority 120 in `Shared/Application/EventListener/`
 - [ ] Security headers in Caddy config (HSTS, XFO, XCTO, CSP, Referrer-Policy)
 - [ ] Request body size limit (64KB) in Caddy
@@ -792,6 +793,7 @@ graph TB
 - [ ] 2FA enablement revokes all sessions except current
 - [ ] 2FA secrets encrypted with AES-256-GCM, key from env var
 - [ ] Refresh token rotation uses atomic MongoDB findOneAndUpdate
+- [ ] Recovery code regeneration requires recent high-trust re-auth (5-minute sudo window)
 - [ ] User deletion cleans up auth artifacts (sessions, tokens, recovery codes)
 - [ ] JWT private key permissions are 600 (not 666/world-readable)
 - [ ] GraphQL batching rejected or counted per-operation for rate limiting

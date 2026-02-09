@@ -46,7 +46,7 @@ This document provides the complete epic and story breakdown for the Auth Sign-i
 | FR-15 | Authenticated users can disable 2FA with valid TOTP/recovery code                                 | P0       |
 | FR-16 | 8 single-use recovery codes generated on 2FA enable                                               | P0       |
 | FR-17 | Recovery codes accepted in place of TOTP during 2FA sign-in                                       | P0       |
-| FR-18 | Authenticated users can regenerate recovery codes                                                 | P1       |
+| FR-18 | Authenticated users can regenerate recovery codes only after recent high-trust re-auth (<= 5 min) | P1       |
 | FR-19 | Password change revokes all sessions except current                                               | P0       |
 | FR-20 | 2FA enablement revokes all sessions except current                                                | P0       |
 
@@ -65,7 +65,7 @@ This document provides the complete epic and story breakdown for the Auth Sign-i
 | NFR-09    | Registration: 5/min per IP                                                | Rate Limiting   |
 | NFR-10    | Token exchange: 10/min per client_id                                      | Rate Limiting   |
 | NFR-11    | Sign-in: 10/min per IP, 5/min per email                                   | Rate Limiting   |
-| NFR-12    | 2FA verification: 5 attempts/min per pending session                      | Rate Limiting   |
+| NFR-12    | 2FA verification: 5 attempts/min per user ID with secondary per-IP guard  | Rate Limiting   |
 | NFR-13    | Resend confirmation: 3/min per IP + 3/min per target user                 | Rate Limiting   |
 | NFR-14    | Rate limit rejections include `Retry-After` + RFC 7807                    | Rate Limiting   |
 | NFR-15    | Refresh tokens stored as SHA-256 hashes                                   | Data Protection |
@@ -423,6 +423,10 @@ So that I have fresh codes after using some.
 **And** the response contains `{ recovery_codes: ["xxxx-xxxx", ...] }` with 8 new codes
 **And** all previous recovery codes are invalidated
 
+**Given** I am authenticated and have 2FA enabled but have not completed high-trust re-auth in the last 5 minutes
+**When** I POST to `/api/users/2fa/recovery-codes`
+**Then** the request is rejected with a sudo-mode challenge response
+
 **Given** I do not have 2FA enabled
 **When** I POST to `/api/users/2fa/recovery-codes`
 **Then** the response status is 403
@@ -703,7 +707,7 @@ So that credential stuffing, brute-force, and abuse are mitigated.
 **Then** subsequent requests receive 429
 
 **Given** a client verifying 2FA codes
-**When** more than 5 `POST /api/signin/2fa` requests use the same pending_session_id in 1 minute
+**When** more than 5 `POST /api/signin/2fa` requests target the same user in 1 minute (with secondary per-IP limiter)
 **Then** subsequent requests receive 429
 
 **Given** an authenticated user setting up 2FA
