@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Behat\UserContext;
 
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
+use App\User\Application\DTO\AuthorizationUserDto;
+use App\User\Domain\Contract\AccountLockoutServiceInterface;
 use App\User\Domain\Entity\ConfirmationToken;
+use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PasswordResetTokenFactoryInterface;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
@@ -16,6 +19,8 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Faker\Factory;
 use Faker\Generator;
 use Psr\Cache\CacheItemPoolInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
@@ -42,7 +47,10 @@ final class UserContext implements Context
         private UuidFactory $uuidFactory,
         private PasswordResetTokenRepositoryInterface $passwordResetTokenRepository,
         private PasswordResetTokenFactoryInterface $passwordResetTokenFactory,
+        private AccountLockoutServiceInterface $accountLockoutService,
         private CacheItemPoolInterface $cachePool,
+        private TokenStorageInterface $tokenStorage,
+        private UserOperationsState $state,
     ) {
         $this->faker = Factory::create();
     }
@@ -53,6 +61,7 @@ final class UserContext implements Context
     public function clearCacheBeforeScenario(BeforeScenarioScope $scope): void
     {
         $this->cachePool->clear();
+        $this->tokenStorage->setToken(null);
     }
 
     /**
@@ -94,6 +103,83 @@ final class UserContext implements Context
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
+    }
+
+    /**
+     * @Given I am authenticated as user :email
+     */
+    public function iAmAuthenticatedAsUser(string $email): void
+    {
+        $this->userWithEmailExists($email);
+
+        $user = $this->userRepository->findByEmail($email);
+        if (!$user instanceof User) {
+            throw new \RuntimeException("User with email {$email} not found");
+        }
+
+        $authorizationUser = new AuthorizationUserDto(
+            $user->getEmail(),
+            $user->getInitials(),
+            $user->getPassword(),
+            $this->transformer->transformFromString($user->getId()),
+            $user->isConfirmed()
+        );
+        $token = new UsernamePasswordToken(
+            $authorizationUser,
+            'behat-user-token',
+            ['ROLE_USER']
+        );
+        $this->tokenStorage->setToken($token);
+        $this->state->currentUserEmail = $email;
+    }
+
+    /**
+     * @Given user with email :email has two-factor enabled
+     * @Given user with email :email has 2FA enabled
+     */
+    public function userWithEmailHasTwoFactorEnabled(string $email): void
+    {
+        $user = $this->userRepository->findByEmail($email);
+        if ($user === null) {
+            throw new \RuntimeException("User with email {$email} not found");
+        }
+
+        $user->setTwoFactorEnabled(true);
+        $user->setTwoFactorSecret($user->getTwoFactorSecret() ?? 'JBSWY3DPEHPK3PXP');
+
+        $this->userRepository->save($user);
+    }
+
+    /**
+     * @Given user with email :email has two-factor enabled with secret :secret
+     */
+    public function userWithEmailHasTwoFactorEnabledWithSecret(
+        string $email,
+        string $secret
+    ): void {
+        $user = $this->userRepository->findByEmail($email);
+        if ($user === null) {
+            throw new \RuntimeException("User with email {$email} not found");
+        }
+
+        $user->setTwoFactorEnabled(true);
+        $user->setTwoFactorSecret($secret);
+
+        $this->userRepository->save($user);
+    }
+
+    /**
+     * @Then user with email :email should have two-factor disabled
+     */
+    public function userWithEmailShouldHaveTwoFactorDisabled(string $email): void
+    {
+        $user = $this->userRepository->findByEmail($email);
+        if ($user === null) {
+            throw new \RuntimeException("User with email {$email} not found");
+        }
+
+        \PHPUnit\Framework\Assert::assertFalse($user->isTwoFactorEnabled());
+        \PHPUnit\Framework\Assert::assertNotNull($user->getTwoFactorSecret());
     }
 
     /**
@@ -161,6 +247,18 @@ final class UserContext implements Context
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
+    }
+
+    /**
+     * @Given :attempts failed sign-in attempts have been recorded for email :email
+     */
+    public function failedSignInAttemptsAreRecordedForEmail(
+        int $attempts,
+        string $email
+    ): void {
+        for ($attempt = 0; $attempt < $attempts; $attempt++) {
+            $this->accountLockoutService->recordFailure($email);
+        }
     }
 
     /**

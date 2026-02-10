@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Tests\Behat\UserContext;
 
 use App\Tests\Behat\UserContext\Input\ConfirmUserInput;
+use App\Tests\Behat\UserContext\Input\CompleteTwoFactorInput;
 use App\Tests\Behat\UserContext\Input\CreateUserBatchInput;
 use App\Tests\Behat\UserContext\Input\CreateUserInput;
 use App\Tests\Behat\UserContext\Input\EmptyInput;
+use App\Tests\Behat\UserContext\Input\SignInInput;
 use App\Tests\Behat\UserContext\Input\UpdateUserInput;
 use Behat\Behat\Context\Context;
+use OTPHP\TOTP;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -70,6 +73,59 @@ final class UserRequestContext implements Context
     }
 
     /**
+     * @Given signing in with email :email and password :password
+     */
+    public function signingInWithEmailAndPassword(
+        string $email,
+        string $password
+    ): void {
+        $this->state->requestBody = new SignInInput($email, $password);
+    }
+
+    /**
+     * @Given signing in with email :email, password :password and remember me
+     */
+    public function signingInWithEmailAndPasswordAndRememberMe(
+        string $email,
+        string $password
+    ): void {
+        $this->state->requestBody = new SignInInput($email, $password, true);
+    }
+
+    /**
+     * @Given completing 2FA with pending session :pendingSessionId and code :code
+     */
+    public function completingTwoFactorWithPendingSessionAndCode(
+        string $pendingSessionId,
+        string $code
+    ): void {
+        $this->state->requestBody = new CompleteTwoFactorInput($pendingSessionId, $code);
+    }
+
+    /**
+     * @Given completing 2FA with stored pending session and code :code
+     */
+    public function completingTwoFactorWithStoredPendingSessionAndCode(
+        string $code
+    ): void {
+        $pendingSessionId = $this->resolveStoredPendingSessionId();
+
+        $this->state->requestBody = new CompleteTwoFactorInput($pendingSessionId, $code);
+    }
+
+    /**
+     * @Given completing 2FA with stored pending session and secret :secret
+     */
+    public function completingTwoFactorWithStoredPendingSessionAndSecret(
+        string $secret
+    ): void {
+        $pendingSessionId = $this->resolveStoredPendingSessionId();
+        $code = $this->generateTotpCode($secret);
+
+        $this->state->requestBody = new CompleteTwoFactorInput($pendingSessionId, $code);
+    }
+
+    /**
      * @Given sending a batch of users
      */
     public function sendingUserBatch(): void
@@ -127,6 +183,7 @@ final class UserRequestContext implements Context
         $processedPath = $this->processRequestPath($path);
         $headers = $this->buildRequestHeaders($method);
         $requestBody = $this->bodySerializer->serialize($this->state->requestBody, $method);
+        $startedAt = microtime(true);
 
         $this->state->response = $this->kernel->handle(Request::create(
             $processedPath,
@@ -137,6 +194,25 @@ final class UserRequestContext implements Context
             $headers,
             $requestBody
         ));
+        $this->state->lastResponseTimeMs = (microtime(true) - $startedAt) * 1000;
+    }
+
+    /**
+     * @When GET request is send to the current user endpoint
+     * @When GET request is sent to the current user endpoint
+     */
+    public function getRequestIsSendToTheCurrentUserEndpoint(): void
+    {
+        $currentUserEmail = $this->state->currentUserEmail;
+
+        if (!is_string($currentUserEmail) || $currentUserEmail === '') {
+            throw new \RuntimeException('Current user is not set for this scenario.');
+        }
+
+        $this->requestSendTo(
+            'GET',
+            sprintf('/api/users/%s', UserContext::getUserIdByEmail($currentUserEmail))
+        );
     }
 
     private function processRequestPath(string $path): string
@@ -160,5 +236,35 @@ final class UserRequestContext implements Context
     private function getContentTypeForMethod(string $method): string
     {
         return $method === 'PATCH' ? 'application/merge-patch+json' : 'application/json';
+    }
+
+    private function resolveStoredPendingSessionId(): string
+    {
+        if (is_string($this->state->pendingSessionId) && $this->state->pendingSessionId !== '') {
+            return $this->state->pendingSessionId;
+        }
+
+        $responseContent = $this->state->response?->getContent();
+        if (!is_string($responseContent) || $responseContent === '') {
+            throw new \RuntimeException('No response body available to extract pending_session_id.');
+        }
+
+        $responseData = json_decode($responseContent, true);
+        $pendingSessionId = is_array($responseData)
+            ? ($responseData['pending_session_id'] ?? '')
+            : '';
+
+        if (!is_string($pendingSessionId) || $pendingSessionId === '') {
+            throw new \RuntimeException('pending_session_id is missing in the latest response.');
+        }
+
+        $this->state->pendingSessionId = $pendingSessionId;
+
+        return $pendingSessionId;
+    }
+
+    private function generateTotpCode(string $secret): string
+    {
+        return TOTP::create($secret)->now();
     }
 }

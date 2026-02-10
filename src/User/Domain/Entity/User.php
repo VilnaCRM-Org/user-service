@@ -15,6 +15,8 @@ use App\User\Domain\ValueObject\UserUpdate;
 class User implements UserInterface
 {
     private bool $confirmed;
+    private bool $twoFactorEnabled;
+    private ?string $twoFactorSecret;
 
     public function __construct(
         private string $email,
@@ -23,6 +25,8 @@ class User implements UserInterface
         private UuidInterface $id,
     ) {
         $this->confirmed = false;
+        $this->twoFactorEnabled = false;
+        $this->twoFactorSecret = null;
     }
 
     #[\Override]
@@ -147,6 +151,38 @@ class User implements UserInterface
     public function setConfirmed(bool $confirmed): void
     {
         $this->confirmed = $confirmed;
+    }
+
+    /** @psalm-suppress PossiblyUnusedMethod API Platform serialization */
+    public function isTwoFactorEnabled(): bool
+    {
+        return $this->twoFactorEnabled;
+    }
+
+    /** @psalm-suppress PossiblyUnusedMethod API Platform serialization */
+    public function getTwoFactorSecret(): ?string
+    {
+        return $this->twoFactorSecret;
+    }
+
+    /**
+     * @internal For Doctrine ORM hydration and test fixtures only.
+     *
+     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     */
+    public function setTwoFactorEnabled(bool $twoFactorEnabled): void
+    {
+        $this->twoFactorEnabled = $twoFactorEnabled;
+    }
+
+    /**
+     * @internal For Doctrine ORM hydration and test fixtures only.
+     *
+     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     */
+    public function setTwoFactorSecret(?string $twoFactorSecret): void
+    {
+        $this->twoFactorSecret = $twoFactorSecret;
     }
 
     /**

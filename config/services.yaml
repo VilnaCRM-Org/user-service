@@ -152,6 +152,18 @@ services:
   App\User\Domain\Repository\PasswordResetTokenRepositoryInterface:
     alias: App\User\Infrastructure\Repository\MongoDBPasswordResetTokenRepository
 
+  App\User\Domain\Repository\AuthSessionRepositoryInterface:
+    alias: App\User\Infrastructure\Repository\MongoDBAuthSessionRepository
+
+  App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface:
+    alias: App\User\Infrastructure\Repository\MongoDBAuthRefreshTokenRepository
+
+  App\User\Domain\Repository\PendingTwoFactorRepositoryInterface:
+    alias: App\User\Infrastructure\Repository\MongoDBPendingTwoFactorRepository
+
+  App\User\Domain\Repository\RecoveryCodeRepositoryInterface:
+    alias: App\User\Infrastructure\Repository\MongoDBRecoveryCodeRepository
+
   App\User\Application\EventSubscriber\PasswordResetEmailSentEventSubscriber:
     arguments:
       $apiBaseUrl: '%env(API_BASE_URL)%'
@@ -172,8 +184,29 @@ services:
         - '@App\User\Application\Validator\TokenExpirationValidator'
         - '@App\User\Application\Validator\TokenUsageValidator'
 
+  App\User\Infrastructure\Service\RedisAccountLockoutService:
+    arguments:
+      $cachePool: '@cache.app'
+
+  App\User\Infrastructure\Service\TwoFactorSecretEncryptor:
+    arguments:
+      $twoFactorEncryptionKey: '%env(resolve:TWO_FACTOR_ENCRYPTION_KEY)%'
+
+  App\User\Application\CommandHandler\SignInCommandHandler:
+    arguments:
+      $pendingTwoFactorTtlSeconds: '%env(int:PENDING_2FA_TTL_SECONDS)%'
+      $refreshTokenTtlSpec: '%env(resolve:REFRESH_TOKEN_TTL)%'
+
+  App\User\Application\CommandHandler\CompleteTwoFactorCommandHandler:
+    arguments:
+      $refreshTokenTtlSpec: '%env(resolve:REFRESH_TOKEN_TTL)%'
+
   App\User\Domain\Contract\PasswordResetTokenValidatorInterface: '@App\User\Application\Validator\CompositePasswordResetTokenValidator'
   App\User\Domain\Contract\PasswordHasherInterface: '@App\User\Infrastructure\Service\SymfonyPasswordHasher'
+  App\User\Domain\Contract\AccountLockoutServiceInterface: '@App\User\Infrastructure\Service\RedisAccountLockoutService'
+  App\User\Domain\Contract\AccessTokenGeneratorInterface: '@App\User\Infrastructure\Service\LexikAccessTokenGenerator'
+  App\User\Domain\Contract\TOTPVerifierInterface: '@App\User\Infrastructure\Service\TOTPVerifier'
+  App\User\Domain\Contract\TwoFactorSecretEncryptorInterface: '@App\User\Infrastructure\Service\TwoFactorSecretEncryptor'
   App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface: '@App\User\Application\CommandHandler\RequestPasswordResetCommandHandler'
 
   App\User\Infrastructure\Decorator\RateLimitedRequestPasswordResetHandler:
