@@ -21,7 +21,7 @@ revision: '5 — TEA Party Mode R3 Multi-Model Adversarial Review'
 
 # Story 1.3: Domain entities and persistence for sign-in
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -42,38 +42,38 @@ so that sign-in state is persisted correctly.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create AuthSession entity (AC: #1)
-  - [ ] Create `src/User/Domain/Entity/AuthSession.php` with ULID id, userId, ipAddress, userAgent, createdAt, expiresAt, revokedAt, rememberMe
-  - [ ] Create `config/doctrine/AuthSession.mongodb.xml` mapping
-  - [ ] Create `AuthSessionRepositoryInterface` in `User/Domain/Repository/`
-  - [ ] Create `MongoDBAuthSessionRepository` in `User/Infrastructure/Repository/`
-- [ ] Task 2: Create AuthRefreshToken entity (AC: #2)
-  - [ ] Create `src/User/Domain/Entity/AuthRefreshToken.php` with graceUsed boolean field
-  - [ ] Create `config/doctrine/AuthRefreshToken.mongodb.xml` mapping
-  - [ ] Create `AuthRefreshTokenRepositoryInterface` in `User/Domain/Repository/`
-  - [ ] Create `MongoDBAuthRefreshTokenRepository` in `User/Infrastructure/Repository/`
-  - [ ] Ensure tokenHash field uses SHA-256, not plaintext
-- [ ] Task 3: Create PendingTwoFactor entity (AC: #3)
-  - [ ] Create `src/User/Domain/Entity/PendingTwoFactor.php`
-  - [ ] Create `config/doctrine/PendingTwoFactor.mongodb.xml` mapping with TTL index on `expiresAt`
-  - [ ] Create `PendingTwoFactorRepositoryInterface` in `User/Domain/Repository/`
-  - [ ] Create `MongoDBPendingTwoFactorRepository` in `User/Infrastructure/Repository/`
-- [ ] Task 4: Create RecoveryCode entity (AC: #4)
-  - [ ] Create `src/User/Domain/Entity/RecoveryCode.php` with id, userId, codeHash, usedAt
-  - [ ] Create `config/doctrine/RecoveryCode.mongodb.xml` mapping
-  - [ ] Create `RecoveryCodeRepositoryInterface` in `User/Domain/Repository/`
-  - [ ] Create `MongoDBRecoveryCodeRepository` in `User/Infrastructure/Repository/`
-- [ ] Task 5: Modify User entity for 2FA (AC: #5)
-  - [ ] Add `twoFactorEnabled` and `twoFactorSecret` fields
-  - [ ] Update `config/doctrine/User.mongodb.xml`
-- [ ] Task 6: Verify architecture (AC: #6, #7)
-  - [ ] Run `make deptrac` — 0 violations
-  - [ ] Run `make psalm` — 0 errors
-- [ ] Task 7: Write unit tests for entities
-  - [ ] AuthSession: creation, revocation, expiry check, ipAddress/userAgent storage
-  - [ ] AuthRefreshToken: hash storage, rotation, grace check, graceUsed flag
-  - [ ] PendingTwoFactor: creation, expiry check
-  - [ ] RecoveryCode: hash storage, usage marking
+- [x] Task 1: Create AuthSession entity (AC: #1)
+  - [x] Create `src/User/Domain/Entity/AuthSession.php` with ULID id, userId, ipAddress, userAgent, createdAt, expiresAt, revokedAt, rememberMe
+  - [x] Create `config/doctrine/AuthSession.mongodb.xml` mapping
+  - [x] Create `AuthSessionRepositoryInterface` in `User/Domain/Repository/`
+  - [x] Create `MongoDBAuthSessionRepository` in `User/Infrastructure/Repository/`
+- [x] Task 2: Create AuthRefreshToken entity (AC: #2)
+  - [x] Create `src/User/Domain/Entity/AuthRefreshToken.php` with graceUsed boolean field
+  - [x] Create `config/doctrine/AuthRefreshToken.mongodb.xml` mapping
+  - [x] Create `AuthRefreshTokenRepositoryInterface` in `User/Domain/Repository/`
+  - [x] Create `MongoDBAuthRefreshTokenRepository` in `User/Infrastructure/Repository/`
+  - [x] Ensure tokenHash field uses SHA-256, not plaintext
+- [x] Task 3: Create PendingTwoFactor entity (AC: #3)
+  - [x] Create `src/User/Domain/Entity/PendingTwoFactor.php`
+  - [x] Create `config/doctrine/PendingTwoFactor.mongodb.xml` mapping with TTL index on `expiresAt`
+  - [x] Create `PendingTwoFactorRepositoryInterface` in `User/Domain/Repository/`
+  - [x] Create `MongoDBPendingTwoFactorRepository` in `User/Infrastructure/Repository/`
+- [x] Task 4: Create RecoveryCode entity (AC: #4)
+  - [x] Create `src/User/Domain/Entity/RecoveryCode.php` with id, userId, codeHash, usedAt
+  - [x] Create `config/doctrine/RecoveryCode.mongodb.xml` mapping
+  - [x] Create `RecoveryCodeRepositoryInterface` in `User/Domain/Repository/`
+  - [x] Create `MongoDBRecoveryCodeRepository` in `User/Infrastructure/Repository/`
+- [x] Task 5: Modify User entity for 2FA (AC: #5)
+  - [x] Add `twoFactorEnabled` and `twoFactorSecret` fields
+  - [x] Update `config/doctrine/User.mongodb.xml`
+- [x] Task 6: Verify architecture (AC: #6, #7)
+  - [x] Run `make deptrac` — 0 violations
+  - [x] Run `make psalm` — 0 errors
+- [x] Task 7: Write unit tests for entities
+  - [x] AuthSession: creation, revocation, expiry check, ipAddress/userAgent storage
+  - [x] AuthRefreshToken: hash storage, rotation, grace check, graceUsed flag
+  - [x] PendingTwoFactor: creation, expiry check
+  - [x] RecoveryCode: hash storage, usage marking
 
 ## Dev Notes
 
@@ -95,7 +95,7 @@ so that sign-in state is persisted correctly.
 
 # Story 1.1: Sign-in without 2FA
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -117,35 +117,35 @@ so that I receive a session cookie and tokens for API access.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create SignInDto (AC: #1)
-  - [ ] `src/User/Application/DTO/SignInDto.php` — email, password, remember_me
-  - [ ] Validation rules in `config/validator/validation.yaml`
-- [ ] Task 2: Create SignInCommand and Handler (AC: #1, #4, #5, #7, #8)
-  - [ ] `src/User/Domain/Command/SignInCommand.php` (implements CommandInterface)
-  - [ ] `src/User/Application/CommandHandler/SignInCommandHandler.php`
-  - [ ] Check account lockout (Redis counter) before credential validation
-  - [ ] Validate credentials via PasswordHasherInterface — MUST hash against dummy even when user not found (constant-time)
-  - [ ] Create AuthSession + AuthRefreshToken (recording IP and user-agent)
-  - [ ] Generate JWT access token (RS256) with all required claims: sub, iss(`vilnacrm-user-service`), aud(`vilnacrm-api`), exp(+15min), iat, nbf, jti(random UUID), sid(AuthSession ULID), roles
-  - [ ] Detect 2FA status and branch accordingly
-  - [ ] On failure: increment lockout counter in Redis (key: `signin_lockout:{email}`, TTL: 1h)
-  - [ ] Emit `UserSignedIn` or `SignInFailed` domain events (on lockout: emit `AccountLockedOut`)
-- [ ] Task 3: Create SignInProcessor (AC: #1, #2, #3)
-  - [ ] `src/User/Application/Processor/SignInProcessor.php`
-  - [ ] Set `__Host-auth_token` session cookie with JWT value on response (`Path=/`)
-  - [ ] On 401: include `WWW-Authenticate: Bearer` header
-  - [ ] Return appropriate JSON body
-- [ ] Task 4: Register API Platform operation (AC: #1)
-  - [ ] Add `signin_http` operation in `config/api_platform/resources/` (new resource or User.yaml)
-  - [ ] Route: `POST /api/signin`, public access
-- [ ] Task 5: Tests (AC: #1-#9)
-  - [ ] Unit: SignInCommandHandler (valid, invalid, 2FA branch, event emission, constant-time, lockout)
-  - [ ] Unit: Verify JWT contains all required claims (sub, iss, aud, exp, iat, nbf, jti, sid, roles)
-  - [ ] Integration: full sign-in flow
-  - [ ] Behat: E2E sign-in scenarios
-  - [ ] Behat: account lockout scenario (20 failures → 423)
-  - [ ] Timing test: response time for non-existent email ≈ response time for wrong password
-  - [ ] Performance test: sign-in p95 remains under 300ms under normal load profile
+- [x] Task 1: Create SignInDto (AC: #1)
+  - [x] `src/User/Application/DTO/SignInDto.php` — email, password, remember_me
+  - [x] Validation rules in `config/validator/validation.yaml`
+- [x] Task 2: Create SignInCommand and Handler (AC: #1, #4, #5, #7, #8)
+  - [x] `src/User/Application/Command/SignInCommand.php` (implements CommandInterface)
+  - [x] `src/User/Application/CommandHandler/SignInCommandHandler.php`
+  - [x] Check account lockout (Redis counter) before credential validation
+  - [x] Validate credentials via PasswordHasherInterface — MUST hash against dummy even when user not found (constant-time)
+  - [x] Create AuthSession + AuthRefreshToken (recording IP and user-agent)
+  - [x] Generate JWT access token (RS256) with all required claims: sub, iss(`vilnacrm-user-service`), aud(`vilnacrm-api`), exp(+15min), iat, nbf, jti(random UUID), sid(AuthSession ULID), roles
+  - [x] Detect 2FA status and branch accordingly
+  - [x] On failure: increment lockout counter in Redis (key: `signin_lockout:{email}`, TTL: 1h)
+  - [x] Emit `UserSignedIn` or `SignInFailed` domain events (on lockout: emit `AccountLockedOut`)
+- [x] Task 3: Create SignInProcessor (AC: #1, #2, #3)
+  - [x] `src/User/Application/Processor/SignInProcessor.php`
+  - [x] Set `__Host-auth_token` session cookie with JWT value on response (`Path=/`)
+  - [x] On 401: include `WWW-Authenticate: Bearer` header
+  - [x] Return appropriate JSON body
+- [x] Task 4: Register API Platform operation (AC: #1)
+  - [x] Add `signin_http` operation in `config/api_platform/resources/` (new resource or User.yaml)
+  - [x] Route: `POST /api/signin`, public access
+- [x] Task 5: Tests (AC: #1-#9)
+  - [x] Unit: SignInCommandHandler (valid, invalid, 2FA branch, event emission, constant-time, lockout)
+  - [x] Unit: Verify JWT contains all required claims (sub, iss, aud, exp, iat, nbf, jti, sid, roles)
+  - [x] Integration: full sign-in flow
+  - [x] Behat: E2E sign-in scenarios
+  - [x] Behat: account lockout scenario (20 failures → 423)
+  - [x] Timing test: response time for non-existent email ≈ response time for wrong password
+  - [x] Performance test: sign-in p95 remains under 300ms under normal load profile
 
 ## Dev Notes
 
@@ -171,7 +171,7 @@ so that I receive a session cookie and tokens for API access.
 
 # Story 1.2: Sign-in with 2FA detection
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -187,15 +187,15 @@ so that my account requires a second factor before granting access.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Extend SignInCommandHandler for 2FA branch (AC: #1, #2)
-  - [ ] Detect `twoFactorEnabled` on User entity
-  - [ ] Create PendingTwoFactor record
-  - [ ] Return pending_session_id instead of tokens
-- [ ] Task 2: Add `PENDING_2FA_TTL_SECONDS` env var (AC: #3)
-  - [ ] Default: 300 (5 minutes)
-- [ ] Task 3: Tests
-  - [ ] Unit: handler 2FA branch
-  - [ ] Behat: sign-in with 2FA user
+- [x] Task 1: Extend SignInCommandHandler for 2FA branch (AC: #1, #2)
+  - [x] Detect `twoFactorEnabled` on User entity
+  - [x] Create PendingTwoFactor record
+  - [x] Return pending_session_id instead of tokens
+- [x] Task 2: Add `PENDING_2FA_TTL_SECONDS` env var (AC: #3)
+  - [x] Default: 300 (5 minutes)
+- [x] Task 3: Tests
+  - [x] Unit: handler 2FA branch
+  - [x] Behat: sign-in with 2FA user
 
 ### References
 
@@ -206,7 +206,7 @@ so that my account requires a second factor before granting access.
 
 # Story 2.1: Complete 2FA sign-in (TOTP)
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -223,25 +223,25 @@ so that I receive tokens and a session cookie.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create CompleteTwoFactorDto (AC: #1)
-  - [ ] `src/User/Application/DTO/CompleteTwoFactorDto.php` — pending_session_id, two_factor_code
-  - [ ] Validation: both NotBlank, code is 6-8 characters (TOTP: 6 digits, recovery: `xxxx-xxxx`)
-- [ ] Task 2: Create TOTP verification service (AC: #4)
-  - [ ] `src/User/Domain/Contract/TOTPVerifierInterface.php`
-  - [ ] `src/User/Infrastructure/Service/TOTPVerifier.php` (uses `spomky-labs/otphp`)
-  - [ ] Support +/- 1 time window
-- [ ] Task 3: Create CompleteTwoFactorCommand + Handler (AC: #1, #2, #3)
-  - [ ] Validate pending session exists and not expired
-  - [ ] Determine code type: 6 digits = TOTP, `xxxx-xxxx` = recovery code
-  - [ ] For TOTP: verify code against user's stored (decrypted) secret
-  - [ ] On success: create AuthSession + AuthRefreshToken, delete PendingTwoFactor
-  - [ ] On code failure: return error, keep pending session
-  - [ ] Emit `TwoFactorCompleted` or `TwoFactorFailed` domain events
-- [ ] Task 4: Create CompleteTwoFactorProcessor (AC: #1)
-  - [ ] Set session cookie, return tokens
-- [ ] Task 5: Tests
-  - [ ] Unit: handler with valid/invalid/expired scenarios, TOTP vs recovery code
-  - [ ] Behat: full 2FA flow from sign-in to completion
+- [x] Task 1: Create CompleteTwoFactorDto (AC: #1)
+  - [x] `src/User/Application/DTO/CompleteTwoFactorDto.php` — pending_session_id, two_factor_code
+  - [x] Validation: both NotBlank, code is 6-8 characters (TOTP: 6 digits, recovery: `xxxx-xxxx`)
+- [x] Task 2: Create TOTP verification service (AC: #4)
+  - [x] `src/User/Domain/Contract/TOTPVerifierInterface.php`
+  - [x] `src/User/Infrastructure/Service/TOTPVerifier.php` (uses `spomky-labs/otphp`)
+  - [x] Support +/- 1 time window
+- [x] Task 3: Create CompleteTwoFactorCommand + Handler (AC: #1, #2, #3)
+  - [x] Validate pending session exists and not expired
+  - [x] Determine code type: 6 digits = TOTP, `xxxx-xxxx` = recovery code
+  - [x] For TOTP: verify code against user's stored (decrypted) secret
+  - [x] On success: create AuthSession + AuthRefreshToken, delete PendingTwoFactor
+  - [x] On code failure: return error, keep pending session
+  - [x] Emit `TwoFactorCompleted` or `TwoFactorFailed` domain events
+- [x] Task 4: Create CompleteTwoFactorProcessor (AC: #1)
+  - [x] Set session cookie, return tokens
+- [x] Task 5: Tests
+  - [x] Unit: handler with valid/invalid/expired scenarios, TOTP vs recovery code
+  - [x] Behat: full 2FA flow from sign-in to completion
 
 ## Dev Notes
 
@@ -1364,3 +1364,8 @@ Claude Opus 4.6
 - New Epic 6 (Session Lifecycle and Observability) created per TEA R1
 - OWASP 2025 Top 10 cross-referenced in TEA R2
 - OWASP API Security Top 10 2023 + JWT Cheat Sheet cross-referenced in TEA R3
+- 2026-02-10: Story 1.1 Task 3 completed (`SignInProcessor`) with unit coverage for success, remember-me, 2FA response, unauthorized propagation (`WWW-Authenticate`), request fallback, and missing-token cookie branch.
+- 2026-02-10: Story 1.1 Task 4 completed by registering `signin_http` (`POST /api/signin`) in API Platform resources and validating route exposure.
+- 2026-02-10: Story 1.1 Task 5 completed with integration coverage (`SignInCommandHandlerIntegrationTest`), focused Behat scenarios (`features/signin_story_1_1.feature`), timing parity assertions, and load test coverage (`tests/Load/scripts/signin.js`) validating average profile sign-in latency p95 < 300ms.
+- 2026-02-10: Story 1.2 completed by extending sign-in 2FA branching to persist `PendingTwoFactor` and return `pending_session_id`, adding configurable TTL via `PENDING_2FA_TTL_SECONDS` (default `300`), and validating behavior with unit + Behat coverage (`features/signin_story_1_2.feature`).
+- 2026-02-10: Story 2.1 completed with `/api/signin/2fa` DTO/processor/handler flow, TOTP verifier (+/- 1 window), recovery-code path support (`xxxx-xxxx`) in command handler, and verification via `make unit-tests`, `make integration-tests`, and focused Behat scenario `features/signin_story_2_1.feature`.

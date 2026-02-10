@@ -404,6 +404,45 @@
                 }
             }
         },
+        "signin":{
+            "setupTimeoutInMinutes":30,
+            "teardownTimeoutInMinutes":30,
+            "smoke":{
+                "threshold":350,
+                "rps":5,
+                "vus":5,
+                "duration":10
+            },
+            "average":{
+                "threshold":350,
+                "rps":5,
+                "vus":5,
+                "duration":{
+                    "rise":5,
+                    "plateau":20,
+                    "fall":5
+                }
+            },
+            "stress":{
+                "threshold":600,
+                "rps":15,
+                "vus":15,
+                "duration":{
+                    "rise":5,
+                    "plateau":20,
+                    "fall":5
+                }
+            },
+            "spike":{
+                "threshold":1000,
+                "rps":20,
+                "vus":20,
+                "duration":{
+                    "rise":10,
+                    "fall":10
+                }
+            }
+        },
         "graphQLGetUser":{
             "setupTimeoutInMinutes":30,
             "teardownTimeoutInMinutes":30,

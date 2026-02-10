@@ -12,6 +12,64 @@ resources:
       'App\User\Domain\Exception\PasswordResetTokenMismatchException': 400
       'App\User\Domain\Exception\PasswordResetRateLimitExceededException': 429
     operations:
+      signin_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        uriTemplate: '/signin'
+        input: 'App\User\Application\DTO\SignInDto'
+        processor: 'App\User\Application\Processor\SignInProcessor'
+        read: false
+        output: false
+        openapi:
+          summary: 'Sign in with email and password'
+          description: 'Authenticates user credentials and returns access/refresh tokens or a pending 2FA session.'
+          tags:
+            - 'Authentication'
+          responses:
+            200:
+              description: 'Sign-in succeeded'
+            401:
+              description: 'Invalid credentials'
+            422:
+              description: 'Validation error'
+      signin_2fa_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        uriTemplate: '/signin/2fa'
+        input: 'App\User\Application\DTO\CompleteTwoFactorDto'
+        processor: 'App\User\Application\Processor\CompleteTwoFactorProcessor'
+        read: false
+        output: false
+        openapi:
+          summary: 'Complete two-factor sign in'
+          description: 'Validates pending 2FA session and TOTP code, then issues access and refresh tokens.'
+          tags:
+            - 'Authentication'
+          responses:
+            200:
+              description: '2FA completed successfully'
+            401:
+              description: 'Invalid or expired 2FA session/code'
+            422:
+              description: 'Validation error'
+      setup_2fa_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        uriTemplate: '/users/2fa/setup'
+        input: 'App\User\Application\DTO\SetupTwoFactorDto'
+        processor: 'App\User\Application\Processor\SetupTwoFactorProcessor'
+        read: false
+        output: false
+        openapi:
+          summary: 'Set up two-factor authentication'
+          description: 'Generates a TOTP secret and provisioning URI for the authenticated user.'
+          tags:
+            - 'Authentication'
+          responses:
+            200:
+              description: '2FA setup payload generated'
+            401:
+              description: 'Authentication required'
       request_password_reset:
         class: ApiPlatform\Metadata\Post
         method: POST

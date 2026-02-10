@@ -194,6 +194,31 @@ App\User\Application\DTO\ConfirmPasswordResetDto:
           max: 255
       - App\Shared\Application\Validator\Constraint\Password: ~
 
+App\User\Application\DTO\SignInDto:
+  properties:
+    email:
+      - Email: { message: 'email.invalid' }
+      - NotBlank: { message: 'not.blank' }
+      - Length:
+          max: 255
+    password:
+      - NotBlank: { message: 'not.blank' }
+      - Length:
+          max: 255
+    rememberMe:
+      - Type:
+          type: bool
+
+App\User\Application\DTO\CompleteTwoFactorDto:
+  properties:
+    pendingSessionId:
+      - NotBlank: { message: 'not.blank' }
+    twoFactorCode:
+      - NotBlank: { message: 'not.blank' }
+      - Regex:
+          pattern: '/^\d{6}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$/'
+          message: 'two.factor.code.invalid'
+
 App\User\Application\MutationInput\RequestPasswordResetMutationInput:
   properties:
     email:

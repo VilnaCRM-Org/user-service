@@ -30,6 +30,7 @@
     "phpmailer/phpmailer": "^6.6",
     "ramsey/uuid": "^4.7",
     "runtime/frankenphp-symfony": "^0.2",
+    "spomky-labs/otphp": "^11.4",
     "symfony/amazon-sqs-messenger": "7.4.*",
     "symfony/asset": "7.4.*",
     "symfony/cache": "7.4.*",
