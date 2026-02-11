@@ -15,6 +15,154 @@ servers:
     url: 'https://api.vilnacrm.com'
     description: ''
 paths:
+  /api/signin:
+    post:
+      operationId: signin_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Sign-in succeeded'
+        '401':
+          description: 'Invalid credentials'
+        '422':
+          description: 'Validation error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Sign in with email and password'
+      description: 'Authenticates user credentials and returns access/refresh tokens or a pending 2FA session.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SignInDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SignInDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SignInDto'
+        required: true
+  /api/signin/2fa:
+    post:
+      operationId: signin_2fa_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: '2FA completed successfully'
+        '401':
+          description: 'Invalid or expired 2FA session/code'
+        '422':
+          description: 'Validation error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Complete two-factor sign in'
+      description: 'Validates pending 2FA session and TOTP code, then issues access and refresh tokens.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.CompleteTwoFactorDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.CompleteTwoFactorDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.CompleteTwoFactorDto'
+        required: true
+  /api/users/2fa/setup:
+    post:
+      operationId: setup_2fa_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: '2FA setup payload generated'
+        '401':
+          description: 'Authentication required'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Set up two-factor authentication'
+      description: 'Generates a TOTP secret and provisioning URI for the authenticated user.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SetupTwoFactorDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SetupTwoFactorDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SetupTwoFactorDto'
+        required: true
   /api/health:
     get:
       operationId: api_health_get
@@ -1642,6 +1790,17 @@ components:
           type:
             - string
             - 'null'
+    EmptyResponse.CompleteTwoFactorDto:
+      type: object
+      required:
+        - pendingSessionId
+        - twoFactorCode
+      properties:
+        pendingSessionId:
+          type: string
+        twoFactorCode:
+          pattern: '^(.*(^\d{6}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$).*)$'
+          type: string
     EmptyResponse.ConfirmPasswordResetDto:
       type: object
       required:
@@ -1667,6 +1826,25 @@ components:
           externalDocs:
             url: 'https://schema.org/email'
           type: string
+    EmptyResponse.SetupTwoFactorDto:
+      type: object
+    EmptyResponse.SignInDto:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          format: email
+          maxLength: 255
+          externalDocs:
+            url: 'https://schema.org/email'
+          type: string
+        password:
+          maxLength: 255
+          type: string
+        rememberMe:
+          type: boolean
     Error:
       type: object
       description: 'A representation of common errors.'
