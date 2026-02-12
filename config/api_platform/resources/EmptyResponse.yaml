@@ -12,6 +12,27 @@ resources:
       'App\User\Domain\Exception\PasswordResetTokenMismatchException': 400
       'App\User\Domain\Exception\PasswordResetRateLimitExceededException': 429
     operations:
+      refresh_token_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        uriTemplate: '/token'
+        input: 'App\User\Application\DTO\RefreshTokenDto'
+        processor: 'App\User\Application\Processor\RefreshTokenProcessor'
+        read: false
+        output: false
+        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        openapi:
+          summary: 'Refresh access token'
+          description: 'Exchanges a valid refresh token for new access and refresh tokens (token rotation).'
+          tags:
+            - 'Authentication'
+          responses:
+            200:
+              description: 'Tokens refreshed successfully'
+            401:
+              description: 'Invalid, expired, or revoked refresh token'
+            422:
+              description: 'Validation error'
       signin_http:
         class: ApiPlatform\Metadata\Post
         method: POST
@@ -20,6 +41,7 @@ resources:
         processor: 'App\User\Application\Processor\SignInProcessor'
         read: false
         output: false
+        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
         openapi:
           summary: 'Sign in with email and password'
           description: 'Authenticates user credentials and returns access/refresh tokens or a pending 2FA session.'
@@ -40,6 +62,7 @@ resources:
         processor: 'App\User\Application\Processor\CompleteTwoFactorProcessor'
         read: false
         output: false
+        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
         openapi:
           summary: 'Complete two-factor sign in'
           description: 'Validates pending 2FA session and TOTP code, then issues access and refresh tokens.'
@@ -52,6 +75,72 @@ resources:
               description: 'Invalid or expired 2FA session/code'
             422:
               description: 'Validation error'
+      confirm_2fa_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        uriTemplate: '/users/2fa/confirm'
+        input: 'App\User\Application\DTO\ConfirmTwoFactorDto'
+        processor: 'App\User\Application\Processor\ConfirmTwoFactorProcessor'
+        read: false
+        output: false
+        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        openapi:
+          summary: 'Confirm two-factor authentication setup'
+          description: 'Validates TOTP code, enables 2FA, generates recovery codes, and revokes other sessions.'
+          tags:
+            - 'Authentication'
+          responses:
+            200:
+              description: '2FA confirmed, recovery codes returned'
+            401:
+              description: 'Invalid code or authentication required'
+            422:
+              description: 'Validation error'
+      disable_2fa_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        status: 204
+        uriTemplate: '/users/2fa/disable'
+        input: 'App\User\Application\DTO\DisableTwoFactorDto'
+        processor: 'App\User\Application\Processor\DisableTwoFactorProcessor'
+        read: false
+        output: false
+        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        openapi:
+          summary: 'Disable two-factor authentication'
+          description: 'Verifies TOTP or recovery code, disables 2FA, clears secret, and deletes all recovery codes.'
+          tags:
+            - 'Authentication'
+          responses:
+            204:
+              description: '2FA disabled successfully'
+            401:
+              description: 'Invalid code or authentication required'
+            403:
+              description: '2FA is not enabled'
+            422:
+              description: 'Validation error'
+      regenerate_recovery_codes_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        uriTemplate: '/users/2fa/recovery-codes'
+        input: 'App\User\Application\DTO\RegenerateRecoveryCodesDto'
+        processor: 'App\User\Application\Processor\RegenerateRecoveryCodesProcessor'
+        read: false
+        output: false
+        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        openapi:
+          summary: 'Regenerate recovery codes'
+          description: 'Invalidates all existing recovery codes and generates 8 new ones. Requires recent authentication (sudo mode).'
+          tags:
+            - 'Authentication'
+          responses:
+            200:
+              description: 'Recovery codes regenerated'
+            401:
+              description: 'Authentication required'
+            403:
+              description: '2FA not enabled or re-authentication required'
       setup_2fa_http:
         class: ApiPlatform\Metadata\Post
         method: POST
@@ -60,6 +149,7 @@ resources:
         processor: 'App\User\Application\Processor\SetupTwoFactorProcessor'
         read: false
         output: false
+        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
         openapi:
           summary: 'Set up two-factor authentication'
           description: 'Generates a TOTP secret and provisioning URI for the authenticated user.'
@@ -79,6 +169,7 @@ resources:
         controller: 'App\User\Application\Controller\RequestPasswordResetController'
         output: false
         read: false
+        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
         openapi:
           summary: 'Request a password reset'
           description: 'Initiates a password reset process by sending a reset token to the provided email address.'
@@ -104,11 +195,56 @@ resources:
         controller: 'App\User\Application\Controller\ConfirmPasswordResetController'
         output: false
         read: false
+        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
         openapi:
           summary: 'Confirm a password reset'
           description: 'Completes the password reset process by validating the reset token and setting a new password.'
           tags:
             - 'User reset password'
+          responses:
+            204:
+              description: 'Password reset confirmed'
+            400:
+              description: 'Invalid or expired password reset token'
+            404:
+              description: 'Password reset token not found'
+            422:
+              description: 'Validation error'
+      signout_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        status: 204
+        uriTemplate: '/signout'
+        input: 'App\User\Application\DTO\SignOutDto'
+        processor: 'App\User\Application\Processor\SignOutProcessor'
+        read: false
+        output: false
+        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        openapi:
+          summary: 'Sign out (logout) from current session'
+          description: 'Revokes the current session and all associated refresh tokens, clears the session cookie.'
+          tags:
+            - 'Authentication'
+          responses:
+            204:
+              description: 'Signed out successfully'
+            401:
+              description: 'Authentication required'
+      signout_all_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        status: 204
+        uriTemplate: '/signout/all'
+        input: 'App\User\Application\DTO\SignOutAllDto'
+        processor: 'App\User\Application\Processor\SignOutAllProcessor'
+        read: false
+        output: false
+        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        openapi:
+          summary: 'Sign out from all sessions (all devices)'
+          description: 'Revokes all sessions and refresh tokens for the authenticated user, clears the session cookie.'
+          tags:
+            - 'Authentication'
           responses:
             204:
               description: 'Password reset confirmed'

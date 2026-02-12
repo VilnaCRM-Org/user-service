@@ -58,6 +58,21 @@ final class AuthRefreshToken
         return $this->expiresAt;
     }
 
+    public function markAsRotated(?DateTimeImmutable $rotatedAt = null): void
+    {
+        $this->rotatedAt = $rotatedAt ?? new DateTimeImmutable();
+    }
+
+    public function isRotated(): bool
+    {
+        return $this->rotatedAt !== null;
+    }
+
+    public function isRevoked(): bool
+    {
+        return $this->revokedAt !== null;
+    }
+
     public function rotate(string $newPlainToken, ?DateTimeImmutable $rotatedAt = null): void
     {
         $this->tokenHash = $this->hash($newPlainToken);

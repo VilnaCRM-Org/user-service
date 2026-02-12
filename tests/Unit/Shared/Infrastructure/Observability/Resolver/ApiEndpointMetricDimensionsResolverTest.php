@@ -115,9 +115,9 @@ final class ApiEndpointMetricDimensionsResolverTest extends UnitTestCase
     }
 
     /**
-     * @return iterable<string, array{0: string, 1: string}>
+     * @psalm-return \Generator<string, list{string, string}, mixed, void>
      */
-    public static function httpMethodsProvider(): iterable
+    public static function httpMethodsProvider(): \Generator
     {
         yield 'GET' => ['GET', 'get'];
         yield 'POST' => ['POST', 'post'];

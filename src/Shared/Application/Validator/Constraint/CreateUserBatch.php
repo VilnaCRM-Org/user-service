@@ -17,6 +17,11 @@ final class CreateUserBatch extends Constraint
         parent::__construct([], $groups, $payload);
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return CreateUserBatchValidator::class
+     */
     #[\Override]
     public function validatedBy(): string
     {

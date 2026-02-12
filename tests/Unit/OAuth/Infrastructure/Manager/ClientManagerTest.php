@@ -246,7 +246,7 @@ final class ClientManagerTest extends OAuthInfrastructureTestCase
         );
     }
 
-    private function createDocumentManagerMock(object $builder): DocumentManager
+    private function createDocumentManagerMock(object $builder): \PHPUnit\Framework\MockObject\MockObject&DocumentManager
     {
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->once())

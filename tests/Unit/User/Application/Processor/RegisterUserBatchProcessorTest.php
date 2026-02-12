@@ -123,7 +123,9 @@ final class RegisterUserBatchProcessorTest extends UnitTestCase
     }
 
     /**
-     * @return array<UserInterface>
+     * @return UserInterface[]
+     *
+     * @psalm-return list{UserInterface,...}
      */
     private function getUsers(): array
     {

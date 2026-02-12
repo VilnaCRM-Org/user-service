@@ -165,7 +165,9 @@ final class CachePerformanceTest extends IntegrationTestCase
     }
 
     /**
-     * @return array<int, User>
+     * @return User[]
+     *
+     * @psalm-return list{0?: User,...}
      */
     private function createTestUsers(int $count): array
     {

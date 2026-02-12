@@ -47,6 +47,11 @@ final class SchemathesisCleanupListenerTestExpectations
     public function expectBatchFindByEmail(array $emails, array $users): void
     {
         $expectedCalls = array_map(
+            /**
+             * @return string[]
+             *
+             * @psalm-return list{string}
+             */
             static fn (string $email): array => [$email],
             $emails
         );
@@ -111,6 +116,11 @@ final class SchemathesisCleanupListenerTestExpectations
     private function expectEventFactory(array $users, array $events): void
     {
         $expectedArgs = array_map(
+            /**
+             * @return (\App\User\Domain\Entity\UserInterface|string)[]
+             *
+             * @psalm-return list{\App\User\Domain\Entity\UserInterface, string}
+             */
             fn (UserInterface $user): array => [$user, $this->eventId],
             $users
         );
@@ -126,6 +136,11 @@ final class SchemathesisCleanupListenerTestExpectations
     private function expectEventBus(array $events): void
     {
         $expectedArgs = array_map(
+            /**
+             * @return \App\User\Domain\Event\UserDeletedEvent[]
+             *
+             * @psalm-return list{\App\User\Domain\Event\UserDeletedEvent}
+             */
             static fn (UserDeletedEvent $event): array => [$event],
             $events
         );

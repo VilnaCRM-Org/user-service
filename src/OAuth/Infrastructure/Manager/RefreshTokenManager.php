@@ -20,6 +20,9 @@ final class RefreshTokenManager implements RefreshTokenManagerInterface
     ) {
     }
 
+    /**
+     * @return RefreshToken|null
+     */
     #[\Override]
     public function find(string $identifier): ?RefreshTokenInterface
     {

@@ -58,7 +58,9 @@ final class AllowedParametersRule implements QueryParameterRule
     /**
      * @param array<string, array|string|int|float|bool|null> $queryParameters
      *
-     * @return array<int, string>
+     * @return string[]
+     *
+     * @psalm-return array<int<0, max>, string>
      */
     private function extractUnknownParameters(
         string $path,

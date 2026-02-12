@@ -207,7 +207,9 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, string|UserInterface>
+     * @return (\App\User\Domain\Entity\User|string)[]
+     *
+     * @psalm-return array{password: string, email: string, initials: string, existingUser: \App\User\Domain\Entity\User}
      */
     private function createExistingUserTestData(): array
     {

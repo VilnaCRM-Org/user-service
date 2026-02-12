@@ -7,15 +7,10 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\UpdateUserCommand;
-use App\User\Domain\Entity\User;
+use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Exception\InvalidPasswordException;
-use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
-use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
-use App\User\Domain\Factory\Event\UserUpdatedEventFactoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Domain\ValueObject\UserUpdate;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
-use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
@@ -23,18 +18,16 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
     public function __construct(
         private EventBusInterface $eventBus,
         private PasswordHasherFactoryInterface $hasherFactory,
-        private UserRepositoryInterface $userRepository,
+        private UserUpdateApplier $userUpdateApplier,
+        private PasswordChangeSessionRevoker $passwordChangeSessionRevoker,
         private UuidFactory $uuidFactory,
-        private EmailChangedEventFactoryInterface $emailChangedEventFactory,
-        private PasswordChangedEventFactoryInterface $passwordChangedFactory,
-        private UserUpdatedEventFactoryInterface $userUpdatedEventFactory,
     ) {
     }
 
     public function __invoke(UpdateUserCommand $command): void
     {
         $user = $command->user;
-        $hasher = $this->hasherFactory->getPasswordHasher(User::class);
+        $hasher = $this->hasherFactory->getPasswordHasher($user::class);
 
         $this->assertPasswordValid(
             $hasher,
@@ -42,23 +35,44 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
             $command->updateData->oldPassword
         );
 
-        $eventId = (string) $this->uuidFactory->create();
-        $previousEmail = $user->getEmail();
-        $hashedPassword = $hasher->hash($command->updateData->newPassword);
-
-        $events = $this->applyUpdate(
-            $user,
-            $command->updateData,
-            $hashedPassword,
-            $eventId,
-            $previousEmail
-        );
+        $events = $this->resolveEvents($command, $user, $hasher);
         $this->eventBus->publish(...$events);
     }
 
+    /**
+     * @return \App\Shared\Domain\Bus\Event\DomainEvent[]
+     *
+     * @psalm-return array<int, \App\Shared\Domain\Bus\Event\DomainEvent>
+     */
+    private function resolveEvents(
+        UpdateUserCommand $command,
+        UserInterface $user,
+        object $hasher
+    ): array {
+        $eventId = (string) $this->uuidFactory->create();
+        $events = $this->userUpdateApplier->apply(
+            $user,
+            $command->updateData,
+            $hasher->hash($command->updateData->newPassword),
+            $eventId
+        );
+
+        if (!$this->passwordChanged($command->updateData)) {
+            return $events;
+        }
+
+        $events[] = $this->revokeOtherSessionsAndTokens(
+            $user->getId(),
+            $command->currentSessionId,
+            $eventId
+        );
+
+        return $events;
+    }
+
     private function assertPasswordValid(
-        PasswordHasherInterface $hasher,
-        User $user,
+        object $hasher,
+        UserInterface $user,
         string $oldPassword
     ): void {
         if ($hasher->verify($user->getPassword(), $oldPassword)) {
@@ -68,32 +82,26 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
         throw new InvalidPasswordException();
     }
 
-    /**
-     * @return array<int, object>
-     */
-    private function applyUpdate(
-        User $user,
-        UserUpdate $updateData,
-        string $hashedPassword,
-        string $eventId,
-        string $previousEmail
-    ): array {
-        $events = $user->update(
-            $updateData,
-            $hashedPassword,
-            $eventId,
-            $this->emailChangedEventFactory,
-            $this->passwordChangedFactory
+    private function passwordChanged(object $updateData): bool
+    {
+        return $updateData->newPassword !== $updateData->oldPassword;
+    }
+
+    private function revokeOtherSessionsAndTokens(
+        string $userId,
+        string $currentSessionId,
+        string $eventId
+    ): AllSessionsRevokedEvent {
+        $revokedCount = $this->passwordChangeSessionRevoker->revokeOtherSessions(
+            $userId,
+            $currentSessionId
         );
 
-        $this->userRepository->save($user);
-
-        $events[] = $this->userUpdatedEventFactory->create(
-            $user,
-            $previousEmail !== $user->getEmail() ? $previousEmail : null,
+        return new AllSessionsRevokedEvent(
+            $userId,
+            'password_change',
+            $revokedCount,
             $eventId
         );
-
-        return $events;
     }
 }

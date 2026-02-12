@@ -1,5 +1,90 @@
 framework:
   rate_limiter:
+    global_api_anonymous:
+      policy: 'sliding_window'
+      limit: '%env(int:GLOBAL_API_ANONYMOUS_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:GLOBAL_API_ANONYMOUS_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    global_api_authenticated:
+      policy: 'sliding_window'
+      limit: '%env(int:GLOBAL_API_AUTHENTICATED_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:GLOBAL_API_AUTHENTICATED_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    registration:
+      policy: 'token_bucket'
+      limit: '%env(int:REGISTRATION_RATE_LIMIT_MAX_REQUESTS)%'
+      rate: { interval: '%env(string:REGISTRATION_RATE_LIMIT_INTERVAL)%' }
+      cache_pool: 'cache.app'
+    oauth_token:
+      policy: 'sliding_window'
+      limit: '%env(int:OAUTH_TOKEN_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:OAUTH_TOKEN_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    signin_ip:
+      policy: 'sliding_window'
+      limit: '%env(int:SIGNIN_IP_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:SIGNIN_IP_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    signin_email:
+      policy: 'sliding_window'
+      limit: '%env(int:SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:SIGNIN_EMAIL_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    twofa_verification_user:
+      policy: 'sliding_window'
+      limit: '%env(int:TWOFA_VERIFICATION_USER_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:TWOFA_VERIFICATION_USER_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    twofa_verification_ip:
+      policy: 'sliding_window'
+      limit: '%env(int:TWOFA_VERIFICATION_IP_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:TWOFA_VERIFICATION_IP_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    twofa_setup:
+      policy: 'sliding_window'
+      limit: '%env(int:TWOFA_SETUP_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:TWOFA_SETUP_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    twofa_confirm:
+      policy: 'sliding_window'
+      limit: '%env(int:TWOFA_CONFIRM_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:TWOFA_CONFIRM_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    twofa_disable:
+      policy: 'sliding_window'
+      limit: '%env(int:TWOFA_DISABLE_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:TWOFA_DISABLE_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    email_confirmation:
+      policy: 'sliding_window'
+      limit: '%env(int:EMAIL_CONFIRMATION_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:EMAIL_CONFIRMATION_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    user_collection:
+      policy: 'sliding_window'
+      limit: '%env(int:USER_COLLECTION_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:USER_COLLECTION_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    user_update:
+      policy: 'sliding_window'
+      limit: '%env(int:USER_UPDATE_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:USER_UPDATE_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    user_delete:
+      policy: 'sliding_window'
+      limit: '%env(int:USER_DELETE_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:USER_DELETE_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    resend_confirmation:
+      policy: 'token_bucket'
+      limit: '%env(int:RESEND_CONFIRMATION_RATE_LIMIT_MAX_REQUESTS)%'
+      rate: { interval: '%env(string:RESEND_CONFIRMATION_RATE_LIMIT_INTERVAL)%' }
+      cache_pool: 'cache.app'
+    resend_confirmation_target:
+      policy: 'token_bucket'
+      limit: '%env(int:RESEND_CONFIRMATION_TARGET_RATE_LIMIT_MAX_REQUESTS)%'
+      rate: { interval: '%env(string:RESEND_CONFIRMATION_TARGET_RATE_LIMIT_INTERVAL)%' }
+      cache_pool: 'cache.app'
     password_reset:
       policy: 'token_bucket'
       limit: '%env(int:PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS)%'

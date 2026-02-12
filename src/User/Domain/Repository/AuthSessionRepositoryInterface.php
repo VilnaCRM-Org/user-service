@@ -12,5 +12,10 @@ interface AuthSessionRepositoryInterface
 
     public function findById(string $id): ?AuthSession;
 
+    /**
+     * @return array<AuthSession>
+     */
+    public function findByUserId(string $userId): array;
+
     public function delete(AuthSession $authSession): void;
 }

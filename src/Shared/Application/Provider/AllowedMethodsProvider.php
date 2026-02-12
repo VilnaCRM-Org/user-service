@@ -18,7 +18,9 @@ final readonly class AllowedMethodsProvider
     }
 
     /**
-     * @return array<int, string>
+     * @return string[]
+     *
+     * @psalm-return list<string>
      */
     public function getAllowedMethods(string $path): array
     {

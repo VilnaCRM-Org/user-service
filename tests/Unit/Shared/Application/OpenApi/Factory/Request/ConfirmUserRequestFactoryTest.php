@@ -32,7 +32,9 @@ final class ConfirmUserRequestFactoryTest extends UnitTestCase
     }
 
     /**
-     * @return array<Parameter>
+     * @return Parameter[]
+     *
+     * @psalm-return list{Parameter}
      */
     private function getParams(): array
     {

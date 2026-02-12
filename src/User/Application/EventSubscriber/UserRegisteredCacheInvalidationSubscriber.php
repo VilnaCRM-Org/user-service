@@ -42,7 +42,9 @@ final readonly class UserRegisteredCacheInvalidationSubscriber implements
     }
 
     /**
-     * @return array<class-string>
+     * @return string[]
+     *
+     * @psalm-return list{UserRegisteredEvent::class}
      */
     #[\Override]
     public function subscribedTo(): array

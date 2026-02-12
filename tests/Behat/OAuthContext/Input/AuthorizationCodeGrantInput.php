@@ -18,7 +18,9 @@ final class AuthorizationCodeGrantInput extends ObtainAccessTokenInput
     }
 
     /**
-     * @return array<string, array|bool|float|int|object|string|null>
+     * @return (null|string)[]
+     *
+     * @psalm-return array{grant_type: null|string, redirect_uri: string, code: string, client_id?: string, code_verifier?: string}
      */
     #[\Override]
     public function toArray(): array

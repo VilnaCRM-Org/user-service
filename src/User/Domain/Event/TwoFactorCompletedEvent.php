@@ -22,6 +22,8 @@ final class TwoFactorCompletedEvent extends DomainEvent
 
     /**
      * @param array<string, string> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(
@@ -40,6 +42,11 @@ final class TwoFactorCompletedEvent extends DomainEvent
         );
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'user.two_factor_completed'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -47,7 +54,9 @@ final class TwoFactorCompletedEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{userId: string, sessionId: string, ipAddress: string, userAgent: string, method: string}
      */
     #[\Override]
     public function toPrimitives(): array

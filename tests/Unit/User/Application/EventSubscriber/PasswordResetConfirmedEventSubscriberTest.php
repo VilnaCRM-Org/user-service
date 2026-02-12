@@ -85,7 +85,7 @@ final class PasswordResetConfirmedEventSubscriberTest extends UnitTestCase
         $this->assertCount(1, $subscribedEvents);
     }
 
-    private function createUserMock(string $userEmail): UserInterface
+    private function createUserMock(string $userEmail): \PHPUnit\Framework\MockObject\MockObject&UserInterface
     {
         $user = $this->createMock(UserInterface::class);
         $user->expects($this->once())

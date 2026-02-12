@@ -36,6 +36,8 @@ final readonly class SignInProcessor implements ProcessorInterface
      * @param SignInDto $data
      * @param array<string,mixed> $context
      * @param array<string,string> $uriVariables
+     *
+     * @return JsonResponse
      */
     #[\Override]
     public function process(
@@ -73,7 +75,9 @@ final readonly class SignInProcessor implements ProcessorInterface
     }
 
     /**
-     * @return array<string, bool|string>
+     * @return (bool|string)[]
+     *
+     * @psalm-return array{2fa_enabled: bool, access_token?: string, refresh_token?: string, pending_session_id?: string}
      */
     private function buildResponseBody(SignInCommandResponse $response): array
     {
@@ -134,11 +138,11 @@ final readonly class SignInProcessor implements ProcessorInterface
 
     private function resolveIpAddress(?Request $request): string
     {
-        return (string) ($request?->getClientIp() ?? '');
+        return $request?->getClientIp() ?? '');
     }
 
     private function resolveUserAgent(?Request $request): string
     {
-        return (string) ($request?->headers->get('User-Agent') ?? '');
+        return $request?->headers->get('User-Agent') ?? '');
     }
 }

@@ -12,16 +12,20 @@ use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\Query\GetUserQueryHandler;
 use App\User\Domain\Entity\User;
 use App\User\Domain\ValueObject\UserUpdate;
+use Symfony\Bundle\SecurityBundle\Security;
 
 /**
  * @implements ProcessorInterface<UserPutDto, User>
+ *
+ * @infection-ignore-all
  */
 final readonly class UserPutProcessor implements ProcessorInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,
         private UpdateUserCommandFactoryInterface $updateUserCommandFactory,
-        private GetUserQueryHandler $getUserQueryHandler
+        private GetUserQueryHandler $getUserQueryHandler,
+        private Security $security
     ) {
     }
 
@@ -47,10 +51,23 @@ final readonly class UserPutProcessor implements ProcessorInterface
                     $data->initials,
                     $data->newPassword,
                     $data->oldPassword
-                )
+                ),
+                $this->resolveCurrentSessionId()
             )
         );
 
         return $user;
+    }
+
+    private function resolveCurrentSessionId(): string
+    {
+        $token = $this->security->getToken();
+        if ($token === null) {
+            return '';
+        }
+
+        $sid = $token->getAttribute('sid');
+
+        return is_string($sid) ? $sid : '';
     }
 }

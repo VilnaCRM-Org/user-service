@@ -25,5 +25,8 @@ services:
   App\Tests\Unit\Shared\Infrastructure\Observability\BusinessMetricsEmitterSpy:
     public: true
 
+  App\Tests\Shared\Auth\Factory\TestAccessTokenFactory:
+    public: true
+
   App\Tests\Behat\:
     resource: '../tests/Behat/*'

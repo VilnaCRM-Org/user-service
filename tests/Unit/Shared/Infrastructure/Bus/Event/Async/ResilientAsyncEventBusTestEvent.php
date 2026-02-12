@@ -13,6 +13,11 @@ final class ResilientAsyncEventBusTestEvent extends DomainEvent
         parent::__construct($eventId, $occurredOn);
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'resilient.async.event'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -20,7 +25,9 @@ final class ResilientAsyncEventBusTestEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{event: 'resilient'}
      */
     #[\Override]
     public function toPrimitives(): array
@@ -30,6 +37,8 @@ final class ResilientAsyncEventBusTestEvent extends DomainEvent
 
     /**
      * @param array<string, string> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(

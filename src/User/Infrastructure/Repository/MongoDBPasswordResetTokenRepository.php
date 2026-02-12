@@ -34,6 +34,9 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
         $this->documentManager->flush();
     }
 
+    /**
+     * @return PasswordResetToken|null
+     */
     #[\Override]
     public function findByToken(string $token): ?PasswordResetTokenInterface
     {
@@ -42,7 +45,7 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
 
     public function findByUserID(
         string $userID
-    ): ?PasswordResetTokenInterface {
+    ): PasswordResetToken|null {
         return $this->findOneBy(
             ['userID' => $userID],
             ['createdAt' => 'DESC']

@@ -32,7 +32,9 @@ final class EmfNamespace extends Compound
     /**
      * @param array<string, scalar|array|null> $options
      *
-     * @return array<Constraint>
+     * @return (Length|NotBlank|Regex)[]
+     *
+     * @psalm-return list{NotBlank, Length, Regex}
      */
     #[\Override]
     protected function getConstraints(array $options): array

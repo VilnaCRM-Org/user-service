@@ -33,7 +33,7 @@ league_oauth2_server:
     enable_client_credentials_grant: true
 
     # Whether to enable the password grant
-    enable_password_grant: true
+    enable_password_grant: false
 
     # Whether to enable the refresh token grant
     enable_refresh_token_grant: true

@@ -22,7 +22,9 @@ final readonly class AuthorizationUserDto implements
     }
 
     /**
-     * @return array<string>
+     * @return array
+     *
+     * @psalm-return array<never, never>
      */
     #[\Override]
     public function getRoles(): array
@@ -30,6 +32,9 @@ final readonly class AuthorizationUserDto implements
         return [];
     }
 
+    /**
+     * @return string
+     */
     #[\Override]
     public function getPassword(): ?string
     {

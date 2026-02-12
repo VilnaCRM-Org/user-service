@@ -18,4 +18,6 @@ interface RecoveryCodeRepositoryInterface
     public function findByUserId(string $userId): array;
 
     public function delete(RecoveryCode $recoveryCode): void;
+
+    public function deleteByUserId(string $userId): int;
 }

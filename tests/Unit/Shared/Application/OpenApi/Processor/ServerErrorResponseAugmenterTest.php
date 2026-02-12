@@ -29,7 +29,7 @@ final class ServerErrorResponseAugmenterTest extends UnitTestCase
         $this->assertBothOperationsHaveServerError($openApi, $internalErrorResponse);
     }
 
-    private function createInternalErrorFactory(Response $response): InternalErrorFactory
+    private function createInternalErrorFactory(Response $response): \PHPUnit\Framework\MockObject\MockObject&InternalErrorFactory
     {
         $factory = $this->createMock(InternalErrorFactory::class);
         $factory->expects($this->once())

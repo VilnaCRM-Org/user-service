@@ -97,7 +97,9 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
     }
 
     /**
-     * @return array<string, array<string, array|bool|float|int|object|string|null>>
+     * @return array[]
+     *
+     * @psalm-return array{accessUpdate: array<never, never>, authUpdate: array<never, never>, accessSelect: array<never, never>, refreshUpdate: array<never, never>}
      */
     private function createCaptureArrays(): array
     {
@@ -116,7 +118,7 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
         AccessToken $tokenA,
         AccessToken $tokenB,
         array &$captures
-    ): DocumentManager {
+    ): \PHPUnit\Framework\MockObject\MockObject&DocumentManager {
         $accessUpdate = $this->makeBuilder(null, $captures['accessUpdate']);
         $authUpdate = $this->makeBuilder(null, $captures['authUpdate']);
         $accessSelect = $this->makeBuilder(
@@ -148,7 +150,7 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
     private function createDocManagerForClientRevocation(
         AccessToken $tokenA,
         array &$captures
-    ): DocumentManager {
+    ): \PHPUnit\Framework\MockObject\MockObject&DocumentManager {
         $accessUpdate = $this->makeBuilder(null, $captures['accessUpdate']);
         $authUpdate = $this->makeBuilder(null, $captures['authUpdate']);
         $accessSelect = $this->makeBuilder([$tokenA], $captures['accessSelect']);
@@ -168,7 +170,7 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
         return $documentManager;
     }
 
-    private function createClientManagerMock(Client $client): ClientManagerInterface
+    private function createClientManagerMock(Client $client): \PHPUnit\Framework\MockObject\MockObject&ClientManagerInterface
     {
         $clientManager = $this->createMock(ClientManagerInterface::class);
         $clientManager->expects($this->once())
@@ -230,7 +232,7 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
         );
     }
 
-    private function makeUser(): UserInterface
+    private function makeUser(): object
     {
         $identifier = $this->faker->userName();
 
@@ -246,7 +248,9 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
             }
 
             /**
-             * @return list<string>
+             * @return array
+             *
+             * @psalm-return array<never, never>
              */
             #[\Override]
             public function getRoles(): array

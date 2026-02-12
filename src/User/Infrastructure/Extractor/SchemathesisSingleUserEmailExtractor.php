@@ -9,7 +9,9 @@ final class SchemathesisSingleUserEmailExtractor
     /**
      * @param array{email?: string|null} $payload
      *
-     * @return list<string>
+     * @return string[]
+     *
+     * @psalm-return list{0?: string}
      */
     public function extract(array $payload): array
     {

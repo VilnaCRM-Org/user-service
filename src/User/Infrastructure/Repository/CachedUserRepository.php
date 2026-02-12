@@ -74,14 +74,16 @@ final class CachedUserRepository implements UserRepositoryInterface
      * MongoDB ODM doesn't support lock modes, so we delegate to findById for caching.
      *
      * @psalm-suppress UnusedParam
+     *
+     * @param numeric-string $id
      */
     public function find(
-        mixed $id,
+        string $id,
         ?int $lockMode = null,
         ?int $lockVersion = null
-    ): ?object {
+    ): UserInterface|null {
         // MongoDB ODM doesn't support lock modes, use findById instead
-        return $this->findById((string) $id);
+        return $this->findById($id);
     }
 
     /**

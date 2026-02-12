@@ -11,11 +11,17 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 final class HashingPasswordHasherFactory implements PasswordHasherFactoryInterface
 {
+    /**
+     * @return object
+     */
     #[\Override]
     public function getPasswordHasher(
         string|PasswordAuthenticatedUserInterface|PasswordHasherAwareInterface $user
     ): PasswordHasherInterface {
         return new class() implements PasswordHasherInterface {
+            /**
+             * @return string
+             */
             #[\Override]
             public function hash(string $plainPassword): string
             {
@@ -28,6 +34,9 @@ final class HashingPasswordHasherFactory implements PasswordHasherFactoryInterfa
                 return $hashedPassword === 'hashed-' . $plainPassword;
             }
 
+            /**
+             * @return false
+             */
             #[\Override]
             public function needsRehash(string $hashedPassword): bool
             {

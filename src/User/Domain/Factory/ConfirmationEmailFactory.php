@@ -18,6 +18,9 @@ final readonly class ConfirmationEmailFactory implements
     ) {
     }
 
+    /**
+     * @return ConfirmationEmail
+     */
     #[\Override]
     public function create(
         ConfirmationTokenInterface $token,

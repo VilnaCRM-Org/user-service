@@ -60,7 +60,9 @@ final class UserEndpointFactory implements EndpointFactoryInterface
     }
 
     /**
-     * @return array<int,Response>
+     * @return Response[]
+     *
+     * @psalm-return array{201: Response, 400: Response, 422: Response}
      */
     private function getPostResponses(): array
     {
@@ -73,7 +75,9 @@ final class UserEndpointFactory implements EndpointFactoryInterface
     }
 
     /**
-     * @return array<int,Response>
+     * @return Response[]
+     *
+     * @psalm-return array{400: Response, 200: Response}
      */
     private function getGetResponses(): array
     {

@@ -44,10 +44,34 @@ final class MongoDBAuthRefreshTokenRepository extends ServiceDocumentRepository 
         return $this->findOneBy(['tokenHash' => $tokenHash]);
     }
 
+    /**
+     * @return list<AuthRefreshToken>
+     */
+    #[\Override]
+    public function findBySessionId(string $sessionId): array
+    {
+        return $this->findBy(['sessionId' => $sessionId]);
+    }
+
     #[\Override]
     public function delete(AuthRefreshToken $authRefreshToken): void
     {
         $this->documentManager->remove($authRefreshToken);
+        $this->documentManager->flush();
+    }
+
+    #[\Override]
+    public function revokeBySessionId(string $sessionId): void
+    {
+        $tokens = $this->findBySessionId($sessionId);
+
+        foreach ($tokens as $token) {
+            if ($token->getRevokedAt() === null) {
+                $token->revoke();
+                $this->documentManager->persist($token);
+            }
+        }
+
         $this->documentManager->flush();
     }
 }

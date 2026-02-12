@@ -51,6 +51,11 @@ final class DomainUuidType extends Type
         return new Uuid((string) $value);
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'if ($value === null) { $return = null; } elseif ($value instanceof \App\Shared\Domain\ValueObject\UuidInterface) { $return = (string) $value; } else { $return = (string) new \App\Shared\Domain\ValueObject\Uuid((string) $value); }'
+     */
     #[\Override]
     public function closureToMongo(): string
     {
@@ -62,6 +67,11 @@ final class DomainUuidType extends Type
             . '}';
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'if ($value === null) { $return = null; } elseif ($value instanceof \App\Shared\Domain\ValueObject\Uuid) { $return = $value; } else { $return = new \App\Shared\Domain\ValueObject\Uuid((string) $value); }'
+     */
     #[\Override]
     public function closureToPHP(): string
     {

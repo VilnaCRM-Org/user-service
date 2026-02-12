@@ -84,15 +84,9 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     }
 
     /**
-     * @return array{
-     *     clientManager: RecordingClientManager,
-     *     documentManager: DocumentManager,
-     *     tokenRepository: InMemoryConfirmationTokenRepository,
-     *     passwordResetTokenRepository: InMemoryPasswordResetTokenRepository,
-     *     userSeeder: SchemathesisUserSeeder,
-     *     userRepository: InMemoryUserRepository,
-     *     authorizationCodeManager: RecordingAuthorizationCodeManager
-     * }
+     * @return (DocumentManager&\PHPUnit\Framework\MockObject\MockObject|InMemoryConfirmationTokenRepository|InMemoryPasswordResetTokenRepository|InMemoryUserRepository|RecordingAuthorizationCodeManager|RecordingClientManager|SchemathesisUserSeeder)[]
+     *
+     * @psalm-return array{clientManager: RecordingClientManager, documentManager: DocumentManager&\PHPUnit\Framework\MockObject\MockObject, tokenRepository: InMemoryConfirmationTokenRepository, passwordResetTokenRepository: InMemoryPasswordResetTokenRepository, userSeeder: SchemathesisUserSeeder, userRepository: InMemoryUserRepository, authorizationCodeManager: RecordingAuthorizationCodeManager}
      */
     private function createMissingClientTestDependencies(): array
     {
@@ -117,7 +111,7 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         ];
     }
 
-    private function createDocumentManagerMockForOAuth(): DocumentManager
+    private function createDocumentManagerMockForOAuth(): \PHPUnit\Framework\MockObject\MockObject&DocumentManager
     {
         $documentManager = $this->createMock(DocumentManager::class);
         // The seeder calls find(), and if nothing exists, doesn't call remove()
@@ -232,15 +226,9 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     }
 
     /**
-     * @return array{
-     *     userRepository: InMemoryUserRepository,
-     *     userFactory: UserFactory,
-     *     hasherFactory: HashingPasswordHasherFactory,
-     *     uuidTransformer: UuidTransformer,
-     *     tokenRepository: InMemoryConfirmationTokenRepository,
-     *     passwordResetTokenRepository: InMemoryPasswordResetTokenRepository,
-     *     existingUpdateUser: UserInterface
-     * }
+     * @return (HashingPasswordHasherFactory|InMemoryConfirmationTokenRepository|InMemoryPasswordResetTokenRepository|InMemoryUserRepository|UserFactory|UuidTransformer|\App\User\Domain\Entity\User)[]
+     *
+     * @psalm-return array{userRepository: InMemoryUserRepository, userFactory: UserFactory, hasherFactory: HashingPasswordHasherFactory, uuidTransformer: UuidTransformer, tokenRepository: InMemoryConfirmationTokenRepository, passwordResetTokenRepository: InMemoryPasswordResetTokenRepository, existingUpdateUser: \App\User\Domain\Entity\User}
      */
     private function createRepositories(): array
     {
@@ -284,7 +272,7 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         ];
     }
 
-    private function createDocumentManagerMockForSeeding(): DocumentManager
+    private function createDocumentManagerMockForSeeding(): \PHPUnit\Framework\MockObject\MockObject&DocumentManager
     {
         $documentManager = $this->createMock(DocumentManager::class);
         // The seeder calls find() and if nothing exists, doesn't call remove()
@@ -465,9 +453,9 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     }
 
     /**
-     * @return array<DocumentManager|InMemoryConfirmationTokenRepository|InMemoryPasswordResetTokenRepository|InMemoryUserRepository|RecordingAuthorizationCodeManager|RecordingClientManager|SchemathesisUserSeeder>
+     * @return (DocumentManager&\PHPUnit\Framework\MockObject\MockObject|InMemoryConfirmationTokenRepository|InMemoryPasswordResetTokenRepository|InMemoryUserRepository|RecordingAuthorizationCodeManager|RecordingClientManager|SchemathesisUserSeeder)[]
      *
-     * @psalm-return array{clientManager: RecordingClientManager, documentManager: DocumentManager, tokenRepository: InMemoryConfirmationTokenRepository, passwordResetTokenRepository: InMemoryPasswordResetTokenRepository, userSeeder: SchemathesisUserSeeder, userRepository: InMemoryUserRepository, authorizationCodeManager: RecordingAuthorizationCodeManager}
+     * @psalm-return array{clientManager: RecordingClientManager, documentManager: DocumentManager&\PHPUnit\Framework\MockObject\MockObject, tokenRepository: InMemoryConfirmationTokenRepository, passwordResetTokenRepository: InMemoryPasswordResetTokenRepository, userSeeder: SchemathesisUserSeeder, userRepository: InMemoryUserRepository, authorizationCodeManager: RecordingAuthorizationCodeManager}
      */
     private function createExistingPasswordResetTokenDependencies(): array
     {

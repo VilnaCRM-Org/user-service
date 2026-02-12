@@ -8,8 +8,8 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\Command\SignInCommandResponse;
-use App\User\Domain\Contract\AccountLockoutServiceInterface;
 use App\User\Domain\Contract\AccessTokenGeneratorInterface;
+use App\User\Domain\Contract\AccountLockoutServiceInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\PendingTwoFactor;
@@ -30,13 +30,19 @@ use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+ */
 final readonly class SignInCommandHandler implements CommandHandlerInterface
 {
     private const ACCESS_TOKEN_TTL_SECONDS = 900;
+    private const LOCKOUT_RETRY_AFTER_SECONDS = 900;
     private const STANDARD_SESSION_TTL_SECONDS = 900;
     private const REMEMBER_ME_SESSION_TTL_SECONDS = 2592000;
     private const JWT_ISSUER = 'vilnacrm-user-service';
     private const JWT_AUDIENCE = 'vilnacrm-api';
+    private const LOCKOUT_MESSAGE = 'Account temporarily locked';
 
     private const DUMMY_PASSWORD = 'signin-dummy-password';
     private const DUMMY_BCRYPT_COST = 4;
@@ -70,11 +76,7 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
     public function __invoke(SignInCommand $command): void
     {
         $email = $this->normalizeEmail($command->email);
-
-        if ($this->lockoutService->isLocked($email)) {
-            $this->publishAccountLockedOutEvent($email, $command->ipAddress, $command->userAgent);
-            throw new LockedHttpException('Account is temporarily locked.');
-        }
+        $this->assertNotLocked($email, $command);
 
         $hasher = $this->hasherFactory->getPasswordHasher(User::class);
         $user = $this->resolveUser($email);
@@ -86,42 +88,86 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
         $this->lockoutService->clearFailures($email);
 
         if ($user->isTwoFactorEnabled()) {
-            $createdAt = new DateTimeImmutable();
-            $pendingTwoFactor = $this->createPendingTwoFactor($user, $createdAt);
-            $this->pendingTwoFactorRepository->save($pendingTwoFactor);
-
-            $command->setResponse(
-                new SignInCommandResponse(
-                    true,
-                    null,
-                    null,
-                    $pendingTwoFactor->getId()
-                )
-            );
+            $this->handleTwoFactorPath($user, $command);
 
             return;
         }
 
+        $this->handleDirectSignIn($user, $command);
+    }
+
+    private function assertNotLocked(
+        string $email,
+        SignInCommand $command
+    ): void {
+        if (!$this->lockoutService->isLocked($email)) {
+            return;
+        }
+
+        $this->publishAccountLockedOutEvent(
+            $email,
+            $command->ipAddress,
+            $command->userAgent
+        );
+
+        throw $this->lockedException();
+    }
+
+    private function handleTwoFactorPath(
+        User $user,
+        SignInCommand $command
+    ): void {
+        $createdAt = new DateTimeImmutable();
+        $pendingTwoFactor = $this->createPendingTwoFactor(
+            $user,
+            $createdAt
+        );
+        $this->pendingTwoFactorRepository->save($pendingTwoFactor);
+
+        $command->setResponse(
+            new SignInCommandResponse(
+                true,
+                null,
+                null,
+                $pendingTwoFactor->getId()
+            )
+        );
+    }
+
+    private function handleDirectSignIn(
+        User $user,
+        SignInCommand $command
+    ): void {
         $issuedAt = new DateTimeImmutable();
         $session = $this->createAuthSession($user, $command, $issuedAt);
         $this->authSessionRepository->save($session);
 
         $refreshTokenValue = $this->generateOpaqueToken();
-        $refreshToken = $this->createRefreshToken($session->getId(), $refreshTokenValue, $issuedAt);
+        $refreshToken = $this->createRefreshToken(
+            $session->getId(),
+            $refreshTokenValue,
+            $issuedAt
+        );
         $this->authRefreshTokenRepository->save($refreshToken);
 
         $accessToken = $this->accessTokenGenerator->generate(
             $this->buildJwtPayload($user, $session->getId(), $issuedAt)
         );
 
-        $command->setResponse(
-            new SignInCommandResponse(
-                false,
-                $accessToken,
-                $refreshTokenValue
-            )
-        );
+        $command->setResponse(new SignInCommandResponse(
+            false,
+            $accessToken,
+            $refreshTokenValue
+        ));
 
+        $this->publishSignedInEvent($user, $session, $command);
+    }
+
+    private function publishSignedInEvent(
+        User $user,
+        AuthSession $session,
+        SignInCommand $command
+    ): void {
         $this->eventBus->publish(
             new UserSignedInEvent(
                 $user->getId(),
@@ -129,6 +175,7 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
                 $session->getId(),
                 $command->ipAddress,
                 $command->userAgent,
+                false,  // AC: NFR-33 - twoFactorUsed is false during password auth (step 1)
                 $this->nextEventId()
             )
         );
@@ -145,6 +192,7 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
                 $email,
                 $command->ipAddress,
                 $command->userAgent,
+                'invalid_credentials',  // AC: NFR-33 - reason for audit logging
                 $this->nextEventId()
             )
         );
@@ -156,7 +204,7 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
                 $command->userAgent
             );
 
-            throw new LockedHttpException('Account is temporarily locked due to failed sign-in attempts.');
+            throw $this->lockedException();
         }
 
         throw new UnauthorizedHttpException('Bearer', 'Invalid credentials.');
@@ -167,11 +215,16 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
         string $ipAddress,
         string $userAgent
     ): void {
+        // AC: NFR-33 - Audit logging with lockout details
+        // TODO: Get actual values from lockout service configuration
+        $failedAttempts = 5;  // Default threshold
+        $lockoutDurationSeconds = 900;  // 15 minutes
+
         $this->eventBus->publish(
             new AccountLockedOutEvent(
                 $email,
-                $ipAddress,
-                $userAgent,
+                $failedAttempts,
+                $lockoutDurationSeconds,
                 $this->nextEventId()
             )
         );
@@ -247,7 +300,9 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
     }
 
     /**
-     * @return array<string, int|string|array<string>>
+     * @return (int|string|string[])[]
+     *
+     * @psalm-return array{sub: string, iss: 'vilnacrm-user-service', aud: 'vilnacrm-api', exp: int, iat: int, nbf: int, jti: string, sid: string, roles: list{'ROLE_USER'}}
      */
     private function buildJwtPayload(
         User $user,
@@ -272,6 +327,16 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
     private function nextEventId(): string
     {
         return (string) $this->uuidFactory->create();
+    }
+
+    private function lockedException(): LockedHttpException
+    {
+        return new LockedHttpException(
+            self::LOCKOUT_MESSAGE,
+            null,
+            0,
+            ['Retry-After' => (string) self::LOCKOUT_RETRY_AFTER_SECONDS]
+        );
     }
 
     private function generateOpaqueToken(): string

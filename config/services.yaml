@@ -80,6 +80,29 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 120 }
 
+  App\Shared\Application\EventListener\ApiRateLimitListener:
+    arguments:
+      $limiterFactories:
+        global_api_anonymous: '@limiter.global_api_anonymous'
+        global_api_authenticated: '@limiter.global_api_authenticated'
+        registration: '@limiter.registration'
+        oauth_token: '@limiter.oauth_token'
+        signin_ip: '@limiter.signin_ip'
+        signin_email: '@limiter.signin_email'
+        twofa_verification_user: '@limiter.twofa_verification_user'
+        twofa_verification_ip: '@limiter.twofa_verification_ip'
+        twofa_setup: '@limiter.twofa_setup'
+        twofa_confirm: '@limiter.twofa_confirm'
+        twofa_disable: '@limiter.twofa_disable'
+        email_confirmation: '@limiter.email_confirmation'
+        user_collection: '@limiter.user_collection'
+        user_update: '@limiter.user_update'
+        user_delete: '@limiter.user_delete'
+        resend_confirmation: '@limiter.resend_confirmation'
+        resend_confirmation_target: '@limiter.resend_confirmation_target'
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, priority: 120 }
+
   App\Shared\Application\EventListener\InvalidUuidRequestListener:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 10 }
@@ -102,6 +125,10 @@ services:
       $rules: !tagged_iterator app.query_parameter_rule
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 5 }
+
+  App\Shared\Application\EventListener\SecurityHeadersResponseListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.response, priority: -255 }
 
   App\Shared\Application\Observability\Emitter\BusinessMetricsEmitterInterface:
     alias: App\Shared\Infrastructure\Observability\Emitter\AwsEmfBusinessMetricsEmitter
@@ -168,15 +195,6 @@ services:
     arguments:
       $apiBaseUrl: '%env(API_BASE_URL)%'
 
-  # Event listener for OAuth2 password grant
-  App\User\Application\EventListener\UserResolveListener:
-    tags:
-      - {
-          name: kernel.event_listener,
-          event: league.oauth2_server.event.user_resolve,
-          method: onUserResolve,
-        }
-
   App\User\Application\Validator\CompositePasswordResetTokenValidator:
     arguments:
       $validators:
@@ -201,12 +219,18 @@ services:
     arguments:
       $refreshTokenTtlSpec: '%env(resolve:REFRESH_TOKEN_TTL)%'
 
+  App\User\Application\CommandHandler\RefreshTokenCommandHandler:
+    arguments:
+      $refreshTokenTtlSpec: '%env(resolve:REFRESH_TOKEN_TTL)%'
+      $refreshTokenGraceWindowSeconds: '%env(int:REFRESH_TOKEN_GRACE_WINDOW_SECONDS)%'
+
   App\User\Domain\Contract\PasswordResetTokenValidatorInterface: '@App\User\Application\Validator\CompositePasswordResetTokenValidator'
   App\User\Domain\Contract\PasswordHasherInterface: '@App\User\Infrastructure\Service\SymfonyPasswordHasher'
   App\User\Domain\Contract\AccountLockoutServiceInterface: '@App\User\Infrastructure\Service\RedisAccountLockoutService'
   App\User\Domain\Contract\AccessTokenGeneratorInterface: '@App\User\Infrastructure\Service\LexikAccessTokenGenerator'
   App\User\Domain\Contract\TOTPVerifierInterface: '@App\User\Infrastructure\Service\TOTPVerifier'
   App\User\Domain\Contract\TwoFactorSecretEncryptorInterface: '@App\User\Infrastructure\Service\TwoFactorSecretEncryptor'
+  App\User\Domain\Contract\TOTPSecretGeneratorInterface: '@App\User\Infrastructure\Service\TOTPSecretGenerator'
   App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface: '@App\User\Application\CommandHandler\RequestPasswordResetCommandHandler'
 
   App\User\Infrastructure\Decorator\RateLimitedRequestPasswordResetHandler:

@@ -202,7 +202,7 @@ final class AllowedMethodsProviderTest extends UnitTestCase
     private function createMultiResourceFactory(
         ApiResource $userResource,
         ApiResource $healthResource
-    ): ResourceMetadataCollectionFactoryInterface {
+    ): \PHPUnit\Framework\MockObject\MockObject&ResourceMetadataCollectionFactoryInterface {
         $factory = $this->createMock(
             ResourceMetadataCollectionFactoryInterface::class
         );

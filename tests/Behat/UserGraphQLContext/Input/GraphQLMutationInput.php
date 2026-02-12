@@ -9,7 +9,9 @@ use GraphQL\RequestBuilder\Argument;
 abstract readonly class GraphQLMutationInput
 {
     /**
-     * @return array<Argument>
+     * @return Argument[]
+     *
+     * @psalm-return list{0?: Argument,...}
      */
     public function toGraphQLArguments(): array
     {

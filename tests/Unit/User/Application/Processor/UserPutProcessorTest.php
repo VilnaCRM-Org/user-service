@@ -20,6 +20,8 @@ use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 final class UserPutProcessorTest extends UnitTestCase
 {
@@ -31,6 +33,7 @@ final class UserPutProcessorTest extends UnitTestCase
     private UpdateUserCommandFactoryInterface $mockUpdateUserCommandFactory;
     private GetUserQueryHandler $getUserQueryHandler;
     private UserPutProcessor $processor;
+    private Security $security;
 
     #[\Override]
     protected function setUp(): void
@@ -46,12 +49,14 @@ final class UserPutProcessorTest extends UnitTestCase
             GetUserQueryHandler::class
         );
         $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->security = $this->createMock(Security::class);
         $this->mockUpdateUserCommandFactory =
             $this->createMock(UpdateUserCommandFactoryInterface::class);
         $this->processor = new UserPutProcessor(
             $this->commandBus,
             $this->mockUpdateUserCommandFactory,
-            $this->getUserQueryHandler
+            $this->getUserQueryHandler,
+            $this->security
         );
     }
 
@@ -209,15 +214,28 @@ final class UserPutProcessorTest extends UnitTestCase
         UserInterface $user,
         UserUpdate $updateData
     ): void {
+        $currentSessionId = $this->faker->uuid();
+        $token = $this->createMock(TokenInterface::class);
+        $token->expects($this->once())
+            ->method('getAttribute')
+            ->with('sid')
+            ->willReturn($currentSessionId);
+
+        $this->security
+            ->expects($this->once())
+            ->method('getToken')
+            ->willReturn($token);
+
         $command = $this->updateUserCommandFactory->create(
             $user,
-            $updateData
+            $updateData,
+            $currentSessionId
         );
 
         $this->mockUpdateUserCommandFactory
             ->expects($this->once())
             ->method('create')
-            ->with($user, $updateData)
+            ->with($user, $updateData, $currentSessionId)
             ->willReturn($command);
 
         $this->commandBus

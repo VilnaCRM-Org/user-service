@@ -45,12 +45,18 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         $this->documentManager->flush();
     }
 
+    /**
+     * @return User|null
+     */
     #[\Override]
     public function findByEmail(string $email): ?UserInterface
     {
         return $this->findOneBy(['email' => $email]);
     }
 
+    /**
+     * @return User|null
+     */
     #[\Override]
     public function findById(string $id): ?UserInterface
     {

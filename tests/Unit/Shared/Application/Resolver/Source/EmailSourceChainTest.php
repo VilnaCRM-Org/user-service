@@ -43,13 +43,16 @@ final class EmailSourceChainTest extends UnitTestCase
         self::assertSame($fallbackEmail, $source->extract([]));
     }
 
-    private function createEmailSource(string $email): BatchEmailSource
+    private function createEmailSource(string $email): object
     {
         return new class($email) implements BatchEmailSource {
             public function __construct(private string $email)
             {
             }
 
+            /**
+             * @return string
+             */
             #[\Override]
             public function extract(mixed $entry): ?string
             {
@@ -58,9 +61,12 @@ final class EmailSourceChainTest extends UnitTestCase
         };
     }
 
-    private function createNullSource(): BatchEmailSource
+    private function createNullSource(): object
     {
         return new class() implements BatchEmailSource {
+            /**
+             * @return null
+             */
             #[\Override]
             public function extract(mixed $entry): ?string
             {

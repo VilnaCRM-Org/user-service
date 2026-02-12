@@ -111,7 +111,9 @@ final class SchemathesisUserSeederTest extends UnitTestCase
     }
 
     /**
-     * @return array{seeder: SchemathesisUserSeeder, existingUser: \App\User\Domain\Entity\UserInterface}
+     * @return (SchemathesisUserSeeder|\App\User\Domain\Entity\User)[]
+     *
+     * @psalm-return array{seeder: SchemathesisUserSeeder, existingUser: \App\User\Domain\Entity\User}
      */
     private function createSeederWithExistingUpdateUser(): array
     {

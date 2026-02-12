@@ -17,6 +17,11 @@ final class UniqueEmail extends Constraint
         parent::__construct([], $groups, $payload);
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return UniqueEmailValidator::class
+     */
     #[\Override]
     public function validatedBy(): string
     {

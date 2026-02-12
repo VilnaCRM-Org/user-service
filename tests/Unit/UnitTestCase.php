@@ -48,11 +48,13 @@ abstract class UnitTestCase extends TestCase
 
     /**
      * @param array<int, array<int, array|bool|float|int|object|string|null>> $expectedCalls
+     *
+     * @psalm-return \Closure(...mixed):(array|null|object|scalar)
      */
     protected function expectSequential(
         array $expectedCalls,
         callable|array|bool|float|int|object|string|null $returnValue = null
-    ): callable {
+    ): \Closure {
         $callIndex = 0;
         $returnValues = $this->extractReturnValues($returnValue);
 
@@ -97,19 +99,28 @@ abstract class UnitTestCase extends TestCase
         return array_shift($returnValues);
     }
 
-    private function setupErrorHandler(): ?callable
+    /**
+     * @psalm-return callable(int, string, string=, int=, array=):bool|null
+     */
+    private function setupErrorHandler(): callable|null
     {
         return set_error_handler($this->createErrorHandlerCallback());
     }
 
-    private function createErrorHandlerCallback(): callable
+    /**
+     * @psalm-return \Closure(int, string, string, int):never
+     */
+    private function createErrorHandlerCallback(): \Closure
     {
-        return static function (
+        return /**
+         * @return never
+         */
+        static function (
             int $severity,
             string $message,
             string $file,
             int $line
-        ): bool {
+        ) {
             throw new \ErrorException($message, 0, $severity, $file, $line);
         };
     }

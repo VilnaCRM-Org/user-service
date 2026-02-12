@@ -211,7 +211,7 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
             ->method('clear');
     }
 
-    private function getRepository(int $batchSize): UserRepositoryInterface
+    private function getRepository(int $batchSize): MongoDBUserRepository
     {
         $this->registry
             ->expects($this->atLeastOnce())

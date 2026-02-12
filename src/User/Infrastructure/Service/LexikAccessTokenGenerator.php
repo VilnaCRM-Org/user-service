@@ -19,6 +19,9 @@ final readonly class LexikAccessTokenGenerator implements
     ) {
     }
 
+    /**
+     * @param array<string, int|string|array<string>> $payload
+     */
     #[\Override]
     public function generate(array $payload): string
     {
@@ -42,9 +45,11 @@ final readonly class LexikAccessTokenGenerator implements
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param array<string, int|string|array<string>> $payload
      *
-     * @return array<string, mixed>
+     * @return (DateTimeImmutable|int|string|string[])[]
+     *
+     * @psalm-return array<string, DateTimeImmutable|array<string>|int|string>
      */
     private function normalizePayload(array $payload): array
     {

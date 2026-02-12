@@ -38,7 +38,9 @@ final readonly class PasswordResetRequestedMetricsSubscriber implements
     }
 
     /**
-     * @return array<class-string>
+     * @return string[]
+     *
+     * @psalm-return list{PasswordResetRequestedEvent::class}
      */
     #[\Override]
     public function subscribedTo(): array

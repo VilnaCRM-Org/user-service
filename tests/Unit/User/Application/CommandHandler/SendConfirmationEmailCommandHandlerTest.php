@@ -64,7 +64,9 @@ final class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return array{0: object, 1: ConfirmationTokenInterface}
+     * @return (ConfirmationTokenInterface|\App\User\Application\Command\SendConfirmationEmailCommand)[]
+     *
+     * @psalm-return list{\App\User\Application\Command\SendConfirmationEmailCommand, ConfirmationTokenInterface}
      */
     private function createCommandPayload(): array
     {

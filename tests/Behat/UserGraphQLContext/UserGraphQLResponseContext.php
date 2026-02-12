@@ -98,6 +98,42 @@ final class UserGraphQLResponseContext implements Context
     }
 
     /**
+     * @Then the GraphQL response should contain an authorization error
+     */
+    public function theGraphQLResponseShouldContainAnAuthorizationError(): void
+    {
+        $data = json_decode($this->state->getResponse()->getContent(), true);
+        Assert::assertIsArray($data);
+        Assert::assertArrayHasKey('errors', $data);
+        Assert::assertNotEmpty($data['errors']);
+
+        $errorMessages = array_map(
+            static fn (array $error): string => $error['message'] ?? '',
+            $data['errors']
+        );
+
+        $hasAuthError = false;
+        foreach ($errorMessages as $message) {
+            if (
+                str_contains($message, 'Access Denied')
+                || str_contains($message, 'Forbidden')
+            ) {
+                $hasAuthError = true;
+
+                break;
+            }
+        }
+
+        Assert::assertTrue(
+            $hasAuthError,
+            sprintf(
+                'Expected authorization error, got: %s',
+                implode(', ', $errorMessages)
+            )
+        );
+    }
+
+    /**
      * @Then graphql error message should be :errorMessage
      */
     public function graphQLErrorShouldBe(string $errorMessage): void
@@ -112,9 +148,34 @@ final class UserGraphQLResponseContext implements Context
     }
 
     /**
-     * @return array<string, bool|int|string|null>|bool|int|string|null
+     * @Then the response should contain a GraphQL error
      */
-    private function extractMutationUserData(): array|string|bool|int|null
+    public function theResponseShouldContainAGraphQLError(): void
+    {
+        $errorMessages = $this->extractErrorMessages();
+        Assert::assertNotSame([], $errorMessages);
+    }
+
+    /**
+     * @Then the response should contain a GraphQL error about depth
+     */
+    public function theResponseShouldContainAGraphQLErrorAboutDepth(): void
+    {
+        $this->assertGraphQlErrorContains('depth');
+    }
+
+    /**
+     * @Then the response should contain a GraphQL error about complexity
+     */
+    public function theResponseShouldContainAGraphQLErrorAboutComplexity(): void
+    {
+        $this->assertGraphQlErrorContains('complexity');
+    }
+
+    /**
+     * @return bool|int|null|string
+     */
+    private function extractMutationUserData(): string|bool|int|null|string|bool|int|null
     {
         $data = $this->parseAndValidateResponse();
         $this->assertQueryNameExists($data);
@@ -173,5 +234,58 @@ final class UserGraphQLResponseContext implements Context
         foreach ($this->state->getResponseContent() as $item) {
             Assert::assertArrayHasKey($item, $userNode);
         }
+    }
+
+    private function assertGraphQlErrorContains(string $expectedFragment): void
+    {
+        $errorMessages = $this->extractErrorMessages();
+        foreach ($errorMessages as $message) {
+            if (str_contains(strtolower($message), strtolower($expectedFragment))) {
+                return;
+            }
+        }
+
+        Assert::fail(
+            sprintf(
+                'Expected a GraphQL error containing "%s", got: %s',
+                $expectedFragment,
+                implode(' | ', $errorMessages)
+            )
+        );
+    }
+
+    /**
+     * @return string[]
+     *
+     * @psalm-return list<non-empty-string>
+     */
+    private function extractErrorMessages(): array
+    {
+        $response = $this->state->getResponse();
+        Assert::assertNotNull($response, 'GraphQL response is missing.');
+
+        $decodedResponse = json_decode(
+            $response->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+        Assert::assertIsArray($decodedResponse);
+        Assert::assertArrayHasKey('errors', $decodedResponse);
+        Assert::assertIsArray($decodedResponse['errors']);
+
+        $errorMessages = [];
+        foreach ($decodedResponse['errors'] as $error) {
+            if (!is_array($error)) {
+                continue;
+            }
+
+            $message = $error['message'] ?? null;
+            if (is_string($message) && $message !== '') {
+                $errorMessages[] = $message;
+            }
+        }
+
+        return $errorMessages;
     }
 }

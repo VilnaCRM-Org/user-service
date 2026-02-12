@@ -61,7 +61,7 @@ final class SchemathesisConfirmationTokenSeederTest extends UnitTestCase
         $this->assertLessThanOrEqual(65, $deltaInSeconds);
     }
 
-    private function createTestUser(): \App\User\Domain\Entity\UserInterface
+    private function createTestUser(): \App\User\Domain\Entity\User
     {
         $uuidTransformer = new UuidTransformer(new UuidFactory());
         $userFactory = new UserFactory();

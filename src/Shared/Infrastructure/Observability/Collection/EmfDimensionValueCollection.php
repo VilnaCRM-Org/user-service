@@ -38,7 +38,9 @@ final readonly class EmfDimensionValueCollection implements IteratorAggregate, C
     }
 
     /**
-     * @return Traversable<int, EmfDimensionValue>
+     * @return ArrayIterator
+     *
+     * @psalm-return ArrayIterator<int, EmfDimensionValue>
      */
     #[\Override]
     public function getIterator(): Traversable
@@ -46,6 +48,11 @@ final readonly class EmfDimensionValueCollection implements IteratorAggregate, C
         return new ArrayIterator($this->dimensions);
     }
 
+    /**
+     * @return int
+     *
+     * @psalm-return int<0, max>
+     */
     #[\Override]
     public function count(): int
     {

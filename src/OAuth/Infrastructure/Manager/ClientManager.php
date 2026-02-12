@@ -44,6 +44,9 @@ final class ClientManager implements ClientManagerInterface
         $this->documentManager->flush();
     }
 
+    /**
+     * @return Client|null
+     */
     #[\Override]
     public function find(string $identifier): ?ClientInterface
     {
@@ -76,7 +79,9 @@ final class ClientManager implements ClientManagerInterface
     }
 
     /**
-     * @return array<string, list<string>>
+     * @return string[][]
+     *
+     * @psalm-return array{grants?: non-empty-list<string>, redirectUris?: non-empty-list<string>, scopes?: non-empty-list<string>}
      */
     private function buildFilters(?ClientFilter $filter): array
     {

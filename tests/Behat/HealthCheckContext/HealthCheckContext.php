@@ -34,6 +34,9 @@ final class HealthCheckContext implements Context
     public function theCacheIsNotWorking(): void
     {
         $failingPool = new class() extends ArrayAdapter {
+            /**
+             * @return never
+             */
             #[\Override]
             public function get(
                 string $key,
@@ -60,6 +63,9 @@ final class HealthCheckContext implements Context
 
         $mongoUri = sprintf('mongodb://%s', $this->faker->ipv4());
         $failingClient = new class($mongoUri) extends Client {
+            /**
+             * @return never
+             */
             #[\Override]
             public function selectDatabase(string $databaseName, array $options = []): Database
             {
@@ -106,6 +112,9 @@ final class HealthCheckContext implements Context
                 ]);
             }
 
+            /**
+             * @return never
+             */
             #[\Override]
             public function __call($name, array $args): void
             {

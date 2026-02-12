@@ -24,7 +24,9 @@ final readonly class TestDomainEventSubscriber implements DomainEventSubscriberI
     }
 
     /**
-     * @return array<class-string>
+     * @return string[]
+     *
+     * @psalm-return list{TestDomainEvent::class}
      */
     #[\Override]
     public function subscribedTo(): array

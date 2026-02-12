@@ -11,7 +11,9 @@ abstract class DomainException extends \RuntimeException
     abstract public function getTranslationTemplate(): string;
 
     /**
-     * @return array<string, string|DateTimeInterface>
+     * @return array
+     *
+     * @psalm-return array<never, never>
      */
     public function getTranslationArgs(): array
     {

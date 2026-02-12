@@ -18,7 +18,9 @@ final class TestEventSubscriber implements DomainEventSubscriberInterface
     }
 
     /**
-     * @return array<class-string>
+     * @return string[]
+     *
+     * @psalm-return list{TestEvent::class}
      */
     #[\Override]
     public function subscribedTo(): array

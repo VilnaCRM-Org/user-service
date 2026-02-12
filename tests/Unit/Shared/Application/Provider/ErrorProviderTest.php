@@ -262,7 +262,11 @@ final class ErrorProviderTest extends UnitTestCase
         );
     }
 
-    /** @return array<string, Request> */
+    /**
+     * @return Request[]
+     *
+     * @psalm-return array{request: Request}
+     */
     private function setupRequestsWithDifferentExceptions(
         int $status,
         string $contextErrorMessage,
@@ -333,7 +337,7 @@ final class ErrorProviderTest extends UnitTestCase
             ->willReturn('');
     }
 
-    private function createApiPlatformHttpException(): ApiPlatformHttpExceptionInterface
+    private function createApiPlatformHttpException(): RuntimeException
     {
         return new class() extends \RuntimeException implements ApiPlatformHttpExceptionInterface {
             public function __construct()
@@ -341,13 +345,22 @@ final class ErrorProviderTest extends UnitTestCase
                 parent::__construct('Invalid payload');
             }
 
+            /**
+             * @return int
+             *
+             * @psalm-return 400
+             */
             #[\Override]
             public function getStatusCode(): int
             {
                 return Response::HTTP_BAD_REQUEST;
             }
 
-            /** @return array<string, string> */
+            /**
+             * @return string[]
+             *
+             * @psalm-return array{'X-Debug': '1'}
+             */
             #[\Override]
             public function getHeaders(): array
             {

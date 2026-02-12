@@ -17,14 +17,14 @@ final class TokenMatcher
     public function matchesByTokenValue(
         ?ConfirmationToken $stored,
         string $value
-    ): ?ConfirmationTokenInterface {
+    ): ConfirmationToken|null {
         return $stored?->getTokenValue() === $value ? $stored : null;
     }
 
     public function matchesByUserId(
         ?ConfirmationToken $stored,
         string $userId
-    ): ?ConfirmationTokenInterface {
+    ): ConfirmationToken|null {
         return $stored?->getUserID() === $userId ? $stored : null;
     }
 

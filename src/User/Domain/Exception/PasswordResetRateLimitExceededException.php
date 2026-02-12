@@ -13,6 +13,11 @@ final class PasswordResetRateLimitExceededException extends DomainException
         );
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'error.password-reset-rate-limit-exceeded'
+     */
     #[\Override]
     public function getTranslationTemplate(): string
     {

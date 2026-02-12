@@ -92,7 +92,7 @@ final class ResilientAsyncEventDispatcherLoggingTest extends UnitTestCase
         self::assertSame('Metric emission failed', $capturedContext['error']);
     }
 
-    private function createFailingMessageBus(): MessageBusInterface
+    private function createFailingMessageBus(): \PHPUnit\Framework\MockObject\MockObject&MessageBusInterface
     {
         $messageBus = $this->createMock(MessageBusInterface::class);
         $messageBus->method('dispatch')
@@ -106,7 +106,7 @@ final class ResilientAsyncEventDispatcherLoggingTest extends UnitTestCase
     private function createLoggerWithContextCapture(
         array &$capturedContext,
         string $level
-    ): \Psr\Log\LoggerInterface {
+    ): \PHPUnit\Framework\MockObject\MockObject&\Psr\Log\LoggerInterface {
         $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
         $logger->method($level)
             ->willReturnCallback(
@@ -129,7 +129,7 @@ final class ResilientAsyncEventDispatcherLoggingTest extends UnitTestCase
         self::assertSame(\RuntimeException::class, $context['exception_class']);
     }
 
-    private function createSuccessfulMessageBus(): MessageBusInterface
+    private function createSuccessfulMessageBus(): \PHPUnit\Framework\MockObject\MockObject&MessageBusInterface
     {
         $messageBus = $this->createMock(MessageBusInterface::class);
         $messageBus->method('dispatch')

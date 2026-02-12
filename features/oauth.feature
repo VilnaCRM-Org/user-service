@@ -23,7 +23,7 @@ Feature: OAuth authorization
     And user with email "passGrant@mail.com" and password "pass" exists
     And passing client id "PasswordId", client secret "PasswordSecret", email "passGrant@mail.com" and password "pass"
     When obtaining access token with "password" grant-type
-    Then access token should be provided
+    Then unsupported grant type error should be returned
 
   Scenario: Obtaining access token with invalid credentials
     And passing client id "invalidId" and client secret "invalidSecret"
@@ -104,9 +104,11 @@ Feature: OAuth authorization
 
   Scenario: Obtaining access token with refresh token grant
     Given client with id "RefreshId", secret "RefreshSecret" and redirect uri "https://example.com" exists
-    And user with email "refreshGrant@mail.com" and password "pass" exists
-    And passing client id "RefreshId", client secret "RefreshSecret", email "refreshGrant@mail.com" and password "pass"
-    When obtaining access token with "password" grant-type
+    And passing client id "RefreshId" and redirect_uri "https://example.com"
+    And authenticating user with email "refreshGrant@mail.com" and password "pass"
+    And obtaining auth code
+    And passing client id "RefreshId", client secret "RefreshSecret", redirect_uri "https://example.com" and auth code
+    When obtaining access token with "authorization_code" grant-type
     Then refresh token should be provided
     And passing client id "RefreshId", client secret "RefreshSecret" and refresh token
     When obtaining access token with "refresh_token" grant-type
@@ -117,7 +119,7 @@ Feature: OAuth authorization
     And user with email "wrongpass@mail.com" and password "pass" exists
     And passing client id "WrongPasswordId", client secret "WrongPasswordSecret", email "wrongpass@mail.com" and password "wrong"
     When obtaining access token with "password" grant-type
-    Then invalid user credentials error should be returned
+    Then unsupported grant type error should be returned
 
   Scenario: Obtaining access token with invalid authorization code
     Given client with id "BadCodeId", secret "BadCodeSecret" and redirect uri "https://example.com" exists
@@ -142,7 +144,7 @@ Feature: OAuth authorization
     And user with email "missingpass@mail.com" and password "pass" exists
     And passing client id "MissingPassId", client secret "MissingPassSecret" and email "missingpass@mail.com"
     When obtaining access token with password grant without password
-    Then invalid request error should be returned
+    Then unsupported grant type error should be returned
 
   Scenario: Public client PKCE S256 authorization code flow with valid code verifier
     Given public client with id "PublicPkceId" and redirect uri "https://example.com" exists
@@ -237,9 +239,11 @@ Feature: OAuth authorization
 
   Scenario: Obtaining access token with refresh token grant
     Given client with id "RefreshId", secret "RefreshSecret" and redirect uri "https://example.com" exists
-    And user with email "refreshGrant@mail.com" and password "pass" exists
-    And passing client id "RefreshId", client secret "RefreshSecret", email "refreshGrant@mail.com" and password "pass"
-    When obtaining access token with "password" grant-type
+    And passing client id "RefreshId" and redirect_uri "https://example.com"
+    And authenticating user with email "refreshGrant@mail.com" and password "pass"
+    And obtaining auth code
+    And passing client id "RefreshId", client secret "RefreshSecret", redirect_uri "https://example.com" and auth code
+    When obtaining access token with "authorization_code" grant-type
     Then refresh token should be provided
     And passing client id "RefreshId", client secret "RefreshSecret" and refresh token
     When obtaining access token with "refresh_token" grant-type
@@ -250,7 +254,7 @@ Feature: OAuth authorization
     And user with email "wrongpass@mail.com" and password "pass" exists
     And passing client id "WrongPasswordId", client secret "WrongPasswordSecret", email "wrongpass@mail.com" and password "wrong"
     When obtaining access token with "password" grant-type
-    Then invalid user credentials error should be returned
+    Then unsupported grant type error should be returned
 
   Scenario: Obtaining access token with invalid authorization code
     Given client with id "BadCodeId", secret "BadCodeSecret" and redirect uri "https://example.com" exists
@@ -275,7 +279,7 @@ Feature: OAuth authorization
     And user with email "missingpass@mail.com" and password "pass" exists
     And passing client id "MissingPassId", client secret "MissingPassSecret" and email "missingpass@mail.com"
     When obtaining access token with password grant without password
-    Then invalid request error should be returned
+    Then unsupported grant type error should be returned
 
   Scenario: Public client PKCE S256 authorization code flow with valid code verifier
     Given public client with id "PublicPkceId" and redirect uri "https://example.com" exists

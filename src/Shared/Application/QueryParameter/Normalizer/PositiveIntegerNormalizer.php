@@ -19,7 +19,10 @@ final class PositiveIntegerNormalizer
         };
     }
 
-    private function normalizeInt(int $value): ?int
+    /**
+     * @psalm-return int<1, max>|null
+     */
+    private function normalizeInt(int $value): int|null
     {
         return match (true) {
             $value < 1 => null,
@@ -27,7 +30,10 @@ final class PositiveIntegerNormalizer
         };
     }
 
-    private function normalizeString(string $value): ?int
+    /**
+     * @psalm-return int<1, max>|null
+     */
+    private function normalizeString(string $value): int|null
     {
         if ($value === '' || !ctype_digit($value)) {
             return null;

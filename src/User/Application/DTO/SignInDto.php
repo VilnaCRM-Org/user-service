@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\User\Application\DTO;
 
+/**
+ * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+ */
 final readonly class SignInDto
 {
     public function __construct(

@@ -99,9 +99,9 @@ final class CreateBatchRequestFactory implements AbstractRequestFactory
     }
 
     /**
-     * @return array{
-     *     users: list<array{email: string, initials: string, password: string}>
-     * }
+     * @return string[][][]
+     *
+     * @psalm-return array{users: list{array{email: string, initials: string, password: string}, array{email: string, initials: string, password: string}}}
      */
     private function createExample(): array
     {

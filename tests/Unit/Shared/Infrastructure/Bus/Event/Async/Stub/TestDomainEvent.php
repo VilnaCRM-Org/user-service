@@ -32,6 +32,11 @@ final class TestDomainEvent extends DomainEvent
         );
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'test.domain_event'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -39,7 +44,9 @@ final class TestDomainEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{aggregateId: string}
      */
     #[\Override]
     public function toPrimitives(): array

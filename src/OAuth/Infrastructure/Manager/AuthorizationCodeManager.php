@@ -20,6 +20,9 @@ final class AuthorizationCodeManager implements AuthorizationCodeManagerInterfac
     ) {
     }
 
+    /**
+     * @return AuthorizationCode|null
+     */
     #[\Override]
     public function find(string $identifier): ?AuthorizationCodeInterface
     {

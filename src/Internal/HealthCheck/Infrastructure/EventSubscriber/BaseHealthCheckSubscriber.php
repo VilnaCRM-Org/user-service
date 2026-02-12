@@ -10,7 +10,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 abstract class BaseHealthCheckSubscriber implements EventSubscriberInterface
 {
     /**
-     * @return array<class-string, string>
+     * @return string[]
+     *
+     * @psalm-return array{'App\\Internal\\HealthCheck\\Domain\\Event\\HealthCheckEvent'::class: 'onHealthCheck'}
      */
     #[\Override]
     public static function getSubscribedEvents(): array

@@ -73,7 +73,9 @@ final class MessengerAsyncEventDispatcherFailureTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{event_id: string, event_type: TestEvent::class, event_name: 'test.event', error: string, exception_class: TestMessengerException::class}
      */
     private function expectedErrorContext(TestEvent $event, string $message): array
     {

@@ -32,6 +32,9 @@ final class TestAuthorizationCodeManager implements AuthorizationCodeManagerInte
         $this->savedCode = $authCode;
     }
 
+    /**
+     * @return int
+     */
     #[\Override]
     public function clearExpired(): int
     {

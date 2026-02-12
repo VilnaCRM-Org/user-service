@@ -192,7 +192,7 @@ final class CachedUserRepositoryFindByEmailTest extends CachedUserRepositoryTest
             );
     }
 
-    private function createCacheItemForEmail(string $hash): ItemInterface
+    private function createCacheItemForEmail(string $hash): \PHPUnit\Framework\MockObject\MockObject&ItemInterface
     {
         $item = $this->createMock(ItemInterface::class);
         $item->expects($this->once())

@@ -31,6 +31,7 @@ final class UpdateUserCommandTest extends UnitTestCase
         $email = $this->faker->email();
         $initials = $this->faker->name();
         $password = $this->faker->password();
+        $currentSessionId = $this->faker->uuid();
 
         $user = $this->userFactory->create(
             $email,
@@ -45,10 +46,11 @@ final class UpdateUserCommandTest extends UnitTestCase
             $password
         );
 
-        $command = new UpdateUserCommand($user, $updateData);
+        $command = new UpdateUserCommand($user, $updateData, $currentSessionId);
 
         $this->assertInstanceOf(UpdateUserCommand::class, $command);
         $this->assertSame($user, $command->user);
         $this->assertSame($updateData, $command->updateData);
+        $this->assertSame($currentSessionId, $command->currentSessionId);
     }
 }

@@ -29,6 +29,8 @@ final readonly class SetupTwoFactorProcessor implements ProcessorInterface
      * @param SetupTwoFactorDto $data
      * @param array<string, mixed> $uriVariables
      * @param array<string, mixed> $context
+     *
+     * @return JsonResponse
      */
     #[\Override]
     public function process(
@@ -55,24 +57,15 @@ final readonly class SetupTwoFactorProcessor implements ProcessorInterface
     private function resolveCurrentUserEmail(): string
     {
         $user = $this->security->getUser();
-        if (!is_object($user)) {
-            throw new UnauthorizedHttpException('Bearer', 'Authentication required.');
+
+        $identifier = $user?->getUserIdentifier() ?? '';
+        if ($identifier !== '') {
+            return $identifier;
         }
 
-        if (method_exists($user, 'getUserIdentifier')) {
-            $identifier = $user->getUserIdentifier();
-            if (is_string($identifier) && $identifier !== '') {
-                return $identifier;
-            }
-        }
-
-        if (method_exists($user, 'getEmail')) {
-            $email = $user->getEmail();
-            if (is_string($email) && $email !== '') {
-                return $email;
-            }
-        }
-
-        throw new UnauthorizedHttpException('Bearer', 'Authentication required.');
+        throw new UnauthorizedHttpException(
+            'Bearer',
+            'Authentication required.'
+        );
     }
 }

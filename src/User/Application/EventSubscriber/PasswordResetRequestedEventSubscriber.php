@@ -43,7 +43,9 @@ final readonly class PasswordResetRequestedEventSubscriber implements
     }
 
     /**
-     * @return array<class-string<DomainEvent>>
+     * @return string[]
+     *
+     * @psalm-return list{PasswordResetRequestedEvent::class}
      */
     #[\Override]
     public function subscribedTo(): array

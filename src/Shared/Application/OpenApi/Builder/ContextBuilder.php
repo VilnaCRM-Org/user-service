@@ -41,6 +41,8 @@ final readonly class ContextBuilder
 
     /**
      * @param array<Parameter> $params
+     *
+     * @psalm-return ArrayObject<string, array<'example'|'schema', array<int|string, array<array<int|mixed|string>|bool|int|mixed|string>|bool|int|string>>>
      */
     private function processParams(
         array $params,
@@ -62,6 +64,8 @@ final readonly class ContextBuilder
      * @param array<string, array<string, string|int>> $properties
      * @param array<string, string|int|array|bool> $example
      * @param array<int, string> $required
+     *
+     * @psalm-return ArrayObject<string, array<'example'|'schema', array<int|string, array<array<int|mixed|string>|bool|int|mixed|string>|bool|int|string>>>
      */
     private function buildContent(
         string $contentType,
@@ -106,7 +110,7 @@ final readonly class ContextBuilder
             $params
         );
 
-        return (array) array_combine($names, $schemas);
+        return array_combine($names, $schemas);
     }
 
     /**
@@ -125,7 +129,7 @@ final readonly class ContextBuilder
             $params
         );
 
-        $combined = (array) array_combine($names, $examples);
+        $combined = array_combine($names, $examples);
 
         return array_filter(
             $combined,
@@ -136,7 +140,9 @@ final readonly class ContextBuilder
     /**
      * @param array<Parameter> $params
      *
-     * @return array<int, string>
+     * @return string[]
+     *
+     * @psalm-return list<string>
      */
     private function collectRequired(array $params): array
     {
@@ -154,9 +160,11 @@ final readonly class ContextBuilder
     /**
      * @param array<int|string, array|string|int|bool> $values
      *
-     * @return array<int|string, array|string|int|bool>|null
+     * @return (array|bool|int|string)[]|null
+     *
+     * @psalm-return array<int|string, array|bool|int|string>|null
      */
-    private function emptyArrayToNull(array $values): ?array
+    private function emptyArrayToNull(array $values): array|null|null
     {
         if ($values === []) {
             return null;

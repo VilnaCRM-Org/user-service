@@ -35,6 +35,8 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
      * @param CompleteTwoFactorDto $data
      * @param array<string,mixed> $context
      * @param array<string,string> $uriVariables
+     *
+     * @return JsonResponse
      */
     #[\Override]
     public function process(
@@ -62,16 +64,28 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
     }
 
     /**
-     * @return array<string, bool|string>
+     * @return (int|string|true)[]
+     *
+     * @psalm-return array{2fa_enabled: true, access_token: string, refresh_token: string, recovery_codes_remaining?: int, warning?: string}
      */
     private function buildResponseBody(
         CompleteTwoFactorCommandResponse $response
     ): array {
-        return [
+        $body = [
             '2fa_enabled' => true,
             'access_token' => $response->getAccessToken(),
             'refresh_token' => $response->getRefreshToken(),
         ];
+
+        if ($response->getRecoveryCodesRemaining() !== null) {
+            $body['recovery_codes_remaining'] = $response->getRecoveryCodesRemaining();
+        }
+
+        if ($response->getWarningMessage() !== null) {
+            $body['warning'] = $response->getWarningMessage();
+        }
+
+        return $body;
     }
 
     private function attachAuthCookie(
@@ -106,11 +120,11 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
 
     private function resolveIpAddress(?Request $request): string
     {
-        return (string) ($request?->getClientIp() ?? '');
+        return $request?->getClientIp() ?? '';
     }
 
     private function resolveUserAgent(?Request $request): string
     {
-        return (string) ($request?->headers->get('User-Agent') ?? '');
+        return $request?->headers->get('User-Agent') ?? '');
     }
 }

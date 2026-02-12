@@ -25,7 +25,7 @@ final class ItemsPerPageRuleTest extends UnitTestCase
         self::assertSame($violation, $rule->evaluate('   '));
     }
 
-    private function createValueEvaluatorForNonExplicitValue(): ExplicitValueEvaluator
+    private function createValueEvaluatorForNonExplicitValue(): \PHPUnit\Framework\MockObject\MockObject&ExplicitValueEvaluator
     {
         $evaluator = $this->createMock(ExplicitValueEvaluator::class);
         $evaluator->expects(self::once())
@@ -40,7 +40,7 @@ final class ItemsPerPageRuleTest extends UnitTestCase
         return $evaluator;
     }
 
-    private function createNormalizerThatShouldNotBeCalled(): PositiveIntegerNormalizer
+    private function createNormalizerThatShouldNotBeCalled(): \PHPUnit\Framework\MockObject\MockObject&PositiveIntegerNormalizer
     {
         $normalizer = $this->createMock(PositiveIntegerNormalizer::class);
         $normalizer->expects(self::never())->method('normalize');
@@ -50,7 +50,7 @@ final class ItemsPerPageRuleTest extends UnitTestCase
 
     private function createViolationFactory(
         QueryParameterViolation $violation
-    ): QueryParameterViolationFactory {
+    ): \PHPUnit\Framework\MockObject\MockObject&QueryParameterViolationFactory {
         $factory = $this->createMock(QueryParameterViolationFactory::class);
         $factory->expects(self::once())
             ->method('invalidPagination')

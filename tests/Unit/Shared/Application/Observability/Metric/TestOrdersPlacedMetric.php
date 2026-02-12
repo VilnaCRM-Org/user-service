@@ -19,12 +19,20 @@ final readonly class TestOrdersPlacedMetric extends BusinessMetric
         parent::__construct($value, new MetricUnit(MetricUnit::COUNT));
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'OrdersPlaced'
+     */
     #[\Override]
     public function name(): string
     {
         return 'OrdersPlaced';
     }
 
+    /**
+     * @return EndpointOperationMetricDimensions
+     */
     #[\Override]
     public function dimensions(): MetricDimensionsInterface
     {
