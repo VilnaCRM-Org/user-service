@@ -15,9 +15,9 @@ final readonly class ArraySchemaFactory
     }
 
     /**
-     * @return array<int|string|array<string>>
+     * @return (int|string|string[])[]
      *
-     * @psalm-return array<'items'|'minItems'|'type', 'array'|array<string, string>|int>
+     * @psalm-return array<'items'|'minItems'|'type', 'array'|array{type: 'object'|'string'}|int>
      */
     public function create(Parameter $param): array
     {
@@ -32,7 +32,9 @@ final readonly class ArraySchemaFactory
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{type: 'object'|'string'}
      */
     private function resolveItemsSchema(array|bool|int|string|null $example): array
     {

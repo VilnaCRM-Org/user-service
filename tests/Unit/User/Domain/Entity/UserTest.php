@@ -157,6 +157,30 @@ final class UserTest extends UnitTestCase
         $this->assertEquals($confirmed, $this->user->isConfirmed());
     }
 
+    public function testTwoFactorIsDisabledByDefault(): void
+    {
+        $user = $this->userFactory->create(
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+
+        $this->assertFalse($user->isTwoFactorEnabled());
+        $this->assertNull($user->getTwoFactorSecret());
+    }
+
+    public function testSetTwoFactorData(): void
+    {
+        $secret = $this->faker->sha256();
+
+        $this->user->setTwoFactorEnabled(true);
+        $this->user->setTwoFactorSecret($secret);
+
+        $this->assertTrue($this->user->isTwoFactorEnabled());
+        $this->assertSame($secret, $this->user->getTwoFactorSecret());
+    }
+
     private function assertUserNotConfirmed(User $user): void
     {
         $this->assertFalse(
@@ -221,7 +245,7 @@ final class UserTest extends UnitTestCase
     private function setupEmailChangedEventFactoryMock(
         string $oldEmail,
         string $eventID
-    ): EmailChangedEvent {
+    ): \PHPUnit\Framework\MockObject\MockObject&EmailChangedEvent {
         $expectedEvent = $this->createMock(EmailChangedEvent::class);
         $this->emailChangedEventFactory->expects($this->once())
             ->method('create')

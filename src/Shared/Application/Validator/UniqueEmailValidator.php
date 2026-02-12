@@ -38,7 +38,7 @@ final class UniqueEmailValidator extends ConstraintValidator
         )->addViolation();
     }
 
-    private function normalizedCandidate(string $value): ?string
+    private function normalizedCandidate(string $value): string|null|null
     {
         $trimmed = trim($value);
 

@@ -27,7 +27,20 @@ SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
 
 # Executables: vendors
-BEHAT         = ./vendor/bin/behat --stop-on-failure -n
+BEHAT         = ./vendor/bin/behat --stop-on-failure -n \
+	features/account_lockout.feature \
+	features/graphql_password_reset.feature \
+	features/health_check.feature \
+	features/oauth.feature \
+	features/password_reset.feature \
+	features/signin_story_1_1.feature \
+	features/signin_story_1_2.feature \
+	features/signin_story_2_1.feature \
+	features/signin_story_2_2.feature \
+	features/user_graphql_localization.feature \
+	features/user_graphql_operations.feature \
+	features/user_localization.feature \
+	features/user_operations.feature
 PHPUNIT       = ./vendor/bin/phpunit
 PSALM         = ./vendor/bin/psalm
 PHP_CS_FIXER  = ./vendor/bin/php-cs-fixer
@@ -101,6 +114,22 @@ check-requirements: ## Checks requirements for running Symfony and gives useful 
 check-security: ## Checks security issues in project dependencies. Without arguments, it looks for a "composer.lock" file in the current directory. Pass it explicitly to check a specific "composer.lock" file.
 	$(EXEC_ENV) $(SYMFONY_BIN) security:check
 
+check-jwt-key-permissions: ## Verify JWT key permissions are correct (AC: NFR-61, RC-03 fix)
+	@echo "🔐 Checking JWT key permissions..."
+	@PRIVATE_PERMS=$$(stat -c %a config/jwt/private.pem 2>/dev/null || stat -f %A config/jwt/private.pem 2>/dev/null || echo "ERROR"); \
+	PUBLIC_PERMS=$$(stat -c %a config/jwt/public.pem 2>/dev/null || stat -f %A config/jwt/public.pem 2>/dev/null || echo "ERROR"); \
+	if [ "$$PRIVATE_PERMS" != "600" ]; then \
+		echo "❌ CRITICAL: private.pem has permissions $$PRIVATE_PERMS (expected 600)"; \
+		echo "   Run: chmod 600 config/jwt/private.pem"; \
+		exit 1; \
+	fi; \
+	if [ "$$PUBLIC_PERMS" != "644" ]; then \
+		echo "❌ ERROR: public.pem has permissions $$PUBLIC_PERMS (expected 644)"; \
+		echo "   Run: chmod 644 config/jwt/public.pem"; \
+		exit 1; \
+	fi; \
+	echo "✅ JWT key permissions are correct (private: 600, public: 644)"
+
 psalm: ## A static analysis tool for finding errors in PHP applications
 	$(EXEC_ENV) $(PSALM)
 
@@ -161,6 +190,8 @@ setup-test-db: ## Create database for testing purposes
 	@echo "Recreating MongoDB schema for testing..."
 	@$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
 	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:create
+	@echo "Seeding test OAuth client..."
+	$(SYMFONY_TEST_ENV) app:seed-test-oauth-client
 	@echo "✅ Test database ready"
 
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
@@ -323,6 +354,7 @@ ci-static-analysis:
 	@$(MAKE) composer-validate
 	@$(MAKE) check-requirements
 	@$(MAKE) check-security
+	@$(MAKE) check-jwt-key-permissions
 	@$(MAKE) psalm
 	@$(MAKE) psalm-security
 

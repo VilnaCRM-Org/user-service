@@ -19,6 +19,8 @@ final class ConfirmationEmailSentEvent extends DomainEvent
 
     /**
      * @param array<string, string> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(
@@ -34,6 +36,11 @@ final class ConfirmationEmailSentEvent extends DomainEvent
         );
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'confirmation_email.send'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -41,7 +48,9 @@ final class ConfirmationEmailSentEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{emailAddress: string, tokenValue: string}
      */
     #[\Override]
     public function toPrimitives(): array

@@ -47,14 +47,14 @@ final class UserUpdatedMetricsSubscriberTest extends UnitTestCase
             email: $this->faker->email(),
             initials: 'JD',
             password: 'secret',
-            id: new Uuid((string) $this->faker->uuid())
+            id: new Uuid($this->faker->uuid())
         );
 
         ($this->subscriber)(new EmailChangedEvent(
             userId: $user->getId(),
             newEmail: $this->faker->email(),
             oldEmail: $user->getEmail(),
-            eventId: (string) $this->faker->uuid()
+            eventId: $this->faker->uuid()
         ));
 
         self::assertSame(1, $this->metricsEmitterSpy->count());
@@ -64,7 +64,7 @@ final class UserUpdatedMetricsSubscriberTest extends UnitTestCase
     {
         ($this->subscriber)(new PasswordChangedEvent(
             $this->faker->email(),
-            (string) $this->faker->uuid()
+            $this->faker->uuid()
         ));
 
         self::assertSame(1, $this->metricsEmitterSpy->count());
@@ -92,18 +92,18 @@ final class UserUpdatedMetricsSubscriberTest extends UnitTestCase
             email: $this->faker->email(),
             initials: 'JD',
             password: 'secret',
-            id: new Uuid((string) $this->faker->uuid())
+            id: new Uuid($this->faker->uuid())
         );
 
         return new EmailChangedEvent(
             userId: $user->getId(),
             newEmail: $this->faker->email(),
             oldEmail: $user->getEmail(),
-            eventId: (string) $this->faker->uuid()
+            eventId: $this->faker->uuid()
         );
     }
 
-    private function createFailingEmitter(): BusinessMetricsEmitterInterface
+    private function createFailingEmitter(): \PHPUnit\Framework\MockObject\MockObject&BusinessMetricsEmitterInterface
     {
         $failingEmitter = $this->createMock(BusinessMetricsEmitterInterface::class);
         $failingEmitter

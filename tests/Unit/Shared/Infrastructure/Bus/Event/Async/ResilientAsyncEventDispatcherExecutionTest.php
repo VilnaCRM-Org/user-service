@@ -200,7 +200,7 @@ final class ResilientAsyncEventDispatcherExecutionTest extends UnitTestCase
         self::assertFalse($result);
     }
 
-    private function createFailingMessageBus(): MessageBusInterface
+    private function createFailingMessageBus(): \PHPUnit\Framework\MockObject\MockObject&MessageBusInterface
     {
         $messageBus = $this->createMock(MessageBusInterface::class);
         $messageBus->method('dispatch')
@@ -208,7 +208,7 @@ final class ResilientAsyncEventDispatcherExecutionTest extends UnitTestCase
         return $messageBus;
     }
 
-    private function createMessageBusThatFailsOnSecondCall(): MessageBusInterface
+    private function createMessageBusThatFailsOnSecondCall(): \PHPUnit\Framework\MockObject\MockObject&MessageBusInterface
     {
         $callCount = 0;
         $messageBus = $this->createMock(MessageBusInterface::class);
@@ -223,7 +223,7 @@ final class ResilientAsyncEventDispatcherExecutionTest extends UnitTestCase
         return $messageBus;
     }
 
-    private function createSuccessfulMessageBus(): MessageBusInterface
+    private function createSuccessfulMessageBus(): \PHPUnit\Framework\MockObject\MockObject&MessageBusInterface
     {
         $messageBus = $this->createMock(MessageBusInterface::class);
         $messageBus->method('dispatch')

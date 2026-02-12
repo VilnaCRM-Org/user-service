@@ -41,6 +41,11 @@ final class OtherDomainEvent extends DomainEvent
         );
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'test.other_domain_event'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -48,7 +53,9 @@ final class OtherDomainEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{data: string}
      */
     #[\Override]
     public function toPrimitives(): array

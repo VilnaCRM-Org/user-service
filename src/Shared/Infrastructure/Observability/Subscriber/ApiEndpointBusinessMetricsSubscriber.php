@@ -29,7 +29,9 @@ final readonly class ApiEndpointBusinessMetricsSubscriber extends ResilientEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{'kernel.response': 'onResponse'}
      */
     #[\Override]
     public static function getSubscribedEvents(): array

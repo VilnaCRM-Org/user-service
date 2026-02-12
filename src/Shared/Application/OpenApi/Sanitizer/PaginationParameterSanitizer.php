@@ -12,7 +12,7 @@ final class PaginationParameterSanitizer
 {
     private const PAGINATION_PARAMETERS = ['page', 'itemsPerPage'];
 
-    public function sanitize(mixed $parameter): mixed
+    public function sanitize(OpenApiParameter $parameter): mixed
     {
         if (!$this->isPaginationQueryParameter($parameter)) {
             return $parameter;
@@ -26,7 +26,7 @@ final class PaginationParameterSanitizer
             ->withSchema($schema);
     }
 
-    private function isPaginationQueryParameter(mixed $parameter): bool
+    private function isPaginationQueryParameter(OpenApiParameter $parameter): bool
     {
         if (!$parameter instanceof OpenApiParameter) {
             return false;

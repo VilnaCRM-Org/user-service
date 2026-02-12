@@ -114,7 +114,7 @@ final class DomainEventMessageHandlerLoggingTest extends UnitTestCase
     private function createDebugLoggerForMessage(
         string $expectedMessage,
         array &$capturedContext
-    ): \Psr\Log\LoggerInterface {
+    ): \PHPUnit\Framework\MockObject\MockObject&\Psr\Log\LoggerInterface {
         $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
         $logger->method('debug')
             ->willReturnCallback(
@@ -136,7 +136,7 @@ final class DomainEventMessageHandlerLoggingTest extends UnitTestCase
     private function createErrorLoggerForMessage(
         string $expectedMessage,
         array &$capturedContext
-    ): \Psr\Log\LoggerInterface {
+    ): \PHPUnit\Framework\MockObject\MockObject&\Psr\Log\LoggerInterface {
         $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
         $logger->method('error')
             ->willReturnCallback(
@@ -158,7 +158,7 @@ final class DomainEventMessageHandlerLoggingTest extends UnitTestCase
     private function createWarningLoggerForMessage(
         string $expectedMessage,
         array &$capturedContext
-    ): \Psr\Log\LoggerInterface {
+    ): \PHPUnit\Framework\MockObject\MockObject&\Psr\Log\LoggerInterface {
         $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
         $logger->method('warning')
             ->willReturnCallback(

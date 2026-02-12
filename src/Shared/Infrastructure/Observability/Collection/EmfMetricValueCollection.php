@@ -34,7 +34,9 @@ final readonly class EmfMetricValueCollection implements IteratorAggregate, Coun
     }
 
     /**
-     * @return Traversable<int, EmfMetricValue>
+     * @return ArrayIterator
+     *
+     * @psalm-return ArrayIterator<int, EmfMetricValue>
      */
     #[\Override]
     public function getIterator(): Traversable
@@ -42,6 +44,11 @@ final readonly class EmfMetricValueCollection implements IteratorAggregate, Coun
         return new ArrayIterator($this->values);
     }
 
+    /**
+     * @return int
+     *
+     * @psalm-return int<0, max>
+     */
     #[\Override]
     public function count(): int
     {

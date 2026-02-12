@@ -65,7 +65,9 @@ final class CreateUserBatchValidatorTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @return string[][]
+     *
+     * @psalm-return array{messages: list{'batch.empty', 'batch.email.duplicate'}, translated: list{string, string}}
      */
     private function createBatchValidatorTestData(): array
     {
@@ -76,7 +78,9 @@ final class CreateUserBatchValidatorTest extends UnitTestCase
     }
 
     /**
-     * @return array<int, ConstraintViolationBuilderInterface>
+     * @return \PHPUnit\Framework\MockObject\MockObject&ConstraintViolationBuilderInterface[]
+     *
+     * @psalm-return list{\PHPUnit\Framework\MockObject\MockObject&ConstraintViolationBuilderInterface, \PHPUnit\Framework\MockObject\MockObject&ConstraintViolationBuilderInterface}
      */
     private function createViolationBuilders(): array
     {

@@ -197,7 +197,7 @@ final class CachedUserRepositoryFindByIdTest extends CachedUserRepositoryTestCas
             );
     }
 
-    private function createCacheItemForUser(string $id): ItemInterface
+    private function createCacheItemForUser(string $id): \PHPUnit\Framework\MockObject\MockObject&ItemInterface
     {
         $item = $this->createMock(ItemInterface::class);
         $item->expects($this->once())

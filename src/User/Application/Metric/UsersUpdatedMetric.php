@@ -22,18 +22,33 @@ final readonly class UsersUpdatedMetric extends EndpointOperationBusinessMetric
         parent::__construct($value, new MetricUnit(MetricUnit::COUNT));
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'UsersUpdated'
+     */
     #[\Override]
     public function name(): string
     {
         return 'UsersUpdated';
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'User'
+     */
     #[\Override]
     protected function endpoint(): string
     {
         return self::ENDPOINT;
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'update'
+     */
     #[\Override]
     protected function operation(): string
     {

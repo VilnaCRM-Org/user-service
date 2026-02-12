@@ -15,6 +15,8 @@ use App\User\Domain\ValueObject\UserUpdate;
 class User implements UserInterface
 {
     private bool $confirmed;
+    private bool $twoFactorEnabled;
+    private ?string $twoFactorSecret;
 
     public function __construct(
         private string $email,
@@ -23,6 +25,8 @@ class User implements UserInterface
         private UuidInterface $id,
     ) {
         $this->confirmed = false;
+        $this->twoFactorEnabled = false;
+        $this->twoFactorSecret = null;
     }
 
     #[\Override]
@@ -76,6 +80,7 @@ class User implements UserInterface
         $this->initials = $initials;
     }
 
+    #[\Override]
     public function getPassword(): string
     {
         return $this->password;
@@ -101,7 +106,9 @@ class User implements UserInterface
     }
 
     /**
-     * @return array<DomainEvent>
+     * @return (\App\User\Domain\Event\EmailChangedEvent|\App\User\Domain\Event\PasswordChangedEvent)[]
+     *
+     * @psalm-return array{0?: \App\User\Domain\Event\EmailChangedEvent|\App\User\Domain\Event\PasswordChangedEvent}
      */
     #[\Override]
     public function update(
@@ -149,8 +156,42 @@ class User implements UserInterface
         $this->confirmed = $confirmed;
     }
 
+    /** @psalm-suppress PossiblyUnusedMethod API Platform serialization */
+    public function isTwoFactorEnabled(): bool
+    {
+        return $this->twoFactorEnabled;
+    }
+
+    /** @psalm-suppress PossiblyUnusedMethod API Platform serialization */
+    public function getTwoFactorSecret(): ?string
+    {
+        return $this->twoFactorSecret;
+    }
+
     /**
-     * @return array<DomainEvent>
+     * @internal For Doctrine ORM hydration and test fixtures only.
+     *
+     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     */
+    public function setTwoFactorEnabled(bool $twoFactorEnabled): void
+    {
+        $this->twoFactorEnabled = $twoFactorEnabled;
+    }
+
+    /**
+     * @internal For Doctrine ORM hydration and test fixtures only.
+     *
+     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     */
+    public function setTwoFactorSecret(?string $twoFactorSecret): void
+    {
+        $this->twoFactorSecret = $twoFactorSecret;
+    }
+
+    /**
+     * @return \App\User\Domain\Event\EmailChangedEvent[]
+     *
+     * @psalm-return list{0?: \App\User\Domain\Event\EmailChangedEvent}
      */
     private function processNewEmail(
         string $newEmail,
@@ -170,7 +211,9 @@ class User implements UserInterface
     }
 
     /**
-     * @return array<DomainEvent>
+     * @return \App\User\Domain\Event\PasswordChangedEvent[]
+     *
+     * @psalm-return list{0?: \App\User\Domain\Event\PasswordChangedEvent}
      */
     private function processNewPassword(
         string $newPassword,

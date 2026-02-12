@@ -20,6 +20,8 @@ final class PasswordResetRequestedEvent extends DomainEvent
 
     /**
      * @param array<string, string> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(
@@ -36,6 +38,11 @@ final class PasswordResetRequestedEvent extends DomainEvent
         );
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'user.password_reset_requested'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -43,7 +50,9 @@ final class PasswordResetRequestedEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{userId: string, userEmail: string, token: string}
      */
     #[\Override]
     public function toPrimitives(): array

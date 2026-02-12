@@ -15,6 +15,357 @@ servers:
     url: 'https://api.vilnacrm.com'
     description: ''
 paths:
+  /api/signin:
+    post:
+      operationId: signin_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Sign-in succeeded'
+        '401':
+          description: 'Invalid credentials'
+        '422':
+          description: 'Validation error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Sign in with email and password'
+      description: 'Authenticates user credentials and returns access/refresh tokens or a pending 2FA session.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SignInDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SignInDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SignInDto'
+        required: true
+  /api/signin/2fa:
+    post:
+      operationId: signin_2fa_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: '2FA completed successfully'
+        '401':
+          description: 'Invalid or expired 2FA session/code'
+        '422':
+          description: 'Validation error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Complete two-factor sign in'
+      description: 'Validates pending 2FA session and TOTP code, then issues access and refresh tokens.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.CompleteTwoFactorDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.CompleteTwoFactorDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.CompleteTwoFactorDto'
+        required: true
+  /api/token:
+    post:
+      operationId: refresh_token_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Tokens refreshed successfully'
+        '401':
+          description: 'Invalid, expired, or revoked refresh token'
+        '422':
+          description: 'Validation error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Refresh access token'
+      description: 'Exchanges a valid refresh token for new access and refresh tokens (token rotation).'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.RefreshTokenDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.RefreshTokenDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.RefreshTokenDto'
+        required: true
+  /api/users/2fa/confirm:
+    post:
+      operationId: confirm_2fa_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: '2FA confirmed, recovery codes returned'
+        '401':
+          description: 'Invalid code or authentication required'
+        '422':
+          description: 'Validation error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Confirm two-factor authentication setup'
+      description: 'Validates TOTP code, enables 2FA, generates recovery codes, and revokes other sessions.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.ConfirmTwoFactorDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.ConfirmTwoFactorDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.ConfirmTwoFactorDto'
+        required: true
+  /api/users/2fa/disable:
+    post:
+      operationId: disable_2fa_http
+      tags:
+        - Authentication
+      responses:
+        '204':
+          description: '2FA disabled successfully'
+          content: {  }
+        '401':
+          description: 'Invalid code or authentication required'
+        '403':
+          description: '2FA is not enabled'
+        '422':
+          description: 'Validation error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Disable two-factor authentication'
+      description: 'Verifies TOTP or recovery code, disables 2FA, clears secret, and deletes all recovery codes.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.DisableTwoFactorDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.DisableTwoFactorDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.DisableTwoFactorDto'
+        required: true
+  /api/users/2fa/recovery-codes:
+    post:
+      operationId: regenerate_recovery_codes_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Recovery codes regenerated'
+        '401':
+          description: 'Authentication required'
+        '403':
+          description: '2FA not enabled or re-authentication required'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Regenerate recovery codes'
+      description: 'Invalidates all existing recovery codes and generates 8 new ones. Requires recent authentication (sudo mode).'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.RegenerateRecoveryCodesDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.RegenerateRecoveryCodesDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.RegenerateRecoveryCodesDto'
+        required: true
+  /api/users/2fa/setup:
+    post:
+      operationId: setup_2fa_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: '2FA setup payload generated'
+        '401':
+          description: 'Authentication required'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Set up two-factor authentication'
+      description: 'Generates a TOTP secret and provisioning URI for the authenticated user.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SetupTwoFactorDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SetupTwoFactorDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SetupTwoFactorDto'
+        required: true
   /api/health:
     get:
       operationId: api_health_get
@@ -1642,6 +1993,17 @@ components:
           type:
             - string
             - 'null'
+    EmptyResponse.CompleteTwoFactorDto:
+      type: object
+      required:
+        - pendingSessionId
+        - twoFactorCode
+      properties:
+        pendingSessionId:
+          type: string
+        twoFactorCode:
+          pattern: '^(.*(^\d{6}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$).*)$'
+          type: string
     EmptyResponse.ConfirmPasswordResetDto:
       type: object
       required:
@@ -1656,6 +2018,31 @@ components:
           minLength: 8
           pattern: '^(.*[A-Z].*)$'
           type: string
+    EmptyResponse.ConfirmTwoFactorDto:
+      type: object
+      required:
+        - twoFactorCode
+      properties:
+        twoFactorCode:
+          pattern: '^(\d{6})$'
+          type: string
+    EmptyResponse.DisableTwoFactorDto:
+      type: object
+      required:
+        - twoFactorCode
+      properties:
+        twoFactorCode:
+          pattern: '^(.*(^\d{6}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$).*)$'
+          type: string
+    EmptyResponse.RefreshTokenDto:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+    EmptyResponse.RegenerateRecoveryCodesDto:
+      type: object
     EmptyResponse.RequestPasswordResetDto:
       type: object
       required:
@@ -1667,6 +2054,25 @@ components:
           externalDocs:
             url: 'https://schema.org/email'
           type: string
+    EmptyResponse.SetupTwoFactorDto:
+      type: object
+    EmptyResponse.SignInDto:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          format: email
+          maxLength: 255
+          externalDocs:
+            url: 'https://schema.org/email'
+          type: string
+        password:
+          maxLength: 255
+          type: string
+        rememberMe:
+          type: boolean
     Error:
       type: object
       description: 'A representation of common errors.'
@@ -1968,6 +2374,9 @@ security:
   -
     OAuth2: []
 tags:
+  -
+    name: Authentication
+    description: 'Authentication and two-factor endpoints'
   -
     name: HealthCheck
     description: 'Service health monitoring endpoints'

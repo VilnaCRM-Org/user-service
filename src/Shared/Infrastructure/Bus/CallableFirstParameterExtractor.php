@@ -51,7 +51,10 @@ final readonly class CallableFirstParameterExtractor
         );
     }
 
-    private function pipedCallablesReducer(): callable
+    /**
+     * @psalm-return \Closure(array, DomainEventSubscriberInterface):array
+     */
+    private function pipedCallablesReducer(): \Closure
     {
         return static fn (
             array $subscribers,
@@ -69,7 +72,7 @@ final readonly class CallableFirstParameterExtractor
     /**
      * @param array<DomainEventSubscriberInterface> $subscribers
      *
-     * @return array<DomainEventSubscriberInterface>
+     * @return DomainEventSubscriberInterface[]
      *
      * @psalm-return array<DomainEventSubscriberInterface>
      */

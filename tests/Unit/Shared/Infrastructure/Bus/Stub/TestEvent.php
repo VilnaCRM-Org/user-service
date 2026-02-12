@@ -17,6 +17,11 @@ final class TestEvent extends DomainEvent
         return new self($eventId, $occurredOn);
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'test.event'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -24,7 +29,9 @@ final class TestEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string|object>
+     * @return array
+     *
+     * @psalm-return array<never, never>
      */
     #[\Override]
     public function toPrimitives(): array

@@ -152,7 +152,9 @@ final class AccessTokenManagerTest extends OAuthInfrastructureTestCase
     }
 
     /**
-     * @return array<string, array<string, array|bool|float|int|object|string|null>>
+     * @return array[]
+     *
+     * @psalm-return array{expired: array<never, never>, refresh: array<never, never>, remove: array<never, never>}
      */
     private function createCaptureArrays(): array
     {
@@ -168,7 +170,7 @@ final class AccessTokenManagerTest extends OAuthInfrastructureTestCase
         AccessToken $tokenB,
         array &$captures,
         array &$calls
-    ): DocumentManager {
+    ): \PHPUnit\Framework\MockObject\MockObject&DocumentManager {
         $builders = [
             $this->makeBuilder([$tokenA, $tokenB], $captures['expired']),
             $this->makeBuilder(null, $captures['refresh']),

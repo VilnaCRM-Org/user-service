@@ -111,7 +111,9 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, string|Uuid>
+     * @return (Uuid|string)[]
+     *
+     * @psalm-return array{email: string, userId: string, tokenValue: string, uuid: Uuid}
      */
     private function createPasswordResetTestData(): array
     {
@@ -126,7 +128,9 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
     /**
      * @param array<string, string|Uuid> $testData
      *
-     * @return array<string, PasswordResetTokenInterface|UserInterface|PasswordResetRequestedEvent>
+     * @return (MockObject&PasswordResetRequestedEvent|MockObject&PasswordResetTokenInterface|MockObject&UserInterface)[]
+     *
+     * @psalm-return array{token: MockObject&PasswordResetTokenInterface, user: MockObject&UserInterface, event: MockObject&PasswordResetRequestedEvent}
      */
     private function createPasswordResetMocks(array $testData): array
     {

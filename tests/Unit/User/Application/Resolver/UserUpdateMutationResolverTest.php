@@ -17,6 +17,8 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 final class UserUpdateMutationResolverTest extends UnitTestCase
 {
@@ -28,6 +30,7 @@ final class UserUpdateMutationResolverTest extends UnitTestCase
     private UpdateUserMutationInputTransformer $transformer;
     private UpdateUserCommandFactoryInterface $mockUpdateUserCommandFactory;
     private UserUpdateMutationResolver $resolver;
+    private Security $security;
 
     #[\Override]
     protected function setUp(): void
@@ -45,11 +48,13 @@ final class UserUpdateMutationResolverTest extends UnitTestCase
             $this->createMock(UpdateUserMutationInputTransformer::class);
         $this->mockUpdateUserCommandFactory =
             $this->createMock(UpdateUserCommandFactoryInterface::class);
+        $this->security = $this->createMock(Security::class);
         $this->resolver = new UserUpdateMutationResolver(
             $this->commandBus,
             $this->validator,
             $this->transformer,
-            $this->mockUpdateUserCommandFactory
+            $this->mockUpdateUserCommandFactory,
+            $this->security
         );
     }
 
@@ -86,10 +91,22 @@ final class UserUpdateMutationResolverTest extends UnitTestCase
         string $initials,
         string $password
     ): void {
+        $currentSessionId = $this->faker->uuid();
+        $token = $this->createMock(TokenInterface::class);
+        $token->expects($this->once())
+            ->method('getAttribute')
+            ->with('sid')
+            ->willReturn($currentSessionId);
+
+        $this->security->expects($this->once())
+            ->method('getToken')
+            ->willReturn($token);
+
         $updateData = new UserUpdate($email, $initials, $password, $password);
         $command = $this->updateUserCommandFactory->create(
             $user,
-            $updateData
+            $updateData,
+            $currentSessionId
         );
 
         $this->transformer->expects($this->once())
@@ -100,7 +117,7 @@ final class UserUpdateMutationResolverTest extends UnitTestCase
 
         $this->mockUpdateUserCommandFactory->expects($this->once())
             ->method('create')
-            ->with($user, $updateData)
+            ->with($user, $updateData, $currentSessionId)
             ->willReturn($command);
 
         $this->commandBus->expects($this->once())

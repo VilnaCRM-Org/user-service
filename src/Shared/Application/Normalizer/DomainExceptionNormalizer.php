@@ -56,7 +56,9 @@ final readonly class DomainExceptionNormalizer implements NormalizerInterface
     }
 
     /**
-     * @return array<string, bool>
+     * @return false[]
+     *
+     * @psalm-return array{'GraphQL\\Error\\Error'::class: false}
      */
     #[\Override]
     public function getSupportedTypes(?string $format): array

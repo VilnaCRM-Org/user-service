@@ -37,6 +37,8 @@ final class ArrayContextBuilder
      * @param array<string, array<string, string|int>> $items
      * @param array<string, string|int|array|bool> $example
      * @param array<int, string> $required
+     *
+     * @psalm-return ArrayObject<'application/json', array{schema: array{type: 'array', items: array{type: 'object', properties: array<string, array<string, int|string>>, required?: array<int, string>}}, example: list{array<string, array|bool|int|string>}}>
      */
     private function buildContent(
         array $items,
@@ -64,7 +66,9 @@ final class ArrayContextBuilder
     }
 
     /**
-     * @return array<string, string|int>
+     * @return (int|string)[]
+     *
+     * @psalm-return array<'format'|'maxLength'|'type', int|string>
      */
     private function createPropertySchema(Parameter $param): array
     {
@@ -80,6 +84,8 @@ final class ArrayContextBuilder
 
     /**
      * @param array<Parameter> $params
+     *
+     * @psalm-return ArrayObject<'application/json', array{schema: array{type: 'array', items: array{type: 'object', properties: array<string, array<string, int|string>>, required?: array<int, string>}}, example: list{array<string, array|bool|int|string>}}>
      */
     private function buildForParams(array $params): ArrayObject
     {

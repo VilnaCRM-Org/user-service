@@ -60,7 +60,9 @@ final readonly class SchemathesisUserSeeder
     }
 
     /**
-     * @return array<string,UserInterface>
+     * @return UserInterface[]
+     *
+     * @psalm-return array{primary: UserInterface, update: UserInterface, delete: UserInterface, password_reset_request: UserInterface, password_reset_confirm: UserInterface}
      */
     public function seedUsers(): array
     {
@@ -72,7 +74,9 @@ final readonly class SchemathesisUserSeeder
     }
 
     /**
-     * @return array<string,UserInterface>
+     * @return UserInterface[]
+     *
+     * @psalm-return array{primary: UserInterface, update: UserInterface, delete: UserInterface, password_reset_request: UserInterface, password_reset_confirm: UserInterface}
      */
     private function prepareUsers(): array
     {

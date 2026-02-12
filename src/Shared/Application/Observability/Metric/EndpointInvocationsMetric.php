@@ -21,6 +21,11 @@ final readonly class EndpointInvocationsMetric extends EndpointOperationBusiness
         parent::__construct($value, new MetricUnit(MetricUnit::COUNT));
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'EndpointInvocations'
+     */
     #[\Override]
     public function name(): string
     {

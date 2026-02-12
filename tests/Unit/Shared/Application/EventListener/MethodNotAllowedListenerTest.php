@@ -67,7 +67,7 @@ final class MethodNotAllowedListenerTest extends UnitTestCase
     private function createProviderMock(
         array $allowedMethods,
         string $path = '/api/users/batch'
-    ): AllowedMethodsProvider {
+    ): \PHPUnit\Framework\MockObject\MockObject&AllowedMethodsProvider {
         $provider = $this->createMock(AllowedMethodsProvider::class);
         $provider->expects($this->once())
             ->method('getAllowedMethods')

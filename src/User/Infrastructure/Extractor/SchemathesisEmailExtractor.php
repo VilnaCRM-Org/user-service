@@ -35,7 +35,9 @@ final readonly class SchemathesisEmailExtractor
     /**
      * @param array<string, array|scalar|null> $payload
      *
-     * @return array<string>
+     * @return string[]
+     *
+     * @psalm-return list<string>
      */
     private function extractFromPayload(
         Request $request,

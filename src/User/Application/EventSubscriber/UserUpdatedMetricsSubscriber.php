@@ -38,7 +38,9 @@ final readonly class UserUpdatedMetricsSubscriber implements DomainEventSubscrib
     }
 
     /**
-     * @return array<class-string>
+     * @return string[]
+     *
+     * @psalm-return list{EmailChangedEvent::class, PasswordChangedEvent::class}
      */
     #[\Override]
     public function subscribedTo(): array

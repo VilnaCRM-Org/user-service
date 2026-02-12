@@ -7,6 +7,9 @@ namespace App\Shared\Domain\Bus\Event;
 use DateTimeImmutable;
 use DateTimeInterface;
 
+/**
+ * @SuppressWarnings(PHPMD.NumberOfChildren)
+ */
 abstract class DomainEvent
 {
     private readonly string $eventId;

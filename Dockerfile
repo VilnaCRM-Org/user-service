@@ -66,6 +66,11 @@ RUN set -eux; \
 COPY --link . ./
 RUN rm -Rf infrastructure/docker/
 
+# AC: NFR-61 - Enforce JWT key permissions (RC-03 fix)
+RUN set -eux; \
+    chmod 600 config/jwt/private.pem; \
+    chmod 644 config/jwt/public.pem
+
 RUN set -eux; \
     mkdir -p var/cache var/log; \
     if [ -f composer.json ]; then \

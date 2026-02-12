@@ -1,6 +1,7 @@
 nelmio_cors:
   defaults:
     origin_regex: true
+    allow_credentials: true # AC: NFR-65 - enable credentials for cookies/auth
     allow_methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
     allow_headers: ['Content-Type', 'Authorization']
     expose_headers: ['Link']
@@ -9,7 +10,8 @@ nelmio_cors:
 when@dev:
   nelmio_cors:
     defaults:
-      allow_origin: ['*']
+      # AC: NFR-65 - explicit origin required when allow_credentials: true
+      allow_origin: ['http://localhost:3000']
 
 when@prod:
   nelmio_cors:

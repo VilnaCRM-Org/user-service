@@ -49,7 +49,9 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{token: string, newPassword: string}
      */
     private function createTestData(): array
     {
@@ -78,6 +80,9 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
             ));
     }
 
+    /**
+     * @return true
+     */
     private function validateCommand(
         ConfirmPasswordResetCommand $command,
         string $token,

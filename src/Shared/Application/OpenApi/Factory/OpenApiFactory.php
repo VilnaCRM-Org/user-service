@@ -80,11 +80,14 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     }
 
     /**
-     * @return array<int, Tag>
+     * @return Tag[]
+     *
+     * @psalm-return list{Tag, Tag, Tag, Tag, Tag}
      */
     private function buildTags(): array
     {
         return [
+            new Tag('Authentication', 'Authentication and two-factor endpoints'),
             new Tag('HealthCheck', 'Service health monitoring endpoints'),
             new Tag('OAuth', 'OAuth 2.0 authorization and token endpoints'),
             new Tag('User', 'User account management operations'),

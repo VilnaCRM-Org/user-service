@@ -22,6 +22,9 @@ final class AccessTokenManager implements AccessTokenManagerInterface
     ) {
     }
 
+    /**
+     * @return AccessToken|null
+     */
     #[\Override]
     public function find(string $identifier): ?AccessTokenInterface
     {
@@ -43,6 +46,11 @@ final class AccessTokenManager implements AccessTokenManagerInterface
         $this->documentManager->flush();
     }
 
+    /**
+     * @return int
+     *
+     * @psalm-return int<0, max>
+     */
     #[\Override]
     public function clearExpired(): int
     {
