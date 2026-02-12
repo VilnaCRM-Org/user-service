@@ -39,6 +39,6 @@ security:
   password_hashers:
     App\User\Domain\Entity\User:
       algorithm: auto
-      cost: 12  # AC: NFR-32 - bcrypt cost upgrade for security
+      cost: 12 # AC: NFR-32 - bcrypt cost upgrade for security
       migrate_from:
-        - bcrypt  # Support transparent upgrade from cost 4
+        - bcrypt # Support transparent upgrade from cost 4

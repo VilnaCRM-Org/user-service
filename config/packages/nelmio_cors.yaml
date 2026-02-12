@@ -1,7 +1,7 @@
 nelmio_cors:
   defaults:
     origin_regex: true
-    allow_credentials: true  # AC: NFR-65 - enable credentials for cookies/auth
+    allow_credentials: true # AC: NFR-65 - enable credentials for cookies/auth
     allow_methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
     allow_headers: ['Content-Type', 'Authorization']
     expose_headers: ['Link']

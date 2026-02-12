@@ -296,21 +296,22 @@ so that I can configure Google Authenticator.
 
 ## File List
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `src/User/Application/Command/SetupTwoFactorCommand.php` | Existing | Command carrying user email |
-| `src/User/Application/Command/SetupTwoFactorCommandResponse.php` | Existing | Response DTO with otpauth_uri + secret |
-| `src/User/Application/CommandHandler/SetupTwoFactorCommandHandler.php` | Modified | Uses TOTPSecretGeneratorInterface |
-| `src/User/Application/Processor/SetupTwoFactorProcessor.php` | Modified | Simplified resolveCurrentUserEmail |
-| `src/User/Application/DTO/SetupTwoFactorDto.php` | Existing | Empty DTO for API Platform |
-| `src/User/Domain/Contract/TOTPSecretGeneratorInterface.php` | New | Domain contract for TOTP generation |
-| `src/User/Infrastructure/Service/TOTPSecretGenerator.php` | New | OTPHP-based TOTP secret generation |
-| `config/api_platform/resources/EmptyResponse.yaml` | Existing | setup_2fa_http operation |
-| `config/services.yaml` | Modified | Interface bindings |
+| File                                                                   | Action   | Purpose                                |
+| ---------------------------------------------------------------------- | -------- | -------------------------------------- |
+| `src/User/Application/Command/SetupTwoFactorCommand.php`               | Existing | Command carrying user email            |
+| `src/User/Application/Command/SetupTwoFactorCommandResponse.php`       | Existing | Response DTO with otpauth_uri + secret |
+| `src/User/Application/CommandHandler/SetupTwoFactorCommandHandler.php` | Modified | Uses TOTPSecretGeneratorInterface      |
+| `src/User/Application/Processor/SetupTwoFactorProcessor.php`           | Modified | Simplified resolveCurrentUserEmail     |
+| `src/User/Application/DTO/SetupTwoFactorDto.php`                       | Existing | Empty DTO for API Platform             |
+| `src/User/Domain/Contract/TOTPSecretGeneratorInterface.php`            | New      | Domain contract for TOTP generation    |
+| `src/User/Infrastructure/Service/TOTPSecretGenerator.php`              | New      | OTPHP-based TOTP secret generation     |
+| `config/api_platform/resources/EmptyResponse.yaml`                     | Existing | setup_2fa_http operation               |
+| `config/services.yaml`                                                 | Modified | Interface bindings                     |
 
 ## Dev Agent Record
 
 ### Implementation Notes
+
 - SetupTwoFactorCommand/Handler/Processor already existed from prior session; validated TDD compliance
 - Extracted `TOTPSecretGeneratorInterface` (Domain) + `TOTPSecretGenerator` (Infrastructure) to fix Deptrac uncovered dependency — Application layer was directly importing `OTPHP\TOTP`
 - Simplified `SetupTwoFactorProcessor::resolveCurrentUserEmail` to reduce cyclomatic complexity
@@ -321,6 +322,7 @@ so that I can configure Google Authenticator.
 - Fixed `RedisAccountLockoutService` useless parentheses
 
 ### Debug Log
+
 - Coverage dropped to 99.98% after refactoring `SignInEventLogSubscriber` to use `match` — the `default => null` branch is unreachable; added `@codeCoverageIgnore`
 - PHPInsights "Method argument space" rule and "Function length" rule conflicted on `openssl_decrypt` call — resolved by extracting validation into `decodePayload` method
 
@@ -532,15 +534,15 @@ so that I can access my account.
 
 ### File List
 
-| File | Action |
-|------|--------|
-| `src/User/Application/CommandHandler/CompleteTwoFactorCommandHandler.php` | Modified — added recovery code counting, warning response, RecoveryCodeUsedEvent |
-| `src/User/Application/Command/CompleteTwoFactorCommandResponse.php` | Modified — added `recoveryCodesRemaining` + `warningMessage` |
-| `src/User/Application/Processor/CompleteTwoFactorProcessor.php` | Modified — added conditional warning fields in JSON response |
-| `src/User/Domain/Event/RecoveryCodeUsedEvent.php` | Created |
-| `tests/Unit/User/Domain/Event/RecoveryCodeUsedEventTest.php` | Created |
-| `tests/Unit/User/Application/CommandHandler/CompleteTwoFactorCommandHandlerTest.php` | Modified — updated recovery code test + 3 new tests |
-| `tests/Unit/User/Application/Processor/CompleteTwoFactorProcessorTest.php` | Modified — 2 new tests |
+| File                                                                                 | Action                                                                           |
+| ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `src/User/Application/CommandHandler/CompleteTwoFactorCommandHandler.php`            | Modified — added recovery code counting, warning response, RecoveryCodeUsedEvent |
+| `src/User/Application/Command/CompleteTwoFactorCommandResponse.php`                  | Modified — added `recoveryCodesRemaining` + `warningMessage`                     |
+| `src/User/Application/Processor/CompleteTwoFactorProcessor.php`                      | Modified — added conditional warning fields in JSON response                     |
+| `src/User/Domain/Event/RecoveryCodeUsedEvent.php`                                    | Created                                                                          |
+| `tests/Unit/User/Domain/Event/RecoveryCodeUsedEventTest.php`                         | Created                                                                          |
+| `tests/Unit/User/Application/CommandHandler/CompleteTwoFactorCommandHandlerTest.php` | Modified — updated recovery code test + 3 new tests                              |
+| `tests/Unit/User/Application/Processor/CompleteTwoFactorProcessorTest.php`           | Modified — 2 new tests                                                           |
 
 ### Dev Agent Record
 
@@ -590,16 +592,16 @@ so that I have fresh codes after using some.
 
 ### File List
 
-| File | Action |
-|------|--------|
-| `src/User/Application/Command/RegenerateRecoveryCodesCommand.php` | Created |
-| `src/User/Application/Command/RegenerateRecoveryCodesCommandResponse.php` | Created |
-| `src/User/Application/CommandHandler/RegenerateRecoveryCodesCommandHandler.php` | Created |
-| `src/User/Application/DTO/RegenerateRecoveryCodesDto.php` | Created |
-| `src/User/Application/Processor/RegenerateRecoveryCodesProcessor.php` | Created |
-| `config/api_platform/resources/EmptyResponse.yaml` | Modified — added regenerate_recovery_codes_http operation |
-| `tests/Unit/User/Application/CommandHandler/RegenerateRecoveryCodesCommandHandlerTest.php` | Created (4 tests) |
-| `tests/Unit/User/Application/Processor/RegenerateRecoveryCodesProcessorTest.php` | Created (2 tests) |
+| File                                                                                       | Action                                                    |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| `src/User/Application/Command/RegenerateRecoveryCodesCommand.php`                          | Created                                                   |
+| `src/User/Application/Command/RegenerateRecoveryCodesCommandResponse.php`                  | Created                                                   |
+| `src/User/Application/CommandHandler/RegenerateRecoveryCodesCommandHandler.php`            | Created                                                   |
+| `src/User/Application/DTO/RegenerateRecoveryCodesDto.php`                                  | Created                                                   |
+| `src/User/Application/Processor/RegenerateRecoveryCodesProcessor.php`                      | Created                                                   |
+| `config/api_platform/resources/EmptyResponse.yaml`                                         | Modified — added regenerate_recovery_codes_http operation |
+| `tests/Unit/User/Application/CommandHandler/RegenerateRecoveryCodesCommandHandlerTest.php` | Created (4 tests)                                         |
+| `tests/Unit/User/Application/Processor/RegenerateRecoveryCodesProcessorTest.php`           | Created (2 tests)                                         |
 
 ### Dev Agent Record
 
@@ -652,24 +654,24 @@ so that I can maintain my session without re-authenticating.
 
 ### File List
 
-| File | Action |
-|------|--------|
-| `src/User/Application/DTO/RefreshTokenDto.php` | Created |
-| `src/User/Application/Command/RefreshTokenCommand.php` | Created |
-| `src/User/Application/Command/RefreshTokenCommandResponse.php` | Created |
-| `src/User/Application/CommandHandler/RefreshTokenCommandHandler.php` | Created |
-| `src/User/Application/Processor/RefreshTokenProcessor.php` | Created |
-| `src/User/Domain/Event/RefreshTokenRotatedEvent.php` | Created |
-| `src/User/Domain/Entity/AuthRefreshToken.php` | Modified — added markAsRotated(), isRotated(), isRevoked() |
-| `config/validator/validation.yaml` | Modified — added RefreshTokenDto validation |
-| `config/api_platform/resources/EmptyResponse.yaml` | Modified — added refresh_token_http operation |
-| `tests/Unit/User/Application/CommandHandler/RefreshTokenCommandHandlerTest.php` | Created (6 tests) |
-| `tests/Unit/User/Application/Processor/RefreshTokenProcessorTest.php` | Created (2 tests) |
-| `tests/Unit/User/Domain/Event/RefreshTokenRotatedEventTest.php` | Created (4 tests) |
+| File                                                                            | Action                                                     |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `src/User/Application/DTO/RefreshTokenDto.php`                                  | Created                                                    |
+| `src/User/Application/Command/RefreshTokenCommand.php`                          | Created                                                    |
+| `src/User/Application/Command/RefreshTokenCommandResponse.php`                  | Created                                                    |
+| `src/User/Application/CommandHandler/RefreshTokenCommandHandler.php`            | Created                                                    |
+| `src/User/Application/Processor/RefreshTokenProcessor.php`                      | Created                                                    |
+| `src/User/Domain/Event/RefreshTokenRotatedEvent.php`                            | Created                                                    |
+| `src/User/Domain/Entity/AuthRefreshToken.php`                                   | Modified — added markAsRotated(), isRotated(), isRevoked() |
+| `config/validator/validation.yaml`                                              | Modified — added RefreshTokenDto validation                |
+| `config/api_platform/resources/EmptyResponse.yaml`                              | Modified — added refresh_token_http operation              |
+| `tests/Unit/User/Application/CommandHandler/RefreshTokenCommandHandlerTest.php` | Created (6 tests)                                          |
+| `tests/Unit/User/Application/Processor/RefreshTokenProcessorTest.php`           | Created (2 tests)                                          |
+| `tests/Unit/User/Domain/Event/RefreshTokenRotatedEventTest.php`                 | Created (4 tests)                                          |
 
 ### Dev Agent Record
 
-- **Approach**: TDD red-green. Handler resolves token by SHA-256 hash, validates (not expired/revoked/rotated), marks old token as rotated, creates new token+JWT, emits RefreshTokenRotatedEvent. Processor attaches __Host-auth_token cookie. Atomic MongoDB rotation deferred.
+- **Approach**: TDD red-green. Handler resolves token by SHA-256 hash, validates (not expired/revoked/rotated), marks old token as rotated, creates new token+JWT, emits RefreshTokenRotatedEvent. Processor attaches \_\_Host-auth_token cookie. Atomic MongoDB rotation deferred.
 - **Quality gates**: Unit 1293/3617, Psalm 0, Deptrac 0, PHPInsights 100/99.3/100/100
 
 ---
@@ -715,23 +717,23 @@ so that crashes do not log me out.
 
 ### File List
 
-| File | Action |
-|------|--------|
-| `src/User/Application/CommandHandler/RefreshTokenCommandHandler.php` | Modified — added grace-window reuse path, theft detection path, session token-family revocation |
-| `src/User/Domain/Repository/AuthRefreshTokenRepositoryInterface.php` | Modified — added `findBySessionId()` contract |
-| `src/User/Infrastructure/Repository/MongoDBAuthRefreshTokenRepository.php` | Modified — implemented `findBySessionId()` |
-| `src/User/Domain/Event/RefreshTokenTheftDetectedEvent.php` | Modified — added `ipAddress` primitive |
-| `src/User/Application/EventSubscriber/SignInEventLogSubscriber.php` | Modified — logs refresh rotation at debug and theft detection at critical |
-| `config/services.yaml` | Modified — injected `REFRESH_TOKEN_GRACE_WINDOW_SECONDS` into handler |
-| `.env` | Modified — added `REFRESH_TOKEN_GRACE_WINDOW_SECONDS=60` |
-| `.env.test` | Modified — added `REFRESH_TOKEN_GRACE_WINDOW_SECONDS=60` |
-| `tests/Unit/User/Application/CommandHandler/RefreshTokenCommandHandlerTest.php` | Modified — added grace-window/theft/session-family-revocation coverage |
-| `tests/Unit/User/Application/EventSubscriber/SignInEventLogSubscriberTest.php` | Modified — added refresh rotation and theft log assertions |
-| `tests/Unit/User/Infrastructure/Repository/MongoDBAuthRefreshTokenRepositoryTest.php` | Modified — added `findBySessionId()` test |
-| `tests/Unit/User/Domain/Event/RefreshTokenTheftDetectedEventTest.php` | Modified — updated event primitives for `ipAddress` |
-| `tests/Behat/UserContext/Input/RefreshTokenInput.php` | Created — request payload mapper for refresh token exchange |
-| `tests/Behat/UserContext/UserRequestContext.php` | Modified — added Story 3.2 setup/exchange steps |
-| `tests/Behat/UserContext/UserResponseContext.php` | Modified — added rotated-token/session-revocation/theft-log assertions |
+| File                                                                                  | Action                                                                                          |
+| ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `src/User/Application/CommandHandler/RefreshTokenCommandHandler.php`                  | Modified — added grace-window reuse path, theft detection path, session token-family revocation |
+| `src/User/Domain/Repository/AuthRefreshTokenRepositoryInterface.php`                  | Modified — added `findBySessionId()` contract                                                   |
+| `src/User/Infrastructure/Repository/MongoDBAuthRefreshTokenRepository.php`            | Modified — implemented `findBySessionId()`                                                      |
+| `src/User/Domain/Event/RefreshTokenTheftDetectedEvent.php`                            | Modified — added `ipAddress` primitive                                                          |
+| `src/User/Application/EventSubscriber/SignInEventLogSubscriber.php`                   | Modified — logs refresh rotation at debug and theft detection at critical                       |
+| `config/services.yaml`                                                                | Modified — injected `REFRESH_TOKEN_GRACE_WINDOW_SECONDS` into handler                           |
+| `.env`                                                                                | Modified — added `REFRESH_TOKEN_GRACE_WINDOW_SECONDS=60`                                        |
+| `.env.test`                                                                           | Modified — added `REFRESH_TOKEN_GRACE_WINDOW_SECONDS=60`                                        |
+| `tests/Unit/User/Application/CommandHandler/RefreshTokenCommandHandlerTest.php`       | Modified — added grace-window/theft/session-family-revocation coverage                          |
+| `tests/Unit/User/Application/EventSubscriber/SignInEventLogSubscriberTest.php`        | Modified — added refresh rotation and theft log assertions                                      |
+| `tests/Unit/User/Infrastructure/Repository/MongoDBAuthRefreshTokenRepositoryTest.php` | Modified — added `findBySessionId()` test                                                       |
+| `tests/Unit/User/Domain/Event/RefreshTokenTheftDetectedEventTest.php`                 | Modified — updated event primitives for `ipAddress`                                             |
+| `tests/Behat/UserContext/Input/RefreshTokenInput.php`                                 | Created — request payload mapper for refresh token exchange                                     |
+| `tests/Behat/UserContext/UserRequestContext.php`                                      | Modified — added Story 3.2 setup/exchange steps                                                 |
+| `tests/Behat/UserContext/UserResponseContext.php`                                     | Modified — added rotated-token/session-revocation/theft-log assertions                          |
 
 ### Dev Agent Record
 
