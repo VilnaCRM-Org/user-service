@@ -55,4 +55,21 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
         $this->documentManager->remove($recoveryCode);
         $this->documentManager->flush();
     }
+
+    /**
+     * @return int
+     *
+     * @psalm-return int<0, max>
+     */
+    #[\Override]
+    public function deleteByUserId(string $userId): int
+    {
+        $codes = $this->findByUserId($userId);
+        foreach ($codes as $code) {
+            $this->documentManager->remove($code);
+        }
+        $this->documentManager->flush();
+
+        return count($codes);
+    }
 }

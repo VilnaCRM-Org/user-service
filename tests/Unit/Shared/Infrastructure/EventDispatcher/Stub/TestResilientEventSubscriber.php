@@ -8,7 +8,11 @@ use App\Shared\Infrastructure\EventDispatcher\ResilientEventSubscriber;
 
 final readonly class TestResilientEventSubscriber extends ResilientEventSubscriber
 {
-    /** @return array<string, array|string> */
+    /**
+     * @return array
+     *
+     * @psalm-return array<never, never>
+     */
     #[\Override]
     public static function getSubscribedEvents(): array
     {

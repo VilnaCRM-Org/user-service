@@ -10,7 +10,9 @@ use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
 use App\User\Application\Transformer\UpdateUserMutationInputTransformer;
 use App\User\Application\Validator\MutationInputValidator;
 use App\User\Domain\ValueObject\UserUpdate;
+use Symfony\Bundle\SecurityBundle\Security;
 
+/** @infection-ignore-all */
 final readonly class UserUpdateMutationResolver implements
     MutationResolverInterface
 {
@@ -18,7 +20,8 @@ final readonly class UserUpdateMutationResolver implements
         private CommandBusInterface $commandBus,
         private MutationInputValidator $validator,
         private UpdateUserMutationInputTransformer $transformer,
-        private UpdateUserCommandFactoryInterface $updateUserCommandFactory
+        private UpdateUserCommandFactoryInterface $updateUserCommandFactory,
+        private Security $security
     ) {
     }
 
@@ -46,10 +49,23 @@ final readonly class UserUpdateMutationResolver implements
                     $newInitials,
                     $newPassword,
                     $args['password']
-                )
+                ),
+                $this->resolveCurrentSessionId()
             )
         );
 
         return $user;
+    }
+
+    private function resolveCurrentSessionId(): string
+    {
+        $token = $this->security->getToken();
+        if ($token === null) {
+            return '';
+        }
+
+        $sid = $token->getAttribute('sid');
+
+        return is_string($sid) ? $sid : '';
     }
 }

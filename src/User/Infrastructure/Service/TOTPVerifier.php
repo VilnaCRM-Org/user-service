@@ -7,6 +7,9 @@ namespace App\User\Infrastructure\Service;
 use App\User\Domain\Contract\TOTPVerifierInterface;
 use OTPHP\TOTP;
 
+/**
+ * @SuppressWarnings(PHPMD.StaticAccess)
+ */
 final class TOTPVerifier implements TOTPVerifierInterface
 {
     #[\Override]
@@ -19,9 +22,11 @@ final class TOTPVerifier implements TOTPVerifierInterface
             $totp = TOTP::create($secret);
             $pointInTime = $timestamp ?? time();
             $period = $totp->getPeriod();
+            $previousWindowTimestamp = $pointInTime - $period;
 
             return $totp->verify($code, $pointInTime)
-                || $totp->verify($code, max(0, $pointInTime - $period))
+                || ($previousWindowTimestamp >= 0
+                    && $totp->verify($code, $previousWindowTimestamp))
                 || $totp->verify($code, $pointInTime + $period);
         } catch (\Throwable) {
             return false;

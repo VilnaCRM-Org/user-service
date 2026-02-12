@@ -52,15 +52,9 @@ final class UuidUriParameterFactoryTest extends UnitTestCase
     }
 
     /**
-     * @return array{
-     *     name: string,
-     *     description: string,
-     *     example: string,
-     *     required: bool,
-     *     type: string,
-     *     format: string,
-     *     enum: array<int, string>
-     * }
+     * @return (string|string[]|true)[]
+     *
+     * @psalm-return array{name: 'id', description: 'User identifier', example: '018dd6ba-e901-7a8c-b27d-65d122caca6b', required: true, type: 'string', format: 'uuid', enum: list{'018dd6ba-e901-7a8c-b27d-65d122caca6b'}}
      */
     private function createDefaultTestData(): array
     {

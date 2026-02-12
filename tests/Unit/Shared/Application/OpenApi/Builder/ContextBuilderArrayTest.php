@@ -147,7 +147,7 @@ final class ContextBuilderArrayTest extends UnitTestCase
     }
 
     /**
-     * @return array<array<array<string|array<string>>|string>|string>
+     * @return (((string|string[])[]|string)[]|string)[]
      *
      * @psalm-return array{type: 'object', properties: array<string, array{type: 'array', items: array{type: 'object'}}>, required: list{string}}
      */
@@ -163,6 +163,8 @@ final class ContextBuilderArrayTest extends UnitTestCase
     /**
      * @param array<string,string|array<string>> $expectedSchema
      * @param array<string,string|array<string>> $expectedExample
+     *
+     * @psalm-return ArrayObject<'application/json', array{schema: array<string, array<string>|string>, example: array<string, array<string>|string>}>
      */
     private function getExpectedResult(
         array $expectedSchema,

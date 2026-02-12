@@ -18,12 +18,20 @@ final readonly class TestInvalidUtf8Metric extends BusinessMetric
         parent::__construct(1, new MetricUnit(MetricUnit::COUNT));
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'InvalidMetric'
+     */
     #[\Override]
     public function name(): string
     {
         return 'InvalidMetric';
     }
 
+    /**
+     * @return TestInvalidUtf8Dimensions
+     */
     #[\Override]
     public function dimensions(): MetricDimensionsInterface
     {

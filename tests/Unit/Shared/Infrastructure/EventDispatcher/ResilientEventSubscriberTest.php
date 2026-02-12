@@ -51,7 +51,10 @@ final class ResilientEventSubscriberTest extends UnitTestCase
         self::assertTrue(true);
     }
 
-    private function createSuccessHandler(bool &$called): callable
+    /**
+     * @psalm-return \Closure():void
+     */
+    private function createSuccessHandler(bool &$called): \Closure
     {
         return static function () use (&$called): void {
             $called = true;
@@ -70,9 +73,15 @@ final class ResilientEventSubscriberTest extends UnitTestCase
             );
     }
 
-    private function createThrowingHandler(\RuntimeException $exception): callable
+    /**
+     * @psalm-return \Closure():never
+     */
+    private function createThrowingHandler(\RuntimeException $exception): \Closure
     {
-        return static function () use ($exception): void {
+        return /**
+         * @return never
+         */
+        static function () use ($exception) {
             throw $exception;
         };
     }
@@ -82,7 +91,10 @@ final class ResilientEventSubscriberTest extends UnitTestCase
         return new TestResilientEventSubscriber($logger);
     }
 
-    private function createContextValidator(string $exceptionMessage): callable
+    /**
+     * @psalm-return \Closure(array):bool
+     */
+    private function createContextValidator(string $exceptionMessage): \Closure
     {
         $test = $this;
         return static function (array $context) use ($exceptionMessage, $test): bool {

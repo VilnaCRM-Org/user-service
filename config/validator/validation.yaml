@@ -209,6 +209,11 @@ App\User\Application\DTO\SignInDto:
       - Type:
           type: bool
 
+App\User\Application\DTO\RefreshTokenDto:
+  properties:
+    refreshToken:
+      - NotBlank: { message: 'not.blank' }
+
 App\User\Application\DTO\CompleteTwoFactorDto:
   properties:
     pendingSessionId:
@@ -217,6 +222,22 @@ App\User\Application\DTO\CompleteTwoFactorDto:
       - NotBlank: { message: 'not.blank' }
       - Regex:
           pattern: '/^\d{6}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$/'
+          message: 'two.factor.code.invalid'
+
+App\User\Application\DTO\DisableTwoFactorDto:
+  properties:
+    twoFactorCode:
+      - NotBlank: { message: 'not.blank' }
+      - Regex:
+          pattern: '/^\d{6}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$/'
+          message: 'two.factor.code.invalid'
+
+App\User\Application\DTO\ConfirmTwoFactorDto:
+  properties:
+    twoFactorCode:
+      - NotBlank: { message: 'not.blank' }
+      - Regex:
+          pattern: '/^\d{6}$/'
           message: 'two.factor.code.invalid'
 
 App\User\Application\MutationInput\RequestPasswordResetMutationInput:

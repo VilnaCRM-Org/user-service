@@ -10,8 +10,8 @@ final class AccountLockedOutEvent extends DomainEvent
 {
     public function __construct(
         public readonly string $email,
-        public readonly string $ipAddress,
-        public readonly string $userAgent,
+        public readonly int $failedAttempts,
+        public readonly int $lockoutDurationSeconds,
         string $eventId,
         ?string $occurredOn = null
     ) {
@@ -19,7 +19,9 @@ final class AccountLockedOutEvent extends DomainEvent
     }
 
     /**
-     * @param array<string, string> $body
+     * @param array<string, string|int> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(
@@ -29,13 +31,18 @@ final class AccountLockedOutEvent extends DomainEvent
     ): DomainEvent {
         return new self(
             $body['email'],
-            $body['ipAddress'],
-            $body['userAgent'],
+            $body['failedAttempts'],
+            $body['lockoutDurationSeconds'],
             $eventId,
             $occurredOn
         );
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'user.account_locked_out'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -43,15 +50,17 @@ final class AccountLockedOutEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return (int|string)[]
+     *
+     * @psalm-return array{email: string, failedAttempts: int, lockoutDurationSeconds: int}
      */
     #[\Override]
     public function toPrimitives(): array
     {
         return [
             'email' => $this->email,
-            'ipAddress' => $this->ipAddress,
-            'userAgent' => $this->userAgent,
+            'failedAttempts' => $this->failedAttempts,
+            'lockoutDurationSeconds' => $this->lockoutDurationSeconds,
         ];
     }
 }

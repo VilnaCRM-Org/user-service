@@ -74,7 +74,9 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, array<string, array<string, string>>>
+     * @return string[][][]
+     *
+     * @psalm-return array{args: array{input: array{email: string}}}
      */
     private function createContext(string $email): array
     {

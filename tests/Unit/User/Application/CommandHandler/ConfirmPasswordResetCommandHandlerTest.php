@@ -162,7 +162,9 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, string|ConfirmPasswordResetCommand>
+     * @return (ConfirmPasswordResetCommand|string)[]
+     *
+     * @psalm-return array{token: string, newPassword: string, command: ConfirmPasswordResetCommand}
      */
     private function createCommandWithTestData(): array
     {
@@ -179,7 +181,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
     private function createMockPasswordResetTokenWithUserId(
         string $userId
-    ): PasswordResetTokenInterface {
+    ): MockObject&PasswordResetTokenInterface {
         $passwordResetToken = $this->createMock(PasswordResetTokenInterface::class);
 
         $passwordResetToken->expects($this->once())
@@ -210,7 +212,9 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{token: string, newPassword: string, userId: string, hashedPassword: string}
      */
     private function createConfirmPasswordResetTestData(): array
     {
@@ -225,7 +229,9 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     /**
      * @param array<string, string> $testData
      *
-     * @return array<string, PasswordResetTokenInterface|User>
+     * @return (MockObject&PasswordResetTokenInterface|MockObject&User)[]
+     *
+     * @psalm-return array{passwordResetToken: MockObject&PasswordResetTokenInterface, user: MockObject&User}
      */
     private function createConfirmPasswordResetMocks(array $testData): array
     {

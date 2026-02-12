@@ -180,11 +180,14 @@ final class OpenApiFactoryTest extends UnitTestCase
     }
 
     /**
-     * @return array<int, Tag>
+     * @return Tag[]
+     *
+     * @psalm-return list{Tag, Tag, Tag, Tag, Tag}
      */
     private function createTags(): array
     {
         return [
+            new Tag('Authentication', 'Authentication and two-factor endpoints'),
             new Tag('HealthCheck', 'Service health monitoring endpoints'),
             new Tag('OAuth', 'OAuth 2.0 authorization and token endpoints'),
             new Tag('User', 'User account management operations'),
@@ -193,17 +196,9 @@ final class OpenApiFactoryTest extends UnitTestCase
     }
 
     /**
-     * @return array{
-     *     type: string,
-     *     description: string,
-     *     flows: array{
-     *         authorizationCode: array{
-     *             authorizationUrl: string,
-     *             tokenUrl: string,
-     *             scopes: array<string, string>
-     *         }
-     *     }
-     * }
+     * @return ((string|string[])[][]|string)[]
+     *
+     * @psalm-return array{type: 'oauth2', description: 'OAuth2 Authorization Code flow securing VilnaCRM API.', flows: array{authorizationCode: array{authorizationUrl: 'https://localhost/api/oauth/dialog', tokenUrl: 'https://localhost/api/oauth/token', scopes: array{'write:pets': 'modify pets in your account', 'read:pets': 'read your pets'}}}}
      */
     private function createOAuth2Scheme(): array
     {

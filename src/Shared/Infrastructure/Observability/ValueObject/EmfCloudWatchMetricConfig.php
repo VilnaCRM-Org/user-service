@@ -51,7 +51,9 @@ final readonly class EmfCloudWatchMetricConfig implements \JsonSerializable
     }
 
     /**
-     * @return array{Namespace: string, Dimensions: array<int, array<int, string>>, Metrics: array<int, array{Name: string, Unit: string}>}
+     * @return (string|string[][])[]
+     *
+     * @psalm-return array{Namespace: string, Dimensions: list{array<int, string>}, Metrics: array<int, array{Name: string, Unit: string}>}
      */
     #[\Override]
     public function jsonSerialize(): array

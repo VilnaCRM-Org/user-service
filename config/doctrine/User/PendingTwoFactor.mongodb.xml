@@ -1,0 +1,25 @@
+<doctrine-mongo-mapping
+  xmlns="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping
+                                            http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd"
+>
+
+    <document name="App\User\Domain\Entity\PendingTwoFactor" db="user_service" collection="pending_two_factor">
+        <id field-name="id" type="string" strategy="NONE" />
+
+        <field field-name="userId" type="string" />
+        <field field-name="createdAt" type="date_immutable" />
+        <field field-name="expiresAt" type="date_immutable" />
+
+        <indexes>
+            <index>
+                <key name="userId" order="asc" />
+            </index>
+            <index>
+                <key name="expiresAt" order="asc" />
+                <option name="expireAfterSeconds" value="0" />
+            </index>
+        </indexes>
+    </document>
+</doctrine-mongo-mapping>

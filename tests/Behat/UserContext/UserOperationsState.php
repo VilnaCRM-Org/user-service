@@ -32,6 +32,16 @@ final class UserOperationsState
             'violationNum' => 0,
             'language' => 'en',
             'currentUserEmail' => '',
+            'pendingSessionId' => '',
+            'accessToken' => '',
+            'refreshToken' => '',
+            'originalRefreshToken' => '',
+            'rotatedRefreshToken' => '',
+            'submittedRefreshToken' => '',
+            'authCookieToken' => '',
+            'useAuthCookie' => false,
+            'storedAccessTokens' => [],
+            'storedRefreshTokens' => [],
         ];
     }
 }

@@ -17,10 +17,16 @@ final class OAuth2GrantType extends Type
     public const NAME = 'oauth2_grant';
 
     /**
-     * @return array<int, string>|null
+     * @return null|string[]
+     *
+     * @param array<Grant|\stdClass|object|string>|string|null $value
+     *
+     * @psalm-param list{0: Grant|\stdClass|object|string, 1?: Grant|string, 2?: Grant|string}|string|null $value
+     *
+     * @psalm-return list<string>|null
      */
     #[\Override]
-    public function convertToDatabaseValue(mixed $value): ?array
+    public function convertToDatabaseValue($value): ?array
     {
         if ($value === null) {
             return null;
@@ -41,10 +47,16 @@ final class OAuth2GrantType extends Type
     }
 
     /**
-     * @return array<int, Grant>
+     * @return Grant[]
+     *
+     * @param string|array<string>|null $value
+     *
+     * @psalm-param list{0: string, 1?: string, 2?: string}|string|null $value
+     *
+     * @psalm-return list{0?: Grant, 1?: Grant, 2?: Grant}
      */
     #[\Override]
-    public function convertToPHPValue(mixed $value): array
+    public function convertToPHPValue($value): array
     {
         if ($value === null) {
             return [];
@@ -60,6 +72,11 @@ final class OAuth2GrantType extends Type
         );
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'if ($value === null) { $return = null; } elseif (is_array($value)) { $return = []; foreach ($value as $item) { if (is_string($item) || (is_object($item) && method_exists($item, "__toString"))) { $return[] = (string) $item; } else { throw new \InvalidArgumentException("OAuth2GrantType expects an array of stringable values."); } } } else { throw new \InvalidArgumentException("OAuth2GrantType expects an array of stringable values."); }'
+     */
     #[\Override]
     public function closureToMongo(): string
     {

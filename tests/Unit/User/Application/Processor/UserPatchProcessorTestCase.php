@@ -26,8 +26,10 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 abstract class UserPatchProcessorTestCase extends UnitTestCase
 {
@@ -42,6 +44,7 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
     protected RequestStack $requestStack;
     protected JsonRequestPayloadProvider $payloadProvider;
     protected UserPatchUpdateResolver $updateResolver;
+    protected Security $security;
 
     #[\Override]
     protected function setUp(): void
@@ -54,6 +57,7 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $updateFactory = UpdateUserCommandFactoryInterface::class;
         $this->mockUpdateUserCommandFactory = $this->createMock($updateFactory);
+        $this->security = $this->createMock(Security::class);
 
         $this->initializeRealObjectsAndProcessor();
     }
@@ -93,10 +97,14 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
             $this->getUserQueryHandler,
             $this->payloadProvider,
             $this->updateResolver,
-            new UserPatchPayloadValidator()
+            new UserPatchPayloadValidator(),
+            $this->security
         );
     }
 
+    /**
+     * @return array|null|object|scalar
+     */
     protected function processWithInvalidInput(
         UserInterface $user,
         string $initials,
@@ -105,7 +113,7 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
         ?string $invalidEmail = null,
         ?string $invalidInitials = null,
         ?string $invalidPassword = null
-    ): UserInterface {
+    ) {
         $invalidEmail = $invalidEmail ?? $this->faker->word();
         $effectiveInitials = $invalidInitials ?? $initials;
         $effectivePassword = $invalidPassword ?? $password;
@@ -127,13 +135,16 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
         );
     }
 
+    /**
+     * @return array|null|object|scalar
+     */
     protected function executeProcessWithPayload(
         string $email,
         string $initials,
         string $oldPassword,
         string $newPassword,
         string $userId
-    ): UserInterface {
+    ) {
         return $this->withRequest(
             [
                 'email' => $email,
@@ -154,7 +165,13 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
         UserUpdate $updateData,
         string $userId
     ): void {
-        $command = $this->updateUserCommandFactory->create($user, $updateData);
+        $currentSessionId = $this->faker->uuid();
+        $command = $this->updateUserCommandFactory->create(
+            $user,
+            $updateData,
+            $currentSessionId
+        );
+        $this->expectCurrentSessionId($currentSessionId);
 
         $this->getUserQueryHandler->expects($this->once())
             ->method('handle')
@@ -172,7 +189,8 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
                     $this->assertSame($updateData->oldPassword, $actual->oldPassword);
 
                     return true;
-                })
+                }),
+                $currentSessionId
             )
             ->willReturn($command);
 
@@ -204,7 +222,7 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
 
     /**
      * @param array<string, string|null> $payload
-     * @param callable(): array|bool|float|int|object|string|null $callback
+     * @param callable $callback
      */
     protected function withRequest(
         array $payload,
@@ -227,7 +245,7 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
     }
 
     /**
-     * @param callable(): array|bool|float|int|object|string|null $callback
+     * @param callable $callback
      */
     protected function withRawRequest(
         string $content,
@@ -260,7 +278,9 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
     }
 
     /**
-     * @return array<string, string|UserInterface|UserUpdate>
+     * @return (UserInterface|UserUpdate|string)[]
+     *
+     * @psalm-return array{user: UserInterface, updateData: UserUpdate, userId: string, newEmail: string, newInitials: string, password: string, newPassword: string}
      */
     protected function createProcessTestData(): array
     {
@@ -289,8 +309,10 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
 
     /**
      * @param array<string, string|UserInterface|UserUpdate> $testData
+     *
+     * @return array|null|object|scalar
      */
-    protected function executeProcessWithNewData(array $testData): UserInterface
+    protected function executeProcessWithNewData(array $testData)
     {
         return $this->withRequest(
             [
@@ -310,5 +332,18 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
                 ['id' => $testData['userId']]
             )
         );
+    }
+
+    private function expectCurrentSessionId(string $currentSessionId): void
+    {
+        $token = $this->createMock(TokenInterface::class);
+        $token->expects($this->once())
+            ->method('getAttribute')
+            ->with('sid')
+            ->willReturn($currentSessionId);
+
+        $this->security->expects($this->once())
+            ->method('getToken')
+            ->willReturn($token);
     }
 }

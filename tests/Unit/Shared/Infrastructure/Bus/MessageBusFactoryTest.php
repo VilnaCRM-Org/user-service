@@ -120,7 +120,11 @@ final class MessageBusFactoryTest extends UnitTestCase
     public function testSubscriberRegisteredOnceInHandlersMap(): void
     {
         $subscriber = new class() implements DomainEventSubscriberInterface {
-            /** @return array<int, class-string> */
+            /**
+             * @return string[]
+             *
+             * @psalm-return list{Stub\TestEvent::class}
+             */
             #[\Override]
             public function subscribedTo(): array
             {
@@ -161,14 +165,18 @@ final class MessageBusFactoryTest extends UnitTestCase
         };
     }
 
-    private function createEventSubscriber(bool &$called): DomainEventSubscriberInterface
+    private function createEventSubscriber(bool &$called): object
     {
         return new class($called) implements DomainEventSubscriberInterface {
             public function __construct(private bool &$called)
             {
             }
 
-            /** @return array<int, class-string> */
+            /**
+             * @return string[]
+             *
+             * @psalm-return list{Stub\TestEvent::class}
+             */
             #[\Override]
             public function subscribedTo(): array
             {

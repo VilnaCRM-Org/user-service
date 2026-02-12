@@ -69,7 +69,9 @@ final class OAuthAuthEndpointFactory implements EndpointFactoryInterface
     }
 
     /**
-     * @return array<int,Response>
+     * @return Response[]
+     *
+     * @psalm-return array{200: Response, 302: Response, 400: Response, 401: Response}
      */
     private function getResponses(): array
     {

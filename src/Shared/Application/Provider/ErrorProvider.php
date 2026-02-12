@@ -33,6 +33,8 @@ final readonly class ErrorProvider implements ProviderInterface
     /**
      * @param array<string,string> $uriVariables
      * @param array<string,array<string>> $context
+     *
+     * @return Error|array
      */
     #[\Override]
     public function provide(
@@ -58,6 +60,11 @@ final readonly class ErrorProvider implements ProviderInterface
         return $this->getError($request, $status, $internalErrorText);
     }
 
+    /**
+     * @return Error|string[]
+     *
+     * @psalm-return Error|array{message: string}
+     */
     private function getError(
         Request $request,
         int $status,
@@ -78,6 +85,11 @@ final readonly class ErrorProvider implements ProviderInterface
         return $this->provideDomainOrHttpError($exception, $status);
     }
 
+    /**
+     * @return Error|string[]
+     *
+     * @psalm-return Error|array{message: string}
+     */
     private function provideInternalServerError(
         Request $request,
         Throwable $exception,

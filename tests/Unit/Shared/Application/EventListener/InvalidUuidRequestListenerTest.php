@@ -116,7 +116,7 @@ final class InvalidUuidRequestListenerTest extends UnitTestCase
         );
     }
 
-    private function createTranslator(string $message = 'Not Found'): TranslatorInterface
+    private function createTranslator(string $message = 'Not Found'): \PHPUnit\Framework\MockObject\MockObject&TranslatorInterface
     {
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->with('error.not.found.http')->willReturn($message);

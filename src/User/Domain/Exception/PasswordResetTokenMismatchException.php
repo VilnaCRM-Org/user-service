@@ -13,6 +13,11 @@ final class PasswordResetTokenMismatchException extends DomainException
         );
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'error.password-reset-token-mismatch'
+     */
     #[\Override]
     public function getTranslationTemplate(): string
     {

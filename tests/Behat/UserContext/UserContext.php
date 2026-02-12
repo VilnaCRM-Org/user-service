@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Behat\UserContext;
 
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\User\Application\DTO\AuthorizationUserDto;
+use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
+use App\User\Domain\Contract\AccessTokenGeneratorInterface;
 use App\User\Domain\Contract\AccountLockoutServiceInterface;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Entity\User;
@@ -19,9 +20,8 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Faker\Factory;
 use Faker\Generator;
 use Psr\Cache\CacheItemPoolInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 /**
@@ -30,7 +30,10 @@ use Symfony\Component\Uid\Factory\UuidFactory;
  */
 final class UserContext implements Context
 {
+    use AuthenticatedUserContextTrait;
+
     private Generator $faker;
+    private string $lastLockoutEmail = '';
     private static string $lastPasswordResetToken = '';
     /**
      * @var array<string, string>
@@ -38,6 +41,7 @@ final class UserContext implements Context
     private static array $userIdsByEmail = [];
     private static string $currentTokenUserEmail = '';
 
+    /** @SuppressWarnings(PHPMD.ExcessiveParameterList) */
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private PasswordHasherFactoryInterface $hasherFactory,
@@ -51,6 +55,8 @@ final class UserContext implements Context
         private CacheItemPoolInterface $cachePool,
         private TokenStorageInterface $tokenStorage,
         private UserOperationsState $state,
+        private TestAccessTokenFactory $testAccessTokenFactory,
+        private AccessTokenGeneratorInterface $accessTokenGenerator,
     ) {
         $this->faker = Factory::create();
     }
@@ -62,6 +68,7 @@ final class UserContext implements Context
     {
         $this->cachePool->clear();
         $this->tokenStorage->setToken(null);
+        $this->lastLockoutEmail = '';
     }
 
     /**
@@ -106,36 +113,9 @@ final class UserContext implements Context
     }
 
     /**
-     * @Given I am authenticated as user :email
-     */
-    public function iAmAuthenticatedAsUser(string $email): void
-    {
-        $this->userWithEmailExists($email);
-
-        $user = $this->userRepository->findByEmail($email);
-        if (!$user instanceof User) {
-            throw new \RuntimeException("User with email {$email} not found");
-        }
-
-        $authorizationUser = new AuthorizationUserDto(
-            $user->getEmail(),
-            $user->getInitials(),
-            $user->getPassword(),
-            $this->transformer->transformFromString($user->getId()),
-            $user->isConfirmed()
-        );
-        $token = new UsernamePasswordToken(
-            $authorizationUser,
-            'behat-user-token',
-            ['ROLE_USER']
-        );
-        $this->tokenStorage->setToken($token);
-        $this->state->currentUserEmail = $email;
-    }
-
-    /**
      * @Given user with email :email has two-factor enabled
      * @Given user with email :email has 2FA enabled
+     * @Given user :email has 2FA enabled
      */
     public function userWithEmailHasTwoFactorEnabled(string $email): void
     {
@@ -251,14 +231,59 @@ final class UserContext implements Context
 
     /**
      * @Given :attempts failed sign-in attempts have been recorded for email :email
+     * @Given :attempts failed sign-in attempts are recorded for email :email
      */
     public function failedSignInAttemptsAreRecordedForEmail(
         int $attempts,
         string $email
     ): void {
+        $this->lastLockoutEmail = $this->normalizeEmail($email);
+
         for ($attempt = 0; $attempt < $attempts; $attempt++) {
             $this->accountLockoutService->recordFailure($email);
         }
+    }
+
+    /**
+     * @Given user with email :email does not exist
+     */
+    public function userWithEmailDoesNotExist(string $email): void
+    {
+        $user = $this->userRepository->findByEmail($email);
+        if ($user instanceof User) {
+            $this->userRepository->delete($user);
+        }
+    }
+
+    /**
+     * @Given :hours hour has passed since the first failed attempt
+     * @Given :hours hours have passed since the first failed attempt
+     */
+    public function hoursHavePassedSinceTheFirstFailedAttempt(int $hours): void
+    {
+        $this->timeHasPassedSinceTheFirstFailedAttempt($hours * 60);
+    }
+
+    /**
+     * @Given :minutes minutes have passed since the first failed attempt
+     */
+    public function minutesHavePassedSinceTheFirstFailedAttempt(int $minutes): void
+    {
+        $this->timeHasPassedSinceTheFirstFailedAttempt($minutes);
+    }
+
+    /**
+     * @Given :minutes minutes have passed since the lockout
+     */
+    public function minutesHavePassedSinceTheLockout(int $minutes): void
+    {
+        if ($minutes < 15) {
+            return;
+        }
+
+        $this->cachePool->deleteItem(
+            $this->lockKey($this->requireLastLockoutEmail())
+        );
     }
 
     /**
@@ -294,5 +319,51 @@ final class UserContext implements Context
     public static function getLastPasswordResetToken(): string
     {
         return self::$lastPasswordResetToken;
+    }
+
+    private function timeHasPassedSinceTheFirstFailedAttempt(int $minutes): void
+    {
+        if ($minutes < 60) {
+            return;
+        }
+
+        $email = $this->requireLastLockoutEmail();
+
+        $this->cachePool->deleteItems([
+            $this->attemptsKey($email),
+            $this->lockKey($email),
+        ]);
+    }
+
+    private function requireLastLockoutEmail(): string
+    {
+        if ($this->lastLockoutEmail === '') {
+            throw new \RuntimeException(
+                'No lockout email found in scenario state.'
+            );
+        }
+
+        return $this->lastLockoutEmail;
+    }
+
+    private function attemptsKey(string $email): string
+    {
+        return sprintf(
+            'signin_lockout_%s',
+            hash('sha256', $this->normalizeEmail($email))
+        );
+    }
+
+    private function lockKey(string $email): string
+    {
+        return sprintf(
+            'signin_lock_%s',
+            hash('sha256', $this->normalizeEmail($email))
+        );
+    }
+
+    private function normalizeEmail(string $email): string
+    {
+        return strtolower(trim($email));
     }
 }

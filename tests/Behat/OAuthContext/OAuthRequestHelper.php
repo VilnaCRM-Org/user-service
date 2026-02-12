@@ -96,7 +96,9 @@ final class OAuthRequestHelper
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{HTTP_ACCEPT: 'application/json', CONTENT_TYPE: 'application/json', HTTP_AUTHORIZATION?: string}
      */
     private function buildRequestHeaders(?string $clientId, ?string $clientSecret): array
     {

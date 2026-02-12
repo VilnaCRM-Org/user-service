@@ -9,6 +9,8 @@ final readonly class CompleteTwoFactorCommandResponse
     public function __construct(
         private string $accessToken,
         private string $refreshToken,
+        private ?int $recoveryCodesRemaining = null,
+        private ?string $warningMessage = null,
     ) {
     }
 
@@ -20,5 +22,15 @@ final readonly class CompleteTwoFactorCommandResponse
     public function getRefreshToken(): string
     {
         return $this->refreshToken;
+    }
+
+    public function getRecoveryCodesRemaining(): ?int
+    {
+        return $this->recoveryCodesRemaining;
+    }
+
+    public function getWarningMessage(): ?string
+    {
+        return $this->warningMessage;
     }
 }

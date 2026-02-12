@@ -15,7 +15,9 @@ final class Initials extends Compound
     /**
      * @param array<string, string> $options
      *
-     * @return array<int, \Symfony\Component\Validator\Constraint>
+     * @return (Length|Regex|Type)[]
+     *
+     * @psalm-return list{Type, Length, Regex, Regex}
      */
     #[\Override]
     protected function getConstraints(array $options): array

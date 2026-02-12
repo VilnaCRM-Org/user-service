@@ -17,10 +17,16 @@ final class OAuth2RedirectUriType extends Type
     public const NAME = 'oauth2_redirect_uri';
 
     /**
-     * @return array<int, string>|null
+     * @return null|string[]
+     *
+     * @param array<RedirectUri|\stdClass|object|string>|string|null $value
+     *
+     * @psalm-param list{0: RedirectUri|\stdClass|object|string, 1?: RedirectUri|string, 2?: RedirectUri|string}|string|null $value
+     *
+     * @psalm-return list<string>|null
      */
     #[\Override]
-    public function convertToDatabaseValue(mixed $value): ?array
+    public function convertToDatabaseValue($value): ?array
     {
         if ($value === null) {
             return null;
@@ -41,10 +47,16 @@ final class OAuth2RedirectUriType extends Type
     }
 
     /**
-     * @return array<int, RedirectUri>
+     * @return RedirectUri[]
+     *
+     * @param string|array<string>|null $value
+     *
+     * @psalm-param list{0: string, 1?: string, 2?: string}|string|null $value
+     *
+     * @psalm-return list{0?: RedirectUri, 1?: RedirectUri, 2?: RedirectUri}
      */
     #[\Override]
-    public function convertToPHPValue(mixed $value): array
+    public function convertToPHPValue($value): array
     {
         if ($value === null) {
             return [];
@@ -62,6 +74,11 @@ final class OAuth2RedirectUriType extends Type
         );
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'if ($value === null) { $return = null; } elseif (is_array($value)) { $return = []; foreach ($value as $item) { if (is_string($item) || (is_object($item) && method_exists($item, "__toString"))) { $return[] = (string) $item; } else { throw new \InvalidArgumentException("OAuth2RedirectUriType expects an array of stringable values."); } } } else { throw new \InvalidArgumentException("OAuth2RedirectUriType expects an array of stringable values."); }'
+     */
     #[\Override]
     public function closureToMongo(): string
     {

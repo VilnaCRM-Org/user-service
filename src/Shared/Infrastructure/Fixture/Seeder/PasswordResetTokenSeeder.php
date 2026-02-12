@@ -30,7 +30,9 @@ final readonly class PasswordResetTokenSeeder
     /**
      * @param array<int,string> $tokenValues
      *
-     * @return array<PasswordResetTokenInterface>
+     * @return PasswordResetTokenInterface[]
+     *
+     * @psalm-return list{0?: PasswordResetTokenInterface,...}
      */
     private function prepareTokens(
         UserInterface $user,
@@ -70,7 +72,7 @@ final readonly class PasswordResetTokenSeeder
     private function createToken(
         UserInterface $user,
         string $tokenValue
-    ): PasswordResetTokenInterface {
+    ): PasswordResetToken {
         return new PasswordResetToken(
             $tokenValue,
             $user->getId(),

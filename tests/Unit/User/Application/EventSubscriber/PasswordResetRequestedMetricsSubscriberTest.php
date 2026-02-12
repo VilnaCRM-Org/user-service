@@ -41,14 +41,14 @@ final class PasswordResetRequestedMetricsSubscriberTest extends UnitTestCase
             email: $this->faker->email(),
             initials: 'JD',
             password: 'secret',
-            id: new Uuid((string) $this->faker->uuid())
+            id: new Uuid($this->faker->uuid())
         );
 
         ($this->subscriber)(new PasswordResetRequestedEvent(
             userId: $user->getId(),
             userEmail: $user->getEmail(),
             token: $this->faker->uuid(),
-            eventId: (string) $this->faker->uuid()
+            eventId: $this->faker->uuid()
         ));
 
         self::assertSame(1, $this->metricsEmitterSpy->count());
@@ -81,7 +81,7 @@ final class PasswordResetRequestedMetricsSubscriberTest extends UnitTestCase
             email: $this->faker->email(),
             initials: 'JD',
             password: 'secret',
-            id: new Uuid((string) $this->faker->uuid())
+            id: new Uuid($this->faker->uuid())
         );
     }
 
@@ -91,7 +91,7 @@ final class PasswordResetRequestedMetricsSubscriberTest extends UnitTestCase
             userId: $user->getId(),
             userEmail: $user->getEmail(),
             token: $this->faker->uuid(),
-            eventId: (string) $this->faker->uuid()
+            eventId: $this->faker->uuid()
         );
     }
 }

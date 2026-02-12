@@ -122,7 +122,9 @@ final class ParamUserEndpointFactory implements EndpointFactoryInterface
     }
 
     /**
-     * @return array<int, Response>
+     * @return Response[]
+     *
+     * @psalm-return array{200: Response, 400: Response, 404: Response, 422: Response}
      */
     private function userMutationResponses(): array
     {
@@ -135,7 +137,9 @@ final class ParamUserEndpointFactory implements EndpointFactoryInterface
     }
 
     /**
-     * @return array<int, Response>
+     * @return Response[]
+     *
+     * @psalm-return array{404: Response, 200: Response}
      */
     private function userReadResponses(): array
     {
@@ -146,7 +150,9 @@ final class ParamUserEndpointFactory implements EndpointFactoryInterface
     }
 
     /**
-     * @return array<int, Response>
+     * @return Response[]
+     *
+     * @psalm-return array{204: Response, 404: Response}
      */
     private function userDeleteResponses(): array
     {

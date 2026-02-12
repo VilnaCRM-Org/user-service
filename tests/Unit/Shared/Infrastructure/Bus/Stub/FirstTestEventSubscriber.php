@@ -24,7 +24,11 @@ final class FirstTestEventSubscriber implements DomainEventSubscriberInterface
         $this->called = true;
     }
 
-    /** @return array<class-string> */
+    /**
+     * @return string[]
+     *
+     * @psalm-return list{TestEvent::class}
+     */
     #[\Override]
     public function subscribedTo(): array
     {

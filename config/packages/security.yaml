@@ -1,27 +1,44 @@
 # config/packages/security.yaml
 security:
-  # enable_authenticator_manager: true
-
   access_control:
+    - { path: ^/api/users$, methods: [POST], roles: PUBLIC_ACCESS }
+    - { path: ^/api/users/confirm$, methods: [PATCH], roles: PUBLIC_ACCESS }
+    - { path: ^/api/reset-password, roles: PUBLIC_ACCESS }
+    - { path: ^/api/signin, roles: PUBLIC_ACCESS }
+    - { path: ^/api/token$, methods: [POST], roles: PUBLIC_ACCESS }
+    - { path: ^/api/docs, roles: PUBLIC_ACCESS }
+    - { path: ^/api/health, roles: PUBLIC_ACCESS }
+    - { path: ^/api/oauth, roles: PUBLIC_ACCESS }
+    - { path: ^/api/\.well-known, roles: PUBLIC_ACCESS }
+    - { path: ^/healthz, roles: PUBLIC_ACCESS }
+    - { path: ^/api/users/batch$, methods: [POST], roles: ROLE_SERVICE }
+    - { path: ^/api/graphql, roles: ROLE_USER }
+    - { path: ^/api/, roles: ROLE_USER }
     - { path: ^/authorize, roles: IS_AUTHENTICATED_REMEMBERED }
 
   providers:
     app_user_provider:
-      mongodb:
-        class: App\User\Domain\Entity\User
-        property: email
+      memory: null
 
   firewalls:
-    main:
+    dev:
+      pattern: ^/(_(profiler|wdt)|css|images|js)/
       security: false
 
-      # activate different ways to authenticate
-      # https://symfony.com/doc/current/security.html#firewalls-authentication
+    oauth:
+      pattern: ^/api/(oauth|\.well-known)
+      security: false
 
-      # https://symfony.com/doc/current/security/impersonating_user.html
-      # switch_user: true
+    api:
+      pattern: ^/
+      stateless: true
+      entry_point: App\Shared\Infrastructure\Security\DualAuthenticator
+      custom_authenticators:
+        - App\Shared\Infrastructure\Security\DualAuthenticator
 
   password_hashers:
     App\User\Domain\Entity\User:
       algorithm: auto
-      cost: 4
+      cost: 12  # AC: NFR-32 - bcrypt cost upgrade for security
+      migrate_from:
+        - bcrypt  # Support transparent upgrade from cost 4

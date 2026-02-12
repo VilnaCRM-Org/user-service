@@ -14,6 +14,7 @@ final class UserSignedInEvent extends DomainEvent
         public readonly string $sessionId,
         public readonly string $ipAddress,
         public readonly string $userAgent,
+        public readonly bool $twoFactorUsed,
         string $eventId,
         ?string $occurredOn = null
     ) {
@@ -21,7 +22,9 @@ final class UserSignedInEvent extends DomainEvent
     }
 
     /**
-     * @param array<string, string> $body
+     * @param array<string, string|bool> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(
@@ -35,11 +38,17 @@ final class UserSignedInEvent extends DomainEvent
             $body['sessionId'],
             $body['ipAddress'],
             $body['userAgent'],
+            $body['twoFactorUsed'],
             $eventId,
             $occurredOn
         );
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'user.signed_in'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -47,7 +56,9 @@ final class UserSignedInEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return (bool|string)[]
+     *
+     * @psalm-return array{userId: string, email: string, sessionId: string, ipAddress: string, userAgent: string, twoFactorUsed: bool}
      */
     #[\Override]
     public function toPrimitives(): array
@@ -58,6 +69,7 @@ final class UserSignedInEvent extends DomainEvent
             'sessionId' => $this->sessionId,
             'ipAddress' => $this->ipAddress,
             'userAgent' => $this->userAgent,
+            'twoFactorUsed' => $this->twoFactorUsed,
         ];
     }
 }

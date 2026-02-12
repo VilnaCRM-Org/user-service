@@ -158,7 +158,7 @@ final class PasswordResetTokenSeederTest extends UnitTestCase
         );
     }
 
-    private function createTestUser(): \App\User\Domain\Entity\UserInterface
+    private function createTestUser(): \App\User\Domain\Entity\User
     {
         $uuidTransformer = new UuidTransformer(new UuidFactory());
         $userFactory = new UserFactory();

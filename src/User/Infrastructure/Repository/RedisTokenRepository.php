@@ -54,6 +54,9 @@ final readonly class RedisTokenRepository implements TokenRepositoryInterface
         );
     }
 
+    /**
+     * @return ConfirmationToken|null
+     */
     #[\Override]
     public function findByUserId(string $userID): ?ConfirmationTokenInterface
     {
@@ -73,7 +76,7 @@ final readonly class RedisTokenRepository implements TokenRepositoryInterface
         }
     }
 
-    private function getFromCache(string $key): ?ConfirmationTokenInterface
+    private function getFromCache(string $key): ConfirmationToken|null
     {
         $cacheItem = $this->redisAdapter->getItem($key);
         $serializedToken = $cacheItem->get();

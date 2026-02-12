@@ -76,7 +76,10 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
             $this->uuidFactory,
             $this->eventFactory,
             $eventId,
-            function (array $expectedCalls, $returnValue = null): callable {
+            /**
+             * @psalm-return \Closure(...mixed):(array|null|object|scalar)
+             */
+            function (array $expectedCalls, $returnValue = null): \Closure {
                 return $this->expectSequential($expectedCalls, $returnValue);
             }
         );
@@ -106,7 +109,7 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
         );
     }
 
-    protected function userWithEmail(string $email): UserInterface
+    protected function userWithEmail(string $email): \PHPUnit\Framework\MockObject\MockObject&UserInterface
     {
         $user = $this->createMock(UserInterface::class);
         $user->method('getId')->willReturn($this->faker->uuid());

@@ -26,7 +26,11 @@ final class MultiEventTestSubscriber implements DomainEventSubscriberInterface
         }
     }
 
-    /** @return array<int, class-string> */
+    /**
+     * @return string[]
+     *
+     * @psalm-return list{TestEvent::class, TestCommand::class}
+     */
     #[\Override]
     public function subscribedTo(): array
     {

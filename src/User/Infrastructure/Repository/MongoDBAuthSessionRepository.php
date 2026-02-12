@@ -38,6 +38,17 @@ final class MongoDBAuthSessionRepository extends ServiceDocumentRepository imple
         return $this->find($id);
     }
 
+    /**
+     * @return array<AuthSession>
+     */
+    #[\Override]
+    public function findByUserId(string $userId): array
+    {
+        $result = $this->findBy(['userId' => $userId]);
+
+        return array_values($result);
+    }
+
     #[\Override]
     public function delete(AuthSession $authSession): void
     {

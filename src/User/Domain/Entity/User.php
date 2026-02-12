@@ -80,6 +80,7 @@ class User implements UserInterface
         $this->initials = $initials;
     }
 
+    #[\Override]
     public function getPassword(): string
     {
         return $this->password;
@@ -105,7 +106,9 @@ class User implements UserInterface
     }
 
     /**
-     * @return array<DomainEvent>
+     * @return (\App\User\Domain\Event\EmailChangedEvent|\App\User\Domain\Event\PasswordChangedEvent)[]
+     *
+     * @psalm-return array{0?: \App\User\Domain\Event\EmailChangedEvent|\App\User\Domain\Event\PasswordChangedEvent}
      */
     #[\Override]
     public function update(
@@ -186,7 +189,9 @@ class User implements UserInterface
     }
 
     /**
-     * @return array<DomainEvent>
+     * @return \App\User\Domain\Event\EmailChangedEvent[]
+     *
+     * @psalm-return list{0?: \App\User\Domain\Event\EmailChangedEvent}
      */
     private function processNewEmail(
         string $newEmail,
@@ -206,7 +211,9 @@ class User implements UserInterface
     }
 
     /**
-     * @return array<DomainEvent>
+     * @return \App\User\Domain\Event\PasswordChangedEvent[]
+     *
+     * @psalm-return list{0?: \App\User\Domain\Event\PasswordChangedEvent}
      */
     private function processNewPassword(
         string $newPassword,

@@ -10,7 +10,9 @@ use App\User\Domain\Entity\User;
 final readonly class ResourceClassAllowlist
 {
     /**
-     * @return array<int, class-string>
+     * @return string[]
+     *
+     * @psalm-return list{User::class, HealthCheck::class}
      */
     public function all(): array
     {

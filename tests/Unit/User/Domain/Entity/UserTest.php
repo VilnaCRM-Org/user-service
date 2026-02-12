@@ -245,7 +245,7 @@ final class UserTest extends UnitTestCase
     private function setupEmailChangedEventFactoryMock(
         string $oldEmail,
         string $eventID
-    ): EmailChangedEvent {
+    ): \PHPUnit\Framework\MockObject\MockObject&EmailChangedEvent {
         $expectedEvent = $this->createMock(EmailChangedEvent::class);
         $this->emailChangedEventFactory->expects($this->once())
             ->method('create')

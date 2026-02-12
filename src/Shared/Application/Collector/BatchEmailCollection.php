@@ -35,7 +35,9 @@ final class BatchEmailCollection
     }
 
     /**
-     * @return array<string>
+     * @return string[]
+     *
+     * @psalm-return list<string>
      */
     public function messages(
         string $missingMessage,

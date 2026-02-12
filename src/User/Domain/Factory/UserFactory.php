@@ -10,6 +10,9 @@ use App\User\Domain\Entity\UserInterface;
 
 final readonly class UserFactory implements UserFactoryInterface
 {
+    /**
+     * @return User
+     */
     #[\Override]
     public function create(
         string $email,

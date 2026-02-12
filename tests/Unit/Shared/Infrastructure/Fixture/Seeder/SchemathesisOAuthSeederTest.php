@@ -49,7 +49,7 @@ final class SchemathesisOAuthSeederTest extends UnitTestCase
         );
     }
 
-    private function createTestUser(): UserInterface
+    private function createTestUser(): \PHPUnit\Framework\MockObject\MockObject&UserInterface
     {
         $userId = $this->faker->uuid();
         $user = $this->createMock(UserInterface::class);
@@ -74,7 +74,7 @@ final class SchemathesisOAuthSeederTest extends UnitTestCase
 
     private function createDocumentManagerMock(
         AuthorizationCode $existingCode
-    ): DocumentManager {
+    ): \PHPUnit\Framework\MockObject\MockObject&DocumentManager {
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->once())
             ->method('remove')

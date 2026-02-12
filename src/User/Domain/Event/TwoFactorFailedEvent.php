@@ -20,6 +20,8 @@ final class TwoFactorFailedEvent extends DomainEvent
 
     /**
      * @param array<string, string> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(
@@ -36,6 +38,11 @@ final class TwoFactorFailedEvent extends DomainEvent
         );
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'user.two_factor_failed'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -43,7 +50,9 @@ final class TwoFactorFailedEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{pendingSessionId: string, ipAddress: string, reason: string}
      */
     #[\Override]
     public function toPrimitives(): array

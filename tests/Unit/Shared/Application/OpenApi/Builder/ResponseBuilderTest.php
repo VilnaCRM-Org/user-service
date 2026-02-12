@@ -80,6 +80,9 @@ final class ResponseBuilderTest extends UnitTestCase
         $this->assertEquals($expectedHeaders, $response->getHeaders());
     }
 
+    /**
+     * @psalm-return \ArrayObject<'application/json', array{schema: array{type: 'object', properties: array<string, array{type: string}>}, example: array<string, string>}>
+     */
     private function getExpectedContent(): \ArrayObject
     {
         return new \ArrayObject([
@@ -98,7 +101,9 @@ final class ResponseBuilderTest extends UnitTestCase
     }
 
     /**
-     * @return array<Parameter>
+     * @return Parameter[]
+     *
+     * @psalm-return list{Parameter}
      */
     private function getParams(): array
     {
@@ -112,7 +117,9 @@ final class ResponseBuilderTest extends UnitTestCase
     }
 
     /**
-     * @return array<Header>
+     * @return Header[]
+     *
+     * @psalm-return list{Header}
      */
     private function getHeaders(): array
     {
@@ -127,6 +134,9 @@ final class ResponseBuilderTest extends UnitTestCase
         ];
     }
 
+    /**
+     * @psalm-return \ArrayObject<string, array{description: string, schema: array{type: string, format?: string}, example?: string}>
+     */
     private function getExpectedHeaders(): \ArrayObject
     {
         $schema = ['type' => $this->headerType];

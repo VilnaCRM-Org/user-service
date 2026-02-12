@@ -19,6 +19,8 @@ final class UserRegisteredEvent extends DomainEvent
 
     /**
      * @param array<string, string> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(
@@ -29,6 +31,11 @@ final class UserRegisteredEvent extends DomainEvent
         return new self($body['userId'], $body['email'], $eventId, $occurredOn);
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'user.registered'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -36,7 +43,9 @@ final class UserRegisteredEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{userId: string, email: string}
      */
     #[\Override]
     public function toPrimitives(): array

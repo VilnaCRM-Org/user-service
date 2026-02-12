@@ -115,6 +115,11 @@ final class UserUpdatedCacheInvalidationSubscriberTest extends UnitTestCase
     private function expectEmailHashes(array $emails, array $hashes): void
     {
         $expectedCalls = array_map(
+            /**
+             * @return string[]
+             *
+             * @psalm-return list{string}
+             */
             static fn (string $email): array => [$email],
             $emails
         );

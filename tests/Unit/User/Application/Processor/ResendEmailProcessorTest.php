@@ -12,6 +12,7 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\DTO\RetryDto;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactory;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
@@ -32,6 +33,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 final class ResendEmailProcessorTest extends UnitTestCase
 {
@@ -48,6 +51,8 @@ final class ResendEmailProcessorTest extends UnitTestCase
     private GetUserQueryHandler $getUserQueryHandler;
     private RequestStack $requestStack;
     private JsonRequestValidator $jsonRequestValidator;
+    private TokenStorageInterface $tokenStorage;
+    private ?string $authenticatedUserId = null;
 
     #[\Override]
     protected function setUp(): void
@@ -74,6 +79,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $token = $this->confirmationTokenFactory->create($userId);
 
         $this->testProcessSetExpectations($user, $token);
+        $this->authenticatedUserId = $userId;
 
         $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '{}'));
 
@@ -121,6 +127,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
 
         $this->setupTokenCreationExpectations($user, $userId, $token);
         $this->setupEmailDispatchExpectations($token, $user);
+        $this->authenticatedUserId = $userId;
         $this->processWithRequest($userId, '{}');
     }
 
@@ -132,6 +139,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $userId = $testData['userId'];
 
         $this->testProcessSetExpectations($user, $token);
+        $this->authenticatedUserId = $userId;
         $this->processWithRequest($userId, '');
     }
 
@@ -202,6 +210,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $token = $this->confirmationTokenFactory->create($userId);
 
         $this->testProcessSetExpectations($user, $token);
+        $this->authenticatedUserId = $userId;
 
         $this->getProcessor()->process(
             new RetryDto(),
@@ -219,7 +228,8 @@ final class ResendEmailProcessorTest extends UnitTestCase
             $this->tokenFactory,
             $this->mockConfirmationEmailFactory,
             $this->mockEmailCmdFactory,
-            $this->jsonRequestValidator
+            $this->jsonRequestValidator,
+            $this->tokenStorage
         );
     }
 
@@ -294,6 +304,9 @@ final class ResendEmailProcessorTest extends UnitTestCase
         );
         $this->getUserQueryHandler = $this->createMock(GetUserQueryHandler::class);
         $this->tokenFactory = $this->createMock(ConfirmationTokenFactoryInterface::class);
+        $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
+        $this->tokenStorage->method('getToken')
+            ->willReturnCallback(fn (): (\Symfony\Component\Security\Core\Authentication\Token\TokenInterface&\PHPUnit\Framework\MockObject\MockObject)|null => $this->createAuthenticatedToken());
     }
 
     private function initRequestHandlers(): void
@@ -310,7 +323,9 @@ final class ResendEmailProcessorTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, string|UserInterface|ConfirmationTokenInterface>
+     * @return (ConfirmationTokenInterface|UserInterface|string)[]
+     *
+     * @psalm-return array{user: UserInterface, token: ConfirmationTokenInterface, userId: string}
      */
     private function createUserAndToken(): array
     {
@@ -390,5 +405,25 @@ final class ResendEmailProcessorTest extends UnitTestCase
         } finally {
             $this->requestStack->pop();
         }
+    }
+
+    private function createAuthenticatedToken(): (\PHPUnit\Framework\MockObject\MockObject&TokenInterface)|null
+    {
+        if ($this->authenticatedUserId === null) {
+            return null;
+        }
+
+        $authorizationUser = new AuthorizationUserDto(
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->uuidTransformer->transformFromString($this->authenticatedUserId),
+            true
+        );
+
+        $token = $this->createMock(TokenInterface::class);
+        $token->method('getUser')->willReturn($authorizationUser);
+
+        return $token;
     }
 }

@@ -17,6 +17,8 @@ interface UserInterface
 
     public function getEmail(): string;
 
+    public function getPassword(): string;
+
     public function confirm(
         ConfirmationToken $token,
         string $eventID,

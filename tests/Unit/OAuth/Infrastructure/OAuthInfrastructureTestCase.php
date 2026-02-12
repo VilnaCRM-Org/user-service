@@ -16,7 +16,7 @@ abstract class OAuthInfrastructureTestCase extends UnitTestCase
     protected function makeBuilder(
         array|bool|float|int|object|string|null $result,
         array &$captures = []
-    ): Builder {
+    ): \PHPUnit\Framework\MockObject\MockObject&Builder {
         $builder = $this->createMock(Builder::class);
         $currentField = null;
 

@@ -29,7 +29,7 @@ final readonly class RedisAccountLockoutService implements
     public function recordFailure(string $email): bool
     {
         $attemptsItem = $this->cachePool->getItem($this->attemptsKey($email));
-        $attempts = ((int) $attemptsItem->get()) + 1;
+        $attempts = (int) $attemptsItem->get() + 1;
 
         $attemptsItem->set($attempts);
         $attemptsItem->expiresAfter(self::ATTEMPT_WINDOW_SECONDS);

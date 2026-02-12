@@ -26,7 +26,9 @@ final readonly class MetricCollection implements IteratorAggregate, Countable
     }
 
     /**
-     * @return Traversable<int, BusinessMetric>
+     * @return ArrayIterator
+     *
+     * @psalm-return ArrayIterator<int, BusinessMetric>
      */
     #[\Override]
     public function getIterator(): Traversable
@@ -34,6 +36,11 @@ final readonly class MetricCollection implements IteratorAggregate, Countable
         return new ArrayIterator($this->metrics);
     }
 
+    /**
+     * @return int
+     *
+     * @psalm-return int<0, max>
+     */
     #[\Override]
     public function count(): int
     {

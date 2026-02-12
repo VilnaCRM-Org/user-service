@@ -12,6 +12,7 @@ final class SignInFailedEvent extends DomainEvent
         public readonly string $email,
         public readonly string $ipAddress,
         public readonly string $userAgent,
+        public readonly string $reason,
         string $eventId,
         ?string $occurredOn = null
     ) {
@@ -20,6 +21,8 @@ final class SignInFailedEvent extends DomainEvent
 
     /**
      * @param array<string, string> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(
@@ -31,11 +34,17 @@ final class SignInFailedEvent extends DomainEvent
             $body['email'],
             $body['ipAddress'],
             $body['userAgent'],
+            $body['reason'],
             $eventId,
             $occurredOn
         );
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'user.sign_in_failed'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -43,7 +52,9 @@ final class SignInFailedEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
+     *
+     * @psalm-return array{email: string, ipAddress: string, userAgent: string, reason: string}
      */
     #[\Override]
     public function toPrimitives(): array
@@ -52,6 +63,7 @@ final class SignInFailedEvent extends DomainEvent
             'email' => $this->email,
             'ipAddress' => $this->ipAddress,
             'userAgent' => $this->userAgent,
+            'reason' => $this->reason,
         ];
     }
 }

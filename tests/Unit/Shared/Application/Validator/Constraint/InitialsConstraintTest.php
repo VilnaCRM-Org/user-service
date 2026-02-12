@@ -107,7 +107,9 @@ final class InitialsConstraintTest extends UnitTestCase
     /**
      * @param iterable<Constraint> $constraints
      *
-     * @return array<int, Regex>
+     * @return Regex[]
+     *
+     * @psalm-return list<Symfony\Component\Validator\Constraints\Regex>
      */
     private function findAllRegexConstraints(iterable $constraints): array
     {

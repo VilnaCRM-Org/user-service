@@ -11,6 +11,11 @@ final class InvalidPasswordException extends DomainException
         parent::__construct('Old password is invalid');
     }
 
+    /**
+     * @return string
+     *
+     * @psalm-return 'error.invalid-password'
+     */
     #[\Override]
     public function getTranslationTemplate(): string
     {

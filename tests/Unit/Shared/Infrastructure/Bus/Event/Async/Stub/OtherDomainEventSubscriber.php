@@ -21,7 +21,9 @@ final class OtherDomainEventSubscriber implements DomainEventSubscriberInterface
     }
 
     /**
-     * @return array<class-string>
+     * @return string[]
+     *
+     * @psalm-return list{OtherDomainEvent::class}
      */
     #[\Override]
     public function subscribedTo(): array

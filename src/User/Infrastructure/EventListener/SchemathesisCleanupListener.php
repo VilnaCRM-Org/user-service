@@ -82,7 +82,9 @@ final class SchemathesisCleanupListener
     /**
      * @param array<int, UserInterface> $users
      *
-     * @return array<int, string>
+     * @return string[]
+     *
+     * @psalm-return list{0: string, 1?: string,...}
      */
     private function buildInvalidationTags(array $users): array
     {
