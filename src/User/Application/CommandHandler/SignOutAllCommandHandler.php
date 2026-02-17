@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
+use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\SignOutAllCommand;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @implements CommandHandlerInterface<SignOutAllCommand, void>
@@ -19,7 +19,7 @@ final readonly class SignOutAllCommandHandler implements CommandHandlerInterface
     public function __construct(
         private AuthSessionRepositoryInterface $sessionRepository,
         private AuthRefreshTokenRepositoryInterface $refreshTokenRepository,
-        private EventDispatcherInterface $eventDispatcher,
+        private EventBusInterface $eventBus,
     ) {
     }
 
@@ -42,7 +42,7 @@ final readonly class SignOutAllCommandHandler implements CommandHandlerInterface
         }
 
         // AC: NFR-33 - Emit audit event
-        $this->eventDispatcher->dispatch(new AllSessionsRevokedEvent(
+        $this->eventBus->publish(new AllSessionsRevokedEvent(
             $command->userId,
             'user_initiated',
             $revokedCount,

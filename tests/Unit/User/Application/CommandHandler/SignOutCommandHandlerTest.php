@@ -9,16 +9,16 @@ use App\User\Application\Command\SignOutCommand;
 use App\User\Application\CommandHandler\SignOutCommandHandler;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Event\SessionRevokedEvent;
+use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class SignOutCommandHandlerTest extends UnitTestCase
 {
     private AuthSessionRepositoryInterface&MockObject $sessionRepository;
     private AuthRefreshTokenRepositoryInterface&MockObject $refreshTokenRepository;
-    private EventDispatcherInterface&MockObject $eventDispatcher;
+    private EventBusInterface&MockObject $eventBus;
     private SignOutCommandHandler $handler;
 
     #[\Override]
@@ -27,11 +27,11 @@ final class SignOutCommandHandlerTest extends UnitTestCase
         parent::setUp();
         $this->sessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
         $this->refreshTokenRepository = $this->createMock(AuthRefreshTokenRepositoryInterface::class);
-        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->handler = new SignOutCommandHandler(
             $this->sessionRepository,
             $this->refreshTokenRepository,
-            $this->eventDispatcher
+            $this->eventBus
         );
     }
 
@@ -59,9 +59,9 @@ final class SignOutCommandHandlerTest extends UnitTestCase
             ->method('revokeBySessionId')
             ->with($sessionId);
 
-        $this->eventDispatcher->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(function (SessionRevokedEvent $event) use ($userId, $sessionId) {
+        $this->eventBus->expects($this->once())
+            ->method('publish')
+            ->with($this->callback(static function (SessionRevokedEvent $event) use ($userId, $sessionId) {
                 return $event->userId === $userId
                     && $event->sessionId === $sessionId
                     && $event->reason === 'logout';
@@ -88,8 +88,8 @@ final class SignOutCommandHandlerTest extends UnitTestCase
             ->method('revokeBySessionId')
             ->with($sessionId);
 
-        $this->eventDispatcher->expects($this->once())
-            ->method('dispatch')
+        $this->eventBus->expects($this->once())
+            ->method('publish')
             ->with($this->isInstanceOf(SessionRevokedEvent::class));
 
         $this->handler->__invoke($command);

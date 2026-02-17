@@ -1451,7 +1451,7 @@ so that the API schema is not leaked and DoS via complex queries is prevented.
 
 # Story 5.8: JWT key security, GraphQL batch defense, and transport hardening
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 

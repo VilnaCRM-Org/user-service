@@ -9,16 +9,16 @@ use App\User\Application\Command\SignOutAllCommand;
 use App\User\Application\CommandHandler\SignOutAllCommandHandler;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
+use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class SignOutAllCommandHandlerTest extends UnitTestCase
 {
     private AuthSessionRepositoryInterface&MockObject $sessionRepository;
     private AuthRefreshTokenRepositoryInterface&MockObject $refreshTokenRepository;
-    private EventDispatcherInterface&MockObject $eventDispatcher;
+    private EventBusInterface&MockObject $eventBus;
     private SignOutAllCommandHandler $handler;
 
     #[\Override]
@@ -27,11 +27,11 @@ final class SignOutAllCommandHandlerTest extends UnitTestCase
         parent::setUp();
         $this->sessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
         $this->refreshTokenRepository = $this->createMock(AuthRefreshTokenRepositoryInterface::class);
-        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->handler = new SignOutAllCommandHandler(
             $this->sessionRepository,
             $this->refreshTokenRepository,
-            $this->eventDispatcher
+            $this->eventBus
         );
     }
 
@@ -73,9 +73,9 @@ final class SignOutAllCommandHandlerTest extends UnitTestCase
         $this->refreshTokenRepository->expects($this->exactly(2))
             ->method('revokeBySessionId');
 
-        $this->eventDispatcher->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(function (AllSessionsRevokedEvent $event) use ($userId) {
+        $this->eventBus->expects($this->once())
+            ->method('publish')
+            ->with($this->callback(static function (AllSessionsRevokedEvent $event) use ($userId) {
                 return $event->userId === $userId
                     && $event->reason === 'user_initiated'
                     && $event->revokedCount === 2;
@@ -120,9 +120,9 @@ final class SignOutAllCommandHandlerTest extends UnitTestCase
         $this->refreshTokenRepository->expects($this->once())
             ->method('revokeBySessionId');
 
-        $this->eventDispatcher->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(function (AllSessionsRevokedEvent $event) use ($userId) {
+        $this->eventBus->expects($this->once())
+            ->method('publish')
+            ->with($this->callback(static function (AllSessionsRevokedEvent $event) use ($userId) {
                 return $event->userId === $userId
                     && $event->revokedCount === 1;
             }));
