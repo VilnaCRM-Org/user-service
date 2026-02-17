@@ -11,6 +11,7 @@ use App\User\Application\Command\SignOutAllCommand;
 use App\User\Application\DTO\SignOutAllDto;
 use App\User\Application\Processor\SignOutAllProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -56,6 +57,30 @@ final class SignOutAllProcessorTest extends UnitTestCase
             }));
 
         $this->processor->process($dto, $operation);
+    }
+
+    public function testClearCookieHasCorrectAttributes(): void
+    {
+        $processor = new SignOutAllProcessor(
+            $this->commandBus,
+            $this->tokenStorage
+        );
+
+        $reflection = new \ReflectionMethod(SignOutAllProcessor::class, 'createClearCookieResponse');
+        $response = $reflection->invoke($processor);
+
+        $cookies = $response->headers->getCookies();
+        $this->assertCount(1, $cookies);
+        $cookie = $cookies[0];
+
+        $this->assertSame('__Host-auth_token', $cookie->getName());
+        $this->assertSame('', $cookie->getValue());
+        $this->assertSame(1, $cookie->getExpiresTime());
+        $this->assertSame('/', $cookie->getPath());
+        $this->assertNull($cookie->getDomain());
+        $this->assertTrue($cookie->isSecure());
+        $this->assertTrue($cookie->isHttpOnly());
+        $this->assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
     }
 
     public function testProcessThrowsExceptionWhenNoToken(): void

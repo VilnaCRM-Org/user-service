@@ -535,11 +535,15 @@ final class SignInCommandHandlerTest extends UnitTestCase
             ->willReturn(true);
 
         $publishedEvents = [];
+        $lockedOutEvent = null;
         $this->eventBus
             ->expects($this->exactly(2))
             ->method('publish')
-            ->willReturnCallback(static function (...$events) use (&$publishedEvents): void {
+            ->willReturnCallback(static function (...$events) use (&$publishedEvents, &$lockedOutEvent): void {
                 $publishedEvents[] = $events[0]::class;
+                if ($events[0] instanceof AccountLockedOutEvent) {
+                    $lockedOutEvent = $events[0];
+                }
             });
 
         $handler = $this->createHandler();
@@ -562,6 +566,9 @@ final class SignInCommandHandlerTest extends UnitTestCase
                 ],
                 $publishedEvents
             );
+            $this->assertNotNull($lockedOutEvent);
+            $this->assertSame(900, $lockedOutEvent->lockoutDurationSeconds);
+            $this->assertSame(5, $lockedOutEvent->failedAttempts);
             $this->assertSame('Account temporarily locked', $exception->getMessage());
             $this->assertSame(0, $exception->getCode());
             $this->assertSame('900', $exception->getHeaders()['Retry-After'] ?? null);
@@ -589,7 +596,10 @@ final class SignInCommandHandlerTest extends UnitTestCase
         $this->eventBus
             ->expects($this->once())
             ->method('publish')
-            ->with($this->isInstanceOf(AccountLockedOutEvent::class));
+            ->with($this->callback(static function (AccountLockedOutEvent $event): bool {
+                return $event->lockoutDurationSeconds === 900
+                    && $event->failedAttempts === 5;
+            }));
 
         $handler = $this->createHandler();
         $command = new SignInCommand(
