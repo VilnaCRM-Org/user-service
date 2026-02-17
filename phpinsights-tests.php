@@ -138,6 +138,7 @@ return [
                 'tests/Unit/User/Application/EventSubscriber/UserRegisteredMetricsSubscriberTest.php',
                 'tests/Unit/User/Application/EventSubscriber/UserUpdatedMetricsSubscriberTest.php',
                 'tests/Unit/User/Application/Processor/ResendEmailProcessorTest.php',
+                'tests/Unit/User/Application/Processor/SignOutAllProcessorTest.php',
                 'tests/Unit/User/Application/Processor/SignOutProcessorTest.php',
                 'tests/Unit/User/Application/Processor/UserPatchProcessorTestCase.php',
                 'tests/Unit/User/Infrastructure/EventSubscriber/RefreshTokenEventLogSubscriberTest.php',
