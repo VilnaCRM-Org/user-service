@@ -32,8 +32,6 @@ final class UserRegisteredEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.registered'
      */
     #[\Override]
@@ -43,7 +41,7 @@ final class UserRegisteredEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{userId: string, email: string}
      */

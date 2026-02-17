@@ -43,8 +43,6 @@ final class TwoFactorCompletedEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.two_factor_completed'
      */
     #[\Override]
@@ -54,7 +52,7 @@ final class TwoFactorCompletedEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{userId: string, sessionId: string, ipAddress: string, userAgent: string, method: string}
      */

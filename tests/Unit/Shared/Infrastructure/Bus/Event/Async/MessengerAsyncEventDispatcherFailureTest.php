@@ -73,7 +73,7 @@ final class MessengerAsyncEventDispatcherFailureTest extends UnitTestCase
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{event_id: string, event_type: TestEvent::class, event_name: 'test.event', error: string, exception_class: TestMessengerException::class}
      */

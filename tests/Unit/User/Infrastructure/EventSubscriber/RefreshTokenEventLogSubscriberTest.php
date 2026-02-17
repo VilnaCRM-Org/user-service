@@ -28,13 +28,13 @@ final class RefreshTokenEventLogSubscriberTest extends UnitTestCase
     {
         $sessionId = $this->faker->uuid();
 
-        $event = new RefreshTokenRotatedEvent($sessionId);
+        $event = new RefreshTokenRotatedEvent($sessionId, $this->faker->uuid(), $this->faker->uuid());
 
         $this->logger->expects($this->once())
             ->method('info')
             ->with(
                 'Refresh token rotated',
-                $this->callback(function ($context) use ($sessionId) {
+                $this->callback(static function ($context) use ($sessionId) {
                     return $context['event'] === 'user.refresh_token.rotated'
                         && $context['session_id'] === $sessionId
                         && $context['old_token_revoked'] === true;
@@ -50,13 +50,13 @@ final class RefreshTokenEventLogSubscriberTest extends UnitTestCase
         $userId = $this->faker->uuid();
         $ipAddress = $this->faker->ipv4();
 
-        $event = new RefreshTokenTheftDetectedEvent($sessionId, $userId, $ipAddress, "double_grace_use", $this->faker->uuid());
+        $event = new RefreshTokenTheftDetectedEvent($sessionId, $userId, $ipAddress, 'double_grace_use', $this->faker->uuid());
 
         $this->logger->expects($this->once())
             ->method('critical')
             ->with(
                 'Refresh token theft detected',
-                $this->callback(function ($context) use ($sessionId, $userId, $ipAddress) {
+                $this->callback(static function ($context) use ($sessionId, $userId, $ipAddress) {
                     return $context['event'] === 'user.refresh_token.theft_detected'
                         && $context['session_id'] === $sessionId
                         && $context['user_id'] === $userId

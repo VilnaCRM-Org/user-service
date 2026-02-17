@@ -31,8 +31,6 @@ final class PasswordResetConfirmedEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.password_reset_confirmed'
      */
     #[\Override]
@@ -42,7 +40,7 @@ final class PasswordResetConfirmedEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{userId: string}
      */

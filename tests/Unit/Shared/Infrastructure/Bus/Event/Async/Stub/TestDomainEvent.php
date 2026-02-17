@@ -33,8 +33,6 @@ final class TestDomainEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'test.domain_event'
      */
     #[\Override]
@@ -44,7 +42,7 @@ final class TestDomainEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{aggregateId: string}
      */

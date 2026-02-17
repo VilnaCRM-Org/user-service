@@ -18,8 +18,6 @@ final class CreateUserBatch extends Constraint
     }
 
     /**
-     * @return string
-     *
      * @psalm-return CreateUserBatchValidator::class
      */
     #[\Override]

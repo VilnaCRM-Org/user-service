@@ -76,7 +76,7 @@ final readonly class RedisTokenRepository implements TokenRepositoryInterface
         }
     }
 
-    private function getFromCache(string $key): ConfirmationToken|null
+    private function getFromCache(string $key): ?ConfirmationToken
     {
         $cacheItem = $this->redisAdapter->getItem($key);
         $serializedToken = $cacheItem->get();

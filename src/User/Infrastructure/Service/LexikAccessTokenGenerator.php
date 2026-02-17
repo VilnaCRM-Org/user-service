@@ -47,7 +47,7 @@ final readonly class LexikAccessTokenGenerator implements
     /**
      * @param array<string, int|string|array<string>> $payload
      *
-     * @return (DateTimeImmutable|int|string|string[])[]
+     * @return array<DateTimeImmutable|int|string|array<string>>
      *
      * @psalm-return array<string, DateTimeImmutable|array<string>|int|string>
      */

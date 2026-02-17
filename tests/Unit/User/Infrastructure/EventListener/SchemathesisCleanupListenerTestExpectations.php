@@ -48,7 +48,7 @@ final class SchemathesisCleanupListenerTestExpectations
     {
         $expectedCalls = array_map(
             /**
-             * @return string[]
+             * @return array<string>
              *
              * @psalm-return list{string}
              */
@@ -117,7 +117,7 @@ final class SchemathesisCleanupListenerTestExpectations
     {
         $expectedArgs = array_map(
             /**
-             * @return (\App\User\Domain\Entity\UserInterface|string)[]
+             * @return array<\App\User\Domain\Entity\UserInterface|string>
              *
              * @psalm-return list{\App\User\Domain\Entity\UserInterface, string}
              */
@@ -137,7 +137,7 @@ final class SchemathesisCleanupListenerTestExpectations
     {
         $expectedArgs = array_map(
             /**
-             * @return \App\User\Domain\Event\UserDeletedEvent[]
+             * @return array<\App\User\Domain\Event\UserDeletedEvent>
              *
              * @psalm-return list{\App\User\Domain\Event\UserDeletedEvent}
              */

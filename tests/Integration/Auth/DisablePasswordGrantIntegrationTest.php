@@ -75,7 +75,7 @@ final class DisablePasswordGrantIntegrationTest extends IntegrationTestCase
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{string, string}
      */

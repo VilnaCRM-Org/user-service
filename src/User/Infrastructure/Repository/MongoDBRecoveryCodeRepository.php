@@ -57,8 +57,6 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
     }
 
     /**
-     * @return int
-     *
      * @psalm-return int<0, max>
      */
     #[\Override]

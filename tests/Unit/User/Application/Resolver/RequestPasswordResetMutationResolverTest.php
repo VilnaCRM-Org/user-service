@@ -74,7 +74,7 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
     }
 
     /**
-     * @return string[][][]
+     * @return array<array<array<string>>>
      *
      * @psalm-return array{args: array{input: array{email: string}}}
      */

@@ -60,7 +60,7 @@ final readonly class SchemathesisUserSeeder
     }
 
     /**
-     * @return UserInterface[]
+     * @return array<UserInterface>
      *
      * @psalm-return array{primary: UserInterface, update: UserInterface, delete: UserInterface, password_reset_request: UserInterface, password_reset_confirm: UserInterface}
      */
@@ -74,7 +74,7 @@ final readonly class SchemathesisUserSeeder
     }
 
     /**
-     * @return UserInterface[]
+     * @return array<UserInterface>
      *
      * @psalm-return array{primary: UserInterface, update: UserInterface, delete: UserInterface, password_reset_request: UserInterface, password_reset_confirm: UserInterface}
      */

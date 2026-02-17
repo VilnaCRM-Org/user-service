@@ -81,7 +81,7 @@ final class ResilientEventSubscriberTest extends UnitTestCase
         return /**
          * @return never
          */
-        static function () use ($exception) {
+        static function () use ($exception): void {
             throw $exception;
         };
     }

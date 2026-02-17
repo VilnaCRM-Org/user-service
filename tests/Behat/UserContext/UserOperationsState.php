@@ -42,6 +42,7 @@ final class UserOperationsState
             'useAuthCookie' => false,
             'storedAccessTokens' => [],
             'storedRefreshTokens' => [],
+            'originHeader' => '',
         ];
     }
 }

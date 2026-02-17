@@ -41,8 +41,6 @@ final class SignInFailedEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.sign_in_failed'
      */
     #[\Override]
@@ -52,7 +50,7 @@ final class SignInFailedEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{email: string, ipAddress: string, userAgent: string, reason: string}
      */

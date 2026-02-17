@@ -21,6 +21,7 @@ default:
                 - App\Tests\Behat\UserContext\RateLimitingContext
                 - App\Tests\Behat\UserContext\UserRequestContext
                 - App\Tests\Behat\UserContext\UserPasswordResetRequestContext
+                - App\Tests\Behat\UserContext\SecurityHardeningContext
                 - App\Tests\Behat\UserContext\UserResponseContext
                 - App\Tests\Behat\HealthCheckContext\HealthCheckContext
         health_check:

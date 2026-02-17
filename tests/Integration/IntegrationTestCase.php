@@ -50,7 +50,7 @@ abstract class IntegrationTestCase extends KernelTestCase
     /**
      * @param list<string> $roles
      *
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{HTTP_AUTHORIZATION: string, HTTP_ACCEPT: 'application/json'}
      */

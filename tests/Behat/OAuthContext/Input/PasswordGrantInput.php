@@ -20,9 +20,9 @@ final class PasswordGrantInput extends ObtainAccessTokenInput
     }
 
     /**
-     * @return (null|string)[]
+     * @return array<string|null>
      *
-     * @psalm-return array{grant_type: null|string, username: string, password: string}
+     * @psalm-return array{grant_type: string|null, username: string, password: string}
      */
     #[\Override]
     public function toArray(): array

@@ -18,9 +18,9 @@ final class ClientCredentialsGrantInput extends ObtainAccessTokenInput
     }
 
     /**
-     * @return (null|string)[]
+     * @return array<string|null>
      *
-     * @psalm-return array{grant_type: null|string}
+     * @psalm-return array{grant_type: string|null}
      */
     #[\Override]
     public function toArray(): array

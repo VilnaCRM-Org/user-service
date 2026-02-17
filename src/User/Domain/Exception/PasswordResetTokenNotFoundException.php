@@ -12,8 +12,6 @@ final class PasswordResetTokenNotFoundException extends DomainException
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'error.password-reset-token-not-found'
      */
     #[\Override]

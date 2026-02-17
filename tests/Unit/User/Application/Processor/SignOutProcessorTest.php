@@ -10,11 +10,11 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SignOutCommand;
 use App\User\Application\DTO\SignOutDto;
 use App\User\Application\Processor\SignOutProcessor;
-use App\User\Domain\Entity\User;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 final class SignOutProcessorTest extends UnitTestCase
 {
@@ -42,7 +42,7 @@ final class SignOutProcessorTest extends UnitTestCase
         $operation = $this->createMock(Operation::class);
 
         $token = $this->createMock(TokenInterface::class);
-        $user = $this->createMock(User::class);
+        $user = $this->createMock(UserInterface::class);
 
         $this->tokenStorage->expects($this->once())
             ->method('getToken')
@@ -63,7 +63,7 @@ final class SignOutProcessorTest extends UnitTestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(function (SignOutCommand $command) use ($sessionId, $userId) {
+            ->with($this->callback(static function (SignOutCommand $command) use ($sessionId, $userId) {
                 return $command->sessionId === $sessionId
                     && $command->userId === $userId;
             }));
@@ -111,7 +111,7 @@ final class SignOutProcessorTest extends UnitTestCase
         $dto = new SignOutDto();
         $operation = $this->createMock(Operation::class);
         $token = $this->createMock(TokenInterface::class);
-        $user = $this->createMock(User::class);
+        $user = $this->createMock(UserInterface::class);
 
         $this->tokenStorage->expects($this->once())
             ->method('getToken')

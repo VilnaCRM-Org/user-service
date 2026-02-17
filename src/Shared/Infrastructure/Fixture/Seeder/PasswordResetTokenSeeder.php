@@ -30,7 +30,7 @@ final readonly class PasswordResetTokenSeeder
     /**
      * @param array<int,string> $tokenValues
      *
-     * @return PasswordResetTokenInterface[]
+     * @return array<PasswordResetTokenInterface>
      *
      * @psalm-return list{0?: PasswordResetTokenInterface,...}
      */

@@ -25,8 +25,6 @@ final readonly class EventSubscriberFailureMetric extends BusinessMetric
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'EventSubscriberFailures'
      */
     #[\Override]

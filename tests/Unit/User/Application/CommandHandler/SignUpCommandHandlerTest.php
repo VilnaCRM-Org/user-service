@@ -110,7 +110,7 @@ final class SignUpCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return (RegisterUserCommand|UserInterface|string)[]
+     * @return array<RegisterUserCommand|UserInterface|string>
      *
      * @psalm-return array{email: string, existingUser: UserInterface, command: RegisterUserCommand}
      */

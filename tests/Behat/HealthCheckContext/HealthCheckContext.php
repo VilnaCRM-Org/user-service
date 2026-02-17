@@ -112,11 +112,8 @@ final class HealthCheckContext implements Context
                 ]);
             }
 
-            /**
-             * @return never
-             */
             #[\Override]
-            public function __call($name, array $args): void
+            public function __call($name, array $args): never
             {
                 throw new \RuntimeException('Message broker is not available');
             }

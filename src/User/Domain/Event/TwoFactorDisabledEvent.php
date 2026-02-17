@@ -37,8 +37,6 @@ final class TwoFactorDisabledEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.two_factor_disabled'
      */
     #[\Override]
@@ -48,7 +46,7 @@ final class TwoFactorDisabledEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{userId: string, email: string}
      */

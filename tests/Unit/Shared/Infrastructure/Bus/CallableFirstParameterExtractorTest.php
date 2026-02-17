@@ -50,7 +50,7 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
     {
         return new class() implements DomainEventSubscriberInterface {
             /**
-             * @return string[]
+             * @return array<string>
              *
              * @psalm-return list{\App\Shared\Domain\Bus\Event\DomainEvent::class}
              */
@@ -71,7 +71,7 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
     {
         return new class() implements DomainEventSubscriberInterface {
             /**
-             * @return string[]
+             * @return array<string>
              *
              * @psalm-return list{\App\Shared\Domain\Bus\Event\DomainEvent::class, Stub\TestOtherEvent::class}
              */

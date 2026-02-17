@@ -18,8 +18,6 @@ final class InfiniteRetryStrategy implements RetryStrategyInterface
 
     /**
      * @psalm-suppress UnusedParam Parameters required by interface but not used (always retry)
-     *
-     * @return true
      */
     public function shouldRetry(
         AsyncContext $context,
@@ -40,9 +38,6 @@ final class InfiniteRetryStrategy implements RetryStrategyInterface
         return $this->delayMs;
     }
 
-    /**
-     * @return true
-     */
     #[\Override]
     public function isRetryable(
         Envelope $message,

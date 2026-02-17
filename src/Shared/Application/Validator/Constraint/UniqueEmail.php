@@ -18,8 +18,6 @@ final class UniqueEmail extends Constraint
     }
 
     /**
-     * @return string
-     *
      * @psalm-return UniqueEmailValidator::class
      */
     #[\Override]

@@ -18,7 +18,7 @@ final readonly class AllowedMethodsProvider
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list<string>
      */

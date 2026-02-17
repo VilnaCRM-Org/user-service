@@ -54,7 +54,7 @@ final readonly class SignInEventLogSubscriber implements DomainEventSubscriberIn
             'ip_address' => $event->ipAddress,
             'user_agent' => $event->userAgent,
             'two_factor_used' => $event->twoFactorUsed,
-            'timestamp' => $event->occurredOn()->format(\DateTimeInterface::ATOM),
+            'timestamp' => $event->occurredOn(),
         ]);
     }
 
@@ -66,7 +66,7 @@ final readonly class SignInEventLogSubscriber implements DomainEventSubscriberIn
             'attempted_email' => $event->email,
             'ip_address' => $event->ipAddress,
             'reason' => $event->reason,
-            'timestamp' => $event->occurredOn()->format(\DateTimeInterface::ATOM),
+            'timestamp' => $event->occurredOn(),
         ]);
     }
 }

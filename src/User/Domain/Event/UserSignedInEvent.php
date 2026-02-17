@@ -45,8 +45,6 @@ final class UserSignedInEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.signed_in'
      */
     #[\Override]
@@ -56,7 +54,7 @@ final class UserSignedInEvent extends DomainEvent
     }
 
     /**
-     * @return (bool|string)[]
+     * @return array<bool|string>
      *
      * @psalm-return array{userId: string, email: string, sessionId: string, ipAddress: string, userAgent: string, twoFactorUsed: bool}
      */

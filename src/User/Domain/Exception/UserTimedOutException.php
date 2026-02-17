@@ -18,8 +18,6 @@ final class UserTimedOutException extends DomainException
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'error.user-timed-out'
      */
     #[\Override]
@@ -29,7 +27,7 @@ final class UserTimedOutException extends DomainException
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{datetime: string}
      */

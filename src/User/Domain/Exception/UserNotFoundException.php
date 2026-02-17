@@ -12,8 +12,6 @@ final class UserNotFoundException extends DomainException
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'error.user-not-found'
      */
     #[\Override]

@@ -81,7 +81,7 @@ final class CachedUserRepository implements UserRepositoryInterface
         string $id,
         ?int $lockMode = null,
         ?int $lockVersion = null
-    ): UserInterface|null {
+    ): ?UserInterface {
         // MongoDB ODM doesn't support lock modes, use findById instead
         return $this->findById($id);
     }

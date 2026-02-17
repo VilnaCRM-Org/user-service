@@ -23,8 +23,6 @@ final readonly class UsersUpdatedMetric extends EndpointOperationBusinessMetric
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'UsersUpdated'
      */
     #[\Override]
@@ -34,8 +32,6 @@ final readonly class UsersUpdatedMetric extends EndpointOperationBusinessMetric
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'User'
      */
     #[\Override]
@@ -45,8 +41,6 @@ final readonly class UsersUpdatedMetric extends EndpointOperationBusinessMetric
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'update'
      */
     #[\Override]

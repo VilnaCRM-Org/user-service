@@ -76,7 +76,7 @@ final class CreateUserRequestFactory implements AbstractRequestFactory
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{email: 'create-user@example.com', initials: 'Create User', password: 'CreatePass1!'}
      */

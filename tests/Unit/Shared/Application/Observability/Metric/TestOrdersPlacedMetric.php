@@ -20,8 +20,6 @@ final readonly class TestOrdersPlacedMetric extends BusinessMetric
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'OrdersPlaced'
      */
     #[\Override]

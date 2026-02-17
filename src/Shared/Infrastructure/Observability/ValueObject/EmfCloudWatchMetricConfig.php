@@ -51,7 +51,7 @@ final readonly class EmfCloudWatchMetricConfig implements \JsonSerializable
     }
 
     /**
-     * @return (string|string[][])[]
+     * @return array<string|array<array<string>>>
      *
      * @psalm-return array{Namespace: string, Dimensions: list{array<int, string>}, Metrics: array<int, array{Name: string, Unit: string}>}
      */

@@ -15,10 +15,9 @@ final class JwtKeyPermissionsTest extends IntegrationTestCase
     private const PUBLIC_KEY_PATH = __DIR__ . '/../../../config/jwt/public.pem';
 
     /**
-     * @test
      * AC: NFR-61 - Private key must have 600 permissions (owner read/write only)
      */
-    public function private_key_has_600_permissions(): void
+    public function testPrivateKeyHas600Permissions(): void
     {
         $this->assertTrue(
             file_exists(self::PRIVATE_KEY_PATH),
@@ -32,8 +31,7 @@ final class JwtKeyPermissionsTest extends IntegrationTestCase
             '600',
             $octal,
             sprintf(
-                'Private key must have 600 permissions (owner read/write only), got %s. ' .
-                'Run: chmod 600 %s',
+                'Private key must have 600 permissions (owner read/write only), got %s. Run: chmod 600 %s',
                 $octal,
                 self::PRIVATE_KEY_PATH
             )
@@ -41,10 +39,9 @@ final class JwtKeyPermissionsTest extends IntegrationTestCase
     }
 
     /**
-     * @test
      * AC: NFR-61 - Public key must have 644 permissions (owner read/write, group/others read)
      */
-    public function public_key_has_644_permissions(): void
+    public function testPublicKeyHas644Permissions(): void
     {
         $this->assertTrue(
             file_exists(self::PUBLIC_KEY_PATH),
@@ -58,8 +55,7 @@ final class JwtKeyPermissionsTest extends IntegrationTestCase
             '644',
             $octal,
             sprintf(
-                'Public key must have 644 permissions (owner read/write, others read), got %s. ' .
-                'Run: chmod 644 %s',
+                'Public key must have 644 permissions (owner read/write, others read), got %s. Run: chmod 644 %s',
                 $octal,
                 self::PUBLIC_KEY_PATH
             )
@@ -67,10 +63,9 @@ final class JwtKeyPermissionsTest extends IntegrationTestCase
     }
 
     /**
-     * @test
      * AC: NFR-61 - Private key must not be world-readable
      */
-    public function private_key_is_not_world_readable(): void
+    public function testPrivateKeyIsNotWorldReadable(): void
     {
         $this->assertTrue(
             file_exists(self::PRIVATE_KEY_PATH),
@@ -87,10 +82,9 @@ final class JwtKeyPermissionsTest extends IntegrationTestCase
     }
 
     /**
-     * @test
      * AC: NFR-61 - Private key must not be group-readable
      */
-    public function private_key_is_not_group_readable(): void
+    public function testPrivateKeyIsNotGroupReadable(): void
     {
         $this->assertTrue(
             file_exists(self::PRIVATE_KEY_PATH),

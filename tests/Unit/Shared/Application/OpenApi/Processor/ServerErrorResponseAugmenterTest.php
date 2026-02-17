@@ -20,12 +20,15 @@ final class ServerErrorResponseAugmenterTest extends UnitTestCase
     public function testAugmentAddsInternalServerErrorResponse(): void
     {
         $internalErrorResponse = new Response(description: 'Server error');
+        /** @psalm-suppress NoValue */
         $internalErrorFactory = $this->createInternalErrorFactory($internalErrorResponse);
+        /** @psalm-suppress UnevaluatedCode */
         $openApi = $this->createOpenApiWithOperations();
-
+        /** @psalm-suppress UnevaluatedCode */
         $augmenter = new ServerErrorResponseAugmenter($internalErrorFactory);
+        /** @psalm-suppress UnevaluatedCode */
         $augmenter->augment($openApi);
-
+        /** @psalm-suppress UnevaluatedCode */
         $this->assertBothOperationsHaveServerError($openApi, $internalErrorResponse);
     }
 
@@ -39,6 +42,7 @@ final class ServerErrorResponseAugmenterTest extends UnitTestCase
         return $factory;
     }
 
+    /** @psalm-suppress UnusedMethod */
     private function createOpenApiWithOperations(): OpenApi
     {
         $operation = new Operation(responses: []);
@@ -52,6 +56,7 @@ final class ServerErrorResponseAugmenterTest extends UnitTestCase
         return new OpenApi(new Info('Test', '1.0.0'), [], $paths);
     }
 
+    /** @psalm-suppress UnusedMethod */
     private function assertBothOperationsHaveServerError(
         OpenApi $openApi,
         Response $internalErrorResponse

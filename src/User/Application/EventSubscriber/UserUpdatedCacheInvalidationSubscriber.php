@@ -46,7 +46,7 @@ final readonly class UserUpdatedCacheInvalidationSubscriber implements
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{UserUpdatedEvent::class}
      */

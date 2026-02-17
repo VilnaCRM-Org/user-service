@@ -58,7 +58,7 @@ final class AllowedParametersRule implements QueryParameterRule
     /**
      * @param array<string, array|string|int|float|bool|null> $queryParameters
      *
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array<int<0, max>, string>
      */

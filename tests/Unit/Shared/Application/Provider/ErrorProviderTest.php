@@ -263,7 +263,7 @@ final class ErrorProviderTest extends UnitTestCase
     }
 
     /**
-     * @return Request[]
+     * @return array<Request>
      *
      * @psalm-return array{request: Request}
      */
@@ -337,7 +337,7 @@ final class ErrorProviderTest extends UnitTestCase
             ->willReturn('');
     }
 
-    private function createApiPlatformHttpException(): RuntimeException
+    private function createApiPlatformHttpException(): \RuntimeException
     {
         return new class() extends \RuntimeException implements ApiPlatformHttpExceptionInterface {
             public function __construct()
@@ -346,8 +346,6 @@ final class ErrorProviderTest extends UnitTestCase
             }
 
             /**
-             * @return int
-             *
              * @psalm-return 400
              */
             #[\Override]
@@ -357,7 +355,7 @@ final class ErrorProviderTest extends UnitTestCase
             }
 
             /**
-             * @return string[]
+             * @return array<string>
              *
              * @psalm-return array{'X-Debug': '1'}
              */

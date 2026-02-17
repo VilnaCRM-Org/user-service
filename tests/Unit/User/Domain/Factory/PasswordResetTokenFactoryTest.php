@@ -8,7 +8,6 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\PasswordResetToken;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Factory\PasswordResetTokenFactory;
-use App\User\Domain\Factory\PasswordResetTokenFactoryInterface;
 
 final class PasswordResetTokenFactoryTest extends UnitTestCase
 {

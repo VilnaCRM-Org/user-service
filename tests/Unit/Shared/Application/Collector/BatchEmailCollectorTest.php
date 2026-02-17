@@ -72,10 +72,7 @@ final class BatchEmailCollectorTest extends UnitTestCase
 
     public function testCollectsFromGeneratorEntries(): void
     {
-        $entries = (/**
-         * @psalm-return \Generator<'first'|'second', array{email: 'bar@example.com'|'foo@example.com'}, mixed, void>
-         */
-        static function (): \Generator {
+        $entries = (static function (): \Generator {
             yield 'first' => ['email' => 'foo@example.com'];
             yield 'second' => ['email' => 'bar@example.com'];
         })();

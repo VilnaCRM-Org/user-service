@@ -13,8 +13,8 @@ final class AccountLockedOutEventTest extends UnitTestCase
     {
         $event = new AccountLockedOutEvent(
             $this->faker->email(),
-            $this->faker->ipv4(),
-            $this->faker->userAgent(),
+            $this->faker->numberBetween(1, 20),
+            $this->faker->numberBetween(300, 3600),
             $this->faker->uuid()
         );
 
@@ -22,8 +22,8 @@ final class AccountLockedOutEventTest extends UnitTestCase
 
         $this->assertSame('user.account_locked_out', AccountLockedOutEvent::eventName());
         $this->assertSame($event->email, $primitives['email']);
-        $this->assertSame($event->ipAddress, $primitives['ipAddress']);
-        $this->assertSame($event->userAgent, $primitives['userAgent']);
+        $this->assertSame($event->failedAttempts, $primitives['failedAttempts']);
+        $this->assertSame($event->lockoutDurationSeconds, $primitives['lockoutDurationSeconds']);
     }
 
     public function testFromPrimitives(): void
@@ -34,8 +34,8 @@ final class AccountLockedOutEventTest extends UnitTestCase
         $event = AccountLockedOutEvent::fromPrimitives(
             [
                 'email' => $this->faker->email(),
-                'ipAddress' => $this->faker->ipv4(),
-                'userAgent' => $this->faker->userAgent(),
+                'failedAttempts' => (string) $this->faker->numberBetween(1, 20),
+                'lockoutDurationSeconds' => (string) $this->faker->numberBetween(300, 3600),
             ],
             $eventId,
             $occurredOn

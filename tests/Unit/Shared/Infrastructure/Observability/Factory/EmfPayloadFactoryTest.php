@@ -213,8 +213,6 @@ final class EmfPayloadFactoryTest extends UnitTestCase
     {
         return new class() implements EmfTimestampProvider {
             /**
-             * @return int
-             *
              * @psalm-return 1702425600000
              */
             #[\Override]

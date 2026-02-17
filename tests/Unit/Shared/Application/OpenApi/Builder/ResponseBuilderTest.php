@@ -101,7 +101,7 @@ final class ResponseBuilderTest extends UnitTestCase
     }
 
     /**
-     * @return Parameter[]
+     * @return array<Parameter>
      *
      * @psalm-return list{Parameter}
      */
@@ -117,7 +117,7 @@ final class ResponseBuilderTest extends UnitTestCase
     }
 
     /**
-     * @return Header[]
+     * @return array<Header>
      *
      * @psalm-return list{Header}
      */

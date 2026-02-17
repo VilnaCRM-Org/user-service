@@ -50,7 +50,7 @@ final readonly class RefreshTokenEventLogSubscriber implements DomainEventSubscr
             'event' => 'user.refresh_token.rotated',
             'session_id' => $event->sessionId,
             'old_token_revoked' => true,
-            'timestamp' => $event->occurredOn()->format(\DateTimeInterface::ATOM),
+            'timestamp' => $event->occurredOn(),
         ]);
     }
 
@@ -62,7 +62,7 @@ final readonly class RefreshTokenEventLogSubscriber implements DomainEventSubscr
             'session_id' => $event->sessionId,
             'user_id' => $event->userId,
             'ip_address' => $event->ipAddress,
-            'timestamp' => $event->occurredOn()->format(\DateTimeInterface::ATOM),
+            'timestamp' => $event->occurredOn(),
         ]);
     }
 }

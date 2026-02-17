@@ -26,6 +26,7 @@ final class UserTest extends UnitTestCase
     private UserInterface $user;
     private UserConfirmedEventFactoryInterface $userConfirmedEventFactory;
     private EmailChangedEventFactoryInterface $emailChangedEventFactory;
+    /** @psalm-suppress UnusedProperty */
     private PasswordChangedEventFactoryInterface $passwordChangedEventFactory;
     private UserFactoryInterface $userFactory;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
@@ -105,6 +106,11 @@ final class UserTest extends UnitTestCase
         $this->assertTrue($this->user->isConfirmed());
     }
 
+    /**
+     * @psalm-suppress NoValue
+     * @psalm-suppress UnusedVariable
+     * @psalm-suppress UnevaluatedCode
+     */
     public function testUpdate(): void
     {
         $oldEmail = $this->user->getEmail();

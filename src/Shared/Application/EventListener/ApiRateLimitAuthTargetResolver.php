@@ -26,7 +26,7 @@ final readonly class ApiRateLimitAuthTargetResolver
     }
 
     /**
-     * @return string[][]
+     * @return array<array<string>>
      *
      * @psalm-return list<array{key: string, name: 'signin_email'|'signin_ip'|'twofa_confirm'|'twofa_disable'|'twofa_setup'|'twofa_verification_ip'|'twofa_verification_user'}>
      */
@@ -43,7 +43,7 @@ final readonly class ApiRateLimitAuthTargetResolver
     }
 
     /**
-     * @return string[][]
+     * @return array<array<string>>
      *
      * @psalm-return list{0?: array{name: 'signin_ip', key: string}, 1?: array{name: 'signin_email', key: string}}
      */
@@ -69,7 +69,7 @@ final readonly class ApiRateLimitAuthTargetResolver
     }
 
     /**
-     * @return string[][]
+     * @return array<array<string>>
      *
      * @psalm-return list{0?: array{name: 'twofa_verification_ip', key: string}, 1?: array{name: 'twofa_verification_user', key: string}}
      */
@@ -104,7 +104,7 @@ final readonly class ApiRateLimitAuthTargetResolver
     }
 
     /**
-     * @return string[][]
+     * @return array<array<string>>
      *
      * @psalm-return list{0?: array{name: 'twofa_confirm'|'twofa_disable'|'twofa_setup', key: string}}
      */

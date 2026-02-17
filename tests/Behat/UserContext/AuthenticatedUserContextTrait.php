@@ -603,7 +603,7 @@ trait AuthenticatedUserContextTrait
     /**
      * @param array<string, array<string>|int|string> $payload
      *
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{string,...}
      */
@@ -645,7 +645,7 @@ trait AuthenticatedUserContextTrait
     }
 
     /**
-     * @return (int|string|string[])[]
+     * @return array<int|string|array<string>>
      *
      * @psalm-return array{sub: string, iss: 'vilnacrm-user-service', aud: 'vilnacrm-api', exp: int<901, max>, iat: int<1, max>, nbf: int<1, max>, jti: string, sid: string, roles: list{'ROLE_USER'}}
      */
@@ -680,7 +680,7 @@ trait AuthenticatedUserContextTrait
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return non-empty-list<string>
      */

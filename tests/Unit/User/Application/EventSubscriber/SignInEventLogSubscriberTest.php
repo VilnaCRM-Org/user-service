@@ -92,8 +92,8 @@ final class SignInEventLogSubscriberTest extends UnitTestCase
     {
         $event = new AccountLockedOutEvent(
             $this->faker->email(),
-            $this->faker->ipv4(),
-            $this->faker->userAgent(),
+            $this->faker->numberBetween(1, 20),
+            $this->faker->numberBetween(300, 3600),
             $this->faker->uuid(),
         );
 
@@ -102,8 +102,8 @@ final class SignInEventLogSubscriberTest extends UnitTestCase
             ->method('warning')
             ->with('Account locked out', [
                 'email' => $event->email,
-                'ipAddress' => $event->ipAddress,
-                'userAgent' => $event->userAgent,
+                'failedAttempts' => $event->failedAttempts,
+                'lockoutDurationSeconds' => $event->lockoutDurationSeconds,
             ]);
 
         $this->logger
@@ -269,8 +269,6 @@ final class SignInEventLogSubscriberTest extends UnitTestCase
             }
 
             /**
-             * @return string
-             *
              * @psalm-return 'unknown.event'
              */
             #[\Override]
@@ -280,8 +278,6 @@ final class SignInEventLogSubscriberTest extends UnitTestCase
             }
 
             /**
-             * @return array
-             *
              * @psalm-return array<never, never>
              */
             #[\Override]

@@ -12,8 +12,6 @@ final class TokenNotFoundException extends DomainException
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'error.token-not-found'
      */
     #[\Override]

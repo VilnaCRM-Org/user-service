@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\User\Domain\Entity;
 
-use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\ValueObject\UuidInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
@@ -106,7 +105,7 @@ class User implements UserInterface
     }
 
     /**
-     * @return (\App\User\Domain\Event\EmailChangedEvent|\App\User\Domain\Event\PasswordChangedEvent)[]
+     * @return array<\App\User\Domain\Event\EmailChangedEvent|\App\User\Domain\Event\PasswordChangedEvent>
      *
      * @psalm-return array{0?: \App\User\Domain\Event\EmailChangedEvent|\App\User\Domain\Event\PasswordChangedEvent}
      */
@@ -189,7 +188,7 @@ class User implements UserInterface
     }
 
     /**
-     * @return \App\User\Domain\Event\EmailChangedEvent[]
+     * @return array<\App\User\Domain\Event\EmailChangedEvent>
      *
      * @psalm-return list{0?: \App\User\Domain\Event\EmailChangedEvent}
      */
@@ -211,7 +210,7 @@ class User implements UserInterface
     }
 
     /**
-     * @return \App\User\Domain\Event\PasswordChangedEvent[]
+     * @return array<\App\User\Domain\Event\PasswordChangedEvent>
      *
      * @psalm-return list{0?: \App\User\Domain\Event\PasswordChangedEvent}
      */

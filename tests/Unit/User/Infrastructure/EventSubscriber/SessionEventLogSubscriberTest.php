@@ -36,7 +36,7 @@ final class SessionEventLogSubscriberTest extends UnitTestCase
             ->method('info')
             ->with(
                 'Session revoked',
-                $this->callback(function ($context) use ($userId, $sessionId, $reason) {
+                $this->callback(static function ($context) use ($userId, $sessionId, $reason) {
                     return $context['event'] === 'user.session.revoked'
                         && $context['user_id'] === $userId
                         && $context['session_id'] === $sessionId
@@ -59,7 +59,7 @@ final class SessionEventLogSubscriberTest extends UnitTestCase
             ->method('info')
             ->with(
                 'All sessions revoked',
-                $this->callback(function ($context) use ($userId, $reason) {
+                $this->callback(static function ($context) use ($userId, $reason) {
                     return $context['event'] === 'user.sessions.all_revoked'
                         && $context['user_id'] === $userId
                         && $context['reason'] === $reason;

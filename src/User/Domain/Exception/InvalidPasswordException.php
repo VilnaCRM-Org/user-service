@@ -12,8 +12,6 @@ final class InvalidPasswordException extends DomainException
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'error.invalid-password'
      */
     #[\Override]

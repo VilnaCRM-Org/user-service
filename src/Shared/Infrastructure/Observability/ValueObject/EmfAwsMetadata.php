@@ -37,7 +37,7 @@ final readonly class EmfAwsMetadata implements \JsonSerializable
     }
 
     /**
-     * @return ((string|string[][])[][]|int)[]
+     * @return array<array<array<string|array<array<string>>>>|int>
      *
      * @psalm-return array{Timestamp: int, CloudWatchMetrics: list{array{Namespace: string, Dimensions: array<int, array<int, string>>, Metrics: array<int, array{Name: string, Unit: string}>}}}
      */

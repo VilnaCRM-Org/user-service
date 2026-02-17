@@ -42,7 +42,7 @@ final readonly class ContextBuilder
     /**
      * @param array<Parameter> $params
      *
-     * @psalm-return ArrayObject<string, array<'example'|'schema', array<int|string, array<array<int|mixed|string>|bool|int|mixed|string>|bool|int|string>>>
+     * @psalm-return ArrayObject<string, array<'example'|'schema', array<int|string, array<array<int|string>|bool|int|string>|bool|int|string>>>
      */
     private function processParams(
         array $params,
@@ -65,7 +65,7 @@ final readonly class ContextBuilder
      * @param array<string, string|int|array|bool> $example
      * @param array<int, string> $required
      *
-     * @psalm-return ArrayObject<string, array<'example'|'schema', array<int|string, array<array<int|mixed|string>|bool|int|mixed|string>|bool|int|string>>>
+     * @psalm-return ArrayObject<string, array<'example'|'schema', array<int|string, array<array<int|string>|bool|int|string>|bool|int|string>>>
      */
     private function buildContent(
         string $contentType,
@@ -140,7 +140,7 @@ final readonly class ContextBuilder
     /**
      * @param array<Parameter> $params
      *
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list<string>
      */
@@ -160,11 +160,11 @@ final readonly class ContextBuilder
     /**
      * @param array<int|string, array|string|int|bool> $values
      *
-     * @return (array|bool|int|string)[]|null
+     * @return array<array|bool|int|string>|null
      *
      * @psalm-return array<int|string, array|bool|int|string>|null
      */
-    private function emptyArrayToNull(array $values): array|null|null
+    private function emptyArrayToNull(array $values): ?array
     {
         if ($values === []) {
             return null;

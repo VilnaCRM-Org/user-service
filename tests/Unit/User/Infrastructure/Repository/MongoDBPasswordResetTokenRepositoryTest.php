@@ -70,7 +70,7 @@ final class MongoDBPasswordResetTokenRepositoryTest extends UnitTestCase
     public function testFindByUserID(): void
     {
         $userID = $this->faker->uuid();
-        $expectedToken = $this->createMock(PasswordResetTokenInterface::class);
+        $expectedToken = $this->createMock(PasswordResetToken::class);
 
         $repositoryClass = MongoDBPasswordResetTokenRepository::class;
         $repository = $this->getMockBuilder($repositoryClass)

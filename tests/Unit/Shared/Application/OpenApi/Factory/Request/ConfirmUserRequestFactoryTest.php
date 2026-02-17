@@ -32,7 +32,7 @@ final class ConfirmUserRequestFactoryTest extends UnitTestCase
     }
 
     /**
-     * @return Parameter[]
+     * @return array<Parameter>
      *
      * @psalm-return list{Parameter}
      */

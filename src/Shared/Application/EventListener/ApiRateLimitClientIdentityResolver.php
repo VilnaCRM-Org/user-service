@@ -37,10 +37,7 @@ final readonly class ApiRateLimitClientIdentityResolver
         return 'anonymous';
     }
 
-    /**
-     * @return null|string
-     */
-    public function resolveSignInEmail(Request $request): string|null|null
+    public function resolveSignInEmail(Request $request): ?string
     {
         $email = $this->resolvePayloadValue($request, [self::EMAIL_KEY]);
         if ($email === null) {
@@ -55,7 +52,7 @@ final readonly class ApiRateLimitClientIdentityResolver
         return $this->resolvePayloadValue($request, self::PENDING_SESSION_ID_KEYS);
     }
 
-    public function resolveUserSubject(Request $request): string|null|null
+    public function resolveUserSubject(Request $request): ?string
     {
         $token = $this->resolveBearerToken($request);
         if ($token === null) {
@@ -133,10 +130,8 @@ final readonly class ApiRateLimitClientIdentityResolver
     /**
      * @param array<string, array<int, string>|bool|float|int|string|null> $payload
      * @param list<string> $keys
-     *
-     * @return null|string
      */
-    private function findStringValue(array $payload, array $keys): string|null|null
+    private function findStringValue(array $payload, array $keys): ?string
     {
         foreach ($keys as $key) {
             $value = $payload[$key] ?? null;
@@ -148,7 +143,7 @@ final readonly class ApiRateLimitClientIdentityResolver
         return null;
     }
 
-    private function resolveClientIdFromBasicAuth(Request $request): string|null|null
+    private function resolveClientIdFromBasicAuth(Request $request): ?string
     {
         $authorization = $request->headers->get('Authorization');
         if (!is_string($authorization) || !str_starts_with($authorization, 'Basic ')) {

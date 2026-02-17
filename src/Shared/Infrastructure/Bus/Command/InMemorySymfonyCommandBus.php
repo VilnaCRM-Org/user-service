@@ -1,6 +1,6 @@
 <?php
 
-definal clare(strict_types=1);
+declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Bus\Command;
 

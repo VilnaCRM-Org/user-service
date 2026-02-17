@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Validator;
 
-use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\Compound;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -35,7 +34,7 @@ final class EmfValue extends Compound
     /**
      * @param array<string, scalar|array|null> $options
      *
-     * @return (Length|NotBlank|Regex)[]
+     * @return array<Length|NotBlank|Regex>
      *
      * @psalm-return list{NotBlank, Length, Regex, Regex}
      */

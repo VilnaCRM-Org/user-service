@@ -72,7 +72,7 @@ final readonly class CallableFirstParameterExtractor
     /**
      * @param array<DomainEventSubscriberInterface> $subscribers
      *
-     * @return DomainEventSubscriberInterface[]
+     * @return array<DomainEventSubscriberInterface>
      *
      * @psalm-return array<DomainEventSubscriberInterface>
      */

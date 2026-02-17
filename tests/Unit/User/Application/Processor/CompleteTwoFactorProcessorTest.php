@@ -47,21 +47,22 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (CompleteTwoFactorCommand $command) use ($pendingSessionId, $totpCode, $ipAddress, $userAgent): bool {
-                $this->assertSame($pendingSessionId, $command->pendingSessionId);
-                $this->assertSame($totpCode, $command->twoFactorCode);
-                $this->assertSame($ipAddress, $command->ipAddress);
-                $this->assertSame($userAgent, $command->userAgent);
+                function (CompleteTwoFactorCommand $command) use ($pendingSessionId, $totpCode, $ipAddress, $userAgent): bool {
+                    $this->assertSame($pendingSessionId, $command->pendingSessionId);
+                    $this->assertSame($totpCode, $command->twoFactorCode);
+                    $this->assertSame($ipAddress, $command->ipAddress);
+                    $this->assertSame($userAgent, $command->userAgent);
 
-                $command->setResponse(
-                    new CompleteTwoFactorCommandResponse(
-                        'issued-access-token',
-                        'issued-refresh-token'
-                    )
-                );
+                    $command->setResponse(
+                        new CompleteTwoFactorCommandResponse(
+                            'issued-access-token',
+                            'issued-refresh-token'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new CompleteTwoFactorProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
@@ -102,16 +103,17 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            static function (CompleteTwoFactorCommand $command): bool {
-                $command->setResponse(
-                    new CompleteTwoFactorCommandResponse(
-                        '',
-                        'issued-refresh-token'
-                    )
-                );
+                static function (CompleteTwoFactorCommand $command): bool {
+                    $command->setResponse(
+                        new CompleteTwoFactorCommandResponse(
+                            '',
+                            'issued-refresh-token'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new CompleteTwoFactorProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
@@ -135,19 +137,20 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (CompleteTwoFactorCommand $command) use ($ipAddress, $userAgent): bool {
-                $this->assertSame($ipAddress, $command->ipAddress);
-                $this->assertSame($userAgent, $command->userAgent);
+                function (CompleteTwoFactorCommand $command) use ($ipAddress, $userAgent): bool {
+                    $this->assertSame($ipAddress, $command->ipAddress);
+                    $this->assertSame($userAgent, $command->userAgent);
 
-                $command->setResponse(
-                    new CompleteTwoFactorCommandResponse(
-                        'stack-access-token',
-                        'stack-refresh-token'
-                    )
-                );
+                    $command->setResponse(
+                        new CompleteTwoFactorCommandResponse(
+                            'stack-access-token',
+                            'stack-refresh-token'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new CompleteTwoFactorProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation);
@@ -165,19 +168,20 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (CompleteTwoFactorCommand $command): bool {
-                $this->assertSame('', $command->ipAddress);
-                $this->assertSame('', $command->userAgent);
+                function (CompleteTwoFactorCommand $command): bool {
+                    $this->assertSame('', $command->ipAddress);
+                    $this->assertSame('', $command->userAgent);
 
-                $command->setResponse(
-                    new CompleteTwoFactorCommandResponse(
-                        'no-request-access-token',
-                        'no-request-refresh-token'
-                    )
-                );
+                    $command->setResponse(
+                        new CompleteTwoFactorCommandResponse(
+                            'no-request-access-token',
+                            'no-request-refresh-token'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new CompleteTwoFactorProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation);
@@ -196,18 +200,19 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            static function (CompleteTwoFactorCommand $command): bool {
-                $command->setResponse(
-                    new CompleteTwoFactorCommandResponse(
-                        'recovery-access-token',
-                        'recovery-refresh-token',
-                        1,
-                        'Only 1 recovery code(s) remaining. Regenerate soon.'
-                    )
-                );
+                static function (CompleteTwoFactorCommand $command): bool {
+                    $command->setResponse(
+                        new CompleteTwoFactorCommandResponse(
+                            'recovery-access-token',
+                            'recovery-refresh-token',
+                            1,
+                            'Only 1 recovery code(s) remaining. Regenerate soon.'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new CompleteTwoFactorProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
@@ -233,16 +238,17 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            static function (CompleteTwoFactorCommand $command): bool {
-                $command->setResponse(
-                    new CompleteTwoFactorCommandResponse(
-                        'totp-access-token',
-                        'totp-refresh-token'
-                    )
-                );
+                static function (CompleteTwoFactorCommand $command): bool {
+                    $command->setResponse(
+                        new CompleteTwoFactorCommandResponse(
+                            'totp-access-token',
+                            'totp-refresh-token'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new CompleteTwoFactorProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation, [], ['request' => $request]);

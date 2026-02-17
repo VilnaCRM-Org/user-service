@@ -25,7 +25,7 @@ final class SecondTestEventSubscriber implements DomainEventSubscriberInterface
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{TestEvent::class}
      */

@@ -35,7 +35,7 @@ final class BatchEmailCollection
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list<string>
      */

@@ -15,6 +15,7 @@ final class ServerErrorResponseAugmenter
 {
     private const OPERATIONS = ['Get', 'Post', 'Put', 'Patch', 'Delete'];
 
+    /** @psalm-suppress PossiblyUnusedMethod */
     public function __construct(
         private InternalErrorFactory $internalErrorFactory
     ) {

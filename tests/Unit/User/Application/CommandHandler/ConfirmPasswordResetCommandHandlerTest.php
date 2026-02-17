@@ -162,7 +162,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return (ConfirmPasswordResetCommand|string)[]
+     * @return array<ConfirmPasswordResetCommand|string>
      *
      * @psalm-return array{token: string, newPassword: string, command: ConfirmPasswordResetCommand}
      */
@@ -212,7 +212,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{token: string, newPassword: string, userId: string, hashedPassword: string}
      */

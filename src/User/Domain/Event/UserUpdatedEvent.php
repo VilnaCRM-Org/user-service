@@ -39,8 +39,6 @@ final class UserUpdatedEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.updated'
      */
     #[\Override]
@@ -50,9 +48,9 @@ final class UserUpdatedEvent extends DomainEvent
     }
 
     /**
-     * @return (null|string)[]
+     * @return array<string|null>
      *
-     * @psalm-return array{userId: string, email: string, previousEmail: null|string}
+     * @psalm-return array{userId: string, email: string, previousEmail: string|null}
      */
     #[\Override]
     public function toPrimitives(): array

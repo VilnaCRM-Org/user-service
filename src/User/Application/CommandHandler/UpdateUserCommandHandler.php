@@ -40,7 +40,7 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
     }
 
     /**
-     * @return \App\Shared\Domain\Bus\Event\DomainEvent[]
+     * @return array<\App\Shared\Domain\Bus\Event\DomainEvent>
      *
      * @psalm-return array<int, \App\Shared\Domain\Bus\Event\DomainEvent>
      */

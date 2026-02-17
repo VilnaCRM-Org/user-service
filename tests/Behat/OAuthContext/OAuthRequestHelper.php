@@ -96,7 +96,7 @@ final class OAuthRequestHelper
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{HTTP_ACCEPT: 'application/json', CONTENT_TYPE: 'application/json', HTTP_AUTHORIZATION?: string}
      */

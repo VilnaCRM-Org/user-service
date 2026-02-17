@@ -14,7 +14,7 @@ final class Password extends Compound
     /**
      * @param array<string, string> $options
      *
-     * @return (Length|Regex)[]
+     * @return array<Length|Regex>
      *
      * @psalm-return list{Length, Regex, Regex}
      */

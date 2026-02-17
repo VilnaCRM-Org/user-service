@@ -122,7 +122,7 @@ final class ParamUserEndpointFactory implements EndpointFactoryInterface
     }
 
     /**
-     * @return Response[]
+     * @return array<Response>
      *
      * @psalm-return array{200: Response, 400: Response, 404: Response, 422: Response}
      */
@@ -137,7 +137,7 @@ final class ParamUserEndpointFactory implements EndpointFactoryInterface
     }
 
     /**
-     * @return Response[]
+     * @return array<Response>
      *
      * @psalm-return array{404: Response, 200: Response}
      */
@@ -150,7 +150,7 @@ final class ParamUserEndpointFactory implements EndpointFactoryInterface
     }
 
     /**
-     * @return Response[]
+     * @return array<Response>
      *
      * @psalm-return array{204: Response, 404: Response}
      */

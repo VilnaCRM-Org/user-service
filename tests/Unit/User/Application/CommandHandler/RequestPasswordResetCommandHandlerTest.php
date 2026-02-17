@@ -111,7 +111,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return (Uuid|string)[]
+     * @return array<Uuid|string>
      *
      * @psalm-return array{email: string, userId: string, tokenValue: string, uuid: Uuid}
      */

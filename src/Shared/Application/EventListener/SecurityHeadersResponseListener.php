@@ -36,5 +36,8 @@ final readonly class SecurityHeadersResponseListener
         $headers->set('Content-Security-Policy', self::CONTENT_SECURITY_POLICY_VALUE);
         $headers->set('Permissions-Policy', implode(', ', self::PERMISSIONS_POLICY_DIRECTIVES));
         $headers->remove('Server');
+        $headers->set('Cache-Control', 'no-store');
+        $headers->remove('ETag');
+        $headers->remove('Last-Modified');
     }
 }

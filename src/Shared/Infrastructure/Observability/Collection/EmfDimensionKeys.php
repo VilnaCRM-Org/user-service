@@ -39,8 +39,6 @@ final readonly class EmfDimensionKeys implements IteratorAggregate, Countable, \
     }
 
     /**
-     * @return int
-     *
      * @psalm-return int<0, max>
      */
     #[\Override]
@@ -58,7 +56,7 @@ final readonly class EmfDimensionKeys implements IteratorAggregate, Countable, \
     }
 
     /**
-     * @return string[][]
+     * @return array<array<string>>
      *
      * @psalm-return list{array<int, string>}
      */

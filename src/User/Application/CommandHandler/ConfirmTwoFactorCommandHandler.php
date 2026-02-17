@@ -98,7 +98,7 @@ final readonly class ConfirmTwoFactorCommandHandler implements
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{string,...}
      */

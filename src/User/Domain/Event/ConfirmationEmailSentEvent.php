@@ -37,8 +37,6 @@ final class ConfirmationEmailSentEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'confirmation_email.send'
      */
     #[\Override]
@@ -48,7 +46,7 @@ final class ConfirmationEmailSentEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{emailAddress: string, tokenValue: string}
      */

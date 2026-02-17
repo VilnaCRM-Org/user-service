@@ -40,8 +40,6 @@ final readonly class MetricDimensions implements IteratorAggregate, Countable
     }
 
     /**
-     * @return int
-     *
      * @psalm-return int<0, max>
      */
     #[\Override]

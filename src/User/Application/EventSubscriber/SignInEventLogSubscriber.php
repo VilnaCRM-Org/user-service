@@ -92,8 +92,8 @@ final readonly class SignInEventLogSubscriber implements
     {
         $this->logger->warning('Account locked out', [
             'email' => $event->email,
-            'ipAddress' => $event->ipAddress,
-            'userAgent' => $event->userAgent,
+            'failedAttempts' => $event->failedAttempts,
+            'lockoutDurationSeconds' => $event->lockoutDurationSeconds,
         ]);
     }
 

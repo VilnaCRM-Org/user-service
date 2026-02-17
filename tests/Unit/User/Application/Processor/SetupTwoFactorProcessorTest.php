@@ -124,7 +124,7 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
             }
 
             /**
-             * @return string[]
+             * @return array<string>
              *
              * @psalm-return list{'ROLE_USER'}
              */

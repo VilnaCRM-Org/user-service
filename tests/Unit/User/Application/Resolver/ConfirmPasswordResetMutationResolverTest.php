@@ -75,7 +75,7 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
     }
 
     /**
-     * @return string[][][]
+     * @return array<array<array<string>>>
      *
      * @psalm-return array{args: array{input: array{token: string, newPassword: string}}}
      */

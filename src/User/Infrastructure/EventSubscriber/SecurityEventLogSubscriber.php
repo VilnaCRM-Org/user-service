@@ -50,8 +50,8 @@ final readonly class SecurityEventLogSubscriber implements DomainEventSubscriber
         $this->logger->warning('Recovery code used', [
             'event' => 'user.recovery_code.used',
             'user_id' => $event->userId,
-            'remaining_codes' => $event->remainingCodes,
-            'timestamp' => $event->occurredOn()->format(\DateTimeInterface::ATOM),
+            'remaining_count' => $event->remainingCount,
+            'timestamp' => $event->occurredOn(),
         ]);
     }
 
@@ -62,7 +62,7 @@ final readonly class SecurityEventLogSubscriber implements DomainEventSubscriber
             'email' => $event->email,
             'failed_attempts' => $event->failedAttempts,
             'lockout_duration_seconds' => $event->lockoutDurationSeconds,
-            'timestamp' => $event->occurredOn()->format(\DateTimeInterface::ATOM),
+            'timestamp' => $event->occurredOn(),
         ]);
     }
 }

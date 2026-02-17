@@ -29,7 +29,7 @@ final readonly class ApiEndpointBusinessMetricsSubscriber extends ResilientEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{'kernel.response': 'onResponse'}
      */

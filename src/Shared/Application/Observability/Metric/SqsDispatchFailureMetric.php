@@ -24,8 +24,6 @@ final readonly class SqsDispatchFailureMetric extends BusinessMetric
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'SqsDispatchFailures'
      */
     #[\Override]

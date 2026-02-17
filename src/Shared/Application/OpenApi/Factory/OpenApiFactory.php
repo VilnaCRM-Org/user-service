@@ -80,7 +80,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     }
 
     /**
-     * @return Tag[]
+     * @return array<Tag>
      *
      * @psalm-return list{Tag, Tag, Tag, Tag, Tag}
      */

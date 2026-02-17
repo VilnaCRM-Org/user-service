@@ -211,7 +211,7 @@ final class ContextBuilderTest extends UnitTestCase
     }
 
     /**
-     * @return Parameter[]
+     * @return array<Parameter>
      *
      * @psalm-return list{Parameter, Parameter}
      */

@@ -51,23 +51,24 @@ final class SignInProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (SignInCommand $command) use ($email, $password, $ipAddress, $userAgent): bool {
-                $this->assertSame($email, $command->email);
-                $this->assertSame($password, $command->password);
-                $this->assertFalse($command->rememberMe);
-                $this->assertSame($ipAddress, $command->ipAddress);
-                $this->assertSame($userAgent, $command->userAgent);
+                function (SignInCommand $command) use ($email, $password, $ipAddress, $userAgent): bool {
+                    $this->assertSame($email, $command->email);
+                    $this->assertSame($password, $command->password);
+                    $this->assertFalse($command->rememberMe);
+                    $this->assertSame($ipAddress, $command->ipAddress);
+                    $this->assertSame($userAgent, $command->userAgent);
 
-                $command->setResponse(
-                    new SignInCommandResponse(
-                        false,
-                        'access-token-value',
-                        'refresh-token-value'
-                    )
-                );
+                    $command->setResponse(
+                        new SignInCommandResponse(
+                            false,
+                            'access-token-value',
+                            'refresh-token-value'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new SignInProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
@@ -108,19 +109,20 @@ final class SignInProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (SignInCommand $command): bool {
-                $this->assertTrue($command->rememberMe);
+                function (SignInCommand $command): bool {
+                    $this->assertTrue($command->rememberMe);
 
-                $command->setResponse(
-                    new SignInCommandResponse(
-                        false,
-                        'remember-token',
-                        'refresh-token'
-                    )
-                );
+                    $command->setResponse(
+                        new SignInCommandResponse(
+                            false,
+                            'remember-token',
+                            'refresh-token'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new SignInProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
@@ -142,18 +144,19 @@ final class SignInProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            static function (SignInCommand $command): bool {
-                $command->setResponse(
-                    new SignInCommandResponse(
-                        true,
-                        null,
-                        null,
-                        'pending-session-123'
-                    )
-                );
+                static function (SignInCommand $command): bool {
+                    $command->setResponse(
+                        new SignInCommandResponse(
+                            true,
+                            null,
+                            null,
+                            'pending-session-123'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new SignInProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
@@ -180,18 +183,19 @@ final class SignInProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            static function (SignInCommand $command): bool {
-                $command->setResponse(
-                    new SignInCommandResponse(
-                        true,
-                        'unexpected-access-token',
-                        null,
-                        'pending-session-with-token'
-                    )
-                );
+                static function (SignInCommand $command): bool {
+                    $command->setResponse(
+                        new SignInCommandResponse(
+                            true,
+                            'unexpected-access-token',
+                            null,
+                            'pending-session-with-token'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new SignInProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
@@ -210,17 +214,18 @@ final class SignInProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            static function (SignInCommand $command): bool {
-                $command->setResponse(
-                    new SignInCommandResponse(
-                        false,
-                        null,
-                        'refresh-token'
-                    )
-                );
+                static function (SignInCommand $command): bool {
+                    $command->setResponse(
+                        new SignInCommandResponse(
+                            false,
+                            null,
+                            'refresh-token'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new SignInProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
@@ -248,17 +253,18 @@ final class SignInProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            static function (SignInCommand $command): bool {
-                $command->setResponse(
-                    new SignInCommandResponse(
-                        false,
-                        'access-token',
-                        null
-                    )
-                );
+                static function (SignInCommand $command): bool {
+                    $command->setResponse(
+                        new SignInCommandResponse(
+                            false,
+                            'access-token',
+                            null
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new SignInProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
@@ -311,20 +317,21 @@ final class SignInProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (SignInCommand $command) use ($ipAddress, $userAgent): bool {
-                $this->assertSame($ipAddress, $command->ipAddress);
-                $this->assertSame($userAgent, $command->userAgent);
+                function (SignInCommand $command) use ($ipAddress, $userAgent): bool {
+                    $this->assertSame($ipAddress, $command->ipAddress);
+                    $this->assertSame($userAgent, $command->userAgent);
 
-                $command->setResponse(
-                    new SignInCommandResponse(
-                        false,
-                        'stack-token',
-                        'refresh-token'
-                    )
-                );
+                    $command->setResponse(
+                        new SignInCommandResponse(
+                            false,
+                            'stack-token',
+                            'refresh-token'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new SignInProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation);
@@ -346,20 +353,21 @@ final class SignInProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (SignInCommand $command): bool {
-                $this->assertSame('198.51.100.15', $command->ipAddress);
-                $this->assertSame('Context Agent', $command->userAgent);
+                function (SignInCommand $command): bool {
+                    $this->assertSame('198.51.100.15', $command->ipAddress);
+                    $this->assertSame('Context Agent', $command->userAgent);
 
-                $command->setResponse(
-                    new SignInCommandResponse(
-                        false,
-                        'context-token',
-                        'refresh-token'
-                    )
-                );
+                    $command->setResponse(
+                        new SignInCommandResponse(
+                            false,
+                            'context-token',
+                            'refresh-token'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new SignInProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation, [], ['request' => $contextRequest]);
@@ -377,20 +385,21 @@ final class SignInProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (SignInCommand $command): bool {
-                $this->assertSame('', $command->ipAddress);
-                $this->assertSame('', $command->userAgent);
+                function (SignInCommand $command): bool {
+                    $this->assertSame('', $command->ipAddress);
+                    $this->assertSame('', $command->userAgent);
 
-                $command->setResponse(
-                    new SignInCommandResponse(
-                        false,
-                        'empty-request-token',
-                        'refresh-token'
-                    )
-                );
+                    $command->setResponse(
+                        new SignInCommandResponse(
+                            false,
+                            'empty-request-token',
+                            'refresh-token'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new SignInProcessor($this->commandBus, $this->requestStack);
         $response = $processor->process($dto, $this->operation);

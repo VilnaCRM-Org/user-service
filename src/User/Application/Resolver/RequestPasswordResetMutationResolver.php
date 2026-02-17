@@ -21,8 +21,6 @@ final readonly class RequestPasswordResetMutationResolver implements
 
     /**
      * @param array<string,string> $context
-     *
-     * @return null
      */
     #[\Override]
     public function __invoke(?object $item, array $context): ?object

@@ -20,8 +20,6 @@ final readonly class TestOrderValueMetric extends BusinessMetric
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'OrderValue'
      */
     #[\Override]

@@ -14,8 +14,6 @@ final class TestOtherDomainEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'test.other.domain.event'
      */
     #[\Override]
@@ -25,8 +23,6 @@ final class TestOtherDomainEvent extends DomainEvent
     }
 
     /**
-     * @return array
-     *
      * @psalm-return array<never, never>
      */
     #[\Override]

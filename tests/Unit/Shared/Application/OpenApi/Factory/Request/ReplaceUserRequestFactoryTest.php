@@ -32,7 +32,7 @@ final class ReplaceUserRequestFactoryTest extends UnitTestCase
     }
 
     /**
-     * @return Parameter[]
+     * @return array<Parameter>
      *
      * @psalm-return list{Parameter, Parameter, Parameter, Parameter}
      */

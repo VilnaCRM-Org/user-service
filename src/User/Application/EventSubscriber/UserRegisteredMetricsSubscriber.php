@@ -37,7 +37,7 @@ final readonly class UserRegisteredMetricsSubscriber implements DomainEventSubsc
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{UserRegisteredEvent::class}
      */

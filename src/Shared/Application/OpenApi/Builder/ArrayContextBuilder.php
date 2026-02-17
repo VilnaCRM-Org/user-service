@@ -66,7 +66,7 @@ final class ArrayContextBuilder
     }
 
     /**
-     * @return (int|string)[]
+     * @return array<int|string>
      *
      * @psalm-return array<'format'|'maxLength'|'type', int|string>
      */

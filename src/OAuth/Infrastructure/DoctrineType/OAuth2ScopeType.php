@@ -17,7 +17,7 @@ final class OAuth2ScopeType extends Type
     public const NAME = 'oauth2_scope';
 
     /**
-     * @return null|string[]
+     * @return array<string>|null
      *
      * @param array<Scope|\stdClass|object|string>|string|null $value
      *
@@ -47,7 +47,7 @@ final class OAuth2ScopeType extends Type
     }
 
     /**
-     * @return Scope[]
+     * @return array<Scope>
      *
      * @param string|array<string>|null $value
      *
@@ -73,8 +73,6 @@ final class OAuth2ScopeType extends Type
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'if ($value === null) { $return = null; } elseif (is_array($value)) { $return = []; foreach ($value as $item) { if (is_string($item) || (is_object($item) && method_exists($item, "__toString"))) { $return[] = (string) $item; } else { throw new \InvalidArgumentException("OAuth2ScopeType expects an array of stringable values."); } } } else { throw new \InvalidArgumentException("OAuth2ScopeType expects an array of stringable values."); }'
      */
     #[\Override]

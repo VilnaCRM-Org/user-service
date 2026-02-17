@@ -31,8 +31,6 @@ final class PasswordChangedEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'password.changed'
      */
     #[\Override]
@@ -42,7 +40,7 @@ final class PasswordChangedEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{email: string}
      */

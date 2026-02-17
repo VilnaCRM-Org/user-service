@@ -37,8 +37,6 @@ final readonly class MetricCollection implements IteratorAggregate, Countable
     }
 
     /**
-     * @return int
-     *
      * @psalm-return int<0, max>
      */
     #[\Override]

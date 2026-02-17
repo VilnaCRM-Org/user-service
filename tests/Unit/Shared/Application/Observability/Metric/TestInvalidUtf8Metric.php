@@ -19,8 +19,6 @@ final readonly class TestInvalidUtf8Metric extends BusinessMetric
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'InvalidMetric'
      */
     #[\Override]

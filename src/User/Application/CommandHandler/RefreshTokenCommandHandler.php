@@ -232,7 +232,7 @@ final readonly class RefreshTokenCommandHandler implements
     }
 
     /**
-     * @return (int|string|string[])[]
+     * @return array<int|string|array<string>>
      *
      * @psalm-return array{sub: string, iss: 'vilnacrm-user-service', aud: 'vilnacrm-api', exp: int, iat: int, nbf: int, jti: string, sid: string, roles: list{'ROLE_USER'}}
      */

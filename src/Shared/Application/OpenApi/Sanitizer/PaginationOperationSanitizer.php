@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Sanitizer;
 
 use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Parameter as OpenApiParameter;
 
 final class PaginationOperationSanitizer
 {
@@ -20,8 +21,9 @@ final class PaginationOperationSanitizer
             !\is_array($operation->getParameters()) => $operation,
             default => $operation->withParameters(
                 array_map(
-                    fn (mixed $parameter) => $this->parameterSanitizer
-                        ->sanitize($parameter),
+                    fn (mixed $parameter) => $parameter instanceof OpenApiParameter
+                        ? $this->parameterSanitizer->sanitize($parameter)
+                        : $parameter,
                     $operation->getParameters()
                 )
             ),

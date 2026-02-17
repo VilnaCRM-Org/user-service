@@ -28,15 +28,16 @@ final class TestAccessTokenFactoryTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (array $payload) use ($subject, $sessionId): bool {
-                $this->assertSame($subject, $payload['sub']);
-                $this->assertSame($sessionId, $payload['sid']);
-                $this->assertSame(['ROLE_USER'], $payload['roles']);
-                $this->assertSame('vilnacrm-user-service', $payload['iss']);
-                $this->assertSame('vilnacrm-api', $payload['aud']);
+                function (array $payload) use ($subject, $sessionId): bool {
+                    $this->assertSame($subject, $payload['sub']);
+                    $this->assertSame($sessionId, $payload['sid']);
+                    $this->assertSame(['ROLE_USER'], $payload['roles']);
+                    $this->assertSame('vilnacrm-user-service', $payload['iss']);
+                    $this->assertSame('vilnacrm-api', $payload['aud']);
 
-                return true;
-            }))
+                    return true;
+                }
+            ))
             ->willReturn($tokenValue);
 
         $uuidFactory = $this->createMock(UuidFactory::class);
@@ -75,13 +76,14 @@ final class TestAccessTokenFactoryTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (array $payload) use ($subject, $sessionId): bool {
-                $this->assertSame($subject, $payload['sub']);
-                $this->assertSame($sessionId, $payload['sid']);
-                $this->assertSame(['ROLE_SERVICE'], $payload['roles']);
+                function (array $payload) use ($subject, $sessionId): bool {
+                    $this->assertSame($subject, $payload['sub']);
+                    $this->assertSame($sessionId, $payload['sid']);
+                    $this->assertSame(['ROLE_SERVICE'], $payload['roles']);
 
-                return true;
-            }))
+                    return true;
+                }
+            ))
             ->willReturn($tokenValue);
 
         $uuidFactory = $this->createMock(UuidFactory::class);
@@ -121,18 +123,19 @@ final class TestAccessTokenFactoryTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (array $payload) use ($subject, $sessionId, $issuedAt): bool {
-                $timestamp = $issuedAt->getTimestamp();
+                function (array $payload) use ($subject, $sessionId, $issuedAt): bool {
+                    $timestamp = $issuedAt->getTimestamp();
 
-                $this->assertSame($subject, $payload['sub']);
-                $this->assertSame($sessionId, $payload['sid']);
-                $this->assertSame(['ROLE_SERVICE'], $payload['roles']);
-                $this->assertSame($timestamp, $payload['iat']);
-                $this->assertSame($timestamp, $payload['nbf']);
-                $this->assertSame($timestamp + 900, $payload['exp']);
+                    $this->assertSame($subject, $payload['sub']);
+                    $this->assertSame($sessionId, $payload['sid']);
+                    $this->assertSame(['ROLE_SERVICE'], $payload['roles']);
+                    $this->assertSame($timestamp, $payload['iat']);
+                    $this->assertSame($timestamp, $payload['nbf']);
+                    $this->assertSame($timestamp + 900, $payload['exp']);
 
-                return true;
-            }))
+                    return true;
+                }
+            ))
             ->willReturn($tokenValue);
 
         $uuidFactory = $this->createMock(UuidFactory::class);

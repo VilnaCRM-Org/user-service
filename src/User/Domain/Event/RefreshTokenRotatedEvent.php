@@ -37,8 +37,6 @@ final class RefreshTokenRotatedEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.refresh_token_rotated'
      */
     #[\Override]
@@ -48,7 +46,7 @@ final class RefreshTokenRotatedEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{sessionId: string, userId: string}
      */

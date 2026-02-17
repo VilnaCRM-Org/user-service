@@ -15,10 +15,9 @@ final class GraphQLAuthExclusionTest extends IntegrationTestCase
     private const EMPTY_RESPONSE_CONFIG_PATH = __DIR__ . '/../../../config/api_platform/resources/EmptyResponse.yaml';
 
     /**
-     * @test
      * AC: NFR-62 - Auth operations must have graphql: false configured
      */
-    public function auth_operations_have_graphql_disabled_in_config(): void
+    public function testAuthOperationsHaveGraphqlDisabledInConfig(): void
     {
         $this->assertFileExists(
             self::EMPTY_RESPONSE_CONFIG_PATH,
@@ -62,8 +61,7 @@ final class GraphQLAuthExclusionTest extends IntegrationTestCase
             $this->assertFalse(
                 $operation['graphql'],
                 sprintf(
-                    'Operation "%s" must have "graphql: false" to exclude from GraphQL (AC: NFR-62). ' .
-                    'This prevents rate limit bypass via GraphQL batching (RC-01).',
+                    'Operation "%s" must have "graphql: false" to exclude from GraphQL (AC: NFR-62). This prevents rate limit bypass via GraphQL batching (RC-01).',
                     $operationName
                 )
             );
@@ -71,16 +69,15 @@ final class GraphQLAuthExclusionTest extends IntegrationTestCase
     }
 
     /**
-     * @test
      * AC: NFR-62 - Verify all 9 auth operations are excluded
      */
-    public function all_nine_auth_operations_are_excluded_from_graphql(): void
+    public function testAllNineAuthOperationsAreExcludedFromGraphql(): void
     {
         $config = Yaml::parseFile(self::EMPTY_RESPONSE_CONFIG_PATH);
         $operations = $config['resources']['App\Shared\Application\DTO\EmptyResponse']['operations'] ?? [];
 
         $disabledCount = 0;
-        foreach ($operations as $operationName => $operation) {
+        foreach ($operations as $operation) {
             if (isset($operation['graphql']) && $operation['graphql'] === false) {
                 ++$disabledCount;
             }

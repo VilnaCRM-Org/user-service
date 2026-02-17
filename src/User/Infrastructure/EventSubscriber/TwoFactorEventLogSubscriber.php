@@ -56,8 +56,8 @@ final readonly class TwoFactorEventLogSubscriber implements DomainEventSubscribe
             'event' => 'user.two_factor.completed',
             'user_id' => $event->userId,
             'session_id' => $event->sessionId,
-            'recovery_code_used' => $event->recoveryCodeUsed,
-            'timestamp' => $event->occurredOn()->format(\DateTimeInterface::ATOM),
+            'method' => $event->method,
+            'timestamp' => $event->occurredOn(),
         ]);
     }
 
@@ -65,10 +65,10 @@ final readonly class TwoFactorEventLogSubscriber implements DomainEventSubscribe
     {
         $this->logger->warning('Two-factor authentication failed', [
             'event' => 'user.two_factor.failed',
-            'user_id' => $event->userId,
             'pending_session_id' => $event->pendingSessionId,
+            'ip_address' => $event->ipAddress,
             'reason' => $event->reason,
-            'timestamp' => $event->occurredOn()->format(\DateTimeInterface::ATOM),
+            'timestamp' => $event->occurredOn(),
         ]);
     }
 
@@ -78,8 +78,8 @@ final readonly class TwoFactorEventLogSubscriber implements DomainEventSubscribe
         $this->logger->info('Two-factor authentication enabled', [
             'event' => 'user.two_factor.enabled',
             'user_id' => $event->userId,
-            'recovery_codes_generated' => $event->recoveryCodesCount,
-            'timestamp' => $event->occurredOn()->format(\DateTimeInterface::ATOM),
+            'email' => $event->email,
+            'timestamp' => $event->occurredOn(),
         ]);
     }
 
@@ -89,7 +89,7 @@ final readonly class TwoFactorEventLogSubscriber implements DomainEventSubscribe
         $this->logger->info('Two-factor authentication disabled', [
             'event' => 'user.two_factor.disabled',
             'user_id' => $event->userId,
-            'timestamp' => $event->occurredOn()->format(\DateTimeInterface::ATOM),
+            'timestamp' => $event->occurredOn(),
         ]);
     }
 }

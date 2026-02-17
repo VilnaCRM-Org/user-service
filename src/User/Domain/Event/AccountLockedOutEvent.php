@@ -31,16 +31,14 @@ final class AccountLockedOutEvent extends DomainEvent
     ): DomainEvent {
         return new self(
             $body['email'],
-            $body['failedAttempts'],
-            $body['lockoutDurationSeconds'],
+            (int) $body['failedAttempts'],
+            (int) $body['lockoutDurationSeconds'],
             $eventId,
             $occurredOn
         );
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.account_locked_out'
      */
     #[\Override]
@@ -50,7 +48,7 @@ final class AccountLockedOutEvent extends DomainEvent
     }
 
     /**
-     * @return (int|string)[]
+     * @return array<int|string>
      *
      * @psalm-return array{email: string, failedAttempts: int, lockoutDurationSeconds: int}
      */

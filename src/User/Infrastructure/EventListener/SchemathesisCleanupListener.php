@@ -82,7 +82,7 @@ final class SchemathesisCleanupListener
     /**
      * @param array<int, UserInterface> $users
      *
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{0: string, 1?: string,...}
      */

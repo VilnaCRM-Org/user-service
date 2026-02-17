@@ -32,8 +32,6 @@ final class UserDeletedEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.deleted'
      */
     #[\Override]
@@ -43,7 +41,7 @@ final class UserDeletedEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{userId: string, email: string}
      */

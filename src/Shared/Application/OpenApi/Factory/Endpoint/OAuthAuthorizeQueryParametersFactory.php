@@ -50,7 +50,7 @@ final class OAuthAuthorizeQueryParametersFactory
     }
 
     /**
-     * @return Parameter[]
+     * @return array<Parameter>
      *
      * @psalm-return list{Parameter,...}
      */

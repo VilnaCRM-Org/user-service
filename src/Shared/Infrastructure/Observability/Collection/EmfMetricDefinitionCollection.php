@@ -45,8 +45,6 @@ final readonly class EmfMetricDefinitionCollection implements
     }
 
     /**
-     * @return int
-     *
      * @psalm-return int<0, max>
      */
     #[\Override]
@@ -76,7 +74,7 @@ final readonly class EmfMetricDefinitionCollection implements
     {
         return array_map(
             /**
-             * @return string[]
+             * @return array<string>
              *
              * @psalm-return array{Name: string, Unit: string}
              */

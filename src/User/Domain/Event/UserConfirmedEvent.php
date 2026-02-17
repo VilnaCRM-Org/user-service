@@ -31,8 +31,6 @@ final class UserConfirmedEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.confirmed'
      */
     #[\Override]
@@ -42,7 +40,7 @@ final class UserConfirmedEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{tokenValue: string}
      */

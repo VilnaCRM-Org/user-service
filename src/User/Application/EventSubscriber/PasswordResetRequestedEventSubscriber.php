@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\User\Application\EventSubscriber;
 
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Application\Factory\SendPasswordResetEmailCommandFactoryInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
@@ -43,7 +42,7 @@ final readonly class PasswordResetRequestedEventSubscriber implements
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{PasswordResetRequestedEvent::class}
      */

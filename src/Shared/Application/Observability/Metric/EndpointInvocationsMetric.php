@@ -22,8 +22,6 @@ final readonly class EndpointInvocationsMetric extends EndpointOperationBusiness
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'EndpointInvocations'
      */
     #[\Override]

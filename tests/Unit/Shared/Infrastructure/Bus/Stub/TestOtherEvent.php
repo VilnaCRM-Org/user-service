@@ -21,8 +21,6 @@ final class TestOtherEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'test.other_event'
      */
     #[\Override]
@@ -32,7 +30,7 @@ final class TestOtherEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{id: string, value: string}
      */

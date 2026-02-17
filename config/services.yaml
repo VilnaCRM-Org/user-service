@@ -76,6 +76,10 @@ services:
       - '%env(API_URL)%'
     autoconfigure: false
 
+  App\Shared\Application\EventListener\RequestBodySizeLimitListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, priority: 200 }
+
   App\Shared\Application\EventListener\MethodNotAllowedListener:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 120 }

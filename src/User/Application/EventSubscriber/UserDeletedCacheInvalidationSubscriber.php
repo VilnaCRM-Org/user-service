@@ -35,7 +35,7 @@ final readonly class UserDeletedCacheInvalidationSubscriber implements
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{UserDeletedEvent::class}
      */

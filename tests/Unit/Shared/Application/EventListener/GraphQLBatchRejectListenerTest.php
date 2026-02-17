@@ -25,10 +25,7 @@ final class GraphQLBatchRejectListenerTest extends TestCase
         $this->listener = new GraphQLBatchRejectListener();
     }
 
-    /**
-     * @test
-     */
-    public function it_rejects_batch_requests_with_400(): void
+    public function testRejectsBatchRequestsWith400(): void
     {
         $batchRequest = [
             ['query' => '{ __typename }'],
@@ -62,10 +59,7 @@ final class GraphQLBatchRejectListenerTest extends TestCase
         $this->assertStringContainsString('batch', strtolower($data['detail'] ?? ''));
     }
 
-    /**
-     * @test
-     */
-    public function it_allows_single_graphql_requests(): void
+    public function testAllowsSingleGraphqlRequests(): void
     {
         $singleRequest = ['query' => '{ __typename }'];
 
@@ -90,10 +84,7 @@ final class GraphQLBatchRejectListenerTest extends TestCase
         $this->assertFalse($event->hasResponse());
     }
 
-    /**
-     * @test
-     */
-    public function it_ignores_non_graphql_paths(): void
+    public function testIgnoresNonGraphqlPaths(): void
     {
         $batchRequest = [
             ['query' => '{ __typename }'],
@@ -121,10 +112,7 @@ final class GraphQLBatchRejectListenerTest extends TestCase
         $this->assertFalse($event->hasResponse());
     }
 
-    /**
-     * @test
-     */
-    public function it_ignores_non_post_requests(): void
+    public function testIgnoresNonPostRequests(): void
     {
         $batchRequest = [
             ['query' => '{ __typename }'],
@@ -152,10 +140,7 @@ final class GraphQLBatchRejectListenerTest extends TestCase
         $this->assertFalse($event->hasResponse());
     }
 
-    /**
-     * @test
-     */
-    public function it_ignores_empty_content(): void
+    public function testIgnoresEmptyContent(): void
     {
         $request = Request::create(
             '/api/graphql',
@@ -178,10 +163,7 @@ final class GraphQLBatchRejectListenerTest extends TestCase
         $this->assertFalse($event->hasResponse());
     }
 
-    /**
-     * @test
-     */
-    public function it_ignores_invalid_json(): void
+    public function testIgnoresInvalidJson(): void
     {
         $request = Request::create(
             '/api/graphql',

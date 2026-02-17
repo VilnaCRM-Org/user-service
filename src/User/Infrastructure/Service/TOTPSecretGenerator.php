@@ -15,7 +15,7 @@ final class TOTPSecretGenerator implements TOTPSecretGeneratorInterface
     private const OTP_ISSUER = 'VilnaCRM';
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{secret: string, otpauth_uri: string}
      */

@@ -102,7 +102,7 @@ abstract class UnitTestCase extends TestCase
     /**
      * @psalm-return callable(int, string, string=, int=, array=):bool|null
      */
-    private function setupErrorHandler(): callable|null
+    private function setupErrorHandler(): ?callable
     {
         return set_error_handler($this->createErrorHandlerCallback());
     }
@@ -120,7 +120,7 @@ abstract class UnitTestCase extends TestCase
             string $message,
             string $file,
             int $line
-        ) {
+        ): void {
             throw new \ErrorException($message, 0, $severity, $file, $line);
         };
     }

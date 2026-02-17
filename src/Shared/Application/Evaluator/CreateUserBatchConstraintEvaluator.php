@@ -21,7 +21,7 @@ final class CreateUserBatchConstraintEvaluator
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @param string|array<array<string>> $value
      *

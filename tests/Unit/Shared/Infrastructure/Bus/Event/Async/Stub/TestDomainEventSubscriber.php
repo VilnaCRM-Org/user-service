@@ -23,7 +23,7 @@ final class TestDomainEventSubscriber implements DomainEventSubscriberInterface
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{TestDomainEvent::class}
      */

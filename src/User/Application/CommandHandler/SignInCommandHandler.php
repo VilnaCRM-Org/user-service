@@ -76,7 +76,7 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
     public function __invoke(SignInCommand $command): void
     {
         $email = $this->normalizeEmail($command->email);
-        $this->assertNotLocked($email, $command);
+        $this->assertNotLocked($email);
 
         $hasher = $this->hasherFactory->getPasswordHasher(User::class);
         $user = $this->resolveUser($email);
@@ -96,19 +96,13 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
         $this->handleDirectSignIn($user, $command);
     }
 
-    private function assertNotLocked(
-        string $email,
-        SignInCommand $command
-    ): void {
+    private function assertNotLocked(string $email): void
+    {
         if (!$this->lockoutService->isLocked($email)) {
             return;
         }
 
-        $this->publishAccountLockedOutEvent(
-            $email,
-            $command->ipAddress,
-            $command->userAgent
-        );
+        $this->publishAccountLockedOutEvent($email);
 
         throw $this->lockedException();
     }
@@ -198,11 +192,7 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
         );
 
         if ($lockedAfterFailure) {
-            $this->publishAccountLockedOutEvent(
-                $email,
-                $command->ipAddress,
-                $command->userAgent
-            );
+            $this->publishAccountLockedOutEvent($email);
 
             throw $this->lockedException();
         }
@@ -210,15 +200,11 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
         throw new UnauthorizedHttpException('Bearer', 'Invalid credentials.');
     }
 
-    private function publishAccountLockedOutEvent(
-        string $email,
-        string $ipAddress,
-        string $userAgent
-    ): void {
+    private function publishAccountLockedOutEvent(string $email): void
+    {
         // AC: NFR-33 - Audit logging with lockout details
-        // TODO: Get actual values from lockout service configuration
-        $failedAttempts = 5;  // Default threshold
-        $lockoutDurationSeconds = 900;  // 15 minutes
+        $failedAttempts = 5;
+        $lockoutDurationSeconds = 900;
 
         $this->eventBus->publish(
             new AccountLockedOutEvent(
@@ -300,7 +286,7 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
     }
 
     /**
-     * @return (int|string|string[])[]
+     * @return array<int|string|array<string>>
      *
      * @psalm-return array{sub: string, iss: 'vilnacrm-user-service', aud: 'vilnacrm-api', exp: int, iat: int, nbf: int, jti: string, sid: string, roles: list{'ROLE_USER'}}
      */

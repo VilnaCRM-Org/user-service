@@ -26,7 +26,7 @@ final readonly class RouteIdentifierProvider
         );
     }
 
-    private function normalizeAttributeValue(mixed $value): string|null|null
+    private function normalizeAttributeValue(mixed $value): ?string
     {
         return match (true) {
             !is_string($value) => null,

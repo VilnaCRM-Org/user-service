@@ -35,10 +35,10 @@ final class SecurityEventLogSubscriberTest extends UnitTestCase
             ->method('warning')
             ->with(
                 'Recovery code used',
-                $this->callback(function ($context) use ($userId, $remainingCodes) {
+                $this->callback(static function ($context) use ($userId, $remainingCodes) {
                     return $context['event'] === 'user.recovery_code.used'
                         && $context['user_id'] === $userId
-                        && $context['remaining_codes'] === $remainingCodes;
+                        && $context['remaining_count'] === $remainingCodes;
                 })
             );
 
@@ -57,7 +57,7 @@ final class SecurityEventLogSubscriberTest extends UnitTestCase
             ->method('warning')
             ->with(
                 'Account locked out due to failed attempts',
-                $this->callback(function ($context) use ($email, $failedAttempts, $lockoutDuration) {
+                $this->callback(static function ($context) use ($email, $failedAttempts, $lockoutDuration) {
                     return $context['event'] === 'user.account.locked_out'
                         && $context['email'] === $email
                         && $context['failed_attempts'] === $failedAttempts

@@ -54,7 +54,7 @@ final class UserBatchEndpointFactory implements EndpointFactoryInterface
     }
 
     /**
-     * @return Response[]
+     * @return array<Response>
      *
      * @psalm-return array{201: Response, 400: Response, 422: Response}
      */

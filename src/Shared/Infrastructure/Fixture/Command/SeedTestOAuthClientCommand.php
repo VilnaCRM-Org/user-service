@@ -25,9 +25,6 @@ final class SeedTestOAuthClientCommand extends Command
         parent::__construct();
     }
 
-    /**
-     * @return int
-     */
     #[\Override]
     protected function execute(
         InputInterface $input,

@@ -93,7 +93,7 @@ final readonly class RegenerateRecoveryCodesCommandHandler implements
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{string,...}
      */

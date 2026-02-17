@@ -41,8 +41,6 @@ final class RefreshTokenTheftDetectedEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.refresh_token_theft_detected'
      */
     #[\Override]
@@ -52,7 +50,7 @@ final class RefreshTokenTheftDetectedEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{sessionId: string, userId: string, ipAddress: string, reason: string}
      */

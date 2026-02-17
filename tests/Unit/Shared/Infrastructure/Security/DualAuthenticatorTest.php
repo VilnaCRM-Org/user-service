@@ -649,7 +649,7 @@ final class DualAuthenticatorTest extends UnitTestCase
     /**
      * @param array<string> $roles
      *
-     * @return (int|string|string[])[]
+     * @return array<int|string|array<string>>
      *
      * @psalm-return array{sub: string, iss: 'vilnacrm-user-service', aud: 'vilnacrm-api', nbf: int<-9, max>, iat: int<-9, max>, exp: int<901, max>, sid: 'sid-token', roles: array<string>}
      */

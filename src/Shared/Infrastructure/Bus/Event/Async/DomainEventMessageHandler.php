@@ -51,8 +51,6 @@ final readonly class DomainEventMessageHandler
 
     /**
      * @param class-string<DomainEvent> $eventClass
-     *
-     * @return false
      */
     private function subscriberHandlesEvent(
         DomainEventSubscriberInterface $subscriber,

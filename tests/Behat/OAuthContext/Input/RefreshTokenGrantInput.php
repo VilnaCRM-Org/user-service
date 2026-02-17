@@ -19,9 +19,9 @@ final class RefreshTokenGrantInput extends ObtainAccessTokenInput
     }
 
     /**
-     * @return (null|string)[]
+     * @return array<string|null>
      *
-     * @psalm-return array{grant_type: null|string, refresh_token: string}
+     * @psalm-return array{grant_type: string|null, refresh_token: string}
      */
     #[\Override]
     public function toArray(): array

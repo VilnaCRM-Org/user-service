@@ -23,8 +23,6 @@ final readonly class PasswordResetRequestsMetric extends EndpointOperationBusine
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'PasswordResetRequests'
      */
     #[\Override]
@@ -34,8 +32,6 @@ final readonly class PasswordResetRequestsMetric extends EndpointOperationBusine
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'User'
      */
     #[\Override]
@@ -45,8 +41,6 @@ final readonly class PasswordResetRequestsMetric extends EndpointOperationBusine
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'request-password-reset'
      */
     #[\Override]

@@ -226,7 +226,7 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     }
 
     /**
-     * @return (HashingPasswordHasherFactory|InMemoryConfirmationTokenRepository|InMemoryPasswordResetTokenRepository|InMemoryUserRepository|UserFactory|UuidTransformer|\App\User\Domain\Entity\User)[]
+     * @return array<HashingPasswordHasherFactory|InMemoryConfirmationTokenRepository|InMemoryPasswordResetTokenRepository|InMemoryUserRepository|UserFactory|UuidTransformer|\App\User\Domain\Entity\User>
      *
      * @psalm-return array{userRepository: InMemoryUserRepository, userFactory: UserFactory, hasherFactory: HashingPasswordHasherFactory, uuidTransformer: UuidTransformer, tokenRepository: InMemoryConfirmationTokenRepository, passwordResetTokenRepository: InMemoryPasswordResetTokenRepository, existingUpdateUser: \App\User\Domain\Entity\User}
      */

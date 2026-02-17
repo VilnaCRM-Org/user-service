@@ -14,8 +14,6 @@ final class ResilientAsyncEventBusTestEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'resilient.async.event'
      */
     #[\Override]
@@ -25,7 +23,7 @@ final class ResilientAsyncEventBusTestEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{event: 'resilient'}
      */

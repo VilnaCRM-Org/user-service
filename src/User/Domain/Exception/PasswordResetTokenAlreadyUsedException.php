@@ -12,8 +12,6 @@ final class PasswordResetTokenAlreadyUsedException extends DomainException
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'error.password-reset-token-already-used'
      */
     #[\Override]

@@ -47,8 +47,6 @@ final class AccessTokenManager implements AccessTokenManagerInterface
     }
 
     /**
-     * @return int
-     *
      * @psalm-return int<0, max>
      */
     #[\Override]

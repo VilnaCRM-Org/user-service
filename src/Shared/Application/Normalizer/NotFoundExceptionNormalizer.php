@@ -63,7 +63,7 @@ final readonly class NotFoundExceptionNormalizer implements NormalizerInterface
     }
 
     /**
-     * @return true[]
+     * @return array<true>
      *
      * @psalm-return array{'GraphQL\\Error\\Error'::class: true}
      */

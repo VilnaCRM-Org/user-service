@@ -50,9 +50,6 @@ final class EmailSourceChainTest extends UnitTestCase
             {
             }
 
-            /**
-             * @return string
-             */
             #[\Override]
             public function extract(mixed $entry): ?string
             {
@@ -64,9 +61,6 @@ final class EmailSourceChainTest extends UnitTestCase
     private function createNullSource(): object
     {
         return new class() implements BatchEmailSource {
-            /**
-             * @return null
-             */
             #[\Override]
             public function extract(mixed $entry): ?string
             {

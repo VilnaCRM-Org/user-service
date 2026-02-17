@@ -147,7 +147,7 @@ final class ContextBuilderArrayTest extends UnitTestCase
     }
 
     /**
-     * @return (((string|string[])[]|string)[]|string)[]
+     * @return array<array<array<string|array<string>>|string>|string>
      *
      * @psalm-return array{type: 'object', properties: array<string, array{type: 'array', items: array{type: 'object'}}>, required: list{string}}
      */

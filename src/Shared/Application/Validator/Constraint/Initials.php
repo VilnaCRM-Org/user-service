@@ -15,7 +15,7 @@ final class Initials extends Compound
     /**
      * @param array<string, string> $options
      *
-     * @return (Length|Regex|Type)[]
+     * @return array<Length|Regex|Type>
      *
      * @psalm-return list{Type, Length, Regex, Regex}
      */

@@ -40,7 +40,7 @@ final class SignInEventLogSubscriberTest extends UnitTestCase
             ->method('info')
             ->with(
                 'User signed in successfully',
-                $this->callback(function ($context) use ($userId, $sessionId, $ip, $userAgent, $twoFactorUsed) {
+                $this->callback(static function ($context) use ($userId, $sessionId, $ip, $userAgent, $twoFactorUsed) {
                     return $context['event'] === 'user.signed_in'
                         && $context['user_id'] === $userId
                         && $context['session_id'] === $sessionId
@@ -68,7 +68,7 @@ final class SignInEventLogSubscriberTest extends UnitTestCase
             ->method('warning')
             ->with(
                 'Sign-in attempt failed',
-                $this->callback(function ($context) use ($email, $ip, $reason) {
+                $this->callback(static function ($context) use ($email, $ip, $reason) {
                     return $context['event'] === 'user.signin.failed'
                         && $context['attempted_email'] === $email
                         && $context['ip_address'] === $ip

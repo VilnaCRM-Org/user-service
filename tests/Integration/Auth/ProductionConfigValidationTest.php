@@ -12,10 +12,9 @@ use App\Tests\Integration\IntegrationTestCase;
 final class ProductionConfigValidationTest extends IntegrationTestCase
 {
     /**
-     * @test
      * AC: NFR-17 - MongoDB production DSN must enable TLS
      */
-    public function production_mongodb_dsn_format_includes_tls_parameter(): void
+    public function testProductionMongodbDsnFormatIncludesTlsParameter(): void
     {
         // This test verifies the DSN format - actual TLS enforcement happens at infrastructure level
         $exampleProductionDsn = 'mongodb://user:password@host:27017/database?tls=true';
@@ -31,10 +30,9 @@ final class ProductionConfigValidationTest extends IntegrationTestCase
     }
 
     /**
-     * @test
      * AC: NFR-18 - Document TLS 1.2+ and HSTS requirements for production
      */
-    public function production_transport_hardening_requirements_are_documented(): void
+    public function testProductionTransportHardeningRequirementsAreDocumented(): void
     {
         $requirements = [
             'TLS 1.2 or higher must be enforced at load balancer/edge level',

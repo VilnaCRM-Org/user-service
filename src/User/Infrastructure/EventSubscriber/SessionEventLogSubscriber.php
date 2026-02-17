@@ -52,7 +52,7 @@ final readonly class SessionEventLogSubscriber implements DomainEventSubscriberI
             'user_id' => $event->userId,
             'session_id' => $event->sessionId,
             'reason' => $event->reason,
-            'timestamp' => $event->occurredOn()->format(\DateTimeInterface::ATOM),
+            'timestamp' => $event->occurredOn(),
         ]);
     }
 
@@ -63,7 +63,7 @@ final readonly class SessionEventLogSubscriber implements DomainEventSubscriberI
             'event' => 'user.sessions.all_revoked',
             'user_id' => $event->userId,
             'reason' => $event->reason,
-            'timestamp' => $event->occurredOn()->format(\DateTimeInterface::ATOM),
+            'timestamp' => $event->occurredOn(),
         ]);
     }
 }

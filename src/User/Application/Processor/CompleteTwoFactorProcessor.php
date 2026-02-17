@@ -64,7 +64,7 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
     }
 
     /**
-     * @return (int|string|true)[]
+     * @return array<int|string|true>
      *
      * @psalm-return array{2fa_enabled: true, access_token: string, refresh_token: string, recovery_codes_remaining?: int, warning?: string}
      */
@@ -125,6 +125,6 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
 
     private function resolveUserAgent(?Request $request): string
     {
-        return $request?->headers->get('User-Agent') ?? '');
+        return $request?->headers->get('User-Agent') ?? '';
     }
 }

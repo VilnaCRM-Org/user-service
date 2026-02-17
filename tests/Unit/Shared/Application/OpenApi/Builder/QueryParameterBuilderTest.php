@@ -90,9 +90,9 @@ final class QueryParameterBuilderTest extends UnitTestCase
     }
 
     /**
-     * @return (App\Shared\Application\OpenApi\Enum\AllowEmptyValue::DISALLOWED|App\Shared\Application\OpenApi\Enum\Requirement::REQUIRED|int|string|string[])[]
+     * @return array<AllowEmptyValue::DISALLOWED|Requirement::REQUIRED|int|string|array<string>>
      *
-     * @psalm-return list{string, string, App\Shared\Application\OpenApi\Enum\Requirement::REQUIRED, string, string, 1, App\Shared\Application\OpenApi\Enum\AllowEmptyValue::DISALLOWED, list{'value'}}
+     * @psalm-return list{string, string, Requirement::REQUIRED, string, string, 1, AllowEmptyValue::DISALLOWED, list{'value'}}
      */
     private function createValidBuildParams(): array
     {

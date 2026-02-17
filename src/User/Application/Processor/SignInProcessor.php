@@ -75,7 +75,7 @@ final readonly class SignInProcessor implements ProcessorInterface
     }
 
     /**
-     * @return (bool|string)[]
+     * @return array<bool|string>
      *
      * @psalm-return array{2fa_enabled: bool, access_token?: string, refresh_token?: string, pending_session_id?: string}
      */
@@ -138,11 +138,11 @@ final readonly class SignInProcessor implements ProcessorInterface
 
     private function resolveIpAddress(?Request $request): string
     {
-        return $request?->getClientIp() ?? '');
+        return $request?->getClientIp() ?? '';
     }
 
     private function resolveUserAgent(?Request $request): string
     {
-        return $request?->headers->get('User-Agent') ?? '');
+        return $request?->headers->get('User-Agent') ?? '';
     }
 }

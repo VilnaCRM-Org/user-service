@@ -33,7 +33,7 @@ final class OAuthTokenRequestFactoryTest extends UnitTestCase
     }
 
     /**
-     * @return Parameter[]
+     * @return array<Parameter>
      *
      * @psalm-return list{Parameter, Parameter, Parameter, Parameter, Parameter, Parameter, Parameter, Parameter, Parameter}
      */

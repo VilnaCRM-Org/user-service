@@ -97,7 +97,7 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
     }
 
     /**
-     * @return array[]
+     * @return array<array>
      *
      * @psalm-return array{accessUpdate: array<never, never>, authUpdate: array<never, never>, accessSelect: array<never, never>, refreshUpdate: array<never, never>}
      */
@@ -248,8 +248,6 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
             }
 
             /**
-             * @return array
-             *
              * @psalm-return array<never, never>
              */
             #[\Override]

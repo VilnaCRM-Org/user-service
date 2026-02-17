@@ -28,7 +28,7 @@ final class InvokeParameterExtractor
         return $this->firstParameterClassFrom($method);
     }
 
-    private function firstParameterClassFrom(ReflectionMethod $method): string|null|null
+    private function firstParameterClassFrom(ReflectionMethod $method): ?string
     {
         $firstParameterType = $method->getParameters()[0]->getType();
 

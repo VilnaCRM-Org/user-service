@@ -123,7 +123,7 @@ final class RegisterUserBatchProcessorTest extends UnitTestCase
     }
 
     /**
-     * @return UserInterface[]
+     * @return array<UserInterface>
      *
      * @psalm-return list{UserInterface,...}
      */

@@ -21,7 +21,7 @@ final class OtherDomainEventSubscriber implements DomainEventSubscriberInterface
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{OtherDomainEvent::class}
      */

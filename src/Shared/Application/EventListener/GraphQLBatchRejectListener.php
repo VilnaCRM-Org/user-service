@@ -6,6 +6,7 @@ namespace App\Shared\Application\EventListener;
 
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -23,46 +24,48 @@ use Symfony\Component\HttpKernel\KernelEvents;
 final readonly class GraphQLBatchRejectListener
 {
     private const GRAPHQL_PATH = '/api/graphql';
+    private const BATCH_REJECT_DETAIL =
+        'GraphQL batch requests are not allowed. Use individual requests (OWASP API2:2023).';
 
     public function __invoke(RequestEvent $event): void
     {
-        $request = $event->getRequest();
-
-        // Only apply to GraphQL endpoint
-        if ($request->getPathInfo() !== self::GRAPHQL_PATH) {
+        if (!$this->isGraphQlPost($event->getRequest())) {
             return;
         }
 
-        // Only apply to POST requests with JSON content
-        if ($request->getMethod() !== 'POST') {
+        if (!$this->isBatchRequest($event->getRequest()->getContent())) {
             return;
         }
 
-        $content = $request->getContent();
+        $event->setResponse(new JsonResponse(
+            [
+                'type' => 'about:blank',
+                'title' => 'Bad Request',
+                'status' => Response::HTTP_BAD_REQUEST,
+                'detail' => self::BATCH_REJECT_DETAIL,
+            ],
+            Response::HTTP_BAD_REQUEST
+        ));
+    }
+
+    private function isGraphQlPost(Request $request): bool
+    {
+        return $request->getPathInfo() === self::GRAPHQL_PATH
+            && $request->getMethod() === 'POST';
+    }
+
+    private function isBatchRequest(string $content): bool
+    {
         if ($content === '') {
-            return;
+            return false;
         }
 
-        // Check if the request body is a JSON array (batch request)
         try {
             $decoded = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
         } catch (\JsonException) {
-            // Invalid JSON - let the normal error handling deal with it
-            return;
+            return false;
         }
 
-        // If the decoded content is an array with numeric keys (JSON array), reject it
-        if (\is_array($decoded) && array_is_list($decoded)) {
-            $event->setResponse(new JsonResponse(
-                [
-                    'type' => 'about:blank',
-                    'title' => 'Bad Request',
-                    'status' => Response::HTTP_BAD_REQUEST,
-                    'detail' => 'GraphQL batch requests (JSON arrays) are not allowed. ' .
-                               'Send individual requests instead to prevent rate limit bypass (OWASP API2:2023).',
-                ],
-                Response::HTTP_BAD_REQUEST
-            ));
-        }
+        return \is_array($decoded) && array_is_list($decoded);
     }
 }

@@ -14,10 +14,9 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 final class GraphQLBatchRejectTest extends IntegrationTestCase
 {
     /**
-     * @test
      * AC: NFR-59 - GraphQL batch requests (JSON arrays) must be rejected with 400
      */
-    public function graphql_batch_request_returns_400(): void
+    public function testGraphqlBatchRequestReturns400(): void
     {
         $kernel = self::getContainer()->get('kernel');
         $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
@@ -61,10 +60,9 @@ final class GraphQLBatchRejectTest extends IntegrationTestCase
     }
 
     /**
-     * @test
      * AC: NFR-59 - Single GraphQL requests should still work
      */
-    public function single_graphql_request_is_allowed(): void
+    public function testSingleGraphqlRequestIsAllowed(): void
     {
         $kernel = self::getContainer()->get('kernel');
         $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
@@ -95,10 +93,9 @@ final class GraphQLBatchRejectTest extends IntegrationTestCase
     }
 
     /**
-     * @test
      * AC: NFR-59 - Batch rejection should happen before rate limiting
      */
-    public function batch_rejection_happens_before_authentication(): void
+    public function testBatchRejectionHappensBeforeAuthentication(): void
     {
         $kernel = self::getContainer()->get('kernel');
         $this->assertInstanceOf(HttpKernelInterface::class, $kernel);

@@ -48,16 +48,17 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (RegenerateRecoveryCodesCommand $command) use ($email, $sessionId, $recoveryCodes): bool {
-                $this->assertSame($email, $command->userEmail);
-                $this->assertSame($sessionId, $command->currentSessionId);
+                function (RegenerateRecoveryCodesCommand $command) use ($email, $sessionId, $recoveryCodes): bool {
+                    $this->assertSame($email, $command->userEmail);
+                    $this->assertSame($sessionId, $command->currentSessionId);
 
-                $command->setResponse(
-                    new RegenerateRecoveryCodesCommandResponse($recoveryCodes)
-                );
+                    $command->setResponse(
+                        new RegenerateRecoveryCodesCommandResponse($recoveryCodes)
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new RegenerateRecoveryCodesProcessor(
             $this->commandBus,
@@ -90,15 +91,16 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (RegenerateRecoveryCodesCommand $command): bool {
-                $this->assertSame('', $command->currentSessionId);
+                function (RegenerateRecoveryCodesCommand $command): bool {
+                    $this->assertSame('', $command->currentSessionId);
 
-                $command->setResponse(
-                    new RegenerateRecoveryCodesCommandResponse([])
-                );
+                    $command->setResponse(
+                        new RegenerateRecoveryCodesCommandResponse([])
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new RegenerateRecoveryCodesProcessor(
             $this->commandBus,
@@ -131,15 +133,16 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (RegenerateRecoveryCodesCommand $command): bool {
-                $this->assertSame('', $command->currentSessionId);
+                function (RegenerateRecoveryCodesCommand $command): bool {
+                    $this->assertSame('', $command->currentSessionId);
 
-                $command->setResponse(
-                    new RegenerateRecoveryCodesCommandResponse([])
-                );
+                    $command->setResponse(
+                        new RegenerateRecoveryCodesCommandResponse([])
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new RegenerateRecoveryCodesProcessor(
             $this->commandBus,

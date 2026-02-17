@@ -39,8 +39,6 @@ final class TwoFactorFailedEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.two_factor_failed'
      */
     #[\Override]
@@ -50,7 +48,7 @@ final class TwoFactorFailedEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{pendingSessionId: string, ipAddress: string, reason: string}
      */

@@ -102,9 +102,6 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
         );
     }
 
-    /**
-     * @return array|null|object|scalar
-     */
     protected function processWithInvalidInput(
         UserInterface $user,
         string $initials,
@@ -113,7 +110,7 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
         ?string $invalidEmail = null,
         ?string $invalidInitials = null,
         ?string $invalidPassword = null
-    ) {
+    ): array|object|string|int|float|bool|null {
         $invalidEmail = $invalidEmail ?? $this->faker->word();
         $effectiveInitials = $invalidInitials ?? $initials;
         $effectivePassword = $invalidPassword ?? $password;
@@ -135,16 +132,13 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
         );
     }
 
-    /**
-     * @return array|null|object|scalar
-     */
     protected function executeProcessWithPayload(
         string $email,
         string $initials,
         string $oldPassword,
         string $newPassword,
         string $userId
-    ) {
+    ): array|object|string|int|float|bool|null {
         return $this->withRequest(
             [
                 'email' => $email,
@@ -222,7 +216,6 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
 
     /**
      * @param array<string, string|null> $payload
-     * @param callable $callback
      */
     protected function withRequest(
         array $payload,
@@ -244,9 +237,6 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
         }
     }
 
-    /**
-     * @param callable $callback
-     */
     protected function withRawRequest(
         string $content,
         callable $callback
@@ -278,7 +268,7 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
     }
 
     /**
-     * @return (UserInterface|UserUpdate|string)[]
+     * @return array<UserInterface|UserUpdate|string>
      *
      * @psalm-return array{user: UserInterface, updateData: UserUpdate, userId: string, newEmail: string, newInitials: string, password: string, newPassword: string}
      */
@@ -309,10 +299,8 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
 
     /**
      * @param array<string, string|UserInterface|UserUpdate> $testData
-     *
-     * @return array|null|object|scalar
      */
-    protected function executeProcessWithNewData(array $testData)
+    protected function executeProcessWithNewData(array $testData): array|object|string|int|float|bool|null
     {
         return $this->withRequest(
             [

@@ -88,7 +88,7 @@ final class LexikAccessTokenGeneratorTest extends UnitTestCase
             private ?array $capturedPayload = null;
 
             /**
-             * @param array<string, array<string>|\DateTimeImmutable|string> $payload 
+             * @param array<string, array<string>|\DateTimeImmutable|string> $payload
              *
              * @psalm-return 'jwt-token'
              */
@@ -137,7 +137,7 @@ final class LexikAccessTokenGeneratorTest extends UnitTestCase
             private ?array $capturedPayload = null;
 
             /**
-             * @param array<string, array<string>|\DateTimeImmutable|string> $payload 
+             * @param array<string, array<string>|\DateTimeImmutable|string> $payload
              *
              * @psalm-return 'jwt-token'
              */

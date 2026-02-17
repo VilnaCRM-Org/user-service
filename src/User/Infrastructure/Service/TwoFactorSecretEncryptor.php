@@ -28,9 +28,6 @@ final readonly class TwoFactorSecretEncryptor implements
         $this->key = $decodedKey;
     }
 
-    /**
-     * @return string
-     */
     #[\Override]
     public function encrypt(string $secret): string
     {

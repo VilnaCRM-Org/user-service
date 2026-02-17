@@ -51,7 +51,7 @@ final class SignOutAllProcessorTest extends UnitTestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(function (SignOutAllCommand $command) use ($userId) {
+            ->with($this->callback(static function (SignOutAllCommand $command) use ($userId) {
                 return $command->userId === $userId;
             }));
 

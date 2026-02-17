@@ -17,7 +17,7 @@ final class OAuth2GrantType extends Type
     public const NAME = 'oauth2_grant';
 
     /**
-     * @return null|string[]
+     * @return array<string>|null
      *
      * @param array<Grant|\stdClass|object|string>|string|null $value
      *
@@ -47,7 +47,7 @@ final class OAuth2GrantType extends Type
     }
 
     /**
-     * @return Grant[]
+     * @return array<Grant>
      *
      * @param string|array<string>|null $value
      *
@@ -73,8 +73,6 @@ final class OAuth2GrantType extends Type
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'if ($value === null) { $return = null; } elseif (is_array($value)) { $return = []; foreach ($value as $item) { if (is_string($item) || (is_object($item) && method_exists($item, "__toString"))) { $return[] = (string) $item; } else { throw new \InvalidArgumentException("OAuth2GrantType expects an array of stringable values."); } } } else { throw new \InvalidArgumentException("OAuth2GrantType expects an array of stringable values."); }'
      */
     #[\Override]

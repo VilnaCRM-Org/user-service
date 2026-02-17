@@ -39,8 +39,6 @@ final class EmailChangedEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'email.changed'
      */
     #[\Override]
@@ -50,7 +48,7 @@ final class EmailChangedEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{userId: string, newEmail: string, oldEmail: string}
      */

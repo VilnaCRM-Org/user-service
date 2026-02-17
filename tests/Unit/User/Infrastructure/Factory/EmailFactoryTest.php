@@ -49,7 +49,7 @@ final class EmailFactoryTest extends UnitTestCase
     /**
      * @param array<string, string> $additionalContext
      *
-     * @return (\Symfony\Bridge\Twig\Mime\TemplatedEmail|string)[]
+     * @return array<\Symfony\Bridge\Twig\Mime\TemplatedEmail|string>
      *
      * @psalm-return array{email: \Symfony\Bridge\Twig\Mime\TemplatedEmail, sendTo: string, subject: string, template: 'email/confirm.html.twig', content: string}
      */

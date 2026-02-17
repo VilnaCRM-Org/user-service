@@ -20,8 +20,6 @@ final readonly class TestCustomerMetric extends BusinessMetric
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'CustomersCreated'
      */
     #[\Override]

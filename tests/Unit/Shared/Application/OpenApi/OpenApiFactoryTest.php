@@ -180,7 +180,7 @@ final class OpenApiFactoryTest extends UnitTestCase
     }
 
     /**
-     * @return Tag[]
+     * @return array<Tag>
      *
      * @psalm-return list{Tag, Tag, Tag, Tag, Tag}
      */
@@ -196,7 +196,7 @@ final class OpenApiFactoryTest extends UnitTestCase
     }
 
     /**
-     * @return ((string|string[])[][]|string)[]
+     * @return array<array<array<string|array<string>>>|string>
      *
      * @psalm-return array{type: 'oauth2', description: 'OAuth2 Authorization Code flow securing VilnaCRM API.', flows: array{authorizationCode: array{authorizationUrl: 'https://localhost/api/oauth/dialog', tokenUrl: 'https://localhost/api/oauth/token', scopes: array{'write:pets': 'modify pets in your account', 'read:pets': 'read your pets'}}}}
      */

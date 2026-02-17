@@ -39,18 +39,19 @@ final class RefreshTokenProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            function (RefreshTokenCommand $command): bool {
-                $this->assertSame('old-refresh-token', $command->refreshToken);
+                function (RefreshTokenCommand $command): bool {
+                    $this->assertSame('old-refresh-token', $command->refreshToken);
 
-                $command->setResponse(
-                    new RefreshTokenCommandResponse(
-                        'new-access-token',
-                        'new-refresh-token'
-                    )
-                );
+                    $command->setResponse(
+                        new RefreshTokenCommandResponse(
+                            'new-access-token',
+                            'new-refresh-token'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new RefreshTokenProcessor($this->commandBus);
         $response = $processor->process($dto, $this->operation);
@@ -83,16 +84,17 @@ final class RefreshTokenProcessorTest extends UnitTestCase
             ->with($this->callback(/**
              * @return true
              */
-            static function (RefreshTokenCommand $command): bool {
-                $command->setResponse(
-                    new RefreshTokenCommandResponse(
-                        '',
-                        'new-refresh-token'
-                    )
-                );
+                static function (RefreshTokenCommand $command): bool {
+                    $command->setResponse(
+                        new RefreshTokenCommandResponse(
+                            '',
+                            'new-refresh-token'
+                        )
+                    );
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         $processor = new RefreshTokenProcessor($this->commandBus);
         $response = $processor->process($dto, $this->operation);

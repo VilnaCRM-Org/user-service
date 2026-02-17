@@ -127,7 +127,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
     private function resolveRemainingCodes(
         User $user,
         ?string $method
-    ): int|null {
+    ): ?int {
         if ($method !== 'recovery_code') {
             return null;
         }
@@ -256,7 +256,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
     private function resolveVerificationMethod(
         User $user,
         string $twoFactorCode
-    ): string|null|null {
+    ): ?string {
         if ($this->isTotpCode($twoFactorCode)) {
             return $this->verifyTotp($user, $twoFactorCode)
                 ? 'totp'
@@ -358,7 +358,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
     }
 
     /**
-     * @return (int|string|string[])[]
+     * @return array<int|string|array<string>>
      *
      * @psalm-return array{sub: string, iss: 'vilnacrm-user-service', aud: 'vilnacrm-api', exp: int, iat: int, nbf: int, jti: string, sid: string, roles: list{'ROLE_USER'}}
      */

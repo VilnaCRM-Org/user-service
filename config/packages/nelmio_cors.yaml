@@ -13,6 +13,12 @@ when@dev:
       # AC: NFR-65 - explicit origin required when allow_credentials: true
       allow_origin: ['http://localhost:3000']
 
+when@test:
+  nelmio_cors:
+    defaults:
+      # AC: NFR-65 - explicit origin for test environment
+      allow_origin: ['http://localhost:3000']
+
 when@prod:
   nelmio_cors:
     defaults:

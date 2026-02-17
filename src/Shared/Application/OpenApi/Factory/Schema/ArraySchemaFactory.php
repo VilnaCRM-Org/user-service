@@ -15,7 +15,7 @@ final readonly class ArraySchemaFactory
     }
 
     /**
-     * @return (int|string|string[])[]
+     * @return array<int|string|array<string>>
      *
      * @psalm-return array<'items'|'minItems'|'type', 'array'|array{type: 'object'|'string'}|int>
      */
@@ -32,7 +32,7 @@ final readonly class ArraySchemaFactory
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{type: 'object'|'string'}
      */

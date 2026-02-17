@@ -402,6 +402,12 @@ final class UserRequestContext implements Context
             );
         }
 
+        $originHeader = $this->state->originHeader;
+        if (is_string($originHeader) && $originHeader !== '') {
+            $headers['HTTP_ORIGIN'] = $originHeader;
+            $this->state->originHeader = '';
+        }
+
         return $headers;
     }
 

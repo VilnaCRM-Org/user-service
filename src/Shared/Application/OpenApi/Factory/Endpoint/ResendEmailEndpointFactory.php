@@ -74,7 +74,7 @@ final class ResendEmailEndpointFactory implements EndpointFactoryInterface
     }
 
     /**
-     * @return Response[]
+     * @return array<Response>
      *
      * @psalm-return array{200: Response, 400: Response, 404: Response, 429: Response, 415: Response}
      */

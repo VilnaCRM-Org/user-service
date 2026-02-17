@@ -79,7 +79,7 @@ final class ClientManager implements ClientManagerInterface
     }
 
     /**
-     * @return string[][]
+     * @return array<array<string>>
      *
      * @psalm-return array{grants?: non-empty-list<string>, redirectUris?: non-empty-list<string>, scopes?: non-empty-list<string>}
      */

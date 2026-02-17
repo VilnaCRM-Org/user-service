@@ -56,7 +56,7 @@ final readonly class RefreshTokenProcessor implements ProcessorInterface
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{access_token: string, refresh_token: string}
      */

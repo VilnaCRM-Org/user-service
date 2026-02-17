@@ -34,7 +34,7 @@ final readonly class ErrorProvider implements ProviderInterface
      * @param array<string,string> $uriVariables
      * @param array<string,array<string>> $context
      *
-     * @return Error|array
+     * @return Error|array<int, Error>
      */
     #[\Override]
     public function provide(
@@ -61,7 +61,7 @@ final readonly class ErrorProvider implements ProviderInterface
     }
 
     /**
-     * @return Error|string[]
+     * @return Error|array<string>
      *
      * @psalm-return Error|array{message: string}
      */
@@ -86,7 +86,7 @@ final readonly class ErrorProvider implements ProviderInterface
     }
 
     /**
-     * @return Error|string[]
+     * @return Error|array<string>
      *
      * @psalm-return Error|array{message: string}
      */

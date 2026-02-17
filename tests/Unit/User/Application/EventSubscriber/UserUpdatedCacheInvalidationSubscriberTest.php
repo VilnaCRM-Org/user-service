@@ -116,7 +116,7 @@ final class UserUpdatedCacheInvalidationSubscriberTest extends UnitTestCase
     {
         $expectedCalls = array_map(
             /**
-             * @return string[]
+             * @return array<string>
              *
              * @psalm-return list{string}
              */

@@ -19,7 +19,7 @@ final readonly class AllowedMethodsCollector
     /**
      * @param class-string $resourceClass
      *
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list<string>
      */
@@ -39,7 +39,7 @@ final readonly class AllowedMethodsCollector
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{0?: string,...}
      */

@@ -9,7 +9,7 @@ use GraphQL\RequestBuilder\Argument;
 abstract readonly class GraphQLMutationInput
 {
     /**
-     * @return Argument[]
+     * @return array<Argument>
      *
      * @psalm-return list{0?: Argument,...}
      */

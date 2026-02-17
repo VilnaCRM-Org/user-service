@@ -23,7 +23,7 @@ final readonly class ApiRateLimitRequestMatcher
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{name: 'global_api_anonymous'|'global_api_authenticated', key: string}
      */
@@ -72,7 +72,7 @@ final readonly class ApiRateLimitRequestMatcher
     }
 
     /**
-     * @return string[][]
+     * @return array<array<string>>
      *
      * @psalm-return list{0?: array{name: 'user_delete'|'user_update', key: string}}
      */
@@ -97,7 +97,7 @@ final readonly class ApiRateLimitRequestMatcher
     }
 
     /**
-     * @return string[][]
+     * @return array<array<string>>
      *
      * @psalm-return list{0?: array{name: 'resend_confirmation', key: string}, 1?: array{name: 'resend_confirmation_target', key: string}}
      */
@@ -118,7 +118,7 @@ final readonly class ApiRateLimitRequestMatcher
     }
 
     /**
-     * @return null|string[]
+     * @return array<string>|null
      *
      * @psalm-return array{name: 'registration', key: string}|null
      */
@@ -126,7 +126,7 @@ final readonly class ApiRateLimitRequestMatcher
         Request $request,
         string $path,
         string $method
-    ): array|null {
+    ): ?array {
         if (
             $method === 'POST'
             && preg_match('#^/api/users(?:\.[^/]+)?$#', $path) === 1
@@ -138,7 +138,7 @@ final readonly class ApiRateLimitRequestMatcher
     }
 
     /**
-     * @return null|string[]
+     * @return array<string>|null
      *
      * @psalm-return array{name: 'oauth_token', key: string}|null
      */
@@ -146,7 +146,7 @@ final readonly class ApiRateLimitRequestMatcher
         Request $request,
         string $path,
         string $method
-    ): array|null {
+    ): ?array {
         if (
             $method === 'POST'
             && in_array($path, ['/api/token', '/api/oauth/token'], true)
@@ -163,7 +163,7 @@ final readonly class ApiRateLimitRequestMatcher
     }
 
     /**
-     * @return null|string[]
+     * @return array<string>|null
      *
      * @psalm-return array{name: 'email_confirmation', key: string}|null
      */
@@ -171,7 +171,7 @@ final readonly class ApiRateLimitRequestMatcher
         Request $request,
         string $path,
         string $method
-    ): array|null {
+    ): ?array {
         if ($method === 'PATCH' && $path === '/api/users/confirm') {
             return ['name' => 'email_confirmation', 'key' => $this->buildIpKey($request)];
         }
@@ -180,7 +180,7 @@ final readonly class ApiRateLimitRequestMatcher
     }
 
     /**
-     * @return null|string[]
+     * @return array<string>|null
      *
      * @psalm-return array{name: 'user_collection', key: string}|null
      */
@@ -188,7 +188,7 @@ final readonly class ApiRateLimitRequestMatcher
         Request $request,
         string $path,
         string $method
-    ): array|null {
+    ): ?array {
         if (
             $method === 'GET'
             && preg_match('#^/api/users(?:\.[^/]+)?$#', $path) === 1

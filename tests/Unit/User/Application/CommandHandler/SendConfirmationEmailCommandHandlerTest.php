@@ -64,7 +64,7 @@ final class SendConfirmationEmailCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return (ConfirmationTokenInterface|\App\User\Application\Command\SendConfirmationEmailCommand)[]
+     * @return array<ConfirmationTokenInterface|\App\User\Application\Command\SendConfirmationEmailCommand>
      *
      * @psalm-return list{\App\User\Application\Command\SendConfirmationEmailCommand, ConfirmationTokenInterface}
      */

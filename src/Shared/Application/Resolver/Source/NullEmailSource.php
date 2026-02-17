@@ -10,8 +10,6 @@ final class NullEmailSource implements BatchEmailSource
      * @param array<string> $entry
      *
      * @psalm-param array{email: 'ignored@example.com'} $entry
-     *
-     * @return null
      */
     #[\Override]
     public function extract(mixed $entry): ?string

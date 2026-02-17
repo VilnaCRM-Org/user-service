@@ -100,9 +100,6 @@ final class MongoDBDomainUuidTypeDatabaseTest extends UnitTestCase
                 return $this->value;
             }
 
-            /**
-             * @return null
-             */
             #[\Override]
             public function toBinary(): ?string
             {

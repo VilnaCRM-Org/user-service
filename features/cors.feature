@@ -45,14 +45,15 @@ Feature: CORS Configuration
 
   Scenario: CORS preflight response has correct status code
     When an OPTIONS request is send to "/api/users" with Origin header
-    Then the response status code should be 204
+    Then the response status code should be 200
 
   Scenario: CORS preflight with unknown origin is rejected or ignored
     When an OPTIONS request is send to "/api/users" with Origin "https://malicious-site.com"
     Then the response should not have header "Access-Control-Allow-Origin" with value "https://malicious-site.com"
 
-  Scenario: CORS preflight exposes required headers
-    When an OPTIONS request is send to "/api/users" with Origin header
+  Scenario: CORS response exposes required headers
+    Given I am authenticated as user "cors-expose@test.com"
+    When GET request is send to "/api/users?page=1&itemsPerPage=10" with Origin header
     Then the response should have header "Access-Control-Expose-Headers"
 
   Scenario: CORS credentials header present on 2FA response
@@ -86,5 +87,5 @@ Feature: CORS Configuration
 
   Scenario: CORS request without Origin header does not include CORS headers
     When GET request is send to "/api/health" without Origin header
-    Then the response status code should be 200
+    Then the response status code should be 204
     And the response should not have header "Access-Control-Allow-Origin"

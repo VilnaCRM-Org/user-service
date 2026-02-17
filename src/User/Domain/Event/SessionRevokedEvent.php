@@ -44,8 +44,6 @@ final class SessionRevokedEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.session.revoked'
      */
     #[\Override]
@@ -55,7 +53,7 @@ final class SessionRevokedEvent extends DomainEvent
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return array{userId: string, sessionId: string, reason: string}
      */

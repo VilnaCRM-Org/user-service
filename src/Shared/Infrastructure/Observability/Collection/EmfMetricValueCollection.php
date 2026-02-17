@@ -45,8 +45,6 @@ final readonly class EmfMetricValueCollection implements IteratorAggregate, Coun
     }
 
     /**
-     * @return int
-     *
      * @psalm-return int<0, max>
      */
     #[\Override]

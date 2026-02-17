@@ -36,9 +36,6 @@ final class SeedSchemathesisDataCommand extends Command
         parent::__construct();
     }
 
-    /**
-     * @return int
-     */
     #[\Override]
     protected function execute(
         InputInterface $input,

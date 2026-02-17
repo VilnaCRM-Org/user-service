@@ -323,7 +323,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
     }
 
     /**
-     * @return (ConfirmationTokenInterface|UserInterface|string)[]
+     * @return array<ConfirmationTokenInterface|UserInterface|string>
      *
      * @psalm-return array{user: UserInterface, token: ConfirmationTokenInterface, userId: string}
      */

@@ -35,8 +35,6 @@ final class UserCollection implements IteratorAggregate, Countable, ArrayAccess
     }
 
     /**
-     * @return ArrayIterator
-     *
      * @psalm-return ArrayIterator<array-key, User>
      */
     #[\Override]
@@ -46,9 +44,7 @@ final class UserCollection implements IteratorAggregate, Countable, ArrayAccess
     }
 
     /**
-     * @psalm-suppress PossiblyUnusedMethod Called via Countable interface 
-     *
-     * @return int
+     * @psalm-suppress PossiblyUnusedMethod Called via Countable interface
      *
      * @psalm-return int<0, max>
      */

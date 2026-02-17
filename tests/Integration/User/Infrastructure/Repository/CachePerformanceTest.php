@@ -165,7 +165,7 @@ final class CachePerformanceTest extends IntegrationTestCase
     }
 
     /**
-     * @return User[]
+     * @return array<User>
      *
      * @psalm-return list{0?: User,...}
      */

@@ -13,15 +13,18 @@ use App\Tests\Unit\UnitTestCase;
 
 final class ItemsPerPageRuleTest extends UnitTestCase
 {
+    /**
+     * @psalm-suppress NoValue
+     * @psalm-suppress UnusedVariable
+     * @psalm-suppress UnevaluatedCode
+     */
     public function testDoesNotNormalizeWhenValueIsNotExplicit(): void
     {
         $violation = new QueryParameterViolation('Invalid pagination', 'detail');
         $valueEvaluator = $this->createValueEvaluatorForNonExplicitValue();
         $normalizer = $this->createNormalizerThatShouldNotBeCalled();
         $violationFactory = $this->createViolationFactory($violation);
-
         $rule = new ItemsPerPageRule($valueEvaluator, $normalizer, $violationFactory);
-
         self::assertSame($violation, $rule->evaluate('   '));
     }
 
@@ -40,6 +43,7 @@ final class ItemsPerPageRuleTest extends UnitTestCase
         return $evaluator;
     }
 
+    /** @psalm-suppress UnusedMethod */
     private function createNormalizerThatShouldNotBeCalled(): \PHPUnit\Framework\MockObject\MockObject&PositiveIntegerNormalizer
     {
         $normalizer = $this->createMock(PositiveIntegerNormalizer::class);
@@ -48,6 +52,7 @@ final class ItemsPerPageRuleTest extends UnitTestCase
         return $normalizer;
     }
 
+    /** @psalm-suppress UnusedMethod */
     private function createViolationFactory(
         QueryParameterViolation $violation
     ): \PHPUnit\Framework\MockObject\MockObject&QueryParameterViolationFactory {

@@ -121,7 +121,7 @@ final class MessageBusFactoryTest extends UnitTestCase
     {
         $subscriber = new class() implements DomainEventSubscriberInterface {
             /**
-             * @return string[]
+             * @return array<string>
              *
              * @psalm-return list{Stub\TestEvent::class}
              */
@@ -173,7 +173,7 @@ final class MessageBusFactoryTest extends UnitTestCase
             }
 
             /**
-             * @return string[]
+             * @return array<string>
              *
              * @psalm-return list{Stub\TestEvent::class}
              */

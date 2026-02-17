@@ -24,7 +24,7 @@ final readonly class TestDomainEventSubscriber implements DomainEventSubscriberI
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{TestDomainEvent::class}
      */

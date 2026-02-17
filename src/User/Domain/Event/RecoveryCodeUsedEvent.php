@@ -37,8 +37,6 @@ final class RecoveryCodeUsedEvent extends DomainEvent
     }
 
     /**
-     * @return string
-     *
      * @psalm-return 'user.recovery_code_used'
      */
     #[\Override]
@@ -48,7 +46,7 @@ final class RecoveryCodeUsedEvent extends DomainEvent
     }
 
     /**
-     * @return (int|string)[]
+     * @return array<int|string>
      *
      * @psalm-return array{userId: string, remainingCount: int}
      */

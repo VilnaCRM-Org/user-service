@@ -69,7 +69,7 @@ final class OAuthAuthEndpointFactory implements EndpointFactoryInterface
     }
 
     /**
-     * @return Response[]
+     * @return array<Response>
      *
      * @psalm-return array{200: Response, 302: Response, 400: Response, 401: Response}
      */

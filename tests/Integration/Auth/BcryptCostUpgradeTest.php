@@ -16,10 +16,9 @@ use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 final class BcryptCostUpgradeTest extends IntegrationTestCase
 {
     /**
-     * @test
      * AC: NFR-32 - New registrations use cost 12
      */
-    public function new_user_passwords_use_cost_12(): void
+    public function testNewUserPasswordsUseCost12(): void
     {
         $userFactory = $this->container->get(UserFactoryInterface::class);
         $userRepository = $this->container->get(UserRepositoryInterface::class);
@@ -46,10 +45,9 @@ final class BcryptCostUpgradeTest extends IntegrationTestCase
     }
 
     /**
-     * @test
      * AC: NFR-32 - Existing cost-4 hashes are verified and transparently upgraded on login
      */
-    public function cost_4_hashes_are_upgraded_on_verification(): void
+    public function testCost4HashesAreUpgradedOnVerification(): void
     {
         $userFactory = $this->container->get(UserFactoryInterface::class);
         $userRepository = $this->container->get(UserRepositoryInterface::class);

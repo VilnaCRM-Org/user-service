@@ -49,8 +49,6 @@ final readonly class EmfDimensionValueCollection implements IteratorAggregate, C
     }
 
     /**
-     * @return int
-     *
      * @psalm-return int<0, max>
      */
     #[\Override]

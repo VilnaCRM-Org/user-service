@@ -134,11 +134,12 @@ final class RedisAccountLockoutServiceTest extends UnitTestCase
             ->willReturnCallback(/**
              * @return true
              */
-            static function (CacheItemInterface $item) use (&$savedItems): bool {
-                $savedItems[] = $item;
+                static function (CacheItemInterface $item) use (&$savedItems): bool {
+                    $savedItems[] = $item;
 
-                return true;
-            });
+                    return true;
+                }
+            );
 
         $service = new RedisAccountLockoutService($this->cachePool);
 

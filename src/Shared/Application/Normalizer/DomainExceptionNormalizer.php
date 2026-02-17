@@ -56,7 +56,7 @@ final readonly class DomainExceptionNormalizer implements NormalizerInterface
     }
 
     /**
-     * @return false[]
+     * @return array<false>
      *
      * @psalm-return array{'GraphQL\\Error\\Error'::class: false}
      */

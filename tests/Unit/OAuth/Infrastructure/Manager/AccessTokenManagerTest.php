@@ -152,7 +152,7 @@ final class AccessTokenManagerTest extends OAuthInfrastructureTestCase
     }
 
     /**
-     * @return array[]
+     * @return array<array>
      *
      * @psalm-return array{expired: array<never, never>, refresh: array<never, never>, remove: array<never, never>}
      */

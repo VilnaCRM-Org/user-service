@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Security;
 
+use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\Transformer\UserTransformer;
 use App\User\Domain\Entity\UserInterface as DomainUserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -16,7 +17,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
@@ -48,9 +48,6 @@ final class DualAuthenticator extends AbstractAuthenticator implements
     ) {
     }
 
-    /**
-     * @return bool
-     */
     #[\Override]
     public function supports(Request $request): ?bool
     {
@@ -95,9 +92,6 @@ final class DualAuthenticator extends AbstractAuthenticator implements
         return $token;
     }
 
-    /**
-     * @return null
-     */
     #[\Override]
     public function onAuthenticationSuccess(
         Request $request,
@@ -143,10 +137,7 @@ final class DualAuthenticator extends AbstractAuthenticator implements
         $passport = new SelfValidatingPassport(
             new UserBadge(
                 $subject,
-                fn (string $identifier): ServicePrincipal|\App\User\Application\DTO\AuthorizationUserDto => $this->resolveUser(
-                    $identifier,
-                    $roles
-                )
+                fn (string $identifier) => $this->resolveUser($identifier, $roles)
             )
         );
         $passport->setAttribute('roles', $roles);
@@ -289,7 +280,7 @@ final class DualAuthenticator extends AbstractAuthenticator implements
     /**
      * @param JwtPayload $payload
      *
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return non-empty-list<non-empty-string>
      */
@@ -318,13 +309,11 @@ final class DualAuthenticator extends AbstractAuthenticator implements
 
     /**
      * @param array<string> $roles
-     *
-     * @return ServicePrincipal|\App\User\Application\DTO\AuthorizationUserDto
      */
     private function resolveUser(
         string $subject,
         array $roles
-    ): \App\User\Application\DTO\AuthorizationUserDto|ServicePrincipal {
+    ): AuthorizationUserDto|ServicePrincipal {
         if (in_array('ROLE_SERVICE', $roles, true)) {
             return new ServicePrincipal($subject, $roles);
         }
@@ -460,7 +449,7 @@ final class DualAuthenticator extends AbstractAuthenticator implements
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list{string,...}
      */

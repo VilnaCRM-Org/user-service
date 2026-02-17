@@ -2,172 +2,172 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\Service {
-    final class OpenSslEncryptTestDouble
-    {
-        public static bool $forceFailure = false;
-    }
+namespace App\User\Infrastructure\Service;
 
-    function openssl_encrypt(
-        string $data,
-        string $cipherAlgorithm,
-        string $passphrase,
-        int $options = 0,
-        string $iv = '',
-        mixed &$tag = null,
-        string $aad = '',
-        int $tagLength = 16
-    ): string|false {
-        if (OpenSslEncryptTestDouble::$forceFailure) {
-            return false;
-        }
-
-        return \openssl_encrypt(
-            $data,
-            $cipherAlgorithm,
-            $passphrase,
-            $options,
-            $iv,
-            $tag,
-            $aad,
-            $tagLength
-        );
-    }
+final class OpenSslEncryptTestDouble
+{
+    public static bool $forceFailure = false;
 }
 
-namespace App\Tests\Unit\User\Infrastructure\Service {
-    use App\Tests\Unit\UnitTestCase;
-    use App\User\Infrastructure\Service\OpenSslEncryptTestDouble;
-    use App\User\Infrastructure\Service\TwoFactorSecretEncryptor;
-    use RuntimeException;
+function openssl_encrypt(
+    string $data,
+    string $cipherAlgorithm,
+    string $passphrase,
+    int $options = 0,
+    string $iv = '',
+    mixed &$tag = null,
+    string $aad = '',
+    int $tagLength = 16
+): string|false {
+    if (OpenSslEncryptTestDouble::$forceFailure) {
+        return false;
+    }
 
-    final class TwoFactorSecretEncryptorTest extends UnitTestCase
+    return \openssl_encrypt(
+        $data,
+        $cipherAlgorithm,
+        $passphrase,
+        $options,
+        $iv,
+        $tag,
+        $aad,
+        $tagLength
+    );
+}
+
+namespace App\Tests\Unit\User\Infrastructure\Service;
+
+use App\Tests\Unit\UnitTestCase;
+use App\User\Infrastructure\Service\OpenSslEncryptTestDouble;
+use App\User\Infrastructure\Service\TwoFactorSecretEncryptor;
+use RuntimeException;
+
+final class TwoFactorSecretEncryptorTest extends UnitTestCase
+{
+    public function testEncryptAndDecryptRoundTrip(): void
     {
-        public function testEncryptAndDecryptRoundTrip(): void
-        {
-            $encryptor = new TwoFactorSecretEncryptor(
-                base64_encode('0123456789abcdef0123456789abcdef')
-            );
-            $secret = 'JBSWY3DPEHPK3PXP';
+        $encryptor = new TwoFactorSecretEncryptor(
+            base64_encode('0123456789abcdef0123456789abcdef')
+        );
+        $secret = 'JBSWY3DPEHPK3PXP';
 
-            $cipherText = $encryptor->encrypt($secret);
-            $plainSecret = $encryptor->decrypt($cipherText);
+        $cipherText = $encryptor->encrypt($secret);
+        $plainSecret = $encryptor->decrypt($cipherText);
 
-            $this->assertNotSame($secret, $cipherText);
-            $this->assertSame($secret, $plainSecret);
-        }
+        $this->assertNotSame($secret, $cipherText);
+        $this->assertSame($secret, $plainSecret);
+    }
 
-        public function testEncryptUsesRandomIv(): void
-        {
-            $encryptor = new TwoFactorSecretEncryptor(
-                base64_encode('0123456789abcdef0123456789abcdef')
-            );
+    public function testEncryptUsesRandomIv(): void
+    {
+        $encryptor = new TwoFactorSecretEncryptor(
+            base64_encode('0123456789abcdef0123456789abcdef')
+        );
 
-            $first = $encryptor->encrypt('JBSWY3DPEHPK3PXP');
-            $second = $encryptor->encrypt('JBSWY3DPEHPK3PXP');
+        $first = $encryptor->encrypt('JBSWY3DPEHPK3PXP');
+        $second = $encryptor->encrypt('JBSWY3DPEHPK3PXP');
 
-            $this->assertNotSame($first, $second);
-        }
+        $this->assertNotSame($first, $second);
+    }
 
-        public function testEncryptThrowsWhenOpenSslEncryptionFails(): void
-        {
-            $encryptor = new TwoFactorSecretEncryptor(
-                base64_encode('0123456789abcdef0123456789abcdef')
-            );
+    public function testEncryptThrowsWhenOpenSslEncryptionFails(): void
+    {
+        $encryptor = new TwoFactorSecretEncryptor(
+            base64_encode('0123456789abcdef0123456789abcdef')
+        );
 
-            OpenSslEncryptTestDouble::$forceFailure = true;
+        OpenSslEncryptTestDouble::$forceFailure = true;
 
-            try {
-                $this->expectException(RuntimeException::class);
-                $this->expectExceptionMessage('Failed to encrypt two-factor secret.');
-
-                $encryptor->encrypt('JBSWY3DPEHPK3PXP');
-            } finally {
-                OpenSslEncryptTestDouble::$forceFailure = false;
-            }
-        }
-
-        public function testConstructorRejectsInvalidKey(): void
-        {
+        try {
             $this->expectException(RuntimeException::class);
-            $this->expectExceptionMessage(
-                'TWO_FACTOR_ENCRYPTION_KEY must be 32-byte base64.'
-            );
+            $this->expectExceptionMessage('Failed to encrypt two-factor secret.');
 
-            new TwoFactorSecretEncryptor('invalid-key');
+            $encryptor->encrypt('JBSWY3DPEHPK3PXP');
+        } finally {
+            OpenSslEncryptTestDouble::$forceFailure = false;
         }
+    }
 
-        public function testDecryptRejectsInvalidPayloadEncoding(): void
-        {
-            $encryptor = new TwoFactorSecretEncryptor(
-                base64_encode('0123456789abcdef0123456789abcdef')
-            );
+    public function testConstructorRejectsInvalidKey(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(
+            'TWO_FACTOR_ENCRYPTION_KEY must be 32-byte base64.'
+        );
 
-            $this->expectException(RuntimeException::class);
-            $this->expectExceptionMessage('Invalid payload encoding.');
+        new TwoFactorSecretEncryptor('invalid-key');
+    }
 
-            $encryptor->decrypt('###');
-        }
+    public function testDecryptRejectsInvalidPayloadEncoding(): void
+    {
+        $encryptor = new TwoFactorSecretEncryptor(
+            base64_encode('0123456789abcdef0123456789abcdef')
+        );
 
-        public function testDecryptRejectsPayloadTooShort(): void
-        {
-            $encryptor = new TwoFactorSecretEncryptor(
-                base64_encode('0123456789abcdef0123456789abcdef')
-            );
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Invalid payload encoding.');
 
-            $this->expectException(RuntimeException::class);
-            $this->expectExceptionMessage('Invalid payload length.');
+        $encryptor->decrypt('###');
+    }
 
-            $encryptor->decrypt(base64_encode('tooshort'));
-        }
+    public function testDecryptRejectsPayloadTooShort(): void
+    {
+        $encryptor = new TwoFactorSecretEncryptor(
+            base64_encode('0123456789abcdef0123456789abcdef')
+        );
 
-        public function testDecryptRejectsPayloadAtIvAndTagBoundaryLength(): void
-        {
-            $encryptor = new TwoFactorSecretEncryptor(
-                base64_encode('0123456789abcdef0123456789abcdef')
-            );
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Invalid payload length.');
 
-            $boundaryRawPayload = str_repeat('A', 28);
+        $encryptor->decrypt(base64_encode('tooshort'));
+    }
 
-            $this->expectException(RuntimeException::class);
-            $this->expectExceptionMessage('Invalid payload length.');
+    public function testDecryptRejectsPayloadAtIvAndTagBoundaryLength(): void
+    {
+        $encryptor = new TwoFactorSecretEncryptor(
+            base64_encode('0123456789abcdef0123456789abcdef')
+        );
 
-            $encryptor->decrypt(base64_encode($boundaryRawPayload));
-        }
+        $boundaryRawPayload = str_repeat('A', 28);
 
-        public function testDecryptAllowsMinimumPayloadLengthValidationAndFailsDuringDecrypt(): void
-        {
-            $encryptor = new TwoFactorSecretEncryptor(
-                base64_encode('0123456789abcdef0123456789abcdef')
-            );
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Invalid payload length.');
 
-            $minimumLengthRawPayload = str_repeat('B', 29);
+        $encryptor->decrypt(base64_encode($boundaryRawPayload));
+    }
 
-            $this->expectException(RuntimeException::class);
-            $this->expectExceptionMessage('Failed to decrypt secret.');
+    public function testDecryptAllowsMinimumPayloadLengthValidationAndFailsDuringDecrypt(): void
+    {
+        $encryptor = new TwoFactorSecretEncryptor(
+            base64_encode('0123456789abcdef0123456789abcdef')
+        );
 
-            $encryptor->decrypt(base64_encode($minimumLengthRawPayload));
-        }
+        $minimumLengthRawPayload = str_repeat('B', 29);
 
-        public function testDecryptRejectsTamperedCiphertext(): void
-        {
-            $encryptor = new TwoFactorSecretEncryptor(
-                base64_encode('0123456789abcdef0123456789abcdef')
-            );
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Failed to decrypt secret.');
 
-            $encrypted = $encryptor->encrypt('JBSWY3DPEHPK3PXP');
-            $decoded = base64_decode($encrypted, true);
-            self::assertIsString($decoded);
+        $encryptor->decrypt(base64_encode($minimumLengthRawPayload));
+    }
 
-            $tampered = $decoded;
-            $tampered[strlen($tampered) - 1] = chr(
-                ord($tampered[strlen($tampered) - 1]) ^ 0xFF
-            );
+    public function testDecryptRejectsTamperedCiphertext(): void
+    {
+        $encryptor = new TwoFactorSecretEncryptor(
+            base64_encode('0123456789abcdef0123456789abcdef')
+        );
 
-            $this->expectException(RuntimeException::class);
-            $this->expectExceptionMessage('Failed to decrypt secret.');
+        $encrypted = $encryptor->encrypt('JBSWY3DPEHPK3PXP');
+        $decoded = base64_decode($encrypted, true);
+        self::assertIsString($decoded);
 
-            $encryptor->decrypt(base64_encode($tampered));
-        }
+        $tampered = $decoded;
+        $tampered[strlen($tampered) - 1] = chr(
+            ord($tampered[strlen($tampered) - 1]) ^ 0xFF
+        );
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Failed to decrypt secret.');
+
+        $encryptor->decrypt(base64_encode($tampered));
     }
 }

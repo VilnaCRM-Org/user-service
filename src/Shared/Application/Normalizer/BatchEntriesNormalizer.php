@@ -25,9 +25,9 @@ final class BatchEntriesNormalizer
     /**
      * @param iterable<array-key, array|object|string|int|float|bool|null> $value
      *
-     * @return (array|null|object|scalar)[]
+     * @return array<array|object|scalar|null>
      *
-     * @psalm-return list<array|null|object|scalar>
+     * @psalm-return list<array|object|scalar|null>
      */
     private function toArray(iterable $value): array
     {
@@ -41,9 +41,9 @@ final class BatchEntriesNormalizer
     /**
      * @param Traversable<array-key, array|object|string|int|float|bool|null> $value
      *
-     * @return (array|null|object|scalar)[]
+     * @return array<array|object|scalar|null>
      *
-     * @psalm-return list<array|null|object|scalar>
+     * @psalm-return list<array|object|scalar|null>
      */
     private function normalizeTraversable(Traversable $value): array
     {

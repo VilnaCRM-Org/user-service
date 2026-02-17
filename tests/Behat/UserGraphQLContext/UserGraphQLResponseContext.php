@@ -172,10 +172,7 @@ final class UserGraphQLResponseContext implements Context
         $this->assertGraphQlErrorContains('complexity');
     }
 
-    /**
-     * @return bool|int|null|string
-     */
-    private function extractMutationUserData(): string|bool|int|null|string|bool|int|null
+    private function extractMutationUserData(): string|bool|int|null
     {
         $data = $this->parseAndValidateResponse();
         $this->assertQueryNameExists($data);
@@ -255,7 +252,7 @@ final class UserGraphQLResponseContext implements Context
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      *
      * @psalm-return list<non-empty-string>
      */
