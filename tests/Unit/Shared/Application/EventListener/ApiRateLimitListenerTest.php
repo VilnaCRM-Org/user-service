@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\EventListener;
 
+use App\Shared\Application\Decoder\JwtTokenDecoderInterface;
 use App\Shared\Application\EventListener\ApiRateLimitAuthTargetResolver;
 use App\Shared\Application\EventListener\ApiRateLimitClientIdentityResolver;
 use App\Shared\Application\EventListener\ApiRateLimitListener;
 use App\Shared\Application\EventListener\ApiRateLimitRequestMatcher;
 use App\Tests\Unit\UnitTestCase;
 use DateTimeImmutable;
-use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -321,23 +321,23 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         string $token,
         array $payload
     ): ApiRateLimitListener {
-        $jwtEncoder = $this->createMock(JWTEncoderInterface::class);
-        $jwtEncoder
+        $jwtDecoder = $this->createMock(JwtTokenDecoderInterface::class);
+        $jwtDecoder
             ->method('decode')
             ->willReturnCallback(
                 /**
-                 * @return array<string, array<int, string>|bool|float|int|string|null>|false
+                 * @return array<string, array<int, string>|bool|float|int|string|null>|null
                  */
-                static function (string $candidateToken) use ($token, $payload) {
+                static function (string $candidateToken) use ($token, $payload): ?array {
                     if ($candidateToken === $token) {
                         return $payload;
                     }
 
-                    return false;
+                    return null;
                 }
             );
 
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($jwtEncoder);
+        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($jwtDecoder);
         $authTargetResolver = new ApiRateLimitAuthTargetResolver(
             null,
             $clientIdentityResolver

@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\EventListener;
 
-use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
-use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
+use App\Shared\Application\Decoder\JwtTokenDecoderInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /** @infection-ignore-all */
@@ -18,7 +17,7 @@ final readonly class ApiRateLimitClientIdentityResolver
     private const PENDING_SESSION_ID_KEYS = ['pendingSessionId', 'pending_session_id'];
 
     public function __construct(
-        private ?JWTEncoderInterface $jwtEncoder = null
+        private ?JwtTokenDecoderInterface $jwtDecoder = null
     ) {
     }
 
@@ -167,7 +166,7 @@ final readonly class ApiRateLimitClientIdentityResolver
      */
     private function resolveValidatedJwtPayload(Request $request): ?array
     {
-        if (!$this->jwtEncoder instanceof JWTEncoderInterface) {
+        if (!$this->jwtDecoder instanceof JwtTokenDecoderInterface) {
             return null;
         }
 
@@ -176,12 +175,7 @@ final readonly class ApiRateLimitClientIdentityResolver
             return null;
         }
 
-        try {
-            $payload = $this->jwtEncoder->decode($token);
-        } catch (JWTDecodeFailureException) {
-            return null;
-        }
-
+        $payload = $this->jwtDecoder->decode($token);
         if (!is_array($payload)) {
             return null;
         }

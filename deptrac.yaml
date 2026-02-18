@@ -70,6 +70,10 @@ parameters:
       collectors:
         - type: className
           regex: '.*Ramsey\\.*'
+    - name: Lexik
+      collectors:
+        - type: className
+          regex: '.*Lexik\\.*'
   ruleset:
     Application:
       - Domain
@@ -92,5 +96,6 @@ parameters:
       - PhpAttributes
       - Aws
       - Ramsey
+      - Lexik
     Domain:
       - PhpAttributes
