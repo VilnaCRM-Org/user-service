@@ -1,4 +1,3 @@
-
 ---
 stepsCompleted: [init, story-details, task-breakdown, dev-notes]
 inputDocuments:
