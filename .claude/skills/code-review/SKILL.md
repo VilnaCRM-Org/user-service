@@ -56,6 +56,7 @@ make ai-review-loop
 ```
 
 This executes `scripts/ai-review-loop.sh`, which:
+
 1. Runs an AI review agent against the current diff (base: `main` by default)
 2. If issues are found (`STATUS: FAIL`), runs a fix agent to auto-remediate
 3. Verifies fixes with `make ci`
@@ -63,13 +64,13 @@ This executes `scripts/ai-review-loop.sh`, which:
 
 **Configuration** (all overridable via environment):
 
-| Variable              | Default                              | Description                           |
-| --------------------- | ------------------------------------ | ------------------------------------- |
-| `AI_REVIEW_AGENTS`    | `codex`                              | Agent(s) to use (`codex`, `claude`)   |
-| `AI_REVIEW_BASE`      | `main`                               | Base branch for diff comparison       |
-| `AI_REVIEW_MAX_ITER`  | `3`                                  | Max review/fix iterations (0=∞)       |
-| `AI_REVIEW_VERIFY_CMD`| `make ci`                            | Verification command after each fix   |
-| `AI_REVIEW_LOG_DIR`   | `var/ai-review`                      | Directory for review/fix logs         |
+| Variable               | Default         | Description                         |
+| ---------------------- | --------------- | ----------------------------------- |
+| `AI_REVIEW_AGENTS`     | `codex`         | Agent(s) to use (`codex`, `claude`) |
+| `AI_REVIEW_BASE`       | `main`          | Base branch for diff comparison     |
+| `AI_REVIEW_MAX_ITER`   | `3`             | Max review/fix iterations (0=∞)     |
+| `AI_REVIEW_VERIFY_CMD` | `make ci`       | Verification command after each fix |
+| `AI_REVIEW_LOG_DIR`    | `var/ai-review` | Directory for review/fix logs       |
 
 **Examples**:
 
