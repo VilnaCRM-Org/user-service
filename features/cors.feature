@@ -1,4 +1,3 @@
-@wip
 Feature: CORS Configuration
   In order to support cookie-based authentication for web clients
   As the system

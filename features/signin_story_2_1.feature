@@ -1,4 +1,3 @@
-@wip
 Feature: Story 2.1 Complete 2FA sign-in (TOTP)
   In order to finish authentication when 2FA is enabled
   As a user with a pending 2FA session

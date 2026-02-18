@@ -1,4 +1,3 @@
-@wip
 Feature: Story 2.2 Two-factor setup for current user
   In order to configure two-factor authentication
   As an authenticated user

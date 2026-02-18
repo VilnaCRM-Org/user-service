@@ -1,4 +1,3 @@
-@wip
 Feature: Error Response Format
   In order to integrate reliably with API clients
   As the system

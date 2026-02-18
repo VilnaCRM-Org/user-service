@@ -1,4 +1,3 @@
-@wip
 Feature: Cookie Security and Attribute Validation
   In order to prevent session hijacking and cookie-based attacks
   As the system

@@ -1,4 +1,3 @@
-@wip
 Feature: JWT Token Validation
   In order to prevent token forgery and misuse
   As the system

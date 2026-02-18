@@ -1,4 +1,3 @@
-@wip
 Feature: Authentication Gate and Access Control
   In order to protect API resources from unauthorized access
   As the system

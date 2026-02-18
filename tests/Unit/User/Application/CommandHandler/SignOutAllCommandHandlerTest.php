@@ -84,7 +84,7 @@ final class SignOutAllCommandHandlerTest extends UnitTestCase
         $this->handler->__invoke($command);
     }
 
-    public function testInvokeSkipsAlreadyRevokedSessions(): void
+    public function testInvokeRevokesRefreshTokensForAlreadyRevokedSessions(): void
     {
         $userId = $this->faker->uuid();
         $command = new SignOutAllCommand($userId);
@@ -98,6 +98,7 @@ final class SignOutAllCommandHandlerTest extends UnitTestCase
             ->with($userId)
             ->willReturn($sessions);
 
+        $activeSessionId = $this->faker->uuid();
         $activeSession->expects($this->once())
             ->method('isRevoked')
             ->willReturn(false);
@@ -105,20 +106,28 @@ final class SignOutAllCommandHandlerTest extends UnitTestCase
             ->method('revoke');
         $activeSession->expects($this->once())
             ->method('getId')
-            ->willReturn($this->faker->uuid());
+            ->willReturn($activeSessionId);
 
+        $revokedSessionId = $this->faker->uuid();
         $revokedSession->expects($this->once())
             ->method('isRevoked')
             ->willReturn(true);
         $revokedSession->expects($this->never())
             ->method('revoke');
+        $revokedSession->expects($this->once())
+            ->method('getId')
+            ->willReturn($revokedSessionId);
 
         $this->sessionRepository->expects($this->once())
             ->method('save')
             ->with($activeSession);
 
-        $this->refreshTokenRepository->expects($this->once())
-            ->method('revokeBySessionId');
+        $revokedRefreshTokenSessionIds = [];
+        $this->refreshTokenRepository->expects($this->exactly(2))
+            ->method('revokeBySessionId')
+            ->willReturnCallback(static function (string $sessionId) use (&$revokedRefreshTokenSessionIds): void {
+                $revokedRefreshTokenSessionIds[] = $sessionId;
+            });
 
         $this->eventBus->expects($this->once())
             ->method('publish')
@@ -128,5 +137,10 @@ final class SignOutAllCommandHandlerTest extends UnitTestCase
             }));
 
         $this->handler->__invoke($command);
+
+        self::assertSame(
+            [$activeSessionId, $revokedSessionId],
+            $revokedRefreshTokenSessionIds
+        );
     }
 }

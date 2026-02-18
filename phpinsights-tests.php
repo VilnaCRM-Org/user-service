@@ -172,9 +172,9 @@ return [
             'exclude' => [
                 'src/Shared/Application/Validator/InitialsValidator.php',
                 'src/Shared/Application/Validator/PasswordValidator.php',
-                'tests/Unit/User/Application/CommandHandler/CompleteTwoFactorCommandHandlerSuccessPathTest.php',
                 'tests/Unit/User/Infrastructure/Repository/CachedUserRepositoryTest.php',
                 'tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php',
+                'tests/Unit/User/Application/CommandHandler/CompleteTwoFactorCommandHandlerSuccessPathTest.php',
             ],
         ],
         FunctionLengthSniff::class => [

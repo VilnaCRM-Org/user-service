@@ -30,12 +30,11 @@ final readonly class SignOutAllCommandHandler implements CommandHandlerInterface
 
         $revokedCount = 0;
         foreach ($sessions as $session) {
+            $this->refreshTokenRepository->revokeBySessionId($session->getId());
+
             if (!$session->isRevoked()) {
                 $session->revoke();
                 $this->sessionRepository->save($session);
-
-                // Revoke all refresh tokens for this session
-                $this->refreshTokenRepository->revokeBySessionId($session->getId());
 
                 ++$revokedCount;
             }

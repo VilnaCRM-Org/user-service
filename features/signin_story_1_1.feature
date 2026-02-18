@@ -1,4 +1,3 @@
-@wip
 Feature: Story 1.1 Sign-In
   In order to access protected API resources
   As a registered user

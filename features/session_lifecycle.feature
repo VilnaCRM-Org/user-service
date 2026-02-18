@@ -1,4 +1,3 @@
-@wip
 Feature: Session Lifecycle and Observability
   In order to manage my active sessions and maintain security
   As an authenticated user

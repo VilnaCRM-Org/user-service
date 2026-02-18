@@ -41,9 +41,6 @@ final class DualAuthenticator extends AbstractAuthenticator implements
     private const JWT_ISSUER = 'vilnacrm-user-service';
     private const JWT_AUDIENCE = 'vilnacrm-api';
     private const JWT_ALGORITHM = 'RS256';
-    /**
-     * @var list<array{pattern: string, methods?: list<string>}>
-     */
     private const PUBLIC_ACCESS_RULES = [
         ['pattern' => '#^/api/users$#', 'methods' => ['POST']],
         ['pattern' => '#^/api/users/confirm$#', 'methods' => ['PATCH']],
@@ -214,7 +211,8 @@ final class DualAuthenticator extends AbstractAuthenticator implements
      */
     private function validateClaims(array $payload): void
     {
-        if (!$this->hasExpectedIssuer($payload)) {
+        $issuer = $payload['iss'] ?? null;
+        if (!is_string($issuer) || $issuer !== self::JWT_ISSUER) {
             throw new CustomUserMessageAuthenticationException(
                 'Invalid access token claims.'
             );
@@ -235,17 +233,6 @@ final class DualAuthenticator extends AbstractAuthenticator implements
                 'Invalid access token claims.'
             );
         }
-    }
-
-    /**
-     * @param JwtPayload $payload
-     */
-    private function hasExpectedIssuer(array $payload): bool
-    {
-        $issuer = $payload['iss'] ?? null;
-
-        return is_string($issuer)
-            && $issuer === self::JWT_ISSUER;
     }
 
     /**
@@ -501,32 +488,21 @@ final class DualAuthenticator extends AbstractAuthenticator implements
         $method = $request->getMethod();
 
         foreach (self::PUBLIC_ACCESS_RULES as $rule) {
-            if ($this->matchesPublicAccessRule($path, $method, $rule)) {
+            if (preg_match($rule['pattern'], $path) !== 1) {
+                continue;
+            }
+
+            $methods = $rule['methods'] ?? null;
+            if (!is_array($methods) || $methods === []) {
+                return true;
+            }
+
+            if (in_array($method, $methods, true)) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    /**
-     * @param array{pattern: string, methods?: list<string>} $rule
-     */
-    private function matchesPublicAccessRule(
-        string $path,
-        string $method,
-        array $rule
-    ): bool {
-        if (preg_match($rule['pattern'], $path) !== 1) {
-            return false;
-        }
-
-        $methods = $rule['methods'] ?? null;
-        if (!is_array($methods) || $methods === []) {
-            return true;
-        }
-
-        return in_array($method, $methods, true);
     }
 
     /**

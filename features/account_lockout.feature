@@ -1,4 +1,3 @@
-@wip
 Feature: Account Lockout
   In order to protect accounts from brute-force attacks
   As the system

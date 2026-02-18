@@ -1,4 +1,3 @@
-@wip
 Feature: Security Headers and Hardening
   In order to pass security audits and protect against common attacks
   As the system

@@ -1,4 +1,3 @@
-@wip
 Feature: Token Refresh and Rotation
   In order to maintain my session without re-authenticating
   As an authenticated client

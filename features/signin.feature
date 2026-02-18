@@ -1,4 +1,3 @@
-@wip
 Feature: Sign-In Flow
   In order to access protected API resources
   As a registered user
