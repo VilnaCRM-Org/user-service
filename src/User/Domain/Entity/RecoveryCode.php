@@ -57,6 +57,6 @@ final class RecoveryCode
 
     private function hash(string $value): string
     {
-        return hash('sha256', $value);
+        return hash('sha256', strtolower($value));
     }
 }

@@ -32,7 +32,7 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
         $this->operation = $this->createMock(Operation::class);
     }
 
-    public function testProcessReturnsTokensAndSetsCookie(): void
+    public function testProcessReturnsTokensAndSetsCookieWithStandardTtl(): void
     {
         $pendingSessionId = '01ARZ3NDEKTSV4RRFFQ69G5FAZ';
         $totpCode = '123456';
@@ -56,7 +56,8 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
                     $command->setResponse(
                         new CompleteTwoFactorCommandResponse(
                             'issued-access-token',
-                            'issued-refresh-token'
+                            'issued-refresh-token',
+                            false  // rememberMe = false → standard 900s cookie
                         )
                     );
 
@@ -90,6 +91,41 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
         $this->assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
         $this->assertGreaterThanOrEqual(899, $cookie->getMaxAge());
         $this->assertLessThanOrEqual(900, $cookie->getMaxAge());
+    }
+
+    public function testProcessSetsCookieWithRememberMeTtlWhenRememberMeIsTrue(): void
+    {
+        $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
+        $dto = new CompleteTwoFactorDto('01ARZ3NDEKTSV4RRFFQ69G5FZZ', '123456');
+
+        $this->commandBus
+            ->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(/**
+             * @return true
+             */
+                static function (CompleteTwoFactorCommand $command): bool {
+                    $command->setResponse(
+                        new CompleteTwoFactorCommandResponse(
+                            'remember-access-token',
+                            'remember-refresh-token',
+                            true  // rememberMe = true → 2592000s cookie
+                        )
+                    );
+
+                    return true;
+                }
+            ));
+
+        $processor = new CompleteTwoFactorProcessor($this->commandBus, $this->requestStack);
+        $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
+
+        $cookies = $response->headers->getCookies();
+        $this->assertCount(1, $cookies);
+        $cookie = $cookies[0];
+
+        $this->assertGreaterThanOrEqual(2591999, $cookie->getMaxAge());
+        $this->assertLessThanOrEqual(2592000, $cookie->getMaxAge());
     }
 
     public function testProcessDoesNotSetCookieWhenAccessTokenIsEmpty(): void
@@ -156,6 +192,10 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
         $response = $processor->process($dto, $this->operation);
 
         $this->assertSame(200, $response->getStatusCode());
+        $cookies = $response->headers->getCookies();
+        $this->assertCount(1, $cookies);
+        $this->assertGreaterThanOrEqual(899, $cookies[0]->getMaxAge());
+        $this->assertLessThanOrEqual(900, $cookies[0]->getMaxAge());
     }
 
     public function testProcessFallsBackToEmptyRequestMetadataWhenNoRequestAvailable(): void
@@ -205,6 +245,7 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
                         new CompleteTwoFactorCommandResponse(
                             'recovery-access-token',
                             'recovery-refresh-token',
+                            false,
                             1,
                             'Only 1 recovery code(s) remaining. Regenerate soon.'
                         )

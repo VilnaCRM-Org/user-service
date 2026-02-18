@@ -25,13 +25,26 @@ final class RecoveryCodeTest extends UnitTestCase
         $this->assertSame($id, $recoveryCode->getId());
         $this->assertSame($userId, $recoveryCode->getUserId());
         $this->assertNotSame($plainCode, $recoveryCode->getCodeHash());
-        $this->assertSame(hash('sha256', $plainCode), $recoveryCode->getCodeHash());
+        $this->assertSame(hash('sha256', strtolower($plainCode)), $recoveryCode->getCodeHash());
         $this->assertTrue($recoveryCode->matchesCode($plainCode));
         $this->assertFalse(
             $recoveryCode->matchesCode(strtolower($this->faker->bothify('????-????')))
         );
         $this->assertNull($recoveryCode->getUsedAt());
         $this->assertFalse($recoveryCode->isUsed());
+    }
+
+    public function testMatchesCodeIsCaseInsensitive(): void
+    {
+        $upperCode = strtoupper($this->faker->bothify('????-????'));
+        $recoveryCode = new RecoveryCode(
+            $this->faker->uuid(),
+            $this->faker->uuid(),
+            $upperCode
+        );
+
+        $this->assertTrue($recoveryCode->matchesCode($upperCode));
+        $this->assertTrue($recoveryCode->matchesCode(strtolower($upperCode)));
     }
 
     public function testMarkAsUsedStoresTimestamp(): void

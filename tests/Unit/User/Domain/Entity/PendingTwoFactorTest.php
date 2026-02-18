@@ -29,6 +29,31 @@ final class PendingTwoFactorTest extends UnitTestCase
             $createdAt->modify('+5 minutes'),
             $pendingTwoFactor->getExpiresAt()
         );
+        $this->assertFalse($pendingTwoFactor->isRememberMe());
+    }
+
+    public function testConstructorStoresRememberMeFlag(): void
+    {
+        $createdAt = new DateTimeImmutable();
+
+        $withRememberMe = new PendingTwoFactor(
+            $this->faker->uuid(),
+            $this->faker->uuid(),
+            $createdAt,
+            null,
+            true
+        );
+
+        $withoutRememberMe = new PendingTwoFactor(
+            $this->faker->uuid(),
+            $this->faker->uuid(),
+            $createdAt,
+            null,
+            false
+        );
+
+        $this->assertTrue($withRememberMe->isRememberMe());
+        $this->assertFalse($withoutRememberMe->isRememberMe());
     }
 
     public function testIsExpiredReturnsExpectedStatus(): void

@@ -24,6 +24,7 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
 {
     private const AUTH_COOKIE_NAME = '__Host-auth_token';
     private const COOKIE_MAX_AGE = 900;
+    private const REMEMBER_ME_COOKIE_MAX_AGE = 2592000;
 
     public function __construct(
         private CommandBusInterface $commandBus,
@@ -58,7 +59,11 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
         $commandResponse = $command->getResponse();
 
         $response = new JsonResponse($this->buildResponseBody($commandResponse));
-        $this->attachAuthCookie($response, $commandResponse->getAccessToken());
+        $this->attachAuthCookie(
+            $response,
+            $commandResponse->getAccessToken(),
+            $commandResponse->isRememberMe()
+        );
 
         return $response;
     }
@@ -90,17 +95,20 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
 
     private function attachAuthCookie(
         Response $response,
-        string $accessToken
+        string $accessToken,
+        bool $rememberMe
     ): void {
         if ($accessToken === '') {
             return;
         }
 
+        $maxAge = $rememberMe ? self::REMEMBER_ME_COOKIE_MAX_AGE : self::COOKIE_MAX_AGE;
+
         $response->headers->setCookie(
             Cookie::create(
                 self::AUTH_COOKIE_NAME,
                 $accessToken,
-                (new DateTimeImmutable())->modify(sprintf('+%d seconds', self::COOKIE_MAX_AGE))
+                (new DateTimeImmutable())->modify(sprintf('+%d seconds', $maxAge))
             )
                 ->withPath('/')
                 ->withSecure(true)

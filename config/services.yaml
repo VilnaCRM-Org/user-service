@@ -218,14 +218,15 @@ services:
     arguments:
       $twoFactorEncryptionKey: '%env(resolve:TWO_FACTOR_ENCRYPTION_KEY)%'
 
+  App\User\Application\Factory\AuthTokenFactoryInterface: '@App\User\Application\Factory\AuthTokenFactory'
+
+  App\User\Application\Factory\AuthTokenFactory:
+    arguments:
+      $refreshTokenTtlSpec: '%env(resolve:REFRESH_TOKEN_TTL)%'
+
   App\User\Application\CommandHandler\SignInCommandHandler:
     arguments:
       $pendingTwoFactorTtlSeconds: '%env(int:PENDING_2FA_TTL_SECONDS)%'
-      $refreshTokenTtlSpec: '%env(resolve:REFRESH_TOKEN_TTL)%'
-
-  App\User\Application\CommandHandler\CompleteTwoFactorCommandHandler:
-    arguments:
-      $refreshTokenTtlSpec: '%env(resolve:REFRESH_TOKEN_TTL)%'
 
   App\User\Application\CommandHandler\RefreshTokenCommandHandler:
     arguments:

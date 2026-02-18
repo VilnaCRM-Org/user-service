@@ -82,8 +82,9 @@ final readonly class SignInEventLogSubscriber implements
     private function logFailed(SignInFailedEvent $event): void
     {
         $this->logger->warning('Sign-in failed', [
-            'email' => $event->email,
-            'ipAddress' => $event->ipAddress,
+            'attemptedEmail' => $event->email,
+            'ip' => $event->ipAddress,
+            'reason' => $event->reason,
             'userAgent' => $event->userAgent,
         ]);
     }

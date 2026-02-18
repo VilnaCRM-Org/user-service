@@ -11,6 +11,7 @@ use App\User\Domain\Contract\TOTPSecretGeneratorInterface;
 use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 final readonly class SetupTwoFactorCommandHandler implements CommandHandlerInterface
@@ -26,13 +27,16 @@ final readonly class SetupTwoFactorCommandHandler implements CommandHandlerInter
     {
         $user = $this->resolveUser($command->userEmail);
 
+        if ($user->isTwoFactorEnabled()) {
+            throw new ConflictHttpException('Two-factor authentication is already enabled.');
+        }
+
         $totpData = $this->totpSecretGenerator->generate($user->getEmail());
         $secret = $totpData['secret'];
 
         $user->setTwoFactorSecret(
             $this->twoFactorSecretEncryptor->encrypt($secret)
         );
-        $user->setTwoFactorEnabled(false);
         $this->userRepository->save($user);
 
         $command->setResponse(

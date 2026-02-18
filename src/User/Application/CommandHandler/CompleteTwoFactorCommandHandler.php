@@ -8,9 +8,9 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\Command\CompleteTwoFactorCommandResponse;
+use App\User\Application\Factory\AuthTokenFactoryInterface;
 use App\User\Domain\Contract\AccessTokenGeneratorInterface;
 use App\User\Domain\Contract\TOTPVerifierInterface;
-use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\RecoveryCode;
@@ -23,11 +23,9 @@ use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use DateInterval;
 use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Uid\Factory\UlidFactory;
-use Symfony\Component\Uid\Factory\UuidFactory;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -35,13 +33,9 @@ use Symfony\Component\Uid\Factory\UuidFactory;
  */
 final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerInterface
 {
-    private const ACCESS_TOKEN_TTL_SECONDS = 900;
-    private const SESSION_TTL_SECONDS = 900;
-    private const JWT_ISSUER = 'vilnacrm-user-service';
-    private const JWT_AUDIENCE = 'vilnacrm-api';
+    private const STANDARD_SESSION_TTL_SECONDS = 900;
+    private const REMEMBER_ME_SESSION_TTL_SECONDS = 2592000;
     private const RECOVERY_CODE_WARNING_THRESHOLD = 2;
-
-    private DateInterval $refreshTokenTtl;
 
     public function __construct(
         private UserRepositoryInterface $userRepository,
@@ -51,12 +45,10 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         private AuthRefreshTokenRepositoryInterface $authRefreshTokenRepository,
         private TOTPVerifierInterface $totpVerifier,
         private AccessTokenGeneratorInterface $accessTokenGenerator,
+        private AuthTokenFactoryInterface $authTokenFactory,
         private EventBusInterface $eventBus,
-        private UuidFactory $uuidFactory,
         private UlidFactory $ulidFactory,
-        string $refreshTokenTtlSpec = 'P1M',
     ) {
-        $this->refreshTokenTtl = new DateInterval($refreshTokenTtlSpec);
     }
 
     public function __invoke(CompleteTwoFactorCommand $command): void
@@ -89,15 +81,16 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         ?string $method
     ): void {
         $issuedAt = new DateTimeImmutable();
-        $session = $this->createSession($user, $command, $issuedAt);
+        $session = $this->createSession($user, $command, $pendingSession, $issuedAt);
         $this->authSessionRepository->save($session);
 
         $tokens = $this->generateTokenPair($user, $session, $issuedAt);
         $remaining = $this->resolveRemainingCodes($user, $method);
 
         $this->pendingTwoFactorRepository->delete($pendingSession);
+        $rememberMe = $pendingSession->isRememberMe();
         $command->setResponse(
-            $this->buildResponse($tokens[0], $tokens[1], $remaining)
+            $this->buildResponse($tokens[0], $tokens[1], $rememberMe, $remaining)
         );
 
         $this->publishEvents($user, $session, $command, $method, $remaining);
@@ -111,11 +104,11 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         AuthSession $session,
         DateTimeImmutable $issuedAt
     ): array {
-        $refreshToken = $this->generateOpaqueToken();
+        $refreshToken = $this->authTokenFactory->generateOpaqueToken();
         $this->saveRefreshToken($session->getId(), $refreshToken, $issuedAt);
 
         $accessToken = $this->accessTokenGenerator->generate(
-            $this->buildJwtPayload($user, $session->getId(), $issuedAt)
+            $this->authTokenFactory->buildJwtPayload($user, $session->getId(), $issuedAt)
         );
 
         return [$accessToken, $refreshToken];
@@ -155,7 +148,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         DateTimeImmutable $issuedAt
     ): void {
         $this->authRefreshTokenRepository->save(
-            $this->createRefreshToken($sessionId, $plainToken, $issuedAt)
+            $this->authTokenFactory->createRefreshToken($sessionId, $plainToken, $issuedAt)
         );
     }
 
@@ -172,7 +165,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
                 $command->ipAddress,
                 $command->userAgent,
                 $verificationMethod,
-                $this->nextEventId()
+                $this->authTokenFactory->nextEventId()
             )
         );
     }
@@ -180,14 +173,15 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
     private function buildResponse(
         string $accessToken,
         string $refreshToken,
+        bool $rememberMe,
         ?int $remainingCodes
     ): CompleteTwoFactorCommandResponse {
         if ($remainingCodes === null) {
-            return new CompleteTwoFactorCommandResponse($accessToken, $refreshToken);
+            return new CompleteTwoFactorCommandResponse($accessToken, $refreshToken, $rememberMe);
         }
 
         if ($remainingCodes > self::RECOVERY_CODE_WARNING_THRESHOLD) {
-            return new CompleteTwoFactorCommandResponse($accessToken, $refreshToken);
+            return new CompleteTwoFactorCommandResponse($accessToken, $refreshToken, $rememberMe);
         }
 
         $warningMessage = $remainingCodes === 0
@@ -200,6 +194,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         return new CompleteTwoFactorCommandResponse(
             $accessToken,
             $refreshToken,
+            $rememberMe,
             $remainingCodes,
             $warningMessage
         );
@@ -213,7 +208,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
             new RecoveryCodeUsedEvent(
                 $user->getId(),
                 $remainingCodes,
-                $this->nextEventId()
+                $this->authTokenFactory->nextEventId()
             )
         );
     }
@@ -321,7 +316,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
                 $command->pendingSessionId,
                 $command->ipAddress,
                 'invalid_code',
-                $this->nextEventId()
+                $this->authTokenFactory->nextEventId()
             )
         );
 
@@ -331,55 +326,23 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
     private function createSession(
         User $user,
         CompleteTwoFactorCommand $command,
+        PendingTwoFactor $pendingSession,
         DateTimeImmutable $issuedAt
     ): AuthSession {
+        $rememberMe = $pendingSession->isRememberMe();
+        $ttlSeconds = $rememberMe
+            ? self::REMEMBER_ME_SESSION_TTL_SECONDS
+            : self::STANDARD_SESSION_TTL_SECONDS;
+
         return new AuthSession(
             (string) $this->ulidFactory->create(),
             $user->getId(),
             $command->ipAddress,
             $command->userAgent,
             $issuedAt,
-            $issuedAt->modify(sprintf('+%d seconds', self::SESSION_TTL_SECONDS)),
-            false
+            $issuedAt->modify(sprintf('+%d seconds', $ttlSeconds)),
+            $rememberMe
         );
-    }
-
-    private function createRefreshToken(
-        string $sessionId,
-        string $plainToken,
-        DateTimeImmutable $issuedAt
-    ): AuthRefreshToken {
-        return new AuthRefreshToken(
-            (string) $this->ulidFactory->create(),
-            $sessionId,
-            $plainToken,
-            $issuedAt->add($this->refreshTokenTtl)
-        );
-    }
-
-    /**
-     * @return array<int|string|array<string>>
-     *
-     * @psalm-return array{sub: string, iss: 'vilnacrm-user-service', aud: 'vilnacrm-api', exp: int, iat: int, nbf: int, jti: string, sid: string, roles: list{'ROLE_USER'}}
-     */
-    private function buildJwtPayload(
-        User $user,
-        string $sessionId,
-        DateTimeImmutable $issuedAt
-    ): array {
-        $issuedAtTimestamp = $issuedAt->getTimestamp();
-
-        return [
-            'sub' => $user->getId(),
-            'iss' => self::JWT_ISSUER,
-            'aud' => self::JWT_AUDIENCE,
-            'exp' => $issuedAtTimestamp + self::ACCESS_TOKEN_TTL_SECONDS,
-            'iat' => $issuedAtTimestamp,
-            'nbf' => $issuedAtTimestamp,
-            'jti' => (string) $this->uuidFactory->create(),
-            'sid' => $sessionId,
-            'roles' => ['ROLE_USER'],
-        ];
     }
 
     private function isTotpCode(string $code): bool
@@ -390,18 +353,5 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
     private function isRecoveryCode(string $code): bool
     {
         return preg_match('/^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$/', $code) === 1;
-    }
-
-    private function generateOpaqueToken(): string
-    {
-        return rtrim(
-            strtr(base64_encode(random_bytes(32)), '+/', '-_'),
-            '='
-        );
-    }
-
-    private function nextEventId(): string
-    {
-        return (string) $this->uuidFactory->create();
     }
 }

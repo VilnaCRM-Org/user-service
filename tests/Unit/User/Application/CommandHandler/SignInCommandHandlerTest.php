@@ -10,6 +10,7 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\CommandHandler\SignInCommandHandler;
+use App\User\Application\Factory\AuthTokenFactoryInterface;
 use App\User\Domain\Contract\AccessTokenGeneratorInterface;
 use App\User\Domain\Contract\AccountLockoutServiceInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
@@ -24,15 +25,14 @@ use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\LockedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
-use Symfony\Component\Uid\Factory\UuidFactory;
 use Symfony\Component\Uid\Ulid;
-use Symfony\Component\Uid\Uuid;
 
 final class SignInCommandHandlerTest extends UnitTestCase
 {
@@ -43,8 +43,8 @@ final class SignInCommandHandlerTest extends UnitTestCase
     private PasswordHasherFactoryInterface&MockObject $hasherFactory;
     private AccountLockoutServiceInterface&MockObject $lockoutService;
     private AccessTokenGeneratorInterface&MockObject $accessTokenGenerator;
+    private AuthTokenFactoryInterface&MockObject $authTokenFactory;
     private EventBusInterface&MockObject $eventBus;
-    private UuidFactory&MockObject $uuidFactory;
     private UlidFactory&MockObject $ulidFactory;
 
     private UserFactory $userFactory;
@@ -62,8 +62,8 @@ final class SignInCommandHandlerTest extends UnitTestCase
         $this->hasherFactory = $this->createMock(PasswordHasherFactoryInterface::class);
         $this->lockoutService = $this->createMock(AccountLockoutServiceInterface::class);
         $this->accessTokenGenerator = $this->createMock(AccessTokenGeneratorInterface::class);
+        $this->authTokenFactory = $this->createMock(AuthTokenFactoryInterface::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
-        $this->uuidFactory = $this->createMock(UuidFactory::class);
         $this->ulidFactory = $this->createMock(UlidFactory::class);
 
         $this->userFactory = new UserFactory();
@@ -112,20 +112,54 @@ final class SignInCommandHandlerTest extends UnitTestCase
             ->with($email);
 
         $sessionId = Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FAV');
-        $refreshTokenId = Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FAW');
 
         $this->ulidFactory
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('create')
-            ->willReturnOnConsecutiveCalls($sessionId, $refreshTokenId);
+            ->willReturn($sessionId);
 
-        $jti = Uuid::fromString('d2719e4f-d1e8-47b6-bd4b-b637f2c40591');
-        $eventId = Uuid::fromString('e2a1b3c7-16cc-4242-ac9e-c76d740f5d2f');
+        $testJwtPayload = [
+            'sub' => $user->getId(),
+            'iss' => 'vilnacrm-user-service',
+            'aud' => 'vilnacrm-api',
+            'exp' => time() + 900,
+            'iat' => time(),
+            'nbf' => time(),
+            'jti' => 'd2719e4f-d1e8-47b6-bd4b-b637f2c40591',
+            'sid' => (string) $sessionId,
+            'roles' => ['ROLE_USER'],
+        ];
 
-        $this->uuidFactory
-            ->expects($this->exactly(2))
-            ->method('create')
-            ->willReturnOnConsecutiveCalls($jti, $eventId);
+        $opaqueToken = str_repeat('a', 43);
+
+        $refreshToken = new AuthRefreshToken(
+            '01ARZ3NDEKTSV4RRFFQ69G5FAW',
+            (string) $sessionId,
+            $opaqueToken,
+            (new DateTimeImmutable())->modify('+1 month')
+        );
+
+        $this->authTokenFactory
+            ->expects($this->once())
+            ->method('generateOpaqueToken')
+            ->willReturn($opaqueToken);
+
+        $this->authTokenFactory
+            ->expects($this->once())
+            ->method('createRefreshToken')
+            ->with((string) $sessionId, $opaqueToken, $this->isInstanceOf(DateTimeImmutable::class))
+            ->willReturn($refreshToken);
+
+        $this->authTokenFactory
+            ->expects($this->once())
+            ->method('buildJwtPayload')
+            ->with($user, (string) $sessionId, $this->isInstanceOf(DateTimeImmutable::class))
+            ->willReturn($testJwtPayload);
+
+        $this->authTokenFactory
+            ->expects($this->once())
+            ->method('nextEventId')
+            ->willReturn('e2a1b3c7-16cc-4242-ac9e-c76d740f5d2f');
 
         $this->accessTokenGenerator
             ->expects($this->once())
@@ -135,7 +169,7 @@ final class SignInCommandHandlerTest extends UnitTestCase
                     && $payload['sub'] === $user->getId()
                     && $payload['iss'] === 'vilnacrm-user-service'
                     && $payload['aud'] === 'vilnacrm-api'
-                    && $payload['jti'] === (string) $jti
+                    && $payload['jti'] === 'd2719e4f-d1e8-47b6-bd4b-b637f2c40591'
                     && $payload['sid'] === (string) $sessionId
                     && is_int($payload['iat'])
                     && is_int($payload['exp'])
@@ -159,10 +193,7 @@ final class SignInCommandHandlerTest extends UnitTestCase
         $this->authRefreshTokenRepository
             ->expects($this->once())
             ->method('save')
-            ->with($this->callback(
-                static fn (AuthRefreshToken $token): bool => $token->getId() === (string) $refreshTokenId
-                    && $token->getSessionId() === (string) $sessionId
-            ));
+            ->with($refreshToken);
 
         $this->eventBus
             ->expects($this->once())
@@ -179,8 +210,8 @@ final class SignInCommandHandlerTest extends UnitTestCase
             $this->hasherFactory,
             $this->lockoutService,
             $this->accessTokenGenerator,
+            $this->authTokenFactory,
             $this->eventBus,
-            $this->uuidFactory,
             $this->ulidFactory,
             dummyPasswordHash: $this->createDummyPasswordHash(),
         );
@@ -190,12 +221,8 @@ final class SignInCommandHandlerTest extends UnitTestCase
 
         $this->assertFalse($command->getResponse()->isTwoFactorEnabled());
         $this->assertSame('signed-access-token', $command->getResponse()->getAccessToken());
-        $this->assertNotEmpty($command->getResponse()->getRefreshToken());
-        $this->assertNotSame(
-            $command->getResponse()->getAccessToken(),
-            $command->getResponse()->getRefreshToken()
-        );
-        $this->assertOpaqueTokenFormat($command->getResponse()->getRefreshToken());
+        $this->assertSame($opaqueToken, $command->getResponse()->getRefreshToken());
+        $this->assertSame(43, strlen((string) $command->getResponse()->getRefreshToken()));
     }
 
     public function testInvokeThrowsUnauthorizedWhenPasswordIsInvalid(): void
@@ -262,8 +289,8 @@ final class SignInCommandHandlerTest extends UnitTestCase
             $this->hasherFactory,
             $this->lockoutService,
             $this->accessTokenGenerator,
+            $this->authTokenFactory,
             $this->eventBus,
-            $this->uuidFactory,
             $this->ulidFactory,
             dummyPasswordHash: $this->createDummyPasswordHash(),
         );
@@ -328,20 +355,24 @@ final class SignInCommandHandlerTest extends UnitTestCase
             ->with($email);
 
         $sessionId = Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB0');
-        $refreshTokenId = Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB1');
 
         $this->ulidFactory
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('create')
-            ->willReturnOnConsecutiveCalls($sessionId, $refreshTokenId);
+            ->willReturn($sessionId);
 
-        $jti = Uuid::fromString('ed15a4b0-e7a2-4959-8c88-c8fc23832a15');
-        $eventId = Uuid::fromString('31e0c50b-5930-4fcb-aea0-ea6fdce37aeb');
+        $opaqueToken = str_repeat('b', 43);
+        $refreshToken = new AuthRefreshToken(
+            '01ARZ3NDEKTSV4RRFFQ69G5FB1',
+            (string) $sessionId,
+            $opaqueToken,
+            (new DateTimeImmutable())->modify('+1 month')
+        );
 
-        $this->uuidFactory
-            ->expects($this->exactly(2))
-            ->method('create')
-            ->willReturnOnConsecutiveCalls($jti, $eventId);
+        $this->authTokenFactory->method('generateOpaqueToken')->willReturn($opaqueToken);
+        $this->authTokenFactory->method('createRefreshToken')->willReturn($refreshToken);
+        $this->authTokenFactory->method('buildJwtPayload')->willReturn([]);
+        $this->authTokenFactory->method('nextEventId')->willReturn('ed15a4b0-e7a2-4959-8c88-c8fc23832a15');
 
         $this->accessTokenGenerator
             ->expects($this->once())
@@ -378,7 +409,7 @@ final class SignInCommandHandlerTest extends UnitTestCase
         $handler->__invoke($command);
 
         $this->assertSame('remember-token', $command->getResponse()->getAccessToken());
-        $this->assertOpaqueTokenFormat((string) $command->getResponse()->getRefreshToken());
+        $this->assertSame($opaqueToken, $command->getResponse()->getRefreshToken());
     }
 
     public function testInvokeReturnsTwoFactorResponseWhenTwoFactorIsEnabled(): void
@@ -433,6 +464,7 @@ final class SignInCommandHandlerTest extends UnitTestCase
                 static fn (PendingTwoFactor $pendingTwoFactor): bool => $pendingTwoFactor->getId() === (string) $pendingSessionId
                     && $pendingTwoFactor->getUserId() === $user->getId()
                     && $pendingTwoFactor->getExpiresAt()->getTimestamp() - $pendingTwoFactor->getCreatedAt()->getTimestamp() === 300
+                    && $pendingTwoFactor->isRememberMe() === false
             ));
 
         $this->authSessionRepository
@@ -459,8 +491,8 @@ final class SignInCommandHandlerTest extends UnitTestCase
             $this->hasherFactory,
             $this->lockoutService,
             $this->accessTokenGenerator,
+            $this->authTokenFactory,
             $this->eventBus,
-            $this->uuidFactory,
             $this->ulidFactory,
             dummyPasswordHash: $this->createDummyPasswordHash(),
         );
@@ -478,6 +510,46 @@ final class SignInCommandHandlerTest extends UnitTestCase
         $this->assertSame((string) $pendingSessionId, $command->getResponse()->getPendingSessionId());
         $this->assertNull($command->getResponse()->getAccessToken());
         $this->assertNull($command->getResponse()->getRefreshToken());
+    }
+
+    public function testInvokeStoresRememberMeInPendingTwoFactorWhenTwoFactorIsEnabled(): void
+    {
+        $email = $this->faker->email();
+        $plainPassword = $this->faker->password();
+        $storedHash = '$2y$04$r2kNnAQAt5lvP0j3QulPaOFeENrToTdbjG6Qx3ZfLTPW7h0v4kN3y';
+        $user = $this->createUser($email, $storedHash);
+        $user->setTwoFactorEnabled(true);
+
+        $hasher = $this->createMock(PasswordHasherInterface::class);
+
+        $this->lockoutService->method('isLocked')->willReturn(false);
+        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->hasherFactory->method('getPasswordHasher')->willReturn($hasher);
+        $hasher->method('verify')->willReturn(true);
+        $this->lockoutService->method('clearFailures');
+
+        $pendingSessionId = Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB3');
+        $this->ulidFactory->method('create')->willReturn($pendingSessionId);
+
+        $this->pendingTwoFactorRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->callback(
+                static fn (PendingTwoFactor $pendingTwoFactor): bool => $pendingTwoFactor->isRememberMe() === true
+            ));
+
+        $handler = $this->createHandler();
+        $command = new SignInCommand(
+            $email,
+            $plainPassword,
+            true,  // rememberMe = true
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
+
+        $handler->__invoke($command);
+
+        $this->assertTrue($command->getResponse()->isTwoFactorEnabled());
     }
 
     public function testInvokeUsesDummyPasswordVerificationWhenUserDoesNotExist(): void
@@ -595,8 +667,8 @@ final class SignInCommandHandlerTest extends UnitTestCase
             $this->hasherFactory,
             $this->lockoutService,
             $this->accessTokenGenerator,
+            $this->authTokenFactory,
             $this->eventBus,
-            $this->uuidFactory,
             $this->ulidFactory,
         );
 
@@ -776,9 +848,12 @@ final class SignInCommandHandlerTest extends UnitTestCase
             ->method('create')
             ->willReturnCallback(static fn () => new Ulid());
 
-        $this->uuidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => Uuid::v4());
+        $this->authTokenFactory->method('generateOpaqueToken')->willReturn(str_repeat('c', 43));
+        $this->authTokenFactory->method('createRefreshToken')->willReturn(
+            new AuthRefreshToken('id', 'sid', str_repeat('c', 43), new DateTimeImmutable('+1 month'))
+        );
+        $this->authTokenFactory->method('buildJwtPayload')->willReturn([]);
+        $this->authTokenFactory->method('nextEventId')->willReturn('event-id');
 
         $this->accessTokenGenerator
             ->expects($this->once())
@@ -814,13 +889,6 @@ final class SignInCommandHandlerTest extends UnitTestCase
         );
     }
 
-    private function assertOpaqueTokenFormat(string $token): void
-    {
-        $this->assertSame(43, strlen($token));
-        $this->assertStringNotContainsString('=', $token);
-        $this->assertMatchesRegularExpression('/^[A-Za-z0-9\-_]+$/', $token);
-    }
-
     private function createHandler(): SignInCommandHandler
     {
         return new SignInCommandHandler(
@@ -831,11 +899,10 @@ final class SignInCommandHandlerTest extends UnitTestCase
             $this->hasherFactory,
             $this->lockoutService,
             $this->accessTokenGenerator,
+            $this->authTokenFactory,
             $this->eventBus,
-            $this->uuidFactory,
             $this->ulidFactory,
             300,
-            'P1M',
             $this->createDummyPasswordHash(),
         );
     }

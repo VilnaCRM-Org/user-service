@@ -11,6 +11,7 @@
         <field field-name="userId" type="string" />
         <field field-name="createdAt" type="date_immutable" />
         <field field-name="expiresAt" type="date_immutable" />
+        <field field-name="rememberMe" type="boolean" />
 
         <indexes>
             <index>

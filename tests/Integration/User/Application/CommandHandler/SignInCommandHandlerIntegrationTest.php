@@ -10,6 +10,7 @@ use App\Shared\Domain\Factory\UuidFactoryInterface;
 use App\Tests\Integration\IntegrationTestCase;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\CommandHandler\SignInCommandHandler;
+use App\User\Application\Factory\AuthTokenFactoryInterface;
 use App\User\Domain\Contract\AccessTokenGeneratorInterface;
 use App\User\Domain\Contract\AccountLockoutServiceInterface;
 use App\User\Domain\Contract\PasswordHasherInterface;
@@ -20,7 +21,6 @@ use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
-use Symfony\Component\Uid\Factory\UuidFactory;
 
 final class SignInCommandHandlerIntegrationTest extends IntegrationTestCase
 {
@@ -30,7 +30,7 @@ final class SignInCommandHandlerIntegrationTest extends IntegrationTestCase
     private UuidFactoryInterface $uuidFactory;
     private PasswordHasherFactoryInterface $hasherFactory;
     private AccessTokenGeneratorInterface $accessTokenGenerator;
-    private UuidFactory $symfonyUuidFactory;
+    private AuthTokenFactoryInterface $authTokenFactory;
     private UlidFactory $ulidFactory;
     private EventBusInterface $eventBus;
     private AuthSessionRepositoryInterface $authSessionRepository;
@@ -48,7 +48,7 @@ final class SignInCommandHandlerIntegrationTest extends IntegrationTestCase
         $this->uuidFactory = $this->container->get(UuidFactoryInterface::class);
         $this->hasherFactory = $this->container->get(PasswordHasherFactoryInterface::class);
         $this->accessTokenGenerator = $this->container->get(AccessTokenGeneratorInterface::class);
-        $this->symfonyUuidFactory = $this->container->get(UuidFactory::class);
+        $this->authTokenFactory = $this->container->get(AuthTokenFactoryInterface::class);
         $this->ulidFactory = $this->container->get(UlidFactory::class);
         $this->eventBus = new class() implements EventBusInterface {
             #[\Override]
@@ -87,8 +87,8 @@ final class SignInCommandHandlerIntegrationTest extends IntegrationTestCase
             $this->hasherFactory,
             $this->container->get(AccountLockoutServiceInterface::class),
             $this->accessTokenGenerator,
+            $this->authTokenFactory,
             $this->eventBus,
-            $this->symfonyUuidFactory,
             $this->ulidFactory,
         );
 

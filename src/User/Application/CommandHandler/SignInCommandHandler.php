@@ -8,9 +8,9 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\Command\SignInCommandResponse;
+use App\User\Application\Factory\AuthTokenFactoryInterface;
 use App\User\Domain\Contract\AccessTokenGeneratorInterface;
 use App\User\Domain\Contract\AccountLockoutServiceInterface;
-use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
@@ -21,14 +21,12 @@ use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use DateInterval;
 use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\LockedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
-use Symfony\Component\Uid\Factory\UuidFactory;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -36,17 +34,13 @@ use Symfony\Component\Uid\Factory\UuidFactory;
  */
 final readonly class SignInCommandHandler implements CommandHandlerInterface
 {
-    private const ACCESS_TOKEN_TTL_SECONDS = 900;
     private const LOCKOUT_RETRY_AFTER_SECONDS = AccountLockoutServiceInterface::LOCKOUT_SECONDS;
     private const STANDARD_SESSION_TTL_SECONDS = 900;
     private const REMEMBER_ME_SESSION_TTL_SECONDS = 2592000;
-    private const JWT_ISSUER = 'vilnacrm-user-service';
-    private const JWT_AUDIENCE = 'vilnacrm-api';
     private const LOCKOUT_MESSAGE = 'Account temporarily locked';
 
     private const DUMMY_PASSWORD = 'signin-dummy-password';
     private string $dummyPasswordHash;
-    private DateInterval $refreshTokenTtl;
 
     public function __construct(
         private UserRepositoryInterface $userRepository,
@@ -56,16 +50,13 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
         private PasswordHasherFactoryInterface $hasherFactory,
         private AccountLockoutServiceInterface $lockoutService,
         private AccessTokenGeneratorInterface $accessTokenGenerator,
+        private AuthTokenFactoryInterface $authTokenFactory,
         private EventBusInterface $eventBus,
-        private UuidFactory $uuidFactory,
         private UlidFactory $ulidFactory,
         private int $pendingTwoFactorTtlSeconds = 300,
-        string $refreshTokenTtlSpec = 'P1M',
         ?string $dummyPasswordHash = null,
     ) {
         $this->dummyPasswordHash = $this->resolveDummyPasswordHash($dummyPasswordHash);
-
-        $this->refreshTokenTtl = new DateInterval($refreshTokenTtlSpec);
     }
 
     public function __invoke(SignInCommand $command): void
@@ -109,7 +100,8 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
         $createdAt = new DateTimeImmutable();
         $pendingTwoFactor = $this->createPendingTwoFactor(
             $user,
-            $createdAt
+            $createdAt,
+            $command->rememberMe
         );
         $this->pendingTwoFactorRepository->save($pendingTwoFactor);
 
@@ -131,8 +123,8 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
         $session = $this->createAuthSession($user, $command, $issuedAt);
         $this->authSessionRepository->save($session);
 
-        $refreshTokenValue = $this->generateOpaqueToken();
-        $refreshToken = $this->createRefreshToken(
+        $refreshTokenValue = $this->authTokenFactory->generateOpaqueToken();
+        $refreshToken = $this->authTokenFactory->createRefreshToken(
             $session->getId(),
             $refreshTokenValue,
             $issuedAt
@@ -140,7 +132,7 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
         $this->authRefreshTokenRepository->save($refreshToken);
 
         $accessToken = $this->accessTokenGenerator->generate(
-            $this->buildJwtPayload($user, $session->getId(), $issuedAt)
+            $this->authTokenFactory->buildJwtPayload($user, $session->getId(), $issuedAt)
         );
 
         $command->setResponse(new SignInCommandResponse(
@@ -165,7 +157,7 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
                 $command->ipAddress,
                 $command->userAgent,
                 false,  // AC: NFR-33 - twoFactorUsed is false during password auth (step 1)
-                $this->nextEventId()
+                $this->authTokenFactory->nextEventId()
             )
         );
     }
@@ -182,7 +174,7 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
                 $command->ipAddress,
                 $command->userAgent,
                 'invalid_credentials',  // AC: NFR-33 - reason for audit logging
-                $this->nextEventId()
+                $this->authTokenFactory->nextEventId()
             )
         );
 
@@ -206,7 +198,7 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
                 $email,
                 $failedAttempts,
                 $lockoutDurationSeconds,
-                $this->nextEventId()
+                $this->authTokenFactory->nextEventId()
             )
         );
     }
@@ -266,59 +258,23 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
         );
     }
 
-    private function createRefreshToken(
-        string $sessionId,
-        string $plainToken,
-        DateTimeImmutable $issuedAt
-    ): AuthRefreshToken {
-        return new AuthRefreshToken(
-            (string) $this->ulidFactory->create(),
-            $sessionId,
-            $plainToken,
-            $issuedAt->add($this->refreshTokenTtl)
-        );
-    }
-
     private function createPendingTwoFactor(
         User $user,
-        DateTimeImmutable $createdAt
+        DateTimeImmutable $createdAt,
+        bool $rememberMe
     ): PendingTwoFactor {
         return new PendingTwoFactor(
             (string) $this->ulidFactory->create(),
             $user->getId(),
             $createdAt,
-            $createdAt->modify(sprintf('+%d seconds', $this->pendingTwoFactorTtlSeconds))
+            $createdAt->modify(sprintf('+%d seconds', $this->pendingTwoFactorTtlSeconds)),
+            $rememberMe
         );
     }
 
-    /**
-     * @return array<int|string|array<string>>
-     *
-     * @psalm-return array{sub: string, iss: 'vilnacrm-user-service', aud: 'vilnacrm-api', exp: int, iat: int, nbf: int, jti: string, sid: string, roles: list{'ROLE_USER'}}
-     */
-    private function buildJwtPayload(
-        User $user,
-        string $sessionId,
-        DateTimeImmutable $issuedAt
-    ): array {
-        $issuedAtTimestamp = $issuedAt->getTimestamp();
-
-        return [
-            'sub' => $user->getId(),
-            'iss' => self::JWT_ISSUER,
-            'aud' => self::JWT_AUDIENCE,
-            'exp' => $issuedAtTimestamp + self::ACCESS_TOKEN_TTL_SECONDS,
-            'iat' => $issuedAtTimestamp,
-            'nbf' => $issuedAtTimestamp,
-            'jti' => (string) $this->uuidFactory->create(),
-            'sid' => $sessionId,
-            'roles' => ['ROLE_USER'],
-        ];
-    }
-
-    private function nextEventId(): string
+    private function normalizeEmail(string $email): string
     {
-        return (string) $this->uuidFactory->create();
+        return strtolower(trim($email));
     }
 
     private function lockedException(): LockedHttpException
@@ -329,18 +285,5 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
             0,
             ['Retry-After' => (string) self::LOCKOUT_RETRY_AFTER_SECONDS]
         );
-    }
-
-    private function generateOpaqueToken(): string
-    {
-        return rtrim(
-            strtr(base64_encode(random_bytes(32)), '+/', '-_'),
-            '='
-        );
-    }
-
-    private function normalizeEmail(string $email): string
-    {
-        return strtolower(trim($email));
     }
 }

@@ -11,10 +11,10 @@ Feature: Password Reset Integration with Auth System
     And user "reset-sessions@test.com" has 3 active sessions
     And requesting password reset for email "reset-sessions@test.com"
     And POST request is send to "/api/reset-password"
-    And the response status code should be 200
+    And the response status code should be 204
     And I confirm the password reset with the received token and new password "passWORD2"
     When POST request is send to "/api/reset-password/confirm"
-    Then the response status code should be 200
+    Then the response status code should be 204
     And all 3 sessions for user "reset-sessions@test.com" should be revoked
 
   Scenario: After password reset, old password no longer works
@@ -23,7 +23,7 @@ Feature: Password Reset Integration with Auth System
     And POST request is send to "/api/reset-password"
     And I confirm the password reset with the received token and new password "passWORD2"
     And POST request is send to "/api/reset-password/confirm"
-    And the response status code should be 200
+    And the response status code should be 204
     And signing in with email "reset-oldpw@test.com" and password "passWORD1"
     When POST request is send to "/api/signin"
     Then the response status code should be 401
@@ -34,10 +34,10 @@ Feature: Password Reset Integration with Auth System
     And POST request is send to "/api/reset-password"
     And I confirm the password reset with the received token and new password "passWORD2"
     And POST request is send to "/api/reset-password/confirm"
-    And the response status code should be 200
+    And the response status code should be 204
     And signing in with email "reset-newpw@test.com" and password "passWORD2"
     When POST request is send to "/api/signin"
-    Then the response status code should be 200
+    Then the response status code should be 204
 
   # Password reset with 2FA-enabled account
 
@@ -46,7 +46,7 @@ Feature: Password Reset Integration with Auth System
     And user with email "reset-2fa@test.com" has 2FA enabled
     And requesting password reset for email "reset-2fa@test.com"
     When POST request is send to "/api/reset-password"
-    Then the response status code should be 200
+    Then the response status code should be 204
 
   Scenario: After password reset 2FA-enabled user still needs 2FA
     Given user with email "reset-2fa-flow@test.com" and password "passWORD1" exists
@@ -55,10 +55,10 @@ Feature: Password Reset Integration with Auth System
     And POST request is send to "/api/reset-password"
     And I confirm the password reset with the received token and new password "passWORD2"
     And POST request is send to "/api/reset-password/confirm"
-    And the response status code should be 200
+    And the response status code should be 204
     And signing in with email "reset-2fa-flow@test.com" and password "passWORD2"
     When POST request is send to "/api/signin"
-    Then the response status code should be 200
+    Then the response status code should be 204
     And the response field "2fa_enabled" should be true
     And the response should contain "pending_session_id"
 
@@ -71,7 +71,7 @@ Feature: Password Reset Integration with Auth System
     And I store the reset token
     And I confirm the password reset with the stored token and new password "passWORD2"
     And POST request is send to "/api/reset-password/confirm"
-    And the response status code should be 200
+    And the response status code should be 204
     And I confirm the password reset with the stored token and new password "passWORD3"
     When POST request is send to "/api/reset-password/confirm"
     Then the response status code should be 401
@@ -92,10 +92,10 @@ Feature: Password Reset Integration with Auth System
     And POST request is send to "/api/reset-password"
     And I confirm the password reset with the received token and new password "passWORD2"
     And POST request is send to "/api/reset-password/confirm"
-    And the response status code should be 200
+    And the response status code should be 204
     And signing in with email "reset-unlock@test.com" and password "passWORD2"
     When POST request is send to "/api/signin"
-    Then the response status code should be 200
+    Then the response status code should be 204
 
   # Password reset email enumeration prevention
 
@@ -118,7 +118,7 @@ Feature: Password Reset Integration with Auth System
     And POST request is send to "/api/reset-password"
     And I confirm the password reset with the received token and new password "passWORD2"
     And POST request is send to "/api/reset-password/confirm"
-    And the response status code should be 200
+    And the response status code should be 204
     And submitting the stored refresh token to exchange
     When POST request is send to "/api/token"
     Then the response status code should be 401

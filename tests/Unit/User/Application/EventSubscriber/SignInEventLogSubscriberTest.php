@@ -75,8 +75,9 @@ final class SignInEventLogSubscriberTest extends UnitTestCase
             ->expects($this->once())
             ->method('warning')
             ->with('Sign-in failed', [
-                'email' => $event->email,
-                'ipAddress' => $event->ipAddress,
+                'attemptedEmail' => $event->email,
+                'ip' => $event->ipAddress,
+                'reason' => $event->reason,
                 'userAgent' => $event->userAgent,
             ]);
 

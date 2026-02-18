@@ -6,6 +6,9 @@ namespace App\User\Domain\Entity;
 
 use DateTimeImmutable;
 
+/**
+ * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+ */
 final class PendingTwoFactor
 {
     private const DEFAULT_TTL_MINUTES = 5;
@@ -16,7 +19,8 @@ final class PendingTwoFactor
         private string $id,
         private string $userId,
         private DateTimeImmutable $createdAt,
-        ?DateTimeImmutable $expiresAt = null
+        ?DateTimeImmutable $expiresAt = null,
+        private bool $rememberMe = false
     ) {
         $this->expiresAt =
             $expiresAt ?? $this->createdAt->modify('+' . self::DEFAULT_TTL_MINUTES . ' minutes');
@@ -40,6 +44,11 @@ final class PendingTwoFactor
     public function getExpiresAt(): DateTimeImmutable
     {
         return $this->expiresAt;
+    }
+
+    public function isRememberMe(): bool
+    {
+        return $this->rememberMe;
     }
 
     public function isExpired(?DateTimeImmutable $currentTime = null): bool

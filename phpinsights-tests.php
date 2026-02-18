@@ -76,6 +76,7 @@ return [
                 'tests/Integration/User/Application/CommandHandler/SignInCommandHandlerIntegrationTest.php',
                 'tests/Integration/User/Application/CommandHandler/UpdateUserCommandHandlerIntegrationTest.php',
                 'tests/Unit/Shared/Auth/Factory/TestAccessTokenFactoryTest.php',
+                'tests/Unit/User/Application/CommandHandler/CompleteTwoFactorCommandHandlerSuccessPathTest.php',
                 'tests/Unit/User/Application/CommandHandler/CompleteTwoFactorCommandHandlerTest.php',
                 'tests/Unit/User/Application/CommandHandler/RefreshTokenCommandHandlerTest.php',
                 'tests/Unit/User/Application/CommandHandler/SetupTwoFactorCommandHandlerTest.php',
@@ -171,6 +172,7 @@ return [
             'exclude' => [
                 'src/Shared/Application/Validator/InitialsValidator.php',
                 'src/Shared/Application/Validator/PasswordValidator.php',
+                'tests/Unit/User/Application/CommandHandler/CompleteTwoFactorCommandHandlerSuccessPathTest.php',
                 'tests/Unit/User/Infrastructure/Repository/CachedUserRepositoryTest.php',
                 'tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php',
             ],
@@ -195,6 +197,7 @@ return [
                 'tests/Unit/Shared/Auth/Factory/TestAccessTokenFactoryTest.php',
                 'tests/Unit/Shared/Infrastructure/Security/DualAuthenticatorTest.php',
                 'tests/Unit/User/Application/Command/UpdateUserCommandTest.php',
+                'tests/Unit/User/Application/CommandHandler/CompleteTwoFactorCommandHandlerSuccessPathTest.php',
                 'tests/Unit/User/Application/CommandHandler/CompleteTwoFactorCommandHandlerTest.php',
                 'tests/Unit/User/Application/CommandHandler/ConfirmTwoFactorCommandHandlerTest.php',
                 'tests/Unit/User/Application/CommandHandler/DisableTwoFactorCommandHandlerTest.php',

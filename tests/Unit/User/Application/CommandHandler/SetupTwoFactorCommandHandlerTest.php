@@ -15,6 +15,7 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
@@ -40,7 +41,6 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
     public function testInvokeGeneratesAndStoresEncryptedTwoFactorSecret(): void
     {
         $user = $this->createUser($this->faker->email());
-        $user->setTwoFactorEnabled(true);
         $secret = 'JBSWY3DPEHPK3PXP';
         $otpauthUri = sprintf(
             'otpauth://totp/VilnaCRM:%s?secret=%s&issuer=VilnaCRM',
@@ -117,6 +117,32 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
 
         $handler = $this->createHandler();
         $handler->__invoke(new SetupTwoFactorCommand($email));
+    }
+
+    public function testInvokeThrowsConflictWhenTwoFactorAlreadyEnabled(): void
+    {
+        $user = $this->createUser($this->faker->email());
+        $user->setTwoFactorEnabled(true);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($user->getEmail())
+            ->willReturn($user);
+
+        $this->totpSecretGenerator
+            ->expects($this->never())
+            ->method('generate');
+
+        $this->twoFactorSecretEncryptor
+            ->expects($this->never())
+            ->method('encrypt');
+
+        $this->expectException(ConflictHttpException::class);
+        $this->expectExceptionMessage('Two-factor authentication is already enabled.');
+
+        $handler = $this->createHandler();
+        $handler->__invoke(new SetupTwoFactorCommand($user->getEmail()));
     }
 
     private function createHandler(): SetupTwoFactorCommandHandler
