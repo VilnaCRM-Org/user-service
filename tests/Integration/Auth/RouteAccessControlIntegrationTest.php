@@ -6,8 +6,10 @@ namespace App\Tests\Integration\Auth;
 
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Integration\IntegrationTestCase;
+use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
@@ -111,6 +113,44 @@ final class RouteAccessControlIntegrationTest extends IntegrationTestCase
             401,
             $response->getStatusCode(),
             sprintf('%s %s should NOT return 401 (public endpoint).', $method, $path)
+        );
+    }
+
+    public function testPublicSignInRouteIgnoresExpiredAuthCookie(): void
+    {
+        $kernel = self::getContainer()->get('kernel');
+        $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
+
+        $tokenFactory = $this->container->get(TestAccessTokenFactory::class);
+        $this->assertInstanceOf(TestAccessTokenFactory::class, $tokenFactory);
+
+        $expiredToken = $tokenFactory->createToken(
+            sprintf('service-%s', strtolower($this->faker->lexify('????'))),
+            ['ROLE_SERVICE'],
+            null,
+            new DateTimeImmutable('-1 hour')
+        );
+
+        $request = Request::create(
+            '/api/signin',
+            'POST',
+            [],
+            ['__Host-auth_token' => $expiredToken],
+            [],
+            [
+                'REMOTE_ADDR' => $this->faker->ipv4(),
+                'HTTP_ACCEPT' => 'application/json',
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            '{}'
+        );
+
+        $response = $kernel->handle($request);
+
+        $this->assertNotSame(
+            401,
+            $response->getStatusCode(),
+            'POST /api/signin should stay public even with an expired auth cookie.'
         );
     }
 

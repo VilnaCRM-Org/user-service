@@ -54,6 +54,13 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
         $this->ulidFactory = $this->createMock(UlidFactory::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
+
+        $this->refreshTokenRepository
+            ->method('markAsRotatedIfActive')
+            ->willReturn(true);
+        $this->refreshTokenRepository
+            ->method('markGraceUsedIfEligible')
+            ->willReturn(true);
     }
 
     public function testInvokeRotatesTokenAndIssuesNewTokens(): void
@@ -82,7 +89,7 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->willReturn($user);
 
         $this->refreshTokenRepository
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('save');
 
         $newTokenId = new Ulid();
@@ -232,7 +239,7 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->willReturn($user);
 
         $this->refreshTokenRepository
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('save');
 
         $this->ulidFactory
@@ -412,7 +419,7 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->willReturn($user);
 
         $this->refreshTokenRepository
-            ->expects($this->exactly(2))
+            ->expects($this->once())
             ->method('save');
 
         $this->ulidFactory
@@ -655,6 +662,69 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->expects($this->once())
             ->method('findById')
             ->willReturn(null);
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Invalid refresh token.');
+
+        $handler = $this->createHandler();
+        $handler->__invoke(new RefreshTokenCommand($plainToken));
+    }
+
+    public function testInvokeThrows401WhenSessionIsRevoked(): void
+    {
+        $plainToken = 'valid-token-revoked-session';
+        $token = $this->createValidRefreshToken($plainToken);
+        $session = $this->createValidSession($token->getSessionId());
+        $session->revoke();
+
+        $this->refreshTokenRepository
+            ->expects($this->once())
+            ->method('findByTokenHash')
+            ->willReturn($token);
+
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->willReturn($session);
+
+        $this->userRepository
+            ->expects($this->never())
+            ->method('findById');
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Invalid refresh token.');
+
+        $handler = $this->createHandler();
+        $handler->__invoke(new RefreshTokenCommand($plainToken));
+    }
+
+    public function testInvokeThrows401WhenSessionIsExpired(): void
+    {
+        $plainToken = 'valid-token-expired-session';
+        $token = $this->createValidRefreshToken($plainToken);
+        $session = new AuthSession(
+            $token->getSessionId(),
+            $this->faker->uuid(),
+            '127.0.0.1',
+            'Expired Agent',
+            new DateTimeImmutable('-2 hours'),
+            new DateTimeImmutable('-1 hour'),
+            false
+        );
+
+        $this->refreshTokenRepository
+            ->expects($this->once())
+            ->method('findByTokenHash')
+            ->willReturn($token);
+
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->willReturn($session);
+
+        $this->userRepository
+            ->expects($this->never())
+            ->method('findById');
 
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid refresh token.');

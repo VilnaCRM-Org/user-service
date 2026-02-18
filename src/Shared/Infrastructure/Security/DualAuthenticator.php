@@ -7,6 +7,7 @@ namespace App\Shared\Infrastructure\Security;
 use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\Transformer\UserTransformer;
 use App\User\Domain\Entity\UserInterface as DomainUserInterface;
+use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use JsonException;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
@@ -40,17 +41,37 @@ final class DualAuthenticator extends AbstractAuthenticator implements
     private const JWT_ISSUER = 'vilnacrm-user-service';
     private const JWT_AUDIENCE = 'vilnacrm-api';
     private const JWT_ALGORITHM = 'RS256';
+    /**
+     * @var list<array{pattern: string, methods?: list<string>}>
+     */
+    private const PUBLIC_ACCESS_RULES = [
+        ['pattern' => '#^/api/users$#', 'methods' => ['POST']],
+        ['pattern' => '#^/api/users/confirm$#', 'methods' => ['PATCH']],
+        ['pattern' => '#^/api/reset-password#'],
+        ['pattern' => '#^/api/signin#'],
+        ['pattern' => '#^/api/token$#', 'methods' => ['POST']],
+        ['pattern' => '#^/api/docs#'],
+        ['pattern' => '#^/api/health#'],
+        ['pattern' => '#^/api/oauth#'],
+        ['pattern' => '#^/api/\.well-known#'],
+        ['pattern' => '#^/healthz#'],
+    ];
 
     public function __construct(
         private readonly JWTEncoderInterface $jwtEncoder,
         private readonly UserRepositoryInterface $userRepository,
         private readonly UserTransformer $userTransformer,
+        private readonly AuthSessionRepositoryInterface $authSessionRepository,
     ) {
     }
 
     #[\Override]
     public function supports(Request $request): ?bool
     {
+        if ($this->isPublicAccessRequest($request)) {
+            return false;
+        }
+
         return $this->extractToken($request) !== null;
     }
 
@@ -65,8 +86,11 @@ final class DualAuthenticator extends AbstractAuthenticator implements
         $this->validateAlgorithm($header);
         $payload = $this->decodePayload($token);
         $this->validateClaims($payload);
+        $roles = $this->extractRoles($payload);
+        $sid = $this->extractSid($payload);
+        $this->validateSession($sid, $roles);
 
-        return $this->buildPassport($payload);
+        return $this->buildPassport($payload, $roles, $sid);
     }
 
     /**
@@ -127,12 +151,14 @@ final class DualAuthenticator extends AbstractAuthenticator implements
 
     /**
      * @param JwtPayload $payload
+     * @param array<string> $roles
      */
-    private function buildPassport(array $payload): SelfValidatingPassport
-    {
+    private function buildPassport(
+        array $payload,
+        array $roles,
+        string $sid
+    ): SelfValidatingPassport {
         $subject = $this->extractSubject($payload);
-        $roles = $this->extractRoles($payload);
-        $sid = $this->extractSid($payload);
 
         $passport = new SelfValidatingPassport(
             new UserBadge(
@@ -144,6 +170,27 @@ final class DualAuthenticator extends AbstractAuthenticator implements
         $passport->setAttribute('sid', $sid);
 
         return $passport;
+    }
+
+    /**
+     * @param array<string> $roles
+     */
+    private function validateSession(string $sid, array $roles): void
+    {
+        if (in_array('ROLE_SERVICE', $roles, true)) {
+            return;
+        }
+
+        $session = $this->authSessionRepository->findById($sid);
+        if (
+            $session === null
+            || $session->isRevoked()
+            || $session->isExpired()
+        ) {
+            throw new CustomUserMessageAuthenticationException(
+                'Invalid access token claims.'
+            );
+        }
     }
 
     /**
@@ -446,6 +493,40 @@ final class DualAuthenticator extends AbstractAuthenticator implements
         }
 
         return null;
+    }
+
+    private function isPublicAccessRequest(Request $request): bool
+    {
+        $path = $request->getPathInfo();
+        $method = $request->getMethod();
+
+        foreach (self::PUBLIC_ACCESS_RULES as $rule) {
+            if ($this->matchesPublicAccessRule($path, $method, $rule)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array{pattern: string, methods?: list<string>} $rule
+     */
+    private function matchesPublicAccessRule(
+        string $path,
+        string $method,
+        array $rule
+    ): bool {
+        if (preg_match($rule['pattern'], $path) !== 1) {
+            return false;
+        }
+
+        $methods = $rule['methods'] ?? null;
+        if (!is_array($methods) || $methods === []) {
+            return true;
+        }
+
+        return in_array($method, $methods, true);
     }
 
     /**

@@ -10,8 +10,11 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\Transformer\UserTransformer;
+use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use DateTimeImmutable;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -27,6 +30,7 @@ final class DualAuthenticatorTest extends UnitTestCase
 {
     private JWTEncoderInterface&MockObject $jwtEncoder;
     private UserRepositoryInterface&MockObject $userRepository;
+    private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
     private UserTransformer $userTransformer;
 
     #[\Override]
@@ -36,9 +40,14 @@ final class DualAuthenticatorTest extends UnitTestCase
 
         $this->jwtEncoder = $this->createMock(JWTEncoderInterface::class);
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
         $this->userTransformer = new UserTransformer(
             new UuidTransformer(new SharedUuidFactory())
         );
+
+        $this->authSessionRepository
+            ->method('findById')
+            ->willReturn($this->createActiveSession('sid-token'));
     }
 
     public function testAuthenticateUsesBearerTokenAndResolvesUser(): void
@@ -196,6 +205,99 @@ final class DualAuthenticatorTest extends UnitTestCase
         $this->createAuthenticator()->authenticate($request);
     }
 
+    public function testAuthenticateRejectsWhenSessionIsMissing(): void
+    {
+        $email = $this->faker->email();
+        $tokenValue = $this->createJwtToken('RS256');
+        $payload = $this->validPayload($email, ['ROLE_USER']);
+
+        $this->jwtEncoder
+            ->expects($this->once())
+            ->method('decode')
+            ->with($tokenValue)
+            ->willReturn($payload);
+
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with('sid-token')
+            ->willReturn(null);
+
+        $request = Request::create('/api/users');
+        $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
+
+        $this->expectException(CustomUserMessageAuthenticationException::class);
+        $this->expectExceptionMessage('Invalid access token claims.');
+
+        $this->createAuthenticator()->authenticate($request);
+    }
+
+    public function testAuthenticateRejectsWhenSessionIsRevoked(): void
+    {
+        $email = $this->faker->email();
+        $tokenValue = $this->createJwtToken('RS256');
+        $payload = $this->validPayload($email, ['ROLE_USER']);
+        $revokedSession = $this->createActiveSession('sid-token');
+        $revokedSession->revoke();
+
+        $this->jwtEncoder
+            ->expects($this->once())
+            ->method('decode')
+            ->with($tokenValue)
+            ->willReturn($payload);
+
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with('sid-token')
+            ->willReturn($revokedSession);
+
+        $request = Request::create('/api/users');
+        $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
+
+        $this->expectException(CustomUserMessageAuthenticationException::class);
+        $this->expectExceptionMessage('Invalid access token claims.');
+
+        $this->createAuthenticator()->authenticate($request);
+    }
+
+    public function testAuthenticateRejectsWhenSessionIsExpired(): void
+    {
+        $email = $this->faker->email();
+        $tokenValue = $this->createJwtToken('RS256');
+        $payload = $this->validPayload($email, ['ROLE_USER']);
+
+        $this->jwtEncoder
+            ->expects($this->once())
+            ->method('decode')
+            ->with($tokenValue)
+            ->willReturn($payload);
+
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with('sid-token')
+            ->willReturn(
+                new AuthSession(
+                    'sid-token',
+                    $this->faker->uuid(),
+                    '127.0.0.1',
+                    'Test Agent',
+                    new DateTimeImmutable('-2 hours'),
+                    new DateTimeImmutable('-1 hour'),
+                    false
+                )
+            );
+
+        $request = Request::create('/api/users');
+        $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
+
+        $this->expectException(CustomUserMessageAuthenticationException::class);
+        $this->expectExceptionMessage('Invalid access token claims.');
+
+        $this->createAuthenticator()->authenticate($request);
+    }
+
     public function testOnAuthenticationFailureReturnsProblemJsonAndBearerHeader(): void
     {
         $response = $this->createAuthenticator()->onAuthenticationFailure(
@@ -252,6 +354,16 @@ final class DualAuthenticatorTest extends UnitTestCase
         $supports = $this->createAuthenticator()->supports($request);
 
         $this->assertTrue($supports);
+    }
+
+    public function testSupportsReturnsFalseOnPublicRouteEvenWhenTokenExists(): void
+    {
+        $request = Request::create('/api/signin', 'POST');
+        $request->cookies->set('__Host-auth_token', 'cookie-token');
+
+        $supports = $this->createAuthenticator()->supports($request);
+
+        $this->assertFalse($supports);
     }
 
     public function testAuthenticateRejectsRequestWithoutToken(): void
@@ -642,7 +754,8 @@ final class DualAuthenticatorTest extends UnitTestCase
         return new DualAuthenticator(
             $this->jwtEncoder,
             $this->userRepository,
-            $this->userTransformer
+            $this->userTransformer,
+            $this->authSessionRepository
         );
     }
 
@@ -707,6 +820,19 @@ final class DualAuthenticatorTest extends UnitTestCase
             $this->faker->name(),
             $this->faker->sha256(),
             $transformer->transformFromString($this->faker->uuid())
+        );
+    }
+
+    private function createActiveSession(string $sessionId): AuthSession
+    {
+        return new AuthSession(
+            $sessionId,
+            $this->faker->uuid(),
+            '127.0.0.1',
+            'Test Agent',
+            new DateTimeImmutable('-10 minutes'),
+            new DateTimeImmutable('+10 minutes'),
+            false
         );
     }
 }

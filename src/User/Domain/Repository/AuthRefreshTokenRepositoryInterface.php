@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\User\Domain\Repository;
 
 use App\User\Domain\Entity\AuthRefreshToken;
+use DateTimeImmutable;
 
 interface AuthRefreshTokenRepositoryInterface
 {
@@ -26,4 +27,15 @@ interface AuthRefreshTokenRepositoryInterface
      * Sets revokedAt timestamp on all tokens.
      */
     public function revokeBySessionId(string $sessionId): void;
+
+    public function markAsRotatedIfActive(
+        string $tokenHash,
+        DateTimeImmutable $rotatedAt
+    ): bool;
+
+    public function markGraceUsedIfEligible(
+        string $tokenHash,
+        DateTimeImmutable $graceWindowStartedAt,
+        DateTimeImmutable $currentTime
+    ): bool;
 }

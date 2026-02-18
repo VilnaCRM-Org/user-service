@@ -55,20 +55,30 @@ final readonly class RefreshTokenCommandHandler implements
         $oldToken = $this->resolveRefreshToken($command->refreshToken);
         $session = $this->resolveSession($oldToken->getSessionId());
         $user = $this->resolveUser($session->getUserId());
+        $currentTime = new DateTimeImmutable();
 
-        if ($oldToken->isRotated()) {
-            $this->handleRotatedToken($oldToken, $session, $user, $command);
-
+        if ($this->tryHandleRotatedToken(
+            $oldToken,
+            $session,
+            $user,
+            $command,
+            $currentTime
+        )) {
             return;
         }
 
-        $oldToken->markAsRotated();
-        $this->refreshTokenRepository->save($oldToken);
+        if ($this->tryHandleConcurrentRotation(
+            $oldToken->getTokenHash(),
+            $session,
+            $user,
+            $command,
+            $currentTime,
+            $command->refreshToken
+        )) {
+            return;
+        }
 
-        $tokens = $this->issueNewTokens($user, $session);
-        $command->setResponse($tokens);
-
-        $this->publishRotatedEvent($session, $user);
+        $this->rotateActiveToken($oldToken, $user, $session, $command, $currentTime);
     }
 
     private function resolveRefreshToken(
@@ -92,13 +102,20 @@ final readonly class RefreshTokenCommandHandler implements
         AuthRefreshToken $oldToken,
         AuthSession $session,
         User $user,
-        RefreshTokenCommand $command
+        RefreshTokenCommand $command,
+        DateTimeImmutable $currentTime
     ): void {
         if ($oldToken->isWithinGracePeriod(
-            new DateTimeImmutable(),
+            $currentTime,
             $this->refreshTokenGraceWindowSeconds
         )) {
-            $this->handleGraceWindowReuse($oldToken, $session, $user, $command);
+            $this->handleGraceWindowReuse(
+                $oldToken,
+                $session,
+                $user,
+                $command,
+                $currentTime
+            );
 
             return;
         }
@@ -115,23 +132,19 @@ final readonly class RefreshTokenCommandHandler implements
         AuthRefreshToken $oldToken,
         AuthSession $session,
         User $user,
-        RefreshTokenCommand $command
+        RefreshTokenCommand $command,
+        DateTimeImmutable $currentTime
     ): void {
-        if ($oldToken->isGraceUsed()) {
-            $this->handleTheftDetection(
-                $oldToken,
-                $session,
-                $user,
-                'double_grace_use'
-            );
-        }
+        $this->assertGraceWindowIsEligible(
+            $oldToken,
+            $session,
+            $user,
+            $currentTime
+        );
 
         $oldToken->markGraceUsed();
-        $this->refreshTokenRepository->save($oldToken);
 
-        $tokens = $this->issueNewTokens($user, $session);
-        $command->setResponse($tokens);
-
+        $this->setResponseWithNewTokens($command, $user, $session);
         $this->publishRotatedEvent($session, $user);
     }
 
@@ -179,8 +192,115 @@ final readonly class RefreshTokenCommandHandler implements
         if (!$session instanceof AuthSession) {
             $this->throwUnauthorized();
         }
+        if ($session->isRevoked() || $session->isExpired()) {
+            $this->throwUnauthorized();
+        }
 
         return $session;
+    }
+
+    private function tryHandleRotatedToken(
+        AuthRefreshToken $oldToken,
+        AuthSession $session,
+        User $user,
+        RefreshTokenCommand $command,
+        DateTimeImmutable $currentTime
+    ): bool {
+        if (!$oldToken->isRotated()) {
+            return false;
+        }
+
+        $this->handleRotatedToken($oldToken, $session, $user, $command, $currentTime);
+
+        return true;
+    }
+
+    private function tryHandleConcurrentRotation(
+        string $tokenHash,
+        AuthSession $session,
+        User $user,
+        RefreshTokenCommand $command,
+        DateTimeImmutable $currentTime,
+        string $plainToken
+    ): bool {
+        $wasRotated = $this->refreshTokenRepository->markAsRotatedIfActive(
+            $tokenHash,
+            $currentTime
+        );
+        if ($wasRotated) {
+            return false;
+        }
+
+        $latestToken = $this->resolveRefreshToken($plainToken);
+        if (!$latestToken->isRotated()) {
+            $this->throwUnauthorized();
+        }
+
+        $this->handleRotatedToken(
+            $latestToken,
+            $session,
+            $user,
+            $command,
+            $currentTime
+        );
+
+        return true;
+    }
+
+    private function rotateActiveToken(
+        AuthRefreshToken $oldToken,
+        User $user,
+        AuthSession $session,
+        RefreshTokenCommand $command,
+        DateTimeImmutable $currentTime
+    ): void {
+        $oldToken->markAsRotated($currentTime);
+        $this->setResponseWithNewTokens($command, $user, $session);
+        $this->publishRotatedEvent($session, $user);
+    }
+
+    private function setResponseWithNewTokens(
+        RefreshTokenCommand $command,
+        User $user,
+        AuthSession $session
+    ): void {
+        $command->setResponse($this->issueNewTokens($user, $session));
+    }
+
+    private function assertGraceWindowIsEligible(
+        AuthRefreshToken $oldToken,
+        AuthSession $session,
+        User $user,
+        DateTimeImmutable $currentTime
+    ): void {
+        if ($oldToken->isGraceUsed()) {
+            $this->handleTheftDetection(
+                $oldToken,
+                $session,
+                $user,
+                'double_grace_use'
+            );
+        }
+
+        $graceWindowStartedAt = $currentTime->setTimestamp(
+            $currentTime->getTimestamp() - $this->refreshTokenGraceWindowSeconds
+        );
+        $wasGraceConsumed = $this->refreshTokenRepository
+            ->markGraceUsedIfEligible(
+                $oldToken->getTokenHash(),
+                $graceWindowStartedAt,
+                $currentTime
+            );
+        if ($wasGraceConsumed) {
+            return;
+        }
+
+        $this->handleTheftDetection(
+            $oldToken,
+            $session,
+            $user,
+            'double_grace_use'
+        );
     }
 
     private function resolveUser(string $userId): User

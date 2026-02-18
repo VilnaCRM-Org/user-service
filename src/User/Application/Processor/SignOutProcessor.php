@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\SignOutCommand;
+use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\DTO\SignOutDto;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,8 +44,8 @@ final readonly class SignOutProcessor implements ProcessorInterface
             throw new UnauthorizedHttpException('Bearer', 'Authentication required');
         }
 
-        $user = $token->getUser();
-        if ($user === null) {
+        $authenticatedUser = $token->getUser();
+        if (!$authenticatedUser instanceof AuthorizationUserDto) {
             throw new UnauthorizedHttpException('Bearer', 'Invalid token');
         }
 
@@ -54,7 +55,7 @@ final readonly class SignOutProcessor implements ProcessorInterface
             throw new UnauthorizedHttpException('Bearer', 'Session ID not found in token');
         }
 
-        $userId = $token->getUserIdentifier();
+        $userId = $authenticatedUser->getId()->__toString();
 
         // Execute signout command
         $this->commandBus->dispatch(new SignOutCommand($sessionId, $userId));

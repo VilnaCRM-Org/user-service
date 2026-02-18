@@ -6,9 +6,11 @@ namespace App\User\Infrastructure\Repository;
 
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
+use DateTimeImmutable;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use MongoDB\UpdateResult;
 
 /**
  * @extends ServiceDocumentRepository<AuthRefreshToken>
@@ -73,5 +75,52 @@ final class MongoDBAuthRefreshTokenRepository extends ServiceDocumentRepository 
         }
 
         $this->documentManager->flush();
+    }
+
+    #[\Override]
+    public function markAsRotatedIfActive(
+        string $tokenHash,
+        DateTimeImmutable $rotatedAt
+    ): bool {
+        $result = $this->createQueryBuilder()
+            ->updateOne()
+            ->field('tokenHash')->equals($tokenHash)
+            ->field('rotatedAt')->equals(null)
+            ->field('revokedAt')->equals(null)
+            ->field('expiresAt')->gt($rotatedAt)
+            ->field('rotatedAt')->set($rotatedAt)
+            ->getQuery()
+            ->execute();
+
+        return $this->wasDocumentUpdated($result);
+    }
+
+    #[\Override]
+    public function markGraceUsedIfEligible(
+        string $tokenHash,
+        DateTimeImmutable $graceWindowStartedAt,
+        DateTimeImmutable $currentTime
+    ): bool {
+        $result = $this->createQueryBuilder()
+            ->updateOne()
+            ->field('tokenHash')->equals($tokenHash)
+            ->field('rotatedAt')->gte($graceWindowStartedAt)
+            ->field('graceUsed')->equals(false)
+            ->field('revokedAt')->equals(null)
+            ->field('expiresAt')->gt($currentTime)
+            ->field('graceUsed')->set(true)
+            ->getQuery()
+            ->execute();
+
+        return $this->wasDocumentUpdated($result);
+    }
+
+    private function wasDocumentUpdated(mixed $result): bool
+    {
+        if ($result instanceof UpdateResult) {
+            return $result->getModifiedCount() > 0;
+        }
+
+        return is_int($result) && $result > 0;
     }
 }

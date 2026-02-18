@@ -6,8 +6,11 @@ namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\Shared\Infrastructure\Factory\UuidFactory as SharedUuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SignOutCommand;
+use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\DTO\SignOutDto;
 use App\User\Application\Processor\SignOutProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -16,7 +19,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 final class SignOutProcessorTest extends UnitTestCase
 {
@@ -44,7 +46,14 @@ final class SignOutProcessorTest extends UnitTestCase
         $operation = $this->createMock(Operation::class);
 
         $token = $this->createMock(TokenInterface::class);
-        $user = $this->createMock(UserInterface::class);
+        $uuidTransformer = new UuidTransformer(new SharedUuidFactory());
+        $user = new AuthorizationUserDto(
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $uuidTransformer->transformFromString($userId),
+            true
+        );
 
         $this->tokenStorage->expects($this->once())
             ->method('getToken')
@@ -58,10 +67,6 @@ final class SignOutProcessorTest extends UnitTestCase
             ->method('getAttribute')
             ->with('sid')
             ->willReturn($sessionId);
-
-        $token->expects($this->once())
-            ->method('getUserIdentifier')
-            ->willReturn($userId);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
@@ -142,7 +147,14 @@ final class SignOutProcessorTest extends UnitTestCase
         $dto = new SignOutDto();
         $operation = $this->createMock(Operation::class);
         $token = $this->createMock(TokenInterface::class);
-        $user = $this->createMock(UserInterface::class);
+        $uuidTransformer = new UuidTransformer(new SharedUuidFactory());
+        $user = new AuthorizationUserDto(
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $uuidTransformer->transformFromString($this->faker->uuid()),
+            true
+        );
 
         $this->tokenStorage->expects($this->once())
             ->method('getToken')

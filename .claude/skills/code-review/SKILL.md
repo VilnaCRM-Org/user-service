@@ -21,12 +21,15 @@ Systematically retrieve, categorize, and address all PR code review comments whi
 ## Workflow Overview
 
 ```mermaid
-PR Comments → Categorize → Apply by Priority → Verify → Run CI → Done
+AI Review Loop → PR Comments → Categorize → Apply by Priority → Verify → Run CI → Done
 ```
 
 ## Quick Start
 
 ```bash
+# 0. Run autonomous AI review + fix loop (Codex default, Claude optional)
+make ai-review-loop
+
 # 1. Get comments
 make pr-comments
 
@@ -43,6 +46,45 @@ make ci  # Must show "✅ CI checks successfully passed!"
 ```
 
 ## Execution Steps
+
+### Step 0: Run Autonomous AI Review Loop
+
+Before addressing PR comments manually, run the autonomous review loop:
+
+```bash
+make ai-review-loop
+```
+
+This executes `scripts/ai-review-loop.sh`, which:
+1. Runs an AI review agent against the current diff (base: `main` by default)
+2. If issues are found (`STATUS: FAIL`), runs a fix agent to auto-remediate
+3. Verifies fixes with `make ci`
+4. Repeats up to `AI_REVIEW_MAX_ITER` times (default: 3)
+
+**Configuration** (all overridable via environment):
+
+| Variable              | Default                              | Description                           |
+| --------------------- | ------------------------------------ | ------------------------------------- |
+| `AI_REVIEW_AGENTS`    | `codex`                              | Agent(s) to use (`codex`, `claude`)   |
+| `AI_REVIEW_BASE`      | `main`                               | Base branch for diff comparison       |
+| `AI_REVIEW_MAX_ITER`  | `3`                                  | Max review/fix iterations (0=∞)       |
+| `AI_REVIEW_VERIFY_CMD`| `make ci`                            | Verification command after each fix   |
+| `AI_REVIEW_LOG_DIR`   | `var/ai-review`                      | Directory for review/fix logs         |
+
+**Examples**:
+
+```bash
+# Use Claude instead of Codex
+AI_REVIEW_AGENTS=claude make ai-review-loop
+
+# Limit to 1 iteration, custom base branch
+AI_REVIEW_BASE=develop AI_REVIEW_MAX_ITER=1 make ai-review-loop
+
+# Run both agents
+AI_REVIEW_AGENTS=codex,claude make ai-review-loop
+```
+
+**Prompt templates**: `scripts/ai-review-prompts/review.md` (reviewer) and `scripts/ai-review-prompts/fix.md` (fixer).
 
 ### Step 1: Get PR Comments
 
@@ -146,6 +188,7 @@ make ci  # Must output "✅ CI checks successfully passed!"
 
 **NEVER**:
 
+- Skip the autonomous AI review loop (`make ai-review-loop`) without justification
 - Skip committable suggestions
 - Batch unrelated changes in one commit
 - Ignore LLM prompts from reviewers
@@ -157,6 +200,7 @@ make ci  # Must output "✅ CI checks successfully passed!"
 
 **ALWAYS**:
 
+- Run `make ai-review-loop` before manually addressing PR comments
 - Apply suggestions exactly as provided
 - Commit each suggestion separately with URL reference
 - Invoke `code-organization` skill for structural issues
@@ -186,6 +230,7 @@ Ref: https://github.com/owner/repo/pull/XX#discussion_rYYYYYYY
 
 ## Verification Checklist
 
+- [ ] Autonomous AI review loop run via `make ai-review-loop` (or skipped with justification)
 - [ ] All PR comments retrieved via `make pr-comments`
 - [ ] Comments categorized by type (suggestion/prompt/architecture/question/feedback)
 - [ ] Architecture verified using appropriate skills
