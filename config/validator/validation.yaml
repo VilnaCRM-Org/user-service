@@ -200,10 +200,12 @@ App\User\Application\DTO\SignInDto:
       - Email: { message: 'email.invalid' }
       - NotBlank: { message: 'not.blank' }
       - Length:
+          min: 1
           max: 255
     password:
       - NotBlank: { message: 'not.blank' }
       - Length:
+          min: 1
           max: 255
     rememberMe:
       - Type:
@@ -213,13 +215,19 @@ App\User\Application\DTO\RefreshTokenDto:
   properties:
     refreshToken:
       - NotBlank: { message: 'not.blank' }
+      - Length:
+          min: 1
 
 App\User\Application\DTO\CompleteTwoFactorDto:
   properties:
     pendingSessionId:
       - NotBlank: { message: 'not.blank' }
+      - Length:
+          min: 1
     twoFactorCode:
       - NotBlank: { message: 'not.blank' }
+      - Length:
+          min: 1
       - Regex:
           pattern: '/^\d{6}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$/'
           message: 'two.factor.code.invalid'

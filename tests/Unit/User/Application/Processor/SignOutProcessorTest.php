@@ -12,6 +12,7 @@ use App\User\Application\DTO\SignOutDto;
 use App\User\Application\Processor\SignOutProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -69,7 +70,11 @@ final class SignOutProcessorTest extends UnitTestCase
                     && $command->userId === $userId;
             }));
 
-        $this->processor->process($dto, $operation);
+        $response = $this->processor->process($dto, $operation);
+        $cookies = $response->headers->getCookies();
+        $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
+        $this->assertCount(1, $cookies);
+        $this->assertSame('__Host-auth_token', $cookies[0]->getName());
     }
 
     public function testProcessThrowsExceptionWhenNoToken(): void
@@ -128,6 +133,7 @@ final class SignOutProcessorTest extends UnitTestCase
         $this->assertNull($cookie->getDomain());
         $this->assertTrue($cookie->isSecure());
         $this->assertTrue($cookie->isHttpOnly());
+        $this->assertFalse($cookie->isRaw());
         $this->assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
     }
 

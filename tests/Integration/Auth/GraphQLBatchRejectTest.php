@@ -8,9 +8,6 @@ use App\Tests\Integration\IntegrationTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
-/**
- * @covers GraphQL batch request rejection
- */
 final class GraphQLBatchRejectTest extends IntegrationTestCase
 {
     /**

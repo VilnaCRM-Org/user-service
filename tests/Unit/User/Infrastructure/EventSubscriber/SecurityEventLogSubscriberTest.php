@@ -38,7 +38,8 @@ final class SecurityEventLogSubscriberTest extends UnitTestCase
                 $this->callback(static function ($context) use ($userId, $remainingCodes) {
                     return $context['event'] === 'user.recovery_code.used'
                         && $context['user_id'] === $userId
-                        && $context['remaining_count'] === $remainingCodes;
+                        && $context['remaining_count'] === $remainingCodes
+                        && isset($context['timestamp']);
                 })
             );
 
@@ -61,11 +62,21 @@ final class SecurityEventLogSubscriberTest extends UnitTestCase
                     return $context['event'] === 'user.account.locked_out'
                         && $context['email'] === $email
                         && $context['failed_attempts'] === $failedAttempts
-                        && $context['lockout_duration_seconds'] === $lockoutDuration;
+                        && $context['lockout_duration_seconds'] === $lockoutDuration
+                        && isset($context['timestamp']);
                 })
             );
 
         $this->subscriber->__invoke($event);
+    }
+
+    public function testInvokeIgnoresUnknownEvent(): void
+    {
+        $this->logger->expects($this->never())->method('info');
+        $this->logger->expects($this->never())->method('warning');
+        $this->logger->expects($this->never())->method('critical');
+
+        $this->subscriber->__invoke(new \stdClass());
     }
 
     public function testSubscribedToReturnsCorrectEvents(): void

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\EventListener;
 
+use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 use Symfony\Component\HttpFoundation\Request;
 
 /** @infection-ignore-all */
@@ -11,15 +13,18 @@ final readonly class ApiRateLimitClientIdentityResolver
 {
     private const AUTH_COOKIE_NAME = '__Host-auth_token';
     private const EMAIL_KEY = 'email';
+    private const JWT_ISSUER = 'vilnacrm-user-service';
+    private const JWT_AUDIENCE = 'vilnacrm-api';
     private const PENDING_SESSION_ID_KEYS = ['pendingSessionId', 'pending_session_id'];
+
+    public function __construct(
+        private ?JWTEncoderInterface $jwtEncoder = null
+    ) {
+    }
 
     public function isAuthenticatedRequest(Request $request): bool
     {
-        $authorizationHeader = $request->headers->get('Authorization');
-        $hasBearerToken = is_string($authorizationHeader)
-            && preg_match('/^Bearer\s+\S+/i', $authorizationHeader) === 1;
-
-        return $hasBearerToken || $request->cookies->has(self::AUTH_COOKIE_NAME);
+        return $this->resolveValidatedJwtPayload($request) !== null;
     }
 
     public function resolveClientId(Request $request): string
@@ -54,29 +59,14 @@ final readonly class ApiRateLimitClientIdentityResolver
 
     public function resolveUserSubject(Request $request): ?string
     {
-        $token = $this->resolveBearerToken($request);
-        if ($token === null) {
+        $payload = $this->resolveValidatedJwtPayload($request);
+        if ($payload === null) {
             return null;
         }
 
-        $parts = explode('.', $token);
-        if (count($parts) < 2) {
-            return null;
-        }
+        $subject = $payload['sub'] ?? null;
 
-        $payloadJson = $this->decodeBase64Url($parts[1]);
-        if (!is_string($payloadJson) || $payloadJson === '') {
-            return null;
-        }
-
-        $payload = json_decode($payloadJson, true);
-        if (!is_array($payload)) {
-            return null;
-        }
-
-        $sub = $payload['sub'] ?? null;
-
-        return is_string($sub) && $sub !== '' ? $sub : null;
+        return is_string($subject) ? $subject : null;
     }
 
     /**
@@ -120,9 +110,6 @@ final readonly class ApiRateLimitClientIdentityResolver
         array $keys
     ): ?string {
         parse_str($rawPayload, $formPayload);
-        if (!is_array($formPayload)) {
-            return null;
-        }
 
         return $this->findStringValue($formPayload, $keys);
     }
@@ -150,29 +137,20 @@ final readonly class ApiRateLimitClientIdentityResolver
             return null;
         }
 
-        $encodedCredentials = trim(substr($authorization, 6));
-        if ($encodedCredentials === '') {
+        $decoded = base64_decode(trim(substr($authorization, 6)), true);
+        if (!is_string($decoded) || $decoded === '') {
             return null;
         }
 
-        $decodedCredentials = base64_decode($encodedCredentials, true);
-        if (!is_string($decodedCredentials) || $decodedCredentials === '') {
-            return null;
-        }
-
-        $parts = explode(':', $decodedCredentials, 2);
-        $clientId = $parts[0] ?? '';
+        $clientId = explode(':', $decoded, 2)[0];
 
         return $clientId !== '' ? $clientId : null;
     }
 
     private function resolveBearerToken(Request $request): ?string
     {
-        $authorizationHeader = $request->headers->get('Authorization');
-        if (
-            is_string($authorizationHeader)
-            && preg_match('/^Bearer\s+(\S+)/i', $authorizationHeader, $matches) === 1
-        ) {
+        $header = (string) $request->headers->get('Authorization');
+        if (preg_match('/^Bearer\s+(\S+)/i', $header, $matches) === 1) {
             return $matches[1];
         }
 
@@ -184,15 +162,77 @@ final readonly class ApiRateLimitClientIdentityResolver
         return null;
     }
 
-    private function decodeBase64Url(string $value): string|false
+    /**
+     * @return array<string, array<int, string>|bool|float|int|string|null>|null
+     */
+    private function resolveValidatedJwtPayload(Request $request): ?array
     {
-        $paddedValue = str_pad(
-            strtr($value, '-_', '+/'),
-            strlen($value) + ((4 - strlen($value) % 4) % 4),
-            '=',
-            STR_PAD_RIGHT
-        );
+        if (!$this->jwtEncoder instanceof JWTEncoderInterface) {
+            return null;
+        }
 
-        return base64_decode($paddedValue, true);
+        $token = $this->resolveBearerToken($request);
+        if ($token === null) {
+            return null;
+        }
+
+        try {
+            $payload = $this->jwtEncoder->decode($token);
+        } catch (JWTDecodeFailureException) {
+            return null;
+        }
+
+        if (!is_array($payload)) {
+            return null;
+        }
+
+        return $this->hasExpectedClaims($payload) ? $payload : null;
+    }
+
+    /**
+     * @param array<string, array<int, string>|bool|float|int|string|null> $payload
+     */
+    private function hasExpectedClaims(array $payload): bool
+    {
+        if (!$this->hasExpectedIssuer($payload) || !$this->hasExpectedAudience($payload)) {
+            return false;
+        }
+
+        $subject = $payload['sub'] ?? null;
+        if (!is_string($subject) || $subject === '') {
+            return false;
+        }
+
+        $notBefore = $payload['nbf'] ?? null;
+        $expiresAt = $payload['exp'] ?? null;
+        if (!is_int($notBefore) || !is_int($expiresAt)) {
+            return false;
+        }
+
+        $now = time();
+
+        return $notBefore <= $now && $expiresAt > $now;
+    }
+
+    /**
+     * @param array<string, array<int, string>|bool|float|int|string|null> $payload
+     */
+    private function hasExpectedIssuer(array $payload): bool
+    {
+        return ($payload['iss'] ?? null) === self::JWT_ISSUER;
+    }
+
+    /**
+     * @param array<string, array<int, string>|bool|float|int|string|null> $payload
+     */
+    private function hasExpectedAudience(array $payload): bool
+    {
+        $audience = $payload['aud'] ?? null;
+
+        if (is_string($audience)) {
+            return $audience === self::JWT_AUDIENCE;
+        }
+
+        return is_array($audience) && in_array(self::JWT_AUDIENCE, $audience, true);
     }
 }

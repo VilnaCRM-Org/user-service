@@ -124,13 +124,14 @@ final class ParamUserEndpointFactory implements EndpointFactoryInterface
     /**
      * @return array<Response>
      *
-     * @psalm-return array{200: Response, 400: Response, 404: Response, 422: Response}
+     * @psalm-return array{200: Response, 400: Response, 401: Response, 404: Response, 422: Response}
      */
     private function userMutationResponses(): array
     {
         return [
             HttpResponse::HTTP_OK => $this->responseProvider->userUpdated(),
             HttpResponse::HTTP_BAD_REQUEST => $this->responseProvider->badRequest(),
+            HttpResponse::HTTP_UNAUTHORIZED => $this->responseProvider->unauthorized(),
             HttpResponse::HTTP_NOT_FOUND => $this->responseProvider->userNotFound(),
             HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $this->responseProvider->validationError(),
         ];
@@ -139,25 +140,27 @@ final class ParamUserEndpointFactory implements EndpointFactoryInterface
     /**
      * @return array<Response>
      *
-     * @psalm-return array{404: Response, 200: Response}
+     * @psalm-return array{200: Response, 401: Response, 404: Response}
      */
     private function userReadResponses(): array
     {
         return [
-            HttpResponse::HTTP_NOT_FOUND => $this->responseProvider->userNotFound(),
             HttpResponse::HTTP_OK => $this->responseProvider->userReturned(),
+            HttpResponse::HTTP_UNAUTHORIZED => $this->responseProvider->unauthorized(),
+            HttpResponse::HTTP_NOT_FOUND => $this->responseProvider->userNotFound(),
         ];
     }
 
     /**
      * @return array<Response>
      *
-     * @psalm-return array{204: Response, 404: Response}
+     * @psalm-return array{204: Response, 401: Response, 404: Response}
      */
     private function userDeleteResponses(): array
     {
         return [
             HttpResponse::HTTP_NO_CONTENT => $this->responseProvider->userDeleted(),
+            HttpResponse::HTTP_UNAUTHORIZED => $this->responseProvider->unauthorized(),
             HttpResponse::HTTP_NOT_FOUND => $this->responseProvider->userNotFound(),
         ];
     }

@@ -37,7 +37,8 @@ final class RefreshTokenEventLogSubscriberTest extends UnitTestCase
                 $this->callback(static function ($context) use ($sessionId) {
                     return $context['event'] === 'user.refresh_token.rotated'
                         && $context['session_id'] === $sessionId
-                        && $context['old_token_revoked'] === true;
+                        && $context['old_token_revoked'] === true
+                        && isset($context['timestamp']);
                 })
             );
 
@@ -60,11 +61,21 @@ final class RefreshTokenEventLogSubscriberTest extends UnitTestCase
                     return $context['event'] === 'user.refresh_token.theft_detected'
                         && $context['session_id'] === $sessionId
                         && $context['user_id'] === $userId
-                        && $context['ip_address'] === $ipAddress;
+                        && $context['ip_address'] === $ipAddress
+                        && isset($context['timestamp']);
                 })
             );
 
         $this->subscriber->__invoke($event);
+    }
+
+    public function testInvokeIgnoresUnknownEvent(): void
+    {
+        $this->logger->expects($this->never())->method('info');
+        $this->logger->expects($this->never())->method('warning');
+        $this->logger->expects($this->never())->method('critical');
+
+        $this->subscriber->__invoke(new \stdClass());
     }
 
     public function testSubscribedToReturnsCorrectEvents(): void

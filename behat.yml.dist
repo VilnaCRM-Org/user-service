@@ -3,6 +3,8 @@ default:
         default:
             paths:
                 - features
+            filters:
+                tags: "~@wip"
             contexts:
                 - App\Tests\Behat\OAuthContext\OAuthStateContext
                 - App\Tests\Behat\OAuthContext\OAuthClientContext

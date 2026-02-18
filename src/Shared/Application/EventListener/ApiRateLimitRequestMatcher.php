@@ -9,17 +9,33 @@ use Symfony\Component\HttpFoundation\Request;
 /** @infection-ignore-all */
 final readonly class ApiRateLimitRequestMatcher
 {
+    private const SCHEMATHESIS_HEADER_NAME = 'X-Schemathesis-Test';
+    private const SCHEMATHESIS_HEADER_VALUE = 'cleanup-users';
+
     public function __construct(
         private ApiRateLimitClientIdentityResolver $clientIdentityResolver =
             new ApiRateLimitClientIdentityResolver(),
         private ApiRateLimitAuthTargetResolver $authTargetResolver =
             new ApiRateLimitAuthTargetResolver(),
+        private string $appEnvironment = 'prod',
     ) {
     }
 
     public function supports(Request $request): bool
     {
-        return str_starts_with($request->getPathInfo(), '/api/');
+        if (!str_starts_with($request->getPathInfo(), '/api/')) {
+            return false;
+        }
+
+        if (
+            $this->appEnvironment !== 'prod'
+            && $request->headers->get(self::SCHEMATHESIS_HEADER_NAME)
+                === self::SCHEMATHESIS_HEADER_VALUE
+        ) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

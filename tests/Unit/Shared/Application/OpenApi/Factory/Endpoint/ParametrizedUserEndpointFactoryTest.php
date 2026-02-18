@@ -13,6 +13,7 @@ use App\Shared\Application\OpenApi\Factory\Endpoint\ParamUserEndpointFactory;
 use App\Shared\Application\OpenApi\Factory\Request\ReplaceUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Request\UpdateUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UnauthorizedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserDeletedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserNotFoundResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserReturnedResponseFactory;
@@ -26,6 +27,7 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
 {
     private ValidationErrorFactory $validationErrorResponseFactory;
     private BadRequestResponseFactory $badRequestResponseFactory;
+    private UnauthorizedResponseFactory $unauthorizedResponseFactory;
     private UserNotFoundResponseFactory $userNotFoundResponseFactory;
     private UserDeletedResponseFactory $userDeletedResponseFactory;
     private UuidUriParameterFactory $uuidUriParameterFactory;
@@ -57,6 +59,7 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
     {
         $this->validationErrorResponseFactory = $this->createMock(ValidationErrorFactory::class);
         $this->badRequestResponseFactory = $this->createMock(BadRequestResponseFactory::class);
+        $this->unauthorizedResponseFactory = $this->createMock(UnauthorizedResponseFactory::class);
         $this->userNotFoundResponseFactory = $this->createMock(UserNotFoundResponseFactory::class);
         $this->userDeletedResponseFactory = $this->createMock(UserDeletedResponseFactory::class);
         $this->uuidUriParameterFactory = $this->createMock(UuidUriParameterFactory::class);
@@ -78,6 +81,7 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
         $responseProvider = new ParamUserResponseProvider(
             $this->validationErrorResponseFactory,
             $this->badRequestResponseFactory,
+            $this->unauthorizedResponseFactory,
             $this->userNotFoundResponseFactory,
             $this->userDeletedResponseFactory,
             $this->userUpdatedResponseFactory,
@@ -107,6 +111,8 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
         $this->validationErrorResponseFactory->expects($this->once())
             ->method('getResponse')->willReturn($this->createMock(Response::class));
         $this->badRequestResponseFactory->expects($this->once())
+            ->method('getResponse')->willReturn($this->createMock(Response::class));
+        $this->unauthorizedResponseFactory->expects($this->once())
             ->method('getResponse')->willReturn($this->createMock(Response::class));
         $this->userNotFoundResponseFactory->expects($this->once())
             ->method('getResponse')->willReturn($this->createMock(Response::class));

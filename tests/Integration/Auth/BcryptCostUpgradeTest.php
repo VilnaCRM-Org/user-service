@@ -10,9 +10,6 @@ use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
-/**
- * @covers Bcrypt cost upgrade
- */
 final class BcryptCostUpgradeTest extends IntegrationTestCase
 {
     /**

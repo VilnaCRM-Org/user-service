@@ -167,9 +167,23 @@ final class SignInCommandHandlerTest extends UnitTestCase
         $this->eventBus
             ->expects($this->once())
             ->method('publish')
-            ->with($this->isInstanceOf(UserSignedInEvent::class));
+            ->with($this->callback(static function (UserSignedInEvent $event): bool {
+                return $event->twoFactorUsed === false;
+            }));
 
-        $handler = $this->createHandler();
+        $handler = new SignInCommandHandler(
+            $this->userRepository,
+            $this->authSessionRepository,
+            $this->authRefreshTokenRepository,
+            $this->pendingTwoFactorRepository,
+            $this->hasherFactory,
+            $this->lockoutService,
+            $this->accessTokenGenerator,
+            $this->eventBus,
+            $this->uuidFactory,
+            $this->ulidFactory,
+            dummyPasswordHash: $this->createDummyPasswordHash(),
+        );
         $command = new SignInCommand($email, $plainPassword, false, $ipAddress, $userAgent);
 
         $handler->__invoke($command);
@@ -240,7 +254,19 @@ final class SignInCommandHandlerTest extends UnitTestCase
             ->expects($this->never())
             ->method('generate');
 
-        $handler = $this->createHandler();
+        $handler = new SignInCommandHandler(
+            $this->userRepository,
+            $this->authSessionRepository,
+            $this->authRefreshTokenRepository,
+            $this->pendingTwoFactorRepository,
+            $this->hasherFactory,
+            $this->lockoutService,
+            $this->accessTokenGenerator,
+            $this->eventBus,
+            $this->uuidFactory,
+            $this->ulidFactory,
+            dummyPasswordHash: $this->createDummyPasswordHash(),
+        );
         $command = new SignInCommand(
             $email,
             $plainPassword,
@@ -342,7 +368,9 @@ final class SignInCommandHandlerTest extends UnitTestCase
         $this->eventBus
             ->expects($this->once())
             ->method('publish')
-            ->with($this->isInstanceOf(UserSignedInEvent::class));
+            ->with($this->callback(static function (UserSignedInEvent $event): bool {
+                return $event->twoFactorUsed === false;
+            }));
 
         $handler = $this->createHandler();
         $command = new SignInCommand($email, $plainPassword, true, $ipAddress, $userAgent);
@@ -423,7 +451,19 @@ final class SignInCommandHandlerTest extends UnitTestCase
             ->expects($this->never())
             ->method('publish');
 
-        $handler = $this->createHandler();
+        $handler = new SignInCommandHandler(
+            $this->userRepository,
+            $this->authSessionRepository,
+            $this->authRefreshTokenRepository,
+            $this->pendingTwoFactorRepository,
+            $this->hasherFactory,
+            $this->lockoutService,
+            $this->accessTokenGenerator,
+            $this->eventBus,
+            $this->uuidFactory,
+            $this->ulidFactory,
+            dummyPasswordHash: $this->createDummyPasswordHash(),
+        );
         $command = new SignInCommand(
             $email,
             $plainPassword,
@@ -469,7 +509,7 @@ final class SignInCommandHandlerTest extends UnitTestCase
             ->expects($this->once())
             ->method('verify')
             ->with(
-                $this->callback(static fn (string $dummyHash): bool => str_starts_with($dummyHash, '$2y$04$')),
+                $this->callback(static fn (string $dummyHash): bool => str_starts_with($dummyHash, '$2y$12$')),
                 $plainPassword
             )
             ->willReturn(false);
@@ -486,6 +526,80 @@ final class SignInCommandHandlerTest extends UnitTestCase
             ->with($this->isInstanceOf(SignInFailedEvent::class));
 
         $handler = $this->createHandler();
+        $command = new SignInCommand(
+            $email,
+            $plainPassword,
+            false,
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $handler->__invoke($command);
+    }
+
+    public function testInvokeBuildsDummyHashFromPasswordHasherWhenOverrideIsNotProvided(): void
+    {
+        $email = $this->faker->email();
+        $plainPassword = $this->faker->password();
+        $computedDummyHash = password_hash('signin-dummy-password', PASSWORD_BCRYPT, ['cost' => 12]);
+
+        $hasher = $this->createMock(PasswordHasherInterface::class);
+
+        $this->lockoutService
+            ->expects($this->once())
+            ->method('isLocked')
+            ->with($email)
+            ->willReturn(false);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn(null);
+
+        $this->hasherFactory
+            ->expects($this->exactly(2))
+            ->method('getPasswordHasher')
+            ->with(User::class)
+            ->willReturn($hasher);
+
+        $hasher
+            ->expects($this->once())
+            ->method('hash')
+            ->with('signin-dummy-password')
+            ->willReturn($computedDummyHash);
+
+        $hasher
+            ->expects($this->once())
+            ->method('verify')
+            ->with($computedDummyHash, $plainPassword)
+            ->willReturn(false);
+
+        $this->lockoutService
+            ->expects($this->once())
+            ->method('recordFailure')
+            ->with($email)
+            ->willReturn(false);
+
+        $this->eventBus
+            ->expects($this->once())
+            ->method('publish')
+            ->with($this->isInstanceOf(SignInFailedEvent::class));
+
+        $handler = new SignInCommandHandler(
+            $this->userRepository,
+            $this->authSessionRepository,
+            $this->authRefreshTokenRepository,
+            $this->pendingTwoFactorRepository,
+            $this->hasherFactory,
+            $this->lockoutService,
+            $this->accessTokenGenerator,
+            $this->eventBus,
+            $this->uuidFactory,
+            $this->ulidFactory,
+        );
+
         $command = new SignInCommand(
             $email,
             $plainPassword,
@@ -568,7 +682,7 @@ final class SignInCommandHandlerTest extends UnitTestCase
             );
             $this->assertNotNull($lockedOutEvent);
             $this->assertSame(900, $lockedOutEvent->lockoutDurationSeconds);
-            $this->assertSame(5, $lockedOutEvent->failedAttempts);
+            $this->assertSame(20, $lockedOutEvent->failedAttempts);
             $this->assertSame('Account temporarily locked', $exception->getMessage());
             $this->assertSame(0, $exception->getCode());
             $this->assertSame('900', $exception->getHeaders()['Retry-After'] ?? null);
@@ -598,7 +712,7 @@ final class SignInCommandHandlerTest extends UnitTestCase
             ->method('publish')
             ->with($this->callback(static function (AccountLockedOutEvent $event): bool {
                 return $event->lockoutDurationSeconds === 900
-                    && $event->failedAttempts === 5;
+                    && $event->failedAttempts === 20;
             }));
 
         $handler = $this->createHandler();
@@ -684,7 +798,9 @@ final class SignInCommandHandlerTest extends UnitTestCase
         $this->eventBus
             ->expects($this->once())
             ->method('publish')
-            ->with($this->isInstanceOf(UserSignedInEvent::class));
+            ->with($this->callback(static function (UserSignedInEvent $event): bool {
+                return $event->twoFactorUsed === false;
+            }));
 
         $handler = $this->createHandler();
         $handler->__invoke(
@@ -718,7 +834,15 @@ final class SignInCommandHandlerTest extends UnitTestCase
             $this->eventBus,
             $this->uuidFactory,
             $this->ulidFactory,
+            300,
+            'P1M',
+            $this->createDummyPasswordHash(),
         );
+    }
+
+    private function createDummyPasswordHash(): string
+    {
+        return password_hash('signin-dummy-password', PASSWORD_BCRYPT, ['cost' => 12]);
     }
 
     private function createUser(string $email, string $passwordHash): User

@@ -28,10 +28,6 @@ final class PaginationParameterSanitizer
 
     private function isPaginationQueryParameter(OpenApiParameter $parameter): bool
     {
-        if (!$parameter instanceof OpenApiParameter) {
-            return false;
-        }
-
         if ($parameter->getIn() !== 'query') {
             return false;
         }

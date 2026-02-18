@@ -9,6 +9,7 @@ use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Request\CreateUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UnauthorizedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserCreatedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UsersReturnedFactory;
 use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
@@ -20,6 +21,7 @@ final class UserEndpointFactory implements EndpointFactoryInterface
 
     private Response $validationErrorResponse;
     private Response $badRequestResponse;
+    private Response $unauthorizedResponse;
     private Response $userCreatedResponse;
     private RequestBody $createUserRequest;
     private Response $usersReturnedResponse;
@@ -28,6 +30,7 @@ final class UserEndpointFactory implements EndpointFactoryInterface
         string $apiPrefix,
         ValidationErrorFactory $validationErrorResponseFactory,
         BadRequestResponseFactory $badRequestResponseFactory,
+        UnauthorizedResponseFactory $unauthorizedResponseFactory,
         UserCreatedResponseFactory $userCreatedResponseFactory,
         CreateUserRequestFactory $createUserRequestFactory,
         UsersReturnedFactory $usersReturnedResponseFactory
@@ -36,6 +39,7 @@ final class UserEndpointFactory implements EndpointFactoryInterface
         $this->validationErrorResponse =
             $validationErrorResponseFactory->getResponse();
         $this->badRequestResponse = $badRequestResponseFactory->getResponse();
+        $this->unauthorizedResponse = $unauthorizedResponseFactory->getResponse();
         $this->userCreatedResponse = $userCreatedResponseFactory->getResponse();
         $this->createUserRequest = $createUserRequestFactory->getRequest();
         $this->usersReturnedResponse = $usersReturnedResponseFactory->getResponse();
@@ -77,13 +81,14 @@ final class UserEndpointFactory implements EndpointFactoryInterface
     /**
      * @return array<Response>
      *
-     * @psalm-return array{400: Response, 200: Response}
+     * @psalm-return array{200: Response, 400: Response, 401: Response}
      */
     private function getGetResponses(): array
     {
         return [
-            HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
             HttpResponse::HTTP_OK => $this->usersReturnedResponse,
+            HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
+            HttpResponse::HTTP_UNAUTHORIZED => $this->unauthorizedResponse,
         ];
     }
 }

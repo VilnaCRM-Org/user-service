@@ -42,7 +42,8 @@ final class TwoFactorEventLogSubscriberTest extends UnitTestCase
                     return $context['event'] === 'user.two_factor.completed'
                         && $context['user_id'] === $userId
                         && $context['session_id'] === $sessionId
-                        && $context['method'] === $method;
+                        && $context['method'] === $method
+                        && isset($context['timestamp']);
                 })
             );
 
@@ -65,7 +66,8 @@ final class TwoFactorEventLogSubscriberTest extends UnitTestCase
                     return $context['event'] === 'user.two_factor.failed'
                         && $context['pending_session_id'] === $pendingSessionId
                         && $context['ip_address'] === $ipAddress
-                        && $context['reason'] === $reason;
+                        && $context['reason'] === $reason
+                        && isset($context['timestamp']);
                 })
             );
 
@@ -86,7 +88,8 @@ final class TwoFactorEventLogSubscriberTest extends UnitTestCase
                 $this->callback(static function ($context) use ($userId, $email) {
                     return $context['event'] === 'user.two_factor.enabled'
                         && $context['user_id'] === $userId
-                        && $context['email'] === $email;
+                        && $context['email'] === $email
+                        && isset($context['timestamp']);
                 })
             );
 
@@ -105,11 +108,21 @@ final class TwoFactorEventLogSubscriberTest extends UnitTestCase
                 'Two-factor authentication disabled',
                 $this->callback(static function ($context) use ($userId) {
                     return $context['event'] === 'user.two_factor.disabled'
-                        && $context['user_id'] === $userId;
+                        && $context['user_id'] === $userId
+                        && isset($context['timestamp']);
                 })
             );
 
         $this->subscriber->__invoke($event);
+    }
+
+    public function testInvokeIgnoresUnknownEvent(): void
+    {
+        $this->logger->expects($this->never())->method('info');
+        $this->logger->expects($this->never())->method('warning');
+        $this->logger->expects($this->never())->method('critical');
+
+        $this->subscriber->__invoke(new \stdClass());
     }
 
     public function testSubscribedToReturnsCorrectEvents(): void

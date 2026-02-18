@@ -27,20 +27,7 @@ SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
 
 # Executables: vendors
-BEHAT         = ./vendor/bin/behat --stop-on-failure -n \
-	features/account_lockout.feature \
-	features/graphql_password_reset.feature \
-	features/health_check.feature \
-	features/oauth.feature \
-	features/password_reset.feature \
-	features/signin_story_1_1.feature \
-	features/signin_story_1_2.feature \
-	features/signin_story_2_1.feature \
-	features/signin_story_2_2.feature \
-	features/user_graphql_localization.feature \
-	features/user_graphql_operations.feature \
-	features/user_localization.feature \
-	features/user_operations.feature
+BEHAT         = ./vendor/bin/behat --stop-on-failure -n features
 PHPUNIT       = ./vendor/bin/phpunit
 PSALM         = ./vendor/bin/psalm
 PHP_CS_FIXER  = ./vendor/bin/php-cs-fixer
@@ -329,9 +316,11 @@ openapi-diff: generate-openapi-spec ## Compare the generated OpenAPI spec agains
 
 schemathesis-validate: reset-db generate-openapi-spec ## Validate the running API against the OpenAPI spec with Schemathesis
 	$(EXEC_PHP) bin/console app:seed-schemathesis-data
+	$(EXEC_PHP) bin/console cache:pool:clear cache.app
 	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'
 	$(EXEC_PHP) bin/console app:seed-schemathesis-data
-	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'
+	$(EXEC_PHP) bin/console cache:pool:clear cache.app
+	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage -n 1 --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'
 
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec

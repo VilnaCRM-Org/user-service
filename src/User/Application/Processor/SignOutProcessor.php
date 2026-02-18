@@ -15,7 +15,7 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
- * @implements ProcessorInterface<SignOutDto, void>
+ * @implements ProcessorInterface<SignOutDto, Response>
  */
 final readonly class SignOutProcessor implements ProcessorInterface
 {
@@ -36,7 +36,7 @@ final readonly class SignOutProcessor implements ProcessorInterface
         Operation $operation,
         array $uriVariables = [],
         array $context = []
-    ): void {
+    ): Response {
         // Extract session ID from JWT token
         $token = $this->tokenStorage->getToken();
         if ($token === null) {
@@ -59,8 +59,7 @@ final readonly class SignOutProcessor implements ProcessorInterface
         // Execute signout command
         $this->commandBus->dispatch(new SignOutCommand($sessionId, $userId));
 
-        // AC: FR-13 - Clear session cookie
-        $context['response'] = $this->createClearCookieResponse();
+        return $this->createClearCookieResponse();
     }
 
     private function createClearCookieResponse(): Response

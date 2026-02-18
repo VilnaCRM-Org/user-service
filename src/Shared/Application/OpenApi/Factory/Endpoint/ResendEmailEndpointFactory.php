@@ -10,6 +10,7 @@ use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Request\EmptyRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\EmailSendFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UnauthorizedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UnsupportedMediaTypeFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserNotFoundResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserTimedOutResponseFactory;
@@ -23,6 +24,7 @@ final class ResendEmailEndpointFactory implements EndpointFactoryInterface
     private Parameter $uuidWithExamplePathParam;
     private Response $sendAgainResponse;
     private Response $badRequestResponse;
+    private Response $unauthorizedResponse;
     private Response $userNotFoundResponse;
     private Response $timedOutResponse;
     private Response $unsupportedMediaResponse;
@@ -35,6 +37,7 @@ final class ResendEmailEndpointFactory implements EndpointFactoryInterface
         UserTimedOutResponseFactory $timedOutResponseFactory,
         UnsupportedMediaTypeFactory $unsupportedMediaTypeFactory,
         BadRequestResponseFactory $badRequestResponseFactory,
+        UnauthorizedResponseFactory $unauthorizedResponseFactory,
         EmptyRequestFactory $emptyRequestFactory,
         UuidUriParameterFactory $parameterFactory
     ) {
@@ -45,6 +48,8 @@ final class ResendEmailEndpointFactory implements EndpointFactoryInterface
             $sendAgainResponseFactory->getResponse();
         $this->badRequestResponse =
             $badRequestResponseFactory->getResponse();
+        $this->unauthorizedResponse =
+            $unauthorizedResponseFactory->getResponse();
         $this->userNotFoundResponse =
             $userNotFoundResponseFactory->getResponse();
         $this->timedOutResponse = $timedOutResponseFactory->getResponse();
@@ -76,7 +81,7 @@ final class ResendEmailEndpointFactory implements EndpointFactoryInterface
     /**
      * @return array<Response>
      *
-     * @psalm-return array{200: Response, 400: Response, 404: Response, 429: Response, 415: Response}
+     * @psalm-return array{200: Response, 400: Response, 401: Response, 404: Response, 429: Response, 415: Response}
      */
     private function getResponses(): array
     {
@@ -85,6 +90,7 @@ final class ResendEmailEndpointFactory implements EndpointFactoryInterface
         return [
             Http::HTTP_OK => $this->sendAgainResponse,
             Http::HTTP_BAD_REQUEST => $this->badRequestResponse,
+            Http::HTTP_UNAUTHORIZED => $this->unauthorizedResponse,
             Http::HTTP_NOT_FOUND => $this->userNotFoundResponse,
             Http::HTTP_TOO_MANY_REQUESTS => $this->timedOutResponse,
             Http::HTTP_UNSUPPORTED_MEDIA_TYPE => $unsupportedMediaResponse,

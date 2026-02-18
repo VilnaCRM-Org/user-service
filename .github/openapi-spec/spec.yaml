@@ -23,6 +23,8 @@ paths:
       responses:
         '200':
           description: 'Sign-in succeeded'
+        '400':
+          description: 'Invalid request payload'
         '401':
           description: 'Invalid credentials'
         '422':
@@ -73,6 +75,8 @@ paths:
       responses:
         '200':
           description: '2FA completed successfully'
+        '400':
+          description: 'Invalid request payload'
         '401':
           description: 'Invalid or expired 2FA session/code'
         '422':
@@ -115,6 +119,110 @@ paths:
             schema:
               $ref: '#/components/schemas/EmptyResponse.CompleteTwoFactorDto'
         required: true
+  /api/signout:
+    post:
+      operationId: signout_http
+      tags:
+        - Authentication
+      responses:
+        '204':
+          description: 'Signed out successfully'
+          content: {  }
+        '400':
+          description: 'Invalid request payload'
+        '401':
+          description: 'Authentication required'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Sign out (logout) from current session'
+      description: 'Revokes the current session and all associated refresh tokens, clears the session cookie.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SignOutDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SignOutDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SignOutDto'
+        required: true
+  /api/signout/all:
+    post:
+      operationId: signout_all_http
+      tags:
+        - Authentication
+      responses:
+        '204':
+          description: 'Signed out from all sessions successfully'
+          content: {  }
+        '400':
+          description: 'Invalid request payload'
+        '401':
+          description: 'Authentication required'
+        '422':
+          description: 'Validation error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Sign out from all sessions (all devices)'
+      description: 'Revokes all sessions and refresh tokens for the authenticated user, clears the session cookie.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SignOutAllDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SignOutAllDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.SignOutAllDto'
+        required: true
   /api/token:
     post:
       operationId: refresh_token_http
@@ -123,6 +231,8 @@ paths:
       responses:
         '200':
           description: 'Tokens refreshed successfully'
+        '400':
+          description: 'Invalid request payload'
         '401':
           description: 'Invalid, expired, or revoked refresh token'
         '422':
@@ -705,6 +815,23 @@ paths:
       tags:
         - User
       responses:
+        '200':
+          description: 'Users returned'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties: { confirmed: { type: boolean }, email: { type: string }, initials: { type: string }, id: { type: string } }
+                  required: [confirmed, email, initials, id]
+              example:
+                -
+                  confirmed: false
+                  email: user@example.com
+                  initials: 'Name Surname'
+                  id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
+          headers: {  }
         '400':
           description: 'Bad request'
           content:
@@ -727,22 +854,27 @@ paths:
                 detail: 'The input data is misformatted.'
                 status: 400
           headers: {  }
-        '200':
-          description: 'Users returned'
+        '401':
+          description: Unauthorized
           content:
-            application/json:
+            application/problem+json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties: { confirmed: { type: boolean }, email: { type: string }, initials: { type: string }, id: { type: string } }
-                  required: [confirmed, email, initials, id]
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  status: { type: integer }
+                  detail: { type: string }
+                required:
+                  - type
+                  - title
+                  - status
+                  - detail
               example:
-                -
-                  confirmed: false
-                  email: user@example.com
-                  initials: 'Name Surname'
-                  id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
+                type: 'about:blank'
+                title: Unauthorized
+                status: 401
+                detail: 'Authentication required.'
           headers: {  }
         '500':
           description: 'Internal server error'
@@ -971,6 +1103,28 @@ paths:
                 detail: 'The input data is misformatted.'
                 status: 400
           headers: {  }
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  status: { type: integer }
+                  detail: { type: string }
+                required:
+                  - type
+                  - title
+                  - status
+                  - detail
+              example:
+                type: 'about:blank'
+                title: Unauthorized
+                status: 401
+                detail: 'Authentication required.'
+          headers: {  }
         '422':
           description: 'Validation error'
           content:
@@ -1157,28 +1311,6 @@ paths:
       tags:
         - User
       responses:
-        '404':
-          description: 'User not found'
-          content:
-            application/problem+json:
-              schema:
-                type: object
-                properties:
-                  type: { type: string }
-                  title: { type: string }
-                  detail: { type: string }
-                  status: { type: integer }
-                required:
-                  - type
-                  - title
-                  - detail
-                  - status
-              example:
-                type: 'https://tools.ietf.org/html/rfc2616#section-10'
-                title: 'An error occurred'
-                detail: 'User not found'
-                status: 404
-          headers: {  }
         '200':
           description: 'User returned'
           content:
@@ -1200,6 +1332,50 @@ paths:
                 email: user@example.com
                 initials: 'Name Surname'
                 id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
+          headers: {  }
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  status: { type: integer }
+                  detail: { type: string }
+                required:
+                  - type
+                  - title
+                  - status
+                  - detail
+              example:
+                type: 'about:blank'
+                title: Unauthorized
+                status: 401
+                detail: 'Authentication required.'
+          headers: {  }
+        '404':
+          description: 'User not found'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'User not found'
+                status: 404
           headers: {  }
         '500':
           description: 'Internal server error'
@@ -1288,6 +1464,28 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
+          headers: {  }
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  status: { type: integer }
+                  detail: { type: string }
+                required:
+                  - type
+                  - title
+                  - status
+                  - detail
+              example:
+                type: 'about:blank'
+                title: Unauthorized
+                status: 401
+                detail: 'Authentication required.'
           headers: {  }
         '404':
           description: 'User not found'
@@ -1418,6 +1616,28 @@ paths:
           description: 'User resource deleted'
           content: {  }
           headers: {  }
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  status: { type: integer }
+                  detail: { type: string }
+                required:
+                  - type
+                  - title
+                  - status
+                  - detail
+              example:
+                type: 'about:blank'
+                title: Unauthorized
+                status: 401
+                detail: 'Authentication required.'
+          headers: {  }
         '404':
           description: 'User not found'
           content:
@@ -1527,6 +1747,28 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
+          headers: {  }
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  status: { type: integer }
+                  detail: { type: string }
+                required:
+                  - type
+                  - title
+                  - status
+                  - detail
+              example:
+                type: 'about:blank'
+                title: Unauthorized
+                status: 401
+                detail: 'Authentication required.'
           headers: {  }
         '404':
           description: 'User not found'
@@ -1678,6 +1920,28 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
+          headers: {  }
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  status: { type: integer }
+                  detail: { type: string }
+                required:
+                  - type
+                  - title
+                  - status
+                  - detail
+              example:
+                type: 'about:blank'
+                title: Unauthorized
+                status: 401
+                detail: 'Authentication required.'
           headers: {  }
         '404':
           description: 'User not found'
@@ -2000,8 +2264,10 @@ components:
         - twoFactorCode
       properties:
         pendingSessionId:
+          minLength: 1
           type: string
         twoFactorCode:
+          minLength: 1
           pattern: '^(.*(^\d{6}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$).*)$'
           type: string
     EmptyResponse.ConfirmPasswordResetDto:
@@ -2040,6 +2306,7 @@ components:
         - refreshToken
       properties:
         refreshToken:
+          minLength: 1
           type: string
     EmptyResponse.RegenerateRecoveryCodesDto:
       type: object
@@ -2064,15 +2331,21 @@ components:
       properties:
         email:
           format: email
+          minLength: 1
           maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
           type: string
         password:
+          minLength: 1
           maxLength: 255
           type: string
         rememberMe:
           type: boolean
+    EmptyResponse.SignOutAllDto:
+      type: object
+    EmptyResponse.SignOutDto:
+      type: object
     Error:
       type: object
       description: 'A representation of common errors.'

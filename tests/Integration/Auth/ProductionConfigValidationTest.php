@@ -6,9 +6,6 @@ namespace App\Tests\Integration\Auth;
 
 use App\Tests\Integration\IntegrationTestCase;
 
-/**
- * @covers Production configuration validation
- */
 final class ProductionConfigValidationTest extends IntegrationTestCase
 {
     /**

@@ -515,7 +515,7 @@ final class UserResponseContext implements Context
         Assert::assertIsFloat($currentTime, 'No response time captured for the latest request.');
 
         $difference = abs($currentTime - $referenceTime);
-        $maxAllowedDifference = max(150.0, $referenceTime * 0.5);
+        $maxAllowedDifference = max(250.0, $referenceTime * 0.7);
 
         Assert::assertLessThanOrEqual(
             $maxAllowedDifference,

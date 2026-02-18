@@ -19,17 +19,20 @@ final class UserBatchEndpointFactory implements EndpointFactoryInterface
     private Response $validationErrorResponse;
     private Response $usersCreatedResponse;
     private Response $badRequestResponse;
+    private Response $unauthorizedResponse;
     private RequestBody $batchRequest;
 
     public function __construct(
         string $apiPrefix,
         ResponseF\BadRequestResponseFactory $badRequestFactory,
+        ResponseF\UnauthorizedResponseFactory $unauthorizedFactory,
         ResponseF\ValidationErrorFactory $validationErrorFactory,
         ResponseF\UsersBatchCreatedResponseFactory $usersCreatedFactory,
         CreateBatchRequestFactory $batchRequestFactory
     ) {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
         $this->badRequestResponse = $badRequestFactory->getResponse();
+        $this->unauthorizedResponse = $unauthorizedFactory->getResponse();
         $this->validationErrorResponse = $validationErrorFactory->getResponse();
         $this->usersCreatedResponse = $usersCreatedFactory->getResponse();
         $this->batchRequest = $batchRequestFactory->getRequest();
@@ -56,7 +59,7 @@ final class UserBatchEndpointFactory implements EndpointFactoryInterface
     /**
      * @return array<Response>
      *
-     * @psalm-return array{201: Response, 400: Response, 422: Response}
+     * @psalm-return array{201: Response, 400: Response, 401: Response, 422: Response}
      */
     private function getPostResponses(): array
     {
@@ -64,6 +67,7 @@ final class UserBatchEndpointFactory implements EndpointFactoryInterface
         return [
             HttpResponse::HTTP_CREATED => $this->usersCreatedResponse,
             HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
+            HttpResponse::HTTP_UNAUTHORIZED => $this->unauthorizedResponse,
             HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $valResponse,
         ];
     }

@@ -37,7 +37,7 @@ use Symfony\Component\Uid\Factory\UuidFactory;
 final readonly class SignInCommandHandler implements CommandHandlerInterface
 {
     private const ACCESS_TOKEN_TTL_SECONDS = 900;
-    private const LOCKOUT_RETRY_AFTER_SECONDS = 900;
+    private const LOCKOUT_RETRY_AFTER_SECONDS = AccountLockoutServiceInterface::LOCKOUT_SECONDS;
     private const STANDARD_SESSION_TTL_SECONDS = 900;
     private const REMEMBER_ME_SESSION_TTL_SECONDS = 2592000;
     private const JWT_ISSUER = 'vilnacrm-user-service';
@@ -45,8 +45,6 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
     private const LOCKOUT_MESSAGE = 'Account temporarily locked';
 
     private const DUMMY_PASSWORD = 'signin-dummy-password';
-    private const DUMMY_BCRYPT_COST = 4;
-
     private string $dummyPasswordHash;
     private DateInterval $refreshTokenTtl;
 
@@ -63,12 +61,9 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
         private UlidFactory $ulidFactory,
         private int $pendingTwoFactorTtlSeconds = 300,
         string $refreshTokenTtlSpec = 'P1M',
+        ?string $dummyPasswordHash = null,
     ) {
-        $this->dummyPasswordHash = password_hash(
-            self::DUMMY_PASSWORD,
-            PASSWORD_BCRYPT,
-            ['cost' => self::DUMMY_BCRYPT_COST]
-        );
+        $this->dummyPasswordHash = $this->resolveDummyPasswordHash($dummyPasswordHash);
 
         $this->refreshTokenTtl = new DateInterval($refreshTokenTtlSpec);
     }
@@ -203,8 +198,8 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
     private function publishAccountLockedOutEvent(string $email): void
     {
         // AC: NFR-33 - Audit logging with lockout details
-        $failedAttempts = 5;
-        $lockoutDurationSeconds = 900;
+        $failedAttempts = AccountLockoutServiceInterface::MAX_ATTEMPTS;
+        $lockoutDurationSeconds = AccountLockoutServiceInterface::LOCKOUT_SECONDS;
 
         $this->eventBus->publish(
             new AccountLockedOutEvent(
@@ -235,6 +230,17 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
         $user = $this->userRepository->findByEmail($email);
 
         return $user instanceof User ? $user : null;
+    }
+
+    private function resolveDummyPasswordHash(?string $dummyPasswordHash): string
+    {
+        if (is_string($dummyPasswordHash) && $dummyPasswordHash !== '') {
+            return $dummyPasswordHash;
+        }
+
+        $hasher = $this->hasherFactory->getPasswordHasher(User::class);
+
+        return $hasher->hash(self::DUMMY_PASSWORD);
     }
 
     private function createAuthSession(

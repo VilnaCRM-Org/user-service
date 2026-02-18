@@ -7,6 +7,7 @@ namespace App\Shared\Application\Provider\OpenApi;
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Application\OpenApi\Factory\Response\AbstractResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UnauthorizedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserDeletedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserNotFoundResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserReturnedResponseFactory;
@@ -21,6 +22,7 @@ final class ParamUserResponseProvider
     public function __construct(
         private ValidationErrorFactory $validationErrorResponseFactory,
         private BadRequestResponseFactory $badRequestResponseFactory,
+        private UnauthorizedResponseFactory $unauthorizedResponseFactory,
         private UserNotFoundResponseFactory $userNotFoundResponseFactory,
         private UserDeletedResponseFactory $deletedResponseFactory,
         private UserUpdatedResponseFactory $userUpdatedResponseFactory,
@@ -49,6 +51,14 @@ final class ParamUserResponseProvider
         return $this->getCachedResponse(
             'validationError',
             $this->validationErrorResponseFactory
+        );
+    }
+
+    public function unauthorized(): Response
+    {
+        return $this->getCachedResponse(
+            'unauthorized',
+            $this->unauthorizedResponseFactory
         );
     }
 

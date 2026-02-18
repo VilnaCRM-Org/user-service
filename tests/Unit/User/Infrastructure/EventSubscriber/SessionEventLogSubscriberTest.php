@@ -40,7 +40,8 @@ final class SessionEventLogSubscriberTest extends UnitTestCase
                     return $context['event'] === 'user.session.revoked'
                         && $context['user_id'] === $userId
                         && $context['session_id'] === $sessionId
-                        && $context['reason'] === $reason;
+                        && $context['reason'] === $reason
+                        && isset($context['timestamp']);
                 })
             );
 
@@ -62,11 +63,21 @@ final class SessionEventLogSubscriberTest extends UnitTestCase
                 $this->callback(static function ($context) use ($userId, $reason) {
                     return $context['event'] === 'user.sessions.all_revoked'
                         && $context['user_id'] === $userId
-                        && $context['reason'] === $reason;
+                        && $context['reason'] === $reason
+                        && isset($context['timestamp']);
                 })
             );
 
         $this->subscriber->__invoke($event);
+    }
+
+    public function testInvokeIgnoresUnknownEvent(): void
+    {
+        $this->logger->expects($this->never())->method('info');
+        $this->logger->expects($this->never())->method('warning');
+        $this->logger->expects($this->never())->method('critical');
+
+        $this->subscriber->__invoke(new \stdClass());
     }
 
     public function testSubscribedToReturnsCorrectEvents(): void

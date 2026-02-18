@@ -51,6 +51,21 @@ final class RouteAccessControlIntegrationTest extends IntegrationTestCase
         '#^/api/\{index\}#',
     ];
 
+    #[\Override]
+    protected function tearDown(): void
+    {
+        $userRepository = $this->container->get(UserRepositoryInterface::class);
+
+        foreach (['batch-403-test@example.test', 'batch-enum-test@test.com'] as $email) {
+            $user = $userRepository->findByEmail($email);
+            if ($user !== null) {
+                $userRepository->delete($user);
+            }
+        }
+
+        parent::tearDown();
+    }
+
     /**
      * @dataProvider protectedRouteProvider
      */

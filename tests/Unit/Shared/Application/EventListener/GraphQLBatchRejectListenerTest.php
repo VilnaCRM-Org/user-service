@@ -56,6 +56,7 @@ final class GraphQLBatchRejectListenerTest extends TestCase
         $this->assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
 
         $data = json_decode($response->getContent(), true);
+        $this->assertSame('about:blank', $data['type'] ?? null);
         $this->assertStringContainsString('batch', strtolower($data['detail'] ?? ''));
     }
 
@@ -150,6 +151,59 @@ final class GraphQLBatchRejectListenerTest extends TestCase
             [],
             ['CONTENT_TYPE' => 'application/json'],
             ''
+        );
+
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        ($this->listener)($event);
+
+        $this->assertFalse($event->hasResponse());
+    }
+
+    public function testRejectsBatchRequestAtMaxJsonDepth(): void
+    {
+        // 511-level deep nested list: json_decode with depth=512 succeeds (512 handles up to 511 levels)
+        $deepJson = str_repeat('[', 511) . str_repeat(']', 511);
+
+        $request = Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $deepJson
+        );
+
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        ($this->listener)($event);
+
+        $this->assertTrue($event->hasResponse());
+        $this->assertSame(Response::HTTP_BAD_REQUEST, $event->getResponse()->getStatusCode());
+    }
+
+    public function testIgnoresTooDeepJson(): void
+    {
+        // 512-level deep nested list: json_decode with depth=512 throws JsonException → ignored
+        $tooDeepJson = str_repeat('[', 512) . str_repeat(']', 512);
+
+        $request = Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $tooDeepJson
         );
 
         $event = new RequestEvent(

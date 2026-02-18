@@ -6,15 +6,20 @@ namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\Shared\Infrastructure\Factory\UuidFactory;
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SignOutAllCommand;
+use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\DTO\SignOutAllDto;
 use App\User\Application\Processor\SignOutAllProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 final class SignOutAllProcessorTest extends UnitTestCase
 {
@@ -37,18 +42,14 @@ final class SignOutAllProcessorTest extends UnitTestCase
     public function testProcessDispatchesSignOutAllCommand(): void
     {
         $userId = $this->faker->uuid();
+        $userEmail = $this->faker->email();
         $dto = new SignOutAllDto();
         $operation = $this->createMock(Operation::class);
-
-        $token = $this->createMock(TokenInterface::class);
+        $token = $this->createAuthToken($userId, $userEmail);
 
         $this->tokenStorage->expects($this->once())
             ->method('getToken')
             ->willReturn($token);
-
-        $token->expects($this->once())
-            ->method('getUserIdentifier')
-            ->willReturn($userId);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
@@ -56,18 +57,18 @@ final class SignOutAllProcessorTest extends UnitTestCase
                 return $command->userId === $userId;
             }));
 
-        $this->processor->process($dto, $operation);
+        $response = $this->processor->process($dto, $operation);
+
+        $cookies = $response->headers->getCookies();
+        $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
+        $this->assertCount(1, $cookies);
+        $this->assertSame('__Host-auth_token', $cookies[0]->getName());
     }
 
     public function testClearCookieHasCorrectAttributes(): void
     {
-        $processor = new SignOutAllProcessor(
-            $this->commandBus,
-            $this->tokenStorage
-        );
-
         $reflection = new \ReflectionMethod(SignOutAllProcessor::class, 'createClearCookieResponse');
-        $response = $reflection->invoke($processor);
+        $response = $reflection->invoke($this->processor);
 
         $cookies = $response->headers->getCookies();
         $this->assertCount(1, $cookies);
@@ -80,6 +81,7 @@ final class SignOutAllProcessorTest extends UnitTestCase
         $this->assertNull($cookie->getDomain());
         $this->assertTrue($cookie->isSecure());
         $this->assertTrue($cookie->isHttpOnly());
+        $this->assertFalse($cookie->isRaw());
         $this->assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
     }
 
@@ -96,5 +98,39 @@ final class SignOutAllProcessorTest extends UnitTestCase
         $this->expectExceptionMessage('Authentication required');
 
         $this->processor->process($dto, $operation);
+    }
+
+    public function testProcessThrowsExceptionWhenTokenUserIsInvalid(): void
+    {
+        $dto = new SignOutAllDto();
+        $operation = $this->createMock(Operation::class);
+        $token = $this->createMock(TokenInterface::class);
+
+        $this->tokenStorage->expects($this->once())
+            ->method('getToken')
+            ->willReturn($token);
+
+        $token->expects($this->once())
+            ->method('getUser')
+            ->willReturn($this->createMock(\Symfony\Component\Security\Core\User\UserInterface::class));
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Invalid token');
+
+        $this->processor->process($dto, $operation);
+    }
+
+    private function createAuthToken(string $userId, string $userEmail): UsernamePasswordToken
+    {
+        $uuidTransformer = new UuidTransformer(new UuidFactory());
+        $authorizationUser = new AuthorizationUserDto(
+            $userEmail,
+            $this->faker->name(),
+            $this->faker->password(),
+            $uuidTransformer->transformFromString($userId),
+            true
+        );
+
+        return new UsernamePasswordToken($authorizationUser, 'api', []);
     }
 }

@@ -1561,6 +1561,8 @@ so that key compromise and rate limit bypass attacks are prevented.
 - 2026-02-13: Implemented Story 5.8 — JWT key permissions, GraphQL batch defense, transport hardening
 - 2026-02-13: Fixed Deptrac violation — replaced PSR EventDispatcherInterface with EventBusInterface in SignOut handlers
 - 2026-02-13: Fixed PHPInsights quality scores to maintain 100/100/100/100 thresholds
+- 2026-02-17: PR stop-point finalized per BMAD dev-story flow — current PR scope closed at Story 5.8; Stories 5.5/5.6/5.7/6.1/6.2/6.3 explicitly deferred to follow-up PR
+- 2026-02-17: Final verification for stop-point completed — `make ci` passed locally (`✅ CI checks successfully passed!`); PR #249 status reviewed (remote checks/review decision are from older runs and need refreshed push/re-run)
 
 ---
 
@@ -1862,3 +1864,5 @@ Claude Opus 4.6
 - 2026-02-10: Story 1.2 completed by extending sign-in 2FA branching to persist `PendingTwoFactor` and return `pending_session_id`, adding configurable TTL via `PENDING_2FA_TTL_SECONDS` (default `300`), and validating behavior with unit + Behat coverage (`features/signin_story_1_2.feature`).
 - 2026-02-10: Story 2.1 completed with `/api/signin/2fa` DTO/processor/handler flow, TOTP verifier (+/- 1 window), recovery-code path support (`xxxx-xxxx`) in command handler, and verification via `make unit-tests`, `make integration-tests`, and focused Behat scenario `features/signin_story_2_1.feature`.
 - 2026-02-12: Story 4.4 completed by disabling OAuth password grant (`enable_password_grant: false`), removing `UserResolveListener` service wiring, adding integration coverage (`DisablePasswordGrantIntegrationTest`), and updating OAuth Behat password-grant expectations to `unsupported_grant_type`.
+- 2026-02-17: Story execution stop-point validated with BMAD dev-story logic — implementation scope for this PR finalized through Story 5.8; Stories 5.5/5.6/5.7/6.1/6.2/6.3 remain ready-for-dev for a separate follow-up PR.
+- 2026-02-17: Local completion gate re-run succeeded (`make ci`); PR #249 currently shows `CHANGES_REQUESTED` with outdated failing checks from 2026-02-12 and should be refreshed after pushing latest branch state.

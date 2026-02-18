@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\EventListener;
 
+use App\Shared\Application\EventListener\ApiRateLimitAuthTargetResolver;
+use App\Shared\Application\EventListener\ApiRateLimitClientIdentityResolver;
 use App\Shared\Application\EventListener\ApiRateLimitListener;
+use App\Shared\Application\EventListener\ApiRateLimitRequestMatcher;
 use App\Tests\Unit\UnitTestCase;
 use DateTimeImmutable;
+use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -92,20 +96,21 @@ final class ApiRateLimitListenerTest extends UnitTestCase
 
     public function testUsesAuthenticatedGlobalLimiterForBearerRequests(): void
     {
+        $token = 'valid-auth-jwt';
         $globalLimiter = $this->createLimiterFactoryMock(
             expectedKey: 'ip:127.0.0.1',
             accepted: true
         );
 
-        $listener = new ApiRateLimitListener([
+        $listener = $this->createListenerWithValidatedToken([
             'global_api_authenticated' => $globalLimiter,
-        ]);
+        ], $token, $this->createValidJwtPayload($this->faker->uuid()));
         $event = $this->createRequestEvent(
             '/api/health',
             'GET',
             HttpKernelInterface::MAIN_REQUEST,
             [
-                'HTTP_AUTHORIZATION' => 'Bearer some-jwt',
+                'HTTP_AUTHORIZATION' => sprintf('Bearer %s', $token),
             ]
         );
 
@@ -116,6 +121,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
 
     public function testUsesUserSpecificKeyForUserUpdate(): void
     {
+        $token = 'valid-update-jwt';
         $userId = '8be90127-9840-4235-a6da-39b8debfb260';
         $userLimiter = $this->createLimiterFactoryMock(
             expectedKey: sprintf('user:%s', $userId),
@@ -126,16 +132,16 @@ final class ApiRateLimitListenerTest extends UnitTestCase
             accepted: true
         );
 
-        $listener = new ApiRateLimitListener([
+        $listener = $this->createListenerWithValidatedToken([
             'user_update' => $userLimiter,
             'global_api_authenticated' => $globalLimiter,
-        ]);
+        ], $token, $this->createValidJwtPayload($userId));
         $event = $this->createRequestEvent(
             sprintf('/api/users/%s', $userId),
             'PATCH',
             HttpKernelInterface::MAIN_REQUEST,
             [
-                'HTTP_AUTHORIZATION' => 'Bearer some-jwt',
+                'HTTP_AUTHORIZATION' => sprintf('Bearer %s', $token),
             ]
         );
 
@@ -183,6 +189,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
 
     public function testUsesTokenSubjectForTwoFactorSetupLimiter(): void
     {
+        $token = 'valid-twofa-jwt';
         $userId = '8be90127-9840-4235-a6da-39b8debfb260';
         $twoFactorSetupLimiter = $this->createLimiterFactoryMock(
             expectedKey: sprintf('user:%s', $userId),
@@ -193,16 +200,40 @@ final class ApiRateLimitListenerTest extends UnitTestCase
             accepted: true
         );
 
-        $listener = new ApiRateLimitListener([
+        $listener = $this->createListenerWithValidatedToken([
             'twofa_setup' => $twoFactorSetupLimiter,
             'global_api_authenticated' => $globalLimiter,
-        ]);
+        ], $token, $this->createValidJwtPayload($userId));
         $event = $this->createRequestEvent(
             '/api/users/2fa/setup',
             'POST',
             HttpKernelInterface::MAIN_REQUEST,
             [
-                'HTTP_AUTHORIZATION' => sprintf('Bearer %s', $this->createJwt($userId)),
+                'HTTP_AUTHORIZATION' => sprintf('Bearer %s', $token),
+            ]
+        );
+
+        $listener($event);
+
+        $this->assertFalse($event->hasResponse());
+    }
+
+    public function testUsesAnonymousGlobalLimiterForInvalidBearerRequests(): void
+    {
+        $globalLimiter = $this->createLimiterFactoryMock(
+            expectedKey: 'ip:127.0.0.1',
+            accepted: true
+        );
+
+        $listener = new ApiRateLimitListener([
+            'global_api_anonymous' => $globalLimiter,
+        ]);
+        $event = $this->createRequestEvent(
+            '/api/health',
+            'GET',
+            HttpKernelInterface::MAIN_REQUEST,
+            [
+                'HTTP_AUTHORIZATION' => 'Bearer invalid-token',
             ]
         );
 
@@ -236,23 +267,6 @@ final class ApiRateLimitListenerTest extends UnitTestCase
             $request,
             $requestType
         );
-    }
-
-    private function createJwt(string $sub): string
-    {
-        $header = $this->encodeBase64Url(
-            json_encode(['alg' => 'RS256', 'typ' => 'JWT'], JSON_THROW_ON_ERROR)
-        );
-        $payload = $this->encodeBase64Url(
-            json_encode(['sub' => $sub], JSON_THROW_ON_ERROR)
-        );
-
-        return sprintf('%s.%s.signature', $header, $payload);
-    }
-
-    private function encodeBase64Url(string $value): string
-    {
-        return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
     }
 
     private function createNeverCalledFactory(): RateLimiterFactory&MockObject
@@ -296,5 +310,60 @@ final class ApiRateLimitListenerTest extends UnitTestCase
             ->willReturn($retryAfter ?? new DateTimeImmutable('+1 second'));
 
         return $factory;
+    }
+
+    /**
+     * @param array<string, RateLimiterFactory> $limiterFactories
+     * @param array<string, array<int, string>|bool|float|int|string|null> $payload
+     */
+    private function createListenerWithValidatedToken(
+        array $limiterFactories,
+        string $token,
+        array $payload
+    ): ApiRateLimitListener {
+        $jwtEncoder = $this->createMock(JWTEncoderInterface::class);
+        $jwtEncoder
+            ->method('decode')
+            ->willReturnCallback(
+                /**
+                 * @return array<string, array<int, string>|bool|float|int|string|null>|false
+                 */
+                static function (string $candidateToken) use ($token, $payload) {
+                    if ($candidateToken === $token) {
+                        return $payload;
+                    }
+
+                    return false;
+                }
+            );
+
+        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($jwtEncoder);
+        $authTargetResolver = new ApiRateLimitAuthTargetResolver(
+            null,
+            $clientIdentityResolver
+        );
+        $requestMatcher = new ApiRateLimitRequestMatcher(
+            $clientIdentityResolver,
+            $authTargetResolver
+        );
+
+        return new ApiRateLimitListener($limiterFactories, $requestMatcher);
+    }
+
+    /**
+     * @return array<string, array<int, string>|bool|float|int|string|null>
+     */
+    private function createValidJwtPayload(string $subject): array
+    {
+        $now = time();
+
+        return [
+            'sub' => $subject,
+            'iss' => 'vilnacrm-user-service',
+            'aud' => 'vilnacrm-api',
+            'nbf' => $now - 1,
+            'exp' => $now + 60,
+            'roles' => ['ROLE_USER'],
+        ];
     }
 }

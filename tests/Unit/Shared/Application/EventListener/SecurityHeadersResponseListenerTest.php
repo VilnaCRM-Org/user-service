@@ -41,6 +41,30 @@ final class SecurityHeadersResponseListenerTest extends UnitTestCase
         );
     }
 
+    public function testSetsCacheControlNoStoreOnMainRequest(): void
+    {
+        $listener = new SecurityHeadersResponseListener();
+        $event = $this->createResponseEvent(HttpKernelInterface::MAIN_REQUEST);
+
+        $listener($event);
+
+        $cacheControl = $event->getResponse()->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-store', $cacheControl);
+    }
+
+    public function testRemovesCacheRelatedHeadersOnMainRequest(): void
+    {
+        $listener = new SecurityHeadersResponseListener();
+        $event = $this->createResponseEvent(HttpKernelInterface::MAIN_REQUEST);
+        $event->getResponse()->headers->set('ETag', '"abc123"');
+        $event->getResponse()->headers->set('Last-Modified', 'Mon, 01 Jan 2024 00:00:00 GMT');
+
+        $listener($event);
+
+        $this->assertFalse($event->getResponse()->headers->has('ETag'));
+        $this->assertFalse($event->getResponse()->headers->has('Last-Modified'));
+    }
+
     public function testRemovesServerHeaderOnMainRequest(): void
     {
         $listener = new SecurityHeadersResponseListener();

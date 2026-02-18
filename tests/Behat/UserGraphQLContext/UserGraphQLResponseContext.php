@@ -172,17 +172,40 @@ final class UserGraphQLResponseContext implements Context
         $this->assertGraphQlErrorContains('complexity');
     }
 
-    private function extractMutationUserData(): string|bool|int|null
+    /**
+     * @return array<string, bool|int|string|null>
+     */
+    private function extractMutationUserData(): array
     {
         $data = $this->parseAndValidateResponse();
         $this->assertQueryNameExists($data);
+        $mutationData = $data['data'][$this->state->getQueryName()];
+        Assert::assertIsArray(
+            $mutationData,
+            sprintf(
+                'Expected "%s" GraphQL data node to be an object.',
+                $this->state->getQueryName()
+            )
+        );
+
         $msg = 'Missing "user" in GraphQL data node.';
-        Assert::assertArrayHasKey('user', $data['data'][$this->state->getQueryName()], $msg);
-        return $data['data'][$this->state->getQueryName()]['user'];
+        Assert::assertArrayHasKey('user', $mutationData, $msg);
+        $userData = $mutationData['user'];
+        Assert::assertIsArray(
+            $userData,
+            'Expected "user" to be an object in GraphQL mutation response.'
+        );
+
+        return $userData;
     }
 
     /**
-     * @return array<string, array<string, array<string, string|bool|int|null>|null>>
+     * @return array{
+     *     data: array<
+     *         string,
+     *         array<string, array<string, bool|int|string|null>|bool|int|string|null>|null
+     *     >
+     * }
      */
     private function parseAndValidateResponse(): array
     {
@@ -200,7 +223,12 @@ final class UserGraphQLResponseContext implements Context
     }
 
     /**
-     * @param array<string, array<string, array<string, string|bool|int|null>>> $data
+     * @param array{
+     *     data: array<
+     *         string,
+     *         array<string, array<string, bool|int|string|null>|bool|int|string|null>|null
+     *     >
+     * } $data
      */
     private function assertQueryNameExists(array $data): void
     {
@@ -212,15 +240,42 @@ final class UserGraphQLResponseContext implements Context
     }
 
     /**
-     * @return array<bool|int|string|null>|null
-     *
-     * @psalm-return array<string, bool|int|string|null>|null
+     * @return array<string, bool|int|string|null>|null
      */
     private function extractQueryUserData(): ?array
     {
         $data = $this->parseAndValidateResponse();
         $this->assertQueryNameExists($data);
-        return $data['data'][$this->state->getQueryName()];
+        $queryData = $data['data'][$this->state->getQueryName()];
+        if ($queryData === null) {
+            return null;
+        }
+
+        Assert::assertIsArray(
+            $queryData,
+            sprintf(
+                'Expected "%s" GraphQL data node to be an object or null.',
+                $this->state->getQueryName()
+            )
+        );
+
+        $scalarQueryData = [];
+        foreach ($queryData as $fieldName => $fieldValue) {
+            Assert::assertIsString($fieldName);
+            $isScalarValue = is_string($fieldValue)
+                || is_bool($fieldValue)
+                || is_int($fieldValue)
+                || $fieldValue === null;
+
+            Assert::assertTrue(
+                $isScalarValue,
+                sprintf('Expected "%s" query field to be scalar or null.', $fieldName)
+            );
+
+            $scalarQueryData[$fieldName] = $fieldValue;
+        }
+
+        return $scalarQueryData;
     }
 
     /**

@@ -6,9 +6,6 @@ namespace App\Tests\Integration\Auth;
 
 use App\Tests\Integration\IntegrationTestCase;
 
-/**
- * @covers JWT key file permissions
- */
 final class JwtKeyPermissionsTest extends IntegrationTestCase
 {
     private const PRIVATE_KEY_PATH = __DIR__ . '/../../../config/jwt/private.pem';

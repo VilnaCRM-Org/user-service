@@ -56,10 +56,6 @@ final readonly class GraphQLBatchRejectListener
 
     private function isBatchRequest(string $content): bool
     {
-        if ($content === '') {
-            return false;
-        }
-
         try {
             $decoded = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
         } catch (\JsonException) {

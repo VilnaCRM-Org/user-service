@@ -29,6 +29,8 @@ resources:
           responses:
             200:
               description: 'Tokens refreshed successfully'
+            400:
+              description: 'Invalid request payload'
             401:
               description: 'Invalid, expired, or revoked refresh token'
             422:
@@ -50,6 +52,8 @@ resources:
           responses:
             200:
               description: 'Sign-in succeeded'
+            400:
+              description: 'Invalid request payload'
             401:
               description: 'Invalid credentials'
             422:
@@ -71,6 +75,8 @@ resources:
           responses:
             200:
               description: '2FA completed successfully'
+            400:
+              description: 'Invalid request payload'
             401:
               description: 'Invalid or expired 2FA session/code'
             422:
@@ -228,6 +234,8 @@ resources:
           responses:
             204:
               description: 'Signed out successfully'
+            400:
+              description: 'Invalid request payload'
             401:
               description: 'Authentication required'
       signout_all_http:
@@ -247,10 +255,10 @@ resources:
             - 'Authentication'
           responses:
             204:
-              description: 'Password reset confirmed'
+              description: 'Signed out from all sessions successfully'
             400:
-              description: 'Invalid or expired password reset token'
-            404:
-              description: 'Password reset token not found'
+              description: 'Invalid request payload'
+            401:
+              description: 'Authentication required'
             422:
               description: 'Validation error'

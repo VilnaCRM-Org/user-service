@@ -80,6 +80,15 @@ final class SignInEventLogSubscriberTest extends UnitTestCase
         $this->subscriber->__invoke($event);
     }
 
+    public function testInvokeIgnoresUnknownEvent(): void
+    {
+        $this->logger->expects($this->never())->method('info');
+        $this->logger->expects($this->never())->method('warning');
+        $this->logger->expects($this->never())->method('critical');
+
+        $this->subscriber->__invoke(new \stdClass());
+    }
+
     public function testSubscribedToReturnsCorrectEvents(): void
     {
         $this->assertSame(

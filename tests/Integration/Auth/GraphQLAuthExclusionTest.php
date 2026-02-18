@@ -7,9 +7,6 @@ namespace App\Tests\Integration\Auth;
 use App\Tests\Integration\IntegrationTestCase;
 use Symfony\Component\Yaml\Yaml;
 
-/**
- * @covers GraphQL auth operation exclusion
- */
 final class GraphQLAuthExclusionTest extends IntegrationTestCase
 {
     private const EMPTY_RESPONSE_CONFIG_PATH = __DIR__ . '/../../../config/api_platform/resources/EmptyResponse.yaml';

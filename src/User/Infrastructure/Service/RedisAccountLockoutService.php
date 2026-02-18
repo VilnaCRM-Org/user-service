@@ -10,9 +10,7 @@ use Psr\Cache\CacheItemPoolInterface;
 final readonly class RedisAccountLockoutService implements
     AccountLockoutServiceInterface
 {
-    private const MAX_ATTEMPTS = 20;
     private const ATTEMPT_WINDOW_SECONDS = 3600;
-    private const LOCKOUT_SECONDS = 900;
 
     public function __construct(
         private CacheItemPoolInterface $cachePool
@@ -35,13 +33,13 @@ final readonly class RedisAccountLockoutService implements
         $attemptsItem->expiresAfter(self::ATTEMPT_WINDOW_SECONDS);
         $this->cachePool->save($attemptsItem);
 
-        if ($attempts < self::MAX_ATTEMPTS) {
+        if ($attempts < AccountLockoutServiceInterface::MAX_ATTEMPTS) {
             return false;
         }
 
         $lockItem = $this->cachePool->getItem($this->lockKey($email));
         $lockItem->set(true);
-        $lockItem->expiresAfter(self::LOCKOUT_SECONDS);
+        $lockItem->expiresAfter(AccountLockoutServiceInterface::LOCKOUT_SECONDS);
         $this->cachePool->save($lockItem);
 
         return true;
