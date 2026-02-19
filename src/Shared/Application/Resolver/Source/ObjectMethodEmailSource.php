@@ -22,10 +22,16 @@ final class ObjectMethodEmailSource implements BatchEmailSource
             return null;
         }
 
-        return match (true) {
-            !is_callable([$entry, $this->method]) => null,
-            !is_string($value = $entry->{$this->method}()) => null,
-            default => $value,
-        };
+        if (!is_callable([$entry, $this->method])) {
+            return null;
+        }
+
+        $value = $entry->{$this->method}();
+
+        if (!is_string($value)) {
+            return null;
+        }
+
+        return $value;
     }
 }

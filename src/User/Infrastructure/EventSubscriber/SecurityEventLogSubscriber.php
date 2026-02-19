@@ -23,11 +23,11 @@ final readonly class SecurityEventLogSubscriber implements DomainEventSubscriber
 
     public function __invoke(object $event): void
     {
-        match (true) {
-            $event instanceof RecoveryCodeUsedEvent => $this->logRecoveryCodeUsed($event),
-            $event instanceof AccountLockedOutEvent => $this->logAccountLockedOut($event),
-            default => null, // @codeCoverageIgnore
-        };
+        if ($event instanceof RecoveryCodeUsedEvent) {
+            $this->logRecoveryCodeUsed($event);
+        } elseif ($event instanceof AccountLockedOutEvent) {
+            $this->logAccountLockedOut($event);
+        }
     }
 
     /**

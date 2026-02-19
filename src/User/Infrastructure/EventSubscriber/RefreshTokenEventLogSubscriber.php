@@ -23,11 +23,11 @@ final readonly class RefreshTokenEventLogSubscriber implements DomainEventSubscr
 
     public function __invoke(object $event): void
     {
-        match (true) {
-            $event instanceof RefreshTokenRotatedEvent => $this->logRefreshTokenRotated($event),
-            $event instanceof RefreshTokenTheftDetectedEvent => $this->logRefreshTokenTheft($event),
-            default => null, // @codeCoverageIgnore
-        };
+        if ($event instanceof RefreshTokenRotatedEvent) {
+            $this->logRefreshTokenRotated($event);
+        } elseif ($event instanceof RefreshTokenTheftDetectedEvent) {
+            $this->logRefreshTokenTheft($event);
+        }
     }
 
     /**

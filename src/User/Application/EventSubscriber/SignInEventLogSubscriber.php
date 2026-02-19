@@ -26,17 +26,23 @@ final readonly class SignInEventLogSubscriber implements
 
     public function __invoke(DomainEvent $event): void
     {
-        match (true) {
-            $event instanceof UserSignedInEvent => $this->logSignedIn($event),
-            $event instanceof SignInFailedEvent => $this->logFailed($event),
-            $event instanceof AccountLockedOutEvent => $this->logLocked($event),
-            $event instanceof TwoFactorCompletedEvent => $this->logTfaOk($event),
-            $event instanceof TwoFactorFailedEvent => $this->logTfaFail($event),
-            $event instanceof RefreshTokenRotatedEvent => $this->logRefreshTokenRotated($event),
-            $event instanceof RefreshTokenTheftDetectedEvent => $this->logRefreshTokenTheft($event),
-            $event instanceof AllSessionsRevokedEvent => $this->logAllSessionsRevoked($event),
-            default => null, // @codeCoverageIgnore
-        };
+        if ($event instanceof UserSignedInEvent) {
+            $this->logSignedIn($event);
+        } elseif ($event instanceof SignInFailedEvent) {
+            $this->logFailed($event);
+        } elseif ($event instanceof AccountLockedOutEvent) {
+            $this->logLocked($event);
+        } elseif ($event instanceof TwoFactorCompletedEvent) {
+            $this->logTfaOk($event);
+        } elseif ($event instanceof TwoFactorFailedEvent) {
+            $this->logTfaFail($event);
+        } elseif ($event instanceof RefreshTokenRotatedEvent) {
+            $this->logRefreshTokenRotated($event);
+        } elseif ($event instanceof RefreshTokenTheftDetectedEvent) {
+            $this->logRefreshTokenTheft($event);
+        } elseif ($event instanceof AllSessionsRevokedEvent) {
+            $this->logAllSessionsRevoked($event);
+        }
     }
 
     /**

@@ -16,17 +16,21 @@ final class PaginationOperationSanitizer
 
     public function sanitize(?Operation $operation): ?Operation
     {
-        return match (true) {
-            $operation === null => null,
-            !\is_array($operation->getParameters()) => $operation,
-            default => $operation->withParameters(
-                array_map(
-                    fn (mixed $parameter) => $parameter instanceof OpenApiParameter
-                        ? $this->parameterSanitizer->sanitize($parameter)
-                        : $parameter,
-                    $operation->getParameters()
-                )
-            ),
-        };
+        if ($operation === null) {
+            return null;
+        }
+
+        if (!\is_array($operation->getParameters())) {
+            return $operation;
+        }
+
+        return $operation->withParameters(
+            array_map(
+                fn (mixed $parameter) => $parameter instanceof OpenApiParameter
+                    ? $this->parameterSanitizer->sanitize($parameter)
+                    : $parameter,
+                $operation->getParameters()
+            )
+        );
     }
 }

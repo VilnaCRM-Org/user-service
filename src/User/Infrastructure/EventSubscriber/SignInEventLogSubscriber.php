@@ -23,11 +23,11 @@ final readonly class SignInEventLogSubscriber implements DomainEventSubscriberIn
 
     public function __invoke(object $event): void
     {
-        match (true) {
-            $event instanceof UserSignedInEvent => $this->logUserSignedIn($event),
-            $event instanceof SignInFailedEvent => $this->logSignInFailed($event),
-            default => null, // @codeCoverageIgnore
-        };
+        if ($event instanceof UserSignedInEvent) {
+            $this->logUserSignedIn($event);
+        } elseif ($event instanceof SignInFailedEvent) {
+            $this->logSignInFailed($event);
+        }
     }
 
     /**

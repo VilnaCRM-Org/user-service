@@ -25,13 +25,15 @@ final readonly class TwoFactorEventLogSubscriber implements DomainEventSubscribe
 
     public function __invoke(object $event): void
     {
-        match (true) {
-            $event instanceof TwoFactorCompletedEvent => $this->logTwoFactorCompleted($event),
-            $event instanceof TwoFactorFailedEvent => $this->logTwoFactorFailed($event),
-            $event instanceof TwoFactorEnabledEvent => $this->logTwoFactorEnabled($event),
-            $event instanceof TwoFactorDisabledEvent => $this->logTwoFactorDisabled($event),
-            default => null, // @codeCoverageIgnore
-        };
+        if ($event instanceof TwoFactorCompletedEvent) {
+            $this->logTwoFactorCompleted($event);
+        } elseif ($event instanceof TwoFactorFailedEvent) {
+            $this->logTwoFactorFailed($event);
+        } elseif ($event instanceof TwoFactorEnabledEvent) {
+            $this->logTwoFactorEnabled($event);
+        } elseif ($event instanceof TwoFactorDisabledEvent) {
+            $this->logTwoFactorDisabled($event);
+        }
     }
 
     /**

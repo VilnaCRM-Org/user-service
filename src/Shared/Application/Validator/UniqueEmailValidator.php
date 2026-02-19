@@ -51,10 +51,10 @@ final class UniqueEmailValidator extends ConstraintValidator
 
     private function shouldSkipUniquenessCheck(?string $candidate): bool
     {
-        return match (true) {
-            $candidate === null => true,
-            $this->emailUniquenessChecker->isUnique($candidate) => true,
-            default => false,
-        };
+        if ($candidate === null) {
+            return true;
+        }
+
+        return $this->emailUniquenessChecker->isUnique($candidate);
     }
 }

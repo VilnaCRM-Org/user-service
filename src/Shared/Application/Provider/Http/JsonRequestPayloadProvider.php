@@ -21,13 +21,16 @@ final readonly class JsonRequestPayloadProvider
      */
     public function getPayload(string $invalidJsonMessage): ?array
     {
-        return match (true) {
-            ($content = $this->contentProvider->content()) === null => null,
-            $content === '' => [],
-            default => $this->decoder->decodeToArray(
-                $content,
-                $invalidJsonMessage
-            ),
-        };
+        $content = $this->contentProvider->content();
+
+        if ($content === null) {
+            return null;
+        }
+
+        if ($content === '') {
+            return [];
+        }
+
+        return $this->decoder->decodeToArray($content, $invalidJsonMessage);
     }
 }

@@ -12,11 +12,15 @@ final class PositiveIntegerNormalizer
 {
     public function normalize(string|\stdClass|int $value): ?int
     {
-        return match (true) {
-            is_int($value) => $this->normalizeInt($value),
-            is_string($value) => $this->normalizeString($value),
-            default => null,
-        };
+        if (is_int($value)) {
+            return $this->normalizeInt($value);
+        }
+
+        if (is_string($value)) {
+            return $this->normalizeString($value);
+        }
+
+        return null;
     }
 
     /**
@@ -24,10 +28,11 @@ final class PositiveIntegerNormalizer
      */
     private function normalizeInt(int $value): ?int
     {
-        return match (true) {
-            $value < 1 => null,
-            default => $value,
-        };
+        if ($value < 1) {
+            return null;
+        }
+
+        return $value;
     }
 
     /**

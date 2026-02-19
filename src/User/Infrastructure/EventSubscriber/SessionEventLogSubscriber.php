@@ -23,11 +23,11 @@ final readonly class SessionEventLogSubscriber implements DomainEventSubscriberI
 
     public function __invoke(object $event): void
     {
-        match (true) {
-            $event instanceof SessionRevokedEvent => $this->logSessionRevoked($event),
-            $event instanceof AllSessionsRevokedEvent => $this->logAllSessionsRevoked($event),
-            default => null, // @codeCoverageIgnore
-        };
+        if ($event instanceof SessionRevokedEvent) {
+            $this->logSessionRevoked($event);
+        } elseif ($event instanceof AllSessionsRevokedEvent) {
+            $this->logAllSessionsRevoked($event);
+        }
     }
 
     /**

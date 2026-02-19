@@ -17,10 +17,14 @@ final class ResponseContentCleaner
         Response|ArrayObject|array|string|int|bool|null $response,
         string $status
     ): Response|ArrayObject|array|string|int|bool|null {
-        return match (true) {
-            !$response instanceof Response => $response,
-            !in_array($status, self::NO_CONTENT_STATUSES, true) => $response,
-            default => $response->withContent(new ArrayObject()),
-        };
+        if (!$response instanceof Response) {
+            return $response;
+        }
+
+        if (!in_array($status, self::NO_CONTENT_STATUSES, true)) {
+            return $response;
+        }
+
+        return $response->withContent(new ArrayObject());
     }
 }

@@ -15,11 +15,17 @@ final class BatchEntriesNormalizer
      */
     public function normalize(array|\ArrayIterator|string $value): BatchEntriesResult
     {
-        return match (true) {
-            !is_iterable($value) => $this->notIterableResult(),
-            ($entries = $this->toArray($value)) === [] => $this->emptyResult(),
-            default => new BatchEntriesResult(BatchEntriesResult::STATE_VALID, $entries),
-        };
+        if (!is_iterable($value)) {
+            return $this->notIterableResult();
+        }
+
+        $entries = $this->toArray($value);
+
+        if ($entries === []) {
+            return $this->emptyResult();
+        }
+
+        return new BatchEntriesResult(BatchEntriesResult::STATE_VALID, $entries);
     }
 
     /**

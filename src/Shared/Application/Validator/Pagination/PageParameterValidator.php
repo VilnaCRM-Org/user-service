@@ -25,15 +25,15 @@ final class PageParameterValidator
      */
     public function validate(array $query): ?QueryParameterViolation
     {
-        return match (true) {
-            !array_key_exists('page', $query) => null,
-            $this->valueEvaluator->isExplicitlyProvided(
-                $query['page']
-            ) => $this->violationForExplicit(
-                $query['page']
-            ),
-            default => $this->violationForImplicit($query['page']),
-        };
+        if (!array_key_exists('page', $query)) {
+            return null;
+        }
+
+        if ($this->valueEvaluator->isExplicitlyProvided($query['page'])) {
+            return $this->violationForExplicit($query['page']);
+        }
+
+        return $this->violationForImplicit($query['page']);
     }
 
     /**

@@ -15,12 +15,19 @@ final class ExplicitValueEvaluator
      */
     public function isExplicitlyProvided(mixed $value): bool
     {
-        return match (true) {
-            $value === null => false,
-            is_string($value) => trim($value) !== '',
-            is_array($value) => $value !== [],
-            default => true,
-        };
+        if ($value === null) {
+            return false;
+        }
+
+        if (is_string($value)) {
+            return trim($value) !== '';
+        }
+
+        if (is_array($value)) {
+            return $value !== [];
+        }
+
+        return true;
     }
 
     /**
