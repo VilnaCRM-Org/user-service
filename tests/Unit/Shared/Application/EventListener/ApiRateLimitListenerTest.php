@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\EventListener;
 
 use App\Shared\Application\Decoder\JwtTokenDecoderInterface;
-use App\Shared\Application\EventListener\ApiRateLimitAuthTargetResolver;
-use App\Shared\Application\EventListener\ApiRateLimitClientIdentityResolver;
 use App\Shared\Application\EventListener\ApiRateLimitListener;
-use App\Shared\Application\EventListener\ApiRateLimitRequestMatcher;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitAuthTargetResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use App\Tests\Unit\UnitTestCase;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -342,7 +342,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
             null,
             $clientIdentityResolver
         );
-        $requestMatcher = new ApiRateLimitRequestMatcher(
+        $requestMatcher = new ApiRateLimitRequestResolver(
             $clientIdentityResolver,
             $authTargetResolver
         );

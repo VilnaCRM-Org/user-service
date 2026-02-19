@@ -34,10 +34,10 @@
         </include>
         <exclude>
             <directory>src/DataFixtures</directory>
-            <file>src/Shared/Application/EventListener/ApiRateLimitAuthTargetResolver.php</file>
-            <file>src/Shared/Application/EventListener/ApiRateLimitClientIdentityResolver.php</file>
             <file>src/Shared/Application/EventListener/ApiRateLimitListener.php</file>
-            <file>src/Shared/Application/EventListener/ApiRateLimitRequestMatcher.php</file>
+            <file>src/Shared/Application/Resolver/RateLimit/ApiRateLimitAuthTargetResolver.php</file>
+            <file>src/Shared/Application/Resolver/RateLimit/ApiRateLimitClientIdentityResolver.php</file>
+            <file>src/Shared/Application/Resolver/RateLimit/ApiRateLimitRequestResolver.php</file>
             <file>src/Shared/Infrastructure/Security/DualAuthenticator.php</file>
             <file>src/User/Application/Processor/ResendEmailProcessor.php</file>
             <file>src/User/Application/Processor/UserPatchProcessor.php</file>

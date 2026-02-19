@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\EventListener;
 
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use LogicException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,7 +20,7 @@ final readonly class ApiRateLimitListener
      */
     public function __construct(
         private array $limiterFactories,
-        private ApiRateLimitRequestMatcher $requestMatcher = new ApiRateLimitRequestMatcher(),
+        private ApiRateLimitRequestResolver $requestMatcher = new ApiRateLimitRequestResolver(),
     ) {
     }
 

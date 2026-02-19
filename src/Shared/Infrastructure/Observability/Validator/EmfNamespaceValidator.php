@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Observability\Validator;
 
-use App\Shared\Application\Validator\EmfNamespace;
+use App\Shared\Application\Validator\Constraint\EmfNamespace;
 use App\Shared\Infrastructure\Observability\Exception\InvalidEmfNamespaceException;
 use App\Shared\Infrastructure\Observability\ValueObject\EmfNamespaceValue;
 use Symfony\Component\Validator\Validator\ValidatorInterface;

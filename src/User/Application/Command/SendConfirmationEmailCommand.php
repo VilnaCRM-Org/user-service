@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application\Command;
 
 use App\Shared\Domain\Bus\Command\CommandInterface;
-use App\User\Domain\Aggregate\ConfirmationEmailInterface;
+use App\User\Domain\Contract\ConfirmationEmailInterface;
 
 final readonly class SendConfirmationEmailCommand implements CommandInterface
 {

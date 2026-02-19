@@ -6,7 +6,7 @@ namespace App\Tests\Unit\User\Application\Command;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SendPasswordResetEmailCommand;
-use App\User\Domain\Aggregate\PasswordResetEmailInterface;
+use App\User\Domain\Contract\PasswordResetEmailInterface;
 
 final class SendPasswordResetEmailCommandTest extends UnitTestCase
 {

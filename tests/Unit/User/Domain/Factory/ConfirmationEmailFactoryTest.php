@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Domain\Factory;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Domain\Aggregate\ConfirmationEmailInterface;
+use App\User\Domain\Contract\ConfirmationEmailInterface;
 use App\User\Domain\Factory\ConfirmationEmailFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;

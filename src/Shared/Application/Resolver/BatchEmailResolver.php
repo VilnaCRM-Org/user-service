@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Resolver;
 
-use App\Shared\Application\Resolver\Source\ArrayEmailSource;
-use App\Shared\Application\Resolver\Source\BatchEmailSource;
-use App\Shared\Application\Resolver\Source\ObjectMethodEmailSource;
-use App\Shared\Application\Resolver\Source\ObjectPropertyEmailSource;
+use App\Shared\Application\Source\ArrayEmailSource;
+use App\Shared\Application\Source\BatchEmailSource;
+use App\Shared\Application\Source\ObjectMethodEmailSource;
+use App\Shared\Application\Source\ObjectPropertyEmailSource;
 
 final class BatchEmailResolver
 {

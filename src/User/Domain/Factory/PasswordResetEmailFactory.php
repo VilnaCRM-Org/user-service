@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Domain\Factory;
 
 use App\User\Domain\Aggregate\PasswordResetEmail;
-use App\User\Domain\Aggregate\PasswordResetEmailInterface;
+use App\User\Domain\Contract\PasswordResetEmailInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\PasswordResetEmailSendEventFactoryInterface;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Domain\Factory;
 
 use App\User\Domain\Aggregate\ConfirmationEmail;
-use App\User\Domain\Aggregate\ConfirmationEmailInterface;
+use App\User\Domain\Contract\ConfirmationEmailInterface;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\ConfirmationEmailSendEventFactoryInterface;

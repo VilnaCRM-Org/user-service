@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Application\Evaluator;
 
 use App\Shared\Application\Collector\BatchEmailCollector;
+use App\Shared\Application\DTO\BatchEntriesResult;
 use App\Shared\Application\Normalizer\BatchEntriesNormalizer;
-use App\Shared\Application\Normalizer\BatchEntriesResult;
 
 final class CreateUserBatchConstraintEvaluator
 {

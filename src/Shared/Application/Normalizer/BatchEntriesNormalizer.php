@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Normalizer;
 
+use App\Shared\Application\DTO\BatchEntriesResult;
 use Traversable;
 
 final class BatchEntriesNormalizer

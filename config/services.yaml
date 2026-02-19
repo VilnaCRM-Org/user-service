@@ -84,7 +84,7 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 120 }
 
-  App\Shared\Application\EventListener\ApiRateLimitRequestMatcher:
+  App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver:
     arguments:
       $appEnvironment: '%kernel.environment%'
 
@@ -242,7 +242,7 @@ services:
   App\User\Domain\Contract\TOTPSecretGeneratorInterface: '@App\User\Infrastructure\Service\TOTPSecretGenerator'
   App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface: '@App\User\Application\CommandHandler\RequestPasswordResetCommandHandler'
 
-  App\User\Infrastructure\Decorator\RateLimitedRequestPasswordResetHandler:
+  App\User\Infrastructure\Decorator\RateLimitedRequestPasswordResetHandlerDecorator:
     decorates: App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface
     arguments:
       $inner: '@.inner'

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Observability\Validator;
 
-use App\Shared\Application\Validator\EmfKey;
-use App\Shared\Application\Validator\EmfValue;
+use App\Shared\Application\Validator\Constraint\EmfKey;
+use App\Shared\Application\Validator\Constraint\EmfValue;
 use App\Shared\Infrastructure\Observability\Exception\InvalidEmfDimensionKeyException;
 use App\Shared\Infrastructure\Observability\Exception\InvalidEmfDimensionValueException;
 use App\Shared\Infrastructure\Observability\ValueObject\EmfDimensionValue;
