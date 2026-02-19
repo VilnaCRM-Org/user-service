@@ -13,6 +13,7 @@ use App\User\Application\CommandHandler\CompleteTwoFactorCommandHandler;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
 use App\User\Domain\Contract\AccessTokenGeneratorInterface;
 use App\User\Domain\Contract\TOTPVerifierInterface;
+use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
@@ -37,6 +38,7 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
     private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
     private AuthRefreshTokenRepositoryInterface&MockObject $authRefreshTokenRepository;
     private TOTPVerifierInterface&MockObject $totpVerifier;
+    private TwoFactorSecretEncryptorInterface&MockObject $twoFactorSecretEncryptor;
     private AccessTokenGeneratorInterface&MockObject $accessTokenGenerator;
     private AuthTokenFactoryInterface&MockObject $authTokenFactory;
     private EventBusInterface&MockObject $eventBus;
@@ -55,12 +57,19 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
         $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
         $this->authRefreshTokenRepository = $this->createMock(AuthRefreshTokenRepositoryInterface::class);
         $this->totpVerifier = $this->createMock(TOTPVerifierInterface::class);
+        $this->twoFactorSecretEncryptor = $this->createMock(TwoFactorSecretEncryptorInterface::class);
         $this->accessTokenGenerator = $this->createMock(AccessTokenGeneratorInterface::class);
         $this->authTokenFactory = $this->createMock(AuthTokenFactoryInterface::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->ulidFactory = $this->createMock(UlidFactory::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
+
+        $this->twoFactorSecretEncryptor
+            ->method('decrypt')
+            ->willReturnCallback(
+                static fn (string $secret): string => $secret
+            );
     }
 
     public function testInvokeThrowsUnauthorizedWhenPendingSessionIsMissing(): void
@@ -456,6 +465,7 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             $this->authSessionRepository,
             $this->authRefreshTokenRepository,
             $this->totpVerifier,
+            $this->twoFactorSecretEncryptor,
             $this->accessTokenGenerator,
             $this->authTokenFactory,
             $this->eventBus,

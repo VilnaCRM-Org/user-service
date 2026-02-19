@@ -44,10 +44,6 @@ final class DualAuthenticatorTest extends UnitTestCase
         $this->userTransformer = new UserTransformer(
             new UuidTransformer(new SharedUuidFactory())
         );
-
-        $this->authSessionRepository
-            ->method('findById')
-            ->willReturn($this->createActiveSession('sid-token'));
     }
 
     public function testAuthenticateUsesBearerTokenAndResolvesUser(): void
@@ -68,6 +64,11 @@ final class DualAuthenticatorTest extends UnitTestCase
             ->method('findByEmail')
             ->with($email)
             ->willReturn($user);
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with('sid-token')
+            ->willReturn($this->createActiveSession('sid-token'));
 
         $request = Request::create('/api/users');
         $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
@@ -170,6 +171,11 @@ final class DualAuthenticatorTest extends UnitTestCase
             ->method('findByEmail')
             ->with($email)
             ->willReturn($user);
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with('sid-token')
+            ->willReturn($this->createActiveSession('sid-token'));
 
         $request = Request::create('/api/users');
         $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
@@ -642,6 +648,11 @@ final class DualAuthenticatorTest extends UnitTestCase
             ->method('findById')
             ->with($subject)
             ->willReturn($user);
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with('sid-token')
+            ->willReturn($this->createActiveSession('sid-token'));
 
         $request = Request::create('/api/users');
         $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
@@ -674,6 +685,11 @@ final class DualAuthenticatorTest extends UnitTestCase
             ->method('findById')
             ->with($subject)
             ->willReturn(null);
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with('sid-token')
+            ->willReturn($this->createActiveSession('sid-token'));
 
         $request = Request::create('/api/users');
         $request->headers->set('Authorization', 'Bearer ' . $tokenValue);

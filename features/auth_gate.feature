@@ -74,17 +74,25 @@ Feature: Authentication Gate and Access Control
     Then the response status code should not be 401
 
   Scenario: Sign-in endpoint is publicly accessible
+    Given user with email "public-signin@test.com" and password "passWORD1" exists
     Given signing in with email "public-signin@test.com" and password "passWORD1"
     When POST request is send to "/api/signin"
     Then the response status code should not be 401
 
   Scenario: 2FA completion endpoint is publicly accessible
-    Given completing 2FA with pending_session_id "some-session" and code "123456"
+    Given user with email "public-2fa@test.com" and password "passWORD1" exists
+    And user with email "public-2fa@test.com" has 2FA enabled
+    And signing in with email "public-2fa@test.com" and password "passWORD1"
+    And POST request is send to "/api/signin"
+    And I store the pending_session_id from the response
+    And completing 2FA with the stored pending_session_id and a valid TOTP code
     When POST request is send to "/api/signin/2fa"
     Then the response status code should not be 401
 
   Scenario: Token refresh endpoint is publicly accessible
-    Given submitting refresh token "some-token"
+    Given user with email "public-refresh@test.com" and password "passWORD1" exists
+    And user "public-refresh@test.com" has signed in and received tokens
+    And submitting the refresh token to exchange
     When POST request is send to "/api/token"
     Then the response status code should not be 401
 

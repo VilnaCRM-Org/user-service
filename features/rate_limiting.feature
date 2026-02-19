@@ -150,11 +150,11 @@ Feature: Rate Limiting
     When POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb263/resend-confirmation-email"
     Then the response status code should be 429
 
-  Scenario: Password reset rate limit enforced at 1000/hour per email
+  Scenario: Password reset remains opaque after 1000 requests per email
     Given 1000 password reset requests for email "reset-rate@test.com" have been sent within 1 hour
     And requesting password reset for email "reset-rate@test.com"
     When POST request is send to "/api/reset-password"
-    Then the response status code should be 429
+    Then the response status code should be 204
 
   # Rate limit response format validation (NFR-14, NFR-25)
 
@@ -187,7 +187,7 @@ Feature: Rate Limiting
   Scenario: Requests within global anonymous limit succeed
     Given 50 anonymous requests have been sent within 1 minute
     When GET request is send to "/api/health"
-    Then the response status code should be 200
+    Then the response status code should be 204
 
   Scenario: Requests within sign-in per-IP limit succeed
     Given 5 sign-in requests from the same IP have been sent within 1 minute

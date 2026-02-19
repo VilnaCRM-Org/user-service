@@ -54,13 +54,6 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
         $this->ulidFactory = $this->createMock(UlidFactory::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
-
-        $this->refreshTokenRepository
-            ->method('markAsRotatedIfActive')
-            ->willReturn(true);
-        $this->refreshTokenRepository
-            ->method('markGraceUsedIfEligible')
-            ->willReturn(true);
     }
 
     public function testInvokeRotatesTokenAndIssuesNewTokens(): void
@@ -91,6 +84,11 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
         $this->refreshTokenRepository
             ->expects($this->once())
             ->method('save');
+
+        $this->refreshTokenRepository
+            ->expects($this->once())
+            ->method('markAsRotatedIfActive')
+            ->willReturn(true);
 
         $newTokenId = new Ulid();
         $this->ulidFactory
@@ -242,6 +240,11 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->expects($this->once())
             ->method('save');
 
+        $this->refreshTokenRepository
+            ->expects($this->once())
+            ->method('markGraceUsedIfEligible')
+            ->willReturn(true);
+
         $this->ulidFactory
             ->method('create')
             ->willReturnCallback(static fn () => new Ulid());
@@ -270,6 +273,189 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
         );
         $this->assertOpaqueTokenFormat($command->getResponse()->getRefreshToken());
         $this->assertTrue($token->isGraceUsed());
+    }
+
+    public function testConcurrentRotationUsesLatestRotatedTokenWithinGraceWindow(): void
+    {
+        $plainToken = 'concurrent-rotated-token';
+        $oldToken = $this->createValidRefreshToken($plainToken);
+        $latestToken = $this->createValidRefreshToken($plainToken);
+        $latestToken->markAsRotated(new DateTimeImmutable('-30 seconds'));
+        $session = $this->createValidSession($oldToken->getSessionId());
+        $user = $this->createUser();
+
+        $this->refreshTokenRepository
+            ->expects($this->exactly(2))
+            ->method('findByTokenHash')
+            ->with(hash('sha256', $plainToken))
+            ->willReturnOnConsecutiveCalls($oldToken, $latestToken);
+
+        $this->refreshTokenRepository
+            ->expects($this->once())
+            ->method('markAsRotatedIfActive')
+            ->willReturn(false);
+
+        $this->refreshTokenRepository
+            ->expects($this->once())
+            ->method('markGraceUsedIfEligible')
+            ->willReturn(true);
+
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($oldToken->getSessionId())
+            ->willReturn($session);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($session->getUserId())
+            ->willReturn($user);
+
+        $this->refreshTokenRepository
+            ->expects($this->once())
+            ->method('save');
+
+        $this->ulidFactory
+            ->method('create')
+            ->willReturnCallback(static fn () => new Ulid());
+
+        $this->uuidFactory
+            ->method('create')
+            ->willReturnCallback(static fn () => Uuid::v4());
+
+        $this->accessTokenGenerator
+            ->expects($this->once())
+            ->method('generate')
+            ->willReturn('concurrent-access-token');
+
+        $this->eventBus
+            ->expects($this->once())
+            ->method('publish')
+            ->with($this->isInstanceOf(RefreshTokenRotatedEvent::class));
+
+        $handler = $this->createHandler();
+        $command = new RefreshTokenCommand($plainToken);
+        $handler->__invoke($command);
+
+        $this->assertSame(
+            'concurrent-access-token',
+            $command->getResponse()->getAccessToken()
+        );
+        $this->assertOpaqueTokenFormat($command->getResponse()->getRefreshToken());
+        $this->assertTrue($latestToken->isGraceUsed());
+    }
+
+    public function testConcurrentRotationThrowsWhenLatestTokenIsNotRotated(): void
+    {
+        $plainToken = 'concurrent-not-rotated-token';
+        $oldToken = $this->createValidRefreshToken($plainToken);
+        $latestToken = $this->createValidRefreshToken($plainToken);
+        $session = $this->createValidSession($oldToken->getSessionId());
+        $user = $this->createUser();
+
+        $this->refreshTokenRepository
+            ->expects($this->exactly(2))
+            ->method('findByTokenHash')
+            ->with(hash('sha256', $plainToken))
+            ->willReturnOnConsecutiveCalls($oldToken, $latestToken);
+
+        $this->refreshTokenRepository
+            ->expects($this->once())
+            ->method('markAsRotatedIfActive')
+            ->willReturn(false);
+
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($oldToken->getSessionId())
+            ->willReturn($session);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($session->getUserId())
+            ->willReturn($user);
+
+        $this->refreshTokenRepository
+            ->expects($this->never())
+            ->method('save');
+
+        $this->eventBus
+            ->expects($this->never())
+            ->method('publish');
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Invalid refresh token.');
+
+        $handler = $this->createHandler();
+        $handler->__invoke(new RefreshTokenCommand($plainToken));
+    }
+
+    public function testTheftDetectedWhenGraceEligibilityCheckFails(): void
+    {
+        $plainToken = 'grace-eligibility-fails-token';
+        $token = $this->createValidRefreshToken($plainToken);
+        $token->markAsRotated(new DateTimeImmutable('-30 seconds'));
+        $session = $this->createValidSession($token->getSessionId());
+        $user = $this->createUser();
+
+        $this->refreshTokenRepository
+            ->expects($this->once())
+            ->method('findByTokenHash')
+            ->willReturn($token);
+
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->willReturn($session);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->willReturn($user);
+
+        $this->refreshTokenRepository
+            ->expects($this->once())
+            ->method('markGraceUsedIfEligible')
+            ->willReturn(false);
+
+        $this->refreshTokenRepository
+            ->expects($this->once())
+            ->method('findBySessionId')
+            ->with($session->getId())
+            ->willReturn([$token]);
+
+        $this->refreshTokenRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->callback(
+                static fn (AuthRefreshToken $savedToken): bool => $savedToken->isRevoked()
+            ));
+
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->callback(
+                static fn (AuthSession $savedSession): bool => $savedSession->isRevoked()
+            ));
+
+        $this->uuidFactory
+            ->method('create')
+            ->willReturnCallback(static fn () => Uuid::v4());
+
+        $this->eventBus
+            ->expects($this->once())
+            ->method('publish')
+            ->with($this->callback(
+                static fn (RefreshTokenTheftDetectedEvent $event): bool => $event->reason === 'double_grace_use'
+            ));
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Invalid refresh token.');
+
+        $handler = $this->createHandler();
+        $handler->__invoke(new RefreshTokenCommand($plainToken));
     }
 
     public function testTheftDetectedWhenGraceUsedTwice(): void
@@ -395,63 +581,6 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
         $handler->__invoke(new RefreshTokenCommand($plainToken));
     }
 
-    public function testGraceWindowCanBeConfigured(): void
-    {
-        $plainToken = 'custom-grace-window-token';
-        $token = $this->createValidRefreshToken($plainToken);
-        $token->markAsRotated(new DateTimeImmutable('-120 seconds'));
-        $session = $this->createValidSession($token->getSessionId());
-        $user = $this->createUser();
-
-        $this->refreshTokenRepository
-            ->expects($this->once())
-            ->method('findByTokenHash')
-            ->willReturn($token);
-
-        $this->authSessionRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->willReturn($session);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->willReturn($user);
-
-        $this->refreshTokenRepository
-            ->expects($this->once())
-            ->method('save');
-
-        $this->ulidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => new Ulid());
-
-        $this->uuidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => Uuid::v4());
-
-        $this->accessTokenGenerator
-            ->expects($this->once())
-            ->method('generate')
-            ->willReturn('custom-grace-token');
-
-        $this->eventBus
-            ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(RefreshTokenRotatedEvent::class));
-
-        $handler = $this->createHandler(180);
-        $command = new RefreshTokenCommand($plainToken);
-        $handler->__invoke($command);
-
-        $this->assertSame(
-            'custom-grace-token',
-            $command->getResponse()->getAccessToken()
-        );
-        $this->assertOpaqueTokenFormat($command->getResponse()->getRefreshToken());
-        $this->assertTrue($token->isGraceUsed());
-    }
-
     public function testTheftDetectionUsesOldTokenWhenSessionLookupReturnsEmpty(): void
     {
         $plainToken = 'fallback-old-token';
@@ -511,14 +640,13 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
         $handler->__invoke(new RefreshTokenCommand($plainToken));
     }
 
-    public function testTheftDetectionSkipsAlreadyRevokedSessionAndTokens(): void
+    public function testTheftDetectionSkipsAlreadyRevokedTokens(): void
     {
         $plainToken = 'skip-revoked-token';
         $token = $this->createValidRefreshToken($plainToken);
         $token->markAsRotated(new DateTimeImmutable('-30 seconds'));
         $token->markGraceUsed();
         $session = $this->createValidSession($token->getSessionId());
-        $session->revoke();
         $user = $this->createUser();
 
         $alreadyRevokedToken = new AuthRefreshToken(
@@ -551,8 +679,11 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->willReturn([$alreadyRevokedToken]);
 
         $this->authSessionRepository
-            ->expects($this->never())
-            ->method('save');
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->callback(
+                static fn (AuthSession $savedSession): bool => $savedSession->isRevoked()
+            ));
 
         $this->refreshTokenRepository
             ->expects($this->never())

@@ -36,7 +36,7 @@ Feature: Password Reset Integration with Auth System
     And the response status code should be 204
     And signing in with email "reset-newpw@test.com" and password "passWORD2"
     When POST request is send to "/api/signin"
-    Then the response status code should be 204
+    Then the response status code should be 200
 
   # Password reset with 2FA-enabled account
 
@@ -57,7 +57,7 @@ Feature: Password Reset Integration with Auth System
     And the response status code should be 204
     And signing in with email "reset-2fa-flow@test.com" and password "passWORD2"
     When POST request is send to "/api/signin"
-    Then the response status code should be 204
+    Then the response status code should be 200
     And the response field "2fa_enabled" should be true
     And the response should contain "pending_session_id"
 
@@ -94,7 +94,7 @@ Feature: Password Reset Integration with Auth System
     And the response status code should be 204
     And signing in with email "reset-unlock@test.com" and password "passWORD2"
     When POST request is send to "/api/signin"
-    Then the response status code should be 204
+    Then the response status code should be 200
 
   # Password reset email enumeration prevention
 

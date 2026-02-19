@@ -64,11 +64,11 @@ Feature: Data Protection and Sensitive Data Handling
     And signing in with email "dp-exists@test.com" and password "wrongPassword1"
     When POST request is send to "/api/signin"
     Then the response status code should be 401
-    And the error message should be "Invalid credentials"
+    And the error message should be "Invalid credentials."
     And signing in with email "dp-not-exists@test.com" and password "passWORD1"
     When POST request is send to "/api/signin"
     Then the response status code should be 401
-    And the error message should be "Invalid credentials"
+    And the error message should be "Invalid credentials."
 
   Scenario: 2FA sign-in error does not expose TOTP secret
     Given user with email "dp-2fa-error@test.com" and password "passWORD1" exists

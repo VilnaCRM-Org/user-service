@@ -10,7 +10,6 @@ use DateTimeImmutable;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
-use MongoDB\UpdateResult;
 
 /**
  * @extends ServiceDocumentRepository<AuthRefreshToken>
@@ -117,10 +116,16 @@ final class MongoDBAuthRefreshTokenRepository extends ServiceDocumentRepository 
 
     private function wasDocumentUpdated(mixed $result): bool
     {
-        if ($result instanceof UpdateResult) {
-            return $result->getModifiedCount() > 0;
+        if (is_int($result)) {
+            return $result > 0;
         }
 
-        return is_int($result) && $result > 0;
+        if (!is_object($result) || !method_exists($result, 'getModifiedCount')) {
+            return false;
+        }
+
+        $modifiedCount = $result->getModifiedCount();
+
+        return is_int($modifiedCount) && $modifiedCount > 0;
     }
 }

@@ -18,6 +18,7 @@ use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Bridge\PhpUnit\ClockMock;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Uid\Factory\UlidFactory;
@@ -224,42 +225,50 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
 
     public function testInvokeAllowsSudoModeAtExactBoundary(): void
     {
-        $user = $this->createTwoFactorEnabledUser();
-        $sessionId = (string) new Ulid();
-        $session = $this->createBoundarySudoSession($user->getId(), $sessionId);
+        ClockMock::register(RegenerateRecoveryCodesCommandHandler::class);
+        ClockMock::register(self::class);
+        ClockMock::withClockMock(time());
 
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($user->getEmail())
-            ->willReturn($user);
+        try {
+            $user = $this->createTwoFactorEnabledUser();
+            $sessionId = (string) new Ulid();
+            $session = $this->createBoundarySudoSession($user->getId(), $sessionId);
 
-        $this->authSessionRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with($sessionId)
-            ->willReturn($session);
+            $this->userRepository
+                ->expects($this->once())
+                ->method('findByEmail')
+                ->with($user->getEmail())
+                ->willReturn($user);
 
-        $this->recoveryCodeRepository
-            ->expects($this->once())
-            ->method('deleteByUserId')
-            ->with($user->getId());
+            $this->authSessionRepository
+                ->expects($this->once())
+                ->method('findById')
+                ->with($sessionId)
+                ->willReturn($session);
 
-        $this->ulidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => new Ulid());
+            $this->recoveryCodeRepository
+                ->expects($this->once())
+                ->method('deleteByUserId')
+                ->with($user->getId());
 
-        $this->recoveryCodeRepository
-            ->expects($this->exactly(8))
-            ->method('save')
-            ->with($this->isInstanceOf(RecoveryCode::class));
+            $this->ulidFactory
+                ->method('create')
+                ->willReturnCallback(static fn () => new Ulid());
 
-        $handler = $this->createHandler();
-        $command = new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId);
+            $this->recoveryCodeRepository
+                ->expects($this->exactly(8))
+                ->method('save')
+                ->with($this->isInstanceOf(RecoveryCode::class));
 
-        $handler->__invoke($command);
+            $handler = $this->createHandler();
+            $command = new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId);
 
-        $this->assertCount(8, $command->getResponse()->getRecoveryCodes());
+            $handler->__invoke($command);
+
+            $this->assertCount(8, $command->getResponse()->getRecoveryCodes());
+        } finally {
+            ClockMock::withClockMock(false);
+        }
     }
 
     private function createHandler(): RegenerateRecoveryCodesCommandHandler

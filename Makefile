@@ -21,13 +21,16 @@ EXEC_PHP      = $(DOCKER_COMPOSE) exec php
 COMPOSER      = $(EXEC_PHP) composer
 GIT           = git
 EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
+EXEC_PHP_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=test -e APP_DEBUG=0 php
 
 # Alias
 SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
+SYMFONY_TEST_ENV_NODEBUG = $(EXEC_PHP_TEST_ENV_NODEBUG) bin/console
 
 # Executables: vendors
-BEHAT         = ./vendor/bin/behat --stop-on-failure -n features
+BEHAT         = php -d memory_limit=-1 ./vendor/bin/behat --stop-on-failure -n features
+BEHAT_ENV     = env APP_DEBUG=0
 PHPUNIT       = ./vendor/bin/phpunit
 PSALM         = ./vendor/bin/psalm
 PHP_CS_FIXER  = ./vendor/bin/php-cs-fixer
@@ -161,7 +164,7 @@ deptrac-debug: ## Find files unassigned for Deptrac
 	$(EXEC_ENV) $(DEPTRAC) debug:unassigned --config-file=deptrac.yaml
 
 behat: setup-test-db ## A php framework for autotesting business expectations
-	$(EXEC_ENV) $(BEHAT)
+	$(EXEC_ENV) $(BEHAT_ENV) $(BEHAT)
 
 integration-tests: setup-test-db ## Run integration tests
 	$(RUN_TESTS_COVERAGE) --testsuite=Integration
@@ -174,6 +177,7 @@ tests-with-coverage: ## Run tests with coverage
 
 setup-test-db: ## Create database for testing purposes
 	$(SYMFONY_TEST_ENV) c:c
+	$(SYMFONY_TEST_ENV_NODEBUG) c:c
 	@echo "Recreating MongoDB schema for testing..."
 	@$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
 	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:create

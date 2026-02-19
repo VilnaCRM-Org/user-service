@@ -150,6 +150,87 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
         ));
     }
 
+    public function testSuccessfulDisableWithPlaintextSecretWhenDecryptFails(): void
+    {
+        $user = $this->createTwoFactorEnabledUser();
+        $user->setTwoFactorSecret('JBSWY3DPEHPK3PXP');
+
+        $this->userRepository
+            ->method('findByEmail')
+            ->willReturn($user);
+
+        $this->encryptor
+            ->expects($this->once())
+            ->method('decrypt')
+            ->with('JBSWY3DPEHPK3PXP')
+            ->willThrowException(new \RuntimeException('invalid payload'));
+
+        $this->totpVerifier
+            ->expects($this->once())
+            ->method('verify')
+            ->with('JBSWY3DPEHPK3PXP', '123456')
+            ->willReturn(true);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->callback(
+                static fn (User $u): bool => !$u->isTwoFactorEnabled()
+                    && $u->getTwoFactorSecret() === null
+            ));
+
+        $this->recoveryCodeRepository
+            ->expects($this->once())
+            ->method('deleteByUserId')
+            ->with($user->getId());
+
+        $this->eventBus
+            ->expects($this->once())
+            ->method('publish')
+            ->with($this->isInstanceOf(TwoFactorDisabledEvent::class));
+
+        $handler = $this->createHandler();
+        $handler->__invoke(new DisableTwoFactorCommand(
+            $user->getEmail(),
+            '123456'
+        ));
+    }
+
+    public function testEnabledUserWithMissingSecretReturnsUnauthorized(): void
+    {
+        $user = $this->createTwoFactorEnabledUser();
+        $user->setTwoFactorSecret(null);
+
+        $this->userRepository
+            ->method('findByEmail')
+            ->willReturn($user);
+
+        $this->encryptor
+            ->expects($this->once())
+            ->method('decrypt')
+            ->with('')
+            ->willThrowException(new \RuntimeException('invalid payload'));
+
+        $this->totpVerifier
+            ->expects($this->once())
+            ->method('verify')
+            ->with('', '123456')
+            ->willReturn(false);
+
+        $this->userRepository
+            ->expects($this->never())
+            ->method('save');
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Invalid two-factor code.');
+
+        $handler = $this->createHandler();
+        $handler->__invoke(new DisableTwoFactorCommand(
+            $user->getEmail(),
+            '123456'
+        ));
+    }
+
     public function testInvalidCodeThrowsUnauthorized(): void
     {
         $user = $this->createTwoFactorEnabledUser();

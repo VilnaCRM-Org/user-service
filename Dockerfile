@@ -68,8 +68,10 @@ RUN rm -Rf infrastructure/docker/
 
 # AC: NFR-61 - Enforce JWT key permissions (RC-03 fix)
 RUN set -eux; \
-    chmod 600 config/jwt/private.pem; \
-    chmod 644 config/jwt/public.pem
+    if [ -f config/jwt/private.pem ] && [ -f config/jwt/public.pem ]; then \
+        chmod 600 config/jwt/private.pem; \
+        chmod 644 config/jwt/public.pem; \
+    fi
 
 RUN set -eux; \
     mkdir -p var/cache var/log; \

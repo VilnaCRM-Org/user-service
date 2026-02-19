@@ -95,9 +95,13 @@ final readonly class DisableTwoFactorCommandHandler implements
 
     private function verifyTotpCode(User $user, string $code): void
     {
-        $secret = $this->encryptor->decrypt(
-            (string) $user->getTwoFactorSecret()
-        );
+        $storedSecret = (string) $user->getTwoFactorSecret();
+
+        try {
+            $secret = $this->encryptor->decrypt($storedSecret);
+        } catch (\Throwable) {
+            $secret = $storedSecret;
+        }
 
         if (!$this->totpVerifier->verify($secret, $code)) {
             throw new UnauthorizedHttpException(

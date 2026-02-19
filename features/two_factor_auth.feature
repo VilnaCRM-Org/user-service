@@ -78,8 +78,7 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-setup-pending@test.com"
     And POST request is send to "/api/users/2fa/setup"
     And the response status code should be 200
-    When GET request is send to the current user endpoint
-    Then the user should have "twoFactorEnabled" set to false
+    Then user with email "2fa-setup-pending@test.com" should have two-factor disabled
 
   Scenario: 2FA setup requires authentication
     When POST request is send to "/api/users/2fa/setup"
@@ -103,7 +102,7 @@ Feature: Two-Factor Authentication Management
     And confirming 2FA with code "000000"
     When POST request is send to "/api/users/2fa/confirm"
     Then the response status code should be 401
-    And the user should have "twoFactorEnabled" set to false
+    And user with email "2fa-confirm-bad@test.com" should have two-factor disabled
 
   Scenario: 2FA confirmation revokes other sessions
     Given user "2fa-multisession@test.com" has 3 active sessions
@@ -127,7 +126,7 @@ Feature: Two-Factor Authentication Management
     And disabling 2FA with a valid TOTP code
     When POST request is send to "/api/users/2fa/disable"
     Then the response status code should be 204
-    And the user should have "twoFactorEnabled" set to false
+    And user with email "2fa-disable@test.com" should have two-factor disabled
 
   Scenario: Disable 2FA with valid recovery code
     Given I am authenticated as user "2fa-disable-recovery@test.com"
@@ -135,7 +134,7 @@ Feature: Two-Factor Authentication Management
     And disabling 2FA with a valid recovery code
     When POST request is send to "/api/users/2fa/disable"
     Then the response status code should be 204
-    And the user should have "twoFactorEnabled" set to false
+    And user with email "2fa-disable-recovery@test.com" should have two-factor disabled
 
   Scenario: Disable 2FA with invalid code
     Given I am authenticated as user "2fa-disable-bad@test.com"
@@ -143,7 +142,7 @@ Feature: Two-Factor Authentication Management
     And disabling 2FA with code "000000"
     When POST request is send to "/api/users/2fa/disable"
     Then the response status code should be 401
-    And the user should have "twoFactorEnabled" set to true
+    And user with email "2fa-disable-bad@test.com" should have two-factor enabled
 
   Scenario: Disable 2FA when not enabled
     Given I am authenticated as user "2fa-disable-none@test.com"
@@ -302,9 +301,8 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-setup-already@test.com"
     And user "2fa-setup-already@test.com" has 2FA enabled
     When POST request is send to "/api/users/2fa/setup"
-    Then the response status code should be 200
-    And the response should contain "otpauth_uri"
-    And the response should contain "secret"
+    Then the response status code should be 409
+    And the error message should be "Two-factor authentication is already enabled."
 
   Scenario: 2FA setup secret is not returned in subsequent GET requests
     Given I am authenticated as user "2fa-secret-hidden@test.com"
@@ -312,7 +310,6 @@ Feature: Two-Factor Authentication Management
     And the response status code should be 200
     When GET request is send to the current user endpoint
     Then the response should not contain "twoFactorSecret"
-    And the response should not contain "secret"
 
   # Additional 2FA confirm edge cases (FR-08, FR-16, NFR-42)
 

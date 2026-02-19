@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Behat\UserContext;
 
 use App\User\Application\DTO\AuthorizationUserDto;
+use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
+use DateTimeImmutable;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
@@ -37,9 +39,11 @@ trait AuthenticatedUserContextTrait
     public function iHaveAValidSessionCookieForUser(string $email): void
     {
         $user = $this->resolveAuthenticationUser($email, null);
+        $sessionId = $this->createActiveSession($user->getId());
         $cookieToken = $this->testAccessTokenFactory->createToken(
             $user->getId(),
-            ['ROLE_USER']
+            ['ROLE_USER'],
+            $sessionId
         );
 
         $this->state->currentUserEmail = $user->getEmail();
@@ -356,11 +360,18 @@ trait AuthenticatedUserContextTrait
      */
     public function iAmAuthenticatedWithRole(string $role): void
     {
+        $subject = sprintf('service-%s', strtolower($this->faker->lexify('????')));
+        $roles = [$role];
+        $sessionId = in_array('ROLE_SERVICE', $roles, true)
+            ? null
+            : $this->createActiveSession($subject);
+
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
         $this->state->accessToken = $this->testAccessTokenFactory->createToken(
-            sprintf('service-%s', strtolower($this->faker->lexify('????'))),
-            [$role]
+            $subject,
+            $roles,
+            $sessionId
         );
 
         $authorizationUser = new AuthorizationUserDto(
@@ -477,9 +488,13 @@ trait AuthenticatedUserContextTrait
         bool $viaCookie = false
     ): void {
         $user = $this->resolveAuthenticationUser($email, $forcedUserId);
+        $sessionId = in_array('ROLE_SERVICE', $roles, true)
+            ? null
+            : $this->createActiveSession($user->getId());
         $accessToken = $this->testAccessTokenFactory->createToken(
             $user->getId(),
-            $roles
+            $roles,
+            $sessionId
         );
 
         $this->setAuthenticatedUserToken($user, $roles);
@@ -657,6 +672,7 @@ trait AuthenticatedUserContextTrait
         );
         $user = $this->resolveAuthenticationUser($email, null);
         $now = time();
+        $sessionId = $this->createActiveSession($user->getId());
 
         return [
             'sub' => $user->getId(),
@@ -666,9 +682,29 @@ trait AuthenticatedUserContextTrait
             'iat' => $now,
             'nbf' => $now,
             'jti' => (string) $this->uuidFactory->create(),
-            'sid' => strtoupper($this->faker->bothify('??????????????????????????')),
+            'sid' => $sessionId,
             'roles' => ['ROLE_USER'],
         ];
+    }
+
+    private function createActiveSession(string $userId): string
+    {
+        $sessionId = (string) $this->ulidFactory->create();
+        $createdAt = new DateTimeImmutable('-1 minute');
+
+        $this->authSessionRepository->save(
+            new AuthSession(
+                $sessionId,
+                $userId,
+                $this->faker->ipv4(),
+                'BehatAuthenticatedUserContextTrait',
+                $createdAt,
+                $createdAt->modify('+15 minutes'),
+                false
+            )
+        );
+
+        return $sessionId;
     }
 
     /**

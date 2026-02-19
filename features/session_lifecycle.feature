@@ -196,8 +196,7 @@ Feature: Session Lifecycle and Observability
   # Integration: Password change invalidates sessions then re-sign-in
 
   Scenario: Password change then re-sign-in with new password lifecycle
-    Given user with email "lifecycle-pwchange@test.com" and password "passWORD1" exists
-    And I am authenticated as user "lifecycle-pwchange@test.com" with id "8be90127-9840-4235-a6da-39b8debfb280"
+    Given I am authenticated as user "lifecycle-pwchange@test.com" with id "8be90127-9840-4235-a6da-39b8debfb280"
     And user with id "8be90127-9840-4235-a6da-39b8debfb280" and password "passWORD1" exists
     And updating user with email "lifecycle-pwchange@test.com", initials "name", oldPassword "passWORD1", newPassword "passWORD2"
     And PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb280"
@@ -247,15 +246,15 @@ Feature: Session Lifecycle and Observability
   # Integration: Password change then all sessions revoked then re-sign-in
 
   Scenario: Password change revokes all other sessions then re-sign-in works
-    Given user with email "lifecycle-pw-revoke@test.com" and password "passWORD1" exists
-    And I am authenticated as user "lifecycle-pw-revoke@test.com" with id "8be90127-9840-4235-a6da-39b8debfb281"
+    Given user with email "lifecycle-pw-revoke-2@test.com" does not exist
+    And I am authenticated as user "lifecycle-pw-revoke-2@test.com" with id "8be90127-9840-4235-a6da-39b8debfb281"
     And user with id "8be90127-9840-4235-a6da-39b8debfb281" and password "passWORD1" exists
     And user "8be90127-9840-4235-a6da-39b8debfb281" has 2 active sessions
-    And updating user with email "lifecycle-pw-revoke@test.com", initials "name", oldPassword "passWORD1", newPassword "passWORD2"
+    And updating user with email "lifecycle-pw-revoke-2@test.com", initials "name", oldPassword "passWORD1", newPassword "passWORD2"
     And PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb281"
     And the response status code should be 200
     And session 2 should be revoked
-    And signing in with email "lifecycle-pw-revoke@test.com" and password "passWORD2"
+    And signing in with email "lifecycle-pw-revoke-2@test.com" and password "passWORD2"
     When POST request is send to "/api/signin"
     Then the response status code should be 200
 

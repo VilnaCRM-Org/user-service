@@ -11,6 +11,7 @@ use App\User\Application\Command\CompleteTwoFactorCommandResponse;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
 use App\User\Domain\Contract\AccessTokenGeneratorInterface;
 use App\User\Domain\Contract\TOTPVerifierInterface;
+use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\RecoveryCode;
@@ -44,6 +45,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         private AuthSessionRepositoryInterface $authSessionRepository,
         private AuthRefreshTokenRepositoryInterface $authRefreshTokenRepository,
         private TOTPVerifierInterface $totpVerifier,
+        private TwoFactorSecretEncryptorInterface $twoFactorSecretEncryptor,
         private AccessTokenGeneratorInterface $accessTokenGenerator,
         private AuthTokenFactoryInterface $authTokenFactory,
         private EventBusInterface $eventBus,
@@ -269,12 +271,24 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
 
     private function verifyTotp(User $user, string $code): bool
     {
-        $secret = $user->getTwoFactorSecret();
-        if ($secret === null) {
+        $storedSecret = $user->getTwoFactorSecret();
+        if ($storedSecret === null) {
             return false;
         }
 
-        return $this->totpVerifier->verify($secret, $code);
+        return $this->totpVerifier->verify(
+            $this->resolveTotpSecret($storedSecret),
+            $code
+        );
+    }
+
+    private function resolveTotpSecret(string $storedSecret): string
+    {
+        try {
+            return $this->twoFactorSecretEncryptor->decrypt($storedSecret);
+        } catch (\Throwable) {
+            return $storedSecret;
+        }
     }
 
     private function consumeRecoveryCode(

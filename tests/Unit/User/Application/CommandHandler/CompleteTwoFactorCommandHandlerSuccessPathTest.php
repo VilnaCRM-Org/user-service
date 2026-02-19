@@ -13,6 +13,7 @@ use App\User\Application\CommandHandler\CompleteTwoFactorCommandHandler;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
 use App\User\Domain\Contract\AccessTokenGeneratorInterface;
 use App\User\Domain\Contract\TOTPVerifierInterface;
+use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\PendingTwoFactor;
@@ -39,6 +40,7 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
     private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
     private AuthRefreshTokenRepositoryInterface&MockObject $authRefreshTokenRepository;
     private TOTPVerifierInterface&MockObject $totpVerifier;
+    private TwoFactorSecretEncryptorInterface&MockObject $twoFactorSecretEncryptor;
     private AccessTokenGeneratorInterface&MockObject $accessTokenGenerator;
     private AuthTokenFactoryInterface&MockObject $authTokenFactory;
     private EventBusInterface&MockObject $eventBus;
@@ -57,12 +59,19 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
         $this->authRefreshTokenRepository = $this->createMock(AuthRefreshTokenRepositoryInterface::class);
         $this->totpVerifier = $this->createMock(TOTPVerifierInterface::class);
+        $this->twoFactorSecretEncryptor = $this->createMock(TwoFactorSecretEncryptorInterface::class);
         $this->accessTokenGenerator = $this->createMock(AccessTokenGeneratorInterface::class);
         $this->authTokenFactory = $this->createMock(AuthTokenFactoryInterface::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->ulidFactory = $this->createMock(UlidFactory::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
+
+        $this->twoFactorSecretEncryptor
+            ->method('decrypt')
+            ->willReturnCallback(
+                static fn (string $secret): string => $secret
+            );
     }
 
     /** @SuppressWarnings(PHPMD.CyclomaticComplexity) */
@@ -602,6 +611,59 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->assertNull($command->getResponse()->getWarningMessage());
     }
 
+    public function testTotpSignInFallsBackToStoredSecretWhenDecryptFails(): void
+    {
+        $user = $this->createTwoFactorEnabledUser();
+        $pendingSession = $this->createPendingSession($user->getId(), '+5 minutes');
+
+        $this->pendingTwoFactorRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->willReturn($pendingSession);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->willReturn($user);
+
+        $this->twoFactorSecretEncryptor
+            ->expects($this->once())
+            ->method('decrypt')
+            ->with('JBSWY3DPEHPK3PXP')
+            ->willThrowException(new \RuntimeException('invalid payload'));
+
+        $this->totpVerifier
+            ->expects($this->once())
+            ->method('verify')
+            ->with('JBSWY3DPEHPK3PXP', '123456')
+            ->willReturn(true);
+
+        $this->recoveryCodeRepository
+            ->expects($this->never())
+            ->method('findByUserId');
+
+        $sessionId = new Ulid();
+        $this->ulidFactory->method('create')->willReturn($sessionId);
+        $this->setupTokenGeneration();
+
+        $this->eventBus
+            ->expects($this->once())
+            ->method('publish')
+            ->with($this->isInstanceOf(TwoFactorCompletedEvent::class));
+
+        $handler = $this->createHandler();
+        $command = new CompleteTwoFactorCommand(
+            $pendingSession->getId(),
+            '123456',
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
+
+        $handler->__invoke($command);
+
+        $this->assertSame('test-access-token', $command->getResponse()->getAccessToken());
+    }
+
     /**
      * @param int<1, max> $nextEventIdCallCount
      */
@@ -682,6 +744,7 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
             $this->authSessionRepository,
             $this->authRefreshTokenRepository,
             $this->totpVerifier,
+            $this->twoFactorSecretEncryptor,
             $this->accessTokenGenerator,
             $this->authTokenFactory,
             $this->eventBus,

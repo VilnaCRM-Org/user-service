@@ -10,6 +10,8 @@ use App\User\Infrastructure\Repository\MongoDBAuthRefreshTokenRepository;
 use DateTimeImmutable;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Doctrine\ODM\MongoDB\Query\Builder;
+use Doctrine\ODM\MongoDB\Query\Query;
 use PHPUnit\Framework\MockObject\MockObject;
 
 final class MongoDBAuthRefreshTokenRepositoryTest extends UnitTestCase
@@ -151,6 +153,78 @@ final class MongoDBAuthRefreshTokenRepositoryTest extends UnitTestCase
         $this->assertNotNull($activeToken->getRevokedAt());
     }
 
+    public function testMarkAsRotatedIfActiveReturnsTrueWhenUpdateReturnsPositiveInt(): void
+    {
+        $repository = $this->createRepositoryWithUpdateResult(1);
+
+        $this->assertTrue(
+            $repository->markAsRotatedIfActive(
+                $this->faker->sha256(),
+                new DateTimeImmutable()
+            )
+        );
+    }
+
+    public function testMarkAsRotatedIfActiveReturnsFalseWhenUpdateReturnsZeroInt(): void
+    {
+        $repository = $this->createRepositoryWithUpdateResult(0);
+
+        $this->assertFalse(
+            $repository->markAsRotatedIfActive(
+                $this->faker->sha256(),
+                new DateTimeImmutable()
+            )
+        );
+    }
+
+    public function testMarkGraceUsedIfEligibleReturnsTrueWhenModifiedCountIsPositiveInt(): void
+    {
+        $repository = $this->createRepositoryWithUpdateResult(new class() {
+            public function getModifiedCount(): int
+            {
+                return 1;
+            }
+        });
+
+        $this->assertTrue(
+            $repository->markGraceUsedIfEligible(
+                $this->faker->sha256(),
+                new DateTimeImmutable('-1 minute'),
+                new DateTimeImmutable()
+            )
+        );
+    }
+
+    public function testMarkGraceUsedIfEligibleReturnsFalseWhenModifiedCountIsNotInt(): void
+    {
+        $repository = $this->createRepositoryWithUpdateResult(new class() {
+            public function getModifiedCount(): string
+            {
+                return '1';
+            }
+        });
+
+        $this->assertFalse(
+            $repository->markGraceUsedIfEligible(
+                $this->faker->sha256(),
+                new DateTimeImmutable('-1 minute'),
+                new DateTimeImmutable()
+            )
+        );
+    }
+
+    public function testMarkAsRotatedIfActiveReturnsFalseWhenResultHasNoModifiedCountMethod(): void
+    {
+        $repository = $this->createRepositoryWithUpdateResult(new \stdClass());
+
+        $this->assertFalse(
+            $repository->markAsRotatedIfActive(
+                $this->faker->sha256(),
+                new DateTimeImmutable()
+            )
+        );
+    }
+
     private function createAuthRefreshToken(): AuthRefreshToken
     {
         return new AuthRefreshToken(
@@ -159,5 +233,32 @@ final class MongoDBAuthRefreshTokenRepositoryTest extends UnitTestCase
             $this->faker->sha256(),
             new DateTimeImmutable('+1 month')
         );
+    }
+
+    private function createRepositoryWithUpdateResult(
+        mixed $updateResult
+    ): MongoDBAuthRefreshTokenRepository {
+        $repositoryClass = MongoDBAuthRefreshTokenRepository::class;
+        $repository = $this->getMockBuilder($repositoryClass)
+            ->setConstructorArgs([$this->documentManager, $this->registry])
+            ->onlyMethods(['createQueryBuilder'])
+            ->getMock();
+
+        $queryBuilder = $this->createMock(Builder::class);
+        $query = $this->createMock(Query::class);
+
+        $queryBuilder->method('updateOne')->willReturnSelf();
+        $queryBuilder->method('field')->willReturnSelf();
+        $queryBuilder->method('equals')->willReturnSelf();
+        $queryBuilder->method('gt')->willReturnSelf();
+        $queryBuilder->method('gte')->willReturnSelf();
+        $queryBuilder->method('set')->willReturnSelf();
+        $queryBuilder->method('getQuery')->willReturn($query);
+
+        $query->method('execute')->willReturn($updateResult);
+
+        $repository->method('createQueryBuilder')->willReturn($queryBuilder);
+
+        return $repository;
     }
 }

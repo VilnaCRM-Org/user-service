@@ -56,7 +56,7 @@ Feature: Sign-In Flow
     And signing in with email "wrongpw@test.com" and password "wrongPassword1"
     When POST request is send to "/api/signin"
     Then the response status code should be 401
-    And the error message should be "Invalid credentials"
+    And the error message should be "Invalid credentials."
     And the response should be RFC 7807 problem+json
     And the response should have header "WWW-Authenticate" with value "Bearer"
 
@@ -64,7 +64,7 @@ Feature: Sign-In Flow
     Given signing in with email "nonexistent@test.com" and password "passWORD1"
     When POST request is send to "/api/signin"
     Then the response status code should be 401
-    And the error message should be "Invalid credentials"
+    And the error message should be "Invalid credentials."
     And the response should be RFC 7807 problem+json
 
   Scenario: Sign-in error does not distinguish between wrong email and wrong password
@@ -72,11 +72,11 @@ Feature: Sign-In Flow
     And signing in with email "existing@test.com" and password "wrongPassword1"
     When POST request is send to "/api/signin"
     Then the response status code should be 401
-    And the error message should be "Invalid credentials"
+    And the error message should be "Invalid credentials."
     And signing in with email "definitely-not-existing@test.com" and password "passWORD1"
     When POST request is send to "/api/signin"
     Then the response status code should be 401
-    And the error message should be "Invalid credentials"
+    And the error message should be "Invalid credentials."
 
   Scenario: Sign-in with empty body
     Given sending empty body
@@ -128,7 +128,7 @@ Feature: Sign-In Flow
     And signing in with email "2fa-badpw@test.com" and password "wrongPassword1"
     When POST request is send to "/api/signin"
     Then the response status code should be 401
-    And the error message should be "Invalid credentials"
+    And the error message should be "Invalid credentials."
 
   # Additional sign-in edge cases (FR-01, NFR-50, NFR-54, NFR-56)
 
@@ -204,7 +204,7 @@ Feature: Sign-In Flow
     And signing in with email "pw-changed-old@test.com" and password "passWORD1"
     When POST request is send to "/api/signin"
     Then the response status code should be 401
-    And the error message should be "Invalid credentials"
+    And the error message should be "Invalid credentials."
 
   Scenario: Multiple sign-ins create separate sessions
     Given user with email "multi-session@test.com" and password "passWORD1" exists
@@ -274,7 +274,7 @@ Feature: Sign-In Flow
     And signing in with email "2fa-nonexist@test.com" and password "passWORD1"
     When POST request is send to "/api/signin"
     Then the response status code should be 401
-    And the error message should be "Invalid credentials"
+    And the error message should be "Invalid credentials."
 
   # Constant-time credential validation (NFR-01)
 

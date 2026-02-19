@@ -8,10 +8,12 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
 use App\User\Domain\Contract\AccessTokenGeneratorInterface;
 use App\User\Domain\Contract\AccountLockoutServiceInterface;
+use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PasswordResetTokenFactoryInterface;
 use App\User\Domain\Factory\UserFactoryInterface;
+use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -22,6 +24,7 @@ use Faker\Generator;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Uid\Factory\UlidFactory;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 /**
@@ -57,6 +60,9 @@ final class UserContext implements Context
         private UserOperationsState $state,
         private TestAccessTokenFactory $testAccessTokenFactory,
         private AccessTokenGeneratorInterface $accessTokenGenerator,
+        private AuthSessionRepositoryInterface $authSessionRepository,
+        private UlidFactory $ulidFactory,
+        private TwoFactorSecretEncryptorInterface $twoFactorSecretEncryptor,
     ) {
         $this->faker = Factory::create();
     }
@@ -125,7 +131,9 @@ final class UserContext implements Context
         }
 
         $user->setTwoFactorEnabled(true);
-        $user->setTwoFactorSecret($user->getTwoFactorSecret() ?? 'JBSWY3DPEHPK3PXP');
+        $user->setTwoFactorSecret(
+            $this->twoFactorSecretEncryptor->encrypt('JBSWY3DPEHPK3PXP')
+        );
 
         $this->userRepository->save($user);
     }
@@ -143,7 +151,7 @@ final class UserContext implements Context
         }
 
         $user->setTwoFactorEnabled(true);
-        $user->setTwoFactorSecret($secret);
+        $user->setTwoFactorSecret($this->twoFactorSecretEncryptor->encrypt($secret));
 
         $this->userRepository->save($user);
     }
@@ -159,6 +167,19 @@ final class UserContext implements Context
         }
 
         \PHPUnit\Framework\Assert::assertFalse($user->isTwoFactorEnabled());
+    }
+
+    /**
+     * @Then user with email :email should have two-factor enabled
+     */
+    public function userWithEmailShouldHaveTwoFactorEnabled(string $email): void
+    {
+        $user = $this->userRepository->findByEmail($email);
+        if ($user === null) {
+            throw new \RuntimeException("User with email {$email} not found");
+        }
+
+        \PHPUnit\Framework\Assert::assertTrue($user->isTwoFactorEnabled());
         \PHPUnit\Framework\Assert::assertNotNull($user->getTwoFactorSecret());
     }
 
