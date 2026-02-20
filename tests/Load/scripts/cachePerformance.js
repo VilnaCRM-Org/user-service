@@ -35,7 +35,10 @@ export function setup() {
 
   for (let i = 0; i < warmupCount; i++) {
     const user = users[i];
-    const response = http.get(`${utils.getBaseHttpUrl()}/${user.id}`, utils.getJsonHeader());
+    const response = http.get(
+      `${utils.getBaseHttpUrl()}/${user.id}`,
+      utils.getJsonHeaderWithAuth(user.accessToken)
+    );
 
     if (response.status === 200 && response.body && response.body.length > 0) {
       warmupSuccesses++;
@@ -63,7 +66,10 @@ export default function cachePerformance(data) {
 
   const { id } = user;
 
-  const response = http.get(`${utils.getBaseHttpUrl()}/${id}`, utils.getJsonHeader());
+  const response = http.get(
+    `${utils.getBaseHttpUrl()}/${id}`,
+    utils.getJsonHeaderWithAuth(user.accessToken)
+  );
 
   // Record metrics
   totalRequests.add(1);

@@ -28,7 +28,10 @@ export default function getUser(data) {
 
   const { id } = user;
 
-  const response = http.get(`${utils.getBaseHttpUrl()}/${id}`, utils.getJsonHeader());
+  const response = http.get(
+    `${utils.getBaseHttpUrl()}/${id}`,
+    utils.getJsonHeaderWithAuth(user.accessToken)
+  );
 
   utils.checkResponse(response, 'is status 200', res => res.status === 200);
 }

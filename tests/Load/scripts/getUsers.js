@@ -22,12 +22,15 @@ export function setup() {
 
 export const options = scenarioUtils.getOptions();
 
-export default function getUsers() {
-  let page = utils.getRandomNumber(1, 5);
+export default function getUsers(data) {
+  const user = data.users[utils.getRandomNumber(0, data.users.length - 1)];
+  utils.checkUserIsDefined(user);
+
+  const page = utils.getRandomNumber(1, 5);
 
   const response = http.get(
     `${utils.getBaseHttpUrl()}?page=${page}&itemsPerPage=${usersToGetInOneRequest}`,
-    utils.getJsonHeader()
+    utils.getJsonHeaderWithAuth(user.accessToken)
   );
 
   utils.checkResponse(response, 'is status 200', res => res.status === 200);

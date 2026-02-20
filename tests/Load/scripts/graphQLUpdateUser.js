@@ -50,7 +50,7 @@ export default function updateUser(data) {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query: mutation }),
-    utils.getJsonHeader()
+    utils.getJsonHeaderWithAuth(user.accessToken)
   );
 
   utils.checkResponse(

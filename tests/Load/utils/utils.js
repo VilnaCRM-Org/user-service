@@ -49,6 +49,15 @@ export default class Utils {
     };
   }
 
+  getJsonHeaderWithAuth(accessToken) {
+    return {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
+  }
+
   getEnv(variable) {
     const value = typeof __ENV !== 'undefined' ? __ENV[variable] : undefined;
 
@@ -63,6 +72,15 @@ export default class Utils {
     return {
       headers: {
         'Content-Type': 'application/merge-patch+json',
+      },
+    };
+  }
+
+  getMergePatchHeaderWithAuth(accessToken) {
+    return {
+      headers: {
+        'Content-Type': 'application/merge-patch+json',
+        Authorization: `Bearer ${accessToken}`,
       },
     };
   }

@@ -38,7 +38,7 @@ export default function getUser(data) {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query: query }),
-    utils.getJsonHeader()
+    utils.getJsonHeaderWithAuth(user.accessToken)
   );
 
   utils.checkResponse(

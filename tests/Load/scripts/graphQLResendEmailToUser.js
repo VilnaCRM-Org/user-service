@@ -41,7 +41,7 @@ export default function resendEmail(data) {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query: mutation }),
-    utils.getJsonHeader()
+    utils.getJsonHeaderWithAuth(user.accessToken)
   );
 
   const parsed = JSON.parse(response.body);

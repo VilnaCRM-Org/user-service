@@ -23,6 +23,9 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default function getUsers(data) {
+  const user = data.users[utils.getRandomNumber(0, data.users.length - 1)];
+  utils.checkUserIsDefined(user);
+
   const query = `
         query{
             users(first: ${usersToGetInOneRequest}){
@@ -37,7 +40,7 @@ export default function getUsers(data) {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query: query }),
-    utils.getJsonHeader()
+    utils.getJsonHeaderWithAuth(user.accessToken)
   );
 
   utils.checkResponse(

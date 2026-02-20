@@ -24,6 +24,8 @@ export const options = scenarioUtils.getOptions();
 
 export default async function confirmUser(data) {
   const num = counter.up();
+  const user = data.users[num % data.users.length];
+  utils.checkUserIsDefined(user);
   const mutationName = 'confirmUser';
 
   const token = await mailCatcherUtils.getConfirmationToken(num);
@@ -40,7 +42,7 @@ export default async function confirmUser(data) {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query: mutation }),
-    utils.getJsonHeader()
+    utils.getJsonHeaderWithAuth(user.accessToken)
   );
 
   utils.checkResponse(

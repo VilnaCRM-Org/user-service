@@ -11,7 +11,32 @@ const mailCatcherUtils = new MailCatcherUtils(utils);
 
 export const options = scenarioUtils.getOptions();
 
-export default function createUser() {
+export function setup() {
+  const authUser = utils.generateUser();
+  const registerResponse = utils.registerUser(authUser);
+  utils.checkResponse(registerResponse, 'is status 201', res => res.status === 201);
+
+  const signInPayload = JSON.stringify({
+    email: authUser.email,
+    password: authUser.password,
+    rememberMe: false,
+  });
+  const signInResponse = http.post(`${utils.getBaseUrl()}/signin`, signInPayload, utils.getJsonHeader());
+  if (signInResponse.status !== 200) {
+    throw new Error(
+      `Failed to authenticate GraphQL bootstrap user. Status: ${signInResponse.status}`
+    );
+  }
+
+  const body = JSON.parse(signInResponse.body);
+  if (typeof body.access_token !== 'string' || body.access_token === '') {
+    throw new Error('GraphQL bootstrap sign-in response does not contain access_token');
+  }
+
+  return { accessToken: body.access_token };
+}
+
+export default function createUser(data) {
   const user = utils.generateUser();
   const mutationName = 'createUser';
 
@@ -33,7 +58,7 @@ export default function createUser() {
   const response = http.post(
     utils.getBaseGraphQLUrl(),
     JSON.stringify({ query: mutation }),
-    utils.getJsonHeader()
+    utils.getJsonHeaderWithAuth(data.accessToken)
   );
 
   utils.checkResponse(

@@ -28,7 +28,11 @@ export default function deleteUser(data) {
 
   const { id } = user;
 
-  const response = http.del(`${utils.getBaseHttpUrl()}/${id}`, null, utils.getJsonHeader());
+  const response = http.del(
+    `${utils.getBaseHttpUrl()}/${id}`,
+    null,
+    utils.getJsonHeaderWithAuth(user.accessToken)
+  );
 
   utils.checkResponse(response, 'is status 204', res => res.status === 204);
 }

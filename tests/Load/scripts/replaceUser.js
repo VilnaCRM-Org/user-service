@@ -37,7 +37,11 @@ export default function updateUser(data) {
     oldPassword: password,
   });
 
-  const response = http.put(`${utils.getBaseHttpUrl()}/${id}`, payload, utils.getJsonHeader());
+  const response = http.put(
+    `${utils.getBaseHttpUrl()}/${id}`,
+    payload,
+    utils.getJsonHeaderWithAuth(user.accessToken)
+  );
 
   utils.checkResponse(response, 'is status 200', res => res.status === 200);
 }

@@ -11,10 +11,15 @@ const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 const batchSize = utils.getConfig().endpoints[scenarioName].batchSize;
 const mailCatcherUtils = new MailCatcherUtils(utils);
+const serviceToken = utils.getCLIVariable('serviceToken');
 
 export const options = scenarioUtils.getOptions();
 
 export default function createUser() {
+  if (serviceToken === 'undefined' || serviceToken === '') {
+    throw new Error('Missing serviceToken environment variable for createUserBatch scenario');
+  }
+
   const generator = insertUsersUtils.usersGenerator(batchSize);
   const batch = [];
   const usedEmails = new Set();
@@ -46,7 +51,11 @@ export default function createUser() {
     users: batch,
   });
 
-  const response = http.post(`${utils.getBaseHttpUrl()}/batch`, payload, utils.getJsonHeader());
+  const response = http.post(
+    `${utils.getBaseHttpUrl()}/batch`,
+    payload,
+    utils.getJsonHeaderWithAuth(serviceToken)
+  );
 
   utils.checkResponse(response, 'is status 201', res => res.status === 201);
 }

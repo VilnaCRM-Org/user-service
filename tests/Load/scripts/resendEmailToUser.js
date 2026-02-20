@@ -31,7 +31,7 @@ export default function resendEmail(data) {
   const response = http.post(
     `${utils.getBaseHttpUrl()}/${id}/resend-confirmation-email`,
     JSON.stringify({}),
-    utils.getJsonHeader()
+    utils.getJsonHeaderWithAuth(user.accessToken)
   );
 
   utils.checkResponse(
