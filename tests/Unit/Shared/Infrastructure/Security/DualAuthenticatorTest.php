@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Infrastructure\Security;
 
 use App\Shared\Infrastructure\Factory\UuidFactory as SharedUuidFactory;
+use App\Shared\Infrastructure\Security\AccessTokenPassportFactory;
+use App\Shared\Infrastructure\Security\AccessTokenUserResolver;
 use App\Shared\Infrastructure\Security\DualAuthenticator;
+use App\Shared\Infrastructure\Security\JwtAccessTokenParser;
+use App\Shared\Infrastructure\Security\PublicAccessMatcher;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\AuthorizationUserDto;
@@ -694,12 +698,10 @@ final class DualAuthenticatorTest extends UnitTestCase
         $request = Request::create('/api/users');
         $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
 
-        $passport = $this->createAuthenticator()->authenticate($request);
-
         $this->expectException(CustomUserMessageAuthenticationException::class);
         $this->expectExceptionMessage('Authentication required.');
 
-        $passport->getUser();
+        $this->createAuthenticator()->authenticate($request);
     }
 
     public function testOnAuthenticationSuccessReturnsNull(): void
@@ -767,11 +769,29 @@ final class DualAuthenticatorTest extends UnitTestCase
 
     private function createAuthenticator(): DualAuthenticator
     {
+        $accessTokenPassportFactory = new AccessTokenPassportFactory(
+            new JwtAccessTokenParser($this->jwtEncoder),
+            new AccessTokenUserResolver(
+                $this->userRepository,
+                $this->userTransformer,
+                $this->authSessionRepository
+            )
+        );
+
         return new DualAuthenticator(
-            $this->jwtEncoder,
-            $this->userRepository,
-            $this->userTransformer,
-            $this->authSessionRepository
+            $accessTokenPassportFactory,
+            new PublicAccessMatcher([
+                ['pattern' => '#^/api/users$#', 'methods' => ['POST']],
+                ['pattern' => '#^/api/users/confirm$#', 'methods' => ['PATCH']],
+                ['pattern' => '#^/api/reset-password#'],
+                ['pattern' => '#^/api/signin#'],
+                ['pattern' => '#^/api/token$#', 'methods' => ['POST']],
+                ['pattern' => '#^/api/docs#'],
+                ['pattern' => '#^/api/health#'],
+                ['pattern' => '#^/api/oauth#'],
+                ['pattern' => '#^/api/\\.well-known#'],
+                ['pattern' => '#^/healthz#'],
+            ])
         );
     }
 

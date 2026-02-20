@@ -41,4 +41,4 @@ security:
       algorithm: auto
       cost: 12  # AC: NFR-32 - bcrypt cost upgrade for security
       migrate_from:
-        - bcrypt  # Support transparent upgrade from cost 4
+        - { algorithm: auto, cost: 4 } # AC: NFR-32 - support transparent upgrade from cost 4

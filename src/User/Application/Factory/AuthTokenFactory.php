@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Application\Factory;
 
+use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\User;
 use DateInterval;
@@ -73,6 +74,17 @@ final readonly class AuthTokenFactory implements AuthTokenFactoryInterface
             $sessionId,
             $plainToken,
             $issuedAt->add($this->refreshTokenTtl)
+        );
+    }
+
+    #[\Override]
+    public function createRefreshTokenResponse(
+        string $accessToken,
+        string $refreshToken
+    ): RefreshTokenCommandResponse {
+        return new RefreshTokenCommandResponse(
+            $accessToken,
+            $refreshToken
         );
     }
 

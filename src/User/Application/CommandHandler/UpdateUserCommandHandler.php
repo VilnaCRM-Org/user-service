@@ -6,9 +6,9 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
-use App\User\Application\Applier\UserUpdateApplier;
 use App\User\Application\Command\UpdateUserCommand;
-use App\User\Application\Revoker\PasswordChangeSessionRevoker;
+use App\User\Application\Service\PasswordChangeSessionRevoker;
+use App\User\Application\Service\UserUpdateApplierInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Exception\InvalidPasswordException;
@@ -20,7 +20,7 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
     public function __construct(
         private EventBusInterface $eventBus,
         private PasswordHasherFactoryInterface $hasherFactory,
-        private UserUpdateApplier $userUpdateApplier,
+        private UserUpdateApplierInterface $userUpdateApplier,
         private PasswordChangeSessionRevoker $passwordChangeSessionRevoker,
         private UuidFactory $uuidFactory,
     ) {

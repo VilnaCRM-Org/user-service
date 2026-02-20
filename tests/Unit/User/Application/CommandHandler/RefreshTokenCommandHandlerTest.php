@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
-use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory as SharedUuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RefreshTokenCommand;
 use App\User\Application\CommandHandler\RefreshTokenCommandHandler;
+use App\User\Application\DTO\RefreshTokenCommandResponse;
+use App\User\Application\Factory\AuthTokenFactoryInterface;
+use App\User\Application\Service\RefreshTokenEventPublisherInterface;
 use App\User\Domain\Contract\AccessTokenGeneratorInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Event\RefreshTokenRotatedEvent;
-use App\User\Domain\Event\RefreshTokenTheftDetectedEvent;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
@@ -23,10 +23,7 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
-use Symfony\Component\Uid\Factory\UlidFactory;
-use Symfony\Component\Uid\Factory\UuidFactory;
 use Symfony\Component\Uid\Ulid;
-use Symfony\Component\Uid\Uuid;
 
 final class RefreshTokenCommandHandlerTest extends UnitTestCase
 {
@@ -34,9 +31,8 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
     private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
     private UserRepositoryInterface&MockObject $userRepository;
     private AccessTokenGeneratorInterface&MockObject $accessTokenGenerator;
-    private EventBusInterface&MockObject $eventBus;
-    private UuidFactory&MockObject $uuidFactory;
-    private UlidFactory&MockObject $ulidFactory;
+    private RefreshTokenEventPublisherInterface&MockObject $eventPublisher;
+    private AuthTokenFactoryInterface&MockObject $authTokenFactory;
     private UserFactory $userFactory;
     private UuidTransformer $uuidTransformer;
 
@@ -49,9 +45,19 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
         $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->accessTokenGenerator = $this->createMock(AccessTokenGeneratorInterface::class);
-        $this->eventBus = $this->createMock(EventBusInterface::class);
-        $this->uuidFactory = $this->createMock(UuidFactory::class);
-        $this->ulidFactory = $this->createMock(UlidFactory::class);
+        $this->eventPublisher = $this->createMock(RefreshTokenEventPublisherInterface::class);
+        $this->authTokenFactory = $this->createMock(AuthTokenFactoryInterface::class);
+        $this->authTokenFactory
+            ->method('createRefreshTokenResponse')
+            ->willReturnCallback(
+                static fn (
+                    string $accessToken,
+                    string $refreshToken
+                ): RefreshTokenCommandResponse => new RefreshTokenCommandResponse(
+                    $accessToken,
+                    $refreshToken
+                )
+            );
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
     }
@@ -90,16 +96,32 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->method('markAsRotatedIfActive')
             ->willReturn(true);
 
-        $newTokenId = new Ulid();
-        $this->ulidFactory
-            ->expects($this->once())
-            ->method('create')
-            ->willReturn($newTokenId);
+        $this->authTokenFactory
+            ->method('generateOpaqueToken')
+            ->willReturn('test-opaque-token-1234567890-abcdefghijklmn');
 
-        $this->uuidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => Uuid::v4());
+        $this->authTokenFactory
+            ->method('createRefreshToken')
+            ->willReturnCallback(
+                static fn (string $sessionId, string $plain, DateTimeImmutable $issuedAt): AuthRefreshToken =>
+                    new AuthRefreshToken((string) new Ulid(), $sessionId, $plain, $issuedAt->modify('+1 month'))
+            );
 
+        $this->authTokenFactory
+            ->method('buildJwtPayload')
+            ->willReturnCallback(
+                static fn (User $u, string $sid, DateTimeImmutable $iat): array => [
+                    'sub' => $u->getId(),
+                    'iss' => 'vilnacrm-user-service',
+                    'aud' => 'vilnacrm-api',
+                    'exp' => $iat->getTimestamp() + 900,
+                    'iat' => $iat->getTimestamp(),
+                    'nbf' => $iat->getTimestamp(),
+                    'jti' => 'test-jti',
+                    'sid' => $sid,
+                    'roles' => ['ROLE_USER'],
+                ]
+            );
         $this->accessTokenGenerator
             ->expects($this->once())
             ->method('generate')
@@ -114,13 +136,10 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ))
             ->willReturn('new-access-token');
 
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(
-                static fn (RefreshTokenRotatedEvent $e): bool => $e->sessionId === $session->getId()
-                    && $e->userId === $user->getId()
-            ));
+            ->method('publishRotated')
+            ->with($session->getId(), $user->getId());
 
         $handler = $this->createHandler();
         $command = new RefreshTokenCommand($plainToken);
@@ -128,7 +147,7 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
 
         $response = $command->getResponse();
         $this->assertSame('new-access-token', $response->getAccessToken());
-        $this->assertNotEmpty($response->getRefreshToken());
+        $this->assertSame('test-opaque-token-1234567890-abcdefghijklmn', $response->getRefreshToken());
         $this->assertOpaqueTokenFormat($response->getRefreshToken());
         $this->assertTrue($oldToken->isRotated());
     }
@@ -245,23 +264,41 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->method('markGraceUsedIfEligible')
             ->willReturn(true);
 
-        $this->ulidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => new Ulid());
+        $this->authTokenFactory
+            ->method('generateOpaqueToken')
+            ->willReturn('test-opaque-token-1234567890-abcdefghijklmn');
 
-        $this->uuidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => Uuid::v4());
+        $this->authTokenFactory
+            ->method('createRefreshToken')
+            ->willReturnCallback(
+                static fn (string $sessionId, string $plain, DateTimeImmutable $issuedAt): AuthRefreshToken =>
+                    new AuthRefreshToken((string) new Ulid(), $sessionId, $plain, $issuedAt->modify('+1 month'))
+            );
 
+        $this->authTokenFactory
+            ->method('buildJwtPayload')
+            ->willReturnCallback(
+                static fn (User $u, string $sid, DateTimeImmutable $iat): array => [
+                    'sub' => $u->getId(),
+                    'iss' => 'vilnacrm-user-service',
+                    'aud' => 'vilnacrm-api',
+                    'exp' => $iat->getTimestamp() + 900,
+                    'iat' => $iat->getTimestamp(),
+                    'nbf' => $iat->getTimestamp(),
+                    'jti' => 'test-jti',
+                    'sid' => $sid,
+                    'roles' => ['ROLE_USER'],
+                ]
+            );
         $this->accessTokenGenerator
             ->expects($this->once())
             ->method('generate')
             ->willReturn('grace-access-token');
 
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(RefreshTokenRotatedEvent::class));
+            ->method('publishRotated')
+            ->with($session->getId(), $user->getId());
 
         $handler = $this->createHandler();
         $command = new RefreshTokenCommand($plainToken);
@@ -316,23 +353,41 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->expects($this->once())
             ->method('save');
 
-        $this->ulidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => new Ulid());
+        $this->authTokenFactory
+            ->method('generateOpaqueToken')
+            ->willReturn('test-opaque-token-1234567890-abcdefghijklmn');
 
-        $this->uuidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => Uuid::v4());
+        $this->authTokenFactory
+            ->method('createRefreshToken')
+            ->willReturnCallback(
+                static fn (string $sessionId, string $plain, DateTimeImmutable $issuedAt): AuthRefreshToken =>
+                    new AuthRefreshToken((string) new Ulid(), $sessionId, $plain, $issuedAt->modify('+1 month'))
+            );
 
+        $this->authTokenFactory
+            ->method('buildJwtPayload')
+            ->willReturnCallback(
+                static fn (User $u, string $sid, DateTimeImmutable $iat): array => [
+                    'sub' => $u->getId(),
+                    'iss' => 'vilnacrm-user-service',
+                    'aud' => 'vilnacrm-api',
+                    'exp' => $iat->getTimestamp() + 900,
+                    'iat' => $iat->getTimestamp(),
+                    'nbf' => $iat->getTimestamp(),
+                    'jti' => 'test-jti',
+                    'sid' => $sid,
+                    'roles' => ['ROLE_USER'],
+                ]
+            );
         $this->accessTokenGenerator
             ->expects($this->once())
             ->method('generate')
             ->willReturn('concurrent-access-token');
 
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(RefreshTokenRotatedEvent::class));
+            ->method('publishRotated')
+            ->with($session->getId(), $user->getId());
 
         $handler = $this->createHandler();
         $command = new RefreshTokenCommand($plainToken);
@@ -381,9 +436,9 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->expects($this->never())
             ->method('save');
 
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->never())
-            ->method('publish');
+            ->method('publishRotated');
 
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid refresh token.');
@@ -439,17 +494,15 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->with($this->callback(
                 static fn (AuthSession $savedSession): bool => $savedSession->isRevoked()
             ));
-
-        $this->uuidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => Uuid::v4());
-
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(
-                static fn (RefreshTokenTheftDetectedEvent $event): bool => $event->reason === 'double_grace_use'
-            ));
+            ->method('publishTheftDetected')
+            ->with(
+                $session->getId(),
+                $user->getId(),
+                $session->getIpAddress(),
+                'double_grace_use'
+            );
 
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid refresh token.');
@@ -501,18 +554,15 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->with($this->callback(
                 static fn (AuthSession $s): bool => $s->isRevoked()
             ));
-
-        $this->uuidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => Uuid::v4());
-
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(
-                static fn (RefreshTokenTheftDetectedEvent $e): bool => $e->reason === 'double_grace_use'
-                    && $e->ipAddress === $session->getIpAddress()
-            ));
+            ->method('publishTheftDetected')
+            ->with(
+                $session->getId(),
+                $user->getId(),
+                $session->getIpAddress(),
+                'double_grace_use'
+            );
 
         $this->expectException(UnauthorizedHttpException::class);
 
@@ -562,18 +612,15 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->with($this->callback(
                 static fn (AuthSession $s): bool => $s->isRevoked()
             ));
-
-        $this->uuidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => Uuid::v4());
-
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(
-                static fn (RefreshTokenTheftDetectedEvent $e): bool => $e->reason === 'grace_period_expired'
-                    && $e->ipAddress === $session->getIpAddress()
-            ));
+            ->method('publishTheftDetected')
+            ->with(
+                $session->getId(),
+                $user->getId(),
+                $session->getIpAddress(),
+                'grace_period_expired'
+            );
 
         $this->expectException(UnauthorizedHttpException::class);
 
@@ -624,15 +671,15 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->with($this->callback(
                 static fn (AuthSession $s): bool => $s->isRevoked()
             ));
-
-        $this->uuidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => Uuid::v4());
-
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(RefreshTokenTheftDetectedEvent::class));
+            ->method('publishTheftDetected')
+            ->with(
+                $session->getId(),
+                $user->getId(),
+                $session->getIpAddress(),
+                'double_grace_use'
+            );
 
         $this->expectException(UnauthorizedHttpException::class);
 
@@ -688,15 +735,15 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
         $this->refreshTokenRepository
             ->expects($this->never())
             ->method('save');
-
-        $this->uuidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => Uuid::v4());
-
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(RefreshTokenTheftDetectedEvent::class));
+            ->method('publishTheftDetected')
+            ->with(
+                $session->getId(),
+                $user->getId(),
+                $session->getIpAddress(),
+                'double_grace_use'
+            );
 
         $this->expectException(UnauthorizedHttpException::class);
 
@@ -763,15 +810,15 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             ->with($this->callback(
                 static fn (AuthSession $savedSession): bool => $savedSession->isRevoked()
             ));
-
-        $this->uuidFactory
-            ->method('create')
-            ->willReturnCallback(static fn () => Uuid::v4());
-
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(RefreshTokenTheftDetectedEvent::class));
+            ->method('publishTheftDetected')
+            ->with(
+                $session->getId(),
+                $user->getId(),
+                $session->getIpAddress(),
+                'double_grace_use'
+            );
 
         $this->expectException(UnauthorizedHttpException::class);
 
@@ -907,9 +954,8 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
             $this->authSessionRepository,
             $this->userRepository,
             $this->accessTokenGenerator,
-            $this->eventBus,
-            $this->uuidFactory,
-            $this->ulidFactory,
+            $this->authTokenFactory,
+            $this->eventPublisher,
             $refreshTokenGraceWindowSeconds,
         );
     }

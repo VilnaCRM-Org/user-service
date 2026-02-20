@@ -5,49 +5,33 @@ declare(strict_types=1);
 namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
-use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\RefreshTokenCommand;
-use App\User\Application\DTO\RefreshTokenCommandResponse;
+use App\User\Application\Factory\AuthTokenFactoryInterface;
+use App\User\Application\Service\RefreshTokenEventPublisherInterface;
 use App\User\Domain\Contract\AccessTokenGeneratorInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Event\RefreshTokenRotatedEvent;
-use App\User\Domain\Event\RefreshTokenTheftDetectedEvent;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use DateInterval;
 use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
-use Symfony\Component\Uid\Factory\UlidFactory;
-use Symfony\Component\Uid\Factory\UuidFactory;
 
-/**
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- */
 final readonly class RefreshTokenCommandHandler implements
     CommandHandlerInterface
 {
-    private const ACCESS_TOKEN_TTL_SECONDS = 900;
-    private const JWT_ISSUER = 'vilnacrm-user-service';
-    private const JWT_AUDIENCE = 'vilnacrm-api';
     private const DEFAULT_GRACE_WINDOW_SECONDS = 60;
-
-    private DateInterval $refreshTokenTtl;
 
     public function __construct(
         private AuthRefreshTokenRepositoryInterface $refreshTokenRepository,
         private AuthSessionRepositoryInterface $authSessionRepository,
         private UserRepositoryInterface $userRepository,
         private AccessTokenGeneratorInterface $accessTokenGenerator,
-        private EventBusInterface $eventBus,
-        private UuidFactory $uuidFactory,
-        private UlidFactory $ulidFactory,
+        private AuthTokenFactoryInterface $authTokenFactory,
+        private RefreshTokenEventPublisherInterface $eventPublisher,
         private int $refreshTokenGraceWindowSeconds = self::DEFAULT_GRACE_WINDOW_SECONDS,
-        string $refreshTokenTtlSpec = 'P1M',
     ) {
-        $this->refreshTokenTtl = new DateInterval($refreshTokenTtlSpec);
     }
 
     public function __invoke(RefreshTokenCommand $command): void
@@ -264,7 +248,27 @@ final readonly class RefreshTokenCommandHandler implements
         User $user,
         AuthSession $session
     ): void {
-        $command->setResponse($this->issueNewTokens($user, $session));
+        $issuedAt = new DateTimeImmutable();
+
+        $newRefreshPlain = $this->authTokenFactory->generateOpaqueToken();
+        $this->refreshTokenRepository->save(
+            $this->authTokenFactory->createRefreshToken(
+                $session->getId(),
+                $newRefreshPlain,
+                $issuedAt
+            )
+        );
+
+        $accessToken = $this->accessTokenGenerator->generate(
+            $this->authTokenFactory->buildJwtPayload($user, $session->getId(), $issuedAt)
+        );
+
+        $command->setResponse(
+            $this->authTokenFactory->createRefreshTokenResponse(
+                $accessToken,
+                $newRefreshPlain
+            )
+        );
     }
 
     private function assertGraceWindowIsEligible(
@@ -313,79 +317,13 @@ final readonly class RefreshTokenCommandHandler implements
         return $user;
     }
 
-    private function issueNewTokens(
-        User $user,
-        AuthSession $session
-    ): RefreshTokenCommandResponse {
-        $issuedAt = new DateTimeImmutable();
-
-        $newRefreshPlain = $this->generateOpaqueToken();
-        $this->saveNewRefreshToken(
-            $session->getId(),
-            $newRefreshPlain,
-            $issuedAt
-        );
-
-        $accessToken = $this->accessTokenGenerator->generate(
-            $this->buildJwtPayload($user, $session->getId(), $issuedAt)
-        );
-
-        return new RefreshTokenCommandResponse(
-            $accessToken,
-            $newRefreshPlain
-        );
-    }
-
-    private function saveNewRefreshToken(
-        string $sessionId,
-        string $plainToken,
-        DateTimeImmutable $issuedAt
-    ): void {
-        $this->refreshTokenRepository->save(
-            new AuthRefreshToken(
-                (string) $this->ulidFactory->create(),
-                $sessionId,
-                $plainToken,
-                $issuedAt->add($this->refreshTokenTtl)
-            )
-        );
-    }
-
-    /**
-     * @return array<int|string|array<string>>
-     *
-     * @psalm-return array{sub: string, iss: 'vilnacrm-user-service', aud: 'vilnacrm-api', exp: int, iat: int, nbf: int, jti: string, sid: string, roles: list{'ROLE_USER'}}
-     */
-    private function buildJwtPayload(
-        User $user,
-        string $sessionId,
-        DateTimeImmutable $issuedAt
-    ): array {
-        $ts = $issuedAt->getTimestamp();
-
-        return [
-            'sub' => $user->getId(),
-            'iss' => self::JWT_ISSUER,
-            'aud' => self::JWT_AUDIENCE,
-            'exp' => $ts + self::ACCESS_TOKEN_TTL_SECONDS,
-            'iat' => $ts,
-            'nbf' => $ts,
-            'jti' => (string) $this->uuidFactory->create(),
-            'sid' => $sessionId,
-            'roles' => ['ROLE_USER'],
-        ];
-    }
-
     private function publishRotatedEvent(
         AuthSession $session,
         User $user
     ): void {
-        $this->eventBus->publish(
-            new RefreshTokenRotatedEvent(
-                $session->getId(),
-                $user->getId(),
-                (string) $this->uuidFactory->create()
-            )
+        $this->eventPublisher->publishRotated(
+            $session->getId(),
+            $user->getId()
         );
     }
 
@@ -394,22 +332,11 @@ final readonly class RefreshTokenCommandHandler implements
         User $user,
         string $reason
     ): void {
-        $this->eventBus->publish(
-            new RefreshTokenTheftDetectedEvent(
-                $session->getId(),
-                $user->getId(),
-                $session->getIpAddress(),
-                $reason,
-                (string) $this->uuidFactory->create()
-            )
-        );
-    }
-
-    private function generateOpaqueToken(): string
-    {
-        return rtrim(
-            strtr(base64_encode(random_bytes(32)), '+/', '-_'),
-            '='
+        $this->eventPublisher->publishTheftDetected(
+            $session->getId(),
+            $user->getId(),
+            $session->getIpAddress(),
+            $reason
         );
     }
 

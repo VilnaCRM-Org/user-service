@@ -219,10 +219,25 @@ services:
       $twoFactorEncryptionKey: '%env(resolve:TWO_FACTOR_ENCRYPTION_KEY)%'
 
   App\User\Application\Factory\AuthTokenFactoryInterface: '@App\User\Application\Factory\AuthTokenFactory'
+  App\User\Application\Service\RefreshTokenEventPublisherInterface: '@App\User\Application\Service\RefreshTokenEventPublisher'
 
   App\User\Application\Factory\AuthTokenFactory:
     arguments:
       $refreshTokenTtlSpec: '%env(resolve:REFRESH_TOKEN_TTL)%'
+
+  App\Shared\Infrastructure\Security\PublicAccessMatcher:
+    arguments:
+      $rules:
+        - { pattern: '#^/api/users$#', methods: ['POST'] }
+        - { pattern: '#^/api/users/confirm$#', methods: ['PATCH'] }
+        - { pattern: '#^/api/reset-password#' }
+        - { pattern: '#^/api/signin#' }
+        - { pattern: '#^/api/token$#', methods: ['POST'] }
+        - { pattern: '#^/api/docs#' }
+        - { pattern: '#^/api/health#' }
+        - { pattern: '#^/api/oauth#' }
+        - { pattern: '#^/api/\\.well-known#' }
+        - { pattern: '#^/healthz#' }
 
   App\User\Application\CommandHandler\SignInCommandHandler:
     arguments:
@@ -230,7 +245,6 @@ services:
 
   App\User\Application\CommandHandler\RefreshTokenCommandHandler:
     arguments:
-      $refreshTokenTtlSpec: '%env(resolve:REFRESH_TOKEN_TTL)%'
       $refreshTokenGraceWindowSeconds: '%env(int:REFRESH_TOKEN_GRACE_WINDOW_SECONDS)%'
 
   App\User\Domain\Contract\PasswordResetTokenValidatorInterface: '@App\User\Application\Validator\CompositePasswordResetTokenValidator'
