@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\RefreshTokenCommand;
-use App\User\Application\Command\RefreshTokenCommandResponse;
+use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Application\DTO\RefreshTokenDto;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Cookie;

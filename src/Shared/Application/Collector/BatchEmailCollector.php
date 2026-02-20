@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Collector;
 
+use App\Shared\Application\DTO\BatchEmailCollection;
 use App\Shared\Application\Resolver\BatchEmailResolver;
 use Traversable;
 

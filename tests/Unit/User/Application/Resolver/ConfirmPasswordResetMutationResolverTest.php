@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Application\Resolver;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
-use App\User\Application\Command\ConfirmPasswordResetCommandResponse;
+use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Application\Resolver\ConfirmPasswordResetMutationResolver;
 use App\User\Application\Validator\MutationInputValidator;
 

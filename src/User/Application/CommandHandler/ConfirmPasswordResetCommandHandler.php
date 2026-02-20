@@ -6,7 +6,7 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
-use App\User\Application\Command\ConfirmPasswordResetCommandResponse;
+use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Contract\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;

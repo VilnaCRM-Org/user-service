@@ -6,7 +6,7 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\SetupTwoFactorCommand;
-use App\User\Application\Command\SetupTwoFactorCommandResponse;
+use App\User\Application\DTO\SetupTwoFactorCommandResponse;
 use App\User\Domain\Contract\TOTPSecretGeneratorInterface;
 use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\User;

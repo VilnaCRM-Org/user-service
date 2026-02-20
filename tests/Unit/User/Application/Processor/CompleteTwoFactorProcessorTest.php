@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\CompleteTwoFactorCommand;
-use App\User\Application\Command\CompleteTwoFactorCommandResponse;
+use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
 use App\User\Application\Processor\CompleteTwoFactorProcessor;
 use PHPUnit\Framework\MockObject\MockObject;

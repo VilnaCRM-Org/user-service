@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\CompleteTwoFactorCommand;
-use App\User\Application\Command\CompleteTwoFactorCommandResponse;
+use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Cookie;

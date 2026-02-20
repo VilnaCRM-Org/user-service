@@ -7,7 +7,7 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\CompleteTwoFactorCommand;
-use App\User\Application\Command\CompleteTwoFactorCommandResponse;
+use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
 use App\User\Domain\Contract\AccessTokenGeneratorInterface;
 use App\User\Domain\Contract\TOTPVerifierInterface;

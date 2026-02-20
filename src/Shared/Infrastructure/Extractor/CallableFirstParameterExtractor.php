@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Infrastructure\Bus;
+namespace App\Shared\Infrastructure\Extractor;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
+use App\Shared\Infrastructure\Bus\InvokeParameterExtractor;
 
 final readonly class CallableFirstParameterExtractor
 {

@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
-use App\User\Application\Command\RegenerateRecoveryCodesCommandResponse;
+use App\User\Application\DTO\RegenerateRecoveryCodesCommandResponse;
 use App\User\Application\DTO\RegenerateRecoveryCodesDto;
 use App\User\Application\Processor\RegenerateRecoveryCodesProcessor;
 use PHPUnit\Framework\MockObject\MockObject;

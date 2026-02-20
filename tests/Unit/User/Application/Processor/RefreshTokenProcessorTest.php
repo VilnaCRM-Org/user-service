@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RefreshTokenCommand;
-use App\User\Application\Command\RefreshTokenCommandResponse;
+use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Application\DTO\RefreshTokenDto;
 use App\User\Application\Processor\RefreshTokenProcessor;
 use PHPUnit\Framework\MockObject\MockObject;

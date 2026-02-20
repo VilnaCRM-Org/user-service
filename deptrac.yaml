@@ -31,7 +31,7 @@ parameters:
         - type: className
           regex: '.*App\\OAuth\\Infrastructure\\(DoctrineType|Manager|Revoker|Serializer).*'
         - type: className
-          regex: '.*App\\Shared\\Infrastructure\\(Bus|DoctrineType|RetryStrategy|Transformer|Factory|Command|Fixture|Observability|EventDispatcher|Cache|Serializer|Decoder|Security).*'
+          regex: '.*App\\Shared\\Infrastructure\\(Bus|DoctrineType|RetryStrategy|Transformer|Factory|Command|Fixture|Observability|EventDispatcher|Cache|Serializer|Decoder|Security|Extractor).*'
         - type: className
           regex: '.*App\\Internal\\HealthCheck\\Infrastructure\\.*'
     - name: Symfony

@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\SignInCommand;
-use App\User\Application\Command\SignInCommandResponse;
+use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\DTO\SignInDto;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Cookie;

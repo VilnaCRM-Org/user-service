@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SignInCommand;
-use App\User\Application\Command\SignInCommandResponse;
+use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\DTO\SignInDto;
 use App\User\Application\Processor\SignInProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
