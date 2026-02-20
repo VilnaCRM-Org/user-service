@@ -68,7 +68,7 @@ final readonly class SignInProcessor implements ProcessorInterface
         $this->attachAuthCookie(
             $response,
             $commandResponse->getAccessToken(),
-            $data->rememberMe
+            $data
         );
 
         return $response;
@@ -104,13 +104,13 @@ final readonly class SignInProcessor implements ProcessorInterface
     private function attachAuthCookie(
         Response $response,
         ?string $accessToken,
-        bool $rememberMe
+        SignInDto $data
     ): void {
         if ($accessToken === null || $accessToken === '') {
             return;
         }
 
-        $maxAge = $rememberMe
+        $maxAge = $data->rememberMe
             ? self::REMEMBER_ME_COOKIE_MAX_AGE
             : self::STANDARD_COOKIE_MAX_AGE;
 

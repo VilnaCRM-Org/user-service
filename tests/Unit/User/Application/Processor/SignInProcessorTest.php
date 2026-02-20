@@ -43,7 +43,7 @@ final class SignInProcessorTest extends UnitTestCase
         $request = $this->createRequest($ipAddress, $userAgent);
         $this->requestStack->push($request);
 
-        $dto = new SignInDto($email, $password, false);
+        $dto = new SignInDto($email, $password);
 
         $this->commandBus
             ->expects($this->once())
@@ -101,7 +101,8 @@ final class SignInProcessorTest extends UnitTestCase
     public function testProcessSetsRememberMeCookieMaxAge(): void
     {
         $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
-        $dto = new SignInDto($this->faker->email(), $this->faker->password(), true);
+        $dto = new SignInDto($this->faker->email(), $this->faker->password());
+        $dto->rememberMe = true;
 
         $this->commandBus
             ->expects($this->once())
@@ -136,7 +137,7 @@ final class SignInProcessorTest extends UnitTestCase
     public function testProcessReturnsTwoFactorBodyWithoutCookie(): void
     {
         $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
-        $dto = new SignInDto($this->faker->email(), $this->faker->password(), false);
+        $dto = new SignInDto($this->faker->email(), $this->faker->password());
 
         $this->commandBus
             ->expects($this->once())
@@ -175,7 +176,7 @@ final class SignInProcessorTest extends UnitTestCase
     public function testProcessDoesNotSetCookieForTwoFactorResponseEvenWithTokenValue(): void
     {
         $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
-        $dto = new SignInDto($this->faker->email(), $this->faker->password(), false);
+        $dto = new SignInDto($this->faker->email(), $this->faker->password());
 
         $this->commandBus
             ->expects($this->once())
@@ -206,7 +207,7 @@ final class SignInProcessorTest extends UnitTestCase
     public function testProcessDoesNotSetCookieWhenAccessTokenIsMissing(): void
     {
         $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
-        $dto = new SignInDto($this->faker->email(), $this->faker->password(), false);
+        $dto = new SignInDto($this->faker->email(), $this->faker->password());
 
         $this->commandBus
             ->expects($this->once())
@@ -245,7 +246,7 @@ final class SignInProcessorTest extends UnitTestCase
     public function testProcessCastsMissingRefreshTokenToEmptyStringInResponseBody(): void
     {
         $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
-        $dto = new SignInDto($this->faker->email(), $this->faker->password(), false);
+        $dto = new SignInDto($this->faker->email(), $this->faker->password());
 
         $this->commandBus
             ->expects($this->once())
@@ -282,7 +283,7 @@ final class SignInProcessorTest extends UnitTestCase
     public function testProcessPropagatesUnauthorizedExceptionWithBearerHeader(): void
     {
         $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
-        $dto = new SignInDto($this->faker->email(), $this->faker->password(), false);
+        $dto = new SignInDto($this->faker->email(), $this->faker->password());
 
         $this->commandBus
             ->expects($this->once())
@@ -309,7 +310,7 @@ final class SignInProcessorTest extends UnitTestCase
         $request = $this->createRequest($ipAddress, $userAgent);
         $this->requestStack->push($request);
 
-        $dto = new SignInDto($this->faker->email(), $this->faker->password(), false);
+        $dto = new SignInDto($this->faker->email(), $this->faker->password());
 
         $this->commandBus
             ->expects($this->once())
@@ -345,7 +346,7 @@ final class SignInProcessorTest extends UnitTestCase
         $contextRequest = $this->createRequest('198.51.100.15', 'Context Agent');
         $this->requestStack->push($stackRequest);
 
-        $dto = new SignInDto($this->faker->email(), $this->faker->password(), false);
+        $dto = new SignInDto($this->faker->email(), $this->faker->password());
 
         $this->commandBus
             ->expects($this->once())
@@ -377,7 +378,7 @@ final class SignInProcessorTest extends UnitTestCase
 
     public function testProcessFallsBackToEmptyRequestMetadataWhenNoRequestExists(): void
     {
-        $dto = new SignInDto($this->faker->email(), $this->faker->password(), false);
+        $dto = new SignInDto($this->faker->email(), $this->faker->password());
 
         $this->commandBus
             ->expects($this->once())

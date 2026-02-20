@@ -6,24 +6,29 @@ namespace App\User\Domain\Entity;
 
 use DateTimeImmutable;
 
-/**
- * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
- */
 final class PendingTwoFactor
 {
     private const DEFAULT_TTL_MINUTES = 5;
 
     private DateTimeImmutable $expiresAt;
+    private bool $rememberMe = false;
 
     public function __construct(
         private string $id,
         private string $userId,
         private DateTimeImmutable $createdAt,
-        ?DateTimeImmutable $expiresAt = null,
-        private bool $rememberMe = false
+        ?DateTimeImmutable $expiresAt = null
     ) {
         $this->expiresAt =
             $expiresAt ?? $this->createdAt->modify('+' . self::DEFAULT_TTL_MINUTES . ' minutes');
+    }
+
+    public function withRememberMe(): static
+    {
+        $clone = clone $this;
+        $clone->rememberMe = true;
+
+        return $clone;
     }
 
     public function getId(): string

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Infrastructure\Service;
 
 use App\Tests\Unit\UnitTestCase;
+use App\User\Infrastructure\Service\TOTPCreatorService;
 use App\User\Infrastructure\Service\TOTPVerifier;
 use OTPHP\TOTP;
 
@@ -22,7 +23,7 @@ final class TOTPVerifierTest extends UnitTestCase
         $nextWindowCode = $totp->at($timestamp + $period);
         $twoWindowsOldCode = $totp->at(max(0, $timestamp - (2 * $period)));
 
-        $verifier = new TOTPVerifier();
+        $verifier = new TOTPVerifier(new TOTPCreatorService());
 
         $this->assertTrue($verifier->verify($secret, $currentCode, $timestamp));
         $this->assertTrue($verifier->verify($secret, $previousWindowCode, $timestamp));
@@ -32,7 +33,7 @@ final class TOTPVerifierTest extends UnitTestCase
 
     public function testVerifyReturnsFalseForInvalidSecret(): void
     {
-        $verifier = new TOTPVerifier();
+        $verifier = new TOTPVerifier(new TOTPCreatorService());
 
         $this->assertFalse(
             $verifier->verify('invalid-secret-value', '123456', time())
@@ -46,7 +47,7 @@ final class TOTPVerifierTest extends UnitTestCase
         $totp = TOTP::create($secret);
         $codeAtProvidedTimestamp = $totp->at($timestamp);
 
-        $verifier = new TOTPVerifier();
+        $verifier = new TOTPVerifier(new TOTPCreatorService());
 
         $this->assertTrue(
             $verifier->verify($secret, $codeAtProvidedTimestamp, $timestamp)
@@ -66,7 +67,7 @@ final class TOTPVerifierTest extends UnitTestCase
         $timestamp = $period;
         $previousWindowCode = $totp->at(0);
 
-        $verifier = new TOTPVerifier();
+        $verifier = new TOTPVerifier(new TOTPCreatorService());
 
         $this->assertTrue(
             $verifier->verify($secret, $previousWindowCode, $timestamp)

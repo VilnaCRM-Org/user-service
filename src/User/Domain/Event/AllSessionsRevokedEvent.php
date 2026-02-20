@@ -6,7 +6,7 @@ namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 
-final class AllSessionsRevokedEvent extends DomainEvent
+final class AllSessionsRevokedEvent extends AuthDomainEvent
 {
     public function __construct(
         public readonly string $userId,

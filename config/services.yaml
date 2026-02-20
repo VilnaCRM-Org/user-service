@@ -220,6 +220,13 @@ services:
 
   App\User\Application\Factory\AuthTokenFactoryInterface: '@App\User\Application\Factory\AuthTokenFactory'
   App\User\Application\Service\RefreshTokenEventPublisherInterface: '@App\User\Application\Service\RefreshTokenEventPublisher'
+  App\User\Application\Service\TwoFactorCodeVerifierInterface: '@App\User\Application\Service\TwoFactorCodeVerifierService'
+  App\User\Application\Service\RecoveryCodeGeneratorInterface: '@App\User\Application\Service\RecoveryCodeGeneratorService'
+  App\User\Application\Service\TwoFactorEventPublisherInterface: '@App\User\Application\Service\TwoFactorEventPublisher'
+  App\User\Application\Service\SessionIssuanceServiceInterface: '@App\User\Application\Service\SessionIssuanceService'
+  App\User\Application\Service\SignInEventPublisherInterface: '@App\User\Application\Service\SignInEventPublisher'
+  App\User\Application\Service\UserAuthenticationServiceInterface: '@App\User\Application\Service\UserAuthenticationService'
+  App\User\Application\Service\ConfirmationEmailSenderInterface: '@App\User\Application\Service\ConfirmationEmailSenderService'
 
   App\User\Application\Factory\AuthTokenFactory:
     arguments:
@@ -254,6 +261,7 @@ services:
   App\User\Domain\Contract\TOTPVerifierInterface: '@App\User\Infrastructure\Service\TOTPVerifier'
   App\User\Domain\Contract\TwoFactorSecretEncryptorInterface: '@App\User\Infrastructure\Service\TwoFactorSecretEncryptor'
   App\User\Domain\Contract\TOTPSecretGeneratorInterface: '@App\User\Infrastructure\Generator\TOTPSecretGenerator'
+  App\User\Infrastructure\Service\TOTPCreatorInterface: '@App\User\Infrastructure\Service\TOTPCreatorService'
   App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface: '@App\User\Application\CommandHandler\RequestPasswordResetCommandHandler'
 
   App\User\Infrastructure\Decorator\RateLimitedRequestPasswordResetHandlerDecorator:

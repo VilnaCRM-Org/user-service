@@ -7,14 +7,10 @@ namespace App\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Application\Validator\Http\JsonRequestValidator;
-use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\DTO\RetryDto;
-use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
 use App\User\Application\Query\GetUserQueryHandler;
-use App\User\Domain\Factory\ConfirmationEmailFactoryInterface;
-use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
-use App\User\Domain\Repository\TokenRepositoryInterface;
+use App\User\Application\Service\ConfirmationEmailSenderInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -22,7 +18,6 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 /**
  * @implements ProcessorInterface<RetryDto, Response>
  *
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  *
  * @infection-ignore-all
  */
@@ -32,12 +27,8 @@ final readonly class ResendEmailProcessor implements ProcessorInterface
     private const ERROR_EXPECTED_OBJECT = 'Request body must be a JSON object.';
 
     public function __construct(
-        private CommandBusInterface $commandBus,
         private GetUserQueryHandler $getUserQueryHandler,
-        private TokenRepositoryInterface $tokenRepository,
-        private ConfirmationTokenFactoryInterface $tokenFactory,
-        private ConfirmationEmailFactoryInterface $confirmationEmailFactory,
-        private SendConfirmationEmailCommandFactoryInterface $emailCmdFactory,
+        private ConfirmationEmailSenderInterface $confirmationEmailSender,
         private JsonRequestValidator $jsonRequestValidator,
         private TokenStorageInterface $tokenStorage,
     ) {
@@ -64,15 +55,7 @@ final readonly class ResendEmailProcessor implements ProcessorInterface
 
         $this->assertOwnership($user->getId());
 
-        $token = $this->tokenRepository->findByUserId(
-            $user->getId()
-        ) ?? $this->tokenFactory->create($user->getId());
-
-        $this->commandBus->dispatch(
-            $this->emailCmdFactory->create(
-                $this->confirmationEmailFactory->create($token, $user)
-            )
-        );
+        $this->confirmationEmailSender->send($user);
 
         return new Response();
     }

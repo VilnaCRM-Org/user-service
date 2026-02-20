@@ -4,18 +4,24 @@ declare(strict_types=1);
 
 namespace App\User\Application\DTO;
 
-/**
- * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
- */
-final readonly class CompleteTwoFactorCommandResponse
+final class CompleteTwoFactorCommandResponse
 {
+    private bool $rememberMe = false;
+
     public function __construct(
         private string $accessToken,
         private string $refreshToken,
-        private bool $rememberMe = false,
         private ?int $recoveryCodesRemaining = null,
         private ?string $warningMessage = null,
     ) {
+    }
+
+    public function withRememberMe(): static
+    {
+        $clone = clone $this;
+        $clone->rememberMe = true;
+
+        return $clone;
     }
 
     public function getAccessToken(): string

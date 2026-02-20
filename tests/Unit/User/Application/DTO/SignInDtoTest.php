@@ -9,18 +9,25 @@ use App\User\Application\DTO\SignInDto;
 
 final class SignInDtoTest extends UnitTestCase
 {
-    public function testConstructWithValues(): void
+    public function testConstructWithEmailAndPassword(): void
     {
         $email = $this->faker->safeEmail();
         $password = $this->faker->password();
-        $rememberMe = $this->faker->boolean();
 
-        $dto = new SignInDto($email, $password, $rememberMe);
+        $dto = new SignInDto($email, $password);
 
         $this->assertInstanceOf(SignInDto::class, $dto);
         $this->assertSame($email, $dto->email);
         $this->assertSame($password, $dto->password);
-        $this->assertSame($rememberMe, $dto->rememberMe);
+        $this->assertFalse($dto->rememberMe);
+    }
+
+    public function testRememberMeCanBeSetDirectly(): void
+    {
+        $dto = new SignInDto($this->faker->safeEmail(), $this->faker->password());
+        $dto->rememberMe = true;
+
+        $this->assertTrue($dto->rememberMe);
     }
 
     public function testConstructWithDefaults(): void

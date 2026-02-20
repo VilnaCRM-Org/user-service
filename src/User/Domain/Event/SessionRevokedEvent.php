@@ -11,7 +11,7 @@ use App\Shared\Domain\Bus\Event\DomainEvent;
  *
  * AC: NFR-33 - Audit logging for auth events
  */
-final class SessionRevokedEvent extends DomainEvent
+final class SessionRevokedEvent extends AuthDomainEvent
 {
     public function __construct(
         public readonly string $userId,

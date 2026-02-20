@@ -56,8 +56,7 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
                     $command->setResponse(
                         new CompleteTwoFactorCommandResponse(
                             'issued-access-token',
-                            'issued-refresh-token',
-                            false  // rememberMe = false → standard 900s cookie
+                            'issued-refresh-token'
                         )
                     );
 
@@ -106,11 +105,10 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
              */
                 static function (CompleteTwoFactorCommand $command): bool {
                     $command->setResponse(
-                        new CompleteTwoFactorCommandResponse(
+                        (new CompleteTwoFactorCommandResponse(
                             'remember-access-token',
-                            'remember-refresh-token',
-                            true  // rememberMe = true → 2592000s cookie
-                        )
+                            'remember-refresh-token'
+                        ))->withRememberMe()
                     );
 
                     return true;
@@ -245,7 +243,6 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
                         new CompleteTwoFactorCommandResponse(
                             'recovery-access-token',
                             'recovery-refresh-token',
-                            false,
                             1,
                             'Only 1 recovery code(s) remaining. Regenerate soon.'
                         )

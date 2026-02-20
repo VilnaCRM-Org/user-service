@@ -6,7 +6,7 @@ namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 
-final class RefreshTokenTheftDetectedEvent extends DomainEvent
+final class RefreshTokenTheftDetectedEvent extends AuthDomainEvent
 {
     public function __construct(
         public readonly string $sessionId,

@@ -4,40 +4,30 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
-use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory as SharedUuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\CommandHandler\ConfirmTwoFactorCommandHandler;
-use App\User\Domain\Contract\TOTPVerifierInterface;
-use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
+use App\User\Application\Service\RecoveryCodeGeneratorInterface;
+use App\User\Application\Service\TwoFactorCodeVerifierInterface;
+use App\User\Application\Service\TwoFactorEventPublisherInterface;
 use App\User\Domain\Entity\AuthSession;
-use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Event\AllSessionsRevokedEvent;
-use App\User\Domain\Event\TwoFactorEnabledEvent;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
-use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
-use Symfony\Component\Uid\Factory\UlidFactory;
-use Symfony\Component\Uid\Factory\UuidFactory;
 
-/**
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- */
 final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
-    private RecoveryCodeRepositoryInterface&MockObject $recoveryCodeRepository;
     private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
-    private TwoFactorSecretEncryptorInterface&MockObject $encryptor;
-    private TOTPVerifierInterface&MockObject $totpVerifier;
-    private EventBusInterface&MockObject $eventBus;
+    private TwoFactorCodeVerifierInterface&MockObject $codeVerifier;
+    private RecoveryCodeGeneratorInterface&MockObject $recoveryCodeGenerator;
+    private TwoFactorEventPublisherInterface&MockObject $eventPublisher;
     private UserFactory $userFactory;
     private UuidTransformer $uuidTransformer;
 
@@ -49,19 +39,18 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $this->userRepository = $this->createMock(
             UserRepositoryInterface::class
         );
-        $this->recoveryCodeRepository = $this->createMock(
-            RecoveryCodeRepositoryInterface::class
-        );
         $this->authSessionRepository = $this->createMock(
             AuthSessionRepositoryInterface::class
         );
-        $this->encryptor = $this->createMock(
-            TwoFactorSecretEncryptorInterface::class
+        $this->codeVerifier = $this->createMock(
+            TwoFactorCodeVerifierInterface::class
         );
-        $this->totpVerifier = $this->createMock(
-            TOTPVerifierInterface::class
+        $this->recoveryCodeGenerator = $this->createMock(
+            RecoveryCodeGeneratorInterface::class
         );
-        $this->eventBus = $this->createMock(EventBusInterface::class);
+        $this->eventPublisher = $this->createMock(
+            TwoFactorEventPublisherInterface::class
+        );
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(
             new SharedUuidFactory()
@@ -73,6 +62,8 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $user = $this->createUserWithSecret();
         $code = '123456';
         $sessionId = $this->faker->uuid();
+        $expectedCodes = ['AB12-CD34', 'EF56-GH78', 'IJ90-KL12', 'MN34-OP56',
+            'QR78-ST90', 'UV12-WX34', 'YZ56-AB78', 'CD90-EF12'];
 
         $this->userRepository
             ->expects($this->once())
@@ -80,17 +71,10 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
             ->with($user->getEmail())
             ->willReturn($user);
 
-        $this->encryptor
+        $this->codeVerifier
             ->expects($this->once())
-            ->method('decrypt')
-            ->with('encrypted-secret')
-            ->willReturn('JBSWY3DPEHPK3PXP');
-
-        $this->totpVerifier
-            ->expects($this->once())
-            ->method('verify')
-            ->with('JBSWY3DPEHPK3PXP', $code)
-            ->willReturn(true);
+            ->method('verifyTotpOrFail')
+            ->with($user, $code);
 
         $this->userRepository
             ->expects($this->once())
@@ -99,20 +83,17 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
                 static fn (User $u): bool => $u->isTwoFactorEnabled()
             ));
 
-        $this->recoveryCodeRepository
-            ->expects($this->exactly(8))
-            ->method('save')
-            ->with($this->isInstanceOf(RecoveryCode::class));
+        $this->recoveryCodeGenerator
+            ->expects($this->once())
+            ->method('generateAndStore')
+            ->with($user)
+            ->willReturn($expectedCodes);
 
         $this->authSessionRepository
             ->expects($this->once())
             ->method('findByUserId')
             ->with($user->getId())
             ->willReturn([]);
-
-        $this->eventBus
-            ->expects($this->exactly(2))
-            ->method('publish');
 
         $handler = $this->createHandler();
         $command = new ConfirmTwoFactorCommand(
@@ -125,67 +106,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $response = $command->getResponse();
         $codes = $response->getRecoveryCodes();
         $this->assertCount(8, $codes);
-
-        foreach ($codes as $recoveryCode) {
-            $this->assertMatchesRegularExpression(
-                '/^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$/',
-                $recoveryCode
-            );
-            $this->assertSame(strtoupper($recoveryCode), $recoveryCode);
-        }
-    }
-
-    public function testRecoveryCodesAreStoredAsHashes(): void
-    {
-        $user = $this->createUserWithSecret();
-        $sessionId = $this->faker->uuid();
-
-        $this->userRepository
-            ->method('findByEmail')
-            ->willReturn($user);
-
-        $this->encryptor
-            ->method('decrypt')
-            ->willReturn('JBSWY3DPEHPK3PXP');
-
-        $this->totpVerifier
-            ->method('verify')
-            ->willReturn(true);
-
-        $savedCodes = [];
-        $this->recoveryCodeRepository
-            ->expects($this->exactly(8))
-            ->method('save')
-            ->willReturnCallback(
-                static function (RecoveryCode $code) use (&$savedCodes): void {
-                    $savedCodes[] = $code;
-                }
-            );
-
-        $this->authSessionRepository
-            ->method('findByUserId')
-            ->willReturn([]);
-
-        $handler = $this->createHandler();
-        $command = new ConfirmTwoFactorCommand(
-            $user->getEmail(),
-            '123456',
-            $sessionId
-        );
-        $handler->__invoke($command);
-
-        $plaintextCodes = $command->getResponse()->getRecoveryCodes();
-        $this->assertCount(8, $savedCodes);
-
-        foreach ($savedCodes as $index => $savedCode) {
-            $this->assertTrue(
-                $savedCode->matchesCode($plaintextCodes[$index])
-            );
-            $this->assertNotSame(
-                $plaintextCodes[$index],
-                $savedCode->getCodeHash()
-            );
-        }
+        $this->assertSame($expectedCodes, $codes);
     }
 
     public function testInvalidCodeThrowsUnauthorized(): void
@@ -197,17 +118,17 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->willReturn($user);
 
-        $this->encryptor
-            ->method('decrypt')
-            ->willReturn('JBSWY3DPEHPK3PXP');
+        $this->codeVerifier
+            ->expects($this->once())
+            ->method('verifyTotpOrFail')
+            ->with($user, '000000')
+            ->willThrowException(
+                new UnauthorizedHttpException('Bearer', 'Invalid two-factor code.')
+            );
 
-        $this->totpVerifier
-            ->method('verify')
-            ->willReturn(false);
-
-        $this->recoveryCodeRepository
+        $this->recoveryCodeGenerator
             ->expects($this->never())
-            ->method('save');
+            ->method('generateAndStore');
 
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid two-factor code.');
@@ -229,9 +150,9 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->willReturn($user);
 
-        $this->encryptor
+        $this->codeVerifier
             ->expects($this->never())
-            ->method('decrypt');
+            ->method('verifyTotpOrFail');
 
         $this->expectException(UnauthorizedHttpException::class);
 
@@ -277,13 +198,9 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->willReturn($user);
 
-        $this->encryptor
-            ->method('decrypt')
-            ->willReturn('JBSWY3DPEHPK3PXP');
-
-        $this->totpVerifier
-            ->method('verify')
-            ->willReturn(true);
+        $this->recoveryCodeGenerator
+            ->method('generateAndStore')
+            ->willReturn([]);
 
         $this->authSessionRepository
             ->expects($this->once())
@@ -326,13 +243,9 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->willReturn($user);
 
-        $this->encryptor
-            ->method('decrypt')
-            ->willReturn('JBSWY3DPEHPK3PXP');
-
-        $this->totpVerifier
-            ->method('verify')
-            ->willReturn(true);
+        $this->recoveryCodeGenerator
+            ->method('generateAndStore')
+            ->willReturn([]);
 
         $this->authSessionRepository
             ->method('findByUserId')
@@ -362,27 +275,18 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->willReturn($user);
 
-        $this->encryptor
-            ->method('decrypt')
-            ->willReturn('JBSWY3DPEHPK3PXP');
-
-        $this->totpVerifier
-            ->method('verify')
-            ->willReturn(true);
+        $this->recoveryCodeGenerator
+            ->method('generateAndStore')
+            ->willReturn([]);
 
         $this->authSessionRepository
             ->method('findByUserId')
             ->willReturn([]);
 
-        $publishedEvents = [];
-        $this->eventBus
-            ->expects($this->exactly(2))
-            ->method('publish')
-            ->willReturnCallback(
-                static function ($event) use (&$publishedEvents): void {
-                    $publishedEvents[] = $event;
-                }
-            );
+        $this->eventPublisher
+            ->expects($this->once())
+            ->method('publishEnabled')
+            ->with($user->getId(), $user->getEmail());
 
         $handler = $this->createHandler();
         $command = new ConfirmTwoFactorCommand(
@@ -391,19 +295,6 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
             $sessionId
         );
         $handler->__invoke($command);
-
-        $this->assertInstanceOf(
-            TwoFactorEnabledEvent::class,
-            $publishedEvents[0]
-        );
-        $this->assertSame(
-            $user->getId(),
-            $publishedEvents[0]->userId
-        );
-        $this->assertSame(
-            $user->getEmail(),
-            $publishedEvents[0]->email
-        );
     }
 
     public function testEmitsAllSessionsRevokedEvent(): void
@@ -424,26 +315,18 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->willReturn($user);
 
-        $this->encryptor
-            ->method('decrypt')
-            ->willReturn('JBSWY3DPEHPK3PXP');
-
-        $this->totpVerifier
-            ->method('verify')
-            ->willReturn(true);
+        $this->recoveryCodeGenerator
+            ->method('generateAndStore')
+            ->willReturn([]);
 
         $this->authSessionRepository
             ->method('findByUserId')
             ->willReturn([$otherSession]);
 
-        $publishedEvents = [];
-        $this->eventBus
-            ->method('publish')
-            ->willReturnCallback(
-                static function ($event) use (&$publishedEvents): void {
-                    $publishedEvents[] = $event;
-                }
-            );
+        $this->eventPublisher
+            ->expects($this->once())
+            ->method('publishAllSessionsRevoked')
+            ->with($user->getId(), 'two_factor_enabled', 1);
 
         $handler = $this->createHandler();
         $command = new ConfirmTwoFactorCommand(
@@ -452,33 +335,16 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
             $currentSessionId
         );
         $handler->__invoke($command);
-
-        $this->assertInstanceOf(
-            AllSessionsRevokedEvent::class,
-            $publishedEvents[1]
-        );
-        $this->assertSame(
-            $user->getId(),
-            $publishedEvents[1]->userId
-        );
-        $this->assertSame(
-            'two_factor_enabled',
-            $publishedEvents[1]->reason
-        );
-        $this->assertSame(1, $publishedEvents[1]->revokedCount);
     }
 
     private function createHandler(): ConfirmTwoFactorCommandHandler
     {
         return new ConfirmTwoFactorCommandHandler(
             $this->userRepository,
-            $this->recoveryCodeRepository,
             $this->authSessionRepository,
-            $this->encryptor,
-            $this->totpVerifier,
-            $this->eventBus,
-            new UuidFactory(),
-            new UlidFactory(),
+            $this->codeVerifier,
+            $this->recoveryCodeGenerator,
+            $this->eventPublisher,
         );
     }
 

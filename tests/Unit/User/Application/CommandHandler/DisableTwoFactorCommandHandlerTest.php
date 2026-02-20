@@ -4,32 +4,27 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
-use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory as SharedUuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\DisableTwoFactorCommand;
 use App\User\Application\CommandHandler\DisableTwoFactorCommandHandler;
-use App\User\Domain\Contract\TOTPVerifierInterface;
-use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
-use App\User\Domain\Entity\RecoveryCode;
+use App\User\Application\Service\TwoFactorCodeVerifierInterface;
+use App\User\Application\Service\TwoFactorEventPublisherInterface;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Event\TwoFactorDisabledEvent;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
-use Symfony\Component\Uid\Factory\UuidFactory;
 
 final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
     private RecoveryCodeRepositoryInterface&MockObject $recoveryCodeRepository;
-    private TwoFactorSecretEncryptorInterface&MockObject $encryptor;
-    private TOTPVerifierInterface&MockObject $totpVerifier;
-    private EventBusInterface&MockObject $eventBus;
+    private TwoFactorCodeVerifierInterface&MockObject $codeVerifier;
+    private TwoFactorEventPublisherInterface&MockObject $eventPublisher;
     private UserFactory $userFactory;
     private UuidTransformer $uuidTransformer;
 
@@ -38,23 +33,12 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->userRepository = $this->createMock(
-            UserRepositoryInterface::class
-        );
-        $this->recoveryCodeRepository = $this->createMock(
-            RecoveryCodeRepositoryInterface::class
-        );
-        $this->encryptor = $this->createMock(
-            TwoFactorSecretEncryptorInterface::class
-        );
-        $this->totpVerifier = $this->createMock(
-            TOTPVerifierInterface::class
-        );
-        $this->eventBus = $this->createMock(EventBusInterface::class);
+        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->recoveryCodeRepository = $this->createMock(RecoveryCodeRepositoryInterface::class);
+        $this->codeVerifier = $this->createMock(TwoFactorCodeVerifierInterface::class);
+        $this->eventPublisher = $this->createMock(TwoFactorEventPublisherInterface::class);
         $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer(
-            new SharedUuidFactory()
-        );
+        $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
     }
 
     public function testSuccessfulDisableWithTotpCode(): void
@@ -65,16 +49,10 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->willReturn($user);
 
-        $this->encryptor
-            ->method('decrypt')
-            ->with('encrypted-secret')
-            ->willReturn('JBSWY3DPEHPK3PXP');
-
-        $this->totpVerifier
+        $this->codeVerifier
             ->expects($this->once())
-            ->method('verify')
-            ->with('JBSWY3DPEHPK3PXP', '123456')
-            ->willReturn(true);
+            ->method('verifyAndConsumeOrFail')
+            ->with($user, '123456');
 
         $this->userRepository
             ->expects($this->once())
@@ -89,10 +67,10 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('deleteByUserId')
             ->with($user->getId());
 
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(TwoFactorDisabledEvent::class));
+            ->method('publishDisabled')
+            ->with($user->getId(), $user->getEmail());
 
         $handler = $this->createHandler();
         $handler->__invoke(new DisableTwoFactorCommand(
@@ -104,32 +82,15 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
     public function testSuccessfulDisableWithRecoveryCode(): void
     {
         $user = $this->createTwoFactorEnabledUser();
-        $recoveryCode = new RecoveryCode(
-            $this->faker->uuid(),
-            $user->getId(),
-            'ABCD-1234'
-        );
 
         $this->userRepository
             ->method('findByEmail')
             ->willReturn($user);
 
-        $this->recoveryCodeRepository
-            ->method('findByUserId')
-            ->with($user->getId())
-            ->willReturn([$recoveryCode]);
-
-        $this->recoveryCodeRepository
+        $this->codeVerifier
             ->expects($this->once())
-            ->method('save')
-            ->with($this->callback(
-                static fn (RecoveryCode $c): bool => $c->isUsed()
-            ));
-
-        $this->recoveryCodeRepository
-            ->expects($this->once())
-            ->method('deleteByUserId')
-            ->with($user->getId());
+            ->method('verifyAndConsumeOrFail')
+            ->with($user, 'ABCD-1234');
 
         $this->userRepository
             ->expects($this->once())
@@ -138,96 +99,19 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
                 static fn (User $u): bool => !$u->isTwoFactorEnabled()
             ));
 
-        $this->eventBus
-            ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(TwoFactorDisabledEvent::class));
-
-        $handler = $this->createHandler();
-        $handler->__invoke(new DisableTwoFactorCommand(
-            $user->getEmail(),
-            'ABCD-1234'
-        ));
-    }
-
-    public function testSuccessfulDisableWithPlaintextSecretWhenDecryptFails(): void
-    {
-        $user = $this->createTwoFactorEnabledUser();
-        $user->setTwoFactorSecret('JBSWY3DPEHPK3PXP');
-
-        $this->userRepository
-            ->method('findByEmail')
-            ->willReturn($user);
-
-        $this->encryptor
-            ->expects($this->once())
-            ->method('decrypt')
-            ->with('JBSWY3DPEHPK3PXP')
-            ->willThrowException(new \RuntimeException('invalid payload'));
-
-        $this->totpVerifier
-            ->expects($this->once())
-            ->method('verify')
-            ->with('JBSWY3DPEHPK3PXP', '123456')
-            ->willReturn(true);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($this->callback(
-                static fn (User $u): bool => !$u->isTwoFactorEnabled()
-                    && $u->getTwoFactorSecret() === null
-            ));
-
         $this->recoveryCodeRepository
             ->expects($this->once())
             ->method('deleteByUserId')
             ->with($user->getId());
 
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(TwoFactorDisabledEvent::class));
+            ->method('publishDisabled');
 
         $handler = $this->createHandler();
         $handler->__invoke(new DisableTwoFactorCommand(
             $user->getEmail(),
-            '123456'
-        ));
-    }
-
-    public function testEnabledUserWithMissingSecretReturnsUnauthorized(): void
-    {
-        $user = $this->createTwoFactorEnabledUser();
-        $user->setTwoFactorSecret(null);
-
-        $this->userRepository
-            ->method('findByEmail')
-            ->willReturn($user);
-
-        $this->encryptor
-            ->expects($this->once())
-            ->method('decrypt')
-            ->with('')
-            ->willThrowException(new \RuntimeException('invalid payload'));
-
-        $this->totpVerifier
-            ->expects($this->once())
-            ->method('verify')
-            ->with('', '123456')
-            ->willReturn(false);
-
-        $this->userRepository
-            ->expects($this->never())
-            ->method('save');
-
-        $this->expectException(UnauthorizedHttpException::class);
-        $this->expectExceptionMessage('Invalid two-factor code.');
-
-        $handler = $this->createHandler();
-        $handler->__invoke(new DisableTwoFactorCommand(
-            $user->getEmail(),
-            '123456'
+            'ABCD-1234'
         ));
     }
 
@@ -239,13 +123,13 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->willReturn($user);
 
-        $this->encryptor
-            ->method('decrypt')
-            ->willReturn('JBSWY3DPEHPK3PXP');
-
-        $this->totpVerifier
-            ->method('verify')
-            ->willReturn(false);
+        $this->codeVerifier
+            ->expects($this->once())
+            ->method('verifyAndConsumeOrFail')
+            ->with($user, '000000')
+            ->willThrowException(
+                new UnauthorizedHttpException('Bearer', 'Invalid two-factor code.')
+            );
 
         $this->userRepository
             ->expects($this->never())
@@ -269,9 +153,9 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->willReturn($user);
 
-        $this->encryptor
+        $this->codeVerifier
             ->expects($this->never())
-            ->method('decrypt');
+            ->method('verifyAndConsumeOrFail');
 
         $this->expectException(AccessDeniedHttpException::class);
         $this->expectExceptionMessage(
@@ -308,36 +192,16 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->willReturn($user);
 
-        $this->encryptor
-            ->method('decrypt')
-            ->willReturn('JBSWY3DPEHPK3PXP');
-
-        $this->totpVerifier
-            ->method('verify')
-            ->willReturn(true);
-
-        $publishedEvent = null;
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->once())
-            ->method('publish')
-            ->willReturnCallback(
-                static function ($event) use (&$publishedEvent): void {
-                    $publishedEvent = $event;
-                }
-            );
+            ->method('publishDisabled')
+            ->with($user->getId(), $user->getEmail());
 
         $handler = $this->createHandler();
         $handler->__invoke(new DisableTwoFactorCommand(
             $user->getEmail(),
             '123456'
         ));
-
-        $this->assertInstanceOf(
-            TwoFactorDisabledEvent::class,
-            $publishedEvent
-        );
-        $this->assertSame($user->getId(), $publishedEvent->userId);
-        $this->assertSame($user->getEmail(), $publishedEvent->email);
     }
 
     public function testInvalidRecoveryCodeThrowsUnauthorized(): void
@@ -348,9 +212,12 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->willReturn($user);
 
-        $this->recoveryCodeRepository
-            ->method('findByUserId')
-            ->willReturn([]);
+        $this->codeVerifier
+            ->expects($this->once())
+            ->method('verifyAndConsumeOrFail')
+            ->willThrowException(
+                new UnauthorizedHttpException('Bearer', 'Invalid two-factor code.')
+            );
 
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid two-factor code.');
@@ -359,132 +226,6 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
         $handler->__invoke(new DisableTwoFactorCommand(
             $user->getEmail(),
             'ABCD-1234'
-        ));
-    }
-
-    public function testUsedRecoveryCodeThrowsUnauthorized(): void
-    {
-        $user = $this->createTwoFactorEnabledUser();
-        $recoveryCode = new RecoveryCode(
-            $this->faker->uuid(),
-            $user->getId(),
-            'USED-CODE'
-        );
-        $recoveryCode->markAsUsed();
-
-        $this->userRepository
-            ->method('findByEmail')
-            ->willReturn($user);
-
-        $this->recoveryCodeRepository
-            ->method('findByUserId')
-            ->willReturn([$recoveryCode]);
-
-        $this->expectException(UnauthorizedHttpException::class);
-        $this->expectExceptionMessage('Invalid two-factor code.');
-
-        $handler = $this->createHandler();
-        $handler->__invoke(new DisableTwoFactorCommand(
-            $user->getEmail(),
-            'USED-CODE'
-        ));
-    }
-
-    public function testInvalidFormatCodeThrowsUnauthorized(): void
-    {
-        $user = $this->createTwoFactorEnabledUser();
-
-        $this->userRepository
-            ->method('findByEmail')
-            ->willReturn($user);
-
-        $this->expectException(UnauthorizedHttpException::class);
-        $this->expectExceptionMessage('Invalid two-factor code.');
-
-        $handler = $this->createHandler();
-        $handler->__invoke(new DisableTwoFactorCommand(
-            $user->getEmail(),
-            'not-valid-format'
-        ));
-    }
-
-    public function testRejectsTotpCodeWithLeadingCharacter(): void
-    {
-        $this->assertInvalidTwoFactorCodeRejected('A123456');
-    }
-
-    public function testRejectsTotpCodeWithTrailingCharacter(): void
-    {
-        $this->assertInvalidTwoFactorCodeRejected('1234567');
-    }
-
-    public function testRejectsRecoveryCodeWithLeadingCharacter(): void
-    {
-        $this->assertInvalidTwoFactorCodeRejected('XXABC-1234');
-    }
-
-    public function testRejectsRecoveryCodeWithTrailingCharacter(): void
-    {
-        $this->assertInvalidTwoFactorCodeRejected('ABCD-1234X');
-    }
-
-    public function testRecoveryCodeLookupSkipsUsedCodeAndAcceptsNextUnusedMatch(): void
-    {
-        $user = $this->createTwoFactorEnabledUser();
-
-        $usedRecoveryCode = new RecoveryCode(
-            $this->faker->uuid(),
-            $user->getId(),
-            'ABCD-1234'
-        );
-        $usedRecoveryCode->markAsUsed();
-
-        $validRecoveryCode = new RecoveryCode(
-            $this->faker->uuid(),
-            $user->getId(),
-            'WXYZ-5678'
-        );
-
-        $this->userRepository
-            ->method('findByEmail')
-            ->willReturn($user);
-
-        $this->recoveryCodeRepository
-            ->expects($this->once())
-            ->method('findByUserId')
-            ->with($user->getId())
-            ->willReturn([$usedRecoveryCode, $validRecoveryCode]);
-
-        $this->recoveryCodeRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($this->callback(
-                static fn (RecoveryCode $code): bool => $code->getId() === $validRecoveryCode->getId()
-                    && $code->isUsed()
-            ));
-
-        $this->recoveryCodeRepository
-            ->expects($this->once())
-            ->method('deleteByUserId')
-            ->with($user->getId());
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($this->callback(
-                static fn (User $savedUser): bool => !$savedUser->isTwoFactorEnabled()
-                    && $savedUser->getTwoFactorSecret() === null
-            ));
-
-        $this->eventBus
-            ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(TwoFactorDisabledEvent::class));
-
-        $handler = $this->createHandler();
-        $handler->__invoke(new DisableTwoFactorCommand(
-            $user->getEmail(),
-            'WXYZ-5678'
         ));
     }
 
@@ -495,14 +236,6 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
         $this->userRepository
             ->method('findByEmail')
             ->willReturn($user);
-
-        $this->encryptor
-            ->method('decrypt')
-            ->willReturn('JBSWY3DPEHPK3PXP');
-
-        $this->totpVerifier
-            ->method('verify')
-            ->willReturn(true);
 
         $handler = $this->createHandler();
         $handler->__invoke(new DisableTwoFactorCommand(
@@ -519,41 +252,9 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
         return new DisableTwoFactorCommandHandler(
             $this->userRepository,
             $this->recoveryCodeRepository,
-            $this->encryptor,
-            $this->totpVerifier,
-            $this->eventBus,
-            new UuidFactory(),
+            $this->codeVerifier,
+            $this->eventPublisher,
         );
-    }
-
-    private function assertInvalidTwoFactorCodeRejected(string $twoFactorCode): void
-    {
-        $user = $this->createTwoFactorEnabledUser();
-
-        $this->userRepository
-            ->method('findByEmail')
-            ->willReturn($user);
-
-        $this->encryptor
-            ->expects($this->never())
-            ->method('decrypt');
-
-        $this->totpVerifier
-            ->expects($this->never())
-            ->method('verify');
-
-        $this->recoveryCodeRepository
-            ->expects($this->never())
-            ->method('findByUserId');
-
-        $this->expectException(UnauthorizedHttpException::class);
-        $this->expectExceptionMessage('Invalid two-factor code.');
-
-        $handler = $this->createHandler();
-        $handler->__invoke(new DisableTwoFactorCommand(
-            $user->getEmail(),
-            $twoFactorCode
-        ));
     }
 
     private function createTwoFactorEnabledUser(): User

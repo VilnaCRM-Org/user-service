@@ -6,7 +6,7 @@ namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 
-final class RecoveryCodeUsedEvent extends DomainEvent
+final class RecoveryCodeUsedEvent extends TwoFactorDomainEvent
 {
     public function __construct(
         public readonly string $userId,

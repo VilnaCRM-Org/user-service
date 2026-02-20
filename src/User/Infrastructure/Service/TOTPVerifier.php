@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Service;
 
 use App\User\Domain\Contract\TOTPVerifierInterface;
-use OTPHP\TOTP;
 
-/**
- * @SuppressWarnings(PHPMD.StaticAccess)
- */
 final class TOTPVerifier implements TOTPVerifierInterface
 {
+    public function __construct(private readonly TOTPCreatorInterface $totpCreator)
+    {
+    }
+
     #[\Override]
     public function verify(
         string $secret,
@@ -19,7 +19,7 @@ final class TOTPVerifier implements TOTPVerifierInterface
         ?int $timestamp = null
     ): bool {
         try {
-            $totp = TOTP::create($secret);
+            $totp = $this->totpCreator->create($secret);
             $pointInTime = $timestamp ?? time();
             $period = $totp->getPeriod();
             $previousWindowTimestamp = $pointInTime - $period;

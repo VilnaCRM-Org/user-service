@@ -6,7 +6,7 @@ namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 
-final class UserDeletedEvent extends DomainEvent
+final class UserDeletedEvent extends AccountDomainEvent
 {
     public function __construct(
         public readonly string $userId,

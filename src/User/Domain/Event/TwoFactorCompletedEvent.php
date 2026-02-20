@@ -6,7 +6,7 @@ namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 
-final class TwoFactorCompletedEvent extends DomainEvent
+final class TwoFactorCompletedEvent extends TwoFactorDomainEvent
 {
     public function __construct(
         public readonly string $userId,

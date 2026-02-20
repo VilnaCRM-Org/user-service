@@ -6,7 +6,7 @@ namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 
-final class PasswordResetConfirmedEvent extends DomainEvent
+final class PasswordResetConfirmedEvent extends PasswordDomainEvent
 {
     public function __construct(
         public readonly string $userId,

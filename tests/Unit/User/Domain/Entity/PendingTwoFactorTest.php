@@ -10,7 +10,7 @@ use DateTimeImmutable;
 
 final class PendingTwoFactorTest extends UnitTestCase
 {
-    public function testConstructorSetsDefaultExpiryToFiveMinutes(): void
+    public function testCreateSetsDefaultExpiryToFiveMinutes(): void
     {
         $createdAt = new DateTimeImmutable();
         $id = $this->faker->uuid();
@@ -32,24 +32,20 @@ final class PendingTwoFactorTest extends UnitTestCase
         $this->assertFalse($pendingTwoFactor->isRememberMe());
     }
 
-    public function testConstructorStoresRememberMeFlag(): void
+    public function testWitherPatternSetsRememberMeFlag(): void
     {
         $createdAt = new DateTimeImmutable();
 
-        $withRememberMe = new PendingTwoFactor(
+        $withRememberMe = (new PendingTwoFactor(
             $this->faker->uuid(),
             $this->faker->uuid(),
-            $createdAt,
-            null,
-            true
-        );
+            $createdAt
+        ))->withRememberMe();
 
         $withoutRememberMe = new PendingTwoFactor(
             $this->faker->uuid(),
             $this->faker->uuid(),
-            $createdAt,
-            null,
-            false
+            $createdAt
         );
 
         $this->assertTrue($withRememberMe->isRememberMe());

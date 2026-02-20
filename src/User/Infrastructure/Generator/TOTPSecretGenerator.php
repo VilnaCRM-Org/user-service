@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Generator;
 
 use App\User\Domain\Contract\TOTPSecretGeneratorInterface;
-use OTPHP\TOTP;
+use App\User\Infrastructure\Service\TOTPCreatorInterface;
 
-/**
- * @SuppressWarnings(PHPMD.StaticAccess)
- */
 final class TOTPSecretGenerator implements TOTPSecretGeneratorInterface
 {
     private const OTP_ISSUER = 'VilnaCRM';
+
+    public function __construct(private readonly TOTPCreatorInterface $totpCreator)
+    {
+    }
 
     /**
      * @return array<string>
@@ -22,7 +23,7 @@ final class TOTPSecretGenerator implements TOTPSecretGeneratorInterface
     #[\Override]
     public function generate(string $email): array
     {
-        $totp = TOTP::create();
+        $totp = $this->totpCreator->create();
         $totp->setIssuer(self::OTP_ISSUER);
         $totp->setLabel($email);
 

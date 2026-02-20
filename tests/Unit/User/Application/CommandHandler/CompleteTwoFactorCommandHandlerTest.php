@@ -4,45 +4,31 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
-use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory as SharedUuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\CommandHandler\CompleteTwoFactorCommandHandler;
-use App\User\Application\Factory\AuthTokenFactoryInterface;
-use App\User\Domain\Contract\AccessTokenGeneratorInterface;
-use App\User\Domain\Contract\TOTPVerifierInterface;
-use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
+use App\User\Application\Service\SessionIssuanceServiceInterface;
+use App\User\Application\Service\TwoFactorCodeVerifierInterface;
+use App\User\Application\Service\TwoFactorEventPublisherInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
-use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Event\TwoFactorFailedEvent;
 use App\User\Domain\Factory\UserFactory;
-use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
-use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
-use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
-use Symfony\Component\Uid\Factory\UlidFactory;
 use Symfony\Component\Uid\Ulid;
 
 final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
     private PendingTwoFactorRepositoryInterface&MockObject $pendingTwoFactorRepository;
-    private RecoveryCodeRepositoryInterface&MockObject $recoveryCodeRepository;
-    private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
-    private AuthRefreshTokenRepositoryInterface&MockObject $authRefreshTokenRepository;
-    private TOTPVerifierInterface&MockObject $totpVerifier;
-    private TwoFactorSecretEncryptorInterface&MockObject $twoFactorSecretEncryptor;
-    private AccessTokenGeneratorInterface&MockObject $accessTokenGenerator;
-    private AuthTokenFactoryInterface&MockObject $authTokenFactory;
-    private EventBusInterface&MockObject $eventBus;
-    private UlidFactory&MockObject $ulidFactory;
+    private SessionIssuanceServiceInterface&MockObject $sessionIssuanceService;
+    private TwoFactorCodeVerifierInterface&MockObject $codeVerifier;
+    private TwoFactorEventPublisherInterface&MockObject $eventPublisher;
     private UserFactory $userFactory;
     private UuidTransformer $uuidTransformer;
 
@@ -53,23 +39,11 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
 
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->pendingTwoFactorRepository = $this->createMock(PendingTwoFactorRepositoryInterface::class);
-        $this->recoveryCodeRepository = $this->createMock(RecoveryCodeRepositoryInterface::class);
-        $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
-        $this->authRefreshTokenRepository = $this->createMock(AuthRefreshTokenRepositoryInterface::class);
-        $this->totpVerifier = $this->createMock(TOTPVerifierInterface::class);
-        $this->twoFactorSecretEncryptor = $this->createMock(TwoFactorSecretEncryptorInterface::class);
-        $this->accessTokenGenerator = $this->createMock(AccessTokenGeneratorInterface::class);
-        $this->authTokenFactory = $this->createMock(AuthTokenFactoryInterface::class);
-        $this->eventBus = $this->createMock(EventBusInterface::class);
-        $this->ulidFactory = $this->createMock(UlidFactory::class);
+        $this->sessionIssuanceService = $this->createMock(SessionIssuanceServiceInterface::class);
+        $this->codeVerifier = $this->createMock(TwoFactorCodeVerifierInterface::class);
+        $this->eventPublisher = $this->createMock(TwoFactorEventPublisherInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
-
-        $this->twoFactorSecretEncryptor
-            ->method('decrypt')
-            ->willReturnCallback(
-                static fn (string $secret): string => $secret
-            );
     }
 
     public function testInvokeThrowsUnauthorizedWhenPendingSessionIsMissing(): void
@@ -151,13 +125,13 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             ->with($user->getId())
             ->willReturn($user);
 
-        $this->totpVerifier
+        $this->codeVerifier
             ->expects($this->never())
-            ->method('verify');
+            ->method('resolveVerificationMethod');
 
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->never())
-            ->method('publish');
+            ->method('publishFailed');
 
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid or expired two-factor session.');
@@ -190,18 +164,14 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             ->with($user->getId())
             ->willReturn($user);
 
-        $this->totpVerifier
-            ->expects($this->never())
-            ->method('verify');
-
-        $this->recoveryCodeRepository
-            ->expects($this->never())
-            ->method('findByUserId');
-
-        $this->eventBus
+        $this->codeVerifier
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(TwoFactorFailedEvent::class));
+            ->method('resolveVerificationMethod')
+            ->willReturn(null);
+
+        $this->eventPublisher
+            ->expects($this->once())
+            ->method('publishFailed');
 
         $this->pendingTwoFactorRepository
             ->expects($this->never())
@@ -238,18 +208,14 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             ->with($user->getId())
             ->willReturn($user);
 
-        $this->totpVerifier
-            ->expects($this->never())
-            ->method('verify');
-
-        $this->recoveryCodeRepository
-            ->expects($this->never())
-            ->method('findByUserId');
-
-        $this->eventBus
+        $this->codeVerifier
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(TwoFactorFailedEvent::class));
+            ->method('resolveVerificationMethod')
+            ->willReturn(null);
+
+        $this->eventPublisher
+            ->expects($this->once())
+            ->method('publishFailed');
 
         $this->pendingTwoFactorRepository
             ->expects($this->never())
@@ -293,18 +259,6 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createTwoFactorEnabledUser();
         $pendingSession = $this->createPendingSession($user->getId(), '+5 minutes');
-        $usedRecoveryCode = new RecoveryCode(
-            (string) new Ulid(),
-            $user->getId(),
-            'AA11-BB22'
-        );
-        $usedRecoveryCode->markAsUsed();
-
-        $anotherRecoveryCode = new RecoveryCode(
-            (string) new Ulid(),
-            $user->getId(),
-            'CC33-DD44'
-        );
 
         $this->pendingTwoFactorRepository
             ->expects($this->once())
@@ -318,24 +272,14 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             ->with($user->getId())
             ->willReturn($user);
 
-        $this->totpVerifier
-            ->expects($this->never())
-            ->method('verify');
-
-        $this->recoveryCodeRepository
+        $this->codeVerifier
             ->expects($this->once())
-            ->method('findByUserId')
-            ->with($user->getId())
-            ->willReturn([$usedRecoveryCode, $anotherRecoveryCode]);
+            ->method('resolveVerificationMethod')
+            ->willReturn(null);
 
-        $this->recoveryCodeRepository
-            ->expects($this->never())
-            ->method('save');
-
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(TwoFactorFailedEvent::class));
+            ->method('publishFailed');
 
         $this->pendingTwoFactorRepository
             ->expects($this->never())
@@ -372,20 +316,14 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             ->with($user->getId())
             ->willReturn($user);
 
-        $this->totpVerifier
+        $this->codeVerifier
             ->expects($this->once())
-            ->method('verify')
-            ->with('JBSWY3DPEHPK3PXP', '123456')
-            ->willReturn(false);
+            ->method('resolveVerificationMethod')
+            ->willReturn(null);
 
-        $this->recoveryCodeRepository
-            ->expects($this->never())
-            ->method('findByUserId');
-
-        $this->eventBus
+        $this->eventPublisher
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(TwoFactorFailedEvent::class));
+            ->method('publishFailed');
 
         $this->pendingTwoFactorRepository
             ->expects($this->never())
@@ -422,18 +360,14 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             ->with($user->getId())
             ->willReturn($user);
 
-        $this->totpVerifier
-            ->expects($this->never())
-            ->method('verify');
-
-        $this->recoveryCodeRepository
-            ->expects($this->never())
-            ->method('findByUserId');
-
-        $this->eventBus
+        $this->codeVerifier
             ->expects($this->once())
-            ->method('publish')
-            ->with($this->isInstanceOf(TwoFactorFailedEvent::class));
+            ->method('resolveVerificationMethod')
+            ->willReturn(null);
+
+        $this->eventPublisher
+            ->expects($this->once())
+            ->method('publishFailed');
 
         $this->pendingTwoFactorRepository
             ->expects($this->never())
@@ -461,15 +395,9 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
         return new CompleteTwoFactorCommandHandler(
             $this->userRepository,
             $this->pendingTwoFactorRepository,
-            $this->recoveryCodeRepository,
-            $this->authSessionRepository,
-            $this->authRefreshTokenRepository,
-            $this->totpVerifier,
-            $this->twoFactorSecretEncryptor,
-            $this->accessTokenGenerator,
-            $this->authTokenFactory,
-            $this->eventBus,
-            $this->ulidFactory,
+            $this->sessionIssuanceService,
+            $this->codeVerifier,
+            $this->eventPublisher,
         );
     }
 
