@@ -21,7 +21,11 @@ export function setup() {
     password: authUser.password,
     rememberMe: false,
   });
-  const signInResponse = http.post(`${utils.getBaseUrl()}/signin`, signInPayload, utils.getJsonHeader());
+  const signInResponse = http.post(
+    `${utils.getBaseUrl()}/signin`,
+    signInPayload,
+    utils.getJsonHeader()
+  );
   if (signInResponse.status !== 200) {
     throw new Error(
       `Failed to authenticate GraphQL bootstrap user. Status: ${signInResponse.status}`
