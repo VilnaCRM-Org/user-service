@@ -27,7 +27,7 @@ final readonly class AccessTokenPassportFactory
         $passport = new SelfValidatingPassport(
             new UserBadge(
                 $subject,
-                static fn (string $identifier) => $user
+                static fn (string $_identifier) => $user
             )
         );
         $passport->setAttribute('roles', $roles);

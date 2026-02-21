@@ -12,7 +12,6 @@ use App\User\Application\Validator\MutationInputValidator;
 use App\User\Domain\ValueObject\UserUpdate;
 use Symfony\Bundle\SecurityBundle\Security;
 
-/** @infection-ignore-all */
 final readonly class UserUpdateMutationResolver implements
     MutationResolverInterface
 {

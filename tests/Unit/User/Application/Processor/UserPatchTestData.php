@@ -25,7 +25,7 @@ final class UserPatchTestData
     }
 
     /**
-     * @psalm-suppress PossiblyUnusedReturnValue - Magic getter for test data access
+     * @psalm-api
      */
     public function __get(string $name): UserInterface|string|null
     {

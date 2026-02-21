@@ -26,10 +26,8 @@ abstract class UnitTestCase extends TestCase
     }
 
     protected function makeAccessible(
-        ReflectionMethod|ReflectionProperty $reflection
+        ReflectionMethod|ReflectionProperty $_reflection
     ): void {
-        /** @psalm-suppress UnusedMethodCall */
-        $reflection->setAccessible(true);
     }
 
     /**

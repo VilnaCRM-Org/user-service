@@ -14,8 +14,6 @@ use InvalidArgumentException;
 
 /**
  * @extends ServiceDocumentRepository<User>
- *
- * @psalm-suppress UnusedClass - Used via dependency injection
  */
 final class MongoDBUserRepository extends ServiceDocumentRepository implements
     UserRepositoryInterface
@@ -73,10 +71,6 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     }
 
     /**
-     * @codeCoverageIgnore Tested in integration tests
-     *
-     * @infection-ignore-all Tested in integration tests
-     *
      * @param array<User> $users
      */
     #[\Override]
@@ -85,11 +79,6 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         $this->removeUsersInBatch($users);
     }
 
-    /**
-     * @codeCoverageIgnore Tested in integration tests
-     *
-     * @infection-ignore-all Tested in integration tests
-     */
     #[\Override]
     public function deleteAll(): void
     {
@@ -123,10 +112,6 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     }
 
     /**
-     * @codeCoverageIgnore Tested in integration tests
-     *
-     * @infection-ignore-all Tested in integration tests
-     *
      * @param array<User> $users
      */
     private function removeUsersInBatch(array $users): void

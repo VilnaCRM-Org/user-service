@@ -103,8 +103,7 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
         $this->authTokenFactory
             ->method('createRefreshToken')
             ->willReturnCallback(
-                static fn (string $sessionId, string $plain, DateTimeImmutable $issuedAt): AuthRefreshToken =>
-                    new AuthRefreshToken((string) new Ulid(), $sessionId, $plain, $issuedAt->modify('+1 month'))
+                static fn (string $sessionId, string $plain, DateTimeImmutable $issuedAt): AuthRefreshToken => new AuthRefreshToken((string) new Ulid(), $sessionId, $plain, $issuedAt->modify('+1 month'))
             );
 
         $this->authTokenFactory
@@ -271,8 +270,7 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
         $this->authTokenFactory
             ->method('createRefreshToken')
             ->willReturnCallback(
-                static fn (string $sessionId, string $plain, DateTimeImmutable $issuedAt): AuthRefreshToken =>
-                    new AuthRefreshToken((string) new Ulid(), $sessionId, $plain, $issuedAt->modify('+1 month'))
+                static fn (string $sessionId, string $plain, DateTimeImmutable $issuedAt): AuthRefreshToken => new AuthRefreshToken((string) new Ulid(), $sessionId, $plain, $issuedAt->modify('+1 month'))
             );
 
         $this->authTokenFactory
@@ -360,8 +358,7 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
         $this->authTokenFactory
             ->method('createRefreshToken')
             ->willReturnCallback(
-                static fn (string $sessionId, string $plain, DateTimeImmutable $issuedAt): AuthRefreshToken =>
-                    new AuthRefreshToken((string) new Ulid(), $sessionId, $plain, $issuedAt->modify('+1 month'))
+                static fn (string $sessionId, string $plain, DateTimeImmutable $issuedAt): AuthRefreshToken => new AuthRefreshToken((string) new Ulid(), $sessionId, $plain, $issuedAt->modify('+1 month'))
             );
 
         $this->authTokenFactory

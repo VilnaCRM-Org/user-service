@@ -180,6 +180,7 @@ Repeat until: "✅ CI checks successfully passed!"
 - Commit code without all CI checks passing
 - Modify `deptrac.yaml` to allow violations (fix code, not config)
 - Disable security checks
+- Add suppression/ignore annotations to hide quality issues (`@SuppressWarnings`, `@infection-ignore*`, `@codeCoverageIgnore*`, `@psalm-suppress`, `@phpstan-ignore*`, `phpcs:ignore`, `@phpinsights-ignore*`)
 
 ### ALWAYS
 

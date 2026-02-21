@@ -12,8 +12,6 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 
 /**
  * @extends ServiceDocumentRepository<AuthSession>
- *
- * @psalm-suppress UnusedClass - Used via dependency injection
  */
 final class MongoDBAuthSessionRepository extends ServiceDocumentRepository implements
     AuthSessionRepositoryInterface

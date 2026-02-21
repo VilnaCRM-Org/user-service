@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Auth;
 
-use App\Tests\Integration\IntegrationTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
-final class AuthGateOverheadIntegrationTest extends IntegrationTestCase
+final class AuthGateOverheadIntegrationTest extends AuthIntegrationTestCase
 {
     private const ITERATIONS = 20;
     private const MAX_AUTH_GATE_OVERHEAD_MS = 5.0;

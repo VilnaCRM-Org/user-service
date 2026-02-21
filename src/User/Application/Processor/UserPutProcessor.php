@@ -16,8 +16,6 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 /**
  * @implements ProcessorInterface<UserPutDto, User>
- *
- * @infection-ignore-all
  */
 final readonly class UserPutProcessor implements ProcessorInterface
 {

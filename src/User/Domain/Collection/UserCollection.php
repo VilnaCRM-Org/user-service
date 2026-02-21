@@ -44,8 +44,6 @@ final class UserCollection implements IteratorAggregate, Countable, ArrayAccess
     }
 
     /**
-     * @psalm-suppress PossiblyUnusedMethod Called via Countable interface
-     *
      * @psalm-return int<0, max>
      */
     #[\Override]

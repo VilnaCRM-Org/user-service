@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Infrastructure\Bus;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
-use App\Shared\Infrastructure\Extractor\CallableFirstParameterExtractor;
 use App\Shared\Infrastructure\Bus\InvokeParameterExtractor;
 use App\Shared\Infrastructure\Bus\MessageBusFactory;
+use App\Shared\Infrastructure\Extractor\CallableFirstParameterExtractor;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\FirstTestEventSubscriber;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\MultiEventTestSubscriber;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\SecondTestEventSubscriber;
@@ -54,11 +54,8 @@ final class MessageBusFactoryTest extends UnitTestCase
 
     public function testCreateWithOnlySubscribers(): void
     {
-        $subscriber1Called = false;
-        $subscriber2Called = false;
-
-        $subscriber1 = new FirstTestEventSubscriber($subscriber1Called);
-        $subscriber2 = new SecondTestEventSubscriber($subscriber2Called);
+        $subscriber1 = new FirstTestEventSubscriber();
+        $subscriber2 = new SecondTestEventSubscriber();
 
         $factory = new MessageBusFactory(
             new CallableFirstParameterExtractor(new InvokeParameterExtractor())
@@ -66,8 +63,8 @@ final class MessageBusFactoryTest extends UnitTestCase
         $messageBus = $factory->create([$subscriber1, $subscriber2]);
 
         $messageBus->dispatch(new TestEvent('event-id', '2024-01-22 00:00:00'));
-        self::assertTrue($subscriber1Called, 'Subscriber 1 should be called');
-        self::assertTrue($subscriber2Called, 'Subscriber 2 should be called');
+        self::assertTrue($subscriber1->isCalled(), 'Subscriber 1 should be called');
+        self::assertTrue($subscriber2->isCalled(), 'Subscriber 2 should be called');
     }
 
     public function testCreateWithOnlyRegularHandlers(): void
@@ -100,10 +97,7 @@ final class MessageBusFactoryTest extends UnitTestCase
 
     public function testSubscriberHandlesMultipleEventTypes(): void
     {
-        $event1Called = false;
-        $event2Called = false;
-
-        $subscriber = new MultiEventTestSubscriber($event1Called, $event2Called);
+        $subscriber = new MultiEventTestSubscriber();
 
         $factory = new MessageBusFactory(
             new CallableFirstParameterExtractor(new InvokeParameterExtractor())
@@ -111,10 +105,10 @@ final class MessageBusFactoryTest extends UnitTestCase
         $messageBus = $factory->create([$subscriber]);
 
         $messageBus->dispatch(new TestEvent('event-id', '2024-01-01 00:00:00'));
-        self::assertTrue($event1Called);
+        self::assertTrue($subscriber->isEvent1Called());
 
         $messageBus->dispatch(new TestCommand());
-        self::assertTrue($event2Called);
+        self::assertTrue($subscriber->isEvent2Called());
     }
 
     public function testSubscriberRegisteredOnceInHandlersMap(): void

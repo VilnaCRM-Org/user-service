@@ -7,7 +7,7 @@ namespace App\Tests\Integration\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Domain\Factory\UuidFactoryInterface;
-use App\Tests\Integration\IntegrationTestCase;
+use App\Tests\Integration\User\UserIntegrationTestCase;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\CommandHandler\SignInCommandHandler;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
@@ -22,7 +22,7 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
 
-final class SignInCommandHandlerIntegrationTest extends IntegrationTestCase
+final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
 {
     private UserFactoryInterface $userFactory;
     private UserRepositoryInterface $userRepository;

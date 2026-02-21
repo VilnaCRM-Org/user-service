@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Auth;
 
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Integration\IntegrationTestCase;
 use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -14,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
-final class RouteAccessControlIntegrationTest extends IntegrationTestCase
+final class RouteAccessControlIntegrationTest extends AuthIntegrationTestCase
 {
     /**
      * Routes that MUST be accessible without authentication.

@@ -15,6 +15,8 @@ final readonly class RegenerateRecoveryCodesCommandResponse
     }
 
     /**
+     * @psalm-api
+     *
      * @return array<string>
      */
     public function getRecoveryCodes(): array

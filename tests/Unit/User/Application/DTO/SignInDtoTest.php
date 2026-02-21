@@ -19,15 +19,15 @@ final class SignInDtoTest extends UnitTestCase
         $this->assertInstanceOf(SignInDto::class, $dto);
         $this->assertSame($email, $dto->email);
         $this->assertSame($password, $dto->password);
-        $this->assertFalse($dto->rememberMe);
+        $this->assertFalse($dto->isRememberMe());
     }
 
     public function testRememberMeCanBeSetDirectly(): void
     {
         $dto = new SignInDto($this->faker->safeEmail(), $this->faker->password());
-        $dto->rememberMe = true;
+        $dto->setRememberMe(true);
 
-        $this->assertTrue($dto->rememberMe);
+        $this->assertTrue($dto->isRememberMe());
     }
 
     public function testConstructWithDefaults(): void
@@ -37,6 +37,6 @@ final class SignInDtoTest extends UnitTestCase
         $this->assertInstanceOf(SignInDto::class, $dto);
         $this->assertSame('', $dto->email);
         $this->assertSame('', $dto->password);
-        $this->assertFalse($dto->rememberMe);
+        $this->assertFalse($dto->isRememberMe());
     }
 }

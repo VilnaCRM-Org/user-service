@@ -67,7 +67,7 @@ final class UpdateUserRequestFactoryTest extends UnitTestCase
             255,
             null,
             Requirement::OPTIONAL,
-            '^(?!\\d).*\\S.*$'
+            '^(?!\d).*\S.*$'
         );
     }
 

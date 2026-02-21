@@ -348,7 +348,7 @@ trait AuthenticatedUserContextTrait
     public function iAmAuthenticatedViaSessionCookieAsUser(string $email): void
     {
         $existingAccessToken = $this->state->accessToken;
-        $this->authenticateAsUserEmail($email, ['ROLE_USER'], null, true);
+        $this->authenticateAsUserEmailViaCookie($email);
 
         if (is_string($existingAccessToken) && $existingAccessToken !== '') {
             $this->state->accessToken = $existingAccessToken;
@@ -478,40 +478,59 @@ trait AuthenticatedUserContextTrait
 
     /**
      * @param list<string> $roles
-     *
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     private function authenticateAsUserEmail(
         string $email,
         array $roles = ['ROLE_USER'],
-        ?string $forcedUserId = null,
-        bool $viaCookie = false
+        ?string $forcedUserId = null
     ): void {
         $user = $this->resolveAuthenticationUser($email, $forcedUserId);
-        $sessionId = in_array('ROLE_SERVICE', $roles, true)
-            ? null
-            : $this->createActiveSession($user->getId());
-        $accessToken = $this->testAccessTokenFactory->createToken(
-            $user->getId(),
-            $roles,
-            $sessionId
-        );
-
-        $this->setAuthenticatedUserToken($user, $roles);
-        $this->state->currentUserEmail = $user->getEmail();
-        $this->state->storedAccessTokens = ['default' => $accessToken];
-
-        if ($viaCookie) {
-            $this->state->accessToken = '';
-            $this->state->useAuthCookie = true;
-            $this->state->authCookieToken = $accessToken;
-
-            return;
-        }
+        $accessToken = $this->createAuthenticationAccessToken($user, $roles);
+        $this->storeAuthenticatedUserState($user, $roles, $accessToken);
 
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
         $this->state->accessToken = $accessToken;
+    }
+
+    private function authenticateAsUserEmailViaCookie(string $email): void
+    {
+        $user = $this->resolveAuthenticationUser($email, null);
+        $roles = ['ROLE_USER'];
+        $accessToken = $this->createAuthenticationAccessToken($user, $roles);
+        $this->storeAuthenticatedUserState($user, $roles, $accessToken);
+        $this->state->accessToken = '';
+        $this->state->useAuthCookie = true;
+        $this->state->authCookieToken = $accessToken;
+    }
+
+    /**
+     * @param list<string> $roles
+     */
+    private function createAuthenticationAccessToken(User $user, array $roles): string
+    {
+        $sessionId = in_array('ROLE_SERVICE', $roles, true)
+            ? null
+            : $this->createActiveSession($user->getId());
+
+        return $this->testAccessTokenFactory->createToken(
+            $user->getId(),
+            $roles,
+            $sessionId
+        );
+    }
+
+    /**
+     * @param list<string> $roles
+     */
+    private function storeAuthenticatedUserState(
+        User $user,
+        array $roles,
+        string $accessToken
+    ): void {
+        $this->setAuthenticatedUserToken($user, $roles);
+        $this->state->currentUserEmail = $user->getEmail();
+        $this->state->storedAccessTokens = ['default' => $accessToken];
     }
 
     private function authenticateFromAccessToken(string $accessToken): void

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\User\Application\CommandHandler;
 
 use App\Shared\Domain\Factory\UuidFactoryInterface;
-use App\Tests\Integration\IntegrationTestCase;
+use App\Tests\Integration\User\UserIntegrationTestCase;
 use App\User\Application\Command\UpdateUserCommand;
 use App\User\Application\CommandHandler\UpdateUserCommandHandler;
 use App\User\Domain\Entity\AuthRefreshToken;
@@ -20,7 +20,7 @@ use DateTimeImmutable;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
 
-final class UpdateUserCommandHandlerIntegrationTest extends IntegrationTestCase
+final class UpdateUserCommandHandlerIntegrationTest extends UserIntegrationTestCase
 {
     private UserFactoryInterface $userFactory;
     private UserRepositoryInterface $userRepository;

@@ -35,9 +35,9 @@ class User implements UserInterface
     }
 
     /**
-     * @internal For Doctrine ORM hydration and test fixtures only.
+     * @psalm-api
      *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @internal For Doctrine ORM hydration and test fixtures only.
      */
     public function setId(UuidInterface $id): void
     {
@@ -51,9 +51,9 @@ class User implements UserInterface
     }
 
     /**
-     * @internal For Doctrine ORM hydration and test fixtures only. Use update() for business logic.
+     * @psalm-api
      *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @internal For Doctrine ORM hydration and test fixtures only. Use update() for business logic.
      *
      * @see User::update()
      */
@@ -68,9 +68,9 @@ class User implements UserInterface
     }
 
     /**
-     * @internal For Doctrine ORM hydration and test fixtures only. Use update() for business logic.
+     * @psalm-api
      *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @internal For Doctrine ORM hydration and test fixtures only. Use update() for business logic.
      *
      * @see User::update()
      */
@@ -137,7 +137,6 @@ class User implements UserInterface
         return $events;
     }
 
-    /** @psalm-suppress PossiblyUnusedMethod API Platform serialization */
     public function isConfirmed(): bool
     {
         return $this->confirmed;
@@ -146,8 +145,6 @@ class User implements UserInterface
     /**
      * @internal For Doctrine ORM hydration and test fixtures only. Use confirm() for business logic.
      *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
-     *
      * @see User::confirm()
      */
     public function setConfirmed(bool $confirmed): void
@@ -155,13 +152,11 @@ class User implements UserInterface
         $this->confirmed = $confirmed;
     }
 
-    /** @psalm-suppress PossiblyUnusedMethod API Platform serialization */
     public function isTwoFactorEnabled(): bool
     {
         return $this->twoFactorEnabled;
     }
 
-    /** @psalm-suppress PossiblyUnusedMethod API Platform serialization */
     public function getTwoFactorSecret(): ?string
     {
         return $this->twoFactorSecret;
@@ -169,8 +164,6 @@ class User implements UserInterface
 
     /**
      * @internal For Doctrine ORM hydration and test fixtures only.
-     *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
      */
     public function setTwoFactorEnabled(bool $twoFactorEnabled): void
     {
@@ -179,8 +172,6 @@ class User implements UserInterface
 
     /**
      * @internal For Doctrine ORM hydration and test fixtures only.
-     *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
      */
     public function setTwoFactorSecret(?string $twoFactorSecret): void
     {

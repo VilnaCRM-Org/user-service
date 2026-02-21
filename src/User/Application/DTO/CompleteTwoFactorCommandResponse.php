@@ -34,6 +34,9 @@ final class CompleteTwoFactorCommandResponse
         return $this->refreshToken;
     }
 
+    /**
+     * @psalm-api
+     */
     public function isRememberMe(): bool
     {
         return $this->rememberMe;

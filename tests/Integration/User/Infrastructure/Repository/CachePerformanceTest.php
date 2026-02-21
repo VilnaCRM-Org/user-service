@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Integration\User\Infrastructure\Repository;
 
 use App\Shared\Domain\ValueObject\Uuid;
-use App\Tests\Integration\IntegrationTestCase;
+use App\Tests\Integration\User\UserIntegrationTestCase;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -17,7 +17,7 @@ use Symfony\Component\Uid\Uuid as SymfonyUuid;
  * These tests measure actual latency differences between cache hits and misses
  * to ensure the caching implementation provides real performance benefits.
  */
-final class CachePerformanceTest extends IntegrationTestCase
+final class CachePerformanceTest extends UserIntegrationTestCase
 {
     private const PERFORMANCE_ITERATIONS = 10;
     private const MAX_CACHE_HIT_LATENCY_MS = 10;

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Auth;
 
-use App\Tests\Integration\IntegrationTestCase;
-
-final class IntegrationAuthTokenHelperTest extends IntegrationTestCase
+final class IntegrationAuthTokenHelperTest extends AuthIntegrationTestCase
 {
     public function testCreateBearerTokenForUserIncludesExpectedClaims(): void
     {

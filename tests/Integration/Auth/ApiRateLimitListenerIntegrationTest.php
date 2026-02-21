@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Auth;
 
-use App\Tests\Integration\IntegrationTestCase;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -14,7 +13,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Uid\Factory\UlidFactory;
 
-final class ApiRateLimitListenerIntegrationTest extends IntegrationTestCase
+final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
 {
     private HttpKernelInterface $httpKernel;
     private CacheItemPoolInterface $cachePool;

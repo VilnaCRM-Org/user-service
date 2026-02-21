@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Auth;
 
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Integration\IntegrationTestCase;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
-final class BcryptCostUpgradeTest extends IntegrationTestCase
+final class BcryptCostUpgradeTest extends AuthIntegrationTestCase
 {
     /**
      * AC: NFR-32 - New registrations use cost 12

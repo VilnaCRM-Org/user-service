@@ -27,7 +27,7 @@ final class ApiEndpointMetricDimensionsResolverTest extends UnitTestCase
         $request = Request::create('/api/customers', 'GET');
         $request->attributes->set(
             '_api_resource_class',
-            'App\\Core\\Customer\\Domain\\Entity\\Customer'
+            'App\Core\Customer\Domain\Entity\Customer'
         );
         $request->attributes->set(
             '_api_operation_name',
@@ -45,7 +45,7 @@ final class ApiEndpointMetricDimensionsResolverTest extends UnitTestCase
         $request = Request::create('/api/customer-types', 'POST');
         $request->attributes->set(
             '_api_resource_class',
-            'App\\Core\\Customer\\Domain\\Entity\\CustomerType'
+            'App\Core\Customer\Domain\Entity\CustomerType'
         );
         $request->attributes->set('_api_operation_name', '_api_/customer-types_post');
 
@@ -131,7 +131,7 @@ final class ApiEndpointMetricDimensionsResolverTest extends UnitTestCase
         $request = Request::create('/api/customer-statuses', 'GET');
         $request->attributes->set(
             '_api_resource_class',
-            'App\\Core\\Customer\\Domain\\Entity\\CustomerStatus'
+            'App\Core\Customer\Domain\Entity\CustomerStatus'
         );
         $request->attributes->set(
             '_api_operation_name',

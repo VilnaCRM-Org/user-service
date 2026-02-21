@@ -6,7 +6,6 @@ namespace App\Shared\Application\Resolver\RateLimit;
 
 use Symfony\Component\HttpFoundation\Request;
 
-/** @infection-ignore-all */
 final readonly class ApiRateLimitRequestResolver
 {
     private const SCHEMATHESIS_HEADER_NAME = 'X-Schemathesis-Test';

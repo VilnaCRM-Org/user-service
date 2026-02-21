@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Auth;
 
-use App\Tests\Integration\IntegrationTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
-final class GraphQLBatchRejectTest extends IntegrationTestCase
+final class GraphQLBatchRejectTest extends AuthIntegrationTestCase
 {
     /**
      * AC: NFR-59 - GraphQL batch requests (JSON arrays) must be rejected with 400

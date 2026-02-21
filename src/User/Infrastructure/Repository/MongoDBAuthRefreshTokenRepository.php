@@ -13,8 +13,6 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 
 /**
  * @extends ServiceDocumentRepository<AuthRefreshToken>
- *
- * @psalm-suppress UnusedClass - Used via dependency injection
  */
 final class MongoDBAuthRefreshTokenRepository extends ServiceDocumentRepository implements
     AuthRefreshTokenRepositoryInterface

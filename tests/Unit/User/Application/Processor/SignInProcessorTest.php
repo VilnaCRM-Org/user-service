@@ -102,7 +102,7 @@ final class SignInProcessorTest extends UnitTestCase
     {
         $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
         $dto = new SignInDto($this->faker->email(), $this->faker->password());
-        $dto->rememberMe = true;
+        $dto->setRememberMe(true);
 
         $this->commandBus
             ->expects($this->once())

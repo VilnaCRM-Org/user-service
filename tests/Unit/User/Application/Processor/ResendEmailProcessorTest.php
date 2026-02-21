@@ -14,7 +14,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\DTO\RetryDto;
 use App\User\Application\Processor\ResendEmailProcessor;
-use App\User\Application\Query\GetUserQueryHandler;
+use App\User\Application\Query\GetUserQueryHandlerInterface;
 use App\User\Application\Service\ConfirmationEmailSenderInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\UserNotFoundException;
@@ -32,7 +32,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
 {
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;
-    private GetUserQueryHandler&MockObject $getUserQueryHandler;
+    private GetUserQueryHandlerInterface&MockObject $getUserQueryHandler;
     private ConfirmationEmailSenderInterface&MockObject $confirmationEmailSender;
     private JsonRequestValidator $jsonRequestValidator;
     private TokenStorageInterface&MockObject $tokenStorage;
@@ -45,7 +45,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
         parent::setUp();
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new UuidFactory());
-        $this->getUserQueryHandler = $this->createMock(GetUserQueryHandler::class);
+        $this->getUserQueryHandler = $this->createMock(GetUserQueryHandlerInterface::class);
         $this->confirmationEmailSender = $this->createMock(ConfirmationEmailSenderInterface::class);
         $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
         $this->tokenStorage->method('getToken')
@@ -241,6 +241,91 @@ final class ResendEmailProcessorTest extends UnitTestCase
                 new RetryDto(),
                 $this->createMock(Operation::class),
                 ['id' => $userId]
+            );
+        } finally {
+            $this->requestStack->pop();
+        }
+    }
+
+    public function testProcessThrowsAccessDeniedWhenTokenIsNull(): void
+    {
+        $userId = $this->faker->uuid();
+        $user = $this->createUser($userId);
+
+        $this->getUserQueryHandler->expects($this->once())
+            ->method('handle')
+            ->with($userId)
+            ->willReturn($user);
+
+        $this->authenticatedUserId = null;
+        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '{}'));
+
+        $this->expectException(\Symfony\Component\Security\Core\Exception\AccessDeniedException::class);
+
+        try {
+            $this->getProcessor()->process(
+                new RetryDto(),
+                $this->createMock(Operation::class),
+                ['id' => $userId]
+            );
+        } finally {
+            $this->requestStack->pop();
+        }
+    }
+
+    public function testProcessThrowsAccessDeniedWhenUserIsNotAuthorizationUserDto(): void
+    {
+        $userId = $this->faker->uuid();
+        $user = $this->createUser($userId);
+
+        $this->getUserQueryHandler->expects($this->once())
+            ->method('handle')
+            ->with($userId)
+            ->willReturn($user);
+
+        $nonAuthorizationUser = $this->createMock(
+            \Symfony\Component\Security\Core\User\UserInterface::class
+        );
+        $token = $this->createMock(TokenInterface::class);
+        $token->method('getUser')->willReturn($nonAuthorizationUser);
+        $this->tokenStorage->method('getToken')->willReturn($token);
+
+        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '{}'));
+
+        $this->expectException(\Symfony\Component\Security\Core\Exception\AccessDeniedException::class);
+
+        try {
+            $this->getProcessor()->process(
+                new RetryDto(),
+                $this->createMock(Operation::class),
+                ['id' => $userId]
+            );
+        } finally {
+            $this->requestStack->pop();
+        }
+    }
+
+    public function testProcessThrowsAccessDeniedWhenUserIdDoesNotMatch(): void
+    {
+        $resourceUserId = $this->faker->uuid();
+        $differentAuthenticatedUserId = $this->faker->uuid();
+        $user = $this->createUser($resourceUserId);
+
+        $this->getUserQueryHandler->expects($this->once())
+            ->method('handle')
+            ->with($resourceUserId)
+            ->willReturn($user);
+
+        $this->authenticatedUserId = $differentAuthenticatedUserId;
+        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '{}'));
+
+        $this->expectException(\Symfony\Component\Security\Core\Exception\AccessDeniedException::class);
+
+        try {
+            $this->getProcessor()->process(
+                new RetryDto(),
+                $this->createMock(Operation::class),
+                ['id' => $resourceUserId]
             );
         } finally {
             $this->requestStack->pop();

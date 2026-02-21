@@ -22,19 +22,37 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Faker\Factory;
 use Faker\Generator;
 use Psr\Cache\CacheItemPoolInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-/**
- * @psalm-suppress UnusedClass
- * @psalm-suppress PossiblyUnusedMethod
- */
 final class UserContext implements Context
 {
     use AuthenticatedUserContextTrait;
 
+    private const SERVICE_MAP = [
+        'userRepository' => UserRepositoryInterface::class,
+        'hasherFactory' => PasswordHasherFactoryInterface::class,
+        'tokenRepository' => TokenRepositoryInterface::class,
+        'userFactory' => UserFactoryInterface::class,
+        'transformer' => UuidTransformer::class,
+        'uuidFactory' => UuidFactory::class,
+        'passwordResetTokenRepository' => PasswordResetTokenRepositoryInterface::class,
+        'passwordResetTokenFactory' => PasswordResetTokenFactoryInterface::class,
+        'accountLockoutService' => AccountLockoutServiceInterface::class,
+        'cachePool' => CacheItemPoolInterface::class,
+        'tokenStorage' => TokenStorageInterface::class,
+        'testAccessTokenFactory' => TestAccessTokenFactory::class,
+        'accessTokenGenerator' => AccessTokenGeneratorInterface::class,
+        'authSessionRepository' => AuthSessionRepositoryInterface::class,
+        'ulidFactory' => UlidFactory::class,
+        'twoFactorSecretEncryptor' => TwoFactorSecretEncryptorInterface::class,
+    ];
+
+    private ContainerInterface $container;
+    private UserOperationsState $state;
     private Generator $faker;
     private string $lastLockoutEmail = '';
     private static string $lastPasswordResetToken = '';
@@ -44,27 +62,23 @@ final class UserContext implements Context
     private static array $userIdsByEmail = [];
     private static string $currentTokenUserEmail = '';
 
-    /** @SuppressWarnings(PHPMD.ExcessiveParameterList) */
     public function __construct(
-        private UserRepositoryInterface $userRepository,
-        private PasswordHasherFactoryInterface $hasherFactory,
-        private TokenRepositoryInterface $tokenRepository,
-        private UserFactoryInterface $userFactory,
-        private UuidTransformer $transformer,
-        private UuidFactory $uuidFactory,
-        private PasswordResetTokenRepositoryInterface $passwordResetTokenRepository,
-        private PasswordResetTokenFactoryInterface $passwordResetTokenFactory,
-        private AccountLockoutServiceInterface $accountLockoutService,
-        private CacheItemPoolInterface $cachePool,
-        private TokenStorageInterface $tokenStorage,
-        private UserOperationsState $state,
-        private TestAccessTokenFactory $testAccessTokenFactory,
-        private AccessTokenGeneratorInterface $accessTokenGenerator,
-        private AuthSessionRepositoryInterface $authSessionRepository,
-        private UlidFactory $ulidFactory,
-        private TwoFactorSecretEncryptorInterface $twoFactorSecretEncryptor,
+        UserOperationsState $state,
+        ContainerInterface $container,
     ) {
+        $this->container = $container;
+        $this->state = $state;
         $this->faker = Factory::create();
+    }
+
+    public function __get(string $name): mixed
+    {
+        $serviceId = self::SERVICE_MAP[$name] ?? null;
+        if (!is_string($serviceId) || $serviceId === '') {
+            throw new \RuntimeException(sprintf('Unknown dynamic property "%s".', $name));
+        }
+
+        return $this->container->get($serviceId);
     }
 
     /**

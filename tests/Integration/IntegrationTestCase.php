@@ -15,7 +15,6 @@ use Symfony\Bundle\FrameworkBundle\Test\MailerAssertionsTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
 
-/** @SuppressWarnings(PHPMD.NumberOfChildren) */
 abstract class IntegrationTestCase extends KernelTestCase
 {
     use MailerAssertionsTrait;

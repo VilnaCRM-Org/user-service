@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Behat\UserContext\Input;
 
 /**
- * @psalm-suppress UnusedClass
- * @psalm-suppress UnusedProperty - Properties used via reflection in RequestInput::toArray()
  */
 final class UpdateUserInput extends RequestInput
 {

@@ -63,7 +63,8 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $code = '123456';
         $sessionId = $this->faker->uuid();
         $expectedCodes = ['AB12-CD34', 'EF56-GH78', 'IJ90-KL12', 'MN34-OP56',
-            'QR78-ST90', 'UV12-WX34', 'YZ56-AB78', 'CD90-EF12'];
+            'QR78-ST90', 'UV12-WX34', 'YZ56-AB78', 'CD90-EF12',
+        ];
 
         $this->userRepository
             ->expects($this->once())

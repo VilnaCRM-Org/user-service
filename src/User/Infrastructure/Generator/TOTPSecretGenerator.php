@@ -7,6 +7,9 @@ namespace App\User\Infrastructure\Generator;
 use App\User\Domain\Contract\TOTPSecretGeneratorInterface;
 use App\User\Infrastructure\Service\TOTPCreatorInterface;
 
+/**
+ * @psalm-api
+ */
 final class TOTPSecretGenerator implements TOTPSecretGeneratorInterface
 {
     private const OTP_ISSUER = 'VilnaCRM';

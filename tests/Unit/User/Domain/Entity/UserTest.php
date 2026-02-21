@@ -26,7 +26,6 @@ final class UserTest extends UnitTestCase
     private UserInterface $user;
     private UserConfirmedEventFactoryInterface $userConfirmedEventFactory;
     private EmailChangedEventFactoryInterface $emailChangedEventFactory;
-    /** @psalm-suppress UnusedProperty */
     private PasswordChangedEventFactoryInterface $passwordChangedEventFactory;
     private UserFactoryInterface $userFactory;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
@@ -106,11 +105,6 @@ final class UserTest extends UnitTestCase
         $this->assertTrue($this->user->isConfirmed());
     }
 
-    /**
-     * @psalm-suppress NoValue
-     * @psalm-suppress UnusedVariable
-     * @psalm-suppress UnevaluatedCode
-     */
     public function testUpdate(): void
     {
         $oldEmail = $this->user->getEmail();
@@ -251,8 +245,13 @@ final class UserTest extends UnitTestCase
     private function setupEmailChangedEventFactoryMock(
         string $oldEmail,
         string $eventID
-    ): \PHPUnit\Framework\MockObject\MockObject&EmailChangedEvent {
-        $expectedEvent = $this->createMock(EmailChangedEvent::class);
+    ): EmailChangedEvent {
+        $expectedEvent = new EmailChangedEvent(
+            (string) $this->user->getId(),
+            $this->user->getEmail(),
+            $oldEmail,
+            $eventID
+        );
         $this->emailChangedEventFactory->expects($this->once())
             ->method('create')
             ->with($this->user, $oldEmail, $eventID)

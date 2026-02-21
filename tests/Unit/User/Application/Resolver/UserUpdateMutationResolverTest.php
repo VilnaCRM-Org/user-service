@@ -124,4 +124,166 @@ final class UserUpdateMutationResolverTest extends UnitTestCase
             ->method('dispatch')
             ->with($command);
     }
+
+    public function testInvokeWithoutEmailUsesExistingEmail(): void
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+
+        $user = $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+        $this->prepareExpectations($user, $email, $initials, $password);
+
+        $input = [
+            'initials' => $initials,
+            'newPassword' => $password,
+            'password' => $password,
+        ];
+
+        $this->assertSame(
+            $user,
+            $this->resolver->__invoke($user, ['args' => ['input' => $input]]),
+        );
+    }
+
+    public function testInvokeWithoutInitialsUsesExistingInitials(): void
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+
+        $user = $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+        $this->prepareExpectations($user, $email, $initials, $password);
+
+        $input = [
+            'email' => $email,
+            'newPassword' => $password,
+            'password' => $password,
+        ];
+
+        $this->assertSame(
+            $user,
+            $this->resolver->__invoke($user, ['args' => ['input' => $input]]),
+        );
+    }
+
+    public function testInvokeWithoutNewPasswordFallsBackToPassword(): void
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+
+        $user = $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+        $this->prepareExpectations($user, $email, $initials, $password);
+
+        $input = [
+            'email' => $email,
+            'initials' => $initials,
+            'password' => $password,
+        ];
+
+        $this->assertSame(
+            $user,
+            $this->resolver->__invoke($user, ['args' => ['input' => $input]]),
+        );
+    }
+
+    public function testInvokeWithNullSecurityToken(): void
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+
+        $user = $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+
+        $this->security->expects($this->once())->method('getToken')->willReturn(null);
+
+        $updateData = new UserUpdate($email, $initials, $password, $password);
+        $command = $this->updateUserCommandFactory->create($user, $updateData, '');
+
+        $this->transformer->expects($this->once())->method('transform');
+        $this->validator->expects($this->once())->method('validate');
+
+        $this->mockUpdateUserCommandFactory->expects($this->once())
+            ->method('create')
+            ->with($user, $updateData, '')
+            ->willReturn($command);
+
+        $this->commandBus->expects($this->once())->method('dispatch')->with($command);
+
+        $input = [
+            'email' => $email,
+            'initials' => $initials,
+            'newPassword' => $password,
+            'password' => $password,
+        ];
+
+        $this->assertSame(
+            $user,
+            $this->resolver->__invoke($user, ['args' => ['input' => $input]]),
+        );
+    }
+
+    public function testInvokeWithNonStringSessionId(): void
+    {
+        $email = $this->faker->email();
+        $initials = $this->faker->name();
+        $password = $this->faker->password();
+
+        $user = $this->userFactory->create(
+            $email,
+            $initials,
+            $password,
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+
+        $token = $this->createMock(TokenInterface::class);
+        $token->method('getAttribute')->with('sid')->willReturn(null);
+        $this->security->expects($this->once())->method('getToken')->willReturn($token);
+
+        $updateData = new UserUpdate($email, $initials, $password, $password);
+        $command = $this->updateUserCommandFactory->create($user, $updateData, '');
+
+        $this->transformer->expects($this->once())->method('transform');
+        $this->validator->expects($this->once())->method('validate');
+
+        $this->mockUpdateUserCommandFactory->expects($this->once())
+            ->method('create')
+            ->with($user, $updateData, '')
+            ->willReturn($command);
+
+        $this->commandBus->expects($this->once())->method('dispatch')->with($command);
+
+        $input = [
+            'email' => $email,
+            'initials' => $initials,
+            'newPassword' => $password,
+            'password' => $password,
+        ];
+
+        $this->assertSame(
+            $user,
+            $this->resolver->__invoke($user, ['args' => ['input' => $input]]),
+        );
+    }
 }

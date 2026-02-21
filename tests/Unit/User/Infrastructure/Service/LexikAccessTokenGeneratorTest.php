@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Infrastructure\Service;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Infrastructure\Service\LexikAccessTokenGenerator;
+use App\User\Infrastructure\Generator\LexikAccessTokenGenerator;
 use DateTimeImmutable;
 use RuntimeException;
 

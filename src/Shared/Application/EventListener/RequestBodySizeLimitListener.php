@@ -9,7 +9,6 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
-/** @psalm-suppress UnusedClass */
 final readonly class RequestBodySizeLimitListener
 {
     private const MAX_BODY_SIZE_BYTES = 65_536; // 64 KB

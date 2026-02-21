@@ -66,7 +66,7 @@ final class ReplaceUserRequestFactoryTest extends UnitTestCase
             255,
             null,
             Requirement::REQUIRED,
-            '^(?!\\d).*\\S.*$'
+            '^(?!\d).*\S.*$'
         );
     }
 

@@ -12,7 +12,6 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\RateLimiter\RateLimit;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 
-/** @infection-ignore-all */
 final readonly class ApiRateLimitListener
 {
     /**

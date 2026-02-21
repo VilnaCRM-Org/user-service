@@ -12,8 +12,6 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 
 /**
  * @extends ServiceDocumentRepository<PendingTwoFactor>
- *
- * @psalm-suppress UnusedClass - Used via dependency injection
  */
 final class MongoDBPendingTwoFactorRepository extends ServiceDocumentRepository implements
     PendingTwoFactorRepositoryInterface

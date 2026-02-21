@@ -112,7 +112,7 @@ final class ApiEndpointBusinessMetricsSubscriberTest extends UnitTestCase
         $request = Request::create('/api/something', 'PATCH');
         $request->attributes->set(
             '_api_resource_class',
-            'App\\Core\\Customer\\Domain\\Entity\\Customer'
+            'App\Core\Customer\Domain\Entity\Customer'
         );
 
         $event = $this->createResponseEvent($request);
@@ -164,7 +164,7 @@ final class ApiEndpointBusinessMetricsSubscriberTest extends UnitTestCase
         );
 
         $request = Request::create('/something', 'GET');
-        $request->attributes->set('_api_resource_class', 'App\\Shared\\Kernel');
+        $request->attributes->set('_api_resource_class', 'App\Shared\Kernel');
 
         $event = new ResponseEvent(
             $this->createMock(HttpKernelInterface::class),
@@ -186,7 +186,7 @@ final class ApiEndpointBusinessMetricsSubscriberTest extends UnitTestCase
         $request = Request::create('/api/customers', 'GET');
         $request->attributes->set(
             '_api_resource_class',
-            'App\\Core\\Customer\\Domain\\Entity\\Customer'
+            'App\Core\Customer\Domain\Entity\Customer'
         );
         $request->attributes->set(
             '_api_operation_name',
@@ -269,7 +269,7 @@ final class ApiEndpointBusinessMetricsSubscriberTest extends UnitTestCase
         $request = Request::create('/api/customers', 'GET');
         $request->attributes->set(
             '_api_resource_class',
-            'App\\Core\\Customer\\Domain\\Entity\\Customer'
+            'App\Core\Customer\Domain\Entity\Customer'
         );
         $request->attributes->set(
             '_api_operation_name',
@@ -283,7 +283,7 @@ final class ApiEndpointBusinessMetricsSubscriberTest extends UnitTestCase
         $request = Request::create('/api/health', 'GET');
         $request->attributes->set(
             '_api_resource_class',
-            'App\\Internal\\HealthCheck\\Domain\\ValueObject\\HealthCheck'
+            'App\Internal\HealthCheck\Domain\ValueObject\HealthCheck'
         );
         $request->attributes->set('_api_operation_name', '_api_/health_get');
         return $request;

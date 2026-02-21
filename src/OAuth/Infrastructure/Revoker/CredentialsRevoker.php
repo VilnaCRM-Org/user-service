@@ -15,7 +15,6 @@ use League\Bundle\OAuth2ServerBundle\Service\CredentialsRevokerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * @psalm-suppress UnusedClass - Used via dependency injection
  */
 final class CredentialsRevoker implements CredentialsRevokerInterface
 {

@@ -306,6 +306,43 @@ final class SignInCommandHandlerTest extends UnitTestCase
         }
     }
 
+    public function testDefaultTtlIsThreeHundredSeconds(): void
+    {
+        $email = $this->faker->email();
+        $user = $this->createUser($email);
+        $user->setTwoFactorEnabled(true);
+
+        $this->authService->method('authenticate')->willReturn($user);
+
+        $pendingSessionId = Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB5');
+        $this->ulidFactory->method('create')->willReturn($pendingSessionId);
+
+        $this->pendingTwoFactorRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->callback(
+                static fn (PendingTwoFactor $pf): bool => $pf->getExpiresAt()->getTimestamp() - $pf->getCreatedAt()->getTimestamp() === 300
+            ));
+
+        $handler = new SignInCommandHandler(
+            $this->authService,
+            $this->sessionIssuanceService,
+            $this->eventPublisher,
+            $this->pendingTwoFactorRepository,
+            $this->ulidFactory,
+        );
+
+        $command = new SignInCommand(
+            $email,
+            $this->faker->password(),
+            false,
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
+
+        $handler->__invoke($command);
+    }
+
     private function createHandler(): SignInCommandHandler
     {
         return new SignInCommandHandler(

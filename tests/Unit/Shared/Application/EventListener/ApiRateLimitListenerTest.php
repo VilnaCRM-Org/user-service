@@ -11,6 +11,7 @@ use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use App\Tests\Unit\UnitTestCase;
 use DateTimeImmutable;
+use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -23,16 +24,68 @@ final class ApiRateLimitListenerTest extends UnitTestCase
 {
     public function testIgnoresSubRequest(): void
     {
-        $listener = new ApiRateLimitListener([]);
+        $listener = new ApiRateLimitListener([
+            'registration' => $this->createNeverCalledFactory(),
+            'global_api_anonymous' => $this->createNeverCalledFactory(),
+        ]);
         $event = $this->createRequestEvent(
-            '/api/health',
-            'GET',
+            '/api/users',
+            'POST',
             HttpKernelInterface::SUB_REQUEST
         );
 
         $listener($event);
 
         $this->assertFalse($event->hasResponse());
+    }
+
+    public function testIgnoresUnsupportedPath(): void
+    {
+        $listener = new ApiRateLimitListener([
+            'global_api_anonymous' => $this->createNeverCalledFactory(),
+        ]);
+        $event = $this->createRequestEvent('/health', 'GET');
+
+        $listener($event);
+
+        $this->assertFalse($event->hasResponse());
+    }
+
+    public function testThrowsLogicExceptionWhenLimiterNotConfigured(): void
+    {
+        $listener = new ApiRateLimitListener([]);
+        $event = $this->createRequestEvent('/api/users', 'POST');
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Rate limiter "registration" is not configured.');
+
+        $listener($event);
+    }
+
+    public function testGlobalLimiterRejectsAfterEndpointLimiterPasses(): void
+    {
+        $registrationLimiter = $this->createLimiterFactoryMock(
+            expectedKey: 'ip:127.0.0.1',
+            accepted: true
+        );
+        $globalLimiter = $this->createLimiterFactoryMock(
+            expectedKey: 'ip:127.0.0.1',
+            accepted: false,
+            retryAfter: new DateTimeImmutable('+30 seconds')
+        );
+
+        $listener = new ApiRateLimitListener([
+            'registration' => $registrationLimiter,
+            'global_api_anonymous' => $globalLimiter,
+        ]);
+        $event = $this->createRequestEvent('/api/users', 'POST');
+
+        $listener($event);
+
+        $this->assertTrue($event->hasResponse());
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+        $this->assertSame(429, $response->getStatusCode());
     }
 
     public function testAppliesEndpointLimiterThenGlobalAnonymousLimiter(): void

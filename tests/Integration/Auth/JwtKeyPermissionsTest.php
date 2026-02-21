@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Auth;
 
-use App\Tests\Integration\IntegrationTestCase;
-
-final class JwtKeyPermissionsTest extends IntegrationTestCase
+final class JwtKeyPermissionsTest extends AuthIntegrationTestCase
 {
     private const PRIVATE_KEY_PATH = __DIR__ . '/../../../config/jwt/private.pem';
     private const PUBLIC_KEY_PATH = __DIR__ . '/../../../config/jwt/public.pem';

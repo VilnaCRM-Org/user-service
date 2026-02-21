@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Collector;
 
-use App\Shared\Application\DTO\BatchEmailCollection;
 use App\Shared\Application\Collector\BatchEmailCollector;
+use App\Shared\Application\DTO\BatchEmailCollection;
 use App\Shared\Application\Resolver\BatchEmailResolver;
 use App\Tests\Unit\UnitTestCase;
 use ArrayIterator;

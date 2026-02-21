@@ -14,6 +14,8 @@ use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Infrastructure\Repository\MongoDBUserRepository;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Doctrine\ODM\MongoDB\Query\Builder;
+use Doctrine\ODM\MongoDB\Query\Query;
 use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -165,6 +167,81 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->testSaveBatchSetDocumentManagerExpectations($users);
 
         $this->userRepository->saveBatch($users);
+    }
+
+    public function testDeleteAll(): void
+    {
+        $queryBuilder = $this->createMock(Builder::class);
+        $query = $this->createMock(Query::class);
+
+        $queryBuilder->expects($this->once())
+            ->method('remove')
+            ->willReturnSelf();
+        $queryBuilder->expects($this->once())
+            ->method('getQuery')
+            ->willReturn($query);
+        $query->expects($this->once())
+            ->method('execute');
+
+        $repository = $this->getMockBuilder(MongoDBUserRepository::class)
+            ->setConstructorArgs([
+                $this->documentManager,
+                $this->registry,
+                self::BATCH_SIZE,
+            ])
+            ->onlyMethods(['createQueryBuilder'])
+            ->getMock();
+
+        $repository->expects($this->once())
+            ->method('createQueryBuilder')
+            ->willReturn($queryBuilder);
+
+        $repository->deleteAll();
+    }
+
+    public function testDeleteBatch(): void
+    {
+        $totalUsers = self::BATCH_SIZE + 1;
+        $users = $this->getUsersForBatchSave($totalUsers);
+
+        $fullBatches = (int) floor($totalUsers / self::BATCH_SIZE);
+        $expectedFlushCalls = $fullBatches + 1;
+        $expectedClearCalls = $expectedFlushCalls;
+
+        $this->documentManager
+            ->expects($this->exactly($totalUsers))
+            ->method('remove')
+            ->with($this->isInstanceOf(User::class));
+
+        $this->documentManager
+            ->expects($this->exactly($expectedFlushCalls))
+            ->method('flush');
+
+        $this->documentManager
+            ->expects($this->exactly($expectedClearCalls))
+            ->method('clear');
+
+        $this->userRepository->deleteBatch($users);
+    }
+
+    public function testDeleteBatchWithExactBatchSize(): void
+    {
+        $users = $this->getUsersForBatchSave(self::BATCH_SIZE);
+
+        $this->documentManager
+            ->expects($this->exactly(self::BATCH_SIZE))
+            ->method('remove')
+            ->with($this->isInstanceOf(User::class));
+
+        $this->documentManager
+            ->expects($this->exactly(2))
+            ->method('flush');
+
+        $this->documentManager
+            ->expects($this->exactly(2))
+            ->method('clear');
+
+        $this->userRepository->deleteBatch($users);
     }
 
     /**

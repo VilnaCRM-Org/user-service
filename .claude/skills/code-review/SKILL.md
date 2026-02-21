@@ -197,6 +197,7 @@ make ci  # Must output "✅ CI checks successfully passed!"
 - Leave questions unanswered
 - Accept organizational violations (invoke `code-organization` skill)
 - Accept architecture violations (invoke `implementing-ddd-architecture` skill)
+- Add suppression/ignore annotations to "fix" review comments or CI failures
 - Finish task before `make ci` shows success message
 
 **ALWAYS**:

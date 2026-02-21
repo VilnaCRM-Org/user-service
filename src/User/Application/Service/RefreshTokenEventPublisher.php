@@ -9,6 +9,9 @@ use App\User\Application\Factory\AuthTokenFactoryInterface;
 use App\User\Domain\Event\RefreshTokenRotatedEvent;
 use App\User\Domain\Event\RefreshTokenTheftDetectedEvent;
 
+/**
+ * @psalm-api
+ */
 final readonly class RefreshTokenEventPublisher implements
     RefreshTokenEventPublisherInterface
 {
@@ -18,6 +21,7 @@ final readonly class RefreshTokenEventPublisher implements
     ) {
     }
 
+    #[\Override]
     public function publishRotated(string $sessionId, string $userId): void
     {
         $this->eventBus->publish(
@@ -29,6 +33,7 @@ final readonly class RefreshTokenEventPublisher implements
         );
     }
 
+    #[\Override]
     public function publishTheftDetected(
         string $sessionId,
         string $userId,

@@ -8,16 +8,15 @@ use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\Application\OpenApi\Factory\Response\InternalErrorFactory;
+use App\Shared\Application\OpenApi\Factory\Response\AbstractResponseFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class ServerErrorResponseAugmenter
 {
     private const OPERATIONS = ['Get', 'Post', 'Put', 'Patch', 'Delete'];
 
-    /** @psalm-suppress PossiblyUnusedMethod */
     public function __construct(
-        private InternalErrorFactory $internalErrorFactory
+        private AbstractResponseFactory $internalErrorFactory
     ) {
     }
 

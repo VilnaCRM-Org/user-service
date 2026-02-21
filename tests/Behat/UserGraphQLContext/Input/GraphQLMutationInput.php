@@ -34,10 +34,6 @@ abstract readonly class GraphQLMutationInput
         $values = [];
 
         foreach ($reflection->getProperties() as $property) {
-            if (!$property->isPublic()) {
-                /** @psalm-suppress UnusedMethodCall */
-                $property->setAccessible(true);
-            }
             $values[$property->getName()] = $property->getValue($this);
         }
 

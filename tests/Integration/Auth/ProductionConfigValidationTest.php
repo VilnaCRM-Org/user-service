@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Auth;
 
-use App\Tests\Integration\IntegrationTestCase;
-
-final class ProductionConfigValidationTest extends IntegrationTestCase
+final class ProductionConfigValidationTest extends AuthIntegrationTestCase
 {
     /**
      * AC: NFR-17 - MongoDB production DSN must enable TLS

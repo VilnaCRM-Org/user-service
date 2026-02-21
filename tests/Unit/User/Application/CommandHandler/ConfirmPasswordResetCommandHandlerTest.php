@@ -6,8 +6,8 @@ namespace App\Tests\Unit\User\Application\CommandHandler;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
-use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Application\CommandHandler\ConfirmPasswordResetCommandHandler;
+use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Contract\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;

@@ -9,29 +9,29 @@ use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\Uid\Factory\UlidFactory;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-function fail(string $message): never
-{
-    fwrite(STDERR, $message . PHP_EOL);
-    exit(1);
-}
+$base64UrlEncode = static fn (string $value): string => rtrim(
+    strtr(base64_encode($value), '+/', '-_'),
+    '='
+);
 
-function base64UrlEncode(string $value): string
-{
-    return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
-}
+$fail = static function (string $message): never {
+    fwrite(STDERR, $message . PHP_EOL);
+    throw new RuntimeException($message);
+};
 
 /**
  * @param array<string, int|string|array<string>> $payload
  */
-function signJwt(array $payload, OpenSSLAsymmetricKey $privateKey): string
-{
+$signJwt = static function (array $payload, OpenSSLAsymmetricKey $privateKey) use (
+    $base64UrlEncode
+): string {
     $header = [
         'alg' => 'RS256',
         'typ' => 'JWT',
     ];
 
-    $encodedHeader = base64UrlEncode(json_encode($header, JSON_THROW_ON_ERROR));
-    $encodedPayload = base64UrlEncode(json_encode($payload, JSON_THROW_ON_ERROR));
+    $encodedHeader = $base64UrlEncode(json_encode($header, JSON_THROW_ON_ERROR));
+    $encodedPayload = $base64UrlEncode(json_encode($payload, JSON_THROW_ON_ERROR));
     $unsignedToken = $encodedHeader . '.' . $encodedPayload;
 
     $signature = '';
@@ -39,23 +39,23 @@ function signJwt(array $payload, OpenSSLAsymmetricKey $privateKey): string
         throw new RuntimeException('Unable to sign JWT token.');
     }
 
-    return $unsignedToken . '.' . base64UrlEncode($signature);
-}
+    return $unsignedToken . '.' . $base64UrlEncode($signature);
+};
 
 $usersFilePath = dirname(__DIR__) . '/Load/users.json';
-$rawUsers = @file_get_contents($usersFilePath);
+$rawUsers = file_get_contents($usersFilePath);
 if (!is_string($rawUsers) || $rawUsers === '') {
-    fail('Unable to read load-test users file.');
+    $fail('Unable to read load-test users file.');
 }
 
 try {
     $users = json_decode($rawUsers, true, 512, JSON_THROW_ON_ERROR);
 } catch (JsonException) {
-    fail('Unable to decode load-test users file.');
+    $fail('Unable to decode load-test users file.');
 }
 
 if (!is_array($users)) {
-    fail('Load-test users file must contain a JSON array.');
+    $fail('Load-test users file must contain a JSON array.');
 }
 
 $projectDir = dirname(__DIR__, 2);
@@ -72,20 +72,19 @@ $container = $container->has('test.service_container')
     : $container;
 
 $documentManager = $container->get('doctrine_mongodb.odm.default_document_manager');
-
 if (!$documentManager instanceof DocumentManager) {
-    fail('DocumentManager service is not available.');
+    $fail('DocumentManager service is not available.');
 }
 
 $privateKeyPath = $projectDir . '/config/jwt/private.pem';
-$privateKeyContents = @file_get_contents($privateKeyPath);
+$privateKeyContents = file_get_contents($privateKeyPath);
 if (!is_string($privateKeyContents) || $privateKeyContents === '') {
-    fail('Unable to read JWT private key.');
+    $fail('Unable to read JWT private key.');
 }
 
 $privateKey = openssl_pkey_get_private($privateKeyContents);
 if (!$privateKey instanceof OpenSSLAsymmetricKey) {
-    fail('Unable to load JWT private key.');
+    $fail('Unable to load JWT private key.');
 }
 
 $uuidFactory = new UuidFactory();
@@ -95,10 +94,10 @@ foreach ($users as $index => &$user) {
     $userId = is_array($user) ? ($user['id'] ?? null) : null;
     $userEmail = is_array($user) ? ($user['email'] ?? null) : null;
     if (!is_string($userId) || $userId === '') {
-        fail(sprintf('User at index %d does not contain a valid id.', $index));
+        $fail(sprintf('User at index %d does not contain a valid id.', $index));
     }
     if (!is_string($userEmail) || $userEmail === '') {
-        fail(sprintf('User at index %d does not contain a valid email.', $index));
+        $fail(sprintf('User at index %d does not contain a valid email.', $index));
     }
 
     $now = new DateTimeImmutable();
@@ -118,7 +117,7 @@ foreach ($users as $index => &$user) {
     );
 
     try {
-        $user['accessToken'] = signJwt(
+        $user['accessToken'] = $signJwt(
             [
                 'sub' => $userEmail,
                 'iss' => 'vilnacrm-user-service',
@@ -133,7 +132,7 @@ foreach ($users as $index => &$user) {
             $privateKey
         );
     } catch (JsonException|RuntimeException $exception) {
-        fail($exception->getMessage());
+        $fail($exception->getMessage());
     }
 }
 unset($user);
@@ -143,9 +142,9 @@ $documentManager->flush();
 try {
     $encodedUsers = json_encode($users, JSON_THROW_ON_ERROR);
 } catch (JsonException) {
-    fail('Unable to encode users with attached access tokens.');
+    $fail('Unable to encode users with attached access tokens.');
 }
 
-if (@file_put_contents($usersFilePath, $encodedUsers) === false) {
-    fail('Unable to persist users with attached access tokens.');
+if (file_put_contents($usersFilePath, $encodedUsers) === false) {
+    $fail('Unable to persist users with attached access tokens.');
 }

@@ -7,8 +7,8 @@ namespace App\Tests\Unit\User\Application\Controller;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RequestPasswordResetCommand;
-use App\User\Application\DTO\RequestPasswordResetCommandResponse;
 use App\User\Application\Controller\RequestPasswordResetController;
+use App\User\Application\DTO\RequestPasswordResetCommandResponse;
 use App\User\Application\DTO\RequestPasswordResetDto;
 use Symfony\Component\HttpFoundation\JsonResponse;
 

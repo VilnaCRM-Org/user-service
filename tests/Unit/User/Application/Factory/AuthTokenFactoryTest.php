@@ -7,6 +7,7 @@ namespace App\Tests\Unit\User\Application\Factory;
 use App\Shared\Infrastructure\Factory\UuidFactory as SharedUuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Application\Factory\AuthTokenFactory;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\User;
@@ -134,6 +135,18 @@ final class AuthTokenFactoryTest extends UnitTestCase
         $id2 = $this->factory->nextEventId();
 
         $this->assertNotSame($id1, $id2);
+    }
+
+    public function testCreateRefreshTokenResponseReturnsDto(): void
+    {
+        $accessToken = $this->faker->sha256();
+        $refreshToken = $this->faker->sha256();
+
+        $response = $this->factory->createRefreshTokenResponse($accessToken, $refreshToken);
+
+        $this->assertInstanceOf(RefreshTokenCommandResponse::class, $response);
+        $this->assertSame($accessToken, $response->getAccessToken());
+        $this->assertSame($refreshToken, $response->getRefreshToken());
     }
 
     private function createUser(): User

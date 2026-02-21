@@ -49,17 +49,7 @@ final class RefreshTokenCommandHandlerGraceWindowTest extends UnitTestCase
         $this->accessTokenGenerator = $this->createMock(AccessTokenGeneratorInterface::class);
         $this->eventPublisher = $this->createMock(RefreshTokenEventPublisherInterface::class);
         $this->authTokenFactory = $this->createMock(AuthTokenFactoryInterface::class);
-        $this->authTokenFactory
-            ->method('createRefreshTokenResponse')
-            ->willReturnCallback(
-                static fn (
-                    string $accessToken,
-                    string $refreshToken
-                ): RefreshTokenCommandResponse => new RefreshTokenCommandResponse(
-                    $accessToken,
-                    $refreshToken
-                )
-            );
+        $this->configureRefreshTokenResponseFactory();
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
     }
@@ -115,6 +105,21 @@ final class RefreshTokenCommandHandlerGraceWindowTest extends UnitTestCase
         $this->expectExceptionMessage('Invalid refresh token.');
 
         $this->executeRefresh($plainToken);
+    }
+
+    private function configureRefreshTokenResponseFactory(): void
+    {
+        $this->authTokenFactory
+            ->method('createRefreshTokenResponse')
+            ->willReturnCallback(
+                static fn (
+                    string $accessToken,
+                    string $refreshToken
+                ): RefreshTokenCommandResponse => new RefreshTokenCommandResponse(
+                    $accessToken,
+                    $refreshToken
+                )
+            );
     }
 
     private function assertOpaqueTokenFormat(string $token): void
@@ -191,11 +196,29 @@ final class RefreshTokenCommandHandlerGraceWindowTest extends UnitTestCase
     {
         $this->authTokenFactory->method('generateOpaqueToken')
             ->willReturn('test-opaque-token-1234567890-abcdefghijklmn');
+        $this->configureRefreshTokenFactory();
+        $this->configureJwtPayloadFactory();
+    }
+
+    private function configureRefreshTokenFactory(): void
+    {
         $this->authTokenFactory->method('createRefreshToken')
             ->willReturnCallback(
-                static fn (string $sessionId, string $plain, DateTimeImmutable $issuedAt): AuthRefreshToken =>
-                    new AuthRefreshToken((string) new Ulid(), $sessionId, $plain, $issuedAt->modify('+1 month'))
+                static fn (
+                    string $sessionId,
+                    string $plain,
+                    DateTimeImmutable $issuedAt
+                ): AuthRefreshToken => new AuthRefreshToken(
+                    (string) new Ulid(),
+                    $sessionId,
+                    $plain,
+                    $issuedAt->modify('+1 month')
+                )
             );
+    }
+
+    private function configureJwtPayloadFactory(): void
+    {
         $this->authTokenFactory->method('buildJwtPayload')
             ->willReturnCallback(
                 static fn (User $user, string $sessionId, DateTimeImmutable $issuedAt): array => [

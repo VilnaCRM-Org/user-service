@@ -11,7 +11,6 @@ use League\Bundle\OAuth2ServerBundle\Model\RefreshToken;
 use League\Bundle\OAuth2ServerBundle\Model\RefreshTokenInterface;
 
 /**
- * @psalm-suppress UnusedClass - Used via dependency injection
  */
 final class RefreshTokenManager implements RefreshTokenManagerInterface
 {

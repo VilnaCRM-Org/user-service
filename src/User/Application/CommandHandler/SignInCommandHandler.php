@@ -89,13 +89,12 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
             $issued->refreshToken
         ));
 
-        $this->eventPublisher->publishSignedIn(
+        $this->publishSignedInEvent(
             $user->getId(),
             $user->getEmail(),
             $issued->sessionId,
             $command->ipAddress,
-            $command->userAgent,
-            false  // AC: NFR-33 - twoFactorUsed is false during password auth (step 1)
+            $command->userAgent
         );
     }
 
@@ -114,5 +113,22 @@ final readonly class SignInCommandHandler implements CommandHandlerInterface
         }
 
         return $pending;
+    }
+
+    private function publishSignedInEvent(
+        string $userId,
+        string $email,
+        string $sessionId,
+        string $ipAddress,
+        string $userAgent
+    ): void {
+        $this->eventPublisher->publishSignedIn(
+            $userId,
+            $email,
+            $sessionId,
+            $ipAddress,
+            $userAgent,
+            false
+        );
     }
 }

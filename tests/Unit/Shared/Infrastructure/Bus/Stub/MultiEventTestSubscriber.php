@@ -7,15 +7,11 @@ namespace App\Tests\Unit\Shared\Infrastructure\Bus\Stub;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 
 /**
- * @psalm-suppress UnusedProperty
  */
 final class MultiEventTestSubscriber implements DomainEventSubscriberInterface
 {
-    public function __construct(
-        private bool &$event1Called,
-        private bool &$event2Called
-    ) {
-    }
+    private bool $event1Called = false;
+    private bool $event2Called = false;
 
     public function __invoke(TestEvent|TestCommand $message): void
     {
@@ -24,6 +20,16 @@ final class MultiEventTestSubscriber implements DomainEventSubscriberInterface
         } else {
             $this->event2Called = true;
         }
+    }
+
+    public function isEvent1Called(): bool
+    {
+        return $this->event1Called;
+    }
+
+    public function isEvent2Called(): bool
+    {
+        return $this->event2Called;
     }
 
     /**

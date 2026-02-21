@@ -12,8 +12,6 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 
 /**
  * @extends ServiceDocumentRepository<RecoveryCode>
- *
- * @psalm-suppress UnusedClass - Used via dependency injection
  */
 final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository implements
     RecoveryCodeRepositoryInterface

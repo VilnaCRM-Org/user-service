@@ -31,8 +31,6 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
  * Cache Invalidation:
  * - Handled by UserCacheInvalidationSubscriber via domain events
  * - This class only reads from cache, never invalidates
- *
- * @psalm-suppress UnusedClass
  */
 final class CachedUserRepository implements UserRepositoryInterface
 {
@@ -73,14 +71,12 @@ final class CachedUserRepository implements UserRepositoryInterface
      * Note: This is a Doctrine method, not part of UserRepositoryInterface.
      * MongoDB ODM doesn't support lock modes, so we delegate to findById for caching.
      *
-     * @psalm-suppress UnusedParam
-     *
      * @param numeric-string $id
      */
     public function find(
         string $id,
-        ?int $lockMode = null,
-        ?int $lockVersion = null
+        ?int $_lockMode = null,
+        ?int $_lockVersion = null
     ): ?UserInterface {
         // MongoDB ODM doesn't support lock modes, use findById instead
         return $this->findById($id);

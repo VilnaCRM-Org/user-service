@@ -10,6 +10,9 @@ use DateTimeZone;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
+/**
+ * @psalm-api
+ */
 final readonly class LexikAccessTokenGenerator implements
     AccessTokenGeneratorInterface
 {

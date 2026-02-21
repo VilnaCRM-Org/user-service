@@ -52,6 +52,22 @@ final class PendingTwoFactorTest extends UnitTestCase
         $this->assertFalse($withoutRememberMe->isRememberMe());
     }
 
+    public function testWithRememberMeDoesNotMutateOriginal(): void
+    {
+        $createdAt = new DateTimeImmutable();
+        $original = new PendingTwoFactor(
+            $this->faker->uuid(),
+            $this->faker->uuid(),
+            $createdAt
+        );
+
+        $clone = $original->withRememberMe();
+
+        $this->assertFalse($original->isRememberMe());
+        $this->assertTrue($clone->isRememberMe());
+        $this->assertNotSame($original, $clone);
+    }
+
     public function testIsExpiredReturnsExpectedStatus(): void
     {
         $createdAt = new DateTimeImmutable();

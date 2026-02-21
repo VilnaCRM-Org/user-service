@@ -44,19 +44,8 @@ final readonly class ConfirmTwoFactorCommandHandler implements
             $command->currentSessionId
         );
 
-        $command->setResponse(
-            new ConfirmTwoFactorCommandResponse($codes)
-        );
-
-        $this->eventPublisher->publishEnabled(
-            $user->getId(),
-            $user->getEmail()
-        );
-        $this->eventPublisher->publishAllSessionsRevoked(
-            $user->getId(),
-            'two_factor_enabled',
-            $revokedCount
-        );
+        $command->setResponse(new ConfirmTwoFactorCommandResponse($codes));
+        $this->publishTwoFactorEnabledEvents($user, $revokedCount);
     }
 
     private function resolveUser(string $email): User
@@ -108,5 +97,15 @@ final readonly class ConfirmTwoFactorCommandHandler implements
     ): bool {
         return $session->getId() !== $currentSessionId
             && !$session->isRevoked();
+    }
+
+    private function publishTwoFactorEnabledEvents(User $user, int $revokedCount): void
+    {
+        $this->eventPublisher->publishEnabled($user->getId(), $user->getEmail());
+        $this->eventPublisher->publishAllSessionsRevoked(
+            $user->getId(),
+            'two_factor_enabled',
+            $revokedCount
+        );
     }
 }

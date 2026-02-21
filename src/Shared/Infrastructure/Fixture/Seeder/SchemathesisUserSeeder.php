@@ -67,7 +67,6 @@ final readonly class SchemathesisUserSeeder
     public function seedUsers(): array
     {
         $users = $this->prepareUsers();
-        /** @infection-ignore-all */
         $this->userRepository->saveBatch(array_values($users));
 
         return $users;

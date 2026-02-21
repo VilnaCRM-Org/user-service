@@ -44,8 +44,8 @@ final readonly class TwoFactorSecretEncryptor implements
             self::TAG_LENGTH
         );
 
-        if (!is_string($cipherText)) { // @infection-ignore-all
-            throw new RuntimeException('Failed to encrypt two-factor secret.'); // @infection-ignore-all
+        if (!is_string($cipherText)) {
+            throw new RuntimeException('Failed to encrypt two-factor secret.');
         }
 
         return base64_encode($iv . $tag . $cipherText);

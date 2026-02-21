@@ -51,7 +51,7 @@ final readonly class SignInProcessor implements ProcessorInterface
         $command = new SignInCommand(
             $data->email,
             $data->password,
-            $data->rememberMe,
+            $data->isRememberMe(),
             $this->resolveIpAddress($request),
             $this->resolveUserAgent($request)
         );
@@ -110,7 +110,7 @@ final readonly class SignInProcessor implements ProcessorInterface
             return;
         }
 
-        $maxAge = $data->rememberMe
+        $maxAge = $data->isRememberMe()
             ? self::REMEMBER_ME_COOKIE_MAX_AGE
             : self::STANDARD_COOKIE_MAX_AGE;
 

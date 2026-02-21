@@ -12,11 +12,17 @@ final readonly class SetupTwoFactorCommandResponse
     ) {
     }
 
+    /**
+     * @psalm-api
+     */
     public function getOtpauthUri(): string
     {
         return $this->otpauthUri;
     }
 
+    /**
+     * @psalm-api
+     */
     public function getSecret(): string
     {
         return $this->secret;

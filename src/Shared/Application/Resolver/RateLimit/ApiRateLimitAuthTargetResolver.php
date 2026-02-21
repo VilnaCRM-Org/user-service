@@ -7,7 +7,6 @@ namespace App\Shared\Application\Resolver\RateLimit;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 
-/** @infection-ignore-all */
 final readonly class ApiRateLimitAuthTargetResolver
 {
     private const SIGNIN_PATH = '/api/signin';

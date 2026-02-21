@@ -16,7 +16,6 @@ use Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 
 /**
- * @infection-ignore-all
  */
 final class DualAuthenticator extends AbstractAuthenticator implements
     AuthenticationEntryPointInterface

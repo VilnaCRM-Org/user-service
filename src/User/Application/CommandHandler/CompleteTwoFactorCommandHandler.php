@@ -123,10 +123,11 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         ?int $remainingCodes
     ): CompleteTwoFactorCommandResponse {
         $warningMessage = $this->buildWarningMessage($remainingCodes);
+        $codesForResponse = $warningMessage !== null ? $remainingCodes : null;
         $response = new CompleteTwoFactorCommandResponse(
             $issued->accessToken,
             $issued->refreshToken,
-            $remainingCodes,
+            $codesForResponse,
             $warningMessage
         );
 

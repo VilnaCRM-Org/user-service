@@ -11,7 +11,6 @@ use League\Bundle\OAuth2ServerBundle\Model\AuthorizationCode;
 use League\Bundle\OAuth2ServerBundle\Model\AuthorizationCodeInterface;
 
 /**
- * @psalm-suppress UnusedClass - Used via dependency injection
  */
 final class AuthorizationCodeManager implements AuthorizationCodeManagerInterface
 {

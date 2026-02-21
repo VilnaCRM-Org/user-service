@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Auth;
 
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Integration\IntegrationTestCase;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
@@ -17,7 +16,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-final class DisablePasswordGrantIntegrationTest extends IntegrationTestCase
+final class DisablePasswordGrantIntegrationTest extends AuthIntegrationTestCase
 {
     public function testPasswordGrantReturnsUnsupportedGrantTypeWhenDisabled(): void
     {

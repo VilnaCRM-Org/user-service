@@ -7,7 +7,6 @@ namespace App\Shared\Application\Resolver\RateLimit;
 use App\Shared\Application\Decoder\JwtTokenDecoderInterface;
 use Symfony\Component\HttpFoundation\Request;
 
-/** @infection-ignore-all */
 final readonly class ApiRateLimitClientIdentityResolver
 {
     private const AUTH_COOKIE_NAME = '__Host-auth_token';

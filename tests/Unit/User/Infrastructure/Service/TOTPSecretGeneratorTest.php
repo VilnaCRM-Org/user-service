@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Infrastructure\Service;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Infrastructure\Service\TOTPSecretGenerator;
+use App\User\Infrastructure\Generator\TOTPSecretGenerator;
+use App\User\Infrastructure\Service\TOTPCreatorService;
 
 final class TOTPSecretGeneratorTest extends UnitTestCase
 {
     public function testGenerateReturnsSecretAndOtpauthUri(): void
     {
-        $generator = new TOTPSecretGenerator();
+        $generator = new TOTPSecretGenerator(new TOTPCreatorService());
         $email = $this->faker->email();
 
         $result = $generator->generate($email);
@@ -35,7 +36,7 @@ final class TOTPSecretGeneratorTest extends UnitTestCase
 
     public function testGenerateProducesUniqueSecretsPerCall(): void
     {
-        $generator = new TOTPSecretGenerator();
+        $generator = new TOTPSecretGenerator(new TOTPCreatorService());
         $email = $this->faker->email();
 
         $first = $generator->generate($email);

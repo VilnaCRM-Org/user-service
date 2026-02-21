@@ -219,6 +219,7 @@ Complex skills have multi-file structure:
 | Infection   | MSI          | High %   | `testing-workflow`      |
 
 **Always improve code quality to meet standards. Never lower thresholds.**
+**Never hide problems with suppression/ignore annotations (e.g. `@SuppressWarnings`, `@psalm-suppress`, `@infection-ignore-all`, `@codeCoverageIgnore`, `@phpstan-ignore`, `phpcs:ignore`, `@phpinsights-ignore*`).**
 
 ## Locked Configuration Exception Policy (AI Agents)
 
@@ -349,6 +350,7 @@ Never normalize "merge with red CI" as a general workflow. It is a human excepti
 - Skip reading the decision guide
 - Jump directly to execution without reading the full skill
 - Lower quality thresholds to make checks pass
+- Add suppression/ignore annotations to silence quality tools
 - Modify skill files without understanding the workflow
 - Ignore supporting documentation when errors occur
 

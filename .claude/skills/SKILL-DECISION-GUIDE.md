@@ -1,6 +1,7 @@
 # Skill Decision Guide
 
 **Choose the right skill for your task based on what you're trying to accomplish.**
+**Non-negotiable rule**: Fix root causes. Do not use suppression/ignore annotations to silence PHPMD, PHPInsights, Infection, Psalm, PHPStan, or PHPCS issues.
 
 ## 🚨 Mandatory New Feature Verification Gate (ALL Skills)
 

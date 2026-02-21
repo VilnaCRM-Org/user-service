@@ -223,7 +223,7 @@ Track progress: 15 violations → 10 → 5 → 0 ✅
 
 - Modify `deptrac.yaml` to allow violations
 - Disable Deptrac checks
-- Add suppression comments
+- Add suppression comments or ignore directives (`@SuppressWarnings`, `@psalm-suppress`, `@phpstan-ignore*`, `@infection-ignore*`, `phpcs:ignore`)
 - Create "wrapper" classes to hide dependencies
 - Move entire class to wrong layer just to satisfy Deptrac
 - Use reflection or dynamic loading to bypass checks

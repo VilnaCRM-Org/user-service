@@ -116,6 +116,7 @@ Do not normalize red CI merges as routine behavior.
 - Run commands outside Docker container (use `make` or `docker compose exec php`)
 - Edit locked quality config files unless the task explicitly requires a governed config change
 - Present a failed CI run as "complete" without marking it as a human exception
+- Add suppression/ignore annotations to silence PHPMD/PHPInsights/Infection/Psalm/PHPStan/PHPCS failures
 
 ## Format (Output)
 
