@@ -31,19 +31,23 @@ final class SecurityEventLogSubscriberTest extends UnitTestCase
 
         $event = new RecoveryCodeUsedEvent($userId, $remainingCodes, $this->faker->uuid());
 
+        $capturedContext = [];
         $this->logger->expects($this->once())
             ->method('warning')
             ->with(
                 'Recovery code used',
-                $this->callback(static function ($context) use ($userId, $remainingCodes) {
-                    return $context['event'] === 'user.recovery_code.used'
-                        && $context['user_id'] === $userId
-                        && $context['remaining_count'] === $remainingCodes
-                        && isset($context['timestamp']);
+                $this->callback(static function (array $context) use (&$capturedContext): bool {
+                    $capturedContext = $context;
+                    return true;
                 })
             );
 
         $this->subscriber->__invoke($event);
+
+        $this->assertSame('user.recovery_code.used', $capturedContext['event']);
+        $this->assertSame($userId, $capturedContext['user_id']);
+        $this->assertSame($remainingCodes, $capturedContext['remaining_count']);
+        $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 
     public function testInvokeLogsAccountLockedOutAtWarningLevel(): void
@@ -54,20 +58,24 @@ final class SecurityEventLogSubscriberTest extends UnitTestCase
 
         $event = new AccountLockedOutEvent($email, $failedAttempts, $lockoutDuration, $this->faker->uuid());
 
+        $capturedContext = [];
         $this->logger->expects($this->once())
             ->method('warning')
             ->with(
                 'Account locked out due to failed attempts',
-                $this->callback(static function ($context) use ($email, $failedAttempts, $lockoutDuration) {
-                    return $context['event'] === 'user.account.locked_out'
-                        && $context['email'] === $email
-                        && $context['failed_attempts'] === $failedAttempts
-                        && $context['lockout_duration_seconds'] === $lockoutDuration
-                        && isset($context['timestamp']);
+                $this->callback(static function (array $context) use (&$capturedContext): bool {
+                    $capturedContext = $context;
+                    return true;
                 })
             );
 
         $this->subscriber->__invoke($event);
+
+        $this->assertSame('user.account.locked_out', $capturedContext['event']);
+        $this->assertSame($email, $capturedContext['email']);
+        $this->assertSame($failedAttempts, $capturedContext['failed_attempts']);
+        $this->assertSame($lockoutDuration, $capturedContext['lockout_duration_seconds']);
+        $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 
     public function testInvokeIgnoresUnknownEvent(): void

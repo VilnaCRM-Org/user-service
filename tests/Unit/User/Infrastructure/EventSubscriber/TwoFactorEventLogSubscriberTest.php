@@ -34,20 +34,24 @@ final class TwoFactorEventLogSubscriberTest extends UnitTestCase
 
         $event = new TwoFactorCompletedEvent($userId, $sessionId, $this->faker->ipv4(), $this->faker->userAgent(), $method, $this->faker->uuid());
 
+        $capturedContext = [];
         $this->logger->expects($this->once())
             ->method('info')
             ->with(
                 'Two-factor authentication completed',
-                $this->callback(static function ($context) use ($userId, $sessionId, $method) {
-                    return $context['event'] === 'user.two_factor.completed'
-                        && $context['user_id'] === $userId
-                        && $context['session_id'] === $sessionId
-                        && $context['method'] === $method
-                        && isset($context['timestamp']);
+                $this->callback(static function (array $context) use (&$capturedContext): bool {
+                    $capturedContext = $context;
+                    return true;
                 })
             );
 
         $this->subscriber->__invoke($event);
+
+        $this->assertSame('user.two_factor.completed', $capturedContext['event']);
+        $this->assertSame($userId, $capturedContext['user_id']);
+        $this->assertSame($sessionId, $capturedContext['session_id']);
+        $this->assertSame($method, $capturedContext['method']);
+        $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 
     public function testInvokeLogsTwoFactorFailedAtWarningLevel(): void
@@ -58,20 +62,24 @@ final class TwoFactorEventLogSubscriberTest extends UnitTestCase
 
         $event = new TwoFactorFailedEvent($pendingSessionId, $ipAddress, $reason, $this->faker->uuid());
 
+        $capturedContext = [];
         $this->logger->expects($this->once())
             ->method('warning')
             ->with(
                 'Two-factor authentication failed',
-                $this->callback(static function ($context) use ($pendingSessionId, $ipAddress, $reason) {
-                    return $context['event'] === 'user.two_factor.failed'
-                        && $context['pending_session_id'] === $pendingSessionId
-                        && $context['ip_address'] === $ipAddress
-                        && $context['reason'] === $reason
-                        && isset($context['timestamp']);
+                $this->callback(static function (array $context) use (&$capturedContext): bool {
+                    $capturedContext = $context;
+                    return true;
                 })
             );
 
         $this->subscriber->__invoke($event);
+
+        $this->assertSame('user.two_factor.failed', $capturedContext['event']);
+        $this->assertSame($pendingSessionId, $capturedContext['pending_session_id']);
+        $this->assertSame($ipAddress, $capturedContext['ip_address']);
+        $this->assertSame($reason, $capturedContext['reason']);
+        $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 
     public function testInvokeLogsTwoFactorEnabledAtInfoLevel(): void
@@ -81,19 +89,23 @@ final class TwoFactorEventLogSubscriberTest extends UnitTestCase
 
         $event = new TwoFactorEnabledEvent($userId, $email, $this->faker->uuid());
 
+        $capturedContext = [];
         $this->logger->expects($this->once())
             ->method('info')
             ->with(
                 'Two-factor authentication enabled',
-                $this->callback(static function ($context) use ($userId, $email) {
-                    return $context['event'] === 'user.two_factor.enabled'
-                        && $context['user_id'] === $userId
-                        && $context['email'] === $email
-                        && isset($context['timestamp']);
+                $this->callback(static function (array $context) use (&$capturedContext): bool {
+                    $capturedContext = $context;
+                    return true;
                 })
             );
 
         $this->subscriber->__invoke($event);
+
+        $this->assertSame('user.two_factor.enabled', $capturedContext['event']);
+        $this->assertSame($userId, $capturedContext['user_id']);
+        $this->assertSame($email, $capturedContext['email']);
+        $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 
     public function testInvokeLogsTwoFactorDisabledAtInfoLevel(): void
@@ -102,18 +114,22 @@ final class TwoFactorEventLogSubscriberTest extends UnitTestCase
 
         $event = new TwoFactorDisabledEvent($userId, $this->faker->email(), $this->faker->uuid());
 
+        $capturedContext = [];
         $this->logger->expects($this->once())
             ->method('info')
             ->with(
                 'Two-factor authentication disabled',
-                $this->callback(static function ($context) use ($userId) {
-                    return $context['event'] === 'user.two_factor.disabled'
-                        && $context['user_id'] === $userId
-                        && isset($context['timestamp']);
+                $this->callback(static function (array $context) use (&$capturedContext): bool {
+                    $capturedContext = $context;
+                    return true;
                 })
             );
 
         $this->subscriber->__invoke($event);
+
+        $this->assertSame('user.two_factor.disabled', $capturedContext['event']);
+        $this->assertSame($userId, $capturedContext['user_id']);
+        $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 
     public function testInvokeIgnoresUnknownEvent(): void

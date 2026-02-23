@@ -48,7 +48,11 @@ final class TwoFactorEventPublisherTest extends UnitTestCase
         $this->eventBus->expects($this->once())
             ->method('publish')
             ->with($this->callback(
-                static function (TwoFactorEnabledEvent $event) use ($userId, $email, $eventId): bool {
+                static function (TwoFactorEnabledEvent $event) use (
+                    $userId,
+                    $email,
+                    $eventId
+                ): bool {
                     return $event->userId === $userId
                         && $event->email === $email
                         && $event->eventId() === $eventId;
@@ -71,7 +75,11 @@ final class TwoFactorEventPublisherTest extends UnitTestCase
         $this->eventBus->expects($this->once())
             ->method('publish')
             ->with($this->callback(
-                static function (TwoFactorDisabledEvent $event) use ($userId, $email, $eventId): bool {
+                static function (TwoFactorDisabledEvent $event) use (
+                    $userId,
+                    $email,
+                    $eventId
+                ): bool {
                     return $event->userId === $userId
                         && $event->email === $email
                         && $event->eventId() === $eventId;
@@ -90,37 +98,17 @@ final class TwoFactorEventPublisherTest extends UnitTestCase
         $verificationMethod = $this->faker->word();
         $eventId = $this->faker->uuid();
 
-        $this->authTokenFactory->expects($this->once())
-            ->method('nextEventId')
-            ->willReturn($eventId);
-
-        $this->eventBus->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(
-                static function (TwoFactorCompletedEvent $event) use (
-                    $userId,
-                    $sessionId,
-                    $ipAddress,
-                    $userAgent,
-                    $verificationMethod,
-                    $eventId
-                ): bool {
-                    return $event->userId === $userId
-                        && $event->sessionId === $sessionId
-                        && $event->ipAddress === $ipAddress
-                        && $event->userAgent === $userAgent
-                        && $event->method === $verificationMethod
-                        && $event->eventId() === $eventId;
-                }
-            ));
-
-        $this->publisher->publishCompleted(
+        $validator = $this->buildCompletedValidator(
             $userId,
             $sessionId,
             $ipAddress,
             $userAgent,
-            $verificationMethod
+            $verificationMethod,
+            $eventId
         );
+        $this->arrangeEventId($eventId);
+        $this->expectEventPublished($validator);
+        $this->callCompleted($userId, $sessionId, $ipAddress, $userAgent, $verificationMethod);
     }
 
     public function testPublishCompletedWithNullVerificationMethod(): void
@@ -143,13 +131,7 @@ final class TwoFactorEventPublisherTest extends UnitTestCase
                 }
             ));
 
-        $this->publisher->publishCompleted(
-            $userId,
-            $sessionId,
-            $ipAddress,
-            $userAgent,
-            null
-        );
+        $this->publisher->publishCompleted($userId, $sessionId, $ipAddress, $userAgent, null);
     }
 
     public function testPublishFailed(): void
@@ -166,17 +148,7 @@ final class TwoFactorEventPublisherTest extends UnitTestCase
         $this->eventBus->expects($this->once())
             ->method('publish')
             ->with($this->callback(
-                static function (TwoFactorFailedEvent $event) use (
-                    $pendingSessionId,
-                    $ipAddress,
-                    $reason,
-                    $eventId
-                ): bool {
-                    return $event->pendingSessionId === $pendingSessionId
-                        && $event->ipAddress === $ipAddress
-                        && $event->reason === $reason
-                        && $event->eventId() === $eventId;
-                }
+                $this->buildFailedValidator($pendingSessionId, $ipAddress, $reason, $eventId)
             ));
 
         $this->publisher->publishFailed($pendingSessionId, $ipAddress, $reason);
@@ -223,19 +195,102 @@ final class TwoFactorEventPublisherTest extends UnitTestCase
         $this->eventBus->expects($this->once())
             ->method('publish')
             ->with($this->callback(
-                static function (AllSessionsRevokedEvent $event) use (
-                    $userId,
-                    $reason,
-                    $revokedCount,
-                    $eventId
-                ): bool {
-                    return $event->userId === $userId
-                        && $event->reason === $reason
-                        && $event->revokedCount === $revokedCount
-                        && $event->eventId() === $eventId;
-                }
+                $this->buildAllSessionsRevokedValidator($userId, $reason, $revokedCount, $eventId)
             ));
 
         $this->publisher->publishAllSessionsRevoked($userId, $reason, $revokedCount);
+    }
+
+    private function callCompleted(
+        string $userId,
+        string $sessionId,
+        string $ipAddress,
+        string $userAgent,
+        string $verificationMethod
+    ): void {
+        $this->publisher->publishCompleted(
+            $userId,
+            $sessionId,
+            $ipAddress,
+            $userAgent,
+            $verificationMethod
+        );
+    }
+
+    private function arrangeEventId(string $eventId): void
+    {
+        $this->authTokenFactory->expects($this->once())
+            ->method('nextEventId')
+            ->willReturn($eventId);
+    }
+
+    private function expectEventPublished(callable $validator): void
+    {
+        $this->eventBus->expects($this->once())
+            ->method('publish')
+            ->with($this->callback($validator));
+    }
+
+    private function buildCompletedValidator(
+        string $userId,
+        string $sessionId,
+        string $ipAddress,
+        string $userAgent,
+        string $verificationMethod,
+        string $eventId
+    ): callable {
+        return static function (TwoFactorCompletedEvent $event) use (
+            $userId,
+            $sessionId,
+            $ipAddress,
+            $userAgent,
+            $verificationMethod,
+            $eventId
+        ): bool {
+            return $event->userId === $userId
+                && $event->sessionId === $sessionId
+                && $event->ipAddress === $ipAddress
+                && $event->userAgent === $userAgent
+                && $event->method === $verificationMethod
+                && $event->eventId() === $eventId;
+        };
+    }
+
+    private function buildFailedValidator(
+        string $pendingSessionId,
+        string $ipAddress,
+        string $reason,
+        string $eventId
+    ): callable {
+        return static function (TwoFactorFailedEvent $event) use (
+            $pendingSessionId,
+            $ipAddress,
+            $reason,
+            $eventId
+        ): bool {
+            return $event->pendingSessionId === $pendingSessionId
+                && $event->ipAddress === $ipAddress
+                && $event->reason === $reason
+                && $event->eventId() === $eventId;
+        };
+    }
+
+    private function buildAllSessionsRevokedValidator(
+        string $userId,
+        string $reason,
+        int $revokedCount,
+        string $eventId
+    ): callable {
+        return static function (AllSessionsRevokedEvent $event) use (
+            $userId,
+            $reason,
+            $revokedCount,
+            $eventId
+        ): bool {
+            return $event->userId === $userId
+                && $event->reason === $reason
+                && $event->revokedCount === $revokedCount
+                && $event->eventId() === $eventId;
+        };
     }
 }

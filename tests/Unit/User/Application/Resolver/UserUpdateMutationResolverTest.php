@@ -85,46 +85,6 @@ final class UserUpdateMutationResolverTest extends UnitTestCase
         );
     }
 
-    private function prepareExpectations(
-        UserInterface $user,
-        string $email,
-        string $initials,
-        string $password
-    ): void {
-        $currentSessionId = $this->faker->uuid();
-        $token = $this->createMock(TokenInterface::class);
-        $token->expects($this->once())
-            ->method('getAttribute')
-            ->with('sid')
-            ->willReturn($currentSessionId);
-
-        $this->security->expects($this->once())
-            ->method('getToken')
-            ->willReturn($token);
-
-        $updateData = new UserUpdate($email, $initials, $password, $password);
-        $command = $this->updateUserCommandFactory->create(
-            $user,
-            $updateData,
-            $currentSessionId
-        );
-
-        $this->transformer->expects($this->once())
-            ->method('transform');
-
-        $this->validator->expects($this->once())
-            ->method('validate');
-
-        $this->mockUpdateUserCommandFactory->expects($this->once())
-            ->method('create')
-            ->with($user, $updateData, $currentSessionId)
-            ->willReturn($command);
-
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($command);
-    }
-
     public function testInvokeWithoutEmailUsesExistingEmail(): void
     {
         $email = $this->faker->email();
@@ -285,5 +245,45 @@ final class UserUpdateMutationResolverTest extends UnitTestCase
             $user,
             $this->resolver->__invoke($user, ['args' => ['input' => $input]]),
         );
+    }
+
+    private function prepareExpectations(
+        UserInterface $user,
+        string $email,
+        string $initials,
+        string $password
+    ): void {
+        $currentSessionId = $this->faker->uuid();
+        $token = $this->createMock(TokenInterface::class);
+        $token->expects($this->once())
+            ->method('getAttribute')
+            ->with('sid')
+            ->willReturn($currentSessionId);
+
+        $this->security->expects($this->once())
+            ->method('getToken')
+            ->willReturn($token);
+
+        $updateData = new UserUpdate($email, $initials, $password, $password);
+        $command = $this->updateUserCommandFactory->create(
+            $user,
+            $updateData,
+            $currentSessionId
+        );
+
+        $this->transformer->expects($this->once())
+            ->method('transform');
+
+        $this->validator->expects($this->once())
+            ->method('validate');
+
+        $this->mockUpdateUserCommandFactory->expects($this->once())
+            ->method('create')
+            ->with($user, $updateData, $currentSessionId)
+            ->willReturn($command);
+
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($command);
     }
 }

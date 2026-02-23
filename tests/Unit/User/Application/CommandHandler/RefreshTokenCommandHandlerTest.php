@@ -121,18 +121,14 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
                     'roles' => ['ROLE_USER'],
                 ]
             );
+        $capturedPayload = [];
         $this->accessTokenGenerator
             ->expects($this->once())
             ->method('generate')
-            ->with($this->callback(
-                static fn (array $payload): bool => $payload['sub'] === $user->getId()
-                    && $payload['sid'] === $session->getId()
-                    && is_int($payload['iat'] ?? null)
-                    && is_int($payload['exp'] ?? null)
-                    && ($payload['exp'] - $payload['iat']) === 900
-                    && is_string($payload['jti'] ?? null)
-                    && $payload['roles'] === ['ROLE_USER']
-            ))
+            ->with($this->callback(static function (array $payload) use (&$capturedPayload): bool {
+                $capturedPayload = $payload;
+                return true;
+            }))
             ->willReturn('new-access-token');
 
         $this->eventPublisher
@@ -149,6 +145,14 @@ final class RefreshTokenCommandHandlerTest extends UnitTestCase
         $this->assertSame('test-opaque-token-1234567890-abcdefghijklmn', $response->getRefreshToken());
         $this->assertOpaqueTokenFormat($response->getRefreshToken());
         $this->assertTrue($oldToken->isRotated());
+
+        $this->assertSame($user->getId(), $capturedPayload['sub']);
+        $this->assertSame($session->getId(), $capturedPayload['sid']);
+        $this->assertIsInt($capturedPayload['iat']);
+        $this->assertIsInt($capturedPayload['exp']);
+        $this->assertSame(900, $capturedPayload['exp'] - $capturedPayload['iat']);
+        $this->assertIsString($capturedPayload['jti']);
+        $this->assertSame(['ROLE_USER'], $capturedPayload['roles']);
     }
 
     public function testInvokeThrows401WhenTokenNotFound(): void

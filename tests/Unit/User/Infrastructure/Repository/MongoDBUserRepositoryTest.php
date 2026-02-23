@@ -171,17 +171,7 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
 
     public function testDeleteAll(): void
     {
-        $queryBuilder = $this->createMock(Builder::class);
-        $query = $this->createMock(Query::class);
-
-        $queryBuilder->expects($this->once())
-            ->method('remove')
-            ->willReturnSelf();
-        $queryBuilder->expects($this->once())
-            ->method('getQuery')
-            ->willReturn($query);
-        $query->expects($this->once())
-            ->method('execute');
+        [$queryBuilder] = $this->setupDeleteQueryBuilder();
 
         $repository = $this->getMockBuilder(MongoDBUserRepository::class)
             ->setConstructorArgs([
@@ -242,6 +232,21 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
             ->method('clear');
 
         $this->userRepository->deleteBatch($users);
+    }
+
+    /**
+     * @return array{Builder, Query}
+     */
+    private function setupDeleteQueryBuilder(): array
+    {
+        $queryBuilder = $this->createMock(Builder::class);
+        $query = $this->createMock(Query::class);
+
+        $queryBuilder->expects($this->once())->method('remove')->willReturnSelf();
+        $queryBuilder->expects($this->once())->method('getQuery')->willReturn($query);
+        $query->expects($this->once())->method('execute');
+
+        return [$queryBuilder, $query];
     }
 
     /**

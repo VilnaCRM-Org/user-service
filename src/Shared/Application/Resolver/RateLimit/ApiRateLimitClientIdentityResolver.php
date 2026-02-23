@@ -62,9 +62,7 @@ final readonly class ApiRateLimitClientIdentityResolver
             return null;
         }
 
-        $subject = $payload['sub'] ?? null;
-
-        return is_string($subject) ? $subject : null;
+        return $this->extractSubjectFromPayload($payload);
     }
 
     /**
@@ -73,16 +71,22 @@ final readonly class ApiRateLimitClientIdentityResolver
     public function resolvePayloadValue(Request $request, array $keys): ?string
     {
         $rawPayload = trim($request->getContent());
-        if ($rawPayload === '') {
-            return null;
-        }
-
         $jsonValue = $this->resolveJsonPayloadValue($rawPayload, $keys);
         if ($jsonValue !== null) {
             return $jsonValue;
         }
 
         return $this->resolveFormPayloadValue($rawPayload, $keys);
+    }
+
+    /**
+     * @param array<string, array<int, string>|bool|float|int|string|null> $payload
+     */
+    private function extractSubjectFromPayload(array $payload): ?string
+    {
+        $subject = $payload['sub'] ?? null;
+
+        return is_string($subject) ? $subject : null;
     }
 
     /**
@@ -135,12 +139,13 @@ final readonly class ApiRateLimitClientIdentityResolver
             return null;
         }
 
-        $decoded = base64_decode(trim(substr($authorization, 6)), true);
+        $decoded = base64_decode(substr($authorization, strlen('Basic ')), true);
         if (!is_string($decoded) || $decoded === '') {
             return null;
         }
 
-        $clientId = explode(':', $decoded, 2)[0];
+        $colonPos = strpos($decoded, ':');
+        $clientId = $colonPos !== false ? substr($decoded, 0, $colonPos) : $decoded;
 
         return $clientId !== '' ? $clientId : null;
     }

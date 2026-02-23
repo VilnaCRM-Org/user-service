@@ -42,40 +42,18 @@ final class SignInEventPublisherTest extends UnitTestCase
         $twoFactorUsed = $this->faker->boolean();
         $eventId = $this->faker->uuid();
 
-        $this->authTokenFactory->expects($this->once())
-            ->method('nextEventId')
-            ->willReturn($eventId);
-
-        $this->eventBus->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(
-                static function (UserSignedInEvent $event) use (
-                    $userId,
-                    $email,
-                    $sessionId,
-                    $ipAddress,
-                    $userAgent,
-                    $twoFactorUsed,
-                    $eventId
-                ): bool {
-                    return $event->userId === $userId
-                        && $event->email === $email
-                        && $event->sessionId === $sessionId
-                        && $event->ipAddress === $ipAddress
-                        && $event->userAgent === $userAgent
-                        && $event->twoFactorUsed === $twoFactorUsed
-                        && $event->eventId() === $eventId;
-                }
-            ));
-
-        $this->publisher->publishSignedIn(
+        $validator = $this->buildSignedInValidator(
             $userId,
             $email,
             $sessionId,
             $ipAddress,
             $userAgent,
-            $twoFactorUsed
+            $twoFactorUsed,
+            $eventId
         );
+        $this->arrangeEventId($eventId);
+        $this->expectEventPublished($validator);
+        $this->callSignedIn($userId, $email, $sessionId, $ipAddress, $userAgent, $twoFactorUsed);
     }
 
     public function testPublishSignedInWithTwoFactorUsed(): void
@@ -97,14 +75,7 @@ final class SignInEventPublisherTest extends UnitTestCase
                 }
             ));
 
-        $this->publisher->publishSignedIn(
-            $userId,
-            $email,
-            $sessionId,
-            $ipAddress,
-            $userAgent,
-            true
-        );
+        $this->callSignedIn($userId, $email, $sessionId, $ipAddress, $userAgent, true);
     }
 
     public function testPublishSignedInWithoutTwoFactor(): void
@@ -126,14 +97,7 @@ final class SignInEventPublisherTest extends UnitTestCase
                 }
             ));
 
-        $this->publisher->publishSignedIn(
-            $userId,
-            $email,
-            $sessionId,
-            $ipAddress,
-            $userAgent,
-            false
-        );
+        $this->callSignedIn($userId, $email, $sessionId, $ipAddress, $userAgent, false);
     }
 
     public function testPublishFailed(): void
@@ -145,25 +109,12 @@ final class SignInEventPublisherTest extends UnitTestCase
         $eventId = $this->faker->uuid();
 
         $this->authTokenFactory->expects($this->once())
-            ->method('nextEventId')
-            ->willReturn($eventId);
+            ->method('nextEventId')->willReturn($eventId);
 
         $this->eventBus->expects($this->once())
             ->method('publish')
             ->with($this->callback(
-                static function (SignInFailedEvent $event) use (
-                    $email,
-                    $ipAddress,
-                    $userAgent,
-                    $reason,
-                    $eventId
-                ): bool {
-                    return $event->email === $email
-                        && $event->ipAddress === $ipAddress
-                        && $event->userAgent === $userAgent
-                        && $event->reason === $reason
-                        && $event->eventId() === $eventId;
-                }
+                $this->buildSignInFailedValidator($email, $ipAddress, $userAgent, $reason, $eventId)
             ));
 
         $this->publisher->publishFailed($email, $ipAddress, $userAgent, $reason);
@@ -177,25 +128,119 @@ final class SignInEventPublisherTest extends UnitTestCase
         $eventId = $this->faker->uuid();
 
         $this->authTokenFactory->expects($this->once())
-            ->method('nextEventId')
-            ->willReturn($eventId);
+            ->method('nextEventId')->willReturn($eventId);
 
         $this->eventBus->expects($this->once())
             ->method('publish')
             ->with($this->callback(
-                static function (AccountLockedOutEvent $event) use (
+                $this->buildLockedOutValidator(
                     $email,
                     $failedAttempts,
                     $lockoutDurationSeconds,
                     $eventId
-                ): bool {
-                    return $event->email === $email
-                        && $event->failedAttempts === $failedAttempts
-                        && $event->lockoutDurationSeconds === $lockoutDurationSeconds
-                        && $event->eventId() === $eventId;
-                }
+                )
             ));
 
         $this->publisher->publishLockedOut($email, $failedAttempts, $lockoutDurationSeconds);
+    }
+
+    private function callSignedIn(
+        string $userId,
+        string $email,
+        string $sessionId,
+        string $ipAddress,
+        string $userAgent,
+        bool $twoFactorUsed
+    ): void {
+        $this->publisher->publishSignedIn(
+            $userId,
+            $email,
+            $sessionId,
+            $ipAddress,
+            $userAgent,
+            $twoFactorUsed
+        );
+    }
+
+    private function arrangeEventId(string $eventId): void
+    {
+        $this->authTokenFactory->expects($this->once())
+            ->method('nextEventId')->willReturn($eventId);
+    }
+
+    private function expectEventPublished(callable $validator): void
+    {
+        $this->eventBus->expects($this->once())
+            ->method('publish')
+            ->with($this->callback($validator));
+    }
+
+    private function buildSignedInValidator(
+        string $userId,
+        string $email,
+        string $sessionId,
+        string $ipAddress,
+        string $userAgent,
+        bool $twoFactorUsed,
+        string $eventId
+    ): callable {
+        return static function (UserSignedInEvent $event) use (
+            $userId,
+            $email,
+            $sessionId,
+            $ipAddress,
+            $userAgent,
+            $twoFactorUsed,
+            $eventId
+        ): bool {
+            return $event->userId === $userId
+                && $event->email === $email
+                && $event->sessionId === $sessionId
+                && $event->ipAddress === $ipAddress
+                && $event->userAgent === $userAgent
+                && $event->twoFactorUsed === $twoFactorUsed
+                && $event->eventId() === $eventId;
+        };
+    }
+
+    private function buildSignInFailedValidator(
+        string $email,
+        string $ipAddress,
+        string $userAgent,
+        string $reason,
+        string $eventId
+    ): callable {
+        return static function (SignInFailedEvent $event) use (
+            $email,
+            $ipAddress,
+            $userAgent,
+            $reason,
+            $eventId
+        ): bool {
+            return $event->email === $email
+                && $event->ipAddress === $ipAddress
+                && $event->userAgent === $userAgent
+                && $event->reason === $reason
+                && $event->eventId() === $eventId;
+        };
+    }
+
+    private function buildLockedOutValidator(
+        string $email,
+        int $failedAttempts,
+        int $lockoutDurationSeconds,
+        string $eventId
+    ): callable {
+        return static function (AccountLockedOutEvent $event) use (
+            $email,
+            $failedAttempts,
+            $lockoutDurationSeconds,
+            $eventId
+        ): bool {
+            return $event->email === $email
+                && $event->failedAttempts === $failedAttempts
+                && $event->lockoutDurationSeconds === $lockoutDurationSeconds
+                && $event->eventId() === $eventId;
+        };
     }
 }

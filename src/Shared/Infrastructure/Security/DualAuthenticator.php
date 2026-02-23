@@ -139,7 +139,7 @@ final class DualAuthenticator extends AbstractAuthenticator implements
             }
         }
 
-        return $roles === [] ? ['ROLE_USER'] : array_values($roles);
+        return $roles === [] ? ['ROLE_USER'] : $roles;
     }
 
     private function buildFailureResponse(string $detail): JsonResponse

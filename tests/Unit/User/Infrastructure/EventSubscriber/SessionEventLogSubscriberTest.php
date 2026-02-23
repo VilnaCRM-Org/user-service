@@ -32,20 +32,24 @@ final class SessionEventLogSubscriberTest extends UnitTestCase
 
         $event = new SessionRevokedEvent($userId, $sessionId, $reason, $this->faker->uuid());
 
+        $capturedContext = [];
         $this->logger->expects($this->once())
             ->method('info')
             ->with(
                 'Session revoked',
-                $this->callback(static function ($context) use ($userId, $sessionId, $reason) {
-                    return $context['event'] === 'user.session.revoked'
-                        && $context['user_id'] === $userId
-                        && $context['session_id'] === $sessionId
-                        && $context['reason'] === $reason
-                        && isset($context['timestamp']);
+                $this->callback(static function (array $context) use (&$capturedContext): bool {
+                    $capturedContext = $context;
+                    return true;
                 })
             );
 
         $this->subscriber->__invoke($event);
+
+        $this->assertSame('user.session.revoked', $capturedContext['event']);
+        $this->assertSame($userId, $capturedContext['user_id']);
+        $this->assertSame($sessionId, $capturedContext['session_id']);
+        $this->assertSame($reason, $capturedContext['reason']);
+        $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 
     public function testInvokeLogsAllSessionsRevokedAtInfoLevel(): void
@@ -56,19 +60,23 @@ final class SessionEventLogSubscriberTest extends UnitTestCase
 
         $event = new AllSessionsRevokedEvent($userId, $reason, $revokedCount, $this->faker->uuid());
 
+        $capturedContext = [];
         $this->logger->expects($this->once())
             ->method('info')
             ->with(
                 'All sessions revoked',
-                $this->callback(static function ($context) use ($userId, $reason) {
-                    return $context['event'] === 'user.sessions.all_revoked'
-                        && $context['user_id'] === $userId
-                        && $context['reason'] === $reason
-                        && isset($context['timestamp']);
+                $this->callback(static function (array $context) use (&$capturedContext): bool {
+                    $capturedContext = $context;
+                    return true;
                 })
             );
 
         $this->subscriber->__invoke($event);
+
+        $this->assertSame('user.sessions.all_revoked', $capturedContext['event']);
+        $this->assertSame($userId, $capturedContext['user_id']);
+        $this->assertSame($reason, $capturedContext['reason']);
+        $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 
     public function testInvokeIgnoresUnknownEvent(): void

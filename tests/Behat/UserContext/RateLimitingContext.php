@@ -10,8 +10,8 @@ use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Behat\Behat\Context\Context;
 use DateTimeImmutable;
-use Psr\Container\ContainerInterface;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  */

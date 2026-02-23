@@ -30,19 +30,23 @@ final class RefreshTokenEventLogSubscriberTest extends UnitTestCase
 
         $event = new RefreshTokenRotatedEvent($sessionId, $this->faker->uuid(), $this->faker->uuid());
 
+        $capturedContext = [];
         $this->logger->expects($this->once())
             ->method('info')
             ->with(
                 'Refresh token rotated',
-                $this->callback(static function ($context) use ($sessionId) {
-                    return $context['event'] === 'user.refresh_token.rotated'
-                        && $context['session_id'] === $sessionId
-                        && $context['old_token_revoked'] === true
-                        && isset($context['timestamp']);
+                $this->callback(static function (array $context) use (&$capturedContext): bool {
+                    $capturedContext = $context;
+                    return true;
                 })
             );
 
         $this->subscriber->__invoke($event);
+
+        $this->assertSame('user.refresh_token.rotated', $capturedContext['event']);
+        $this->assertSame($sessionId, $capturedContext['session_id']);
+        $this->assertTrue($capturedContext['old_token_revoked']);
+        $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 
     public function testInvokeLogsRefreshTokenTheftAtCriticalLevel(): void
@@ -53,20 +57,24 @@ final class RefreshTokenEventLogSubscriberTest extends UnitTestCase
 
         $event = new RefreshTokenTheftDetectedEvent($sessionId, $userId, $ipAddress, 'double_grace_use', $this->faker->uuid());
 
+        $capturedContext = [];
         $this->logger->expects($this->once())
             ->method('critical')
             ->with(
                 'Refresh token theft detected',
-                $this->callback(static function ($context) use ($sessionId, $userId, $ipAddress) {
-                    return $context['event'] === 'user.refresh_token.theft_detected'
-                        && $context['session_id'] === $sessionId
-                        && $context['user_id'] === $userId
-                        && $context['ip_address'] === $ipAddress
-                        && isset($context['timestamp']);
+                $this->callback(static function (array $context) use (&$capturedContext): bool {
+                    $capturedContext = $context;
+                    return true;
                 })
             );
 
         $this->subscriber->__invoke($event);
+
+        $this->assertSame('user.refresh_token.theft_detected', $capturedContext['event']);
+        $this->assertSame($sessionId, $capturedContext['session_id']);
+        $this->assertSame($userId, $capturedContext['user_id']);
+        $this->assertSame($ipAddress, $capturedContext['ip_address']);
+        $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 
     public function testInvokeIgnoresUnknownEvent(): void

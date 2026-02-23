@@ -82,7 +82,10 @@ final class AccessTokenUserResolverTest extends UnitTestCase
 
         $this->authSessionRepository->method('findById')->willReturn($validSession);
         $this->userRepository->method('findByEmail')->with($uuid)->willReturn(null);
-        $this->userRepository->expects($this->once())->method('findById')->with($uuid)->willReturn($user);
+        $this->userRepository->expects($this->once())
+            ->method('findById')
+            ->with($uuid)
+            ->willReturn($user);
 
         $result = $this->resolver->resolve($uuid, [], $sid);
 
@@ -165,7 +168,7 @@ final class AccessTokenUserResolverTest extends UnitTestCase
 
     public function testResolveDoesNotTreatPrefixedUuidAsUuid(): void
     {
-        $subject = 'prefix-' . '550e8400-e29b-41d4-a716-446655440000';
+        $subject = 'prefix-550e8400-e29b-41d4-a716-446655440000';
         $sid = $this->faker->uuid();
         $validSession = $this->createValidSession($sid);
 
@@ -180,7 +183,7 @@ final class AccessTokenUserResolverTest extends UnitTestCase
 
     public function testResolveDoesNotTreatSuffixedUuidAsUuid(): void
     {
-        $subject = '550e8400-e29b-41d4-a716-446655440000' . '-suffix';
+        $subject = '550e8400-e29b-41d4-a716-446655440000-suffix';
         $sid = $this->faker->uuid();
         $validSession = $this->createValidSession($sid);
 

@@ -40,7 +40,7 @@ trait AuthenticatedUserContextTrait
     {
         $user = $this->resolveAuthenticationUser($email, null);
         $sessionId = $this->createActiveSession($user->getId());
-        $cookieToken = $this->testAccessTokenFactory->createToken(
+        $cookieToken = $this->auth->testAccessTokenFactory->createToken(
             $user->getId(),
             ['ROLE_USER'],
             $sessionId
@@ -368,7 +368,7 @@ trait AuthenticatedUserContextTrait
 
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
-        $this->state->accessToken = $this->testAccessTokenFactory->createToken(
+        $this->state->accessToken = $this->auth->testAccessTokenFactory->createToken(
             $subject,
             $roles,
             $sessionId
@@ -378,11 +378,13 @@ trait AuthenticatedUserContextTrait
             sprintf('service-%s@example.test', strtolower($this->faker->lexify('????'))),
             strtoupper($this->faker->lexify('??')),
             $this->faker->sha256(),
-            $this->transformer->transformFromSymfonyUuid($this->uuidFactory->create()),
+            $this->userManagement->transformer->transformFromSymfonyUuid(
+                $this->userManagement->uuidFactory->create()
+            ),
             true
         );
 
-        $this->tokenStorage->setToken(
+        $this->auth->tokenStorage->setToken(
             new UsernamePasswordToken(
                 $authorizationUser,
                 'behat-service-token',
@@ -396,7 +398,7 @@ trait AuthenticatedUserContextTrait
      */
     public function theAuthenticatedUserShouldBe(string $email): void
     {
-        $token = $this->tokenStorage->getToken();
+        $token = $this->auth->tokenStorage->getToken();
         Assert::assertNotNull($token);
 
         $authenticatedUser = $token->getUser();
@@ -513,7 +515,7 @@ trait AuthenticatedUserContextTrait
             ? null
             : $this->createActiveSession($user->getId());
 
-        return $this->testAccessTokenFactory->createToken(
+        return $this->auth->testAccessTokenFactory->createToken(
             $user->getId(),
             $roles,
             $sessionId
@@ -540,13 +542,13 @@ trait AuthenticatedUserContextTrait
 
         $subject = $payload['sub'] ?? null;
         if (is_string($subject) && $subject !== '') {
-            $user = $this->userRepository->findById($subject);
+            $user = $this->userManagement->userRepository->findById($subject);
             if ($user instanceof User) {
                 $this->setAuthenticatedUserToken($user, $roles);
                 $this->state->currentUserEmail = $user->getEmail();
                 self::$userIdsByEmail[$user->getEmail()] = $user->getId();
             } else {
-                $this->tokenStorage->setToken(
+                $this->auth->tokenStorage->setToken(
                     new UsernamePasswordToken(
                         $subject,
                         'behat-bearer-token',
@@ -568,7 +570,7 @@ trait AuthenticatedUserContextTrait
     ): User {
         if ($forcedUserId === null) {
             $this->userWithEmailExists($email);
-            $user = $this->userRepository->findByEmail($email);
+            $user = $this->userManagement->userRepository->findByEmail($email);
             if (!$user instanceof User) {
                 throw new \RuntimeException("User with email {$email} not found");
             }
@@ -578,7 +580,7 @@ trait AuthenticatedUserContextTrait
             return $user;
         }
 
-        $existingUser = $this->userRepository->findByEmail($email);
+        $existingUser = $this->userManagement->userRepository->findByEmail($email);
         if ($existingUser instanceof User) {
             if ($existingUser->getId() !== $forcedUserId) {
                 throw new \RuntimeException(
@@ -597,15 +599,15 @@ trait AuthenticatedUserContextTrait
         }
 
         $password = $this->faker->password;
-        $user = $this->userFactory->create(
+        $user = $this->userManagement->userFactory->create(
             $email,
             $this->faker->name,
             $password,
-            $this->transformer->transformFromString($forcedUserId)
+            $this->userManagement->transformer->transformFromString($forcedUserId)
         );
-        $hasher = $this->hasherFactory->getPasswordHasher($user::class);
+        $hasher = $this->userManagement->hasherFactory->getPasswordHasher($user::class);
         $user->setPassword($hasher->hash($password, null));
-        $this->userRepository->save($user);
+        $this->userManagement->userRepository->save($user);
 
         self::$userIdsByEmail[$email] = $user->getId();
 
@@ -621,11 +623,11 @@ trait AuthenticatedUserContextTrait
             $user->getEmail(),
             $user->getInitials(),
             $user->getPassword(),
-            $this->transformer->transformFromString($user->getId()),
+            $this->userManagement->transformer->transformFromString($user->getId()),
             $user->isConfirmed()
         );
 
-        $this->tokenStorage->setToken(
+        $this->auth->tokenStorage->setToken(
             new UsernamePasswordToken(
                 $authorizationUser,
                 'behat-user-token',
@@ -700,7 +702,7 @@ trait AuthenticatedUserContextTrait
             'exp' => $now + self::JWT_ACCESS_TTL_SECONDS,
             'iat' => $now,
             'nbf' => $now,
-            'jti' => (string) $this->uuidFactory->create(),
+            'jti' => (string) $this->userManagement->uuidFactory->create(),
             'sid' => $sessionId,
             'roles' => ['ROLE_USER'],
         ];
@@ -708,10 +710,10 @@ trait AuthenticatedUserContextTrait
 
     private function createActiveSession(string $userId): string
     {
-        $sessionId = (string) $this->ulidFactory->create();
+        $sessionId = (string) $this->auth->ulidFactory->create();
         $createdAt = new DateTimeImmutable('-1 minute');
 
-        $this->authSessionRepository->save(
+        $this->auth->authSessionRepository->save(
             new AuthSession(
                 $sessionId,
                 $userId,
@@ -731,7 +733,7 @@ trait AuthenticatedUserContextTrait
      */
     private function createSignedJwt(array $payload): string
     {
-        return $this->accessTokenGenerator->generate($payload);
+        return $this->auth->accessTokenGenerator->generate($payload);
     }
 
     /**

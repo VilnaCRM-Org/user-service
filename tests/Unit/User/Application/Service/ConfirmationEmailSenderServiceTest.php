@@ -39,8 +39,12 @@ final class ConfirmationEmailSenderServiceTest extends UnitTestCase
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->tokenRepository = $this->createMock(TokenRepositoryInterface::class);
         $this->tokenFactory = $this->createMock(ConfirmationTokenFactoryInterface::class);
-        $this->confirmationEmailFactory = $this->createMock(ConfirmationEmailFactoryInterface::class);
-        $this->emailCmdFactory = $this->createMock(SendConfirmationEmailCommandFactoryInterface::class);
+        $this->confirmationEmailFactory = $this->createMock(
+            ConfirmationEmailFactoryInterface::class
+        );
+        $this->emailCmdFactory = $this->createMock(
+            SendConfirmationEmailCommandFactoryInterface::class
+        );
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new UuidFactory());
 
@@ -65,22 +69,9 @@ final class ConfirmationEmailSenderServiceTest extends UnitTestCase
             ->with($user->getId())
             ->willReturn($existingToken);
 
-        $this->tokenFactory->expects($this->never())
-            ->method('create');
+        $this->tokenFactory->expects($this->never())->method('create');
 
-        $this->confirmationEmailFactory->expects($this->once())
-            ->method('create')
-            ->with($existingToken, $user)
-            ->willReturn($confirmationEmail);
-
-        $this->emailCmdFactory->expects($this->once())
-            ->method('create')
-            ->with($confirmationEmail)
-            ->willReturn($command);
-
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($command);
+        $this->setupSendExpectations($user, $existingToken, $confirmationEmail, $command);
 
         $this->service->send($user);
     }
@@ -102,21 +93,30 @@ final class ConfirmationEmailSenderServiceTest extends UnitTestCase
             ->with($user->getId())
             ->willReturn($newToken);
 
+        $this->setupSendExpectations($user, $newToken, $confirmationEmail, $command);
+
+        $this->service->send($user);
+    }
+
+    private function setupSendExpectations(
+        User $user,
+        ConfirmationTokenInterface $token,
+        ConfirmationEmailInterface $email,
+        SendConfirmationEmailCommand $command
+    ): void {
         $this->confirmationEmailFactory->expects($this->once())
             ->method('create')
-            ->with($newToken, $user)
-            ->willReturn($confirmationEmail);
+            ->with($token, $user)
+            ->willReturn($email);
 
         $this->emailCmdFactory->expects($this->once())
             ->method('create')
-            ->with($confirmationEmail)
+            ->with($email)
             ->willReturn($command);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($command);
-
-        $this->service->send($user);
     }
 
     private function createUser(): User

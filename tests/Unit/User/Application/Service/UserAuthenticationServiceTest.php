@@ -54,7 +54,8 @@ final class UserAuthenticationServiceTest extends UnitTestCase
 
         $this->lockoutService->method('isLocked')->willReturn(false);
         $this->userRepository->method('findByEmail')->with($email)->willReturn($user);
-        $this->hasherFactory->method('getPasswordHasher')->with(User::class)->willReturn($this->hasher);
+        $this->hasherFactory->method('getPasswordHasher')
+            ->with(User::class)->willReturn($this->hasher);
         $this->hasher->method('verify')->with($hashedPassword, $password)->willReturn(true);
         $this->lockoutService->expects($this->once())->method('clearFailures')->with($email);
 
@@ -71,14 +72,20 @@ final class UserAuthenticationServiceTest extends UnitTestCase
 
         $this->lockoutService->method('isLocked')->willReturn(false);
         $this->userRepository->method('findByEmail')->willReturn(null);
-        $this->hasherFactory->method('getPasswordHasher')->with(User::class)->willReturn($this->hasher);
+        $this->hasherFactory->method('getPasswordHasher')
+            ->with(User::class)->willReturn($this->hasher);
         $this->hasher->method('verify')->willReturn(false);
         $this->lockoutService->method('recordFailure')->willReturn(false);
         $this->eventPublisher->expects($this->once())->method('publishFailed')
             ->with($email, $this->anything(), $this->anything(), 'invalid_credentials');
 
         $this->expectException(UnauthorizedHttpException::class);
-        $this->createService($dummyHash)->authenticate($email, $password, $this->faker->ipv4(), $this->faker->userAgent());
+        $this->createService($dummyHash)->authenticate(
+            $email,
+            $password,
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
     }
 
     public function testAuthenticateFailsOnWrongPassword(): void
@@ -96,7 +103,12 @@ final class UserAuthenticationServiceTest extends UnitTestCase
         $this->eventPublisher->expects($this->once())->method('publishFailed');
 
         $this->expectException(UnauthorizedHttpException::class);
-        $this->createService()->authenticate($email, $password, $this->faker->ipv4(), $this->faker->userAgent());
+        $this->createService()->authenticate(
+            $email,
+            $password,
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
     }
 
     public function testAuthenticateThrowsLockedWhenEmailIsAlreadyLocked(): void
@@ -105,16 +117,24 @@ final class UserAuthenticationServiceTest extends UnitTestCase
 
         $this->lockoutService->method('isLocked')->willReturn(true);
         $this->eventPublisher->expects($this->once())->method('publishLockedOut')
-            ->with($email, AccountLockoutServiceInterface::MAX_ATTEMPTS, AccountLockoutServiceInterface::LOCKOUT_SECONDS);
+            ->with(
+                $email,
+                AccountLockoutServiceInterface::MAX_ATTEMPTS,
+                AccountLockoutServiceInterface::LOCKOUT_SECONDS
+            );
 
         $this->expectException(LockedHttpException::class);
-        $this->createService()->authenticate($email, $this->faker->password(), $this->faker->ipv4(), $this->faker->userAgent());
+        $this->createService()->authenticate(
+            $email,
+            $this->faker->password(),
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
     }
 
     public function testAuthenticateThrowsLockedWhenFailureBecomesLocked(): void
     {
         $email = $this->faker->email();
-
         $user = $this->createUser($email, $this->faker->sha256());
 
         $this->lockoutService->method('isLocked')->willReturn(false);
@@ -122,12 +142,15 @@ final class UserAuthenticationServiceTest extends UnitTestCase
         $this->hasherFactory->method('getPasswordHasher')->willReturn($this->hasher);
         $this->hasher->method('verify')->willReturn(false);
         $this->lockoutService->method('recordFailure')->willReturn(true);
-        $this->eventPublisher->expects($this->once())->method('publishFailed');
-        $this->eventPublisher->expects($this->once())->method('publishLockedOut')
-            ->with($email, AccountLockoutServiceInterface::MAX_ATTEMPTS, AccountLockoutServiceInterface::LOCKOUT_SECONDS);
+        $this->expectLockoutEventPublished($email);
 
         $this->expectException(LockedHttpException::class);
-        $this->createService()->authenticate($email, $this->faker->password(), $this->faker->ipv4(), $this->faker->userAgent());
+        $this->createService()->authenticate(
+            $email,
+            $this->faker->password(),
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
     }
 
     public function testAuthenticateThrowsUnauthorizedWhenFailureDoesNotLock(): void
@@ -145,7 +168,12 @@ final class UserAuthenticationServiceTest extends UnitTestCase
         $this->eventPublisher->expects($this->never())->method('publishLockedOut');
 
         $this->expectException(UnauthorizedHttpException::class);
-        $this->createService()->authenticate($email, $this->faker->password(), $this->faker->ipv4(), $this->faker->userAgent());
+        $this->createService()->authenticate(
+            $email,
+            $this->faker->password(),
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
     }
 
     public function testNormalizeEmailTrimsAndLowercases(): void
@@ -165,7 +193,12 @@ final class UserAuthenticationServiceTest extends UnitTestCase
         $this->eventPublisher->method('publishFailed');
 
         $this->expectException(UnauthorizedHttpException::class);
-        $this->createService()->authenticate($rawEmail, $this->faker->password(), $this->faker->ipv4(), $this->faker->userAgent());
+        $this->createService()->authenticate(
+            $rawEmail,
+            $this->faker->password(),
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
     }
 
     public function testResolveDummyHashUsesProvidedHash(): void
@@ -182,7 +215,12 @@ final class UserAuthenticationServiceTest extends UnitTestCase
         $this->eventPublisher->method('publishFailed');
 
         $this->expectException(UnauthorizedHttpException::class);
-        $this->createService($dummyHash)->authenticate($email, $password, $this->faker->ipv4(), $this->faker->userAgent());
+        $this->createService($dummyHash)->authenticate(
+            $email,
+            $password,
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
     }
 
     public function testResolveDummyHashGeneratesHashWhenNotProvided(): void
@@ -221,7 +259,12 @@ final class UserAuthenticationServiceTest extends UnitTestCase
         $this->eventPublisher->method('publishLockedOut');
 
         try {
-            $this->createService()->authenticate($email, $this->faker->password(), $this->faker->ipv4(), $this->faker->userAgent());
+            $this->createService()->authenticate(
+                $email,
+                $this->faker->password(),
+                $this->faker->ipv4(),
+                $this->faker->userAgent()
+            );
             $this->fail('Expected LockedHttpException');
         } catch (LockedHttpException $exception) {
             $this->assertSame(
@@ -229,6 +272,37 @@ final class UserAuthenticationServiceTest extends UnitTestCase
                 $exception->getHeaders()['Retry-After']
             );
         }
+    }
+
+    public function testLockedExceptionHasZeroCode(): void
+    {
+        $email = $this->faker->email();
+
+        $this->lockoutService->method('isLocked')->willReturn(true);
+        $this->eventPublisher->method('publishLockedOut');
+
+        try {
+            $this->createService()->authenticate(
+                $email,
+                $this->faker->password(),
+                $this->faker->ipv4(),
+                $this->faker->userAgent()
+            );
+            $this->fail('Expected LockedHttpException');
+        } catch (LockedHttpException $exception) {
+            self::assertSame(0, $exception->getCode());
+        }
+    }
+
+    private function expectLockoutEventPublished(string $email): void
+    {
+        $this->eventPublisher->expects($this->once())->method('publishFailed');
+        $this->eventPublisher->expects($this->once())->method('publishLockedOut')
+            ->with(
+                $email,
+                AccountLockoutServiceInterface::MAX_ATTEMPTS,
+                AccountLockoutServiceInterface::LOCKOUT_SECONDS
+            );
     }
 
     private function createUser(string $email, string $hashedPassword): User

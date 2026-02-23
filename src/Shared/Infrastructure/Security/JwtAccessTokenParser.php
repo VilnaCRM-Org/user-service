@@ -14,6 +14,7 @@ final readonly class JwtAccessTokenParser
     private const JWT_ISSUER = 'vilnacrm-user-service';
     private const JWT_AUDIENCE = 'vilnacrm-api';
     private const JWT_ALGORITHM = 'RS256';
+    private const JWT_HEADER_DEPTH_LIMIT = 4;
 
     public function __construct(private JWTEncoderInterface $jwtEncoder)
     {
@@ -43,8 +44,8 @@ final readonly class JwtAccessTokenParser
     private function decodeHeader(string $token): array
     {
         $parts = explode('.', $token);
-        $headerPart = $parts[0] ?? null;
-        if (count($parts) !== 3 || !is_string($headerPart) || $headerPart === '') {
+        $headerPart = $parts[0] ?? '';
+        if (count($parts) !== 3 || $headerPart === '') {
             throw new CustomUserMessageAuthenticationException('Invalid access token.');
         }
 
@@ -204,7 +205,12 @@ final readonly class JwtAccessTokenParser
     private function decodeJsonObject(string $json): array
     {
         try {
-            $decodedObject = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+            $decodedObject = json_decode(
+                $json,
+                true,
+                self::JWT_HEADER_DEPTH_LIMIT,
+                JSON_THROW_ON_ERROR,
+            );
         } catch (JsonException) {
             throw new CustomUserMessageAuthenticationException('Invalid access token.');
         }

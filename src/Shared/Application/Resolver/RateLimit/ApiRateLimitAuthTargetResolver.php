@@ -86,17 +86,15 @@ final readonly class ApiRateLimitAuthTargetResolver
         ];
 
         $pendingSessionId = $this->clientIdentityResolver->resolvePendingSessionId($request);
-        if ($pendingSessionId === null || $this->pendingTwoFactorRepository === null) {
-            return $targets;
-        }
-
-        $pendingSession = $this->pendingTwoFactorRepository->findById($pendingSessionId);
-        $userId = $pendingSession?->getUserId();
-        if (is_string($userId) && $userId !== '') {
-            $targets[] = [
-                'name' => 'twofa_verification_user',
-                'key' => $this->buildUserKey($userId),
-            ];
+        if ($pendingSessionId !== null && $this->pendingTwoFactorRepository !== null) {
+            $pendingSession = $this->pendingTwoFactorRepository->findById($pendingSessionId);
+            $userId = $pendingSession?->getUserId();
+            if (is_string($userId) && $userId !== '') {
+                $targets[] = [
+                    'name' => 'twofa_verification_user',
+                    'key' => $this->buildUserKey($userId),
+                ];
+            }
         }
 
         return $targets;

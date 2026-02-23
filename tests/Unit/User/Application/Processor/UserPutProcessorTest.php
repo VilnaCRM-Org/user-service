@@ -104,6 +104,80 @@ final class UserPutProcessorTest extends UnitTestCase
         );
     }
 
+    public function testProcessWithNullSecurityToken(): void
+    {
+        [
+            $user,
+            $updateData,
+            $userPutDto,
+            $userId,
+        ] = $this->prepareUserPutTestData();
+
+        $this->getUserQueryHandler
+            ->expects($this->once())
+            ->method('handle')
+            ->with($userId)
+            ->willReturn($user);
+
+        $this->security->expects($this->once())
+            ->method('getToken')
+            ->willReturn(null);
+
+        $command = $this->updateUserCommandFactory->create($user, $updateData, '');
+        $this->mockUpdateUserCommandFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with($user, $updateData, '')
+            ->willReturn($command);
+
+        $this->commandBus->expects($this->once())->method('dispatch')->with($command);
+
+        $result = $this->processor->process(
+            $userPutDto,
+            $this->mockOperation,
+            ['id' => $userId]
+        );
+
+        $this->assertInstanceOf(User::class, $result);
+    }
+
+    public function testProcessWithNonStringSessionId(): void
+    {
+        [
+            $user,
+            $updateData,
+            $userPutDto,
+            $userId,
+        ] = $this->prepareUserPutTestData();
+
+        $this->getUserQueryHandler
+            ->expects($this->once())
+            ->method('handle')
+            ->with($userId)
+            ->willReturn($user);
+
+        $token = $this->createMock(TokenInterface::class);
+        $token->method('getAttribute')->with('sid')->willReturn(null);
+        $this->security->expects($this->once())->method('getToken')->willReturn($token);
+
+        $command = $this->updateUserCommandFactory->create($user, $updateData, '');
+        $this->mockUpdateUserCommandFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with($user, $updateData, '')
+            ->willReturn($command);
+
+        $this->commandBus->expects($this->once())->method('dispatch')->with($command);
+
+        $result = $this->processor->process(
+            $userPutDto,
+            $this->mockOperation,
+            ['id' => $userId]
+        );
+
+        $this->assertInstanceOf(User::class, $result);
+    }
+
     /**
      * @return array{UserInterface, UserUpdate, UserPutDto, string}
      */
@@ -242,79 +316,5 @@ final class UserPutProcessorTest extends UnitTestCase
             ->expects($this->once())
             ->method('dispatch')
             ->with($command);
-    }
-
-    public function testProcessWithNullSecurityToken(): void
-    {
-        [
-            $user,
-            $updateData,
-            $userPutDto,
-            $userId,
-        ] = $this->prepareUserPutTestData();
-
-        $this->getUserQueryHandler
-            ->expects($this->once())
-            ->method('handle')
-            ->with($userId)
-            ->willReturn($user);
-
-        $this->security->expects($this->once())
-            ->method('getToken')
-            ->willReturn(null);
-
-        $command = $this->updateUserCommandFactory->create($user, $updateData, '');
-        $this->mockUpdateUserCommandFactory
-            ->expects($this->once())
-            ->method('create')
-            ->with($user, $updateData, '')
-            ->willReturn($command);
-
-        $this->commandBus->expects($this->once())->method('dispatch')->with($command);
-
-        $result = $this->processor->process(
-            $userPutDto,
-            $this->mockOperation,
-            ['id' => $userId]
-        );
-
-        $this->assertInstanceOf(User::class, $result);
-    }
-
-    public function testProcessWithNonStringSessionId(): void
-    {
-        [
-            $user,
-            $updateData,
-            $userPutDto,
-            $userId,
-        ] = $this->prepareUserPutTestData();
-
-        $this->getUserQueryHandler
-            ->expects($this->once())
-            ->method('handle')
-            ->with($userId)
-            ->willReturn($user);
-
-        $token = $this->createMock(TokenInterface::class);
-        $token->method('getAttribute')->with('sid')->willReturn(null);
-        $this->security->expects($this->once())->method('getToken')->willReturn($token);
-
-        $command = $this->updateUserCommandFactory->create($user, $updateData, '');
-        $this->mockUpdateUserCommandFactory
-            ->expects($this->once())
-            ->method('create')
-            ->with($user, $updateData, '')
-            ->willReturn($command);
-
-        $this->commandBus->expects($this->once())->method('dispatch')->with($command);
-
-        $result = $this->processor->process(
-            $userPutDto,
-            $this->mockOperation,
-            ['id' => $userId]
-        );
-
-        $this->assertInstanceOf(User::class, $result);
     }
 }

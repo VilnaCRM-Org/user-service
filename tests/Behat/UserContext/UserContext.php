@@ -4,55 +4,18 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserContext;
 
-use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
-use App\User\Domain\Contract\AccessTokenGeneratorInterface;
-use App\User\Domain\Contract\AccountLockoutServiceInterface;
-use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Factory\PasswordResetTokenFactoryInterface;
-use App\User\Domain\Factory\UserFactoryInterface;
-use App\User\Domain\Repository\AuthSessionRepositoryInterface;
-use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
-use App\User\Domain\Repository\TokenRepositoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Faker\Factory;
 use Faker\Generator;
 use Psr\Cache\CacheItemPoolInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Uid\Factory\UlidFactory;
-use Symfony\Component\Uid\Factory\UuidFactory;
 
 final class UserContext implements Context
 {
     use AuthenticatedUserContextTrait;
 
-    private const SERVICE_MAP = [
-        'userRepository' => UserRepositoryInterface::class,
-        'hasherFactory' => PasswordHasherFactoryInterface::class,
-        'tokenRepository' => TokenRepositoryInterface::class,
-        'userFactory' => UserFactoryInterface::class,
-        'transformer' => UuidTransformer::class,
-        'uuidFactory' => UuidFactory::class,
-        'passwordResetTokenRepository' => PasswordResetTokenRepositoryInterface::class,
-        'passwordResetTokenFactory' => PasswordResetTokenFactoryInterface::class,
-        'accountLockoutService' => AccountLockoutServiceInterface::class,
-        'cachePool' => CacheItemPoolInterface::class,
-        'tokenStorage' => TokenStorageInterface::class,
-        'testAccessTokenFactory' => TestAccessTokenFactory::class,
-        'accessTokenGenerator' => AccessTokenGeneratorInterface::class,
-        'authSessionRepository' => AuthSessionRepositoryInterface::class,
-        'ulidFactory' => UlidFactory::class,
-        'twoFactorSecretEncryptor' => TwoFactorSecretEncryptorInterface::class,
-    ];
-
-    private ContainerInterface $container;
-    private UserOperationsState $state;
     private Generator $faker;
     private string $lastLockoutEmail = '';
     private static string $lastPasswordResetToken = '';
@@ -63,22 +26,12 @@ final class UserContext implements Context
     private static string $currentTokenUserEmail = '';
 
     public function __construct(
-        UserOperationsState $state,
-        ContainerInterface $container,
+        private UserOperationsState $state,
+        private CacheItemPoolInterface $cachePool,
+        private readonly UserContextUserManagementServices $userManagement,
+        private readonly UserContextAuthServices $auth,
     ) {
-        $this->container = $container;
-        $this->state = $state;
         $this->faker = Factory::create();
-    }
-
-    public function __get(string $name): mixed
-    {
-        $serviceId = self::SERVICE_MAP[$name] ?? null;
-        if (!is_string($serviceId) || $serviceId === '') {
-            throw new \RuntimeException(sprintf('Unknown dynamic property "%s".', $name));
-        }
-
-        return $this->container->get($serviceId);
     }
 
     /**
@@ -87,7 +40,7 @@ final class UserContext implements Context
     public function clearCacheBeforeScenario(BeforeScenarioScope $scope): void
     {
         $this->cachePool->clear();
-        $this->tokenStorage->setToken(null);
+        $this->auth->tokenStorage->setToken(null);
         $this->lastLockoutEmail = '';
     }
 
@@ -97,7 +50,7 @@ final class UserContext implements Context
     public function userHasConfirmationToken(string $id, string $token): void
     {
         $token = new ConfirmationToken($token, $id);
-        $this->tokenRepository->save($token);
+        $this->userManagement->tokenRepository->save($token);
     }
 
     /**
@@ -107,29 +60,29 @@ final class UserContext implements Context
         string $email,
         string $password
     ): void {
-        $existingUser = $this->userRepository->findByEmail($email);
+        $existingUser = $this->userManagement->userRepository->findByEmail($email);
         if ($existingUser !== null) {
-            $hasher = $this->hasherFactory->getPasswordHasher($existingUser::class);
+            $hasher = $this->userManagement->hasherFactory->getPasswordHasher($existingUser::class);
             $hashedPassword = $hasher->hash($password, null);
             $existingUser->setPassword($hashedPassword);
-            $this->userRepository->save($existingUser);
+            $this->userManagement->userRepository->save($existingUser);
             return;
         }
 
-        $user = $this->userFactory->create(
+        $user = $this->userManagement->userFactory->create(
             $email,
             $this->faker->name,
             $password,
-            $this->transformer->transformFromSymfonyUuid(
-                $this->uuidFactory->create()
+            $this->userManagement->transformer->transformFromSymfonyUuid(
+                $this->userManagement->uuidFactory->create()
             )
         );
 
-        $hasher = $this->hasherFactory->getPasswordHasher($user::class);
+        $hasher = $this->userManagement->hasherFactory->getPasswordHasher($user::class);
         $hashedPassword = $hasher->hash($password, null);
         $user->setPassword($hashedPassword);
 
-        $this->userRepository->save($user);
+        $this->userManagement->userRepository->save($user);
     }
 
     /**
@@ -139,17 +92,17 @@ final class UserContext implements Context
      */
     public function userWithEmailHasTwoFactorEnabled(string $email): void
     {
-        $user = $this->userRepository->findByEmail($email);
+        $user = $this->userManagement->userRepository->findByEmail($email);
         if ($user === null) {
             throw new \RuntimeException("User with email {$email} not found");
         }
 
         $user->setTwoFactorEnabled(true);
         $user->setTwoFactorSecret(
-            $this->twoFactorSecretEncryptor->encrypt('JBSWY3DPEHPK3PXP')
+            $this->auth->twoFactorSecretEncryptor->encrypt('JBSWY3DPEHPK3PXP')
         );
 
-        $this->userRepository->save($user);
+        $this->userManagement->userRepository->save($user);
     }
 
     /**
@@ -159,15 +112,15 @@ final class UserContext implements Context
         string $email,
         string $secret
     ): void {
-        $user = $this->userRepository->findByEmail($email);
+        $user = $this->userManagement->userRepository->findByEmail($email);
         if ($user === null) {
             throw new \RuntimeException("User with email {$email} not found");
         }
 
         $user->setTwoFactorEnabled(true);
-        $user->setTwoFactorSecret($this->twoFactorSecretEncryptor->encrypt($secret));
+        $user->setTwoFactorSecret($this->auth->twoFactorSecretEncryptor->encrypt($secret));
 
-        $this->userRepository->save($user);
+        $this->userManagement->userRepository->save($user);
     }
 
     /**
@@ -175,7 +128,7 @@ final class UserContext implements Context
      */
     public function userWithEmailShouldHaveTwoFactorDisabled(string $email): void
     {
-        $user = $this->userRepository->findByEmail($email);
+        $user = $this->userManagement->userRepository->findByEmail($email);
         if ($user === null) {
             throw new \RuntimeException("User with email {$email} not found");
         }
@@ -188,7 +141,7 @@ final class UserContext implements Context
      */
     public function userWithEmailShouldHaveTwoFactorEnabled(string $email): void
     {
-        $user = $this->userRepository->findByEmail($email);
+        $user = $this->userManagement->userRepository->findByEmail($email);
         if ($user === null) {
             throw new \RuntimeException("User with email {$email} not found");
         }
@@ -202,28 +155,28 @@ final class UserContext implements Context
      */
     public function userWithEmailExists(string $email): void
     {
-        $existingUser = $this->userRepository->findByEmail($email);
+        $existingUser = $this->userManagement->userRepository->findByEmail($email);
         if ($existingUser !== null) {
             self::$userIdsByEmail[$email] = $existingUser->getId();
             return;
         }
 
         $password = $this->faker->password;
-        $userId = $this->transformer->transformFromSymfonyUuid(
-            $this->uuidFactory->create()
+        $userId = $this->userManagement->transformer->transformFromSymfonyUuid(
+            $this->userManagement->uuidFactory->create()
         );
-        $user = $this->userFactory->create(
+        $user = $this->userManagement->userFactory->create(
             $email,
             $this->faker->name,
             $password,
             $userId
         );
 
-        $hasher = $this->hasherFactory->getPasswordHasher($user::class);
+        $hasher = $this->userManagement->hasherFactory->getPasswordHasher($user::class);
         $hashedPassword = $hasher->hash($password, null);
         $user->setPassword($hashedPassword);
 
-        $this->userRepository->save($user);
+        $this->userManagement->userRepository->save($user);
 
         self::$userIdsByEmail[$email] = (string) $userId;
     }
@@ -233,14 +186,14 @@ final class UserContext implements Context
      */
     public function userWithIdExists(string $id): void
     {
-        $user = $this->userRepository->find($id) ??
-            $this->userFactory->create(
+        $user = $this->userManagement->userRepository->find($id) ??
+            $this->userManagement->userFactory->create(
                 $this->faker->email,
                 $this->faker->name,
                 $this->faker->password,
-                $this->transformer->transformFromString($id)
+                $this->userManagement->transformer->transformFromString($id)
             );
-        $this->userRepository->save($user);
+        $this->userManagement->userRepository->save($user);
     }
 
     /**
@@ -250,18 +203,19 @@ final class UserContext implements Context
         string $id,
         string $password
     ): void {
-        $user = $this->userRepository->find($id) ?? $this->userFactory->create(
-            $this->faker->email,
-            $this->faker->name,
-            $password,
-            $this->transformer->transformFromString($id)
-        );
+        $user = $this->userManagement->userRepository->find($id)
+            ?? $this->userManagement->userFactory->create(
+                $this->faker->email,
+                $this->faker->name,
+                $password,
+                $this->userManagement->transformer->transformFromString($id)
+            );
 
-        $hasher = $this->hasherFactory->getPasswordHasher($user::class);
+        $hasher = $this->userManagement->hasherFactory->getPasswordHasher($user::class);
         $hashedPassword = $hasher->hash($password, null);
         $user->setPassword($hashedPassword);
 
-        $this->userRepository->save($user);
+        $this->userManagement->userRepository->save($user);
     }
 
     /**
@@ -275,7 +229,7 @@ final class UserContext implements Context
         $this->lastLockoutEmail = $this->normalizeEmail($email);
 
         for ($attempt = 0; $attempt < $attempts; $attempt++) {
-            $this->accountLockoutService->recordFailure($email);
+            $this->auth->accountLockoutService->recordFailure($email);
         }
     }
 
@@ -284,9 +238,9 @@ final class UserContext implements Context
      */
     public function userWithEmailDoesNotExist(string $email): void
     {
-        $user = $this->userRepository->findByEmail($email);
+        $user = $this->userManagement->userRepository->findByEmail($email);
         if ($user instanceof User) {
-            $this->userRepository->delete($user);
+            $this->userManagement->userRepository->delete($user);
         }
     }
 
@@ -326,13 +280,13 @@ final class UserContext implements Context
      */
     public function passwordResetTokenExistsForUser(string $email): void
     {
-        $user = $this->userRepository->findByEmail($email);
+        $user = $this->userManagement->userRepository->findByEmail($email);
         if ($user === null) {
             throw new \RuntimeException("User with email {$email} not found");
         }
 
-        $token = $this->passwordResetTokenFactory->create($user->getId());
-        $this->passwordResetTokenRepository->save($token);
+        $token = $this->userManagement->passwordResetTokenFactory->create($user->getId());
+        $this->userManagement->passwordResetTokenRepository->save($token);
 
         self::$lastPasswordResetToken = $token->getTokenValue();
         self::$currentTokenUserEmail = $email;

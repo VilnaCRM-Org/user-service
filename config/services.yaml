@@ -128,6 +128,10 @@ services:
     arguments:
       $namespace: '%env(AWS_EMF_NAMESPACE)%'
 
+  App\Shared\Application\OpenApi\Augmenter\ServerErrorResponseAugmenter:
+    arguments:
+      $internalErrorFactory: '@App\Shared\Application\OpenApi\Factory\Response\InternalErrorFactory'
+
   App\Shared\Application\EventListener\QueryParameterValidationListener:
     arguments:
       $rules: !tagged_iterator app.query_parameter_rule

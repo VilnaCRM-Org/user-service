@@ -97,8 +97,8 @@ final class PublicAccessMatcherTest extends UnitTestCase
         $this->assertTrue($matcher->isPublic($request));
     }
 
-    public function testIsPublicReturnsFalseWhenFirstRuleMatchesButMethodNotAllowedAndSecondDoesNotMatch(): void
-    {
+    public function testIsPublicReturnsFalseWhenMethodExcludedAndNoOtherRuleMatches(
+    ): void {
         $matcher = new PublicAccessMatcher([
             ['pattern' => '#^/api/public#', 'methods' => ['DELETE']],
             ['pattern' => '#^/api/private#'],

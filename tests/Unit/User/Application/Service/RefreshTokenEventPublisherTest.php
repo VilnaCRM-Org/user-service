@@ -73,21 +73,37 @@ final class RefreshTokenEventPublisherTest extends UnitTestCase
         $this->eventBus->expects($this->once())
             ->method('publish')
             ->with($this->callback(
-                static function (RefreshTokenTheftDetectedEvent $event) use (
+                $this->buildTheftDetectedValidator(
                     $sessionId,
                     $userId,
                     $ipAddress,
                     $reason,
                     $eventId
-                ): bool {
-                    return $event->sessionId === $sessionId
-                        && $event->userId === $userId
-                        && $event->ipAddress === $ipAddress
-                        && $event->reason === $reason
-                        && $event->eventId() === $eventId;
-                }
+                )
             ));
 
         $this->publisher->publishTheftDetected($sessionId, $userId, $ipAddress, $reason);
+    }
+
+    private function buildTheftDetectedValidator(
+        string $sessionId,
+        string $userId,
+        string $ipAddress,
+        string $reason,
+        string $eventId
+    ): callable {
+        return static function (RefreshTokenTheftDetectedEvent $event) use (
+            $sessionId,
+            $userId,
+            $ipAddress,
+            $reason,
+            $eventId
+        ): bool {
+            return $event->sessionId === $sessionId
+                && $event->userId === $userId
+                && $event->ipAddress === $ipAddress
+                && $event->reason === $reason
+                && $event->eventId() === $eventId;
+        };
     }
 }

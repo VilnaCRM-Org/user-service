@@ -282,59 +282,6 @@ trait DualAuthenticatorAdditionalTestTrait
         $this->assertSame(['ROLE_USER'], $token->getRoleNames());
     }
 
-    private function createPassportWithoutRoles(string $email): SelfValidatingPassport
-    {
-        $authorizationUser = $this->createAuthorizationUser($email);
-
-        return new SelfValidatingPassport(
-            new UserBadge(
-                $authorizationUser->getUserIdentifier(),
-                static fn () => $authorizationUser
-            )
-        );
-    }
-
-    /**
-     * @param array<string, array<int, string>|int|string> $payload
-     */
-    private function expectUuidSubjectResolution(
-        string $tokenValue,
-        array $payload,
-        string $subject,
-        ?\App\User\Domain\Entity\User $user
-    ): void {
-        $this->jwtEncoder
-            ->expects($this->once())
-            ->method('decode')
-            ->with($tokenValue)
-            ->willReturn($payload);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($subject)
-            ->willReturn(null);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with($subject)
-            ->willReturn($user);
-        $this->authSessionRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with('sid-token')
-            ->willReturn($this->createActiveSession('sid-token'));
-    }
-
-    private function createBearerRequest(string $tokenValue): Request
-    {
-        $request = Request::create('/api/users');
-        $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
-
-        return $request;
-    }
-
     public function testSupportsReturnsFalseWhenBearerHasNoTokenAfterPrefix(): void
     {
         $request = Request::create('/api/users');
@@ -413,6 +360,59 @@ trait DualAuthenticatorAdditionalTestTrait
         $this->assertSame('Unauthorized', $body['title']);
         $this->assertSame(Response::HTTP_UNAUTHORIZED, $body['status']);
         $this->assertSame('Authentication required.', $body['detail']);
+    }
+
+    private function createPassportWithoutRoles(string $email): SelfValidatingPassport
+    {
+        $authorizationUser = $this->createAuthorizationUser($email);
+
+        return new SelfValidatingPassport(
+            new UserBadge(
+                $authorizationUser->getUserIdentifier(),
+                static fn () => $authorizationUser
+            )
+        );
+    }
+
+    /**
+     * @param array<string, array<int, string>|int|string> $payload
+     */
+    private function expectUuidSubjectResolution(
+        string $tokenValue,
+        array $payload,
+        string $subject,
+        ?\App\User\Domain\Entity\User $user
+    ): void {
+        $this->jwtEncoder
+            ->expects($this->once())
+            ->method('decode')
+            ->with($tokenValue)
+            ->willReturn($payload);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($subject)
+            ->willReturn(null);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($subject)
+            ->willReturn($user);
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with('sid-token')
+            ->willReturn($this->createActiveSession('sid-token'));
+    }
+
+    private function createBearerRequest(string $tokenValue): Request
+    {
+        $request = Request::create('/api/users');
+        $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
+
+        return $request;
     }
 
     private function assertUnauthorizedProblemResponse(Response $response): void

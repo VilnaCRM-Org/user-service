@@ -222,31 +222,6 @@ final class ResendEmailProcessorTest extends UnitTestCase
         );
     }
 
-    private function getProcessor(): ResendEmailProcessor
-    {
-        return new ResendEmailProcessor(
-            $this->getUserQueryHandler,
-            $this->confirmationEmailSender,
-            $this->jsonRequestValidator,
-            $this->tokenStorage
-        );
-    }
-
-    private function processWithRequest(string $userId, string $body): void
-    {
-        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], $body));
-
-        try {
-            $this->getProcessor()->process(
-                new RetryDto(),
-                $this->createMock(Operation::class),
-                ['id' => $userId]
-            );
-        } finally {
-            $this->requestStack->pop();
-        }
-    }
-
     public function testProcessThrowsAccessDeniedWhenTokenIsNull(): void
     {
         $userId = $this->faker->uuid();
@@ -326,6 +301,31 @@ final class ResendEmailProcessorTest extends UnitTestCase
                 new RetryDto(),
                 $this->createMock(Operation::class),
                 ['id' => $resourceUserId]
+            );
+        } finally {
+            $this->requestStack->pop();
+        }
+    }
+
+    private function getProcessor(): ResendEmailProcessor
+    {
+        return new ResendEmailProcessor(
+            $this->getUserQueryHandler,
+            $this->confirmationEmailSender,
+            $this->jsonRequestValidator,
+            $this->tokenStorage
+        );
+    }
+
+    private function processWithRequest(string $userId, string $body): void
+    {
+        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], $body));
+
+        try {
+            $this->getProcessor()->process(
+                new RetryDto(),
+                $this->createMock(Operation::class),
+                ['id' => $userId]
             );
         } finally {
             $this->requestStack->pop();

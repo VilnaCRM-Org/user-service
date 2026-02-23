@@ -98,7 +98,7 @@ final class RecoveryCodeGeneratorServiceTest extends UnitTestCase
         $this->recoveryCodeRepository
             ->expects($this->exactly(8))
             ->method('save')
-            ->willReturnCallback(function (RecoveryCode $code) use (&$savedIds): void {
+            ->willReturnCallback(static function (RecoveryCode $code) use (&$savedIds): void {
                 $savedIds[] = $code->getId();
             });
 
@@ -116,7 +116,7 @@ final class RecoveryCodeGeneratorServiceTest extends UnitTestCase
 
         $this->recoveryCodeRepository
             ->method('save')
-            ->willReturnCallback(function (RecoveryCode $code) use (&$savedCodes): void {
+            ->willReturnCallback(static function (RecoveryCode $code) use (&$savedCodes): void {
                 $savedCodes[] = $code;
             });
 
@@ -143,6 +143,21 @@ final class RecoveryCodeGeneratorServiceTest extends UnitTestCase
             });
 
         $this->createService()->generateAndStore($user);
+    }
+
+    public function testGenerateAndStoreReturnsUppercaseCodes(): void
+    {
+        $user = $this->createUser();
+        $this->ulidFactory->method('create')->willReturnCallback(static fn () => new Ulid());
+        $this->recoveryCodeRepository->method('save');
+
+        $codes = $this->createService()->generateAndStore($user);
+
+        foreach ($codes as $code) {
+            foreach (explode('-', $code) as $segment) {
+                self::assertSame(strtoupper($segment), $segment);
+            }
+        }
     }
 
     private function createUser(): User

@@ -45,8 +45,10 @@ final class TwoFactorCodeVerifierServiceTest extends UnitTestCase
         $user = $this->createUser();
         $user->setTwoFactorSecret($secret);
 
-        $this->encryptor->expects($this->once())->method('decrypt')->with($secret)->willReturn($decrypted);
-        $this->totpVerifier->expects($this->once())->method('verify')->with($decrypted, $code)->willReturn(true);
+        $this->encryptor->expects($this->once())
+            ->method('decrypt')->with($secret)->willReturn($decrypted);
+        $this->totpVerifier->expects($this->once())
+            ->method('verify')->with($decrypted, $code)->willReturn(true);
 
         $this->createService()->verifyTotpOrFail($user, $code);
     }
@@ -60,8 +62,10 @@ final class TwoFactorCodeVerifierServiceTest extends UnitTestCase
         $user = $this->createUser();
         $user->setTwoFactorSecret($secret);
 
-        $this->encryptor->expects($this->once())->method('decrypt')->with($secret)->willReturn($decrypted);
-        $this->totpVerifier->expects($this->once())->method('verify')->with($decrypted, $code)->willReturn(false);
+        $this->encryptor->expects($this->once())
+            ->method('decrypt')->with($secret)->willReturn($decrypted);
+        $this->totpVerifier->expects($this->once())
+            ->method('verify')->with($decrypted, $code)->willReturn(false);
 
         $this->expectException(UnauthorizedHttpException::class);
         $this->createService()->verifyTotpOrFail($user, $code);
@@ -77,7 +81,8 @@ final class TwoFactorCodeVerifierServiceTest extends UnitTestCase
         $user->setTwoFactorSecret($secret);
 
         $this->encryptor->expects($this->once())->method('decrypt')->willReturn($decrypted);
-        $this->totpVerifier->expects($this->once())->method('verify')->with($decrypted, $code)->willReturn(true);
+        $this->totpVerifier->expects($this->once())
+            ->method('verify')->with($decrypted, $code)->willReturn(true);
 
         $this->createService()->verifyAndConsumeOrFail($user, $code);
     }
@@ -129,7 +134,8 @@ final class TwoFactorCodeVerifierServiceTest extends UnitTestCase
         $user->setTwoFactorSecret($secret);
 
         $this->encryptor->expects($this->once())->method('decrypt')->willReturn($decrypted);
-        $this->totpVerifier->expects($this->once())->method('verify')->with($decrypted, $code)->willReturn(true);
+        $this->totpVerifier->expects($this->once())
+            ->method('verify')->with($decrypted, $code)->willReturn(true);
 
         $this->assertSame('totp', $this->createService()->resolveVerificationMethod($user, $code));
     }
@@ -168,7 +174,10 @@ final class TwoFactorCodeVerifierServiceTest extends UnitTestCase
             ->willReturn([$recoveryCode]);
         $this->recoveryCodeRepository->expects($this->once())->method('save');
 
-        $this->assertSame('recovery_code', $this->createService()->resolveVerificationMethod($user, $plainCode));
+        $this->assertSame(
+            'recovery_code',
+            $this->createService()->resolveVerificationMethod($user, $plainCode)
+        );
     }
 
     public function testResolveVerificationMethodReturnsNullWhenRecoveryCodeNotFound(): void
@@ -188,7 +197,9 @@ final class TwoFactorCodeVerifierServiceTest extends UnitTestCase
     {
         $user = $this->createUser();
 
-        $this->assertNull($this->createService()->resolveVerificationMethod($user, $this->faker->word()));
+        $this->assertNull(
+            $this->createService()->resolveVerificationMethod($user, $this->faker->word())
+        );
     }
 
     public function testCountRemainingCodesCountsOnlyUnused(): void
@@ -196,9 +207,10 @@ final class TwoFactorCodeVerifierServiceTest extends UnitTestCase
         $user = $this->createUser();
         $userId = $user->getId();
 
-        $unusedCode1 = new RecoveryCode($this->faker->uuid(), $userId, $this->faker->regexify('[A-Za-z0-9]{4}-[A-Za-z0-9]{4}'));
-        $unusedCode2 = new RecoveryCode($this->faker->uuid(), $userId, $this->faker->regexify('[A-Za-z0-9]{4}-[A-Za-z0-9]{4}'));
-        $usedCode = new RecoveryCode($this->faker->uuid(), $userId, $this->faker->regexify('[A-Za-z0-9]{4}-[A-Za-z0-9]{4}'));
+        $pattern = '[A-Za-z0-9]{4}-[A-Za-z0-9]{4}';
+        $unusedCode1 = $this->makeRecoveryCode($userId, $pattern);
+        $unusedCode2 = $this->makeRecoveryCode($userId, $pattern);
+        $usedCode = $this->makeRecoveryCode($userId, $pattern);
         $usedCode->markAsUsed();
 
         $this->recoveryCodeRepository
@@ -213,7 +225,11 @@ final class TwoFactorCodeVerifierServiceTest extends UnitTestCase
     public function testCountRemainingCodesReturnsZeroWhenAllUsed(): void
     {
         $userId = $this->faker->uuid();
-        $usedCode = new RecoveryCode($this->faker->uuid(), $userId, $this->faker->regexify('[A-Za-z0-9]{4}-[A-Za-z0-9]{4}'));
+        $usedCode = new RecoveryCode(
+            $this->faker->uuid(),
+            $userId,
+            $this->faker->regexify('[A-Za-z0-9]{4}-[A-Za-z0-9]{4}')
+        );
         $usedCode->markAsUsed();
 
         $this->recoveryCodeRepository
@@ -265,6 +281,82 @@ final class TwoFactorCodeVerifierServiceTest extends UnitTestCase
         $this->recoveryCodeRepository->expects($this->once())->method('save');
 
         $this->createService()->verifyAndConsumeOrFail($user, $plainCode);
+    }
+
+    public function testResolveVerificationMethodDoesNotQueryRepositoryForUnknownFormat(): void
+    {
+        $user = $this->createUser();
+        $this->recoveryCodeRepository->expects($this->never())->method('findByUserId');
+
+        self::assertNull(
+            $this->createService()->resolveVerificationMethod($user, $this->faker->word())
+        );
+    }
+
+    public function testConsumeRecoveryCodeMarksCodeAsUsed(): void
+    {
+        $plainCode = $this->faker->regexify('[A-Za-z0-9]{4}-[A-Za-z0-9]{4}');
+        $user = $this->createUser();
+        $recoveryCode = new RecoveryCode($this->faker->uuid(), $user->getId(), $plainCode);
+
+        $this->recoveryCodeRepository->method('findByUserId')->willReturn([$recoveryCode]);
+        $savedCodes = [];
+        $this->recoveryCodeRepository
+            ->expects($this->once())
+            ->method('save')
+            ->willReturnCallback(static function (RecoveryCode $code) use (&$savedCodes): void {
+                $savedCodes[] = $code;
+            });
+
+        $this->createService()->verifyAndConsumeOrFail($user, $plainCode);
+
+        self::assertCount(1, $savedCodes);
+        self::assertTrue($savedCodes[0]->isUsed());
+    }
+
+    public function testVerifyAndConsumeOrFailThrowsWhenOnlyUsedCodesMatch(): void
+    {
+        $plainCode = $this->faker->regexify('[A-Za-z0-9]{4}-[A-Za-z0-9]{4}');
+        $user = $this->createUser();
+        $usedCode = new RecoveryCode($this->faker->uuid(), $user->getId(), $plainCode);
+        $usedCode->markAsUsed();
+
+        $this->recoveryCodeRepository->method('findByUserId')->willReturn([$usedCode]);
+        $this->recoveryCodeRepository->expects($this->never())->method('save');
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->createService()->verifyAndConsumeOrFail($user, $plainCode);
+    }
+
+    public function testVerifyAndConsumeOrFailThrowsForCodeWithExtraCharsAfterSixDigits(): void
+    {
+        $secret = $this->faker->sha256();
+        $user = $this->createUser();
+        $user->setTwoFactorSecret($secret);
+
+        $this->encryptor->method('decrypt')->willReturn($this->faker->sha256());
+        $this->totpVerifier->method('verify')->willReturn(true);
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->createService()->verifyAndConsumeOrFail($user, '123456X');
+    }
+
+    public function testVerifyAndConsumeOrFailThrowsForCodeWithPrefixBeforeSixDigits(): void
+    {
+        $secret = $this->faker->sha256();
+        $user = $this->createUser();
+        $user->setTwoFactorSecret($secret);
+
+        $this->encryptor->method('decrypt')->willReturn($this->faker->sha256());
+        $this->totpVerifier->method('verify')->willReturn(true);
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->createService()->verifyAndConsumeOrFail($user, 'X123456');
+    }
+
+    private function makeRecoveryCode(string $userId, string $pattern): RecoveryCode
+    {
+        return new RecoveryCode($this->faker->uuid(), $userId, $this->faker->regexify($pattern));
     }
 
     private function createUser(): User

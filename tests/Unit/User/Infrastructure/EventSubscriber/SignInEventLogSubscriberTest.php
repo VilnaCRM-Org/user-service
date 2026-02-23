@@ -36,22 +36,26 @@ final class SignInEventLogSubscriberTest extends UnitTestCase
 
         $event = new UserSignedInEvent($userId, $email, $sessionId, $ip, $userAgent, $twoFactorUsed, $eventId);
 
+        $capturedContext = [];
         $this->logger->expects($this->once())
             ->method('info')
             ->with(
                 'User signed in successfully',
-                $this->callback(static function ($context) use ($userId, $sessionId, $ip, $userAgent, $twoFactorUsed) {
-                    return $context['event'] === 'user.signed_in'
-                        && $context['user_id'] === $userId
-                        && $context['session_id'] === $sessionId
-                        && $context['ip_address'] === $ip
-                        && $context['user_agent'] === $userAgent
-                        && $context['two_factor_used'] === $twoFactorUsed
-                        && isset($context['timestamp']);
+                $this->callback(static function (array $context) use (&$capturedContext): bool {
+                    $capturedContext = $context;
+                    return true;
                 })
             );
 
         $this->subscriber->__invoke($event);
+
+        $this->assertSame('user.signed_in', $capturedContext['event']);
+        $this->assertSame($userId, $capturedContext['user_id']);
+        $this->assertSame($sessionId, $capturedContext['session_id']);
+        $this->assertSame($ip, $capturedContext['ip_address']);
+        $this->assertSame($userAgent, $capturedContext['user_agent']);
+        $this->assertSame($twoFactorUsed, $capturedContext['two_factor_used']);
+        $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 
     public function testInvokeLogsSignInFailedAtWarningLevel(): void
@@ -64,20 +68,24 @@ final class SignInEventLogSubscriberTest extends UnitTestCase
 
         $event = new SignInFailedEvent($email, $ip, $userAgent, $reason, $eventId);
 
+        $capturedContext = [];
         $this->logger->expects($this->once())
             ->method('warning')
             ->with(
                 'Sign-in attempt failed',
-                $this->callback(static function ($context) use ($email, $ip, $reason) {
-                    return $context['event'] === 'user.signin.failed'
-                        && $context['attempted_email'] === $email
-                        && $context['ip_address'] === $ip
-                        && $context['reason'] === $reason
-                        && isset($context['timestamp']);
+                $this->callback(static function (array $context) use (&$capturedContext): bool {
+                    $capturedContext = $context;
+                    return true;
                 })
             );
 
         $this->subscriber->__invoke($event);
+
+        $this->assertSame('user.signin.failed', $capturedContext['event']);
+        $this->assertSame($email, $capturedContext['attempted_email']);
+        $this->assertSame($ip, $capturedContext['ip_address']);
+        $this->assertSame($reason, $capturedContext['reason']);
+        $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 
     public function testInvokeIgnoresUnknownEvent(): void
