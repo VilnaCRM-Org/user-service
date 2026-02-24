@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 use NunoMaduro\PhpInsights\Domain\Insights\CyclomaticComplexityIsHigh;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
-use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\CodeAnalysis\UselessOverridingMethodSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Strings\UnnecessaryStringConcatSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
-use SlevomatCodingStandard\Sniffs\Classes\SuperfluousTraitNamingSniff;
 use SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\UseSpacingSniff;
@@ -25,27 +23,21 @@ return [
     'exclude' => [
         'vendor',
         'CLI/bats/php',
-        'tests/Behat/UserContext/AuthenticatedUserContextTrait.php',
-        // Multi-namespace function-override trick for openssl_encrypt test double
-        'TwoFactorSecretEncryptorTest',
+        'tests/Unit/User/Infrastructure/Service/OpenSslEncryptOverride.php',
     ],
     'add' => [],
     'remove' => [
         UnusedParameterSniff::class,
         SuperfluousInterfaceNamingSniff::class,
         SuperfluousExceptionNamingSniff::class,
-        SuperfluousTraitNamingSniff::class,
         SpaceAfterNotSniff::class,
         NunoMaduro\PhpInsights\Domain\Sniffs\ForbiddenSetterSniff::class,
         UseSpacingSniff::class,
-        ForbiddenTraits::class,
     ],
     'config' => [
         ReturnTypeHintSniff::class => [
             'exclude' => [
                 'src/User/Domain/Repository/UserRepositoryInterface',
-                'tests/Unit/OAuth/Infrastructure/Manager/AccessTokenManagerTest.php',
-                'tests/Unit/OAuth/Infrastructure/Revoker/CredentialsRevokerTest.php',
             ],
         ],
         ParameterTypeHintSniff::class => [
@@ -58,10 +50,6 @@ return [
         DisallowMixedTypeHintSniff::class => [
             'exclude' => [
                 'tests/Unit/Shared/Infrastructure/Bus/Event/Async/RecordingLogger.php',
-                'tests/Unit/Shared/Application/Collector/BatchEmailCollectorTest.php',
-                'tests/Unit/Shared/Infrastructure/Observability/Resolver/ApiEndpointMetricDimensionsResolverTest.php',
-                'tests/Unit/User/Domain/Factory/PasswordResetTokenFactoryTest.php',
-                'tests/Integration/Auth/RouteAccessControlIntegrationTest.php',
             ],
         ],
         LineLengthSniff::class => [
