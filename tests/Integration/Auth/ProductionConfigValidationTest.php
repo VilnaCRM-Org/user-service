@@ -31,7 +31,11 @@ final class ProductionConfigValidationTest extends AuthIntegrationTestCase
     {
         $requirements = [
             'TLS 1.2 or higher must be enforced at load balancer/edge level',
-            'HSTS header must be set: Strict-Transport-Security: max-age=31536000; includeSubDomains',
+            implode('', [
+                'HSTS header must be set: ',
+                'Strict-Transport-Security: ',
+                'max-age=31536000; includeSubDomains',
+            ]),
             'External traffic must be served via HTTPS only',
         ];
 

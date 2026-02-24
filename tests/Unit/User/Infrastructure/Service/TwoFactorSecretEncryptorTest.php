@@ -2,39 +2,6 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\Service;
-
-final class OpenSslEncryptTestDouble
-{
-    public static bool $forceFailure = false;
-}
-
-function openssl_encrypt(
-    string $data,
-    string $cipherAlgorithm,
-    string $passphrase,
-    int $options = 0,
-    string $iv = '',
-    mixed &$tag = null,
-    string $aad = '',
-    int $tagLength = 16
-): string|false {
-    if (OpenSslEncryptTestDouble::$forceFailure) {
-        return false;
-    }
-
-    return \openssl_encrypt(
-        $data,
-        $cipherAlgorithm,
-        $passphrase,
-        $options,
-        $iv,
-        $tag,
-        $aad,
-        $tagLength
-    );
-}
-
 namespace App\Tests\Unit\User\Infrastructure\Service;
 
 use App\Tests\Unit\UnitTestCase;
@@ -44,6 +11,12 @@ use RuntimeException;
 
 final class TwoFactorSecretEncryptorTest extends UnitTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        require_once __DIR__ . '/OpenSslEncryptOverride.inc';
+    }
+
     public function testEncryptAndDecryptRoundTrip(): void
     {
         $encryptor = new TwoFactorSecretEncryptor(
@@ -76,7 +49,7 @@ final class TwoFactorSecretEncryptorTest extends UnitTestCase
             base64_encode('0123456789abcdef0123456789abcdef')
         );
 
-        OpenSslEncryptTestDouble::$forceFailure = true;
+        OpenSslEncryptTestDouble::enableFailure();
 
         try {
             $this->expectException(RuntimeException::class);
@@ -84,7 +57,7 @@ final class TwoFactorSecretEncryptorTest extends UnitTestCase
 
             $encryptor->encrypt('JBSWY3DPEHPK3PXP');
         } finally {
-            OpenSslEncryptTestDouble::$forceFailure = false;
+            OpenSslEncryptTestDouble::disableFailure();
         }
     }
 

@@ -50,100 +50,37 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         $user = $this->createTwoFactorEnabledUser();
         $sessionId = (string) new Ulid();
         $session = $this->createRecentSession($user->getId(), $sessionId);
-        $expectedCodes = ['AB12-CD34', 'EF56-GH78', 'IJ90-KL12', 'MN34-OP56',
-            'QR78-ST90', 'UV12-WX34', 'YZ56-AB78', 'CD90-EF12',
-        ];
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($user->getEmail())
-            ->willReturn($user);
-
-        $this->authSessionRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with($sessionId)
-            ->willReturn($session);
-
-        $this->recoveryCodeRepository
-            ->expects($this->once())
-            ->method('deleteByUserId')
-            ->with($user->getId());
-
-        $this->recoveryCodeGenerator
-            ->expects($this->once())
-            ->method('generateAndStore')
-            ->with($user)
-            ->willReturn($expectedCodes);
-
-        $handler = $this->createHandler();
-        $command = new RegenerateRecoveryCodesCommand(
-            $user->getEmail(),
-            $sessionId
-        );
-
-        $handler->__invoke($command);
-
-        $codes = $command->getResponse()->getRecoveryCodes();
-        $this->assertCount(8, $codes);
-        $this->assertSame($expectedCodes, $codes);
+        $expectedCodes = $this->expectedRecoveryCodes();
+        $this->expectSuccessfulRegeneration($user, $sessionId, $session, $expectedCodes);
+        $command = new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId);
+        $this->createHandler()->__invoke($command);
+        $this->assertCount(8, $command->getResponse()->getRecoveryCodes());
+        $this->assertSame($expectedCodes, $command->getResponse()->getRecoveryCodes());
     }
 
     public function testInvokeThrows403WhenTwoFactorNotEnabled(): void
     {
-        $user = $this->userFactory->create(
-            $this->faker->email(),
-            $this->faker->firstName(),
-            $this->faker->password(),
-            $this->uuidTransformer->transformFromString($this->faker->uuid())
-        );
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->willReturn($user);
-
-        $this->authSessionRepository
-            ->expects($this->never())
-            ->method('findById');
-
-        $this->recoveryCodeRepository
-            ->expects($this->never())
-            ->method('deleteByUserId');
-
+        $user = $this->createPlainUser();
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')->willReturn($user);
+        $this->authSessionRepository->expects($this->never())->method('findById');
+        $this->recoveryCodeRepository->expects($this->never())->method('deleteByUserId');
         $this->expectException(AccessDeniedHttpException::class);
         $this->expectExceptionMessage('Two-factor authentication is not enabled.');
-
-        $handler = $this->createHandler();
-        $handler->__invoke(
-            new RegenerateRecoveryCodesCommand(
-                $user->getEmail(),
-                (string) new Ulid()
-            )
+        $this->createHandler()->__invoke(
+            new RegenerateRecoveryCodesCommand($user->getEmail(), (string) new Ulid())
         );
     }
 
     public function testInvokeThrows401WhenUserNotFound(): void
     {
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->willReturn(null);
-
-        $this->authSessionRepository
-            ->expects($this->never())
-            ->method('findById');
-
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')->willReturn(null);
+        $this->authSessionRepository->expects($this->never())->method('findById');
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Authentication required.');
-
-        $handler = $this->createHandler();
-        $handler->__invoke(
-            new RegenerateRecoveryCodesCommand(
-                $this->faker->email(),
-                (string) new Ulid()
-            )
+        $this->createHandler()->__invoke(
+            new RegenerateRecoveryCodesCommand($this->faker->email(), (string) new Ulid())
         );
     }
 
@@ -151,31 +88,15 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createTwoFactorEnabledUser();
         $sessionId = (string) new Ulid();
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->willReturn($user);
-
-        $this->authSessionRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with($sessionId)
-            ->willReturn(null);
-
-        $this->recoveryCodeRepository
-            ->expects($this->never())
-            ->method('deleteByUserId');
-
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')->willReturn($user);
+        $this->authSessionRepository->expects($this->once())
+            ->method('findById')->with($sessionId)->willReturn(null);
+        $this->recoveryCodeRepository->expects($this->never())->method('deleteByUserId');
         $this->expectException(AccessDeniedHttpException::class);
         $this->expectExceptionMessage('Re-authentication required.');
-
-        $handler = $this->createHandler();
-        $handler->__invoke(
-            new RegenerateRecoveryCodesCommand(
-                $user->getEmail(),
-                $sessionId
-            )
+        $this->createHandler()->__invoke(
+            new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId)
         );
     }
 
@@ -183,35 +104,16 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createTwoFactorEnabledUser();
         $sessionId = (string) new Ulid();
-        $session = $this->createExpiredSudoSession(
-            $user->getId(),
-            $sessionId
-        );
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->willReturn($user);
-
-        $this->authSessionRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with($sessionId)
-            ->willReturn($session);
-
-        $this->recoveryCodeRepository
-            ->expects($this->never())
-            ->method('deleteByUserId');
-
+        $session = $this->createExpiredSudoSession($user->getId(), $sessionId);
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')->willReturn($user);
+        $this->authSessionRepository->expects($this->once())
+            ->method('findById')->with($sessionId)->willReturn($session);
+        $this->recoveryCodeRepository->expects($this->never())->method('deleteByUserId');
         $this->expectException(AccessDeniedHttpException::class);
         $this->expectExceptionMessage('Re-authentication required.');
-
-        $handler = $this->createHandler();
-        $handler->__invoke(
-            new RegenerateRecoveryCodesCommand(
-                $user->getEmail(),
-                $sessionId
-            )
+        $this->createHandler()->__invoke(
+            new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId)
         );
     }
 
@@ -220,43 +122,14 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         ClockMock::register(RegenerateRecoveryCodesCommandHandler::class);
         ClockMock::register(self::class);
         ClockMock::withClockMock(time());
-
         try {
             $user = $this->createTwoFactorEnabledUser();
             $sessionId = (string) new Ulid();
             $session = $this->createBoundarySudoSession($user->getId(), $sessionId);
-            $expectedCodes = ['AB12-CD34', 'EF56-GH78', 'IJ90-KL12', 'MN34-OP56',
-                'QR78-ST90', 'UV12-WX34', 'YZ56-AB78', 'CD90-EF12',
-            ];
-
-            $this->userRepository
-                ->expects($this->once())
-                ->method('findByEmail')
-                ->with($user->getEmail())
-                ->willReturn($user);
-
-            $this->authSessionRepository
-                ->expects($this->once())
-                ->method('findById')
-                ->with($sessionId)
-                ->willReturn($session);
-
-            $this->recoveryCodeRepository
-                ->expects($this->once())
-                ->method('deleteByUserId')
-                ->with($user->getId());
-
-            $this->recoveryCodeGenerator
-                ->expects($this->once())
-                ->method('generateAndStore')
-                ->with($user)
-                ->willReturn($expectedCodes);
-
-            $handler = $this->createHandler();
+            $expectedCodes = $this->expectedRecoveryCodes();
+            $this->expectSuccessfulRegeneration($user, $sessionId, $session, $expectedCodes);
             $command = new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId);
-
-            $handler->__invoke($command);
-
+            $this->createHandler()->__invoke($command);
             $this->assertCount(8, $command->getResponse()->getRecoveryCodes());
         } finally {
             ClockMock::withClockMock(false);
@@ -275,17 +148,50 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
 
     private function createTwoFactorEnabledUser(): User
     {
-        $user = $this->userFactory->create(
+        $user = $this->createPlainUser();
+        $user->setTwoFactorEnabled(true);
+        $user->setTwoFactorSecret('JBSWY3DPEHPK3PXP');
+
+        return $user;
+    }
+
+    private function createPlainUser(): User
+    {
+        return $this->userFactory->create(
             $this->faker->email(),
             $this->faker->firstName(),
             $this->faker->password(),
             $this->uuidTransformer->transformFromString($this->faker->uuid())
         );
+    }
 
-        $user->setTwoFactorEnabled(true);
-        $user->setTwoFactorSecret('JBSWY3DPEHPK3PXP');
+    /**
+     * @return array<string>
+     */
+    private function expectedRecoveryCodes(): array
+    {
+        return ['AB12-CD34', 'EF56-GH78', 'IJ90-KL12', 'MN34-OP56',
+            'QR78-ST90', 'UV12-WX34', 'YZ56-AB78', 'CD90-EF12',
+        ];
+    }
 
-        return $user;
+    /**
+     * @param array<string> $expectedCodes
+     */
+    private function expectSuccessfulRegeneration(
+        User $user,
+        string $sessionId,
+        AuthSession $session,
+        array $expectedCodes
+    ): void {
+        $this->userRepository->expects($this->once())->method('findByEmail')
+            ->with($user->getEmail())->willReturn($user);
+        $this->authSessionRepository->expects($this->once())->method('findById')
+            ->with($sessionId)->willReturn($session);
+        $this->recoveryCodeRepository->expects($this->once())
+            ->method('deleteByUserId')->with($user->getId());
+        $this->recoveryCodeGenerator->expects($this->once())->method('generateAndStore')
+            ->with($user)->willReturn($expectedCodes);
     }
 
     private function createRecentSession(

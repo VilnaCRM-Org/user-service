@@ -38,7 +38,8 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         parent::setUp();
 
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
-        $this->pendingTwoFactorRepository = $this->createMock(PendingTwoFactorRepositoryInterface::class);
+        $this->pendingTwoFactorRepository =
+            $this->createMock(PendingTwoFactorRepositoryInterface::class);
         $this->sessionIssuanceService = $this->createMock(SessionIssuanceServiceInterface::class);
         $this->codeVerifier = $this->createMock(TwoFactorCodeVerifierInterface::class);
         $this->eventPublisher = $this->createMock(TwoFactorEventPublisherInterface::class);
@@ -49,383 +50,152 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
     public function testInvokeCompletesTwoFactorAndIssuesTokens(): void
     {
         $user = $this->createTwoFactorEnabledUser();
-        $pendingSession = $this->createPendingSession($user->getId(), '+5 minutes');
+        $pending = $this->createPendingSession($user->getId(), '+5 minutes');
         $ipAddress = $this->faker->ipv4();
         $userAgent = $this->faker->userAgent();
-        $sessionId = 'test-session-id';
-        $accessToken = 'issued-access-token';
-        $refreshToken = str_repeat('a', 43);
-
+        $session = new IssuedSession('test-session-id', 'issued-access-token', str_repeat('a', 43));
+        $this->configureLookupsOnce($pending, $user);
+        $this->configureVerificationOnce($user, '123456', 'totp');
+        $this->codeVerifier->expects($this->never())->method('countRemainingCodes');
+        $this->configureIssuanceOnce($user, $ipAddress, $userAgent, false, $session);
         $this->pendingTwoFactorRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with($pendingSession->getId())
-            ->willReturn($pendingSession);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with($user->getId())
-            ->willReturn($user);
-
-        $this->codeVerifier
-            ->expects($this->once())
-            ->method('resolveVerificationMethod')
-            ->with($user, '123456')
-            ->willReturn('totp');
-
-        $this->codeVerifier
-            ->expects($this->never())
-            ->method('countRemainingCodes');
-
-        $this->sessionIssuanceService
-            ->expects($this->once())
-            ->method('issue')
-            ->with($user, $ipAddress, $userAgent, false, $this->isInstanceOf(DateTimeImmutable::class))
-            ->willReturn(new IssuedSession($sessionId, $accessToken, $refreshToken));
-
-        $this->pendingTwoFactorRepository
-            ->expects($this->once())
-            ->method('delete')
-            ->with($pendingSession);
-
-        $this->eventPublisher
-            ->expects($this->never())
-            ->method('publishRecoveryCodeUsed');
-
-        $this->eventPublisher
-            ->expects($this->once())
-            ->method('publishCompleted')
-            ->with($user->getId(), $sessionId, $ipAddress, $userAgent, 'totp');
-
-        $handler = $this->createHandler();
-        $command = new CompleteTwoFactorCommand(
-            $pendingSession->getId(),
-            '123456',
+            ->expects($this->once())->method('delete')->with($pending);
+        $this->configureTotpEventExpectations(
+            $user->getId(),
+            'test-session-id',
             $ipAddress,
             $userAgent
         );
-
-        $handler->__invoke($command);
-
-        $this->assertSame($accessToken, $command->getResponse()->getAccessToken());
-        $this->assertSame($refreshToken, $command->getResponse()->getRefreshToken());
-        $this->assertNotSame(
-            $command->getResponse()->getAccessToken(),
-            $command->getResponse()->getRefreshToken()
-        );
+        $command = $this->invokeHandlerWith($pending->getId(), '123456', $ipAddress, $userAgent);
+        $this->assertTokensIssued($command, 'issued-access-token', str_repeat('a', 43));
         $this->assertFalse($command->getResponse()->isRememberMe());
     }
 
     public function testInvokeCompletesTwoFactorWithRememberMeFromPendingSession(): void
     {
         $user = $this->createTwoFactorEnabledUser();
-        $pendingSession = $this->createPendingSessionWithRememberMe($user->getId(), '+5 minutes', true);
-
-        $this->pendingTwoFactorRepository->method('findById')->willReturn($pendingSession);
-        $this->userRepository->method('findById')->willReturn($user);
+        $pending = $this->createPendingSessionWithRememberMe($user->getId(), '+5 minutes', true);
+        $session = new IssuedSession('session-id', 'access-token', 'refresh-token');
+        $this->pendingTwoFactorRepository->method('findById')
+            ->willReturn($pending);
+        $this->userRepository->method('findById')
+            ->willReturn($user);
         $this->codeVerifier->method('resolveVerificationMethod')->willReturn('totp');
-
-        $this->sessionIssuanceService
-            ->expects($this->once())
-            ->method('issue')
-            ->with($user, $this->anything(), $this->anything(), true, $this->anything())
-            ->willReturn(new IssuedSession('session-id', 'access-token', 'refresh-token'));
-
+        $this->configureRememberMeIssuanceOnce($user, $session);
         $this->pendingTwoFactorRepository->method('delete');
         $this->eventPublisher->method('publishCompleted');
-
-        $handler = $this->createHandler();
-        $command = new CompleteTwoFactorCommand(
-            $pendingSession->getId(),
+        $command = $this->invokeHandlerWith(
+            $pending->getId(),
             '123456',
             $this->faker->ipv4(),
             $this->faker->userAgent()
         );
-
-        $handler->__invoke($command);
-
         $this->assertTrue($command->getResponse()->isRememberMe());
     }
 
     public function testInvokeCompletesTwoFactorWithRecoveryCodeAndIssuesTokens(): void
     {
         $user = $this->createTwoFactorEnabledUser();
-        $pendingSession = $this->createPendingSession($user->getId(), '+5 minutes');
-        $ipAddress = $this->faker->ipv4();
-        $userAgent = $this->faker->userAgent();
-        $sessionId = 'test-session-id';
-
-        $this->pendingTwoFactorRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with($pendingSession->getId())
-            ->willReturn($pendingSession);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with($user->getId())
-            ->willReturn($user);
-
-        $this->codeVerifier
-            ->expects($this->once())
-            ->method('resolveVerificationMethod')
-            ->with($user, 'AB12-CD34')
-            ->willReturn('recovery_code');
-
-        $this->codeVerifier
-            ->expects($this->once())
-            ->method('countRemainingCodes')
-            ->with($user->getId())
-            ->willReturn(0);
-
-        $this->sessionIssuanceService
-            ->expects($this->once())
-            ->method('issue')
-            ->willReturn(new IssuedSession($sessionId, 'issued-access-token', str_repeat('a', 43)));
-
-        $this->pendingTwoFactorRepository
-            ->expects($this->once())
-            ->method('delete')
-            ->with($pendingSession);
-
-        $this->eventPublisher
-            ->expects($this->once())
-            ->method('publishRecoveryCodeUsed')
-            ->with($user->getId(), 0);
-
-        $this->eventPublisher
-            ->expects($this->once())
-            ->method('publishCompleted')
-            ->with($user->getId(), $sessionId, $ipAddress, $userAgent, 'recovery_code');
-
-        $handler = $this->createHandler();
-        $command = new CompleteTwoFactorCommand(
-            $pendingSession->getId(),
-            'AB12-CD34',
-            $ipAddress,
-            $userAgent
-        );
-
-        $handler->__invoke($command);
-
-        $this->assertSame('issued-access-token', $command->getResponse()->getAccessToken());
-        $this->assertNotEmpty($command->getResponse()->getRefreshToken());
-        $this->assertSame(0, $command->getResponse()->getRecoveryCodesRemaining());
-        $this->assertSame(
-            'All recovery codes have been used. Regenerate immediately.',
-            $command->getResponse()->getWarningMessage()
-        );
+        $pending = $this->createPendingSession($user->getId(), '+5 minutes');
+        $ip = $this->faker->ipv4();
+        $ua = $this->faker->userAgent();
+        $session = new IssuedSession('test-session-id', 'issued-access-token', str_repeat('a', 43));
+        $this->configureLookupsOnce($pending, $user);
+        $this->configureRecoveryVerificationOnce($user, 'AB12-CD34', 0);
+        $this->sessionIssuanceService->expects($this->once())
+            ->method('issue')->willReturn($session);
+        $this->pendingTwoFactorRepository->expects($this->once())->method('delete')->with($pending);
+        $this->configureRecoveryEventExpectations($user->getId(), 0, 'test-session-id', $ip, $ua);
+        $command = $this->invokeHandlerWith($pending->getId(), 'AB12-CD34', $ip, $ua);
+        $this->assertZeroRemainingCodesResponse($command, 'issued-access-token');
     }
 
     public function testInvokeUsesLaterUnusedRecoveryCodeWhenEarlierCodeIsUsed(): void
     {
         $user = $this->createTwoFactorEnabledUser();
-        $pendingSession = $this->createPendingSession($user->getId(), '+5 minutes');
-
-        $this->pendingTwoFactorRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->willReturn($pendingSession);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->willReturn($user);
-
-        $this->codeVerifier
-            ->expects($this->once())
-            ->method('resolveVerificationMethod')
-            ->with($user, 'CC33-DD44')
-            ->willReturn('recovery_code');
-
-        $this->codeVerifier
-            ->expects($this->once())
-            ->method('countRemainingCodes')
-            ->willReturn(1);
-
-        $this->sessionIssuanceService
-            ->method('issue')
-            ->willReturn(new IssuedSession('session-id', 'test-access-token', 'refresh-token'));
-
+        $pending = $this->createPendingSession($user->getId(), '+5 minutes');
+        $this->configureLookupsOnce($pending, $user);
+        $this->configureRecoveryVerificationOnce($user, 'CC33-DD44', 1);
+        $this->sessionIssuanceService->method('issue')->willReturn(
+            new IssuedSession('session-id', 'test-access-token', 'refresh-token')
+        );
         $this->pendingTwoFactorRepository->method('delete');
         $this->eventPublisher->method('publishRecoveryCodeUsed');
         $this->eventPublisher->method('publishCompleted');
-
-        $handler = $this->createHandler();
-        $command = new CompleteTwoFactorCommand(
-            $pendingSession->getId(),
+        $command = $this->invokeHandlerWith(
+            $pending->getId(),
             'CC33-DD44',
             $this->faker->ipv4(),
             $this->faker->userAgent()
         );
-
-        $handler->__invoke($command);
-
         $this->assertSame('test-access-token', $command->getResponse()->getAccessToken());
     }
 
     public function testRecoveryCodeSignInIncludesWarningWhenFewCodesRemain(): void
     {
         $user = $this->createTwoFactorEnabledUser();
-        $pendingSession = $this->createPendingSession($user->getId(), '+5 minutes');
-
-        $this->pendingTwoFactorRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->willReturn($pendingSession);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->willReturn($user);
-
-        $this->codeVerifier
-            ->expects($this->once())
-            ->method('resolveVerificationMethod')
-            ->willReturn('recovery_code');
-
-        $this->codeVerifier
-            ->expects($this->once())
-            ->method('countRemainingCodes')
-            ->willReturn(2);
-
-        $this->sessionIssuanceService
-            ->method('issue')
-            ->willReturn(new IssuedSession('session-id', 'access-token', 'refresh-token'));
-
-        $publishedRecoveryEvents = [];
-        $this->eventPublisher
-            ->method('publishRecoveryCodeUsed')
-            ->willReturnCallback(static function (string $userId, int $remaining) use (&$publishedRecoveryEvents): void {
-                $publishedRecoveryEvents[] = $remaining;
-            });
-
+        $pending = $this->createPendingSession($user->getId(), '+5 minutes');
+        $this->configureLookupsOnce($pending, $user);
+        $this->configureRecoveryVerificationOnce($user, 'AB12-CD34', 2);
+        $session = new IssuedSession('session-id', 'access-token', 'refresh-token');
+        $this->sessionIssuanceService->method('issue')->willReturn($session);
+        $published = [];
+        $this->captureRecoveryCodeEvents($published);
         $this->pendingTwoFactorRepository->method('delete');
         $this->eventPublisher->method('publishCompleted');
-
-        $handler = $this->createHandler();
-        $command = new CompleteTwoFactorCommand(
-            $pendingSession->getId(),
-            'AB12-CD34',
-            $this->faker->ipv4(),
-            $this->faker->userAgent()
-        );
-
-        $handler->__invoke($command);
-
+        $ip = $this->faker->ipv4();
+        $ua = $this->faker->userAgent();
+        $command = $this->invokeHandlerWith($pending->getId(), 'AB12-CD34', $ip, $ua);
         $this->assertSame(2, $command->getResponse()->getRecoveryCodesRemaining());
-        $this->assertStringContainsString(
-            '2',
-            (string) $command->getResponse()->getWarningMessage()
-        );
-        $this->assertSame([2], $publishedRecoveryEvents);
+        $warning = (string) $command->getResponse()->getWarningMessage();
+        $this->assertStringContainsString('2', $warning);
+        $this->assertSame([2], $published);
     }
 
     public function testRecoveryCodeSignInWithoutWarningWhenManyCodesRemain(): void
     {
         $user = $this->createTwoFactorEnabledUser();
-        $pendingSession = $this->createPendingSession($user->getId(), '+5 minutes');
-
-        $this->pendingTwoFactorRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->willReturn($pendingSession);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->willReturn($user);
-
-        $this->codeVerifier
-            ->expects($this->once())
-            ->method('resolveVerificationMethod')
-            ->willReturn('recovery_code');
-
-        $this->codeVerifier
-            ->expects($this->once())
-            ->method('countRemainingCodes')
-            ->willReturn(5);
-
-        $publishedRecoveryEvents = [];
-        $this->eventPublisher
-            ->method('publishRecoveryCodeUsed')
-            ->willReturnCallback(static function (string $userId, int $remaining) use (&$publishedRecoveryEvents): void {
-                $publishedRecoveryEvents[] = $remaining;
-            });
-
-        $this->sessionIssuanceService
-            ->method('issue')
-            ->willReturn(new IssuedSession('session-id', 'access-token', 'refresh-token'));
-
+        $pending = $this->createPendingSession($user->getId(), '+5 minutes');
+        $this->configureLookupsOnce($pending, $user);
+        $this->configureRecoveryVerificationOnce($user, 'AB12-CD34', 5);
+        $published = [];
+        $this->captureRecoveryCodeEvents($published);
+        $this->sessionIssuanceService->method('issue')->willReturn(
+            new IssuedSession('session-id', 'access-token', 'refresh-token')
+        );
         $this->pendingTwoFactorRepository->method('delete');
         $this->eventPublisher->method('publishCompleted');
-
-        $handler = $this->createHandler();
-        $command = new CompleteTwoFactorCommand(
-            $pendingSession->getId(),
+        $command = $this->invokeHandlerWith(
+            $pending->getId(),
             'AB12-CD34',
             $this->faker->ipv4(),
             $this->faker->userAgent()
         );
-
-        $handler->__invoke($command);
-
         $this->assertNull($command->getResponse()->getRecoveryCodesRemaining());
         $this->assertNull($command->getResponse()->getWarningMessage());
-        $this->assertSame([5], $publishedRecoveryEvents);
+        $this->assertSame([5], $published);
     }
 
     public function testTotpSignInDoesNotIncludeRecoveryCodeInfo(): void
     {
         $user = $this->createTwoFactorEnabledUser();
-        $pendingSession = $this->createPendingSession($user->getId(), '+5 minutes');
-
-        $this->pendingTwoFactorRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->willReturn($pendingSession);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->willReturn($user);
-
-        $this->codeVerifier
-            ->expects($this->once())
-            ->method('resolveVerificationMethod')
-            ->willReturn('totp');
-
-        $this->codeVerifier
-            ->expects($this->never())
-            ->method('countRemainingCodes');
-
-        $this->sessionIssuanceService
-            ->method('issue')
-            ->willReturn(new IssuedSession('session-id', 'access-token', 'refresh-token'));
-
-        $this->eventPublisher
-            ->expects($this->once())
-            ->method('publishCompleted')
+        $pending = $this->createPendingSession($user->getId(), '+5 minutes');
+        $this->configureLookupsOnce($pending, $user);
+        $this->configureVerificationOnce($user, '123456', 'totp');
+        $this->codeVerifier->expects($this->never())->method('countRemainingCodes');
+        $this->sessionIssuanceService->method('issue')->willReturn(
+            new IssuedSession('session-id', 'access-token', 'refresh-token')
+        );
+        $this->eventPublisher->expects($this->once())->method('publishCompleted')
             ->with($user->getId(), 'session-id', $this->anything(), $this->anything(), 'totp');
-
-        $this->eventPublisher
-            ->expects($this->never())
-            ->method('publishRecoveryCodeUsed');
-
+        $this->eventPublisher->expects($this->never())->method('publishRecoveryCodeUsed');
         $this->pendingTwoFactorRepository->method('delete');
-
-        $handler = $this->createHandler();
-        $command = new CompleteTwoFactorCommand(
-            $pendingSession->getId(),
+        $command = $this->invokeHandlerWith(
+            $pending->getId(),
             '123456',
             $this->faker->ipv4(),
             $this->faker->userAgent()
         );
-
-        $handler->__invoke($command);
-
         $this->assertNull($command->getResponse()->getRecoveryCodesRemaining());
         $this->assertNull($command->getResponse()->getWarningMessage());
     }
@@ -433,41 +203,168 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
     public function testTotpSignInFallsBackToStoredSecretWhenDecryptFails(): void
     {
         $user = $this->createTwoFactorEnabledUser();
-        $pendingSession = $this->createPendingSession($user->getId(), '+5 minutes');
-
-        $this->pendingTwoFactorRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->willReturn($pendingSession);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->willReturn($user);
-
-        $this->codeVerifier
-            ->expects($this->once())
-            ->method('resolveVerificationMethod')
-            ->willReturn('totp');
-
-        $this->sessionIssuanceService
-            ->method('issue')
-            ->willReturn(new IssuedSession('session-id', 'test-access-token', 'refresh-token'));
-
+        $pending = $this->createPendingSession($user->getId(), '+5 minutes');
+        $this->configureLookupsOnce($pending, $user);
+        $this->configureVerificationOnce($user, '123456', 'totp');
+        $this->sessionIssuanceService->method('issue')->willReturn(
+            new IssuedSession('session-id', 'test-access-token', 'refresh-token')
+        );
         $this->eventPublisher->method('publishCompleted');
         $this->pendingTwoFactorRepository->method('delete');
-
-        $handler = $this->createHandler();
-        $command = new CompleteTwoFactorCommand(
-            $pendingSession->getId(),
+        $command = $this->invokeHandlerWith(
+            $pending->getId(),
             '123456',
             $this->faker->ipv4(),
             $this->faker->userAgent()
         );
-
-        $handler->__invoke($command);
-
         $this->assertSame('test-access-token', $command->getResponse()->getAccessToken());
+    }
+
+    private function configureLookupsOnce(PendingTwoFactor $pending, User $user): void
+    {
+        $this->pendingTwoFactorRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($pending->getId())
+            ->willReturn($pending);
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($user->getId())
+            ->willReturn($user);
+    }
+
+    private function configureVerificationOnce(User $user, string $code, string $method): void
+    {
+        $this->codeVerifier
+            ->expects($this->once())
+            ->method('resolveVerificationMethod')
+            ->with($user, $code)
+            ->willReturn($method);
+    }
+
+    private function configureRecoveryVerificationOnce(
+        User $user,
+        string $code,
+        int $remaining
+    ): void {
+        $this->configureVerificationOnce($user, $code, 'recovery_code');
+        $this->codeVerifier
+            ->expects($this->once())
+            ->method('countRemainingCodes')
+            ->with($user->getId())
+            ->willReturn($remaining);
+    }
+
+    private function configureIssuanceOnce(
+        User $user,
+        string $ipAddress,
+        string $userAgent,
+        bool $rememberMe,
+        IssuedSession $session
+    ): void {
+        $this->sessionIssuanceService
+            ->expects($this->once())
+            ->method('issue')
+            ->with(
+                $user,
+                $ipAddress,
+                $userAgent,
+                $rememberMe,
+                $this->isInstanceOf(DateTimeImmutable::class)
+            )
+            ->willReturn($session);
+    }
+
+    private function configureRememberMeIssuanceOnce(User $user, IssuedSession $session): void
+    {
+        $this->sessionIssuanceService
+            ->expects($this->once())
+            ->method('issue')
+            ->with($user, $this->anything(), $this->anything(), true, $this->anything())
+            ->willReturn($session);
+    }
+
+    private function configureTotpEventExpectations(
+        string $userId,
+        string $sessionId,
+        string $ipAddress,
+        string $userAgent
+    ): void {
+        $this->eventPublisher
+            ->expects($this->never())
+            ->method('publishRecoveryCodeUsed');
+        $this->eventPublisher
+            ->expects($this->once())
+            ->method('publishCompleted')
+            ->with($userId, $sessionId, $ipAddress, $userAgent, 'totp');
+    }
+
+    private function configureRecoveryEventExpectations(
+        string $userId,
+        int $remainingCodes,
+        string $sessionId,
+        string $ipAddress,
+        string $userAgent
+    ): void {
+        $this->eventPublisher
+            ->expects($this->once())
+            ->method('publishRecoveryCodeUsed')
+            ->with($userId, $remainingCodes);
+        $this->eventPublisher
+            ->expects($this->once())
+            ->method('publishCompleted')
+            ->with($userId, $sessionId, $ipAddress, $userAgent, 'recovery_code');
+    }
+
+    /**
+     * @param array<int, int> $published
+     */
+    private function captureRecoveryCodeEvents(array &$published): void
+    {
+        $this->eventPublisher->method('publishRecoveryCodeUsed')->willReturnCallback(
+            static function (string $userId, int $remaining) use (&$published): void {
+                $published[] = $remaining;
+            }
+        );
+    }
+
+    private function invokeHandlerWith(
+        string $pendingId,
+        string $code,
+        string $ipAddress,
+        string $userAgent
+    ): CompleteTwoFactorCommand {
+        $handler = $this->createHandler();
+        $command = new CompleteTwoFactorCommand($pendingId, $code, $ipAddress, $userAgent);
+        $handler->__invoke($command);
+        return $command;
+    }
+
+    private function assertTokensIssued(
+        CompleteTwoFactorCommand $command,
+        string $expectedAccess,
+        string $expectedRefresh
+    ): void {
+        $this->assertSame($expectedAccess, $command->getResponse()->getAccessToken());
+        $this->assertSame($expectedRefresh, $command->getResponse()->getRefreshToken());
+        $this->assertNotSame(
+            $command->getResponse()->getAccessToken(),
+            $command->getResponse()->getRefreshToken()
+        );
+    }
+
+    private function assertZeroRemainingCodesResponse(
+        CompleteTwoFactorCommand $command,
+        string $expectedAccess
+    ): void {
+        $this->assertSame($expectedAccess, $command->getResponse()->getAccessToken());
+        $this->assertNotEmpty($command->getResponse()->getRefreshToken());
+        $this->assertSame(0, $command->getResponse()->getRecoveryCodesRemaining());
+        $this->assertSame(
+            'All recovery codes have been used. Regenerate immediately.',
+            $command->getResponse()->getWarningMessage()
+        );
     }
 
     private function createHandler(): CompleteTwoFactorCommandHandler

@@ -99,7 +99,7 @@ final class PasswordResetTokenFactoryTest extends UnitTestCase
     }
 
     /**
-     * @psalm-return \Generator<'full day'|'one hour'|'two hours', list{16|32, 1|2|24}, mixed, void>
+     * @psalm-return \Generator<'full day'|'one hour'|'two hours', list{16|32, 1|2|24}, void, void>
      */
     public static function expirationProvider(): \Generator
     {

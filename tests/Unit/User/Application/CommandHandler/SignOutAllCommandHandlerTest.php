@@ -26,7 +26,8 @@ final class SignOutAllCommandHandlerTest extends UnitTestCase
     {
         parent::setUp();
         $this->sessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
-        $this->refreshTokenRepository = $this->createMock(AuthRefreshTokenRepositoryInterface::class);
+        $this->refreshTokenRepository =
+            $this->createMock(AuthRefreshTokenRepositoryInterface::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->handler = new SignOutAllCommandHandler(
             $this->sessionRepository,
@@ -38,109 +39,96 @@ final class SignOutAllCommandHandlerTest extends UnitTestCase
     public function testInvokeRevokesAllSessionsAndTokens(): void
     {
         $userId = $this->faker->uuid();
-        $command = new SignOutAllCommand($userId);
+        $session1 = $this->createActiveSessionMock($this->faker->uuid());
+        $session2 = $this->createActiveSessionMock($this->faker->uuid());
+        $this->expectFindSessions($userId, [$session1, $session2]);
+        $this->sessionRepository->expects($this->exactly(2))->method('save');
+        $this->refreshTokenRepository->expects($this->exactly(2))->method('revokeBySessionId');
+        $this->expectRevokedEvent($userId, 'user_initiated', 2);
 
-        $session1 = $this->createMock(AuthSession::class);
-        $session2 = $this->createMock(AuthSession::class);
-        $sessions = [$session1, $session2];
-
-        $this->sessionRepository->expects($this->once())
-            ->method('findByUserId')
-            ->with($userId)
-            ->willReturn($sessions);
-
-        $session1->expects($this->once())
-            ->method('isRevoked')
-            ->willReturn(false);
-        $session1->expects($this->once())
-            ->method('revoke');
-        $session1->expects($this->once())
-            ->method('getId')
-            ->willReturn($this->faker->uuid());
-
-        $session2->expects($this->once())
-            ->method('isRevoked')
-            ->willReturn(false);
-        $session2->expects($this->once())
-            ->method('revoke');
-        $session2->expects($this->once())
-            ->method('getId')
-            ->willReturn($this->faker->uuid());
-
-        $this->sessionRepository->expects($this->exactly(2))
-            ->method('save');
-
-        $this->refreshTokenRepository->expects($this->exactly(2))
-            ->method('revokeBySessionId');
-
-        $this->eventBus->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(static function (AllSessionsRevokedEvent $event) use ($userId) {
-                return $event->userId === $userId
-                    && $event->reason === 'user_initiated'
-                    && $event->revokedCount === 2;
-            }));
-
-        $this->handler->__invoke($command);
+        $this->handler->__invoke(new SignOutAllCommand($userId));
     }
 
     public function testInvokeRevokesRefreshTokensForAlreadyRevokedSessions(): void
     {
         $userId = $this->faker->uuid();
-        $command = new SignOutAllCommand($userId);
+        $activeSessionId = $this->faker->uuid();
+        $revokedSessionId = $this->faker->uuid();
+        $activeSession = $this->createActiveSessionMock($activeSessionId);
+        $revokedSession = $this->createRevokedSessionMock($revokedSessionId);
+        $this->expectFindSessions($userId, [$activeSession, $revokedSession]);
+        $this->sessionRepository->expects($this->once())->method('save')->with($activeSession);
+        $capturedIds = [];
+        $this->expectRefreshTokenRevocation(2, $capturedIds);
+        $this->expectRevokedEvent($userId, 'user_initiated', 1);
 
-        $activeSession = $this->createMock(AuthSession::class);
-        $revokedSession = $this->createMock(AuthSession::class);
-        $sessions = [$activeSession, $revokedSession];
+        $this->handler->__invoke(new SignOutAllCommand($userId));
 
+        self::assertSame([$activeSessionId, $revokedSessionId], $capturedIds);
+    }
+
+    private function createActiveSessionMock(
+        string $sessionId
+    ): AuthSession&MockObject {
+        $session = $this->createMock(AuthSession::class);
+        $session->expects($this->once())->method('isRevoked')->willReturn(false);
+        $session->expects($this->once())->method('revoke');
+        $session->expects($this->once())->method('getId')->willReturn($sessionId);
+
+        return $session;
+    }
+
+    private function createRevokedSessionMock(
+        string $sessionId
+    ): AuthSession&MockObject {
+        $session = $this->createMock(AuthSession::class);
+        $session->expects($this->once())->method('isRevoked')->willReturn(true);
+        $session->expects($this->never())->method('revoke');
+        $session->expects($this->once())->method('getId')->willReturn($sessionId);
+
+        return $session;
+    }
+
+    /**
+     * @param array<AuthSession&MockObject> $sessions
+     */
+    private function expectFindSessions(string $userId, array $sessions): void
+    {
         $this->sessionRepository->expects($this->once())
             ->method('findByUserId')
             ->with($userId)
             ->willReturn($sessions);
+    }
 
-        $activeSessionId = $this->faker->uuid();
-        $activeSession->expects($this->once())
-            ->method('isRevoked')
-            ->willReturn(false);
-        $activeSession->expects($this->once())
-            ->method('revoke');
-        $activeSession->expects($this->once())
-            ->method('getId')
-            ->willReturn($activeSessionId);
-
-        $revokedSessionId = $this->faker->uuid();
-        $revokedSession->expects($this->once())
-            ->method('isRevoked')
-            ->willReturn(true);
-        $revokedSession->expects($this->never())
-            ->method('revoke');
-        $revokedSession->expects($this->once())
-            ->method('getId')
-            ->willReturn($revokedSessionId);
-
-        $this->sessionRepository->expects($this->once())
-            ->method('save')
-            ->with($activeSession);
-
-        $revokedRefreshTokenSessionIds = [];
-        $this->refreshTokenRepository->expects($this->exactly(2))
-            ->method('revokeBySessionId')
-            ->willReturnCallback(static function (string $sessionId) use (&$revokedRefreshTokenSessionIds): void {
-                $revokedRefreshTokenSessionIds[] = $sessionId;
-            });
-
+    private function expectRevokedEvent(
+        string $userId,
+        string $reason,
+        int $count
+    ): void {
         $this->eventBus->expects($this->once())
             ->method('publish')
-            ->with($this->callback(static function (AllSessionsRevokedEvent $event) use ($userId) {
-                return $event->userId === $userId
-                    && $event->revokedCount === 1;
-            }));
+            ->with($this->callback(
+                static function (AllSessionsRevokedEvent $event) use ($userId, $reason, $count) {
+                    return $event->userId === $userId
+                        && $event->reason === $reason
+                        && $event->revokedCount === $count;
+                }
+            ));
+    }
 
-        $this->handler->__invoke($command);
-
-        self::assertSame(
-            [$activeSessionId, $revokedSessionId],
-            $revokedRefreshTokenSessionIds
-        );
+    /**
+     * @param array<string> $capturedIds
+     */
+    private function expectRefreshTokenRevocation(
+        int $count,
+        array &$capturedIds
+    ): void {
+        $this->refreshTokenRepository->expects($this->exactly($count))
+            ->method('revokeBySessionId')
+            ->willReturnCallback(
+                static function (string $sessionId) use (&$capturedIds): void {
+                    $capturedIds[] = $sessionId;
+                }
+            );
     }
 }

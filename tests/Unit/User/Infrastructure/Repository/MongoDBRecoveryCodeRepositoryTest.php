@@ -104,34 +104,35 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
     public function testDeleteByUserId(): void
     {
         $userId = $this->faker->uuid();
-        $codes = [
-            $this->createRecoveryCode(),
-            $this->createRecoveryCode(),
-        ];
+        $codes = [$this->createRecoveryCode(), $this->createRecoveryCode()];
+        $repository = $this->createMockRepositoryWithFindByUserId($userId, $codes);
+        $this->documentManager
+            ->expects($this->exactly(2))
+            ->method('remove');
+        $this->documentManager
+            ->expects($this->once())
+            ->method('flush');
+        $result = $repository->deleteByUserId($userId);
+        $this->assertSame(2, $result);
+    }
 
-        $repositoryClass = MongoDBRecoveryCodeRepository::class;
-        $repository = $this->getMockBuilder($repositoryClass)
-            ->setConstructorArgs(
-                [$this->documentManager, $this->registry]
-            )
+    /**
+     * @param array<RecoveryCode> $codes
+     */
+    private function createMockRepositoryWithFindByUserId(
+        string $userId,
+        array $codes
+    ): MongoDBRecoveryCodeRepository {
+        $repository = $this->getMockBuilder(MongoDBRecoveryCodeRepository::class)
+            ->setConstructorArgs([$this->documentManager, $this->registry])
             ->onlyMethods(['findByUserId'])
             ->getMock();
-
         $repository->expects($this->once())
             ->method('findByUserId')
             ->with($userId)
             ->willReturn($codes);
 
-        $this->documentManager
-            ->expects($this->exactly(2))
-            ->method('remove');
-
-        $this->documentManager
-            ->expects($this->once())
-            ->method('flush');
-
-        $result = $repository->deleteByUserId($userId);
-        $this->assertSame(2, $result);
+        return $repository;
     }
 
     private function createRecoveryCode(): RecoveryCode

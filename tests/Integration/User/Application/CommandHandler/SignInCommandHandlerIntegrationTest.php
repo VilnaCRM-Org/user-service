@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\User\Application\CommandHandler;
 
-use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Domain\Factory\UuidFactoryInterface;
+use App\Tests\Integration\JwtPayloadDecoder;
 use App\Tests\Integration\User\UserIntegrationTestCase;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\CommandHandler\SignInCommandHandler;
-use App\User\Application\Factory\AuthTokenFactoryInterface;
-use App\User\Domain\Contract\AccessTokenGeneratorInterface;
-use App\User\Domain\Contract\AccountLockoutServiceInterface;
+use App\User\Application\Service\SessionIssuanceServiceInterface;
+use App\User\Application\Service\SignInEventPublisherInterface;
+use App\User\Application\Service\UserAuthenticationServiceInterface;
 use App\User\Domain\Contract\PasswordHasherInterface;
+use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
 
 final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
@@ -28,126 +28,108 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
     private UserRepositoryInterface $userRepository;
     private PasswordHasherInterface $passwordHasher;
     private UuidFactoryInterface $uuidFactory;
-    private PasswordHasherFactoryInterface $hasherFactory;
-    private AccessTokenGeneratorInterface $accessTokenGenerator;
-    private AuthTokenFactoryInterface $authTokenFactory;
-    private UlidFactory $ulidFactory;
-    private EventBusInterface $eventBus;
     private AuthSessionRepositoryInterface $authSessionRepository;
     private AuthRefreshTokenRepositoryInterface $authRefreshTokenRepository;
     private PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository;
+    private UserAuthenticationServiceInterface $authService;
+    private SessionIssuanceServiceInterface $sessionIssuanceService;
+    private SignInEventPublisherInterface $signInEventPublisher;
+    private UlidFactory $ulidFactory;
+    private EventBusInterface $eventBus;
 
     #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->userFactory = $this->container->get(UserFactoryInterface::class);
         $this->userRepository = $this->container->get(UserRepositoryInterface::class);
         $this->passwordHasher = $this->container->get(PasswordHasherInterface::class);
         $this->uuidFactory = $this->container->get(UuidFactoryInterface::class);
-        $this->hasherFactory = $this->container->get(PasswordHasherFactoryInterface::class);
-        $this->accessTokenGenerator = $this->container->get(AccessTokenGeneratorInterface::class);
-        $this->authTokenFactory = $this->container->get(AuthTokenFactoryInterface::class);
+        $this->authSessionRepository = $this->container
+            ->get(AuthSessionRepositoryInterface::class);
+        $this->authRefreshTokenRepository = $this->container
+            ->get(AuthRefreshTokenRepositoryInterface::class);
+        $this->pendingTwoFactorRepository = $this->container
+            ->get(PendingTwoFactorRepositoryInterface::class);
+        $this->authService = $this->container
+            ->get(UserAuthenticationServiceInterface::class);
+        $this->sessionIssuanceService = $this->container
+            ->get(SessionIssuanceServiceInterface::class);
+        $this->signInEventPublisher = $this->container->get(SignInEventPublisherInterface::class);
         $this->ulidFactory = $this->container->get(UlidFactory::class);
-        $this->eventBus = new class() implements EventBusInterface {
-            #[\Override]
-            public function publish(DomainEvent ...$events): void
-            {
-            }
-        };
-        $this->authSessionRepository = $this->container->get(AuthSessionRepositoryInterface::class);
-        $this->authRefreshTokenRepository = $this->container->get(AuthRefreshTokenRepositoryInterface::class);
-        $this->pendingTwoFactorRepository = $this->container->get(PendingTwoFactorRepositoryInterface::class);
+        $this->eventBus = $this->container->get(EventBusInterface::class);
     }
 
     public function testInvokePerformsFullSignInFlowAndPersistsSessionData(): void
     {
-        $email = $this->faker->email();
         $plainPassword = $this->faker->password();
-        $userId = $this->faker->uuid();
-        $initials = strtoupper($this->faker->lexify('??'));
-
-        $user = $this->userFactory->create(
-            $email,
-            $initials,
-            $this->passwordHasher->hash($plainPassword),
-            $this->uuidFactory->create($userId)
-        );
-        $this->userRepository->save($user);
-
+        $user = $this->createAndSaveUser($plainPassword);
         $ipAddress = $this->faker->ipv4();
         $userAgent = $this->faker->userAgent();
-
-        $signInCommandHandler = new SignInCommandHandler(
-            $this->userRepository,
-            $this->authSessionRepository,
-            $this->authRefreshTokenRepository,
-            $this->pendingTwoFactorRepository,
-            $this->hasherFactory,
-            $this->container->get(AccountLockoutServiceInterface::class),
-            $this->accessTokenGenerator,
-            $this->authTokenFactory,
-            $this->eventBus,
-            $this->ulidFactory,
+        $command = new SignInCommand(
+            $user->getEmail(),
+            $plainPassword,
+            false,
+            $ipAddress,
+            $userAgent
         );
-
-        $command = new SignInCommand($email, $plainPassword, false, $ipAddress, $userAgent);
-        $signInCommandHandler->__invoke($command);
+        $this->createSignInHandler()->__invoke($command);
         $response = $command->getResponse();
-
         $this->assertFalse($response->isTwoFactorEnabled());
         $this->assertNotEmpty($response->getAccessToken());
         $this->assertNotEmpty($response->getRefreshToken());
+        $this->assertSessionAndTokenPersistence($command, $user, $ipAddress, $userAgent);
+    }
 
-        $accessTokenPayload = $this->decodeJwtPayload($response->getAccessToken());
-        $this->assertSame($user->getId(), $accessTokenPayload['sub'] ?? null);
+    private function createAndSaveUser(string $plainPassword): User
+    {
+        $user = $this->userFactory->create(
+            $this->faker->email(),
+            strtoupper($this->faker->lexify('??')),
+            $this->passwordHasher->hash($plainPassword),
+            $this->uuidFactory->create($this->faker->uuid())
+        );
+        $this->userRepository->save($user);
 
-        $sessionId = (string) ($accessTokenPayload['sid'] ?? '');
+        return $user;
+    }
+
+    private function createSignInHandler(): SignInCommandHandler
+    {
+        return new SignInCommandHandler(
+            $this->authService,
+            $this->sessionIssuanceService,
+            $this->signInEventPublisher,
+            $this->pendingTwoFactorRepository,
+            $this->ulidFactory,
+        );
+    }
+
+    private function assertSessionAndTokenPersistence(
+        SignInCommand $command,
+        User $user,
+        string $ipAddress,
+        string $userAgent
+    ): void {
+        $response = $command->getResponse();
+        $payload = JwtPayloadDecoder::decode($response->getAccessToken());
+        $this->assertSame($user->getId(), $payload['sub'] ?? null);
+        $sessionId = (string) ($payload['sid'] ?? '');
         $this->assertNotSame('', $sessionId);
-
         $session = $this->authSessionRepository->findById($sessionId);
         $this->assertNotNull($session);
         $this->assertSame($user->getId(), $session->getUserId());
         $this->assertSame($ipAddress, $session->getIpAddress());
         $this->assertSame($userAgent, $session->getUserAgent());
         $this->assertFalse($session->isRememberMe());
-
-        $refreshTokenHash = hash('sha256', $response->getRefreshToken());
-        $refreshToken = $this->authRefreshTokenRepository->findByTokenHash($refreshTokenHash);
-        $this->assertNotNull($refreshToken);
-        $this->assertSame($sessionId, $refreshToken->getSessionId());
+        $this->assertRefreshTokenPersisted($response->getRefreshToken(), $sessionId);
     }
 
-    /**
-     * @return array<string, array<string>|int|string>
-     */
-    private function decodeJwtPayload(string $jwt): array
+    private function assertRefreshTokenPersisted(string $refreshToken, string $sessionId): void
     {
-        $parts = explode('.', $jwt);
-        if (count($parts) !== 3) {
-            return [];
-        }
-
-        $payload = $this->base64UrlDecode($parts[1]);
-        if ($payload === '') {
-            return [];
-        }
-
-        $decoded = json_decode($payload, true);
-
-        return is_array($decoded) ? $decoded : [];
-    }
-
-    private function base64UrlDecode(string $input): string
-    {
-        $remainder = strlen($input) % 4;
-        if ($remainder > 0) {
-            $input .= str_repeat('=', 4 - $remainder);
-        }
-
-        $decoded = base64_decode(strtr($input, '-_', '+/'), true);
-
-        return is_string($decoded) ? $decoded : '';
+        $hash = hash('sha256', $refreshToken);
+        $token = $this->authRefreshTokenRepository->findByTokenHash($hash);
+        $this->assertNotNull($token);
+        $this->assertSame($sessionId, $token->getSessionId());
     }
 }

@@ -166,28 +166,8 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
             $currentSessionId
         );
         $this->expectCurrentSessionId($currentSessionId);
-
-        $this->getUserQueryHandler->expects($this->once())
-            ->method('handle')
-            ->with($userId)
-            ->willReturn($user);
-
-        $this->mockUpdateUserCommandFactory->expects($this->once())
-            ->method('create')
-            ->with(
-                $user,
-                $this->callback(function (UserUpdate $actual) use ($updateData) {
-                    $this->assertSame($updateData->newEmail, $actual->newEmail);
-                    $this->assertSame($updateData->newInitials, $actual->newInitials);
-                    $this->assertSame($updateData->newPassword, $actual->newPassword);
-                    $this->assertSame($updateData->oldPassword, $actual->oldPassword);
-
-                    return true;
-                }),
-                $currentSessionId
-            )
-            ->willReturn($command);
-
+        $this->expectUserQuery($userId, $user);
+        $this->expectCommandCreation($user, $updateData, $currentSessionId, $command);
         $this->commandBus->expects($this->once())->method('dispatch')->with($command);
     }
 
@@ -197,7 +177,6 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
         $initials = $this->faker->name();
         $password = $this->faker->password();
         $userId = $this->faker->uuid();
-
         $user = $this->userFactory->create(
             $email,
             $initials,
@@ -274,18 +253,16 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
      */
     protected function createProcessTestData(): array
     {
-        $email = $this->faker->email();
-        $initials = $this->faker->name();
         $password = $this->faker->password();
-        $userId = $this->faker->uuid();
         $newPassword = $this->faker->password();
         $newInitials = $this->faker->name();
         $newEmail = $this->faker->email();
+        $userId = $this->faker->uuid();
         $uuid = $this->uuidTransformer->transformFromString($userId);
-
+        $email = $this->faker->email();
+        $name = $this->faker->name();
         $updateData = new UserUpdate($newEmail, $newInitials, $newPassword, $password);
-        $user = $this->userFactory->create($email, $initials, $password, $uuid);
-
+        $user = $this->userFactory->create($email, $name, $password, $uuid);
         return [
             'user' => $user,
             'updateData' => $updateData,
@@ -300,8 +277,9 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
     /**
      * @param array<string, string|UserInterface|UserUpdate> $testData
      */
-    protected function executeProcessWithNewData(array $testData): array|object|string|int|float|bool|null
-    {
+    protected function executeProcessWithNewData(
+        array $testData
+    ): array|object|string|int|float|bool|null {
         return $this->withRequest(
             [
                 'email' => $testData['newEmail'],
@@ -333,5 +311,36 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
         $this->security->expects($this->once())
             ->method('getToken')
             ->willReturn($token);
+    }
+
+    private function expectUserQuery(string $userId, UserInterface $user): void
+    {
+        $this->getUserQueryHandler->expects($this->once())
+            ->method('handle')
+            ->with($userId)
+            ->willReturn($user);
+    }
+
+    private function expectCommandCreation(
+        UserInterface $user,
+        UserUpdate $updateData,
+        string $currentSessionId,
+        mixed $command
+    ): void {
+        $this->mockUpdateUserCommandFactory->expects($this->once())
+            ->method('create')
+            ->with(
+                $user,
+                $this->callback(function (UserUpdate $actual) use ($updateData) {
+                    $this->assertSame($updateData->newEmail, $actual->newEmail);
+                    $this->assertSame($updateData->newInitials, $actual->newInitials);
+                    $this->assertSame($updateData->newPassword, $actual->newPassword);
+                    $this->assertSame($updateData->oldPassword, $actual->oldPassword);
+
+                    return true;
+                }),
+                $currentSessionId
+            )
+            ->willReturn($command);
     }
 }

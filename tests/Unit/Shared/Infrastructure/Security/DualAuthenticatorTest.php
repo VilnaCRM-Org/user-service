@@ -4,23 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Infrastructure\Security;
 
-use App\Shared\Infrastructure\Factory\UuidFactory as SharedUuidFactory;
-use App\Shared\Infrastructure\Security\AccessTokenPassportFactory;
-use App\Shared\Infrastructure\Security\AccessTokenUserResolver;
-use App\Shared\Infrastructure\Security\DualAuthenticator;
-use App\Shared\Infrastructure\Security\JwtAccessTokenParser;
-use App\Shared\Infrastructure\Security\PublicAccessMatcher;
-use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\AuthorizationUserDto;
-use App\User\Application\Transformer\UserTransformer;
-use App\User\Domain\Entity\AuthSession;
-use App\User\Domain\Entity\User;
-use App\User\Domain\Repository\AuthSessionRepositoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
-use DateTimeImmutable;
-use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
-use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
@@ -28,97 +12,38 @@ use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationExc
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
-final class DualAuthenticatorTest extends UnitTestCase
+final class DualAuthenticatorTest extends DualAuthenticatorTestCase
 {
-    use DualAuthenticatorAdditionalTestTrait;
-
-    private JWTEncoderInterface&MockObject $jwtEncoder;
-    private UserRepositoryInterface&MockObject $userRepository;
-    private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
-    private UserTransformer $userTransformer;
-
-    #[\Override]
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->jwtEncoder = $this->createMock(JWTEncoderInterface::class);
-        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
-        $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
-        $this->userTransformer = new UserTransformer(
-            new UuidTransformer(new SharedUuidFactory())
-        );
-    }
-
     public function testAuthenticateUsesBearerTokenAndResolvesUser(): void
     {
         $email = $this->faker->email();
         $tokenValue = $this->createJwtToken('RS256');
         $payload = $this->validPayload($email, ['ROLE_USER']);
         $user = $this->createDomainUser($email);
-
-        $this->jwtEncoder
-            ->expects($this->once())
-            ->method('decode')
-            ->with($tokenValue)
-            ->willReturn($payload);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
-        $this->authSessionRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with('sid-token')
-            ->willReturn($this->createActiveSession('sid-token'));
-
-        $request = Request::create('/api/users');
-        $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
-
-        $passport = $this->createAuthenticator()->authenticate($request);
-
+        $this->expectJwtDecode($tokenValue, $payload);
+        $this->expectUserAndSessionResolution($email, $user);
+        $passport = $this->createAuthenticator()->authenticate(
+            $this->createBearerRequest($tokenValue)
+        );
         $this->assertSame(['ROLE_USER'], $passport->getAttribute('roles'));
         $this->assertSame('sid-token', $passport->getAttribute('sid'));
-        $this->assertInstanceOf(
-            AuthorizationUserDto::class,
-            $passport->getUser()
-        );
+        $this->assertInstanceOf(AuthorizationUserDto::class, $passport->getUser());
         $this->assertSame($email, $passport->getUser()->getUserIdentifier());
     }
 
     public function testAuthenticateUsesCookieWhenBearerHeaderMissing(): void
     {
         $tokenValue = $this->createJwtToken('RS256');
-        $payload = $this->validPayload(
-            sprintf('service-%s', strtolower($this->faker->lexify('????'))),
-            ['ROLE_SERVICE']
-        );
-
-        $this->jwtEncoder
-            ->expects($this->once())
-            ->method('decode')
-            ->with($tokenValue)
-            ->willReturn($payload);
-
-        $this->userRepository
-            ->expects($this->never())
-            ->method('findByEmail')
-            ->with($payload['sub']);
-
-        $this->userRepository
-            ->expects($this->never())
-            ->method('findById');
-
+        $subject = sprintf('service-%s', strtolower($this->faker->lexify('????')));
+        $payload = $this->validPayload($subject, ['ROLE_SERVICE']);
+        $this->expectJwtDecode($tokenValue, $payload);
+        $this->userRepository->expects($this->never())->method('findByEmail')->with($subject);
+        $this->userRepository->expects($this->never())->method('findById');
         $request = Request::create('/api/users/batch');
         $request->cookies->set('__Host-auth_token', $tokenValue);
-
         $passport = $this->createAuthenticator()->authenticate($request);
-        $user = $passport->getUser();
-
         $this->assertSame(['ROLE_SERVICE'], $passport->getAttribute('roles'));
-        $this->assertSame($payload['sub'], $user->getUserIdentifier());
+        $this->assertSame($subject, $passport->getUser()->getUserIdentifier());
     }
 
     public function testAuthenticateRejectsWrongAlgorithm(): void
@@ -129,7 +54,9 @@ final class DualAuthenticatorTest extends UnitTestCase
             'Bearer ' . $this->createJwtToken('HS256')
         );
 
-        $this->expectException(CustomUserMessageAuthenticationException::class);
+        $this->expectException(
+            CustomUserMessageAuthenticationException::class
+        );
         $this->expectExceptionMessage('Invalid access token.');
 
         $this->createAuthenticator()->authenticate($request);
@@ -137,23 +64,9 @@ final class DualAuthenticatorTest extends UnitTestCase
 
     public function testAuthenticateRejectsInvalidIssuerClaimType(): void
     {
-        $tokenValue = $this->createJwtToken('RS256');
         $payload = $this->validPayload($this->faker->email(), ['ROLE_USER']);
         $payload['iss'] = ['vilnacrm-user-service'];
-
-        $this->jwtEncoder
-            ->expects($this->once())
-            ->method('decode')
-            ->with($tokenValue)
-            ->willReturn($payload);
-
-        $request = Request::create('/api/users');
-        $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
-
-        $this->expectException(CustomUserMessageAuthenticationException::class);
-        $this->expectExceptionMessage('Invalid access token claims.');
-
-        $this->createAuthenticator()->authenticate($request);
+        $this->expectRejectWithInvalidClaims($payload);
     }
 
     public function testAuthenticateAcceptsAudienceClaimArray(): void
@@ -163,157 +76,98 @@ final class DualAuthenticatorTest extends UnitTestCase
         $payload = $this->validPayload($email, ['ROLE_USER']);
         $payload['aud'] = ['vilnacrm-api'];
         $user = $this->createDomainUser($email);
-
-        $this->jwtEncoder
-            ->expects($this->once())
-            ->method('decode')
-            ->with($tokenValue)
-            ->willReturn($payload);
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
-        $this->authSessionRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with('sid-token')
-            ->willReturn($this->createActiveSession('sid-token'));
-
-        $request = Request::create('/api/users');
-        $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
-
-        $passport = $this->createAuthenticator()->authenticate($request);
-
-        $this->assertSame(['ROLE_USER'], $passport->getAttribute('roles'));
-        $this->assertInstanceOf(
-            AuthorizationUserDto::class,
-            $passport->getUser()
+        $this->expectJwtDecode($tokenValue, $payload);
+        $this->expectUserAndSessionResolution($email, $user);
+        $passport = $this->createAuthenticator()->authenticate(
+            $this->createBearerRequest($tokenValue)
         );
+        $this->assertSame(['ROLE_USER'], $passport->getAttribute('roles'));
+        $this->assertInstanceOf(AuthorizationUserDto::class, $passport->getUser());
         $this->assertSame($email, $passport->getUser()->getUserIdentifier());
     }
 
     public function testAuthenticateRejectsMissingSidClaim(): void
     {
-        $tokenValue = $this->createJwtToken('RS256');
         $payload = $this->validPayload($this->faker->email(), ['ROLE_USER']);
         unset($payload['sid']);
-
-        $this->jwtEncoder
-            ->expects($this->once())
-            ->method('decode')
-            ->with($tokenValue)
-            ->willReturn($payload);
-
-        $request = Request::create('/api/users');
-        $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
-
-        $this->expectException(CustomUserMessageAuthenticationException::class);
-        $this->expectExceptionMessage('Invalid access token claims.');
-
-        $this->createAuthenticator()->authenticate($request);
+        $this->expectRejectWithInvalidClaims($payload);
     }
 
     public function testAuthenticateRejectsWhenSessionIsMissing(): void
     {
-        $email = $this->faker->email();
         $tokenValue = $this->createJwtToken('RS256');
-        $payload = $this->validPayload($email, ['ROLE_USER']);
-
-        $this->jwtEncoder
-            ->expects($this->once())
-            ->method('decode')
-            ->with($tokenValue)
-            ->willReturn($payload);
-
-        $this->authSessionRepository
-            ->expects($this->once())
+        $payload = $this->validPayload(
+            $this->faker->email(),
+            ['ROLE_USER']
+        );
+        $this->expectJwtDecode($tokenValue, $payload);
+        $this->authSessionRepository->expects($this->once())
             ->method('findById')
             ->with('sid-token')
             ->willReturn(null);
-
-        $request = Request::create('/api/users');
-        $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
-
-        $this->expectException(CustomUserMessageAuthenticationException::class);
-        $this->expectExceptionMessage('Invalid access token claims.');
-
-        $this->createAuthenticator()->authenticate($request);
+        $this->expectException(
+            CustomUserMessageAuthenticationException::class
+        );
+        $this->expectExceptionMessage(
+            'Invalid access token claims.'
+        );
+        $this->createAuthenticator()->authenticate(
+            $this->createBearerRequest($tokenValue)
+        );
     }
 
     public function testAuthenticateRejectsWhenSessionIsRevoked(): void
     {
-        $email = $this->faker->email();
         $tokenValue = $this->createJwtToken('RS256');
-        $payload = $this->validPayload($email, ['ROLE_USER']);
+        $payload = $this->validPayload($this->faker->email(), ['ROLE_USER']);
         $revokedSession = $this->createActiveSession('sid-token');
         $revokedSession->revoke();
-
-        $this->jwtEncoder
-            ->expects($this->once())
-            ->method('decode')
-            ->with($tokenValue)
-            ->willReturn($payload);
-
-        $this->authSessionRepository
-            ->expects($this->once())
+        $this->expectJwtDecode($tokenValue, $payload);
+        $this->authSessionRepository->expects($this->once())
             ->method('findById')
             ->with('sid-token')
             ->willReturn($revokedSession);
-
-        $request = Request::create('/api/users');
-        $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
-
-        $this->expectException(CustomUserMessageAuthenticationException::class);
-        $this->expectExceptionMessage('Invalid access token claims.');
-
-        $this->createAuthenticator()->authenticate($request);
+        $this->expectException(
+            CustomUserMessageAuthenticationException::class
+        );
+        $this->expectExceptionMessage(
+            'Invalid access token claims.'
+        );
+        $this->createAuthenticator()->authenticate(
+            $this->createBearerRequest($tokenValue)
+        );
     }
 
     public function testAuthenticateRejectsWhenSessionIsExpired(): void
     {
-        $email = $this->faker->email();
         $tokenValue = $this->createJwtToken('RS256');
-        $payload = $this->validPayload($email, ['ROLE_USER']);
-
-        $this->jwtEncoder
-            ->expects($this->once())
-            ->method('decode')
-            ->with($tokenValue)
-            ->willReturn($payload);
-
-        $this->authSessionRepository
-            ->expects($this->once())
+        $payload = $this->validPayload(
+            $this->faker->email(),
+            ['ROLE_USER']
+        );
+        $this->expectJwtDecode($tokenValue, $payload);
+        $this->authSessionRepository->expects($this->once())
             ->method('findById')
             ->with('sid-token')
-            ->willReturn(
-                new AuthSession(
-                    'sid-token',
-                    $this->faker->uuid(),
-                    '127.0.0.1',
-                    'Test Agent',
-                    new DateTimeImmutable('-2 hours'),
-                    new DateTimeImmutable('-1 hour'),
-                    false
-                )
-            );
-
-        $request = Request::create('/api/users');
-        $request->headers->set('Authorization', 'Bearer ' . $tokenValue);
-
-        $this->expectException(CustomUserMessageAuthenticationException::class);
-        $this->expectExceptionMessage('Invalid access token claims.');
-
-        $this->createAuthenticator()->authenticate($request);
+            ->willReturn($this->createExpiredSession());
+        $this->expectException(
+            CustomUserMessageAuthenticationException::class
+        );
+        $this->expectExceptionMessage(
+            'Invalid access token claims.'
+        );
+        $this->createAuthenticator()->authenticate(
+            $this->createBearerRequest($tokenValue)
+        );
     }
 
     public function testOnAuthenticationFailureReturnsProblemJsonAndBearerHeader(): void
     {
-        $response = $this->createAuthenticator()->onAuthenticationFailure(
-            Request::create('/api/users'),
-            new AuthenticationException('invalid')
-        );
+        $response = $this->createAuthenticator()
+            ->onAuthenticationFailure(
+                Request::create('/api/users'),
+                new AuthenticationException('invalid')
+            );
 
         $this->assertSame(401, $response->getStatusCode());
         $this->assertSame(
@@ -328,9 +182,7 @@ final class DualAuthenticatorTest extends UnitTestCase
 
     public function testCreateTokenUsesRolesAndSidFromPassportAttributes(): void
     {
-        $authorizationUser = $this->createAuthorizationUser(
-            $this->faker->email()
-        );
+        $authorizationUser = $this->createAuthorizationUser($this->faker->email());
         $passport = new SelfValidatingPassport(
             new UserBadge(
                 $authorizationUser->getUserIdentifier(),
@@ -339,9 +191,7 @@ final class DualAuthenticatorTest extends UnitTestCase
         );
         $passport->setAttribute('roles', ['ROLE_USER']);
         $passport->setAttribute('sid', 'sid-test');
-
         $token = $this->createAuthenticator()->createToken($passport, 'api');
-
         $this->assertInstanceOf(TokenInterface::class, $token);
         $this->assertSame(['ROLE_USER'], $token->getRoleNames());
         $this->assertSame('sid-test', $token->getAttribute('sid'));
@@ -359,9 +209,14 @@ final class DualAuthenticatorTest extends UnitTestCase
     public function testSupportsReturnsTrueWhenCookieTokenIsPresent(): void
     {
         $request = Request::create('/api/users');
-        $request->cookies->set('__Host-auth_token', 'cookie-token');
+        $request->cookies->set(
+            '__Host-auth_token',
+            'cookie-token'
+        );
 
-        $supports = $this->createAuthenticator()->supports($request);
+        $supports = $this->createAuthenticator()->supports(
+            $request
+        );
 
         $this->assertTrue($supports);
     }
@@ -369,27 +224,41 @@ final class DualAuthenticatorTest extends UnitTestCase
     public function testSupportsReturnsFalseOnPublicRouteEvenWhenTokenExists(): void
     {
         $request = Request::create('/api/signin', 'POST');
-        $request->cookies->set('__Host-auth_token', 'cookie-token');
+        $request->cookies->set(
+            '__Host-auth_token',
+            'cookie-token'
+        );
 
-        $supports = $this->createAuthenticator()->supports($request);
+        $supports = $this->createAuthenticator()->supports(
+            $request
+        );
 
         $this->assertFalse($supports);
     }
 
     public function testAuthenticateRejectsRequestWithoutToken(): void
     {
-        $this->expectException(CustomUserMessageAuthenticationException::class);
+        $this->expectException(
+            CustomUserMessageAuthenticationException::class
+        );
         $this->expectExceptionMessage('Authentication required.');
 
-        $this->createAuthenticator()->authenticate(Request::create('/api/users'));
+        $this->createAuthenticator()->authenticate(
+            Request::create('/api/users')
+        );
     }
 
     public function testAuthenticateRejectsMalformedTokenSegments(): void
     {
         $request = Request::create('/api/users');
-        $request->headers->set('Authorization', 'Bearer malformed-token');
+        $request->headers->set(
+            'Authorization',
+            'Bearer malformed-token'
+        );
 
-        $this->expectException(CustomUserMessageAuthenticationException::class);
+        $this->expectException(
+            CustomUserMessageAuthenticationException::class
+        );
         $this->expectExceptionMessage('Invalid access token.');
 
         $this->createAuthenticator()->authenticate($request);
@@ -402,9 +271,14 @@ final class DualAuthenticatorTest extends UnitTestCase
             . $this->base64UrlEncode('{}')
             . '.signature';
         $request = Request::create('/api/users');
-        $request->headers->set('Authorization', 'Bearer ' . $token);
+        $request->headers->set(
+            'Authorization',
+            'Bearer ' . $token
+        );
 
-        $this->expectException(CustomUserMessageAuthenticationException::class);
+        $this->expectException(
+            CustomUserMessageAuthenticationException::class
+        );
         $this->expectExceptionMessage('Invalid access token.');
 
         $this->createAuthenticator()->authenticate($request);
@@ -412,121 +286,42 @@ final class DualAuthenticatorTest extends UnitTestCase
 
     public function testAuthenticateRejectsHeaderDecodedToNonArray(): void
     {
-        $token = $this->base64UrlEncode(json_encode('header', JSON_THROW_ON_ERROR))
+        $token = $this->base64UrlEncode(
+            json_encode('header', JSON_THROW_ON_ERROR)
+        )
             . '.'
             . $this->base64UrlEncode('{}')
             . '.signature';
         $request = Request::create('/api/users');
-        $request->headers->set('Authorization', 'Bearer ' . $token);
+        $request->headers->set(
+            'Authorization',
+            'Bearer ' . $token
+        );
 
-        $this->expectException(CustomUserMessageAuthenticationException::class);
+        $this->expectException(
+            CustomUserMessageAuthenticationException::class
+        );
         $this->expectExceptionMessage('Invalid access token.');
 
         $this->createAuthenticator()->authenticate($request);
     }
 
-    private function createAuthenticator(): DualAuthenticator
-    {
-        $accessTokenPassportFactory = new AccessTokenPassportFactory(
-            new JwtAccessTokenParser($this->jwtEncoder),
-            new AccessTokenUserResolver(
-                $this->userRepository,
-                $this->userTransformer,
-                $this->authSessionRepository
-            )
-        );
-
-        return new DualAuthenticator(
-            $accessTokenPassportFactory,
-            new PublicAccessMatcher([
-                ['pattern' => '#^/api/users$#', 'methods' => ['POST']],
-                ['pattern' => '#^/api/users/confirm$#', 'methods' => ['PATCH']],
-                ['pattern' => '#^/api/reset-password#'],
-                ['pattern' => '#^/api/signin#'],
-                ['pattern' => '#^/api/token$#', 'methods' => ['POST']],
-                ['pattern' => '#^/api/docs#'],
-                ['pattern' => '#^/api/health#'],
-                ['pattern' => '#^/api/oauth#'],
-                ['pattern' => '#^/api/\.well-known#'],
-                ['pattern' => '#^/healthz#'],
-            ])
-        );
-    }
-
     /**
-     * @param array<string> $roles
-     *
-     * @return array<int|string|array<string>>
-     *
-     * @psalm-return array{sub: string, iss: 'vilnacrm-user-service', aud: 'vilnacrm-api', nbf: int<-9, max>, iat: int<-9, max>, exp: int<901, max>, sid: 'sid-token', roles: array<string>}
+     * @param array<string, int|string|array<int|string>> $payload
      */
-    private function validPayload(string $subject, array $roles): array
-    {
-        $now = time();
-
-        return [
-            'sub' => $subject,
-            'iss' => 'vilnacrm-user-service',
-            'aud' => 'vilnacrm-api',
-            'nbf' => $now - 10,
-            'iat' => $now - 10,
-            'exp' => $now + 900,
-            'sid' => 'sid-token',
-            'roles' => $roles,
-        ];
-    }
-
-    private function createJwtToken(string $algorithm): string
-    {
-        $header = ['alg' => $algorithm, 'typ' => 'JWT'];
-        $payload = ['sub' => $this->faker->email()];
-
-        return $this->base64UrlEncode(json_encode($header, JSON_THROW_ON_ERROR))
-            . '.'
-            . $this->base64UrlEncode(json_encode($payload, JSON_THROW_ON_ERROR))
-            . '.signature';
-    }
-
-    private function base64UrlEncode(string $value): string
-    {
-        return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
-    }
-
-    private function createAuthorizationUser(string $email): AuthorizationUserDto
-    {
-        $transformer = new UuidTransformer(new SharedUuidFactory());
-
-        return new AuthorizationUserDto(
-            $email,
-            $this->faker->name(),
-            $this->faker->password(),
-            $transformer->transformFromString($this->faker->uuid()),
-            true
+    private function expectRejectWithInvalidClaims(
+        array $payload
+    ): void {
+        $tokenValue = $this->createJwtToken('RS256');
+        $this->expectJwtDecode($tokenValue, $payload);
+        $this->expectException(
+            CustomUserMessageAuthenticationException::class
         );
-    }
-
-    private function createDomainUser(string $email): User
-    {
-        $transformer = new UuidTransformer(new SharedUuidFactory());
-
-        return new User(
-            $email,
-            $this->faker->name(),
-            $this->faker->sha256(),
-            $transformer->transformFromString($this->faker->uuid())
+        $this->expectExceptionMessage(
+            'Invalid access token claims.'
         );
-    }
-
-    private function createActiveSession(string $sessionId): AuthSession
-    {
-        return new AuthSession(
-            $sessionId,
-            $this->faker->uuid(),
-            '127.0.0.1',
-            'Test Agent',
-            new DateTimeImmutable('-10 minutes'),
-            new DateTimeImmutable('+10 minutes'),
-            false
+        $this->createAuthenticator()->authenticate(
+            $this->createBearerRequest($tokenValue)
         );
     }
 }

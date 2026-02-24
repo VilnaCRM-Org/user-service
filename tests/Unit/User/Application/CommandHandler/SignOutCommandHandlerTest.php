@@ -26,7 +26,8 @@ final class SignOutCommandHandlerTest extends UnitTestCase
     {
         parent::setUp();
         $this->sessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
-        $this->refreshTokenRepository = $this->createMock(AuthRefreshTokenRepositoryInterface::class);
+        $this->refreshTokenRepository =
+            $this->createMock(AuthRefreshTokenRepositoryInterface::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->handler = new SignOutCommandHandler(
             $this->sessionRepository,
@@ -40,33 +41,10 @@ final class SignOutCommandHandlerTest extends UnitTestCase
         $sessionId = $this->faker->uuid();
         $userId = $this->faker->uuid();
         $command = new SignOutCommand($sessionId, $userId);
-
         $session = $this->createMock(AuthSession::class);
-
-        $this->sessionRepository->expects($this->once())
-            ->method('findById')
-            ->with($sessionId)
-            ->willReturn($session);
-
-        $session->expects($this->once())
-            ->method('revoke');
-
-        $this->sessionRepository->expects($this->once())
-            ->method('save')
-            ->with($session);
-
-        $this->refreshTokenRepository->expects($this->once())
-            ->method('revokeBySessionId')
-            ->with($sessionId);
-
-        $this->eventBus->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(static function (SessionRevokedEvent $event) use ($userId, $sessionId) {
-                return $event->userId === $userId
-                    && $event->sessionId === $sessionId
-                    && $event->reason === 'logout';
-            }));
-
+        $this->expectSessionRevocation($sessionId, $session);
+        $this->expectRefreshTokenRevocation($sessionId);
+        $this->expectSessionRevokedEvent($userId, $sessionId);
         $this->handler->__invoke($command);
     }
 
@@ -75,23 +53,53 @@ final class SignOutCommandHandlerTest extends UnitTestCase
         $sessionId = $this->faker->uuid();
         $userId = $this->faker->uuid();
         $command = new SignOutCommand($sessionId, $userId);
-
         $this->sessionRepository->expects($this->once())
             ->method('findById')
             ->with($sessionId)
             ->willReturn(null);
-
         $this->sessionRepository->expects($this->never())
             ->method('save');
-
         $this->refreshTokenRepository->expects($this->once())
             ->method('revokeBySessionId')
             ->with($sessionId);
-
         $this->eventBus->expects($this->once())
             ->method('publish')
             ->with($this->isInstanceOf(SessionRevokedEvent::class));
-
         $this->handler->__invoke($command);
+    }
+
+    private function expectSessionRevocation(
+        string $sessionId,
+        AuthSession&MockObject $session
+    ): void {
+        $this->sessionRepository->expects($this->once())
+            ->method('findById')
+            ->with($sessionId)
+            ->willReturn($session);
+        $session->expects($this->once())
+            ->method('revoke');
+        $this->sessionRepository->expects($this->once())
+            ->method('save')
+            ->with($session);
+    }
+
+    private function expectRefreshTokenRevocation(string $sessionId): void
+    {
+        $this->refreshTokenRepository->expects($this->once())
+            ->method('revokeBySessionId')
+            ->with($sessionId);
+    }
+
+    private function expectSessionRevokedEvent(string $userId, string $sessionId): void
+    {
+        $this->eventBus->expects($this->once())
+            ->method('publish')
+            ->with($this->callback(
+                static function (SessionRevokedEvent $event) use ($userId, $sessionId) {
+                    return $event->userId === $userId
+                        && $event->sessionId === $sessionId
+                        && $event->reason === 'logout';
+                }
+            ));
     }
 }

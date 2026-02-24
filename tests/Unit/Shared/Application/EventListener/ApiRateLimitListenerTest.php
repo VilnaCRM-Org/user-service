@@ -64,24 +64,16 @@ final class ApiRateLimitListenerTest extends UnitTestCase
 
     public function testGlobalLimiterRejectsAfterEndpointLimiterPasses(): void
     {
-        $registrationLimiter = $this->createLimiterFactoryMock(
-            expectedKey: 'ip:127.0.0.1',
-            accepted: true
-        );
-        $globalLimiter = $this->createLimiterFactoryMock(
-            expectedKey: 'ip:127.0.0.1',
-            accepted: false,
-            retryAfter: new DateTimeImmutable('+30 seconds')
-        );
-
         $listener = new ApiRateLimitListener([
-            'registration' => $registrationLimiter,
-            'global_api_anonymous' => $globalLimiter,
+            'registration' => $this->createLimiterFactoryMock('ip:127.0.0.1', true),
+            'global_api_anonymous' => $this->createLimiterFactoryMock(
+                'ip:127.0.0.1',
+                false,
+                new DateTimeImmutable('+30 seconds')
+            ),
         ]);
         $event = $this->createRequestEvent('/api/users', 'POST');
-
         $listener($event);
-
         $this->assertTrue($event->hasResponse());
         $response = $event->getResponse();
         $this->assertNotNull($response);
@@ -112,63 +104,30 @@ final class ApiRateLimitListenerTest extends UnitTestCase
 
     public function testReturnsProblemResponseWhenEndpointLimiterRejects(): void
     {
-        $registrationLimiter = $this->createLimiterFactoryMock(
-            expectedKey: 'ip:127.0.0.1',
-            accepted: false,
-            retryAfter: new DateTimeImmutable('+60 seconds')
-        );
-
         $listener = new ApiRateLimitListener([
-            'registration' => $registrationLimiter,
+            'registration' => $this->createLimiterFactoryMock(
+                'ip:127.0.0.1',
+                false,
+                new DateTimeImmutable('+60 seconds')
+            ),
             'global_api_anonymous' => $this->createNeverCalledFactory(),
         ]);
         $event = $this->createRequestEvent('/api/users', 'POST');
-
         $listener($event);
-
-        $this->assertTrue($event->hasResponse());
-        $response = $event->getResponse();
-        $this->assertNotNull($response);
-        $this->assertSame(429, $response->getStatusCode());
-        $this->assertSame(
-            'application/problem+json',
-            $response->headers->get('Content-Type')
-        );
-        $this->assertIsNumeric($response->headers->get('Retry-After'));
-        $this->assertGreaterThan(
-            0,
-            (int) $response->headers->get('Retry-After')
-        );
-
-        $payload = json_decode((string) $response->getContent(), true);
-        $this->assertIsArray($payload);
-        $this->assertSame('/errors/429', $payload['type']);
-        $this->assertSame('Too Many Requests', $payload['title']);
-        $this->assertSame(429, $payload['status']);
+        $this->assertRateLimitedResponse($event);
     }
 
     public function testUsesAuthenticatedGlobalLimiterForBearerRequests(): void
     {
         $token = 'valid-auth-jwt';
-        $globalLimiter = $this->createLimiterFactoryMock(
-            expectedKey: 'ip:127.0.0.1',
-            accepted: true
+        $globalLimiter = $this->createLimiterFactoryMock('ip:127.0.0.1', true);
+        $listener = $this->createListenerWithValidatedToken(
+            ['global_api_authenticated' => $globalLimiter],
+            $token,
+            $this->createValidJwtPayload($this->faker->uuid())
         );
-
-        $listener = $this->createListenerWithValidatedToken([
-            'global_api_authenticated' => $globalLimiter,
-        ], $token, $this->createValidJwtPayload($this->faker->uuid()));
-        $event = $this->createRequestEvent(
-            '/api/health',
-            'GET',
-            HttpKernelInterface::MAIN_REQUEST,
-            [
-                'HTTP_AUTHORIZATION' => sprintf('Bearer %s', $token),
-            ]
-        );
-
+        $event = $this->createBearerRequestEvent('/api/health', 'GET', $token);
         $listener($event);
-
         $this->assertFalse($event->hasResponse());
     }
 
@@ -176,49 +135,28 @@ final class ApiRateLimitListenerTest extends UnitTestCase
     {
         $token = 'valid-update-jwt';
         $userId = '8be90127-9840-4235-a6da-39b8debfb260';
-        $userLimiter = $this->createLimiterFactoryMock(
-            expectedKey: sprintf('user:%s', $userId),
-            accepted: true
+        $userLimiter = $this->createLimiterFactoryMock(sprintf('user:%s', $userId), true);
+        $globalLimiter = $this->createLimiterFactoryMock('ip:127.0.0.1', true);
+        $listener = $this->createListenerWithValidatedToken(
+            ['user_update' => $userLimiter, 'global_api_authenticated' => $globalLimiter],
+            $token,
+            $this->createValidJwtPayload($userId)
         );
-        $globalLimiter = $this->createLimiterFactoryMock(
-            expectedKey: 'ip:127.0.0.1',
-            accepted: true
-        );
-
-        $listener = $this->createListenerWithValidatedToken([
-            'user_update' => $userLimiter,
-            'global_api_authenticated' => $globalLimiter,
-        ], $token, $this->createValidJwtPayload($userId));
-        $event = $this->createRequestEvent(
+        $event = $this->createBearerRequestEvent(
             sprintf('/api/users/%s', $userId),
             'PATCH',
-            HttpKernelInterface::MAIN_REQUEST,
-            [
-                'HTTP_AUTHORIZATION' => sprintf('Bearer %s', $token),
-            ]
+            $token
         );
-
         $listener($event);
-
         $this->assertFalse($event->hasResponse());
     }
 
     public function testUsesSignInIpAndEmailLimiters(): void
     {
         $email = 'rate-email@test.com';
-        $signinIpLimiter = $this->createLimiterFactoryMock(
-            expectedKey: 'ip:127.0.0.1',
-            accepted: true
-        );
-        $signinEmailLimiter = $this->createLimiterFactoryMock(
-            expectedKey: sprintf('email:%s', $email),
-            accepted: true
-        );
-        $globalLimiter = $this->createLimiterFactoryMock(
-            expectedKey: 'ip:127.0.0.1',
-            accepted: true
-        );
-
+        $signinIpLimiter = $this->createLimiterFactoryMock('ip:127.0.0.1', true);
+        $signinEmailLimiter = $this->createLimiterFactoryMock(sprintf('email:%s', $email), true);
+        $globalLimiter = $this->createLimiterFactoryMock('ip:127.0.0.1', true);
         $listener = new ApiRateLimitListener([
             'signin_ip' => $signinIpLimiter,
             'signin_email' => $signinEmailLimiter,
@@ -229,14 +167,9 @@ final class ApiRateLimitListenerTest extends UnitTestCase
             'POST',
             HttpKernelInterface::MAIN_REQUEST,
             [],
-            json_encode(
-                ['email' => $email, 'password' => 'passWORD1'],
-                JSON_THROW_ON_ERROR
-            )
+            json_encode(['email' => $email, 'password' => 'passWORD1'], JSON_THROW_ON_ERROR)
         );
-
         $listener($event);
-
         $this->assertFalse($event->hasResponse());
     }
 
@@ -244,55 +177,54 @@ final class ApiRateLimitListenerTest extends UnitTestCase
     {
         $token = 'valid-twofa-jwt';
         $userId = '8be90127-9840-4235-a6da-39b8debfb260';
-        $twoFactorSetupLimiter = $this->createLimiterFactoryMock(
-            expectedKey: sprintf('user:%s', $userId),
-            accepted: true
+        $twoFactorSetupLimiter = $this->createLimiterFactoryMock(sprintf('user:%s', $userId), true);
+        $globalLimiter = $this->createLimiterFactoryMock('ip:127.0.0.1', true);
+        $listener = $this->createListenerWithValidatedToken(
+            ['twofa_setup' => $twoFactorSetupLimiter, 'global_api_authenticated' => $globalLimiter],
+            $token,
+            $this->createValidJwtPayload($userId)
         );
-        $globalLimiter = $this->createLimiterFactoryMock(
-            expectedKey: 'ip:127.0.0.1',
-            accepted: true
-        );
-
-        $listener = $this->createListenerWithValidatedToken([
-            'twofa_setup' => $twoFactorSetupLimiter,
-            'global_api_authenticated' => $globalLimiter,
-        ], $token, $this->createValidJwtPayload($userId));
-        $event = $this->createRequestEvent(
-            '/api/users/2fa/setup',
-            'POST',
-            HttpKernelInterface::MAIN_REQUEST,
-            [
-                'HTTP_AUTHORIZATION' => sprintf('Bearer %s', $token),
-            ]
-        );
-
+        $event = $this->createBearerRequestEvent('/api/users/2fa/setup', 'POST', $token);
         $listener($event);
-
         $this->assertFalse($event->hasResponse());
     }
 
     public function testUsesAnonymousGlobalLimiterForInvalidBearerRequests(): void
     {
-        $globalLimiter = $this->createLimiterFactoryMock(
-            expectedKey: 'ip:127.0.0.1',
-            accepted: true
-        );
-
-        $listener = new ApiRateLimitListener([
-            'global_api_anonymous' => $globalLimiter,
-        ]);
-        $event = $this->createRequestEvent(
-            '/api/health',
-            'GET',
-            HttpKernelInterface::MAIN_REQUEST,
-            [
-                'HTTP_AUTHORIZATION' => 'Bearer invalid-token',
-            ]
-        );
-
+        $globalLimiter = $this->createLimiterFactoryMock('ip:127.0.0.1', true);
+        $listener = new ApiRateLimitListener(['global_api_anonymous' => $globalLimiter]);
+        $event = $this->createBearerRequestEvent('/api/health', 'GET', 'invalid-token');
         $listener($event);
-
         $this->assertFalse($event->hasResponse());
+    }
+
+    private function assertRateLimitedResponse(RequestEvent $event): void
+    {
+        $this->assertTrue($event->hasResponse());
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+        $this->assertSame(429, $response->getStatusCode());
+        $this->assertSame('application/problem+json', $response->headers->get('Content-Type'));
+        $this->assertIsNumeric($response->headers->get('Retry-After'));
+        $this->assertGreaterThan(0, (int) $response->headers->get('Retry-After'));
+        $payload = json_decode((string) $response->getContent(), true);
+        $this->assertIsArray($payload);
+        $this->assertSame('/errors/429', $payload['type']);
+        $this->assertSame('Too Many Requests', $payload['title']);
+        $this->assertSame(429, $payload['status']);
+    }
+
+    private function createBearerRequestEvent(
+        string $path,
+        string $method,
+        string $token
+    ): RequestEvent {
+        return $this->createRequestEvent(
+            $path,
+            $method,
+            HttpKernelInterface::MAIN_REQUEST,
+            ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $token)]
+        );
     }
 
     /**
@@ -340,28 +272,13 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         $factory = $this->createMock(RateLimiterFactory::class);
         $limiter = $this->createMock(LimiterInterface::class);
         $rateLimit = $this->createMock(RateLimit::class);
-
-        $factory
-            ->expects($this->once())
-            ->method('create')
-            ->with($expectedKey)
-            ->willReturn($limiter);
-
-        $limiter
-            ->expects($this->once())
-            ->method('consume')
-            ->with(1)
-            ->willReturn($rateLimit);
-
-        $rateLimit
-            ->expects($this->once())
-            ->method('isAccepted')
-            ->willReturn($accepted);
-
-        $rateLimit
-            ->method('getRetryAfter')
+        $factory->expects($this->once())->method('create')
+            ->with($expectedKey)->willReturn($limiter);
+        $limiter->expects($this->once())->method('consume')
+            ->with(1)->willReturn($rateLimit);
+        $rateLimit->expects($this->once())->method('isAccepted')->willReturn($accepted);
+        $rateLimit->method('getRetryAfter')
             ->willReturn($retryAfter ?? new DateTimeImmutable('+1 second'));
-
         return $factory;
     }
 
@@ -375,32 +292,23 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         array $payload
     ): ApiRateLimitListener {
         $jwtDecoder = $this->createMock(JwtTokenDecoderInterface::class);
-        $jwtDecoder
-            ->method('decode')
-            ->willReturnCallback(
-                /**
-                 * @return array<string, array<int, string>|bool|float|int|string|null>|null
-                 */
-                static function (string $candidateToken) use ($token, $payload): ?array {
-                    if ($candidateToken === $token) {
-                        return $payload;
-                    }
-
-                    return null;
-                }
-            );
-
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($jwtDecoder);
-        $authTargetResolver = new ApiRateLimitAuthTargetResolver(
-            null,
-            $clientIdentityResolver
+        $jwtDecoder->method('decode')->willReturnCallback(
+            static function (string $candidateToken) use ($token, $payload): ?array {
+                return $candidateToken === $token ? $payload : null;
+            }
         );
+        $clientIdentityResolver =
+            new ApiRateLimitClientIdentityResolver($jwtDecoder);
+        $authTargetResolver =
+            new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
         $requestMatcher = new ApiRateLimitRequestResolver(
             $clientIdentityResolver,
             $authTargetResolver
         );
-
-        return new ApiRateLimitListener($limiterFactories, $requestMatcher);
+        return new ApiRateLimitListener(
+            $limiterFactories,
+            $requestMatcher
+        );
     }
 
     /**

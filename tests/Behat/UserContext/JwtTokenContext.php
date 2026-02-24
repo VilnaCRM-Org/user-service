@@ -53,8 +53,7 @@ final class JwtTokenContext implements Context
     ): void {
         $header = ['typ' => 'JWT', 'alg' => $algorithm];
         $payload = $this->createDefaultJwtPayload();
-        $encode = static fn (string $v): string =>
-            rtrim(strtr(base64_encode($v), '+/', '-_'), '=');
+        $encode = static fn (string $v): string => rtrim(strtr(base64_encode($v), '+/', '-_'), '=');
 
         $this->state->accessToken = sprintf(
             '%s.%s.%s',
@@ -103,8 +102,7 @@ final class JwtTokenContext implements Context
         $header = ['typ' => 'JWT', 'alg' => 'RS256'];
         $payload = $this->createDefaultJwtPayload();
         $payload['iss'] = $this->decodeJsonArray($issuerJson);
-        $encode = static fn (string $v): string =>
-            rtrim(strtr(base64_encode($v), '+/', '-_'), '=');
+        $encode = static fn (string $v): string => rtrim(strtr(base64_encode($v), '+/', '-_'), '=');
 
         $this->state->accessToken = sprintf(
             '%s.%s.%s',
@@ -147,30 +145,17 @@ final class JwtTokenContext implements Context
      */
     public function iHaveAJwtWithTamperedPayload(): void
     {
-        $signedToken =
-            $this->auth->accessTokenGenerator->generate(
-                $this->createDefaultJwtPayload()
-            );
+        $payload = $this->createDefaultJwtPayload();
+        $signedToken = $this->auth
+            ->accessTokenGenerator->generate($payload);
         $parts = explode('.', $signedToken);
         if (count($parts) !== 3) {
-            throw new \RuntimeException(
-                'Could not tamper JWT payload.'
-            );
+            throw new \RuntimeException('Could not tamper JWT payload.');
         }
-
         $tamperedPayload = ['sub' => 'tampered'];
-
-        $this->state->accessToken = sprintf(
-            '%s.%s.%s',
-            $parts[0],
-            rtrim(strtr(base64_encode(
-                json_encode(
-                    $tamperedPayload,
-                    JSON_THROW_ON_ERROR
-                )
-            ), '+/', '-_'), '='),
-            $parts[2]
-        );
+        $json = json_encode($tamperedPayload, JSON_THROW_ON_ERROR);
+        $encodedPayload = rtrim(strtr(base64_encode($json), '+/', '-_'), '=');
+        $this->state->accessToken = sprintf('%s.%s.%s', $parts[0], $encodedPayload, $parts[2]);
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
     }
@@ -234,8 +219,7 @@ final class JwtTokenContext implements Context
         $header = ['typ' => 'JWT', 'alg' => 'RS256'];
         $payload = $this->createDefaultJwtPayload();
         $payload['aud'] = $this->decodeJsonArray($audienceJson);
-        $encode = static fn (string $v): string =>
-            rtrim(strtr(base64_encode($v), '+/', '-_'), '=');
+        $encode = static fn (string $v): string => rtrim(strtr(base64_encode($v), '+/', '-_'), '=');
 
         $this->state->accessToken = sprintf(
             '%s.%s.%s',
@@ -363,40 +347,21 @@ final class JwtTokenContext implements Context
 
     private function resolveUser(string $email): \App\User\Domain\Entity\User
     {
-        $existing = $this->userManagement
-            ->userRepository->findByEmail($email);
+        $existing = $this->userManagement->userRepository->findByEmail($email);
         if ($existing !== null) {
-            UserContext::registerUserIdByEmail(
-                $email,
-                $existing->getId()
-            );
-
+            UserContext::registerUserIdByEmail($email, $existing->getId());
             return $existing;
         }
-
         $faker = \Faker\Factory::create();
         $password = $faker->password;
-        $userId = $this->userManagement->transformer
-            ->transformFromSymfonyUuid(
-                $this->userManagement->uuidFactory->create()
-            );
-        $user = $this->userManagement->userFactory->create(
-            $email,
-            $faker->name,
-            $password,
-            $userId
-        );
-
-        $hasher = $this->userManagement->hasherFactory
-            ->getPasswordHasher($user::class);
+        $uuid = $this->userManagement->uuidFactory->create();
+        $userId = $this->userManagement->transformer->transformFromSymfonyUuid($uuid);
+        $user = $this->userManagement->userFactory
+            ->create($email, $faker->name, $password, $userId);
+        $hasher = $this->userManagement->hasherFactory->getPasswordHasher($user::class);
         $user->setPassword($hasher->hash($password, null));
         $this->userManagement->userRepository->save($user);
-
-        UserContext::registerUserIdByEmail(
-            $email,
-            (string) $userId
-        );
-
+        UserContext::registerUserIdByEmail($email, (string) $userId);
         return $user;
     }
 

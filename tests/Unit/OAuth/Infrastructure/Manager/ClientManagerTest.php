@@ -14,6 +14,7 @@ use League\Bundle\OAuth2ServerBundle\OAuth2Events;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Grant;
 use League\Bundle\OAuth2ServerBundle\ValueObject\RedirectUri;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Scope;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class ClientManagerTest extends OAuthInfrastructureTestCase
@@ -246,8 +247,9 @@ final class ClientManagerTest extends OAuthInfrastructureTestCase
         );
     }
 
-    private function createDocumentManagerMock(object $builder): \PHPUnit\Framework\MockObject\MockObject&DocumentManager
-    {
+    private function createDocumentManagerMock(
+        object $builder
+    ): MockObject&DocumentManager {
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->once())
             ->method('createQueryBuilder')

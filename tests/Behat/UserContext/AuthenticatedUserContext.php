@@ -138,45 +138,20 @@ final class AuthenticatedUserContext implements Context
      */
     public function iAmAuthenticatedWithRole(string $role): void
     {
-        $subject = sprintf(
-            'service-%s',
-            strtolower($this->faker->lexify('????'))
-        );
+        $subject = sprintf('service-%s', strtolower($this->faker->lexify('????')));
         $roles = [$role];
-        $sessionId = in_array('ROLE_SERVICE', $roles, true)
-            ? null
-            : $this->createActiveSession($subject);
-
+        $isService = in_array('ROLE_SERVICE', $roles, true);
+        $sessionId = $isService ? null : $this->createActiveSession($subject);
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
         $this->state->accessToken =
-            $this->auth->testAccessTokenFactory->createToken(
-                $subject,
-                $roles,
-                $sessionId
-            );
-
-        $authorizationUser = new AuthorizationUserDto(
-            sprintf(
-                'service-%s@example.test',
-                strtolower($this->faker->lexify('????'))
-            ),
-            strtoupper($this->faker->lexify('??')),
-            $this->faker->sha256(),
-            $this->userManagement->transformer
-                ->transformFromSymfonyUuid(
-                    $this->userManagement->uuidFactory->create()
-                ),
-            true
+            $this->auth->testAccessTokenFactory
+                ->createToken($subject, $roles, $sessionId);
+        $email = sprintf(
+            'service-%s@example.test',
+            strtolower($this->faker->lexify('????'))
         );
-
-        $this->auth->tokenStorage->setToken(
-            new UsernamePasswordToken(
-                $authorizationUser,
-                'behat-service-token',
-                [$role]
-            )
-        );
+        $this->configureTokenStorage($email, $role);
     }
 
     /**
@@ -187,43 +162,22 @@ final class AuthenticatedUserContext implements Context
     ): void {
         $token = $this->auth->tokenStorage->getToken();
         Assert::assertNotNull($token);
-
         $authenticatedUser = $token->getUser();
-        if (
-            $authenticatedUser instanceof AuthorizationUserDto
-        ) {
-            Assert::assertSame(
-                $email,
-                $authenticatedUser->getUserIdentifier()
-            );
-
+        if ($authenticatedUser instanceof AuthorizationUserDto) {
+            Assert::assertSame($email, $authenticatedUser->getUserIdentifier());
             return;
         }
-
         if (is_string($authenticatedUser)) {
             Assert::assertSame($email, $authenticatedUser);
-
             return;
         }
-
-        if (
-            is_object($authenticatedUser)
-            && method_exists(
-                $authenticatedUser,
-                'getUserIdentifier'
-            )
+        if (is_object($authenticatedUser)
+            && method_exists($authenticatedUser, 'getUserIdentifier')
         ) {
-            $identifier =
-                $authenticatedUser->getUserIdentifier();
-            Assert::assertIsString($identifier);
-            Assert::assertSame($email, $identifier);
-
+            Assert::assertSame($email, $authenticatedUser->getUserIdentifier());
             return;
         }
-
-        throw new \RuntimeException(
-            'Unable to resolve authenticated user.'
-        );
+        throw new \RuntimeException('Unable to resolve authenticated user.');
     }
 
     /**
@@ -364,114 +318,50 @@ final class AuthenticatedUserContext implements Context
     private function authenticateFromAccessToken(
         string $accessToken
     ): void {
-        $parts = explode('.', $accessToken);
-        $payload = [];
-        if (count($parts) === 3) {
-            $encoded = $parts[1];
-            $remainder = strlen($encoded) % 4;
-            if ($remainder !== 0) {
-                $encoded .= str_repeat('=', 4 - $remainder);
-            }
-            $raw = base64_decode(
-                strtr($encoded, '-_', '+/'),
-                true
-            );
-            if (is_string($raw) && $raw !== '') {
-                $decoded = json_decode($raw, true);
-                if (is_array($decoded)) {
-                    $payload = $decoded;
-                }
-            }
-        }
+        $payload = $this->decodeJwtPayload($accessToken);
         $roles = $this->extractRoles($payload);
-
         $subject = $payload['sub'] ?? null;
         if (is_string($subject) && $subject !== '') {
-            $user = $this->userManagement
-                ->userRepository->findById($subject);
+            $user = $this->userManagement->userRepository->findById($subject);
             if ($user instanceof User) {
                 $this->setAuthenticatedUserToken($user, $roles);
-                $this->state->currentUserEmail =
-                    $user->getEmail();
-                UserContext::registerUserIdByEmail(
-                    $user->getEmail(),
-                    $user->getId()
-                );
+                $this->state->currentUserEmail = $user->getEmail();
+                UserContext::registerUserIdByEmail($user->getEmail(), $user->getId());
             } else {
                 $this->auth->tokenStorage->setToken(
-                    new UsernamePasswordToken(
-                        $subject,
-                        'behat-bearer-token',
-                        $roles
-                    )
+                    new UsernamePasswordToken($subject, 'behat-bearer-token', $roles)
                 );
             }
         }
-
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
         $this->state->accessToken = $accessToken;
-        $this->state->storedAccessTokens =
-            ['default' => $accessToken];
+        $this->state->storedAccessTokens = ['default' => $accessToken];
     }
 
     private function resolveAuthenticationUser(
         string $email,
         ?string $forcedUserId
     ): User {
-        $existingUser = $this->userManagement
-            ->userRepository->findByEmail($email);
-
+        $existingUser = $this->userManagement->userRepository->findByEmail($email);
         if ($existingUser !== null) {
-            UserContext::registerUserIdByEmail(
-                $email,
-                $existingUser->getId()
-            );
-
-            if ($forcedUserId === null) {
-                return $existingUser;
+            UserContext::registerUserIdByEmail($email, $existingUser->getId());
+            if ($forcedUserId !== null && $existingUser->getId() !== $forcedUserId) {
+                throw new \RuntimeException("User {$email} id mismatch.");
             }
-
-            if ($existingUser->getId() !== $forcedUserId) {
-                throw new \RuntimeException(
-                    sprintf(
-                        'User %s exists with id %s'
-                        . ' (expected %s).',
-                        $email,
-                        $existingUser->getId(),
-                        $forcedUserId
-                    )
-                );
-            }
-
             return $existingUser;
         }
-
         $password = $this->faker->password;
+        $uuid = $this->userManagement->uuidFactory->create();
         $userId = $forcedUserId !== null
-            ? $this->userManagement->transformer
-                ->transformFromString($forcedUserId)
-            : $this->userManagement->transformer
-                ->transformFromSymfonyUuid(
-                    $this->userManagement
-                        ->uuidFactory->create()
-                );
-        $user = $this->userManagement->userFactory->create(
-            $email,
-            $this->faker->name,
-            $password,
-            $userId
-        );
-        $hasher = $this->userManagement->hasherFactory
-            ->getPasswordHasher($user::class);
+            ? $this->userManagement->transformer->transformFromString($forcedUserId)
+            : $this->userManagement->transformer->transformFromSymfonyUuid($uuid);
+        $factory = $this->userManagement->userFactory;
+        $user = $factory->create($email, $this->faker->name, $password, $userId);
+        $hasher = $this->userManagement->hasherFactory->getPasswordHasher($user::class);
         $user->setPassword($hasher->hash($password, null));
         $this->userManagement->userRepository->save($user);
-
-        UserContext::registerUserIdByEmail(
-            $email,
-            $user->getId()
-        );
-
+        UserContext::registerUserIdByEmail($email, $user->getId());
         return $user;
     }
 
@@ -501,6 +391,28 @@ final class AuthenticatedUserContext implements Context
     }
 
     /**
+     * @return array<string, array<string>|int|string>
+     */
+    private function decodeJwtPayload(string $token): array
+    {
+        $parts = explode('.', $token);
+        if (count($parts) !== 3) {
+            return [];
+        }
+        $encoded = $parts[1];
+        $remainder = strlen($encoded) % 4;
+        if ($remainder !== 0) {
+            $encoded .= str_repeat('=', 4 - $remainder);
+        }
+        $raw = base64_decode(strtr($encoded, '-_', '+/'), true);
+        if (!is_string($raw) || $raw === '') {
+            return [];
+        }
+        $decoded = json_decode($raw, true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
      * @param array<string, array<string>|int|string> $payload
      *
      * @return array<string>
@@ -517,8 +429,7 @@ final class AuthenticatedUserContext implements Context
         $normalizedRoles = array_values(
             array_filter(
                 $roles,
-                static fn ($role): bool =>
-                    is_string($role) && $role !== ''
+                static fn ($role): bool => is_string($role) && $role !== ''
             )
         );
 
@@ -549,4 +460,26 @@ final class AuthenticatedUserContext implements Context
         return $sessionId;
     }
 
+    private function configureTokenStorage(
+        string $email,
+        string $role
+    ): void {
+        $uuid = $this->userManagement->uuidFactory->create();
+        $userId = $this->userManagement->transformer
+            ->transformFromSymfonyUuid($uuid);
+        $authorizationUser = new AuthorizationUserDto(
+            $email,
+            strtoupper($this->faker->lexify('??')),
+            $this->faker->sha256(),
+            $userId,
+            true
+        );
+        $this->auth->tokenStorage->setToken(
+            new UsernamePasswordToken(
+                $authorizationUser,
+                'behat-service-token',
+                [$role]
+            )
+        );
+    }
 }

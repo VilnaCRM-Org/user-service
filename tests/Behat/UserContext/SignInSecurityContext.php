@@ -226,7 +226,11 @@ final class SignInSecurityContext implements Context
             );
             return;
         }
+        $this->createAndRegisterUser($email);
+    }
 
+    private function createAndRegisterUser(string $email): void
+    {
         $faker = \Faker\Factory::create();
         $password = $faker->password;
         $userId = $this->userManagement->transformer
@@ -239,17 +243,20 @@ final class SignInSecurityContext implements Context
             $password,
             $userId
         );
-
-        $hasher = $this->userManagement->hasherFactory
-            ->getPasswordHasher($user::class);
-        $hashedPassword = $hasher->hash($password, null);
-        $user->setPassword($hashedPassword);
-
-        $this->userManagement->userRepository->save($user);
-
+        $this->hashPasswordAndSave($user, $password);
         UserContext::registerUserIdByEmail(
             $email,
             (string) $userId
         );
+    }
+
+    private function hashPasswordAndSave(
+        User $user,
+        string $password
+    ): void {
+        $hasher = $this->userManagement->hasherFactory
+            ->getPasswordHasher($user::class);
+        $user->setPassword($hasher->hash($password, null));
+        $this->userManagement->userRepository->save($user);
     }
 }

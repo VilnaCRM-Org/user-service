@@ -27,22 +27,14 @@ final class RefreshTokenEventLogSubscriberTest extends UnitTestCase
     public function testInvokeLogsRefreshTokenRotatedAtInfoLevel(): void
     {
         $sessionId = $this->faker->uuid();
-
-        $event = new RefreshTokenRotatedEvent($sessionId, $this->faker->uuid(), $this->faker->uuid());
-
+        $event = new RefreshTokenRotatedEvent(
+            $sessionId,
+            $this->faker->uuid(),
+            $this->faker->uuid()
+        );
         $capturedContext = [];
-        $this->logger->expects($this->once())
-            ->method('info')
-            ->with(
-                'Refresh token rotated',
-                $this->callback(static function (array $context) use (&$capturedContext): bool {
-                    $capturedContext = $context;
-                    return true;
-                })
-            );
-
+        $this->expectLogCall('info', 'Refresh token rotated', $capturedContext);
         $this->subscriber->__invoke($event);
-
         $this->assertSame('user.refresh_token.rotated', $capturedContext['event']);
         $this->assertSame($sessionId, $capturedContext['session_id']);
         $this->assertTrue($capturedContext['old_token_revoked']);
@@ -54,27 +46,17 @@ final class RefreshTokenEventLogSubscriberTest extends UnitTestCase
         $sessionId = $this->faker->uuid();
         $userId = $this->faker->uuid();
         $ipAddress = $this->faker->ipv4();
-
-        $event = new RefreshTokenTheftDetectedEvent($sessionId, $userId, $ipAddress, 'double_grace_use', $this->faker->uuid());
-
+        $event = new RefreshTokenTheftDetectedEvent(
+            $sessionId,
+            $userId,
+            $ipAddress,
+            'double_grace_use',
+            $this->faker->uuid()
+        );
         $capturedContext = [];
-        $this->logger->expects($this->once())
-            ->method('critical')
-            ->with(
-                'Refresh token theft detected',
-                $this->callback(static function (array $context) use (&$capturedContext): bool {
-                    $capturedContext = $context;
-                    return true;
-                })
-            );
-
+        $this->expectLogCall('critical', 'Refresh token theft detected', $capturedContext);
         $this->subscriber->__invoke($event);
-
-        $this->assertSame('user.refresh_token.theft_detected', $capturedContext['event']);
-        $this->assertSame($sessionId, $capturedContext['session_id']);
-        $this->assertSame($userId, $capturedContext['user_id']);
-        $this->assertSame($ipAddress, $capturedContext['ip_address']);
-        $this->assertArrayHasKey('timestamp', $capturedContext);
+        $this->assertTheftEventContext($capturedContext, $sessionId, $userId, $ipAddress);
     }
 
     public function testInvokeIgnoresUnknownEvent(): void
@@ -95,5 +77,37 @@ final class RefreshTokenEventLogSubscriberTest extends UnitTestCase
             ],
             $this->subscriber->subscribedTo()
         );
+    }
+
+    /**
+     * @param array<string, string|bool> $context
+     */
+    private function expectLogCall(string $method, string $message, array &$context): void
+    {
+        $this->logger->expects($this->once())
+            ->method($method)
+            ->with(
+                $message,
+                $this->callback(static function (array $ctx) use (&$context): bool {
+                    $context = $ctx;
+                    return true;
+                })
+            );
+    }
+
+    /**
+     * @param array<string, string|bool> $context
+     */
+    private function assertTheftEventContext(
+        array $context,
+        string $sessionId,
+        string $userId,
+        string $ipAddress
+    ): void {
+        $this->assertSame('user.refresh_token.theft_detected', $context['event']);
+        $this->assertSame($sessionId, $context['session_id']);
+        $this->assertSame($userId, $context['user_id']);
+        $this->assertSame($ipAddress, $context['ip_address']);
+        $this->assertArrayHasKey('timestamp', $context);
     }
 }

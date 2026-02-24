@@ -16,7 +16,6 @@ final class RefreshTokenTheftDetectedEventTest extends UnitTestCase
         $ipAddress = $this->faker->ipv4();
         $reason = 'grace_period_expired';
         $eventId = $this->faker->uuid();
-
         $event = new RefreshTokenTheftDetectedEvent(
             $sessionId,
             $userId,
@@ -24,7 +23,6 @@ final class RefreshTokenTheftDetectedEventTest extends UnitTestCase
             $reason,
             $eventId
         );
-
         $this->assertSame($sessionId, $event->sessionId);
         $this->assertSame($userId, $event->userId);
         $this->assertSame($ipAddress, $event->ipAddress);
@@ -45,7 +43,6 @@ final class RefreshTokenTheftDetectedEventTest extends UnitTestCase
         $sessionId = $this->faker->uuid();
         $userId = $this->faker->uuid();
         $ipAddress = $this->faker->ipv4();
-
         $event = new RefreshTokenTheftDetectedEvent(
             $sessionId,
             $userId,
@@ -53,16 +50,13 @@ final class RefreshTokenTheftDetectedEventTest extends UnitTestCase
             'double_grace_use',
             $this->faker->uuid()
         );
-
-        $this->assertSame(
-            [
-                'sessionId' => $sessionId,
-                'userId' => $userId,
-                'ipAddress' => $ipAddress,
-                'reason' => 'double_grace_use',
-            ],
-            $event->toPrimitives()
-        );
+        $expected = [
+            'sessionId' => $sessionId,
+            'userId' => $userId,
+            'ipAddress' => $ipAddress,
+            'reason' => 'double_grace_use',
+        ];
+        $this->assertSame($expected, $event->toPrimitives());
     }
 
     public function testFromPrimitives(): void
@@ -70,7 +64,6 @@ final class RefreshTokenTheftDetectedEventTest extends UnitTestCase
         $sessionId = $this->faker->uuid();
         $userId = $this->faker->uuid();
         $eventId = $this->faker->uuid();
-
         $event = RefreshTokenTheftDetectedEvent::fromPrimitives(
             [
                 'sessionId' => $sessionId,
@@ -81,11 +74,15 @@ final class RefreshTokenTheftDetectedEventTest extends UnitTestCase
             $eventId,
             '2026-02-11T12:00:00+00:00'
         );
+        $this->assertFromPrimitivesEvent($event, $sessionId, $userId);
+    }
 
-        $this->assertInstanceOf(
-            RefreshTokenTheftDetectedEvent::class,
-            $event
-        );
+    private function assertFromPrimitivesEvent(
+        RefreshTokenTheftDetectedEvent $event,
+        string $sessionId,
+        string $userId
+    ): void {
+        $this->assertInstanceOf(RefreshTokenTheftDetectedEvent::class, $event);
         $this->assertSame($sessionId, $event->sessionId);
         $this->assertSame($userId, $event->userId);
         $this->assertSame('127.0.0.1', $event->ipAddress);

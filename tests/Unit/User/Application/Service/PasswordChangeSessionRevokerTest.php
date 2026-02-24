@@ -23,7 +23,9 @@ final class PasswordChangeSessionRevokerTest extends UnitTestCase
         parent::setUp();
 
         $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
-        $this->authRefreshTokenRepository = $this->createMock(AuthRefreshTokenRepositoryInterface::class);
+        $this->authRefreshTokenRepository = $this->createMock(
+            AuthRefreshTokenRepositoryInterface::class
+        );
     }
 
     public function testRevokeOtherSessionsRevokesOnlyNonCurrentSessions(): void
@@ -31,85 +33,34 @@ final class PasswordChangeSessionRevokerTest extends UnitTestCase
         $userId = $this->faker->uuid();
         $currentSessionId = $this->faker->uuid();
         $otherSessionId = $this->faker->uuid();
-        $alreadyRevokedSessionId = $this->faker->uuid();
-
         $currentSession = $this->createSession($currentSessionId, $userId);
         $otherSession = $this->createSession($otherSessionId, $userId);
-        $alreadyRevokedSession = $this->createRevokedSession(
-            $alreadyRevokedSessionId,
-            $userId
-        );
-
+        $revokedSession = $this->createRevokedSession($this->faker->uuid(), $userId);
         $activeToken = $this->createRefreshToken($otherSessionId);
-        $alreadyRevokedToken = $this->createRevokedRefreshToken($otherSessionId);
-
-        $this->authSessionRepository
-            ->expects($this->once())
-            ->method('findByUserId')
-            ->with($userId)
-            ->willReturn([$currentSession, $otherSession, $alreadyRevokedSession]);
-        $this->authSessionRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($otherSession);
-
-        $this->authRefreshTokenRepository
-            ->expects($this->once())
-            ->method('findBySessionId')
-            ->with($otherSessionId)
-            ->willReturn([$activeToken, $alreadyRevokedToken]);
-        $this->authRefreshTokenRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($activeToken);
-
-        $revokedCount = $this->createRevoker()->revokeOtherSessions(
-            $userId,
-            $currentSessionId
-        );
-
-        $this->assertSame(1, $revokedCount);
+        $revokedToken = $this->createRevokedRefreshToken($otherSessionId);
+        $allSessions = [$currentSession, $otherSession, $revokedSession];
+        $this->expectSessionRevocation($userId, $allSessions, $otherSession);
+        $this->expectTokenRevocation($otherSessionId, [$activeToken, $revokedToken], $activeToken);
+        $count = $this->createRevoker()->revokeOtherSessions($userId, $currentSessionId);
+        $this->assertSame(1, $count);
         $this->assertFalse($currentSession->isRevoked());
         $this->assertTrue($otherSession->isRevoked());
-        $this->assertTrue($alreadyRevokedSession->isRevoked());
+        $this->assertTrue($revokedSession->isRevoked());
         $this->assertTrue($activeToken->isRevoked());
-        $this->assertTrue($alreadyRevokedToken->isRevoked());
+        $this->assertTrue($revokedToken->isRevoked());
     }
 
     public function testRevokeOtherSessionsReturnsZeroWhenNothingToRevoke(): void
     {
         $userId = $this->faker->uuid();
         $currentSessionId = $this->faker->uuid();
-
         $currentSession = $this->createSession($currentSessionId, $userId);
-        $alreadyRevokedSession = $this->createRevokedSession(
-            $this->faker->uuid(),
-            $userId
-        );
-
-        $this->authSessionRepository
-            ->expects($this->once())
-            ->method('findByUserId')
-            ->with($userId)
-            ->willReturn([$currentSession, $alreadyRevokedSession]);
-        $this->authSessionRepository
-            ->expects($this->never())
-            ->method('save');
-        $this->authRefreshTokenRepository
-            ->expects($this->never())
-            ->method('findBySessionId');
-        $this->authRefreshTokenRepository
-            ->expects($this->never())
-            ->method('save');
-
-        $revokedCount = $this->createRevoker()->revokeOtherSessions(
-            $userId,
-            $currentSessionId
-        );
-
-        $this->assertSame(0, $revokedCount);
+        $revokedSession = $this->createRevokedSession($this->faker->uuid(), $userId);
+        $this->expectNoRevocation($userId, [$currentSession, $revokedSession]);
+        $count = $this->createRevoker()->revokeOtherSessions($userId, $currentSessionId);
+        $this->assertSame(0, $count);
         $this->assertFalse($currentSession->isRevoked());
-        $this->assertTrue($alreadyRevokedSession->isRevoked());
+        $this->assertTrue($revokedSession->isRevoked());
     }
 
     public function testRevokeOtherSessionsSkipsRevokedTokenAndRevokesLaterActiveToken(): void
@@ -117,43 +68,70 @@ final class PasswordChangeSessionRevokerTest extends UnitTestCase
         $userId = $this->faker->uuid();
         $currentSessionId = $this->faker->uuid();
         $otherSessionId = $this->faker->uuid();
-
+        $currentSession = $this->createSession($currentSessionId, $userId);
         $otherSession = $this->createSession($otherSessionId, $userId);
         $revokedToken = $this->createRevokedRefreshToken($otherSessionId);
         $activeToken = $this->createRefreshToken($otherSessionId);
+        $this->expectSessionRevocation($userId, [$currentSession, $otherSession], $otherSession);
+        $this->expectTokenRevocation($otherSessionId, [$revokedToken, $activeToken], $activeToken);
+        $count = $this->createRevoker()->revokeOtherSessions($userId, $currentSessionId);
+        $this->assertSame(1, $count);
+        $this->assertTrue($otherSession->isRevoked());
+        $this->assertTrue($revokedToken->isRevoked());
+        $this->assertTrue($activeToken->isRevoked());
+    }
 
+    /**
+     * @param array<AuthSession> $sessions
+     */
+    private function expectSessionRevocation(
+        string $userId,
+        array $sessions,
+        AuthSession $savedSession
+    ): void {
         $this->authSessionRepository
             ->expects($this->once())
             ->method('findByUserId')
             ->with($userId)
-            ->willReturn([
-                $this->createSession($currentSessionId, $userId),
-                $otherSession,
-            ]);
+            ->willReturn($sessions);
         $this->authSessionRepository
             ->expects($this->once())
             ->method('save')
-            ->with($otherSession);
+            ->with($savedSession);
+    }
 
+    /**
+     * @param array<AuthRefreshToken> $tokens
+     */
+    private function expectTokenRevocation(
+        string $sessionId,
+        array $tokens,
+        AuthRefreshToken $savedToken
+    ): void {
         $this->authRefreshTokenRepository
             ->expects($this->once())
             ->method('findBySessionId')
-            ->with($otherSessionId)
-            ->willReturn([$revokedToken, $activeToken]);
+            ->with($sessionId)
+            ->willReturn($tokens);
         $this->authRefreshTokenRepository
             ->expects($this->once())
             ->method('save')
-            ->with($activeToken);
+            ->with($savedToken);
+    }
 
-        $revokedCount = $this->createRevoker()->revokeOtherSessions(
-            $userId,
-            $currentSessionId
-        );
-
-        $this->assertSame(1, $revokedCount);
-        $this->assertTrue($otherSession->isRevoked());
-        $this->assertTrue($revokedToken->isRevoked());
-        $this->assertTrue($activeToken->isRevoked());
+    /**
+     * @param array<AuthSession> $sessions
+     */
+    private function expectNoRevocation(string $userId, array $sessions): void
+    {
+        $this->authSessionRepository
+            ->expects($this->once())
+            ->method('findByUserId')
+            ->with($userId)
+            ->willReturn($sessions);
+        $this->authSessionRepository->expects($this->never())->method('save');
+        $this->authRefreshTokenRepository->expects($this->never())->method('findBySessionId');
+        $this->authRefreshTokenRepository->expects($this->never())->method('save');
     }
 
     private function createSession(

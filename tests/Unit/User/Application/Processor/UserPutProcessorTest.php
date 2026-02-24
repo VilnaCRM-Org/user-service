@@ -40,18 +40,11 @@ final class UserPutProcessorTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->mockOperation =
-            $this->createMock(Operation::class);
+        $this->mockOperation = $this->createMock(Operation::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new UuidFactory());
         $this->updateUserCommandFactory = new UpdateUserCommandFactory();
-        $this->getUserQueryHandler = $this->createMock(
-            GetUserQueryHandler::class
-        );
-        $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->security = $this->createMock(Security::class);
-        $this->mockUpdateUserCommandFactory =
-            $this->createMock(UpdateUserCommandFactoryInterface::class);
+        $this->initializeMocks();
         $this->processor = new UserPutProcessor(
             $this->commandBus,
             $this->mockUpdateUserCommandFactory,
@@ -62,20 +55,9 @@ final class UserPutProcessorTest extends UnitTestCase
 
     public function testProcess(): void
     {
-        [
-            $user,
-            $updateData,
-            $userPutDto,
-            $userId,
-        ] = $this->prepareUserPutTestData();
-
-        $this->getUserQueryHandler
-            ->expects($this->once())
-            ->method('handle')
-            ->with($userId)
-            ->willReturn($user);
-
-        $this->testProcessSetExpectations($user, $updateData);
+        [$user, $updateData, $userPutDto, $userId] = $this->prepareUserPutTestData();
+        $this->expectUserQueryReturns($userId, $user);
+        $this->prepareSessionExpectations($user, $updateData);
 
         $result = $this->processor->process(
             $userPutDto,
@@ -88,13 +70,8 @@ final class UserPutProcessorTest extends UnitTestCase
 
     public function testProcessUserNotFound(): void
     {
-        [
-            $userPutDto,
-            $userId,
-        ] = $this->prepareUserNotFoundTestData();
-
+        [$userPutDto, $userId] = $this->prepareUserNotFoundTestData();
         $this->expectUserNotFound($userId);
-
         $this->expectException(UserNotFoundException::class);
 
         $this->processor->process(
@@ -106,31 +83,10 @@ final class UserPutProcessorTest extends UnitTestCase
 
     public function testProcessWithNullSecurityToken(): void
     {
-        [
-            $user,
-            $updateData,
-            $userPutDto,
-            $userId,
-        ] = $this->prepareUserPutTestData();
-
-        $this->getUserQueryHandler
-            ->expects($this->once())
-            ->method('handle')
-            ->with($userId)
-            ->willReturn($user);
-
-        $this->security->expects($this->once())
-            ->method('getToken')
-            ->willReturn(null);
-
-        $command = $this->updateUserCommandFactory->create($user, $updateData, '');
-        $this->mockUpdateUserCommandFactory
-            ->expects($this->once())
-            ->method('create')
-            ->with($user, $updateData, '')
-            ->willReturn($command);
-
-        $this->commandBus->expects($this->once())->method('dispatch')->with($command);
+        [$user, $updateData, $userPutDto, $userId] = $this->prepareUserPutTestData();
+        $this->expectUserQueryReturns($userId, $user);
+        $this->security->expects($this->once())->method('getToken')->willReturn(null);
+        $this->prepareEmptySessionCommand($user, $updateData);
 
         $result = $this->processor->process(
             $userPutDto,
@@ -143,31 +99,12 @@ final class UserPutProcessorTest extends UnitTestCase
 
     public function testProcessWithNonStringSessionId(): void
     {
-        [
-            $user,
-            $updateData,
-            $userPutDto,
-            $userId,
-        ] = $this->prepareUserPutTestData();
-
-        $this->getUserQueryHandler
-            ->expects($this->once())
-            ->method('handle')
-            ->with($userId)
-            ->willReturn($user);
-
+        [$user, $updateData, $userPutDto, $userId] = $this->prepareUserPutTestData();
+        $this->expectUserQueryReturns($userId, $user);
         $token = $this->createMock(TokenInterface::class);
         $token->method('getAttribute')->with('sid')->willReturn(null);
         $this->security->expects($this->once())->method('getToken')->willReturn($token);
-
-        $command = $this->updateUserCommandFactory->create($user, $updateData, '');
-        $this->mockUpdateUserCommandFactory
-            ->expects($this->once())
-            ->method('create')
-            ->with($user, $updateData, '')
-            ->willReturn($command);
-
-        $this->commandBus->expects($this->once())->method('dispatch')->with($command);
+        $this->prepareEmptySessionCommand($user, $updateData);
 
         $result = $this->processor->process(
             $userPutDto,
@@ -178,28 +115,28 @@ final class UserPutProcessorTest extends UnitTestCase
         $this->assertInstanceOf(User::class, $result);
     }
 
+    private function initializeMocks(): void
+    {
+        $this->getUserQueryHandler = $this->createMock(GetUserQueryHandler::class);
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->security = $this->createMock(Security::class);
+        $this->mockUpdateUserCommandFactory = $this->createMock(
+            UpdateUserCommandFactoryInterface::class
+        );
+    }
+
     /**
      * @return array{UserInterface, UserUpdate, UserPutDto, string}
      */
     private function prepareUserPutTestData(): array
     {
         $userId = $this->faker->uuid();
-        [
-            $email,
-            $initials,
-            $password,
-        ] = $this->generateUserData();
-
+        [$email, $initials, $password] = $this->generateUserData();
         $user = $this->createUser($email, $initials, $password, $userId);
         $updateData = $this->createUserUpdate($email, $initials, $password);
         $userPutDto = $this->createUserPutDto($email, $initials, $password);
 
-        return [
-            $user,
-            $updateData,
-            $userPutDto,
-            $userId,
-        ];
+        return [$user, $updateData, $userPutDto, $userId];
     }
 
     private function createUser(
@@ -247,13 +184,10 @@ final class UserPutProcessorTest extends UnitTestCase
      */
     private function generateUserData(): array
     {
-        $email = $this->faker->email();
-        $initials = $this->faker->name();
-        $password = $this->faker->password();
         return [
-            $email,
-            $initials,
-            $password,
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
         ];
     }
 
@@ -267,12 +201,7 @@ final class UserPutProcessorTest extends UnitTestCase
         $initials = $this->faker->name();
         $password = $this->faker->password();
 
-        $userPutDto = new UserPutDto($email, $initials, $password, $password);
-
-        return [
-            $userPutDto,
-            $userId,
-        ];
+        return [new UserPutDto($email, $initials, $password, $password), $userId];
     }
 
     private function expectUserNotFound(string $userId): void
@@ -284,36 +213,64 @@ final class UserPutProcessorTest extends UnitTestCase
             ->willThrowException(new UserNotFoundException());
     }
 
-    private function testProcessSetExpectations(
+    private function expectUserQueryReturns(
+        string $userId,
+        UserInterface $user
+    ): void {
+        $this->getUserQueryHandler
+            ->expects($this->once())
+            ->method('handle')
+            ->with($userId)
+            ->willReturn($user);
+    }
+
+    private function prepareSessionExpectations(
         UserInterface $user,
         UserUpdate $updateData
     ): void {
         $currentSessionId = $this->faker->uuid();
+        $this->prepareSecurityTokenExpectation($currentSessionId);
+        $this->prepareCommandDispatch($user, $updateData, $currentSessionId);
+    }
+
+    private function prepareSecurityTokenExpectation(
+        string $sessionId
+    ): void {
         $token = $this->createMock(TokenInterface::class);
         $token->expects($this->once())
             ->method('getAttribute')
             ->with('sid')
-            ->willReturn($currentSessionId);
-
-        $this->security
-            ->expects($this->once())
+            ->willReturn($sessionId);
+        $this->security->expects($this->once())
             ->method('getToken')
             ->willReturn($token);
+    }
 
-        $command = $this->updateUserCommandFactory->create(
-            $user,
-            $updateData,
-            $currentSessionId
-        );
-
-        $this->mockUpdateUserCommandFactory
-            ->expects($this->once())
+    private function prepareCommandDispatch(
+        UserInterface $user,
+        UserUpdate $updateData,
+        string $sessionId
+    ): void {
+        $command = $this->updateUserCommandFactory->create($user, $updateData, $sessionId);
+        $this->mockUpdateUserCommandFactory->expects($this->once())
             ->method('create')
-            ->with($user, $updateData, $currentSessionId)
+            ->with($user, $updateData, $sessionId)
             ->willReturn($command);
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($command);
+    }
 
-        $this->commandBus
-            ->expects($this->once())
+    private function prepareEmptySessionCommand(
+        UserInterface $user,
+        UserUpdate $updateData
+    ): void {
+        $command = $this->updateUserCommandFactory->create($user, $updateData, '');
+        $this->mockUpdateUserCommandFactory->expects($this->once())
+            ->method('create')
+            ->with($user, $updateData, '')
+            ->willReturn($command);
+        $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($command);
     }

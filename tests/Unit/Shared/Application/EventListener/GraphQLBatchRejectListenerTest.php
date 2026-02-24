@@ -27,34 +27,16 @@ final class GraphQLBatchRejectListenerTest extends TestCase
 
     public function testRejectsBatchRequestsWith400(): void
     {
-        $batchRequest = [
+        $body = json_encode([
             ['query' => '{ __typename }'],
             ['query' => '{ __typename }'],
-        ];
-
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            [],
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            json_encode($batchRequest)
-        );
-
-        $event = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST
-        );
-
+        ]);
+        $event = $this->createGraphqlRequestEvent('/api/graphql', 'POST', $body);
         ($this->listener)($event);
-
         $this->assertTrue($event->hasResponse());
         $response = $event->getResponse();
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
-
         $data = json_decode($response->getContent(), true);
         $this->assertSame('about:blank', $data['type'] ?? null);
         $this->assertStringContainsString('batch', strtolower($data['detail'] ?? ''));
@@ -62,181 +44,84 @@ final class GraphQLBatchRejectListenerTest extends TestCase
 
     public function testAllowsSingleGraphqlRequests(): void
     {
-        $singleRequest = ['query' => '{ __typename }'];
-
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            [],
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            json_encode($singleRequest)
-        );
-
-        $event = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST
-        );
-
+        $body = json_encode(['query' => '{ __typename }']);
+        $event = $this->createGraphqlRequestEvent('/api/graphql', 'POST', $body);
         ($this->listener)($event);
-
         $this->assertFalse($event->hasResponse());
     }
 
     public function testIgnoresNonGraphqlPaths(): void
     {
-        $batchRequest = [
+        $body = json_encode([
             ['query' => '{ __typename }'],
             ['query' => '{ __typename }'],
-        ];
-
-        $request = Request::create(
-            '/api/users',
-            'POST',
-            [],
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            json_encode($batchRequest)
-        );
-
-        $event = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST
-        );
-
+        ]);
+        $event = $this->createGraphqlRequestEvent('/api/users', 'POST', $body);
         ($this->listener)($event);
-
         $this->assertFalse($event->hasResponse());
     }
 
     public function testIgnoresNonPostRequests(): void
     {
-        $batchRequest = [
+        $body = json_encode([
             ['query' => '{ __typename }'],
             ['query' => '{ __typename }'],
-        ];
-
-        $request = Request::create(
-            '/api/graphql',
-            'GET',
-            [],
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            json_encode($batchRequest)
-        );
-
-        $event = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST
-        );
-
+        ]);
+        $event = $this->createGraphqlRequestEvent('/api/graphql', 'GET', $body);
         ($this->listener)($event);
-
         $this->assertFalse($event->hasResponse());
     }
 
     public function testIgnoresEmptyContent(): void
     {
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            [],
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            ''
-        );
-
-        $event = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST
-        );
-
+        $event = $this->createGraphqlRequestEvent('/api/graphql', 'POST', '');
         ($this->listener)($event);
-
         $this->assertFalse($event->hasResponse());
     }
 
     public function testRejectsBatchRequestAtMaxJsonDepth(): void
     {
-        // 511-level deep nested list: json_decode with depth=512 succeeds (512 handles up to 511 levels)
         $deepJson = str_repeat('[', 511) . str_repeat(']', 511);
-
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            [],
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            $deepJson
-        );
-
-        $event = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST
-        );
-
+        $event = $this->createGraphqlRequestEvent('/api/graphql', 'POST', $deepJson);
         ($this->listener)($event);
-
         $this->assertTrue($event->hasResponse());
         $this->assertSame(Response::HTTP_BAD_REQUEST, $event->getResponse()->getStatusCode());
     }
 
     public function testIgnoresTooDeepJson(): void
     {
-        // 512-level deep nested list: json_decode with depth=512 throws JsonException → ignored
         $tooDeepJson = str_repeat('[', 512) . str_repeat(']', 512);
-
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            [],
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            $tooDeepJson
-        );
-
-        $event = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
-            $request,
-            HttpKernelInterface::MAIN_REQUEST
-        );
-
+        $event = $this->createGraphqlRequestEvent('/api/graphql', 'POST', $tooDeepJson);
         ($this->listener)($event);
-
         $this->assertFalse($event->hasResponse());
     }
 
     public function testIgnoresInvalidJson(): void
     {
+        $event = $this->createGraphqlRequestEvent('/api/graphql', 'POST', 'invalid json');
+        ($this->listener)($event);
+        $this->assertFalse($event->hasResponse());
+    }
+
+    private function createGraphqlRequestEvent(
+        string $path,
+        string $method,
+        string $body
+    ): RequestEvent {
         $request = Request::create(
-            '/api/graphql',
-            'POST',
+            $path,
+            $method,
             [],
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
-            'invalid json'
+            $body
         );
 
-        $event = new RequestEvent(
+        return new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
             $request,
             HttpKernelInterface::MAIN_REQUEST
         );
-
-        ($this->listener)($event);
-
-        $this->assertFalse($event->hasResponse());
     }
 }

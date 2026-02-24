@@ -10,6 +10,7 @@ use App\User\Application\Factory\EmailFactoryInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetConfirmedEvent;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -85,8 +86,9 @@ final class PasswordResetConfirmedEventSubscriberTest extends UnitTestCase
         $this->assertCount(1, $subscribedEvents);
     }
 
-    private function createUserMock(string $userEmail): \PHPUnit\Framework\MockObject\MockObject&UserInterface
-    {
+    private function createUserMock(
+        string $userEmail
+    ): MockObject&UserInterface {
         $user = $this->createMock(UserInterface::class);
         $user->expects($this->once())
             ->method('getEmail')

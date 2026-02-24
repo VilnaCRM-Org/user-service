@@ -11,14 +11,10 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use Behat\Behat\Context\Context;
 use DateTimeImmutable;
 use RuntimeException;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 
-/**
- */
 final readonly class RateLimitingContext implements Context
 {
-    use RateLimitingContextHelperTrait;
-
     private const IP_ADDRESS = '127.0.0.1';
     private const DEFAULT_PENDING_SESSION_ID = 'some-session';
 
@@ -26,7 +22,8 @@ final readonly class RateLimitingContext implements Context
         private UserOperationsState $state,
         private UserRepositoryInterface $userRepository,
         private PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
-        private ContainerInterface $container,
+        private ApiRateLimiterCollection $apiLimiters,
+        private AuthRateLimiterCollection $authLimiters,
     ) {
     }
 
@@ -35,7 +32,7 @@ final readonly class RateLimitingContext implements Context
      */
     public function anonymousRequestsHaveBeenSentWithinMinute(int $count): void
     {
-        $this->consume($this->limiter('global_api_anonymous'), $this->buildIpKey(), $count);
+        $this->consume($this->apiLimiters->globalApiAnonymousLimiter, $this->buildIpKey(), $count);
     }
 
     /**
@@ -43,7 +40,11 @@ final readonly class RateLimitingContext implements Context
      */
     public function authenticatedRequestsHaveBeenSentWithinMinute(int $count): void
     {
-        $this->consume($this->limiter('global_api_authenticated'), $this->buildIpKey(), $count);
+        $this->consume(
+            $this->apiLimiters->globalApiAuthenticatedLimiter,
+            $this->buildIpKey(),
+            $count
+        );
     }
 
     /**
@@ -51,7 +52,7 @@ final readonly class RateLimitingContext implements Context
      */
     public function registrationRequestsHaveBeenSentFromSameIpWithinMinute(int $count): void
     {
-        $this->consume($this->limiter('registration'), $this->buildIpKey(), $count);
+        $this->consume($this->apiLimiters->registrationLimiter, $this->buildIpKey(), $count);
     }
 
     /**
@@ -65,7 +66,7 @@ final readonly class RateLimitingContext implements Context
             throw new RuntimeException(sprintf('Unsupported rate-limit path: %s', $path));
         }
 
-        $this->consume($this->limiter('user_collection'), $this->buildIpKey(), $count);
+        $this->consume($this->apiLimiters->userCollectionLimiter, $this->buildIpKey(), $count);
     }
 
     /**
@@ -74,8 +75,12 @@ final readonly class RateLimitingContext implements Context
     public function patchRequestsForCurrentUserHaveBeenSentWithinMinute(int $count): void
     {
         $this->consume(
-            $this->limiter('user_update'),
-            $this->buildUserKey($this->requireCurrentUserId()),
+            $this->apiLimiters->userUpdateLimiter,
+            $this->buildUserKey(
+                $this->resolveUserIdByEmail(
+                    (string) $this->state->currentUserEmail
+                )
+            ),
             $count
         );
     }
@@ -87,7 +92,7 @@ final readonly class RateLimitingContext implements Context
         int $count,
         string $userId
     ): void {
-        $this->consume($this->limiter('user_update'), $this->buildUserKey($userId), $count);
+        $this->consume($this->apiLimiters->userUpdateLimiter, $this->buildUserKey($userId), $count);
     }
 
     /**
@@ -96,8 +101,12 @@ final readonly class RateLimitingContext implements Context
     public function deleteRequestsForCurrentUserHaveBeenSentWithinMinute(int $count): void
     {
         $this->consume(
-            $this->limiter('user_delete'),
-            $this->buildUserKey($this->requireCurrentUserId()),
+            $this->apiLimiters->userDeleteLimiter,
+            $this->buildUserKey(
+                $this->resolveUserIdByEmail(
+                    (string) $this->state->currentUserEmail
+                )
+            ),
             $count
         );
     }
@@ -107,7 +116,7 @@ final readonly class RateLimitingContext implements Context
      */
     public function resendConfirmationRequestsFromSameIpWithinMinute(int $count): void
     {
-        $this->consume($this->limiter('resend_confirmation'), $this->buildIpKey(), $count);
+        $this->consume($this->apiLimiters->resendConfirmationLimiter, $this->buildIpKey(), $count);
     }
 
     /**
@@ -118,7 +127,7 @@ final readonly class RateLimitingContext implements Context
         string $userId
     ): void {
         $this->consume(
-            $this->limiter('resend_confirmation_target'),
+            $this->apiLimiters->resendConfirmationTargetLimiter,
             $this->buildUserKey($userId),
             $count
         );
@@ -129,7 +138,7 @@ final readonly class RateLimitingContext implements Context
      */
     public function tokenExchangeRequestsWithSameClientWithinMinute(int $count): void
     {
-        $this->consume($this->limiter('oauth_token'), 'client:anonymous', $count);
+        $this->consume($this->authLimiters->oauthTokenLimiter, 'client:anonymous', $count);
     }
 
     /**
@@ -137,7 +146,7 @@ final readonly class RateLimitingContext implements Context
      */
     public function emailConfirmationRequestsFromSameIpWithinMinute(int $count): void
     {
-        $this->consume($this->limiter('email_confirmation'), $this->buildIpKey(), $count);
+        $this->consume($this->apiLimiters->emailConfirmationLimiter, $this->buildIpKey(), $count);
     }
 
     /**
@@ -145,7 +154,7 @@ final readonly class RateLimitingContext implements Context
      */
     public function signInRequestsFromSameIpWithinMinute(int $count): void
     {
-        $this->consume($this->limiter('signin_ip'), $this->buildIpKey(), $count);
+        $this->consume($this->authLimiters->signinIpLimiter, $this->buildIpKey(), $count);
     }
 
     /**
@@ -155,7 +164,11 @@ final readonly class RateLimitingContext implements Context
         int $count,
         string $email
     ): void {
-        $this->consume($this->limiter('signin_email'), $this->buildEmailKey($email), $count);
+        $this->consume(
+            $this->authLimiters->signinEmailLimiter,
+            $this->buildEmailKey($email),
+            $count
+        );
     }
 
     /**
@@ -177,7 +190,7 @@ final readonly class RateLimitingContext implements Context
         $this->state->pendingSessionId = self::DEFAULT_PENDING_SESSION_ID;
 
         $this->consume(
-            $this->limiter('twofa_verification_user'),
+            $this->authLimiters->twofaVerificationUserLimiter,
             $this->buildUserKey($userId),
             $count
         );
@@ -188,7 +201,11 @@ final readonly class RateLimitingContext implements Context
      */
     public function twoFactorVerificationRequestsFromSameIpWithinMinute(int $count): void
     {
-        $this->consume($this->limiter('twofa_verification_ip'), $this->buildIpKey(), $count);
+        $this->consume(
+            $this->authLimiters->twofaVerificationIpLimiter,
+            $this->buildIpKey(),
+            $count
+        );
     }
 
     /**
@@ -197,8 +214,12 @@ final readonly class RateLimitingContext implements Context
     public function twoFactorSetupRequestsWithinMinute(int $count): void
     {
         $this->consume(
-            $this->limiter('twofa_setup'),
-            $this->buildUserKey($this->requireCurrentUserId()),
+            $this->authLimiters->twofaSetupLimiter,
+            $this->buildUserKey(
+                $this->resolveUserIdByEmail(
+                    (string) $this->state->currentUserEmail
+                )
+            ),
             $count
         );
     }
@@ -209,8 +230,12 @@ final readonly class RateLimitingContext implements Context
     public function twoFactorConfirmRequestsWithinMinute(int $count): void
     {
         $this->consume(
-            $this->limiter('twofa_confirm'),
-            $this->buildUserKey($this->requireCurrentUserId()),
+            $this->authLimiters->twofaConfirmLimiter,
+            $this->buildUserKey(
+                $this->resolveUserIdByEmail(
+                    (string) $this->state->currentUserEmail
+                )
+            ),
             $count
         );
     }
@@ -221,8 +246,12 @@ final readonly class RateLimitingContext implements Context
     public function twoFactorDisableRequestsWithinMinute(int $count): void
     {
         $this->consume(
-            $this->limiter('twofa_disable'),
-            $this->buildUserKey($this->requireCurrentUserId()),
+            $this->authLimiters->twofaDisableLimiter,
+            $this->buildUserKey(
+                $this->resolveUserIdByEmail(
+                    (string) $this->state->currentUserEmail
+                )
+            ),
             $count
         );
     }
@@ -234,7 +263,7 @@ final readonly class RateLimitingContext implements Context
         int $count,
         string $email
     ): void {
-        $this->consume($this->limiter('password_reset'), $email, $count);
+        $this->consume($this->authLimiters->passwordResetLimiter, $email, $count);
     }
 
     /**
@@ -243,5 +272,40 @@ final readonly class RateLimitingContext implements Context
     public function signInRateLimitForIpHasBeenExceeded(): void
     {
         $this->signInRequestsFromSameIpWithinMinute(10);
+    }
+
+    private function resolveUserIdByEmail(string $email): string
+    {
+        $user = $this->userRepository->findByEmail($email);
+        if (!$user instanceof User) {
+            throw new RuntimeException(
+                sprintf('User with email %s was not found.', $email)
+            );
+        }
+
+        return $user->getId();
+    }
+
+    private function consume(
+        RateLimiterFactory $limiter,
+        string $key,
+        int $count
+    ): void {
+        $limiter->create($key)->consume($count);
+    }
+
+    private function buildUserKey(string $userId): string
+    {
+        return sprintf('user:%s', $userId);
+    }
+
+    private function buildEmailKey(string $email): string
+    {
+        return sprintf('email:%s', strtolower(trim($email)));
+    }
+
+    private function buildIpKey(): string
+    {
+        return sprintf('ip:%s', self::IP_ADDRESS);
     }
 }

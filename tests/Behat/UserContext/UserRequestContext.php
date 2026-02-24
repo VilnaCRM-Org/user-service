@@ -12,10 +12,8 @@ use App\Tests\Behat\UserContext\Input\EmptyInput;
 use App\Tests\Behat\UserContext\Input\SignInInput;
 use App\Tests\Behat\UserContext\Input\TwoFactorCodeInput;
 use App\Tests\Behat\UserContext\Input\UpdateUserInput;
-use App\User\Domain\Entity\AuthRefreshToken;
-use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use Behat\Behat\Context\Context;
-use DateTimeImmutable;
+use OTPHP\TOTP;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\KernelInterface;
@@ -25,8 +23,6 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class UserRequestContext implements Context
 {
-    use UserRequestContextHelperTrait;
-
     private UrlResolver $urlResolver;
     private RequestBodySerializer $bodySerializer;
 
@@ -34,7 +30,6 @@ final class UserRequestContext implements Context
         private UserOperationsState $state,
         private readonly KernelInterface $kernel,
         SerializerInterface $serializer,
-        private readonly AuthRefreshTokenRepositoryInterface $authRefreshTokenRepository,
     ) {
         $this->urlResolver = new UrlResolver();
         $this->bodySerializer = new RequestBodySerializer($serializer);
@@ -109,7 +104,13 @@ final class UserRequestContext implements Context
         $this->state->requestBody = new SignInInput($email, 'passWORD1');
         $this->requestSendTo('POST', '/api/signin');
 
-        $responseData = $this->decodeLatestResponse();
+        $content = $this->state->response?->getContent();
+        Assert::assertIsString($content);
+        Assert::assertNotSame('', $content);
+
+        $responseData = json_decode($content, true);
+        Assert::assertIsArray($responseData);
+
         $refreshToken = $responseData['refresh_token'] ?? null;
         $accessToken = $responseData['access_token'] ?? null;
 
@@ -123,108 +124,6 @@ final class UserRequestContext implements Context
         $this->state->originalRefreshToken = $refreshToken;
         $this->state->storedAccessTokens = ['default' => $accessToken];
         $this->state->storedRefreshTokens = ['default' => $refreshToken];
-    }
-
-    /**
-     * @Given submitting the refresh token to exchange
-     */
-    public function submittingTheRefreshTokenToExchange(): void
-    {
-        $refreshToken = $this->resolveStateToken('refreshToken');
-        $this->submitRefreshToken($refreshToken);
-    }
-
-    /**
-     * @Given submitting the stored refresh token to exchange
-     */
-    public function submittingTheStoredRefreshTokenToExchange(): void
-    {
-        $storedTokens = $this->state->storedRefreshTokens;
-        if (!is_array($storedTokens) || !isset($storedTokens['default'])) {
-            throw new \RuntimeException('No stored refresh token found.');
-        }
-
-        $refreshToken = $storedTokens['default'];
-        Assert::assertIsString($refreshToken);
-        Assert::assertNotSame('', $refreshToken);
-
-        $this->submitRefreshToken($refreshToken);
-    }
-
-    /**
-     * @Given submitting the new stored refresh token to exchange
-     */
-    public function submittingTheNewStoredRefreshTokenToExchange(): void
-    {
-        $storedTokens = $this->state->storedRefreshTokens;
-        if (!is_array($storedTokens) || !isset($storedTokens['new'])) {
-            throw new \RuntimeException('No stored new refresh token found.');
-        }
-
-        $refreshToken = $storedTokens['new'];
-        Assert::assertIsString($refreshToken);
-        Assert::assertNotSame('', $refreshToken);
-
-        $this->submitRefreshToken($refreshToken);
-    }
-
-    /**
-     * @Given submitting refresh token :refreshToken
-     */
-    public function submittingRefreshToken(string $refreshToken): void
-    {
-        $this->submitRefreshToken($refreshToken);
-    }
-
-    /**
-     * @Given submitting the rotated refresh token to exchange
-     */
-    public function submittingTheRotatedRefreshTokenToExchange(): void
-    {
-        $rotatedToken = $this->resolveStateToken('rotatedRefreshToken');
-        $this->submitRefreshToken($rotatedToken);
-    }
-
-    /**
-     * @Given the refresh token has been rotated within the grace window
-     */
-    public function theRefreshTokenHasBeenRotatedWithinTheGraceWindow(): void
-    {
-        $originalToken = $this->resolveStateToken('refreshToken');
-        $this->exchangeRefreshTokenAndStoreLatest($originalToken);
-
-        $this->state->rotatedRefreshToken = $originalToken;
-    }
-
-    /**
-     * @Given the refresh token has been rotated and grace reuse has been consumed
-     */
-    public function theRefreshTokenHasBeenRotatedAndGraceReuseHasBeenConsumed(): void
-    {
-        $originalToken = $this->resolveStateToken('refreshToken');
-        $this->exchangeRefreshTokenAndStoreLatest($originalToken);
-        $this->exchangeRefreshTokenAndStoreLatest($originalToken);
-
-        $this->state->rotatedRefreshToken = $originalToken;
-    }
-
-    /**
-     * @Given the refresh token has been rotated and the grace window has expired
-     */
-    public function theRefreshTokenHasBeenRotatedAndTheGraceWindowHasExpired(): void
-    {
-        $originalToken = $this->resolveStateToken('refreshToken');
-        $this->exchangeRefreshTokenAndStoreLatest($originalToken);
-
-        $token = $this->authRefreshTokenRepository->findByTokenHash(
-            hash('sha256', $originalToken)
-        );
-        Assert::assertInstanceOf(AuthRefreshToken::class, $token);
-
-        $token->markAsRotated(new DateTimeImmutable('-120 seconds'));
-        $this->authRefreshTokenRepository->save($token);
-
-        $this->state->rotatedRefreshToken = $originalToken;
     }
 
     /**
@@ -332,7 +231,10 @@ final class UserRequestContext implements Context
      */
     public function requestSendTo(string $method, string $path): void
     {
-        $processedPath = $this->processRequestPath($path);
+        $this->urlResolver->setCurrentUserEmail(
+            $this->state->currentUserEmail
+        );
+        $processedPath = $this->urlResolver->resolve($path);
         $headers = $this->buildRequestHeaders($method);
         $requestBody = $this->bodySerializer->serialize($this->state->requestBody, $method);
         $startedAt = microtime(true);
@@ -365,5 +267,118 @@ final class UserRequestContext implements Context
             'GET',
             sprintf('/api/users/%s', UserContext::getUserIdByEmail($currentUserEmail))
         );
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function buildRequestHeaders(string $method): array
+    {
+        $headers = [
+            'HTTP_ACCEPT' => 'application/json',
+            'CONTENT_TYPE' => $this->getContentTypeForMethod($method),
+            'HTTP_ACCEPT_LANGUAGE' => $this->state->language,
+        ];
+
+        $this->appendAuthorizationHeader($headers);
+        $this->appendAuthCookieHeader($headers);
+        $this->appendOriginHeader($headers);
+
+        return $headers;
+    }
+
+    private function getContentTypeForMethod(string $method): string
+    {
+        return $method === 'PATCH' ? 'application/merge-patch+json' : 'application/json';
+    }
+
+    private function resolveStoredPendingSessionId(): string
+    {
+        if (is_string($this->state->pendingSessionId) && $this->state->pendingSessionId !== '') {
+            return $this->state->pendingSessionId;
+        }
+
+        $responseData = $this->decodePendingSessionResponse();
+        $pendingSessionId = $this->extractPendingSessionId($responseData);
+
+        $this->state->pendingSessionId = $pendingSessionId;
+
+        return $pendingSessionId;
+    }
+
+    /**
+     * @return array<string, array<string>|int|string>
+     */
+    private function decodePendingSessionResponse(): array
+    {
+        $responseContent = $this->state->response?->getContent();
+        if (!is_string($responseContent) || $responseContent === '') {
+            throw new \RuntimeException(
+                'No response body available to extract pending_session_id.'
+            );
+        }
+
+        $responseData = json_decode($responseContent, true);
+        if (!is_array($responseData)) {
+            throw new \RuntimeException('pending_session_id is missing in the latest response.');
+        }
+
+        return $responseData;
+    }
+
+    /**
+     * @param array<string, array<string>|int|string> $responseData
+     */
+    private function extractPendingSessionId(array $responseData): string
+    {
+        $pendingSessionId = $responseData['pending_session_id'] ?? '';
+        if (!is_string($pendingSessionId) || $pendingSessionId === '') {
+            throw new \RuntimeException('pending_session_id is missing in the latest response.');
+        }
+
+        return $pendingSessionId;
+    }
+
+    /**
+     * @param array<string, string> $headers
+     */
+    private function appendAuthorizationHeader(array &$headers): void
+    {
+        $accessToken = $this->state->accessToken;
+        if (is_string($accessToken) && $accessToken !== '') {
+            $headers['HTTP_AUTHORIZATION'] = sprintf('Bearer %s', $accessToken);
+        }
+    }
+
+    /**
+     * @param array<string, string> $headers
+     */
+    private function appendAuthCookieHeader(array &$headers): void
+    {
+        $authCookieToken = $this->state->authCookieToken;
+        if (
+            $this->state->useAuthCookie === true &&
+            is_string($authCookieToken) &&
+            $authCookieToken !== ''
+        ) {
+            $headers['HTTP_COOKIE'] = sprintf('__Host-auth_token=%s', $authCookieToken);
+        }
+    }
+
+    /**
+     * @param array<string, string> $headers
+     */
+    private function appendOriginHeader(array &$headers): void
+    {
+        $originHeader = $this->state->originHeader;
+        if (is_string($originHeader) && $originHeader !== '') {
+            $headers['HTTP_ORIGIN'] = $originHeader;
+            $this->state->originHeader = '';
+        }
+    }
+
+    private function generateTotpCode(string $secret): string
+    {
+        return TOTP::create($secret)->now();
     }
 }

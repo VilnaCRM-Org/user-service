@@ -35,38 +35,13 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
     {
         $email = $this->faker->email();
         $securityUser = $this->createSecurityUser($email);
-
-        $this->security
-            ->expects($this->once())
-            ->method('getUser')
-            ->willReturn($securityUser);
-
+        $this->security->expects($this->once())->method('getUser')->willReturn($securityUser);
         $uri = 'otpauth://totp/VilnaCRM:test@example.com?secret=ABC123&issuer=VilnaCRM';
-        $this->commandBus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(
-                static function (SetupTwoFactorCommand $cmd) use ($email, $uri): bool {
-                    $cmd->setResponse(
-                        new SetupTwoFactorCommandResponse($uri, 'ABC123')
-                    );
+        $this->expectSetupDispatch($email, $uri, 'ABC123');
 
-                    return $cmd->userEmail === $email;
-                }
-            ));
+        $response = $this->createProcessor()->process(new SetupTwoFactorDto(), new Post());
 
-        $processor = $this->createProcessor();
-        $response = $processor->process(new SetupTwoFactorDto(), new Post());
-
-        $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertJsonStringEqualsJsonString(
-            json_encode([
-                'otpauth_uri' => $uri,
-                'secret' => 'ABC123',
-            ], JSON_THROW_ON_ERROR),
-            (string) $response->getContent()
-        );
+        $this->assertSetupResponse($response, $uri, 'ABC123');
     }
 
     public function testProcessThrowsUnauthorizedWhenNoUserExists(): void
@@ -115,35 +90,46 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
         );
     }
 
-    private function createSecurityUser(string $identifier): object
+    private function expectSetupDispatch(
+        string $email,
+        string $uri,
+        string $secret
+    ): void {
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(
+                static function (SetupTwoFactorCommand $cmd) use ($email, $uri, $secret): bool {
+                    $cmd->setResponse(
+                        new SetupTwoFactorCommandResponse($uri, $secret)
+                    );
+
+                    return $cmd->userEmail === $email;
+                }
+            ));
+    }
+
+    private function assertSetupResponse(
+        mixed $response,
+        string $uri,
+        string $secret
+    ): void {
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertJsonStringEqualsJsonString(
+            json_encode([
+                'otpauth_uri' => $uri,
+                'secret' => $secret,
+            ], JSON_THROW_ON_ERROR),
+            (string) $response->getContent()
+        );
+    }
+
+    private function createSecurityUser(string $identifier): UserInterface&MockObject
     {
-        return new class($identifier) implements UserInterface {
-            public function __construct(
-                private readonly string $identifier,
-            ) {
-            }
+        $user = $this->createMock(UserInterface::class);
+        $user->method('getUserIdentifier')->willReturn($identifier);
+        $user->method('getRoles')->willReturn(['ROLE_USER']);
 
-            /**
-             * @return array<string>
-             *
-             * @psalm-return list{'ROLE_USER'}
-             */
-            #[\Override]
-            public function getRoles(): array
-            {
-                return ['ROLE_USER'];
-            }
-
-            #[\Override]
-            public function eraseCredentials(): void
-            {
-            }
-
-            #[\Override]
-            public function getUserIdentifier(): string
-            {
-                return $this->identifier;
-            }
-        };
+        return $user;
     }
 }

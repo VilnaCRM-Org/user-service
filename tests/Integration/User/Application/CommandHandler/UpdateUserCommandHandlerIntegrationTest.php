@@ -39,7 +39,9 @@ final class UpdateUserCommandHandlerIntegrationTest extends UserIntegrationTestC
         $this->userFactory = $this->container->get(UserFactoryInterface::class);
         $this->userRepository = $this->container->get(UserRepositoryInterface::class);
         $this->authSessionRepository = $this->container->get(AuthSessionRepositoryInterface::class);
-        $this->authRefreshTokenRepository = $this->container->get(AuthRefreshTokenRepositoryInterface::class);
+        $this->authRefreshTokenRepository = $this->container->get(
+            AuthRefreshTokenRepositoryInterface::class
+        );
         $this->hasherFactory = $this->container->get(PasswordHasherFactoryInterface::class);
         $this->uuidFactory = $this->container->get(UuidFactoryInterface::class);
         $this->ulidFactory = $this->container->get(UlidFactory::class);
@@ -51,58 +53,19 @@ final class UpdateUserCommandHandlerIntegrationTest extends UserIntegrationTestC
         $oldPassword = $this->faker->password();
         $newPassword = $this->faker->password();
         $user = $this->createUserWithHashedPassword($oldPassword);
-
         $currentSessionId = (string) $this->ulidFactory->create();
         $otherSessionOneId = (string) $this->ulidFactory->create();
         $otherSessionTwoId = (string) $this->ulidFactory->create();
-
-        $this->authSessionRepository->save(
-            $this->createSession($currentSessionId, $user->getId())
+        $this->createSessionsWithTokens(
+            $user->getId(),
+            $currentSessionId,
+            $otherSessionOneId,
+            $otherSessionTwoId
         );
-        $this->authSessionRepository->save(
-            $this->createSession($otherSessionOneId, $user->getId())
-        );
-        $this->authSessionRepository->save(
-            $this->createSession($otherSessionTwoId, $user->getId())
-        );
-
-        $this->authRefreshTokenRepository->save(
-            $this->createRefreshToken($currentSessionId)
-        );
-        $this->authRefreshTokenRepository->save(
-            $this->createRefreshToken($otherSessionOneId)
-        );
-        $this->authRefreshTokenRepository->save(
-            $this->createRefreshToken($otherSessionTwoId)
-        );
-
-        $command = new UpdateUserCommand(
-            $user,
-            new UserUpdate(
-                $user->getEmail(),
-                strtoupper($this->faker->lexify('????')),
-                $newPassword,
-                $oldPassword
-            ),
-            $currentSessionId
-        );
-
+        $command = $this->buildUpdateCommand($user, $oldPassword, $newPassword, $currentSessionId);
         $this->handler->__invoke($command);
-
-        $currentSession = $this->authSessionRepository->findById($currentSessionId);
-        $otherSessionOne = $this->authSessionRepository->findById($otherSessionOneId);
-        $otherSessionTwo = $this->authSessionRepository->findById($otherSessionTwoId);
-
-        $this->assertNotNull($currentSession);
-        $this->assertNotNull($otherSessionOne);
-        $this->assertNotNull($otherSessionTwo);
-        $this->assertFalse($currentSession->isRevoked());
-        $this->assertTrue($otherSessionOne->isRevoked());
-        $this->assertTrue($otherSessionTwo->isRevoked());
-
-        $this->assertTokensNotRevokedForSession($currentSessionId);
-        $this->assertTokensRevokedForSession($otherSessionOneId);
-        $this->assertTokensRevokedForSession($otherSessionTwoId);
+        $this->assertCurrentSessionPreserved($currentSessionId);
+        $this->assertOtherSessionsRevoked($otherSessionOneId, $otherSessionTwoId);
     }
 
     private function createUserWithHashedPassword(string $plainPassword): User
@@ -110,7 +73,6 @@ final class UpdateUserCommandHandlerIntegrationTest extends UserIntegrationTestC
         $hashedPassword = $this->hasherFactory
             ->getPasswordHasher(User::class)
             ->hash($plainPassword);
-
         $user = $this->userFactory->create(
             $this->faker->email(),
             strtoupper($this->faker->lexify('????')),
@@ -120,6 +82,32 @@ final class UpdateUserCommandHandlerIntegrationTest extends UserIntegrationTestC
         $this->userRepository->save($user);
 
         return $user;
+    }
+
+    private function createSessionsWithTokens(string $userId, string ...$sessionIds): void
+    {
+        foreach ($sessionIds as $sessionId) {
+            $this->authSessionRepository->save($this->createSession($sessionId, $userId));
+            $this->authRefreshTokenRepository->save($this->createRefreshToken($sessionId));
+        }
+    }
+
+    private function buildUpdateCommand(
+        User $user,
+        string $oldPassword,
+        string $newPassword,
+        string $currentSessionId
+    ): UpdateUserCommand {
+        return new UpdateUserCommand(
+            $user,
+            new UserUpdate(
+                $user->getEmail(),
+                strtoupper($this->faker->lexify('????')),
+                $newPassword,
+                $oldPassword
+            ),
+            $currentSessionId
+        );
     }
 
     private function createSession(string $sessionId, string $userId): AuthSession
@@ -158,10 +146,27 @@ final class UpdateUserCommandHandlerIntegrationTest extends UserIntegrationTestC
     private function assertTokensNotRevokedForSession(string $sessionId): void
     {
         $tokens = $this->authRefreshTokenRepository->findBySessionId($sessionId);
-
         $this->assertNotEmpty($tokens);
         foreach ($tokens as $token) {
             $this->assertFalse($token->isRevoked());
+        }
+    }
+
+    private function assertCurrentSessionPreserved(string $currentSessionId): void
+    {
+        $currentSession = $this->authSessionRepository->findById($currentSessionId);
+        $this->assertNotNull($currentSession);
+        $this->assertFalse($currentSession->isRevoked());
+        $this->assertTokensNotRevokedForSession($currentSessionId);
+    }
+
+    private function assertOtherSessionsRevoked(string ...$sessionIds): void
+    {
+        foreach ($sessionIds as $sessionId) {
+            $session = $this->authSessionRepository->findById($sessionId);
+            $this->assertNotNull($session);
+            $this->assertTrue($session->isRevoked());
+            $this->assertTokensRevokedForSession($sessionId);
         }
     }
 }

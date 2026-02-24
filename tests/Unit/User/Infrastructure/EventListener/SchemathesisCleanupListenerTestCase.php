@@ -16,6 +16,7 @@ use App\User\Infrastructure\EventListener\SchemathesisCleanupListener;
 use App\User\Infrastructure\Extractor\SchemathesisBatchUsersEmailExtractor;
 use App\User\Infrastructure\Extractor\SchemathesisEmailExtractor;
 use App\User\Infrastructure\Extractor\SchemathesisSingleUserEmailExtractor;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
@@ -109,8 +110,9 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
         );
     }
 
-    protected function userWithEmail(string $email): \PHPUnit\Framework\MockObject\MockObject&UserInterface
-    {
+    protected function userWithEmail(
+        string $email
+    ): MockObject&UserInterface {
         $user = $this->createMock(UserInterface::class);
         $user->method('getId')->willReturn($this->faker->uuid());
         $user->method('getEmail')->willReturn($email);

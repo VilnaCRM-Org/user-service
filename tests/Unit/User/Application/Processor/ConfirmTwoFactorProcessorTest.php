@@ -38,56 +38,13 @@ final class ConfirmTwoFactorProcessorTest extends UnitTestCase
     {
         $email = $this->faker->email();
         $code = '123456';
-        $recoveryCodes = [
-            'ABCD-1234',
-            'EFGH-5678',
-            'IJKL-9012',
-            'MNOP-3456',
-            'QRST-7890',
-            'UVWX-1234',
-            'YZab-5678',
-            'cdef-9012',
-        ];
-
+        $recoveryCodes = $this->createRecoveryCodes();
         $this->mockAuthenticatedUser($email);
+        $this->expectDispatchConfirm($email, $code, $recoveryCodes);
 
-        $this->commandBus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->willReturnCallback(
-                function (ConfirmTwoFactorCommand $cmd) use (
-                    $email,
-                    $code,
-                    $recoveryCodes
-                ): void {
-                    $this->assertSame($email, $cmd->userEmail);
-                    $this->assertSame($code, $cmd->twoFactorCode);
-                    $cmd->setResponse(
-                        new ConfirmTwoFactorCommandResponse(
-                            $recoveryCodes
-                        )
-                    );
-                }
-            );
+        $response = $this->processConfirmTwoFactor($code);
 
-        $processor = $this->createProcessor();
-        $dto = new ConfirmTwoFactorDto($code);
-
-        $response = $processor->process(
-            $dto,
-            new Post(),
-            [],
-            []
-        );
-
-        $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertSame(200, $response->getStatusCode());
-
-        $body = json_decode(
-            (string) $response->getContent(),
-            true
-        );
-        $this->assertSame($recoveryCodes, $body['recovery_codes']);
+        $this->assertRecoveryCodesResponse($response, $recoveryCodes);
     }
 
     public function testProcessThrowsWhenNotAuthenticated(): void
@@ -116,59 +73,19 @@ final class ConfirmTwoFactorProcessorTest extends UnitTestCase
     {
         $email = $this->faker->email();
         $sessionId = $this->faker->uuid();
-
         $this->mockAuthenticatedUserWithSession($email, $sessionId);
+        $this->expectDispatchWithSessionId($sessionId);
 
-        $this->commandBus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->willReturnCallback(
-                function (ConfirmTwoFactorCommand $cmd) use (
-                    $sessionId
-                ): void {
-                    $this->assertSame(
-                        $sessionId,
-                        $cmd->currentSessionId
-                    );
-                    $cmd->setResponse(
-                        new ConfirmTwoFactorCommandResponse([])
-                    );
-                }
-            );
-
-        $processor = $this->createProcessor();
-        $processor->process(
-            new ConfirmTwoFactorDto('123456'),
-            new Post(),
-            [],
-            []
-        );
+        $this->processConfirmTwoFactor('123456');
     }
 
     public function testProcessFallsBackToEmptySessionId(): void
     {
         $email = $this->faker->email();
         $this->mockAuthenticatedUser($email);
+        $this->expectDispatchWithEmptySessionId();
 
-        $this->commandBus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->willReturnCallback(
-                function (ConfirmTwoFactorCommand $cmd): void {
-                    $this->assertSame('', $cmd->currentSessionId);
-                    $cmd->setResponse(
-                        new ConfirmTwoFactorCommandResponse([])
-                    );
-                }
-            );
-
-        $processor = $this->createProcessor();
-        $processor->process(
-            new ConfirmTwoFactorDto('123456'),
-            new Post(),
-            [],
-            []
-        );
+        $this->processConfirmTwoFactor('123456');
     }
 
     private function createProcessor(): ConfirmTwoFactorProcessor
@@ -212,5 +129,106 @@ final class ConfirmTwoFactorProcessorTest extends UnitTestCase
         $this->security
             ->method('getToken')
             ->willReturn($token);
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function createRecoveryCodes(): array
+    {
+        return [
+            'ABCD-1234', 'EFGH-5678', 'IJKL-9012', 'MNOP-3456',
+            'QRST-7890', 'UVWX-1234', 'YZab-5678', 'cdef-9012',
+        ];
+    }
+
+    /**
+     * @param array<string> $recoveryCodes
+     */
+    private function expectDispatchConfirm(
+        string $email,
+        string $code,
+        array $recoveryCodes
+    ): void {
+        $this->commandBus
+            ->expects($this->once())
+            ->method('dispatch')
+            ->willReturnCallback(
+                function (ConfirmTwoFactorCommand $cmd) use (
+                    $email,
+                    $code,
+                    $recoveryCodes
+                ): void {
+                    $this->assertSame($email, $cmd->userEmail);
+                    $this->assertSame($code, $cmd->twoFactorCode);
+                    $cmd->setResponse(
+                        new ConfirmTwoFactorCommandResponse(
+                            $recoveryCodes
+                        )
+                    );
+                }
+            );
+    }
+
+    private function processConfirmTwoFactor(string $code): mixed
+    {
+        return $this->createProcessor()->process(
+            new ConfirmTwoFactorDto($code),
+            new Post(),
+            [],
+            []
+        );
+    }
+
+    /**
+     * @param array<string> $recoveryCodes
+     */
+    private function assertRecoveryCodesResponse(
+        mixed $response,
+        array $recoveryCodes
+    ): void {
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $this->assertSame(200, $response->getStatusCode());
+        $body = json_decode(
+            (string) $response->getContent(),
+            true
+        );
+        $this->assertSame($recoveryCodes, $body['recovery_codes']);
+    }
+
+    private function expectDispatchWithSessionId(
+        string $sessionId
+    ): void {
+        $this->commandBus
+            ->expects($this->once())
+            ->method('dispatch')
+            ->willReturnCallback(
+                function (ConfirmTwoFactorCommand $cmd) use (
+                    $sessionId
+                ): void {
+                    $this->assertSame(
+                        $sessionId,
+                        $cmd->currentSessionId
+                    );
+                    $cmd->setResponse(
+                        new ConfirmTwoFactorCommandResponse([])
+                    );
+                }
+            );
+    }
+
+    private function expectDispatchWithEmptySessionId(): void
+    {
+        $this->commandBus
+            ->expects($this->once())
+            ->method('dispatch')
+            ->willReturnCallback(
+                function (ConfirmTwoFactorCommand $cmd): void {
+                    $this->assertSame('', $cmd->currentSessionId);
+                    $cmd->setResponse(
+                        new ConfirmTwoFactorCommandResponse([])
+                    );
+                }
+            );
     }
 }

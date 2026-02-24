@@ -69,74 +69,32 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createUser();
         $currentSessionId = (string) new SymfonyUuid($this->faker->uuid());
-        $updateData = $this->createUpdateData(
-            $this->faker->password(),
-            $this->faker->password()
-        );
+        $updateData = $this->createUpdateData($this->faker->password(), $this->faker->password());
         $command = new UpdateUserCommand($user, $updateData, $currentSessionId);
-
         $this->expectUuidFactory();
         $this->expectPasswordHasher(true);
         $this->expectUserUpdateApplied($user, $updateData);
-        $this->passwordChangeSessionRevoker
-            ->expects($this->once())
-            ->method('revokeOtherSessions')
-            ->with($user->getId(), $currentSessionId)
-            ->willReturn(1);
-
+        $this->expectSessionRevocation($user, $currentSessionId, 1);
         $publishedEvents = [];
-        $this->eventBus
-            ->expects($this->once())
-            ->method('publish')
-            ->willReturnCallback(
-                static function (DomainEvent ...$events) use (&$publishedEvents): void {
-                    $publishedEvents = $events;
-                }
-            );
+        $this->expectEventPublish($publishedEvents);
 
         $this->createHandler()->__invoke($command);
 
-        $allSessionsRevokedEvent = $this->findAllSessionsRevokedEvent(
-            $publishedEvents
-        );
-        $this->assertInstanceOf(AllSessionsRevokedEvent::class, $allSessionsRevokedEvent);
-        $this->assertSame($user->getId(), $allSessionsRevokedEvent->userId);
-        $this->assertSame('password_change', $allSessionsRevokedEvent->reason);
-        $this->assertSame(1, $allSessionsRevokedEvent->revokedCount);
+        $this->assertSessionRevokedEvent($publishedEvents, $user->getId(), 'password_change', 1);
     }
 
     public function testInvokeDoesNotRevokeSessionsWhenPasswordIsNotChanged(): void
     {
         $user = $this->createUser();
         $unchangedPassword = $this->faker->password();
-        $updateData = new UserUpdate(
-            $user->getEmail(),
-            $this->faker->firstName(),
-            $unchangedPassword,
-            $unchangedPassword,
-        );
-        $command = new UpdateUserCommand(
-            $user,
-            $updateData,
-            $this->faker->uuid()
-        );
-
+        $updateData = $this->createUnchangedPasswordUpdate($user, $unchangedPassword);
+        $command = new UpdateUserCommand($user, $updateData, $this->faker->uuid());
         $this->expectUuidFactory();
         $this->expectPasswordHasher(true);
         $this->expectUserUpdateApplied($user, $updateData);
-        $this->passwordChangeSessionRevoker
-            ->expects($this->never())
-            ->method('revokeOtherSessions');
-
+        $this->expectNoSessionRevocation();
         $publishedEvents = [];
-        $this->eventBus
-            ->expects($this->once())
-            ->method('publish')
-            ->willReturnCallback(
-                static function (DomainEvent ...$events) use (&$publishedEvents): void {
-                    $publishedEvents = $events;
-                }
-            );
+        $this->expectEventPublish($publishedEvents);
 
         $this->createHandler()->__invoke($command);
 
@@ -176,24 +134,14 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
     private function expectPasswordHasher(bool $isValid): void
     {
         $hasher = $this->createMock(PasswordHasherInterface::class);
-        $hasher
-            ->expects($this->once())
-            ->method('verify')
-            ->willReturn($isValid);
-
+        $hasher->expects($this->once())->method('verify')->willReturn($isValid);
         if ($isValid) {
-            $hasher
-                ->expects($this->once())
-                ->method('hash')
+            $hasher->expects($this->once())->method('hash')
                 ->willReturn($this->faker->sha256());
         } else {
-            $hasher
-                ->expects($this->never())
-                ->method('hash');
+            $hasher->expects($this->never())->method('hash');
         }
-
-        $this->hasherFactory
-            ->expects($this->once())
+        $this->hasherFactory->expects($this->once())
             ->method('getPasswordHasher')
             ->willReturn($hasher);
     }
@@ -263,5 +211,67 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
             $this->passwordChangeSessionRevoker,
             $this->uuidFactory
         );
+    }
+
+    private function expectSessionRevocation(
+        UserInterface $user,
+        string $sessionId,
+        int $revokedCount
+    ): void {
+        $this->passwordChangeSessionRevoker
+            ->expects($this->once())
+            ->method('revokeOtherSessions')
+            ->with($user->getId(), $sessionId)
+            ->willReturn($revokedCount);
+    }
+
+    /**
+     * @param array<int, DomainEvent> $publishedEvents
+     */
+    private function expectEventPublish(array &$publishedEvents): void
+    {
+        $this->eventBus
+            ->expects($this->once())
+            ->method('publish')
+            ->willReturnCallback(
+                static function (DomainEvent ...$events) use (&$publishedEvents): void {
+                    $publishedEvents = $events;
+                }
+            );
+    }
+
+    /**
+     * @param array<int, DomainEvent> $events
+     */
+    private function assertSessionRevokedEvent(
+        array $events,
+        string $userId,
+        string $reason,
+        int $revokedCount
+    ): void {
+        $event = $this->findAllSessionsRevokedEvent($events);
+        $this->assertInstanceOf(AllSessionsRevokedEvent::class, $event);
+        $this->assertSame($userId, $event->userId);
+        $this->assertSame($reason, $event->reason);
+        $this->assertSame($revokedCount, $event->revokedCount);
+    }
+
+    private function createUnchangedPasswordUpdate(
+        UserInterface $user,
+        string $password
+    ): UserUpdate {
+        return new UserUpdate(
+            $user->getEmail(),
+            $this->faker->firstName(),
+            $password,
+            $password,
+        );
+    }
+
+    private function expectNoSessionRevocation(): void
+    {
+        $this->passwordChangeSessionRevoker
+            ->expects($this->never())
+            ->method('revokeOtherSessions');
     }
 }

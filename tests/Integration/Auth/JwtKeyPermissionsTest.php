@@ -22,14 +22,15 @@ final class JwtKeyPermissionsTest extends AuthIntegrationTestCase
         $perms = fileperms(self::PRIVATE_KEY_PATH);
         $octal = decoct($perms & 0777);
 
+        $format = implode('', [
+            'Private key must have 600 permissions ',
+            '(owner read/write only), got %s. ',
+            'Run: chmod 600 %s',
+        ]);
         $this->assertSame(
             '600',
             $octal,
-            sprintf(
-                'Private key must have 600 permissions (owner read/write only), got %s. Run: chmod 600 %s',
-                $octal,
-                self::PRIVATE_KEY_PATH
-            )
+            sprintf($format, $octal, self::PRIVATE_KEY_PATH)
         );
     }
 
@@ -46,14 +47,15 @@ final class JwtKeyPermissionsTest extends AuthIntegrationTestCase
         $perms = fileperms(self::PUBLIC_KEY_PATH);
         $octal = decoct($perms & 0777);
 
+        $format = implode('', [
+            'Public key must have 644 permissions ',
+            '(owner read/write, others read), ',
+            'got %s. Run: chmod 644 %s',
+        ]);
         $this->assertSame(
             '644',
             $octal,
-            sprintf(
-                'Public key must have 644 permissions (owner read/write, others read), got %s. Run: chmod 644 %s',
-                $octal,
-                self::PUBLIC_KEY_PATH
-            )
+            sprintf($format, $octal, self::PUBLIC_KEY_PATH)
         );
     }
 

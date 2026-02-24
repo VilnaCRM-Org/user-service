@@ -6,10 +6,22 @@ namespace App\Tests\Behat\UserContext;
 
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
+use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
+use App\User\Domain\Repository\AuthSessionRepositoryInterface;
+use Behat\Behat\Context\Context;
 use PHPUnit\Framework\Assert;
 
-trait UserResponseContextTokenTrait
+/**
+ */
+final class TokenResponseContext implements Context
 {
+    public function __construct(
+        private UserOperationsState $state,
+        private readonly AuthRefreshTokenRepositoryInterface $authRefreshTokenRepository,
+        private readonly AuthSessionRepositoryInterface $authSessionRepository,
+    ) {
+    }
+
     /**
      * @Then I store the access token from the response
      */
@@ -23,8 +35,9 @@ trait UserResponseContextTokenTrait
     /**
      * @Then I store the access token from the response as :key
      */
-    public function iStoreTheAccessTokenFromTheResponseAs(string $key): void
-    {
+    public function iStoreTheAccessTokenFromTheResponseAs(
+        string $key
+    ): void {
         $accessToken = $this->extractResponseStringField('access_token');
         $storedTokens = $this->state->storedAccessTokens;
         if (!is_array($storedTokens)) {
@@ -91,11 +104,19 @@ trait UserResponseContextTokenTrait
      */
     public function theAccessTokenShouldDifferFrom(string $tokenKey): void
     {
-        $currentAccessToken = $this->extractResponseStringField('access_token');
+        $currentAccessToken = $this->extractResponseStringField(
+            'access_token'
+        );
         $storedTokens = $this->state->storedAccessTokens;
-        if (!is_array($storedTokens) || !array_key_exists($tokenKey, $storedTokens)) {
+        if (
+            !is_array($storedTokens)
+            || !array_key_exists($tokenKey, $storedTokens)
+        ) {
             throw new \RuntimeException(
-                sprintf('Stored access token "%s" was not found.', $tokenKey)
+                sprintf(
+                    'Stored access token "%s" was not found.',
+                    $tokenKey
+                )
             );
         }
 
@@ -112,7 +133,8 @@ trait UserResponseContextTokenTrait
         string $cookieName,
         string $maxAge
     ): void {
-        $setCookieHeader = $this->state->response?->headers->get('Set-Cookie');
+        $setCookieHeader = $this->state
+            ->response?->headers->get('Set-Cookie');
         Assert::assertIsString($setCookieHeader);
         Assert::assertStringContainsString(
             sprintf('%s=', $cookieName),
@@ -130,7 +152,11 @@ trait UserResponseContextTokenTrait
     public function theOldRefreshTokenShouldBeMarkedAsRotated(): void
     {
         $tokenValue = $this->resolveScenarioToken(
-            ['originalRefreshToken', 'rotatedRefreshToken', 'submittedRefreshToken']
+            [
+                'originalRefreshToken',
+                'rotatedRefreshToken',
+                'submittedRefreshToken',
+            ]
         );
 
         $token = $this->authRefreshTokenRepository->findByTokenHash(
@@ -146,7 +172,11 @@ trait UserResponseContextTokenTrait
     public function theEntireSessionShouldBeRevoked(): void
     {
         $tokenValue = $this->resolveScenarioToken(
-            ['rotatedRefreshToken', 'submittedRefreshToken', 'originalRefreshToken']
+            [
+                'rotatedRefreshToken',
+                'submittedRefreshToken',
+                'originalRefreshToken',
+            ]
         );
 
         $token = $this->authRefreshTokenRepository->findByTokenHash(
@@ -166,7 +196,10 @@ trait UserResponseContextTokenTrait
      */
     public function aCriticalLevelAuditLogShouldBeEmittedForRefreshTokenTheft(): void
     {
-        Assert::assertSame(401, $this->state->response?->getStatusCode());
+        Assert::assertSame(
+            401,
+            $this->state->response?->getStatusCode()
+        );
         $this->theEntireSessionShouldBeRevoked();
     }
 
@@ -182,7 +215,9 @@ trait UserResponseContextTokenTrait
             }
         }
 
-        throw new \RuntimeException('No refresh token value found in scenario state.');
+        throw new \RuntimeException(
+            'No refresh token value found in scenario state.'
+        );
     }
 
     private function extractResponseStringField(string $field): string
@@ -201,7 +236,10 @@ trait UserResponseContextTokenTrait
      */
     private function decodeResponseData(): array
     {
-        $responseData = json_decode((string) $this->state->response?->getContent(), true);
+        $responseData = json_decode(
+            (string) $this->state->response?->getContent(),
+            true
+        );
 
         Assert::assertIsArray($responseData);
 

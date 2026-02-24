@@ -36,29 +36,10 @@ final class DisableTwoFactorProcessorTest extends UnitTestCase
     {
         $email = $this->faker->email();
         $code = '123456';
-
         $this->mockAuthenticatedUser($email);
+        $this->expectDisableDispatch($email, $code);
 
-        $this->commandBus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->willReturnCallback(
-                function (DisableTwoFactorCommand $cmd) use (
-                    $email,
-                    $code
-                ): void {
-                    $this->assertSame($email, $cmd->userEmail);
-                    $this->assertSame($code, $cmd->twoFactorCode);
-                }
-            );
-
-        $processor = $this->createProcessor();
-        $response = $processor->process(
-            new DisableTwoFactorDto($code),
-            new Post(),
-            [],
-            []
-        );
+        $response = $this->processDisableTwoFactor($code);
 
         $this->assertSame(
             Response::HTTP_NO_CONTENT,
@@ -104,5 +85,31 @@ final class DisableTwoFactorProcessorTest extends UnitTestCase
         $this->security
             ->method('getUser')
             ->willReturn($user);
+    }
+
+    private function expectDisableDispatch(string $email, string $code): void
+    {
+        $this->commandBus
+            ->expects($this->once())
+            ->method('dispatch')
+            ->willReturnCallback(
+                function (DisableTwoFactorCommand $cmd) use (
+                    $email,
+                    $code
+                ): void {
+                    $this->assertSame($email, $cmd->userEmail);
+                    $this->assertSame($code, $cmd->twoFactorCode);
+                }
+            );
+    }
+
+    private function processDisableTwoFactor(string $code): Response
+    {
+        return $this->createProcessor()->process(
+            new DisableTwoFactorDto($code),
+            new Post(),
+            [],
+            []
+        );
     }
 }

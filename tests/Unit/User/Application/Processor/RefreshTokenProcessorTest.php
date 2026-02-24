@@ -32,7 +32,29 @@ final class RefreshTokenProcessorTest extends UnitTestCase
     public function testProcessReturnsNewTokensAndSetsCookie(): void
     {
         $dto = new RefreshTokenDto('old-refresh-token');
+        $this->expectRefreshDispatch();
 
+        $processor = new RefreshTokenProcessor($this->commandBus);
+        $response = $processor->process($dto, $this->operation);
+
+        $this->assertRefreshResponse($response);
+        $this->assertAuthCookie($response);
+    }
+
+    public function testProcessDoesNotSetCookieWhenAccessTokenIsEmpty(): void
+    {
+        $dto = new RefreshTokenDto('old-refresh-token');
+        $this->expectEmptyAccessTokenDispatch();
+
+        $processor = new RefreshTokenProcessor($this->commandBus);
+        $response = $processor->process($dto, $this->operation);
+
+        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertCount(0, $response->headers->getCookies());
+    }
+
+    private function expectRefreshDispatch(): void
+    {
         $this->commandBus
             ->expects($this->once())
             ->method('dispatch')
@@ -41,7 +63,6 @@ final class RefreshTokenProcessorTest extends UnitTestCase
              */
                 function (RefreshTokenCommand $command): bool {
                     $this->assertSame('old-refresh-token', $command->refreshToken);
-
                     $command->setResponse(
                         new RefreshTokenCommandResponse(
                             'new-access-token',
@@ -52,32 +73,10 @@ final class RefreshTokenProcessorTest extends UnitTestCase
                     return true;
                 }
             ));
-
-        $processor = new RefreshTokenProcessor($this->commandBus);
-        $response = $processor->process($dto, $this->operation);
-
-        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
-
-        $body = json_decode((string) $response->getContent(), true);
-        $this->assertSame('new-access-token', $body['access_token']);
-        $this->assertSame('new-refresh-token', $body['refresh_token']);
-
-        $cookies = $response->headers->getCookies();
-        $this->assertCount(1, $cookies);
-        $this->assertSame('__Host-auth_token', $cookies[0]->getName());
-        $this->assertSame('new-access-token', $cookies[0]->getValue());
-        $this->assertTrue($cookies[0]->isSecure());
-        $this->assertTrue($cookies[0]->isHttpOnly());
-        $this->assertSame(
-            Cookie::SAMESITE_LAX,
-            $cookies[0]->getSameSite()
-        );
     }
 
-    public function testProcessDoesNotSetCookieWhenAccessTokenIsEmpty(): void
+    private function expectEmptyAccessTokenDispatch(): void
     {
-        $dto = new RefreshTokenDto('old-refresh-token');
-
         $this->commandBus
             ->expects($this->once())
             ->method('dispatch')
@@ -95,11 +94,27 @@ final class RefreshTokenProcessorTest extends UnitTestCase
                     return true;
                 }
             ));
+    }
 
-        $processor = new RefreshTokenProcessor($this->commandBus);
-        $response = $processor->process($dto, $this->operation);
-
+    private function assertRefreshResponse(Response $response): void
+    {
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
-        $this->assertCount(0, $response->headers->getCookies());
+        $body = json_decode((string) $response->getContent(), true);
+        $this->assertSame('new-access-token', $body['access_token']);
+        $this->assertSame('new-refresh-token', $body['refresh_token']);
+    }
+
+    private function assertAuthCookie(Response $response): void
+    {
+        $cookies = $response->headers->getCookies();
+        $this->assertCount(1, $cookies);
+        $this->assertSame('__Host-auth_token', $cookies[0]->getName());
+        $this->assertSame('new-access-token', $cookies[0]->getValue());
+        $this->assertTrue($cookies[0]->isSecure());
+        $this->assertTrue($cookies[0]->isHttpOnly());
+        $this->assertSame(
+            Cookie::SAMESITE_LAX,
+            $cookies[0]->getSameSite()
+        );
     }
 }

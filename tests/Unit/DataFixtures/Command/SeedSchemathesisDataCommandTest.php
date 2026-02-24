@@ -26,6 +26,7 @@ use DateTimeImmutable;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use League\Bundle\OAuth2ServerBundle\Model\Client;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Scope;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -111,8 +112,8 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         ];
     }
 
-    private function createDocumentManagerMockForOAuth(): \PHPUnit\Framework\MockObject\MockObject&DocumentManager
-    {
+    private function createDocumentManagerMockForOAuth(
+    ): MockObject&DocumentManager {
         $documentManager = $this->createMock(DocumentManager::class);
         // The seeder calls find(), and if nothing exists, doesn't call remove()
         $documentManager->expects($this->never())->method('remove');
@@ -272,8 +273,8 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         ];
     }
 
-    private function createDocumentManagerMockForSeeding(): \PHPUnit\Framework\MockObject\MockObject&DocumentManager
-    {
+    private function createDocumentManagerMockForSeeding(
+    ): MockObject&DocumentManager {
         $documentManager = $this->createMock(DocumentManager::class);
         // The seeder calls find() and if nothing exists, doesn't call remove()
         $documentManager->expects($this->never())->method('remove');

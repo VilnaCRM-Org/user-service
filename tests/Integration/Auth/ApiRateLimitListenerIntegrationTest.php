@@ -37,68 +37,30 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
     public function testGlobalAnonymousLimiterReturns429WithRetryAfterAndProblemJson(): void
     {
         $this->exhaustLimiter('global_api_anonymous', 'ip:127.0.0.1', 100);
-
-        $response = $this->httpKernel->handle(Request::create(
-            '/api/health',
-            Request::METHOD_GET,
-            [],
-            [],
-            [],
-            [
-                'REMOTE_ADDR' => '127.0.0.1',
-                'HTTP_ACCEPT' => 'application/json',
-            ]
-        ));
-
+        $response = $this->handleJsonRequest('/api/health', Request::METHOD_GET);
         $this->assertRateLimitResponse($response);
     }
 
     public function testRegistrationLimiterReturns429WithRetryAfterAndProblemJson(): void
     {
         $this->exhaustLimiter('registration', 'ip:127.0.0.1', 5);
-
-        $response = $this->httpKernel->handle(Request::create(
-            '/api/users',
-            Request::METHOD_POST,
-            [],
-            [],
-            [],
-            [
-                'REMOTE_ADDR' => '127.0.0.1',
-                'HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-            ],
-            json_encode([
-                'email' => $this->faker->safeEmail(),
-                'initials' => $this->faker->name(),
-                'password' => 'passWORD1',
-            ], JSON_THROW_ON_ERROR)
-        ));
-
+        $content = json_encode([
+            'email' => $this->faker->safeEmail(),
+            'initials' => $this->faker->name(),
+            'password' => 'passWORD1',
+        ], JSON_THROW_ON_ERROR);
+        $response = $this->handleJsonRequest('/api/users', Request::METHOD_POST, $content);
         $this->assertRateLimitResponse($response);
     }
 
     public function testSignInIpLimiterReturns429WithRetryAfterAndProblemJson(): void
     {
         $this->exhaustLimiter('signin_ip', 'ip:127.0.0.1', 10);
-
-        $response = $this->httpKernel->handle(Request::create(
-            '/api/signin',
-            Request::METHOD_POST,
-            [],
-            [],
-            [],
-            [
-                'REMOTE_ADDR' => '127.0.0.1',
-                'HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-            ],
-            json_encode([
-                'email' => $this->faker->safeEmail(),
-                'password' => 'passWORD1',
-            ], JSON_THROW_ON_ERROR)
-        ));
-
+        $content = json_encode([
+            'email' => $this->faker->safeEmail(),
+            'password' => 'passWORD1',
+        ], JSON_THROW_ON_ERROR);
+        $response = $this->handleJsonRequest('/api/signin', Request::METHOD_POST, $content);
         $this->assertRateLimitResponse($response);
     }
 
@@ -106,24 +68,11 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
     {
         $email = 'signin-email-limit@test.com';
         $this->exhaustLimiter('signin_email', sprintf('email:%s', $email), 5);
-
-        $response = $this->httpKernel->handle(Request::create(
-            '/api/signin',
-            Request::METHOD_POST,
-            [],
-            [],
-            [],
-            [
-                'REMOTE_ADDR' => '127.0.0.1',
-                'HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-            ],
-            json_encode([
-                'email' => $email,
-                'password' => 'passWORD1',
-            ], JSON_THROW_ON_ERROR)
-        ));
-
+        $content = json_encode([
+            'email' => $email,
+            'password' => 'passWORD1',
+        ], JSON_THROW_ON_ERROR);
+        $response = $this->handleJsonRequest('/api/signin', Request::METHOD_POST, $content);
         $this->assertRateLimitResponse($response);
     }
 
@@ -131,35 +80,32 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
     {
         $userId = '8be90127-9840-4235-a6da-39b8debfb260';
         $this->exhaustLimiter('twofa_setup', sprintf('user:%s', $userId), 5);
-
-        $response = $this->httpKernel->handle(Request::create(
+        $response = $this->handleJsonRequest(
             '/api/users/2fa/setup',
             Request::METHOD_POST,
-            [],
-            [],
-            [],
-            [
-                'REMOTE_ADDR' => '127.0.0.1',
-                'HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-                'HTTP_AUTHORIZATION' => sprintf(
-                    'Bearer %s',
-                    $this->createBearerTokenForUser($userId)
-                ),
-            ],
-            json_encode([], JSON_THROW_ON_ERROR)
-        ));
-
+            json_encode([], JSON_THROW_ON_ERROR),
+            ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $this->createBearerTokenForUser($userId))]
+        );
         $this->assertRateLimitResponse($response);
     }
 
     public function testTwoFactorVerificationLimitersReturn429(): void
     {
         $userId = '8be90127-9840-4235-a6da-39b8debfb261';
-        $pendingSessionId = (string) $this->container
-            ->get(UlidFactory::class)
-            ->create();
+        $pendingSessionId = (string) $this->container->get(UlidFactory::class)->create();
+        $this->savePendingTwoFactor($pendingSessionId, $userId);
+        $this->exhaustLimiter('twofa_verification_user', sprintf('user:%s', $userId), 5);
+        $this->exhaustLimiter('twofa_verification_ip', 'ip:127.0.0.1', 5);
+        $content = json_encode([
+            'pendingSessionId' => $pendingSessionId,
+            'twoFactorCode' => '123456',
+        ], JSON_THROW_ON_ERROR);
+        $response = $this->handleJsonRequest('/api/signin/2fa', Request::METHOD_POST, $content);
+        $this->assertRateLimitResponse($response);
+    }
 
+    private function savePendingTwoFactor(string $pendingSessionId, string $userId): void
+    {
         $this->container->get(PendingTwoFactorRepositoryInterface::class)->save(
             new PendingTwoFactor(
                 $pendingSessionId,
@@ -168,32 +114,26 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
                 new \DateTimeImmutable('+5 minutes')
             )
         );
+    }
 
-        $this->exhaustLimiter(
-            'twofa_verification_user',
-            sprintf('user:%s', $userId),
-            5
+    /**
+     * @param array<string, string> $extraHeaders
+     */
+    private function handleJsonRequest(
+        string $uri,
+        string $method,
+        ?string $content = null,
+        array $extraHeaders = []
+    ): Response {
+        $serverParams = array_merge([
+            'REMOTE_ADDR' => '127.0.0.1',
+            'HTTP_ACCEPT' => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
+        ], $extraHeaders);
+
+        return $this->httpKernel->handle(
+            Request::create($uri, $method, [], [], [], $serverParams, $content)
         );
-        $this->exhaustLimiter('twofa_verification_ip', 'ip:127.0.0.1', 5);
-
-        $response = $this->httpKernel->handle(Request::create(
-            '/api/signin/2fa',
-            Request::METHOD_POST,
-            [],
-            [],
-            [],
-            [
-                'REMOTE_ADDR' => '127.0.0.1',
-                'HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-            ],
-            json_encode([
-                'pendingSessionId' => $pendingSessionId,
-                'twoFactorCode' => '123456',
-            ], JSON_THROW_ON_ERROR)
-        ));
-
-        $this->assertRateLimitResponse($response);
     }
 
     private function exhaustLimiter(string $limiterName, string $key, int $tokens): void

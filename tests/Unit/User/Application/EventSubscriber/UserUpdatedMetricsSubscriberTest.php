@@ -13,6 +13,7 @@ use App\User\Application\Factory\UsersUpdatedMetricFactory;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Event\PasswordChangedEvent;
+use PHPUnit\Framework\MockObject\MockObject;
 
 final class UserUpdatedMetricsSubscriberTest extends UnitTestCase
 {
@@ -103,8 +104,8 @@ final class UserUpdatedMetricsSubscriberTest extends UnitTestCase
         );
     }
 
-    private function createFailingEmitter(): \PHPUnit\Framework\MockObject\MockObject&BusinessMetricsEmitterInterface
-    {
+    private function createFailingEmitter(
+    ): MockObject&BusinessMetricsEmitterInterface {
         $failingEmitter = $this->createMock(BusinessMetricsEmitterInterface::class);
         $failingEmitter
             ->method('emit')

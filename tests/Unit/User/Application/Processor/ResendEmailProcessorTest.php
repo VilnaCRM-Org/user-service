@@ -27,6 +27,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 final class ResendEmailProcessorTest extends UnitTestCase
 {
@@ -45,47 +46,19 @@ final class ResendEmailProcessorTest extends UnitTestCase
         parent::setUp();
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new UuidFactory());
-        $this->getUserQueryHandler = $this->createMock(GetUserQueryHandlerInterface::class);
-        $this->confirmationEmailSender = $this->createMock(ConfirmationEmailSenderInterface::class);
-        $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
-        $this->tokenStorage->method('getToken')
-            ->willReturnCallback(fn (): (\Symfony\Component\Security\Core\Authentication\Token\TokenInterface&\PHPUnit\Framework\MockObject\MockObject)|null => $this->createAuthenticatedToken());
-
-        $this->requestStack = new RequestStack();
-        $serializer = new \Symfony\Component\Serializer\Serializer(
-            [],
-            [new \Symfony\Component\Serializer\Encoder\JsonEncoder()]
-        );
-        $this->jsonRequestValidator = new JsonRequestValidator(
-            new JsonRequestContentProvider($this->requestStack),
-            new JsonBodyDecoder($serializer)
-        );
+        $this->initMocks();
+        $this->initJsonValidator();
     }
 
     public function testProcess(): void
     {
         $userId = $this->faker->uuid();
         $user = $this->createUser($userId);
-
-        $this->getUserQueryHandler->expects($this->once())
-            ->method('handle')
-            ->with($userId)
-            ->willReturn($user);
-
-        $this->confirmationEmailSender->expects($this->once())
-            ->method('send')
-            ->with($user);
-
+        $this->expectUserLookup($userId, $user);
+        $this->confirmationEmailSender->expects($this->once())->method('send')->with($user);
         $this->authenticatedUserId = $userId;
-        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '{}'));
 
-        $response = $this->getProcessor()->process(
-            new RetryDto(),
-            $this->createMock(Operation::class),
-            ['id' => $userId]
-        );
-
-        $this->requestStack->pop();
+        $response = $this->processWithRequest($userId, '{}');
 
         $this->assertInstanceOf(Response::class, $response);
     }
@@ -93,41 +66,23 @@ final class ResendEmailProcessorTest extends UnitTestCase
     public function testProcessUserNotFound(): void
     {
         $userId = $this->faker->uuid();
-
         $this->getUserQueryHandler->expects($this->once())
             ->method('handle')
             ->with($userId)
             ->willThrowException(new UserNotFoundException());
-
         $this->expectException(UserNotFoundException::class);
 
-        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '{}'));
-        try {
-            $this->getProcessor()->process(
-                new RetryDto(),
-                $this->createMock(Operation::class),
-                ['id' => $userId]
-            );
-        } finally {
-            $this->requestStack->pop();
-        }
+        $this->processWithRequest($userId, '{}');
     }
 
     public function testProcessSendsEmailForUser(): void
     {
         $userId = $this->faker->uuid();
         $user = $this->createUser($userId);
-
-        $this->getUserQueryHandler->expects($this->once())
-            ->method('handle')
-            ->with($userId)
-            ->willReturn($user);
-
-        $this->confirmationEmailSender->expects($this->once())
-            ->method('send')
-            ->with($user);
-
+        $this->expectUserLookup($userId, $user);
+        $this->confirmationEmailSender->expects($this->once())->method('send')->with($user);
         $this->authenticatedUserId = $userId;
+
         $this->processWithRequest($userId, '{}');
     }
 
@@ -135,16 +90,10 @@ final class ResendEmailProcessorTest extends UnitTestCase
     {
         $userId = $this->faker->uuid();
         $user = $this->createUser($userId);
-
-        $this->getUserQueryHandler->expects($this->once())
-            ->method('handle')
-            ->with($userId)
-            ->willReturn($user);
-
-        $this->confirmationEmailSender->expects($this->once())
-            ->method('send');
-
+        $this->expectUserLookup($userId, $user);
+        $this->confirmationEmailSender->expects($this->once())->method('send');
         $this->authenticatedUserId = $userId;
+
         $this->processWithRequest($userId, '');
     }
 
@@ -203,16 +152,8 @@ final class ResendEmailProcessorTest extends UnitTestCase
     {
         $userId = $this->faker->uuid();
         $user = $this->createUser($userId);
-
-        $this->getUserQueryHandler->expects($this->once())
-            ->method('handle')
-            ->with($userId)
-            ->willReturn($user);
-
-        $this->confirmationEmailSender->expects($this->once())
-            ->method('send')
-            ->with($user);
-
+        $this->expectUserLookup($userId, $user);
+        $this->confirmationEmailSender->expects($this->once())->method('send')->with($user);
         $this->authenticatedUserId = $userId;
 
         $this->getProcessor()->process(
@@ -225,86 +166,31 @@ final class ResendEmailProcessorTest extends UnitTestCase
     public function testProcessThrowsAccessDeniedWhenTokenIsNull(): void
     {
         $userId = $this->faker->uuid();
-        $user = $this->createUser($userId);
-
-        $this->getUserQueryHandler->expects($this->once())
-            ->method('handle')
-            ->with($userId)
-            ->willReturn($user);
-
+        $this->expectUserLookup($userId, $this->createUser($userId));
         $this->authenticatedUserId = null;
-        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '{}'));
+        $this->expectException(AccessDeniedException::class);
 
-        $this->expectException(\Symfony\Component\Security\Core\Exception\AccessDeniedException::class);
-
-        try {
-            $this->getProcessor()->process(
-                new RetryDto(),
-                $this->createMock(Operation::class),
-                ['id' => $userId]
-            );
-        } finally {
-            $this->requestStack->pop();
-        }
+        $this->processWithRequest($userId, '{}');
     }
 
     public function testProcessThrowsAccessDeniedWhenUserIsNotAuthorizationUserDto(): void
     {
         $userId = $this->faker->uuid();
-        $user = $this->createUser($userId);
+        $this->expectUserLookup($userId, $this->createUser($userId));
+        $this->overrideTokenWithNonAuthorizationUser();
+        $this->expectException(AccessDeniedException::class);
 
-        $this->getUserQueryHandler->expects($this->once())
-            ->method('handle')
-            ->with($userId)
-            ->willReturn($user);
-
-        $nonAuthorizationUser = $this->createMock(
-            \Symfony\Component\Security\Core\User\UserInterface::class
-        );
-        $token = $this->createMock(TokenInterface::class);
-        $token->method('getUser')->willReturn($nonAuthorizationUser);
-        $this->tokenStorage->method('getToken')->willReturn($token);
-
-        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '{}'));
-
-        $this->expectException(\Symfony\Component\Security\Core\Exception\AccessDeniedException::class);
-
-        try {
-            $this->getProcessor()->process(
-                new RetryDto(),
-                $this->createMock(Operation::class),
-                ['id' => $userId]
-            );
-        } finally {
-            $this->requestStack->pop();
-        }
+        $this->processWithRequest($userId, '{}');
     }
 
     public function testProcessThrowsAccessDeniedWhenUserIdDoesNotMatch(): void
     {
         $resourceUserId = $this->faker->uuid();
-        $differentAuthenticatedUserId = $this->faker->uuid();
-        $user = $this->createUser($resourceUserId);
+        $this->expectUserLookup($resourceUserId, $this->createUser($resourceUserId));
+        $this->authenticatedUserId = $this->faker->uuid();
+        $this->expectException(AccessDeniedException::class);
 
-        $this->getUserQueryHandler->expects($this->once())
-            ->method('handle')
-            ->with($resourceUserId)
-            ->willReturn($user);
-
-        $this->authenticatedUserId = $differentAuthenticatedUserId;
-        $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], '{}'));
-
-        $this->expectException(\Symfony\Component\Security\Core\Exception\AccessDeniedException::class);
-
-        try {
-            $this->getProcessor()->process(
-                new RetryDto(),
-                $this->createMock(Operation::class),
-                ['id' => $resourceUserId]
-            );
-        } finally {
-            $this->requestStack->pop();
-        }
+        $this->processWithRequest($resourceUserId, '{}');
     }
 
     private function getProcessor(): ResendEmailProcessor
@@ -317,12 +203,12 @@ final class ResendEmailProcessorTest extends UnitTestCase
         );
     }
 
-    private function processWithRequest(string $userId, string $body): void
+    private function processWithRequest(string $userId, string $body): mixed
     {
         $this->requestStack->push(Request::create('/', 'POST', [], [], [], [], $body));
 
         try {
-            $this->getProcessor()->process(
+            return $this->getProcessor()->process(
                 new RetryDto(),
                 $this->createMock(Operation::class),
                 ['id' => $userId]
@@ -342,7 +228,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
         );
     }
 
-    private function createAuthenticatedToken(): (\PHPUnit\Framework\MockObject\MockObject&TokenInterface)|null
+    private function createAuthenticatedToken(): (MockObject&TokenInterface)|null
     {
         if ($this->authenticatedUserId === null) {
             return null;
@@ -360,5 +246,47 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $token->method('getUser')->willReturn($authorizationUser);
 
         return $token;
+    }
+
+    private function initMocks(): void
+    {
+        $this->getUserQueryHandler = $this->createMock(GetUserQueryHandlerInterface::class);
+        $this->confirmationEmailSender = $this->createMock(ConfirmationEmailSenderInterface::class);
+        $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
+        $this->tokenStorage->method('getToken')
+            ->willReturnCallback(
+                fn (): (TokenInterface&MockObject)|null => $this->createAuthenticatedToken()
+            );
+    }
+
+    private function initJsonValidator(): void
+    {
+        $this->requestStack = new RequestStack();
+        $serializer = new \Symfony\Component\Serializer\Serializer(
+            [],
+            [new \Symfony\Component\Serializer\Encoder\JsonEncoder()]
+        );
+        $this->jsonRequestValidator = new JsonRequestValidator(
+            new JsonRequestContentProvider($this->requestStack),
+            new JsonBodyDecoder($serializer)
+        );
+    }
+
+    private function expectUserLookup(string $userId, UserInterface $user): void
+    {
+        $this->getUserQueryHandler->expects($this->once())
+            ->method('handle')
+            ->with($userId)
+            ->willReturn($user);
+    }
+
+    private function overrideTokenWithNonAuthorizationUser(): void
+    {
+        $nonAuthorizationUser = $this->createMock(
+            \Symfony\Component\Security\Core\User\UserInterface::class
+        );
+        $token = $this->createMock(TokenInterface::class);
+        $token->method('getUser')->willReturn($nonAuthorizationUser);
+        $this->tokenStorage->method('getToken')->willReturn($token);
     }
 }

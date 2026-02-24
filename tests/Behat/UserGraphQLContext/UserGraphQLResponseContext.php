@@ -102,30 +102,19 @@ final class UserGraphQLResponseContext implements Context
      */
     public function theGraphQLResponseShouldContainAnAuthorizationError(): void
     {
-        $data = json_decode($this->state->getResponse()->getContent(), true);
+        $data = json_decode(
+            $this->state->getResponse()->getContent(),
+            true
+        );
         Assert::assertIsArray($data);
         Assert::assertArrayHasKey('errors', $data);
         Assert::assertNotEmpty($data['errors']);
-
         $errorMessages = array_map(
             static fn (array $error): string => $error['message'] ?? '',
             $data['errors']
         );
-
-        $hasAuthError = false;
-        foreach ($errorMessages as $message) {
-            if (
-                str_contains($message, 'Access Denied')
-                || str_contains($message, 'Forbidden')
-            ) {
-                $hasAuthError = true;
-
-                break;
-            }
-        }
-
         Assert::assertTrue(
-            $hasAuthError,
+            $this->containsAuthError($errorMessages),
             sprintf(
                 'Expected authorization error, got: %s',
                 implode(', ', $errorMessages)
@@ -170,6 +159,22 @@ final class UserGraphQLResponseContext implements Context
     public function theResponseShouldContainAGraphQLErrorAboutComplexity(): void
     {
         $this->assertGraphQlErrorContains('complexity');
+    }
+
+    /**
+     * @param array<string> $messages
+     */
+    private function containsAuthError(array $messages): bool
+    {
+        foreach ($messages as $message) {
+            if (
+                str_contains($message, 'Access Denied')
+                || str_contains($message, 'Forbidden')
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -250,7 +255,6 @@ final class UserGraphQLResponseContext implements Context
         if ($queryData === null) {
             return null;
         }
-
         Assert::assertIsArray(
             $queryData,
             sprintf(
@@ -258,7 +262,16 @@ final class UserGraphQLResponseContext implements Context
                 $this->state->getQueryName()
             )
         );
+        return $this->extractScalarFields($queryData);
+    }
 
+    /**
+     * @param array<string, string|int|bool|array<string, string|int|bool|null>|null> $queryData
+     *
+     * @return array<string, bool|int|string|null>
+     */
+    private function extractScalarFields(array $queryData): array
+    {
         $scalarQueryData = [];
         foreach ($queryData as $fieldName => $fieldValue) {
             Assert::assertIsString($fieldName);
@@ -274,7 +287,6 @@ final class UserGraphQLResponseContext implements Context
 
             $scalarQueryData[$fieldName] = $fieldValue;
         }
-
         return $scalarQueryData;
     }
 
@@ -315,7 +327,6 @@ final class UserGraphQLResponseContext implements Context
     {
         $response = $this->state->getResponse();
         Assert::assertNotNull($response, 'GraphQL response is missing.');
-
         $decodedResponse = json_decode(
             $response->getContent(),
             true,
@@ -325,19 +336,28 @@ final class UserGraphQLResponseContext implements Context
         Assert::assertIsArray($decodedResponse);
         Assert::assertArrayHasKey('errors', $decodedResponse);
         Assert::assertIsArray($decodedResponse['errors']);
+        return $this->collectMessages($decodedResponse['errors']);
+    }
 
+    /**
+     * @param list<array<string, string|int|null>> $errors
+     *
+     * @return array<string>
+     *
+     * @psalm-return list<non-empty-string>
+     */
+    private function collectMessages(array $errors): array
+    {
         $errorMessages = [];
-        foreach ($decodedResponse['errors'] as $error) {
+        foreach ($errors as $error) {
             if (!is_array($error)) {
                 continue;
             }
-
             $message = $error['message'] ?? null;
             if (is_string($message) && $message !== '') {
                 $errorMessages[] = $message;
             }
         }
-
         return $errorMessages;
     }
 }

@@ -46,37 +46,11 @@ final class RedisAccountLockoutServiceTest extends UnitTestCase
     public function testRecordFailureReturnsFalseBeforeThreshold(): void
     {
         $emailHash = hash('sha256', 'test@example.com');
-
-        $attemptItem = $this->createMock(CacheItemInterface::class);
-        $attemptItem
-            ->expects($this->once())
-            ->method('get')
-            ->willReturn(3);
-
-        $attemptItem
-            ->expects($this->once())
-            ->method('set')
-            ->with(4)
-            ->willReturnSelf();
-
-        $attemptItem
-            ->expects($this->once())
-            ->method('expiresAfter')
-            ->with(3600)
-            ->willReturnSelf();
-
-        $this->cachePool
-            ->expects($this->once())
-            ->method('getItem')
-            ->with(sprintf('signin_lockout_%s', $emailHash))
-            ->willReturn($attemptItem);
-
-        $this->cachePool
-            ->expects($this->once())
-            ->method('save')
-            ->with($attemptItem)
-            ->willReturn(true);
-
+        $attemptItem = $this->createAttemptItem(3, 4);
+        $this->expectCachePoolGetAndSave(
+            sprintf('signin_lockout_%s', $emailHash),
+            $attemptItem
+        );
         $service = new RedisAccountLockoutService($this->cachePool);
 
         $this->assertFalse($service->recordFailure(' Test@Example.COM '));
@@ -85,72 +59,19 @@ final class RedisAccountLockoutServiceTest extends UnitTestCase
     public function testRecordFailureReturnsTrueWhenThresholdReached(): void
     {
         $emailHash = hash('sha256', 'test@example.com');
-
-        $attemptItem = $this->createMock(CacheItemInterface::class);
-        $attemptItem
-            ->expects($this->once())
-            ->method('get')
-            ->willReturn(19);
-
-        $attemptItem
-            ->expects($this->once())
-            ->method('set')
-            ->with(20)
-            ->willReturnSelf();
-
-        $attemptItem
-            ->expects($this->once())
-            ->method('expiresAfter')
-            ->with(3600)
-            ->willReturnSelf();
-
-        $lockItem = $this->createMock(CacheItemInterface::class);
-        $lockItem
-            ->expects($this->once())
-            ->method('set')
-            ->with(true)
-            ->willReturnSelf();
-
-        $lockItem
-            ->expects($this->once())
-            ->method('expiresAfter')
-            ->with(900)
-            ->willReturnSelf();
-
+        $attemptItem = $this->createAttemptItem(19, 20);
+        $lockItem = $this->createLockItem();
         $requestedKeys = [];
-        $this->cachePool
-            ->expects($this->exactly(2))
-            ->method('getItem')
-            ->willReturnCallback(static function (string $key) use ($attemptItem, $lockItem, &$requestedKeys): \PHPUnit\Framework\MockObject\MockObject&\Psr\Cache\CacheItemInterface {
-                $requestedKeys[] = $key;
-
-                return count($requestedKeys) === 1 ? $attemptItem : $lockItem;
-            });
-
         $savedItems = [];
-        $this->cachePool
-            ->expects($this->exactly(2))
-            ->method('save')
-            ->willReturnCallback(/**
-             * @return true
-             */
-                static function (CacheItemInterface $item) use (&$savedItems): bool {
-                    $savedItems[] = $item;
-
-                    return true;
-                }
-            );
-
+        $this->expectSequentialGetItems($attemptItem, $lockItem, $requestedKeys);
+        $this->expectSequentialSaves($savedItems);
         $service = new RedisAccountLockoutService($this->cachePool);
-
         $this->assertTrue($service->recordFailure(' Test@Example.COM '));
-        $this->assertSame(
-            [
-                sprintf('signin_lockout_%s', $emailHash),
-                sprintf('signin_lock_%s', $emailHash),
-            ],
-            $requestedKeys
-        );
+        $expectedKeys = [
+            sprintf('signin_lockout_%s', $emailHash),
+            sprintf('signin_lock_%s', $emailHash),
+        ];
+        $this->assertSame($expectedKeys, $requestedKeys);
         $this->assertSame([$attemptItem, $lockItem], $savedItems);
     }
 
@@ -175,39 +96,96 @@ final class RedisAccountLockoutServiceTest extends UnitTestCase
     public function testRecordFailureTreatsEmptyAttemptCounterAsZero(): void
     {
         $emailHash = hash('sha256', 'test@example.com');
-
-        $attemptItem = $this->createMock(CacheItemInterface::class);
-        $attemptItem
-            ->expects($this->once())
-            ->method('get')
-            ->willReturn('');
-
-        $attemptItem
-            ->expects($this->once())
-            ->method('set')
-            ->with(1)
-            ->willReturnSelf();
-
-        $attemptItem
-            ->expects($this->once())
-            ->method('expiresAfter')
-            ->with(3600)
-            ->willReturnSelf();
-
-        $this->cachePool
-            ->expects($this->once())
-            ->method('getItem')
-            ->with(sprintf('signin_lockout_%s', $emailHash))
-            ->willReturn($attemptItem);
-
-        $this->cachePool
-            ->expects($this->once())
-            ->method('save')
-            ->with($attemptItem)
-            ->willReturn(true);
-
+        $attemptItem = $this->createAttemptItem('', 1);
+        $this->expectCachePoolGetAndSave(
+            sprintf('signin_lockout_%s', $emailHash),
+            $attemptItem
+        );
         $service = new RedisAccountLockoutService($this->cachePool);
 
         $this->assertFalse($service->recordFailure(' Test@Example.COM '));
+    }
+
+    private function createAttemptItem(
+        mixed $currentCount,
+        int $newCount
+    ): CacheItemInterface&MockObject {
+        $item = $this->createMock(CacheItemInterface::class);
+        $item->expects($this->once())->method('get')->willReturn($currentCount);
+        $item->expects($this->once())->method('set')->with($newCount)->willReturnSelf();
+        $item->expects($this->once())->method('expiresAfter')->with(3600)->willReturnSelf();
+
+        return $item;
+    }
+
+    private function createLockItem(): CacheItemInterface&MockObject
+    {
+        $item = $this->createMock(CacheItemInterface::class);
+        $item->expects($this->once())->method('set')->with(true)->willReturnSelf();
+        $item->expects($this->once())->method('expiresAfter')->with(900)->willReturnSelf();
+
+        return $item;
+    }
+
+    private function expectCachePoolGetAndSave(
+        string $key,
+        CacheItemInterface $item
+    ): void {
+        $this->cachePool
+            ->expects($this->once())
+            ->method('getItem')
+            ->with($key)
+            ->willReturn($item);
+        $this->cachePool
+            ->expects($this->once())
+            ->method('save')
+            ->with($item)
+            ->willReturn(true);
+    }
+
+    /**
+     * @param array<string> $requestedKeys
+     */
+    private function expectSequentialGetItems(
+        CacheItemInterface $firstItem,
+        CacheItemInterface $secondItem,
+        array &$requestedKeys
+    ): void {
+        $this->cachePool
+            ->expects($this->exactly(2))
+            ->method('getItem')
+            ->willReturnCallback(
+                static function (
+                    string $key
+                ) use (
+                    $firstItem,
+                    $secondItem,
+                    &$requestedKeys
+                ): MockObject&CacheItemInterface {
+                    $requestedKeys[] = $key;
+
+                    return count($requestedKeys) === 1
+                        ? $firstItem : $secondItem;
+                }
+            );
+    }
+
+    /**
+     * @param array<CacheItemInterface> $savedItems
+     */
+    private function expectSequentialSaves(array &$savedItems): void
+    {
+        $this->cachePool
+            ->expects($this->exactly(2))
+            ->method('save')
+            ->willReturnCallback(/**
+             * @return true
+             */
+                static function (CacheItemInterface $item) use (&$savedItems): bool {
+                    $savedItems[] = $item;
+
+                    return true;
+                }
+            );
     }
 }

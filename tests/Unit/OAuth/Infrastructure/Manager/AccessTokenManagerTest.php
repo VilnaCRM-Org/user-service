@@ -152,9 +152,7 @@ final class AccessTokenManagerTest extends OAuthInfrastructureTestCase
     }
 
     /**
-     * @return array<array>
-     *
-     * @psalm-return array{expired: array<never, never>, refresh: array<never, never>, remove: array<never, never>}
+     * @return array{expired: list<string>, refresh: list<string>, remove: list<string>}
      */
     private function createCaptureArrays(): array
     {

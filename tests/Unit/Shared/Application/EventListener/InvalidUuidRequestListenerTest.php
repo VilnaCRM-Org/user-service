@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Shared\Application\EventListener;
 
 use App\Shared\Application\EventListener\InvalidUuidRequestListener;
 use App\Tests\Unit\UnitTestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 use Ramsey\Uuid\Validator\GenericValidator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -116,8 +117,9 @@ final class InvalidUuidRequestListenerTest extends UnitTestCase
         );
     }
 
-    private function createTranslator(string $message = 'Not Found'): \PHPUnit\Framework\MockObject\MockObject&TranslatorInterface
-    {
+    private function createTranslator(
+        string $message = 'Not Found'
+    ): MockObject&TranslatorInterface {
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->with('error.not.found.http')->willReturn($message);
 

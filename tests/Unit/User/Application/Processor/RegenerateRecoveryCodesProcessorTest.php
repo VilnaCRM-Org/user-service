@@ -38,118 +38,28 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
     {
         $email = $this->faker->email();
         $sessionId = $this->faker->uuid();
-        $recoveryCodes = ['AB12-CD34', 'EF56-GH78', 'IJ90-KL12', 'MN34-OP56', 'QR78-ST90', 'UV12-WX34', 'YZ56-AB78', 'CD90-EF12'];
-
+        $recoveryCodes = $this->defaultRecoveryCodes();
         $this->mockAuthenticatedUser($email, $sessionId);
-
-        $this->commandBus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(/**
-             * @return true
-             */
-                function (RegenerateRecoveryCodesCommand $command) use ($email, $sessionId, $recoveryCodes): bool {
-                    $this->assertSame($email, $command->userEmail);
-                    $this->assertSame($sessionId, $command->currentSessionId);
-
-                    $command->setResponse(
-                        new RegenerateRecoveryCodesCommandResponse($recoveryCodes)
-                    );
-
-                    return true;
-                }
-            ));
-
-        $processor = new RegenerateRecoveryCodesProcessor(
-            $this->commandBus,
-            $this->security
-        );
-
-        $response = $processor->process(
-            new RegenerateRecoveryCodesDto(),
-            $this->operation
-        );
-
+        $this->expectDispatchWithAssertions($email, $sessionId, $recoveryCodes);
+        $response = $this->processRecoveryCodes();
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
-
         $body = json_decode((string) $response->getContent(), true);
         $this->assertSame($recoveryCodes, $body['recovery_codes']);
     }
 
     public function testProcessUsesEmptySessionIdWhenTokenMissing(): void
     {
-        $email = $this->faker->email();
-
-        $user = $this->createMock(UserInterface::class);
-        $user->method('getUserIdentifier')->willReturn($email);
-        $this->security->method('getUser')->willReturn($user);
-        $this->security->method('getToken')->willReturn(null);
-
-        $this->commandBus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(/**
-             * @return true
-             */
-                function (RegenerateRecoveryCodesCommand $command): bool {
-                    $this->assertSame('', $command->currentSessionId);
-
-                    $command->setResponse(
-                        new RegenerateRecoveryCodesCommandResponse([])
-                    );
-
-                    return true;
-                }
-            ));
-
-        $processor = new RegenerateRecoveryCodesProcessor(
-            $this->commandBus,
-            $this->security
-        );
-
-        $response = $processor->process(
-            new RegenerateRecoveryCodesDto(),
-            $this->operation
-        );
-
+        $this->mockUserWithNullToken($this->faker->email());
+        $this->expectDispatchWithEmptySessionResponse();
+        $response = $this->processRecoveryCodes();
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
     }
 
     public function testProcessUsesEmptySessionIdWhenSidIsNotString(): void
     {
-        $email = $this->faker->email();
-
-        $user = $this->createMock(UserInterface::class);
-        $user->method('getUserIdentifier')->willReturn($email);
-        $this->security->method('getUser')->willReturn($user);
-
-        $token = $this->createMock(TokenInterface::class);
-        $token->method('getAttribute')->with('sid')->willReturn(123);
-        $this->security->method('getToken')->willReturn($token);
-
-        $this->commandBus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(/**
-             * @return true
-             */
-                function (RegenerateRecoveryCodesCommand $command): bool {
-                    $this->assertSame('', $command->currentSessionId);
-
-                    $command->setResponse(
-                        new RegenerateRecoveryCodesCommandResponse([])
-                    );
-
-                    return true;
-                }
-            ));
-
-        $processor = new RegenerateRecoveryCodesProcessor(
-            $this->commandBus,
-            $this->security
-        );
-
-        $processor->process(new RegenerateRecoveryCodesDto(), $this->operation);
+        $this->mockUserWithIntegerSid($this->faker->email());
+        $this->expectDispatchWithEmptySessionResponse();
+        $this->processRecoveryCodes();
     }
 
     public function testProcessThrows401WhenUserIsMissing(): void
@@ -185,6 +95,78 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
             ->with('sid')
             ->willReturn($sessionId);
 
+        $this->security->method('getToken')->willReturn($token);
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function defaultRecoveryCodes(): array
+    {
+        return [
+            'AB12-CD34', 'EF56-GH78',
+            'IJ90-KL12', 'MN34-OP56',
+            'QR78-ST90', 'UV12-WX34',
+            'YZ56-AB78', 'CD90-EF12',
+        ];
+    }
+
+    /**
+     * @param array<string> $codes
+     */
+    private function expectDispatchWithAssertions(
+        string $email,
+        string $sessionId,
+        array $codes
+    ): void {
+        $this->commandBus->expects($this->once())->method('dispatch')
+            ->with($this->callback(
+                function (RegenerateRecoveryCodesCommand $cmd) use (
+                    $email,
+                    $sessionId,
+                    $codes
+                ): bool {
+                    $this->assertSame($email, $cmd->userEmail);
+                    $this->assertSame($sessionId, $cmd->currentSessionId);
+                    $cmd->setResponse(new RegenerateRecoveryCodesCommandResponse($codes));
+                    return true;
+                }
+            ));
+    }
+
+    private function expectDispatchWithEmptySessionResponse(): void
+    {
+        $this->commandBus->expects($this->once())->method('dispatch')
+            ->with($this->callback(
+                function (RegenerateRecoveryCodesCommand $cmd): bool {
+                    $this->assertSame('', $cmd->currentSessionId);
+                    $cmd->setResponse(new RegenerateRecoveryCodesCommandResponse([]));
+                    return true;
+                }
+            ));
+    }
+
+    private function processRecoveryCodes(): mixed
+    {
+        $processor = new RegenerateRecoveryCodesProcessor($this->commandBus, $this->security);
+        return $processor->process(new RegenerateRecoveryCodesDto(), $this->operation);
+    }
+
+    private function mockUserWithNullToken(string $email): void
+    {
+        $user = $this->createMock(UserInterface::class);
+        $user->method('getUserIdentifier')->willReturn($email);
+        $this->security->method('getUser')->willReturn($user);
+        $this->security->method('getToken')->willReturn(null);
+    }
+
+    private function mockUserWithIntegerSid(string $email): void
+    {
+        $user = $this->createMock(UserInterface::class);
+        $user->method('getUserIdentifier')->willReturn($email);
+        $this->security->method('getUser')->willReturn($user);
+        $token = $this->createMock(TokenInterface::class);
+        $token->method('getAttribute')->with('sid')->willReturn(123);
         $this->security->method('getToken')->willReturn($token);
     }
 }

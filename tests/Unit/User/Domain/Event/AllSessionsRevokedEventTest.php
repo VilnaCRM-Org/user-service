@@ -65,7 +65,6 @@ final class AllSessionsRevokedEventTest extends UnitTestCase
         $reason = 'two_factor_enabled';
         $eventId = $this->faker->uuid();
         $occurredOn = '2026-02-11T12:00:00+00:00';
-
         $event = AllSessionsRevokedEvent::fromPrimitives(
             [
                 'userId' => $userId,
@@ -75,11 +74,17 @@ final class AllSessionsRevokedEventTest extends UnitTestCase
             $eventId,
             $occurredOn
         );
+        $this->assertFromPrimitivesEvent($event, $userId, $reason, $eventId, $occurredOn);
+    }
 
-        $this->assertInstanceOf(
-            AllSessionsRevokedEvent::class,
-            $event
-        );
+    private function assertFromPrimitivesEvent(
+        AllSessionsRevokedEvent $event,
+        string $userId,
+        string $reason,
+        string $eventId,
+        string $occurredOn
+    ): void {
+        $this->assertInstanceOf(AllSessionsRevokedEvent::class, $event);
         $this->assertSame($userId, $event->userId);
         $this->assertSame($reason, $event->reason);
         $this->assertSame(3, $event->revokedCount);

@@ -32,7 +32,8 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
         parent::setUp();
 
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
-        $this->twoFactorSecretEncryptor = $this->createMock(TwoFactorSecretEncryptorInterface::class);
+        $this->twoFactorSecretEncryptor =
+            $this->createMock(TwoFactorSecretEncryptorInterface::class);
         $this->totpSecretGenerator = $this->createMock(TOTPSecretGeneratorInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
@@ -42,79 +43,32 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createUser($this->faker->email());
         $secret = 'JBSWY3DPEHPK3PXP';
-        $otpauthUri = sprintf(
-            'otpauth://totp/VilnaCRM:%s?secret=%s&issuer=VilnaCRM',
-            rawurlencode($user->getEmail()),
-            $secret
-        );
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($user->getEmail())
-            ->willReturn($user);
-
-        $this->totpSecretGenerator
-            ->expects($this->once())
-            ->method('generate')
-            ->with($user->getEmail())
-            ->willReturn([
-                'secret' => $secret,
-                'otpauth_uri' => $otpauthUri,
-            ]);
-
-        $this->twoFactorSecretEncryptor
-            ->expects($this->once())
-            ->method('encrypt')
-            ->with($secret)
-            ->willReturn('encrypted-secret');
-
-        $this->userRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($this->callback(
-                static fn (User $savedUser): bool => $savedUser->getEmail() === $user->getEmail()
-                    && $savedUser->getTwoFactorSecret() === 'encrypted-secret'
-                    && $savedUser->isTwoFactorEnabled() === false
-            ));
-
-        $handler = $this->createHandler();
+        $otpauthUri = $this->buildOtpauthUri($user->getEmail(), $secret);
+        $this->expectUserLookup($user);
+        $this->expectTotpGeneration($user->getEmail(), $secret, $otpauthUri);
+        $this->expectSecretEncryption($secret);
+        $this->expectUserSaveWithEncryptedSecret($user);
         $command = new SetupTwoFactorCommand($user->getEmail());
-
-        $handler->__invoke($command);
-
-        $response = $command->getResponse();
-
-        $this->assertSame($secret, $response->getSecret());
-        $this->assertSame($otpauthUri, $response->getOtpauthUri());
-        $this->assertStringContainsString(
-            rawurlencode($user->getEmail()),
-            $response->getOtpauthUri()
-        );
-        $this->assertStringContainsString('issuer=VilnaCRM', $response->getOtpauthUri());
+        $this->createHandler()->__invoke($command);
+        $this->assertSetupTwoFactorResponse($command, $secret, $otpauthUri, $user->getEmail());
     }
 
     public function testInvokeThrowsUnauthorizedWhenAuthenticatedUserIsMissing(): void
     {
         $email = $this->faker->email();
-
         $this->userRepository
             ->expects($this->once())
             ->method('findByEmail')
             ->with($email)
             ->willReturn(null);
-
         $this->totpSecretGenerator
             ->expects($this->never())
             ->method('generate');
-
         $this->twoFactorSecretEncryptor
             ->expects($this->never())
             ->method('encrypt');
-
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Authentication required.');
-
         $handler = $this->createHandler();
         $handler->__invoke(new SetupTwoFactorCommand($email));
     }
@@ -123,24 +77,19 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createUser($this->faker->email());
         $user->setTwoFactorEnabled(true);
-
         $this->userRepository
             ->expects($this->once())
             ->method('findByEmail')
             ->with($user->getEmail())
             ->willReturn($user);
-
         $this->totpSecretGenerator
             ->expects($this->never())
             ->method('generate');
-
         $this->twoFactorSecretEncryptor
             ->expects($this->never())
             ->method('encrypt');
-
         $this->expectException(ConflictHttpException::class);
         $this->expectExceptionMessage('Two-factor authentication is already enabled.');
-
         $handler = $this->createHandler();
         $handler->__invoke(new SetupTwoFactorCommand($user->getEmail()));
     }
@@ -152,6 +101,70 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
             $this->twoFactorSecretEncryptor,
             $this->totpSecretGenerator,
         );
+    }
+
+    private function buildOtpauthUri(string $email, string $secret): string
+    {
+        return sprintf(
+            'otpauth://totp/VilnaCRM:%s?secret=%s&issuer=VilnaCRM',
+            rawurlencode($email),
+            $secret
+        );
+    }
+
+    private function expectUserLookup(User $user): void
+    {
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($user->getEmail())
+            ->willReturn($user);
+    }
+
+    private function expectTotpGeneration(string $email, string $secret, string $otpauthUri): void
+    {
+        $this->totpSecretGenerator
+            ->expects($this->once())
+            ->method('generate')
+            ->with($email)
+            ->willReturn([
+                'secret' => $secret,
+                'otpauth_uri' => $otpauthUri,
+            ]);
+    }
+
+    private function expectSecretEncryption(string $secret): void
+    {
+        $this->twoFactorSecretEncryptor
+            ->expects($this->once())
+            ->method('encrypt')
+            ->with($secret)
+            ->willReturn('encrypted-secret');
+    }
+
+    private function expectUserSaveWithEncryptedSecret(User $user): void
+    {
+        $this->userRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->callback(
+                static fn (User $savedUser): bool => $savedUser->getEmail() === $user->getEmail()
+                    && $savedUser->getTwoFactorSecret() === 'encrypted-secret'
+                    && $savedUser->isTwoFactorEnabled() === false
+            ));
+    }
+
+    private function assertSetupTwoFactorResponse(
+        SetupTwoFactorCommand $command,
+        string $secret,
+        string $otpauthUri,
+        string $email
+    ): void {
+        $response = $command->getResponse();
+        $this->assertSame($secret, $response->getSecret());
+        $this->assertSame($otpauthUri, $response->getOtpauthUri());
+        $this->assertStringContainsString(rawurlencode($email), $response->getOtpauthUri());
+        $this->assertStringContainsString('issuer=VilnaCRM', $response->getOtpauthUri());
     }
 
     private function createUser(string $email): User

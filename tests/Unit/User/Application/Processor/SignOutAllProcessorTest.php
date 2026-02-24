@@ -20,6 +20,7 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 final class SignOutAllProcessorTest extends UnitTestCase
 {
@@ -46,19 +47,15 @@ final class SignOutAllProcessorTest extends UnitTestCase
         $dto = new SignOutAllDto();
         $operation = $this->createMock(Operation::class);
         $token = $this->createAuthToken($userId, $userEmail);
-
         $this->tokenStorage->expects($this->once())
             ->method('getToken')
             ->willReturn($token);
-
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(static function (SignOutAllCommand $command) use ($userId) {
                 return $command->userId === $userId;
             }));
-
         $response = $this->processor->process($dto, $operation);
-
         $cookies = $response->headers->getCookies();
         $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
         $this->assertCount(1, $cookies);
@@ -67,13 +64,14 @@ final class SignOutAllProcessorTest extends UnitTestCase
 
     public function testClearCookieHasCorrectAttributes(): void
     {
-        $reflection = new \ReflectionMethod(SignOutAllProcessor::class, 'createClearCookieResponse');
+        $reflection = new \ReflectionMethod(
+            SignOutAllProcessor::class,
+            'createClearCookieResponse'
+        );
         $response = $reflection->invoke($this->processor);
-
         $cookies = $response->headers->getCookies();
         $this->assertCount(1, $cookies);
         $cookie = $cookies[0];
-
         $this->assertSame('__Host-auth_token', $cookie->getName());
         $this->assertSame('', $cookie->getValue());
         $this->assertSame(1, $cookie->getExpiresTime());
@@ -112,7 +110,9 @@ final class SignOutAllProcessorTest extends UnitTestCase
 
         $token->expects($this->once())
             ->method('getUser')
-            ->willReturn($this->createMock(\Symfony\Component\Security\Core\User\UserInterface::class));
+            ->willReturn(
+                $this->createMock(UserInterface::class)
+            );
 
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid token');

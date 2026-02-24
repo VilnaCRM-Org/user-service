@@ -53,11 +53,7 @@ final class SecurityEventLogSubscriberTest extends UnitTestCase
     public function testInvokeLogsAccountLockedOutAtWarningLevel(): void
     {
         $email = $this->faker->email();
-        $failedAttempts = 5;
-        $lockoutDuration = 900;
-
-        $event = new AccountLockedOutEvent($email, $failedAttempts, $lockoutDuration, $this->faker->uuid());
-
+        $event = new AccountLockedOutEvent($email, 5, 900, $this->faker->uuid());
         $capturedContext = [];
         $this->logger->expects($this->once())
             ->method('warning')
@@ -68,13 +64,11 @@ final class SecurityEventLogSubscriberTest extends UnitTestCase
                     return true;
                 })
             );
-
         $this->subscriber->__invoke($event);
-
         $this->assertSame('user.account.locked_out', $capturedContext['event']);
         $this->assertSame($email, $capturedContext['email']);
-        $this->assertSame($failedAttempts, $capturedContext['failed_attempts']);
-        $this->assertSame($lockoutDuration, $capturedContext['lockout_duration_seconds']);
+        $this->assertSame(5, $capturedContext['failed_attempts']);
+        $this->assertSame(900, $capturedContext['lockout_duration_seconds']);
         $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 

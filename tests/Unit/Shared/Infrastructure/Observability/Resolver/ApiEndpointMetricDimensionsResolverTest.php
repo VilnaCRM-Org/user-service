@@ -115,7 +115,7 @@ final class ApiEndpointMetricDimensionsResolverTest extends UnitTestCase
     }
 
     /**
-     * @psalm-return \Generator<string, list{string, string}, mixed, void>
+     * @psalm-return \Generator<string, list{string, string}, void, void>
      */
     public static function httpMethodsProvider(): \Generator
     {

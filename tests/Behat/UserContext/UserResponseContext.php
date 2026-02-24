@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserContext;
 
-use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
-use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use Behat\Behat\Context\Context;
 use PHPUnit\Framework\Assert;
 
@@ -13,12 +11,8 @@ use PHPUnit\Framework\Assert;
  */
 final class UserResponseContext implements Context
 {
-    use UserResponseContextTokenTrait;
-
     public function __construct(
         private UserOperationsState $state,
-        private readonly AuthRefreshTokenRepositoryInterface $authRefreshTokenRepository,
-        private readonly AuthSessionRepositoryInterface $authSessionRepository,
     ) {
     }
 
@@ -68,21 +62,17 @@ final class UserResponseContext implements Context
     public function theResponseShouldBeRfcProblemJson(string $rfc): void
     {
         Assert::assertSame('7807', $rfc);
-
         $response = $this->state->response;
         Assert::assertNotNull($response);
-
         $contentType = $response->headers->get('Content-Type');
         Assert::assertIsString($contentType);
         Assert::assertStringContainsString(
             'application/problem+json',
             $contentType
         );
-
         $content = $response->getContent();
         Assert::assertIsString($content);
         Assert::assertNotSame('', $content);
-
         $decoded = json_decode($content, true);
         Assert::assertIsArray($decoded);
         Assert::assertArrayHasKey('title', $decoded);
@@ -260,24 +250,10 @@ final class UserResponseContext implements Context
     {
         $responseContent = $this->state->response->getContent();
         $normalizedText = trim($text, "\"'");
-
         if ($normalizedText === '__schema') {
-            $decodedResponse = json_decode($responseContent, true);
-            if (
-                is_array($decodedResponse)
-                && array_key_exists('data', $decodedResponse)
-                && is_array($decodedResponse['data'])
-            ) {
-                Assert::assertArrayNotHasKey(
-                    '__schema',
-                    $decodedResponse['data'],
-                    'GraphQL response unexpectedly returned schema data.'
-                );
-            }
-
+            $this->assertNoSchemaInResponse($responseContent);
             return;
         }
-
         Assert::assertStringNotContainsString(
             $normalizedText,
             $responseContent,
@@ -349,24 +325,49 @@ final class UserResponseContext implements Context
     {
         $referenceTime = $this->state->{$key};
         $currentTime = $this->state->lastResponseTimeMs;
-
         Assert::assertIsFloat($referenceTime, "Stored response time '{$key}' is missing.");
         Assert::assertIsFloat($currentTime, 'No response time captured for the latest request.');
-
         $difference = abs($currentTime - $referenceTime);
-        $maxAllowedDifference = max(250.0, $referenceTime * 0.7);
-
+        $maxAllowed = max(250.0, $referenceTime * 0.7);
         Assert::assertLessThanOrEqual(
-            $maxAllowedDifference,
+            $maxAllowed,
             $difference,
-            sprintf(
-                'Response time deviation is too high. Current: %.2fms, Reference: %.2fms, Difference: %.2fms, Allowed: %.2fms',
+            $this->buildDeviationMessage(
                 $currentTime,
                 $referenceTime,
                 $difference,
-                $maxAllowedDifference
+                $maxAllowed
             )
         );
+    }
+
+    private function assertNoSchemaInResponse(
+        string $responseContent
+    ): void {
+        $decodedResponse = json_decode($responseContent, true);
+        if (
+            is_array($decodedResponse)
+            && array_key_exists('data', $decodedResponse)
+            && is_array($decodedResponse['data'])
+        ) {
+            Assert::assertArrayNotHasKey(
+                '__schema',
+                $decodedResponse['data'],
+                'GraphQL response unexpectedly returned schema data.'
+            );
+        }
+    }
+
+    private function buildDeviationMessage(
+        float $current,
+        float $reference,
+        float $difference,
+        float $maxAllowed
+    ): string {
+        $format = 'Response time deviation is too high. ';
+        $format .= 'Current: %.2fms, Reference: %.2fms, ';
+        $format .= 'Difference: %.2fms, Allowed: %.2fms';
+        return sprintf($format, $current, $reference, $difference, $maxAllowed);
     }
 
     /**
@@ -374,8 +375,25 @@ final class UserResponseContext implements Context
      */
     private function resolveUserField(string $field, array $responseData): string
     {
-        $candidates = [$field];
+        $candidates = $this->buildFieldCandidates($field);
+        foreach ($candidates as $candidate) {
+            if (array_key_exists($candidate, $responseData)) {
+                return $candidate;
+            }
+        }
+        throw new \RuntimeException(sprintf(
+            'Field "%s" was not found in response keys: %s',
+            $field,
+            implode(', ', array_keys($responseData))
+        ));
+    }
 
+    /**
+     * @return array<string>
+     */
+    private function buildFieldCandidates(string $field): array
+    {
+        $candidates = [$field];
         if (str_contains($field, '_')) {
             $candidates[] = lcfirst(str_replace(
                 ' ',
@@ -383,22 +401,10 @@ final class UserResponseContext implements Context
                 ucwords(str_replace('_', ' ', $field))
             ));
         } else {
-            $snakeCaseField = strtolower((string) preg_replace('/[A-Z]/', '_$0', $field));
-            $candidates[] = $snakeCaseField;
+            $candidates[] = strtolower(
+                (string) preg_replace('/[A-Z]/', '_$0', $field)
+            );
         }
-
-        foreach ($candidates as $candidate) {
-            if (array_key_exists($candidate, $responseData)) {
-                return $candidate;
-            }
-        }
-
-        throw new \RuntimeException(
-            sprintf(
-                'Field "%s" was not found in response keys: %s',
-                $field,
-                implode(', ', array_keys($responseData))
-            )
-        );
+        return $candidates;
     }
 }

@@ -12,6 +12,7 @@ use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
 use League\Bundle\OAuth2ServerBundle\Model\AccessToken;
 use League\Bundle\OAuth2ServerBundle\Model\Client;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Scope;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
@@ -97,9 +98,7 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
     }
 
     /**
-     * @return array<array>
-     *
-     * @psalm-return array{accessUpdate: array<never, never>, authUpdate: array<never, never>, accessSelect: array<never, never>, refreshUpdate: array<never, never>}
+     * @return array{accessUpdate: list<string>, authUpdate: list<string>, accessSelect: list<string>, refreshUpdate: list<string>}
      */
     private function createCaptureArrays(): array
     {
@@ -170,8 +169,9 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
         return $documentManager;
     }
 
-    private function createClientManagerMock(Client $client): \PHPUnit\Framework\MockObject\MockObject&ClientManagerInterface
-    {
+    private function createClientManagerMock(
+        Client $client
+    ): MockObject&ClientManagerInterface {
         $clientManager = $this->createMock(ClientManagerInterface::class);
         $clientManager->expects($this->once())
             ->method('find')

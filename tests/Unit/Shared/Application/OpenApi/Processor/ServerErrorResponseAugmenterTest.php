@@ -13,6 +13,7 @@ use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Augmenter\ServerErrorResponseAugmenter;
 use App\Shared\Application\OpenApi\Factory\Response\AbstractResponseFactory;
 use App\Tests\Unit\UnitTestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class ServerErrorResponseAugmenterTest extends UnitTestCase
@@ -27,8 +28,9 @@ final class ServerErrorResponseAugmenterTest extends UnitTestCase
         $this->assertBothOperationsHaveServerError($openApi, $internalErrorResponse);
     }
 
-    private function createInternalErrorFactory(Response $response): \PHPUnit\Framework\MockObject\MockObject&AbstractResponseFactory
-    {
+    private function createInternalErrorFactory(
+        Response $response
+    ): MockObject&AbstractResponseFactory {
         $factory = $this->createMock(AbstractResponseFactory::class);
         $factory->expects($this->once())
             ->method('getResponse')

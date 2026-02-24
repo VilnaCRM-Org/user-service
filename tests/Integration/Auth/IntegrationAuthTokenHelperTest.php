@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Auth;
 
+use App\Tests\Integration\JwtPayloadDecoder;
+
 final class IntegrationAuthTokenHelperTest extends AuthIntegrationTestCase
 {
     public function testCreateBearerTokenForUserIncludesExpectedClaims(): void
@@ -11,7 +13,7 @@ final class IntegrationAuthTokenHelperTest extends AuthIntegrationTestCase
         $userId = $this->faker->uuid();
 
         $token = $this->createBearerTokenForUser($userId);
-        $payload = $this->decodeJwtPayload($token);
+        $payload = JwtPayloadDecoder::decode($token);
 
         $this->assertSame($userId, $payload['sub'] ?? null);
         $this->assertSame('vilnacrm-user-service', $payload['iss'] ?? null);
@@ -24,7 +26,7 @@ final class IntegrationAuthTokenHelperTest extends AuthIntegrationTestCase
     public function testCreateBearerTokenForRoleSupportsServiceRole(): void
     {
         $token = $this->createBearerTokenForRole('ROLE_SERVICE');
-        $payload = $this->decodeJwtPayload($token);
+        $payload = JwtPayloadDecoder::decode($token);
 
         $this->assertSame(['ROLE_SERVICE'], $payload['roles'] ?? null);
     }
@@ -41,7 +43,7 @@ final class IntegrationAuthTokenHelperTest extends AuthIntegrationTestCase
         $this->assertStringStartsWith('Bearer ', $headers['HTTP_AUTHORIZATION']);
 
         $token = substr($headers['HTTP_AUTHORIZATION'], 7);
-        $payload = $this->decodeJwtPayload($token);
+        $payload = JwtPayloadDecoder::decode($token);
 
         $this->assertSame($subject, $payload['sub'] ?? null);
         $this->assertSame(['ROLE_SERVICE'], $payload['roles'] ?? null);

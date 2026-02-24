@@ -8,6 +8,8 @@ use App\Shared\Infrastructure\Factory\UuidFactory as UuidFactoryInterface;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Service\UserUpdateApplier;
+use App\User\Domain\Entity\User;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Event\PasswordChangedEvent;
 use App\User\Domain\Event\UserUpdatedEvent;
@@ -34,8 +36,12 @@ final class UserUpdateApplierTest extends UnitTestCase
         parent::setUp();
 
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
-        $this->emailChangedEventFactory = $this->createMock(EmailChangedEventFactoryInterface::class);
-        $this->passwordChangedFactory = $this->createMock(PasswordChangedEventFactoryInterface::class);
+        $this->emailChangedEventFactory = $this->createMock(
+            EmailChangedEventFactoryInterface::class
+        );
+        $this->passwordChangedFactory = $this->createMock(
+            PasswordChangedEventFactoryInterface::class
+        );
         $this->userUpdatedEventFactory = $this->createMock(UserUpdatedEventFactoryInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new UuidFactoryInterface());
@@ -52,51 +58,11 @@ final class UserUpdateApplierTest extends UnitTestCase
             $this->faker->password()
         );
         $eventId = $this->faker->uuid();
-
-        $emailChangedEvent = new EmailChangedEvent(
-            $user->getId(),
-            $updateData->newEmail,
-            $previousEmail,
-            $eventId
-        );
-        $passwordChangedEvent = new PasswordChangedEvent(
-            $updateData->newEmail,
-            $eventId
-        );
-        $userUpdatedEvent = new UserUpdatedEvent(
-            $user->getId(),
-            $updateData->newEmail,
-            $previousEmail,
-            $eventId
-        );
-
-        $this->emailChangedEventFactory
-            ->expects($this->once())
-            ->method('create')
-            ->willReturn($emailChangedEvent);
-        $this->passwordChangedFactory
-            ->expects($this->once())
-            ->method('create')
-            ->willReturn($passwordChangedEvent);
-        $this->userRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($user);
-        $this->userUpdatedEventFactory
-            ->expects($this->once())
-            ->method('create')
-            ->with($user, $previousEmail, $eventId)
-            ->willReturn($userUpdatedEvent);
-
-        $events = $this->createApplier()->apply(
-            $user,
-            $updateData,
-            $this->faker->sha256(),
-            $eventId
-        );
-
-        $this->assertContains($userUpdatedEvent, $events);
-        $this->assertContains($emailChangedEvent, $events);
+        [$u, $e] = $this->expectUpdateWithEmailChange($user, $updateData, $previousEmail, $eventId);
+        $hash = $this->faker->sha256();
+        $events = $this->createApplier()->apply($user, $updateData, $hash, $eventId);
+        $this->assertContains($u, $events);
+        $this->assertContains($e, $events);
     }
 
     public function testApplyPassesNullPreviousEmailWhenEmailUnchanged(): void
@@ -110,40 +76,81 @@ final class UserUpdateApplierTest extends UnitTestCase
             $password
         );
         $eventId = $this->faker->uuid();
-        $userUpdatedEvent = new UserUpdatedEvent(
-            $user->getId(),
-            $user->getEmail(),
-            null,
-            $eventId
-        );
-
-        $this->emailChangedEventFactory
-            ->expects($this->never())
-            ->method('create');
-        $this->passwordChangedFactory
-            ->expects($this->never())
-            ->method('create');
-        $this->userRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($user);
-        $this->userUpdatedEventFactory
-            ->expects($this->once())
-            ->method('create')
-            ->with($user, null, $eventId)
-            ->willReturn($userUpdatedEvent);
-
+        $userUpdated = $this->expectUpdateWithoutEmailChange($user, $eventId);
         $events = $this->createApplier()->apply(
             $user,
             $updateData,
             $this->faker->sha256(),
             $eventId
         );
-
-        $this->assertSame([$userUpdatedEvent], $events);
+        $this->assertSame([$userUpdated], $events);
     }
 
-    private function createUser(): \App\User\Domain\Entity\User
+    /**
+     * @return array{UserUpdatedEvent, EmailChangedEvent}
+     */
+    private function expectUpdateWithEmailChange(
+        UserInterface $user,
+        UserUpdate $updateData,
+        string $previousEmail,
+        string $eventId
+    ): array {
+        $uid = $user->getId();
+        $newEmail = $updateData->newEmail;
+        $emailChanged = new EmailChangedEvent($uid, $newEmail, $previousEmail, $eventId);
+        $passwordChanged = new PasswordChangedEvent($newEmail, $eventId);
+        $userUpdated = new UserUpdatedEvent($uid, $newEmail, $previousEmail, $eventId);
+        $this->emailChangedEventFactory
+            ->expects($this->once())
+            ->method('create')->willReturn($emailChanged);
+        $this->passwordChangedFactory
+            ->expects($this->once())
+            ->method('create')->willReturn($passwordChanged);
+        $this->expectSaveUser($user);
+        $this->expectUserUpdatedEvent($user, $previousEmail, $eventId, $userUpdated);
+        return [$userUpdated, $emailChanged];
+    }
+
+    private function expectUpdateWithoutEmailChange(
+        UserInterface $user,
+        string $eventId
+    ): UserUpdatedEvent {
+        $userUpdated = new UserUpdatedEvent(
+            $user->getId(),
+            $user->getEmail(),
+            null,
+            $eventId
+        );
+        $this->emailChangedEventFactory->expects($this->never())->method('create');
+        $this->passwordChangedFactory->expects($this->never())->method('create');
+        $this->expectSaveUser($user);
+        $this->expectUserUpdatedEvent($user, null, $eventId, $userUpdated);
+
+        return $userUpdated;
+    }
+
+    private function expectSaveUser(UserInterface $user): void
+    {
+        $this->userRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($user);
+    }
+
+    private function expectUserUpdatedEvent(
+        UserInterface $user,
+        ?string $previousEmail,
+        string $eventId,
+        UserUpdatedEvent $userUpdated
+    ): void {
+        $this->userUpdatedEventFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with($user, $previousEmail, $eventId)
+            ->willReturn($userUpdated);
+    }
+
+    private function createUser(): User
     {
         return $this->userFactory->create(
             $this->faker->email(),

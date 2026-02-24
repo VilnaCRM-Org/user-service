@@ -5,81 +5,37 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Auth;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 final class GraphQLBatchRejectTest extends AuthIntegrationTestCase
 {
-    /**
-     * AC: NFR-59 - GraphQL batch requests (JSON arrays) must be rejected with 400
-     */
     public function testGraphqlBatchRequestReturns400(): void
     {
-        $kernel = self::getContainer()->get('kernel');
-        $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
-
-        // Batch request: JSON array of queries (OWASP API2:2023 rate limit bypass)
         $batchRequest = [
             ['query' => '{ __typename }'],
             ['query' => '{ __typename }'],
             ['query' => '{ __typename }'],
         ];
+        $response = $this->sendGraphqlRequest(json_encode($batchRequest));
 
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            [],
-            [],
-            [],
-            [
-                'HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-            ],
-            json_encode($batchRequest)
-        );
-
-        $response = $kernel->handle($request);
-
+        $message = implode('', [
+            'GraphQL batch requests (JSON arrays) ',
+            'must be rejected with 400 Bad Request ',
+            '(AC: NFR-59, RC-01)',
+        ]);
         $this->assertSame(
             400,
             $response->getStatusCode(),
-            'GraphQL batch requests (JSON arrays) must be rejected with 400 Bad Request (AC: NFR-59, RC-01)'
+            $message
         );
-
-        $data = json_decode($response->getContent(), true);
-
-        $this->assertArrayHasKey('detail', $data);
-        $this->assertStringContainsString(
-            'batch',
-            strtolower($data['detail'] ?? ''),
-            'Error message should mention batch requests'
-        );
+        $this->assertBatchErrorInResponse($response);
     }
 
-    /**
-     * AC: NFR-59 - Single GraphQL requests should still work
-     */
     public function testSingleGraphqlRequestIsAllowed(): void
     {
-        $kernel = self::getContainer()->get('kernel');
-        $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
-
-        // Single request: JSON object (allowed)
         $singleRequest = ['query' => '{ __typename }'];
-
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            [],
-            [],
-            [],
-            [
-                'HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-            ],
-            json_encode($singleRequest)
-        );
-
-        $response = $kernel->handle($request);
+        $response = $this->sendGraphqlRequest(json_encode($singleRequest));
 
         $this->assertNotSame(
             400,
@@ -88,19 +44,25 @@ final class GraphQLBatchRejectTest extends AuthIntegrationTestCase
         );
     }
 
-    /**
-     * AC: NFR-59 - Batch rejection should happen before rate limiting
-     */
     public function testBatchRejectionHappensBeforeAuthentication(): void
     {
-        $kernel = self::getContainer()->get('kernel');
-        $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
-
-        // Batch request without auth should return 400, NOT 401
         $batchRequest = [
             ['query' => '{ __typename }'],
             ['query' => '{ __typename }'],
         ];
+        $response = $this->sendGraphqlRequest(json_encode($batchRequest));
+
+        $this->assertSame(
+            400,
+            $response->getStatusCode(),
+            'Batch rejection (400) must happen before authentication (401) - priority 130 > 120'
+        );
+    }
+
+    private function sendGraphqlRequest(string $body): Response
+    {
+        $kernel = self::getContainer()->get('kernel');
+        $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
 
         $request = Request::create(
             '/api/graphql',
@@ -112,15 +74,20 @@ final class GraphQLBatchRejectTest extends AuthIntegrationTestCase
                 'HTTP_ACCEPT' => 'application/json',
                 'CONTENT_TYPE' => 'application/json',
             ],
-            json_encode($batchRequest)
+            $body
         );
 
-        $response = $kernel->handle($request);
+        return $kernel->handle($request);
+    }
 
-        $this->assertSame(
-            400,
-            $response->getStatusCode(),
-            'Batch rejection (400) must happen before authentication (401) - priority 130 > 120'
+    private function assertBatchErrorInResponse(Response $response): void
+    {
+        $data = json_decode($response->getContent(), true);
+        $this->assertArrayHasKey('detail', $data);
+        $this->assertStringContainsString(
+            'batch',
+            strtolower($data['detail'] ?? ''),
+            'Error message should mention batch requests'
         );
     }
 }

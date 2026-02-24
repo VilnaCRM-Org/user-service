@@ -15,21 +15,7 @@ final class LexikAccessTokenGeneratorTest extends UnitTestCase
     {
         $expectedToken = $this->faker->sha256();
         $payload = ['sub' => $this->faker->uuid()];
-
-        $encoder = new class($expectedToken) {
-            public function __construct(private string $token)
-            {
-            }
-
-            /**
-             * @param array<string, int|string|array<string>> $payload
-             */
-            public function encode(array $payload): string
-            {
-                return $this->token;
-            }
-        };
-
+        $encoder = $this->createSimpleEncoder($expectedToken);
         $generator = new LexikAccessTokenGenerator($encoder);
 
         $this->assertSame($expectedToken, $generator->generate($payload));
@@ -82,32 +68,7 @@ final class LexikAccessTokenGeneratorTest extends UnitTestCase
         $issuedAt = 1_705_000_000;
         $notBefore = 1_705_000_010;
         $expiresAt = 1_705_000_900;
-
-        $encoder = new class() {
-            /** @var array<string, array<string>|\DateTimeImmutable|string>|null */
-            private ?array $capturedPayload = null;
-
-            /**
-             * @param array<string, array<string>|\DateTimeImmutable|string> $payload
-             *
-             * @psalm-return 'jwt-token'
-             */
-            public function encode(array $payload): string
-            {
-                $this->capturedPayload = $payload;
-
-                return 'jwt-token';
-            }
-
-            /**
-             * @return array<string, array<string>|\DateTimeImmutable|string>|null
-             */
-            public function capturedPayload(): ?array
-            {
-                return $this->capturedPayload;
-            }
-        };
-
+        $encoder = $this->createCapturingEncoder();
         $generator = new LexikAccessTokenGenerator($encoder);
         $token = $generator->generate([
             'sub' => $this->faker->uuid(),
@@ -119,44 +80,14 @@ final class LexikAccessTokenGeneratorTest extends UnitTestCase
         $this->assertSame('jwt-token', $token);
         $capturedPayload = $encoder->capturedPayload();
         $this->assertIsArray($capturedPayload);
-        $this->assertInstanceOf(DateTimeImmutable::class, $capturedPayload['iat'] ?? null);
-        $this->assertInstanceOf(DateTimeImmutable::class, $capturedPayload['nbf'] ?? null);
-        $this->assertInstanceOf(DateTimeImmutable::class, $capturedPayload['exp'] ?? null);
-        $this->assertSame($issuedAt, ($capturedPayload['iat'] ?? null)?->getTimestamp());
-        $this->assertSame($notBefore, ($capturedPayload['nbf'] ?? null)?->getTimestamp());
-        $this->assertSame($expiresAt, ($capturedPayload['exp'] ?? null)?->getTimestamp());
+        $this->assertTemporalClaims($capturedPayload, $issuedAt, $notBefore, $expiresAt);
     }
 
     public function testGenerateNormalizesLaterTemporalClaimsWhenEarlierClaimIsNonInteger(): void
     {
         $notBefore = 1_706_000_010;
         $expiresAt = 1_706_000_900;
-
-        $encoder = new class() {
-            /** @var array<string, array<string>|\DateTimeImmutable|string>|null */
-            private ?array $capturedPayload = null;
-
-            /**
-             * @param array<string, array<string>|\DateTimeImmutable|string> $payload
-             *
-             * @psalm-return 'jwt-token'
-             */
-            public function encode(array $payload): string
-            {
-                $this->capturedPayload = $payload;
-
-                return 'jwt-token';
-            }
-
-            /**
-             * @return array<string, array<string>|\DateTimeImmutable|string>|null
-             */
-            public function capturedPayload(): ?array
-            {
-                return $this->capturedPayload;
-            }
-        };
-
+        $encoder = $this->createCapturingEncoder();
         $generator = new LexikAccessTokenGenerator($encoder);
         $generator->generate([
             'sub' => $this->faker->uuid(),
@@ -170,5 +101,61 @@ final class LexikAccessTokenGeneratorTest extends UnitTestCase
         $this->assertSame('not-an-int', $capturedPayload['iat'] ?? null);
         $this->assertInstanceOf(DateTimeImmutable::class, $capturedPayload['nbf'] ?? null);
         $this->assertInstanceOf(DateTimeImmutable::class, $capturedPayload['exp'] ?? null);
+    }
+
+    private function createSimpleEncoder(string $token): object
+    {
+        return new class($token) {
+            public function __construct(private string $token)
+            {
+            }
+
+            /**
+             * @param array<string, int|string|array<string>> $payload
+             */
+            public function encode(array $payload): string
+            {
+                return $this->token;
+            }
+        };
+    }
+
+    private function createCapturingEncoder(): object
+    {
+        return new class() {
+            /** @var array<string, string|int|DateTimeImmutable>|null */
+            private ?array $capturedPayload = null;
+
+            /** @param array<string, string|int|DateTimeImmutable> $payload */
+            public function encode(array $payload): string
+            {
+                $this->capturedPayload = $payload;
+
+                return 'jwt-token';
+            }
+
+            /** @return array<string, string|int|DateTimeImmutable>|null */
+            public function capturedPayload(): ?array
+            {
+                return $this->capturedPayload;
+            }
+        };
+    }
+
+    /**
+     * @param array<string, string|int|DateTimeImmutable> $payload
+     */
+    private function assertTemporalClaims(
+        array $payload,
+        int $issuedAt,
+        int $notBefore,
+        int $expiresAt
+    ): void {
+        $this->assertInstanceOf(DateTimeImmutable::class, $payload['iat'] ?? null);
+        $this->assertInstanceOf(DateTimeImmutable::class, $payload['nbf'] ?? null);
+        $this->assertInstanceOf(DateTimeImmutable::class, $payload['exp'] ?? null);
+        $this->assertSame($issuedAt, ($payload['iat'] ?? null)?->getTimestamp());
+        $this->assertSame($notBefore, ($payload['nbf'] ?? null)?->getTimestamp());
+        $this->assertSame($expiresAt, ($payload['exp'] ?? null)?->getTimestamp());
     }
 }

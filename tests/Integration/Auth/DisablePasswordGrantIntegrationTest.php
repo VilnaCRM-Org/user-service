@@ -22,51 +22,31 @@ final class DisablePasswordGrantIntegrationTest extends AuthIntegrationTestCase
     {
         $kernel = self::getContainer()->get('kernel');
         $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
-
         [$clientId, $clientSecret] = $this->createOAuthClient();
         $email = $this->faker->unique()->safeEmail();
         $password = 'passWORD1';
         $this->createUser($email, $password);
-
         $response = $this->sendTokenRequest(
             $kernel,
-            [
-                'grant_type' => 'password',
-                'username' => $email,
-                'password' => $password,
-            ],
+            ['grant_type' => 'password', 'username' => $email, 'password' => $password],
             $clientId,
             $clientSecret
         );
-
-        $responseData = json_decode((string) $response->getContent(), true);
-
-        $this->assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
-        $this->assertSame('unsupported_grant_type', $responseData['error'] ?? null);
-        $this->assertSame(
-            'The authorization grant type is not supported by the authorization server.',
-            $responseData['error_description'] ?? null
-        );
+        $this->assertUnsupportedGrantTypeResponse($response);
     }
 
     public function testClientCredentialsGrantStillWorksWhenPasswordGrantIsDisabled(): void
     {
         $kernel = self::getContainer()->get('kernel');
         $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
-
         [$clientId, $clientSecret] = $this->createOAuthClient();
-
         $response = $this->sendTokenRequest(
             $kernel,
-            [
-                'grant_type' => 'client_credentials',
-            ],
+            ['grant_type' => 'client_credentials'],
             $clientId,
             $clientSecret
         );
-
         $responseData = json_decode((string) $response->getContent(), true);
-
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         $this->assertSame('Bearer', $responseData['token_type'] ?? null);
         $this->assertIsString($responseData['access_token'] ?? null);
@@ -131,11 +111,24 @@ final class DisablePasswordGrantIntegrationTest extends AuthIntegrationTestCase
             [
                 'HTTP_ACCEPT' => 'application/json',
                 'CONTENT_TYPE' => 'application/json',
-                'HTTP_AUTHORIZATION' => 'Basic ' . base64_encode(sprintf('%s:%s', $clientId, $clientSecret)),
+                'HTTP_AUTHORIZATION' => 'Basic ' . base64_encode(
+                    sprintf('%s:%s', $clientId, $clientSecret)
+                ),
             ],
             json_encode($payload, JSON_THROW_ON_ERROR)
         );
 
         return $kernel->handle($request);
+    }
+
+    private function assertUnsupportedGrantTypeResponse(Response $response): void
+    {
+        $responseData = json_decode((string) $response->getContent(), true);
+        $this->assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $this->assertSame('unsupported_grant_type', $responseData['error'] ?? null);
+        $this->assertSame(
+            'The authorization grant type is not supported by the authorization server.',
+            $responseData['error_description'] ?? null
+        );
     }
 }

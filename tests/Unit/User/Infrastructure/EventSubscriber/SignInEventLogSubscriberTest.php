@@ -26,66 +26,30 @@ final class SignInEventLogSubscriberTest extends UnitTestCase
 
     public function testInvokeLogsUserSignedInAtInfoLevel(): void
     {
-        $userId = $this->faker->uuid();
-        $email = $this->faker->email();
-        $sessionId = $this->faker->uuid();
-        $ip = $this->faker->ipv4();
-        $userAgent = $this->faker->userAgent();
-        $twoFactorUsed = false;
-        $eventId = $this->faker->uuid();
-
-        $event = new UserSignedInEvent($userId, $email, $sessionId, $ip, $userAgent, $twoFactorUsed, $eventId);
-
+        $event = $this->createSignedInEvent();
         $capturedContext = [];
-        $this->logger->expects($this->once())
-            ->method('info')
-            ->with(
-                'User signed in successfully',
-                $this->callback(static function (array $context) use (&$capturedContext): bool {
-                    $capturedContext = $context;
-                    return true;
-                })
-            );
+        $this->expectLogCapture('info', 'User signed in successfully', $capturedContext);
 
         $this->subscriber->__invoke($event);
 
-        $this->assertSame('user.signed_in', $capturedContext['event']);
-        $this->assertSame($userId, $capturedContext['user_id']);
-        $this->assertSame($sessionId, $capturedContext['session_id']);
-        $this->assertSame($ip, $capturedContext['ip_address']);
-        $this->assertSame($userAgent, $capturedContext['user_agent']);
-        $this->assertSame($twoFactorUsed, $capturedContext['two_factor_used']);
-        $this->assertArrayHasKey('timestamp', $capturedContext);
+        $this->assertSignedInContext($capturedContext, $event);
     }
 
     public function testInvokeLogsSignInFailedAtWarningLevel(): void
     {
-        $email = $this->faker->email();
-        $ip = $this->faker->ipv4();
-        $userAgent = $this->faker->userAgent();
-        $reason = 'invalid_credentials';
-        $eventId = $this->faker->uuid();
-
-        $event = new SignInFailedEvent($email, $ip, $userAgent, $reason, $eventId);
-
+        $event = new SignInFailedEvent(
+            $this->faker->email(),
+            $this->faker->ipv4(),
+            $this->faker->userAgent(),
+            'invalid_credentials',
+            $this->faker->uuid()
+        );
         $capturedContext = [];
-        $this->logger->expects($this->once())
-            ->method('warning')
-            ->with(
-                'Sign-in attempt failed',
-                $this->callback(static function (array $context) use (&$capturedContext): bool {
-                    $capturedContext = $context;
-                    return true;
-                })
-            );
+        $this->expectLogCapture('warning', 'Sign-in attempt failed', $capturedContext);
 
         $this->subscriber->__invoke($event);
 
-        $this->assertSame('user.signin.failed', $capturedContext['event']);
-        $this->assertSame($email, $capturedContext['attempted_email']);
-        $this->assertSame($ip, $capturedContext['ip_address']);
-        $this->assertSame($reason, $capturedContext['reason']);
-        $this->assertArrayHasKey('timestamp', $capturedContext);
+        $this->assertFailedContext($capturedContext, $event);
     }
 
     public function testInvokeIgnoresUnknownEvent(): void
@@ -106,5 +70,67 @@ final class SignInEventLogSubscriberTest extends UnitTestCase
             ],
             $this->subscriber->subscribedTo()
         );
+    }
+
+    private function createSignedInEvent(): UserSignedInEvent
+    {
+        return new UserSignedInEvent(
+            $this->faker->uuid(),
+            $this->faker->email(),
+            $this->faker->uuid(),
+            $this->faker->ipv4(),
+            $this->faker->userAgent(),
+            false,
+            $this->faker->uuid()
+        );
+    }
+
+    /**
+     * @param array<string, string|bool> $capturedContext
+     */
+    private function expectLogCapture(
+        string $method,
+        string $message,
+        array &$capturedContext
+    ): void {
+        $this->logger->expects($this->once())
+            ->method($method)
+            ->with(
+                $message,
+                $this->callback(static function (array $context) use (&$capturedContext): bool {
+                    $capturedContext = $context;
+                    return true;
+                })
+            );
+    }
+
+    /**
+     * @param array<string, string|bool> $context
+     */
+    private function assertSignedInContext(
+        array $context,
+        UserSignedInEvent $event
+    ): void {
+        $this->assertSame('user.signed_in', $context['event']);
+        $this->assertSame($event->userId, $context['user_id']);
+        $this->assertSame($event->sessionId, $context['session_id']);
+        $this->assertSame($event->ipAddress, $context['ip_address']);
+        $this->assertSame($event->userAgent, $context['user_agent']);
+        $this->assertSame($event->twoFactorUsed, $context['two_factor_used']);
+        $this->assertArrayHasKey('timestamp', $context);
+    }
+
+    /**
+     * @param array<string, string> $context
+     */
+    private function assertFailedContext(
+        array $context,
+        SignInFailedEvent $event
+    ): void {
+        $this->assertSame('user.signin.failed', $context['event']);
+        $this->assertSame($event->email, $context['attempted_email']);
+        $this->assertSame($event->ipAddress, $context['ip_address']);
+        $this->assertSame($event->reason, $context['reason']);
+        $this->assertArrayHasKey('timestamp', $context);
     }
 }

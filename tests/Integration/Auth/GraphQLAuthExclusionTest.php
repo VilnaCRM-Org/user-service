@@ -8,23 +8,57 @@ use Symfony\Component\Yaml\Yaml;
 
 final class GraphQLAuthExclusionTest extends AuthIntegrationTestCase
 {
-    private const EMPTY_RESPONSE_CONFIG_PATH = __DIR__ . '/../../../config/api_platform/resources/EmptyResponse.yaml';
+    private const EMPTY_RESPONSE_CONFIG_PATH =
+        __DIR__ . '/../../../config/api_platform/resources/EmptyResponse.yaml';
 
     /**
      * AC: NFR-62 - Auth operations must have graphql: false configured
      */
     public function testAuthOperationsHaveGraphqlDisabledInConfig(): void
     {
-        $this->assertFileExists(
-            self::EMPTY_RESPONSE_CONFIG_PATH,
-            'EmptyResponse.yaml must exist'
+        $this->assertFileExists(self::EMPTY_RESPONSE_CONFIG_PATH, 'EmptyResponse.yaml must exist');
+        $operations = $this->loadEmptyResponseOperations();
+        foreach ($this->getRequiredDisabledOperations() as $operationName) {
+            $this->assertOperationHasGraphqlDisabled($operations, $operationName);
+        }
+    }
+
+    /**
+     * AC: NFR-62 - Verify all 9 auth operations are excluded
+     */
+    public function testAllNineAuthOperationsAreExcludedFromGraphql(): void
+    {
+        $operations = $this->loadEmptyResponseOperations();
+        $disabledCount = 0;
+        foreach ($operations as $operation) {
+            if (isset($operation['graphql']) && $operation['graphql'] === false) {
+                ++$disabledCount;
+            }
+        }
+        $this->assertGreaterThanOrEqual(
+            9,
+            $disabledCount,
+            'At least 9 auth operations must have graphql: false (AC: NFR-62)'
         );
+    }
 
+    /**
+     * @return array<string, array<string, bool|string>>
+     */
+    private function loadEmptyResponseOperations(): array
+    {
         $config = Yaml::parseFile(self::EMPTY_RESPONSE_CONFIG_PATH);
-        $operations = $config['resources']['App\Shared\Application\DTO\EmptyResponse']['operations'] ?? [];
+        $key = 'App\Shared\Application\DTO\EmptyResponse';
 
-        // AC: NFR-62 - These auth operations MUST have "graphql: false"
-        $requiredDisabledOperations = [
+        return $config['resources'][$key]['operations'] ?? [];
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function getRequiredDisabledOperations(): array
+    {
+        return [
             'refresh_token_http',
             'signin_http',
             'signin_2fa_http',
@@ -35,54 +69,28 @@ final class GraphQLAuthExclusionTest extends AuthIntegrationTestCase
             'request_password_reset',
             'confirm_password_reset',
         ];
-
-        foreach ($requiredDisabledOperations as $operationName) {
-            $this->assertArrayHasKey(
-                $operationName,
-                $operations,
-                sprintf('Operation "%s" must be defined in EmptyResponse.yaml', $operationName)
-            );
-
-            $operation = $operations[$operationName];
-
-            $this->assertArrayHasKey(
-                'graphql',
-                $operation,
-                sprintf(
-                    'Operation "%s" must have "graphql" key configured (AC: NFR-62)',
-                    $operationName
-                )
-            );
-
-            $this->assertFalse(
-                $operation['graphql'],
-                sprintf(
-                    'Operation "%s" must have "graphql: false" to exclude from GraphQL (AC: NFR-62). This prevents rate limit bypass via GraphQL batching (RC-01).',
-                    $operationName
-                )
-            );
-        }
     }
 
     /**
-     * AC: NFR-62 - Verify all 9 auth operations are excluded
+     * @param array<string, array<string, bool|string>> $operations
      */
-    public function testAllNineAuthOperationsAreExcludedFromGraphql(): void
-    {
-        $config = Yaml::parseFile(self::EMPTY_RESPONSE_CONFIG_PATH);
-        $operations = $config['resources']['App\Shared\Application\DTO\EmptyResponse']['operations'] ?? [];
-
-        $disabledCount = 0;
-        foreach ($operations as $operation) {
-            if (isset($operation['graphql']) && $operation['graphql'] === false) {
-                ++$disabledCount;
-            }
-        }
-
-        $this->assertGreaterThanOrEqual(
-            9,
-            $disabledCount,
-            'At least 9 auth operations must have graphql: false (AC: NFR-62)'
+    private function assertOperationHasGraphqlDisabled(
+        array $operations,
+        string $operationName
+    ): void {
+        $this->assertArrayHasKey(
+            $operationName,
+            $operations,
+            sprintf('Operation "%s" must be defined in EmptyResponse.yaml', $operationName)
         );
+        $operation = $operations[$operationName];
+        $this->assertArrayHasKey('graphql', $operation, sprintf(
+            'Operation "%s" must have "graphql" key configured (AC: NFR-62)',
+            $operationName
+        ));
+        $this->assertFalse($operation['graphql'], sprintf(
+            'Operation "%s" must have "graphql: false" to exclude from GraphQL (AC: NFR-62)',
+            $operationName
+        ));
     }
 }

@@ -44,37 +44,9 @@ final class SignOutProcessorTest extends UnitTestCase
         $userId = $this->faker->uuid();
         $dto = new SignOutDto();
         $operation = $this->createMock(Operation::class);
-
-        $token = $this->createMock(TokenInterface::class);
-        $uuidTransformer = new UuidTransformer(new SharedUuidFactory());
-        $user = new AuthorizationUserDto(
-            $this->faker->email(),
-            $this->faker->name(),
-            $this->faker->password(),
-            $uuidTransformer->transformFromString($userId),
-            true
-        );
-
-        $this->tokenStorage->expects($this->once())
-            ->method('getToken')
-            ->willReturn($token);
-
-        $token->expects($this->once())
-            ->method('getUser')
-            ->willReturn($user);
-
-        $token->expects($this->once())
-            ->method('getAttribute')
-            ->with('sid')
-            ->willReturn($sessionId);
-
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(static function (SignOutCommand $command) use ($sessionId, $userId) {
-                return $command->sessionId === $sessionId
-                    && $command->userId === $userId;
-            }));
-
+        $user = $this->createAuthorizationUserDto($userId);
+        $this->expectTokenWithUserAndSession($user, $sessionId);
+        $this->expectSignOutCommandDispatched($sessionId, $userId);
         $response = $this->processor->process($dto, $operation);
         $cookies = $response->headers->getCookies();
         $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
@@ -119,18 +91,64 @@ final class SignOutProcessorTest extends UnitTestCase
 
     public function testClearCookieHasCorrectAttributes(): void
     {
-        $processor = new SignOutProcessor(
-            $this->commandBus,
-            $this->tokenStorage
-        );
-
         $reflection = new \ReflectionMethod(SignOutProcessor::class, 'createClearCookieResponse');
-        $response = $reflection->invoke($processor);
-
+        $response = $reflection->invoke($this->processor);
         $cookies = $response->headers->getCookies();
         $this->assertCount(1, $cookies);
-        $cookie = $cookies[0];
+        $this->assertClearCookieAttributes($cookies[0]);
+    }
 
+    public function testProcessThrowsExceptionWhenNoSessionId(): void
+    {
+        $dto = new SignOutDto();
+        $operation = $this->createMock(Operation::class);
+        $user = $this->createAuthorizationUserDto($this->faker->uuid());
+        $this->expectTokenWithUserAndSession($user, null);
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Session ID not found in token');
+
+        $this->processor->process($dto, $operation);
+    }
+
+    private function createAuthorizationUserDto(string $userId): AuthorizationUserDto
+    {
+        $uuidTransformer = new UuidTransformer(new SharedUuidFactory());
+
+        return new AuthorizationUserDto(
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $uuidTransformer->transformFromString($userId),
+            true
+        );
+    }
+
+    private function expectTokenWithUserAndSession(
+        AuthorizationUserDto $user,
+        ?string $sessionId
+    ): void {
+        $token = $this->createMock(TokenInterface::class);
+        $this->tokenStorage->expects($this->once())->method('getToken')->willReturn($token);
+        $token->expects($this->once())->method('getUser')->willReturn($user);
+        $token->expects($this->once())->method('getAttribute')->with('sid')->willReturn($sessionId);
+    }
+
+    private function expectSignOutCommandDispatched(
+        string $sessionId,
+        string $userId
+    ): void {
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(
+                static function (SignOutCommand $command) use ($sessionId, $userId) {
+                    return $command->sessionId === $sessionId
+                        && $command->userId === $userId;
+                }
+            ));
+    }
+
+    private function assertClearCookieAttributes(Cookie $cookie): void
+    {
         $this->assertSame('__Host-auth_token', $cookie->getName());
         $this->assertSame('', $cookie->getValue());
         $this->assertSame(1, $cookie->getExpiresTime());
@@ -140,38 +158,5 @@ final class SignOutProcessorTest extends UnitTestCase
         $this->assertTrue($cookie->isHttpOnly());
         $this->assertFalse($cookie->isRaw());
         $this->assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
-    }
-
-    public function testProcessThrowsExceptionWhenNoSessionId(): void
-    {
-        $dto = new SignOutDto();
-        $operation = $this->createMock(Operation::class);
-        $token = $this->createMock(TokenInterface::class);
-        $uuidTransformer = new UuidTransformer(new SharedUuidFactory());
-        $user = new AuthorizationUserDto(
-            $this->faker->email(),
-            $this->faker->name(),
-            $this->faker->password(),
-            $uuidTransformer->transformFromString($this->faker->uuid()),
-            true
-        );
-
-        $this->tokenStorage->expects($this->once())
-            ->method('getToken')
-            ->willReturn($token);
-
-        $token->expects($this->once())
-            ->method('getUser')
-            ->willReturn($user);
-
-        $token->expects($this->once())
-            ->method('getAttribute')
-            ->with('sid')
-            ->willReturn(null);
-
-        $this->expectException(UnauthorizedHttpException::class);
-        $this->expectExceptionMessage('Session ID not found in token');
-
-        $this->processor->process($dto, $operation);
     }
 }
