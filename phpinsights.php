@@ -9,7 +9,6 @@ use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Strings\UnnecessaryStringConcatSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
-use SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\AlphabeticallySortedUsesSniff;
 use SlevomatCodingStandard\Sniffs\Namespaces\UseSpacingSniff;
@@ -72,13 +71,6 @@ return [
                 'src/Shared/Application/OpenApi/Enum/AllowEmptyValue',
                 'src/Shared/Application/OpenApi/Enum/Requirement',
             ],
-        ],
-        FunctionLengthSniff::class => [
-            'exclude' => [
-                // Atomic refresh-token rotation with grace-window logic requires longer methods
-                'src/User/Application/CommandHandler/RefreshTokenCommandHandler',
-            ],
-            'maxLinesLength' => 20,
         ],
         UnnecessaryStringConcatSniff::class => [
             'exclude' => [

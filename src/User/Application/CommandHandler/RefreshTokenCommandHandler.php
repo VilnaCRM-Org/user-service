@@ -41,24 +41,7 @@ final readonly class RefreshTokenCommandHandler implements
         $user = $this->resolveUser($session->getUserId());
         $currentTime = new DateTimeImmutable();
 
-        if ($this->tryHandleRotatedToken(
-            $oldToken,
-            $session,
-            $user,
-            $command,
-            $currentTime
-        )) {
-            return;
-        }
-
-        if ($this->tryHandleConcurrentRotation(
-            $oldToken->getTokenHash(),
-            $session,
-            $user,
-            $command,
-            $currentTime,
-            $command->refreshToken
-        )) {
+        if ($this->handleIfAlreadyRotated($oldToken, $session, $user, $command, $currentTime)) {
             return;
         }
 
@@ -80,6 +63,27 @@ final readonly class RefreshTokenCommandHandler implements
         }
 
         return $token;
+    }
+
+    private function handleIfAlreadyRotated(
+        AuthRefreshToken $oldToken,
+        AuthSession $session,
+        User $user,
+        RefreshTokenCommand $command,
+        DateTimeImmutable $currentTime
+    ): bool {
+        if ($this->tryHandleRotatedToken($oldToken, $session, $user, $command, $currentTime)) {
+            return true;
+        }
+
+        return $this->tryHandleConcurrentRotation(
+            $oldToken->getTokenHash(),
+            $session,
+            $user,
+            $command,
+            $currentTime,
+            $command->refreshToken
+        );
     }
 
     private function handleRotatedToken(
@@ -278,12 +282,7 @@ final readonly class RefreshTokenCommandHandler implements
         DateTimeImmutable $currentTime
     ): void {
         if ($oldToken->isGraceUsed()) {
-            $this->handleTheftDetection(
-                $oldToken,
-                $session,
-                $user,
-                'double_grace_use'
-            );
+            $this->detectDoubleGraceUse($oldToken, $session, $user);
         }
 
         $graceWindowStartedAt = $currentTime->setTimestamp(
@@ -299,12 +298,15 @@ final readonly class RefreshTokenCommandHandler implements
             return;
         }
 
-        $this->handleTheftDetection(
-            $oldToken,
-            $session,
-            $user,
-            'double_grace_use'
-        );
+        $this->detectDoubleGraceUse($oldToken, $session, $user);
+    }
+
+    private function detectDoubleGraceUse(
+        AuthRefreshToken $oldToken,
+        AuthSession $session,
+        User $user
+    ): never {
+        $this->handleTheftDetection($oldToken, $session, $user, 'double_grace_use');
     }
 
     private function resolveUser(string $userId): User

@@ -23,7 +23,6 @@ return [
     'exclude' => [
         'vendor',
         'CLI/bats/php',
-        'tests/Unit/User/Infrastructure/Service/OpenSslEncryptOverride.php',
     ],
     'add' => [],
     'remove' => [

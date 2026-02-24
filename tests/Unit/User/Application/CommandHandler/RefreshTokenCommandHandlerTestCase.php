@@ -170,7 +170,10 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
             ->with(
                 $this->isType('string'),
                 $this->callback(
-                    static fn (DateTimeImmutable $windowStart): bool => $windowStart->getTimestamp() < (new DateTimeImmutable())->getTimestamp()
+                    static function (DateTimeImmutable $windowStart): bool {
+                        return $windowStart->getTimestamp()
+                            < (new DateTimeImmutable())->getTimestamp();
+                    }
                 ),
                 $this->isInstanceOf(DateTimeImmutable::class)
             )
