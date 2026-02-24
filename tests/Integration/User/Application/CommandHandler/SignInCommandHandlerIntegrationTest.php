@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\User\Application\CommandHandler;
 
-use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Domain\Factory\UuidFactoryInterface;
 use App\Tests\Integration\JwtPayloadDecoder;
 use App\Tests\Integration\User\UserIntegrationTestCase;
@@ -35,7 +34,6 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
     private SessionIssuanceServiceInterface $sessionIssuanceService;
     private SignInEventPublisherInterface $signInEventPublisher;
     private UlidFactory $ulidFactory;
-    private EventBusInterface $eventBus;
 
     #[\Override]
     protected function setUp(): void
@@ -57,7 +55,6 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
             ->get(SessionIssuanceServiceInterface::class);
         $this->signInEventPublisher = $this->container->get(SignInEventPublisherInterface::class);
         $this->ulidFactory = $this->container->get(UlidFactory::class);
-        $this->eventBus = $this->container->get(EventBusInterface::class);
     }
 
     public function testInvokePerformsFullSignInFlowAndPersistsSessionData(): void

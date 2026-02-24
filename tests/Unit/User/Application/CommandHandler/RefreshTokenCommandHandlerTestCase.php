@@ -162,6 +162,21 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
             ->method('publishRotated')->with($session->getId(), $user->getId());
     }
 
+    protected function expectGraceEligibilityCheck(bool $granted): void
+    {
+        $this->refreshTokenRepository
+            ->expects($this->once())
+            ->method('markGraceUsedIfEligible')
+            ->with(
+                $this->isType('string'),
+                $this->callback(
+                    static fn (DateTimeImmutable $windowStart): bool => $windowStart->getTimestamp() < (new DateTimeImmutable())->getTimestamp()
+                ),
+                $this->isInstanceOf(DateTimeImmutable::class)
+            )
+            ->willReturn($granted);
+    }
+
     protected function expectSuccessfulGraceReuse(
         AuthSession $session,
         User $user,
@@ -170,10 +185,7 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
         $this->refreshTokenRepository
             ->expects($this->once())
             ->method('save');
-        $this->refreshTokenRepository
-            ->expects($this->once())
-            ->method('markGraceUsedIfEligible')
-            ->willReturn(true);
+        $this->expectGraceEligibilityCheck(true);
         $this->configureTokenRotationFactories();
         $this->accessTokenGenerator
             ->expects($this->once())

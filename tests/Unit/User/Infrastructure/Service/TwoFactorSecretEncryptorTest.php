@@ -11,6 +11,7 @@ use RuntimeException;
 
 final class TwoFactorSecretEncryptorTest extends UnitTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

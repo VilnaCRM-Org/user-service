@@ -12,6 +12,7 @@ use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
+use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 
 final class SignOutAllCommandHandlerTest extends UnitTestCase
@@ -39,14 +40,17 @@ final class SignOutAllCommandHandlerTest extends UnitTestCase
     public function testInvokeRevokesAllSessionsAndTokens(): void
     {
         $userId = $this->faker->uuid();
-        $session1 = $this->createActiveSessionMock($this->faker->uuid());
-        $session2 = $this->createActiveSessionMock($this->faker->uuid());
+        $session1 = $this->createActiveSession($this->faker->uuid());
+        $session2 = $this->createActiveSession($this->faker->uuid());
         $this->expectFindSessions($userId, [$session1, $session2]);
         $this->sessionRepository->expects($this->exactly(2))->method('save');
         $this->refreshTokenRepository->expects($this->exactly(2))->method('revokeBySessionId');
         $this->expectRevokedEvent($userId, 'user_initiated', 2);
 
         $this->handler->__invoke(new SignOutAllCommand($userId));
+
+        self::assertTrue($session1->isRevoked());
+        self::assertTrue($session2->isRevoked());
     }
 
     public function testInvokeRevokesRefreshTokensForAlreadyRevokedSessions(): void
@@ -54,8 +58,8 @@ final class SignOutAllCommandHandlerTest extends UnitTestCase
         $userId = $this->faker->uuid();
         $activeSessionId = $this->faker->uuid();
         $revokedSessionId = $this->faker->uuid();
-        $activeSession = $this->createActiveSessionMock($activeSessionId);
-        $revokedSession = $this->createRevokedSessionMock($revokedSessionId);
+        $activeSession = $this->createActiveSession($activeSessionId);
+        $revokedSession = $this->createRevokedSession($revokedSessionId);
         $this->expectFindSessions($userId, [$activeSession, $revokedSession]);
         $this->sessionRepository->expects($this->once())->method('save')->with($activeSession);
         $capturedIds = [];
@@ -64,33 +68,41 @@ final class SignOutAllCommandHandlerTest extends UnitTestCase
 
         $this->handler->__invoke(new SignOutAllCommand($userId));
 
+        self::assertTrue($activeSession->isRevoked());
         self::assertSame([$activeSessionId, $revokedSessionId], $capturedIds);
     }
 
-    private function createActiveSessionMock(
-        string $sessionId
-    ): AuthSession&MockObject {
-        $session = $this->createMock(AuthSession::class);
-        $session->expects($this->once())->method('isRevoked')->willReturn(false);
-        $session->expects($this->once())->method('revoke');
-        $session->expects($this->once())->method('getId')->willReturn($sessionId);
-
-        return $session;
+    private function createActiveSession(string $sessionId): AuthSession
+    {
+        return new AuthSession(
+            $sessionId,
+            $this->faker->uuid(),
+            $this->faker->ipv4(),
+            'TestAgent/1.0',
+            new DateTimeImmutable(),
+            new DateTimeImmutable('+1 hour'),
+            false
+        );
     }
 
-    private function createRevokedSessionMock(
-        string $sessionId
-    ): AuthSession&MockObject {
-        $session = $this->createMock(AuthSession::class);
-        $session->expects($this->once())->method('isRevoked')->willReturn(true);
-        $session->expects($this->never())->method('revoke');
-        $session->expects($this->once())->method('getId')->willReturn($sessionId);
+    private function createRevokedSession(string $sessionId): AuthSession
+    {
+        $session = new AuthSession(
+            $sessionId,
+            $this->faker->uuid(),
+            $this->faker->ipv4(),
+            'TestAgent/1.0',
+            new DateTimeImmutable(),
+            new DateTimeImmutable('+1 hour'),
+            false
+        );
+        $session->revoke();
 
         return $session;
     }
 
     /**
-     * @param array<AuthSession&MockObject> $sessions
+     * @param array<AuthSession> $sessions
      */
     private function expectFindSessions(string $userId, array $sessions): void
     {

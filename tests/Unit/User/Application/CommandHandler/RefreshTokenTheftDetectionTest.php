@@ -42,6 +42,7 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
         $this->expectTokenLookup($token, $plainToken);
         $this->expectSessionLookup($session);
         $this->expectUserLookup($user);
+        $this->expectNeverGraceEligibilityCheck();
         $this->expectTokenRevocationSave();
         $this->expectTheftDetectionResponse($session, $user, 'double_grace_use', [$token]);
         $this->expectException(UnauthorizedHttpException::class);
@@ -75,6 +76,7 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
         $this->expectTokenLookup($token, $plainToken);
         $this->expectSessionLookup($session);
         $this->expectUserLookup($user);
+        $this->expectNeverGraceEligibilityCheck();
         $this->expectTokenRevocationSave();
         $this->expectTheftDetectionResponse($session, $user, 'double_grace_use', []);
         $this->expectException(UnauthorizedHttpException::class);
@@ -93,6 +95,7 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
         $this->expectTokenLookup($token, $plainToken);
         $this->expectSessionLookup($session);
         $this->expectUserLookup($user);
+        $this->expectNeverGraceEligibilityCheck();
         $this->refreshTokenRepository->expects($this->never())->method('save');
         $this->expectTheftDetectionResponse(
             $session,
@@ -117,6 +120,7 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
         $this->expectTokenLookup($token, $plainToken);
         $this->expectSessionLookup($session);
         $this->expectUserLookup($user);
+        $this->expectNeverGraceEligibilityCheck();
         $this->expectSpecificTokenRevocation($activeToken);
         $sessionTokens = [$alreadyRevokedToken, $activeToken];
         $this->expectTheftDetectionResponse($session, $user, 'double_grace_use', $sessionTokens);
@@ -124,12 +128,16 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
         $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
     }
 
-    private function expectFailedGraceEligibility(): void
+    private function expectNeverGraceEligibilityCheck(): void
     {
         $this->refreshTokenRepository
-            ->expects($this->once())
-            ->method('markGraceUsedIfEligible')
-            ->willReturn(false);
+            ->expects($this->never())
+            ->method('markGraceUsedIfEligible');
+    }
+
+    private function expectFailedGraceEligibility(): void
+    {
+        $this->expectGraceEligibilityCheck(false);
     }
 
     private function expectTokenRevocationSave(): void
