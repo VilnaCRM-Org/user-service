@@ -19,6 +19,12 @@ interface UserInterface
 
     public function getPassword(): string;
 
+    public function upgradePasswordHash(string $newHash): void;
+
+    public function enableTwoFactor(): void;
+
+    public function disableTwoFactor(): void;
+
     public function confirm(
         ConfirmationToken $token,
         string $eventID,

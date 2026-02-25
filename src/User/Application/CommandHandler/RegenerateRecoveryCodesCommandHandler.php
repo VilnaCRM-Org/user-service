@@ -7,19 +7,20 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\DTO\RegenerateRecoveryCodesCommandResponse;
-use App\User\Application\Service\RecoveryCodeGeneratorInterface;
 use App\User\Domain\Entity\AuthSession;
+use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\Uid\Factory\UlidFactory;
 
 /**
+ * @psalm-api
  */
-final readonly class RegenerateRecoveryCodesCommandHandler implements
-    CommandHandlerInterface
+final readonly class RegenerateRecoveryCodesCommandHandler implements CommandHandlerInterface
 {
     private const SUDO_MODE_TTL_SECONDS = 300;
 
@@ -27,38 +28,30 @@ final readonly class RegenerateRecoveryCodesCommandHandler implements
         private UserRepositoryInterface $userRepository,
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
         private AuthSessionRepositoryInterface $authSessionRepository,
-        private RecoveryCodeGeneratorInterface $recoveryCodeGenerator,
+        private UlidFactory $ulidFactory,
     ) {
     }
 
-    public function __invoke(
-        RegenerateRecoveryCodesCommand $command
-    ): void {
+    public function __invoke(RegenerateRecoveryCodesCommand $command): void
+    {
         $user = $this->resolveUser($command->userEmail);
         $this->verifySudoMode($command->currentSessionId);
 
         $this->recoveryCodeRepository->deleteByUserId($user->getId());
-        $codes = $this->recoveryCodeGenerator->generateAndStore($user);
+        $codes = $this->generateAndStoreCodes($user);
 
-        $command->setResponse(
-            new RegenerateRecoveryCodesCommandResponse($codes)
-        );
+        $command->setResponse(new RegenerateRecoveryCodesCommandResponse($codes));
     }
 
     private function resolveUser(string $email): User
     {
         $user = $this->userRepository->findByEmail($email);
         if (!$user instanceof User) {
-            throw new UnauthorizedHttpException(
-                'Bearer',
-                'Authentication required.'
-            );
+            throw new UnauthorizedHttpException('Bearer', 'Authentication required.');
         }
 
         if (!$user->isTwoFactorEnabled()) {
-            throw new AccessDeniedHttpException(
-                'Two-factor authentication is not enabled.'
-            );
+            throw new AccessDeniedHttpException('Two-factor authentication is not enabled.');
         }
 
         return $user;
@@ -68,15 +61,11 @@ final readonly class RegenerateRecoveryCodesCommandHandler implements
     {
         $session = $this->authSessionRepository->findById($sessionId);
         if (!$session instanceof AuthSession) {
-            throw new AccessDeniedHttpException(
-                'Re-authentication required.'
-            );
+            throw new AccessDeniedHttpException('Re-authentication required.');
         }
 
         if ($this->isSudoModeExpired($session)) {
-            throw new AccessDeniedHttpException(
-                'Re-authentication required.'
-            );
+            throw new AccessDeniedHttpException('Re-authentication required.');
         }
     }
 
@@ -86,5 +75,38 @@ final readonly class RegenerateRecoveryCodesCommandHandler implements
             + self::SUDO_MODE_TTL_SECONDS;
 
         return $expiresAtTimestamp < time();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function generateAndStoreCodes(User $user): array
+    {
+        $codes = [];
+        for ($i = 0; $i < RecoveryCode::COUNT; $i++) {
+            $plainCode = $this->generateCode();
+            $codes[] = $plainCode;
+            $this->recoveryCodeRepository->save(
+                new RecoveryCode(
+                    (string) $this->ulidFactory->create(),
+                    $user->getId(),
+                    $plainCode
+                )
+            );
+        }
+
+        return $codes;
+    }
+
+    private function generateCode(): string
+    {
+        return $this->randomSegment(RecoveryCode::SEGMENT_LENGTH)
+            . '-'
+            . $this->randomSegment(RecoveryCode::SEGMENT_LENGTH);
+    }
+
+    private function randomSegment(int $length): string
+    {
+        return strtoupper(bin2hex(random_bytes(intdiv($length, 2))));
     }
 }

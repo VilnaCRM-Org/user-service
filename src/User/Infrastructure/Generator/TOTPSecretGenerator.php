@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Generator;
 
 use App\User\Domain\Contract\TOTPSecretGeneratorInterface;
-use App\User\Infrastructure\Service\TOTPCreatorInterface;
+use App\User\Infrastructure\TwoFactor\TOTPCreatorInterface;
 
 /**
  * @psalm-api

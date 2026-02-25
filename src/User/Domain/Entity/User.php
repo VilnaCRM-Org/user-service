@@ -94,6 +94,25 @@ class User implements UserInterface
     }
 
     #[\Override]
+    public function upgradePasswordHash(string $newHash): void
+    {
+        $this->password = $newHash;
+    }
+
+    #[\Override]
+    public function enableTwoFactor(): void
+    {
+        $this->twoFactorEnabled = true;
+    }
+
+    #[\Override]
+    public function disableTwoFactor(): void
+    {
+        $this->twoFactorEnabled = false;
+        $this->twoFactorSecret = null;
+    }
+
+    #[\Override]
     public function confirm(
         ConfirmationToken $token,
         string $eventID,

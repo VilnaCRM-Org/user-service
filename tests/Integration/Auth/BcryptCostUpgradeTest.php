@@ -8,6 +8,9 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use Doctrine\ODM\MongoDB\DocumentManager;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
 final class BcryptCostUpgradeTest extends AuthIntegrationTestCase
@@ -16,6 +19,8 @@ final class BcryptCostUpgradeTest extends AuthIntegrationTestCase
     private UserRepositoryInterface $userRepository;
     private PasswordHasherFactoryInterface $hasherFactory;
     private UuidTransformer $transformer;
+    private HttpKernelInterface $httpKernel;
+    private DocumentManager $documentManager;
 
     #[\Override]
     protected function setUp(): void
@@ -25,6 +30,8 @@ final class BcryptCostUpgradeTest extends AuthIntegrationTestCase
         $this->userRepository = $this->container->get(UserRepositoryInterface::class);
         $this->hasherFactory = $this->container->get(PasswordHasherFactoryInterface::class);
         $this->transformer = $this->container->get(UuidTransformer::class);
+        $this->httpKernel = $this->container->get('kernel');
+        $this->documentManager = $this->container->get('doctrine_mongodb.odm.document_manager');
     }
 
     /**
@@ -49,20 +56,21 @@ final class BcryptCostUpgradeTest extends AuthIntegrationTestCase
     /**
      * AC: NFR-32 - Existing cost-4 hashes are verified and transparently upgraded on login
      */
-    public function testCost4HashesAreUpgradedOnVerification(): void
+    public function testCost4HashesAreUpgradedOnLogin(): void
     {
         $password = 'TestPassword123!';
         $user = $this->createUserWithCost4Hash($password);
         $this->assertCost4Hash($user);
-        $hasher = $this->hasherFactory->getPasswordHasher($user::class);
-        $this->assertTrue($hasher->verify($user->getPassword(), $password));
-        $this->assertTrue($hasher->needsRehash($user->getPassword()));
-        $user->setPassword($hasher->hash($password));
-        $this->userRepository->save($user);
+
+        $this->signIn($user->getEmail(), $password);
+
+        $this->documentManager->clear();
+        $reloadedUser = $this->userRepository->findByEmail($user->getEmail());
+        $this->assertInstanceOf(User::class, $reloadedUser);
         $this->assertMatchesRegularExpression(
             '/^\$2y\$12\$/',
-            $user->getPassword(),
-            'Cost-4 hash must be upgraded to cost 12 after verification (AC: NFR-32)'
+            $reloadedUser->getPassword(),
+            'Cost-4 hash must be upgraded to cost 12 after login (AC: NFR-32)'
         );
     }
 
@@ -85,5 +93,29 @@ final class BcryptCostUpgradeTest extends AuthIntegrationTestCase
             $user->getPassword(),
             'Test setup: user should have cost-4 hash'
         );
+    }
+
+    private function signIn(string $email, string $password): void
+    {
+        $content = json_encode([
+            'email' => $email,
+            'password' => $password,
+        ], JSON_THROW_ON_ERROR);
+        $response = $this->httpKernel->handle(
+            Request::create(
+                '/api/signin',
+                Request::METHOD_POST,
+                [],
+                [],
+                [],
+                [
+                    'REMOTE_ADDR' => '127.0.0.1',
+                    'HTTP_ACCEPT' => 'application/json',
+                    'CONTENT_TYPE' => 'application/json',
+                ],
+                $content
+            )
+        );
+        $this->assertSame(200, $response->getStatusCode());
     }
 }

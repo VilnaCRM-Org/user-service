@@ -6,11 +6,11 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\CompleteTwoFactorCommand;
+use App\User\Application\Component\SessionIssuerInterface;
+use App\User\Application\Component\TwoFactorCodeVerifierInterface;
+use App\User\Application\Component\TwoFactorEventsInterface;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
-use App\User\Application\Service\IssuedSession;
-use App\User\Application\Service\SessionIssuanceServiceInterface;
-use App\User\Application\Service\TwoFactorCodeVerifierInterface;
-use App\User\Application\Service\TwoFactorEventPublisherInterface;
+use App\User\Application\DTO\IssuedSession;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
@@ -19,6 +19,7 @@ use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
+ * @psalm-api
  */
 final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerInterface
 {
@@ -27,19 +28,17 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
-        private SessionIssuanceServiceInterface $sessionIssuanceService,
-        private TwoFactorCodeVerifierInterface $codeVerifier,
-        private TwoFactorEventPublisherInterface $eventPublisher,
+        private SessionIssuerInterface $sessionIssuer,
+        private TwoFactorCodeVerifierInterface $twoFactorCodeVerifier,
+        private TwoFactorEventsInterface $events,
     ) {
     }
 
     public function __invoke(CompleteTwoFactorCommand $command): void
     {
-        $pendingSession = $this->resolvePendingSession(
-            $command->pendingSessionId
-        );
+        $pendingSession = $this->resolvePendingSession($command->pendingSessionId);
         $user = $this->resolveUser($pendingSession->getUserId());
-        $method = $this->codeVerifier->resolveVerificationMethod(
+        $method = $this->twoFactorCodeVerifier->resolveVerificationMethod(
             $user,
             $command->twoFactorCode
         );
@@ -48,12 +47,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
             $this->handleTwoFactorFailure($command);
         }
 
-        $this->issueTokensAndComplete(
-            $user,
-            $command,
-            $pendingSession,
-            $method
-        );
+        $this->issueTokensAndComplete($user, $command, $pendingSession, $method);
     }
 
     private function issueTokensAndComplete(
@@ -62,36 +56,45 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         PendingTwoFactor $pendingSession,
         ?string $method
     ): void {
-        $issuedAt = new DateTimeImmutable();
-        $issued = $this->sessionIssuanceService->issue(
+        $issued = $this->issueSession(
             $user,
             $command->ipAddress,
             $command->userAgent,
-            $pendingSession->isRememberMe(),
-            $issuedAt
+            $pendingSession->isRememberMe()
         );
         $remaining = $this->resolveRemainingCodes($user, $method);
 
         $this->pendingTwoFactorRepository->delete($pendingSession);
-        $command->setResponse(
-            $this->buildResponse($issued, $pendingSession, $remaining)
-        );
+        $command->setResponse($this->buildResponse($issued, $pendingSession, $remaining));
 
         $this->publishEvents($user, $issued, $command, $method, $remaining);
+    }
+
+    private function issueSession(
+        User $user,
+        string $ipAddress,
+        string $userAgent,
+        bool $rememberMe
+    ): IssuedSession {
+        return $this->sessionIssuer->issue(
+            $user,
+            $ipAddress,
+            $userAgent,
+            $rememberMe,
+            new DateTimeImmutable()
+        );
     }
 
     /**
      * @psalm-return int<0, max>|null
      */
-    private function resolveRemainingCodes(
-        User $user,
-        ?string $method
-    ): ?int {
+    private function resolveRemainingCodes(User $user, ?string $method): ?int
+    {
         if ($method !== 'recovery_code') {
             return null;
         }
 
-        return $this->codeVerifier->countRemainingCodes($user->getId());
+        return $this->twoFactorCodeVerifier->countRemainingCodes($user->getId());
     }
 
     private function publishEvents(
@@ -102,13 +105,10 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         ?int $remaining
     ): void {
         if ($remaining !== null) {
-            $this->eventPublisher->publishRecoveryCodeUsed(
-                $user->getId(),
-                $remaining
-            );
+            $this->events->publishRecoveryCodeUsed($user->getId(), $remaining);
         }
 
-        $this->eventPublisher->publishCompleted(
+        $this->events->publishCompleted(
             $user->getId(),
             $issued->sessionId,
             $command->ipAddress,
@@ -173,7 +173,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
 
     private function handleTwoFactorFailure(CompleteTwoFactorCommand $command): never
     {
-        $this->eventPublisher->publishFailed(
+        $this->events->publishFailed(
             $command->pendingSessionId,
             $command->ipAddress,
             'invalid_code'

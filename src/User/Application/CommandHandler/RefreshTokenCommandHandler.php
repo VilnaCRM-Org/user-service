@@ -6,8 +6,8 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\RefreshTokenCommand;
+use App\User\Application\Component\RefreshTokenEventsInterface;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
-use App\User\Application\Service\RefreshTokenEventPublisherInterface;
 use App\User\Domain\Contract\AccessTokenGeneratorInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
@@ -29,7 +29,7 @@ final readonly class RefreshTokenCommandHandler implements
         private UserRepositoryInterface $userRepository,
         private AccessTokenGeneratorInterface $accessTokenGenerator,
         private AuthTokenFactoryInterface $authTokenFactory,
-        private RefreshTokenEventPublisherInterface $eventPublisher,
+        private RefreshTokenEventsInterface $events,
         private int $refreshTokenGraceWindowSeconds = self::DEFAULT_GRACE_WINDOW_SECONDS,
     ) {
     }
@@ -323,7 +323,7 @@ final readonly class RefreshTokenCommandHandler implements
         AuthSession $session,
         User $user
     ): void {
-        $this->eventPublisher->publishRotated(
+        $this->events->publishRotated(
             $session->getId(),
             $user->getId()
         );
@@ -334,7 +334,7 @@ final readonly class RefreshTokenCommandHandler implements
         User $user,
         string $reason
     ): void {
-        $this->eventPublisher->publishTheftDetected(
+        $this->events->publishTheftDetected(
             $session->getId(),
             $user->getId(),
             $session->getIpAddress(),

@@ -9,8 +9,8 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\CommandHandler\RegenerateRecoveryCodesCommandHandler;
-use App\User\Application\Service\RecoveryCodeGeneratorInterface;
 use App\User\Domain\Entity\AuthSession;
+use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
@@ -21,6 +21,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bridge\PhpUnit\ClockMock;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\Uid\Factory\UlidFactory;
 use Symfony\Component\Uid\Ulid;
 
 final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
@@ -28,7 +29,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
     private UserRepositoryInterface&MockObject $userRepository;
     private RecoveryCodeRepositoryInterface&MockObject $recoveryCodeRepository;
     private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
-    private RecoveryCodeGeneratorInterface&MockObject $recoveryCodeGenerator;
+    private UlidFactory&MockObject $ulidFactory;
     private UserFactory $userFactory;
     private UuidTransformer $uuidTransformer;
 
@@ -40,9 +41,11 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->recoveryCodeRepository = $this->createMock(RecoveryCodeRepositoryInterface::class);
         $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
-        $this->recoveryCodeGenerator = $this->createMock(RecoveryCodeGeneratorInterface::class);
+        $this->ulidFactory = $this->createMock(UlidFactory::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
+
+        $this->ulidFactory->method('create')->willReturn(new Ulid());
     }
 
     public function testInvokeRegeneratesRecoveryCodesSuccessfully(): void
@@ -50,12 +53,20 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         $user = $this->createTwoFactorEnabledUser();
         $sessionId = (string) new Ulid();
         $session = $this->createRecentSession($user->getId(), $sessionId);
-        $expectedCodes = $this->expectedRecoveryCodes();
-        $this->expectSuccessfulRegeneration($user, $sessionId, $session, $expectedCodes);
+
+        $this->userRepository->expects($this->once())->method('findByEmail')
+            ->with($user->getEmail())->willReturn($user);
+        $this->authSessionRepository->expects($this->once())->method('findById')
+            ->with($sessionId)->willReturn($session);
+        $this->recoveryCodeRepository->expects($this->once())
+            ->method('deleteByUserId')->with($user->getId());
+        $this->recoveryCodeRepository->expects($this->exactly(RecoveryCode::COUNT))
+            ->method('save')
+            ->with($this->isInstanceOf(RecoveryCode::class));
+
         $command = new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId);
         $this->createHandler()->__invoke($command);
-        $this->assertCount(8, $command->getResponse()->getRecoveryCodes());
-        $this->assertSame($expectedCodes, $command->getResponse()->getRecoveryCodes());
+        $this->assertCount(RecoveryCode::COUNT, $command->getResponse()->getRecoveryCodes());
     }
 
     public function testInvokeThrows403WhenTwoFactorNotEnabled(): void
@@ -126,11 +137,18 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
             $user = $this->createTwoFactorEnabledUser();
             $sessionId = (string) new Ulid();
             $session = $this->createBoundarySudoSession($user->getId(), $sessionId);
-            $expectedCodes = $this->expectedRecoveryCodes();
-            $this->expectSuccessfulRegeneration($user, $sessionId, $session, $expectedCodes);
+
+            $this->userRepository->expects($this->once())->method('findByEmail')
+                ->with($user->getEmail())->willReturn($user);
+            $this->authSessionRepository->expects($this->once())->method('findById')
+                ->with($sessionId)->willReturn($session);
+            $this->recoveryCodeRepository->expects($this->once())
+                ->method('deleteByUserId')->with($user->getId());
+            $this->recoveryCodeRepository->method('save');
+
             $command = new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId);
             $this->createHandler()->__invoke($command);
-            $this->assertCount(8, $command->getResponse()->getRecoveryCodes());
+            $this->assertCount(RecoveryCode::COUNT, $command->getResponse()->getRecoveryCodes());
         } finally {
             ClockMock::withClockMock(false);
         }
@@ -142,7 +160,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
             $this->userRepository,
             $this->recoveryCodeRepository,
             $this->authSessionRepository,
-            $this->recoveryCodeGenerator,
+            $this->ulidFactory,
         );
     }
 
@@ -163,35 +181,6 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
             $this->faker->password(),
             $this->uuidTransformer->transformFromString($this->faker->uuid())
         );
-    }
-
-    /**
-     * @return array<string>
-     */
-    private function expectedRecoveryCodes(): array
-    {
-        return ['AB12-CD34', 'EF56-GH78', 'IJ90-KL12', 'MN34-OP56',
-            'QR78-ST90', 'UV12-WX34', 'YZ56-AB78', 'CD90-EF12',
-        ];
-    }
-
-    /**
-     * @param array<string> $expectedCodes
-     */
-    private function expectSuccessfulRegeneration(
-        User $user,
-        string $sessionId,
-        AuthSession $session,
-        array $expectedCodes
-    ): void {
-        $this->userRepository->expects($this->once())->method('findByEmail')
-            ->with($user->getEmail())->willReturn($user);
-        $this->authSessionRepository->expects($this->once())->method('findById')
-            ->with($sessionId)->willReturn($session);
-        $this->recoveryCodeRepository->expects($this->once())
-            ->method('deleteByUserId')->with($user->getId());
-        $this->recoveryCodeGenerator->expects($this->once())->method('generateAndStore')
-            ->with($user)->willReturn($expectedCodes);
     }
 
     private function createRecentSession(

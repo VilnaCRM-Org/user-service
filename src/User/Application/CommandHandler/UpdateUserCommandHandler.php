@@ -7,19 +7,18 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\UpdateUserCommand;
-use App\User\Application\Service\PasswordChangeSessionRevoker;
-use App\User\Application\Service\UserUpdateApplierInterface;
-use App\User\Domain\Entity\UserInterface;
+use App\User\Application\Component\PasswordChangeSessionRevoker;
+use App\User\Application\Component\UserUpdateApplierInterface;
+use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Exception\InvalidPasswordException;
-use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,
-        private PasswordHasherFactoryInterface $hasherFactory,
+        private PasswordHasherInterface $passwordHasher,
         private UserUpdateApplierInterface $userUpdateApplier,
         private PasswordChangeSessionRevoker $passwordChangeSessionRevoker,
         private UuidFactory $uuidFactory,
@@ -29,80 +28,48 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
     public function __invoke(UpdateUserCommand $command): void
     {
         $user = $command->user;
-        $hasher = $this->hasherFactory->getPasswordHasher($user::class);
+        $this->assertPasswordIsValid($user->getPassword(), $command->updateData->oldPassword);
 
-        $this->assertPasswordValid(
-            $hasher,
-            $user,
-            $command->updateData->oldPassword
-        );
-
-        $events = $this->resolveEvents($command, $user, $hasher);
-        $this->eventBus->publish(...$events);
-    }
-
-    /**
-     * @return array<\App\Shared\Domain\Bus\Event\DomainEvent>
-     *
-     * @psalm-return array<int, \App\Shared\Domain\Bus\Event\DomainEvent>
-     */
-    private function resolveEvents(
-        UpdateUserCommand $command,
-        UserInterface $user,
-        object $hasher
-    ): array {
         $eventId = (string) $this->uuidFactory->create();
         $events = $this->userUpdateApplier->apply(
             $user,
             $command->updateData,
-            $hasher->hash($command->updateData->newPassword),
+            $this->passwordHasher->hash($command->updateData->newPassword),
             $eventId
         );
 
-        if (!$this->passwordChanged($command->updateData)) {
-            return $events;
+        if ($command->updateData->newPassword !== $command->updateData->oldPassword) {
+            $events[] = $this->buildPasswordChangeRevocationEvent(
+                $user->getId(),
+                $command->currentSessionId,
+                $eventId
+            );
         }
 
-        $events[] = $this->revokeOtherSessionsAndTokens(
-            $user->getId(),
-            $command->currentSessionId,
-            $eventId
-        );
-
-        return $events;
+        $this->eventBus->publish(...$events);
     }
 
-    private function assertPasswordValid(
-        object $hasher,
-        UserInterface $user,
+    private function assertPasswordIsValid(
+        string $currentPasswordHash,
         string $oldPassword
     ): void {
-        if ($hasher->verify($user->getPassword(), $oldPassword)) {
-            return;
+        if (!$this->passwordHasher->verify($currentPasswordHash, $oldPassword)) {
+            throw new InvalidPasswordException();
         }
-
-        throw new InvalidPasswordException();
     }
 
-    private function passwordChanged(object $updateData): bool
-    {
-        return $updateData->newPassword !== $updateData->oldPassword;
-    }
-
-    private function revokeOtherSessionsAndTokens(
+    private function buildPasswordChangeRevocationEvent(
         string $userId,
         string $currentSessionId,
         string $eventId
     ): AllSessionsRevokedEvent {
-        $revokedCount = $this->passwordChangeSessionRevoker->revokeOtherSessions(
-            $userId,
-            $currentSessionId
-        );
-
         return new AllSessionsRevokedEvent(
             $userId,
             'password_change',
-            $revokedCount,
+            $this->passwordChangeSessionRevoker->revokeOtherSessions(
+                $userId,
+                $currentSessionId
+            ),
             $eventId
         );
     }
