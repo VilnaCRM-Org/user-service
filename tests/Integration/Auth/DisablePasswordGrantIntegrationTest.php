@@ -20,8 +20,7 @@ final class DisablePasswordGrantIntegrationTest extends AuthIntegrationTestCase
 {
     public function testPasswordGrantReturnsUnsupportedGrantTypeWhenDisabled(): void
     {
-        $kernel = self::getContainer()->get('kernel');
-        $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
+        $kernel = $this->resolveKernel();
         [$clientId, $clientSecret] = $this->createOAuthClient();
         $email = $this->faker->unique()->safeEmail();
         $password = 'passWORD1';
@@ -37,8 +36,7 @@ final class DisablePasswordGrantIntegrationTest extends AuthIntegrationTestCase
 
     public function testClientCredentialsGrantStillWorksWhenPasswordGrantIsDisabled(): void
     {
-        $kernel = self::getContainer()->get('kernel');
-        $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
+        $kernel = $this->resolveKernel();
         [$clientId, $clientSecret] = $this->createOAuthClient();
         $response = $this->sendTokenRequest(
             $kernel,
@@ -51,6 +49,66 @@ final class DisablePasswordGrantIntegrationTest extends AuthIntegrationTestCase
         $this->assertSame('Bearer', $responseData['token_type'] ?? null);
         $this->assertIsString($responseData['access_token'] ?? null);
         $this->assertNotSame('', $responseData['access_token'] ?? null);
+    }
+
+    public function testOauthClientCredentialsAccessTokenCanReachProtectedServiceRoute(): void
+    {
+        $kernel = $this->resolveKernel();
+        [$clientId, $clientSecret] = $this->createOAuthClient();
+        $accessToken = $this->obtainAccessToken($kernel, $clientId, $clientSecret);
+        $batchResponse = $this->sendAuthenticatedBatchRequest($kernel, $accessToken);
+        $this->assertNotSame(Response::HTTP_UNAUTHORIZED, $batchResponse->getStatusCode());
+        $this->assertNotSame(Response::HTTP_FORBIDDEN, $batchResponse->getStatusCode());
+    }
+
+    private function resolveKernel(): HttpKernelInterface
+    {
+        $kernel = self::getContainer()->get('kernel');
+        $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
+
+        return $kernel;
+    }
+
+    private function obtainAccessToken(
+        HttpKernelInterface $kernel,
+        string $clientId,
+        string $clientSecret
+    ): string {
+        $tokenResponse = $this->sendTokenRequest(
+            $kernel,
+            ['grant_type' => 'client_credentials'],
+            $clientId,
+            $clientSecret
+        );
+        $tokenPayload = json_decode((string) $tokenResponse->getContent(), true);
+        $this->assertSame(Response::HTTP_OK, $tokenResponse->getStatusCode());
+        $this->assertIsArray($tokenPayload);
+        $this->assertIsString($tokenPayload['access_token'] ?? null);
+        $accessToken = (string) $tokenPayload['access_token'];
+        $this->assertNotSame('', $accessToken);
+
+        return $accessToken;
+    }
+
+    private function sendAuthenticatedBatchRequest(
+        HttpKernelInterface $kernel,
+        string $accessToken
+    ): Response {
+        return $kernel->handle(
+            Request::create(
+                '/api/users/batch',
+                'POST',
+                [],
+                [],
+                [],
+                [
+                    'HTTP_ACCEPT' => 'application/json',
+                    'CONTENT_TYPE' => 'application/json',
+                    'HTTP_AUTHORIZATION' => sprintf('Bearer %s', $accessToken),
+                ],
+                json_encode(['users' => []], JSON_THROW_ON_ERROR)
+            )
+        );
     }
 
     /**

@@ -69,28 +69,33 @@ final class DualAuthenticatorTest extends DualAuthenticatorTestCase
         $this->expectRejectWithInvalidClaims($payload);
     }
 
-    public function testAuthenticateAcceptsAudienceClaimArray(): void
-    {
-        $email = $this->faker->email();
-        $tokenValue = $this->createJwtToken('RS256');
-        $payload = $this->validPayload($email, ['ROLE_USER']);
-        $payload['aud'] = ['vilnacrm-api'];
-        $user = $this->createDomainUser($email);
-        $this->expectJwtDecode($tokenValue, $payload);
-        $this->expectUserAndSessionResolution($email, $user);
-        $passport = $this->createAuthenticator()->authenticate(
-            $this->createBearerRequest($tokenValue)
-        );
-        $this->assertSame(['ROLE_USER'], $passport->getAttribute('roles'));
-        $this->assertInstanceOf(AuthorizationUserDto::class, $passport->getUser());
-        $this->assertSame($email, $passport->getUser()->getUserIdentifier());
-    }
-
-    public function testAuthenticateRejectsMissingSidClaim(): void
+    public function testAuthenticateRejectsAudienceClaimArray(): void
     {
         $payload = $this->validPayload($this->faker->email(), ['ROLE_USER']);
-        unset($payload['sid']);
+        $payload['aud'] = ['vilnacrm-api'];
         $this->expectRejectWithInvalidClaims($payload);
+    }
+
+    public function testAuthenticateRejectsSidlessUnknownSubject(): void
+    {
+        $subject = sprintf('oauth-client-%s', strtolower($this->faker->lexify('????')));
+        $tokenValue = $this->createJwtToken('RS256');
+        $this->expectJwtDecode(
+            $tokenValue,
+            $this->clientCredentialsPayload($subject)
+        );
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')
+            ->with($subject)
+            ->willReturn(null);
+        $this->userRepository->expects($this->never())->method('findById');
+        $this->authSessionRepository->expects($this->never())->method('findById');
+        $this->expectException(CustomUserMessageAuthenticationException::class);
+        $this->expectExceptionMessage('Authentication required.');
+
+        $this->createAuthenticator()->authenticate(
+            $this->createBearerRequest($tokenValue)
+        );
     }
 
     public function testAuthenticateRejectsWhenSessionIsMissing(): void
@@ -323,5 +328,19 @@ final class DualAuthenticatorTest extends DualAuthenticatorTestCase
         $this->createAuthenticator()->authenticate(
             $this->createBearerRequest($tokenValue)
         );
+    }
+
+    /**
+     * @return array<string, int|string>
+     */
+    private function clientCredentialsPayload(string $subject): array
+    {
+        return [
+            'client_id' => $subject,
+            'iss' => 'vilnacrm-user-service',
+            'aud' => 'vilnacrm-api',
+            'nbf' => time() - 10,
+            'exp' => time() + 900,
+        ];
     }
 }
