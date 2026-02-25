@@ -45,8 +45,8 @@ final class SecurityEventLogSubscriberTest extends UnitTestCase
         $this->subscriber->__invoke($event);
 
         $this->assertSame('user.recovery_code.used', $capturedContext['event']);
-        $this->assertSame($userId, $capturedContext['user_id']);
-        $this->assertSame($remainingCodes, $capturedContext['remaining_count']);
+        $this->assertSame($userId, $capturedContext['userId']);
+        $this->assertSame($remainingCodes, $capturedContext['remainingCodes']);
         $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 

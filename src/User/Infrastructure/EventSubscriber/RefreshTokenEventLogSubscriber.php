@@ -46,10 +46,10 @@ final readonly class RefreshTokenEventLogSubscriber implements DomainEventSubscr
 
     private function logRefreshTokenRotated(RefreshTokenRotatedEvent $event): void
     {
-        $this->logger->info('Refresh token rotated', [
+        $this->logger->debug('Refresh token rotated', [
             'event' => 'user.refresh_token.rotated',
-            'session_id' => $event->sessionId,
-            'old_token_revoked' => true,
+            'sessionId' => $event->sessionId,
+            'oldTokenRevoked' => true,
             'timestamp' => $event->occurredOn(),
         ]);
     }
@@ -59,9 +59,9 @@ final readonly class RefreshTokenEventLogSubscriber implements DomainEventSubscr
         // AC: NFR-34 - Theft detection at CRITICAL level
         $this->logger->critical('Refresh token theft detected', [
             'event' => 'user.refresh_token.theft_detected',
-            'session_id' => $event->sessionId,
-            'user_id' => $event->userId,
-            'ip_address' => $event->ipAddress,
+            'sessionId' => $event->sessionId,
+            'userId' => $event->userId,
+            'ip' => $event->ipAddress,
             'timestamp' => $event->occurredOn(),
         ]);
     }

@@ -49,8 +49,8 @@ final readonly class SecurityEventLogSubscriber implements DomainEventSubscriber
         // AC: NFR-33 #4 - Recovery code use at WARNING level
         $this->logger->warning('Recovery code used', [
             'event' => 'user.recovery_code.used',
-            'user_id' => $event->userId,
-            'remaining_count' => $event->remainingCount,
+            'userId' => $event->userId,
+            'remainingCodes' => $event->remainingCount,
             'timestamp' => $event->occurredOn(),
         ]);
     }

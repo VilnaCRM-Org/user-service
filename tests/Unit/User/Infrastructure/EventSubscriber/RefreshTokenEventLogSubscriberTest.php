@@ -24,7 +24,7 @@ final class RefreshTokenEventLogSubscriberTest extends UnitTestCase
         $this->subscriber = new RefreshTokenEventLogSubscriber($this->logger);
     }
 
-    public function testInvokeLogsRefreshTokenRotatedAtInfoLevel(): void
+    public function testInvokeLogsRefreshTokenRotatedAtDebugLevel(): void
     {
         $sessionId = $this->faker->uuid();
         $event = new RefreshTokenRotatedEvent(
@@ -33,11 +33,11 @@ final class RefreshTokenEventLogSubscriberTest extends UnitTestCase
             $this->faker->uuid()
         );
         $capturedContext = [];
-        $this->expectLogCall('info', 'Refresh token rotated', $capturedContext);
+        $this->expectLogCall('debug', 'Refresh token rotated', $capturedContext);
         $this->subscriber->__invoke($event);
         $this->assertSame('user.refresh_token.rotated', $capturedContext['event']);
-        $this->assertSame($sessionId, $capturedContext['session_id']);
-        $this->assertTrue($capturedContext['old_token_revoked']);
+        $this->assertSame($sessionId, $capturedContext['sessionId']);
+        $this->assertTrue($capturedContext['oldTokenRevoked']);
         $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 
@@ -61,6 +61,7 @@ final class RefreshTokenEventLogSubscriberTest extends UnitTestCase
 
     public function testInvokeIgnoresUnknownEvent(): void
     {
+        $this->logger->expects($this->never())->method('debug');
         $this->logger->expects($this->never())->method('info');
         $this->logger->expects($this->never())->method('warning');
         $this->logger->expects($this->never())->method('critical');
@@ -105,9 +106,9 @@ final class RefreshTokenEventLogSubscriberTest extends UnitTestCase
         string $ipAddress
     ): void {
         $this->assertSame('user.refresh_token.theft_detected', $context['event']);
-        $this->assertSame($sessionId, $context['session_id']);
-        $this->assertSame($userId, $context['user_id']);
-        $this->assertSame($ipAddress, $context['ip_address']);
+        $this->assertSame($sessionId, $context['sessionId']);
+        $this->assertSame($userId, $context['userId']);
+        $this->assertSame($ipAddress, $context['ip']);
         $this->assertArrayHasKey('timestamp', $context);
     }
 }

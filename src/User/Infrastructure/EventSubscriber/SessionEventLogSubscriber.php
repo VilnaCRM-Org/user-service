@@ -49,8 +49,8 @@ final readonly class SessionEventLogSubscriber implements DomainEventSubscriberI
         // AC: NFR-33 #6 - Session revoked at INFO with reason
         $this->logger->info('Session revoked', [
             'event' => 'user.session.revoked',
-            'user_id' => $event->userId,
-            'session_id' => $event->sessionId,
+            'userId' => $event->userId,
+            'sessionId' => $event->sessionId,
             'reason' => $event->reason,
             'timestamp' => $event->occurredOn(),
         ]);
@@ -61,7 +61,7 @@ final readonly class SessionEventLogSubscriber implements DomainEventSubscriberI
         // AC: NFR-33 #6 - All sessions revoked at INFO with reason
         $this->logger->info('All sessions revoked', [
             'event' => 'user.sessions.all_revoked',
-            'user_id' => $event->userId,
+            'userId' => $event->userId,
             'reason' => $event->reason,
             'timestamp' => $event->occurredOn(),
         ]);

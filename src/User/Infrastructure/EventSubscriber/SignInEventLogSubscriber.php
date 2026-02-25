@@ -49,11 +49,11 @@ final readonly class SignInEventLogSubscriber implements DomainEventSubscriberIn
         // AC: NFR-33 #1 - Sign-in events at INFO level
         $this->logger->info('User signed in successfully', [
             'event' => 'user.signed_in',
-            'user_id' => $event->userId,
-            'session_id' => $event->sessionId,
-            'ip_address' => $event->ipAddress,
-            'user_agent' => $event->userAgent,
-            'two_factor_used' => $event->twoFactorUsed,
+            'userId' => $event->userId,
+            'sessionId' => $event->sessionId,
+            'ip' => $event->ipAddress,
+            'userAgent' => $event->userAgent,
+            'twoFactorUsed' => $event->twoFactorUsed,
             'timestamp' => $event->occurredOn(),
         ]);
     }
@@ -63,8 +63,9 @@ final readonly class SignInEventLogSubscriber implements DomainEventSubscriberIn
         // AC: NFR-33 #2 - Failed sign-in at WARNING level
         $this->logger->warning('Sign-in attempt failed', [
             'event' => 'user.signin.failed',
-            'attempted_email' => $event->email,
-            'ip_address' => $event->ipAddress,
+            'attemptedEmail' => $event->email,
+            'ip' => $event->ipAddress,
+            'userAgent' => $event->userAgent,
             'reason' => $event->reason,
             'timestamp' => $event->occurredOn(),
         ]);

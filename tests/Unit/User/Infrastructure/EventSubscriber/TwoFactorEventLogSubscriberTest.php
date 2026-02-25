@@ -93,7 +93,7 @@ final class TwoFactorEventLogSubscriberTest extends UnitTestCase
         $this->subscriber->__invoke($event);
 
         $this->assertSame('user.two_factor.enabled', $capturedContext['event']);
-        $this->assertSame($userId, $capturedContext['user_id']);
+        $this->assertSame($userId, $capturedContext['userId']);
         $this->assertSame($email, $capturedContext['email']);
         $this->assertArrayHasKey('timestamp', $capturedContext);
     }
@@ -118,7 +118,7 @@ final class TwoFactorEventLogSubscriberTest extends UnitTestCase
         $this->subscriber->__invoke($event);
 
         $this->assertSame('user.two_factor.disabled', $capturedContext['event']);
-        $this->assertSame($userId, $capturedContext['user_id']);
+        $this->assertSame($userId, $capturedContext['userId']);
         $this->assertArrayHasKey('timestamp', $capturedContext);
     }
 
@@ -153,8 +153,8 @@ final class TwoFactorEventLogSubscriberTest extends UnitTestCase
         string $sessionId
     ): void {
         $this->assertSame('user.two_factor.completed', $context['event']);
-        $this->assertSame($userId, $context['user_id']);
-        $this->assertSame($sessionId, $context['session_id']);
+        $this->assertSame($userId, $context['userId']);
+        $this->assertSame($sessionId, $context['sessionId']);
         $this->assertSame('totp', $context['method']);
         $this->assertArrayHasKey('timestamp', $context);
     }
@@ -168,8 +168,8 @@ final class TwoFactorEventLogSubscriberTest extends UnitTestCase
         string $ipAddress
     ): void {
         $this->assertSame('user.two_factor.failed', $context['event']);
-        $this->assertSame($pendingSessionId, $context['pending_session_id']);
-        $this->assertSame($ipAddress, $context['ip_address']);
+        $this->assertSame($pendingSessionId, $context['pendingSessionId']);
+        $this->assertSame($ipAddress, $context['ip']);
         $this->assertSame('invalid_code', $context['reason']);
         $this->assertArrayHasKey('timestamp', $context);
     }

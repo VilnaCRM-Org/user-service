@@ -56,8 +56,8 @@ final readonly class TwoFactorEventLogSubscriber implements DomainEventSubscribe
     {
         $this->logger->info('Two-factor authentication completed', [
             'event' => 'user.two_factor.completed',
-            'user_id' => $event->userId,
-            'session_id' => $event->sessionId,
+            'userId' => $event->userId,
+            'sessionId' => $event->sessionId,
             'method' => $event->method,
             'timestamp' => $event->occurredOn(),
         ]);
@@ -67,8 +67,8 @@ final readonly class TwoFactorEventLogSubscriber implements DomainEventSubscribe
     {
         $this->logger->warning('Two-factor authentication failed', [
             'event' => 'user.two_factor.failed',
-            'pending_session_id' => $event->pendingSessionId,
-            'ip_address' => $event->ipAddress,
+            'pendingSessionId' => $event->pendingSessionId,
+            'ip' => $event->ipAddress,
             'reason' => $event->reason,
             'timestamp' => $event->occurredOn(),
         ]);
@@ -79,7 +79,7 @@ final readonly class TwoFactorEventLogSubscriber implements DomainEventSubscribe
         // AC: NFR-33 #5 - 2FA enable/disable at INFO
         $this->logger->info('Two-factor authentication enabled', [
             'event' => 'user.two_factor.enabled',
-            'user_id' => $event->userId,
+            'userId' => $event->userId,
             'email' => $event->email,
             'timestamp' => $event->occurredOn(),
         ]);
@@ -90,7 +90,7 @@ final readonly class TwoFactorEventLogSubscriber implements DomainEventSubscribe
         // AC: NFR-33 #5 - 2FA enable/disable at INFO
         $this->logger->info('Two-factor authentication disabled', [
             'event' => 'user.two_factor.disabled',
-            'user_id' => $event->userId,
+            'userId' => $event->userId,
             'timestamp' => $event->occurredOn(),
         ]);
     }

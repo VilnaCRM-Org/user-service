@@ -112,11 +112,11 @@ final class SignInEventLogSubscriberTest extends UnitTestCase
         UserSignedInEvent $event
     ): void {
         $this->assertSame('user.signed_in', $context['event']);
-        $this->assertSame($event->userId, $context['user_id']);
-        $this->assertSame($event->sessionId, $context['session_id']);
-        $this->assertSame($event->ipAddress, $context['ip_address']);
-        $this->assertSame($event->userAgent, $context['user_agent']);
-        $this->assertSame($event->twoFactorUsed, $context['two_factor_used']);
+        $this->assertSame($event->userId, $context['userId']);
+        $this->assertSame($event->sessionId, $context['sessionId']);
+        $this->assertSame($event->ipAddress, $context['ip']);
+        $this->assertSame($event->userAgent, $context['userAgent']);
+        $this->assertSame($event->twoFactorUsed, $context['twoFactorUsed']);
         $this->assertArrayHasKey('timestamp', $context);
     }
 
@@ -128,8 +128,9 @@ final class SignInEventLogSubscriberTest extends UnitTestCase
         SignInFailedEvent $event
     ): void {
         $this->assertSame('user.signin.failed', $context['event']);
-        $this->assertSame($event->email, $context['attempted_email']);
-        $this->assertSame($event->ipAddress, $context['ip_address']);
+        $this->assertSame($event->email, $context['attemptedEmail']);
+        $this->assertSame($event->ipAddress, $context['ip']);
+        $this->assertSame($event->userAgent, $context['userAgent']);
         $this->assertSame($event->reason, $context['reason']);
         $this->assertArrayHasKey('timestamp', $context);
     }

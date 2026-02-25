@@ -46,8 +46,8 @@ final class SessionEventLogSubscriberTest extends UnitTestCase
         $this->subscriber->__invoke($event);
 
         $this->assertSame('user.session.revoked', $capturedContext['event']);
-        $this->assertSame($userId, $capturedContext['user_id']);
-        $this->assertSame($sessionId, $capturedContext['session_id']);
+        $this->assertSame($userId, $capturedContext['userId']);
+        $this->assertSame($sessionId, $capturedContext['sessionId']);
         $this->assertSame($reason, $capturedContext['reason']);
         $this->assertArrayHasKey('timestamp', $capturedContext);
     }
@@ -74,7 +74,7 @@ final class SessionEventLogSubscriberTest extends UnitTestCase
         $this->subscriber->__invoke($event);
 
         $this->assertSame('user.sessions.all_revoked', $capturedContext['event']);
-        $this->assertSame($userId, $capturedContext['user_id']);
+        $this->assertSame($userId, $capturedContext['userId']);
         $this->assertSame($reason, $capturedContext['reason']);
         $this->assertArrayHasKey('timestamp', $capturedContext);
     }
