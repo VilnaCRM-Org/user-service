@@ -94,6 +94,8 @@ final class JwtAccessTokenParserPayloadTest extends JwtAccessTokenParserTestCase
         $result = $this->parser->parse($token);
 
         $this->assertSame($subject, $result['subject']);
+        $this->assertSame($sid, $result['sid']);
+        $this->assertSame(['ROLE_USER'], $result['roles']);
     }
 
     public function testParseAcceptsArrayAudienceWithMultipleValuesIncludingExpected(): void
@@ -111,6 +113,8 @@ final class JwtAccessTokenParserPayloadTest extends JwtAccessTokenParserTestCase
         $result = $this->parser->parse($token);
 
         $this->assertSame($subject, $result['subject']);
+        $this->assertSame($sid, $result['sid']);
+        $this->assertSame(['ROLE_USER'], $result['roles']);
     }
 
     public function testParseThrowsWhenJwtDecoderFails(): void
@@ -187,6 +191,89 @@ final class JwtAccessTokenParserPayloadTest extends JwtAccessTokenParserTestCase
             ->method('decode')
             ->with($this->identicalTo($token))
             ->willReturn($payload);
+
+        $this->parser->parse($token);
+    }
+
+    public function testParseSupportsOauthPayloadWithoutSidAndRoles(): void
+    {
+        $subject = $this->faker->email();
+        $token = $this->createValidToken();
+        $payload = [
+            'sub' => $subject,
+            'iss' => 'vilnacrm-user-service',
+            'aud' => 'vilnacrm-api',
+            'nbf' => time() - 10,
+            'exp' => time() + 900,
+        ];
+
+        $this->jwtEncoder
+            ->method('decode')
+            ->willReturn($payload);
+
+        $result = $this->parser->parse($token);
+
+        $this->assertSame($subject, $result['subject']);
+        $this->assertSame('', $result['sid']);
+        $this->assertSame(['ROLE_USER'], $result['roles']);
+    }
+
+    public function testParseUsesClientIdWhenSubjectMissing(): void
+    {
+        $clientId = strtolower($this->faker->bothify('oauth-client-####'));
+        $token = $this->createValidToken();
+        $payload = [
+            'client_id' => $clientId,
+            'iss' => 'vilnacrm-user-service',
+            'aud' => 'vilnacrm-api',
+            'nbf' => time() - 10,
+            'exp' => time() + 900,
+        ];
+
+        $this->jwtEncoder
+            ->method('decode')
+            ->willReturn($payload);
+
+        $result = $this->parser->parse($token);
+
+        $this->assertSame($clientId, $result['subject']);
+        $this->assertSame(['ROLE_USER'], $result['roles']);
+    }
+
+    public function testParseThrowsWhenSubjectAndClientIdAreMissing(): void
+    {
+        $token = $this->createValidToken();
+        $payload = [
+            'iss' => 'vilnacrm-user-service',
+            'aud' => 'vilnacrm-api',
+            'nbf' => time() - 10,
+            'exp' => time() + 900,
+        ];
+
+        $this->jwtEncoder
+            ->method('decode')
+            ->willReturn($payload);
+
+        $this->expectInvalidClaimsException();
+
+        $this->parser->parse($token);
+    }
+
+    public function testParseThrowsWhenSubjectAndClientIdAreMissingAndAudienceIsArray(): void
+    {
+        $token = $this->createValidToken();
+        $payload = [
+            'iss' => 'vilnacrm-user-service',
+            'aud' => [strtolower($this->faker->bothify('oauth-aud-####'))],
+            'nbf' => time() - 10,
+            'exp' => time() + 900,
+        ];
+
+        $this->jwtEncoder
+            ->method('decode')
+            ->willReturn($payload);
+
+        $this->expectInvalidClaimsException();
 
         $this->parser->parse($token);
     }

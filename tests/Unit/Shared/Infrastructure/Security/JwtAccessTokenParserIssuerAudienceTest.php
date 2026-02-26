@@ -58,6 +58,43 @@ final class JwtAccessTokenParserIssuerAudienceTest extends JwtAccessTokenParserT
         $this->parser->parse($token);
     }
 
+    public function testParseReturnsServiceRoleForOauthTokenWithoutIss(): void
+    {
+        $subject = $this->faker->email();
+        $token = $this->createValidToken();
+        $payload = [
+            'sub' => $subject,
+            'aud' => 'vilnacrm-api',
+            'nbf' => time() - 10,
+            'exp' => time() + 900,
+        ];
+
+        $this->jwtEncoder->method('decode')->willReturn($payload);
+
+        $result = $this->parser->parse($token);
+
+        $this->assertSame($subject, $result['subject']);
+        $this->assertSame('', $result['sid']);
+        $this->assertSame(['ROLE_SERVICE'], $result['roles']);
+    }
+
+    public function testParseThrowsForMissingAudienceWhenSidAndRolesAreMissing(): void
+    {
+        $token = $this->createValidToken();
+        $payload = [
+            'sub' => $this->faker->email(),
+            'iss' => 'vilnacrm-user-service',
+            'nbf' => time() - 10,
+            'exp' => time() + 900,
+        ];
+
+        $this->jwtEncoder->method('decode')->willReturn($payload);
+
+        $this->expectInvalidClaimsException();
+
+        $this->parser->parse($token);
+    }
+
     public function testParseThrowsForWrongStringAudience(): void
     {
         $token = $this->createValidToken();

@@ -104,19 +104,61 @@ final readonly class JwtAccessTokenParser
      */
     private function validateFirstPartyClaims(array $payload): void
     {
+        if (isset($payload['roles'])) {
+            $issuer = $payload['iss'] ?? null;
+            if (!is_string($issuer) || $issuer !== self::JWT_ISSUER) {
+                throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
+            }
+
+            if (!$this->hasExpectedAudience($payload)) {
+                throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
+            }
+
+            if (!isset($payload['sid'])) {
+                throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
+            }
+
+            return;
+        }
+
         $issuer = $payload['iss'] ?? null;
-        if (!is_string($issuer) || $issuer !== self::JWT_ISSUER) {
-            throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
-        }
+        if ($issuer !== null) {
+            if (!is_string($issuer) || $issuer !== self::JWT_ISSUER) {
+                throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
+            }
 
+            if (!$this->hasExpectedAudience($payload)) {
+                throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
+            }
+        }
+    }
+
+    /**
+     * @param array<string, array<int, string>|bool|float|int|string|null> $payload
+     */
+    private function hasExpectedAudience(array $payload): bool
+    {
         $audience = $payload['aud'] ?? null;
-        if (!is_string($audience) || $audience !== self::JWT_AUDIENCE) {
-            throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
+        if (is_string($audience)) {
+            return $audience === self::JWT_AUDIENCE;
         }
 
-        if (isset($payload['roles']) && !isset($payload['sid'])) {
-            throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
+        if (!is_array($audience) || $audience === []) {
+            return false;
         }
+
+        $hasExpectedAudience = false;
+        foreach ($audience as $value) {
+            if (!is_string($value) || $value === '') {
+                return false;
+            }
+
+            if ($value === self::JWT_AUDIENCE) {
+                $hasExpectedAudience = true;
+            }
+        }
+
+        return $hasExpectedAudience;
     }
 
     /**
@@ -178,7 +220,7 @@ final readonly class JwtAccessTokenParser
     {
         $rawRoles = $payload['roles'] ?? null;
         if ($rawRoles === null) {
-            return ['ROLE_USER'];
+            return isset($payload['iss']) ? ['ROLE_USER'] : ['ROLE_SERVICE'];
         }
 
         if (!is_array($rawRoles) || $rawRoles === []) {
