@@ -172,4 +172,22 @@ final class JwtAccessTokenParserIssuerAudienceTest extends JwtAccessTokenParserT
 
         $this->parser->parse($token);
     }
+
+    public function testParseThrowsForWrongIssuerWhenRolesAreAbsent(): void
+    {
+        $token = $this->createValidToken();
+        $payload = [
+            'sub' => $this->faker->email(),
+            'iss' => $this->faker->domainName(),
+            'aud' => 'vilnacrm-api',
+            'nbf' => time() - 10,
+            'exp' => time() + 900,
+        ];
+
+        $this->jwtEncoder->method('decode')->willReturn($payload);
+
+        $this->expectInvalidClaimsException();
+
+        $this->parser->parse($token);
+    }
 }

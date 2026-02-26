@@ -44,13 +44,12 @@ final readonly class JwtAccessTokenParser
     private function decodeHeader(string $token): array
     {
         $parts = explode('.', $token);
-        $headerPart = $parts[0] ?? '';
-        if (count($parts) !== 3 || $headerPart === '') {
+        if (count($parts) !== 3) {
             throw new CustomUserMessageAuthenticationException('Invalid access token.');
         }
 
         return $this->decodeJsonObject(
-            $this->decodeBase64Url($headerPart)
+            $this->decodeBase64Url($parts[0])
         );
     }
 
@@ -105,31 +104,28 @@ final readonly class JwtAccessTokenParser
     private function validateFirstPartyClaims(array $payload): void
     {
         if (isset($payload['roles'])) {
-            $issuer = $payload['iss'] ?? null;
-            if (!is_string($issuer) || $issuer !== self::JWT_ISSUER) {
-                throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
-            }
-
-            if (!$this->hasExpectedAudience($payload)) {
-                throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
-            }
+            $this->validateIssuerAndAudience($payload);
 
             if (!isset($payload['sid'])) {
                 throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
             }
+        } elseif (($payload['iss'] ?? null) !== null) {
+            $this->validateIssuerAndAudience($payload);
+        }
+    }
 
-            return;
+    /**
+     * @param array<string, array<int, string>|bool|float|int|string|null> $payload
+     */
+    private function validateIssuerAndAudience(array $payload): void
+    {
+        $issuer = $payload['iss'] ?? null;
+        if (!is_string($issuer) || $issuer !== self::JWT_ISSUER) {
+            throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
         }
 
-        $issuer = $payload['iss'] ?? null;
-        if ($issuer !== null) {
-            if (!is_string($issuer) || $issuer !== self::JWT_ISSUER) {
-                throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
-            }
-
-            if (!$this->hasExpectedAudience($payload)) {
-                throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
-            }
+        if (!$this->hasExpectedAudience($payload)) {
+            throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
         }
     }
 
@@ -147,18 +143,13 @@ final readonly class JwtAccessTokenParser
             return false;
         }
 
-        $hasExpectedAudience = false;
-        foreach ($audience as $value) {
-            if (!is_string($value) || $value === '') {
-                return false;
-            }
-
-            if ($value === self::JWT_AUDIENCE) {
-                $hasExpectedAudience = true;
-            }
+        $strings = array_filter($audience, 'is_string');
+        $nonEmpty = array_filter($strings);
+        if (count($nonEmpty) !== count($audience)) {
+            return false;
         }
 
-        return $hasExpectedAudience;
+        return in_array(self::JWT_AUDIENCE, $audience, true);
     }
 
     /**
@@ -179,14 +170,11 @@ final readonly class JwtAccessTokenParser
      */
     private function extractSubject(array $payload): string
     {
-        $subject = $payload['sub'] ?? null;
-        if (is_string($subject) && $subject !== '') {
-            return $subject;
-        }
-
-        $clientId = $payload['client_id'] ?? null;
-        if (is_string($clientId) && $clientId !== '') {
-            return $clientId;
+        foreach (['sub', 'client_id'] as $key) {
+            $value = $payload[$key] ?? null;
+            if (is_string($value) && $value !== '') {
+                return $value;
+            }
         }
 
         throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
@@ -239,10 +227,10 @@ final readonly class JwtAccessTokenParser
      */
     private function assertAllRolesAreNonEmptyStrings(array $rawRoles): void
     {
-        foreach ($rawRoles as $role) {
-            if (!is_string($role) || $role === '') {
-                throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
-            }
+        $strings = array_filter($rawRoles, 'is_string');
+        $nonEmpty = array_filter($strings);
+        if (count($nonEmpty) !== count($rawRoles)) {
+            throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
         }
     }
 
