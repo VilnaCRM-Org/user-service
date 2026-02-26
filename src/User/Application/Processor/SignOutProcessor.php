@@ -10,7 +10,7 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\SignOutCommand;
 use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\DTO\SignOutDto;
-use Symfony\Component\HttpFoundation\Cookie;
+use App\User\Application\Factory\ClearAuthCookieResponseFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -23,6 +23,7 @@ final readonly class SignOutProcessor implements ProcessorInterface
     public function __construct(
         private CommandBusInterface $commandBus,
         private TokenStorageInterface $tokenStorage,
+        private ClearAuthCookieResponseFactory $clearAuthCookieResponseFactory,
     ) {
     }
 
@@ -60,25 +61,6 @@ final readonly class SignOutProcessor implements ProcessorInterface
         // Execute signout command
         $this->commandBus->dispatch(new SignOutCommand($sessionId, $userId));
 
-        return $this->createClearCookieResponse();
-    }
-
-    private function createClearCookieResponse(): Response
-    {
-        $response = new Response('', Response::HTTP_NO_CONTENT);
-        $response->headers->setCookie(
-            new Cookie(
-                '__Host-auth_token',
-                '',
-                1,  // Expire immediately (Unix epoch + 1 second)
-                '/',
-                null,
-                true,  // Secure
-                true,  // HttpOnly
-                false,
-                'lax'  // SameSite
-            )
-        );
-        return $response;
+        return $this->clearAuthCookieResponseFactory->create();
     }
 }

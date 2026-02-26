@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\EventListener;
 
-use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
-use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
  * Rejects GraphQL batch requests (JSON arrays) to prevent rate limit bypass.
@@ -20,7 +18,6 @@ use Symfony\Component\HttpKernel\KernelEvents;
  *
  * Priority: 130 (before rate limiter at 120 and security firewall)
  */
-#[AsEventListener(event: KernelEvents::REQUEST, priority: 130)]
 final readonly class GraphQLBatchRejectListener
 {
     private const GRAPHQL_PATH = '/api/graphql';

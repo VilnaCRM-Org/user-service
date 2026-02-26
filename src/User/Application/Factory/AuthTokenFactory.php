@@ -87,10 +87,4 @@ final readonly class AuthTokenFactory implements AuthTokenFactoryInterface
             $refreshToken
         );
     }
-
-    #[\Override]
-    public function nextEventId(): string
-    {
-        return (string) $this->uuidFactory->create();
-    }
 }

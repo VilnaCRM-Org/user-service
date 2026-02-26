@@ -8,6 +8,7 @@ use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SignOutAllCommand;
 use App\User\Application\CommandHandler\SignOutAllCommandHandler;
+use App\User\Application\Generator\EventIdGeneratorInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
@@ -20,6 +21,7 @@ final class SignOutAllCommandHandlerTest extends UnitTestCase
     private AuthSessionRepositoryInterface&MockObject $sessionRepository;
     private AuthRefreshTokenRepositoryInterface&MockObject $refreshTokenRepository;
     private EventBusInterface&MockObject $eventBus;
+    private EventIdGeneratorInterface&MockObject $eventIdGenerator;
     private SignOutAllCommandHandler $handler;
 
     #[\Override]
@@ -30,10 +32,13 @@ final class SignOutAllCommandHandlerTest extends UnitTestCase
         $this->refreshTokenRepository =
             $this->createMock(AuthRefreshTokenRepositoryInterface::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
+        $this->eventIdGenerator = $this->createMock(EventIdGeneratorInterface::class);
+        $this->eventIdGenerator->method('generate')->willReturn($this->faker->uuid());
         $this->handler = new SignOutAllCommandHandler(
             $this->sessionRepository,
             $this->refreshTokenRepository,
-            $this->eventBus
+            $this->eventBus,
+            $this->eventIdGenerator
         );
     }
 

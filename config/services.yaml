@@ -80,6 +80,10 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 200 }
 
+  App\Shared\Application\EventListener\GraphQLBatchRejectListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, priority: 130 }
+
   App\Shared\Application\EventListener\MethodNotAllowedListener:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 120 }
@@ -217,21 +221,24 @@ services:
   App\User\Infrastructure\Lockout\RedisAccountLockout:
     arguments:
       $cachePool: '@cache.app'
+      $maxAttempts: '%env(int:SIGNIN_LOCKOUT_MAX_ATTEMPTS)%'
+      $lockoutSeconds: '%env(int:SIGNIN_LOCKOUT_SECONDS)%'
+      $attemptWindowSeconds: '%env(int:SIGNIN_LOCKOUT_ATTEMPT_WINDOW_SECONDS)%'
 
   App\User\Infrastructure\Security\TwoFactorSecretEncryptor:
     arguments:
       $twoFactorEncryptionKey: '%env(resolve:TWO_FACTOR_ENCRYPTION_KEY)%'
 
   App\User\Application\Factory\AuthTokenFactoryInterface: '@App\User\Application\Factory\AuthTokenFactory'
-  App\User\Application\Component\RefreshTokenEventsInterface: '@App\User\Application\Component\RefreshTokenEvents'
-  App\User\Application\Component\TwoFactorCodeVerifierInterface: '@App\User\Application\Component\TwoFactorCodeVerifier'
-  App\User\Application\Component\RecoveryCodeGeneratorInterface: '@App\User\Application\Component\RecoveryCodeGenerator'
-  App\User\Application\Component\TwoFactorEventsInterface: '@App\User\Application\Component\TwoFactorEvents'
-  App\User\Application\Component\SessionIssuerInterface: '@App\User\Application\Component\SessionIssuer'
-  App\User\Application\Component\SignInEventsInterface: '@App\User\Application\Component\SignInEvents'
-  App\User\Application\Component\UserAuthenticatorInterface: '@App\User\Application\Component\UserAuthenticator'
-  App\User\Application\Component\UserUpdateApplierInterface: '@App\User\Application\Component\UserUpdateApplier'
-  App\User\Application\Component\OwnershipGuardInterface: '@App\User\Application\Component\TokenOwnershipGuard'
+  App\User\Application\EventPublisher\RefreshTokenEventsInterface: '@App\User\Application\EventPublisher\RefreshTokenEvents'
+  App\User\Application\Verifier\TwoFactorCodeVerifierInterface: '@App\User\Application\Verifier\TwoFactorCodeVerifier'
+  App\User\Application\Generator\RecoveryCodeGeneratorInterface: '@App\User\Application\Generator\RecoveryCodeGenerator'
+  App\User\Application\EventPublisher\TwoFactorEventsInterface: '@App\User\Application\EventPublisher\TwoFactorEvents'
+  App\User\Application\Issuer\SessionIssuerInterface: '@App\User\Application\Issuer\SessionIssuer'
+  App\User\Application\EventPublisher\SignInEventsInterface: '@App\User\Application\EventPublisher\SignInEvents'
+  App\User\Application\Authenticator\UserAuthenticatorInterface: '@App\User\Application\Authenticator\UserAuthenticator'
+  App\User\Application\Applier\UserUpdateApplierInterface: '@App\User\Application\Applier\UserUpdateApplier'
+  App\User\Application\Guard\OwnershipGuardInterface: '@App\User\Application\Guard\TokenOwnershipGuard'
 
   App\User\Application\Factory\AuthTokenFactory:
     arguments:
@@ -259,14 +266,16 @@ services:
     arguments:
       $refreshTokenGraceWindowSeconds: '%env(int:REFRESH_TOKEN_GRACE_WINDOW_SECONDS)%'
 
-  App\User\Domain\Contract\PasswordResetTokenValidatorInterface: '@App\User\Application\Validator\CompositePasswordResetTokenValidator'
-  App\User\Domain\Contract\PasswordHasherInterface: '@App\User\Infrastructure\Security\SymfonyPasswordHasher'
-  App\User\Domain\Contract\AccountLockoutServiceInterface: '@App\User\Infrastructure\Lockout\RedisAccountLockout'
-  App\User\Domain\Contract\AccessTokenGeneratorInterface: '@App\User\Infrastructure\Generator\LexikAccessTokenGenerator'
-  App\User\Domain\Contract\TOTPVerifierInterface: '@App\User\Infrastructure\TwoFactor\TOTPVerifier'
-  App\User\Domain\Contract\TwoFactorSecretEncryptorInterface: '@App\User\Infrastructure\Security\TwoFactorSecretEncryptor'
-  App\User\Domain\Contract\TOTPSecretGeneratorInterface: '@App\User\Infrastructure\Generator\TOTPSecretGenerator'
-  App\User\Infrastructure\TwoFactor\TOTPCreatorInterface: '@App\User\Infrastructure\TwoFactor\TotpCreator'
+  App\User\Application\Validator\PasswordResetTokenValidatorInterface: '@App\User\Application\Validator\CompositePasswordResetTokenValidator'
+  App\User\Application\Hasher\PasswordHasherInterface: '@App\User\Infrastructure\Security\SymfonyPasswordHasher'
+  App\User\Application\Lockout\AccountLockoutServiceInterface: '@App\User\Infrastructure\Lockout\RedisAccountLockout'
+  App\User\Application\Generator\AccessTokenGeneratorInterface: '@App\User\Infrastructure\Generator\LexikAccessTokenGenerator'
+  App\User\Application\Verifier\TOTPVerifierInterface: '@App\User\Infrastructure\TwoFactor\TOTPVerifier'
+  App\User\Application\Encryptor\TwoFactorSecretEncryptorInterface: '@App\User\Infrastructure\Security\TwoFactorSecretEncryptor'
+  App\User\Application\Generator\TOTPSecretGeneratorInterface: '@App\User\Infrastructure\Generator\TOTPSecretGenerator'
+  App\User\Application\Generator\EventIdGeneratorInterface: '@App\User\Application\Generator\EventIdGenerator'
+  App\User\Application\Revoker\PasswordChangeSessionRevokerInterface: '@App\User\Application\Revoker\PasswordChangeSessionRevoker'
+  App\User\Infrastructure\TwoFactor\TOTPCreatorInterface: '@App\User\Infrastructure\TwoFactor\TOTPCreator'
   App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface: '@App\User\Application\CommandHandler\RequestPasswordResetCommandHandler'
 
   App\User\Infrastructure\Decorator\RateLimitedRequestPasswordResetHandlerDecorator:

@@ -7,7 +7,7 @@ namespace App\User\Infrastructure\TwoFactor;
 use OTPHP\TOTP;
 use OTPHP\TOTPInterface;
 
-final class TotpCreator implements TOTPCreatorInterface
+final class TOTPCreator implements TOTPCreatorInterface
 {
     private const BASE32_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
     private const SECRET_LENGTH = 32;

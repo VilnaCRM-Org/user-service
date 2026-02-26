@@ -7,6 +7,7 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\SignOutAllCommand;
+use App\User\Application\Generator\EventIdGeneratorInterface;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
@@ -20,6 +21,7 @@ final readonly class SignOutAllCommandHandler implements CommandHandlerInterface
         private AuthSessionRepositoryInterface $sessionRepository,
         private AuthRefreshTokenRepositoryInterface $refreshTokenRepository,
         private EventBusInterface $eventBus,
+        private EventIdGeneratorInterface $eventIdGenerator,
     ) {
     }
 
@@ -45,7 +47,7 @@ final readonly class SignOutAllCommandHandler implements CommandHandlerInterface
             $command->userId,
             'user_initiated',
             $revokedCount,
-            uniqid('event_', true),
+            $this->eventIdGenerator->generate(),
             null
         ));
     }

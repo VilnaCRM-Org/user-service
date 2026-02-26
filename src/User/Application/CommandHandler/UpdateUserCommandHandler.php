@@ -6,10 +6,10 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
+use App\User\Application\Applier\UserUpdateApplierInterface;
 use App\User\Application\Command\UpdateUserCommand;
-use App\User\Application\Component\PasswordChangeSessionRevoker;
-use App\User\Application\Component\UserUpdateApplierInterface;
-use App\User\Domain\Contract\PasswordHasherInterface;
+use App\User\Application\Hasher\PasswordHasherInterface;
+use App\User\Application\Revoker\PasswordChangeSessionRevokerInterface;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Exception\InvalidPasswordException;
 use Symfony\Component\Uid\Factory\UuidFactory;
@@ -20,7 +20,7 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
         private EventBusInterface $eventBus,
         private PasswordHasherInterface $passwordHasher,
         private UserUpdateApplierInterface $userUpdateApplier,
-        private PasswordChangeSessionRevoker $passwordChangeSessionRevoker,
+        private PasswordChangeSessionRevokerInterface $passwordChangeSessionRevoker,
         private UuidFactory $uuidFactory,
     ) {
     }

@@ -6,13 +6,13 @@ namespace App\Tests\Unit\User\Infrastructure\TwoFactor;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Infrastructure\Generator\TOTPSecretGenerator;
-use App\User\Infrastructure\TwoFactor\TotpCreator;
+use App\User\Infrastructure\TwoFactor\TOTPCreator;
 
 final class TOTPSecretGeneratorTest extends UnitTestCase
 {
     public function testGenerateReturnsSecretAndOtpauthUri(): void
     {
-        $generator = new TOTPSecretGenerator(new TotpCreator());
+        $generator = new TOTPSecretGenerator(new TOTPCreator());
         $email = $this->faker->email();
 
         $result = $generator->generate($email);
@@ -36,7 +36,7 @@ final class TOTPSecretGeneratorTest extends UnitTestCase
 
     public function testGenerateProducesUniqueSecretsPerCall(): void
     {
-        $generator = new TOTPSecretGenerator(new TotpCreator());
+        $generator = new TOTPSecretGenerator(new TOTPCreator());
         $email = $this->faker->email();
 
         $first = $generator->generate($email);

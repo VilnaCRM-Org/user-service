@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application\Component;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
-use App\User\Application\Factory\AuthTokenFactoryInterface;
+use App\User\Application\Generator\EventIdGeneratorInterface;
 use App\User\Domain\Event\RefreshTokenRotatedEvent;
 use App\User\Domain\Event\RefreshTokenTheftDetectedEvent;
 
@@ -13,7 +13,7 @@ final readonly class RefreshTokenEvents implements RefreshTokenEventsInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,
-        private AuthTokenFactoryInterface $authTokenFactory,
+        private EventIdGeneratorInterface $eventIdGenerator,
     ) {
     }
 
@@ -23,7 +23,7 @@ final readonly class RefreshTokenEvents implements RefreshTokenEventsInterface
         $this->eventBus->publish(new RefreshTokenRotatedEvent(
             $sessionId,
             $userId,
-            $this->authTokenFactory->nextEventId()
+            $this->eventIdGenerator->generate()
         ));
     }
 
@@ -39,7 +39,7 @@ final readonly class RefreshTokenEvents implements RefreshTokenEventsInterface
             $userId,
             $ipAddress,
             $reason,
-            $this->authTokenFactory->nextEventId()
+            $this->eventIdGenerator->generate()
         ));
     }
 }

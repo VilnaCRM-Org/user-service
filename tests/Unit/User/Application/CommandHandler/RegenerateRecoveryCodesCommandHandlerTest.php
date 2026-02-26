@@ -9,6 +9,7 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\CommandHandler\RegenerateRecoveryCodesCommandHandler;
+use App\User\Application\Generator\RecoveryCodeGeneratorInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
@@ -21,7 +22,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bridge\PhpUnit\ClockMock;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
-use Symfony\Component\Uid\Factory\UlidFactory;
 use Symfony\Component\Uid\Ulid;
 
 final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
@@ -29,7 +29,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
     private UserRepositoryInterface&MockObject $userRepository;
     private RecoveryCodeRepositoryInterface&MockObject $recoveryCodeRepository;
     private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
-    private UlidFactory&MockObject $ulidFactory;
+    private RecoveryCodeGeneratorInterface&MockObject $recoveryCodeGenerator;
     private UserFactory $userFactory;
     private UuidTransformer $uuidTransformer;
 
@@ -41,11 +41,9 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->recoveryCodeRepository = $this->createMock(RecoveryCodeRepositoryInterface::class);
         $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
-        $this->ulidFactory = $this->createMock(UlidFactory::class);
+        $this->recoveryCodeGenerator = $this->createMock(RecoveryCodeGeneratorInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
-
-        $this->ulidFactory->method('create')->willReturn(new Ulid());
     }
 
     public function testInvokeRegeneratesRecoveryCodesSuccessfully(): void
@@ -60,13 +58,18 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
             ->with($sessionId)->willReturn($session);
         $this->recoveryCodeRepository->expects($this->once())
             ->method('deleteByUserId')->with($user->getId());
-        $this->recoveryCodeRepository->expects($this->exactly(RecoveryCode::COUNT))
-            ->method('save')
-            ->with($this->isInstanceOf(RecoveryCode::class));
+        $generatedCodes = ['ABCD-1234', 'EFGH-5678', 'IJKL-9012', 'MNOP-3456',
+            'QRST-7890', 'UVWX-1234', 'YZAB-5678', 'CDEF-9012',
+        ];
+        $this->recoveryCodeGenerator->expects($this->once())
+            ->method('generateAndStore')
+            ->with($user)
+            ->willReturn($generatedCodes);
 
         $command = new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId);
         $this->createHandler()->__invoke($command);
-        $this->assertCount(RecoveryCode::COUNT, $command->getResponse()->getRecoveryCodes());
+        $codes = $command->getResponse()->getRecoveryCodes();
+        $this->assertCount(RecoveryCode::COUNT, $codes);
     }
 
     public function testInvokeThrows403WhenTwoFactorNotEnabled(): void
@@ -134,21 +137,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         ClockMock::register(self::class);
         ClockMock::withClockMock(time());
         try {
-            $user = $this->createTwoFactorEnabledUser();
-            $sessionId = (string) new Ulid();
-            $session = $this->createBoundarySudoSession($user->getId(), $sessionId);
-
-            $this->userRepository->expects($this->once())->method('findByEmail')
-                ->with($user->getEmail())->willReturn($user);
-            $this->authSessionRepository->expects($this->once())->method('findById')
-                ->with($sessionId)->willReturn($session);
-            $this->recoveryCodeRepository->expects($this->once())
-                ->method('deleteByUserId')->with($user->getId());
-            $this->recoveryCodeRepository->method('save');
-
-            $command = new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId);
-            $this->createHandler()->__invoke($command);
-            $this->assertCount(RecoveryCode::COUNT, $command->getResponse()->getRecoveryCodes());
+            $this->assertBoundarySudoSessionAllowsRegeneration();
         } finally {
             ClockMock::withClockMock(false);
         }
@@ -160,7 +149,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
             $this->userRepository,
             $this->recoveryCodeRepository,
             $this->authSessionRepository,
-            $this->ulidFactory,
+            $this->recoveryCodeGenerator,
         );
     }
 
@@ -234,5 +223,28 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
             $createdAt->modify('+15 minutes'),
             false
         );
+    }
+
+    private function assertBoundarySudoSessionAllowsRegeneration(): void
+    {
+        $user = $this->createTwoFactorEnabledUser();
+        $sessionId = (string) new Ulid();
+        $session = $this->createBoundarySudoSession($user->getId(), $sessionId);
+
+        $this->userRepository->expects($this->once())->method('findByEmail')
+            ->with($user->getEmail())->willReturn($user);
+        $this->authSessionRepository->expects($this->once())->method('findById')
+            ->with($sessionId)->willReturn($session);
+        $this->recoveryCodeRepository->expects($this->once())
+            ->method('deleteByUserId')->with($user->getId());
+        $generatedCodes = ['ABCD-1234', 'EFGH-5678', 'IJKL-9012', 'MNOP-3456',
+            'QRST-7890', 'UVWX-1234', 'YZAB-5678', 'CDEF-9012',
+        ];
+        $this->recoveryCodeGenerator->method('generateAndStore')->willReturn($generatedCodes);
+
+        $command = new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId);
+        $this->createHandler()->__invoke($command);
+        $codes = $command->getResponse()->getRecoveryCodes();
+        $this->assertCount(RecoveryCode::COUNT, $codes);
     }
 }

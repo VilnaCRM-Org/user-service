@@ -12,9 +12,9 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SignOutAllCommand;
 use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\DTO\SignOutAllDto;
+use App\User\Application\Factory\ClearAuthCookieResponseFactory;
 use App\User\Application\Processor\SignOutAllProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -36,7 +36,8 @@ final class SignOutAllProcessorTest extends UnitTestCase
         $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
         $this->processor = new SignOutAllProcessor(
             $this->commandBus,
-            $this->tokenStorage
+            $this->tokenStorage,
+            new ClearAuthCookieResponseFactory(),
         );
     }
 
@@ -60,27 +61,6 @@ final class SignOutAllProcessorTest extends UnitTestCase
         $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
         $this->assertCount(1, $cookies);
         $this->assertSame('__Host-auth_token', $cookies[0]->getName());
-    }
-
-    public function testClearCookieHasCorrectAttributes(): void
-    {
-        $reflection = new \ReflectionMethod(
-            SignOutAllProcessor::class,
-            'createClearCookieResponse'
-        );
-        $response = $reflection->invoke($this->processor);
-        $cookies = $response->headers->getCookies();
-        $this->assertCount(1, $cookies);
-        $cookie = $cookies[0];
-        $this->assertSame('__Host-auth_token', $cookie->getName());
-        $this->assertSame('', $cookie->getValue());
-        $this->assertSame(1, $cookie->getExpiresTime());
-        $this->assertSame('/', $cookie->getPath());
-        $this->assertNull($cookie->getDomain());
-        $this->assertTrue($cookie->isSecure());
-        $this->assertTrue($cookie->isHttpOnly());
-        $this->assertFalse($cookie->isRaw());
-        $this->assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
     }
 
     public function testProcessThrowsExceptionWhenNoToken(): void

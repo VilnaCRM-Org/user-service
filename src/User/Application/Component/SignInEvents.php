@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application\Component;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
-use App\User\Application\Factory\AuthTokenFactoryInterface;
+use App\User\Application\Generator\EventIdGeneratorInterface;
 use App\User\Domain\Event\AccountLockedOutEvent;
 use App\User\Domain\Event\SignInFailedEvent;
 use App\User\Domain\Event\UserSignedInEvent;
@@ -14,7 +14,7 @@ final readonly class SignInEvents implements SignInEventsInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,
-        private AuthTokenFactoryInterface $authTokenFactory,
+        private EventIdGeneratorInterface $eventIdGenerator,
     ) {
     }
 
@@ -34,7 +34,7 @@ final readonly class SignInEvents implements SignInEventsInterface
             $ipAddress,
             $userAgent,
             $twoFactorUsed,
-            $this->authTokenFactory->nextEventId()
+            $this->eventIdGenerator->generate()
         ));
     }
 
@@ -50,7 +50,7 @@ final readonly class SignInEvents implements SignInEventsInterface
             $ipAddress,
             $userAgent,
             $reason,
-            $this->authTokenFactory->nextEventId()
+            $this->eventIdGenerator->generate()
         ));
     }
 
@@ -64,7 +64,7 @@ final readonly class SignInEvents implements SignInEventsInterface
             $email,
             $failedAttempts,
             $lockoutDurationSeconds,
-            $this->authTokenFactory->nextEventId()
+            $this->eventIdGenerator->generate()
         ));
     }
 }

@@ -121,22 +121,6 @@ final class AuthTokenFactoryTest extends UnitTestCase
         $this->assertEquals($expectedExpiry, $refreshToken->getExpiresAt());
     }
 
-    public function testNextEventIdReturnsNonEmptyString(): void
-    {
-        $eventId = $this->factory->nextEventId();
-
-        $this->assertIsString($eventId);
-        $this->assertNotEmpty($eventId);
-    }
-
-    public function testNextEventIdIsUniqueEachCall(): void
-    {
-        $id1 = $this->factory->nextEventId();
-        $id2 = $this->factory->nextEventId();
-
-        $this->assertNotSame($id1, $id2);
-    }
-
     public function testCreateRefreshTokenResponseReturnsDto(): void
     {
         $accessToken = $this->faker->sha256();

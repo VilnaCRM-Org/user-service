@@ -34,6 +34,4 @@ interface AuthTokenFactoryInterface
         string $accessToken,
         string $refreshToken
     ): RefreshTokenCommandResponse;
-
-    public function nextEventId(): string;
 }

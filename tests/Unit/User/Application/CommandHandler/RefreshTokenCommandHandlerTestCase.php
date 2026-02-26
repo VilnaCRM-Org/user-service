@@ -50,7 +50,6 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->authTokenFactory = $this->createMock(AuthTokenFactoryInterface::class);
         $this->configureRefreshTokenResponseFactory();
-        $this->authTokenFactory->method('nextEventId')->willReturn('test-event-id');
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
     }

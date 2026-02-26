@@ -7,7 +7,7 @@ namespace App\User\Application\Component;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 
-final readonly class PasswordChangeSessionRevoker
+final readonly class PasswordChangeSessionRevoker implements PasswordChangeSessionRevokerInterface
 {
     public function __construct(
         private AuthSessionRepositoryInterface $authSessionRepository,
@@ -15,6 +15,7 @@ final readonly class PasswordChangeSessionRevoker
     ) {
     }
 
+    #[\Override]
     public function revokeOtherSessions(string $userId, string $currentSessionId): int
     {
         $sessions = $this->authSessionRepository->findByUserId($userId);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application\Component;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
-use App\User\Application\Factory\AuthTokenFactoryInterface;
+use App\User\Application\Generator\EventIdGeneratorInterface;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Event\RecoveryCodeUsedEvent;
 use App\User\Domain\Event\TwoFactorCompletedEvent;
@@ -17,7 +17,7 @@ final readonly class TwoFactorEvents implements TwoFactorEventsInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,
-        private AuthTokenFactoryInterface $authTokenFactory,
+        private EventIdGeneratorInterface $eventIdGenerator,
     ) {
     }
 
@@ -27,7 +27,7 @@ final readonly class TwoFactorEvents implements TwoFactorEventsInterface
         $this->eventBus->publish(new TwoFactorEnabledEvent(
             $userId,
             $email,
-            $this->authTokenFactory->nextEventId()
+            $this->eventIdGenerator->generate()
         ));
     }
 
@@ -37,7 +37,7 @@ final readonly class TwoFactorEvents implements TwoFactorEventsInterface
         $this->eventBus->publish(new TwoFactorDisabledEvent(
             $userId,
             $email,
-            $this->authTokenFactory->nextEventId()
+            $this->eventIdGenerator->generate()
         ));
     }
 
@@ -55,7 +55,7 @@ final readonly class TwoFactorEvents implements TwoFactorEventsInterface
             $ipAddress,
             $userAgent,
             (string) $verificationMethod,
-            $this->authTokenFactory->nextEventId()
+            $this->eventIdGenerator->generate()
         ));
     }
 
@@ -69,7 +69,7 @@ final readonly class TwoFactorEvents implements TwoFactorEventsInterface
             $pendingSessionId,
             $ipAddress,
             $reason,
-            $this->authTokenFactory->nextEventId()
+            $this->eventIdGenerator->generate()
         ));
     }
 
@@ -79,7 +79,7 @@ final readonly class TwoFactorEvents implements TwoFactorEventsInterface
         $this->eventBus->publish(new RecoveryCodeUsedEvent(
             $userId,
             $remainingCount,
-            $this->authTokenFactory->nextEventId()
+            $this->eventIdGenerator->generate()
         ));
     }
 
@@ -93,7 +93,7 @@ final readonly class TwoFactorEvents implements TwoFactorEventsInterface
             $userId,
             $reason,
             $revokedCount,
-            $this->authTokenFactory->nextEventId()
+            $this->eventIdGenerator->generate()
         ));
     }
 }
