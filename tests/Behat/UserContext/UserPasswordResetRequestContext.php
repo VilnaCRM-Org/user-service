@@ -36,6 +36,7 @@ final class UserPasswordResetRequestContext implements Context
 
     /**
      * @Given confirming password reset with token :token and password :password
+     * @Given requesting password reset confirm with token :token and password :password
      */
     public function confirmingPasswordResetWithTokenAndPassword(
         string $token,

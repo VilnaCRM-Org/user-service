@@ -10,6 +10,10 @@ final readonly class ApiRateLimitRequestResolver
 {
     private const SCHEMATHESIS_HEADER_NAME = 'X-Schemathesis-Test';
     private const SCHEMATHESIS_HEADER_VALUE = 'cleanup-users';
+    private const PASSWORD_RESET_CONFIRM_PATH = '/api/reset-password/confirm';
+    private const RECOVERY_CODES_PATH = '/api/users/2fa/recovery-codes';
+    private const SIGNOUT_PATH = '/api/signout';
+    private const SIGNOUT_ALL_PATH = '/api/signout/all';
 
     public function __construct(
         private ApiRateLimitClientIdentityResolver $clientIdentityResolver =
@@ -64,11 +68,16 @@ final readonly class ApiRateLimitRequestResolver
             $this->resolveTokenExchangeLimiter($request, $path, $method),
             $this->resolveEmailConfirmationLimiter($request, $path, $method),
             $this->resolveUserCollectionLimiter($request, $path, $method),
+            $this->resolvePasswordResetConfirmLimiter($request, $path, $method),
         ]));
         $this->appendTargets($targets, $this->resolveUserMutationLimiters($path, $method));
         $this->appendTargets(
             $targets,
             $this->resolveResendConfirmationLimiters($request, $path, $method)
+        );
+        $this->appendTargets(
+            $targets,
+            $this->resolveAuthenticatedSecurityLimiters($request, $path, $method)
         );
         $this->appendTargets($targets, $this->authTargetResolver->resolve($request));
 
@@ -212,6 +221,55 @@ final readonly class ApiRateLimitRequestResolver
         }
 
         return null;
+    }
+
+    /**
+     * @return array<string>|null
+     *
+     * @psalm-return array{name: 'password_reset_confirm', key: string}|null
+     */
+    private function resolvePasswordResetConfirmLimiter(
+        Request $request,
+        string $path,
+        string $method
+    ): ?array {
+        if ($method !== 'POST' || $path !== self::PASSWORD_RESET_CONFIRM_PATH) {
+            return null;
+        }
+
+        return ['name' => 'password_reset_confirm', 'key' => $this->buildIpKey($request)];
+    }
+
+    /**
+     * @return array<array<string>>
+     *
+     * @psalm-return list{0?: array{name: 'recovery_codes'|'signout'|'signout_all', key: string}}
+     */
+    private function resolveAuthenticatedSecurityLimiters(
+        Request $request,
+        string $path,
+        string $method
+    ): array {
+        if ($method !== 'POST') {
+            return [];
+        }
+
+        $limiter = match ($path) {
+            self::RECOVERY_CODES_PATH => 'recovery_codes',
+            self::SIGNOUT_PATH => 'signout',
+            self::SIGNOUT_ALL_PATH => 'signout_all',
+            default => null,
+        };
+        if (!is_string($limiter) || $limiter === '') {
+            return [];
+        }
+
+        $subject = $this->clientIdentityResolver->resolveUserSubject($request);
+        if ($subject === null) {
+            return [];
+        }
+
+        return [['name' => $limiter, 'key' => $this->buildUserKey($subject)]];
     }
 
     private function resolveUserIdFromItemRoute(string $path): ?string

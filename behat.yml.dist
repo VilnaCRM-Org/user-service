@@ -24,6 +24,8 @@ default:
                 - App\Tests\Behat\UserContext\JwtTokenContext
                 - App\Tests\Behat\UserContext\SignInSecurityContext
                 - App\Tests\Behat\UserContext\RateLimitingContext
+                - App\Tests\Behat\UserContext\RateLimitingAdditionalContext
+                - App\Tests\Behat\UserContext\SudoModeContext
                 - App\Tests\Behat\UserContext\AuditLoggingContext
                 - App\Tests\Behat\UserContext\AuditLoggingSetupContext
                 - App\Tests\Behat\UserContext\UserRequestContext
@@ -31,6 +33,7 @@ default:
                 - App\Tests\Behat\UserContext\UserPasswordResetRequestContext
                 - App\Tests\Behat\UserContext\SecurityHardeningContext
                 - App\Tests\Behat\UserContext\UserResponseContext
+                - App\Tests\Behat\UserContext\SudoModeResponseContext
                 - App\Tests\Behat\UserContext\UserResponseHeaderContext
                 - App\Tests\Behat\UserContext\TokenResponseContext
                 - App\Tests\Behat\HealthCheckContext\HealthCheckContext

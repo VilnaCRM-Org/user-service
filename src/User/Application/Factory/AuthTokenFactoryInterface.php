@@ -14,7 +14,7 @@ interface AuthTokenFactoryInterface
     /**
      * @return array<int|string|array<string>>
      *
-     * @psalm-return array{sub: string, iss: 'vilnacrm-user-service', aud: 'vilnacrm-api', exp: int, iat: int, nbf: int, jti: string, sid: string, roles: list{'ROLE_USER'}}
+     * @psalm-return array{sub: string, iss: non-empty-string, aud: non-empty-string, exp: int, iat: int, nbf: int, jti: string, sid: string, roles: list{'ROLE_USER'}}
      */
     public function buildJwtPayload(
         User $user,

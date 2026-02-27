@@ -11,12 +11,12 @@ final readonly class ApiRateLimitClientIdentityResolver
 {
     private const AUTH_COOKIE_NAME = '__Host-auth_token';
     private const EMAIL_KEY = 'email';
-    private const JWT_ISSUER = 'vilnacrm-user-service';
-    private const JWT_AUDIENCE = 'vilnacrm-api';
     private const PENDING_SESSION_ID_KEYS = ['pendingSessionId', 'pending_session_id'];
 
     public function __construct(
-        private ?JwtTokenDecoderInterface $jwtDecoder = null
+        private ?JwtTokenDecoderInterface $jwtDecoder = null,
+        private string $jwtIssuer = 'vilnacrm-user-service',
+        private string $jwtAudience = 'vilnacrm-api',
     ) {
     }
 
@@ -217,7 +217,7 @@ final readonly class ApiRateLimitClientIdentityResolver
      */
     private function hasExpectedIssuer(array $payload): bool
     {
-        return ($payload['iss'] ?? null) === self::JWT_ISSUER;
+        return ($payload['iss'] ?? null) === $this->jwtIssuer;
     }
 
     /**
@@ -228,9 +228,9 @@ final readonly class ApiRateLimitClientIdentityResolver
         $audience = $payload['aud'] ?? null;
 
         if (is_string($audience)) {
-            return $audience === self::JWT_AUDIENCE;
+            return $audience === $this->jwtAudience;
         }
 
-        return is_array($audience) && in_array(self::JWT_AUDIENCE, $audience, true);
+        return is_array($audience) && in_array($this->jwtAudience, $audience, true);
     }
 }

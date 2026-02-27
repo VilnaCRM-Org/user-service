@@ -32,6 +32,18 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
         $this->operation = $this->createMock(Operation::class);
     }
 
+    public function testConstructorDefinesExpectedDefaultCookieTtls(): void
+    {
+        $constructor = new \ReflectionMethod(
+            CompleteTwoFactorProcessor::class,
+            '__construct'
+        );
+        $parameters = $constructor->getParameters();
+
+        $this->assertSame(900, $parameters[2]->getDefaultValue());
+        $this->assertSame(2592000, $parameters[3]->getDefaultValue());
+    }
+
     public function testProcessReturnsTokensAndSetsCookieWithStandardTtl(): void
     {
         $ipAddress = $this->faker->ipv4();

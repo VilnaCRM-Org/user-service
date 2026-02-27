@@ -90,3 +90,23 @@ framework:
       limit: '%env(int:PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS)%'
       rate: { interval: '%env(string:PASSWORD_RESET_RATE_LIMIT_INTERVAL)%' }
       cache_pool: 'cache.app'
+    password_reset_confirm:
+      policy: 'sliding_window'
+      limit: '%env(int:PASSWORD_RESET_CONFIRM_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:PASSWORD_RESET_CONFIRM_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    recovery_codes:
+      policy: 'sliding_window'
+      limit: '%env(int:RECOVERY_CODES_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:RECOVERY_CODES_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    signout:
+      policy: 'sliding_window'
+      limit: '%env(int:SIGNOUT_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:SIGNOUT_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'
+    signout_all:
+      policy: 'sliding_window'
+      limit: '%env(int:SIGNOUT_ALL_RATE_LIMIT_MAX_REQUESTS)%'
+      interval: '%env(string:SIGNOUT_ALL_RATE_LIMIT_INTERVAL)%'
+      cache_pool: 'cache.app'

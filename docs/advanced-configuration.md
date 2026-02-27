@@ -63,11 +63,61 @@ The User Service utilizes environment variables for configuration to ensure that
 
 #### Security and Tokens
 
-- `CONFIRMATION_TOKEN_LENGTH`: The length of user confirmation tokens (default: 10).
+- `JWT_ISSUER`: Expected JWT issuer for first-party access tokens (default: `vilnacrm-user-service`).
+- `JWT_AUDIENCE`: Expected JWT audience for first-party access tokens (default: `vilnacrm-api`).
+- `AUTH_ACCESS_TOKEN_TTL_SECONDS`: Access token lifetime used by the sign-in flow (default: `900`).
+- `AUTH_STANDARD_SESSION_TTL_SECONDS`: Standard session TTL in seconds (default: `900`).
+- `AUTH_REMEMBER_ME_SESSION_TTL_SECONDS`: Remember-me session TTL in seconds (default: `2592000`).
+- `AUTH_STANDARD_COOKIE_MAX_AGE`: Standard auth cookie max-age in seconds (default: `900`).
+- `AUTH_REMEMBER_ME_COOKIE_MAX_AGE`: Remember-me auth cookie max-age in seconds (default: `2592000`).
+- `REQUEST_BODY_MAX_SIZE_BYTES`: Maximum accepted request body size in bytes (default: `65536`).
+- `CONFIRMATION_TOKEN_LENGTH`: The length of user confirmation tokens (default: 32).
 - `PASSWORD_RESET_TOKEN_LENGTH`: The length of password reset tokens (default: 32).
 - `PASSWORD_RESET_TOKEN_EXPIRATION_HOURS`: How long password reset tokens are valid in hours (default: 1).
 - `PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS`: Maximum password reset requests allowed within the rate limit interval (default: 1000).
 - `PASSWORD_RESET_RATE_LIMIT_INTERVAL`: The time window for password reset rate limiting (default: "1 hour").
+- `PASSWORD_RESET_CONFIRM_RATE_LIMIT_MAX_REQUESTS`: Maximum password reset confirmation requests allowed within the rate limit interval (default: 10).
+- `PASSWORD_RESET_CONFIRM_RATE_LIMIT_INTERVAL`: The time window for password reset confirmation rate limiting (default: "1 minute").
+- `GLOBAL_API_ANONYMOUS_RATE_LIMIT_MAX_REQUESTS`: Maximum anonymous API requests allowed per interval (default: 100).
+- `GLOBAL_API_ANONYMOUS_RATE_LIMIT_INTERVAL`: Time window for anonymous API rate limiting (default: "1 minute").
+- `GLOBAL_API_AUTHENTICATED_RATE_LIMIT_MAX_REQUESTS`: Maximum authenticated API requests allowed per interval (default: 300).
+- `GLOBAL_API_AUTHENTICATED_RATE_LIMIT_INTERVAL`: Time window for authenticated API rate limiting (default: "1 minute").
+- `REGISTRATION_RATE_LIMIT_MAX_REQUESTS`: Maximum registration requests allowed per interval (default: 5).
+- `REGISTRATION_RATE_LIMIT_INTERVAL`: Time window for registration rate limiting (default: "1 minute").
+- `OAUTH_TOKEN_RATE_LIMIT_MAX_REQUESTS`: Maximum token exchange requests allowed per interval (default: 10).
+- `OAUTH_TOKEN_RATE_LIMIT_INTERVAL`: Time window for token exchange rate limiting (default: "1 minute").
+- `SIGNIN_IP_RATE_LIMIT_MAX_REQUESTS`: Maximum sign-in attempts per IP per interval (default: 10).
+- `SIGNIN_IP_RATE_LIMIT_INTERVAL`: Time window for sign-in IP rate limiting (default: "1 minute").
+- `SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS`: Maximum sign-in attempts per email per interval (default: 5).
+- `SIGNIN_EMAIL_RATE_LIMIT_INTERVAL`: Time window for sign-in email rate limiting (default: "1 minute").
+- `TWOFA_VERIFICATION_USER_RATE_LIMIT_MAX_REQUESTS`: Maximum 2FA verification attempts per user per interval (default: 5).
+- `TWOFA_VERIFICATION_USER_RATE_LIMIT_INTERVAL`: Time window for 2FA verification user rate limiting (default: "1 minute").
+- `TWOFA_VERIFICATION_IP_RATE_LIMIT_MAX_REQUESTS`: Maximum 2FA verification attempts per IP per interval (default: 5).
+- `TWOFA_VERIFICATION_IP_RATE_LIMIT_INTERVAL`: Time window for 2FA verification IP rate limiting (default: "1 minute").
+- `TWOFA_SETUP_RATE_LIMIT_MAX_REQUESTS`: Maximum 2FA setup requests per user per interval (default: 5).
+- `TWOFA_SETUP_RATE_LIMIT_INTERVAL`: Time window for 2FA setup rate limiting (default: "1 minute").
+- `TWOFA_CONFIRM_RATE_LIMIT_MAX_REQUESTS`: Maximum 2FA confirmation requests per user per interval (default: 5).
+- `TWOFA_CONFIRM_RATE_LIMIT_INTERVAL`: Time window for 2FA confirmation rate limiting (default: "1 minute").
+- `TWOFA_DISABLE_RATE_LIMIT_MAX_REQUESTS`: Maximum 2FA disable requests per user per interval (default: 3).
+- `TWOFA_DISABLE_RATE_LIMIT_INTERVAL`: Time window for 2FA disable rate limiting (default: "1 minute").
+- `EMAIL_CONFIRMATION_RATE_LIMIT_MAX_REQUESTS`: Maximum email confirmation requests per interval (default: 10).
+- `EMAIL_CONFIRMATION_RATE_LIMIT_INTERVAL`: Time window for email confirmation rate limiting (default: "1 minute").
+- `USER_COLLECTION_RATE_LIMIT_MAX_REQUESTS`: Maximum user collection requests per interval (default: 30).
+- `USER_COLLECTION_RATE_LIMIT_INTERVAL`: Time window for user collection rate limiting (default: "1 minute").
+- `USER_UPDATE_RATE_LIMIT_MAX_REQUESTS`: Maximum user update requests per user per interval (default: 10).
+- `USER_UPDATE_RATE_LIMIT_INTERVAL`: Time window for user update rate limiting (default: "1 minute").
+- `USER_DELETE_RATE_LIMIT_MAX_REQUESTS`: Maximum user delete requests per user per interval (default: 3).
+- `USER_DELETE_RATE_LIMIT_INTERVAL`: Time window for user delete rate limiting (default: "1 minute").
+- `RESEND_CONFIRMATION_RATE_LIMIT_MAX_REQUESTS`: Maximum resend confirmation requests per interval (default: 3).
+- `RESEND_CONFIRMATION_RATE_LIMIT_INTERVAL`: Time window for resend confirmation rate limiting (default: "1 minute").
+- `RESEND_CONFIRMATION_TARGET_RATE_LIMIT_MAX_REQUESTS`: Maximum resend confirmation requests per target user per interval (default: 3).
+- `RESEND_CONFIRMATION_TARGET_RATE_LIMIT_INTERVAL`: Time window for resend confirmation target-user rate limiting (default: "1 minute").
+- `RECOVERY_CODES_RATE_LIMIT_MAX_REQUESTS`: Maximum recovery code regeneration requests per user per interval (default: 3).
+- `RECOVERY_CODES_RATE_LIMIT_INTERVAL`: Time window for recovery code regeneration rate limiting (default: "1 minute").
+- `SIGNOUT_RATE_LIMIT_MAX_REQUESTS`: Maximum sign-out requests per user per interval (default: 10).
+- `SIGNOUT_RATE_LIMIT_INTERVAL`: Time window for sign-out rate limiting (default: "1 minute").
+- `SIGNOUT_ALL_RATE_LIMIT_MAX_REQUESTS`: Maximum sign-out-all requests per user per interval (default: 5).
+- `SIGNOUT_ALL_RATE_LIMIT_INTERVAL`: Time window for sign-out-all rate limiting (default: "1 minute").
 
 #### CORS
 

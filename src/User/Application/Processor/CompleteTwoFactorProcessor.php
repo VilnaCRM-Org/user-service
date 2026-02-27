@@ -23,12 +23,12 @@ use Symfony\Component\HttpFoundation\Response;
 final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
 {
     private const AUTH_COOKIE_NAME = '__Host-auth_token';
-    private const COOKIE_MAX_AGE = 900;
-    private const REMEMBER_ME_COOKIE_MAX_AGE = 2592000;
 
     public function __construct(
         private CommandBusInterface $commandBus,
         private RequestStack $requestStack,
+        private int $standardCookieMaxAge = 900,
+        private int $rememberMeCookieMaxAge = 2592000,
     ) {
     }
 
@@ -102,7 +102,7 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
             return;
         }
 
-        $maxAge = $rememberMe ? self::REMEMBER_ME_COOKIE_MAX_AGE : self::COOKIE_MAX_AGE;
+        $maxAge = $rememberMe ? $this->rememberMeCookieMaxAge : $this->standardCookieMaxAge;
 
         $response->headers->setCookie(
             Cookie::create(

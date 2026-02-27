@@ -11,6 +11,8 @@ use Symfony\Component\Uid\Factory\UlidFactory;
 
 final readonly class RecoveryCodeGenerator implements RecoveryCodeGeneratorInterface
 {
+    private const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
     public function __construct(
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
         private UlidFactory $ulidFactory,
@@ -27,11 +29,13 @@ final readonly class RecoveryCodeGenerator implements RecoveryCodeGeneratorInter
         for ($generatedCodes = 0; $generatedCodes < RecoveryCode::COUNT; $generatedCodes++) {
             $plainCode = $this->generateCode();
             $codes[] = $plainCode;
-            $this->recoveryCodeRepository->save(new RecoveryCode(
-                (string) $this->ulidFactory->create(),
-                $user->getId(),
-                $plainCode
-            ));
+            $this->recoveryCodeRepository->save(
+                new RecoveryCode(
+                    (string) $this->ulidFactory->create(),
+                    $user->getId(),
+                    $plainCode
+                )
+            );
         }
 
         return $codes;
@@ -46,6 +50,13 @@ final readonly class RecoveryCodeGenerator implements RecoveryCodeGeneratorInter
 
     private function randomSegment(int $length): string
     {
-        return strtoupper(bin2hex(random_bytes(intdiv($length, 2))));
+        $segment = '';
+        $alphabetLength = strlen(self::ALPHABET);
+
+        for ($index = 0; $index < $length; $index++) {
+            $segment .= self::ALPHABET[random_int(0, $alphabetLength - 1)];
+        }
+
+        return $segment;
     }
 }

@@ -2,4 +2,4 @@ security:
   password_hashers:
     App\User\Domain\Entity\User:
       algorithm: bcrypt
-      cost: 4
+      cost: 12

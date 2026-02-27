@@ -11,13 +11,14 @@ use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationExc
 
 final readonly class JwtAccessTokenParser
 {
-    private const JWT_ISSUER = 'vilnacrm-user-service';
-    private const JWT_AUDIENCE = 'vilnacrm-api';
     private const JWT_ALGORITHM = 'RS256';
     private const JWT_HEADER_DEPTH_LIMIT = 4;
 
-    public function __construct(private JWTEncoderInterface $jwtEncoder)
-    {
+    public function __construct(
+        private JWTEncoderInterface $jwtEncoder,
+        private string $jwtIssuer = 'vilnacrm-user-service',
+        private string $jwtAudience = 'vilnacrm-api',
+    ) {
     }
 
     /**
@@ -120,7 +121,7 @@ final readonly class JwtAccessTokenParser
     private function validateIssuerAndAudience(array $payload): void
     {
         $issuer = $payload['iss'] ?? null;
-        if (!is_string($issuer) || $issuer !== self::JWT_ISSUER) {
+        if (!is_string($issuer) || $issuer !== $this->jwtIssuer) {
             throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
         }
 
@@ -136,7 +137,7 @@ final readonly class JwtAccessTokenParser
     {
         $audience = $payload['aud'] ?? null;
         if (is_string($audience)) {
-            return $audience === self::JWT_AUDIENCE;
+            return $audience === $this->jwtAudience;
         }
 
         if (!is_array($audience) || $audience === []) {
@@ -149,7 +150,7 @@ final readonly class JwtAccessTokenParser
             return false;
         }
 
-        return in_array(self::JWT_AUDIENCE, $audience, true);
+        return in_array($this->jwtAudience, $audience, true);
     }
 
     /**

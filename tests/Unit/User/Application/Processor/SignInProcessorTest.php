@@ -33,6 +33,15 @@ final class SignInProcessorTest extends UnitTestCase
         $this->operation = $this->createMock(Operation::class);
     }
 
+    public function testConstructorDefinesExpectedDefaultCookieTtls(): void
+    {
+        $constructor = new \ReflectionMethod(SignInProcessor::class, '__construct');
+        $parameters = $constructor->getParameters();
+
+        $this->assertSame(900, $parameters[2]->getDefaultValue());
+        $this->assertSame(2592000, $parameters[3]->getDefaultValue());
+    }
+
     public function testProcessReturnsTokensAndSetsStandardCookie(): void
     {
         $email = $this->faker->email();

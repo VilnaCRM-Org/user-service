@@ -77,8 +77,15 @@ services:
     autoconfigure: false
 
   App\Shared\Application\EventListener\RequestBodySizeLimitListener:
+    arguments:
+      $maxBodySizeBytes: '%env(int:REQUEST_BODY_MAX_SIZE_BYTES)%'
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 200 }
+
+  App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver:
+    arguments:
+      $jwtIssuer: '%env(string:JWT_ISSUER)%'
+      $jwtAudience: '%env(string:JWT_AUDIENCE)%'
 
   App\Shared\Application\EventListener\GraphQLBatchRejectListener:
     tags:
@@ -112,6 +119,10 @@ services:
         user_delete: '@limiter.user_delete'
         resend_confirmation: '@limiter.resend_confirmation'
         resend_confirmation_target: '@limiter.resend_confirmation_target'
+        password_reset_confirm: '@limiter.password_reset_confirm'
+        recovery_codes: '@limiter.recovery_codes'
+        signout: '@limiter.signout'
+        signout_all: '@limiter.signout_all'
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 120 }
 
@@ -243,6 +254,29 @@ services:
   App\User\Application\Factory\AuthTokenFactory:
     arguments:
       $refreshTokenTtlSpec: '%env(resolve:REFRESH_TOKEN_TTL)%'
+      $accessTokenTtlSeconds: '%env(int:AUTH_ACCESS_TOKEN_TTL_SECONDS)%'
+      $jwtIssuer: '%env(string:JWT_ISSUER)%'
+      $jwtAudience: '%env(string:JWT_AUDIENCE)%'
+
+  App\User\Application\Issuer\SessionIssuer:
+    arguments:
+      $standardSessionTtlSeconds: '%env(int:AUTH_STANDARD_SESSION_TTL_SECONDS)%'
+      $rememberMeSessionTtlSeconds: '%env(int:AUTH_REMEMBER_ME_SESSION_TTL_SECONDS)%'
+
+  App\User\Application\Processor\SignInProcessor:
+    arguments:
+      $standardCookieMaxAge: '%env(int:AUTH_STANDARD_COOKIE_MAX_AGE)%'
+      $rememberMeCookieMaxAge: '%env(int:AUTH_REMEMBER_ME_COOKIE_MAX_AGE)%'
+
+  App\User\Application\Processor\CompleteTwoFactorProcessor:
+    arguments:
+      $standardCookieMaxAge: '%env(int:AUTH_STANDARD_COOKIE_MAX_AGE)%'
+      $rememberMeCookieMaxAge: '%env(int:AUTH_REMEMBER_ME_COOKIE_MAX_AGE)%'
+
+  App\Shared\Infrastructure\Security\JwtAccessTokenParser:
+    arguments:
+      $jwtIssuer: '%env(string:JWT_ISSUER)%'
+      $jwtAudience: '%env(string:JWT_AUDIENCE)%'
 
   App\Shared\Infrastructure\Security\PublicAccessMatcher:
     arguments:

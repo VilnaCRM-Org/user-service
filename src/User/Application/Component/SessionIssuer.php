@@ -16,15 +16,14 @@ use Symfony\Component\Uid\Factory\UlidFactory;
 
 final readonly class SessionIssuer implements SessionIssuerInterface
 {
-    private const STANDARD_SESSION_TTL_SECONDS = 900;
-    private const REMEMBER_ME_SESSION_TTL_SECONDS = 2592000;
-
     public function __construct(
         private AuthSessionRepositoryInterface $authSessionRepository,
         private AuthRefreshTokenRepositoryInterface $authRefreshTokenRepository,
         private AccessTokenGeneratorInterface $accessTokenGenerator,
         private AuthTokenFactoryInterface $authTokenFactory,
         private UlidFactory $ulidFactory,
+        private int $standardSessionTtlSeconds = 900,
+        private int $rememberMeSessionTtlSeconds = 2592000,
     ) {
     }
 
@@ -63,8 +62,8 @@ final readonly class SessionIssuer implements SessionIssuerInterface
         DateTimeImmutable $issuedAt
     ): AuthSession {
         $ttlSeconds = $rememberMe
-            ? self::REMEMBER_ME_SESSION_TTL_SECONDS
-            : self::STANDARD_SESSION_TTL_SECONDS;
+            ? $this->rememberMeSessionTtlSeconds
+            : $this->standardSessionTtlSeconds;
 
         return new AuthSession(
             (string) $this->ulidFactory->create(),
