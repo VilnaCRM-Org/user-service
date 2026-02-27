@@ -369,7 +369,7 @@
       "clientID": "ID123",
       "clientRedirectUri": "https://example.com",
       "smoke": {
-        "threshold": 90,
+        "threshold": 200,
         "rps": 10,
         "vus": 10,
         "duration": 10

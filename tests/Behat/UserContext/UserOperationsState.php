@@ -43,6 +43,7 @@ final class UserOperationsState
             'storedAccessTokens' => [],
             'storedRefreshTokens' => [],
             'originHeader' => '',
+            'userAgentHeader' => '',
         ];
     }
 }

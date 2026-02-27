@@ -10,6 +10,7 @@ final class RecoveryCode
 {
     public const COUNT = 8;
     public const SEGMENT_LENGTH = 4;
+    private const LEGACY_HASH_ALGORITHM = 'sha256';
 
     private ?DateTimeImmutable $usedAt = null;
 
@@ -55,7 +56,12 @@ final class RecoveryCode
 
     public function matchesCode(string $plainCode): bool
     {
-        return hash_equals($this->codeHash, $this->hash($plainCode));
+        $normalizedCode = $this->normalizeCode($plainCode);
+        if ($this->isPasswordHash($this->codeHash)) {
+            return password_verify($normalizedCode, $this->codeHash);
+        }
+
+        return hash_equals($this->codeHash, $this->legacyHash($normalizedCode));
     }
 
     public static function isValidFormat(string $code): bool
@@ -66,6 +72,23 @@ final class RecoveryCode
 
     private function hash(string $value): string
     {
-        return hash('sha256', strtolower($value));
+        return password_hash($this->normalizeCode($value), PASSWORD_ARGON2ID);
+    }
+
+    private function legacyHash(string $value): string
+    {
+        return hash(self::LEGACY_HASH_ALGORITHM, $value);
+    }
+
+    private function normalizeCode(string $value): string
+    {
+        return strtolower($value);
+    }
+
+    private function isPasswordHash(string $value): bool
+    {
+        $info = password_get_info($value);
+
+        return (string) ($info['algoName'] ?? 'unknown') !== 'unknown';
     }
 }

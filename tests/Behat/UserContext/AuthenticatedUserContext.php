@@ -17,6 +17,8 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 final class AuthenticatedUserContext implements Context
 {
+    private const DEFAULT_PASSWORD = 'passWORD1';
+
     private Generator $faker;
 
     public function __construct(
@@ -34,24 +36,6 @@ final class AuthenticatedUserContext implements Context
         BeforeScenarioScope $scope
     ): void {
         $this->auth->tokenStorage->setToken(null);
-    }
-
-    /**
-     * @Given I am authenticated via bearer token as user :email
-     */
-    public function iAmAuthenticatedViaBearerTokenAsUser(
-        string $email
-    ): void {
-        $this->authenticateAsUserEmail($email);
-    }
-
-    /**
-     * @Given I have a valid Bearer token for user :email
-     */
-    public function iHaveAValidBearerTokenForUser(
-        string $email
-    ): void {
-        $this->authenticateAsUserEmail($email);
     }
 
     /**
@@ -85,6 +69,8 @@ final class AuthenticatedUserContext implements Context
     }
 
     /**
+     * @Given I am authenticated via bearer token as user :email
+     * @Given I have a valid Bearer token for user :email
      * @Given I am authenticated as user :email
      */
     public function iAmAuthenticatedAsUser(string $email): void
@@ -346,22 +332,47 @@ final class AuthenticatedUserContext implements Context
         $existingUser = $this->userManagement->userRepository->findByEmail($email);
         if ($existingUser !== null) {
             UserContext::registerUserIdByEmail($email, $existingUser->getId());
-            if ($forcedUserId !== null && $existingUser->getId() !== $forcedUserId) {
-                throw new \RuntimeException("User {$email} id mismatch.");
-            }
+            $this->assertForcedUserIdMatches($existingUser, $email, $forcedUserId);
+
             return $existingUser;
         }
-        $password = $this->faker->password;
+
+        return $this->createAuthenticationUser($email, $forcedUserId);
+    }
+
+    private function assertForcedUserIdMatches(
+        User $user,
+        string $email,
+        ?string $forcedUserId
+    ): void {
+        if ($forcedUserId === null || $user->getId() === $forcedUserId) {
+            return;
+        }
+
+        throw new \RuntimeException("User {$email} id mismatch.");
+    }
+
+    private function createAuthenticationUser(
+        string $email,
+        ?string $forcedUserId
+    ): User {
+        $password = $forcedUserId !== null ? self::DEFAULT_PASSWORD : $this->faker->password;
         $uuid = $this->userManagement->uuidFactory->create();
         $userId = $forcedUserId !== null
             ? $this->userManagement->transformer->transformFromString($forcedUserId)
             : $this->userManagement->transformer->transformFromSymfonyUuid($uuid);
-        $factory = $this->userManagement->userFactory;
-        $user = $factory->create($email, $this->faker->name, $password, $userId);
+        $user = $this->userManagement->userFactory->create(
+            $email,
+            $this->faker->name,
+            $password,
+            $userId
+        );
         $hasher = $this->userManagement->hasherFactory->getPasswordHasher($user::class);
         $user->setPassword($hasher->hash($password, null));
+
         $this->userManagement->userRepository->save($user);
         UserContext::registerUserIdByEmail($email, $user->getId());
+
         return $user;
     }
 

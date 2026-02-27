@@ -6,6 +6,8 @@ namespace App\Shared\Application\EventListener;
 
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use LogicException;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -20,6 +22,7 @@ final readonly class ApiRateLimitListener
     public function __construct(
         private array $limiterFactories,
         private ApiRateLimitRequestResolver $requestMatcher = new ApiRateLimitRequestResolver(),
+        private LoggerInterface $logger = new NullLogger(),
     ) {
     }
 
@@ -58,6 +61,16 @@ final readonly class ApiRateLimitListener
         if ($rateLimit->isAccepted()) {
             return true;
         }
+
+        $request = $event->getRequest();
+        $this->logger->warning('Rate limit exceeded', [
+            'event' => 'api.rate_limit.exceeded',
+            'endpoint' => $request->getPathInfo(),
+            'method' => $request->getMethod(),
+            'ip' => $request->getClientIp() ?? '0.0.0.0',
+            'limiter' => $limiterName,
+            'timestamp' => time(),
+        ]);
 
         $event->setResponse($this->buildTooManyRequestsResponse($rateLimit));
 

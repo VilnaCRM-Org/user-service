@@ -44,15 +44,15 @@ Feature: Audit Logging for Authentication Events
     And signing in with email "audit-2fa-fail@test.com" and password "passWORD1"
     And POST request is send to "/api/signin"
     And I store the pending_session_id from the response
-    And completing 2FA with the stored pending_session_id and code "000000"
+    And for audit, completing 2FA with the stored pending_session_id and code "000000"
     When POST request is send to "/api/signin/2fa"
     Then the response status code should be 401
     And a WARNING-level audit log should be emitted for "TwoFactorFailed"
 
   Scenario: 2FA enabled emits audit log
     Given I am authenticated as user "audit-2fa-enable@test.com"
-    And I have completed 2FA setup
-    And confirming 2FA with a valid TOTP code
+    And for audit I have completed 2FA setup
+    And for audit confirming 2FA with a valid TOTP code
     When POST request is send to "/api/users/2fa/confirm"
     Then the response status code should be 200
     And an INFO-level audit log should be emitted for "TwoFactorEnabled"
@@ -61,7 +61,7 @@ Feature: Audit Logging for Authentication Events
   Scenario: 2FA disabled emits audit log
     Given I am authenticated as user "audit-2fa-disable@test.com"
     And user "audit-2fa-disable@test.com" has 2FA enabled
-    And disabling 2FA with a valid TOTP code
+    And for audit disabling 2FA with a valid TOTP code
     When POST request is send to "/api/users/2fa/disable"
     Then the response status code should be 204
     And an INFO-level audit log should be emitted for "TwoFactorDisabled"
@@ -102,11 +102,11 @@ Feature: Audit Logging for Authentication Events
 
   Scenario: Recovery code usage emits audit log with remaining count
     Given user with email "audit-recovery@test.com" and password "passWORD1" exists
-    And user with email "audit-recovery@test.com" has 2FA enabled with recovery codes
+    And for audit user with email "audit-recovery@test.com" has 2FA enabled with recovery codes
     And signing in with email "audit-recovery@test.com" and password "passWORD1"
     And POST request is send to "/api/signin"
     And I store the pending_session_id from the response
-    And completing 2FA with the stored pending_session_id and a valid recovery code
+    And for audit completing 2FA with the stored pending_session_id and a valid recovery code
     When POST request is send to "/api/signin/2fa"
     Then the response status code should be 200
     And a WARNING-level audit log should be emitted for "RecoveryCodeUsed"
@@ -124,8 +124,8 @@ Feature: Audit Logging for Authentication Events
 
   Scenario: Password change session revocation emits audit log
     Given user with id "8be90127-9840-4235-a6da-39b8debfb295" and password "passWORD1" exists
-    And user "8be90127-9840-4235-a6da-39b8debfb295" has 2 active sessions
-    And I am authenticated on session 1 for user "8be90127-9840-4235-a6da-39b8debfb295"
+    And for audit user "8be90127-9840-4235-a6da-39b8debfb295" has 2 active sessions
+    And for audit I am authenticated on session 1 for user "8be90127-9840-4235-a6da-39b8debfb295"
     And updating user with email "audit-pwchange@test.com", initials "name", oldPassword "passWORD1", newPassword "passWORD2"
     When PATCH request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb295"
     Then the response status code should be 200
@@ -133,10 +133,10 @@ Feature: Audit Logging for Authentication Events
     And the audit log should contain "reason" with value "password_change"
 
   Scenario: 2FA enable session revocation emits audit log
-    Given user "audit-2fa-revoke@test.com" has 3 active sessions
-    And I am authenticated as user "audit-2fa-revoke@test.com" on device 1
-    And I have completed 2FA setup
-    And confirming 2FA with a valid TOTP code
+    Given for audit user "audit-2fa-revoke@test.com" has 3 active sessions
+    And for audit I am authenticated as user "audit-2fa-revoke@test.com" on device 1
+    And for audit I have completed 2FA setup
+    And for audit confirming 2FA with a valid TOTP code
     When POST request is send to "/api/users/2fa/confirm"
     Then the response status code should be 200
     And an INFO-level audit log should be emitted for "AllSessionsRevoked"
@@ -144,21 +144,21 @@ Feature: Audit Logging for Authentication Events
 
   Scenario: 2FA sign-in with recovery code emits correct method
     Given user with email "audit-recovery-method@test.com" and password "passWORD1" exists
-    And user with email "audit-recovery-method@test.com" has 2FA enabled with recovery codes
+    And for audit user with email "audit-recovery-method@test.com" has 2FA enabled with recovery codes
     And signing in with email "audit-recovery-method@test.com" and password "passWORD1"
     And POST request is send to "/api/signin"
     And I store the pending_session_id from the response
-    And completing 2FA with the stored pending_session_id and a valid recovery code
+    And for audit completing 2FA with the stored pending_session_id and a valid recovery code
     When POST request is send to "/api/signin/2fa"
     Then the response status code should be 200
     And an INFO-level audit log should be emitted for "TwoFactorCompleted"
-    And the audit log should contain "method" with value "recovery"
+    And the audit log should contain "method" with value "recovery_code"
 
   # Audit log: User-Agent tracking (ADR-01)
 
   Scenario: Successful sign-in audit log includes User-Agent
     Given user with email "audit-ua@test.com" and password "passWORD1" exists
-    And signing in with email "audit-ua@test.com" and password "passWORD1" with User-Agent "TestBrowser/1.0"
+    And for audit signing in with email "audit-ua@test.com" and password "passWORD1" with User-Agent "TestBrowser/1.0"
     When POST request is send to "/api/signin"
     Then the response status code should be 200
     And an INFO-level audit log should be emitted for "UserSignedIn"
@@ -166,7 +166,7 @@ Feature: Audit Logging for Authentication Events
 
   Scenario: Failed sign-in audit log includes User-Agent
     Given user with email "audit-ua-fail@test.com" and password "passWORD1" exists
-    And signing in with email "audit-ua-fail@test.com" and password "wrongPassword1" with User-Agent "TestBrowser/1.0"
+    And for audit signing in with email "audit-ua-fail@test.com" and password "wrongPassword1" with User-Agent "TestBrowser/1.0"
     When POST request is send to "/api/signin"
     Then the response status code should be 401
     And a WARNING-level audit log should be emitted for "SignInFailed"
@@ -174,7 +174,7 @@ Feature: Audit Logging for Authentication Events
 
   Scenario: Audit log with missing User-Agent header still succeeds
     Given user with email "audit-no-ua@test.com" and password "passWORD1" exists
-    And signing in with email "audit-no-ua@test.com" and password "passWORD1" without User-Agent header
+    And for audit signing in with email "audit-no-ua@test.com" and password "passWORD1" without User-Agent header
     When POST request is send to "/api/signin"
     Then the response status code should be 200
     And an INFO-level audit log should be emitted for "UserSignedIn"

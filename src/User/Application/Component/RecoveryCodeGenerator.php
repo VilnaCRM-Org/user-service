@@ -11,9 +11,6 @@ use Symfony\Component\Uid\Factory\UlidFactory;
 
 final readonly class RecoveryCodeGenerator implements RecoveryCodeGeneratorInterface
 {
-    private const RECOVERY_CODE_COUNT = 8;
-    private const RECOVERY_CODE_SEGMENT_LENGTH = 4;
-
     public function __construct(
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
         private UlidFactory $ulidFactory,
@@ -27,7 +24,7 @@ final readonly class RecoveryCodeGenerator implements RecoveryCodeGeneratorInter
     public function generateAndStore(User $user): array
     {
         $codes = [];
-        for ($i = 0; $i < self::RECOVERY_CODE_COUNT; $i++) {
+        for ($generatedCodes = 0; $generatedCodes < RecoveryCode::COUNT; $generatedCodes++) {
             $plainCode = $this->generateCode();
             $codes[] = $plainCode;
             $this->recoveryCodeRepository->save(new RecoveryCode(
@@ -42,9 +39,9 @@ final readonly class RecoveryCodeGenerator implements RecoveryCodeGeneratorInter
 
     private function generateCode(): string
     {
-        return $this->randomSegment(self::RECOVERY_CODE_SEGMENT_LENGTH)
+        return $this->randomSegment(RecoveryCode::SEGMENT_LENGTH)
             . '-'
-            . $this->randomSegment(self::RECOVERY_CODE_SEGMENT_LENGTH);
+            . $this->randomSegment(RecoveryCode::SEGMENT_LENGTH);
     }
 
     private function randomSegment(int $length): string

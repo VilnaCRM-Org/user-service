@@ -28,5 +28,12 @@ services:
   App\Tests\Shared\Auth\Factory\TestAccessTokenFactory:
     public: true
 
+  App\Tests\Behat\Support\RecordingLogger:
+    decorates: monolog.logger
+    arguments:
+      $innerLogger: '@App\Tests\Behat\Support\RecordingLogger.inner'
+    public: true
+
   App\Tests\Behat\:
     resource: '../tests/Behat/*'
+    exclude: '../tests/Behat/Support/*'

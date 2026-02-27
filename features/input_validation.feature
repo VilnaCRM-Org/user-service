@@ -111,7 +111,7 @@ Feature: Input Validation for Authentication Endpoints
     And I store the pending_session_id from the response
     And completing 2FA with the stored pending_session_id and code "abcdef"
     When POST request is send to "/api/signin/2fa"
-    Then the response status code should be 401
+    Then the response status code should be 422
 
   Scenario: 2FA completion with very long code is handled gracefully
     Given completing 2FA with pending_session_id "some-session" and a code of 10000 characters

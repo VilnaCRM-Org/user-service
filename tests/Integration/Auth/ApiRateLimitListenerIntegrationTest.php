@@ -36,14 +36,22 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
 
     public function testGlobalAnonymousLimiterReturns429WithRetryAfterAndProblemJson(): void
     {
-        $this->exhaustLimiter('global_api_anonymous', 'ip:127.0.0.1', 100);
+        $this->exhaustLimiter(
+            'global_api_anonymous',
+            'ip:127.0.0.1',
+            $this->resolveLimit('GLOBAL_API_ANONYMOUS_RATE_LIMIT_MAX_REQUESTS', 100)
+        );
         $response = $this->handleJsonRequest('/api/health', Request::METHOD_GET);
         $this->assertRateLimitResponse($response);
     }
 
     public function testRegistrationLimiterReturns429WithRetryAfterAndProblemJson(): void
     {
-        $this->exhaustLimiter('registration', 'ip:127.0.0.1', 5);
+        $this->exhaustLimiter(
+            'registration',
+            'ip:127.0.0.1',
+            $this->resolveLimit('REGISTRATION_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
         $content = json_encode([
             'email' => $this->faker->safeEmail(),
             'initials' => $this->faker->name(),
@@ -55,7 +63,11 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
 
     public function testSignInIpLimiterReturns429WithRetryAfterAndProblemJson(): void
     {
-        $this->exhaustLimiter('signin_ip', 'ip:127.0.0.1', 10);
+        $this->exhaustLimiter(
+            'signin_ip',
+            'ip:127.0.0.1',
+            $this->resolveLimit('SIGNIN_IP_RATE_LIMIT_MAX_REQUESTS', 10)
+        );
         $content = json_encode([
             'email' => $this->faker->safeEmail(),
             'password' => 'passWORD1',
@@ -67,7 +79,11 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
     public function testSignInEmailLimiterReturns429WithRetryAfterAndProblemJson(): void
     {
         $email = 'signin-email-limit@test.com';
-        $this->exhaustLimiter('signin_email', sprintf('email:%s', $email), 5);
+        $this->exhaustLimiter(
+            'signin_email',
+            sprintf('email:%s', $email),
+            $this->resolveLimit('SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
         $content = json_encode([
             'email' => $email,
             'password' => 'passWORD1',
@@ -79,7 +95,11 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
     public function testTwoFactorSetupLimiterUsesJwtSubjectAndReturns429(): void
     {
         $userId = '8be90127-9840-4235-a6da-39b8debfb260';
-        $this->exhaustLimiter('twofa_setup', sprintf('user:%s', $userId), 5);
+        $this->exhaustLimiter(
+            'twofa_setup',
+            sprintf('user:%s', $userId),
+            $this->resolveLimit('TWOFA_SETUP_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
         $response = $this->handleJsonRequest(
             '/api/users/2fa/setup',
             Request::METHOD_POST,
@@ -94,8 +114,16 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
         $userId = '8be90127-9840-4235-a6da-39b8debfb261';
         $pendingSessionId = (string) $this->container->get(UlidFactory::class)->create();
         $this->savePendingTwoFactor($pendingSessionId, $userId);
-        $this->exhaustLimiter('twofa_verification_user', sprintf('user:%s', $userId), 5);
-        $this->exhaustLimiter('twofa_verification_ip', 'ip:127.0.0.1', 5);
+        $this->exhaustLimiter(
+            'twofa_verification_user',
+            sprintf('user:%s', $userId),
+            $this->resolveLimit('TWOFA_VERIFICATION_USER_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
+        $this->exhaustLimiter(
+            'twofa_verification_ip',
+            'ip:127.0.0.1',
+            $this->resolveLimit('TWOFA_VERIFICATION_IP_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
         $content = json_encode([
             'pendingSessionId' => $pendingSessionId,
             'twoFactorCode' => '123456',
@@ -142,6 +170,18 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
         $this->assertInstanceOf(RateLimiterFactory::class, $factory);
 
         $factory->create($key)->consume($tokens);
+    }
+
+    private function resolveLimit(string $envKey, int $fallback): int
+    {
+        $rawValue = getenv($envKey);
+        if (!is_string($rawValue)) {
+            return $fallback;
+        }
+
+        $resolved = (int) trim($rawValue);
+
+        return $resolved > 0 ? $resolved : $fallback;
     }
 
     private function assertRateLimitResponse(Response $response): void

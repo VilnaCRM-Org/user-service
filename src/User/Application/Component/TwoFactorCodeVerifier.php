@@ -12,6 +12,8 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 final readonly class TwoFactorCodeVerifier implements TwoFactorCodeVerifierInterface
 {
+    private const RECOVERY_CODE_PATTERN = '/^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$/';
+
     public function __construct(
         private TOTPVerifierInterface $totpVerifier,
         private TwoFactorSecretEncryptorInterface $encryptor,
@@ -119,6 +121,6 @@ final readonly class TwoFactorCodeVerifier implements TwoFactorCodeVerifierInter
 
     private function isRecoveryCode(string $code): bool
     {
-        return preg_match('/^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$/', $code) === 1;
+        return preg_match(self::RECOVERY_CODE_PATTERN, $code) === 1;
     }
 }

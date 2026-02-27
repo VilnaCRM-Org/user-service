@@ -10,7 +10,7 @@ use DateTimeImmutable;
 
 final class RecoveryCodeTest extends UnitTestCase
 {
-    public function testConstructorStoresCodeAsSha256Hash(): void
+    public function testConstructorStoresCodeAsPasswordHash(): void
     {
         $plainCode = strtolower($this->faker->bothify('????-????'));
         $id = $this->faker->uuid();
@@ -25,7 +25,8 @@ final class RecoveryCodeTest extends UnitTestCase
         $this->assertSame($id, $recoveryCode->getId());
         $this->assertSame($userId, $recoveryCode->getUserId());
         $this->assertNotSame($plainCode, $recoveryCode->getCodeHash());
-        $this->assertSame(hash('sha256', strtolower($plainCode)), $recoveryCode->getCodeHash());
+        $hashInfo = password_get_info($recoveryCode->getCodeHash());
+        $this->assertSame('argon2id', (string) $hashInfo['algoName']);
         $this->assertTrue($recoveryCode->matchesCode($plainCode));
         $this->assertFalse(
             $recoveryCode->matchesCode(strtolower($this->faker->bothify('????-????')))
@@ -45,6 +46,22 @@ final class RecoveryCodeTest extends UnitTestCase
 
         $this->assertTrue($recoveryCode->matchesCode($upperCode));
         $this->assertTrue($recoveryCode->matchesCode(strtolower($upperCode)));
+    }
+
+    public function testMatchesCodeSupportsLegacySha256Hashes(): void
+    {
+        $plainCode = strtoupper($this->faker->bothify('????-####'));
+        $recoveryCode = new RecoveryCode(
+            $this->faker->uuid(),
+            $this->faker->uuid(),
+            $plainCode
+        );
+
+        $reflection = new \ReflectionProperty($recoveryCode, 'codeHash');
+        $reflection->setValue($recoveryCode, hash('sha256', strtolower($plainCode)));
+
+        $this->assertTrue($recoveryCode->matchesCode($plainCode));
+        $this->assertFalse($recoveryCode->matchesCode('ZZZZ-9999'));
     }
 
     public function testMarkAsUsedStoresTimestamp(): void

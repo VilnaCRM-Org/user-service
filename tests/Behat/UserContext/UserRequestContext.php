@@ -280,6 +280,11 @@ final class UserRequestContext implements Context
             'HTTP_ACCEPT_LANGUAGE' => $this->state->language,
         ];
 
+        $userAgent = $this->state->userAgentHeader;
+        if (is_string($userAgent) && $userAgent !== '') {
+            $headers['HTTP_USER_AGENT'] = $userAgent;
+        }
+
         $this->appendAuthorizationHeader($headers);
         $this->appendAuthCookieHeader($headers);
         $this->appendOriginHeader($headers);
