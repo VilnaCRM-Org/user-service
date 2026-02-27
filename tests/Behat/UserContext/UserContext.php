@@ -23,6 +23,7 @@ final class UserContext implements Context
 
     public function __construct(
         private CacheItemPoolInterface $cachePool,
+        private CacheItemPoolInterface $rateLimiterCachePool,
         private readonly UserContextUserManagementServices $userManagement,
     ) {
         $this->faker = Factory::create();
@@ -34,6 +35,7 @@ final class UserContext implements Context
     public function clearCacheBeforeScenario(BeforeScenarioScope $scope): void
     {
         $this->cachePool->clear();
+        $this->rateLimiterCachePool->clear();
     }
 
     /**

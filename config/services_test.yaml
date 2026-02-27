@@ -10,6 +10,7 @@ services:
   App\Tests\Behat\UserContext\UserContext:
     arguments:
       $cachePool: '@cache.user'
+      $rateLimiterCachePool: '@cache.app'
 
   # Use synchronous event bus for integration tests
   # This ensures events are processed immediately during tests
