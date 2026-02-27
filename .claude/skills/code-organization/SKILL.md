@@ -467,9 +467,9 @@ CACHE_USER_BY_EMAIL_TTL=300
 
 ```yaml
 App\User\Infrastructure\Repository\CachedUserRepository:
-    arguments:
-        $ttlById: '%env(int:CACHE_USER_BY_ID_TTL)%'
-        $ttlByEmail: '%env(int:CACHE_USER_BY_EMAIL_TTL)%'
+  arguments:
+    $ttlById: '%env(int:CACHE_USER_BY_ID_TTL)%'
+    $ttlByEmail: '%env(int:CACHE_USER_BY_EMAIL_TTL)%'
 ```
 
 **Step 3**: Replace constant with constructor parameter
@@ -497,13 +497,13 @@ final readonly class CachedUserRepository
 
 ### Common Extraction Candidates
 
-| Pattern in Source                          | Extract To `.env`                    |
-| ----------------------------------------- | ------------------------------------ |
-| `private const TTL_* = <seconds>`         | `CACHE_*_TTL=<seconds>`             |
-| `private const EXPIRES_AFTER_* = <value>` | `TOKEN_EXPIRATION_SECONDS=<value>`   |
-| `private const MAX_ATTEMPTS = <n>`        | `*_MAX_ATTEMPTS=<n>`                |
-| `private const BATCH_SIZE = <n>`          | `*_BATCH_SIZE=<n>`                  |
-| `private const DEFAULT_*_SECONDS = <n>`   | `*_SECONDS=<n>`                     |
+| Pattern in Source                         | Extract To `.env`                      |
+| ----------------------------------------- | -------------------------------------- |
+| `private const TTL_* = <seconds>`         | `CACHE_*_TTL=<seconds>`                |
+| `private const EXPIRES_AFTER_* = <value>` | `TOKEN_EXPIRATION_SECONDS=<value>`     |
+| `private const MAX_ATTEMPTS = <n>`        | `*_MAX_ATTEMPTS=<n>`                   |
+| `private const BATCH_SIZE = <n>`          | `*_BATCH_SIZE=<n>`                     |
+| `private const DEFAULT_*_SECONDS = <n>`   | `*_SECONDS=<n>`                        |
 | Constructor default `= 900`               | Remove default, bind via services.yaml |
 
 ### Verification After Extraction
@@ -520,13 +520,13 @@ make ci                  # Full validation
 
 When `make ci` fails, consult this skill if the failure involves:
 
-| CI Failure Indicator                    | Code Organization Fix                              |
-| --------------------------------------- | -------------------------------------------------- |
-| Class not found / namespace mismatch    | Verify namespace matches directory structure        |
-| Deptrac violation after moving class    | Check layer placement (Domain/Application/Infra)   |
-| PHPInsights architecture score drop     | Verify "Directory X contains ONLY class type X"    |
-| Psalm type errors after refactoring     | Check that imports and namespaces were all updated  |
-| Test failures after class move          | Move test file too, update test namespace + imports |
+| CI Failure Indicator                 | Code Organization Fix                               |
+| ------------------------------------ | --------------------------------------------------- |
+| Class not found / namespace mismatch | Verify namespace matches directory structure        |
+| Deptrac violation after moving class | Check layer placement (Domain/Application/Infra)    |
+| PHPInsights architecture score drop  | Verify "Directory X contains ONLY class type X"     |
+| Psalm type errors after refactoring  | Check that imports and namespaces were all updated  |
+| Test failures after class move       | Move test file too, update test namespace + imports |
 
 ### Refactoring Checklist (Before Running CI)
 

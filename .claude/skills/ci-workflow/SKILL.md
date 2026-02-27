@@ -63,8 +63,8 @@ Identify failing check from output and apply fix:
 | Quality metrics | `make phpinsights` | Reduce complexity, fix architecture | [complexity-management](../complexity-management/SKILL.md) |
 | Architecture    | `make deptrac`     | Fix layer boundary violations       | [deptrac-fixer](../deptrac-fixer/SKILL.md)                 |
 | Organization    | `make psalm`       | Fix naming, directory placement     | [code-organization](../code-organization/SKILL.md)         |
-| Tests           | `make unit-tests`  | Debug failing tests                 | [testing-workflow](../testing-workflow/SKILL.md)            |
-| Mutations       | `make infection`   | Add missing test cases              | [testing-workflow](../testing-workflow/SKILL.md)            |
+| Tests           | `make unit-tests`  | Debug failing tests                 | [testing-workflow](../testing-workflow/SKILL.md)           |
+| Mutations       | `make infection`   | Add missing test cases              | [testing-workflow](../testing-workflow/SKILL.md)           |
 
 **Refactoring during fixes**: If CI failures reveal structural issues (wrong directory, vague names, hardcoded config), consult the [code-organization](../code-organization/SKILL.md) skill before applying fixes.
 

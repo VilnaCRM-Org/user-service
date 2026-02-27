@@ -136,16 +136,16 @@ Complex skills have multi-file structure:
 
 ### 🏗️ Architecture & Quality Skills
 
-| Skill                        | File                                     | When to Use                                            |
-| ---------------------------- | ---------------------------------------- | ------------------------------------------------------ |
-| **Implementing DDD**         | `implementing-ddd-architecture/SKILL.md` | Create entities, value objects, aggregates, CQRS       |
-| **Deptrac Fixer**            | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations                  |
-| **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds               |
-| **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code                   |
-| **OpenAPI Development**      | `openapi-development/SKILL.md`           | OpenAPI factories, sanitizers, augmenters & validation |
+| Skill                        | File                                     | When to Use                                                                |
+| ---------------------------- | ---------------------------------------- | -------------------------------------------------------------------------- |
+| **Implementing DDD**         | `implementing-ddd-architecture/SKILL.md` | Create entities, value objects, aggregates, CQRS                           |
+| **Deptrac Fixer**            | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations                                      |
+| **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds                                   |
+| **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code                                       |
+| **OpenAPI Development**      | `openapi-development/SKILL.md`           | OpenAPI factories, sanitizers, augmenters & validation                     |
 | **Code Organization**        | `code-organization/SKILL.md`             | Placement, naming, boundaries, type safety, config extraction, refactoring |
-| **Query Performance**        | `query-performance-analysis/SKILL.md`    | N+1 detection, EXPLAIN analysis, indexing              |
-| **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl       |
+| **Query Performance**        | `query-performance-analysis/SKILL.md`    | N+1 detection, EXPLAIN analysis, indexing                                  |
+| **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl                           |
 
 ### 💾 Database & Documentation Skills
 
