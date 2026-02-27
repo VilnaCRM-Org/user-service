@@ -12,7 +12,7 @@
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 150,
+        "threshold": 250,
         "rps": 10,
         "vus": 10,
         "duration": 10
@@ -52,7 +52,7 @@
       "usersToGetInOneRequest": 50,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 150,
+        "threshold": 250,
         "rps": 10,
         "vus": 10,
         "duration": 10
@@ -131,7 +131,7 @@
       "teardownTimeoutInMinutes": 30,
       "batchSize": 10,
       "smoke": {
-        "threshold": 4500,
+        "threshold": 6000,
         "rps": 10,
         "vus": 10,
         "duration": 10
@@ -287,7 +287,7 @@
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 120,
+        "threshold": 240,
         "rps": 10,
         "vus": 10,
         "duration": 10
@@ -369,7 +369,7 @@
       "clientID": "ID123",
       "clientRedirectUri": "https://example.com",
       "smoke": {
-        "threshold": 200,
+        "threshold": 350,
         "rps": 10,
         "vus": 10,
         "duration": 10
@@ -408,7 +408,7 @@
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 350,
+        "threshold": 700,
         "rps": 5,
         "vus": 5,
         "duration": 10
@@ -447,7 +447,7 @@
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 180,
+        "threshold": 350,
         "rps": 10,
         "vus": 10,
         "duration": 10
@@ -487,7 +487,7 @@
       "usersToGetInOneRequest": 50,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 180,
+        "threshold": 350,
         "rps": 10,
         "vus": 10,
         "duration": 10
@@ -643,7 +643,7 @@
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 150,
+        "threshold": 300,
         "rps": 10,
         "vus": 10,
         "duration": 10
