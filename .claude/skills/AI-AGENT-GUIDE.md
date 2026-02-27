@@ -49,6 +49,13 @@ Quick Decision Tree:
 │   ├─ Add business metrics → observability-instrumentation
 │   └─ Fix file placement / boundaries → code-organization
 │
+├─ Refactor existing code
+│   ├─ Move class / rename / restructure → code-organization
+│   ├─ Hardcoded config to .env → code-organization
+│   ├─ Reduce complexity → complexity-management
+│   ├─ Fix architecture boundaries → deptrac-fixer
+│   └─ Improve testability → testing-workflow
+│
 ├─ Review/validate work
 │   ├─ Before committing → ci-workflow
 │   ├─ PR feedback → code-review
@@ -136,7 +143,7 @@ Complex skills have multi-file structure:
 | **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds               |
 | **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code                   |
 | **OpenAPI Development**      | `openapi-development/SKILL.md`           | OpenAPI factories, sanitizers, augmenters & validation |
-| **Code Organization**        | `code-organization/SKILL.md`             | Placement, naming, boundaries, and type safety         |
+| **Code Organization**        | `code-organization/SKILL.md`             | Placement, naming, boundaries, type safety, config extraction, refactoring |
 | **Query Performance**        | `query-performance-analysis/SKILL.md`    | N+1 detection, EXPLAIN analysis, indexing              |
 | **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl       |
 
@@ -194,6 +201,17 @@ Complex skills have multi-file structure:
 2. **Read**: `.claude/skills/testing-workflow/SKILL.md`
 3. **Execute**: Run appropriate test commands (`make unit-tests`, `make integration-tests`, etc.)
 4. **Debug failures**: Follow troubleshooting steps in the skill file
+
+### Example 4: User asks to "refactor code" or "extract hardcoded configs"
+
+**Your workflow:**
+
+1. **Identify skill**: `code-organization`
+2. **Read**: `.claude/skills/code-organization/SKILL.md`
+3. **For structural refactoring**: Follow directory type classification and refactoring checklist
+4. **For config extraction**: Follow the "Hardcoded Configuration Values → `.env` Extraction" section
+5. **Validate**: Run `make phpcsfixer && make psalm && make deptrac && make unit-tests`
+6. **If CI fails after refactoring**: Consult the "CI Integration: When CI Fails" section in code-organization
 
 ## Key Differences from Claude Code
 
@@ -260,11 +278,12 @@ Never normalize "merge with red CI" as a general workflow. It is a human excepti
 
 ### Fixing Quality Issues
 
-1. Identify issue type (Deptrac? Complexity? Tests?)
+1. Identify issue type (Deptrac? Complexity? Tests? Naming? Hardcoded config?)
 2. Read `SKILL-DECISION-GUIDE.md` to find the right skill
 3. Read the specific skill file
 4. Follow fix instructions
-5. Run `make ci` to verify
+5. If refactoring is needed, also consult `code-organization/SKILL.md`
+6. Run `make ci` to verify
 
 ## File Structure Reference
 
