@@ -28,6 +28,7 @@ abstract class IntegrationTestCase extends KernelTestCase
         parent::setUp();
 
         $this->container = $this->getContainer();
+        $this->container->get('mailer.message_logger_listener')->reset();
 
         $this->faker = Factory::create();
     }
