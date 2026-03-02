@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
 use App\User\Application\Command\SignInCommand;
-use App\User\Application\CommandHandler\SignInCommandHandler;
 use Symfony\Component\Uid\Ulid;
 
 final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCase
@@ -15,21 +14,15 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
         [$user, $email, $pw, $ip, $ua] = $this->arrangeCredentials();
         $user->setTwoFactorEnabled(true);
 
-        $this->lockoutService->method('isLocked')->willReturn(false);
-        $this->lockoutService->method('clearFailures');
-
-        $this->userRepository->method('findByEmail')->willReturn($user);
-
-        $this->passwordHasher->method('verify')
-            ->with($user->getPassword(), $pw)
-            ->willReturn(true);
-        $this->passwordHasher->method('needsRehash')->willReturn(false);
+        $this->userAuthenticator->method('authenticate')
+            ->with($email, $pw, $ip, $ua)
+            ->willReturn($user);
 
         $pendingSid = Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB2');
         $this->ulidFactory->expects($this->once())->method('create')->willReturn($pendingSid);
 
-        $this->authSessionRepository->expects($this->never())->method('save');
-        $this->eventBus->expects($this->never())->method('publish');
+        $this->sessionIssuer->expects($this->never())->method('issue');
+        $this->signInEvents->expects($this->never())->method('publishSignedIn');
 
         $command = new SignInCommand($email, $pw, false, $ip, $ua);
         $this->createHandler()->__invoke($command);
@@ -47,15 +40,9 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
         [$user, $email, $pw, $ip, $ua] = $this->arrangeCredentials();
         $user->setTwoFactorEnabled(true);
 
-        $this->lockoutService->method('isLocked')->willReturn(false);
-        $this->lockoutService->method('clearFailures');
-
-        $this->userRepository->method('findByEmail')->willReturn($user);
-
-        $this->passwordHasher->method('verify')
-            ->with($user->getPassword(), $pw)
-            ->willReturn(true);
-        $this->passwordHasher->method('needsRehash')->willReturn(false);
+        $this->userAuthenticator->method('authenticate')
+            ->with($email, $pw, $ip, $ua)
+            ->willReturn($user);
 
         $pendingSid = Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB3');
         $this->ulidFactory->method('create')->willReturn($pendingSid);
@@ -74,32 +61,14 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
         [$user, $email, $pw, $ip, $ua] = $this->arrangeCredentials();
         $user->setTwoFactorEnabled(true);
 
-        $this->lockoutService->method('isLocked')->willReturn(false);
-        $this->lockoutService->method('clearFailures');
-
-        $this->userRepository->method('findByEmail')->willReturn($user);
-
-        $this->passwordHasher->method('verify')
-            ->with($user->getPassword(), $pw)
-            ->willReturn(true);
-        $this->passwordHasher->method('needsRehash')->willReturn(false);
+        $this->userAuthenticator->method('authenticate')
+            ->with($email, $pw, $ip, $ua)
+            ->willReturn($user);
 
         $pendingSid = Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB5');
         $this->ulidFactory->method('create')->willReturn($pendingSid);
 
-        $handler = new SignInCommandHandler(
-            $this->userRepository,
-            $this->passwordHasher,
-            $this->lockoutService,
-            $this->authSessionRepository,
-            $this->authRefreshTokenRepository,
-            $this->accessTokenGenerator,
-            $this->authTokenFactory,
-            $this->eventBus,
-            $this->pendingTwoFactorRepository,
-            $this->ulidFactory,
-            '$2y$04$test.dummy.hash.that.is.valid.bcrypt.placeholder',
-        );
+        $handler = $this->createHandler();
 
         $command = new SignInCommand($email, $pw, false, $ip, $ua);
         $handler->__invoke($command);

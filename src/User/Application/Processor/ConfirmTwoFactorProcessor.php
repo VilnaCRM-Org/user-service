@@ -7,8 +7,8 @@ namespace App\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\DTO\ConfirmTwoFactorDto;
+use App\User\Application\Factory\ConfirmTwoFactorCommandFactoryInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +22,7 @@ final readonly class ConfirmTwoFactorProcessor implements ProcessorInterface
     public function __construct(
         private CommandBusInterface $commandBus,
         private Security $security,
+        private ConfirmTwoFactorCommandFactoryInterface $confirmTwoFactorCommandFactory,
     ) {
     }
 
@@ -42,7 +43,7 @@ final readonly class ConfirmTwoFactorProcessor implements ProcessorInterface
         $email = $this->resolveCurrentUserEmail();
         $sessionId = $this->resolveCurrentSessionId();
 
-        $command = new ConfirmTwoFactorCommand(
+        $command = $this->confirmTwoFactorCommandFactory->create(
             $email,
             $data->twoFactorCode,
             $sessionId

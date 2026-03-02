@@ -7,13 +7,14 @@ namespace App\Tests\Integration\User\Application\CommandHandler;
 use App\Shared\Domain\Factory\UuidFactoryInterface;
 use App\Tests\Integration\JwtPayloadDecoder;
 use App\Tests\Integration\User\UserIntegrationTestCase;
+use App\User\Application\Authenticator\UserAuthenticatorInterface;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\CommandHandler\SignInCommandHandler;
-use App\User\Application\Service\SessionIssuanceServiceInterface;
-use App\User\Application\Service\SignInEventPublisherInterface;
-use App\User\Application\Service\UserAuthenticationServiceInterface;
-use App\User\Domain\Contract\PasswordHasherInterface;
+use App\User\Application\EventPublisher\SignInEventsInterface;
+use App\User\Application\Hasher\PasswordHasherInterface;
+use App\User\Application\Issuer\SessionIssuerInterface;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Factory\PendingTwoFactorFactoryInterface;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
@@ -30,9 +31,10 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
     private AuthSessionRepositoryInterface $authSessionRepository;
     private AuthRefreshTokenRepositoryInterface $authRefreshTokenRepository;
     private PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository;
-    private UserAuthenticationServiceInterface $authService;
-    private SessionIssuanceServiceInterface $sessionIssuanceService;
-    private SignInEventPublisherInterface $signInEventPublisher;
+    private PendingTwoFactorFactoryInterface $pendingTwoFactorFactory;
+    private UserAuthenticatorInterface $authService;
+    private SessionIssuerInterface $sessionIssuanceService;
+    private SignInEventsInterface $signInEventPublisher;
     private UlidFactory $ulidFactory;
 
     #[\Override]
@@ -49,11 +51,13 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
             ->get(AuthRefreshTokenRepositoryInterface::class);
         $this->pendingTwoFactorRepository = $this->container
             ->get(PendingTwoFactorRepositoryInterface::class);
+        $this->pendingTwoFactorFactory = $this->container
+            ->get(PendingTwoFactorFactoryInterface::class);
         $this->authService = $this->container
-            ->get(UserAuthenticationServiceInterface::class);
+            ->get(UserAuthenticatorInterface::class);
         $this->sessionIssuanceService = $this->container
-            ->get(SessionIssuanceServiceInterface::class);
-        $this->signInEventPublisher = $this->container->get(SignInEventPublisherInterface::class);
+            ->get(SessionIssuerInterface::class);
+        $this->signInEventPublisher = $this->container->get(SignInEventsInterface::class);
         $this->ulidFactory = $this->container->get(UlidFactory::class);
     }
 
@@ -98,6 +102,7 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
             $this->sessionIssuanceService,
             $this->signInEventPublisher,
             $this->pendingTwoFactorRepository,
+            $this->pendingTwoFactorFactory,
             $this->ulidFactory,
         );
     }

@@ -17,6 +17,7 @@ use App\User\Domain\Contract\AccountLockoutServiceInterface;
 use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Factory\PendingTwoFactorFactory;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
@@ -37,6 +38,7 @@ abstract class SignInCommandHandlerTestCase extends UnitTestCase
     protected AuthTokenFactoryInterface&MockObject $authTokenFactory;
     protected EventBusInterface&MockObject $eventBus;
     protected RecordingPendingTwoFactorRepository $pendingTwoFactorRepository;
+    protected PendingTwoFactorFactory $pendingTwoFactorFactory;
     protected UlidFactory&MockObject $ulidFactory;
     protected UserFactory $userFactory;
     protected UuidTransformer $uuidTransformer;
@@ -55,6 +57,7 @@ abstract class SignInCommandHandlerTestCase extends UnitTestCase
         $this->authTokenFactory = $this->createMock(AuthTokenFactoryInterface::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->pendingTwoFactorRepository = new RecordingPendingTwoFactorRepository();
+        $this->pendingTwoFactorFactory = new PendingTwoFactorFactory();
         $this->ulidFactory = $this->createMock(UlidFactory::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
@@ -116,6 +119,7 @@ abstract class SignInCommandHandlerTestCase extends UnitTestCase
             $this->authTokenFactory,
             $this->eventBus,
             $this->pendingTwoFactorRepository,
+            $this->pendingTwoFactorFactory,
             $this->ulidFactory,
             '$2y$04$test.dummy.hash.that.is.valid.bcrypt.placeholder',
         );

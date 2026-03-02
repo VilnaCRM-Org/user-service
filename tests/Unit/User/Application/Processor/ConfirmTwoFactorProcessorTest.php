@@ -10,6 +10,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
 use App\User\Application\DTO\ConfirmTwoFactorDto;
+use App\User\Application\Factory\ConfirmTwoFactorCommandFactory;
 use App\User\Application\Processor\ConfirmTwoFactorProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -93,6 +94,7 @@ final class ConfirmTwoFactorProcessorTest extends UnitTestCase
         return new ConfirmTwoFactorProcessor(
             $this->commandBus,
             $this->security,
+            new ConfirmTwoFactorCommandFactory(),
         );
     }
 

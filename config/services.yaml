@@ -95,10 +95,6 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 120 }
 
-  App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver:
-    arguments:
-      $appEnvironment: '%kernel.environment%'
-
   App\Shared\Application\EventListener\ApiRateLimitListener:
     arguments:
       $limiterFactories:

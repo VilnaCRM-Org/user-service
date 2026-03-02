@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Fixture\Command;
 
 use App\User\Application\Generator\AccessTokenGeneratorInterface;
-use App\User\Domain\Entity\AuthSession;
+use App\User\Domain\Factory\AuthSessionFactoryInterface;
 use DateTimeImmutable;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -37,6 +37,7 @@ final class AttachLoadTestAccessTokensCommand extends Command
     public function __construct(
         private readonly DocumentManager $documentManager,
         private readonly AccessTokenGeneratorInterface $accessTokenGenerator,
+        private readonly AuthSessionFactoryInterface $authSessionFactory,
         private readonly UlidFactory $ulidFactory,
         private readonly UuidFactory $uuidFactory,
         #[Autowire('%kernel.project_dir%')]
@@ -145,7 +146,7 @@ final class AttachLoadTestAccessTokensCommand extends Command
         DateTimeImmutable $now,
     ): void {
         $this->documentManager->persist(
-            new AuthSession(
+            $this->authSessionFactory->create(
                 $sessionId,
                 $userId,
                 self::SESSION_IP_ADDRESS,

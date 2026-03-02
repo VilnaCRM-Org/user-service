@@ -10,6 +10,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RefreshTokenCommand;
 use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Application\DTO\RefreshTokenDto;
+use App\User\Application\Factory\RefreshTokenCommandFactory;
 use App\User\Application\Processor\RefreshTokenProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -34,7 +35,7 @@ final class RefreshTokenProcessorTest extends UnitTestCase
         $dto = new RefreshTokenDto('old-refresh-token');
         $this->expectRefreshDispatch();
 
-        $processor = new RefreshTokenProcessor($this->commandBus);
+        $processor = new RefreshTokenProcessor($this->commandBus, new RefreshTokenCommandFactory());
         $response = $processor->process($dto, $this->operation);
 
         $this->assertRefreshResponse($response);
@@ -46,7 +47,7 @@ final class RefreshTokenProcessorTest extends UnitTestCase
         $dto = new RefreshTokenDto('old-refresh-token');
         $this->expectEmptyAccessTokenDispatch();
 
-        $processor = new RefreshTokenProcessor($this->commandBus);
+        $processor = new RefreshTokenProcessor($this->commandBus, new RefreshTokenCommandFactory());
         $response = $processor->process($dto, $this->operation);
 
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());

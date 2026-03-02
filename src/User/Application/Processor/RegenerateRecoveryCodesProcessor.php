@@ -7,8 +7,8 @@ namespace App\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\DTO\RegenerateRecoveryCodesDto;
+use App\User\Application\Factory\RegenerateRecoveryCodesCommandFactoryInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,6 +23,7 @@ final readonly class RegenerateRecoveryCodesProcessor implements
     public function __construct(
         private CommandBusInterface $commandBus,
         private Security $security,
+        private RegenerateRecoveryCodesCommandFactoryInterface $commandFactory,
     ) {
     }
 
@@ -43,7 +44,7 @@ final readonly class RegenerateRecoveryCodesProcessor implements
         $email = $this->resolveCurrentUserEmail();
         $sessionId = $this->resolveCurrentSessionId();
 
-        $command = new RegenerateRecoveryCodesCommand(
+        $command = $this->commandFactory->create(
             $email,
             $sessionId
         );

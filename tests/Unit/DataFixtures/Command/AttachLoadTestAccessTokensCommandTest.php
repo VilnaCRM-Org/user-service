@@ -7,6 +7,7 @@ namespace App\Tests\Unit\DataFixtures\Command;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Generator\AccessTokenGeneratorInterface;
 use App\User\Domain\Entity\AuthSession;
+use App\User\Domain\Factory\AuthSessionFactory;
 use App\User\Infrastructure\Fixture\Command\AttachLoadTestAccessTokensCommand;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -261,6 +262,7 @@ final class AttachLoadTestAccessTokensCommandTest extends UnitTestCase
         $command = new AttachLoadTestAccessTokensCommand(
             $documentManager,
             $accessTokenGenerator,
+            new AuthSessionFactory(),
             new UlidFactory(),
             new UuidFactory(),
             $this->tempDir,

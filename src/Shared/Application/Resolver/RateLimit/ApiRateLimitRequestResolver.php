@@ -8,8 +8,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 final readonly class ApiRateLimitRequestResolver
 {
-    private const SCHEMATHESIS_HEADER_NAME = 'X-Schemathesis-Test';
-    private const SCHEMATHESIS_HEADER_VALUE = 'cleanup-users';
     private const PASSWORD_RESET_CONFIRM_PATH = '/api/reset-password/confirm';
     private const RECOVERY_CODES_PATH = '/api/users/2fa/recovery-codes';
     private const SIGNOUT_PATH = '/api/signout';
@@ -20,25 +18,12 @@ final readonly class ApiRateLimitRequestResolver
             new ApiRateLimitClientIdentityResolver(),
         private ApiRateLimitAuthTargetResolver $authTargetResolver =
             new ApiRateLimitAuthTargetResolver(),
-        private string $appEnvironment = 'prod',
     ) {
     }
 
     public function supports(Request $request): bool
     {
-        if (!str_starts_with($request->getPathInfo(), '/api/')) {
-            return false;
-        }
-
-        if (
-            $this->appEnvironment !== 'prod'
-            && $request->headers->get(self::SCHEMATHESIS_HEADER_NAME)
-                === self::SCHEMATHESIS_HEADER_VALUE
-        ) {
-            return false;
-        }
-
-        return true;
+        return str_starts_with($request->getPathInfo(), '/api/');
     }
 
     /**

@@ -319,12 +319,19 @@ openapi-diff: generate-openapi-spec ## Compare the generated OpenAPI spec agains
 	./scripts/openapi-diff.sh $(or $(base_ref),origin/main)
 
 schemathesis-validate: reset-db generate-openapi-spec ## Validate the running API against the OpenAPI spec with Schemathesis
+	$(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.schemathesis.yml up --detach --wait php
+	$(EXEC_PHP) bin/console cache:clear
 	$(EXEC_PHP) bin/console app:seed-schemathesis-data
 	$(EXEC_PHP) bin/console cache:pool:clear cache.app
-	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'
-	$(EXEC_PHP) bin/console app:seed-schemathesis-data
-	$(EXEC_PHP) bin/console cache:pool:clear cache.app
-	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage -n 1 --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'
+	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'; \
+	examples_exit=$$?; \
+	$(EXEC_PHP) bin/console app:seed-schemathesis-data; \
+	$(EXEC_PHP) bin/console cache:pool:clear cache.app; \
+	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage -n 1 --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'; \
+	coverage_exit=$$?; \
+	$(DOCKER_COMPOSE) up --detach --wait php; \
+	$(EXEC_PHP) bin/console cache:clear; \
+	if [ $$examples_exit -ne 0 ] || [ $$coverage_exit -ne 0 ]; then exit 1; fi
 
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec

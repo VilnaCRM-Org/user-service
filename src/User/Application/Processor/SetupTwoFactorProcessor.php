@@ -7,8 +7,8 @@ namespace App\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\Command\SetupTwoFactorCommand;
 use App\User\Application\DTO\SetupTwoFactorDto;
+use App\User\Application\Factory\SetupTwoFactorCommandFactoryInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,7 +21,8 @@ final readonly class SetupTwoFactorProcessor implements ProcessorInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,
-        private Security $security
+        private Security $security,
+        private SetupTwoFactorCommandFactoryInterface $setupTwoFactorCommandFactory,
     ) {
     }
 
@@ -39,7 +40,7 @@ final readonly class SetupTwoFactorProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): Response {
-        $command = new SetupTwoFactorCommand(
+        $command = $this->setupTwoFactorCommandFactory->create(
             $this->resolveCurrentUserEmail()
         );
         $this->commandBus->dispatch($command);

@@ -7,8 +7,8 @@ namespace App\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\Command\DisableTwoFactorCommand;
 use App\User\Application\DTO\DisableTwoFactorDto;
+use App\User\Application\Factory\DisableTwoFactorCommandFactoryInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -21,6 +21,7 @@ final readonly class DisableTwoFactorProcessor implements ProcessorInterface
     public function __construct(
         private CommandBusInterface $commandBus,
         private Security $security,
+        private DisableTwoFactorCommandFactoryInterface $disableTwoFactorCommandFactory,
     ) {
     }
 
@@ -37,7 +38,7 @@ final readonly class DisableTwoFactorProcessor implements ProcessorInterface
         array $context = []
     ): Response {
         $this->commandBus->dispatch(
-            new DisableTwoFactorCommand(
+            $this->disableTwoFactorCommandFactory->create(
                 $this->resolveCurrentUserEmail(),
                 $data->twoFactorCode
             )

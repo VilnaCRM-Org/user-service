@@ -13,6 +13,7 @@ use App\User\Application\DTO\IssuedSession;
 use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Factory\PendingTwoFactorFactoryInterface;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use DateTimeImmutable;
 use Symfony\Component\Uid\Factory\UlidFactory;
@@ -29,6 +30,7 @@ final class SignInCommandHandler implements CommandHandlerInterface
         private readonly SessionIssuerInterface $sessionIssuer,
         private readonly SignInEventsInterface $events,
         private readonly PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
+        private readonly PendingTwoFactorFactoryInterface $pendingTwoFactorFactory,
         private readonly UlidFactory $ulidFactory,
     ) {
     }
@@ -109,7 +111,7 @@ final class SignInCommandHandler implements CommandHandlerInterface
         DateTimeImmutable $createdAt,
         bool $rememberMe
     ): PendingTwoFactor {
-        $pending = new PendingTwoFactor(
+        $pending = $this->pendingTwoFactorFactory->create(
             (string) $this->ulidFactory->create(),
             $userId,
             $createdAt,

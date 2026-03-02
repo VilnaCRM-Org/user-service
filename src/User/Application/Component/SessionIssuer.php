@@ -9,6 +9,7 @@ use App\User\Application\Factory\AuthTokenFactoryInterface;
 use App\User\Domain\Contract\AccessTokenGeneratorInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Factory\AuthSessionFactoryInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use DateTimeImmutable;
@@ -21,6 +22,7 @@ final readonly class SessionIssuer implements SessionIssuerInterface
         private AuthRefreshTokenRepositoryInterface $authRefreshTokenRepository,
         private AccessTokenGeneratorInterface $accessTokenGenerator,
         private AuthTokenFactoryInterface $authTokenFactory,
+        private AuthSessionFactoryInterface $authSessionFactory,
         private UlidFactory $ulidFactory,
         private int $standardSessionTtlSeconds = 900,
         private int $rememberMeSessionTtlSeconds = 2592000,
@@ -65,7 +67,7 @@ final readonly class SessionIssuer implements SessionIssuerInterface
             ? $this->rememberMeSessionTtlSeconds
             : $this->standardSessionTtlSeconds;
 
-        return new AuthSession(
+        return $this->authSessionFactory->create(
             (string) $this->ulidFactory->create(),
             $user->getId(),
             $ipAddress,

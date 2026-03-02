@@ -10,6 +10,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\DTO\SignInDto;
+use App\User\Application\Factory\SignInCommandFactory;
 use App\User\Application\Processor\SignInProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -38,8 +39,8 @@ final class SignInProcessorTest extends UnitTestCase
         $constructor = new \ReflectionMethod(SignInProcessor::class, '__construct');
         $parameters = $constructor->getParameters();
 
-        $this->assertSame(900, $parameters[2]->getDefaultValue());
-        $this->assertSame(2592000, $parameters[3]->getDefaultValue());
+        $this->assertSame(900, $parameters[3]->getDefaultValue());
+        $this->assertSame(2592000, $parameters[4]->getDefaultValue());
     }
 
     public function testProcessReturnsTokensAndSetsStandardCookie(): void
@@ -89,7 +90,7 @@ final class SignInProcessorTest extends UnitTestCase
         $dto = new SignInDto($this->faker->email(), $this->faker->password());
         $cmdResponse = new SignInCommandResponse(true, null, null, 'pending-session-123');
         $this->expectDispatchWithResponse($cmdResponse);
-        $processor = new SignInProcessor($this->commandBus, $this->requestStack);
+        $processor = $this->createProcessor();
         $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
         $this->assertSame(200, $response->getStatusCode());
         $this->assertTwoFactorResponseBody($response, 'pending-session-123');
@@ -107,7 +108,7 @@ final class SignInProcessorTest extends UnitTestCase
             'pending-session-with-token'
         );
         $this->expectDispatchWithResponse($cmdResponse);
-        $processor = new SignInProcessor($this->commandBus, $this->requestStack);
+        $processor = $this->createProcessor();
         $result = $processor->process($dto, $this->operation, [], ['request' => $request]);
         $this->assertCount(0, $result->headers->getCookies());
     }
@@ -117,7 +118,7 @@ final class SignInProcessorTest extends UnitTestCase
         $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
         $dto = new SignInDto($this->faker->email(), $this->faker->password());
         $this->expectDispatchWithResponse(new SignInCommandResponse(false, null, 'refresh-token'));
-        $processor = new SignInProcessor($this->commandBus, $this->requestStack);
+        $processor = $this->createProcessor();
         $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
         $this->assertSame(200, $response->getStatusCode());
         $this->assertTokenResponseBody($response, false, '', 'refresh-token');
@@ -129,7 +130,7 @@ final class SignInProcessorTest extends UnitTestCase
         $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
         $dto = new SignInDto($this->faker->email(), $this->faker->password());
         $this->expectDispatchWithResponse(new SignInCommandResponse(false, 'access-token', null));
-        $processor = new SignInProcessor($this->commandBus, $this->requestStack);
+        $processor = $this->createProcessor();
         $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
         $this->assertTokenResponseBody($response, false, 'access-token', '');
     }
@@ -146,7 +147,7 @@ final class SignInProcessorTest extends UnitTestCase
                 new UnauthorizedHttpException('Bearer', 'Invalid credentials.')
             );
 
-        $processor = new SignInProcessor($this->commandBus, $this->requestStack);
+        $processor = $this->createProcessor();
 
         try {
             $processor->process($dto, $this->operation, [], ['request' => $request]);
@@ -166,7 +167,7 @@ final class SignInProcessorTest extends UnitTestCase
         $dto = new SignInDto($this->faker->email(), $this->faker->password());
         $cmdResponse = new SignInCommandResponse(false, 'stack-token', 'refresh-token');
         $this->expectDispatchValidatingRequestMetadata($ipAddress, $userAgent, $cmdResponse);
-        $processor = new SignInProcessor($this->commandBus, $this->requestStack);
+        $processor = $this->createProcessor();
         $response = $processor->process($dto, $this->operation);
         $this->assertSame(200, $response->getStatusCode());
     }
@@ -197,7 +198,7 @@ final class SignInProcessorTest extends UnitTestCase
         $dto = new SignInDto($this->faker->email(), $this->faker->password());
         $cmdResponse = new SignInCommandResponse(false, 'empty-request-token', 'refresh-token');
         $this->expectDispatchValidatingRequestMetadata('', '', $cmdResponse);
-        $processor = new SignInProcessor($this->commandBus, $this->requestStack);
+        $processor = $this->createProcessor();
         $response = $processor->process($dto, $this->operation);
         $this->assertSame(200, $response->getStatusCode());
     }
@@ -333,6 +334,10 @@ final class SignInProcessorTest extends UnitTestCase
 
     private function createProcessor(): SignInProcessor
     {
-        return new SignInProcessor($this->commandBus, $this->requestStack);
+        return new SignInProcessor(
+            $this->commandBus,
+            $this->requestStack,
+            new SignInCommandFactory()
+        );
     }
 }

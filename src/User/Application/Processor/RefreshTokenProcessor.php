@@ -7,11 +7,9 @@ namespace App\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\Command\RefreshTokenCommand;
 use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Application\DTO\RefreshTokenDto;
-use DateTimeImmutable;
-use Symfony\Component\HttpFoundation\Cookie;
+use App\User\Application\Factory\RefreshTokenCommandFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -20,11 +18,9 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class RefreshTokenProcessor implements ProcessorInterface
 {
-    private const AUTH_COOKIE_NAME = '__Host-auth_token';
-    private const COOKIE_MAX_AGE = 900;
-
     public function __construct(
         private CommandBusInterface $commandBus,
+        private RefreshTokenCommandFactoryInterface $refreshTokenCommandFactory,
     ) {
     }
 
@@ -42,17 +38,13 @@ final readonly class RefreshTokenProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): Response {
-        $command = new RefreshTokenCommand($data->refreshToken);
+        $command = $this->refreshTokenCommandFactory->create($data->refreshToken);
         $this->commandBus->dispatch($command);
 
         $commandResponse = $command->getResponse();
-        $response = new JsonResponse(
+        return new JsonResponse(
             $this->buildResponseBody($commandResponse)
         );
-
-        $this->attachAuthCookie($response, $commandResponse->getAccessToken());
-
-        return $response;
     }
 
     /**
@@ -67,28 +59,5 @@ final readonly class RefreshTokenProcessor implements ProcessorInterface
             'access_token' => $response->getAccessToken(),
             'refresh_token' => $response->getRefreshToken(),
         ];
-    }
-
-    private function attachAuthCookie(
-        Response $response,
-        string $accessToken
-    ): void {
-        if ($accessToken === '') {
-            return;
-        }
-
-        $response->headers->setCookie(
-            Cookie::create(
-                self::AUTH_COOKIE_NAME,
-                $accessToken,
-                (new DateTimeImmutable())->modify(
-                    sprintf('+%d seconds', self::COOKIE_MAX_AGE)
-                )
-            )
-                ->withPath('/')
-                ->withSecure(true)
-                ->withHttpOnly(true)
-                ->withSameSite(Cookie::SAMESITE_LAX)
-        );
     }
 }

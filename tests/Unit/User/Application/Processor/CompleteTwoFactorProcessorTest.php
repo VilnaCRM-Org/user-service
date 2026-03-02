@@ -10,6 +10,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
+use App\User\Application\Factory\CompleteTwoFactorCommandFactory;
 use App\User\Application\Processor\CompleteTwoFactorProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -40,8 +41,8 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
         );
         $parameters = $constructor->getParameters();
 
-        $this->assertSame(900, $parameters[2]->getDefaultValue());
-        $this->assertSame(2592000, $parameters[3]->getDefaultValue());
+        $this->assertSame(900, $parameters[3]->getDefaultValue());
+        $this->assertSame(2592000, $parameters[4]->getDefaultValue());
     }
 
     public function testProcessReturnsTokensAndSetsCookieWithStandardTtl(): void
@@ -241,7 +242,11 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
         CompleteTwoFactorDto $dto,
         ?Request $request = null
     ): mixed {
-        $processor = new CompleteTwoFactorProcessor($this->commandBus, $this->requestStack);
+        $processor = new CompleteTwoFactorProcessor(
+            $this->commandBus,
+            $this->requestStack,
+            new CompleteTwoFactorCommandFactory()
+        );
         if ($request !== null) {
             return $processor->process($dto, $this->operation, [], ['request' => $request]);
         }

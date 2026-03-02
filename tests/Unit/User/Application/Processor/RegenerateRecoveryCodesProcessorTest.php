@@ -10,6 +10,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\DTO\RegenerateRecoveryCodesCommandResponse;
 use App\User\Application\DTO\RegenerateRecoveryCodesDto;
+use App\User\Application\Factory\RegenerateRecoveryCodesCommandFactory;
 use App\User\Application\Processor\RegenerateRecoveryCodesProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -73,7 +74,8 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
 
         $processor = new RegenerateRecoveryCodesProcessor(
             $this->commandBus,
-            $this->security
+            $this->security,
+            new RegenerateRecoveryCodesCommandFactory(),
         );
 
         $this->expectException(UnauthorizedHttpException::class);
@@ -148,7 +150,11 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
 
     private function processRecoveryCodes(): mixed
     {
-        $processor = new RegenerateRecoveryCodesProcessor($this->commandBus, $this->security);
+        $processor = new RegenerateRecoveryCodesProcessor(
+            $this->commandBus,
+            $this->security,
+            new RegenerateRecoveryCodesCommandFactory()
+        );
         return $processor->process(new RegenerateRecoveryCodesDto(), $this->operation);
     }
 

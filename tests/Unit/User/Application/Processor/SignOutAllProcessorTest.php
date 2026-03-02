@@ -13,6 +13,7 @@ use App\User\Application\Command\SignOutAllCommand;
 use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\DTO\SignOutAllDto;
 use App\User\Application\Factory\ClearAuthCookieResponseFactory;
+use App\User\Application\Factory\SignOutAllCommandFactory;
 use App\User\Application\Processor\SignOutAllProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,6 +39,7 @@ final class SignOutAllProcessorTest extends UnitTestCase
             $this->commandBus,
             $this->tokenStorage,
             new ClearAuthCookieResponseFactory(),
+            new SignOutAllCommandFactory(),
         );
     }
 

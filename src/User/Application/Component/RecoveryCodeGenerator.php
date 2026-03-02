@@ -6,6 +6,7 @@ namespace App\User\Application\Component;
 
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Factory\RecoveryCodeFactoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
 
@@ -15,6 +16,7 @@ final readonly class RecoveryCodeGenerator implements RecoveryCodeGeneratorInter
 
     public function __construct(
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
+        private RecoveryCodeFactoryInterface $recoveryCodeFactory,
         private UlidFactory $ulidFactory,
     ) {
     }
@@ -30,7 +32,7 @@ final readonly class RecoveryCodeGenerator implements RecoveryCodeGeneratorInter
             $plainCode = $this->generateCode();
             $codes[] = $plainCode;
             $this->recoveryCodeRepository->save(
-                new RecoveryCode(
+                $this->recoveryCodeFactory->create(
                     (string) $this->ulidFactory->create(),
                     $user->getId(),
                     $plainCode

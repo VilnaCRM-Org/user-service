@@ -29,30 +29,4 @@ final class ApiRateLimitRequestResolverSupportsTest extends UnitTestCase
     {
         self::assertTrue($this->resolver->supports(Request::create('/api/users')));
     }
-
-    public function testSupportsReturnsFalseInNonProdWithSchemathesisHeader(): void
-    {
-        $resolver = new ApiRateLimitRequestResolver(appEnvironment: 'test');
-        $request = Request::create('/api/users');
-        $request->headers->set('X-Schemathesis-Test', 'cleanup-users');
-
-        self::assertFalse($resolver->supports($request));
-    }
-
-    public function testSupportsReturnsTrueInNonProdWithWrongSchemathesisHeaderValue(): void
-    {
-        $resolver = new ApiRateLimitRequestResolver(appEnvironment: 'test');
-        $request = Request::create('/api/users');
-        $request->headers->set('X-Schemathesis-Test', 'other-value');
-
-        self::assertTrue($resolver->supports($request));
-    }
-
-    public function testSupportsReturnsTrueInProdEvenWithSchemathesisHeader(): void
-    {
-        $request = Request::create('/api/users');
-        $request->headers->set('X-Schemathesis-Test', 'cleanup-users');
-
-        self::assertTrue($this->resolver->supports($request));
-    }
 }

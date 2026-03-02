@@ -7,9 +7,9 @@ namespace App\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\Command\SignInCommand;
 use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\DTO\SignInDto;
+use App\User\Application\Factory\SignInCommandFactoryInterface;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,6 +27,7 @@ final readonly class SignInProcessor implements ProcessorInterface
     public function __construct(
         private CommandBusInterface $commandBus,
         private RequestStack $requestStack,
+        private SignInCommandFactoryInterface $signInCommandFactory,
         private int $standardCookieMaxAge = 900,
         private int $rememberMeCookieMaxAge = 2592000,
     ) {
@@ -48,7 +49,7 @@ final readonly class SignInProcessor implements ProcessorInterface
     ): Response {
         $request = $this->resolveRequest($context['request'] ?? null);
 
-        $command = new SignInCommand(
+        $command = $this->signInCommandFactory->create(
             $data->email,
             $data->password,
             $data->isRememberMe(),

@@ -7,9 +7,9 @@ namespace App\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
+use App\User\Application\Factory\CompleteTwoFactorCommandFactoryInterface;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,6 +27,7 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
     public function __construct(
         private CommandBusInterface $commandBus,
         private RequestStack $requestStack,
+        private CompleteTwoFactorCommandFactoryInterface $completeTwoFactorCommandFactory,
         private int $standardCookieMaxAge = 900,
         private int $rememberMeCookieMaxAge = 2592000,
     ) {
@@ -48,7 +49,7 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
     ): Response {
         $request = $this->resolveRequest($context['request'] ?? null);
 
-        $command = new CompleteTwoFactorCommand(
+        $command = $this->completeTwoFactorCommandFactory->create(
             $data->pendingSessionId,
             $data->twoFactorCode,
             $this->resolveIpAddress($request),
