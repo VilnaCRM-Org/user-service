@@ -62,9 +62,10 @@ $projectDir = dirname(__DIR__, 2);
 require $projectDir . '/vendor/autoload.php';
 
 $dotenv = new Dotenv();
-$dotenv->usePutenv()->bootEnv($projectDir . '/.env', 'test');
+$symfonyEnv = getenv('APP_ENV') ?: 'test';
+$dotenv->usePutenv()->bootEnv($projectDir . '/.env', $symfonyEnv);
 
-$kernel = new Kernel('test', false);
+$kernel = new Kernel($symfonyEnv, false);
 $kernel->boot();
 $container = $kernel->getContainer();
 $container = $container->has('test.service_container')

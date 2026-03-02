@@ -3,110 +3,110 @@ framework:
     global_api_anonymous:
       policy: 'token_bucket'
       limit: '%env(int:GLOBAL_API_ANONYMOUS_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:GLOBAL_API_ANONYMOUS_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:GLOBAL_API_ANONYMOUS_RATE_LIMIT_INTERVAL)%', amount: '%env(int:GLOBAL_API_ANONYMOUS_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     global_api_authenticated:
       policy: 'token_bucket'
       limit: '%env(int:GLOBAL_API_AUTHENTICATED_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:GLOBAL_API_AUTHENTICATED_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:GLOBAL_API_AUTHENTICATED_RATE_LIMIT_INTERVAL)%', amount: '%env(int:GLOBAL_API_AUTHENTICATED_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     registration:
       policy: 'token_bucket'
       limit: '%env(int:REGISTRATION_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:REGISTRATION_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:REGISTRATION_RATE_LIMIT_INTERVAL)%', amount: '%env(int:REGISTRATION_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     oauth_token:
       policy: 'token_bucket'
       limit: '%env(int:OAUTH_TOKEN_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:OAUTH_TOKEN_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:OAUTH_TOKEN_RATE_LIMIT_INTERVAL)%', amount: '%env(int:OAUTH_TOKEN_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     signin_ip:
       policy: 'token_bucket'
       limit: '%env(int:SIGNIN_IP_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:SIGNIN_IP_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:SIGNIN_IP_RATE_LIMIT_INTERVAL)%', amount: '%env(int:SIGNIN_IP_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     signin_email:
       policy: 'token_bucket'
       limit: '%env(int:SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:SIGNIN_EMAIL_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:SIGNIN_EMAIL_RATE_LIMIT_INTERVAL)%', amount: '%env(int:SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     twofa_verification_user:
       policy: 'token_bucket'
       limit: '%env(int:TWOFA_VERIFICATION_USER_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:TWOFA_VERIFICATION_USER_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:TWOFA_VERIFICATION_USER_RATE_LIMIT_INTERVAL)%', amount: '%env(int:TWOFA_VERIFICATION_USER_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     twofa_verification_ip:
       policy: 'token_bucket'
       limit: '%env(int:TWOFA_VERIFICATION_IP_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:TWOFA_VERIFICATION_IP_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:TWOFA_VERIFICATION_IP_RATE_LIMIT_INTERVAL)%', amount: '%env(int:TWOFA_VERIFICATION_IP_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     twofa_setup:
       policy: 'token_bucket'
       limit: '%env(int:TWOFA_SETUP_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:TWOFA_SETUP_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:TWOFA_SETUP_RATE_LIMIT_INTERVAL)%', amount: '%env(int:TWOFA_SETUP_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     twofa_confirm:
       policy: 'token_bucket'
       limit: '%env(int:TWOFA_CONFIRM_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:TWOFA_CONFIRM_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:TWOFA_CONFIRM_RATE_LIMIT_INTERVAL)%', amount: '%env(int:TWOFA_CONFIRM_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     twofa_disable:
       policy: 'token_bucket'
       limit: '%env(int:TWOFA_DISABLE_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:TWOFA_DISABLE_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:TWOFA_DISABLE_RATE_LIMIT_INTERVAL)%', amount: '%env(int:TWOFA_DISABLE_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     email_confirmation:
       policy: 'token_bucket'
       limit: '%env(int:EMAIL_CONFIRMATION_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:EMAIL_CONFIRMATION_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:EMAIL_CONFIRMATION_RATE_LIMIT_INTERVAL)%', amount: '%env(int:EMAIL_CONFIRMATION_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     user_collection:
       policy: 'token_bucket'
       limit: '%env(int:USER_COLLECTION_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:USER_COLLECTION_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:USER_COLLECTION_RATE_LIMIT_INTERVAL)%', amount: '%env(int:USER_COLLECTION_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     user_update:
       policy: 'token_bucket'
       limit: '%env(int:USER_UPDATE_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:USER_UPDATE_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:USER_UPDATE_RATE_LIMIT_INTERVAL)%', amount: '%env(int:USER_UPDATE_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     user_delete:
       policy: 'token_bucket'
       limit: '%env(int:USER_DELETE_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:USER_DELETE_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:USER_DELETE_RATE_LIMIT_INTERVAL)%', amount: '%env(int:USER_DELETE_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     resend_confirmation:
       policy: 'token_bucket'
       limit: '%env(int:RESEND_CONFIRMATION_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:RESEND_CONFIRMATION_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:RESEND_CONFIRMATION_RATE_LIMIT_INTERVAL)%', amount: '%env(int:RESEND_CONFIRMATION_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     resend_confirmation_target:
       policy: 'token_bucket'
       limit: '%env(int:RESEND_CONFIRMATION_TARGET_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:RESEND_CONFIRMATION_TARGET_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:RESEND_CONFIRMATION_TARGET_RATE_LIMIT_INTERVAL)%', amount: '%env(int:RESEND_CONFIRMATION_TARGET_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     password_reset:
       policy: 'token_bucket'
       limit: '%env(int:PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:PASSWORD_RESET_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:PASSWORD_RESET_RATE_LIMIT_INTERVAL)%', amount: '%env(int:PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     password_reset_confirm:
       policy: 'token_bucket'
       limit: '%env(int:PASSWORD_RESET_CONFIRM_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:PASSWORD_RESET_CONFIRM_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:PASSWORD_RESET_CONFIRM_RATE_LIMIT_INTERVAL)%', amount: '%env(int:PASSWORD_RESET_CONFIRM_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     recovery_codes:
       policy: 'token_bucket'
       limit: '%env(int:RECOVERY_CODES_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:RECOVERY_CODES_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:RECOVERY_CODES_RATE_LIMIT_INTERVAL)%', amount: '%env(int:RECOVERY_CODES_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     signout:
       policy: 'token_bucket'
       limit: '%env(int:SIGNOUT_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:SIGNOUT_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:SIGNOUT_RATE_LIMIT_INTERVAL)%', amount: '%env(int:SIGNOUT_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'
     signout_all:
       policy: 'token_bucket'
       limit: '%env(int:SIGNOUT_ALL_RATE_LIMIT_MAX_REQUESTS)%'
-      rate: { interval: '%env(string:SIGNOUT_ALL_RATE_LIMIT_INTERVAL)%' }
+      rate: { interval: '%env(string:SIGNOUT_ALL_RATE_LIMIT_INTERVAL)%', amount: '%env(int:SIGNOUT_ALL_RATE_LIMIT_MAX_REQUESTS)%' }
       cache_pool: 'cache.app'

@@ -1,0 +1,7 @@
+framework:
+    messenger:
+        transports:
+            send-email:
+                dsn: 'sync://'
+            domain-events: 'in-memory://'
+            failed-domain-events: 'in-memory://'

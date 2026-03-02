@@ -45,7 +45,7 @@
 
     vulcain
     php_server {
-        env APP_ENV test
+        env APP_ENV {$CADDY_PHP_APP_ENV:test}
     }
     encode zstd gzip
     file_server

@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import counter from 'k6/x/counter';
+import exec from 'k6/execution';
 import MailCatcherUtils from '../utils/mailCatcherUtils.js';
 import ScenarioUtils from '../utils/scenarioUtils.js';
 import Utils from '../utils/utils.js';
@@ -23,7 +23,7 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default async function confirmUser(data) {
-  const num = counter.up();
+  const num = exec.scenario.iterationInTest + 1;
 
   const token = await mailCatcherUtils.getConfirmationToken(num);
 

@@ -36,12 +36,12 @@ for (( i=0; i<clientPoolSize; i++ )); do
     fi
 
     # Delete existing client if it exists
-    if ! eval "${SYMFONY}" league:oauth2-server:delete-client "${poolClientID}" --env=test; then
+    if ! eval "${SYMFONY}" league:oauth2-server:delete-client "${poolClientID}"; then
         echo "Warning: Failed to delete client ${poolClientID}. Proceeding to create a new one."
     fi
 
     # Create new client
-    if ! eval "${SYMFONY}" league:oauth2-server:create-client "${clientName}" "${poolClientID}" "${poolClientSecret}" "${clientRedirectUri}" --env=test; then
+    if ! eval "${SYMFONY}" league:oauth2-server:create-client "${clientName}" "${poolClientID}" "${poolClientSecret}" "${clientRedirectUri}"; then
         echo "Error: Failed to create client ${poolClientID}."
         exit 1
     fi
