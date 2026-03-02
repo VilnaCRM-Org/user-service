@@ -18,53 +18,76 @@ final class AuthGateOverheadIntegrationTest extends AuthIntegrationTestCase
         $kernel = self::getContainer()->get('kernel');
         $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
 
-        $this->performHealthRequest($kernel, false);
-        $this->performHealthRequest($kernel, true);
+        $anonymousServer = ['HTTP_ACCEPT' => 'application/json'];
+        $authenticatedServer = $this->createAuthenticatedServer();
 
-        $anonymousAverageMs = $this->measureAverageLatencyMs($kernel, false);
-        $authenticatedAverageMs = $this->measureAverageLatencyMs($kernel, true);
-        $overheadMs = $authenticatedAverageMs - $anonymousAverageMs;
-        $maxAllowedOverheadMs = $this->resolveMaxAllowedOverheadMs();
-
-        $this->assertLessThan(
-            $maxAllowedOverheadMs,
-            $overheadMs,
-            sprintf(
-                'Auth-gate overhead %.3fms exceeds %.1fms (anon=%.3fms, auth=%.3fms).',
-                $overheadMs,
-                $maxAllowedOverheadMs,
-                $anonymousAverageMs,
-                $authenticatedAverageMs
-            )
+        $this->warmUpHealthRequests($kernel, $anonymousServer, $authenticatedServer);
+        $this->assertAuthGateOverheadWithinThreshold(
+            $kernel,
+            $anonymousServer,
+            $authenticatedServer
         );
     }
 
+    /**
+     * @param array<string, string> $anonymousServer
+     * @param array<string, string> $authenticatedServer
+     */
+    private function warmUpHealthRequests(
+        HttpKernelInterface $kernel,
+        array $anonymousServer,
+        array $authenticatedServer
+    ): void {
+        $this->performHealthRequest($kernel, $anonymousServer);
+        $this->performHealthRequest($kernel, $authenticatedServer);
+    }
+
+    /**
+     * @param array<string, string> $anonymousServer
+     * @param array<string, string> $authenticatedServer
+     */
+    private function assertAuthGateOverheadWithinThreshold(
+        HttpKernelInterface $kernel,
+        array $anonymousServer,
+        array $authenticatedServer
+    ): void {
+        $anonymousAverageMs = $this->measureAverageLatencyMs($kernel, $anonymousServer);
+        $authenticatedAverageMs = $this->measureAverageLatencyMs($kernel, $authenticatedServer);
+        $overheadMs = $authenticatedAverageMs - $anonymousAverageMs;
+        $maxAllowedOverheadMs = $this->resolveMaxAllowedOverheadMs();
+
+        $this->assertLessThan($maxAllowedOverheadMs, $overheadMs, sprintf(
+            'Auth-gate overhead %.3fms exceeds %.1fms (anon=%.3fms, auth=%.3fms).',
+            $overheadMs,
+            $maxAllowedOverheadMs,
+            $anonymousAverageMs,
+            $authenticatedAverageMs
+        ));
+    }
+
+    /**
+     * @param array<string, string> $server
+     */
     private function measureAverageLatencyMs(
         HttpKernelInterface $kernel,
-        bool $withAuthorization
+        array $server
     ): float {
         $totalMs = 0.0;
 
         for ($iteration = 0; $iteration < self::ITERATIONS; $iteration++) {
-            $totalMs += $this->performHealthRequest($kernel, $withAuthorization);
+            $totalMs += $this->performHealthRequest($kernel, $server);
         }
 
         return $totalMs / self::ITERATIONS;
     }
 
+    /**
+     * @param array<string, string> $server
+     */
     private function performHealthRequest(
         HttpKernelInterface $kernel,
-        bool $withAuthorization
+        array $server
     ): float {
-        $server = ['HTTP_ACCEPT' => 'application/json'];
-        if ($withAuthorization) {
-            $headers = $this->createAuthenticatedHeaders(
-                sprintf('service-%s', strtolower($this->faker->lexify('????'))),
-                ['ROLE_SERVICE']
-            );
-            $server['HTTP_AUTHORIZATION'] = $headers['HTTP_AUTHORIZATION'];
-        }
-
         $request = Request::create('/api/health', 'GET', [], [], [], $server);
 
         $startedAt = hrtime(true);
@@ -74,6 +97,17 @@ final class AuthGateOverheadIntegrationTest extends AuthIntegrationTestCase
         $this->assertContains($response->getStatusCode(), [200, 204]);
 
         return $elapsedMs;
+    }
+
+    /**
+     * @return array{HTTP_AUTHORIZATION: string, HTTP_ACCEPT: 'application/json'}
+     */
+    private function createAuthenticatedServer(): array
+    {
+        return $this->createAuthenticatedHeaders(
+            sprintf('service-%s', strtolower($this->faker->lexify('????'))),
+            ['ROLE_SERVICE']
+        );
     }
 
     private function resolveMaxAllowedOverheadMs(): float

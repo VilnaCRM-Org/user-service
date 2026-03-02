@@ -33,7 +33,7 @@ runStress=$4
 runSpike=$5
 htmlPrefix=$6
 
-serviceToken=$(docker compose exec -T php php tests/Load/generate-service-token.php | tr -d '\r\n')
+serviceToken=$(docker compose exec -T php bash tests/Load/generate-service-token.sh | tr -d '\r\n')
 
 if [ -z "$serviceToken" ]; then
   echo "Error: failed to generate service token for load tests."
@@ -47,7 +47,7 @@ K6="docker run -v ./tests/Load:/loadTests --net=host --rm \
 
 if [[ $scenario != "createUser" && $scenario != "graphQLCreateUser" && $scenario != "createUserBatch" ]]; then
   eval "$K6" /loadTests/utils/prepareUsers.js -e scenarioName="${scenario}" -e run_smoke="${runSmoke}" -e run_average="${runAverage}" -e run_stress="${runStress}" -e run_spike="${runSpike}" -e serviceToken="${serviceToken}"
-  docker compose exec -T php php tests/Load/attach-user-access-tokens.php
+  docker compose exec -T php bin/console app:load-test:attach-access-tokens
 fi
 
 eval "$K6" "/loadTests/scripts/${scenario}.js" -e run_smoke="${runSmoke}" -e run_average="${runAverage}" -e run_stress="${runStress}" -e run_spike="${runSpike}" -e serviceToken="${serviceToken}"

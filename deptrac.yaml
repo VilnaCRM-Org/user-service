@@ -27,7 +27,7 @@ parameters:
     - name: Infrastructure
       collectors:
         - type: className
-          regex: '.*App\\User\\Infrastructure\\(Factory|Repository|Decoder|Extractor|Evaluator|EventListener|Publisher|Generator|EventSubscriber|Decorator|Lockout|Security|TwoFactor).*'
+          regex: '.*App\\User\\Infrastructure\\(Factory|Repository|Decoder|Extractor|Evaluator|EventListener|Publisher|Generator|EventSubscriber|Decorator|Lockout|Security|TwoFactor|Fixture).*'
         - type: className
           regex: '.*App\\OAuth\\Infrastructure\\(DoctrineType|Manager|Revoker|Serializer).*'
         - type: className
