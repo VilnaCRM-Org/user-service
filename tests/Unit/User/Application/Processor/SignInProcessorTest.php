@@ -10,18 +10,20 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\DTO\SignInDto;
+use App\User\Application\Factory\AuthCookieAttacherInterface;
 use App\User\Application\Factory\SignInCommandFactory;
 use App\User\Application\Processor\SignInProcessor;
+use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 final class SignInProcessorTest extends UnitTestCase
 {
     private CommandBusInterface&MockObject $commandBus;
-    private RequestStack $requestStack;
+    private HttpRequestContextResolverInterface&MockObject $requestContextResolver;
+    private AuthCookieAttacherInterface&MockObject $cookieAttacher;
     private Operation $operation;
 
     #[\Override]
@@ -30,177 +32,203 @@ final class SignInProcessorTest extends UnitTestCase
         parent::setUp();
 
         $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->requestStack = new RequestStack();
+        $this->requestContextResolver = $this->createMock(
+            HttpRequestContextResolverInterface::class
+        );
+        $this->cookieAttacher = $this->createMock(AuthCookieAttacherInterface::class);
         $this->operation = $this->createMock(Operation::class);
     }
 
-    public function testConstructorDefinesExpectedDefaultCookieTtls(): void
+    public function testProcessReturnsTokensAndAttachesCookie(): void
     {
-        $constructor = new \ReflectionMethod(SignInProcessor::class, '__construct');
-        $parameters = $constructor->getParameters();
-
-        $this->assertSame(900, $parameters[3]->getDefaultValue());
-        $this->assertSame(2592000, $parameters[4]->getDefaultValue());
-    }
-
-    public function testProcessReturnsTokensAndSetsStandardCookie(): void
-    {
-        $email = $this->faker->email();
-        $password = $this->faker->password();
-        $ipAddress = $this->faker->ipv4();
-        $userAgent = $this->faker->userAgent();
-        $access = 'access-token-value';
-        $refresh = 'refresh-token-value';
-        $request = $this->createRequest($ipAddress, $userAgent);
-        $this->requestStack->push($request);
-        $dto = new SignInDto($email, $password);
-        $cmd = new SignInCommandResponse(false, $access, $refresh);
-        $this->expectDispatchValidatingCommand($email, $password, $ipAddress, $userAgent, $cmd);
-        $processor = $this->createProcessor();
-        $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
+        [$email, $password, $ip, $ua] = $this->generateCredentials();
+        $access = $this->faker->sha256();
+        $refresh = $this->faker->sha256();
+        $request = $this->createMock(Request::class);
+        $this->stubResolver($request, $ip, $ua);
+        $cmdResponse = new SignInCommandResponse(false, $access, $refresh);
+        $this->expectDispatchValidatingCommand($email, $password, $ip, $ua, $cmdResponse);
+        $this->cookieAttacher->expects($this->once())->method('attach')
+            ->with($this->isInstanceOf(JsonResponse::class), $access, false);
+        $response = $this->processWithRequest(new SignInDto($email, $password), $request);
         $this->assertSame(200, $response->getStatusCode());
         $this->assertTokenResponseBody($response, false, $access, $refresh);
-        $this->assertCount(1, $response->headers->getCookies());
-        $this->assertStandardAuthCookie($response->headers->getCookies()[0], $access);
     }
 
-    public function testProcessSetsRememberMeCookieMaxAge(): void
+    public function testProcessAttachesCookieWithRememberMe(): void
     {
-        $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
+        $request = $this->createMock(Request::class);
+        $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
         $dto = new SignInDto($this->faker->email(), $this->faker->password());
         $dto->setRememberMe(true);
-        $this->expectDispatchWithRememberMe(
-            new SignInCommandResponse(false, 'remember-token', 'refresh-token')
-        );
+        $accessToken = $this->faker->sha256();
+        $cmdResponse = new SignInCommandResponse(false, $accessToken, $this->faker->sha256());
+        $this->expectDispatchWithRememberMe($cmdResponse);
+        $this->cookieAttacher->expects($this->once())->method('attach')
+            ->with($this->anything(), $accessToken, true);
+        $response = $this->processWithRequest($dto, $request);
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testProcessReturnsTwoFactorBodyWithoutAttachingCookie(): void
+    {
+        $request = $this->createMock(Request::class);
+        $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
+        $dto = new SignInDto($this->faker->email(), $this->faker->password());
+        $pendingSessionId = $this->faker->uuid();
+        $cmdResponse = new SignInCommandResponse(true, null, null, $pendingSessionId);
+        $this->expectDispatchWithResponse($cmdResponse);
+        $this->cookieAttacher->expects($this->never())->method('attach');
         $response = $this->createProcessor()->process(
             $dto,
             $this->operation,
             [],
             ['request' => $request]
         );
-        $cookies = $response->headers->getCookies();
-        $this->assertCount(1, $cookies);
-        $this->assertGreaterThanOrEqual(2591999, $cookies[0]->getMaxAge());
-        $this->assertLessThanOrEqual(2592000, $cookies[0]->getMaxAge());
-    }
-
-    public function testProcessReturnsTwoFactorBodyWithoutCookie(): void
-    {
-        $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
-        $dto = new SignInDto($this->faker->email(), $this->faker->password());
-        $cmdResponse = new SignInCommandResponse(true, null, null, 'pending-session-123');
-        $this->expectDispatchWithResponse($cmdResponse);
-        $processor = $this->createProcessor();
-        $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertTwoFactorResponseBody($response, 'pending-session-123');
-        $this->assertCount(0, $response->headers->getCookies());
+        $this->assertTwoFactorResponseBody(
+            $response,
+            $pendingSessionId
+        );
     }
 
-    public function testProcessDoesNotSetCookieForTwoFactorResponseEvenWithTokenValue(): void
+    public function testProcessDoesNotAttachCookieForTwoFactorEvenWithTokenValue(): void
     {
-        $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
+        $request = $this->createMock(Request::class);
+        $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
         $dto = new SignInDto($this->faker->email(), $this->faker->password());
         $cmdResponse = new SignInCommandResponse(
             true,
-            'unexpected-access-token',
+            $this->faker->sha256(),
             null,
-            'pending-session-with-token'
+            $this->faker->uuid()
         );
         $this->expectDispatchWithResponse($cmdResponse);
-        $processor = $this->createProcessor();
-        $result = $processor->process($dto, $this->operation, [], ['request' => $request]);
-        $this->assertCount(0, $result->headers->getCookies());
+        $this->cookieAttacher->expects($this->never())->method('attach');
+        $this->createProcessor()->process(
+            $dto,
+            $this->operation,
+            [],
+            ['request' => $request]
+        );
     }
 
-    public function testProcessDoesNotSetCookieWhenAccessTokenIsMissing(): void
+    public function testProcessDoesNotAttachCookieWhenAccessTokenIsMissing(): void
     {
-        $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
+        $request = $this->createMock(Request::class);
+        $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
         $dto = new SignInDto($this->faker->email(), $this->faker->password());
-        $this->expectDispatchWithResponse(new SignInCommandResponse(false, null, 'refresh-token'));
-        $processor = $this->createProcessor();
-        $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
+        $refreshToken = $this->faker->sha256();
+        $this->expectDispatchWithResponse(new SignInCommandResponse(false, null, $refreshToken));
+        $this->cookieAttacher->expects($this->never())->method('attach');
+        $response = $this->createProcessor()->process(
+            $dto,
+            $this->operation,
+            [],
+            ['request' => $request]
+        );
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertTokenResponseBody($response, false, '', 'refresh-token');
-        $this->assertCount(0, $response->headers->getCookies());
+        $this->assertTokenResponseBody(
+            $response,
+            false,
+            '',
+            $refreshToken
+        );
     }
 
     public function testProcessCastsMissingRefreshTokenToEmptyStringInResponseBody(): void
     {
-        $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
+        $request = $this->createMock(Request::class);
+        $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
         $dto = new SignInDto($this->faker->email(), $this->faker->password());
-        $this->expectDispatchWithResponse(new SignInCommandResponse(false, 'access-token', null));
-        $processor = $this->createProcessor();
-        $response = $processor->process($dto, $this->operation, [], ['request' => $request]);
-        $this->assertTokenResponseBody($response, false, 'access-token', '');
+        $accessToken = $this->faker->sha256();
+        $this->expectDispatchWithResponse(new SignInCommandResponse(false, $accessToken, null));
+        $this->cookieAttacher->expects($this->once())->method('attach');
+        $response = $this->createProcessor()->process(
+            $dto,
+            $this->operation,
+            [],
+            ['request' => $request]
+        );
+        $this->assertTokenResponseBody($response, false, $accessToken, '');
     }
 
     public function testProcessPropagatesUnauthorizedExceptionWithBearerHeader(): void
     {
-        $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
+        $request = $this->createMock(Request::class);
+        $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
         $dto = new SignInDto($this->faker->email(), $this->faker->password());
-
-        $this->commandBus
-            ->expects($this->once())
+        $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willThrowException(
-                new UnauthorizedHttpException('Bearer', 'Invalid credentials.')
-            );
-
-        $processor = $this->createProcessor();
-
-        try {
-            $processor->process($dto, $this->operation, [], ['request' => $request]);
-            $this->fail('Expected UnauthorizedHttpException to be thrown.');
-        } catch (UnauthorizedHttpException $exception) {
-            $this->assertSame('Invalid credentials.', $exception->getMessage());
-            $this->assertSame('Bearer', $exception->getHeaders()['WWW-Authenticate'] ?? null);
-        }
+            ->willThrowException(new UnauthorizedHttpException('Bearer', 'Invalid credentials.'));
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Invalid credentials.');
+        $this->createProcessor()->process($dto, $this->operation, [], ['request' => $request]);
     }
 
-    public function testProcessUsesRequestStackWhenContextRequestIsMissing(): void
+    public function testProcessDelegatesContextRequestToResolver(): void
     {
         $ipAddress = $this->faker->ipv4();
         $userAgent = $this->faker->userAgent();
-        $request = $this->createRequest($ipAddress, $userAgent);
-        $this->requestStack->push($request);
-        $dto = new SignInDto($this->faker->email(), $this->faker->password());
-        $cmdResponse = new SignInCommandResponse(false, 'stack-token', 'refresh-token');
+        $request = $this->createMock(Request::class);
+        $this->requestContextResolver->expects($this->once())
+            ->method('resolveRequest')->with($request)->willReturn($request);
+        $this->stubResolverMetadata($request, $ipAddress, $userAgent);
+        $cmdResponse = $this->createCommandResponse();
         $this->expectDispatchValidatingRequestMetadata($ipAddress, $userAgent, $cmdResponse);
-        $processor = $this->createProcessor();
-        $response = $processor->process($dto, $this->operation);
-        $this->assertSame(200, $response->getStatusCode());
-    }
-
-    public function testProcessUsesContextRequestInsteadOfRequestStackWhenBothProvided(): void
-    {
-        $stackRequest = $this->createRequest('203.0.113.10', 'Stack Agent');
-        $contextRequest = $this->createRequest('198.51.100.15', 'Context Agent');
-        $this->requestStack->push($stackRequest);
-        $dto = new SignInDto($this->faker->email(), $this->faker->password());
-        $cmdResponse = new SignInCommandResponse(false, 'context-token', 'refresh-token');
-        $this->expectDispatchValidatingRequestMetadata(
-            '198.51.100.15',
-            'Context Agent',
-            $cmdResponse
-        );
-        $result = $this->createProcessor()->process(
-            $dto,
+        $response = $this->createProcessor()->process(
+            new SignInDto($this->faker->email(), $this->faker->password()),
             $this->operation,
             [],
-            ['request' => $contextRequest]
+            ['request' => $request]
         );
-        $this->assertSame(200, $result->getStatusCode());
+        $this->assertSame(200, $response->getStatusCode());
     }
 
-    public function testProcessFallsBackToEmptyRequestMetadataWhenNoRequestExists(): void
+    public function testProcessPassesNullToResolverWhenContextRequestIsMissing(): void
     {
-        $dto = new SignInDto($this->faker->email(), $this->faker->password());
-        $cmdResponse = new SignInCommandResponse(false, 'empty-request-token', 'refresh-token');
-        $this->expectDispatchValidatingRequestMetadata('', '', $cmdResponse);
-        $processor = $this->createProcessor();
-        $response = $processor->process($dto, $this->operation);
+        $ipAddress = $this->faker->ipv4();
+        $userAgent = $this->faker->userAgent();
+        $resolvedRequest = $this->createMock(Request::class);
+        $this->requestContextResolver->expects($this->once())
+            ->method('resolveRequest')->with(null)->willReturn($resolvedRequest);
+        $this->stubResolverMetadata($resolvedRequest, $ipAddress, $userAgent);
+        $cmdResponse = $this->createCommandResponse();
+        $this->expectDispatchValidatingRequestMetadata($ipAddress, $userAgent, $cmdResponse);
+        $response = $this->createProcessor()->process(
+            new SignInDto($this->faker->email(), $this->faker->password()),
+            $this->operation
+        );
         $this->assertSame(200, $response->getStatusCode());
+    }
+
+    private function stubResolver(
+        ?Request $request,
+        string $ipAddress,
+        string $userAgent
+    ): void {
+        $this->requestContextResolver->method('resolveRequest')->willReturn($request);
+        $this->stubResolverMetadata($request, $ipAddress, $userAgent);
+    }
+
+    private function stubResolverMetadata(
+        ?Request $request,
+        string $ipAddress,
+        string $userAgent
+    ): void {
+        $this->requestContextResolver->method('resolveIpAddress')
+            ->with($request)->willReturn($ipAddress);
+        $this->requestContextResolver->method('resolveUserAgent')
+            ->with($request)->willReturn($userAgent);
+    }
+
+    private function createCommandResponse(): SignInCommandResponse
+    {
+        return new SignInCommandResponse(
+            false,
+            $this->faker->sha256(),
+            $this->faker->sha256()
+        );
     }
 
     private function expectDispatchValidatingCommand(
@@ -210,9 +238,7 @@ final class SignInProcessorTest extends UnitTestCase
         string $userAgent,
         SignInCommandResponse $response
     ): void {
-        $this->commandBus
-            ->expects($this->once())
-            ->method('dispatch')
+        $this->commandBus->expects($this->once())->method('dispatch')
             ->with($this->callback(
                 function (SignInCommand $cmd) use (
                     $email,
@@ -234,9 +260,7 @@ final class SignInProcessorTest extends UnitTestCase
 
     private function expectDispatchWithResponse(SignInCommandResponse $response): void
     {
-        $this->commandBus
-            ->expects($this->once())
-            ->method('dispatch')
+        $this->commandBus->expects($this->once())->method('dispatch')
             ->with($this->callback(
                 static function (SignInCommand $cmd) use ($response): bool {
                     $cmd->setResponse($response);
@@ -247,9 +271,7 @@ final class SignInProcessorTest extends UnitTestCase
 
     private function expectDispatchWithRememberMe(SignInCommandResponse $response): void
     {
-        $this->commandBus
-            ->expects($this->once())
-            ->method('dispatch')
+        $this->commandBus->expects($this->once())->method('dispatch')
             ->with($this->callback(
                 function (SignInCommand $cmd) use ($response): bool {
                     $this->assertTrue($cmd->rememberMe);
@@ -264,9 +286,7 @@ final class SignInProcessorTest extends UnitTestCase
         string $expectedAgent,
         SignInCommandResponse $response
     ): void {
-        $this->commandBus
-            ->expects($this->once())
-            ->method('dispatch')
+        $this->commandBus->expects($this->once())->method('dispatch')
             ->with($this->callback(
                 function (SignInCommand $cmd) use ($expectedIp, $expectedAgent, $response): bool {
                     $this->assertSame($expectedIp, $cmd->ipAddress);
@@ -275,19 +295,6 @@ final class SignInProcessorTest extends UnitTestCase
                     return true;
                 }
             ));
-    }
-
-    private function assertStandardAuthCookie(Cookie $cookie, string $expectedValue): void
-    {
-        $this->assertSame('__Host-auth_token', $cookie->getName());
-        $this->assertSame($expectedValue, $cookie->getValue());
-        $this->assertSame('/', $cookie->getPath());
-        $this->assertNull($cookie->getDomain());
-        $this->assertTrue($cookie->isSecure());
-        $this->assertTrue($cookie->isHttpOnly());
-        $this->assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
-        $this->assertGreaterThanOrEqual(899, $cookie->getMaxAge());
-        $this->assertLessThanOrEqual(900, $cookie->getMaxAge());
     }
 
     private function assertTokenResponseBody(
@@ -317,18 +324,26 @@ final class SignInProcessorTest extends UnitTestCase
         );
     }
 
-    private function createRequest(string $ipAddress, string $userAgent): Request
+    /**
+     * @return array{string, string, string, string}
+     */
+    private function generateCredentials(): array
     {
-        return Request::create(
-            '/api/signin',
-            'POST',
+        return [
+            $this->faker->email(),
+            $this->faker->password(),
+            $this->faker->ipv4(),
+            $this->faker->userAgent(),
+        ];
+    }
+
+    private function processWithRequest(SignInDto $dto, Request $request): mixed
+    {
+        return $this->createProcessor()->process(
+            $dto,
+            $this->operation,
             [],
-            [],
-            [],
-            [
-                'REMOTE_ADDR' => $ipAddress,
-                'HTTP_USER_AGENT' => $userAgent,
-            ]
+            ['request' => $request]
         );
     }
 
@@ -336,8 +351,9 @@ final class SignInProcessorTest extends UnitTestCase
     {
         return new SignInProcessor(
             $this->commandBus,
-            $this->requestStack,
-            new SignInCommandFactory()
+            new SignInCommandFactory(),
+            $this->requestContextResolver,
+            $this->cookieAttacher,
         );
     }
 }

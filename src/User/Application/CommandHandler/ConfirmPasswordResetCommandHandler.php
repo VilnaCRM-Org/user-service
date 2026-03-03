@@ -7,14 +7,14 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
-use App\User\Domain\Contract\PasswordHasherInterface;
-use App\User\Domain\Contract\PasswordResetTokenValidatorInterface;
+use App\User\Application\EventPublisher\PasswordResetConfirmationPublisherInterface;
+use App\User\Application\Hasher\PasswordHasherInterface;
+use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisher;
 
 final readonly class ConfirmPasswordResetCommandHandler implements
     CommandHandlerInterface
@@ -24,7 +24,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         private UserRepositoryInterface $userRepository,
         private PasswordHasherInterface $passwordHasher,
         private PasswordResetTokenValidatorInterface $tokenValidator,
-        private PasswordResetConfirmationPublisher $publisher,
+        private PasswordResetConfirmationPublisherInterface $publisher,
     ) {
     }
 
@@ -44,9 +44,10 @@ final readonly class ConfirmPasswordResetCommandHandler implements
 
     private function getValidatedToken(
         string $token
-    ): ?PasswordResetTokenInterface {
+    ): PasswordResetTokenInterface {
         $passwordResetToken = $this->tokenRepository->findByToken($token);
         $this->tokenValidator->validate($passwordResetToken);
+        assert($passwordResetToken instanceof PasswordResetTokenInterface);
 
         return $passwordResetToken;
     }

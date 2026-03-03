@@ -12,6 +12,7 @@ use App\User\Application\DTO\SetupTwoFactorCommandResponse;
 use App\User\Application\DTO\SetupTwoFactorDto;
 use App\User\Application\Factory\SetupTwoFactorCommandFactory;
 use App\User\Application\Processor\SetupTwoFactorProcessor;
+use App\User\Application\Resolver\CurrentUserIdentityResolver;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -87,7 +88,7 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
     {
         return new SetupTwoFactorProcessor(
             $this->commandBus,
-            $this->security,
+            new CurrentUserIdentityResolver($this->security),
             new SetupTwoFactorCommandFactory(),
         );
     }

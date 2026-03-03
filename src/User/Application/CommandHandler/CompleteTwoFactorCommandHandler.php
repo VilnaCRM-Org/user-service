@@ -47,6 +47,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
             $this->handleTwoFactorFailure($command);
         }
 
+        assert(is_string($method));
         $this->issueTokensAndComplete($user, $command, $pendingSession, $method);
     }
 
@@ -54,7 +55,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         User $user,
         CompleteTwoFactorCommand $command,
         PendingTwoFactor $pendingSession,
-        ?string $method
+        string $method
     ): void {
         $issued = $this->issueSession(
             $user,
@@ -88,7 +89,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
     /**
      * @psalm-return int<0, max>|null
      */
-    private function resolveRemainingCodes(User $user, ?string $method): ?int
+    private function resolveRemainingCodes(User $user, string $method): ?int
     {
         if ($method !== 'recovery_code') {
             return null;
@@ -101,7 +102,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         User $user,
         IssuedSession $issued,
         CompleteTwoFactorCommand $command,
-        ?string $method,
+        string $method,
         ?int $remaining
     ): void {
         if ($remaining !== null) {

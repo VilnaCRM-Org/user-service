@@ -137,9 +137,7 @@ final readonly class SudoModeContext implements Context
         DateTimeImmutable $createdAt
     ): AuthSession {
         $rememberMe = $existingSession?->isRememberMe() ?? false;
-        $ttlSeconds = $rememberMe
-            ? AuthSession::REMEMBER_ME_TTL_SECONDS
-            : AuthSession::STANDARD_TTL_SECONDS;
+        $ttlSeconds = $rememberMe ? 2592000 : 900;
 
         return new AuthSession(
             $sessionId,

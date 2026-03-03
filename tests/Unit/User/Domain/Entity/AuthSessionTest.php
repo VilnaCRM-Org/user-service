@@ -100,4 +100,46 @@ final class AuthSessionTest extends UnitTestCase
         $this->assertFalse($session->isExpired($expiresAt));
         $this->assertTrue($session->isExpired($createdAt->modify('+15 minutes')));
     }
+
+    public function testConstructWithStandardTtl(): void
+    {
+        $issuedAt = new DateTimeImmutable();
+        $session = $this->createSession(
+            $issuedAt,
+            $issuedAt->modify('+900 seconds'),
+            false
+        );
+
+        $this->assertFalse($session->isRememberMe());
+        $this->assertFalse($session->isRevoked());
+    }
+
+    public function testConstructWithRememberMe(): void
+    {
+        $issuedAt = new DateTimeImmutable();
+        $session = $this->createSession(
+            $issuedAt,
+            $issuedAt->modify('+2592000 seconds'),
+            true
+        );
+
+        $this->assertTrue($session->isRememberMe());
+        $this->assertFalse($session->isRevoked());
+    }
+
+    private function createSession(
+        DateTimeImmutable $issuedAt,
+        DateTimeImmutable $expiresAt,
+        bool $rememberMe
+    ): AuthSession {
+        return new AuthSession(
+            $this->faker->uuid(),
+            $this->faker->uuid(),
+            $this->faker->ipv4(),
+            $this->faker->userAgent(),
+            $issuedAt,
+            $expiresAt,
+            $rememberMe
+        );
+    }
 }

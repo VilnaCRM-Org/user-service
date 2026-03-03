@@ -88,6 +88,7 @@ class User implements UserInterface
     /**
      * @internal For Doctrine ORM hydration only. Use update() for business logic.
      */
+    #[\Override]
     public function setPassword(string $password): void
     {
         $this->password = $password;
@@ -162,7 +163,9 @@ class User implements UserInterface
     }
 
     /**
-     * @internal For Doctrine ORM hydration and test fixtures only. Use confirm() for business logic.
+     * @internal For Doctrine ORM hydration and test fixtures only.
+     *
+     * @psalm-api
      *
      * @see User::confirm()
      */

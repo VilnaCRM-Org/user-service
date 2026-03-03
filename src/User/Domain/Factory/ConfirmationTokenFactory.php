@@ -14,9 +14,6 @@ final readonly class ConfirmationTokenFactory implements
     {
     }
 
-    /**
-     * @return ConfirmationToken
-     */
     #[\Override]
     public function create(string $userID): ConfirmationTokenInterface
     {

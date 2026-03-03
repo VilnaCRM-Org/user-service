@@ -9,12 +9,10 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
+use App\User\Application\Factory\AuthCookieAttacherInterface;
 use App\User\Application\Factory\CompleteTwoFactorCommandFactoryInterface;
-use DateTimeImmutable;
-use Symfony\Component\HttpFoundation\Cookie;
+use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -22,14 +20,11 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
 {
-    private const AUTH_COOKIE_NAME = '__Host-auth_token';
-
     public function __construct(
         private CommandBusInterface $commandBus,
-        private RequestStack $requestStack,
         private CompleteTwoFactorCommandFactoryInterface $completeTwoFactorCommandFactory,
-        private int $standardCookieMaxAge = 900,
-        private int $rememberMeCookieMaxAge = 2592000,
+        private HttpRequestContextResolverInterface $httpRequestContextResolver,
+        private AuthCookieAttacherInterface $authCookieAttacher,
     ) {
     }
 
@@ -47,20 +42,20 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): Response {
-        $request = $this->resolveRequest($context['request'] ?? null);
+        $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
 
         $command = $this->completeTwoFactorCommandFactory->create(
             $data->pendingSessionId,
             $data->twoFactorCode,
-            $this->resolveIpAddress($request),
-            $this->resolveUserAgent($request)
+            $this->httpRequestContextResolver->resolveIpAddress($request),
+            $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
         $this->commandBus->dispatch($command);
         $commandResponse = $command->getResponse();
 
         $response = new JsonResponse($this->buildResponseBody($commandResponse));
-        $this->attachAuthCookie(
+        $this->authCookieAttacher->attach(
             $response,
             $commandResponse->getAccessToken(),
             $commandResponse->isRememberMe()
@@ -92,48 +87,5 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
         }
 
         return $body;
-    }
-
-    private function attachAuthCookie(
-        Response $response,
-        string $accessToken,
-        bool $rememberMe
-    ): void {
-        if ($accessToken === '') {
-            return;
-        }
-
-        $maxAge = $rememberMe ? $this->rememberMeCookieMaxAge : $this->standardCookieMaxAge;
-
-        $response->headers->setCookie(
-            Cookie::create(
-                self::AUTH_COOKIE_NAME,
-                $accessToken,
-                (new DateTimeImmutable())->modify(sprintf('+%d seconds', $maxAge))
-            )
-                ->withPath('/')
-                ->withSecure(true)
-                ->withHttpOnly(true)
-                ->withSameSite(Cookie::SAMESITE_LAX)
-        );
-    }
-
-    private function resolveRequest(mixed $contextRequest): ?Request
-    {
-        if ($contextRequest instanceof Request) {
-            return $contextRequest;
-        }
-
-        return $this->requestStack->getCurrentRequest();
-    }
-
-    private function resolveIpAddress(?Request $request): string
-    {
-        return $request?->getClientIp() ?? '';
-    }
-
-    private function resolveUserAgent(?Request $request): string
-    {
-        return $request?->headers->get('User-Agent') ?? '';
     }
 }

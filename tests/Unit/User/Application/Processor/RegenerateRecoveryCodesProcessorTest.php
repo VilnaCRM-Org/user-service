@@ -12,6 +12,7 @@ use App\User\Application\DTO\RegenerateRecoveryCodesCommandResponse;
 use App\User\Application\DTO\RegenerateRecoveryCodesDto;
 use App\User\Application\Factory\RegenerateRecoveryCodesCommandFactory;
 use App\User\Application\Processor\RegenerateRecoveryCodesProcessor;
+use App\User\Application\Resolver\CurrentUserIdentityResolver;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Response;
@@ -74,7 +75,7 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
 
         $processor = new RegenerateRecoveryCodesProcessor(
             $this->commandBus,
-            $this->security,
+            new CurrentUserIdentityResolver($this->security),
             new RegenerateRecoveryCodesCommandFactory(),
         );
 
@@ -152,7 +153,7 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
     {
         $processor = new RegenerateRecoveryCodesProcessor(
             $this->commandBus,
-            $this->security,
+            new CurrentUserIdentityResolver($this->security),
             new RegenerateRecoveryCodesCommandFactory()
         );
         return $processor->process(new RegenerateRecoveryCodesDto(), $this->operation);

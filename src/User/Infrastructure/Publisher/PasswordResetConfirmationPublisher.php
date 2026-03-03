@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Publisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
+use App\User\Application\EventPublisher\PasswordResetConfirmationPublisherInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\PasswordResetConfirmedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserUpdatedEventFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-final readonly class PasswordResetConfirmationPublisher
+final readonly class PasswordResetConfirmationPublisher implements
+    PasswordResetConfirmationPublisherInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,
@@ -20,6 +22,7 @@ final readonly class PasswordResetConfirmationPublisher
     ) {
     }
 
+    #[\Override]
     public function publish(UserInterface $user): void
     {
         $eventId = (string) $this->uuidFactory->create();

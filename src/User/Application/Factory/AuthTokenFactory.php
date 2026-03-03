@@ -81,9 +81,6 @@ final readonly class AuthTokenFactory implements AuthTokenFactoryInterface
         string $accessToken,
         string $refreshToken
     ): RefreshTokenCommandResponse {
-        return new RefreshTokenCommandResponse(
-            $accessToken,
-            $refreshToken
-        );
+        return new RefreshTokenCommandResponse($accessToken, $refreshToken);
     }
 }

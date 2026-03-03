@@ -15,6 +15,8 @@ interface AuthRefreshTokenRepositoryInterface
 
     public function findByTokenHash(string $tokenHash): ?AuthRefreshToken;
 
+    public function findByPlainToken(string $plainToken): ?AuthRefreshToken;
+
     /**
      * @return list<AuthRefreshToken>
      */

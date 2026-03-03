@@ -10,17 +10,18 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
+use App\User\Application\Factory\AuthCookieAttacherInterface;
 use App\User\Application\Factory\CompleteTwoFactorCommandFactory;
 use App\User\Application\Processor\CompleteTwoFactorProcessor;
+use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 
 final class CompleteTwoFactorProcessorTest extends UnitTestCase
 {
     private CommandBusInterface&MockObject $commandBus;
-    private RequestStack $requestStack;
+    private HttpRequestContextResolverInterface&MockObject $requestContextResolver;
+    private AuthCookieAttacherInterface&MockObject $cookieAttacher;
     private Operation $operation;
 
     #[\Override]
@@ -29,101 +30,115 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
         parent::setUp();
 
         $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->requestStack = new RequestStack();
+        $this->requestContextResolver = $this->createMock(
+            HttpRequestContextResolverInterface::class
+        );
+        $this->cookieAttacher = $this->createMock(AuthCookieAttacherInterface::class);
         $this->operation = $this->createMock(Operation::class);
     }
 
-    public function testConstructorDefinesExpectedDefaultCookieTtls(): void
+    public function testProcessReturnsTokensAndAttachesCookie(): void
     {
-        $constructor = new \ReflectionMethod(
-            CompleteTwoFactorProcessor::class,
-            '__construct'
-        );
-        $parameters = $constructor->getParameters();
-
-        $this->assertSame(900, $parameters[3]->getDefaultValue());
-        $this->assertSame(2592000, $parameters[4]->getDefaultValue());
-    }
-
-    public function testProcessReturnsTokensAndSetsCookieWithStandardTtl(): void
-    {
-        $ipAddress = $this->faker->ipv4();
-        $userAgent = $this->faker->userAgent();
-        $request = $this->createRequest($ipAddress, $userAgent);
-        $dto = new CompleteTwoFactorDto('01ARZ3NDEKTSV4RRFFQ69G5FAZ', '123456');
+        $data = $this->makeTokenScenarioData();
+        [$ipAddress, $userAgent, $pendingSessionId, $totpCode, $accessToken, $refreshToken] = $data;
+        $request = $this->createMock(Request::class);
+        $this->stubResolver($request, $ipAddress, $userAgent);
+        $dto = new CompleteTwoFactorDto($pendingSessionId, $totpCode);
         $this->expectDispatchValidatingMetadata(
-            '01ARZ3NDEKTSV4RRFFQ69G5FAZ',
-            '123456',
+            $pendingSessionId,
+            $totpCode,
             $ipAddress,
-            $userAgent
+            $userAgent,
+            $accessToken,
+            $refreshToken
         );
+        $this->cookieAttacher->expects($this->once())->method('attach')
+            ->with($this->anything(), $accessToken, false);
         $response = $this->processDto($dto, $request);
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertExpectedTokensInResponse($response);
-        $this->assertStandardAuthCookie(
-            $response->headers->getCookies(),
-            'issued-access-token',
-            899,
-            900
-        );
+        $this->assertExpectedTokensInResponse($response, $accessToken, $refreshToken);
     }
 
-    public function testProcessSetsCookieWithRememberMeTtlWhenRememberMeIsTrue(): void
+    public function testProcessAttachesCookieWithRememberMe(): void
     {
-        $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
-        $dto = new CompleteTwoFactorDto('01ARZ3NDEKTSV4RRFFQ69G5FZZ', '123456');
+        $request = $this->createMock(Request::class);
+        $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
+        $accessToken = $this->faker->sha256();
+        $dto = new CompleteTwoFactorDto(
+            $this->faker->lexify('??????????????????????????'),
+            (string) $this->faker->numberBetween(100000, 999999)
+        );
         $commandResponse = (new CompleteTwoFactorCommandResponse(
-            'remember-access-token',
-            'remember-refresh-token'
+            $accessToken,
+            $this->faker->sha256()
         ))->withRememberMe();
         $this->expectDispatchSetsResponse($commandResponse);
-        $response = $this->processDto($dto, $request);
-        $cookies = $response->headers->getCookies();
-        $this->assertCount(1, $cookies);
-        $this->assertGreaterThanOrEqual(2591999, $cookies[0]->getMaxAge());
-        $this->assertLessThanOrEqual(2592000, $cookies[0]->getMaxAge());
-    }
-
-    public function testProcessDoesNotSetCookieWhenAccessTokenIsEmpty(): void
-    {
-        $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
-        $dto = new CompleteTwoFactorDto('01ARZ3NDEKTSV4RRFFQ69G5FB0', '123456');
-        $this->expectDispatchSetsResponse(
-            new CompleteTwoFactorCommandResponse('', 'issued-refresh-token')
-        );
+        $this->cookieAttacher->expects($this->once())->method('attach')
+            ->with($this->anything(), $accessToken, true);
         $response = $this->processDto($dto, $request);
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertCount(0, $response->headers->getCookies());
     }
 
-    public function testProcessUsesRequestStackWhenContextRequestIsMissing(): void
+    public function testProcessAttachesCookieWithEmptyAccessToken(): void
+    {
+        $request = $this->createMock(Request::class);
+        $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
+        $dto = new CompleteTwoFactorDto(
+            $this->faker->lexify('??????????????????????????'),
+            (string) $this->faker->numberBetween(100000, 999999)
+        );
+        $this->expectDispatchSetsResponse(
+            new CompleteTwoFactorCommandResponse(
+                '',
+                $this->faker->sha256()
+            )
+        );
+        $this->cookieAttacher->expects($this->once())->method('attach')
+            ->with($this->anything(), '', false);
+        $response = $this->processDto($dto, $request);
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testProcessDelegatesContextRequestToResolver(): void
     {
         $ipAddress = $this->faker->ipv4();
         $userAgent = $this->faker->userAgent();
-        $this->requestStack->push($this->createRequest($ipAddress, $userAgent));
-        $dto = new CompleteTwoFactorDto('01ARZ3NDEKTSV4RRFFQ69G5FB1', '123456');
+        $request = $this->createMock(Request::class);
+        $this->requestContextResolver->expects($this->once())->method('resolveRequest')
+            ->with($request)->willReturn($request);
+        $this->stubResolverMetadata($request, $ipAddress, $userAgent);
+        $dto = $this->makeRandomDto();
+        $accessToken = $this->faker->sha256();
         $this->expectDispatchAssertingRequestMetadata(
             $ipAddress,
             $userAgent,
-            new CompleteTwoFactorCommandResponse('stack-access-token', 'stack-refresh-token')
+            new CompleteTwoFactorCommandResponse(
+                $accessToken,
+                $this->faker->sha256()
+            )
         );
-        $response = $this->processDto($dto);
+        $response = $this->processDto($dto, $request);
         $this->assertSame(200, $response->getStatusCode());
-        $cookies = $response->headers->getCookies();
-        $this->assertCount(1, $cookies);
-        $this->assertGreaterThanOrEqual(899, $cookies[0]->getMaxAge());
-        $this->assertLessThanOrEqual(900, $cookies[0]->getMaxAge());
     }
 
-    public function testProcessFallsBackToEmptyRequestMetadataWhenNoRequestAvailable(): void
+    public function testProcessPassesNullToResolverWhenContextRequestIsMissing(): void
     {
-        $dto = new CompleteTwoFactorDto('01ARZ3NDEKTSV4RRFFQ69G5FB9', '123456');
+        $ipAddress = $this->faker->ipv4();
+        $userAgent = $this->faker->userAgent();
+        $resolvedRequest = $this->createMock(Request::class);
+        $this->requestContextResolver->expects($this->once())->method('resolveRequest')
+            ->with(null)->willReturn($resolvedRequest);
+        $this->stubResolverMetadata($resolvedRequest, $ipAddress, $userAgent);
+        $dto = new CompleteTwoFactorDto(
+            $this->faker->lexify('??????????????????????????'),
+            (string) $this->faker->numberBetween(100000, 999999)
+        );
         $this->expectDispatchAssertingRequestMetadata(
-            '',
-            '',
+            $ipAddress,
+            $userAgent,
             new CompleteTwoFactorCommandResponse(
-                'no-request-access-token',
-                'no-request-refresh-token'
+                $this->faker->sha256(),
+                $this->faker->sha256()
             )
         );
         $response = $this->processDto($dto);
@@ -132,30 +147,41 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
 
     public function testProcessIncludesRecoveryCodeWarningFieldsInResponse(): void
     {
-        $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
-        $dto = new CompleteTwoFactorDto('01ARZ3NDEKTSV4RRFFQ69G5FB2', 'AB12-CD34');
+        $request = $this->createMock(Request::class);
+        $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
+        $recoveryCode = $this->faker->regexify('[A-Z0-9]{4}-[A-Z0-9]{4}');
+        $dto = new CompleteTwoFactorDto(
+            $this->faker->lexify('??????????????????????????'),
+            $recoveryCode
+        );
+        $remainingCodes = $this->faker->numberBetween(1, 3);
+        $warningMessage = $this->faker->sentence();
         $this->expectDispatchSetsResponse(new CompleteTwoFactorCommandResponse(
-            'recovery-access-token',
-            'recovery-refresh-token',
-            1,
-            'Only 1 recovery code(s) remaining. Regenerate soon.'
+            $this->faker->sha256(),
+            $this->faker->sha256(),
+            $remainingCodes,
+            $warningMessage
         ));
         $response = $this->processDto($dto, $request);
         $body = json_decode((string) $response->getContent(), true);
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame(1, $body['recovery_codes_remaining']);
-        $this->assertSame(
-            'Only 1 recovery code(s) remaining. Regenerate soon.',
-            $body['warning']
-        );
+        $this->assertSame($remainingCodes, $body['recovery_codes_remaining']);
+        $this->assertSame($warningMessage, $body['warning']);
     }
 
     public function testProcessOmitsRecoveryCodeFieldsWhenNull(): void
     {
-        $request = $this->createRequest($this->faker->ipv4(), $this->faker->userAgent());
-        $dto = new CompleteTwoFactorDto('01ARZ3NDEKTSV4RRFFQ69G5FB3', '123456');
+        $request = $this->createMock(Request::class);
+        $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
+        $dto = new CompleteTwoFactorDto(
+            $this->faker->lexify('??????????????????????????'),
+            (string) $this->faker->numberBetween(100000, 999999)
+        );
         $this->expectDispatchSetsResponse(
-            new CompleteTwoFactorCommandResponse('totp-access-token', 'totp-refresh-token')
+            new CompleteTwoFactorCommandResponse(
+                $this->faker->sha256(),
+                $this->faker->sha256()
+            )
         );
         $response = $this->processDto($dto, $request);
         $body = json_decode((string) $response->getContent(), true);
@@ -164,43 +190,49 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
         $this->assertArrayNotHasKey('warning', $body);
     }
 
-    private function createRequest(string $ipAddress, string $userAgent): Request
-    {
-        return Request::create(
-            '/api/signin/2fa',
-            'POST',
-            [],
-            [],
-            [],
-            [
-                'REMOTE_ADDR' => $ipAddress,
-                'HTTP_USER_AGENT' => $userAgent,
-            ]
-        );
+    private function stubResolver(
+        ?Request $request,
+        string $ipAddress,
+        string $userAgent
+    ): void {
+        $this->requestContextResolver->method('resolveRequest')->willReturn($request);
+        $this->stubResolverMetadata($request, $ipAddress, $userAgent);
+    }
+
+    private function stubResolverMetadata(
+        ?Request $request,
+        string $ipAddress,
+        string $userAgent
+    ): void {
+        $this->requestContextResolver->method('resolveIpAddress')
+            ->with($request)->willReturn($ipAddress);
+        $this->requestContextResolver->method('resolveUserAgent')
+            ->with($request)->willReturn($userAgent);
     }
 
     private function expectDispatchValidatingMetadata(
         string $pendingSessionId,
         string $totpCode,
         string $ipAddress,
-        string $userAgent
+        string $userAgent,
+        string $accessToken,
+        string $refreshToken
     ): void {
+        $response = new CompleteTwoFactorCommandResponse($accessToken, $refreshToken);
         $this->commandBus->expects($this->once())->method('dispatch')
             ->with($this->callback(
                 function (CompleteTwoFactorCommand $cmd) use (
                     $pendingSessionId,
                     $totpCode,
                     $ipAddress,
-                    $userAgent
+                    $userAgent,
+                    $response
                 ): bool {
                     $this->assertSame($pendingSessionId, $cmd->pendingSessionId);
                     $this->assertSame($totpCode, $cmd->twoFactorCode);
                     $this->assertSame($ipAddress, $cmd->ipAddress);
                     $this->assertSame($userAgent, $cmd->userAgent);
-                    $cmd->setResponse(new CompleteTwoFactorCommandResponse(
-                        'issued-access-token',
-                        'issued-refresh-token'
-                    ));
+                    $cmd->setResponse($response);
                     return true;
                 }
             ));
@@ -244,8 +276,9 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
     ): mixed {
         $processor = new CompleteTwoFactorProcessor(
             $this->commandBus,
-            $this->requestStack,
-            new CompleteTwoFactorCommandFactory()
+            new CompleteTwoFactorCommandFactory(),
+            $this->requestContextResolver,
+            $this->cookieAttacher,
         );
         if ($request !== null) {
             return $processor->process($dto, $this->operation, [], ['request' => $request]);
@@ -253,37 +286,41 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
         return $processor->process($dto, $this->operation);
     }
 
-    private function assertExpectedTokensInResponse(mixed $response): void
-    {
+    private function assertExpectedTokensInResponse(
+        mixed $response,
+        string $accessToken,
+        string $refreshToken
+    ): void {
         $this->assertJsonStringEqualsJsonString(
             json_encode([
                 '2fa_enabled' => true,
-                'access_token' => 'issued-access-token',
-                'refresh_token' => 'issued-refresh-token',
+                'access_token' => $accessToken,
+                'refresh_token' => $refreshToken,
             ]),
             (string) $response->getContent()
         );
     }
 
     /**
-     * @param array<Cookie> $cookies
+     * @return array{string, string, string, string, string, string}
      */
-    private function assertStandardAuthCookie(
-        array $cookies,
-        string $expectedValue,
-        int $minAge,
-        int $maxAge
-    ): void {
-        $this->assertCount(1, $cookies);
-        $cookie = $cookies[0];
-        $this->assertSame('__Host-auth_token', $cookie->getName());
-        $this->assertSame($expectedValue, $cookie->getValue());
-        $this->assertSame('/', $cookie->getPath());
-        $this->assertNull($cookie->getDomain());
-        $this->assertTrue($cookie->isSecure());
-        $this->assertTrue($cookie->isHttpOnly());
-        $this->assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
-        $this->assertGreaterThanOrEqual($minAge, $cookie->getMaxAge());
-        $this->assertLessThanOrEqual($maxAge, $cookie->getMaxAge());
+    private function makeTokenScenarioData(): array
+    {
+        return [
+            $this->faker->ipv4(),
+            $this->faker->userAgent(),
+            $this->faker->lexify('??????????????????????????'),
+            (string) $this->faker->numberBetween(100000, 999999),
+            $this->faker->sha256(),
+            $this->faker->sha256(),
+        ];
+    }
+
+    private function makeRandomDto(): CompleteTwoFactorDto
+    {
+        return new CompleteTwoFactorDto(
+            $this->faker->lexify('??????????????????????????'),
+            (string) $this->faker->numberBetween(100000, 999999)
+        );
     }
 }

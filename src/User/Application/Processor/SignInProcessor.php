@@ -9,12 +9,10 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\DTO\SignInDto;
+use App\User\Application\Factory\AuthCookieAttacherInterface;
 use App\User\Application\Factory\SignInCommandFactoryInterface;
-use DateTimeImmutable;
-use Symfony\Component\HttpFoundation\Cookie;
+use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -22,14 +20,11 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class SignInProcessor implements ProcessorInterface
 {
-    private const AUTH_COOKIE_NAME = '__Host-auth_token';
-
     public function __construct(
         private CommandBusInterface $commandBus,
-        private RequestStack $requestStack,
         private SignInCommandFactoryInterface $signInCommandFactory,
-        private int $standardCookieMaxAge = 900,
-        private int $rememberMeCookieMaxAge = 2592000,
+        private HttpRequestContextResolverInterface $httpRequestContextResolver,
+        private AuthCookieAttacherInterface $authCookieAttacher,
     ) {
     }
 
@@ -47,14 +42,14 @@ final readonly class SignInProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): Response {
-        $request = $this->resolveRequest($context['request'] ?? null);
+        $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
 
         $command = $this->signInCommandFactory->create(
             $data->email,
             $data->password,
             $data->isRememberMe(),
-            $this->resolveIpAddress($request),
-            $this->resolveUserAgent($request)
+            $this->httpRequestContextResolver->resolveIpAddress($request),
+            $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
         $this->commandBus->dispatch($command);
@@ -62,15 +57,12 @@ final readonly class SignInProcessor implements ProcessorInterface
 
         $response = new JsonResponse($this->buildResponseBody($commandResponse));
 
-        if ($commandResponse->isTwoFactorEnabled()) {
-            return $response;
+        if (!$commandResponse->isTwoFactorEnabled()) {
+            $accessToken = $commandResponse->getAccessToken();
+            if ($accessToken !== null) {
+                $this->authCookieAttacher->attach($response, $accessToken, $data->isRememberMe());
+            }
         }
-
-        $this->attachAuthCookie(
-            $response,
-            $commandResponse->getAccessToken(),
-            $data
-        );
 
         return $response;
     }
@@ -100,50 +92,5 @@ final readonly class SignInProcessor implements ProcessorInterface
         $body['refresh_token'] = (string) $response->getRefreshToken();
 
         return $body;
-    }
-
-    private function attachAuthCookie(
-        Response $response,
-        ?string $accessToken,
-        SignInDto $data
-    ): void {
-        if ($accessToken === null || $accessToken === '') {
-            return;
-        }
-
-        $maxAge = $data->isRememberMe()
-            ? $this->rememberMeCookieMaxAge
-            : $this->standardCookieMaxAge;
-
-        $response->headers->setCookie(
-            Cookie::create(
-                self::AUTH_COOKIE_NAME,
-                $accessToken,
-                (new DateTimeImmutable())->modify(sprintf('+%d seconds', $maxAge))
-            )
-                ->withPath('/')
-                ->withSecure(true)
-                ->withHttpOnly(true)
-                ->withSameSite(Cookie::SAMESITE_LAX)
-        );
-    }
-
-    private function resolveRequest(mixed $contextRequest): ?Request
-    {
-        if ($contextRequest instanceof Request) {
-            return $contextRequest;
-        }
-
-        return $this->requestStack->getCurrentRequest();
-    }
-
-    private function resolveIpAddress(?Request $request): string
-    {
-        return $request?->getClientIp() ?? '';
-    }
-
-    private function resolveUserAgent(?Request $request): string
-    {
-        return $request?->headers->get('User-Agent') ?? '';
     }
 }

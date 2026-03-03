@@ -8,15 +8,13 @@ use App\Shared\Domain\Bus\Event\DomainEvent;
 
 /**
  * Emitted when a user session is revoked (logout, password change, etc.).
- *
- * AC: NFR-33 - Audit logging for auth events
  */
 final class SessionRevokedEvent extends AuthDomainEvent
 {
     public function __construct(
         public readonly string $userId,
         public readonly string $sessionId,
-        public readonly string $reason,  // "logout", "password_change", "two_factor_enabled", etc.
+        public readonly string $reason,
         string $eventId = '',
         ?string $occurredOn = null,
     ) {

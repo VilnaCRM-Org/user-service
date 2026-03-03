@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
+use App\User\Application\Authenticator\UserAuthenticatorInterface;
 use App\User\Application\Command\SignInCommand;
-use App\User\Application\Component\SessionIssuerInterface;
-use App\User\Application\Component\SignInEventsInterface;
-use App\User\Application\Component\UserAuthenticatorInterface;
-use App\User\Application\DTO\IssuedSession;
 use App\User\Application\DTO\SignInCommandResponse;
+use App\User\Application\EventPublisher\SignInEventsInterface;
+use App\User\Application\Issuer\SessionIssuerInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactoryInterface;
@@ -23,7 +22,7 @@ use Symfony\Component\Uid\Factory\UlidFactory;
  */
 final class SignInCommandHandler implements CommandHandlerInterface
 {
-    private const PENDING_TWO_FACTOR_TTL_SECONDS = 300;
+    private const DEFAULT_PENDING_TWO_FACTOR_TTL_SECONDS = 300;
 
     public function __construct(
         private readonly UserAuthenticatorInterface $userAuthenticator,
@@ -32,6 +31,8 @@ final class SignInCommandHandler implements CommandHandlerInterface
         private readonly PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
         private readonly PendingTwoFactorFactoryInterface $pendingTwoFactorFactory,
         private readonly UlidFactory $ulidFactory,
+        private readonly int $pendingTwoFactorTtlSeconds =
+            self::DEFAULT_PENDING_TWO_FACTOR_TTL_SECONDS,
     ) {
     }
 
@@ -44,19 +45,23 @@ final class SignInCommandHandler implements CommandHandlerInterface
             $command->userAgent
         );
 
+        $now = new DateTimeImmutable();
+
         if ($authenticated->isTwoFactorEnabled()) {
-            $this->handleTwoFactorPath($authenticated, $command);
+            $this->handleTwoFactorPath($authenticated, $command, $now);
 
             return;
         }
 
-        $this->handleDirectSignIn($authenticated, $command);
+        $this->handleDirectSignIn($authenticated, $command, $now);
     }
 
-    private function handleTwoFactorPath(User $user, SignInCommand $command): void
-    {
-        $createdAt = new DateTimeImmutable();
-        $pending = $this->createPendingTwoFactor($user->getId(), $createdAt, $command->rememberMe);
+    private function handleTwoFactorPath(
+        User $user,
+        SignInCommand $command,
+        DateTimeImmutable $now
+    ): void {
+        $pending = $this->createPendingTwoFactor($user->getId(), $now, $command->rememberMe);
         $this->pendingTwoFactorRepository->save($pending);
 
         $command->setResponse(
@@ -64,16 +69,24 @@ final class SignInCommandHandler implements CommandHandlerInterface
         );
     }
 
-    private function handleDirectSignIn(User $user, SignInCommand $command): void
-    {
-        $issued = $this->issueSession(
+    private function handleDirectSignIn(
+        User $user,
+        SignInCommand $command,
+        DateTimeImmutable $now
+    ): void {
+        $issued = $this->sessionIssuer->issue(
             $user,
             $command->ipAddress,
             $command->userAgent,
-            $command->rememberMe
+            $command->rememberMe,
+            $now
         );
 
-        $this->setDirectSignInResponse($command, $issued);
+        $command->setResponse(new SignInCommandResponse(
+            false,
+            $issued->accessToken,
+            $issued->refreshToken
+        ));
 
         $this->events->publishSignedIn(
             $user->getId(),
@@ -85,27 +98,6 @@ final class SignInCommandHandler implements CommandHandlerInterface
         );
     }
 
-    private function setDirectSignInResponse(
-        SignInCommand $command,
-        IssuedSession $issued
-    ): void {
-        $command->setResponse(new SignInCommandResponse(
-            false,
-            $issued->accessToken,
-            $issued->refreshToken
-        ));
-    }
-
-    private function issueSession(
-        User $user,
-        string $ipAddress,
-        string $userAgent,
-        bool $rememberMe
-    ): IssuedSession {
-        $issuedAt = new DateTimeImmutable();
-        return $this->sessionIssuer->issue($user, $ipAddress, $userAgent, $rememberMe, $issuedAt);
-    }
-
     private function createPendingTwoFactor(
         string $userId,
         DateTimeImmutable $createdAt,
@@ -115,7 +107,7 @@ final class SignInCommandHandler implements CommandHandlerInterface
             (string) $this->ulidFactory->create(),
             $userId,
             $createdAt,
-            $createdAt->modify(sprintf('+%d seconds', self::PENDING_TWO_FACTOR_TTL_SECONDS))
+            $createdAt->modify(sprintf('+%d seconds', $this->pendingTwoFactorTtlSeconds))
         );
 
         return $rememberMe ? $pending->withRememberMe() : $pending;

@@ -11,6 +11,7 @@ use App\User\Application\Command\DisableTwoFactorCommand;
 use App\User\Application\DTO\DisableTwoFactorDto;
 use App\User\Application\Factory\DisableTwoFactorCommandFactory;
 use App\User\Application\Processor\DisableTwoFactorProcessor;
+use App\User\Application\Resolver\CurrentUserIdentityResolver;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Response;
@@ -74,7 +75,7 @@ final class DisableTwoFactorProcessorTest extends UnitTestCase
     {
         return new DisableTwoFactorProcessor(
             $this->commandBus,
-            $this->security,
+            new CurrentUserIdentityResolver($this->security),
             new DisableTwoFactorCommandFactory(),
         );
     }

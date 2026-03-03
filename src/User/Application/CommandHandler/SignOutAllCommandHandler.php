@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
-use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\SignOutAllCommand;
-use App\User\Application\Generator\EventIdGeneratorInterface;
-use App\User\Domain\Event\AllSessionsRevokedEvent;
+use App\User\Application\EventPublisher\SessionEventsInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 
@@ -20,14 +18,12 @@ final readonly class SignOutAllCommandHandler implements CommandHandlerInterface
     public function __construct(
         private AuthSessionRepositoryInterface $sessionRepository,
         private AuthRefreshTokenRepositoryInterface $refreshTokenRepository,
-        private EventBusInterface $eventBus,
-        private EventIdGeneratorInterface $eventIdGenerator,
+        private SessionEventsInterface $sessionEvents,
     ) {
     }
 
     public function __invoke(SignOutAllCommand $command): void
     {
-        // AC: FR-14 - Revoke all sessions for user
         $sessions = $this->sessionRepository->findByUserId($command->userId);
 
         $revokedCount = 0;
@@ -42,13 +38,10 @@ final readonly class SignOutAllCommandHandler implements CommandHandlerInterface
             }
         }
 
-        // AC: NFR-33 - Emit audit event
-        $this->eventBus->publish(new AllSessionsRevokedEvent(
+        $this->sessionEvents->publishAllSessionsRevoked(
             $command->userId,
             'user_initiated',
-            $revokedCount,
-            $this->eventIdGenerator->generate(),
-            null
-        ));
+            $revokedCount
+        );
     }
 }

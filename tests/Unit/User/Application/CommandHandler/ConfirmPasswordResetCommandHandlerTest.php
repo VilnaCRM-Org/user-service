@@ -8,8 +8,9 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\CommandHandler\ConfirmPasswordResetCommandHandler;
 use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
-use App\User\Domain\Contract\PasswordHasherInterface;
-use App\User\Domain\Contract\PasswordResetTokenValidatorInterface;
+use App\User\Application\EventPublisher\PasswordResetConfirmationPublisherInterface;
+use App\User\Application\Hasher\PasswordHasherInterface;
+use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException;
@@ -18,7 +19,6 @@ use App\User\Domain\Exception\PasswordResetTokenNotFoundException;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisher;
 use PHPUnit\Framework\MockObject\MockObject;
 
 final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
@@ -27,7 +27,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     private PasswordResetTokenRepositoryInterface&MockObject $tokenRepository;
     private PasswordHasherInterface&MockObject $passwordHasher;
     private PasswordResetTokenValidatorInterface&MockObject $tokenValidator;
-    private PasswordResetConfirmationPublisher&MockObject $publisher;
+    private PasswordResetConfirmationPublisherInterface&MockObject $publisher;
     private ConfirmPasswordResetCommandHandler $handler;
 
     #[\Override]
@@ -39,7 +39,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $this->tokenRepository = $this->createMock(PasswordResetTokenRepositoryInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->tokenValidator = $this->createMock(PasswordResetTokenValidatorInterface::class);
-        $this->publisher = $this->createMock(PasswordResetConfirmationPublisher::class);
+        $this->publisher = $this->createMock(PasswordResetConfirmationPublisherInterface::class);
 
         $this->handler = new ConfirmPasswordResetCommandHandler(
             $this->tokenRepository,

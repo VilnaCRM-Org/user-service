@@ -14,7 +14,7 @@ final readonly class ClearAuthCookieResponseFactory
         $response = new Response('', Response::HTTP_NO_CONTENT);
         $response->headers->setCookie(
             new Cookie(
-                '__Host-auth_token',
+                AuthCookieFactory::COOKIE_NAME,
                 '',
                 1,
                 '/',

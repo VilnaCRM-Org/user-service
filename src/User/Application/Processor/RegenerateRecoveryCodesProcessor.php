@@ -9,10 +9,9 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\RegenerateRecoveryCodesDto;
 use App\User\Application\Factory\RegenerateRecoveryCodesCommandFactoryInterface;
-use Symfony\Bundle\SecurityBundle\Security;
+use App\User\Application\Resolver\CurrentUserIdentityResolver;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
  * @implements ProcessorInterface<RegenerateRecoveryCodesDto, Response>
@@ -22,8 +21,8 @@ final readonly class RegenerateRecoveryCodesProcessor implements
 {
     public function __construct(
         private CommandBusInterface $commandBus,
-        private Security $security,
-        private RegenerateRecoveryCodesCommandFactoryInterface $commandFactory,
+        private CurrentUserIdentityResolver $userIdentityResolver,
+        private RegenerateRecoveryCodesCommandFactoryInterface $regenerateCodesCommandFactory,
     ) {
     }
 
@@ -41,10 +40,10 @@ final readonly class RegenerateRecoveryCodesProcessor implements
         array $uriVariables = [],
         array $context = []
     ): Response {
-        $email = $this->resolveCurrentUserEmail();
-        $sessionId = $this->resolveCurrentSessionId();
+        $email = $this->userIdentityResolver->resolveEmail();
+        $sessionId = $this->userIdentityResolver->resolveSessionId();
 
-        $command = $this->commandFactory->create(
+        $command = $this->regenerateCodesCommandFactory->create(
             $email,
             $sessionId
         );
@@ -59,32 +58,5 @@ final readonly class RegenerateRecoveryCodesProcessor implements
             ],
             Response::HTTP_OK
         );
-    }
-
-    private function resolveCurrentUserEmail(): string
-    {
-        $user = $this->security->getUser();
-
-        $identifier = $user?->getUserIdentifier() ?? '';
-        if ($identifier !== '') {
-            return $identifier;
-        }
-
-        throw new UnauthorizedHttpException(
-            'Bearer',
-            'Authentication required.'
-        );
-    }
-
-    private function resolveCurrentSessionId(): string
-    {
-        $token = $this->security->getToken();
-        if ($token === null) {
-            return '';
-        }
-
-        $sid = $token->getAttribute('sid');
-
-        return is_string($sid) ? $sid : '';
     }
 }

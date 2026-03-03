@@ -9,9 +9,8 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\DisableTwoFactorDto;
 use App\User\Application\Factory\DisableTwoFactorCommandFactoryInterface;
-use Symfony\Bundle\SecurityBundle\Security;
+use App\User\Application\Resolver\CurrentUserIdentityResolver;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
  * @implements ProcessorInterface<DisableTwoFactorDto, Response>
@@ -20,7 +19,7 @@ final readonly class DisableTwoFactorProcessor implements ProcessorInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,
-        private Security $security,
+        private CurrentUserIdentityResolver $userIdentityResolver,
         private DisableTwoFactorCommandFactoryInterface $disableTwoFactorCommandFactory,
     ) {
     }
@@ -39,26 +38,11 @@ final readonly class DisableTwoFactorProcessor implements ProcessorInterface
     ): Response {
         $this->commandBus->dispatch(
             $this->disableTwoFactorCommandFactory->create(
-                $this->resolveCurrentUserEmail(),
+                $this->userIdentityResolver->resolveEmail(),
                 $data->twoFactorCode
             )
         );
 
         return new Response('', Response::HTTP_NO_CONTENT);
-    }
-
-    private function resolveCurrentUserEmail(): string
-    {
-        $user = $this->security->getUser();
-
-        $identifier = $user?->getUserIdentifier() ?? '';
-        if ($identifier !== '') {
-            return $identifier;
-        }
-
-        throw new UnauthorizedHttpException(
-            'Bearer',
-            'Authentication required.'
-        );
     }
 }

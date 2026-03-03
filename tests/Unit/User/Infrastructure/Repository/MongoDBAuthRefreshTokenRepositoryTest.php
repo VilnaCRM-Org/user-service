@@ -88,6 +88,24 @@ final class MongoDBAuthRefreshTokenRepositoryTest extends UnitTestCase
         $this->assertSame($expectedToken, $repository->findByTokenHash($tokenHash));
     }
 
+    public function testFindByPlainToken(): void
+    {
+        $plainToken = $this->faker->sha256();
+        $expectedToken = $this->createAuthRefreshToken();
+        $repositoryClass = MongoDBAuthRefreshTokenRepository::class;
+        $repository = $this->getMockBuilder($repositoryClass)
+            ->setConstructorArgs([$this->documentManager, $this->registry])
+            ->onlyMethods(['findByTokenHash'])
+            ->getMock();
+
+        $repository->expects($this->once())
+            ->method('findByTokenHash')
+            ->with(hash('sha256', $plainToken))
+            ->willReturn($expectedToken);
+
+        $this->assertSame($expectedToken, $repository->findByPlainToken($plainToken));
+    }
+
     public function testFindBySessionId(): void
     {
         $sessionId = $this->faker->uuid();

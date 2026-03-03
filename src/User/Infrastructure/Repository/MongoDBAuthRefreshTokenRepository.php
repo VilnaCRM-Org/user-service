@@ -43,6 +43,12 @@ final class MongoDBAuthRefreshTokenRepository extends ServiceDocumentRepository 
         return $this->findOneBy(['tokenHash' => $tokenHash]);
     }
 
+    #[\Override]
+    public function findByPlainToken(string $plainToken): ?AuthRefreshToken
+    {
+        return $this->findByTokenHash(hash('sha256', $plainToken));
+    }
+
     /**
      * @return list<AuthRefreshToken>
      */
