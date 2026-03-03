@@ -19,7 +19,7 @@ Prerequisite: the target branch must contain the baseline sign-in/session/2FA co
 
 ## 2. Architecture Overview
 
-```
+```text
 Browser
   |
   |- GET /api/auth/social/{provider}
@@ -48,7 +48,7 @@ Browser
   |    |              |- has 2FA: create PendingTwoFactor -> response(twoFactorEnabled=true)
   |    |              |- no 2FA: SessionIssuer::issue() -> response(twoFactorEnabled=false)+cookies
   |
-  |- POST /auth/2fa/complete (unchanged)
+  |- POST /api/auth/2fa/complete (unchanged)
 ```
 
 ---
@@ -57,7 +57,7 @@ Browser
 
 `src/OAuth/` owns social identity mapping. It does not own the User aggregate.
 
-```
+```text
 src/OAuth/
 |- Domain/
 |  |- Entity/SocialIdentity.php
@@ -135,15 +135,15 @@ interface OAuthProviderInterface
 
 Redis key pattern: `oauth_state:{state}`
 
-Value payload:
+Value payload (PHP camelCase in domain; serialised to snake_case in Redis):
 
-- provider
-- codeVerifier
-- flowBindingHash
-- redirectUri
-- createdAt
+- `provider`
+- `codeVerifier` / `code_verifier`
+- `flowBindingHash` / `flow_binding_hash`
+- `redirectUri` / `redirect_uri`
+- `createdAt` / `created_at`
 
-Validation is atomic and one-time (consume on read). Provider mismatch or flow mismatch is rejected.
+Validation is atomic and one-time (consume on read) — implemented as a single Lua script or `WATCH`+`MULTI` transaction. Provider mismatch or flow mismatch is rejected.
 
 ### 4.5 User Resolution Policy
 
@@ -170,7 +170,7 @@ For newly provisioned OAuth users:
 After successful user resolution:
 
 - if user has local 2FA enabled: create `PendingTwoFactor`
-- otherwise: issue session directly
+- otherwise: pass the already-resolved `User` object directly to `SessionIssuer::issue()` — do not re-fetch the user from the repository
 
 `CompleteTwoFactorCommandHandler` remains unchanged.
 
@@ -181,7 +181,18 @@ Routes:
 - `GET /api/auth/social/{provider}`
 - `GET /api/auth/social/{provider}/callback`
 
-Errors are RFC 7807 with stable `error_code` values.
+Errors are RFC 7807 (`application/problem+json`) with stable `error_code` values:
+
+| `error_code`                  | HTTP | Trigger                                          |
+| ----------------------------- | ---- | ------------------------------------------------ |
+| `unsupported_provider`        | 400  | `{provider}` is not `github` or `google`         |
+| `missing_oauth_parameters`    | 400  | `code`, `state`, or flow-binding cookie absent   |
+| `provider_mismatch`           | 400  | Route provider ≠ stored provider in state        |
+| `invalid_state`               | 422  | State unknown, already consumed, or binding fail |
+| `state_expired`               | 422  | State TTL elapsed                                |
+| `unverified_provider_email`   | 422  | Provider email not verified                      |
+| `social_identity_not_linked`  | 409  | Local user exists by email but has no social link |
+| `provider_unavailable`        | 503  | Provider HTTP call timed out or returned error   |
 
 ### 4.9 Outbound HTTP Resilience
 
@@ -197,7 +208,7 @@ Provider adapters must enforce:
 
 ### SocialIdentity Collection
 
-```
+```text
 Collection: social_identities
 {
   _id:          ULID,
