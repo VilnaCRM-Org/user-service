@@ -9,13 +9,13 @@ use App\User\Application\Authenticator\UserAuthenticatorInterface;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\EventPublisher\SignInEventsInterface;
+use App\User\Application\Generator\IdGeneratorInterface;
 use App\User\Application\Issuer\SessionIssuerInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactoryInterface;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use DateTimeImmutable;
-use Symfony\Component\Uid\Factory\UlidFactory;
 
 /**
  * @psalm-api
@@ -31,7 +31,7 @@ final class SignInCommandHandler implements CommandHandlerInterface
         private readonly SignInEventsInterface $events,
         private readonly PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
         private readonly PendingTwoFactorFactoryInterface $pendingTwoFactorFactory,
-        private readonly UlidFactory $ulidFactory,
+        private readonly IdGeneratorInterface $idGenerator,
         private readonly int $pendingTwoFactorTtlSeconds =
             self::DEFAULT_PENDING_TWO_FACTOR_TTL_SECONDS,
     ) {
@@ -105,7 +105,7 @@ final class SignInCommandHandler implements CommandHandlerInterface
         bool $rememberMe
     ): PendingTwoFactor {
         $pending = $this->pendingTwoFactorFactory->create(
-            (string) $this->ulidFactory->create(),
+            $this->idGenerator->generate(),
             $userId,
             $createdAt,
             $createdAt->modify(sprintf('+%d seconds', $this->pendingTwoFactorTtlSeconds))

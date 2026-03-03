@@ -8,11 +8,11 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Applier\UserUpdateApplierInterface;
 use App\User\Application\Command\UpdateUserCommand;
+use App\User\Application\Generator\EventIdGeneratorInterface;
 use App\User\Application\Hasher\PasswordHasherInterface;
 use App\User\Application\Revoker\PasswordChangeSessionRevokerInterface;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Exception\InvalidPasswordException;
-use Symfony\Component\Uid\Factory\UuidFactory;
 
 final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
 {
@@ -21,7 +21,7 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
         private PasswordHasherInterface $passwordHasher,
         private UserUpdateApplierInterface $userUpdateApplier,
         private PasswordChangeSessionRevokerInterface $passwordChangeSessionRevoker,
-        private UuidFactory $uuidFactory,
+        private EventIdGeneratorInterface $eventIdGenerator,
     ) {
     }
 
@@ -30,7 +30,7 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
         $user = $command->user;
         $this->assertPasswordIsValid($user->getPassword(), $command->updateData->oldPassword);
 
-        $eventId = (string) $this->uuidFactory->create();
+        $eventId = $this->eventIdGenerator->generate();
         $events = $this->userUpdateApplier->apply(
             $user,
             $command->updateData,
@@ -38,15 +38,37 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
             $eventId
         );
 
-        if ($command->updateData->newPassword !== $command->updateData->oldPassword) {
-            $events[] = $this->buildPasswordChangeRevocationEvent(
-                $user->getId(),
-                $command->currentSessionId,
-                $eventId
-            );
+        $finalEvents = $this->appendRevocationEvent($command, $user->getId(), $events, $eventId);
+        $this->eventBus->publish(...$finalEvents);
+    }
+
+    /**
+     * @param list<\App\Shared\Domain\Bus\Event\DomainEvent> $events
+     *
+     * @return list<\App\Shared\Domain\Bus\Event\DomainEvent>
+     */
+    private function appendRevocationEvent(
+        UpdateUserCommand $command,
+        string $userId,
+        array $events,
+        string $eventId
+    ): array {
+        if ($command->updateData->newPassword === $command->updateData->oldPassword) {
+            return $events;
         }
 
-        $this->eventBus->publish(...$events);
+        $revokedCount = $this->passwordChangeSessionRevoker->revokeOtherSessions(
+            $userId,
+            $command->currentSessionId
+        );
+        $events[] = new AllSessionsRevokedEvent(
+            $userId,
+            'password_change',
+            $revokedCount,
+            $eventId
+        );
+
+        return $events;
     }
 
     private function assertPasswordIsValid(
@@ -56,21 +78,5 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
         if (!$this->passwordHasher->verify($currentPasswordHash, $oldPassword)) {
             throw new InvalidPasswordException();
         }
-    }
-
-    private function buildPasswordChangeRevocationEvent(
-        string $userId,
-        string $currentSessionId,
-        string $eventId
-    ): AllSessionsRevokedEvent {
-        return new AllSessionsRevokedEvent(
-            $userId,
-            'password_change',
-            $this->passwordChangeSessionRevoker->revokeOtherSessions(
-                $userId,
-                $currentSessionId
-            ),
-            $eventId
-        );
     }
 }

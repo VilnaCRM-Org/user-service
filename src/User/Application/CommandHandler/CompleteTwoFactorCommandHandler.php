@@ -38,7 +38,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
     {
         $pendingSession = $this->resolvePendingSession($command->pendingSessionId);
         $user = $this->resolveUser($pendingSession->getUserId());
-        $method = $this->twoFactorCodeVerifier->resolveVerificationMethod(
+        $method = $this->twoFactorCodeVerifier->verifyAndResolveMethod(
             $user,
             $command->twoFactorCode
         );
@@ -91,7 +91,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
      */
     private function resolveRemainingCodes(User $user, string $method): ?int
     {
-        if ($method !== 'recovery_code') {
+        if ($method !== TwoFactorCodeVerifierInterface::METHOD_RECOVERY_CODE) {
             return null;
         }
 
@@ -111,6 +111,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
 
         $this->events->publishCompleted(
             $user->getId(),
+            $user->getEmail(),
             $issued->sessionId,
             $command->ipAddress,
             $command->userAgent,

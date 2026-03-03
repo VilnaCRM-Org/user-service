@@ -2,15 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Component;
+namespace App\User\Application\Authenticator;
 
-use App\User\Domain\Contract\AccountLockoutServiceInterface;
-use App\User\Domain\Contract\PasswordHasherInterface;
+use App\User\Application\EventPublisher\SignInEventsInterface;
+use App\User\Application\Hasher\PasswordHasherInterface;
+use App\User\Application\Lockout\AccountLockoutServiceInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpKernel\Exception\LockedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
+/**
+ * @psalm-api
+ */
 final class UserAuthenticator implements UserAuthenticatorInterface
 {
     private const LOCKOUT_MESSAGE = 'Account temporarily locked';
@@ -65,17 +69,16 @@ final class UserAuthenticator implements UserAuthenticatorInterface
             return;
         }
 
-        $this->events->publishLockedOut(
-            $email,
-            AccountLockoutServiceInterface::MAX_ATTEMPTS,
-            AccountLockoutServiceInterface::LOCKOUT_SECONDS
-        );
+        $maxAttempts = $this->lockoutService->maxAttempts();
+        $lockoutSeconds = $this->lockoutService->lockoutSeconds();
+
+        $this->events->publishLockedOut($email, $maxAttempts, $lockoutSeconds);
 
         throw new LockedHttpException(
             self::LOCKOUT_MESSAGE,
             null,
             0,
-            ['Retry-After' => (string) AccountLockoutServiceInterface::LOCKOUT_SECONDS]
+            ['Retry-After' => (string) $lockoutSeconds]
         );
     }
 
@@ -102,17 +105,19 @@ final class UserAuthenticator implements UserAuthenticatorInterface
         $this->events->publishFailed($email, $ipAddress, $userAgent, 'invalid_credentials');
 
         if ($lockedAfterFailure) {
+            $maxAttempts = $this->lockoutService->maxAttempts();
+            $lockoutSeconds = $this->lockoutService->lockoutSeconds();
             $this->events->publishLockedOut(
                 $email,
-                AccountLockoutServiceInterface::MAX_ATTEMPTS,
-                AccountLockoutServiceInterface::LOCKOUT_SECONDS
+                $maxAttempts,
+                $lockoutSeconds
             );
 
             throw new LockedHttpException(
                 self::LOCKOUT_MESSAGE,
                 null,
                 0,
-                ['Retry-After' => (string) AccountLockoutServiceInterface::LOCKOUT_SECONDS]
+                ['Retry-After' => (string) $lockoutSeconds]
             );
         }
 

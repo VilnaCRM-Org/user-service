@@ -11,6 +11,7 @@ use App\User\Application\Authenticator\UserAuthenticatorInterface;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\CommandHandler\SignInCommandHandler;
 use App\User\Application\EventPublisher\SignInEventsInterface;
+use App\User\Application\Generator\IdGeneratorInterface;
 use App\User\Application\Hasher\PasswordHasherInterface;
 use App\User\Application\Issuer\SessionIssuerInterface;
 use App\User\Domain\Entity\User;
@@ -20,7 +21,6 @@ use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use Symfony\Component\Uid\Factory\UlidFactory;
 
 final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
 {
@@ -35,7 +35,7 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
     private UserAuthenticatorInterface $authService;
     private SessionIssuerInterface $sessionIssuanceService;
     private SignInEventsInterface $signInEventPublisher;
-    private UlidFactory $ulidFactory;
+    private IdGeneratorInterface $idGenerator;
 
     #[\Override]
     protected function setUp(): void
@@ -58,7 +58,7 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
         $this->sessionIssuanceService = $this->container
             ->get(SessionIssuerInterface::class);
         $this->signInEventPublisher = $this->container->get(SignInEventsInterface::class);
-        $this->ulidFactory = $this->container->get(UlidFactory::class);
+        $this->idGenerator = $this->container->get(IdGeneratorInterface::class);
     }
 
     public function testInvokePerformsFullSignInFlowAndPersistsSessionData(): void
@@ -103,7 +103,7 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
             $this->signInEventPublisher,
             $this->pendingTwoFactorRepository,
             $this->pendingTwoFactorFactory,
-            $this->ulidFactory,
+            $this->idGenerator,
         );
     }
 

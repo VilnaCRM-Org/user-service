@@ -12,6 +12,7 @@ interface TwoFactorEventsInterface
 
     public function publishCompleted(
         string $userId,
+        string $email,
         string $sessionId,
         string $ipAddress,
         string $userAgent,

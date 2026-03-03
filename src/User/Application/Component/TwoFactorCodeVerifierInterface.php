@@ -8,11 +8,16 @@ use App\User\Domain\Entity\User;
 
 interface TwoFactorCodeVerifierInterface
 {
-    public function verifyTotpOrFail(User $user, string $code): void;
+    public const METHOD_TOTP = 'totp';
+    public const METHOD_RECOVERY_CODE = 'recovery_code';
 
     public function verifyAndConsumeOrFail(User $user, string $code): void;
 
-    public function resolveVerificationMethod(User $user, string $code): ?string;
+    /**
+     * Verifies the code and, if it is a recovery code, also consumes it.
+     * Returns the verification method name on success, null on failure.
+     */
+    public function verifyAndResolveMethod(User $user, string $code): ?string;
 
     public function countRemainingCodes(string $userId): int;
 }

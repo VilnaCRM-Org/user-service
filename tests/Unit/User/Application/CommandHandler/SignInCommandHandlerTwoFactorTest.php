@@ -18,8 +18,8 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
             ->with($email, $pw, $ip, $ua)
             ->willReturn($user);
 
-        $pendingSid = Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB2');
-        $this->ulidFactory->expects($this->once())->method('create')->willReturn($pendingSid);
+        $pendingSid = (string) Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB2');
+        $this->idGenerator->expects($this->once())->method('generate')->willReturn($pendingSid);
 
         $this->sessionIssuer->expects($this->never())->method('issue');
         $this->signInEvents->expects($this->never())->method('publishSignedIn');
@@ -27,10 +27,9 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
         $command = new SignInCommand($email, $pw, false, $ip, $ua);
         $this->createHandler()->__invoke($command);
 
-        $sid = (string) $pendingSid;
-        $this->assertPendingTwoFactor($sid, $user->getId(), 300, false);
+        $this->assertPendingTwoFactor($pendingSid, $user->getId(), 300, false);
         $this->assertTrue($command->getResponse()->isTwoFactorEnabled());
-        $this->assertSame($sid, $command->getResponse()->getPendingSessionId());
+        $this->assertSame($pendingSid, $command->getResponse()->getPendingSessionId());
         $this->assertNull($command->getResponse()->getAccessToken());
         $this->assertNull($command->getResponse()->getRefreshToken());
     }
@@ -44,8 +43,8 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
             ->with($email, $pw, $ip, $ua)
             ->willReturn($user);
 
-        $pendingSid = Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB3');
-        $this->ulidFactory->method('create')->willReturn($pendingSid);
+        $pendingSid = (string) Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB3');
+        $this->idGenerator->method('generate')->willReturn($pendingSid);
 
         $command = new SignInCommand($email, $pw, true, $ip, $ua);
         $this->createHandler()->__invoke($command);
@@ -65,8 +64,8 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
             ->with($email, $pw, $ip, $ua)
             ->willReturn($user);
 
-        $pendingSid = Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB5');
-        $this->ulidFactory->method('create')->willReturn($pendingSid);
+        $pendingSid = (string) Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB5');
+        $this->idGenerator->method('generate')->willReturn($pendingSid);
 
         $handler = $this->createHandler();
 

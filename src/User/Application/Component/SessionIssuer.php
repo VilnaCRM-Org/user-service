@@ -2,19 +2,22 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Component;
+namespace App\User\Application\Issuer;
 
 use App\User\Application\DTO\IssuedSession;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
-use App\User\Domain\Contract\AccessTokenGeneratorInterface;
+use App\User\Application\Generator\AccessTokenGeneratorInterface;
+use App\User\Application\Generator\IdGeneratorInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\AuthSessionFactoryInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use DateTimeImmutable;
-use Symfony\Component\Uid\Factory\UlidFactory;
 
+/**
+ * @psalm-api
+ */
 final readonly class SessionIssuer implements SessionIssuerInterface
 {
     public function __construct(
@@ -23,7 +26,7 @@ final readonly class SessionIssuer implements SessionIssuerInterface
         private AccessTokenGeneratorInterface $accessTokenGenerator,
         private AuthTokenFactoryInterface $authTokenFactory,
         private AuthSessionFactoryInterface $authSessionFactory,
-        private UlidFactory $ulidFactory,
+        private IdGeneratorInterface $idGenerator,
         private int $standardSessionTtlSeconds = 900,
         private int $rememberMeSessionTtlSeconds = 2592000,
     ) {
@@ -68,7 +71,7 @@ final readonly class SessionIssuer implements SessionIssuerInterface
             : $this->standardSessionTtlSeconds;
 
         return $this->authSessionFactory->create(
-            (string) $this->ulidFactory->create(),
+            $this->idGenerator->generate(),
             $user->getId(),
             $ipAddress,
             $userAgent,

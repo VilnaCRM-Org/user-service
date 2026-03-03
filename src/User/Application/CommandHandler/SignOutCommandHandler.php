@@ -28,14 +28,14 @@ final readonly class SignOutCommandHandler implements CommandHandlerInterface
         if ($session !== null) {
             $session->revoke();
             $this->sessionRepository->save($session);
+
+            $this->sessionEvents->publishSessionRevoked(
+                $command->userId,
+                $command->sessionId,
+                'logout'
+            );
         }
 
         $this->refreshTokenRepository->revokeBySessionId($command->sessionId);
-
-        $this->sessionEvents->publishSessionRevoked(
-            $command->userId,
-            $command->sessionId,
-            'logout'
-        );
     }
 }

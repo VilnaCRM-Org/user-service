@@ -63,7 +63,7 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
 
     private function verifyTotpOrFail(User $user, string $code): void
     {
-        $this->twoFactorCodeVerifier->verifyTotpOrFail($user, $code);
+        $this->twoFactorCodeVerifier->verifyAndConsumeOrFail($user, $code);
     }
 
     /**

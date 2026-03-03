@@ -21,7 +21,6 @@ final readonly class TwoFactorCodeVerifier implements TwoFactorCodeVerifierInter
     ) {
     }
 
-    #[\Override]
     public function verifyTotpOrFail(User $user, string $code): void
     {
         $secret = $this->decryptSecret((string) $user->getTwoFactorSecret());
@@ -49,17 +48,10 @@ final readonly class TwoFactorCodeVerifier implements TwoFactorCodeVerifierInter
     }
 
     #[\Override]
-    public function resolveVerificationMethod(User $user, string $code): ?string
+    public function verifyAndResolveMethod(User $user, string $code): ?string
     {
         if ($this->isTotpCode($code)) {
-            $secret = $user->getTwoFactorSecret();
-            if ($secret === null) {
-                return null;
-            }
-
-            return $this->totpVerifier->verify($this->decryptSecret($secret), $code)
-                ? 'totp'
-                : null;
+            return $this->tryVerifyTotp($user, $code);
         }
 
         if (!$this->isRecoveryCode($code)) {
@@ -67,7 +59,7 @@ final readonly class TwoFactorCodeVerifier implements TwoFactorCodeVerifierInter
         }
 
         return $this->tryConsumeRecoveryCode($user->getId(), $code)
-            ? 'recovery_code'
+            ? self::METHOD_RECOVERY_CODE
             : null;
     }
 
@@ -82,6 +74,18 @@ final readonly class TwoFactorCodeVerifier implements TwoFactorCodeVerifierInter
         }
 
         return $count;
+    }
+
+    private function tryVerifyTotp(User $user, string $code): ?string
+    {
+        $secret = $user->getTwoFactorSecret();
+        if ($secret === null) {
+            return null;
+        }
+
+        return $this->totpVerifier->verify($this->decryptSecret($secret), $code)
+            ? self::METHOD_TOTP
+            : null;
     }
 
     private function consumeRecoveryCodeOrFail(string $userId, string $code): void
@@ -109,7 +113,9 @@ final readonly class TwoFactorCodeVerifier implements TwoFactorCodeVerifierInter
     {
         try {
             return $this->encryptor->decrypt($storedSecret);
-        } catch (\Throwable) {
+        } catch (\Exception) {
+            // Fallback for plain-text secrets stored before encryption was introduced.
+            // Narrow catch intentionally excludes \Error (programming errors should propagate).
             return $storedSecret;
         }
     }

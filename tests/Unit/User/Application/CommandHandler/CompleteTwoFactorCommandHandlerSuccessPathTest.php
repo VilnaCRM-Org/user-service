@@ -4,44 +4,31 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
-use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory as SharedUuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\CommandHandler\CompleteTwoFactorCommandHandler;
-use App\User\Application\Factory\AuthTokenFactoryInterface;
-use App\User\Domain\Contract\AccessTokenGeneratorInterface;
-use App\User\Domain\Contract\TOTPVerifierInterface;
-use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
-use App\User\Domain\Entity\AuthRefreshToken;
+use App\User\Application\DTO\IssuedSession;
+use App\User\Application\EventPublisher\TwoFactorEventsInterface;
+use App\User\Application\Issuer\SessionIssuerInterface;
+use App\User\Application\Verifier\TwoFactorCodeVerifierInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
-use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactory;
-use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
-use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
-use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\Uid\Factory\UlidFactory;
 use Symfony\Component\Uid\Ulid;
 
 final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
     private PendingTwoFactorRepositoryInterface&MockObject $pendingTwoFactorRepository;
-    private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
-    private AuthRefreshTokenRepositoryInterface&MockObject $authRefreshTokenRepository;
-    private AccessTokenGeneratorInterface&MockObject $accessTokenGenerator;
-    private AuthTokenFactoryInterface&MockObject $authTokenFactory;
-    private TOTPVerifierInterface&MockObject $totpVerifier;
-    private TwoFactorSecretEncryptorInterface&MockObject $encryptor;
-    private RecoveryCodeRepositoryInterface&MockObject $recoveryCodeRepository;
-    private EventBusInterface&MockObject $eventBus;
-    private UlidFactory&MockObject $ulidFactory;
+    private SessionIssuerInterface&MockObject $sessionIssuer;
+    private TwoFactorCodeVerifierInterface&MockObject $twoFactorCodeVerifier;
+    private TwoFactorEventsInterface&MockObject $events;
     private UserFactory $userFactory;
     private UuidTransformer $uuidTransformer;
 
@@ -51,20 +38,14 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         parent::setUp();
 
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
-        $this->pendingTwoFactorRepository = $this->createMock(PendingTwoFactorRepositoryInterface::class);
-        $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
-        $this->authRefreshTokenRepository = $this->createMock(AuthRefreshTokenRepositoryInterface::class);
-        $this->accessTokenGenerator = $this->createMock(AccessTokenGeneratorInterface::class);
-        $this->authTokenFactory = $this->createMock(AuthTokenFactoryInterface::class);
-        $this->totpVerifier = $this->createMock(TOTPVerifierInterface::class);
-        $this->encryptor = $this->createMock(TwoFactorSecretEncryptorInterface::class);
-        $this->recoveryCodeRepository = $this->createMock(RecoveryCodeRepositoryInterface::class);
-        $this->eventBus = $this->createMock(EventBusInterface::class);
-        $this->ulidFactory = $this->createMock(UlidFactory::class);
+        $this->pendingTwoFactorRepository = $this->createMock(
+            PendingTwoFactorRepositoryInterface::class
+        );
+        $this->sessionIssuer = $this->createMock(SessionIssuerInterface::class);
+        $this->twoFactorCodeVerifier = $this->createMock(TwoFactorCodeVerifierInterface::class);
+        $this->events = $this->createMock(TwoFactorEventsInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
-
-        $this->configureDefaultFactories();
     }
 
     public function testInvokeCompletesTwoFactorAndIssuesTokens(): void
@@ -75,22 +56,9 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $userAgent = $this->faker->userAgent();
 
         $this->configureLookupsOnce($pending, $user);
-
-        $this->totpVerifier->expects($this->once())
-            ->method('verify')
-            ->with($user->getTwoFactorSecret(), '123456')
-            ->willReturn(true);
-
-        $this->authSessionRepository->expects($this->once())->method('save');
-        $this->authRefreshTokenRepository->expects($this->once())->method('save');
-
-        $this->accessTokenGenerator->expects($this->once())
-            ->method('generate')
-            ->willReturn('issued-access-token');
-
-        $this->pendingTwoFactorRepository->expects($this->once())->method('delete')->with($pending);
-
-        $this->eventBus->expects($this->once())->method('publish');
+        $this->expectTotpVerification($user, '123456');
+        $this->expectIssuedSession('issued-access-token', 'issued-refresh-token');
+        $this->expectPendingDeletionAndCompletion($pending);
 
         $command = $this->invokeHandlerWith($pending->getId(), '123456', $ipAddress, $userAgent);
         $this->assertSame('issued-access-token', $command->getResponse()->getAccessToken());
@@ -110,15 +78,13 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->pendingTwoFactorRepository->method('findById')->willReturn($pending);
         $this->userRepository->method('findById')->willReturn($user);
 
-        $this->totpVerifier->method('verify')->willReturn(true);
+        $this->twoFactorCodeVerifier->method('verifyAndResolveMethod')->willReturn('totp');
 
-        $this->authSessionRepository->method('save');
-        $this->authRefreshTokenRepository->method('save');
-
-        $this->accessTokenGenerator->method('generate')->willReturn('access-token');
+        $issued = new IssuedSession((string) new Ulid(), 'access-token', 'refresh-token');
+        $this->sessionIssuer->method('issue')->willReturn($issued);
 
         $this->pendingTwoFactorRepository->method('delete');
-        $this->eventBus->method('publish');
+        $this->events->method('publishCompleted');
 
         $command = $this->invokeHandlerWith(
             $pending->getId(),
@@ -137,25 +103,10 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $ua = $this->faker->userAgent();
 
         $this->configureLookupsOnce($pending, $user);
-
-        $recoveryCode = new RecoveryCode((string) new Ulid(), $user->getId(), 'AB12-CD34');
-        $this->recoveryCodeRepository->method('findByUserId')
-            ->with($user->getId())
-            ->willReturn([$recoveryCode]);
-
-        $this->recoveryCodeRepository->expects($this->once())->method('save')
-            ->with($this->callback(static fn (RecoveryCode $c): bool => $c->isUsed()));
-
-        $this->authSessionRepository->expects($this->once())->method('save');
-        $this->authRefreshTokenRepository->expects($this->once())->method('save');
-
-        $this->accessTokenGenerator->expects($this->once())
-            ->method('generate')
-            ->willReturn('issued-access-token');
-
-        $this->pendingTwoFactorRepository->expects($this->once())->method('delete')->with($pending);
-
-        $this->eventBus->expects($this->exactly(2))->method('publish');
+        $this->expectRecoveryCodeVerification($user, 'AB12-CD34', 0);
+        $this->expectIssuedSession('issued-access-token', 'issued-refresh-token');
+        $this->expectPendingDeletionAndCompletion($pending);
+        $this->events->expects($this->once())->method('publishRecoveryCodeUsed');
 
         $command = $this->invokeHandlerWith($pending->getId(), 'AB12-CD34', $ip, $ua);
         $this->assertZeroRemainingCodesResponse($command, 'issued-access-token');
@@ -168,23 +119,19 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
 
         $this->configureLookupsOnce($pending, $user);
 
-        $usedCode = new RecoveryCode((string) new Ulid(), $user->getId(), 'AA11-BB22');
-        $usedCode->markAsUsed();
-        $targetCode = new RecoveryCode((string) new Ulid(), $user->getId(), 'CC33-DD44');
+        $this->twoFactorCodeVerifier->method('verifyAndResolveMethod')
+            ->with($user, 'CC33-DD44')
+            ->willReturn('recovery_code');
 
-        $this->recoveryCodeRepository->method('findByUserId')
+        $this->twoFactorCodeVerifier->method('countRemainingCodes')
             ->with($user->getId())
-            ->willReturn([$usedCode, $targetCode]);
+            ->willReturn(4);
 
-        $this->recoveryCodeRepository->method('save');
-
-        $this->authSessionRepository->method('save');
-        $this->authRefreshTokenRepository->method('save');
-
-        $this->accessTokenGenerator->method('generate')->willReturn('test-access-token');
+        $issued = new IssuedSession((string) new Ulid(), 'test-access-token', 'test-refresh-token');
+        $this->sessionIssuer->method('issue')->willReturn($issued);
 
         $this->pendingTwoFactorRepository->method('delete');
-        $this->eventBus->method('publish');
+        $this->events->method('publishCompleted');
 
         $command = $this->invokeHandlerWith(
             $pending->getId(),
@@ -202,23 +149,20 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
 
         $this->configureLookupsOnce($pending, $user);
 
-        $targetCode = new RecoveryCode((string) new Ulid(), $user->getId(), 'AB12-CD34');
-        $unusedCode1 = new RecoveryCode((string) new Ulid(), $user->getId(), 'EF56-GH78');
-        $unusedCode2 = new RecoveryCode((string) new Ulid(), $user->getId(), 'IJ90-KL12');
+        $this->twoFactorCodeVerifier->method('verifyAndResolveMethod')
+            ->with($user, 'AB12-CD34')
+            ->willReturn('recovery_code');
 
-        $this->recoveryCodeRepository->method('findByUserId')
+        $this->twoFactorCodeVerifier->method('countRemainingCodes')
             ->with($user->getId())
-            ->willReturn([$targetCode, $unusedCode1, $unusedCode2]);
+            ->willReturn(2);
 
-        $this->recoveryCodeRepository->method('save');
-
-        $this->authSessionRepository->method('save');
-        $this->authRefreshTokenRepository->method('save');
-
-        $this->accessTokenGenerator->method('generate')->willReturn('access-token');
+        $issued = new IssuedSession((string) new Ulid(), 'access-token', 'refresh-token');
+        $this->sessionIssuer->method('issue')->willReturn($issued);
 
         $this->pendingTwoFactorRepository->method('delete');
-        $this->eventBus->method('publish');
+        $this->events->method('publishRecoveryCodeUsed');
+        $this->events->method('publishCompleted');
 
         $ip = $this->faker->ipv4();
         $ua = $this->faker->userAgent();
@@ -234,26 +178,9 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $pending = $this->createPendingSession($user->getId(), '+5 minutes');
 
         $this->configureLookupsOnce($pending, $user);
-
-        $targetCode = new RecoveryCode((string) new Ulid(), $user->getId(), 'AB12-CD34');
-        $codes = [$targetCode];
-        for ($i = 0; $i < 5; $i++) {
-            $codes[] = new RecoveryCode((string) new Ulid(), $user->getId(), sprintf('XX%02d-YY%02d', $i, $i));
-        }
-
-        $this->recoveryCodeRepository->method('findByUserId')
-            ->with($user->getId())
-            ->willReturn($codes);
-
-        $this->recoveryCodeRepository->method('save');
-
-        $this->authSessionRepository->method('save');
-        $this->authRefreshTokenRepository->method('save');
-
-        $this->accessTokenGenerator->method('generate')->willReturn('access-token');
-
-        $this->pendingTwoFactorRepository->method('delete');
-        $this->eventBus->method('publish');
+        $this->expectRecoveryCodeVerification($user, 'AB12-CD34', 6);
+        $this->expectIssuedSession('access-token', 'refresh-token');
+        $this->expectPendingDeletionAndCompletion($pending);
 
         $command = $this->invokeHandlerWith(
             $pending->getId(),
@@ -272,18 +199,17 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
 
         $this->configureLookupsOnce($pending, $user);
 
-        $this->totpVerifier->expects($this->once())
-            ->method('verify')
-            ->willReturn(true);
+        $this->twoFactorCodeVerifier->expects($this->once())
+            ->method('verifyAndResolveMethod')
+            ->with($user, '123456')
+            ->willReturn('totp');
 
-        $this->recoveryCodeRepository->expects($this->never())->method('save');
+        $this->twoFactorCodeVerifier->expects($this->never())->method('countRemainingCodes');
 
-        $this->authSessionRepository->method('save');
-        $this->authRefreshTokenRepository->method('save');
+        $issued = new IssuedSession((string) new Ulid(), 'access-token', 'refresh-token');
+        $this->sessionIssuer->method('issue')->willReturn($issued);
 
-        $this->accessTokenGenerator->method('generate')->willReturn('access-token');
-
-        $this->eventBus->expects($this->once())->method('publish');
+        $this->events->expects($this->once())->method('publishCompleted');
         $this->pendingTwoFactorRepository->method('delete');
 
         $command = $this->invokeHandlerWith(
@@ -294,74 +220,6 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         );
         $this->assertNull($command->getResponse()->getRecoveryCodesRemaining());
         $this->assertNull($command->getResponse()->getWarningMessage());
-    }
-
-    public function testTotpSignInFallsBackToStoredSecretWhenDecryptFails(): void
-    {
-        $user = $this->createTwoFactorEnabledUser();
-        $pending = $this->createPendingSession($user->getId(), '+5 minutes');
-
-        $this->configureLookupsOnce($pending, $user);
-
-        $this->encryptor->method('decrypt')
-            ->willThrowException(new \RuntimeException('Decrypt failed'));
-
-        $this->totpVerifier->expects($this->once())
-            ->method('verify')
-            ->with($user->getTwoFactorSecret(), '123456')
-            ->willReturn(true);
-
-        $this->authSessionRepository->method('save');
-        $this->authRefreshTokenRepository->method('save');
-
-        $this->accessTokenGenerator->method('generate')->willReturn('test-access-token');
-
-        $this->eventBus->method('publish');
-        $this->pendingTwoFactorRepository->method('delete');
-
-        $command = $this->invokeHandlerWith(
-            $pending->getId(),
-            '123456',
-            $this->faker->ipv4(),
-            $this->faker->userAgent()
-        );
-        $this->assertSame('test-access-token', $command->getResponse()->getAccessToken());
-    }
-
-    private function configureDefaultFactories(): void
-    {
-        $this->authTokenFactory->method('generateOpaqueToken')
-            ->willReturn('test-opaque-token-1234567890-abcdefghijklmn');
-        $this->authTokenFactory->method('createRefreshToken')
-            ->willReturnCallback(
-                static function (
-                    string $sessionId,
-                    string $plain,
-                    DateTimeImmutable $issuedAt
-                ): AuthRefreshToken {
-                    return new AuthRefreshToken(
-                        (string) new Ulid(),
-                        $sessionId,
-                        $plain,
-                        $issuedAt->modify('+1 month')
-                    );
-                }
-            );
-        $this->authTokenFactory->method('buildJwtPayload')
-            ->willReturn([
-                'sub' => 'test-user-id',
-                'iss' => 'vilnacrm-user-service',
-                'aud' => 'vilnacrm-api',
-                'exp' => time() + 900,
-                'iat' => time(),
-                'nbf' => time(),
-                'jti' => 'test-jti',
-                'sid' => 'test-session-id',
-                'roles' => ['ROLE_USER'],
-            ]);
-        $this->authTokenFactory->method('nextEventId')->willReturn('test-event-id');
-        $this->encryptor->method('decrypt')->willReturnArgument(0);
-        $this->ulidFactory->method('create')->willReturn(new Ulid());
     }
 
     private function configureLookupsOnce(PendingTwoFactor $pending, User $user): void
@@ -378,6 +236,43 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
             ->willReturn($user);
     }
 
+    private function expectTotpVerification(User $user, string $code): void
+    {
+        $this->twoFactorCodeVerifier->expects($this->once())
+            ->method('verifyAndResolveMethod')
+            ->with($user, $code)
+            ->willReturn('totp');
+    }
+
+    private function expectRecoveryCodeVerification(
+        User $user,
+        string $code,
+        int $remainingCodes
+    ): void {
+        $this->twoFactorCodeVerifier->expects($this->once())
+            ->method('verifyAndResolveMethod')
+            ->with($user, $code)
+            ->willReturn('recovery_code');
+        $this->twoFactorCodeVerifier->expects($this->once())
+            ->method('countRemainingCodes')
+            ->with($user->getId())
+            ->willReturn($remainingCodes);
+    }
+
+    private function expectIssuedSession(string $accessToken, string $refreshToken): void
+    {
+        $issued = new IssuedSession((string) new Ulid(), $accessToken, $refreshToken);
+        $this->sessionIssuer->expects($this->once())
+            ->method('issue')
+            ->willReturn($issued);
+    }
+
+    private function expectPendingDeletionAndCompletion(PendingTwoFactor $pending): void
+    {
+        $this->pendingTwoFactorRepository->expects($this->once())->method('delete')->with($pending);
+        $this->events->expects($this->once())->method('publishCompleted');
+    }
+
     private function invokeHandlerWith(
         string $pendingId,
         string $code,
@@ -388,19 +283,6 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $command = new CompleteTwoFactorCommand($pendingId, $code, $ipAddress, $userAgent);
         $handler->__invoke($command);
         return $command;
-    }
-
-    private function assertTokensIssued(
-        CompleteTwoFactorCommand $command,
-        string $expectedAccess,
-        string $expectedRefresh
-    ): void {
-        $this->assertSame($expectedAccess, $command->getResponse()->getAccessToken());
-        $this->assertSame($expectedRefresh, $command->getResponse()->getRefreshToken());
-        $this->assertNotSame(
-            $command->getResponse()->getAccessToken(),
-            $command->getResponse()->getRefreshToken()
-        );
     }
 
     private function assertZeroRemainingCodesResponse(
@@ -421,15 +303,9 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         return new CompleteTwoFactorCommandHandler(
             $this->userRepository,
             $this->pendingTwoFactorRepository,
-            $this->authSessionRepository,
-            $this->authRefreshTokenRepository,
-            $this->accessTokenGenerator,
-            $this->authTokenFactory,
-            $this->totpVerifier,
-            $this->encryptor,
-            $this->recoveryCodeRepository,
-            $this->eventBus,
-            $this->ulidFactory,
+            $this->sessionIssuer,
+            $this->twoFactorCodeVerifier,
+            $this->events,
         );
     }
 

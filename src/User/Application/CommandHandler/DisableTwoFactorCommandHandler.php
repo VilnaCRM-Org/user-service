@@ -30,7 +30,7 @@ final readonly class DisableTwoFactorCommandHandler implements CommandHandlerInt
     public function __invoke(DisableTwoFactorCommand $command): void
     {
         $user = $this->resolveUser($command->userEmail);
-        $this->verifyAndConsumeOrFail($user, $command->twoFactorCode);
+        $this->twoFactorCodeVerifier->verifyAndConsumeOrFail($user, $command->twoFactorCode);
 
         $user->disableTwoFactor();
         $this->userRepository->save($user);
@@ -55,10 +55,5 @@ final readonly class DisableTwoFactorCommandHandler implements CommandHandlerInt
         }
 
         return $user;
-    }
-
-    private function verifyAndConsumeOrFail(User $user, string $code): void
-    {
-        $this->twoFactorCodeVerifier->verifyAndConsumeOrFail($user, $code);
     }
 }

@@ -302,6 +302,7 @@ services:
   App\User\Application\Encryptor\TwoFactorSecretEncryptorInterface: '@App\User\Infrastructure\Security\TwoFactorSecretEncryptor'
   App\User\Application\Generator\TOTPSecretGeneratorInterface: '@App\User\Infrastructure\Generator\TOTPSecretGenerator'
   App\User\Application\Generator\EventIdGeneratorInterface: '@App\User\Application\Generator\EventIdGenerator'
+  App\User\Application\Generator\IdGeneratorInterface: '@App\User\Infrastructure\Generator\UlidIdGenerator'
   App\User\Application\Revoker\PasswordChangeSessionRevokerInterface: '@App\User\Application\Revoker\PasswordChangeSessionRevoker'
   App\User\Application\EventPublisher\PasswordResetConfirmationPublisherInterface: '@App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisher'
   App\User\Application\EventPublisher\SessionEventsInterface: '@App\User\Application\EventPublisher\SessionEvents'

@@ -61,7 +61,7 @@ final class SignOutCommandHandlerTest extends UnitTestCase
         $this->refreshTokenRepository->expects($this->once())
             ->method('revokeBySessionId')
             ->with($sessionId);
-        $this->expectSessionRevokedEvent($userId, $sessionId);
+        $this->sessionEvents->expects($this->never())->method('publishSessionRevoked');
         $this->handler->__invoke($command);
     }
 

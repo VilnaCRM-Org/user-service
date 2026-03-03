@@ -11,6 +11,7 @@ use App\User\Domain\Event\TwoFactorCompletedEvent;
 use App\User\Domain\Event\TwoFactorDisabledEvent;
 use App\User\Domain\Event\TwoFactorEnabledEvent;
 use App\User\Domain\Event\TwoFactorFailedEvent;
+use App\User\Domain\Event\UserSignedInEvent;
 
 final readonly class TwoFactorEvents implements TwoFactorEventsInterface
 {
@@ -43,6 +44,7 @@ final readonly class TwoFactorEvents implements TwoFactorEventsInterface
     #[\Override]
     public function publishCompleted(
         string $userId,
+        string $email,
         string $sessionId,
         string $ipAddress,
         string $userAgent,
@@ -54,6 +56,15 @@ final readonly class TwoFactorEvents implements TwoFactorEventsInterface
             $ipAddress,
             $userAgent,
             (string) $verificationMethod,
+            $this->eventIdGenerator->generate()
+        ));
+        $this->eventBus->publish(new UserSignedInEvent(
+            $userId,
+            $email,
+            $sessionId,
+            $ipAddress,
+            $userAgent,
+            true,
             $this->eventIdGenerator->generate()
         ));
     }
