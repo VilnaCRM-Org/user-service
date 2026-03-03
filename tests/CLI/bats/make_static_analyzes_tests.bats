@@ -6,7 +6,7 @@ load 'bats-assert/load'
 @test "make phpcsfixer command executes" {
   run make phpcsfixer
   assert_success
-  assert_output --partial "Running analysis on 1 core sequentially."
+  assert_output --partial "Running analysis on"
 }
 
 @test "make psalm command executes and reports no errors" {

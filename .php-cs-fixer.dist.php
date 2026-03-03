@@ -2,8 +2,7 @@
 
 $finder = (new PhpCsFixer\Finder())
     ->in(__DIR__)
-    ->exclude('var')
-    ->notPath('config/reference.php');
+    ->exclude('var');
 
 return (new PhpCsFixer\Config())
     ->setRules([
