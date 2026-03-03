@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\User\Application\Factory;
+namespace App\Tests\Unit\User\Application\Attacher;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Factory\AuthCookieAttacher;
+use App\User\Application\Attacher\AuthCookieAttacher;
 use App\User\Application\Factory\AuthCookieFactory;
 use App\User\Application\Factory\AuthCookieFactoryInterface;
+use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,7 +40,7 @@ final class AuthCookieAttacherTest extends UnitTestCase
         $token = $this->faker->sha256();
         $this->cookieFactory->expects($this->once())
             ->method('create')
-            ->with($token, false, 900, 2592000)
+            ->with($token, false, 900, 2592000, $this->isInstanceOf(DateTimeImmutable::class))
             ->willReturn(Cookie::create(AuthCookieFactory::COOKIE_NAME, $token));
 
         $response = new Response();
@@ -53,10 +54,21 @@ final class AuthCookieAttacherTest extends UnitTestCase
         $token = $this->faker->sha256();
         $this->cookieFactory->expects($this->once())
             ->method('create')
-            ->with($token, true, $this->anything(), $this->anything())
+            ->with($token, true, $this->anything(), $this->anything(), $this->anything())
             ->willReturn(Cookie::create(AuthCookieFactory::COOKIE_NAME, $token));
 
         $this->createAttacher()->attach(new Response(), $token, true);
+    }
+
+    public function testAttachUsesDefaultCookieMaxAges(): void
+    {
+        $token = $this->faker->sha256();
+        $this->cookieFactory->expects($this->once())
+            ->method('create')
+            ->with($token, false, 900, 2592000, $this->isInstanceOf(DateTimeImmutable::class))
+            ->willReturn(Cookie::create(AuthCookieFactory::COOKIE_NAME, $token));
+
+        (new AuthCookieAttacher($this->cookieFactory))->attach(new Response(), $token, false);
     }
 
     private function createAttacher(): AuthCookieAttacher

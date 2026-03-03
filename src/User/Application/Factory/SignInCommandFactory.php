@@ -6,6 +6,9 @@ namespace App\User\Application\Factory;
 
 use App\User\Application\Command\SignInCommand;
 
+/**
+ * @psalm-api
+ */
 final class SignInCommandFactory implements SignInCommandFactoryInterface
 {
     #[\Override]

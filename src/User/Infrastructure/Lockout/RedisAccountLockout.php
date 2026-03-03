@@ -66,11 +66,6 @@ final readonly class RedisAccountLockout implements
 
     private function hashedEmailKey(string $email): string
     {
-        return hash('sha256', $this->normalizeEmail($email));
-    }
-
-    private function normalizeEmail(string $email): string
-    {
-        return strtolower(trim($email));
+        return hash('sha256', $email);
     }
 }

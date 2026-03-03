@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\User\Application\Factory;
 
-use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\User;
 use DateTimeImmutable;
@@ -29,9 +28,4 @@ interface AuthTokenFactoryInterface
         string $plainToken,
         DateTimeImmutable $issuedAt
     ): AuthRefreshToken;
-
-    public function createRefreshTokenResponse(
-        string $accessToken,
-        string $refreshToken
-    ): RefreshTokenCommandResponse;
 }

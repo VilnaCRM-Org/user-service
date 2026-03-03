@@ -7,8 +7,13 @@ namespace App\User\Application\Factory;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class ClearAuthCookieResponseFactory
+/**
+ * @psalm-api
+ */
+final readonly class ClearAuthCookieResponseFactory implements
+    ClearAuthCookieResponseFactoryInterface
 {
+    #[\Override]
     public function create(): Response
     {
         $response = new Response('', Response::HTTP_NO_CONTENT);

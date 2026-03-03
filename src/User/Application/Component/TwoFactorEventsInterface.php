@@ -25,10 +25,4 @@ interface TwoFactorEventsInterface
     ): void;
 
     public function publishRecoveryCodeUsed(string $userId, int $remainingCount): void;
-
-    public function publishAllSessionsRevoked(
-        string $userId,
-        string $reason,
-        int $revokedCount
-    ): void;
 }

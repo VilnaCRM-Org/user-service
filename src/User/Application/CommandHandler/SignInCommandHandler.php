@@ -22,7 +22,8 @@ use Symfony\Component\Uid\Factory\UlidFactory;
  */
 final class SignInCommandHandler implements CommandHandlerInterface
 {
-    private const DEFAULT_PENDING_TWO_FACTOR_TTL_SECONDS = 300;
+    private const DEFAULT_PENDING_TWO_FACTOR_TTL_SECONDS =
+        PendingTwoFactor::DEFAULT_TTL_MINUTES * 60;
 
     public function __construct(
         private readonly UserAuthenticatorInterface $userAuthenticator,

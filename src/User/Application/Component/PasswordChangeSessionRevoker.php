@@ -7,6 +7,9 @@ namespace App\User\Application\Component;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 
+/**
+ * @psalm-api
+ */
 final readonly class PasswordChangeSessionRevoker implements PasswordChangeSessionRevokerInterface
 {
     public function __construct(

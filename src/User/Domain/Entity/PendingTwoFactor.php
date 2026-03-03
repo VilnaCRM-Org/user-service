@@ -8,7 +8,7 @@ use DateTimeImmutable;
 
 final class PendingTwoFactor
 {
-    private const DEFAULT_TTL_MINUTES = 5;
+    public const DEFAULT_TTL_MINUTES = 5;
 
     private DateTimeImmutable $expiresAt;
     private bool $rememberMe = false;

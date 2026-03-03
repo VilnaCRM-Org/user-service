@@ -211,11 +211,11 @@ final readonly class RefreshTokenCommandHandler implements
         DateTimeImmutable $currentTime,
         string $plainToken
     ): bool {
-        $wasRotated = $this->refreshTokenRepository->markAsRotatedIfActive(
+        $markedSuccessfully = $this->refreshTokenRepository->markAsRotatedIfActive(
             $tokenHash,
             $currentTime
         );
-        if ($wasRotated) {
+        if ($markedSuccessfully) {
             return false;
         }
 
@@ -267,12 +267,7 @@ final readonly class RefreshTokenCommandHandler implements
             $this->authTokenFactory->buildJwtPayload($user, $session->getId(), $issuedAt)
         );
 
-        $command->setResponse(
-            $this->authTokenFactory->createRefreshTokenResponse(
-                $accessToken,
-                $newRefreshPlain
-            )
-        );
+        $command->setTokens($accessToken, $newRefreshPlain);
     }
 
     private function assertGraceWindowIsEligible(

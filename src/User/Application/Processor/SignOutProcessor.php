@@ -9,7 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\DTO\SignOutDto;
-use App\User\Application\Factory\ClearAuthCookieResponseFactory;
+use App\User\Application\Factory\ClearAuthCookieResponseFactoryInterface;
 use App\User\Application\Factory\SignOutCommandFactoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -23,7 +23,7 @@ final readonly class SignOutProcessor implements ProcessorInterface
     public function __construct(
         private CommandBusInterface $commandBus,
         private TokenStorageInterface $tokenStorage,
-        private ClearAuthCookieResponseFactory $clearAuthCookieResponseFactory,
+        private ClearAuthCookieResponseFactoryInterface $clearAuthCookieResponseFactory,
         private SignOutCommandFactoryInterface $signOutCommandFactory,
     ) {
     }

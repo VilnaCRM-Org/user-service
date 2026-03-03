@@ -34,26 +34,23 @@ final class AuthRefreshTokenTest extends UnitTestCase
         $this->assertNull($refreshToken->getRotatedAt());
     }
 
-    public function testRotateUpdatesTokenHashAndRotationTime(): void
+    public function testMarkAsRotatedSetsRotationTime(): void
     {
-        $expiresAt = new DateTimeImmutable('+1 month');
         $refreshToken = new AuthRefreshToken(
             $this->faker->uuid(),
             $this->faker->uuid(),
             $this->faker->sha256(),
-            $expiresAt
+            new DateTimeImmutable('+1 month')
         );
 
-        $newToken = $this->faker->sha256();
         $rotatedAt = new DateTimeImmutable();
+        $refreshToken->markAsRotated($rotatedAt);
 
-        $refreshToken->rotate($newToken, $rotatedAt);
-
-        $this->assertSame(hash('sha256', $newToken), $refreshToken->getTokenHash());
+        $this->assertTrue($refreshToken->isRotated());
         $this->assertSame($rotatedAt, $refreshToken->getRotatedAt());
     }
 
-    public function testRotateResetsGraceUsedFlag(): void
+    public function testMarkAsRotatedWithoutTimestampUsesCurrentTime(): void
     {
         $refreshToken = new AuthRefreshToken(
             $this->faker->uuid(),
@@ -62,30 +59,13 @@ final class AuthRefreshTokenTest extends UnitTestCase
             new DateTimeImmutable('+1 month')
         );
 
-        $refreshToken->markGraceUsed();
-        $this->assertTrue($refreshToken->isGraceUsed());
-
-        $refreshToken->rotate($this->faker->sha256(), new DateTimeImmutable());
-
-        $this->assertFalse($refreshToken->isGraceUsed());
-    }
-
-    public function testRotateWithoutTimestampUsesCurrentTime(): void
-    {
-        $refreshToken = new AuthRefreshToken(
-            $this->faker->uuid(),
-            $this->faker->uuid(),
-            $this->faker->sha256(),
-            new DateTimeImmutable('+1 month')
-        );
-
-        $beforeRotate = new DateTimeImmutable();
-        $refreshToken->rotate($this->faker->sha256());
-        $afterRotate = new DateTimeImmutable();
+        $before = new DateTimeImmutable();
+        $refreshToken->markAsRotated();
+        $after = new DateTimeImmutable();
 
         $this->assertNotNull($refreshToken->getRotatedAt());
-        $this->assertGreaterThanOrEqual($beforeRotate, $refreshToken->getRotatedAt());
-        $this->assertLessThanOrEqual($afterRotate, $refreshToken->getRotatedAt());
+        $this->assertGreaterThanOrEqual($before, $refreshToken->getRotatedAt());
+        $this->assertLessThanOrEqual($after, $refreshToken->getRotatedAt());
     }
 
     public function testWithinGracePeriodDependsOnRotationTimestamp(): void
@@ -98,7 +78,7 @@ final class AuthRefreshTokenTest extends UnitTestCase
             $expiresAt
         );
         $rotatedAt = new DateTimeImmutable();
-        $refreshToken->rotate($this->faker->sha256(), $rotatedAt);
+        $refreshToken->markAsRotated($rotatedAt);
 
         $this->assertTrue(
             $refreshToken->isWithinGracePeriod($rotatedAt->modify('+30 seconds'), 60)
@@ -134,7 +114,7 @@ final class AuthRefreshTokenTest extends UnitTestCase
             new DateTimeImmutable('+1 month')
         );
 
-        $refreshToken->rotate($this->faker->sha256(), $rotatedAt);
+        $refreshToken->markAsRotated($rotatedAt);
 
         $this->assertTrue($refreshToken->isWithinGracePeriod($rotatedAt, 0));
         $this->assertFalse(

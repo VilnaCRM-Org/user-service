@@ -6,10 +6,11 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
-use App\User\Application\Component\RecoveryCodeGeneratorInterface;
-use App\User\Application\Component\TwoFactorCodeVerifierInterface;
-use App\User\Application\Component\TwoFactorEventsInterface;
 use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
+use App\User\Application\EventPublisher\SessionEventsInterface;
+use App\User\Application\EventPublisher\TwoFactorEventsInterface;
+use App\User\Application\Generator\RecoveryCodeGeneratorInterface;
+use App\User\Application\Verifier\TwoFactorCodeVerifierInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
@@ -27,6 +28,7 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
         private TwoFactorCodeVerifierInterface $twoFactorCodeVerifier,
         private RecoveryCodeGeneratorInterface $recoveryCodeGenerator,
         private TwoFactorEventsInterface $events,
+        private SessionEventsInterface $sessionEvents,
     ) {
     }
 
@@ -94,7 +96,7 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
             $user->getId(),
             $user->getEmail()
         );
-        $this->events->publishAllSessionsRevoked(
+        $this->sessionEvents->publishAllSessionsRevoked(
             $user->getId(),
             'two_factor_enabled',
             $revokedCount

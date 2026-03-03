@@ -26,4 +26,9 @@ final class RefreshTokenCommand implements CommandInterface
     ): void {
         $this->response = $response;
     }
+
+    public function setTokens(string $accessToken, string $refreshToken): void
+    {
+        $this->setResponse(new RefreshTokenCommandResponse($accessToken, $refreshToken));
+    }
 }

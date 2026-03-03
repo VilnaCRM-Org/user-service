@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Factory;
+namespace App\User\Application\Attacher;
 
+use App\User\Application\Factory\AuthCookieFactoryInterface;
+use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -33,7 +35,8 @@ final readonly class AuthCookieAttacher implements AuthCookieAttacherInterface
                 $accessToken,
                 $rememberMe,
                 $this->standardCookieMaxAge,
-                $this->rememberMeCookieMaxAge
+                $this->rememberMeCookieMaxAge,
+                new DateTimeImmutable()
             )
         );
     }

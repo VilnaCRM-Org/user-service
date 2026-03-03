@@ -40,7 +40,7 @@ final class RedisAccountLockoutTest extends UnitTestCase
 
         $service = new RedisAccountLockout($this->cachePool);
 
-        $this->assertTrue($service->isLocked(' Test@Example.COM '));
+        $this->assertTrue($service->isLocked('test@example.com'));
     }
 
     public function testRecordFailureReturnsFalseBeforeThreshold(): void
@@ -53,7 +53,7 @@ final class RedisAccountLockoutTest extends UnitTestCase
         );
         $service = new RedisAccountLockout($this->cachePool);
 
-        $this->assertFalse($service->recordFailure(' Test@Example.COM '));
+        $this->assertFalse($service->recordFailure('test@example.com'));
     }
 
     public function testRecordFailureReturnsTrueWhenThresholdReached(): void
@@ -66,7 +66,7 @@ final class RedisAccountLockoutTest extends UnitTestCase
         $this->expectSequentialGetItems($attemptItem, $lockItem, $requestedKeys);
         $this->expectSequentialSaves($savedItems);
         $service = new RedisAccountLockout($this->cachePool);
-        $this->assertTrue($service->recordFailure(' Test@Example.COM '));
+        $this->assertTrue($service->recordFailure('test@example.com'));
         $expectedKeys = [
             sprintf('signin_lockout_%s', $emailHash),
             sprintf('signin_lock_%s', $emailHash),
@@ -90,7 +90,7 @@ final class RedisAccountLockoutTest extends UnitTestCase
 
         $service = new RedisAccountLockout($this->cachePool);
 
-        $service->clearFailures(' Test@Example.COM ');
+        $service->clearFailures('test@example.com');
     }
 
     public function testRecordFailureTreatsEmptyAttemptCounterAsZero(): void
@@ -103,7 +103,7 @@ final class RedisAccountLockoutTest extends UnitTestCase
         );
         $service = new RedisAccountLockout($this->cachePool);
 
-        $this->assertFalse($service->recordFailure(' Test@Example.COM '));
+        $this->assertFalse($service->recordFailure('test@example.com'));
     }
 
     private function createAttemptItem(

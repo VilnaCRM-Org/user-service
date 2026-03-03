@@ -6,7 +6,6 @@ namespace App\User\Application\Component;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Generator\EventIdGeneratorInterface;
-use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Event\RecoveryCodeUsedEvent;
 use App\User\Domain\Event\TwoFactorCompletedEvent;
 use App\User\Domain\Event\TwoFactorDisabledEvent;
@@ -79,20 +78,6 @@ final readonly class TwoFactorEvents implements TwoFactorEventsInterface
         $this->eventBus->publish(new RecoveryCodeUsedEvent(
             $userId,
             $remainingCount,
-            $this->eventIdGenerator->generate()
-        ));
-    }
-
-    #[\Override]
-    public function publishAllSessionsRevoked(
-        string $userId,
-        string $reason,
-        int $revokedCount
-    ): void {
-        $this->eventBus->publish(new AllSessionsRevokedEvent(
-            $userId,
-            $reason,
-            $revokedCount,
             $this->eventIdGenerator->generate()
         ));
     }

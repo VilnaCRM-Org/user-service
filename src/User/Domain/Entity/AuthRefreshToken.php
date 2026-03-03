@@ -73,13 +73,6 @@ final class AuthRefreshToken
         return $this->revokedAt !== null;
     }
 
-    public function rotate(string $newPlainToken, ?DateTimeImmutable $rotatedAt = null): void
-    {
-        $this->tokenHash = $this->hash($newPlainToken);
-        $this->rotatedAt = $rotatedAt ?? new DateTimeImmutable();
-        $this->graceUsed = false;
-    }
-
     public function markGraceUsed(): void
     {
         $this->graceUsed = true;

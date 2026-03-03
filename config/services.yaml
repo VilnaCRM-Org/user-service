@@ -259,10 +259,12 @@ services:
       $standardSessionTtlSeconds: '%env(int:AUTH_STANDARD_SESSION_TTL_SECONDS)%'
       $rememberMeSessionTtlSeconds: '%env(int:AUTH_REMEMBER_ME_SESSION_TTL_SECONDS)%'
 
-  App\User\Application\Factory\AuthCookieAttacher:
+  App\User\Application\Attacher\AuthCookieAttacher:
     arguments:
       $standardCookieMaxAge: '%env(int:AUTH_STANDARD_COOKIE_MAX_AGE)%'
       $rememberMeCookieMaxAge: '%env(int:AUTH_REMEMBER_ME_COOKIE_MAX_AGE)%'
+
+  App\User\Application\Attacher\AuthCookieAttacherInterface: '@App\User\Application\Attacher\AuthCookieAttacher'
 
   App\Shared\Infrastructure\Security\JwtAccessTokenParser:
     arguments:
@@ -291,6 +293,7 @@ services:
     arguments:
       $refreshTokenGraceWindowSeconds: '%env(int:REFRESH_TOKEN_GRACE_WINDOW_SECONDS)%'
 
+  App\User\Application\Factory\ClearAuthCookieResponseFactoryInterface: '@App\User\Application\Factory\ClearAuthCookieResponseFactory'
   App\User\Application\Validator\PasswordResetTokenValidatorInterface: '@App\User\Application\Validator\CompositePasswordResetTokenValidator'
   App\User\Application\Hasher\PasswordHasherInterface: '@App\User\Infrastructure\Security\SymfonyPasswordHasher'
   App\User\Application\Lockout\AccountLockoutServiceInterface: '@App\User\Infrastructure\Lockout\RedisAccountLockout'
