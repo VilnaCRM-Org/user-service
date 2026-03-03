@@ -24,6 +24,7 @@ LOCKED_CONFIG_FILES=(
     "infection.json5"
     "phpmd-strict.xml"
     "phpmd.tests.xml"
+    ".php-cs-fixer.dist.php"
 )
 
 REQUIRED_DIRS=(
