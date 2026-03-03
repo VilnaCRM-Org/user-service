@@ -107,7 +107,7 @@ get_all_config_files() {
 check_git_changes_to_config() {
     print_info "-> Checking for modifications to locked configuration files..."
 
-    if [ ! -d "$PROJECT_ROOT/.git" ]; then
+    if ! git -C "$PROJECT_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         add_warning "Not a git repository - skipping git modification checks"
         return 0
     fi
@@ -116,6 +116,15 @@ check_git_changes_to_config() {
 
     local modified_files=()
     local comparison_successful=false
+
+    if git rev-parse --is-shallow-repository 2>/dev/null | grep -q "true"; then
+        print_info "  -> Shallow clone detected; attempting to fetch base ref..."
+        for ref in main master; do
+            if git fetch --no-tags --depth=1 origin "$ref" >/dev/null 2>&1; then
+                break
+            fi
+        done
+    fi
 
     for ref in origin/main origin/master main master; do
         if git rev-parse --verify "$ref" >/dev/null 2>&1; then
@@ -137,8 +146,12 @@ check_git_changes_to_config() {
         [ -n "$line" ] && modified_files+=("$PROJECT_ROOT/$line")
     done < <(git diff --cached --name-only 2>/dev/null || true)
 
-    if [ "$comparison_successful" = false ] && [ ${#modified_files[@]} -eq 0 ]; then
-        add_warning "Could not find reference branch and no local changes detected"
+    if [ "$comparison_successful" = false ]; then
+        if [ "${CI:-}" = "true" ] || [ "${CI:-}" = "1" ]; then
+            add_error "Could not find comparison reference branch; CI cannot validate locked config drift without base ref"
+            return 1
+        fi
+        add_warning "No reference branch found; checked only local uncommitted/staged changes"
     fi
 
     local config_files=()
