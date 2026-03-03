@@ -183,16 +183,16 @@ Routes:
 
 Errors are RFC 7807 (`application/problem+json`) with stable `error_code` values:
 
-| `error_code`                  | HTTP | Trigger                                          |
-| ----------------------------- | ---- | ------------------------------------------------ |
-| `unsupported_provider`        | 400  | `{provider}` is not `github` or `google`         |
-| `missing_oauth_parameters`    | 400  | `code`, `state`, or flow-binding cookie absent   |
-| `provider_mismatch`           | 400  | Route provider ≠ stored provider in state        |
-| `invalid_state`               | 422  | State unknown, already consumed, or binding fail |
-| `state_expired`               | 422  | State TTL elapsed                                |
-| `unverified_provider_email`   | 422  | Provider email not verified                      |
-| `social_identity_not_linked`  | 409  | Local user exists by email but has no social link |
-| `provider_unavailable`        | 503  | Provider HTTP call timed out or returned error   |
+| `error_code`                 | HTTP | Trigger                                           |
+| ---------------------------- | ---- | ------------------------------------------------- |
+| `unsupported_provider`       | 400  | `{provider}` is not `github` or `google`          |
+| `missing_oauth_parameters`   | 400  | `code`, `state`, or flow-binding cookie absent    |
+| `provider_mismatch`          | 400  | Route provider ≠ stored provider in state         |
+| `invalid_state`              | 422  | State unknown, already consumed, or binding fail  |
+| `state_expired`              | 422  | State TTL elapsed                                 |
+| `unverified_provider_email`  | 422  | Provider email not verified                       |
+| `social_identity_not_linked` | 409  | Local user exists by email but has no social link |
+| `provider_unavailable`       | 503  | Provider HTTP call timed out or returned error    |
 
 ### 4.9 Outbound HTTP Resilience
 
