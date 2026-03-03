@@ -23,3 +23,17 @@ The length of Confirmation Tokens is configurable via the `.env` file, with the 
 You can find our config for it [here](https://github.com/VilnaCRM-Org/user-service/blob/main/config/packages/cache.yaml).
 
 Learn more about [Security Documentation](security.md)
+
+### Configuration Drift Protection
+
+User Service includes a locked-configuration validation script to detect unauthorized changes in critical quality and static-analysis configuration files.
+
+- Run manually: `make validate-configuration`
+- CI integration: the command is executed from `make ci` via the `ci-static-analysis` stage
+
+The validator checks:
+
+1. Required project directory structure.
+2. Changes to locked configuration files (`phpinsights.php`, `phpinsights-tests.php`, `psalm.xml`, `deptrac.yaml`, `infection.json5`, `phpmd-strict.xml`, `phpmd.tests.xml`, `.php-cs-fixer.dist.php`).
+
+When an unauthorized change is detected, the command exits with a non-zero status and prints the offending file paths.
