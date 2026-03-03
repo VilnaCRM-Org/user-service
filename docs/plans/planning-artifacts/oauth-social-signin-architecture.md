@@ -106,6 +106,7 @@ No Symfony OAuth client bundle is required.
 ### 4.2 SocialIdentity Model and Indexes
 
 `SocialIdentity` fields:
+
 - `id` (ULID)
 - `provider` (`github` | `google`)
 - `providerId` (opaque string)
@@ -113,6 +114,7 @@ No Symfony OAuth client bundle is required.
 - `createdAt`, `lastUsedAt`
 
 MongoDB indexes:
+
 - unique `(provider, provider_id)`
 - unique `(user_id, provider)`
 - non-unique `(user_id)`
@@ -134,6 +136,7 @@ interface OAuthProviderInterface
 Redis key pattern: `oauth_state:{state}`
 
 Value payload:
+
 - provider
 - codeVerifier
 - flowBindingHash
@@ -145,6 +148,7 @@ Validation is atomic and one-time (consume on read). Provider mismatch or flow m
 ### 4.5 User Resolution Policy
 
 Resolution order:
+
 1. Find `SocialIdentity(provider, providerId)` -> return linked user
 2. If not found and local user exists by email -> reject (`SocialIdentityNotLinkedException`, HTTP 409)
 3. If no local user -> create user + social identity
@@ -156,6 +160,7 @@ No auto-linking by email in this phase.
 Do not store empty or plaintext sentinel values.
 
 For newly provisioned OAuth users:
+
 - generate random high-entropy secret in application layer
 - hash with `PasswordHasherInterface`
 - persist only hashed value in `User.password`
@@ -163,6 +168,7 @@ For newly provisioned OAuth users:
 ### 4.7 2FA Reuse
 
 After successful user resolution:
+
 - if user has local 2FA enabled: create `PendingTwoFactor`
 - otherwise: issue session directly
 
@@ -171,6 +177,7 @@ After successful user resolution:
 ### 4.8 HTTP Contract and Routes
 
 Routes:
+
 - `GET /api/auth/social/{provider}`
 - `GET /api/auth/social/{provider}/callback`
 
@@ -179,6 +186,7 @@ Errors are RFC 7807 with stable `error_code` values.
 ### 4.9 Outbound HTTP Resilience
 
 Provider adapters must enforce:
+
 - explicit connect/read timeouts
 - bounded retries only for transient failures
 - normalized `OAuthProviderException` mapping
@@ -244,11 +252,11 @@ OAUTH_PROVIDER_HTTP_MAX_RETRIES=1
 
 ## 9. Risks and Mitigations
 
-| Risk | Likelihood | Mitigation |
-|------|------------|------------|
-| Provider outage during callback | Medium | Timeout + bounded retries + map to `provider_unavailable` (503) |
-| Replay/double callback submission | Low | Atomic one-time `validateAndConsume` in Redis |
-| Provider route/state mix-up | Low | Validate route provider equals stored provider |
-| Email ownership drift takeover | Medium | No auto-linking by email in callback |
-| Sensitive values in logs | Medium | Mandatory redaction of code/state/token/cookies |
-| Duplicate identity writes under race | Low | Unique indexes + idempotent duplicate-key handling |
+| Risk                                 | Likelihood | Mitigation                                                      |
+| ------------------------------------ | ---------- | --------------------------------------------------------------- |
+| Provider outage during callback      | Medium     | Timeout + bounded retries + map to `provider_unavailable` (503) |
+| Replay/double callback submission    | Low        | Atomic one-time `validateAndConsume` in Redis                   |
+| Provider route/state mix-up          | Low        | Validate route provider equals stored provider                  |
+| Email ownership drift takeover       | Medium     | No auto-linking by email in callback                            |
+| Sensitive values in logs             | Medium     | Mandatory redaction of code/state/token/cookies                 |
+| Duplicate identity writes under race | Low        | Unique indexes + idempotent duplicate-key handling              |

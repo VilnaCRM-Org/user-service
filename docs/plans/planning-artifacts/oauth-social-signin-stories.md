@@ -13,19 +13,19 @@ authors: [Bob (Scrum Master), Winston (Architect)]
 
 ## NFR Coverage Map
 
-| NFR | Covered by Story |
-|-----|------------------|
-| NFR-01 Rate limiting | ST-4.3 |
-| NFR-02 State expiry | ST-1.4 |
-| NFR-03 No token persistence/logging | ST-3.3, ST-5.3 |
-| NFR-04 Local 2FA authority | ST-3.3 |
-| NFR-05 Hashed random OAuth password | ST-3.1 |
-| NFR-06 Email verification | ST-2.1, ST-2.2 |
-| NFR-07 HTTPS callback | ST-1.1 |
-| NFR-08 Quality thresholds | DoD (all stories) |
-| NFR-09 Observability + redaction | ST-3.4, ST-5.3 |
-| NFR-10 Provider HTTP resilience | ST-2.3 |
-| NFR-11 Concurrency safety | ST-1.4, ST-5.2 |
+| NFR                                 | Covered by Story  |
+| ----------------------------------- | ----------------- |
+| NFR-01 Rate limiting                | ST-4.3            |
+| NFR-02 State expiry                 | ST-1.4            |
+| NFR-03 No token persistence/logging | ST-3.3, ST-5.3    |
+| NFR-04 Local 2FA authority          | ST-3.3            |
+| NFR-05 Hashed random OAuth password | ST-3.1            |
+| NFR-06 Email verification           | ST-2.1, ST-2.2    |
+| NFR-07 HTTPS callback               | ST-1.1            |
+| NFR-08 Quality thresholds           | DoD (all stories) |
+| NFR-09 Observability + redaction    | ST-3.4, ST-5.3    |
+| NFR-10 Provider HTTP resilience     | ST-2.3            |
+| NFR-11 Concurrency safety           | ST-1.4, ST-5.2    |
 
 ---
 
@@ -39,6 +39,7 @@ authors: [Bob (Scrum Master), Winston (Architect)]
 Add GitHub/Google OAuth client dependencies and secure environment configuration for callback URLs under `/api/auth/social/*/callback`.
 
 **Acceptance Criteria**:
+
 - AC-01: OAuth client dependencies are present in `composer.json` and lock file.
 - AC-02: Redirect URI config points to `/api/auth/social/{provider}/callback`.
 - AC-03: Dev/test/prod config explicitly documents HTTPS requirement and dev override behavior.
@@ -54,6 +55,7 @@ Add GitHub/Google OAuth client dependencies and secure environment configuration
 Create `SocialIdentity` model and persistence mapping with uniqueness constraints required for race-safe linking.
 
 **Acceptance Criteria**:
+
 - AC-01: `SocialIdentity` includes `id`, `provider`, `providerId`, `userId`, `createdAt`, `lastUsedAt`.
 - AC-02: `OAuthProvider` enum supports `github` and `google`.
 - AC-03: MongoDB mapping defines unique `(provider, provider_id)` and unique `(user_id, provider)` indexes.
@@ -69,6 +71,7 @@ Create `SocialIdentity` model and persistence mapping with uniqueness constraint
 Create immutable provider profile value object.
 
 **Acceptance Criteria**:
+
 - AC-01: `OAuthUserProfile` is a readonly value object with `email`, `name`, `providerId`, `emailVerified`.
 - AC-02: No framework dependency in domain.
 - AC-03: Psalm and PHPInsights thresholds are satisfied.
@@ -83,6 +86,7 @@ Create immutable provider profile value object.
 Implement Redis state payload storage and atomic consume behavior with provider and flow-binding verification.
 
 **Acceptance Criteria**:
+
 - AC-01: Stored payload includes `provider`, `codeVerifier`, `flowBindingHash`, `redirectUri`, and creation timestamp.
 - AC-02: TTL defaults to 600 seconds, configurable via env.
 - AC-03: `validateAndConsume(state, provider, flowBinding)` atomically consumes state and returns payload.
@@ -101,6 +105,7 @@ Implement Redis state payload storage and atomic consume behavior with provider 
 Implement GitHub adapter with PKCE support and verified-email enforcement.
 
 **Acceptance Criteria**:
+
 - AC-01: Adapter builds auth URL with `state`, `code_challenge`, `code_challenge_method=S256`.
 - AC-02: Token exchange uses `code_verifier`.
 - AC-03: Profile lookup selects primary + verified email only.
@@ -118,6 +123,7 @@ Implement GitHub adapter with PKCE support and verified-email enforcement.
 Implement Google adapter with PKCE and verified-email enforcement.
 
 **Acceptance Criteria**:
+
 - AC-01: Adapter builds auth URL with scopes `openid email profile` and PKCE params.
 - AC-02: Token exchange uses `code_verifier`.
 - AC-03: Profile extraction includes `email`, `name`, `id`, `email_verified`.
@@ -135,6 +141,7 @@ Implement Google adapter with PKCE and verified-email enforcement.
 Apply explicit timeout/retry policy for provider HTTP calls.
 
 **Acceptance Criteria**:
+
 - AC-01: Connect timeout, total timeout, and max retries are configurable env vars.
 - AC-02: Retries are bounded and used only for transient failures.
 - AC-03: Non-transient provider errors fail fast.
@@ -152,10 +159,11 @@ Apply explicit timeout/retry policy for provider HTTP calls.
 Resolve users securely without implicit email auto-linking.
 
 **Acceptance Criteria**:
+
 - AC-01: Resolution order is strict:
-  1) existing social identity -> return user
-  2) existing local user by email without identity -> throw `SocialIdentityNotLinkedException`
-  3) no user -> create user + identity
+  1. existing social identity -> return user
+  2. existing local user by email without identity -> throw `SocialIdentityNotLinkedException`
+  3. no user -> create user + identity
 - AC-02: New OAuth user is marked `confirmed=true`.
 - AC-03: New OAuth user password is generated randomly and persisted only as hash.
 - AC-04: No raw/empty password value is persisted.
@@ -171,6 +179,7 @@ Resolve users securely without implicit email auto-linking.
 Create initiation command flow that generates state, PKCE payload, and flow binding.
 
 **Acceptance Criteria**:
+
 - AC-01: Command accepts provider string; handler validates against enum.
 - AC-02: Handler generates cryptographically secure `state` and PKCE verifier/challenge.
 - AC-03: Handler stores state payload in Redis with configured TTL.
@@ -187,6 +196,7 @@ Create initiation command flow that generates state, PKCE payload, and flow bind
 Handle callback with strict validation and existing 2FA/session behavior.
 
 **Acceptance Criteria**:
+
 - AC-01: Requires provider, code, state, flow-binding token.
 - AC-02: Validates and consumes state atomically.
 - AC-03: Rejects provider mismatch and flow mismatch.
@@ -206,6 +216,7 @@ Handle callback with strict validation and existing 2FA/session behavior.
 Define events and logging semantics for OAuth flow.
 
 **Acceptance Criteria**:
+
 - AC-01: `OAuthUserCreatedEvent` and `OAuthUserSignedInEvent` exist and follow domain-event conventions.
 - AC-02: Event payloads avoid unnecessary PII (no raw provider tokens; email only if explicitly needed).
 - AC-03: Warning/error logs include provider and correlation metadata.
@@ -221,6 +232,7 @@ Define events and logging semantics for OAuth flow.
 Implement persistence repository with race-safe behavior.
 
 **Acceptance Criteria**:
+
 - AC-01: Repository implements interface contract.
 - AC-02: `findByProviderAndProviderId`, `findByUserId`, and `save` are implemented.
 - AC-03: Duplicate-key races are handled deterministically (idempotent outcome).
@@ -238,6 +250,7 @@ Implement persistence repository with race-safe behavior.
 Add `GET /api/auth/social/{provider}` endpoint.
 
 **Acceptance Criteria**:
+
 - AC-01: Route dispatches initiation command.
 - AC-02: Success returns HTTP 302 redirect to provider.
 - AC-03: Response sets secure flow-binding cookie (`HttpOnly`, `Secure`, `SameSite=Lax`).
@@ -254,6 +267,7 @@ Add `GET /api/auth/social/{provider}` endpoint.
 Add `GET /api/auth/social/{provider}/callback` endpoint.
 
 **Acceptance Criteria**:
+
 - AC-01: Route extracts `code`, `state`, and flow-binding cookie.
 - AC-02: Missing parameters return RFC 7807 (`missing_oauth_parameters`, 400).
 - AC-03: Invalid/expired/replayed state returns RFC 7807 (`invalid_state` or `state_expired`, 422).
@@ -274,6 +288,7 @@ Add `GET /api/auth/social/{provider}/callback` endpoint.
 Add dedicated rate-limit policies for initiation and callback routes.
 
 **Acceptance Criteria**:
+
 - AC-01: Separate policies exist for initiation and callback.
 - AC-02: Limits and intervals are environment configurable.
 - AC-03: Limit exceeded responses are mapped to consistent problem responses.
@@ -288,6 +303,7 @@ Add dedicated rate-limit policies for initiation and callback routes.
 **Type**: Test
 
 **Acceptance Criteria**:
+
 - AC-01: Provider adapters cover success, unverified email, token exchange errors, and retry behavior.
 - AC-02: Handlers cover all successful and failure branches.
 - AC-03: OAuth-specific unit coverage >= 95%.
@@ -299,6 +315,7 @@ Add dedicated rate-limit policies for initiation and callback routes.
 **Type**: Test
 
 **Acceptance Criteria**:
+
 - AC-01: New user social sign-up path succeeds and emits creation event.
 - AC-02: Returning linked social user path succeeds.
 - AC-03: Existing unlinked local user path returns 409 `social_identity_not_linked`.
@@ -313,6 +330,7 @@ Add dedicated rate-limit policies for initiation and callback routes.
 **Type**: Test
 
 **Acceptance Criteria**:
+
 - AC-01: Sensitive values are absent/redacted in logs.
 - AC-02: No provider token persistence in DB/cache beyond state payload lifetime.
 - AC-03: Error responses always conform to RFC 7807 contract.
@@ -324,6 +342,7 @@ Add dedicated rate-limit policies for initiation and callback routes.
 **Type**: Test
 
 **Acceptance Criteria**:
+
 - AC-01: Initiation endpoint meets p95 redirect latency target.
 - AC-02: Callback endpoint included in representative load scenarios with mocked providers.
 - AC-03: Existing load suites remain green.

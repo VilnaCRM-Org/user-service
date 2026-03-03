@@ -38,13 +38,13 @@ Implement OAuth 2.0 Authorization Code flow for GitHub and Google as alternative
 
 ## 2. User Stories (High-Level)
 
-| ID    | As a...       | I want to...                                          | So that...                                             |
-|-------|---------------|-------------------------------------------------------|--------------------------------------------------------|
-| US-01 | New user      | Click "Sign in with GitHub" and get an account       | I do not need to create a password first               |
-| US-02 | New user      | Click "Sign in with Google" and get an account       | Sign-up is fast                                        |
-| US-03 | Linked user   | Sign in via my linked GitHub/Google identity          | I can log in without entering password                 |
-| US-04 | 2FA user      | Still be prompted for TOTP after OAuth                | Security is consistent regardless of auth method       |
-| US-05 | Security team | Reject unsafe linking and replay/mix-up attacks       | Account takeover and login CSRF risks are controlled   |
+| ID    | As a...       | I want to...                                    | So that...                                           |
+| ----- | ------------- | ----------------------------------------------- | ---------------------------------------------------- |
+| US-01 | New user      | Click "Sign in with GitHub" and get an account  | I do not need to create a password first             |
+| US-02 | New user      | Click "Sign in with Google" and get an account  | Sign-up is fast                                      |
+| US-03 | Linked user   | Sign in via my linked GitHub/Google identity    | I can log in without entering password               |
+| US-04 | 2FA user      | Still be prompted for TOTP after OAuth          | Security is consistent regardless of auth method     |
+| US-05 | Security team | Reject unsafe linking and replay/mix-up attacks | Account takeover and login CSRF risks are controlled |
 
 ---
 
@@ -55,6 +55,7 @@ Implement OAuth 2.0 Authorization Code flow for GitHub and Google as alternative
 **FR-01** - The system MUST expose `GET /api/auth/social/{provider}` where `{provider}` is `github` or `google`.
 
 **FR-02** - On request, the system MUST generate:
+
 - cryptographically random `state`
 - PKCE `code_verifier` and `code_challenge` (`S256`)
 - flow-binding token (stored in secure cookie)
@@ -72,6 +73,7 @@ and persist state payload in Redis (TTL 10 minutes): `state`, `provider`, `code_
 **FR-06** - Callback requires `code`, `state`, and flow-binding cookie; missing values MUST return HTTP 400 problem response with code `missing_oauth_parameters`.
 
 **FR-07** - State validation MUST be one-time and atomic and MUST verify all of:
+
 - state exists and not expired
 - not already consumed
 - route provider matches stored provider
@@ -82,21 +84,25 @@ Failures MUST return HTTP 422 (`invalid_state` or `state_expired`) or HTTP 400 (
 **FR-08** - The system MUST exchange `code` server-side using stored PKCE `code_verifier`.
 
 **FR-09** - The system MUST fetch provider profile:
+
 - GitHub: primary verified email + login
 - Google: verified email + name + provider id
 
 **FR-10** - User resolution MUST follow this order:
+
 1. `SocialIdentity(provider, providerId)` exists -> resolve linked `User`
 2. No `SocialIdentity`, email matches existing `User` -> reject with HTTP 409 (`social_identity_not_linked`), no auto-link
 3. Neither exists -> create new `User` (`confirmed=true`, random unusable password hash), create `SocialIdentity`
 
 **FR-11** - After successful user resolution, post-auth behavior MUST match password flow:
+
 - 2FA enabled -> create `PendingTwoFactor`, return `{ twoFactorEnabled: true, sessionId: "..." }`
 - no 2FA -> issue session via `SessionIssuer`, return `{ twoFactorEnabled: false, sessionId: "..." }` with auth cookies
 
 **FR-12** - Existing `CompleteTwoFactorCommandHandler` flow remains unchanged.
 
 **FR-13** - Events:
+
 - publish `OAuthUserCreatedEvent` only for new user creation
 - publish `OAuthUserSignedInEvent` on every successful OAuth sign-in
 
@@ -124,6 +130,7 @@ Failures MUST return HTTP 422 (`invalid_state` or `state_expired`) or HTTP 400 (
 ## 4. Non-Functional Requirements
 
 **NFR-01 - Rate Limiting**: Apply separate token-bucket policies to:
+
 - `GET /api/auth/social/{provider}` (initiation)
 - `GET /api/auth/social/{provider}/callback` (callback)
 
@@ -151,18 +158,18 @@ Failures MUST return HTTP 422 (`invalid_state` or `state_expired`) or HTTP 400 (
 
 ## 5. Scope Summary
 
-| Area                                   | In Scope | Deferred |
-|----------------------------------------|----------|----------|
-| GitHub OAuth sign-in/sign-up           | yes      |          |
-| Google OAuth sign-in/sign-up           | yes      |          |
-| PKCE + state + flow binding            | yes      |          |
-| Local 2FA enforcement post-OAuth       | yes      |          |
-| SocialIdentity persistence             | yes      |          |
-| Domain events (created, signed-in)     | yes      |          |
-| Auto-link existing account by email    |          | yes      |
-| Provider link/unlink management        |          | yes      |
-| Additional providers                   |          | yes      |
-| Mobile/native OAuth flow variants      |          | yes      |
+| Area                                | In Scope | Deferred |
+| ----------------------------------- | -------- | -------- |
+| GitHub OAuth sign-in/sign-up        | yes      |          |
+| Google OAuth sign-in/sign-up        | yes      |          |
+| PKCE + state + flow binding         | yes      |          |
+| Local 2FA enforcement post-OAuth    | yes      |          |
+| SocialIdentity persistence          | yes      |          |
+| Domain events (created, signed-in)  | yes      |          |
+| Auto-link existing account by email |          | yes      |
+| Provider link/unlink management     |          | yes      |
+| Additional providers                |          | yes      |
+| Mobile/native OAuth flow variants   |          | yes      |
 
 ---
 
