@@ -134,6 +134,7 @@ Failures MUST return HTTP 422 (`invalid_state` or `state_expired`) or HTTP 400 (
 `unsupported_provider`, `missing_oauth_parameters`, `invalid_state`, `state_expired`, `provider_mismatch`, `provider_email_unavailable`, `unverified_provider_email`, `provider_unavailable`, `social_identity_not_linked`.
 
 Error code semantics:
+
 - `provider_email_unavailable` (HTTP 422): The provider did not return any email address in the profile response. The user must add a verified email to their provider account before sign-in can succeed.
 - `unverified_provider_email` (HTTP 422): The provider returned an email address but it is not marked as verified per provider semantics. Distinct from absence — the email exists but is not trusted.
 
@@ -165,6 +166,7 @@ Error code semantics:
 **NFR-09 - Observability + Redaction**: OAuth logs MUST be structured, include correlation IDs and provider context, and MUST redact `code`, `state`, `code_verifier`, access tokens, and raw cookies.
 
 **NFR-12 - Per-Provider Metrics**: The system MUST emit structured metrics for each provider, including:
+
 - `oauth.auth_started` per provider (initiation endpoint hit)
 - `oauth.callback_success` per provider
 - `oauth.callback_failure` per provider and error code
@@ -206,12 +208,12 @@ These metrics enable data-driven decisions on whether to open a future email-opt
 
 The following client-facing messages MUST be used (or equivalent approved copy) for error states:
 
-| Scenario | Error Code | Required Copy |
-| --- | --- | --- |
-| Provider returned no email | `provider_email_unavailable` | "Sign in with [Provider] requires a verified email address on your [Provider] account. Please add and verify an email in your [Provider] settings and try again." |
-| Provider returned unverified email | `unverified_provider_email` | "Your [Provider] account's email address is not verified. Please verify your email on [Provider] and try again." |
-| Unsupported provider | `unsupported_provider` | "This sign-in provider is not supported." |
-| Existing account not linked | `social_identity_not_linked` | "An account with this email already exists. Please sign in with your password, then link your [Provider] account in settings." |
+| Scenario                           | Error Code                   | Required Copy                                                                                                                                                     |
+| ---------------------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Provider returned no email         | `provider_email_unavailable` | "Sign in with [Provider] requires a verified email address on your [Provider] account. Please add and verify an email in your [Provider] settings and try again." |
+| Provider returned unverified email | `unverified_provider_email`  | "Your [Provider] account's email address is not verified. Please verify your email on [Provider] and try again."                                                  |
+| Unsupported provider               | `unsupported_provider`       | "This sign-in provider is not supported."                                                                                                                         |
+| Existing account not linked        | `social_identity_not_linked` | "An account with this email already exists. Please sign in with your password, then link your [Provider] account in settings."                                    |
 
 These messages must be stable across providers. Frontend implementations MUST substitute `[Provider]` with the display name (GitHub, Google, Facebook, Twitter/X).
 

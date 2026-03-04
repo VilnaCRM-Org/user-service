@@ -174,12 +174,12 @@ interface OAuthProviderInterface
 
 Provider capability matrix:
 
-| Provider   | `supportsPkce()` | `emailAlwaysVerified()` | `requiresExtraProfileCall()` |
-| ---------- | ---------------- | ----------------------- | ---------------------------- |
-| GitHub     | true             | true                    | false                        |
-| Google     | true             | true                    | false                        |
-| Facebook   | true             | false                   | true (Graph API `/me`)       |
-| Twitter/X  | true             | false                   | true (v2 Users API)          |
+| Provider  | `supportsPkce()` | `emailAlwaysVerified()` | `requiresExtraProfileCall()` |
+| --------- | ---------------- | ----------------------- | ---------------------------- |
+| GitHub    | true             | true                    | false                        |
+| Google    | true             | true                    | false                        |
+| Facebook  | true             | false                   | true (Graph API `/me`)       |
+| Twitter/X | true             | false                   | true (v2 Users API)          |
 
 ### 4.4 Provider Registry as Allowlist
 
@@ -259,17 +259,17 @@ Routes:
 
 Errors are RFC 7807 (`application/problem+json`) with stable `error_code` values:
 
-| `error_code`                 | HTTP | Trigger                                                                    |
-| ---------------------------- | ---- | -------------------------------------------------------------------------- |
-| `unsupported_provider`       | 400  | `{provider}` is not in the supported allowlist                             |
-| `missing_oauth_parameters`   | 400  | `code`, `state`, or flow-binding cookie absent                             |
-| `provider_mismatch`          | 400  | Route provider ≠ stored provider in state                                  |
-| `invalid_state`              | 422  | State unknown, already consumed, or binding fail                           |
-| `state_expired`              | 422  | State TTL elapsed                                                          |
-| `provider_email_unavailable` | 422  | Provider returned no email address (Facebook/Twitter/X without email set)  |
-| `unverified_provider_email`  | 422  | Provider returned email but it is not marked as verified                   |
-| `social_identity_not_linked` | 409  | Local user exists by email but has no social link                          |
-| `provider_unavailable`       | 503  | Provider HTTP call timed out or returned error                             |
+| `error_code`                 | HTTP | Trigger                                                                   |
+| ---------------------------- | ---- | ------------------------------------------------------------------------- |
+| `unsupported_provider`       | 400  | `{provider}` is not in the supported allowlist                            |
+| `missing_oauth_parameters`   | 400  | `code`, `state`, or flow-binding cookie absent                            |
+| `provider_mismatch`          | 400  | Route provider ≠ stored provider in state                                 |
+| `invalid_state`              | 422  | State unknown, already consumed, or binding fail                          |
+| `state_expired`              | 422  | State TTL elapsed                                                         |
+| `provider_email_unavailable` | 422  | Provider returned no email address (Facebook/Twitter/X without email set) |
+| `unverified_provider_email`  | 422  | Provider returned email but it is not marked as verified                  |
+| `social_identity_not_linked` | 409  | Local user exists by email but has no social link                         |
+| `provider_unavailable`       | 503  | Provider HTTP call timed out or returned error                            |
 
 ### 4.10 Outbound HTTP Resilience
 
@@ -350,14 +350,14 @@ OAUTH_PROVIDER_HTTP_MAX_RETRIES=1
 
 ## 9. Risks and Mitigations
 
-| Risk                                        | Likelihood | Mitigation                                                                                                           |
-| ------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------- |
-| Provider outage during callback             | Medium     | Timeout + bounded retries + map to `provider_unavailable` (503)                                                     |
-| Replay/double callback submission           | Low        | Atomic one-time `validateAndConsume` in Redis                                                                        |
-| Provider route/state mix-up                 | Low        | Validate route provider equals stored provider                                                                       |
-| Email ownership drift takeover              | Medium     | No auto-linking by email in callback                                                                                 |
-| Sensitive values in logs                    | Medium     | Mandatory redaction of code/state/token/cookies                                                                      |
-| Duplicate identity writes under race        | Low        | Unique indexes + idempotent duplicate-key handling                                                                   |
-| Facebook/Twitter profile missing email      | Medium     | Adapters raise `OAuthEmailUnavailableException`; resolver never reached without verified email                       |
-| Twitter/X persistent API policy changes     | Medium     | Adapter isolated behind `OAuthProviderInterface`; version-pin league package; monitor Twitter API changelog actively |
-| Facebook Graph API token validation quirks  | Low        | Adapter validates token via `/debug_token` before trusting profile; maps failures to `provider_unavailable`          |
+| Risk                                       | Likelihood | Mitigation                                                                                                           |
+| ------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------- |
+| Provider outage during callback            | Medium     | Timeout + bounded retries + map to `provider_unavailable` (503)                                                      |
+| Replay/double callback submission          | Low        | Atomic one-time `validateAndConsume` in Redis                                                                        |
+| Provider route/state mix-up                | Low        | Validate route provider equals stored provider                                                                       |
+| Email ownership drift takeover             | Medium     | No auto-linking by email in callback                                                                                 |
+| Sensitive values in logs                   | Medium     | Mandatory redaction of code/state/token/cookies                                                                      |
+| Duplicate identity writes under race       | Low        | Unique indexes + idempotent duplicate-key handling                                                                   |
+| Facebook/Twitter profile missing email     | Medium     | Adapters raise `OAuthEmailUnavailableException`; resolver never reached without verified email                       |
+| Twitter/X persistent API policy changes    | Medium     | Adapter isolated behind `OAuthProviderInterface`; version-pin league package; monitor Twitter API changelog actively |
+| Facebook Graph API token validation quirks | Low        | Adapter validates token via `/debug_token` before trusting profile; maps failures to `provider_unavailable`          |

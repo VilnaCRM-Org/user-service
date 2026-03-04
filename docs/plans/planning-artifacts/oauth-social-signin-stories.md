@@ -13,20 +13,20 @@ authors: [Bob (Scrum Master), Winston (Architect)]
 
 ## NFR Coverage Map
 
-| NFR                                 | Covered by Story              |
-| ----------------------------------- | ----------------------------- |
-| NFR-01 Rate limiting                | ST-4.3                        |
-| NFR-02 State expiry                 | ST-1.4                        |
-| NFR-03 No token persistence/logging | ST-3.3, ST-5.3                |
-| NFR-04 Local 2FA authority          | ST-3.3                        |
-| NFR-05 Hashed random OAuth password | ST-3.1                        |
+| NFR                                 | Covered by Story               |
+| ----------------------------------- | ------------------------------ |
+| NFR-01 Rate limiting                | ST-4.3                         |
+| NFR-02 State expiry                 | ST-1.4                         |
+| NFR-03 No token persistence/logging | ST-3.3, ST-5.3                 |
+| NFR-04 Local 2FA authority          | ST-3.3                         |
+| NFR-05 Hashed random OAuth password | ST-3.1                         |
 | NFR-06 Email verification           | ST-2.1, ST-2.2, ST-2.4, ST-2.5 |
-| NFR-07 HTTPS callback               | ST-1.1                        |
-| NFR-08 Quality thresholds           | DoD (all stories)             |
-| NFR-09 Observability + redaction    | ST-3.4, ST-5.3                |
-| NFR-10 Provider HTTP resilience     | ST-2.3                        |
-| NFR-11 Concurrency safety           | ST-1.4, ST-5.2                |
-| NFR-12 Per-provider metrics         | ST-3.4                        |
+| NFR-07 HTTPS callback               | ST-1.1                         |
+| NFR-08 Quality thresholds           | DoD (all stories)              |
+| NFR-09 Observability + redaction    | ST-3.4, ST-5.3                 |
+| NFR-10 Provider HTTP resilience     | ST-2.3                         |
+| NFR-11 Concurrency safety           | ST-1.4, ST-5.2                 |
+| NFR-12 Per-provider metrics         | ST-3.4                         |
 
 ---
 
