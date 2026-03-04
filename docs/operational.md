@@ -37,3 +37,19 @@ The validator checks:
 2. Changes to locked configuration files (`phpinsights.php`, `phpinsights-tests.php`, `psalm.xml`, `deptrac.yaml`, `infection.json5`, `phpmd-strict.xml`, `phpmd.tests.xml`, `.php-cs-fixer.dist.php`).
 
 When an unauthorized change is detected, the command exits with a non-zero status and prints the offending file paths.
+
+#### Approved Exception Workflow (Locked Config Changes)
+
+Some governance changes legitimately require editing locked files (for example, `deptrac.yaml`).  
+To keep quality controls predictable for autonomous AI agents and humans, use this workflow:
+
+1. Open a **dedicated PR** for locked configuration changes only (no feature or bugfix code mixed in).
+2. Document:
+   - Why the config change is required.
+   - Which checks/thresholds are affected.
+   - Rollback plan.
+3. Run `make ci` and attach failure output from `make validate-configuration` as evidence.
+4. Request explicit **human maintainer approval**. AI agents must not self-approve or self-merge failed CI.
+5. After merge, ensure subsequent branches run with a green `make ci` baseline.
+
+This process allows controlled exceptions without normalizing "merge with red CI" as standard practice.
