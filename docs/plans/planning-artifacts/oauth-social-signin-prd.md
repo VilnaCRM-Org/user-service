@@ -2,8 +2,8 @@
 stepsCompleted: []
 workflowType: 'greenfield-fullstack'
 inputDocuments: []
-version: 2
-date: 2026-03-03
+version: 3
+date: 2026-03-05
 authors: [Mary (Analyst), John (PM), Winston (Architect)]
 ---
 
@@ -17,20 +17,25 @@ The current authentication system requires email + password credentials for ever
 
 ### 1.2 Proposed Solution
 
-Implement OAuth 2.0 Authorization Code flow for GitHub and Google as alternative authentication methods, with defense-in-depth controls (state, PKCE, one-time callback consumption, strict error contracts, local 2FA authority).
+Implement OAuth 2.0 Authorization Code flow for GitHub, Google, Facebook, and Twitter/X as alternative authentication methods, with defense-in-depth controls (state, PKCE where provider supports it, one-time callback consumption, strict error contracts, local 2FA authority).
+
+All providers require a verified email for account resolution and creation. Providers that do not supply a verified email are rejected with explicit error codes. Provider capability differences (PKCE support, email guarantee, extra profile call) are handled through a capability interface rather than provider-specific branching in core logic.
 
 ### 1.3 Goals
 
-- Allow users to authenticate via GitHub or Google without creating a local password first.
+- Allow users to authenticate via GitHub, Google, Facebook, or Twitter/X without creating a local password first.
 - Maintain security parity with password sign-in: local 2FA is enforced regardless of provider.
 - Prevent login CSRF, replay, provider mix-up, and account-takeover-by-autolink risks.
 - Keep the `OAuth` bounded context isolated from `User` internals.
+- Reject any provider response that does not supply a verified email; never create accounts without a trusted email.
 
 ### 1.4 Non-Goals (Explicit Deferrals)
 
 - Account linking management endpoint (link/unlink from user settings) - future epic.
 - Automatic linking of existing local users by email during social callback - deferred for security.
-- Additional providers (Apple, Microsoft, LinkedIn) - future epic.
+- Additional providers (Apple, Microsoft, LinkedIn) - future epic. Facebook and Twitter/X are now in scope for this epic.
+- Email-optional OAuth sign-in (users whose provider account has no verified email) - future epic; track drop-off via metrics before prioritising.
+- Post-OAuth email collection and verification flow - future epic.
 - Parsing provider-side `amr` claims to skip local 2FA - explicitly rejected.
 - Mobile/native app OAuth flows - out of scope.
 
@@ -38,13 +43,16 @@ Implement OAuth 2.0 Authorization Code flow for GitHub and Google as alternative
 
 ## 2. User Stories (High-Level)
 
-| ID    | As a...       | I want to...                                    | So that...                                           |
-| ----- | ------------- | ----------------------------------------------- | ---------------------------------------------------- |
-| US-01 | New user      | Click "Sign in with GitHub" and get an account  | I do not need to create a password first             |
-| US-02 | New user      | Click "Sign in with Google" and get an account  | Sign-up is fast                                      |
-| US-03 | Linked user   | Sign in via my linked GitHub/Google identity    | I can log in without entering password               |
-| US-04 | 2FA user      | Still be prompted for TOTP after OAuth          | Security is consistent regardless of auth method     |
-| US-05 | Security team | Reject unsafe linking and replay/mix-up attacks | Account takeover and login CSRF risks are controlled |
+| ID    | As a...       | I want to...                                                              | So that...                                                        |
+| ----- | ------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| US-01 | New user      | Click "Sign in with GitHub" and get an account                            | I do not need to create a password first                          |
+| US-02 | New user      | Click "Sign in with Google" and get an account                            | Sign-up is fast                                                   |
+| US-03 | Linked user   | Sign in via my linked GitHub/Google/Facebook/Twitter identity             | I can log in without entering password                            |
+| US-04 | 2FA user      | Still be prompted for TOTP after OAuth                                    | Security is consistent regardless of auth method                  |
+| US-05 | Security team | Reject unsafe linking and replay/mix-up attacks                           | Account takeover and login CSRF risks are controlled              |
+| US-06 | New user      | Click "Sign in with Facebook" and get an account using my verified email  | I can use my existing Facebook identity                           |
+| US-07 | New user      | Click "Sign in with Twitter/X" and get an account using my verified email | I can use my existing Twitter/X identity                          |
+| US-08 | Any user      | See a clear message when my social account has no verified email          | I understand why sign-in failed and how to fix it on the provider |
 
 ---
 
@@ -52,7 +60,7 @@ Implement OAuth 2.0 Authorization Code flow for GitHub and Google as alternative
 
 ### 3.1 OAuth Initiation
 
-**FR-01** - The system MUST expose `GET /api/auth/social/{provider}` where `{provider}` is `github` or `google`.
+**FR-01** - The system MUST expose `GET /api/auth/social/{provider}` where `{provider}` is one of `github`, `google`, `facebook`, or `twitter`. The supported provider list is enforced by an explicit allowlist registry; free-form provider strings are rejected.
 
 **FR-02** - On request, the system MUST generate:
 
@@ -83,10 +91,12 @@ Failures MUST return HTTP 422 (`invalid_state` or `state_expired`) or HTTP 400 (
 
 **FR-08** - The system MUST exchange `code` server-side using stored PKCE `code_verifier`.
 
-**FR-09** - The system MUST fetch provider profile:
+**FR-09** - The system MUST fetch provider profile. Each provider adapter implements a capability interface declaring whether PKCE is supported, whether email is always present, and whether an extra profile API call is required:
 
-- GitHub: primary verified email + login
-- Google: verified email + name + provider id
+- GitHub: primary verified email + login (PKCE supported; email always verified)
+- Google: verified email + name + provider id (PKCE supported; email always verified)
+- Facebook: email + name + provider id via Graph API `/me?fields=id,name,email` call (PKCE supported; email NOT guaranteed — must check presence and verification)
+- Twitter/X: email + name + provider id via v2 Users API with `users.read` scope (PKCE supported; email NOT guaranteed — must check presence)
 
 **FR-10** - User resolution MUST follow this order:
 
@@ -121,7 +131,11 @@ Failures MUST return HTTP 422 (`invalid_state` or `state_expired`) or HTTP 400 (
 **FR-18** - All endpoint errors MUST be RFC 7807 (`application/problem+json`) with stable machine `error_code`.
 
 **FR-19** - OAuth errors MUST use only documented codes:
-`unsupported_provider`, `missing_oauth_parameters`, `invalid_state`, `state_expired`, `provider_mismatch`, `unverified_provider_email`, `provider_unavailable`, `social_identity_not_linked`.
+`unsupported_provider`, `missing_oauth_parameters`, `invalid_state`, `state_expired`, `provider_mismatch`, `provider_email_unavailable`, `unverified_provider_email`, `provider_unavailable`, `social_identity_not_linked`.
+
+Error code semantics:
+- `provider_email_unavailable` (HTTP 422): The provider did not return any email address in the profile response. The user must add a verified email to their provider account before sign-in can succeed.
+- `unverified_provider_email` (HTTP 422): The provider returned an email address but it is not marked as verified per provider semantics. Distinct from absence — the email exists but is not trusted.
 
 **FR-20** - Callback responses MUST include `Cache-Control: no-store` and `Pragma: no-cache`.
 
@@ -150,6 +164,15 @@ Failures MUST return HTTP 422 (`invalid_state` or `state_expired`) or HTTP 400 (
 
 **NFR-09 - Observability + Redaction**: OAuth logs MUST be structured, include correlation IDs and provider context, and MUST redact `code`, `state`, `code_verifier`, access tokens, and raw cookies.
 
+**NFR-12 - Per-Provider Metrics**: The system MUST emit structured metrics for each provider, including:
+- `oauth.auth_started` per provider (initiation endpoint hit)
+- `oauth.callback_success` per provider
+- `oauth.callback_failure` per provider and error code
+- `oauth.email_unavailable` per provider (tracks `provider_email_unavailable` rejections)
+- `oauth.email_unverified` per provider (tracks `unverified_provider_email` rejections)
+
+These metrics enable data-driven decisions on whether to open a future email-optional OAuth epic.
+
 **NFR-10 - Provider HTTP Resilience**: Outbound provider calls MUST enforce explicit connect/read timeouts and bounded retries for transient failures.
 
 **NFR-11 - Concurrency Safety**: Double callback submission MUST be safely handled (first succeeds, subsequent attempts fail as consumed/invalid state).
@@ -158,25 +181,47 @@ Failures MUST return HTTP 422 (`invalid_state` or `state_expired`) or HTTP 400 (
 
 ## 5. Scope Summary
 
-| Area                                | In Scope | Deferred |
-| ----------------------------------- | -------- | -------- |
-| GitHub OAuth sign-in/sign-up        | yes      |          |
-| Google OAuth sign-in/sign-up        | yes      |          |
-| PKCE + state + flow binding         | yes      |          |
-| Local 2FA enforcement post-OAuth    | yes      |          |
-| SocialIdentity persistence          | yes      |          |
-| Domain events (created, signed-in)  | yes      |          |
-| Auto-link existing account by email |          | yes      |
-| Provider link/unlink management     |          | yes      |
-| Additional providers                |          | yes      |
-| Mobile/native OAuth flow variants   |          | yes      |
+| Area                                           | In Scope | Deferred |
+| ---------------------------------------------- | -------- | -------- |
+| GitHub OAuth sign-in/sign-up                   | yes      |          |
+| Google OAuth sign-in/sign-up                   | yes      |          |
+| Facebook OAuth sign-in/sign-up                 | yes      |          |
+| Twitter/X OAuth sign-in/sign-up                | yes      |          |
+| PKCE + state + flow binding                    | yes      |          |
+| Provider capability model (PKCE, email, extra) | yes      |          |
+| Local 2FA enforcement post-OAuth               | yes      |          |
+| SocialIdentity persistence                     | yes      |          |
+| Domain events (created, signed-in)             | yes      |          |
+| Per-provider observability metrics             | yes      |          |
+| Auto-link existing account by email            |          | yes      |
+| Provider link/unlink management                |          | yes      |
+| Email-optional OAuth (no-email provider users) |          | yes      |
+| Post-OAuth email collection flow               |          | yes      |
+| Additional providers (Apple, Microsoft, etc.)  |          | yes      |
+| Mobile/native OAuth flow variants              |          | yes      |
 
 ---
 
-## 6. Success Metrics
+## 6. UX Copy Requirements
 
-- OAuth sign-in (including 2FA gate decision) completes in < 3s p95.
+The following client-facing messages MUST be used (or equivalent approved copy) for error states:
+
+| Scenario | Error Code | Required Copy |
+| --- | --- | --- |
+| Provider returned no email | `provider_email_unavailable` | "Sign in with [Provider] requires a verified email address on your [Provider] account. Please add and verify an email in your [Provider] settings and try again." |
+| Provider returned unverified email | `unverified_provider_email` | "Your [Provider] account's email address is not verified. Please verify your email on [Provider] and try again." |
+| Unsupported provider | `unsupported_provider` | "This sign-in provider is not supported." |
+| Existing account not linked | `social_identity_not_linked` | "An account with this email already exists. Please sign in with your password, then link your [Provider] account in settings." |
+
+These messages must be stable across providers. Frontend implementations MUST substitute `[Provider]` with the display name (GitHub, Google, Facebook, Twitter/X).
+
+---
+
+## 7. Success Metrics
+
+- OAuth sign-in (including 2FA gate decision) completes in < 3s p95 for all four providers.
 - Zero provider tokens persisted to datastore/logs.
 - 100% replay/mix-up negative tests pass.
 - Existing auth behavior remains regression-free.
 - OAuth-specific test coverage >= 95% (unit + integration for new code).
+- `provider_email_unavailable` and `unverified_provider_email` rejections are observable via per-provider metrics.
