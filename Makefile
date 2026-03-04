@@ -10,6 +10,7 @@ LOAD_TEST_CONFIG = tests/Load/config.prod.json
 SYMFONY_BIN   = symfony
 DOCKER        = docker
 DOCKER_COMPOSE = docker compose
+DOCKER_COMPOSE_LOAD_TEST = $(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.load-tests.yml
 # Pinned Schemathesis image to avoid CI drift
 SCHEMATHESIS_IMAGE = schemathesis/schemathesis:4.9.5
 SCHEMATHESIS_CLIENT_ID ?= dc0bc6323f16fecd4224a3860ca894c5
@@ -188,29 +189,36 @@ setup-test-db: ## Create database for testing purposes
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 
 smoke-load-tests: build-k6-docker ## Run load tests with minimal load
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-smoke-load-tests.sh
 
 average-load-tests: build-k6-docker ## Run load tests with average load
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-average-load-tests.sh
 
 stress-load-tests: build-k6-docker ## Run load tests with high load
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-stress-load-tests.sh
 
 spike-load-tests: build-k6-docker ## Run load tests with a spike of extreme load
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-spike-load-tests.sh
 
 load-tests: build-k6-docker ## Run load tests
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-load-tests.sh
 
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
 	tests/Load/execute-load-test.sh $(scenario) $(or $(runSmoke),true) $(or $(runAverage),true) $(or $(runStress),true) $(or $(runSpike),true)
 
 cache-performance-load-tests: build-k6-docker ## Run cache performance K6 load tests
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
 	tests/Load/execute-load-test.sh cachePerformance true false false false
 
 build-k6-docker:

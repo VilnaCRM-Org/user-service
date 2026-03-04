@@ -443,6 +443,318 @@
         }
       }
     },
+    "refreshToken": {
+      "setupTimeoutInMinutes": 30,
+      "teardownTimeoutInMinutes": 30,
+      "smoke": {
+        "threshold": 800,
+        "rps": 5,
+        "vus": 5,
+        "duration": 10
+      },
+      "average": {
+        "threshold": 900,
+        "rps": 5,
+        "vus": 5,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "stress": {
+        "threshold": 1400,
+        "rps": 15,
+        "vus": 15,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "spike": {
+        "threshold": 2200,
+        "rps": 20,
+        "vus": 20,
+        "duration": {
+          "rise": 10,
+          "fall": 10
+        }
+      }
+    },
+    "setupTwoFactor": {
+      "setupTimeoutInMinutes": 30,
+      "teardownTimeoutInMinutes": 30,
+      "smoke": {
+        "threshold": 1000,
+        "rps": 4,
+        "vus": 4,
+        "duration": 10
+      },
+      "average": {
+        "threshold": 1200,
+        "rps": 4,
+        "vus": 4,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "stress": {
+        "threshold": 1800,
+        "rps": 10,
+        "vus": 10,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "spike": {
+        "threshold": 2800,
+        "rps": 15,
+        "vus": 15,
+        "duration": {
+          "rise": 10,
+          "fall": 10
+        }
+      }
+    },
+    "confirmTwoFactor": {
+      "setupTimeoutInMinutes": 30,
+      "teardownTimeoutInMinutes": 30,
+      "smoke": {
+        "threshold": 10000,
+        "rps": 1,
+        "vus": 3,
+        "duration": 10
+      },
+      "average": {
+        "threshold": 10000,
+        "rps": 2,
+        "vus": 4,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "stress": {
+        "threshold": 10000,
+        "rps": 4,
+        "vus": 8,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "spike": {
+        "threshold": 10000,
+        "rps": 6,
+        "vus": 12,
+        "duration": {
+          "rise": 10,
+          "fall": 10
+        }
+      }
+    },
+    "disableTwoFactor": {
+      "setupTimeoutInMinutes": 30,
+      "teardownTimeoutInMinutes": 30,
+      "smoke": {
+        "threshold": 10000,
+        "rps": 1,
+        "vus": 3,
+        "duration": 10
+      },
+      "average": {
+        "threshold": 10000,
+        "rps": 2,
+        "vus": 4,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "stress": {
+        "threshold": 10000,
+        "rps": 4,
+        "vus": 8,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "spike": {
+        "threshold": 10000,
+        "rps": 6,
+        "vus": 12,
+        "duration": {
+          "rise": 10,
+          "fall": 10
+        }
+      }
+    },
+    "regenerateRecoveryCodes": {
+      "setupTimeoutInMinutes": 30,
+      "teardownTimeoutInMinutes": 30,
+      "smoke": {
+        "threshold": 10000,
+        "rps": 1,
+        "vus": 3,
+        "duration": 10
+      },
+      "average": {
+        "threshold": 10000,
+        "rps": 2,
+        "vus": 4,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "stress": {
+        "threshold": 10000,
+        "rps": 4,
+        "vus": 8,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "spike": {
+        "threshold": 10000,
+        "rps": 6,
+        "vus": 12,
+        "duration": {
+          "rise": 10,
+          "fall": 10
+        }
+      }
+    },
+    "signinTwoFactor": {
+      "setupTimeoutInMinutes": 30,
+      "teardownTimeoutInMinutes": 30,
+      "smoke": {
+        "threshold": 10000,
+        "rps": 1,
+        "vus": 3,
+        "duration": 10
+      },
+      "average": {
+        "threshold": 10000,
+        "rps": 2,
+        "vus": 4,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "stress": {
+        "threshold": 10000,
+        "rps": 3,
+        "vus": 6,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "spike": {
+        "threshold": 10000,
+        "rps": 4,
+        "vus": 8,
+        "duration": {
+          "rise": 10,
+          "fall": 10
+        }
+      }
+    },
+    "signout": {
+      "setupTimeoutInMinutes": 30,
+      "teardownTimeoutInMinutes": 30,
+      "smoke": {
+        "threshold": 700,
+        "rps": 5,
+        "vus": 5,
+        "duration": 10
+      },
+      "average": {
+        "threshold": 900,
+        "rps": 5,
+        "vus": 5,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "stress": {
+        "threshold": 1400,
+        "rps": 15,
+        "vus": 15,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "spike": {
+        "threshold": 2200,
+        "rps": 20,
+        "vus": 20,
+        "duration": {
+          "rise": 10,
+          "fall": 10
+        }
+      }
+    },
+    "signoutAll": {
+      "setupTimeoutInMinutes": 30,
+      "teardownTimeoutInMinutes": 30,
+      "smoke": {
+        "threshold": 800,
+        "rps": 5,
+        "vus": 5,
+        "duration": 10
+      },
+      "average": {
+        "threshold": 1000,
+        "rps": 5,
+        "vus": 5,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "stress": {
+        "threshold": 1500,
+        "rps": 15,
+        "vus": 15,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "spike": {
+        "threshold": 2300,
+        "rps": 20,
+        "vus": 20,
+        "duration": {
+          "rise": 10,
+          "fall": 10
+        }
+      }
+    },
     "graphQLGetUser": {
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,
