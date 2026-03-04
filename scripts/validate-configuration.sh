@@ -128,9 +128,19 @@ check_git_changes_to_config() {
 
     for ref in origin/main origin/master main master; do
         if git rev-parse --verify "$ref" >/dev/null 2>&1; then
-            while IFS= read -r line; do
-                [ -n "$line" ] && modified_files+=("$PROJECT_ROOT/$line")
-            done < <(git diff --name-only "$ref" HEAD 2>/dev/null || true)
+            local merge_base=""
+            merge_base="$(git merge-base "$ref" HEAD 2>/dev/null || true)"
+
+            if [ -n "$merge_base" ]; then
+                while IFS= read -r line; do
+                    [ -n "$line" ] && modified_files+=("$PROJECT_ROOT/$line")
+                done < <(git diff --name-only "$merge_base" HEAD 2>/dev/null || true)
+            else
+                add_warning "Could not compute merge-base with $ref; falling back to $ref..HEAD diff"
+                while IFS= read -r line; do
+                    [ -n "$line" ] && modified_files+=("$PROJECT_ROOT/$line")
+                done < <(git diff --name-only "$ref" HEAD 2>/dev/null || true)
+            fi
 
             comparison_successful=true
             print_info "  -> Comparing against reference branch: $ref"
