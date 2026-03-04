@@ -56,13 +56,13 @@ make ci
 
 Identify failing check from output and apply fix:
 
-| Check           | Command            | Fix                                 |
-| --------------- | ------------------ | ----------------------------------- |
-| Code style      | `make phpcsfixer`  | Apply auto-fixes                    |
-| Static analysis | `make psalm`       | Fix type errors                     |
-| Quality metrics | `make phpinsights` | Reduce complexity, fix architecture |
-| Tests           | `make unit-tests`  | Debug failing tests                 |
-| Mutations       | `make infection`   | Add missing test cases              |
+| Check           | Command                       | Fix                                                       |
+| --------------- | ----------------------------- | --------------------------------------------------------- |
+| Code style      | `make phpcsfixer`             | Apply auto-fixes                                          |
+| Static analysis | `make psalm`                  | Fix type errors                                           |
+| Quality metrics | `make phpinsights`            | Reduce complexity, fix architecture                       |
+| Tests           | `make unit-tests`             | Debug failing tests                                       |
+| Mutations       | `make infection`              | Add missing test cases                                    |
 | Config drift    | `make validate-configuration` | Revert locked-file edits, or use exception workflow below |
 
 ### Step 4: Re-run
