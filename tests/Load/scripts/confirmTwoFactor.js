@@ -48,16 +48,28 @@ export default function confirmTwoFactor(data) {
   utils.checkUserIsDefined(user);
 
   const signInResult = authFlowUtils.signIn(user.email, user.password);
-  utils.checkResponse(signInResult.response, 'sign-in for confirm 2fa is status 200', res => res.status === 200);
+  utils.checkResponse(
+    signInResult.response,
+    'sign-in for confirm 2fa is status 200',
+    res => res.status === 200
+  );
 
   const accessToken = signInResult.body?.access_token;
   if (typeof accessToken !== 'string' || accessToken.length === 0) {
-    utils.checkResponse(signInResult.response, 'sign-in returns access token for confirm 2fa', () => false);
+    utils.checkResponse(
+      signInResult.response,
+      'sign-in returns access token for confirm 2fa',
+      () => false
+    );
     return;
   }
 
   const setupResult = authFlowUtils.setupTwoFactor(accessToken);
-  utils.checkResponse(setupResult.response, 'setup 2fa before confirm is status 200', res => res.status === 200);
+  utils.checkResponse(
+    setupResult.response,
+    'setup 2fa before confirm is status 200',
+    res => res.status === 200
+  );
 
   const secret = setupResult.body?.secret;
   if (typeof secret !== 'string' || secret.length === 0) {
@@ -66,11 +78,13 @@ export default function confirmTwoFactor(data) {
   }
 
   const confirmResult = confirmWithCandidateCodes(accessToken, secret);
-  utils.checkResponse(confirmResult.response, 'confirm 2fa is status 200', res => res.status === 200);
   utils.checkResponse(
     confirmResult.response,
-    'confirm 2fa returns recovery codes array',
-    () => Array.isArray(confirmResult.body?.recovery_codes)
+    'confirm 2fa is status 200',
+    res => res.status === 200
+  );
+  utils.checkResponse(confirmResult.response, 'confirm 2fa returns recovery codes array', () =>
+    Array.isArray(confirmResult.body?.recovery_codes)
   );
 }
 

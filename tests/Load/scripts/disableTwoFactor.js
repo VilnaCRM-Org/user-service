@@ -48,16 +48,28 @@ export default function disableTwoFactor(data) {
   utils.checkUserIsDefined(user);
 
   const signInResult = authFlowUtils.signIn(user.email, user.password);
-  utils.checkResponse(signInResult.response, 'sign-in for disable 2fa is status 200', res => res.status === 200);
+  utils.checkResponse(
+    signInResult.response,
+    'sign-in for disable 2fa is status 200',
+    res => res.status === 200
+  );
 
   const accessToken = signInResult.body?.access_token;
   if (typeof accessToken !== 'string' || accessToken.length === 0) {
-    utils.checkResponse(signInResult.response, 'sign-in returns access token for disable 2fa', () => false);
+    utils.checkResponse(
+      signInResult.response,
+      'sign-in returns access token for disable 2fa',
+      () => false
+    );
     return;
   }
 
   const setupResult = authFlowUtils.setupTwoFactor(accessToken);
-  utils.checkResponse(setupResult.response, 'setup 2fa before disable is status 200', res => res.status === 200);
+  utils.checkResponse(
+    setupResult.response,
+    'setup 2fa before disable is status 200',
+    res => res.status === 200
+  );
 
   const secret = setupResult.body?.secret;
   if (typeof secret !== 'string' || secret.length === 0) {
@@ -66,16 +78,28 @@ export default function disableTwoFactor(data) {
   }
 
   const confirmResult = confirmWithCandidateCodes(accessToken, secret);
-  utils.checkResponse(confirmResult.response, 'confirm 2fa before disable is status 200', res => res.status === 200);
+  utils.checkResponse(
+    confirmResult.response,
+    'confirm 2fa before disable is status 200',
+    res => res.status === 200
+  );
 
   const recoveryCode = confirmResult.body?.recovery_codes?.[0];
   if (typeof recoveryCode !== 'string' || recoveryCode.length === 0) {
-    utils.checkResponse(confirmResult.response, 'confirm 2fa returns recovery code for disable', () => false);
+    utils.checkResponse(
+      confirmResult.response,
+      'confirm 2fa returns recovery code for disable',
+      () => false
+    );
     return;
   }
 
   const disableResult = authFlowUtils.disableTwoFactor(accessToken, recoveryCode);
-  utils.checkResponse(disableResult.response, 'disable 2fa is status 204', res => res.status === 204);
+  utils.checkResponse(
+    disableResult.response,
+    'disable 2fa is status 204',
+    res => res.status === 204
+  );
 }
 
 export function teardown(data) {

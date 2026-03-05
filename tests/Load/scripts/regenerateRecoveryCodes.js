@@ -48,28 +48,52 @@ export default function regenerateRecoveryCodes(data) {
   utils.checkUserIsDefined(user);
 
   const signInResult = authFlowUtils.signIn(user.email, user.password);
-  utils.checkResponse(signInResult.response, 'sign-in for recovery code regeneration is status 200', res => res.status === 200);
+  utils.checkResponse(
+    signInResult.response,
+    'sign-in for recovery code regeneration is status 200',
+    res => res.status === 200
+  );
 
   const accessToken = signInResult.body?.access_token;
   if (typeof accessToken !== 'string' || accessToken.length === 0) {
-    utils.checkResponse(signInResult.response, 'sign-in returns access token for recovery code regeneration', () => false);
+    utils.checkResponse(
+      signInResult.response,
+      'sign-in returns access token for recovery code regeneration',
+      () => false
+    );
     return;
   }
 
   const setupResult = authFlowUtils.setupTwoFactor(accessToken);
-  utils.checkResponse(setupResult.response, 'setup 2fa before recovery code regeneration is status 200', res => res.status === 200);
+  utils.checkResponse(
+    setupResult.response,
+    'setup 2fa before recovery code regeneration is status 200',
+    res => res.status === 200
+  );
 
   const secret = setupResult.body?.secret;
   if (typeof secret !== 'string' || secret.length === 0) {
-    utils.checkResponse(setupResult.response, 'setup 2fa returns secret for recovery code regeneration', () => false);
+    utils.checkResponse(
+      setupResult.response,
+      'setup 2fa returns secret for recovery code regeneration',
+      () => false
+    );
     return;
   }
 
   const confirmResult = confirmWithCandidateCodes(accessToken, secret);
-  utils.checkResponse(confirmResult.response, 'confirm 2fa before recovery code regeneration is status 200', res => res.status === 200);
+  utils.checkResponse(
+    confirmResult.response,
+    'confirm 2fa before recovery code regeneration is status 200',
+    res => res.status === 200
+  );
 
   const regenerateResult = authFlowUtils.regenerateRecoveryCodes(accessToken);
-  utils.checkResponse(regenerateResult.response, 'recovery code regeneration is status 200', res => res.status === 200);
+  utils.checkResponse(
+    regenerateResult.response,
+    'recovery code regeneration is status 200',
+    res => res.status === 200
+  );
   utils.checkResponse(
     regenerateResult.response,
     'recovery code regeneration returns recovery codes array',

@@ -28,21 +28,35 @@ export default function refreshAccessToken(data) {
   utils.checkUserIsDefined(user);
 
   const signInResult = authFlowUtils.signIn(user.email, user.password);
-  utils.checkResponse(signInResult.response, 'sign-in for refresh token is status 200', res => res.status === 200);
+  utils.checkResponse(
+    signInResult.response,
+    'sign-in for refresh token is status 200',
+    res => res.status === 200
+  );
 
   const refreshToken = signInResult.body?.refresh_token;
-  utils.checkResponse(signInResult.response, 'sign-in returns refresh token for refresh flow', () => typeof refreshToken === 'string' && refreshToken.length > 0);
+  utils.checkResponse(
+    signInResult.response,
+    'sign-in returns refresh token for refresh flow',
+    () => typeof refreshToken === 'string' && refreshToken.length > 0
+  );
 
   if (typeof refreshToken !== 'string' || refreshToken.length === 0) {
     return;
   }
 
   const refreshResult = authFlowUtils.refreshToken(refreshToken);
-  utils.checkResponse(refreshResult.response, 'token refresh is status 200', res => res.status === 200);
+  utils.checkResponse(
+    refreshResult.response,
+    'token refresh is status 200',
+    res => res.status === 200
+  );
   utils.checkResponse(
     refreshResult.response,
     'token refresh returns access and refresh token',
-    () => typeof refreshResult.body?.access_token === 'string' && typeof refreshResult.body?.refresh_token === 'string'
+    () =>
+      typeof refreshResult.body?.access_token === 'string' &&
+      typeof refreshResult.body?.refresh_token === 'string'
   );
 }
 

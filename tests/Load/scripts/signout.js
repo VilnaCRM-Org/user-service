@@ -28,11 +28,19 @@ export default function signOutCurrentSession(data) {
   utils.checkUserIsDefined(user);
 
   const signInResult = authFlowUtils.signIn(user.email, user.password);
-  utils.checkResponse(signInResult.response, 'sign-in for signout is status 200', res => res.status === 200);
+  utils.checkResponse(
+    signInResult.response,
+    'sign-in for signout is status 200',
+    res => res.status === 200
+  );
 
   const accessToken = signInResult.body?.access_token;
   if (typeof accessToken !== 'string' || accessToken.length === 0) {
-    utils.checkResponse(signInResult.response, 'sign-in returns access token for signout', () => false);
+    utils.checkResponse(
+      signInResult.response,
+      'sign-in returns access token for signout',
+      () => false
+    );
     return;
   }
 

@@ -24,7 +24,11 @@ export default class AuthFlowUtils {
   }
 
   setupTwoFactor(accessToken) {
-    return this.post('/users/2fa/setup', JSON.stringify({}), this.utils.getJsonHeaderWithAuth(accessToken));
+    return this.post(
+      '/users/2fa/setup',
+      JSON.stringify({}),
+      this.utils.getJsonHeaderWithAuth(accessToken)
+    );
   }
 
   confirmTwoFactor(accessToken, twoFactorCode) {
@@ -44,7 +48,11 @@ export default class AuthFlowUtils {
   }
 
   regenerateRecoveryCodes(accessToken) {
-    return this.post('/users/2fa/recovery-codes', JSON.stringify({}), this.utils.getJsonHeaderWithAuth(accessToken));
+    return this.post(
+      '/users/2fa/recovery-codes',
+      JSON.stringify({}),
+      this.utils.getJsonHeaderWithAuth(accessToken)
+    );
   }
 
   completeTwoFactor(pendingSessionId, twoFactorCode) {
@@ -61,7 +69,11 @@ export default class AuthFlowUtils {
   }
 
   signOutAll(accessToken) {
-    return this.post('/signout/all', JSON.stringify({}), this.utils.getJsonHeaderWithAuth(accessToken));
+    return this.post(
+      '/signout/all',
+      JSON.stringify({}),
+      this.utils.getJsonHeaderWithAuth(accessToken)
+    );
   }
 
   post(path, payload, params) {

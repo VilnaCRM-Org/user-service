@@ -28,16 +28,28 @@ export default function signOutAllSessions(data) {
   utils.checkUserIsDefined(user);
 
   const signInResult = authFlowUtils.signIn(user.email, user.password);
-  utils.checkResponse(signInResult.response, 'sign-in for signout all is status 200', res => res.status === 200);
+  utils.checkResponse(
+    signInResult.response,
+    'sign-in for signout all is status 200',
+    res => res.status === 200
+  );
 
   const accessToken = signInResult.body?.access_token;
   if (typeof accessToken !== 'string' || accessToken.length === 0) {
-    utils.checkResponse(signInResult.response, 'sign-in returns access token for signout all', () => false);
+    utils.checkResponse(
+      signInResult.response,
+      'sign-in returns access token for signout all',
+      () => false
+    );
     return;
   }
 
   const signOutAllResult = authFlowUtils.signOutAll(accessToken);
-  utils.checkResponse(signOutAllResult.response, 'signout all is status 204', res => res.status === 204);
+  utils.checkResponse(
+    signOutAllResult.response,
+    'signout all is status 204',
+    res => res.status === 204
+  );
 }
 
 export function teardown(data) {

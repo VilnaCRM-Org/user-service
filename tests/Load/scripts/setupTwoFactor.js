@@ -28,7 +28,11 @@ export default function setupTwoFactor(data) {
   utils.checkUserIsDefined(user);
 
   const signInResult = authFlowUtils.signIn(user.email, user.password);
-  utils.checkResponse(signInResult.response, 'sign-in for setup 2fa is status 200', res => res.status === 200);
+  utils.checkResponse(
+    signInResult.response,
+    'sign-in for setup 2fa is status 200',
+    res => res.status === 200
+  );
 
   const accessToken = signInResult.body?.access_token;
   utils.checkResponse(
@@ -46,7 +50,9 @@ export default function setupTwoFactor(data) {
   utils.checkResponse(
     setupResult.response,
     'setup 2fa returns secret and otpauth uri',
-    () => typeof setupResult.body?.secret === 'string' && typeof setupResult.body?.otpauth_uri === 'string'
+    () =>
+      typeof setupResult.body?.secret === 'string' &&
+      typeof setupResult.body?.otpauth_uri === 'string'
   );
 }
 
