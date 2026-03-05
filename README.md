@@ -100,6 +100,7 @@ stop                         Stop docker and the Symfony binary server
 smoke-load-tests           Run load tests with minimal load
 spike-load-tests           Run load tests with a spike of extreme load
 up                           Start the docker hub (PHP, caddy)
+validate-configuration       Validate configuration structure and detect locked file modifications
 ```
 
 ## Documentation
