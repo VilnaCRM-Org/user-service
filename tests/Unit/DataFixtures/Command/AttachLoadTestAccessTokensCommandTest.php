@@ -129,6 +129,23 @@ final class AttachLoadTestAccessTokensCommandTest extends UnitTestCase
         $this->assertSame(Command::SUCCESS, $tester->execute([]));
     }
 
+    public function testExecuteFailsWhenUsersFileCannotBeEncodedForWrite(): void
+    {
+        $this->writeUsersFile([
+            ['id' => 'user-1', 'email' => 'a@example.com', 'confirmed' => false],
+        ]);
+        $deps = $this->createDependencies();
+        $this->expectWriteFailureDuringEncoding(
+            $deps['documentManager'],
+            $deps['accessTokenGenerator']
+        );
+
+        $tester = new CommandTester($deps['command']);
+
+        $this->assertSame(Command::FAILURE, $tester->execute([]));
+        $this->assertStringContainsString('Unable to write users file.', $tester->getDisplay());
+    }
+
     private function seedTwoUsers(): void
     {
         $this->writeUsersFile([
@@ -212,6 +229,23 @@ final class AttachLoadTestAccessTokensCommandTest extends UnitTestCase
             ))->willReturn('fake-jwt-token');
     }
 
+    private function expectWriteFailureDuringEncoding(
+        DocumentManager&MockObject $documentManager,
+        AccessTokenGeneratorInterface&MockObject $accessTokenGenerator
+    ): void {
+        $documentManager
+            ->expects($this->once())
+            ->method('persist')
+            ->with($this->isInstanceOf(AuthSession::class));
+        $documentManager
+            ->expects($this->once())
+            ->method('flush');
+        $accessTokenGenerator
+            ->expects($this->once())
+            ->method('generate')
+            ->willReturn("\xB1\x31");
+    }
+
     private function assertWrittenUsersHaveTokens(int $count): void
     {
         $written = $this->readWrittenUsers();
@@ -252,12 +286,7 @@ final class AttachLoadTestAccessTokensCommandTest extends UnitTestCase
     private function createDependencies(): array
     {
         $documentManager = $this->createMock(DocumentManager::class);
-        $accessTokenGenerator = $this->createMock(
-            AccessTokenGeneratorInterface::class
-        );
-        $accessTokenGenerator
-            ->method('generate')
-            ->willReturn('fake-jwt-token');
+        $accessTokenGenerator = $this->createMock(AccessTokenGeneratorInterface::class);
 
         $command = new AttachLoadTestAccessTokensCommand(
             $documentManager,

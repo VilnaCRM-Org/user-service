@@ -48,25 +48,26 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         }
 
         assert(is_string($method));
-        $this->issueTokensAndComplete($user, $command, $pendingSession, $method);
+        $rememberMe = $pendingSession->isRememberMe();
+        $this->consumePendingSessionOrFail($pendingSession->getId());
+        $this->issueTokensAndComplete($user, $command, $rememberMe, $method);
     }
 
     private function issueTokensAndComplete(
         User $user,
         CompleteTwoFactorCommand $command,
-        PendingTwoFactor $pendingSession,
+        bool $rememberMe,
         string $method
     ): void {
         $issued = $this->issueSession(
             $user,
             $command->ipAddress,
             $command->userAgent,
-            $pendingSession->isRememberMe()
+            $rememberMe
         );
         $remaining = $this->resolveRemainingCodes($user, $method);
 
-        $this->pendingTwoFactorRepository->delete($pendingSession);
-        $command->setResponse($this->buildResponse($issued, $pendingSession, $remaining));
+        $command->setResponse($this->buildResponse($issued, $rememberMe, $remaining));
 
         $this->publishEvents($user, $issued, $command, $method, $remaining);
     }
@@ -121,7 +122,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
 
     private function buildResponse(
         IssuedSession $issued,
-        PendingTwoFactor $pendingSession,
+        bool $rememberMe,
         ?int $remainingCodes
     ): CompleteTwoFactorCommandResponse {
         $warningMessage = $this->buildWarningMessage($remainingCodes);
@@ -133,7 +134,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
             $warningMessage
         );
 
-        if ($pendingSession->isRememberMe()) {
+        if ($rememberMe) {
             return $response->withRememberMe();
         }
 
@@ -171,6 +172,20 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         }
 
         return $user;
+    }
+
+    private function consumePendingSessionOrFail(string $pendingSessionId): void
+    {
+        if (
+            $this->pendingTwoFactorRepository->consumeIfActive(
+                $pendingSessionId,
+                new DateTimeImmutable()
+            )
+        ) {
+            return;
+        }
+
+        throw new UnauthorizedHttpException('Bearer', 'Invalid or expired two-factor session.');
     }
 
     private function handleTwoFactorFailure(CompleteTwoFactorCommand $command): never

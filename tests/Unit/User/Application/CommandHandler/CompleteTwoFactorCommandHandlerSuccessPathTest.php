@@ -58,7 +58,7 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->configureLookupsOnce($pending, $user);
         $this->expectTotpVerification($user, '123456');
         $this->expectIssuedSession('issued-access-token', 'issued-refresh-token');
-        $this->expectPendingDeletionAndCompletion($pending);
+        $this->expectPendingConsumeAndCompletion($pending);
 
         $command = $this->invokeHandlerWith($pending->getId(), '123456', $ipAddress, $userAgent);
         $this->assertSame('issued-access-token', $command->getResponse()->getAccessToken());
@@ -83,7 +83,7 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $issued = new IssuedSession((string) new Ulid(), 'access-token', 'refresh-token');
         $this->sessionIssuer->method('issue')->willReturn($issued);
 
-        $this->pendingTwoFactorRepository->method('delete');
+        $this->pendingTwoFactorRepository->method('consumeIfActive')->willReturn(true);
         $this->events->method('publishCompleted');
 
         $command = $this->invokeHandlerWith(
@@ -105,7 +105,7 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->configureLookupsOnce($pending, $user);
         $this->expectRecoveryCodeVerification($user, 'AB12-CD34', 0);
         $this->expectIssuedSession('issued-access-token', 'issued-refresh-token');
-        $this->expectPendingDeletionAndCompletion($pending);
+        $this->expectPendingConsumeAndCompletion($pending);
         $this->events->expects($this->once())->method('publishRecoveryCodeUsed');
 
         $command = $this->invokeHandlerWith($pending->getId(), 'AB12-CD34', $ip, $ua);
@@ -130,7 +130,7 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $issued = new IssuedSession((string) new Ulid(), 'test-access-token', 'test-refresh-token');
         $this->sessionIssuer->method('issue')->willReturn($issued);
 
-        $this->pendingTwoFactorRepository->method('delete');
+        $this->pendingTwoFactorRepository->method('consumeIfActive')->willReturn(true);
         $this->events->method('publishCompleted');
 
         $command = $this->invokeHandlerWith(
@@ -160,7 +160,7 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $issued = new IssuedSession((string) new Ulid(), 'access-token', 'refresh-token');
         $this->sessionIssuer->method('issue')->willReturn($issued);
 
-        $this->pendingTwoFactorRepository->method('delete');
+        $this->pendingTwoFactorRepository->method('consumeIfActive')->willReturn(true);
         $this->events->method('publishRecoveryCodeUsed');
         $this->events->method('publishCompleted');
 
@@ -180,7 +180,7 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->configureLookupsOnce($pending, $user);
         $this->expectRecoveryCodeVerification($user, 'AB12-CD34', 6);
         $this->expectIssuedSession('access-token', 'refresh-token');
-        $this->expectPendingDeletionAndCompletion($pending);
+        $this->expectPendingConsumeAndCompletion($pending);
 
         $command = $this->invokeHandlerWith(
             $pending->getId(),
@@ -210,7 +210,7 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->sessionIssuer->method('issue')->willReturn($issued);
 
         $this->events->expects($this->once())->method('publishCompleted');
-        $this->pendingTwoFactorRepository->method('delete');
+        $this->pendingTwoFactorRepository->method('consumeIfActive')->willReturn(true);
 
         $command = $this->invokeHandlerWith(
             $pending->getId(),
@@ -267,9 +267,12 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
             ->willReturn($issued);
     }
 
-    private function expectPendingDeletionAndCompletion(PendingTwoFactor $pending): void
+    private function expectPendingConsumeAndCompletion(PendingTwoFactor $pending): void
     {
-        $this->pendingTwoFactorRepository->expects($this->once())->method('delete')->with($pending);
+        $this->pendingTwoFactorRepository->expects($this->once())
+            ->method('consumeIfActive')
+            ->with($pending->getId(), $this->isInstanceOf(DateTimeImmutable::class))
+            ->willReturn(true);
         $this->events->expects($this->once())->method('publishCompleted');
     }
 

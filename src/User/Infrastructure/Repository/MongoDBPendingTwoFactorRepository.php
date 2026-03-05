@@ -6,6 +6,7 @@ namespace App\User\Infrastructure\Repository;
 
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
+use DateTimeImmutable;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -37,9 +38,37 @@ final class MongoDBPendingTwoFactorRepository extends ServiceDocumentRepository 
     }
 
     #[\Override]
+    public function consumeIfActive(string $id, DateTimeImmutable $currentTime): bool
+    {
+        $result = $this->createQueryBuilder()
+            ->remove()
+            ->field('id')->equals($id)
+            ->field('expiresAt')->gte($currentTime)
+            ->getQuery()
+            ->execute();
+
+        return $this->wasDocumentRemoved($result);
+    }
+
+    #[\Override]
     public function delete(PendingTwoFactor $pendingTwoFactor): void
     {
         $this->documentManager->remove($pendingTwoFactor);
         $this->documentManager->flush();
+    }
+
+    private function wasDocumentRemoved(mixed $result): bool
+    {
+        if (is_int($result)) {
+            return $result > 0;
+        }
+
+        if (!is_object($result) || !method_exists($result, 'getDeletedCount')) {
+            return false;
+        }
+
+        $deletedCount = $result->getDeletedCount();
+
+        return is_int($deletedCount) && $deletedCount > 0;
     }
 }

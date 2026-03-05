@@ -7,8 +7,11 @@ namespace App\Tests\Unit\User\Infrastructure\Repository;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Infrastructure\Repository\MongoDBRecoveryCodeRepository;
+use DateTimeImmutable;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Doctrine\ODM\MongoDB\Query\Builder;
+use Doctrine\ODM\MongoDB\Query\Query;
 use PHPUnit\Framework\MockObject\MockObject;
 
 final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
@@ -101,6 +104,47 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
         $this->repository->delete($recoveryCode);
     }
 
+    public function testMarkAsUsedIfUnusedReturnsTrueWhenUpdateResultIsPositiveInt(): void
+    {
+        $repository = $this->createRepositoryWithMarkAsUsedResult(1);
+
+        $this->assertTrue(
+            $repository->markAsUsedIfUnused($this->faker->uuid(), new DateTimeImmutable())
+        );
+    }
+
+    public function testMarkAsUsedIfUnusedReturnsFalseWhenUpdateResultIsZero(): void
+    {
+        $repository = $this->createRepositoryWithMarkAsUsedResult(0);
+
+        $this->assertFalse(
+            $repository->markAsUsedIfUnused($this->faker->uuid(), new DateTimeImmutable())
+        );
+    }
+
+    public function testMarkAsUsedIfUnusedReturnsFalseWhenModifiedCountIsNotInt(): void
+    {
+        $repository = $this->createRepositoryWithMarkAsUsedResult(new class() {
+            public function getModifiedCount(): string
+            {
+                return '1';
+            }
+        });
+
+        $this->assertFalse(
+            $repository->markAsUsedIfUnused($this->faker->uuid(), new DateTimeImmutable())
+        );
+    }
+
+    public function testMarkAsUsedIfUnusedReturnsFalseWhenResultHasNoModifiedCountMethod(): void
+    {
+        $repository = $this->createRepositoryWithMarkAsUsedResult(new \stdClass());
+
+        $this->assertFalse(
+            $repository->markAsUsedIfUnused($this->faker->uuid(), new DateTimeImmutable())
+        );
+    }
+
     public function testDeleteByUserId(): void
     {
         $userId = $this->faker->uuid();
@@ -142,5 +186,29 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
             $this->faker->uuid(),
             strtolower($this->faker->bothify('????-????'))
         );
+    }
+
+    private function createRepositoryWithMarkAsUsedResult(
+        mixed $updateResult
+    ): MongoDBRecoveryCodeRepository {
+        $repository = $this->getMockBuilder(MongoDBRecoveryCodeRepository::class)
+            ->setConstructorArgs([$this->documentManager, $this->registry])
+            ->onlyMethods(['createQueryBuilder'])
+            ->getMock();
+
+        $queryBuilder = $this->createMock(Builder::class);
+        $query = $this->createMock(Query::class);
+
+        $queryBuilder->method('updateOne')->willReturnSelf();
+        $queryBuilder->method('field')->willReturnSelf();
+        $queryBuilder->method('equals')->willReturnSelf();
+        $queryBuilder->method('set')->willReturnSelf();
+        $queryBuilder->method('getQuery')->willReturn($query);
+
+        $query->method('execute')->willReturn($updateResult);
+
+        $repository->method('createQueryBuilder')->willReturn($queryBuilder);
+
+        return $repository;
     }
 }

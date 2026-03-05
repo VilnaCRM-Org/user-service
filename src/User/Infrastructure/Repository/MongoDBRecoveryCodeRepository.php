@@ -6,6 +6,7 @@ namespace App\User\Infrastructure\Repository;
 
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
+use DateTimeImmutable;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -48,6 +49,20 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
     }
 
     #[\Override]
+    public function markAsUsedIfUnused(string $id, DateTimeImmutable $usedAt): bool
+    {
+        $result = $this->createQueryBuilder()
+            ->updateOne()
+            ->field('id')->equals($id)
+            ->field('usedAt')->equals(null)
+            ->field('usedAt')->set($usedAt)
+            ->getQuery()
+            ->execute();
+
+        return $this->wasDocumentUpdated($result);
+    }
+
+    #[\Override]
     public function delete(RecoveryCode $recoveryCode): void
     {
         $this->documentManager->remove($recoveryCode);
@@ -67,5 +82,20 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
         $this->documentManager->flush();
 
         return count($codes);
+    }
+
+    private function wasDocumentUpdated(mixed $result): bool
+    {
+        if (is_int($result)) {
+            return $result > 0;
+        }
+
+        if (!is_object($result) || !method_exists($result, 'getModifiedCount')) {
+            return false;
+        }
+
+        $modifiedCount = $result->getModifiedCount();
+
+        return is_int($modifiedCount) && $modifiedCount > 0;
     }
 }

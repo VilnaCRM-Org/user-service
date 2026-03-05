@@ -37,6 +37,7 @@ PSALM         = ./vendor/bin/psalm
 PHP_CS_FIXER  = ./vendor/bin/php-cs-fixer
 DEPTRAC       = ./vendor/bin/deptrac
 INFECTION     = ./vendor/bin/infection
+INFECTION_THREADS ?= 4
 
 # Misc
 .DEFAULT_GOAL = help
@@ -189,36 +190,36 @@ setup-test-db: ## Create database for testing purposes
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 
 smoke-load-tests: build-k6-docker ## Run load tests with minimal load
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-smoke-load-tests.sh
 
 average-load-tests: build-k6-docker ## Run load tests with average load
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-average-load-tests.sh
 
 stress-load-tests: build-k6-docker ## Run load tests with high load
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-stress-load-tests.sh
 
 spike-load-tests: build-k6-docker ## Run load tests with a spike of extreme load
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-spike-load-tests.sh
 
 load-tests: build-k6-docker ## Run load tests
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-load-tests.sh
 
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
 	tests/Load/execute-load-test.sh $(scenario) $(or $(runSmoke),true) $(or $(runAverage),true) $(or $(runStress),true) $(or $(runSpike),true)
 
 cache-performance-load-tests: build-k6-docker ## Run cache performance K6 load tests
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
 	tests/Load/execute-load-test.sh cachePerformance true false false false
 
 build-k6-docker:
@@ -228,7 +229,7 @@ build-spectral-docker:
 	$(DOCKER) build -t user-service-spectral -f ./docker/spectral/Dockerfile .
 
 infection: ## Run mutations test.
-	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j8 --min-msi=100 --min-covered-msi=100 --with-uncovered
+	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j$(INFECTION_THREADS) --min-msi=100 --min-covered-msi=100 --with-uncovered
 
 create-oauth-client: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(clientName)'
@@ -350,9 +351,13 @@ start-prod-loadtest: ## Start production environment with load testing capabilit
 stop-prod-loadtest: ## Stop production load testing environment
 	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml down --remove-orphans
 
-ci: ci-preflight ## Run comprehensive CI checks with parallelization (excludes bats and load tests)
-	@echo "🚀 Running parallel CI checks..."
-	@$(MAKE) -j4 --output-sync=target ci-static-analysis ci-deptrac ci-mutation ci-tests-and-openapi
+ci: ci-preflight ## Run comprehensive CI checks with stable resource usage (excludes bats and load tests)
+	@echo "🚀 Running static checks in parallel..."
+	@$(MAKE) -j2 --output-sync=target ci-static-analysis ci-deptrac
+	@echo "🧪 Running tests and API validation..."
+	@$(MAKE) ci-tests-and-openapi
+	@echo "🧬 Running mutation testing..."
+	@$(MAKE) ci-mutation
 	@echo ""
 	@echo "✅ CI checks successfully passed!"
 

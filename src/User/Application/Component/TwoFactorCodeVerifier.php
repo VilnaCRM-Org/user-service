@@ -8,6 +8,7 @@ use App\User\Domain\Contract\TOTPVerifierInterface;
 use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
+use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 final readonly class TwoFactorCodeVerifier implements TwoFactorCodeVerifierInterface
@@ -97,11 +98,12 @@ final readonly class TwoFactorCodeVerifier implements TwoFactorCodeVerifierInter
 
     private function tryConsumeRecoveryCode(string $userId, string $plainCode): bool
     {
-        foreach ($this->recoveryCodeRepository->findByUserId($userId) as $code) {
-            if (!$code->isUsed() && $code->matchesCode($plainCode)) {
-                $code->markAsUsed();
-                $this->recoveryCodeRepository->save($code);
+        $usedAt = new DateTimeImmutable();
 
+        foreach ($this->recoveryCodeRepository->findByUserId($userId) as $code) {
+            if (!$code->isUsed() && $code->matchesCode($plainCode) && $this->recoveryCodeRepository
+                ->markAsUsedIfUnused($code->getId(), $usedAt)
+            ) {
                 return true;
             }
         }

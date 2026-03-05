@@ -237,11 +237,7 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
             'otpauth://',
             $this->requireStringKey($setup['body'], 'otpauth_uri')
         );
-        $confirm = $this->requestJson(
-            '/api/users/2fa/confirm',
-            ['twoFactorCode' => TOTP::create($secret)->now()],
-            $authHeaders
-        );
+        $confirm = $this->confirmTwoFactorWithinStepWindow($secret, $authHeaders);
         $this->assertSame(Response::HTTP_OK, $confirm['response']->getStatusCode());
         $this->requireRecoveryCodes($confirm['body']);
         $this->assertFalse($this->findSession($primarySessionId)->isRevoked());
@@ -249,6 +245,53 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
         $regenerated = $this->requestJson('/api/users/2fa/recovery-codes', [], $authHeaders);
         $this->assertSame(Response::HTTP_OK, $regenerated['response']->getStatusCode());
         return $this->requireRecoveryCodes($regenerated['body']);
+    }
+
+    /**
+     * @param array<string, string> $authHeaders
+     *
+     * @return JsonResponse
+     */
+    private function confirmTwoFactorWithinStepWindow(string $secret, array $authHeaders): array
+    {
+        $twoFactorCodes = $this->buildTwoFactorCodesWithinStepWindow($secret);
+        $confirm = $this->requestJson(
+            '/api/users/2fa/confirm',
+            ['twoFactorCode' => $twoFactorCodes[0]],
+            $authHeaders
+        );
+        if ($confirm['response']->getStatusCode() === Response::HTTP_OK) {
+            return $confirm;
+        }
+
+        foreach (array_slice($twoFactorCodes, 1) as $twoFactorCode) {
+            $confirm = $this->requestJson(
+                '/api/users/2fa/confirm',
+                ['twoFactorCode' => $twoFactorCode],
+                $authHeaders
+            );
+            if ($confirm['response']->getStatusCode() === Response::HTTP_OK) {
+                return $confirm;
+            }
+        }
+
+        return $confirm;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function buildTwoFactorCodesWithinStepWindow(string $secret): array
+    {
+        $totp = TOTP::create($secret);
+        $timestamp = time();
+        $period = $totp->getPeriod();
+
+        return [
+            $totp->at(max(0, $timestamp - $period)),
+            $totp->at($timestamp),
+            $totp->at($timestamp + $period),
+        ];
     }
 
     private function completeTwoFactorWithRecoveryCode(

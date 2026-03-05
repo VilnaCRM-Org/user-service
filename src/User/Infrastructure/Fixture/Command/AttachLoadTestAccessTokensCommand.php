@@ -66,14 +66,11 @@ final class AttachLoadTestAccessTokensCommand extends Command
         $this->attachTokens($users);
         $this->documentManager->flush();
 
-        // @codeCoverageIgnoreStart
-        /** @infection-ignore-all */
         if (!$this->writeUsersFile($usersFilePath, $users)) {
             $io->error('Unable to write users file.');
 
             return Command::FAILURE;
         }
-        // @codeCoverageIgnoreEnd
 
         $io->success(
             sprintf('Attached access tokens to %d users.', count($users))
@@ -92,12 +89,10 @@ final class AttachLoadTestAccessTokensCommand extends Command
         }
 
         try {
-            /** @infection-ignore-all */
             $users = json_decode(
-                (string) file_get_contents($path),
-                true,
-                512,
-                JSON_THROW_ON_ERROR
+                json: (string) file_get_contents($path),
+                associative: true,
+                flags: JSON_THROW_ON_ERROR
             );
         } catch (\JsonException) {
             return null;
@@ -180,10 +175,6 @@ final class AttachLoadTestAccessTokensCommand extends Command
 
     /**
      * @param list<array<string, string|bool>> $users
-     *
-     * @codeCoverageIgnore Cannot test filesystem write failures as root in Docker
-     *
-     * @infection-ignore-all
      */
     private function writeUsersFile(string $path, array $users): bool
     {

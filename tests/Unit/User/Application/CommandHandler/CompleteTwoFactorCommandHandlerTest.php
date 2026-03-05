@@ -110,7 +110,7 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             ->with($user, '123456')
             ->willReturn(null);
         $this->events->expects($this->once())->method('publishFailed');
-        $this->pendingTwoFactorRepository->expects($this->never())->method('delete');
+        $this->pendingTwoFactorRepository->expects($this->never())->method('consumeIfActive');
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid two-factor code.');
         $this->createHandler()->__invoke(new CompleteTwoFactorCommand(
@@ -131,7 +131,7 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             ->with($user, 'abc-123')
             ->willReturn(null);
         $this->events->expects($this->once())->method('publishFailed');
-        $this->pendingTwoFactorRepository->expects($this->never())->method('delete');
+        $this->pendingTwoFactorRepository->expects($this->never())->method('consumeIfActive');
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid two-factor code.');
         $this->createHandler()->__invoke(new CompleteTwoFactorCommand(
@@ -174,7 +174,7 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             ->willReturn(null);
 
         $this->events->expects($this->once())->method('publishFailed');
-        $this->pendingTwoFactorRepository->expects($this->never())->method('delete');
+        $this->pendingTwoFactorRepository->expects($this->never())->method('consumeIfActive');
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid two-factor code.');
         $this->createHandler()->__invoke(new CompleteTwoFactorCommand(
@@ -197,7 +197,7 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             ->willReturn(null);
 
         $this->events->expects($this->once())->method('publishFailed');
-        $this->pendingTwoFactorRepository->expects($this->never())->method('delete');
+        $this->pendingTwoFactorRepository->expects($this->never())->method('consumeIfActive');
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid two-factor code.');
         $this->createHandler()->__invoke(new CompleteTwoFactorCommand(
@@ -217,12 +217,38 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
 
         $issued = new IssuedSession('session-id', 'access-token', 'refresh-token');
         $this->expectIssuedSession($issued);
-        $this->pendingTwoFactorRepository->expects($this->once())->method('delete')->with($pending);
+        $this->pendingTwoFactorRepository->expects($this->once())
+            ->method('consumeIfActive')
+            ->with($pending->getId(), $this->isInstanceOf(DateTimeImmutable::class))
+            ->willReturn(true);
         $this->events->expects($this->once())->method('publishCompleted');
         $command = $this->createCommand($pending->getId(), '123456');
 
         $this->createHandler()->__invoke($command);
         $this->assertResponseTokens($command, 'access-token', 'refresh-token');
+    }
+
+    public function testInvokeThrowsUnauthorizedWhenPendingSessionConsumeFails(): void
+    {
+        $user = $this->createTwoFactorEnabledUser();
+        $pending = $this->createPendingSession($user->getId(), '+5 minutes');
+        $this->configureLookupsOnce($pending, $user);
+        $this->expectTotpVerification($user, '123456');
+        $this->pendingTwoFactorRepository->expects($this->once())
+            ->method('consumeIfActive')
+            ->with($pending->getId(), $this->isInstanceOf(DateTimeImmutable::class))
+            ->willReturn(false);
+        $this->sessionIssuer->expects($this->never())->method('issue');
+        $this->events->expects($this->never())->method('publishCompleted');
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Invalid or expired two-factor session.');
+
+        $this->createHandler()->__invoke(new CompleteTwoFactorCommand(
+            $pending->getId(),
+            '123456',
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        ));
     }
 
     private function assertInvalidTwoFactorCodeRejected(string $twoFactorCode): void
