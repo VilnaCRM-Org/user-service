@@ -95,7 +95,7 @@ Failures MUST return HTTP 422 (`invalid_state` or `state_expired`) or HTTP 400 (
 
 - GitHub: primary verified email + login (PKCE supported; email always verified)
 - Google: verified email + name + provider id (PKCE supported; email always verified)
-- Facebook: email + name + provider id via Graph API `/me?fields=id,name,email` call (PKCE supported; email NOT guaranteed — must check presence and verification)
+- Facebook: email + name + provider id — authorization via OIDC Authorization Code + PKCE flow; profile fetched separately via Graph API `/me?fields=id,name,email` using the access token (PKCE supported; email NOT guaranteed — must check presence only; Facebook does not return an explicit `email_verified` field, so email presence is treated as implicit verification; only `provider_email_unavailable` applies, never `unverified_provider_email`)
 - Twitter/X: email + name + provider id via v2 Users API with `users.read` scope (PKCE supported; email NOT guaranteed — must check presence)
 
 **FR-10** - User resolution MUST follow this order:
@@ -136,7 +136,7 @@ Failures MUST return HTTP 422 (`invalid_state` or `state_expired`) or HTTP 400 (
 Error code semantics:
 
 - `provider_email_unavailable` (HTTP 422): The provider did not return any email address in the profile response. The user must add a verified email to their provider account before sign-in can succeed.
-- `unverified_provider_email` (HTTP 422): The provider returned an email address but it is not marked as verified per provider semantics. Distinct from absence — the email exists but is not trusted.
+- `unverified_provider_email` (HTTP 422): The provider returned an email address but it is not marked as verified per provider semantics. Distinct from absence — the email exists but is not trusted. Applies only to providers that expose an explicit email verification flag (e.g., GitHub, Google). Providers without an explicit verification flag (e.g., Facebook) treat email presence as implicit verification and can only raise `provider_email_unavailable`, never `unverified_provider_email`.
 
 **FR-20** - Callback responses MUST include `Cache-Control: no-store` and `Pragma: no-cache`.
 
