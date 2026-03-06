@@ -348,14 +348,14 @@ OAUTH_PROVIDER_HTTP_MAX_RETRIES=1
 
 ## 9. Risks and Mitigations
 
-| Risk                                       | Likelihood | Mitigation                                                                                                           |
-| ------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------- |
-| Provider outage during callback            | Medium     | Timeout + bounded retries + map to `provider_unavailable` (503)                                                      |
-| Replay/double callback submission          | Low        | Atomic one-time `validateAndConsume` in Redis                                                                        |
-| Provider route/state mix-up                | Low        | Validate route provider equals stored provider                                                                       |
+| Risk                                       | Likelihood | Mitigation                                                                                                                                         |
+| ------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Provider outage during callback            | Medium     | Timeout + bounded retries + map to `provider_unavailable` (503)                                                                                    |
+| Replay/double callback submission          | Low        | Atomic one-time `validateAndConsume` in Redis                                                                                                      |
+| Provider route/state mix-up                | Low        | Validate route provider equals stored provider                                                                                                     |
 | Email ownership drift takeover             | Medium     | Auto-link only after trusted email resolution; confirm matched users via provider proof and retain provider/correlation context in structured logs |
-| Sensitive values in logs                   | Medium     | Mandatory redaction of code/state/token/cookies                                                                      |
-| Duplicate identity writes under race       | Low        | Unique indexes + idempotent duplicate-key handling                                                                   |
-| Facebook/Twitter profile missing email     | Medium     | Adapters raise `OAuthEmailUnavailableException`; resolver never reached without verified email                       |
-| Twitter/X persistent API policy changes    | Medium     | Adapter isolated behind `OAuthProviderInterface`; version-pin league package; monitor Twitter API changelog actively |
-| Facebook Graph API token validation quirks | Low        | Adapter validates token via `/debug_token` before trusting profile; maps failures to `provider_unavailable`          |
+| Sensitive values in logs                   | Medium     | Mandatory redaction of code/state/token/cookies                                                                                                    |
+| Duplicate identity writes under race       | Low        | Unique indexes + idempotent duplicate-key handling                                                                                                 |
+| Facebook/Twitter profile missing email     | Medium     | Adapters raise `OAuthEmailUnavailableException`; resolver never reached without verified email                                                     |
+| Twitter/X persistent API policy changes    | Medium     | Adapter isolated behind `OAuthProviderInterface`; version-pin league package; monitor Twitter API changelog actively                               |
+| Facebook Graph API token validation quirks | Low        | Adapter validates token via `/debug_token` before trusting profile; maps failures to `provider_unavailable`                                        |

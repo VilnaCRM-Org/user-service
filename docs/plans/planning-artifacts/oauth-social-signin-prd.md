@@ -42,16 +42,16 @@ All providers require a verified email for account resolution and creation. Prov
 
 ## 2. User Stories (High-Level)
 
-| ID    | As a...       | I want to...                                                              | So that...                                                        |
-| ----- | ------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| US-01 | New user      | Click "Sign in with GitHub" and get an account                            | I do not need to create a password first                          |
-| US-02 | New user      | Click "Sign in with Google" and get an account                            | Sign-up is fast                                                   |
-| US-03 | Linked or existing user | Sign in via my GitHub/Google/Facebook/Twitter identity when it is already linked or matches my trusted email | I can log in without entering password or a manual linking step |
-| US-04 | 2FA user      | Still be prompted for TOTP after OAuth                                    | Security is consistent regardless of auth method                  |
-| US-05 | Security team | Auto-link only trusted accounts and reject replay/mix-up attacks          | Account takeover and login CSRF risks are controlled              |
-| US-06 | New user      | Click "Sign in with Facebook" and get an account using my verified email  | I can use my existing Facebook identity                           |
-| US-07 | New user      | Click "Sign in with Twitter/X" and get an account using my verified email | I can use my existing Twitter/X identity                          |
-| US-08 | Any user      | See a clear message when my social account has no verified email          | I understand why sign-in failed and how to fix it on the provider |
+| ID    | As a...                 | I want to...                                                                                                 | So that...                                                        |
+| ----- | ----------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| US-01 | New user                | Click "Sign in with GitHub" and get an account                                                               | I do not need to create a password first                          |
+| US-02 | New user                | Click "Sign in with Google" and get an account                                                               | Sign-up is fast                                                   |
+| US-03 | Linked or existing user | Sign in via my GitHub/Google/Facebook/Twitter identity when it is already linked or matches my trusted email | I can log in without entering password or a manual linking step   |
+| US-04 | 2FA user                | Still be prompted for TOTP after OAuth                                                                       | Security is consistent regardless of auth method                  |
+| US-05 | Security team           | Auto-link only trusted accounts and reject replay/mix-up attacks                                             | Account takeover and login CSRF risks are controlled              |
+| US-06 | New user                | Click "Sign in with Facebook" and get an account using my verified email                                     | I can use my existing Facebook identity                           |
+| US-07 | New user                | Click "Sign in with Twitter/X" and get an account using my verified email                                    | I can use my existing Twitter/X identity                          |
+| US-08 | Any user                | See a clear message when my social account has no verified email                                             | I understand why sign-in failed and how to fix it on the provider |
 
 ---
 
