@@ -195,23 +195,23 @@ Implement Twitter/X adapter using API v2 with OAuth 2.0 PKCE. Profile data inclu
 
 ## Epic 3: OAuth Application Logic
 
-### ST-3.1 - OAuthUserResolver (No Auto-Link)
+### ST-3.1 - OAuthUserResolver (Trusted Auto-Link)
 
 **Type**: Feature
 
 **Description**:
-Resolve users securely without implicit email auto-linking.
+Resolve users securely with trusted email auto-linking.
 
 **Acceptance Criteria**:
 
 - AC-01: Resolution order is strict:
   1. existing social identity -> return user
-  2. existing local user by email without identity -> throw `SocialIdentityNotLinkedException`
+  2. existing local user by email without identity -> create `SocialIdentity`, set `confirmed=true` if needed, return user
   3. no user -> create user + identity
-- AC-02: New OAuth user is marked `confirmed=true`.
+- AC-02: Auto-linked existing users and newly created OAuth users end the resolver flow with `confirmed=true`.
 - AC-03: New OAuth user password is generated randomly and persisted only as hash.
 - AC-04: No raw/empty password value is persisted.
-- AC-05: Unit tests cover all paths.
+- AC-05: Unit tests cover linked-user, auto-linked existing-user, auto-linked previously unconfirmed-user, and new-user paths.
 
 ---
 
@@ -317,7 +317,7 @@ Add `GET /api/auth/social/{provider}/callback` endpoint.
 - AC-02: Missing parameters return RFC 7807 (`missing_oauth_parameters`, 400).
 - AC-03: Invalid/expired/replayed state returns RFC 7807 (`invalid_state` or `state_expired`, 422).
 - AC-04: Provider mismatch returns RFC 7807 (`provider_mismatch`, 400).
-- AC-05: Existing unlinked local account returns RFC 7807 (`social_identity_not_linked`, 409).
+- AC-05: Existing local account with matching trusted email auto-links successfully on first callback.
 - AC-06: Provider returned unverified email returns RFC 7807 (`unverified_provider_email`, 422).
 - AC-07: Provider returned no email returns RFC 7807 (`provider_email_unavailable`, 422). Distinct from AC-06: this is absence, not unverified presence.
 - AC-08: Provider outage/failure returns RFC 7807 (`provider_unavailable`, 503).
@@ -365,7 +365,7 @@ Add dedicated rate-limit policies for initiation and callback routes.
 
 - AC-01: New user social sign-up path succeeds and emits creation event (at least one provider tested end-to-end).
 - AC-02: Returning linked social user path succeeds.
-- AC-03: Existing unlinked local user path returns 409 `social_identity_not_linked`.
+- AC-03: Existing local user without a prior social identity auto-links successfully on first OAuth sign-in.
 - AC-04: 2FA branch and non-2FA branch both validated.
 - AC-05: Replay callback attempt fails after first consume.
 - AC-06: Provider mismatch and flow mismatch paths fail correctly.

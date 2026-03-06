@@ -7,7 +7,7 @@ date: 2026-03-05
 authors: [Mary (Analyst), John (PM), Winston (Architect)]
 ---
 
-# PRD: OAuth Social Sign-In / Sign-Up (GitHub & Google)
+# PRD: OAuth Social Sign-In / Sign-Up
 
 ## 1. Overview
 
@@ -25,14 +25,13 @@ All providers require a verified email for account resolution and creation. Prov
 
 - Allow users to authenticate via GitHub, Google, Facebook, or Twitter/X without creating a local password first.
 - Maintain security parity with password sign-in: local 2FA is enforced regardless of provider.
-- Prevent login CSRF, replay, provider mix-up, and account-takeover-by-autolink risks.
+- Auto-link existing local accounts when a provider returns the same trusted email, while still preventing login CSRF, replay, and provider mix-up attacks.
 - Keep the `OAuth` bounded context isolated from `User` internals.
 - Reject any provider response that does not supply a verified email; never create accounts without a trusted email.
 
 ### 1.4 Non-Goals (Explicit Deferrals)
 
 - Account linking management endpoint (link/unlink from user settings) - future epic.
-- Automatic linking of existing local users by email during social callback - deferred for security.
 - Additional providers (Apple, Microsoft, LinkedIn) - future epic. Facebook and Twitter/X are now in scope for this epic.
 - Email-optional OAuth sign-in (users whose provider account has no verified email) - future epic; track drop-off via metrics before prioritising.
 - Post-OAuth email collection and verification flow - future epic.
@@ -47,9 +46,9 @@ All providers require a verified email for account resolution and creation. Prov
 | ----- | ------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | US-01 | New user      | Click "Sign in with GitHub" and get an account                            | I do not need to create a password first                          |
 | US-02 | New user      | Click "Sign in with Google" and get an account                            | Sign-up is fast                                                   |
-| US-03 | Linked user   | Sign in via my linked GitHub/Google/Facebook/Twitter identity             | I can log in without entering password                            |
+| US-03 | Linked or existing user | Sign in via my GitHub/Google/Facebook/Twitter identity when it is already linked or matches my trusted email | I can log in without entering password or a manual linking step |
 | US-04 | 2FA user      | Still be prompted for TOTP after OAuth                                    | Security is consistent regardless of auth method                  |
-| US-05 | Security team | Reject unsafe linking and replay/mix-up attacks                           | Account takeover and login CSRF risks are controlled              |
+| US-05 | Security team | Auto-link only trusted accounts and reject replay/mix-up attacks          | Account takeover and login CSRF risks are controlled              |
 | US-06 | New user      | Click "Sign in with Facebook" and get an account using my verified email  | I can use my existing Facebook identity                           |
 | US-07 | New user      | Click "Sign in with Twitter/X" and get an account using my verified email | I can use my existing Twitter/X identity                          |
 | US-08 | Any user      | See a clear message when my social account has no verified email          | I understand why sign-in failed and how to fix it on the provider |
@@ -101,7 +100,7 @@ Failures MUST return HTTP 422 (`invalid_state` or `state_expired`) or HTTP 400 (
 **FR-10** - User resolution MUST follow this order:
 
 1. `SocialIdentity(provider, providerId)` exists -> resolve linked `User`
-2. No `SocialIdentity`, email matches existing `User` -> reject with HTTP 409 (`social_identity_not_linked`), no auto-link
+2. No `SocialIdentity`, email matches existing `User` -> create `SocialIdentity`, mark `User.confirmed=true` if it is still `false`, continue sign-in
 3. Neither exists -> create new `User` (`confirmed=true`, random unusable password hash), create `SocialIdentity`
 
 **FR-11** - After successful user resolution, post-auth behavior MUST match password flow:
@@ -131,7 +130,7 @@ Failures MUST return HTTP 422 (`invalid_state` or `state_expired`) or HTTP 400 (
 **FR-18** - All endpoint errors MUST be RFC 7807 (`application/problem+json`) with stable machine `error_code`.
 
 **FR-19** - OAuth errors MUST use only documented codes:
-`unsupported_provider`, `missing_oauth_parameters`, `invalid_state`, `state_expired`, `provider_mismatch`, `provider_email_unavailable`, `unverified_provider_email`, `provider_unavailable`, `social_identity_not_linked`.
+`unsupported_provider`, `missing_oauth_parameters`, `invalid_state`, `state_expired`, `provider_mismatch`, `provider_email_unavailable`, `unverified_provider_email`, `provider_unavailable`.
 
 Error code semantics:
 
@@ -195,7 +194,7 @@ These metrics enable data-driven decisions on whether to open a future email-opt
 | SocialIdentity persistence                     | yes      |          |
 | Domain events (created, signed-in)             | yes      |          |
 | Per-provider observability metrics             | yes      |          |
-| Auto-link existing account by email            |          | yes      |
+| Auto-link existing account by email            | yes      |          |
 | Provider link/unlink management                |          | yes      |
 | Email-optional OAuth (no-email provider users) |          | yes      |
 | Post-OAuth email collection flow               |          | yes      |
@@ -213,7 +212,6 @@ The following client-facing messages MUST be used (or equivalent approved copy) 
 | Provider returned no email         | `provider_email_unavailable` | "Sign in with [Provider] requires a verified email address on your [Provider] account. Please add and verify an email in your [Provider] settings and try again." |
 | Provider returned unverified email | `unverified_provider_email`  | "Your [Provider] account's email address is not verified. Please verify your email on [Provider] and try again."                                                  |
 | Unsupported provider               | `unsupported_provider`       | "This sign-in provider is not supported."                                                                                                                         |
-| Existing account not linked        | `social_identity_not_linked` | "An account with this email already exists. Please sign in with your password, then link your [Provider] account in settings."                                    |
 
 These messages must be stable across providers. Frontend implementations MUST substitute `[Provider]` with the display name (GitHub, Google, Facebook, Twitter/X).
 

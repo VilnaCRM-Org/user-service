@@ -11,7 +11,7 @@ authors: [Winston (Architect)]
 
 ## 1. Context
 
-This ADR defines how social OAuth (GitHub, Google, Facebook, and Twitter/X) fits into the DDD/CQRS architecture with security-first behavior.
+This ADR defines how social OAuth (GitHub, Google, Facebook, and Twitter/X) fits into the DDD/CQRS architecture with security-first behavior and trusted email auto-linking.
 
 **Email policy**: All providers require a verified email for account resolution and creation. Providers that do not supply a verified email are rejected. `provider_email_unavailable` covers absence; `unverified_provider_email` covers unverified presence. Email-optional OAuth is explicitly out of scope for this phase.
 
@@ -46,7 +46,7 @@ Browser
   |    |         |- OAuthUserResolver::resolve(profile, provider)
   |    |              |- SocialIdentityRepository::findByProviderAndProviderId(...)
   |    |              |- [if missing] UserRepository::findByEmail(email)
-  |    |              |- [if existing user] throw SocialIdentityNotLinkedException (no auto-link)
+  |    |              |- [if existing user] create SocialIdentity (+ confirm user if needed)
   |    |              |- [if missing user] create user + SocialIdentity
   |    |         |- 2FA gate:
   |    |              |- has 2FA: create PendingTwoFactor -> response(twoFactorEnabled=true)
@@ -73,7 +73,6 @@ src/OAuth/
 |  |- Event/OAuthUserSignedInEvent.php
 |  |- Exception/InvalidStateException.php
 |  |- Exception/ProviderMismatchException.php
-|  |- Exception/SocialIdentityNotLinkedException.php
 |  |- Exception/UnverifiedProviderEmailException.php
 |  |- Exception/OAuthProviderException.php
 |- Application/
@@ -226,10 +225,10 @@ Validation is atomic and one-time (consume on read) — implemented as a single 
 Resolution order:
 
 1. Find `SocialIdentity(provider, providerId)` -> return linked user
-2. If not found and local user exists by email -> reject (`SocialIdentityNotLinkedException`, HTTP 409)
+2. If not found and local user exists by email -> create `SocialIdentity` for that user, mark `User.confirmed=true` if needed, then return the user
 3. If no local user -> create user + social identity
 
-No auto-linking by email in this phase. Email is always present at this point — adapters that do not supply a verified email throw before reaching the resolver.
+Auto-linking happens only after the adapter returns a trusted email. Email is always present at this point — adapters that do not supply a verified email throw before reaching the resolver.
 
 ### 4.7 OAuth User Password Strategy
 
@@ -268,7 +267,6 @@ Errors are RFC 7807 (`application/problem+json`) with stable `error_code` values
 | `state_expired`              | 422  | State TTL elapsed                                                         |
 | `provider_email_unavailable` | 422  | Provider returned no email address (Facebook/Twitter/X without email set) |
 | `unverified_provider_email`  | 422  | Provider returned email but it is not marked as verified                  |
-| `social_identity_not_linked` | 409  | Local user exists by email but has no social link                         |
 | `provider_unavailable`       | 503  | Provider HTTP call timed out or returned error                            |
 
 ### 4.10 Outbound HTTP Resilience
@@ -355,7 +353,7 @@ OAUTH_PROVIDER_HTTP_MAX_RETRIES=1
 | Provider outage during callback            | Medium     | Timeout + bounded retries + map to `provider_unavailable` (503)                                                      |
 | Replay/double callback submission          | Low        | Atomic one-time `validateAndConsume` in Redis                                                                        |
 | Provider route/state mix-up                | Low        | Validate route provider equals stored provider                                                                       |
-| Email ownership drift takeover             | Medium     | No auto-linking by email in callback                                                                                 |
+| Email ownership drift takeover             | Medium     | Auto-link only after trusted email resolution; confirm matched users via provider proof and retain provider/correlation context in structured logs |
 | Sensitive values in logs                   | Medium     | Mandatory redaction of code/state/token/cookies                                                                      |
 | Duplicate identity writes under race       | Low        | Unique indexes + idempotent duplicate-key handling                                                                   |
 | Facebook/Twitter profile missing email     | Medium     | Adapters raise `OAuthEmailUnavailableException`; resolver never reached without verified email                       |
