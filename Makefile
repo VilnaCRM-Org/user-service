@@ -290,6 +290,9 @@ generate-openapi-spec:
 validate-openapi-spec: generate-openapi-spec build-spectral-docker ## Generate and lint the OpenAPI spec with Spectral
 	./scripts/validate-openapi-spec.sh
 
+validate-configuration: ## Validate configuration structure and detect locked file modifications
+	./scripts/validate-configuration.sh
+
 openapi-diff: generate-openapi-spec ## Compare the generated OpenAPI spec against the base reference using OpenAPI Diff
 	./scripts/openapi-diff.sh $(or $(base_ref),origin/main)
 
@@ -323,6 +326,7 @@ ci-static-analysis:
 	@$(MAKE) composer-validate
 	@$(MAKE) check-requirements
 	@$(MAKE) check-security
+	@$(MAKE) validate-configuration
 	@$(MAKE) psalm
 	@$(MAKE) psalm-security
 
@@ -351,29 +355,31 @@ ci-sequential: ## Run CI checks sequentially (fallback if parallel execution has
 	if ! make check-requirements; then failed_checks="$$failed_checks\n❌ Symfony requirements check"; fi; \
 	echo "3️⃣  Running security analysis..."; \
 	if ! make check-security; then failed_checks="$$failed_checks\n❌ security analysis"; fi; \
-	echo "4️⃣  Fixing code style with PHP CS Fixer..."; \
+	echo "4️⃣  Validating locked configuration files..."; \
+	if ! make validate-configuration; then failed_checks="$$failed_checks\n❌ configuration validation"; fi; \
+	echo "5️⃣  Fixing code style with PHP CS Fixer..."; \
 	if ! make phpcsfixer; then failed_checks="$$failed_checks\n❌ PHP CS Fixer"; fi; \
-	echo "5️⃣  Running static analysis with Psalm..."; \
+	echo "6️⃣  Running static analysis with Psalm..."; \
 	if ! make psalm; then failed_checks="$$failed_checks\n❌ Psalm static analysis"; fi; \
-	echo "6️⃣  Running security taint analysis..."; \
+	echo "7️⃣  Running security taint analysis..."; \
 	if ! make psalm-security; then failed_checks="$$failed_checks\n❌ Psalm security analysis"; fi; \
-	echo "7️⃣  Running code quality analysis with PHPMD..."; \
+	echo "8️⃣  Running code quality analysis with PHPMD..."; \
 	if ! make phpmd; then failed_checks="$$failed_checks\n❌ PHPMD quality analysis"; fi; \
-	echo "8️⃣  Running code quality analysis with PHPInsights..."; \
+	echo "9️⃣  Running code quality analysis with PHPInsights..."; \
 	if ! make phpinsights; then failed_checks="$$failed_checks\n❌ PHPInsights quality analysis"; fi; \
-	echo "9️⃣  Validating architecture with Deptrac..."; \
+	echo "🔟  Validating architecture with Deptrac..."; \
 	if ! make deptrac; then failed_checks="$$failed_checks\n❌ Deptrac architecture validation"; fi; \
-	echo "🔟 Running complete test suite (unit, integration, e2e)..."; \
+	echo "1️⃣1️⃣ Running complete test suite (unit, integration, e2e)..."; \
 	if ! make unit-tests; then failed_checks="$$failed_checks\n❌ unit tests"; fi; \
 	if ! make integration-tests; then failed_checks="$$failed_checks\n❌ integration tests"; fi; \
 	if ! make behat; then failed_checks="$$failed_checks\n❌ Behat e2e tests"; fi; \
-	echo "1️⃣1️⃣ Running mutation testing with Infection..."; \
+	echo "1️⃣2️⃣ Running mutation testing with Infection..."; \
 	if ! make infection; then failed_checks="$$failed_checks\n❌ mutation testing"; fi; \
-	echo "1️⃣2️⃣ Checking OpenAPI backward compatibility..."; \
+	echo "1️⃣3️⃣ Checking OpenAPI backward compatibility..."; \
 	if ! make openapi-diff; then failed_checks="$$failed_checks\n❌ OpenAPI diff"; fi; \
-	echo "1️⃣3️⃣ Validating OpenAPI specification..."; \
+	echo "1️⃣4️⃣ Validating OpenAPI specification..."; \
 	if ! make validate-openapi-spec; then failed_checks="$$failed_checks\n❌ OpenAPI Spectral validation"; fi; \
-	echo "1️⃣4️⃣ Running Schemathesis validation..."; \
+	echo "1️⃣5️⃣ Running Schemathesis validation..."; \
 	if ! make schemathesis-validate; then failed_checks="$$failed_checks\n❌ Schemathesis validation"; fi; \
 	if [ -n "$$failed_checks" ]; then \
 		echo ""; \

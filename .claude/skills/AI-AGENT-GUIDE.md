@@ -220,6 +220,24 @@ Complex skills have multi-file structure:
 
 **Always improve code quality to meet standards. Never lower thresholds.**
 
+## Locked Configuration Exception Policy (AI Agents)
+
+`make validate-configuration` protects locked files:
+`phpinsights.php`, `phpinsights-tests.php`, `psalm.xml`, `deptrac.yaml`, `infection.json5`, `phpmd-strict.xml`, `phpmd.tests.xml`, `.php-cs-fixer.dist.php`.
+
+If CI fails with `Modification of locked configuration file is not allowed`:
+
+1. If the task did **not** explicitly request config updates, treat it as accidental drift:
+   - Revert the locked-file changes.
+   - Re-run `make ci`.
+2. If config updates were explicitly requested (for example, changing `deptrac.yaml`):
+   - Keep changes isolated to a dedicated config-governance PR.
+   - Report CI failure as expected evidence; do not hide or bypass it.
+   - Escalate for human approval. Autonomous agents must not self-approve or self-merge failed CI.
+   - Add explicit rationale (why change is required, impact, rollback plan).
+
+Never normalize "merge with red CI" as a general workflow. It is a human exception path only.
+
 ## Common Workflows
 
 ### Before Every Commit
