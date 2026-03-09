@@ -10,14 +10,12 @@ nelmio_cors:
 when@dev:
   nelmio_cors:
     defaults:
-      # AC: NFR-65 - explicit origin required when allow_credentials: true
-      allow_origin: ['http://localhost:3000']
+      allow_origin: ['%env(CORS_ALLOW_ORIGIN)%']
 
 when@test:
   nelmio_cors:
     defaults:
-      # AC: NFR-65 - explicit origin for test environment
-      allow_origin: ['http://localhost:3000']
+      allow_origin: ['%env(CORS_ALLOW_ORIGIN)%']
 
 when@prod:
   nelmio_cors:

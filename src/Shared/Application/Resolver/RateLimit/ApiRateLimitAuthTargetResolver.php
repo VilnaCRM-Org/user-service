@@ -12,9 +12,9 @@ final readonly class ApiRateLimitAuthTargetResolver
     private const SIGNIN_PATH = '/api/signin';
     private const SIGNIN_TWO_FACTOR_PATH = '/api/signin/2fa';
     private const TWO_FACTOR_ROUTE_LIMITERS = [
-        '/api/users/2fa/setup' => 'twofa_setup',
-        '/api/users/2fa/confirm' => 'twofa_confirm',
-        '/api/users/2fa/disable' => 'twofa_disable',
+        '/api/2fa/setup' => 'twofa_setup',
+        '/api/2fa/confirm' => 'twofa_confirm',
+        '/api/2fa/disable' => 'twofa_disable',
     ];
 
     public function __construct(

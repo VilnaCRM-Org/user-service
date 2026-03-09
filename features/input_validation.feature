@@ -148,7 +148,7 @@ Feature: Input Validation for Authentication Endpoints
     Given I am authenticated as user "2fa-dis-empty@test.com"
     And user "2fa-dis-empty@test.com" has 2FA enabled
     And disabling 2FA with code ""
-    When POST request is send to "/api/users/2fa/disable"
+    When POST request is send to "/api/2fa/disable"
     Then the response status code should be 422
     And violation should be "This value should not be blank."
 
@@ -158,7 +158,7 @@ Feature: Input Validation for Authentication Endpoints
     Given I am authenticated as user "2fa-conf-null@test.com"
     And I have completed 2FA setup
     And confirming 2FA with null code
-    When POST request is send to "/api/users/2fa/confirm"
+    When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 422
 
   # Content-Type validation

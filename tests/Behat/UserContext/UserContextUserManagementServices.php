@@ -13,6 +13,9 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
+/**
+ * @psalm-api
+ */
 final class UserContextUserManagementServices
 {
     public function __construct(

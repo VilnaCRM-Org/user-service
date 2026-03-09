@@ -178,10 +178,10 @@ Feature: Session Lifecycle and Observability
   Scenario: Complete 2FA enable and subsequent sign-in lifecycle
     Given user with email "lifecycle-enable-2fa@test.com" and password "passWORD1" exists
     And I am authenticated as user "lifecycle-enable-2fa@test.com"
-    And POST request is send to "/api/users/2fa/setup"
+    And POST request is send to "/api/2fa/setup"
     And the response status code should be 200
     And confirming 2FA with a valid TOTP code
-    And POST request is send to "/api/users/2fa/confirm"
+    And POST request is send to "/api/2fa/confirm"
     And the response status code should be 200
     And signing in with email "lifecycle-enable-2fa@test.com" and password "passWORD1"
     And POST request is send to "/api/signin"
@@ -219,7 +219,7 @@ Feature: Session Lifecycle and Observability
     And I store the access token from the response
     And I am authenticated with the stored access token
     And user "lifecycle-recovery@test.com" has completed high-trust re-auth within 5 minutes
-    When POST request is send to "/api/users/2fa/recovery-codes"
+    When POST request is send to "/api/2fa/recovery-codes"
     Then the response status code should be 200
     And the response should contain 8 recovery codes
 
@@ -229,10 +229,10 @@ Feature: Session Lifecycle and Observability
     Given user with email "lifecycle-2fa-revoke@test.com" and password "passWORD1" exists
     And user "lifecycle-2fa-revoke@test.com" has 3 active sessions
     And I am authenticated on session 1 for user "lifecycle-2fa-revoke@test.com"
-    And POST request is send to "/api/users/2fa/setup"
+    And POST request is send to "/api/2fa/setup"
     And the response status code should be 200
     And confirming 2FA with a valid TOTP code
-    And POST request is send to "/api/users/2fa/confirm"
+    And POST request is send to "/api/2fa/confirm"
     And the response status code should be 200
     And sessions on devices 2 and 3 should be revoked
     And signing in with email "lifecycle-2fa-revoke@test.com" and password "passWORD1"

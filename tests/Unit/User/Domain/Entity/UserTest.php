@@ -125,6 +125,51 @@ final class UserTest extends UnitTestCase
         $this->testUpdateMakeAssertions($events, $updateData, $hashedNewPassword, $expectedEvent);
     }
 
+    public function testUpdateEmitsPasswordChangedEventWhenPasswordDiffers(): void
+    {
+        $eventID = $this->faker->uuid();
+        $updateData = $this->createPasswordChangeUpdate();
+
+        $expectedEvent = $this->stubPasswordChangedFactory($eventID);
+
+        $events = $this->user->update(
+            $updateData,
+            $this->faker->sha256(),
+            $eventID,
+            $this->emailChangedEventFactory,
+            $this->passwordChangedEventFactory
+        );
+
+        $this->assertContains($expectedEvent, $events);
+    }
+
+    public function testUpdateDoesNotEmitPasswordChangedEventWhenPasswordIsSame(): void
+    {
+        $samePassword = $this->faker->password();
+        $hashedNewPassword = $this->faker->sha256();
+        $eventID = $this->faker->uuid();
+
+        $updateData = new UserUpdate(
+            $this->user->getEmail(),
+            $this->faker->name(),
+            $samePassword,
+            $samePassword,
+        );
+
+        $this->passwordChangedEventFactory->expects($this->never())
+            ->method('create');
+
+        $events = $this->user->update(
+            $updateData,
+            $hashedNewPassword,
+            $eventID,
+            $this->emailChangedEventFactory,
+            $this->passwordChangedEventFactory
+        );
+
+        $this->assertEmpty($events);
+    }
+
     public function testSetId(): void
     {
         $id = $this->faker->uuid();
@@ -230,6 +275,30 @@ final class UserTest extends UnitTestCase
             $this->user->getInitials()
         );
         $this->assertEquals($hashedNewPassword, $this->user->getPassword());
+    }
+
+    private function createPasswordChangeUpdate(): UserUpdate
+    {
+        return new UserUpdate(
+            $this->user->getEmail(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->faker->password(),
+        );
+    }
+
+    private function stubPasswordChangedFactory(
+        string $eventID
+    ): \App\User\Domain\Event\PasswordChangedEvent {
+        $event = new \App\User\Domain\Event\PasswordChangedEvent(
+            $this->user->getEmail(),
+            $eventID
+        );
+        $this->passwordChangedEventFactory->expects($this->once())
+            ->method('create')
+            ->willReturn($event);
+
+        return $event;
     }
 
     private function createUpdateData(): UserUpdate

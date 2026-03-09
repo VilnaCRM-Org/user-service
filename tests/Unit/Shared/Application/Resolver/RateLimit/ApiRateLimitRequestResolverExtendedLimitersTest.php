@@ -36,7 +36,7 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends UnitTestCase
     {
         $subject = $this->faker->uuid();
         $resolver = $this->createResolverWithAuthenticatedSubject($subject);
-        $request = Request::create('/api/users/2fa/recovery-codes', 'POST');
+        $request = Request::create('/api/2fa/recovery-codes', 'POST');
         $request->headers->set('Authorization', 'Bearer ' . $this->faker->sha256());
 
         $limiters = $resolver->resolveEndpointLimiters($request);

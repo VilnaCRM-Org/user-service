@@ -210,10 +210,10 @@ final class RouteAccessControlIntegrationTest extends AuthIntegrationTestCase
     private static function protectedOtherRoutes(): \Generator
     {
         yield 'POST /api/graphql' => ['/api/graphql', 'POST'];
-        yield 'POST /api/users/2fa/setup' => ['/api/users/2fa/setup', 'POST'];
-        yield 'POST /api/users/2fa/confirm' => ['/api/users/2fa/confirm', 'POST'];
-        yield 'POST /api/users/2fa/disable' => ['/api/users/2fa/disable', 'POST'];
-        yield 'POST /api/users/2fa/recovery-codes' => ['/api/users/2fa/recovery-codes', 'POST'];
+        yield 'POST /api/2fa/setup' => ['/api/2fa/setup', 'POST'];
+        yield 'POST /api/2fa/confirm' => ['/api/2fa/confirm', 'POST'];
+        yield 'POST /api/2fa/disable' => ['/api/2fa/disable', 'POST'];
+        yield 'POST /api/2fa/recovery-codes' => ['/api/2fa/recovery-codes', 'POST'];
     }
 
     private function getHttpKernel(): HttpKernelInterface

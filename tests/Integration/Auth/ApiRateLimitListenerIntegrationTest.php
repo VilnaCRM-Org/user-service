@@ -101,7 +101,7 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
             $this->resolveLimit('TWOFA_SETUP_RATE_LIMIT_MAX_REQUESTS', 5)
         );
         $response = $this->handleJsonRequest(
-            '/api/users/2fa/setup',
+            '/api/2fa/setup',
             Request::METHOD_POST,
             json_encode([], JSON_THROW_ON_ERROR),
             ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $this->createBearerTokenForUser($userId))]

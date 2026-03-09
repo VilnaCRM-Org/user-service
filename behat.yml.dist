@@ -26,8 +26,6 @@ default:
                 - App\Tests\Behat\UserContext\RateLimitingContext
                 - App\Tests\Behat\UserContext\RateLimitingAdditionalContext
                 - App\Tests\Behat\UserContext\SudoModeContext
-                - App\Tests\Behat\UserContext\AuditLoggingContext
-                - App\Tests\Behat\UserContext\AuditLoggingSetupContext
                 - App\Tests\Behat\UserContext\UserRequestContext
                 - App\Tests\Behat\UserContext\TokenRefreshRequestContext
                 - App\Tests\Behat\UserContext\UserPasswordResetRequestContext

@@ -12,6 +12,9 @@ use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
 
+/**
+ * @psalm-api
+ */
 final class UserContextAuthServices
 {
     public function __construct(

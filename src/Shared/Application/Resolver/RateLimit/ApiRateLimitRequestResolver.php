@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 final readonly class ApiRateLimitRequestResolver
 {
     private const PASSWORD_RESET_CONFIRM_PATH = '/api/reset-password/confirm';
-    private const RECOVERY_CODES_PATH = '/api/users/2fa/recovery-codes';
+    private const RECOVERY_CODES_PATH = '/api/2fa/recovery-codes';
     private const SIGNOUT_PATH = '/api/signout';
     private const SIGNOUT_ALL_PATH = '/api/signout/all';
 

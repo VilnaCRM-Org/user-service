@@ -184,7 +184,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
             $token,
             $this->createValidJwtPayload($userId)
         );
-        $event = $this->createBearerRequestEvent('/api/users/2fa/setup', 'POST', $token);
+        $event = $this->createBearerRequestEvent('/api/2fa/setup', 'POST', $token);
         $listener($event);
         $this->assertFalse($event->hasResponse());
     }

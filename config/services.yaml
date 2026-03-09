@@ -244,7 +244,7 @@ services:
   App\User\Application\Issuer\SessionIssuerInterface: '@App\User\Application\Issuer\SessionIssuer'
   App\User\Application\EventPublisher\SignInEventsInterface: '@App\User\Application\EventPublisher\SignInEvents'
   App\User\Application\Authenticator\UserAuthenticatorInterface: '@App\User\Application\Authenticator\UserAuthenticator'
-  App\User\Application\Applier\UserUpdateApplierInterface: '@App\User\Application\Applier\UserUpdateApplier'
+  App\User\Application\Service\AuthCookieServiceInterface: '@App\User\Application\Service\AuthCookieService'
   App\User\Application\Guard\OwnershipGuardInterface: '@App\User\Application\Guard\TokenOwnershipGuard'
 
   App\User\Application\Factory\AuthTokenFactory:
@@ -259,12 +259,10 @@ services:
       $standardSessionTtlSeconds: '%env(int:AUTH_STANDARD_SESSION_TTL_SECONDS)%'
       $rememberMeSessionTtlSeconds: '%env(int:AUTH_REMEMBER_ME_SESSION_TTL_SECONDS)%'
 
-  App\User\Application\Attacher\AuthCookieAttacher:
+  App\User\Application\Service\AuthCookieService:
     arguments:
       $standardCookieMaxAge: '%env(int:AUTH_STANDARD_COOKIE_MAX_AGE)%'
       $rememberMeCookieMaxAge: '%env(int:AUTH_REMEMBER_ME_COOKIE_MAX_AGE)%'
-
-  App\User\Application\Attacher\AuthCookieAttacherInterface: '@App\User\Application\Attacher\AuthCookieAttacher'
 
   App\Shared\Infrastructure\Security\JwtAccessTokenParser:
     arguments:

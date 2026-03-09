@@ -95,14 +95,14 @@ Feature: Rate Limiting
   Scenario: 2FA setup rate limit enforced at 5/min per user
     Given I am authenticated as user "2fa-setup-rate@test.com"
     And 5 two-factor setup requests have been sent within 1 minute
-    When POST request is send to "/api/users/2fa/setup"
+    When POST request is send to "/api/2fa/setup"
     Then the response status code should be 429
 
   Scenario: 2FA confirm rate limit enforced at 5/min per user
     Given I am authenticated as user "2fa-confirm-rate@test.com"
     And 5 two-factor confirm requests have been sent within 1 minute
     And confirming 2FA with code "123456"
-    When POST request is send to "/api/users/2fa/confirm"
+    When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 429
 
   Scenario: 2FA disable rate limit enforced at 3/min per user
@@ -110,7 +110,7 @@ Feature: Rate Limiting
     And user "2fa-disable-rate@test.com" has 2FA enabled
     And 3 two-factor disable requests have been sent within 1 minute
     And disabling 2FA with code "123456"
-    When POST request is send to "/api/users/2fa/disable"
+    When POST request is send to "/api/2fa/disable"
     Then the response status code should be 429
 
   Scenario: All rate limit rejections include Retry-After header
@@ -128,7 +128,7 @@ Feature: Rate Limiting
     And user "recovery-rate@test.com" has 2FA enabled
     And user "recovery-rate@test.com" has completed high-trust re-auth within 5 minutes
     And 3 recovery code regeneration requests have been sent within 1 minute
-    When POST request is send to "/api/users/2fa/recovery-codes"
+    When POST request is send to "/api/2fa/recovery-codes"
     Then the response status code should be 429
 
   Scenario: Signout rate limit enforced at 10/min per user

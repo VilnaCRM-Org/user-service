@@ -45,7 +45,7 @@ Feature: Data Protection and Sensitive Data Handling
 
   Scenario: 2FA setup response does not contain encrypted secret
     Given I am authenticated as user "dp-2fa-setup@test.com"
-    When POST request is send to "/api/users/2fa/setup"
+    When POST request is send to "/api/2fa/setup"
     Then the response status code should be 200
     And the response should contain "secret"
     And the response should not contain "twoFactorSecret"
@@ -54,7 +54,7 @@ Feature: Data Protection and Sensitive Data Handling
     Given I am authenticated as user "dp-2fa-confirm@test.com"
     And I have completed 2FA setup
     And confirming 2FA with a valid TOTP code
-    When POST request is send to "/api/users/2fa/confirm"
+    When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 200
     And the response should contain "recovery_codes"
     And the response should not contain "codeHash"

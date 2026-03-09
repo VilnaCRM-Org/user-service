@@ -25,7 +25,7 @@ export default class AuthFlowUtils {
 
   setupTwoFactor(accessToken) {
     return this.post(
-      '/users/2fa/setup',
+      '/2fa/setup',
       JSON.stringify({}),
       this.utils.getJsonHeaderWithAuth(accessToken)
     );
@@ -36,7 +36,7 @@ export default class AuthFlowUtils {
       twoFactorCode,
     });
 
-    return this.post('/users/2fa/confirm', payload, this.utils.getJsonHeaderWithAuth(accessToken));
+    return this.post('/2fa/confirm', payload, this.utils.getJsonHeaderWithAuth(accessToken));
   }
 
   disableTwoFactor(accessToken, twoFactorCode) {
@@ -44,12 +44,12 @@ export default class AuthFlowUtils {
       twoFactorCode,
     });
 
-    return this.post('/users/2fa/disable', payload, this.utils.getJsonHeaderWithAuth(accessToken));
+    return this.post('/2fa/disable', payload, this.utils.getJsonHeaderWithAuth(accessToken));
   }
 
   regenerateRecoveryCodes(accessToken) {
     return this.post(
-      '/users/2fa/recovery-codes',
+      '/2fa/recovery-codes',
       JSON.stringify({}),
       this.utils.getJsonHeaderWithAuth(accessToken)
     );

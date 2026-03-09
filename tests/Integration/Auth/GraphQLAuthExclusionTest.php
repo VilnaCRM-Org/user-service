@@ -12,33 +12,33 @@ final class GraphQLAuthExclusionTest extends AuthIntegrationTestCase
         __DIR__ . '/../../../config/api_platform/resources/EmptyResponse.yaml';
 
     /**
-     * AC: NFR-62 - Auth operations must have graphql: false configured
+     * AC: NFR-62 - Auth operations must have graphql: true configured
      */
-    public function testAuthOperationsHaveGraphqlDisabledInConfig(): void
+    public function testAuthOperationsHaveGraphqlEnabledInConfig(): void
     {
         $this->assertFileExists(self::EMPTY_RESPONSE_CONFIG_PATH, 'EmptyResponse.yaml must exist');
         $operations = $this->loadEmptyResponseOperations();
-        foreach ($this->getRequiredDisabledOperations() as $operationName) {
-            $this->assertOperationHasGraphqlDisabled($operations, $operationName);
+        foreach ($this->getRequiredOperations() as $operationName) {
+            $this->assertOperationHasGraphqlEnabled($operations, $operationName);
         }
     }
 
     /**
-     * AC: NFR-62 - Verify all 9 auth operations are excluded
+     * AC: NFR-62 - Verify all 9 auth operations have graphql configured
      */
-    public function testAllNineAuthOperationsAreExcludedFromGraphql(): void
+    public function testAllNineAuthOperationsHaveGraphqlEnabled(): void
     {
         $operations = $this->loadEmptyResponseOperations();
-        $disabledCount = 0;
+        $enabledCount = 0;
         foreach ($operations as $operation) {
-            if (isset($operation['graphql']) && $operation['graphql'] === false) {
-                ++$disabledCount;
+            if (isset($operation['graphql']) && $operation['graphql'] === true) {
+                ++$enabledCount;
             }
         }
         $this->assertGreaterThanOrEqual(
             9,
-            $disabledCount,
-            'At least 9 auth operations must have graphql: false (AC: NFR-62)'
+            $enabledCount,
+            'At least 9 auth operations must have graphql: true (AC: NFR-62)'
         );
     }
 
@@ -56,7 +56,7 @@ final class GraphQLAuthExclusionTest extends AuthIntegrationTestCase
     /**
      * @return array<string>
      */
-    private function getRequiredDisabledOperations(): array
+    private function getRequiredOperations(): array
     {
         return [
             'refresh_token_http',
@@ -74,7 +74,7 @@ final class GraphQLAuthExclusionTest extends AuthIntegrationTestCase
     /**
      * @param array<string, array<string, bool|string>> $operations
      */
-    private function assertOperationHasGraphqlDisabled(
+    private function assertOperationHasGraphqlEnabled(
         array $operations,
         string $operationName
     ): void {
@@ -88,8 +88,8 @@ final class GraphQLAuthExclusionTest extends AuthIntegrationTestCase
             'Operation "%s" must have "graphql" key configured (AC: NFR-62)',
             $operationName
         ));
-        $this->assertFalse($operation['graphql'], sprintf(
-            'Operation "%s" must have "graphql: false" to exclude from GraphQL (AC: NFR-62)',
+        $this->assertTrue($operation['graphql'], sprintf(
+            'Operation "%s" must have "graphql: true" (AC: NFR-62)',
             $operationName
         ));
     }

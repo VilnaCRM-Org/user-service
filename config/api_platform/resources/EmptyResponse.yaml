@@ -20,7 +20,7 @@ resources:
         processor: 'App\User\Application\Processor\RefreshTokenProcessor'
         read: false
         output: false
-        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        graphql: true
         openapi:
           summary: 'Refresh access token'
           description: 'Exchanges a valid refresh token for new access and refresh tokens (token rotation).'
@@ -43,7 +43,7 @@ resources:
         processor: 'App\User\Application\Processor\SignInProcessor'
         read: false
         output: false
-        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        graphql: true
         openapi:
           summary: 'Sign in with email and password'
           description: 'Authenticates user credentials and returns access/refresh tokens or a pending 2FA session.'
@@ -66,7 +66,7 @@ resources:
         processor: 'App\User\Application\Processor\CompleteTwoFactorProcessor'
         read: false
         output: false
-        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        graphql: true
         openapi:
           summary: 'Complete two-factor sign in'
           description: 'Validates pending 2FA session and TOTP code, then issues access and refresh tokens.'
@@ -84,12 +84,12 @@ resources:
       confirm_2fa_http:
         class: ApiPlatform\Metadata\Post
         method: POST
-        uriTemplate: '/users/2fa/confirm'
+        uriTemplate: '/2fa/confirm'
         input: 'App\User\Application\DTO\ConfirmTwoFactorDto'
         processor: 'App\User\Application\Processor\ConfirmTwoFactorProcessor'
         read: false
         output: false
-        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        graphql: true
         openapi:
           summary: 'Confirm two-factor authentication setup'
           description: 'Validates TOTP code, enables 2FA, generates recovery codes, and revokes other sessions.'
@@ -106,12 +106,12 @@ resources:
         class: ApiPlatform\Metadata\Post
         method: POST
         status: 204
-        uriTemplate: '/users/2fa/disable'
+        uriTemplate: '/2fa/disable'
         input: 'App\User\Application\DTO\DisableTwoFactorDto'
         processor: 'App\User\Application\Processor\DisableTwoFactorProcessor'
         read: false
         output: false
-        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        graphql: true
         openapi:
           summary: 'Disable two-factor authentication'
           description: 'Verifies TOTP or recovery code, disables 2FA, clears secret, and deletes all recovery codes.'
@@ -129,12 +129,12 @@ resources:
       regenerate_recovery_codes_http:
         class: ApiPlatform\Metadata\Post
         method: POST
-        uriTemplate: '/users/2fa/recovery-codes'
+        uriTemplate: '/2fa/recovery-codes'
         input: 'App\User\Application\DTO\RegenerateRecoveryCodesDto'
         processor: 'App\User\Application\Processor\RegenerateRecoveryCodesProcessor'
         read: false
         output: false
-        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        graphql: true
         openapi:
           summary: 'Regenerate recovery codes'
           description: 'Invalidates all existing recovery codes and generates 8 new ones. Requires recent authentication (sudo mode).'
@@ -150,12 +150,12 @@ resources:
       setup_2fa_http:
         class: ApiPlatform\Metadata\Post
         method: POST
-        uriTemplate: '/users/2fa/setup'
+        uriTemplate: '/2fa/setup'
         input: 'App\User\Application\DTO\SetupTwoFactorDto'
         processor: 'App\User\Application\Processor\SetupTwoFactorProcessor'
         read: false
         output: false
-        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        graphql: true
         openapi:
           summary: 'Set up two-factor authentication'
           description: 'Generates a TOTP secret and provisioning URI for the authenticated user.'
@@ -175,7 +175,7 @@ resources:
         controller: 'App\User\Application\Controller\RequestPasswordResetController'
         output: false
         read: false
-        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        graphql: true
         openapi:
           summary: 'Request a password reset'
           description: 'Initiates a password reset process by sending a reset token to the provided email address.'
@@ -201,7 +201,7 @@ resources:
         controller: 'App\User\Application\Controller\ConfirmPasswordResetController'
         output: false
         read: false
-        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        graphql: true
         openapi:
           summary: 'Confirm a password reset'
           description: 'Completes the password reset process by validating the reset token and setting a new password.'
@@ -225,7 +225,7 @@ resources:
         processor: 'App\User\Application\Processor\SignOutProcessor'
         read: false
         output: false
-        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        graphql: true
         openapi:
           summary: 'Sign out (logout) from current session'
           description: 'Revokes the current session and all associated refresh tokens, clears the session cookie.'
@@ -247,7 +247,7 @@ resources:
         processor: 'App\User\Application\Processor\SignOutAllProcessor'
         read: false
         output: false
-        graphql: false  # AC: NFR-62 - auth operations excluded from GraphQL
+        graphql: true
         openapi:
           summary: 'Sign out from all sessions (all devices)'
           description: 'Revokes all sessions and refresh tokens for the authenticated user, clears the session cookie.'

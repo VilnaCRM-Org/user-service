@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Attacher;
+namespace App\User\Application\Service;
 
 use App\User\Application\Factory\AuthCookieFactoryInterface;
 use DateTimeImmutable;
@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * @psalm-api
  */
-final readonly class AuthCookieAttacher implements AuthCookieAttacherInterface
+final readonly class AuthCookieService implements AuthCookieServiceInterface
 {
     public function __construct(
         private AuthCookieFactoryInterface $authCookieFactory,

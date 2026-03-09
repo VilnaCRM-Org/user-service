@@ -202,7 +202,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
         $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
 
-        $request = Request::create('/api/users/2fa/setup', 'POST');
+        $request = Request::create('/api/2fa/setup', 'POST');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
         $result = $resolver->resolve($request);
@@ -222,7 +222,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
         $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
 
-        $request = Request::create('/api/users/2fa/confirm', 'POST');
+        $request = Request::create('/api/2fa/confirm', 'POST');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
         $result = $resolver->resolve($request);
@@ -242,7 +242,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
         $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
 
-        $request = Request::create('/api/users/2fa/disable', 'POST');
+        $request = Request::create('/api/2fa/disable', 'POST');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
         $result = $resolver->resolve($request);
@@ -255,7 +255,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
     public function testResolveReturnsEmptyForTwoFaSetupWhenNotAuthenticated(): void
     {
         $resolver = new ApiRateLimitAuthTargetResolver();
-        $request = Request::create('/api/users/2fa/setup', 'POST');
+        $request = Request::create('/api/2fa/setup', 'POST');
 
         self::assertSame([], $resolver->resolve($request));
     }
@@ -263,7 +263,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
     public function testResolveReturnsEmptyForTwoFaConfirmWhenNotAuthenticated(): void
     {
         $resolver = new ApiRateLimitAuthTargetResolver();
-        $request = Request::create('/api/users/2fa/confirm', 'POST');
+        $request = Request::create('/api/2fa/confirm', 'POST');
 
         self::assertSame([], $resolver->resolve($request));
     }
@@ -271,7 +271,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
     public function testResolveReturnsEmptyForTwoFaDisableWhenNotAuthenticated(): void
     {
         $resolver = new ApiRateLimitAuthTargetResolver();
-        $request = Request::create('/api/users/2fa/disable', 'POST');
+        $request = Request::create('/api/2fa/disable', 'POST');
 
         self::assertSame([], $resolver->resolve($request));
     }
@@ -286,7 +286,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
         $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
 
-        $request = Request::create('/api/users/2fa/setup', 'GET');
+        $request = Request::create('/api/2fa/setup', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
         self::assertSame([], $resolver->resolve($request));
@@ -302,7 +302,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
         $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
 
-        $request = Request::create('/api/users/2fa/unknown', 'POST');
+        $request = Request::create('/api/2fa/unknown', 'POST');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
         self::assertSame([], $resolver->resolve($request));

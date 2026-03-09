@@ -230,7 +230,7 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
         string $secondarySessionId
     ): array {
         $authHeaders = ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $primaryAccessToken)];
-        $setup = $this->requestJson('/api/users/2fa/setup', [], $authHeaders);
+        $setup = $this->requestJson('/api/2fa/setup', [], $authHeaders);
         $this->assertSame(Response::HTTP_OK, $setup['response']->getStatusCode());
         $secret = $this->requireStringKey($setup['body'], 'secret');
         $this->assertStringStartsWith(
@@ -242,7 +242,7 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
         $this->requireRecoveryCodes($confirm['body']);
         $this->assertFalse($this->findSession($primarySessionId)->isRevoked());
         $this->assertTrue($this->findSession($secondarySessionId)->isRevoked());
-        $regenerated = $this->requestJson('/api/users/2fa/recovery-codes', [], $authHeaders);
+        $regenerated = $this->requestJson('/api/2fa/recovery-codes', [], $authHeaders);
         $this->assertSame(Response::HTTP_OK, $regenerated['response']->getStatusCode());
         return $this->requireRecoveryCodes($regenerated['body']);
     }
@@ -256,7 +256,7 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
     {
         $twoFactorCodes = $this->buildTwoFactorCodesWithinStepWindow($secret);
         $confirm = $this->requestJson(
-            '/api/users/2fa/confirm',
+            '/api/2fa/confirm',
             ['twoFactorCode' => $twoFactorCodes[0]],
             $authHeaders
         );
@@ -266,7 +266,7 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
 
         foreach (array_slice($twoFactorCodes, 1) as $twoFactorCode) {
             $confirm = $this->requestJson(
-                '/api/users/2fa/confirm',
+                '/api/2fa/confirm',
                 ['twoFactorCode' => $twoFactorCode],
                 $authHeaders
             );
@@ -321,7 +321,7 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
         string $twoFactorCode
     ): void {
         $disable = $this->requestJson(
-            '/api/users/2fa/disable',
+            '/api/2fa/disable',
             ['twoFactorCode' => $twoFactorCode],
             ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $accessToken)]
         );

@@ -235,21 +235,21 @@ Feature: Authentication Gate and Access Control
     Then the response status code should be 401
 
   Scenario: Unauthenticated 2FA setup returns 401
-    When POST request is send to "/api/users/2fa/setup"
+    When POST request is send to "/api/2fa/setup"
     Then the response status code should be 401
 
   Scenario: Unauthenticated 2FA confirm returns 401
     Given confirming 2FA with code "123456"
-    When POST request is send to "/api/users/2fa/confirm"
+    When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 401
 
   Scenario: Unauthenticated 2FA disable returns 401
     Given disabling 2FA with code "123456"
-    When POST request is send to "/api/users/2fa/disable"
+    When POST request is send to "/api/2fa/disable"
     Then the response status code should be 401
 
   Scenario: Unauthenticated recovery codes endpoint returns 401
-    When POST request is send to "/api/users/2fa/recovery-codes"
+    When POST request is send to "/api/2fa/recovery-codes"
     Then the response status code should be 401
 
   Scenario: Password reset confirm endpoint is publicly accessible
@@ -312,7 +312,7 @@ Feature: Authentication Gate and Access Control
     And I am authenticated as user "2fa-keep-session@test.com" on device 1
     And I have completed 2FA setup
     And confirming 2FA with a valid TOTP code
-    When POST request is send to "/api/users/2fa/confirm"
+    When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 200
     And sessions on devices 2 and 3 should be revoked
     And the current session should remain valid
@@ -335,12 +335,12 @@ Feature: Authentication Gate and Access Control
 
   Scenario: User can only access their own 2FA setup
     Given I am authenticated as user "2fa-own@test.com"
-    When POST request is send to "/api/users/2fa/setup"
+    When POST request is send to "/api/2fa/setup"
     Then the response status code should be 200
 
   Scenario: User can only access their own recovery codes
     Given I am authenticated as user "recovery-own@test.com"
     And user "recovery-own@test.com" has 2FA enabled
     And user "recovery-own@test.com" has completed high-trust re-auth within 5 minutes
-    When POST request is send to "/api/users/2fa/recovery-codes"
+    When POST request is send to "/api/2fa/recovery-codes"
     Then the response status code should be 200

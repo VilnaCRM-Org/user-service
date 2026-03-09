@@ -67,7 +67,7 @@ Feature: Two-Factor Authentication Management
 
   Scenario: Set up 2FA for authenticated user
     Given I am authenticated as user "2fa-setup@test.com"
-    When POST request is send to "/api/users/2fa/setup"
+    When POST request is send to "/api/2fa/setup"
     Then the response status code should be 200
     And the response should contain "otpauth_uri"
     And the response should contain "secret"
@@ -76,12 +76,12 @@ Feature: Two-Factor Authentication Management
 
   Scenario: 2FA setup does not enable 2FA immediately
     Given I am authenticated as user "2fa-setup-pending@test.com"
-    And POST request is send to "/api/users/2fa/setup"
+    And POST request is send to "/api/2fa/setup"
     And the response status code should be 200
     Then user with email "2fa-setup-pending@test.com" should have two-factor disabled
 
   Scenario: 2FA setup requires authentication
-    When POST request is send to "/api/users/2fa/setup"
+    When POST request is send to "/api/2fa/setup"
     Then the response status code should be 401
 
   # Story 2.3: 2FA confirmation with recovery codes (FR-08, FR-16, FR-20, NFR-42, NFR-52)
@@ -90,7 +90,7 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-confirm@test.com"
     And I have completed 2FA setup
     And confirming 2FA with a valid TOTP code
-    When POST request is send to "/api/users/2fa/confirm"
+    When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 200
     And the response should contain "recovery_codes"
     And the response should contain 8 recovery codes
@@ -100,7 +100,7 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-confirm-bad@test.com"
     And I have completed 2FA setup
     And confirming 2FA with code "000000"
-    When POST request is send to "/api/users/2fa/confirm"
+    When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 401
     And user with email "2fa-confirm-bad@test.com" should have two-factor disabled
 
@@ -109,13 +109,13 @@ Feature: Two-Factor Authentication Management
     And I am authenticated as user "2fa-multisession@test.com" on device 1
     And I have completed 2FA setup
     And confirming 2FA with a valid TOTP code
-    When POST request is send to "/api/users/2fa/confirm"
+    When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 200
     And sessions on devices 2 and 3 should be revoked
 
   Scenario: 2FA confirmation requires authentication
     Given confirming 2FA with code "123456"
-    When POST request is send to "/api/users/2fa/confirm"
+    When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 401
 
   # Story 2.4: 2FA disable (FR-15)
@@ -124,7 +124,7 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-disable@test.com"
     And user "2fa-disable@test.com" has 2FA enabled
     And disabling 2FA with a valid TOTP code
-    When POST request is send to "/api/users/2fa/disable"
+    When POST request is send to "/api/2fa/disable"
     Then the response status code should be 204
     And user with email "2fa-disable@test.com" should have two-factor disabled
 
@@ -132,7 +132,7 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-disable-recovery@test.com"
     And user "2fa-disable-recovery@test.com" has 2FA enabled with recovery codes
     And disabling 2FA with a valid recovery code
-    When POST request is send to "/api/users/2fa/disable"
+    When POST request is send to "/api/2fa/disable"
     Then the response status code should be 204
     And user with email "2fa-disable-recovery@test.com" should have two-factor disabled
 
@@ -140,7 +140,7 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-disable-bad@test.com"
     And user "2fa-disable-bad@test.com" has 2FA enabled
     And disabling 2FA with code "000000"
-    When POST request is send to "/api/users/2fa/disable"
+    When POST request is send to "/api/2fa/disable"
     Then the response status code should be 401
     And user with email "2fa-disable-bad@test.com" should have two-factor enabled
 
@@ -148,20 +148,20 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-disable-none@test.com"
     And user "2fa-disable-none@test.com" does not have 2FA enabled
     And disabling 2FA with code "123456"
-    When POST request is send to "/api/users/2fa/disable"
+    When POST request is send to "/api/2fa/disable"
     Then the response status code should be 403
 
   Scenario: Disable 2FA invalidates all recovery codes
     Given I am authenticated as user "2fa-disable-codes@test.com"
     And user "2fa-disable-codes@test.com" has 2FA enabled with recovery codes
     And disabling 2FA with a valid TOTP code
-    And POST request is send to "/api/users/2fa/disable"
+    And POST request is send to "/api/2fa/disable"
     And the response status code should be 204
     Then all recovery codes for user "2fa-disable-codes@test.com" should be invalidated
 
   Scenario: Disable 2FA requires authentication
     Given disabling 2FA with code "123456"
-    When POST request is send to "/api/users/2fa/disable"
+    When POST request is send to "/api/2fa/disable"
     Then the response status code should be 401
 
   # Story 2.5: Complete 2FA sign-in with recovery code (FR-17, NFR-68)
@@ -214,7 +214,7 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-regen@test.com"
     And user "2fa-regen@test.com" has 2FA enabled
     And user "2fa-regen@test.com" has completed high-trust re-auth within 5 minutes
-    When POST request is send to "/api/users/2fa/recovery-codes"
+    When POST request is send to "/api/2fa/recovery-codes"
     Then the response status code should be 200
     And the response should contain "recovery_codes"
     And the response should contain 8 recovery codes
@@ -224,18 +224,18 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-regen-noauth@test.com"
     And user "2fa-regen-noauth@test.com" has 2FA enabled
     And user "2fa-regen-noauth@test.com" has not completed high-trust re-auth recently
-    When POST request is send to "/api/users/2fa/recovery-codes"
+    When POST request is send to "/api/2fa/recovery-codes"
     Then the response status code should be 403
     And the response should indicate sudo mode is required
 
   Scenario: Regenerate recovery codes without 2FA enabled
     Given I am authenticated as user "2fa-regen-no2fa@test.com"
     And user "2fa-regen-no2fa@test.com" does not have 2FA enabled
-    When POST request is send to "/api/users/2fa/recovery-codes"
+    When POST request is send to "/api/2fa/recovery-codes"
     Then the response status code should be 403
 
   Scenario: Regenerate recovery codes requires authentication
-    When POST request is send to "/api/users/2fa/recovery-codes"
+    When POST request is send to "/api/2fa/recovery-codes"
     Then the response status code should be 401
 
   # Additional 2FA sign-in edge cases (FR-03, NFR-07, NFR-50)
@@ -300,13 +300,13 @@ Feature: Two-Factor Authentication Management
   Scenario: 2FA setup when 2FA is already enabled
     Given I am authenticated as user "2fa-setup-already@test.com"
     And user "2fa-setup-already@test.com" has 2FA enabled
-    When POST request is send to "/api/users/2fa/setup"
+    When POST request is send to "/api/2fa/setup"
     Then the response status code should be 409
     And the error message should be "Two-factor authentication is already enabled."
 
   Scenario: 2FA setup secret is not returned in subsequent GET requests
     Given I am authenticated as user "2fa-secret-hidden@test.com"
-    And POST request is send to "/api/users/2fa/setup"
+    And POST request is send to "/api/2fa/setup"
     And the response status code should be 200
     When GET request is send to the current user endpoint
     Then the response should not contain "twoFactorSecret"
@@ -317,14 +317,14 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-confirm-nosetup@test.com"
     And user "2fa-confirm-nosetup@test.com" has not completed 2FA setup
     And confirming 2FA with code "123456"
-    When POST request is send to "/api/users/2fa/confirm"
+    When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 400
 
   Scenario: 2FA confirm with empty code
     Given I am authenticated as user "2fa-confirm-empty@test.com"
     And I have completed 2FA setup
     And confirming 2FA with code ""
-    When POST request is send to "/api/users/2fa/confirm"
+    When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 422
     And violation should be "This value should not be blank."
 
@@ -332,7 +332,7 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-unique-codes@test.com"
     And I have completed 2FA setup
     And confirming 2FA with a valid TOTP code
-    When POST request is send to "/api/users/2fa/confirm"
+    When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 200
     And the response should contain 8 recovery codes
     And all 8 recovery codes should be unique
@@ -341,7 +341,7 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-confirm-session@test.com"
     And I have completed 2FA setup
     And confirming 2FA with a valid TOTP code
-    And POST request is send to "/api/users/2fa/confirm"
+    And POST request is send to "/api/2fa/confirm"
     And the response status code should be 200
     When GET request is send to "/api/users?page=1&itemsPerPage=10"
     Then the response status code should be 200
@@ -388,7 +388,7 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-disable-secret@test.com"
     And user "2fa-disable-secret@test.com" has 2FA enabled
     And disabling 2FA with a valid TOTP code
-    And POST request is send to "/api/users/2fa/disable"
+    And POST request is send to "/api/2fa/disable"
     And the response status code should be 204
     And signing in with email "2fa-disable-secret@test.com" and password "passWORD1"
     When POST request is send to "/api/signin"
@@ -401,7 +401,7 @@ Feature: Two-Factor Authentication Management
     And user with email "2fa-disable-flow@test.com" has 2FA enabled
     And I am authenticated as user "2fa-disable-flow@test.com"
     And disabling 2FA with a valid TOTP code
-    And POST request is send to "/api/users/2fa/disable"
+    And POST request is send to "/api/2fa/disable"
     And the response status code should be 204
     And signing in with email "2fa-disable-flow@test.com" and password "passWORD1"
     When POST request is send to "/api/signin"
@@ -416,7 +416,7 @@ Feature: Two-Factor Authentication Management
     And user "2fa-regen-diff@test.com" has 2FA enabled with recovery codes
     And I store the current recovery codes
     And user "2fa-regen-diff@test.com" has completed high-trust re-auth within 5 minutes
-    When POST request is send to "/api/users/2fa/recovery-codes"
+    When POST request is send to "/api/2fa/recovery-codes"
     Then the response status code should be 200
     And the new recovery codes should differ from the stored ones
 
@@ -425,7 +425,7 @@ Feature: Two-Factor Authentication Management
     And user "2fa-regen-invalid@test.com" has 2FA enabled with recovery codes
     And I store a valid recovery code
     And user "2fa-regen-invalid@test.com" has completed high-trust re-auth within 5 minutes
-    And POST request is send to "/api/users/2fa/recovery-codes"
+    And POST request is send to "/api/2fa/recovery-codes"
     And the response status code should be 200
     And signing in with email "2fa-regen-invalid@test.com" and password "passWORD1"
     And POST request is send to "/api/signin"
@@ -451,7 +451,7 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-code-format@test.com"
     And I have completed 2FA setup
     And confirming 2FA with a valid TOTP code
-    When POST request is send to "/api/users/2fa/confirm"
+    When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 200
     And each recovery code should match the format "xxxx-xxxx"
     And each recovery code should be 9 characters long
@@ -460,7 +460,7 @@ Feature: Two-Factor Authentication Management
     Given I am authenticated as user "2fa-code-chars@test.com"
     And I have completed 2FA setup
     And confirming 2FA with a valid TOTP code
-    When POST request is send to "/api/users/2fa/confirm"
+    When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 200
     And each recovery code should match pattern "[a-z0-9]{4}-[a-z0-9]{4}"
 
@@ -509,10 +509,10 @@ Feature: Two-Factor Authentication Management
 
   Scenario: Second 2FA setup overwrites pending secret
     Given I am authenticated as user "2fa-setup-twice@test.com"
-    And POST request is send to "/api/users/2fa/setup"
+    And POST request is send to "/api/2fa/setup"
     And the response status code should be 200
     And I store the setup secret from the response as "secret1"
-    And POST request is send to "/api/users/2fa/setup"
+    And POST request is send to "/api/2fa/setup"
     And the response status code should be 200
     And I store the setup secret from the response as "secret2"
     Then stored "secret1" should differ from stored "secret2"
