@@ -4,23 +4,75 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
+use App\User\Application\Command\SignInCommand;
 use Symfony\Component\HttpKernel\Exception\LockedHttpException;
 
 final class SignInCommandHandlerLockedTest extends SignInCommandHandlerTestCase
 {
-    public function testInvokeThrowsLockedWhenAuthenticatorThrowsLocked(): void
+    private const LOCKED_MESSAGE = 'Account temporarily locked';
+    private const RETRY_AFTER_SECONDS = '900';
+
+    public function testInvokeThrowsLockedWhenAccountAlreadyLocked(): void
     {
-        $this->userAuthenticator->method('authenticate')
-            ->willThrowException(new LockedHttpException(
-                'Account temporarily locked',
+        $command = $this->createRandomSignInCommand();
+        $this->expectAuthenticateThrowsLocked();
+        $this->assertLockedException($command);
+    }
+
+    public function testInvokeThrowsLockedWhenFailureThresholdReached(): void
+    {
+        $email = strtolower($this->faker->email());
+        $pw = $this->faker->password();
+        $ip = $this->faker->ipv4();
+        $ua = $this->faker->userAgent();
+
+        $this->expectAuthenticateThrowsLocked($email, $pw, $ip, $ua);
+        $command = new SignInCommand($email, $pw, false, $ip, $ua);
+        $exception = $this->assertLockedException($command);
+        $this->assertSame(0, $exception->getCode());
+    }
+
+    private function expectAuthenticateThrowsLocked(
+        ?string $email = null,
+        ?string $password = null,
+        ?string $ipAddress = null,
+        ?string $userAgent = null
+    ): void {
+        $invocation = $this->userAuthenticator->expects($this->once())
+            ->method('authenticate');
+
+        if (
+            is_string($email)
+            && is_string($password)
+            && is_string($ipAddress)
+            && is_string($userAgent)
+        ) {
+            $invocation->with($email, $password, $ipAddress, $userAgent);
+        }
+
+        $invocation->willThrowException(
+            new LockedHttpException(
+                self::LOCKED_MESSAGE,
                 null,
                 0,
-                ['Retry-After' => '900']
-            ));
+                ['Retry-After' => self::RETRY_AFTER_SECONDS]
+            )
+        );
+    }
 
-        $this->expectException(LockedHttpException::class);
-        $this->expectExceptionMessage('Account temporarily locked');
+    private function assertLockedException(SignInCommand $command): LockedHttpException
+    {
+        try {
+            $this->createHandler()->__invoke($command);
+            $this->fail('Expected LockedHttpException.');
+        } catch (LockedHttpException $exception) {
+            $this->assertSame(self::LOCKED_MESSAGE, $exception->getMessage());
+            $this->assertSame(
+                self::RETRY_AFTER_SECONDS,
+                $exception->getHeaders()['Retry-After'] ?? null
+            );
 
-        $this->createHandler()->__invoke($this->createRandomSignInCommand());
+            return $exception;
+        }
     }
 }
