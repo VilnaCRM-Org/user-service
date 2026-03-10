@@ -90,6 +90,14 @@ services:
       - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: 200 }
       - { name: kernel.event_listener, event: console.command, method: onConsoleCommand, priority: 200 }
 
+  App\Shared\Application\EventListener\TwoFactorEncryptionKeyConfigurationListener:
+    arguments:
+      $appEnv: '%kernel.environment%'
+      $twoFactorEncryptionKey: '%env(default::TWO_FACTOR_ENCRYPTION_KEY)%'
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: 200 }
+      - { name: kernel.event_listener, event: console.command, method: onConsoleCommand, priority: 200 }
+
   App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver:
     arguments:
       $jwtIssuer: '%env(string:JWT_ISSUER)%'
@@ -242,7 +250,7 @@ services:
 
   App\User\Infrastructure\Security\TwoFactorSecretEncryptor:
     arguments:
-      $twoFactorEncryptionKey: '%env(resolve:TWO_FACTOR_ENCRYPTION_KEY)%'
+      $twoFactorEncryptionKey: '%env(default::TWO_FACTOR_ENCRYPTION_KEY)%'
 
   App\User\Application\Factory\AuthTokenFactoryInterface: '@App\User\Application\Factory\AuthTokenFactory'
   App\User\Application\EventPublisher\RefreshTokenEventsInterface: '@App\User\Application\EventPublisher\RefreshTokenEvents'

@@ -10,8 +10,8 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
 use App\User\Application\Factory\CompleteTwoFactorCommandFactoryInterface;
-use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use App\User\Application\Provider\AuthCookieProviderInterface;
+use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
