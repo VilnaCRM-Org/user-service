@@ -157,7 +157,7 @@ Apply explicit timeout/retry policy for provider HTTP calls.
 **Type**: Feature
 
 **Description**:
-Implement Facebook adapter using Graph API with PKCE, verified-email enforcement, and token validation. Facebook requires a separate Graph API call (`/me?fields=id,name,email`) to retrieve profile data; email presence is not guaranteed.
+Implement Facebook adapter using OIDC Authorization Code + PKCE flow with verified-email enforcement and token validation. Facebook requires a separate Graph API call (`/me?fields=id,name,email`) to retrieve profile data; email presence is not guaranteed.
 
 **Acceptance Criteria**:
 
@@ -165,7 +165,7 @@ Implement Facebook adapter using Graph API with PKCE, verified-email enforcement
 - AC-02: Token exchange uses `code_verifier`.
 - AC-03: Profile is fetched via Graph API `/me?fields=id,name,email` using the access token.
 - AC-04: If the `email` field is absent in the Graph API response, adapter raises `OAuthEmailUnavailableException` (maps to `provider_email_unavailable`, HTTP 422).
-- AC-05: Facebook does not return an explicit `email_verified` field — the presence of the email field in the Graph API response is treated as implicit verification. If the field is absent, AC-04 applies.
+- AC-05: Facebook does not return an explicit `email_verified` field — the presence of the email field in the Graph API response is treated as implicit verification. The adapter MUST NOT raise `UnverifiedProviderEmailException`; only `OAuthEmailUnavailableException` applies when the email field is absent (AC-04).
 - AC-06: Upstream HTTP failures map to `OAuthProviderException`.
 - AC-07: `supportsPkce()` returns `true`; `emailAlwaysVerified()` returns `false`; `requiresExtraProfileCall()` returns `true`.
 - AC-08: Unit tests cover: happy path (email present), email absent, token exchange failure, Graph API failure, capability method contracts.

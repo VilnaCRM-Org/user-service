@@ -69,12 +69,16 @@ src/OAuth/
 |  |- ValueObject/OAuthUserProfile.php
 |  |- ValueObject/OAuthStatePayload.php
 |  |- Repository/SocialIdentityRepositoryInterface.php
+|  |- Repository/OAuthStateRepositoryInterface.php
 |  |- Event/OAuthUserCreatedEvent.php
 |  |- Event/OAuthUserSignedInEvent.php
 |  |- Exception/InvalidStateException.php
-|  |- Exception/ProviderMismatchException.php
-|  |- Exception/UnverifiedProviderEmailException.php
+|  |- Exception/OAuthEmailUnavailableException.php
 |  |- Exception/OAuthProviderException.php
+|  |- Exception/ProviderMismatchException.php
+|  |- Exception/StateExpiredException.php
+|  |- Exception/UnsupportedProviderException.php
+|  |- Exception/UnverifiedProviderEmailException.php
 |- Application/
 |  |- Command/InitiateOAuthCommand.php
 |  |- Command/HandleOAuthCallbackCommand.php
@@ -177,7 +181,7 @@ Provider capability matrix:
 | --------- | ---------------- | ----------------------- | ---------------------------- |
 | GitHub    | true             | true                    | false                        |
 | Google    | true             | true                    | false                        |
-| Facebook  | true             | false                   | true (Graph API `/me`)       |
+| Facebook  | true (OIDC flow) | false                   | true (Graph API `/me`)       |
 | Twitter/X | true             | false                   | true (v2 Users API)          |
 
 ### 4.4 Provider Registry as Allowlist
