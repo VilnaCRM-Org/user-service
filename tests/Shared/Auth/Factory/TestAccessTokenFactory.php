@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Shared\Auth\Factory;
 
-use App\User\Domain\Contract\AccessTokenGeneratorInterface;
+use App\User\Application\Generator\AccessTokenGeneratorInterface;
 use DateTimeImmutable;
 use Symfony\Component\Uid\Factory\UlidFactory;
 use Symfony\Component\Uid\Factory\UuidFactory;

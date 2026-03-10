@@ -6,11 +6,11 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\CompleteTwoFactorCommand;
-use App\User\Application\Component\SessionIssuerInterface;
-use App\User\Application\Component\TwoFactorCodeVerifierInterface;
-use App\User\Application\Component\TwoFactorEventsInterface;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\IssuedSession;
+use App\User\Application\EventPublisher\TwoFactorEventsInterface;
+use App\User\Application\Issuer\SessionIssuerInterface;
+use App\User\Application\Verifier\TwoFactorCodeVerifierInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;

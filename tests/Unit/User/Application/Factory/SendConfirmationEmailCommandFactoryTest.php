@@ -8,7 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SendConfirmationEmailCommand;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactory;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
-use App\User\Domain\Contract\ConfirmationEmailInterface;
+use App\User\Domain\Aggregate\ConfirmationEmailInterface;
 
 final class SendConfirmationEmailCommandFactoryTest extends UnitTestCase
 {

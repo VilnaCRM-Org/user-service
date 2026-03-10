@@ -179,20 +179,37 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
         $this->refreshTokenRepository->expects($this->once())
             ->method('findBySessionId')->with($session->getId())
             ->willReturn($sessionTokens);
+        $this->expectSessionRevoked();
+        $this->expectTheftEvent($session, $user, $reason);
+    }
+
+    private function expectSessionRevoked(): void
+    {
         $this->authSessionRepository
             ->expects($this->once())
             ->method('save')
             ->with($this->callback(
                 static fn (AuthSession $s): bool => $s->isRevoked()
             ));
+    }
+
+    private function expectTheftEvent(
+        AuthSession $session,
+        User $user,
+        string $reason
+    ): void {
+        $sid = $session->getId();
+        $uid = $user->getId();
+        $ip = $session->getIpAddress();
+
         $this->eventBus
             ->expects($this->once())
             ->method('publish')
             ->with($this->callback(
-                static fn (RefreshTokenTheftDetectedEvent $event): bool => $event->sessionId === $session->getId()
-                    && $event->userId === $user->getId()
-                    && $event->ipAddress === $session->getIpAddress()
-                    && $event->reason === $reason
+                static fn (RefreshTokenTheftDetectedEvent $e): bool => $e->sessionId === $sid
+                    && $e->userId === $uid
+                    && $e->ipAddress === $ip
+                    && $e->reason === $reason
             ));
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\TwoFactor;
 
-use App\User\Domain\Contract\TOTPVerifierInterface;
+use App\User\Application\Verifier\TOTPVerifierInterface;
 
 final class TOTPVerifier implements TOTPVerifierInterface
 {

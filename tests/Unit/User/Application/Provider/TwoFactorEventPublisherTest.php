@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\User\Application\Service;
+namespace App\Tests\Unit\User\Application\EventPublisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\EventPublisher\TwoFactorEvents;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
-use App\User\Application\Service\TwoFactorEventPublisher;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Event\RecoveryCodeUsedEvent;
 use App\User\Domain\Event\TwoFactorCompletedEvent;
@@ -16,11 +16,11 @@ use App\User\Domain\Event\TwoFactorEnabledEvent;
 use App\User\Domain\Event\TwoFactorFailedEvent;
 use PHPUnit\Framework\MockObject\MockObject;
 
-final class TwoFactorEventPublisherTest extends UnitTestCase
+final class TwoFactorEventsTest extends UnitTestCase
 {
     private EventBusInterface&MockObject $eventBus;
     private AuthTokenFactoryInterface&MockObject $authTokenFactory;
-    private TwoFactorEventPublisher $publisher;
+    private TwoFactorEvents $publisher;
 
     #[\Override]
     protected function setUp(): void
@@ -29,7 +29,7 @@ final class TwoFactorEventPublisherTest extends UnitTestCase
 
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->authTokenFactory = $this->createMock(AuthTokenFactoryInterface::class);
-        $this->publisher = new TwoFactorEventPublisher(
+        $this->publisher = new TwoFactorEvents(
             $this->eventBus,
             $this->authTokenFactory
         );
@@ -113,25 +113,20 @@ final class TwoFactorEventPublisherTest extends UnitTestCase
 
     public function testPublishCompletedWithNullVerificationMethod(): void
     {
-        $userId = $this->faker->uuid();
-        $sessionId = $this->faker->uuid();
-        $ipAddress = $this->faker->ipv4();
-        $userAgent = $this->faker->userAgent();
-        $eventId = $this->faker->uuid();
+        [$userId, $sessionId, $ipAddress, $userAgent] = $this->arrangeCompletedFixtures();
 
-        $this->authTokenFactory->expects($this->once())
-            ->method('nextEventId')
-            ->willReturn($eventId);
+        $this->expectEventPublished(
+            static fn (TwoFactorCompletedEvent $e): bool => $e->method === ''
+        );
 
-        $this->eventBus->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(
-                static function (TwoFactorCompletedEvent $event): bool {
-                    return $event->method === '';
-                }
-            ));
-
-        $this->publisher->publishCompleted($userId, $sessionId, $ipAddress, $userAgent, null);
+        $this->publisher->publishCompleted(
+            $userId,
+            $this->faker->email(),
+            $sessionId,
+            $ipAddress,
+            $userAgent,
+            null
+        );
     }
 
     public function testPublishFailed(): void
@@ -210,11 +205,27 @@ final class TwoFactorEventPublisherTest extends UnitTestCase
     ): void {
         $this->publisher->publishCompleted(
             $userId,
+            $this->faker->email(),
             $sessionId,
             $ipAddress,
             $userAgent,
             $verificationMethod
         );
+    }
+
+    /**
+     * @return array{string, string, string, string}
+     */
+    private function arrangeCompletedFixtures(): array
+    {
+        $this->arrangeEventId($this->faker->uuid());
+
+        return [
+            $this->faker->uuid(),
+            $this->faker->uuid(),
+            $this->faker->ipv4(),
+            $this->faker->userAgent(),
+        ];
     }
 
     private function arrangeEventId(string $eventId): void

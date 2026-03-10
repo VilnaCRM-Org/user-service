@@ -48,36 +48,4 @@ final class IntegrationAuthTokenHelperTest extends AuthIntegrationTestCase
         $this->assertSame($subject, $payload['sub'] ?? null);
         $this->assertSame(['ROLE_SERVICE'], $payload['roles'] ?? null);
     }
-
-    /**
-     * @return array<string, array<string>|int|string>
-     */
-    private function decodeJwtPayload(string $jwt): array
-    {
-        $parts = explode('.', $jwt);
-        if (count($parts) !== 3) {
-            return [];
-        }
-
-        $payload = $this->base64UrlDecode($parts[1]);
-        if ($payload === '') {
-            return [];
-        }
-
-        $decoded = json_decode($payload, true);
-
-        return is_array($decoded) ? $decoded : [];
-    }
-
-    private function base64UrlDecode(string $value): string
-    {
-        $remainder = strlen($value) % 4;
-        if ($remainder !== 0) {
-            $value .= str_repeat('=', 4 - $remainder);
-        }
-
-        $decoded = base64_decode(strtr($value, '-_', '+/'), true);
-
-        return is_string($decoded) ? $decoded : '';
-    }
 }

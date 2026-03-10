@@ -6,9 +6,9 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\RefreshTokenCommand;
-use App\User\Application\Component\RefreshTokenEventsInterface;
+use App\User\Application\EventPublisher\RefreshTokenEventsInterface;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
-use App\User\Domain\Contract\AccessTokenGeneratorInterface;
+use App\User\Application\Generator\AccessTokenGeneratorInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;

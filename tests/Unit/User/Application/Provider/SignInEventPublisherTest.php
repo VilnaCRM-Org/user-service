@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\User\Application\Service;
+namespace App\Tests\Unit\User\Application\EventPublisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\EventPublisher\SignInEvents;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
-use App\User\Application\Service\SignInEventPublisher;
 use App\User\Domain\Event\AccountLockedOutEvent;
 use App\User\Domain\Event\SignInFailedEvent;
 use App\User\Domain\Event\UserSignedInEvent;
 use PHPUnit\Framework\MockObject\MockObject;
 
-final class SignInEventPublisherTest extends UnitTestCase
+final class SignInEventsTest extends UnitTestCase
 {
     private EventBusInterface&MockObject $eventBus;
     private AuthTokenFactoryInterface&MockObject $authTokenFactory;
-    private SignInEventPublisher $publisher;
+    private SignInEvents $publisher;
 
     #[\Override]
     protected function setUp(): void
@@ -26,7 +26,7 @@ final class SignInEventPublisherTest extends UnitTestCase
 
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->authTokenFactory = $this->createMock(AuthTokenFactoryInterface::class);
-        $this->publisher = new SignInEventPublisher(
+        $this->publisher = new SignInEvents(
             $this->eventBus,
             $this->authTokenFactory
         );

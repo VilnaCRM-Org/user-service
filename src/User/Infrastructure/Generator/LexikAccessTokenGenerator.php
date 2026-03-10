@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Generator;
 
-use App\User\Domain\Contract\AccessTokenGeneratorInterface;
+use App\User\Application\Generator\AccessTokenGeneratorInterface;
 use DateTimeImmutable;
 use DateTimeZone;
 use RuntimeException;

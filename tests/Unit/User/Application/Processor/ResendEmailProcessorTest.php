@@ -18,7 +18,7 @@ use App\User\Application\DTO\RetryDto;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
 use App\User\Application\Processor\ResendEmailProcessor;
 use App\User\Application\Query\GetUserQueryHandlerInterface;
-use App\User\Domain\Contract\ConfirmationEmailInterface;
+use App\User\Domain\Aggregate\ConfirmationEmailInterface;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\UserNotFoundException;

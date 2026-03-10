@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\User\Application\Validator;
 
-use App\User\Domain\Contract\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Exception\PasswordResetTokenNotFoundException;
 

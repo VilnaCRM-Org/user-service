@@ -6,8 +6,8 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\DisableTwoFactorCommand;
-use App\User\Application\Component\TwoFactorCodeVerifierInterface;
-use App\User\Application\Component\TwoFactorEventsInterface;
+use App\User\Application\EventPublisher\TwoFactorEventsInterface;
+use App\User\Application\Verifier\TwoFactorCodeVerifierInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;

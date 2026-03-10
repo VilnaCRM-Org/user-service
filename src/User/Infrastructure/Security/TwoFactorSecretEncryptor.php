@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Security;
 
-use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
+use App\User\Application\Encryptor\TwoFactorSecretEncryptorInterface;
 use RuntimeException;
 
 final readonly class TwoFactorSecretEncryptor implements

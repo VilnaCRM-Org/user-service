@@ -6,7 +6,7 @@ namespace App\Tests\Unit\User\Application\Command;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SendConfirmationEmailCommand;
-use App\User\Domain\Contract\ConfirmationEmailInterface;
+use App\User\Domain\Aggregate\ConfirmationEmailInterface;
 
 final class SendConfirmationEmailCommandTest extends UnitTestCase
 {

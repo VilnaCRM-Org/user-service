@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Lockout;
 
-use App\User\Domain\Contract\AccountLockoutServiceInterface;
+use App\User\Application\Lockout\AccountLockoutServiceInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
 final readonly class RedisAccountLockout implements
