@@ -56,6 +56,8 @@ resources:
               description: 'Invalid request payload'
             401:
               description: 'Invalid credentials'
+            423:
+              description: 'Account is temporarily locked'
             422:
               description: 'Validation error'
       signin_2fa_http:

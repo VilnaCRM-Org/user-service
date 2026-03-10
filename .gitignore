@@ -58,5 +58,6 @@ coverage-html/
 .phpunit.cache
 ###> league/oauth2-server-bundle ###
 /config/jwt/*.pem
+/config/reference.php
 ###< league/oauth2-server-bundle ###
 /_bmad/

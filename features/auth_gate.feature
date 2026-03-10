@@ -177,7 +177,7 @@ Feature: Authentication Gate and Access Control
     When I execute GraphQL mutation resendEmailTo for user "8be90127-9840-4235-a6da-39b8debfb243"
     Then the GraphQL response should contain an authorization error
 
-  # Story 4.4: Disable OAuth password grant (NFR-41)
+  # Story 4.4: Disable OAuth password grant (NFR-41, credentials must not be shared with clients)
 
   Scenario: Password grant type is rejected
     Given client with id "PwGrantId", secret "PwGrantSecret" and redirect uri "https://example.com" exists

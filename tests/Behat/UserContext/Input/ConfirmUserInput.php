@@ -11,4 +11,13 @@ final class ConfirmUserInput extends RequestInput
     public function __construct(private readonly string $token)
     {
     }
+
+    /**
+     * @return array{token: string}
+     */
+    #[\Override]
+    public function toArray(): array
+    {
+        return ['token' => $this->token];
+    }
 }

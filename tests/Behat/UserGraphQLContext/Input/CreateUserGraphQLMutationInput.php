@@ -14,4 +14,17 @@ final readonly class CreateUserGraphQLMutationInput extends GraphQLMutationInput
         private string $password
     ) {
     }
+
+    /**
+     * @return array{email: string, initials: string, password: string}
+     */
+    #[\Override]
+    public function toArray(): array
+    {
+        return [
+            'email' => $this->email,
+            'initials' => $this->initials,
+            'password' => $this->password,
+        ];
+    }
 }

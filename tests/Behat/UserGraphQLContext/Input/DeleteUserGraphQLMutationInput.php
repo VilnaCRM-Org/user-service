@@ -11,4 +11,13 @@ final readonly class DeleteUserGraphQLMutationInput extends GraphQLMutationInput
     public function __construct(private string $id)
     {
     }
+
+    /**
+     * @return array{id: string}
+     */
+    #[\Override]
+    public function toArray(): array
+    {
+        return ['id' => $this->id];
+    }
 }

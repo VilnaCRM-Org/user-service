@@ -14,4 +14,17 @@ final class CreateUserInput extends RequestInput
         private readonly ?string $password = null
     ) {
     }
+
+    /**
+     * @return array<string, string|null>
+     */
+    #[\Override]
+    public function toArray(): array
+    {
+        return [
+            'email' => $this->email,
+            'initials' => $this->initials,
+            'password' => $this->password,
+        ];
+    }
 }

@@ -109,7 +109,7 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createUser();
         $previousEmail = $user->getEmail();
-        $updateData = $this->createEmailChangeUpdate($this->faker->email());
+        $updateData = $this->createUpdateData($this->faker->password(), $this->faker->password());
         $command = new UpdateUserCommand($user, $updateData, $this->faker->uuid());
 
         $this->preparePasswordChangeScenario($user);
@@ -180,6 +180,28 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
 
         $this->createHandler()->__invoke($command);
 
+        $this->assertNull($this->findAllSessionsRevokedEvent($publishedEvents));
+    }
+
+    public function testInvokePublishesUserUpdatedEventWhenEmailChangesWithoutPasswordChange(): void
+    {
+        $user = $this->createUser();
+        $previousEmail = $user->getEmail();
+        $password = $this->faker->password();
+        $updateData = $this->createUnchangedPasswordUpdate($user, $password, $this->faker->email());
+        $command = new UpdateUserCommand($user, $updateData, $this->faker->uuid());
+
+        $publishedEvents = [];
+        $this->expectEventIdGenerator();
+        $this->expectPasswordHasher(true);
+        $this->setupUpdateMocksForEmailChange($user, $previousEmail);
+        $this->authSessionRepository->expects($this->never())->method('findByUserId');
+        $this->userRepository->expects($this->once())->method('save')->with($user);
+        $this->expectEventPublish($publishedEvents);
+        $this->createHandler()->__invoke($command);
+        $userUpdatedEvent = $this->findEventOfType($publishedEvents, UserUpdatedEvent::class);
+        $this->assertNotNull($userUpdatedEvent);
+        $this->assertSame($previousEmail, $userUpdatedEvent->previousEmail);
         $this->assertNull($this->findAllSessionsRevokedEvent($publishedEvents));
     }
 
@@ -375,32 +397,12 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         $this->userRepository->expects($this->once())->method('save');
     }
 
-    private function createEmailChangeUpdate(string $newEmail): UserUpdate
-    {
-        return new UserUpdate(
-            $newEmail,
-            $this->faker->firstName(),
-            $this->faker->password(),
-            $this->faker->password()
-        );
-    }
-
     private function setupUpdateMocksForEmailChange(
         UserInterface $user,
         string $previousEmail
     ): void {
         $eventId = $this->faker->uuid();
 
-        $this->stubEmailChangedFactory($user, $previousEmail, $eventId);
-        $this->stubPasswordChangedFactory($user, $eventId);
-        $this->expectUserUpdatedFactoryWithPreviousEmail($user, $previousEmail, $eventId);
-    }
-
-    private function stubEmailChangedFactory(
-        UserInterface $user,
-        string $previousEmail,
-        string $eventId
-    ): void {
         $this->emailChangedEventFactory->method('create')
             ->willReturn(new EmailChangedEvent(
                 $user->getId(),
@@ -408,19 +410,8 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
                 $previousEmail,
                 $eventId
             ));
-    }
-
-    private function stubPasswordChangedFactory(UserInterface $user, string $eventId): void
-    {
         $this->passwordChangedFactory->method('create')
             ->willReturn(new PasswordChangedEvent($user->getEmail(), $eventId));
-    }
-
-    private function expectUserUpdatedFactoryWithPreviousEmail(
-        UserInterface $user,
-        string $previousEmail,
-        string $eventId
-    ): void {
         $event = new UserUpdatedEvent($user->getId(), $user->getEmail(), $previousEmail, $eventId);
         $this->userUpdatedEventFactory->expects($this->once())
             ->method('create')
@@ -449,10 +440,11 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
 
     private function createUnchangedPasswordUpdate(
         UserInterface $user,
-        string $password
+        string $password,
+        ?string $email = null
     ): UserUpdate {
         return new UserUpdate(
-            $user->getEmail(),
+            $email ?? $user->getEmail(),
             $this->faker->firstName(),
             $password,
             $password,

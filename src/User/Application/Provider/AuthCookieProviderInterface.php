@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Service;
+namespace App\User\Application\Provider;
 
 use Symfony\Component\HttpFoundation\Response;
 
-interface AuthCookieServiceInterface
+interface AuthCookieProviderInterface
 {
     public function attach(
         Response $response,

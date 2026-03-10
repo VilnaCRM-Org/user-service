@@ -11,6 +11,7 @@ use App\Shared\Application\OpenApi\Factory\Response\UnauthorizedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserDeletedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserNotFoundResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserReturnedResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UserTimedOutResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserUpdatedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 
@@ -25,6 +26,7 @@ final class ParamUserResponseProvider
         private UnauthorizedResponseFactory $unauthorizedResponseFactory,
         private UserNotFoundResponseFactory $userNotFoundResponseFactory,
         private UserDeletedResponseFactory $deletedResponseFactory,
+        private UserTimedOutResponseFactory $userTimedOutResponseFactory,
         private UserUpdatedResponseFactory $userUpdatedResponseFactory,
         private UserReturnedResponseFactory $userReturnedResponseFactory
     ) {
@@ -67,6 +69,14 @@ final class ParamUserResponseProvider
         return $this->getCachedResponse(
             'userDeleted',
             $this->deletedResponseFactory
+        );
+    }
+
+    public function userTimedOut(): Response
+    {
+        return $this->getCachedResponse(
+            'userTimedOut',
+            $this->userTimedOutResponseFactory
         );
     }
 

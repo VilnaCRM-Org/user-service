@@ -32,6 +32,17 @@ We regularly update project dependencies to mitigate vulnerabilities in third-pa
 - **End-to-end tests** verify the application's behavior from the user's perspective, ensuring that security controls are effective.
 - **Load tests** are conducted to ensure the application can handle high traffic without compromising security.
 
+### OAuth Grant Policy
+
+- Password grant is disabled by design (`enable_password_grant: false`) to avoid sending user credentials to OAuth clients.
+- Supported interactive flow is authorization code with PKCE; machine-to-machine uses client credentials grant.
+
+### OAuth Encryption Key Policy
+
+- Root `.env` keeps `OAUTH_ENCRYPTION_KEY` empty.
+- Non-production environments must define the key in environment-specific files.
+- Production must define `OAUTH_ENCRYPTION_KEY` via deployment secrets; runtime validation fails fast when it is empty.
+
 ### GitHub CI Security Checks
 
 Our CI pipeline incorporates security checks to ensure the ongoing security of the application:

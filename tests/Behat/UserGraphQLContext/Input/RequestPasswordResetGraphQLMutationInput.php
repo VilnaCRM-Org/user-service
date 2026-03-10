@@ -12,4 +12,13 @@ final readonly class RequestPasswordResetGraphQLMutationInput extends
     public function __construct(private string $email)
     {
     }
+
+    /**
+     * @return array{email: string}
+     */
+    #[\Override]
+    public function toArray(): array
+    {
+        return ['email' => $this->email];
+    }
 }

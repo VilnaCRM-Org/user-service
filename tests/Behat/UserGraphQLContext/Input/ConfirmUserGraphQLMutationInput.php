@@ -12,4 +12,13 @@ final readonly class ConfirmUserGraphQLMutationInput extends
     public function __construct(private string $token)
     {
     }
+
+    /**
+     * @return array{token: string}
+     */
+    #[\Override]
+    public function toArray(): array
+    {
+        return ['token' => $this->token];
+    }
 }

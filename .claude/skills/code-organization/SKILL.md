@@ -48,6 +48,14 @@ Classes MUST be in directories matching their type:
 | `EventListener/`   | Event listeners (Symfony)       | `QueryParameterValidationListener` |
 | `EventSubscriber/` | Event subscribers (Symfony/App) | `SendEmailOnCustomerCreated`       |
 
+### Directory Creation Guardrails
+
+- **NEVER create new directories autonomously** — every new class-type directory MUST follow a well-known software engineering pattern AND be explicitly requested/approved by the user. When in doubt, use an existing directory.
+- Do not invent ad-hoc class-type directories (`Applier/`, `Attacher/`, `Enricher/`, `Helper/`, `Util/`, `Service/`).
+- The `Service/` suffix is forbidden — it leads to anemic domain models. Use specific pattern names instead (Provider, Factory, Resolver, etc.).
+- Use existing DDD/CQRS directory types and naming patterns from this skill.
+- Follow DDD and CQRS strictly — all class organization must align with established DDD layers and CQRS patterns.
+
 ## DDD Naming Patterns
 
 ### By Layer and Type
@@ -119,6 +127,8 @@ When creating or reviewing a class, verify:
    - ✅ `mixed $value` when accepts any type
    - ❌ `string $binary` when accepts mixed
 9. ✅ **No "Helper" or "Util" Classes** (extract specific responsibilities)
+10. ✅ **No ad-hoc class-type suffixes/directories** (`Applier`, `Attacher`, `Enricher`, `Service`)
+11. ✅ **New directories are explicit and standard**, not agent-invented — must be explicitly approved by the user
 
 ## PHP Best Practices
 
@@ -132,10 +142,12 @@ When creating or reviewing a class, verify:
 
 ### Anti-Patterns (Forbidden)
 
-- ❌ **Helper/Util classes** - Extract specific responsibilities
+- ❌ **Helper/Util/Service classes** - Extract specific responsibilities; `Service` leads to anemic domain models
 - ❌ **Default instantiation in constructors** - Inject dependencies
 - ❌ **Vague variable names** - Be specific
 - ❌ **Namespace mismatches** - Must match directory structure
+- ❌ **Ad-hoc directory/class type inventions** - Use established patterns only; NEVER create new directories without explicit user approval
+- ❌ **Autonomous directory creation** - Agent must NEVER create a new class-type directory on its own
 
 ## Factory Pattern (Maintainability & Flexibility)
 
@@ -374,7 +386,8 @@ What does the class DO?
 ├─ Normalizes/serializes? → Serializer/
 ├─ Formats data for display? → Formatter/
 ├─ Maps data between structures? → Mapper/
-└─ Something else? → Define specific responsibility!
+├─ Provides data/cookies/context? → Provider/
+└─ Something else? → Ask the user before creating a new directory!
 ```
 
 ## Verification Commands

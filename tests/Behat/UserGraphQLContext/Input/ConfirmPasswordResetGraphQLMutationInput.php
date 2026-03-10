@@ -14,4 +14,16 @@ final readonly class ConfirmPasswordResetGraphQLMutationInput extends
         private string $newPassword
     ) {
     }
+
+    /**
+     * @return array{token: string, newPassword: string}
+     */
+    #[\Override]
+    public function toArray(): array
+    {
+        return [
+            'token' => $this->token,
+            'newPassword' => $this->newPassword,
+        ];
+    }
 }

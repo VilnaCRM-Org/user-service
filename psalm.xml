@@ -38,10 +38,5 @@
                 <directory name="tests/Behat"/>
             </errorLevel>
         </UnusedParam>
-        <UnusedProperty>
-            <errorLevel type="suppress">
-                <directory name="tests/Behat"/>
-            </errorLevel>
-        </UnusedProperty>
     </issueHandlers>
 </psalm>

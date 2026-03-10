@@ -82,6 +82,14 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 200 }
 
+  App\Shared\Application\EventListener\OAuthEncryptionKeyConfigurationListener:
+    arguments:
+      $appEnv: '%kernel.environment%'
+      $oauthEncryptionKey: '%env(default::OAUTH_ENCRYPTION_KEY)%'
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: 200 }
+      - { name: kernel.event_listener, event: console.command, method: onConsoleCommand, priority: 200 }
+
   App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver:
     arguments:
       $jwtIssuer: '%env(string:JWT_ISSUER)%'
@@ -244,7 +252,7 @@ services:
   App\User\Application\Issuer\SessionIssuerInterface: '@App\User\Application\Issuer\SessionIssuer'
   App\User\Application\EventPublisher\SignInEventsInterface: '@App\User\Application\EventPublisher\SignInEvents'
   App\User\Application\Authenticator\UserAuthenticatorInterface: '@App\User\Application\Authenticator\UserAuthenticator'
-  App\User\Application\Service\AuthCookieServiceInterface: '@App\User\Application\Service\AuthCookieService'
+  App\User\Application\Provider\AuthCookieProviderInterface: '@App\User\Application\Provider\AuthCookieProvider'
   App\User\Application\Guard\OwnershipGuardInterface: '@App\User\Application\Guard\TokenOwnershipGuard'
 
   App\User\Application\Factory\AuthTokenFactory:
@@ -259,7 +267,7 @@ services:
       $standardSessionTtlSeconds: '%env(int:AUTH_STANDARD_SESSION_TTL_SECONDS)%'
       $rememberMeSessionTtlSeconds: '%env(int:AUTH_REMEMBER_ME_SESSION_TTL_SECONDS)%'
 
-  App\User\Application\Service\AuthCookieService:
+  App\User\Application\Provider\AuthCookieProvider:
     arguments:
       $standardCookieMaxAge: '%env(int:AUTH_STANDARD_COOKIE_MAX_AGE)%'
       $rememberMeCookieMaxAge: '%env(int:AUTH_REMEMBER_ME_COOKIE_MAX_AGE)%'

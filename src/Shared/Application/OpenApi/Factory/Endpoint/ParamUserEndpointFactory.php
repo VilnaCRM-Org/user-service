@@ -124,7 +124,7 @@ final class ParamUserEndpointFactory implements EndpointFactoryInterface
     /**
      * @return array<Response>
      *
-     * @psalm-return array{200: Response, 400: Response, 401: Response, 404: Response, 422: Response}
+     * @psalm-return array{200: Response, 400: Response, 401: Response, 404: Response, 422: Response, 429: Response}
      */
     private function userMutationResponses(): array
     {
@@ -134,6 +134,7 @@ final class ParamUserEndpointFactory implements EndpointFactoryInterface
             HttpResponse::HTTP_UNAUTHORIZED => $this->responseProvider->unauthorized(),
             HttpResponse::HTTP_NOT_FOUND => $this->responseProvider->userNotFound(),
             HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $this->responseProvider->validationError(),
+            HttpResponse::HTTP_TOO_MANY_REQUESTS => $this->responseProvider->userTimedOut(),
         ];
     }
 

@@ -13,7 +13,7 @@ use App\User\Application\DTO\CompleteTwoFactorDto;
 use App\User\Application\Factory\CompleteTwoFactorCommandFactory;
 use App\User\Application\Processor\CompleteTwoFactorProcessor;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
-use App\User\Application\Service\AuthCookieServiceInterface;
+use App\User\Application\Provider\AuthCookieProviderInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -21,7 +21,7 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
 {
     private CommandBusInterface&MockObject $commandBus;
     private HttpRequestContextResolverInterface&MockObject $requestContextResolver;
-    private AuthCookieServiceInterface&MockObject $cookieService;
+    private AuthCookieProviderInterface&MockObject $cookieProvider;
     private Operation $operation;
 
     #[\Override]
@@ -33,7 +33,7 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
         $this->requestContextResolver = $this->createMock(
             HttpRequestContextResolverInterface::class
         );
-        $this->cookieService = $this->createMock(AuthCookieServiceInterface::class);
+        $this->cookieProvider = $this->createMock(AuthCookieProviderInterface::class);
         $this->operation = $this->createMock(Operation::class);
     }
 
@@ -52,7 +52,7 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
             $accessToken,
             $refreshToken
         );
-        $this->cookieService->expects($this->once())->method('attach')
+        $this->cookieProvider->expects($this->once())->method('attach')
             ->with($this->anything(), $accessToken, false);
         $response = $this->processDto($dto, $request);
         $this->assertSame(200, $response->getStatusCode());
@@ -73,7 +73,7 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
             $this->faker->sha256()
         ))->withRememberMe();
         $this->expectDispatchSetsResponse($commandResponse);
-        $this->cookieService->expects($this->once())->method('attach')
+        $this->cookieProvider->expects($this->once())->method('attach')
             ->with($this->anything(), $accessToken, true);
         $response = $this->processDto($dto, $request);
         $this->assertSame(200, $response->getStatusCode());
@@ -93,7 +93,7 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
                 $this->faker->sha256()
             )
         );
-        $this->cookieService->expects($this->once())->method('attach')
+        $this->cookieProvider->expects($this->once())->method('attach')
             ->with($this->anything(), '', false);
         $response = $this->processDto($dto, $request);
         $this->assertSame(200, $response->getStatusCode());
@@ -278,7 +278,7 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
             $this->commandBus,
             new CompleteTwoFactorCommandFactory(),
             $this->requestContextResolver,
-            $this->cookieService,
+            $this->cookieProvider,
         );
         if ($request !== null) {
             return $processor->process($dto, $this->operation, [], ['request' => $request]);

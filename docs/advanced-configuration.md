@@ -52,10 +52,13 @@ The User Service utilizes environment variables for configuration to ensure that
 - `OAUTH_PUBLIC_KEY`: The path to the public key used for OAuth 2.0 authentication.
 - `OAUTH_PASSPHRASE`: The passphrase used to decrypt the private key.
 - `OAUTH_ENCRYPTION_KEY_TYPE`: Specifies the type of encryption key used, either `plain` or `defuse`.
-- `OAUTH_ENCRYPTION_KEY`: Required if `OAUTH_ENCRYPTION_KEY_TYPE` was set to `defuse`. Learn more [here](https://oauth2.thephpleague.com/installation/#string-password).
+- `OAUTH_ENCRYPTION_KEY`: OAuth token encryption key. Keep it empty in root `.env`; set it in environment-specific files or deployment secrets.
 - `ACCESS_TOKEN_TTL`: The TTL for access tokens. Learn more [here](http://php.net/manual/en/dateinterval.construct.php#refsect1-dateinterval.construct-parameters).
 - `REFRESH_TOKEN_TTL`: The TTL for refresh tokens. Learn more [here](http://php.net/manual/en/dateinterval.construct.php#refsect1-dateinterval.construct-parameters).
 - `AUTH_CODE_TTL`: The TTL for authorization codes. Learn more [here](http://php.net/manual/en/dateinterval.construct.php#refsect1-dateinterval.construct-parameters).
+
+In production, the application throws an explicit runtime configuration error if `OAUTH_ENCRYPTION_KEY` is empty.
+Password grant is intentionally disabled (`enable_password_grant: false`); use authorization code + PKCE or client credentials grants.
 
 #### JWT
 

@@ -228,6 +228,8 @@ paths:
           description: 'Invalid request payload'
         '401':
           description: 'Invalid credentials'
+        '423':
+          description: 'Account is temporarily locked'
         '422':
           description: 'Validation error'
         '500':
@@ -1535,6 +1537,28 @@ paths:
                   - { propertyPath: some_property, message: 'This value should not be blank.', code: c1051bb4-d103-4f74-8988-acbcafc7fdc3 }
                 status: 422
           headers: {  }
+        '429':
+          description: 'Too many requests'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'Cannot send new email till 2024-01-24T12:43:01+00:00'
+                status: 429
+          headers: {  }
         '500':
           description: 'Internal server error'
           content:
@@ -1817,6 +1841,28 @@ paths:
                 violations:
                   - { propertyPath: some_property, message: 'This value should not be blank.', code: c1051bb4-d103-4f74-8988-acbcafc7fdc3 }
                 status: 422
+          headers: {  }
+        '429':
+          description: 'Too many requests'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: 'https://tools.ietf.org/html/rfc2616#section-10'
+                title: 'An error occurred'
+                detail: 'Cannot send new email till 2024-01-24T12:43:01+00:00'
+                status: 429
           headers: {  }
         '500':
           description: 'Internal server error'

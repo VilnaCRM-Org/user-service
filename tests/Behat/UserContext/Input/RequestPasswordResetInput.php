@@ -12,4 +12,13 @@ final class RequestPasswordResetInput extends RequestInput
         private readonly string $email
     ) {
     }
+
+    /**
+     * @return array{email: string}
+     */
+    #[\Override]
+    public function toArray(): array
+    {
+        return ['email' => $this->email];
+    }
 }

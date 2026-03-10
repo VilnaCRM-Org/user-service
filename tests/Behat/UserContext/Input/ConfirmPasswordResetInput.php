@@ -13,4 +13,16 @@ final class ConfirmPasswordResetInput extends RequestInput
         private readonly string $newPassword
     ) {
     }
+
+    /**
+     * @return array{token: string, newPassword: string}
+     */
+    #[\Override]
+    public function toArray(): array
+    {
+        return [
+            'token' => $this->token,
+            'newPassword' => $this->newPassword,
+        ];
+    }
 }

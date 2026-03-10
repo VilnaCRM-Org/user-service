@@ -15,4 +15,18 @@ final class UpdateUserInput extends RequestInput
         private readonly ?string $newPassword = null
     ) {
     }
+
+    /**
+     * @return array<string, string|null>
+     */
+    #[\Override]
+    public function toArray(): array
+    {
+        return [
+            'email' => $this->email,
+            'initials' => $this->initials,
+            'oldPassword' => $this->oldPassword,
+            'newPassword' => $this->newPassword,
+        ];
+    }
 }

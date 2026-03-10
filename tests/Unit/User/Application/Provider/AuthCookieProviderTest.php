@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\User\Application\Service;
+namespace App\Tests\Unit\User\Application\Provider;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Factory\AuthCookieFactory;
 use App\User\Application\Factory\AuthCookieFactoryInterface;
-use App\User\Application\Service\AuthCookieService;
+use App\User\Application\Provider\AuthCookieProvider;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
 
-final class AuthCookieServiceTest extends UnitTestCase
+final class AuthCookieProviderTest extends UnitTestCase
 {
     private AuthCookieFactoryInterface&MockObject $cookieFactory;
 
@@ -30,7 +30,7 @@ final class AuthCookieServiceTest extends UnitTestCase
         $this->cookieFactory->expects($this->never())->method('create');
 
         $response = new Response();
-        $this->createService()->attach($response, '', false);
+        $this->createProvider()->attach($response, '', false);
 
         $this->assertCount(0, $response->headers->getCookies());
     }
@@ -44,7 +44,7 @@ final class AuthCookieServiceTest extends UnitTestCase
             ->willReturn(Cookie::create(AuthCookieFactory::COOKIE_NAME, $token));
 
         $response = new Response();
-        $this->createService()->attach($response, $token, false);
+        $this->createProvider()->attach($response, $token, false);
 
         $this->assertCount(1, $response->headers->getCookies());
     }
@@ -57,7 +57,7 @@ final class AuthCookieServiceTest extends UnitTestCase
             ->with($token, true, $this->anything(), $this->anything(), $this->anything())
             ->willReturn(Cookie::create(AuthCookieFactory::COOKIE_NAME, $token));
 
-        $this->createService()->attach(new Response(), $token, true);
+        $this->createProvider()->attach(new Response(), $token, true);
     }
 
     public function testAttachUsesDefaultCookieMaxAges(): void
@@ -68,11 +68,11 @@ final class AuthCookieServiceTest extends UnitTestCase
             ->with($token, false, 900, 2592000, $this->isInstanceOf(DateTimeImmutable::class))
             ->willReturn(Cookie::create(AuthCookieFactory::COOKIE_NAME, $token));
 
-        (new AuthCookieService($this->cookieFactory))->attach(new Response(), $token, false);
+        (new AuthCookieProvider($this->cookieFactory))->attach(new Response(), $token, false);
     }
 
-    private function createService(): AuthCookieService
+    private function createProvider(): AuthCookieProvider
     {
-        return new AuthCookieService($this->cookieFactory, 900, 2592000);
+        return new AuthCookieProvider($this->cookieFactory, 900, 2592000);
     }
 }
