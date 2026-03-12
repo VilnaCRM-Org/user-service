@@ -87,16 +87,36 @@ services:
       $appEnv: '%kernel.environment%'
       $oauthEncryptionKey: '%env(default::OAUTH_ENCRYPTION_KEY)%'
     tags:
-      - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: 200 }
-      - { name: kernel.event_listener, event: console.command, method: onConsoleCommand, priority: 200 }
+      - {
+          name: kernel.event_listener,
+          event: kernel.request,
+          method: onKernelRequest,
+          priority: 200,
+        }
+      - {
+          name: kernel.event_listener,
+          event: console.command,
+          method: onConsoleCommand,
+          priority: 200,
+        }
 
   App\Shared\Application\EventListener\TwoFactorEncryptionKeyConfigurationListener:
     arguments:
       $appEnv: '%kernel.environment%'
       $twoFactorEncryptionKey: '%env(default::TWO_FACTOR_ENCRYPTION_KEY)%'
     tags:
-      - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: 200 }
-      - { name: kernel.event_listener, event: console.command, method: onConsoleCommand, priority: 200 }
+      - {
+          name: kernel.event_listener,
+          event: kernel.request,
+          method: onKernelRequest,
+          priority: 200,
+        }
+      - {
+          name: kernel.event_listener,
+          event: console.command,
+          method: onConsoleCommand,
+          priority: 200,
+        }
 
   App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver:
     arguments:
