@@ -7,7 +7,7 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\DTO\RegenerateRecoveryCodesCommandResponse;
-use App\User\Application\Generator\RecoveryCodeGeneratorInterface;
+use App\User\Application\Factory\Generator\RecoveryCodeGeneratorInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;

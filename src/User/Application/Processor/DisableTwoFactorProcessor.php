@@ -39,7 +39,7 @@ final readonly class DisableTwoFactorProcessor implements ProcessorInterface
         $this->commandBus->dispatch(
             $this->disableTwoFactorCommandFactory->create(
                 $this->userIdentityResolver->resolveEmail(),
-                $data->twoFactorCode
+                $data->twoFactorCodeValue()
             )
         );
 

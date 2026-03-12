@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Application\Provider;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Factory\AuthCookieFactory;
 use App\User\Application\Factory\AuthCookieFactoryInterface;
-use App\User\Application\Provider\AuthCookieProvider;
+use App\User\Application\Processor\Provider\AuthCookieProvider;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Cookie;

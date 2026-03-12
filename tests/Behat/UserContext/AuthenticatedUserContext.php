@@ -130,9 +130,9 @@ final class AuthenticatedUserContext implements Context
         $sessionId = $isService ? null : $this->createActiveSession($subject);
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
-        $this->state->accessToken =
-            $this->auth->testAccessTokenFactory
-                ->createToken($subject, $roles, $sessionId);
+        $factory = $this->auth->testAccessTokenFactory;
+        $this->state->accessToken = $factory
+            ->createToken($subject, $roles, $sessionId);
         $email = sprintf(
             'service-%s@example.test',
             strtolower($this->faker->lexify('????'))
@@ -333,6 +333,10 @@ final class AuthenticatedUserContext implements Context
         if ($existingUser !== null) {
             UserContext::registerUserIdByEmail($email, $existingUser->getId());
             $this->assertForcedUserIdMatches($existingUser, $email, $forcedUserId);
+            $hasher = $this->userManagement->hasherFactory
+                ->getPasswordHasher($existingUser::class);
+            $existingUser->setPassword($hasher->hash(self::DEFAULT_PASSWORD, null));
+            $this->userManagement->userRepository->save($existingUser);
 
             return $existingUser;
         }
@@ -356,7 +360,7 @@ final class AuthenticatedUserContext implements Context
         string $email,
         ?string $forcedUserId
     ): User {
-        $password = $forcedUserId !== null ? self::DEFAULT_PASSWORD : $this->faker->password;
+        $password = self::DEFAULT_PASSWORD;
         $uuid = $this->userManagement->uuidFactory->create();
         $userId = $forcedUserId !== null
             ? $this->userManagement->transformer->transformFromString($forcedUserId)

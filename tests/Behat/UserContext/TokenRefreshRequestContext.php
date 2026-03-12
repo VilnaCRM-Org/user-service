@@ -4,30 +4,33 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserContext;
 
-use App\Tests\Behat\UserContext\Input\RefreshTokenInput;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use Behat\Behat\Context\Context;
 use DateTimeImmutable;
 use PHPUnit\Framework\Assert;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- */
 final class TokenRefreshRequestContext implements Context
 {
-    private RequestBodySerializer $bodySerializer;
+    private TokenRefreshWorkflow $workflow;
 
     public function __construct(
         private UserOperationsState $state,
-        private readonly KernelInterface $kernel,
+        KernelInterface $kernel,
         SerializerInterface $serializer,
         private readonly AuthRefreshTokenRepositoryInterface $refreshRepo,
+        UserContextAuthServices $auth,
+        UserContextUserManagementServices $userManagement,
     ) {
-        $this->bodySerializer = new RequestBodySerializer(
-            $serializer
+        $this->workflow = new TokenRefreshWorkflow(
+            $state,
+            $kernel,
+            $serializer,
+            $this->refreshRepo,
+            $auth,
+            $userManagement
         );
     }
 
@@ -36,10 +39,10 @@ final class TokenRefreshRequestContext implements Context
      */
     public function submittingTheRefreshTokenToExchange(): void
     {
-        $refreshToken = $this->resolveStateToken(
+        $refreshToken = $this->workflow->resolveStateToken(
             'refreshToken'
         );
-        $this->submitRefreshToken($refreshToken);
+        $this->workflow->submitRefreshToken($refreshToken);
     }
 
     /**
@@ -61,11 +64,12 @@ final class TokenRefreshRequestContext implements Context
         Assert::assertIsString($refreshToken);
         Assert::assertNotSame('', $refreshToken);
 
-        $this->submitRefreshToken($refreshToken);
+        $this->workflow->submitRefreshToken($refreshToken);
     }
 
     /**
      * @Given submitting the new stored refresh token to exchange
+     * @Given submitting the new refresh token to exchange
      */
     public function submittingTheNewStoredRefreshTokenToExchange(): void
     {
@@ -83,7 +87,58 @@ final class TokenRefreshRequestContext implements Context
         Assert::assertIsString($refreshToken);
         Assert::assertNotSame('', $refreshToken);
 
-        $this->submitRefreshToken($refreshToken);
+        $this->workflow->submitRefreshToken($refreshToken);
+    }
+
+    /**
+     * @Given user :email has an expired refresh token
+     */
+    public function userHasAnExpiredRefreshToken(string $email): void
+    {
+        $this->workflow->issueRefreshTokenForUser(
+            $email,
+            new DateTimeImmutable('-1 minute')
+        );
+    }
+
+    /**
+     * @Given submitting the expired refresh token to exchange
+     * @Given submitting the revoked refresh token to exchange
+     * @Given submitting the original refresh token to exchange
+     * @Given submitting the same original refresh token again within the grace window
+     */
+    public function submittingTheOriginalRefreshTokenToExchange(): void
+    {
+        $this->workflow->submitRefreshToken(
+            $this->workflow->resolveOriginalRefreshToken()
+        );
+    }
+
+    /**
+     * @Given /^the original refresh token is submitted \(theft attempt\)$/
+     */
+    public function theOriginalRefreshTokenIsSubmittedDuringTheftAttempt(): void
+    {
+        $this->submittingTheOriginalRefreshTokenToExchange();
+    }
+
+    /**
+     * @Given user :email has a revoked refresh token
+     */
+    public function userHasARevokedRefreshToken(string $email): void
+    {
+        $this->workflow->issueRefreshTokenForUser(
+            $email,
+            new DateTimeImmutable('+30 days')
+        );
+
+        $token = $this->refreshRepo->findByTokenHash(
+            hash('sha256', $this->workflow->resolveStateToken('refreshToken'))
+        );
+        Assert::assertInstanceOf(AuthRefreshToken::class, $token);
+
+        $token->revoke();
+        $this->refreshRepo->save($token);
     }
 
     /**
@@ -92,7 +147,7 @@ final class TokenRefreshRequestContext implements Context
     public function submittingRefreshToken(
         string $refreshToken
     ): void {
-        $this->submitRefreshToken($refreshToken);
+        $this->workflow->submitRefreshToken($refreshToken);
     }
 
     /**
@@ -100,10 +155,10 @@ final class TokenRefreshRequestContext implements Context
      */
     public function submittingTheRotatedRefreshTokenToExchange(): void
     {
-        $rotatedToken = $this->resolveStateToken(
+        $rotatedToken = $this->workflow->resolveStateToken(
             'rotatedRefreshToken'
         );
-        $this->submitRefreshToken($rotatedToken);
+        $this->workflow->submitRefreshToken($rotatedToken);
     }
 
     /**
@@ -111,14 +166,50 @@ final class TokenRefreshRequestContext implements Context
      */
     public function theRefreshTokenHasBeenRotatedWithinTheGraceWindow(): void
     {
-        $originalToken = $this->resolveStateToken(
-            'refreshToken'
+        $originalToken = $this->workflow->resolveOriginalRefreshToken();
+        $this->workflow->exchangeRefreshTokenAndStoreUnderKey(
+            $originalToken,
+            'tokenB'
         );
-        $this->exchangeRefreshTokenAndStoreLatest(
-            $originalToken
-        );
-
         $this->state->rotatedRefreshToken = $originalToken;
+    }
+
+    /**
+     * @Given the refresh token has been rotated to token B
+     */
+    public function theRefreshTokenHasBeenRotatedToTokenB(): void
+    {
+        $this->workflow->exchangeRefreshTokenAndStoreUnderKey(
+            $this->workflow->resolveOriginalRefreshToken(),
+            'tokenB'
+        );
+    }
+
+    /**
+     * @Given token B has been rotated to token C
+     */
+    public function tokenBHasBeenRotatedToTokenC(): void
+    {
+        $storedTokens = $this->state->storedRefreshTokens;
+        Assert::assertIsArray($storedTokens);
+        Assert::assertArrayHasKey('tokenB', $storedTokens);
+
+        $tokenB = $storedTokens['tokenB'];
+        Assert::assertIsString($tokenB);
+        Assert::assertNotSame('', $tokenB);
+
+        $this->workflow->exchangeRefreshTokenAndStoreUnderKey(
+            $tokenB,
+            'tokenC'
+        );
+    }
+
+    /**
+     * @Given the refresh token has been rotated to token B within the grace window
+     */
+    public function theRefreshTokenHasBeenRotatedToTokenBWithinTheGraceWindow(): void
+    {
+        $this->theRefreshTokenHasBeenRotatedWithinTheGraceWindow();
     }
 
     /**
@@ -126,13 +217,13 @@ final class TokenRefreshRequestContext implements Context
      */
     public function theRefreshTokenHasBeenRotatedAndGraceReuseHasBeenConsumed(): void
     {
-        $originalToken = $this->resolveStateToken(
+        $originalToken = $this->workflow->resolveStateToken(
             'refreshToken'
         );
-        $this->exchangeRefreshTokenAndStoreLatest(
+        $this->workflow->exchangeRefreshTokenAndStoreLatest(
             $originalToken
         );
-        $this->exchangeRefreshTokenAndStoreLatest(
+        $this->workflow->exchangeRefreshTokenAndStoreLatest(
             $originalToken
         );
 
@@ -144,10 +235,10 @@ final class TokenRefreshRequestContext implements Context
      */
     public function theRefreshTokenHasBeenRotatedAndTheGraceWindowHasExpired(): void
     {
-        $originalToken = $this->resolveStateToken(
+        $originalToken = $this->workflow->resolveStateToken(
             'refreshToken'
         );
-        $this->exchangeRefreshTokenAndStoreLatest(
+        $this->workflow->exchangeRefreshTokenAndStoreLatest(
             $originalToken
         );
         $token = $this->refreshRepo->findByTokenHash(
@@ -162,129 +253,5 @@ final class TokenRefreshRequestContext implements Context
         );
         $this->refreshRepo->save($token);
         $this->state->rotatedRefreshToken = $originalToken;
-    }
-
-    private function exchangeRefreshTokenAndStoreLatest(
-        string $refreshToken
-    ): void {
-        $this->state->requestBody = new RefreshTokenInput(
-            $refreshToken
-        );
-        $this->sendPostRequest('/api/token');
-        Assert::assertSame(
-            200,
-            $this->state->response?->getStatusCode()
-        );
-        $responseData = $this->decodeLatestResponse();
-        $latestRefresh = $responseData['refresh_token'] ?? null;
-        $latestAccess = $responseData['access_token'] ?? null;
-        Assert::assertIsString($latestRefresh);
-        Assert::assertNotSame('', $latestRefresh);
-        Assert::assertIsString($latestAccess);
-        Assert::assertNotSame('', $latestAccess);
-        $this->storeExchangedTokens(
-            $latestRefresh,
-            $latestAccess
-        );
-    }
-
-    private function storeExchangedTokens(
-        string $refreshToken,
-        string $accessToken
-    ): void {
-        $this->state->refreshToken = $refreshToken;
-        $this->state->accessToken = $accessToken;
-        $this->state->storedAccessTokens =
-            ['default' => $accessToken];
-        $this->state->storedRefreshTokens = [
-            'default' => $refreshToken,
-            'new' => $refreshToken,
-        ];
-    }
-
-    /**
-     * @return array<string, array<string>|int|string>
-     */
-    private function decodeLatestResponse(): array
-    {
-        $content = $this->state->response?->getContent();
-        Assert::assertIsString($content);
-        Assert::assertNotSame('', $content);
-
-        $decoded = json_decode($content, true);
-        Assert::assertIsArray($decoded);
-
-        return $decoded;
-    }
-
-    private function resolveStateToken(string $key): string
-    {
-        $value = $this->state->{$key};
-        Assert::assertIsString(
-            $value,
-            sprintf(
-                'Expected "%s" to be set in scenario state.',
-                $key
-            )
-        );
-        Assert::assertNotSame(
-            '',
-            $value,
-            sprintf(
-                'Expected "%s" to be non-empty in scenario state.',
-                $key
-            )
-        );
-
-        return $value;
-    }
-
-    private function submitRefreshToken(
-        string $refreshToken
-    ): void {
-        $this->state->submittedRefreshToken = $refreshToken;
-        $this->state->requestBody = new RefreshTokenInput(
-            $refreshToken
-        );
-    }
-
-    private function sendPostRequest(string $path): void
-    {
-        $headers = $this->buildRequestHeaders();
-        $requestBody = $this->bodySerializer->serialize(
-            $this->state->requestBody,
-            'POST'
-        );
-        $this->state->response = $this->kernel->handle(
-            Request::create(
-                $path,
-                'POST',
-                [],
-                [],
-                [],
-                $headers,
-                $requestBody
-            )
-        );
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function buildRequestHeaders(): array
-    {
-        $headers = [
-            'HTTP_ACCEPT' => 'application/json',
-            'CONTENT_TYPE' => 'application/json',
-            'HTTP_ACCEPT_LANGUAGE' => $this->state->language,
-        ];
-        $accessToken = $this->state->accessToken;
-        if (is_string($accessToken) && $accessToken !== '') {
-            $headers['HTTP_AUTHORIZATION'] = sprintf(
-                'Bearer %s',
-                $accessToken
-            );
-        }
-        return $headers;
     }
 }

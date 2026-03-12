@@ -10,7 +10,7 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\DTO\SignInDto;
 use App\User\Application\Factory\SignInCommandFactoryInterface;
-use App\User\Application\Provider\AuthCookieProviderInterface;
+use App\User\Application\Processor\Provider\AuthCookieProviderInterface;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,8 +45,8 @@ final readonly class SignInProcessor implements ProcessorInterface
         $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
 
         $command = $this->signInCommandFactory->create(
-            $data->email,
-            $data->password,
+            $data->emailValue(),
+            $data->passwordValue(),
             $data->isRememberMe(),
             $this->httpRequestContextResolver->resolveIpAddress($request),
             $this->httpRequestContextResolver->resolveUserAgent($request)

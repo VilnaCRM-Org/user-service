@@ -237,42 +237,6 @@ final class UserResponseContext implements Context
         $this->state->pendingSessionId = $pendingSessionId;
     }
 
-    /**
-     * @Then I store the response time as :key
-     */
-    public function iStoreTheResponseTimeAs(string $key): void
-    {
-        Assert::assertIsFloat(
-            $this->state->lastResponseTimeMs,
-            'No response time captured for the latest request.'
-        );
-
-        $this->state->{$key} = $this->state->lastResponseTimeMs;
-    }
-
-    /**
-     * @Then the response time should be within acceptable range of :key
-     */
-    public function theResponseTimeShouldBeWithinAcceptableRangeOf(string $key): void
-    {
-        $referenceTime = $this->state->{$key};
-        $currentTime = $this->state->lastResponseTimeMs;
-        Assert::assertIsFloat($referenceTime, "Stored response time '{$key}' is missing.");
-        Assert::assertIsFloat($currentTime, 'No response time captured for the latest request.');
-        $difference = abs($currentTime - $referenceTime);
-        $maxAllowed = max(250.0, $referenceTime * 0.7);
-        Assert::assertLessThanOrEqual(
-            $maxAllowed,
-            $difference,
-            $this->buildDeviationMessage(
-                $currentTime,
-                $referenceTime,
-                $difference,
-                $maxAllowed
-            )
-        );
-    }
-
     private function assertNoSchemaInResponse(
         string $responseContent
     ): void {
@@ -288,18 +252,6 @@ final class UserResponseContext implements Context
                 'GraphQL response unexpectedly returned schema data.'
             );
         }
-    }
-
-    private function buildDeviationMessage(
-        float $current,
-        float $reference,
-        float $difference,
-        float $maxAllowed
-    ): string {
-        $format = 'Response time deviation is too high. ';
-        $format .= 'Current: %.2fms, Reference: %.2fms, ';
-        $format .= 'Difference: %.2fms, Allowed: %.2fms';
-        return sprintf($format, $current, $reference, $difference, $maxAllowed);
     }
 
     /**

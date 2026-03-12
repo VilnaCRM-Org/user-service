@@ -6,6 +6,7 @@ namespace App\User\Domain\Factory;
 
 use App\User\Domain\Entity\RecoveryCode;
 
+/** @psalm-suppress UnusedClass */
 final readonly class RecoveryCodeFactory implements RecoveryCodeFactoryInterface
 {
     #[\Override]

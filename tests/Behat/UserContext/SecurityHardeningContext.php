@@ -256,7 +256,12 @@ final class SecurityHardeningContext implements Context
         Assert::assertIsString($pendingSessionId);
         Assert::assertNotSame('', $pendingSessionId);
 
-        $code = TOTP::create('JBSWY3DPEHPK3PXP')->now();
+        $secret = $this->state->twoFactorSecret;
+        if (!is_string($secret) || $secret === '') {
+            $secret = 'JBSWY3DPEHPK3PXP';
+        }
+
+        $code = TOTP::create($secret)->now();
         $this->state->requestBody = new CompleteTwoFactorInput(
             $pendingSessionId,
             $code

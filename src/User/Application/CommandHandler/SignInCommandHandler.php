@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
-use App\User\Application\Authenticator\UserAuthenticatorInterface;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\DTO\SignInCommandResponse;
-use App\User\Application\EventPublisher\SignInEventsInterface;
-use App\User\Application\Generator\IdGeneratorInterface;
-use App\User\Application\Issuer\SessionIssuerInterface;
+use App\User\Application\Factory\Generator\IdGeneratorInterface;
+use App\User\Application\Processor\Authenticator\UserAuthenticatorInterface;
+use App\User\Application\Processor\EventPublisher\SignInEventsInterface;
+use App\User\Application\Processor\Issuer\SessionIssuerInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactoryInterface;

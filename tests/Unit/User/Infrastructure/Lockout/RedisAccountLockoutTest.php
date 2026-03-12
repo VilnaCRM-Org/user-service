@@ -93,6 +93,18 @@ final class RedisAccountLockoutTest extends UnitTestCase
         $service->clearFailures('test@example.com');
     }
 
+    public function testMaxAttemptsReturnsConstant(): void
+    {
+        $service = new RedisAccountLockout($this->cachePool);
+        $this->assertSame(20, $service->maxAttempts());
+    }
+
+    public function testLockoutSecondsReturnsConstant(): void
+    {
+        $service = new RedisAccountLockout($this->cachePool);
+        $this->assertSame(900, $service->lockoutSeconds());
+    }
+
     public function testRecordFailureTreatsEmptyAttemptCounterAsZero(): void
     {
         $emailHash = hash('sha256', 'test@example.com');

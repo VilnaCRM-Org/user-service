@@ -44,7 +44,7 @@ final readonly class ConfirmTwoFactorProcessor implements ProcessorInterface
 
         $command = $this->confirmTwoFactorCommandFactory->create(
             $email,
-            $data->twoFactorCode,
+            $data->twoFactorCodeValue(),
             $sessionId
         );
 

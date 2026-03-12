@@ -94,4 +94,23 @@ final class RecoveryCodeTest extends UnitTestCase
         $this->assertGreaterThanOrEqual($beforeMark, $recoveryCode->getUsedAt());
         $this->assertLessThanOrEqual($afterMark, $recoveryCode->getUsedAt());
     }
+
+    public function testIsValidFormatReturnsTrueForValidCode(): void
+    {
+        $this->assertTrue(RecoveryCode::isValidFormat('ABCD-EF12'));
+        $this->assertTrue(RecoveryCode::isValidFormat('abcd-ef12'));
+        $this->assertTrue(RecoveryCode::isValidFormat('1234-5678'));
+        $this->assertTrue(RecoveryCode::isValidFormat('AaBb-CcDd'));
+    }
+
+    public function testIsValidFormatReturnsFalseForInvalidCodes(): void
+    {
+        $this->assertFalse(RecoveryCode::isValidFormat(''));
+        $this->assertFalse(RecoveryCode::isValidFormat('ABCDEF12'));
+        $this->assertFalse(RecoveryCode::isValidFormat('ABC-DEF'));
+        $this->assertFalse(RecoveryCode::isValidFormat('ABCDE-FGHIJ'));
+        $this->assertFalse(RecoveryCode::isValidFormat('AB!D-EF12'));
+        $this->assertFalse(RecoveryCode::isValidFormat('ABCD-EF1'));
+        $this->assertFalse(RecoveryCode::isValidFormat('ABCD-EF123'));
+    }
 }

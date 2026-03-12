@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Source;
 
-use App\Shared\Application\Source\ObjectMethodEmailSource;
+use App\Shared\Application\Resolver\Source\ObjectMethodEmailSource;
 use App\Tests\Unit\UnitTestCase;
 use stdClass;
 

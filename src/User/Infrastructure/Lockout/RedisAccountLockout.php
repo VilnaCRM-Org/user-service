@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Lockout;
 
-use App\User\Application\Lockout\AccountLockoutServiceInterface;
+use App\User\Application\Processor\Lockout\AccountLockoutServiceInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
 final readonly class RedisAccountLockout implements
@@ -52,6 +52,18 @@ final readonly class RedisAccountLockout implements
             $this->attemptsKey($email),
             $this->lockKey($email),
         ]);
+    }
+
+    #[\Override]
+    public function maxAttempts(): int
+    {
+        return self::MAX_ATTEMPTS;
+    }
+
+    #[\Override]
+    public function lockoutSeconds(): int
+    {
+        return self::LOCKOUT_SECONDS;
     }
 
     private function attemptsKey(string $email): string

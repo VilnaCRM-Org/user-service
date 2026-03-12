@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Infrastructure\Bus;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
+use App\Shared\Infrastructure\Bus\Extractor\CallableFirstParameterExtractor;
 use App\Shared\Infrastructure\Bus\InvokeParameterExtractor;
 use App\Shared\Infrastructure\Bus\MessageBusFactory;
-use App\Shared\Infrastructure\Extractor\CallableFirstParameterExtractor;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\FirstTestEventSubscriber;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\MultiEventTestSubscriber;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\SecondTestEventSubscriber;

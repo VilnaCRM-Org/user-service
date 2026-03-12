@@ -9,7 +9,7 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\CommandHandler\RegenerateRecoveryCodesCommandHandler;
-use App\User\Application\Generator\RecoveryCodeGeneratorInterface;
+use App\User\Application\Factory\Generator\RecoveryCodeGeneratorInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
@@ -26,6 +26,8 @@ use Symfony\Component\Uid\Ulid;
 
 final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
 {
+    private const FIXED_BOUNDARY_TIMESTAMP = 1_700_000_000;
+
     private UserRepositoryInterface&MockObject $userRepository;
     private RecoveryCodeRepositoryInterface&MockObject $recoveryCodeRepository;
     private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
@@ -135,7 +137,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
     {
         ClockMock::register(RegenerateRecoveryCodesCommandHandler::class);
         ClockMock::register(self::class);
-        ClockMock::withClockMock(time());
+        ClockMock::withClockMock(self::FIXED_BOUNDARY_TIMESTAMP);
         try {
             $this->assertBoundarySudoSessionAllowsRegeneration();
         } finally {
@@ -208,10 +210,11 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
 
     private function createBoundarySudoSession(
         string $userId,
-        string $sessionId
+        string $sessionId,
+        int $currentTimestamp
     ): AuthSession {
         $createdAt = new DateTimeImmutable(
-            sprintf('@%d', time() - 300)
+            sprintf('@%d', $currentTimestamp - 300)
         );
 
         return new AuthSession(
@@ -229,7 +232,11 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createTwoFactorEnabledUser();
         $sessionId = (string) new Ulid();
-        $session = $this->createBoundarySudoSession($user->getId(), $sessionId);
+        $session = $this->createBoundarySudoSession(
+            $user->getId(),
+            $sessionId,
+            self::FIXED_BOUNDARY_TIMESTAMP
+        );
 
         $this->userRepository->expects($this->once())->method('findByEmail')
             ->with($user->getEmail())->willReturn($user);

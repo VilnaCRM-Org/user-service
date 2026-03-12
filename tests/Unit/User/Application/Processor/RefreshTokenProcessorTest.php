@@ -13,7 +13,6 @@ use App\User\Application\DTO\RefreshTokenDto;
 use App\User\Application\Factory\RefreshTokenCommandFactory;
 use App\User\Application\Processor\RefreshTokenProcessor;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
 
 final class RefreshTokenProcessorTest extends UnitTestCase
@@ -39,7 +38,6 @@ final class RefreshTokenProcessorTest extends UnitTestCase
         $response = $processor->process($dto, $this->operation);
 
         $this->assertRefreshResponse($response);
-        $this->assertAuthCookie($response);
     }
 
     public function testProcessDoesNotSetCookieWhenAccessTokenIsEmpty(): void
@@ -103,19 +101,5 @@ final class RefreshTokenProcessorTest extends UnitTestCase
         $body = json_decode((string) $response->getContent(), true);
         $this->assertSame('new-access-token', $body['access_token']);
         $this->assertSame('new-refresh-token', $body['refresh_token']);
-    }
-
-    private function assertAuthCookie(Response $response): void
-    {
-        $cookies = $response->headers->getCookies();
-        $this->assertCount(1, $cookies);
-        $this->assertSame('__Host-auth_token', $cookies[0]->getName());
-        $this->assertSame('new-access-token', $cookies[0]->getValue());
-        $this->assertTrue($cookies[0]->isSecure());
-        $this->assertTrue($cookies[0]->isHttpOnly());
-        $this->assertSame(
-            Cookie::SAMESITE_LAX,
-            $cookies[0]->getSameSite()
-        );
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Integration\User\Infrastructure\Repository;
+namespace App\Tests\Integration\User\Infrastructure\Repository;
 
 use App\Shared\Domain\ValueObject\Uuid;
 use App\Tests\Integration\User\UserIntegrationTestCase;

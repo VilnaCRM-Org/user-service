@@ -13,11 +13,11 @@ use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SendConfirmationEmailCommand;
-use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\DTO\RetryDto;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
 use App\User\Application\Processor\ResendEmailProcessor;
 use App\User\Application\Query\GetUserQueryHandlerInterface;
+use App\User\Application\Validator\Guard\OwnershipGuardInterface;
 use App\User\Domain\Aggregate\ConfirmationEmailInterface;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
@@ -32,8 +32,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 final class ResendEmailProcessorTest extends UnitTestCase
@@ -42,14 +40,13 @@ final class ResendEmailProcessorTest extends UnitTestCase
     private UuidTransformer $uuidTransformer;
     private GetUserQueryHandlerInterface&MockObject $getUserQueryHandler;
     private JsonRequestValidator $jsonRequestValidator;
-    private TokenStorageInterface&MockObject $tokenStorage;
     private CommandBusInterface&MockObject $commandBus;
     private TokenRepositoryInterface&MockObject $tokenRepository;
     private ConfirmationTokenFactoryInterface&MockObject $tokenFactory;
     private ConfirmationEmailFactoryInterface&MockObject $confirmationEmailFactory;
     private SendConfirmationEmailCommandFactoryInterface&MockObject $emailCmdFactory;
+    private OwnershipGuardInterface&MockObject $ownershipGuard;
     private RequestStack $requestStack;
-    private ?string $authenticatedUserId = null;
 
     #[\Override]
     protected function setUp(): void
@@ -68,7 +65,6 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $this->expectUserLookup($userId, $user);
         $this->configureEmailSending($user);
         $this->commandBus->expects($this->once())->method('dispatch');
-        $this->authenticatedUserId = $userId;
 
         $response = $this->processWithRequest($userId, '{}');
 
@@ -94,7 +90,6 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $this->expectUserLookup($userId, $user);
         $this->configureEmailSending($user);
         $this->commandBus->expects($this->once())->method('dispatch');
-        $this->authenticatedUserId = $userId;
 
         $this->processWithRequest($userId, '{}');
     }
@@ -106,7 +101,6 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $this->expectUserLookup($userId, $user);
         $this->configureEmailSending($user);
         $this->commandBus->expects($this->once())->method('dispatch');
-        $this->authenticatedUserId = $userId;
 
         $this->processWithRequest($userId, '');
     }
@@ -169,7 +163,6 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $this->expectUserLookup($userId, $user);
         $this->configureEmailSending($user);
         $this->commandBus->expects($this->once())->method('dispatch');
-        $this->authenticatedUserId = $userId;
 
         $this->getProcessor()->process(
             new RetryDto(),
@@ -182,7 +175,9 @@ final class ResendEmailProcessorTest extends UnitTestCase
     {
         $userId = $this->faker->uuid();
         $this->expectUserLookup($userId, $this->createUser($userId));
-        $this->authenticatedUserId = null;
+        $this->ownershipGuard->expects($this->once())
+            ->method('assertOwnership')
+            ->willThrowException(new AccessDeniedException());
         $this->expectException(AccessDeniedException::class);
 
         $this->processWithRequest($userId, '{}');
@@ -192,7 +187,9 @@ final class ResendEmailProcessorTest extends UnitTestCase
     {
         $userId = $this->faker->uuid();
         $this->expectUserLookup($userId, $this->createUser($userId));
-        $this->overrideTokenWithNonAuthorizationUser();
+        $this->ownershipGuard->expects($this->once())
+            ->method('assertOwnership')
+            ->willThrowException(new AccessDeniedException());
         $this->expectException(AccessDeniedException::class);
 
         $this->processWithRequest($userId, '{}');
@@ -202,7 +199,9 @@ final class ResendEmailProcessorTest extends UnitTestCase
     {
         $resourceUserId = $this->faker->uuid();
         $this->expectUserLookup($resourceUserId, $this->createUser($resourceUserId));
-        $this->authenticatedUserId = $this->faker->uuid();
+        $this->ownershipGuard->expects($this->once())
+            ->method('assertOwnership')
+            ->willThrowException(new AccessDeniedException());
         $this->expectException(AccessDeniedException::class);
 
         $this->processWithRequest($resourceUserId, '{}');
@@ -213,12 +212,12 @@ final class ResendEmailProcessorTest extends UnitTestCase
         return new ResendEmailProcessor(
             $this->getUserQueryHandler,
             $this->jsonRequestValidator,
-            $this->tokenStorage,
             $this->commandBus,
             $this->tokenRepository,
             $this->tokenFactory,
             $this->confirmationEmailFactory,
             $this->emailCmdFactory,
+            $this->ownershipGuard,
         );
     }
 
@@ -261,39 +260,19 @@ final class ResendEmailProcessorTest extends UnitTestCase
         );
     }
 
-    private function createAuthenticatedToken(): (MockObject&TokenInterface)|null
-    {
-        if ($this->authenticatedUserId === null) {
-            return null;
-        }
-
-        $authorizationUser = new AuthorizationUserDto(
-            $this->faker->email(),
-            $this->faker->name(),
-            $this->faker->password(),
-            $this->uuidTransformer->transformFromString($this->authenticatedUserId),
-            true
-        );
-
-        $token = $this->createMock(TokenInterface::class);
-        $token->method('getUser')->willReturn($authorizationUser);
-
-        return $token;
-    }
-
     private function initMocks(): void
     {
         $this->getUserQueryHandler = $this->createMock(GetUserQueryHandlerInterface::class);
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->tokenRepository = $this->createMock(TokenRepositoryInterface::class);
         $this->tokenFactory = $this->createMock(ConfirmationTokenFactoryInterface::class);
-        $this->confirmationEmailFactory = $this->createMock(ConfirmationEmailFactoryInterface::class);
-        $this->emailCmdFactory = $this->createMock(SendConfirmationEmailCommandFactoryInterface::class);
-        $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
-        $this->tokenStorage->method('getToken')
-            ->willReturnCallback(
-                fn (): (TokenInterface&MockObject)|null => $this->createAuthenticatedToken()
-            );
+        $this->confirmationEmailFactory = $this->createMock(
+            ConfirmationEmailFactoryInterface::class
+        );
+        $this->emailCmdFactory = $this->createMock(
+            SendConfirmationEmailCommandFactoryInterface::class
+        );
+        $this->ownershipGuard = $this->createMock(OwnershipGuardInterface::class);
     }
 
     private function initJsonValidator(): void
@@ -315,15 +294,5 @@ final class ResendEmailProcessorTest extends UnitTestCase
             ->method('handle')
             ->with($userId)
             ->willReturn($user);
-    }
-
-    private function overrideTokenWithNonAuthorizationUser(): void
-    {
-        $nonAuthorizationUser = $this->createMock(
-            \Symfony\Component\Security\Core\User\UserInterface::class
-        );
-        $token = $this->createMock(TokenInterface::class);
-        $token->method('getUser')->willReturn($nonAuthorizationUser);
-        $this->tokenStorage->method('getToken')->willReturn($token);
     }
 }

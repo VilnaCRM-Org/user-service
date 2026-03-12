@@ -10,7 +10,7 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
 use App\User\Application\Factory\CompleteTwoFactorCommandFactoryInterface;
-use App\User\Application\Provider\AuthCookieProviderInterface;
+use App\User\Application\Processor\Provider\AuthCookieProviderInterface;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,8 +45,8 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
         $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
 
         $command = $this->completeTwoFactorCommandFactory->create(
-            $data->pendingSessionId,
-            $data->twoFactorCode,
+            $data->pendingSessionIdValue(),
+            $data->twoFactorCodeValue(),
             $this->httpRequestContextResolver->resolveIpAddress($request),
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );

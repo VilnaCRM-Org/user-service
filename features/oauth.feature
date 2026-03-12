@@ -42,13 +42,13 @@ Feature: OAuth authorization
     When I request the authorization endpoint
     Then unauthorized error should be returned
 
-  Scenario: Obtaining access token with implicit grant
+  Scenario: Implicit grant is disabled
     Given client with id "ImplicitId", secret "ImplicitSecret" and redirect uri "https://example.com" exists
     And passing client id "ImplicitId" and redirect_uri "https://example.com"
     And using response type "token"
     And authenticating user with email "implicituser@example.com" and password "password"
     When I request the authorization endpoint
-    Then implicit access token should be provided
+    Then unsupported response type error should be returned
 
   Scenario: Failing to obtain authorization code with invalid client
     And passing client id "InvalidClientId" and redirect_uri "https://example.com"
@@ -177,13 +177,13 @@ Feature: OAuth authorization
     When obtaining access token with "authorization_code" grant-type
     Then invalid grant error should be returned
 
-  Scenario: Obtaining access token with implicit grant
+  Scenario: Implicit grant is disabled
     Given client with id "ImplicitId", secret "ImplicitSecret" and redirect uri "https://example.com" exists
     And passing client id "ImplicitId" and redirect_uri "https://example.com"
     And using response type "token"
     And authenticating user with email "implicituser@example.com" and password "password"
     When I request the authorization endpoint
-    Then implicit access token should be provided
+    Then unsupported response type error should be returned
 
   Scenario: Failing to obtain authorization code with invalid client
     And passing client id "InvalidClientId" and redirect_uri "https://example.com"

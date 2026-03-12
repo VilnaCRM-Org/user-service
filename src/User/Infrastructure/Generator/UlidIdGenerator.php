@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Generator;
 
-use App\User\Application\Generator\IdGeneratorInterface;
+use App\User\Application\Factory\Generator\IdGeneratorInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
 
 /**

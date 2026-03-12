@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Application\CommandHandler;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SignOutCommand;
 use App\User\Application\CommandHandler\SignOutCommandHandler;
-use App\User\Application\EventPublisher\SessionEventsInterface;
+use App\User\Application\Processor\EventPublisher\SessionEventsInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;

@@ -6,7 +6,7 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\SignOutCommand;
-use App\User\Application\EventPublisher\SessionEventsInterface;
+use App\User\Application\Processor\EventPublisher\SessionEventsInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 

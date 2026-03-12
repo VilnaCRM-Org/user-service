@@ -64,6 +64,7 @@ final class RecoveryCode
         return hash_equals($this->codeHash, $this->legacyHash($normalizedCode));
     }
 
+    /** @psalm-suppress PossiblyUnusedMethod */
     public static function isValidFormat(string $code): bool
     {
         $segment = '[A-Za-z0-9]{' . self::SEGMENT_LENGTH . '}';

@@ -9,18 +9,14 @@ use App\Tests\Behat\UserContext\Input\ConfirmUserInput;
 use App\Tests\Behat\UserContext\Input\CreateUserBatchInput;
 use App\Tests\Behat\UserContext\Input\CreateUserInput;
 use App\Tests\Behat\UserContext\Input\EmptyInput;
-use App\Tests\Behat\UserContext\Input\SignInInput;
-use App\Tests\Behat\UserContext\Input\TwoFactorCodeInput;
 use App\Tests\Behat\UserContext\Input\UpdateUserInput;
 use Behat\Behat\Context\Context;
 use OTPHP\TOTP;
-use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- */
 final class UserRequestContext implements Context
 {
     private UrlResolver $urlResolver;
@@ -53,6 +49,22 @@ final class UserRequestContext implements Context
     }
 
     /**
+     * @Given updating user with email :email, initials :initials, oldPassword :oldPassword
+     */
+    public function updatingUserWithoutNewPassword(
+        string $email,
+        string $initials,
+        string $oldPassword
+    ): void {
+        $this->state->requestBody = new UpdateUserInput(
+            $email,
+            $initials,
+            $oldPassword,
+            ''
+        );
+    }
+
+    /**
      * @Given updating user with oldPassword :oldPassword
      */
     public function updatingUserWithNoOptionalFields(string $oldPassword): void
@@ -73,57 +85,11 @@ final class UserRequestContext implements Context
         string $initials,
         string $password
     ): void {
-        $this->state->requestBody = new CreateUserInput($email, $initials, $password);
-    }
-
-    /**
-     * @Given signing in with email :email and password :password
-     */
-    public function signingInWithEmailAndPassword(
-        string $email,
-        string $password
-    ): void {
-        $this->state->requestBody = new SignInInput($email, $password);
-    }
-
-    /**
-     * @Given signing in with email :email, password :password and remember me
-     */
-    public function signingInWithEmailAndPasswordAndRememberMe(
-        string $email,
-        string $password
-    ): void {
-        $this->state->requestBody = SignInInput::withRememberMe($email, $password);
-    }
-
-    /**
-     * @Given user :email has signed in and received tokens
-     */
-    public function userHasSignedInAndReceivedTokens(string $email): void
-    {
-        $this->state->requestBody = new SignInInput($email, 'passWORD1');
-        $this->requestSendTo('POST', '/api/signin');
-
-        $content = $this->state->response?->getContent();
-        Assert::assertIsString($content);
-        Assert::assertNotSame('', $content);
-
-        $responseData = json_decode($content, true);
-        Assert::assertIsArray($responseData);
-
-        $refreshToken = $responseData['refresh_token'] ?? null;
-        $accessToken = $responseData['access_token'] ?? null;
-
-        Assert::assertIsString($refreshToken);
-        Assert::assertNotSame('', $refreshToken);
-        Assert::assertIsString($accessToken);
-        Assert::assertNotSame('', $accessToken);
-
-        $this->state->accessToken = $accessToken;
-        $this->state->refreshToken = $refreshToken;
-        $this->state->originalRefreshToken = $refreshToken;
-        $this->state->storedAccessTokens = ['default' => $accessToken];
-        $this->state->storedRefreshTokens = ['default' => $refreshToken];
+        $this->state->requestBody = new CreateUserInput(
+            $email,
+            $initials,
+            $password
+        );
     }
 
     /**
@@ -134,18 +100,25 @@ final class UserRequestContext implements Context
         string $pendingSessionId,
         string $code
     ): void {
-        $this->state->requestBody = new CompleteTwoFactorInput($pendingSessionId, $code);
+        $this->state->requestBody = new CompleteTwoFactorInput(
+            $pendingSessionId,
+            $code
+        );
     }
 
     /**
      * @Given completing 2FA with stored pending session and code :code
+     * @Given completing 2FA with the stored pending_session_id and code :code
      */
     public function completingTwoFactorWithStoredPendingSessionAndCode(
         string $code
     ): void {
         $pendingSessionId = $this->resolveStoredPendingSessionId();
 
-        $this->state->requestBody = new CompleteTwoFactorInput($pendingSessionId, $code);
+        $this->state->requestBody = new CompleteTwoFactorInput(
+            $pendingSessionId,
+            $code
+        );
     }
 
     /**
@@ -157,23 +130,45 @@ final class UserRequestContext implements Context
         $pendingSessionId = $this->resolveStoredPendingSessionId();
         $code = $this->generateTotpCode($secret);
 
-        $this->state->requestBody = new CompleteTwoFactorInput($pendingSessionId, $code);
+        $this->state->requestBody = new CompleteTwoFactorInput(
+            $pendingSessionId,
+            $code
+        );
     }
 
     /**
-     * @Given confirming 2FA with code :code
+     * @Given completing 2FA with stored pending_session_id :key and a valid TOTP code
      */
-    public function confirmingTwoFactorWithCode(string $code): void
-    {
-        $this->state->requestBody = new TwoFactorCodeInput($code);
+    public function completingTwoFactorWithStoredPendingSessionIdAndValidTotpCode(
+        string $key
+    ): void {
+        $this->state->requestBody = new CompleteTwoFactorInput(
+            $this->resolveStoredPendingSessionIdByKey($key),
+            $this->generateTotpCode('JBSWY3DPEHPK3PXP')
+        );
     }
 
     /**
-     * @Given disabling 2FA with code :code
+     * @Given I have completed 2FA setup
      */
-    public function disablingTwoFactorWithCode(string $code): void
+    public function iHaveCompletedTwoFactorSetup(): void
     {
-        $this->state->requestBody = new TwoFactorCodeInput($code);
+        $this->requestSendTo('POST', '/api/2fa/setup');
+        $response = $this->state->response;
+        if ($response === null || $response->getStatusCode() !== Response::HTTP_OK) {
+            throw new \RuntimeException(sprintf(
+                '2FA setup failed with status %s.',
+                (string) ($response?->getStatusCode() ?? 'no response')
+            ));
+        }
+
+        $responseData = json_decode((string) $response->getContent(), true);
+        $secret = is_array($responseData) ? ($responseData['secret'] ?? '') : '';
+        if (!is_string($secret) || $secret === '') {
+            throw new \RuntimeException('2FA setup response did not include a secret.');
+        }
+
+        $this->state->twoFactorSecret = $secret;
     }
 
     /**
@@ -231,23 +226,23 @@ final class UserRequestContext implements Context
      */
     public function requestSendTo(string $method, string $path): void
     {
-        $this->urlResolver->setCurrentUserEmail(
-            $this->state->currentUserEmail
-        );
+        $this->urlResolver->setCurrentUserEmail($this->state->currentUserEmail);
         $processedPath = $this->urlResolver->resolve($path);
         $headers = $this->buildRequestHeaders($method);
         $requestBody = $this->bodySerializer->serialize($this->state->requestBody, $method);
         $startedAt = microtime(true);
 
-        $this->state->response = $this->kernel->handle(Request::create(
-            $processedPath,
-            $method,
-            [],
-            [],
-            [],
-            $headers,
-            $requestBody
-        ));
+        $this->state->response = $this->kernel->handle(
+            Request::create(
+                $processedPath,
+                $method,
+                [],
+                [],
+                [],
+                $headers,
+                $requestBody
+            )
+        );
         $this->state->lastResponseTimeMs = (microtime(true) - $startedAt) * 1000;
     }
 
@@ -260,12 +255,17 @@ final class UserRequestContext implements Context
         $currentUserEmail = $this->state->currentUserEmail;
 
         if (!is_string($currentUserEmail) || $currentUserEmail === '') {
-            throw new \RuntimeException('Current user is not set for this scenario.');
+            throw new \RuntimeException(
+                'Current user is not set for this scenario.'
+            );
         }
 
         $this->requestSendTo(
             'GET',
-            sprintf('/api/users/%s', UserContext::getUserIdByEmail($currentUserEmail))
+            sprintf(
+                '/api/users/%s',
+                UserContext::getUserIdByEmail($currentUserEmail)
+            )
         );
     }
 
@@ -294,12 +294,27 @@ final class UserRequestContext implements Context
 
     private function getContentTypeForMethod(string $method): string
     {
-        return $method === 'PATCH' ? 'application/merge-patch+json' : 'application/json';
+        $requestBody = $this->state->requestBody;
+        if (
+            $requestBody instanceof
+            \App\Tests\Behat\UserContext\Input\RawBodyInput
+            && is_string($requestBody->getContentType())
+            && $requestBody->getContentType() !== ''
+        ) {
+            return $requestBody->getContentType();
+        }
+
+        return $method === 'PATCH'
+            ? 'application/merge-patch+json'
+            : 'application/json';
     }
 
     private function resolveStoredPendingSessionId(): string
     {
-        if (is_string($this->state->pendingSessionId) && $this->state->pendingSessionId !== '') {
+        if (
+            is_string($this->state->pendingSessionId)
+            && $this->state->pendingSessionId !== ''
+        ) {
             return $this->state->pendingSessionId;
         }
 
@@ -309,6 +324,24 @@ final class UserRequestContext implements Context
         $this->state->pendingSessionId = $pendingSessionId;
 
         return $pendingSessionId;
+    }
+
+    private function resolveStoredPendingSessionIdByKey(string $key): string
+    {
+        $pendingSessionId = $this->state->{$key};
+        if (
+            is_string($pendingSessionId)
+            && $pendingSessionId !== ''
+        ) {
+            return $pendingSessionId;
+        }
+
+        throw new \RuntimeException(
+            sprintf(
+                'Stored pending_session_id "%s" is missing.',
+                $key
+            )
+        );
     }
 
     /**
@@ -325,7 +358,9 @@ final class UserRequestContext implements Context
 
         $responseData = json_decode($responseContent, true);
         if (!is_array($responseData)) {
-            throw new \RuntimeException('pending_session_id is missing in the latest response.');
+            throw new \RuntimeException(
+                'pending_session_id is missing in the latest response.'
+            );
         }
 
         return $responseData;
@@ -338,7 +373,9 @@ final class UserRequestContext implements Context
     {
         $pendingSessionId = $responseData['pending_session_id'] ?? '';
         if (!is_string($pendingSessionId) || $pendingSessionId === '') {
-            throw new \RuntimeException('pending_session_id is missing in the latest response.');
+            throw new \RuntimeException(
+                'pending_session_id is missing in the latest response.'
+            );
         }
 
         return $pendingSessionId;
@@ -351,7 +388,10 @@ final class UserRequestContext implements Context
     {
         $accessToken = $this->state->accessToken;
         if (is_string($accessToken) && $accessToken !== '') {
-            $headers['HTTP_AUTHORIZATION'] = sprintf('Bearer %s', $accessToken);
+            $headers['HTTP_AUTHORIZATION'] = sprintf(
+                'Bearer %s',
+                $accessToken
+            );
         }
     }
 
@@ -362,11 +402,14 @@ final class UserRequestContext implements Context
     {
         $authCookieToken = $this->state->authCookieToken;
         if (
-            $this->state->useAuthCookie === true &&
-            is_string($authCookieToken) &&
-            $authCookieToken !== ''
+            $this->state->useAuthCookie === true
+            && is_string($authCookieToken)
+            && $authCookieToken !== ''
         ) {
-            $headers['HTTP_COOKIE'] = sprintf('__Host-auth_token=%s', $authCookieToken);
+            $headers['HTTP_COOKIE'] = sprintf(
+                '__Host-auth_token=%s',
+                $authCookieToken
+            );
         }
     }
 
@@ -379,6 +422,15 @@ final class UserRequestContext implements Context
         if (is_string($originHeader) && $originHeader !== '') {
             $headers['HTTP_ORIGIN'] = $originHeader;
             $this->state->originHeader = '';
+        }
+
+        $clientIpAddress = $this->state->clientIpAddress
+            ?? $this->state->expectedIpAddress;
+        if (
+            is_string($clientIpAddress)
+            && $clientIpAddress !== ''
+        ) {
+            $headers['REMOTE_ADDR'] = $clientIpAddress;
         }
     }
 

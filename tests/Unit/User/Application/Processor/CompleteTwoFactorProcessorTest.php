@@ -12,7 +12,7 @@ use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
 use App\User\Application\Factory\CompleteTwoFactorCommandFactory;
 use App\User\Application\Processor\CompleteTwoFactorProcessor;
-use App\User\Application\Provider\AuthCookieProviderInterface;
+use App\User\Application\Processor\Provider\AuthCookieProviderInterface;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Request;

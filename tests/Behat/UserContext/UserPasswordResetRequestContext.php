@@ -6,12 +6,15 @@ namespace App\Tests\Behat\UserContext;
 
 use App\Tests\Behat\UserContext\Input\ConfirmPasswordResetInput;
 use App\Tests\Behat\UserContext\Input\RequestPasswordResetInput;
+use App\User\Domain\Entity\User;
 use Behat\Behat\Context\Context;
 
 final class UserPasswordResetRequestContext implements Context
 {
-    public function __construct(private UserOperationsState $state)
-    {
+    public function __construct(
+        private UserOperationsState $state,
+        private readonly UserContextUserManagementServices $userManagement,
+    ) {
     }
 
     /**
@@ -29,9 +32,19 @@ final class UserPasswordResetRequestContext implements Context
     public function confirmingPasswordResetWithValidTokenAndPassword(
         string $password
     ): void {
-        $token = UserContext::getLastPasswordResetToken();
-        $this->state->currentUserEmail = UserContext::getCurrentTokenUserEmail();
-        $this->state->requestBody = new ConfirmPasswordResetInput($token, $password);
+        $this->state->requestBody = new ConfirmPasswordResetInput(
+            $this->resolveLatestPasswordResetToken(),
+            $password
+        );
+    }
+
+    /**
+     * @Given I confirm the password reset with the received token and new password :password
+     */
+    public function iConfirmThePasswordResetWithTheReceivedTokenAndNewPassword(
+        string $password
+    ): void {
+        $this->confirmingPasswordResetWithValidTokenAndPassword($password);
     }
 
     /**
@@ -44,5 +57,86 @@ final class UserPasswordResetRequestContext implements Context
     ): void {
         $this->state->currentUserEmail = '';
         $this->state->requestBody = new ConfirmPasswordResetInput($token, $password);
+    }
+
+    /**
+     * @Given I store the reset token
+     */
+    public function iStoreTheResetToken(): void
+    {
+        $this->state->storedResetToken =
+            $this->resolveLatestPasswordResetToken();
+    }
+
+    /**
+     * @Given I confirm the password reset with the stored token and new password :password
+     */
+    public function iConfirmThePasswordResetWithTheStoredTokenAndNewPassword(
+        string $password
+    ): void {
+        $token = $this->state->storedResetToken;
+        if (!is_string($token) || $token === '') {
+            throw new \RuntimeException(
+                'Stored password reset token is missing.'
+            );
+        }
+
+        $this->state->requestBody = new ConfirmPasswordResetInput(
+            $token,
+            $password
+        );
+    }
+
+    private function resolveLatestPasswordResetToken(): string
+    {
+        $email = $this->requireCurrentUserEmail();
+        $user = $this->requireUserByEmail($email);
+        $token = $this->resolvePasswordResetTokenRepository()->findByUserID($user->getId());
+        if ($token === null) {
+            throw new \RuntimeException(
+                sprintf(
+                    'Password reset token for %s was not found.',
+                    $email
+                )
+            );
+        }
+
+        return $token->getTokenValue();
+    }
+
+    private function requireCurrentUserEmail(): string
+    {
+        $email = $this->state->currentUserEmail;
+        if (is_string($email) && $email !== '') {
+            return $email;
+        }
+
+        throw new \RuntimeException(
+            'Current user email is missing for password reset flow.'
+        );
+    }
+
+    private function requireUserByEmail(string $email): User
+    {
+        $user = $this->userManagement->userRepository->findByEmail($email);
+        if ($user instanceof User) {
+            return $user;
+        }
+
+        throw new \RuntimeException(
+            sprintf('User with email %s not found.', $email)
+        );
+    }
+
+    private function resolvePasswordResetTokenRepository(): object
+    {
+        $repository = $this->userManagement->passwordResetTokenRepository;
+        if (method_exists($repository, 'findByUserID')) {
+            return $repository;
+        }
+
+        throw new \RuntimeException(
+            'Password reset token repository does not expose findByUserID().'
+        );
     }
 }

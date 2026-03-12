@@ -6,6 +6,7 @@ namespace App\Tests\Unit\User\Application\DTO;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\SignInDto;
+use LogicException;
 
 final class SignInDtoTest extends UnitTestCase
 {
@@ -38,5 +39,44 @@ final class SignInDtoTest extends UnitTestCase
         $this->assertSame('', $dto->email);
         $this->assertSame('', $dto->password);
         $this->assertFalse($dto->isRememberMe());
+    }
+
+    public function testEmailValueReturnsString(): void
+    {
+        $email = $this->faker->safeEmail();
+        $dto = new SignInDto($email, $this->faker->password());
+
+        $this->assertSame($email, $dto->emailValue());
+    }
+
+    public function testEmailValueThrowsForNonStringPayload(): void
+    {
+        $dto = new SignInDto(
+            $this->faker->numberBetween(100000, 999999),
+            $this->faker->password()
+        );
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Expected "email" to be a string after request validation.');
+
+        $dto->emailValue();
+    }
+
+    public function testPasswordValueReturnsString(): void
+    {
+        $password = $this->faker->password();
+        $dto = new SignInDto($this->faker->safeEmail(), $password);
+
+        $this->assertSame($password, $dto->passwordValue());
+    }
+
+    public function testPasswordValueThrowsForNonStringPayload(): void
+    {
+        $dto = new SignInDto($this->faker->safeEmail(), $this->faker->numberBetween(100000, 999999));
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Expected "password" to be a string after request validation.');
+
+        $dto->passwordValue();
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Generator;
 
-use App\User\Application\Generator\TOTPSecretGeneratorInterface;
+use App\User\Application\Factory\Generator\TOTPSecretGeneratorInterface;
 use App\User\Infrastructure\TwoFactor\TOTPCreatorInterface;
 
 /**

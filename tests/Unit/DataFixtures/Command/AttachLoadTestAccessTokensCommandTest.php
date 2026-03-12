@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\DataFixtures\Command;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Generator\AccessTokenGeneratorInterface;
+use App\User\Application\Factory\Generator\AccessTokenGeneratorInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Factory\AuthSessionFactory;
 use App\User\Infrastructure\Fixture\Command\AttachLoadTestAccessTokensCommand;

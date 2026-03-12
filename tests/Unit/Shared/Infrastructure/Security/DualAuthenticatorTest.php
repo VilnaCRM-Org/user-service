@@ -84,14 +84,14 @@ final class DualAuthenticatorTest extends DualAuthenticatorTestCase
             $tokenValue,
             $this->clientCredentialsPayload($subject)
         );
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($subject)
+        $this->authSessionRepository->expects($this->once())
+            ->method('findById')
+            ->with('')
             ->willReturn(null);
+        $this->userRepository->expects($this->never())->method('findByEmail');
         $this->userRepository->expects($this->never())->method('findById');
-        $this->authSessionRepository->expects($this->never())->method('findById');
         $this->expectException(CustomUserMessageAuthenticationException::class);
-        $this->expectExceptionMessage('Authentication required.');
+        $this->expectExceptionMessage('Invalid access token claims.');
 
         $this->createAuthenticator()->authenticate(
             $this->createBearerRequest($tokenValue)

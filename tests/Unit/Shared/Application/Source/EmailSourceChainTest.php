@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Source;
 
-use App\Shared\Application\Source\BatchEmailSource;
-use App\Shared\Application\Source\ChainEmailSource;
-use App\Shared\Application\Source\NullEmailSource;
+use App\Shared\Application\Resolver\Source\BatchEmailSource;
+use App\Shared\Application\Resolver\Source\ChainEmailSource;
+use App\Shared\Application\Resolver\Source\NullEmailSource;
 use App\Tests\Unit\UnitTestCase;
 
 final class EmailSourceChainTest extends UnitTestCase

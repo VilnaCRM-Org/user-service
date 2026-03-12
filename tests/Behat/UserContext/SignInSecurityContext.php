@@ -4,19 +4,27 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserContext;
 
+use App\Tests\Behat\UserContext\Input\TwoFactorCodeInput;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
+use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use Behat\Behat\Context\Context;
+use OTPHP\TOTP;
 use PHPUnit\Framework\Assert;
 use Psr\Cache\CacheItemPoolInterface;
 
 final class SignInSecurityContext implements Context
 {
+    private const DEFAULT_TOTP_SECRET = 'JBSWY3DPEHPK3PXP';
     private string $lastLockoutEmail = '';
 
     public function __construct(
+        private UserOperationsState $state,
         private CacheItemPoolInterface $cachePool,
         private readonly UserContextUserManagementServices $userManagement,
         private readonly UserContextAuthServices $auth,
+        private readonly PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
+        private readonly RecoveryCodeRepositoryInterface $recoveryCodeRepository,
     ) {
     }
 
@@ -39,7 +47,7 @@ final class SignInSecurityContext implements Context
         $user->setTwoFactorEnabled(true);
         $user->setTwoFactorSecret(
             $this->auth->twoFactorSecretEncryptor
-                ->encrypt('JBSWY3DPEHPK3PXP')
+                ->encrypt(self::DEFAULT_TOTP_SECRET)
         );
 
         $this->userManagement->userRepository->save($user);
@@ -67,6 +75,25 @@ final class SignInSecurityContext implements Context
         );
 
         $this->userManagement->userRepository->save($user);
+    }
+
+    /**
+     * @Given user :email does not have 2FA enabled
+     */
+    public function userDoesNotHaveTwoFactorEnabled(string $email): void
+    {
+        $user = $this->requireUser($email);
+        $user->disableTwoFactor();
+        $this->userManagement->userRepository->save($user);
+        $this->recoveryCodeRepository->deleteByUserId($user->getId());
+    }
+
+    /**
+     * @Given user :email has not completed 2FA setup
+     */
+    public function userHasNotCompletedTwoFactorSetup(string $email): void
+    {
+        $this->userDoesNotHaveTwoFactorEnabled($email);
     }
 
     /**
@@ -154,6 +181,58 @@ final class SignInSecurityContext implements Context
     }
 
     /**
+     * @Given user :email has changed password to :password
+     */
+    public function userHasChangedPasswordTo(
+        string $email,
+        string $password
+    ): void {
+        $user = $this->userManagement
+            ->userRepository->findByEmail($email);
+        if ($user === null) {
+            throw new \RuntimeException(
+                "User with email {$email} not found"
+            );
+        }
+
+        $hasher = $this->userManagement->hasherFactory
+            ->getPasswordHasher($user::class);
+        $user->setPassword($hasher->hash($password, null));
+        $this->userManagement->userRepository->save($user);
+    }
+
+    /**
+     * @Given disabling 2FA with a valid TOTP code
+     */
+    public function disablingTwoFactorWithAValidTotpCode(): void
+    {
+        $this->state->requestBody = new TwoFactorCodeInput(
+            TOTP::create(self::DEFAULT_TOTP_SECRET)->now()
+        );
+    }
+
+    /**
+     * @Given :minutes minutes have passed
+     */
+    public function minutesHavePassed(int $minutes): void
+    {
+        $pendingId = $this->state->pendingSessionId;
+        if (
+            $minutes < 5
+            || !is_string($pendingId)
+            || $pendingId === ''
+        ) {
+            return;
+        }
+
+        $pending = $this->pendingTwoFactorRepository
+            ->findById($pendingId);
+        if ($pending !== null) {
+            $this->pendingTwoFactorRepository->delete($pending);
+        }
+    }
+
+    /**
      * @Given :minutes minutes have passed since the lockout
      */
     public function minutesHavePassedSinceTheLockout(
@@ -166,6 +245,17 @@ final class SignInSecurityContext implements Context
         $this->cachePool->deleteItem(
             $this->lockKey($this->requireLastLockoutEmail())
         );
+    }
+
+    /**
+     * @Given :attempts failed 2FA attempts have been recorded for email :email
+     */
+    public function failedTwoFactorAttemptsHaveBeenRecordedForEmail(
+        int $attempts,
+        string $email
+    ): void {
+        Assert::assertGreaterThanOrEqual(0, $attempts);
+        $this->state->lastFailedTwoFactorEmail = $email;
     }
 
     private function timeHasPassedSinceTheFirstFailedAttempt(
@@ -213,6 +303,19 @@ final class SignInSecurityContext implements Context
     private function normalizeEmail(string $email): string
     {
         return strtolower(trim($email));
+    }
+
+    private function requireUser(string $email): User
+    {
+        $user = $this->userManagement
+            ->userRepository->findByEmail($email);
+        if ($user === null) {
+            throw new \RuntimeException(
+                "User with email {$email} not found"
+            );
+        }
+
+        return $user;
     }
 
     private function ensureUserExists(string $email): void

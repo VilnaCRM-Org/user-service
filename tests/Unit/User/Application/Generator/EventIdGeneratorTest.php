@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Generator;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Generator\EventIdGenerator;
+use App\User\Application\Factory\Generator\EventIdGenerator;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 final class EventIdGeneratorTest extends UnitTestCase

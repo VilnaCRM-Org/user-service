@@ -6,7 +6,7 @@ namespace App\Tests\Unit\Shared\Auth\Factory;
 
 use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Generator\AccessTokenGeneratorInterface;
+use App\User\Application\Factory\Generator\AccessTokenGeneratorInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Uid\Factory\UlidFactory;

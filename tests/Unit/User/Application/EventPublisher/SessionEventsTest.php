@@ -6,8 +6,8 @@ namespace App\Tests\Unit\User\Application\EventPublisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\EventPublisher\SessionEvents;
-use App\User\Application\Generator\EventIdGeneratorInterface;
+use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
+use App\User\Application\Processor\EventPublisher\SessionEvents;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Event\SessionRevokedEvent;
 use PHPUnit\Framework\MockObject\MockObject;

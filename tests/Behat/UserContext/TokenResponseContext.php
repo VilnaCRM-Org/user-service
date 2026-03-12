@@ -127,6 +127,19 @@ final class TokenResponseContext implements Context
     }
 
     /**
+     * @Then the new refresh token should differ from the original
+     */
+    public function theNewRefreshTokenShouldDifferFromTheOriginal(): void
+    {
+        $newRefreshToken = $this->extractResponseStringField('refresh_token');
+        $originalRefreshToken = $this->state->originalRefreshToken;
+
+        Assert::assertIsString($originalRefreshToken);
+        Assert::assertNotSame('', $originalRefreshToken);
+        Assert::assertNotSame($originalRefreshToken, $newRefreshToken);
+    }
+
+    /**
      * @Then the Set-Cookie header should clear :cookieName with Max-Age=:maxAge
      */
     public function theSetCookieHeaderShouldClearWithMaxAge(
@@ -204,6 +217,22 @@ final class TokenResponseContext implements Context
     }
 
     /**
+     * @Then token B should be revoked
+     */
+    public function tokenBShouldBeRevoked(): void
+    {
+        $this->assertStoredRefreshTokenIsRevoked('tokenB');
+    }
+
+    /**
+     * @Then token C should be revoked
+     */
+    public function tokenCShouldBeRevoked(): void
+    {
+        $this->assertStoredRefreshTokenIsRevoked('tokenC');
+    }
+
+    /**
      * @param list<string> $candidateKeys
      */
     private function resolveScenarioToken(array $candidateKeys): string
@@ -229,6 +258,23 @@ final class TokenResponseContext implements Context
         Assert::assertNotSame('', $value);
 
         return $value;
+    }
+
+    private function assertStoredRefreshTokenIsRevoked(string $key): void
+    {
+        $storedTokens = $this->state->storedRefreshTokens;
+        Assert::assertIsArray($storedTokens);
+        Assert::assertArrayHasKey($key, $storedTokens);
+
+        $refreshToken = $storedTokens[$key];
+        Assert::assertIsString($refreshToken);
+        Assert::assertNotSame('', $refreshToken);
+
+        $token = $this->authRefreshTokenRepository->findByTokenHash(
+            hash('sha256', $refreshToken)
+        );
+        Assert::assertInstanceOf(AuthRefreshToken::class, $token);
+        Assert::assertTrue($token->isRevoked());
     }
 
     /**

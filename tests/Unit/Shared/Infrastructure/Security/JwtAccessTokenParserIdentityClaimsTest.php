@@ -84,17 +84,21 @@ final class JwtAccessTokenParserIdentityClaimsTest extends JwtAccessTokenParserT
         $this->parser->parse($token);
     }
 
-    public function testParseThrowsForMissingRoles(): void
+    public function testParseFallsBackToRoleUserWhenRolesAreMissing(): void
     {
         $token = $this->createValidToken();
-        $payload = $this->buildPayload($this->faker->email(), $this->faker->uuid(), ['ROLE_USER']);
+        $subject = $this->faker->email();
+        $sid = $this->faker->uuid();
+        $payload = $this->buildPayload($subject, $sid, ['ROLE_USER']);
         unset($payload['roles']);
 
         $this->jwtEncoder->method('decode')->willReturn($payload);
 
-        $this->expectInvalidClaimsException();
+        $result = $this->parser->parse($token);
 
-        $this->parser->parse($token);
+        $this->assertSame(['ROLE_USER'], $result['roles']);
+        $this->assertSame($subject, $result['subject']);
+        $this->assertSame($sid, $result['sid']);
     }
 
     public function testParseThrowsForEmptyRolesArray(): void

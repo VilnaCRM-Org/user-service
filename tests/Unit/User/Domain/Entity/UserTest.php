@@ -226,6 +226,44 @@ final class UserTest extends UnitTestCase
         $this->assertSame($secret, $this->user->getTwoFactorSecret());
     }
 
+    public function testEnableTwoFactor(): void
+    {
+        $this->assertFalse($this->user->isTwoFactorEnabled());
+
+        $this->user->enableTwoFactor();
+
+        $this->assertTrue($this->user->isTwoFactorEnabled());
+    }
+
+    public function testDisableTwoFactor(): void
+    {
+        $this->user->setTwoFactorEnabled(true);
+        $this->user->setTwoFactorSecret($this->faker->sha256());
+
+        $this->user->disableTwoFactor();
+
+        $this->assertFalse($this->user->isTwoFactorEnabled());
+        $this->assertNull($this->user->getTwoFactorSecret());
+    }
+
+    public function testUpgradePasswordHash(): void
+    {
+        $newHash = $this->faker->sha256();
+
+        $this->user->upgradePasswordHash($newHash);
+
+        $this->assertSame($newHash, $this->user->getPassword());
+    }
+
+    public function testSetPassword(): void
+    {
+        $newPassword = $this->faker->password();
+
+        $this->user->setPassword($newPassword);
+
+        $this->assertSame($newPassword, $this->user->getPassword());
+    }
+
     private function assertUserNotConfirmed(User $user): void
     {
         $this->assertFalse(

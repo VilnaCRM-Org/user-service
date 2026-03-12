@@ -6,6 +6,7 @@ namespace App\Tests\Unit\User\Application\DTO;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\DisableTwoFactorDto;
+use LogicException;
 
 final class DisableTwoFactorDtoTest extends UnitTestCase
 {
@@ -28,5 +29,23 @@ final class DisableTwoFactorDtoTest extends UnitTestCase
         $dto = new DisableTwoFactorDto('ABCD-1234');
 
         $this->assertSame('ABCD-1234', $dto->twoFactorCode);
+    }
+
+    public function testTwoFactorCodeValueReturnsString(): void
+    {
+        $code = strtoupper($this->faker->bothify('????-####'));
+        $dto = new DisableTwoFactorDto($code);
+
+        $this->assertSame($code, $dto->twoFactorCodeValue());
+    }
+
+    public function testTwoFactorCodeValueThrowsForNonStringPayload(): void
+    {
+        $dto = new DisableTwoFactorDto($this->faker->numberBetween(100000, 999999));
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Expected "twoFactorCode" to be a string after request validation.');
+
+        $dto->twoFactorCodeValue();
     }
 }

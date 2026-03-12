@@ -71,7 +71,10 @@ final class UserGraphQLResponseContext implements Context
         }
 
         Assert::assertArrayHasKey('data', $responseData);
-        Assert::assertArrayHasKey($this->state->getQueryName(), $responseData['data']);
+        Assert::assertArrayHasKey(
+            $this->state->getQueryName(),
+            $responseData['data']
+        );
 
         $mutationData = $responseData['data'][$this->state->getQueryName()];
         Assert::assertArrayHasKey('user', $mutationData);
@@ -174,6 +177,7 @@ final class UserGraphQLResponseContext implements Context
                 return true;
             }
         }
+
         return false;
     }
 
@@ -192,9 +196,7 @@ final class UserGraphQLResponseContext implements Context
                 $this->state->getQueryName()
             )
         );
-
-        $msg = 'Missing "user" in GraphQL data node.';
-        Assert::assertArrayHasKey('user', $mutationData, $msg);
+        Assert::assertArrayHasKey('user', $mutationData, 'Missing "user" in GraphQL data node.');
         $userData = $mutationData['user'];
         Assert::assertIsArray(
             $userData,
@@ -214,8 +216,10 @@ final class UserGraphQLResponseContext implements Context
      */
     private function parseAndValidateResponse(): array
     {
-        $msg = 'Response is null; did you call sendGraphQlRequest()?';
-        Assert::assertNotNull($this->state->getResponse(), $msg);
+        Assert::assertNotNull(
+            $this->state->getResponse(),
+            'Response is null; did you call sendGraphQlRequest()?'
+        );
         $data = json_decode(
             $this->state->getResponse()->getContent(),
             true,
@@ -223,7 +227,12 @@ final class UserGraphQLResponseContext implements Context
             JSON_THROW_ON_ERROR
         );
         Assert::assertIsArray($data, 'GraphQL response is not a JSON object.');
-        Assert::assertArrayHasKey('data', $data, 'Missing "data" in GraphQL response.');
+        Assert::assertArrayHasKey(
+            'data',
+            $data,
+            'Missing "data" in GraphQL response.'
+        );
+
         return $data;
     }
 
@@ -240,7 +249,10 @@ final class UserGraphQLResponseContext implements Context
         Assert::assertArrayHasKey(
             $this->state->getQueryName(),
             $data['data'],
-            sprintf('Missing "%s" in GraphQL data.', $this->state->getQueryName())
+            sprintf(
+                'Missing "%s" in GraphQL data.',
+                $this->state->getQueryName()
+            )
         );
     }
 
@@ -255,6 +267,7 @@ final class UserGraphQLResponseContext implements Context
         if ($queryData === null) {
             return null;
         }
+
         Assert::assertIsArray(
             $queryData,
             sprintf(
@@ -262,6 +275,7 @@ final class UserGraphQLResponseContext implements Context
                 $this->state->getQueryName()
             )
         );
+
         return $this->extractScalarFields($queryData);
     }
 
@@ -282,11 +296,15 @@ final class UserGraphQLResponseContext implements Context
 
             Assert::assertTrue(
                 $isScalarValue,
-                sprintf('Expected "%s" query field to be scalar or null.', $fieldName)
+                sprintf(
+                    'Expected "%s" query field to be scalar or null.',
+                    $fieldName
+                )
             );
 
             $scalarQueryData[$fieldName] = $fieldValue;
         }
+
         return $scalarQueryData;
     }
 
@@ -336,6 +354,7 @@ final class UserGraphQLResponseContext implements Context
         Assert::assertIsArray($decodedResponse);
         Assert::assertArrayHasKey('errors', $decodedResponse);
         Assert::assertIsArray($decodedResponse['errors']);
+
         return $this->collectMessages($decodedResponse['errors']);
     }
 
@@ -353,11 +372,13 @@ final class UserGraphQLResponseContext implements Context
             if (!is_array($error)) {
                 continue;
             }
+
             $message = $error['message'] ?? null;
             if (is_string($message) && $message !== '') {
                 $errorMessages[] = $message;
             }
         }
+
         return $errorMessages;
     }
 }
