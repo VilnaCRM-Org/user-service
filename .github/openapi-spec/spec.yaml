@@ -2311,11 +2311,23 @@ components:
       properties:
         pendingSessionId:
           minLength: 1
-          type: string
+          anyOf:
+            -
+              type: integer
+            -
+              type: string
+            -
+              type: 'null'
         twoFactorCode:
           minLength: 1
           pattern: '^(.*(^\d{6}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$).*)$'
-          type: string
+          anyOf:
+            -
+              type: integer
+            -
+              type: string
+            -
+              type: 'null'
     EmptyResponse.ConfirmPasswordResetDto:
       type: object
       required:
@@ -2337,7 +2349,13 @@ components:
       properties:
         twoFactorCode:
           pattern: '^(\d{6})$'
-          type: string
+          anyOf:
+            -
+              type: integer
+            -
+              type: string
+            -
+              type: 'null'
     EmptyResponse.DisableTwoFactorDto:
       type: object
       required:
@@ -2345,7 +2363,13 @@ components:
       properties:
         twoFactorCode:
           pattern: '^(.*(^\d{6}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$).*)$'
-          type: string
+          anyOf:
+            -
+              type: integer
+            -
+              type: string
+            -
+              type: 'null'
     EmptyResponse.RefreshTokenDto:
       type: object
       required:
@@ -2353,7 +2377,13 @@ components:
       properties:
         refreshToken:
           minLength: 1
-          type: string
+          anyOf:
+            -
+              type: integer
+            -
+              type: string
+            -
+              type: 'null'
     EmptyResponse.RegenerateRecoveryCodesDto:
       type: object
     EmptyResponse.RequestPasswordResetDto:
@@ -2371,23 +2401,36 @@ components:
       type: object
     EmptyResponse.SignInDto:
       type: object
-      required:
-        - email
-        - password
       properties:
+        rememberMe:
+          default: false
+          type: boolean
         email:
           format: email
           minLength: 1
           maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
-          type: string
+          anyOf:
+            -
+              type: integer
+            -
+              type: string
+            -
+              type: 'null'
         password:
           minLength: 1
           maxLength: 255
-          type: string
-        rememberMe:
-          type: boolean
+          anyOf:
+            -
+              type: integer
+            -
+              type: string
+            -
+              type: 'null'
+      required:
+        - email
+        - password
     EmptyResponse.SignOutAllDto:
       type: object
     EmptyResponse.SignOutDto:
