@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Behat\UserContext;
 
 use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
-use App\User\Application\Factory\Generator\AccessTokenGeneratorInterface;
 use App\User\Application\Transformer\TwoFactorSecretEncryptorInterface;
 use App\User\Application\Validator\AccountLockoutGuardInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
+use App\User\Application\Factory\AccessTokenFactoryInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
 
@@ -21,7 +21,7 @@ final class UserContextAuthServices
         public readonly AccountLockoutGuardInterface $accountLockoutGuard,
         public readonly TokenStorageInterface $tokenStorage,
         public readonly TestAccessTokenFactory $testAccessTokenFactory,
-        public readonly AccessTokenGeneratorInterface $accessTokenGenerator,
+        public readonly AccessTokenFactoryInterface $accessTokenFactory,
         public readonly AuthSessionRepositoryInterface $authSessionRepository,
         public readonly UlidFactory $ulidFactory,
         public readonly TwoFactorSecretEncryptorInterface $twoFactorSecretEncryptor,

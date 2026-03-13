@@ -6,20 +6,20 @@ namespace App\Tests\Unit\User\Application\EventPublisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Infrastructure\Publisher\TwoFactorPublisher;
-use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
+use App\User\Application\Factory\EventIdFactoryInterface;
 use App\User\Domain\Event\RecoveryCodeUsedEvent;
 use App\User\Domain\Event\TwoFactorCompletedEvent;
 use App\User\Domain\Event\TwoFactorDisabledEvent;
 use App\User\Domain\Event\TwoFactorEnabledEvent;
 use App\User\Domain\Event\TwoFactorFailedEvent;
 use App\User\Domain\Event\UserSignedInEvent;
+use App\User\Infrastructure\Publisher\TwoFactorPublisher;
 use PHPUnit\Framework\MockObject\MockObject;
 
 final class TwoFactorPublisherTest extends UnitTestCase
 {
     private EventBusInterface&MockObject $eventBus;
-    private EventIdGeneratorInterface&MockObject $eventIdGenerator;
+    private EventIdFactoryInterface&MockObject $eventIdFactory;
     private TwoFactorPublisher $publisher;
 
     #[\Override]
@@ -28,10 +28,10 @@ final class TwoFactorPublisherTest extends UnitTestCase
         parent::setUp();
 
         $this->eventBus = $this->createMock(EventBusInterface::class);
-        $this->eventIdGenerator = $this->createMock(EventIdGeneratorInterface::class);
+        $this->eventIdFactory = $this->createMock(EventIdFactoryInterface::class);
         $this->publisher = new TwoFactorPublisher(
             $this->eventBus,
-            $this->eventIdGenerator
+            $this->eventIdFactory
         );
     }
 
@@ -41,7 +41,7 @@ final class TwoFactorPublisherTest extends UnitTestCase
         $email = $this->faker->email();
         $eventId = $this->faker->uuid();
 
-        $this->eventIdGenerator->expects($this->once())
+        $this->eventIdFactory->expects($this->once())
             ->method('generate')
             ->willReturn($eventId);
 
@@ -68,7 +68,7 @@ final class TwoFactorPublisherTest extends UnitTestCase
         $email = $this->faker->email();
         $eventId = $this->faker->uuid();
 
-        $this->eventIdGenerator->expects($this->once())
+        $this->eventIdFactory->expects($this->once())
             ->method('generate')
             ->willReturn($eventId);
 
@@ -98,7 +98,7 @@ final class TwoFactorPublisherTest extends UnitTestCase
         $method = $this->faker->word();
         $eid = $this->faker->uuid();
 
-        $this->eventIdGenerator->method('generate')->willReturn($eid);
+        $this->eventIdFactory->method('generate')->willReturn($eid);
         $events = [];
         $this->capturePublishedEvents(2, $events);
         $this->callCompleted($uid, $sid, $ip, $ua, $method);
@@ -132,7 +132,7 @@ final class TwoFactorPublisherTest extends UnitTestCase
         $reason = $this->faker->sentence();
         $eventId = $this->faker->uuid();
 
-        $this->eventIdGenerator->expects($this->once())
+        $this->eventIdFactory->expects($this->once())
             ->method('generate')
             ->willReturn($eventId);
 
@@ -151,7 +151,7 @@ final class TwoFactorPublisherTest extends UnitTestCase
         $remainingCount = $this->faker->numberBetween(0, 10);
         $eventId = $this->faker->uuid();
 
-        $this->eventIdGenerator->expects($this->once())
+        $this->eventIdFactory->expects($this->once())
             ->method('generate')
             ->willReturn($eventId);
 
@@ -229,7 +229,7 @@ final class TwoFactorPublisherTest extends UnitTestCase
      */
     private function arrangeCompletedFixtures(): array
     {
-        $this->eventIdGenerator->method('generate')
+        $this->eventIdFactory->method('generate')
             ->willReturn($this->faker->uuid());
 
         return [

@@ -8,7 +8,7 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\UpdateUserCommand;
-use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
+use App\User\Application\Factory\EventIdFactoryInterface;
 use App\User\Application\Transformer\PasswordHasherInterface;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Exception\InvalidPasswordException;
@@ -26,7 +26,7 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
         private PasswordHasherInterface $passwordHasher,
         private AuthSessionRepositoryInterface $authSessionRepository,
         private AuthRefreshTokenRepositoryInterface $authRefreshTokenRepository,
-        private EventIdGeneratorInterface $eventIdGenerator,
+        private EventIdFactoryInterface $eventIdFactory,
         private UserRepositoryInterface $userRepository,
         private EmailChangedEventFactoryInterface $emailChangedEventFactory,
         private PasswordChangedEventFactoryInterface $passwordChangedFactory,
@@ -39,7 +39,7 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
         $user = $command->user;
         $this->assertPasswordIsValid($user->getPassword(), $command->updateData->oldPassword);
 
-        $eventId = $this->eventIdGenerator->generate();
+        $eventId = $this->eventIdFactory->generate();
         $events = $this->applyUpdate($command, $eventId);
 
         $finalEvents = $this->appendRevocationEvent($command, $user->getId(), $events, $eventId);

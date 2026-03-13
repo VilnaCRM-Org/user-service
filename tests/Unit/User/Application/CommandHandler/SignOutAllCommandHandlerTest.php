@@ -7,10 +7,10 @@ namespace App\Tests\Unit\User\Application\CommandHandler;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SignOutAllCommand;
 use App\User\Application\CommandHandler\SignOutAllCommandHandler;
-use App\User\Infrastructure\Publisher\SessionPublisherInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
+use App\User\Infrastructure\Publisher\SessionPublisherInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 

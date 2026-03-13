@@ -15,10 +15,10 @@ export default class Utils {
 
   getConfig() {
     try {
-      return JSON.parse(open('../config.json'));
+      return JSON.parse(open('/loadTests/config.json'));
     } catch (error) {
       try {
-        return JSON.parse(open('../config.json.dist'));
+        return JSON.parse(open('/loadTests/config.json.dist'));
       } catch (error) {
         console.log('Error occurred while trying to open config');
       }

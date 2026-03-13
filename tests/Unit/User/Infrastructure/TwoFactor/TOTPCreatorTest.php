@@ -9,90 +9,63 @@ use App\User\Infrastructure\TwoFactor\TOTPCreator;
 
 final class TOTPCreatorTest extends UnitTestCase
 {
-    private const EXPECTED_PERIOD = 30;
-    private const EXPECTED_DIGITS = 6;
-    private const EXPECTED_DIGEST = 'sha1';
-    private const EXPECTED_EPOCH = 0;
     private const EXPECTED_SECRET_LENGTH = 32;
     private const BASE32_PATTERN = '/^[A-Z2-7]+$/';
+    private const OTPAUTH_PATTERN = '/^otpauth:\/\/totp\//';
 
-    public function testCreateSetsCorrectPeriod(): void
+    private TOTPCreator $creator;
+
+    #[\Override]
+    protected function setUp(): void
     {
-        $creator = new TOTPCreator();
-        $totp = $creator->create();
-
-        $this->assertSame(self::EXPECTED_PERIOD, $totp->getPeriod());
+        parent::setUp();
+        $this->creator = new TOTPCreator();
     }
 
-    public function testCreateSetsCorrectDigits(): void
+    public function testCreateReturnsSecretAndOtpauthUri(): void
     {
-        $creator = new TOTPCreator();
-        $totp = $creator->create();
+        $result = $this->creator->create('user@example.com', 'VilnaCRM');
 
-        $this->assertSame(self::EXPECTED_DIGITS, $totp->getDigits());
+        $this->assertArrayHasKey('secret', $result);
+        $this->assertArrayHasKey('otpauth_uri', $result);
     }
 
-    public function testCreateSetsCorrectDigest(): void
+    public function testCreateGeneratesValidBase32Secret(): void
     {
-        $creator = new TOTPCreator();
-        $totp = $creator->create();
+        $result = $this->creator->create('user@example.com', 'VilnaCRM');
 
-        $this->assertSame(self::EXPECTED_DIGEST, $totp->getDigest());
+        $this->assertSame(self::EXPECTED_SECRET_LENGTH, strlen($result['secret']));
+        $this->assertMatchesRegularExpression(self::BASE32_PATTERN, $result['secret']);
     }
 
-    public function testCreateSetsCorrectEpoch(): void
+    public function testCreateIncludesLabelInOtpauthUri(): void
     {
-        $creator = new TOTPCreator();
-        $totp = $creator->create();
+        $label = 'user@example.com';
+        $result = $this->creator->create($label, 'VilnaCRM');
 
-        $this->assertSame(self::EXPECTED_EPOCH, $totp->getEpoch());
+        $this->assertStringContainsString(rawurlencode($label), $result['otpauth_uri']);
     }
 
-    public function testCreateWithProvidedSecretUsesGivenSecret(): void
+    public function testCreateIncludesIssuerInOtpauthUri(): void
     {
-        $secret = 'JBSWY3DPEHPK3PXP';
-        $creator = new TOTPCreator();
-        $totp = $creator->create($secret);
+        $issuer = 'VilnaCRM';
+        $result = $this->creator->create('user@example.com', $issuer);
 
-        $this->assertSame($secret, $totp->getSecret());
+        $this->assertStringContainsString($issuer, $result['otpauth_uri']);
     }
 
-    public function testCreateWithoutSecretGeneratesValidBase32Secret(): void
+    public function testCreateReturnsOtpauthUri(): void
     {
-        $creator = new TOTPCreator();
-        $totp = $creator->create();
+        $result = $this->creator->create('user@example.com', 'VilnaCRM');
 
-        $secret = $totp->getSecret();
-        $this->assertSame(
-            self::EXPECTED_SECRET_LENGTH,
-            strlen($secret)
-        );
-        $this->assertMatchesRegularExpression(
-            self::BASE32_PATTERN,
-            $secret
-        );
+        $this->assertMatchesRegularExpression(self::OTPAUTH_PATTERN, $result['otpauth_uri']);
     }
 
     public function testCreateGeneratesUniqueSecrets(): void
     {
-        $creator = new TOTPCreator();
-        $first = $creator->create();
-        $second = $creator->create();
+        $first = $this->creator->create('user@example.com', 'VilnaCRM');
+        $second = $this->creator->create('user@example.com', 'VilnaCRM');
 
-        $this->assertNotSame(
-            $first->getSecret(),
-            $second->getSecret()
-        );
-    }
-
-    public function testCreateReturnsTOTPWithAllConfiguredProperties(): void
-    {
-        $creator = new TOTPCreator();
-        $totp = $creator->create();
-
-        $this->assertSame(self::EXPECTED_PERIOD, $totp->getPeriod());
-        $this->assertSame(self::EXPECTED_DIGITS, $totp->getDigits());
-        $this->assertSame(self::EXPECTED_DIGEST, $totp->getDigest());
-        $this->assertSame(self::EXPECTED_EPOCH, $totp->getEpoch());
+        $this->assertNotSame($first['secret'], $second['secret']);
     }
 }

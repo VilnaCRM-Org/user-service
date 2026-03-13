@@ -10,14 +10,14 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\CommandHandler\CompleteTwoFactorCommandHandler;
 use App\User\Application\DTO\IssuedSession;
-use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
-use App\User\Application\Factory\SessionIssuerInterface;
+use App\User\Application\Factory\IssuedSessionFactoryInterface;
 use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -27,7 +27,7 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
     private PendingTwoFactorRepositoryInterface&MockObject $pendingTwoFactorRepository;
-    private SessionIssuerInterface&MockObject $sessionIssuer;
+    private IssuedSessionFactoryInterface&MockObject $sessionIssuer;
     private TwoFactorCodeVerifierInterface&MockObject $twoFactorCodeVerifier;
     private TwoFactorPublisherInterface&MockObject $events;
     private UserFactory $userFactory;
@@ -42,7 +42,7 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
         $this->pendingTwoFactorRepository = $this->createMock(
             PendingTwoFactorRepositoryInterface::class
         );
-        $this->sessionIssuer = $this->createMock(SessionIssuerInterface::class);
+        $this->sessionIssuer = $this->createMock(IssuedSessionFactoryInterface::class);
         $this->twoFactorCodeVerifier = $this->createMock(TwoFactorCodeVerifierInterface::class);
         $this->events = $this->createMock(TwoFactorPublisherInterface::class);
         $this->userFactory = new UserFactory();
@@ -265,7 +265,7 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('consumeIfActive')
             ->with($pending->getId(), $this->isInstanceOf(DateTimeImmutable::class))
             ->willReturn(false);
-        $this->sessionIssuer->expects($this->never())->method('issue');
+        $this->sessionIssuer->expects($this->never())->method('create');
         $this->events->expects($this->never())->method('publishCompleted');
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid or expired two-factor session.');
@@ -317,7 +317,7 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
     private function expectIssuedSession(IssuedSession $issued): void
     {
         $this->sessionIssuer->expects($this->once())
-            ->method('issue')
+            ->method('create')
             ->willReturn($issued);
     }
 

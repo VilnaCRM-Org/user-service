@@ -13,7 +13,7 @@ export default class InsertUsersUtils {
   }
 
   loadInsertedUsers() {
-    return JSON.parse(open(`../${this.utils.getConfig()['usersFileName']}`));
+    return JSON.parse(open(`/loadTests/${this.utils.getConfig()['usersFileName']}`));
   }
 
   *usersGenerator(numberOfUsers) {

@@ -9,7 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\DTO\SignInDto;
-use App\User\Application\Factory\AuthCookieProviderInterface;
+use App\User\Application\Factory\AuthCookieFactoryInterface;
 use App\User\Application\Factory\SignInCommandFactoryInterface;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,7 +24,7 @@ final readonly class SignInProcessor implements ProcessorInterface
         private CommandBusInterface $commandBus,
         private SignInCommandFactoryInterface $signInCommandFactory,
         private HttpRequestContextResolverInterface $httpRequestContextResolver,
-        private AuthCookieProviderInterface $authCookieProvider,
+        private AuthCookieFactoryInterface $authCookieFactory,
     ) {
     }
 
@@ -59,8 +59,10 @@ final readonly class SignInProcessor implements ProcessorInterface
 
         if (!$commandResponse->isTwoFactorEnabled()) {
             $accessToken = $commandResponse->getAccessToken();
-            if ($accessToken !== null) {
-                $this->authCookieProvider->attach($response, $accessToken, $data->isRememberMe());
+            if ($accessToken !== null && $accessToken !== '') {
+                $response->headers->setCookie(
+                    $this->authCookieFactory->create($accessToken, $data->isRememberMe())
+                );
             }
         }
 

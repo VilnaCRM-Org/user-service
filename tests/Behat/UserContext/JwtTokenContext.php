@@ -27,7 +27,7 @@ final class JwtTokenContext implements Context
         $payload = $this->createDefaultJwtPayload();
         $payload['iss'] = $issuer;
 
-        $this->state->accessToken = $this->auth->accessTokenGenerator->generate($payload);
+        $this->state->accessToken = $this->auth->accessTokenFactory->create($payload);
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
     }
@@ -40,7 +40,7 @@ final class JwtTokenContext implements Context
         $payload = $this->createDefaultJwtPayload();
         $payload['aud'] = $audience;
 
-        $this->state->accessToken = $this->auth->accessTokenGenerator->generate($payload);
+        $this->state->accessToken = $this->auth->accessTokenFactory->create($payload);
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
     }
@@ -75,7 +75,7 @@ final class JwtTokenContext implements Context
         $payload = $this->createDefaultJwtPayload();
         $payload['exp'] = time() - 1;
 
-        $this->state->accessToken = $this->auth->accessTokenGenerator->generate($payload);
+        $this->state->accessToken = $this->auth->accessTokenFactory->create($payload);
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
     }
@@ -88,7 +88,7 @@ final class JwtTokenContext implements Context
         $payload = $this->createDefaultJwtPayload();
         $payload['nbf'] = time() + 3600;
 
-        $this->state->accessToken = $this->auth->accessTokenGenerator->generate($payload);
+        $this->state->accessToken = $this->auth->accessTokenFactory->create($payload);
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
     }
@@ -135,7 +135,7 @@ final class JwtTokenContext implements Context
         $payload = $this->createDefaultJwtPayload();
         unset($payload[$normalizedClaim]);
 
-        $this->state->accessToken = $this->auth->accessTokenGenerator->generate($payload);
+        $this->state->accessToken = $this->auth->accessTokenFactory->create($payload);
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
     }
@@ -147,7 +147,7 @@ final class JwtTokenContext implements Context
     {
         $payload = $this->createDefaultJwtPayload();
         $signedToken = $this->auth
-            ->accessTokenGenerator->generate($payload);
+            ->accessTokenFactory->create($payload);
         $parts = explode('.', $signedToken);
         if (count($parts) !== 3) {
             throw new \RuntimeException('Could not tamper JWT payload.');
@@ -186,7 +186,7 @@ final class JwtTokenContext implements Context
     public function iHaveABearerTokenWithExtraLeadingSpace(): void
     {
         $this->state->accessToken =
-            ' ' . $this->auth->accessTokenGenerator->generate(
+            ' ' . $this->auth->accessTokenFactory->create(
                 $this->createDefaultJwtPayload()
             );
         $this->state->useAuthCookie = false;
@@ -205,7 +205,7 @@ final class JwtTokenContext implements Context
         $payload[$normalizedClaim] = trim($value, "\"'");
 
         $this->state->accessToken =
-            $this->auth->accessTokenGenerator->generate($payload);
+            $this->auth->accessTokenFactory->create($payload);
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
     }
@@ -249,7 +249,7 @@ final class JwtTokenContext implements Context
         $payload = $this->createDefaultJwtPayload();
         $payload['nbf'] = time();
 
-        $this->state->accessToken = $this->auth->accessTokenGenerator->generate($payload);
+        $this->state->accessToken = $this->auth->accessTokenFactory->create($payload);
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
     }
@@ -262,7 +262,7 @@ final class JwtTokenContext implements Context
         $payload = $this->createDefaultJwtPayload();
         $payload['exp'] = time();
 
-        $this->state->accessToken = $this->auth->accessTokenGenerator->generate($payload);
+        $this->state->accessToken = $this->auth->accessTokenFactory->create($payload);
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
     }

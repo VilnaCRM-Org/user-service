@@ -10,12 +10,12 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\DTO\SignInDto;
-use App\User\Application\Factory\AuthCookieProviderInterface;
+use App\User\Application\Factory\AuthCookieFactoryInterface;
 use App\User\Application\Factory\SignInCommandFactory;
 use App\User\Application\Processor\SignInProcessor;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
@@ -23,7 +23,7 @@ final class SignInProcessorTest extends UnitTestCase
 {
     private CommandBusInterface&MockObject $commandBus;
     private HttpRequestContextResolverInterface&MockObject $requestContextResolver;
-    private AuthCookieProviderInterface&MockObject $cookieProvider;
+    private AuthCookieFactoryInterface&MockObject $cookieFactory;
     private Operation $operation;
 
     #[\Override]
@@ -35,7 +35,7 @@ final class SignInProcessorTest extends UnitTestCase
         $this->requestContextResolver = $this->createMock(
             HttpRequestContextResolverInterface::class
         );
-        $this->cookieProvider = $this->createMock(AuthCookieProviderInterface::class);
+        $this->cookieFactory = $this->createMock(AuthCookieFactoryInterface::class);
         $this->operation = $this->createMock(Operation::class);
     }
 
@@ -48,8 +48,9 @@ final class SignInProcessorTest extends UnitTestCase
         $this->stubResolver($request, $ip, $ua);
         $cmdResponse = new SignInCommandResponse(false, $access, $refresh);
         $this->expectDispatchValidatingCommand($email, $password, $ip, $ua, $cmdResponse);
-        $this->cookieProvider->expects($this->once())->method('attach')
-            ->with($this->isInstanceOf(JsonResponse::class), $access, false);
+        $this->cookieFactory->expects($this->once())->method('create')
+            ->with($access, false)
+            ->willReturn(Cookie::create('__Host-auth_token', $access));
         $response = $this->processWithRequest(new SignInDto($email, $password), $request);
         $this->assertSame(200, $response->getStatusCode());
         $this->assertTokenResponseBody($response, false, $access, $refresh);
@@ -64,8 +65,9 @@ final class SignInProcessorTest extends UnitTestCase
         $accessToken = $this->faker->sha256();
         $cmdResponse = new SignInCommandResponse(false, $accessToken, $this->faker->sha256());
         $this->expectDispatchWithRememberMe($cmdResponse);
-        $this->cookieProvider->expects($this->once())->method('attach')
-            ->with($this->anything(), $accessToken, true);
+        $this->cookieFactory->expects($this->once())->method('create')
+            ->with($accessToken, true)
+            ->willReturn(Cookie::create('__Host-auth_token', $accessToken));
         $response = $this->processWithRequest($dto, $request);
         $this->assertSame(200, $response->getStatusCode());
     }
@@ -78,7 +80,7 @@ final class SignInProcessorTest extends UnitTestCase
         $pendingSessionId = $this->faker->uuid();
         $cmdResponse = new SignInCommandResponse(true, null, null, $pendingSessionId);
         $this->expectDispatchWithResponse($cmdResponse);
-        $this->cookieProvider->expects($this->never())->method('attach');
+        $this->cookieFactory->expects($this->never())->method('create');
         $response = $this->createProcessor()->process(
             $dto,
             $this->operation,
@@ -104,7 +106,7 @@ final class SignInProcessorTest extends UnitTestCase
             $this->faker->uuid()
         );
         $this->expectDispatchWithResponse($cmdResponse);
-        $this->cookieProvider->expects($this->never())->method('attach');
+        $this->cookieFactory->expects($this->never())->method('create');
         $this->createProcessor()->process(
             $dto,
             $this->operation,
@@ -120,7 +122,7 @@ final class SignInProcessorTest extends UnitTestCase
         $dto = new SignInDto($this->faker->email(), $this->faker->password());
         $refreshToken = $this->faker->sha256();
         $this->expectDispatchWithResponse(new SignInCommandResponse(false, null, $refreshToken));
-        $this->cookieProvider->expects($this->never())->method('attach');
+        $this->cookieFactory->expects($this->never())->method('create');
         $response = $this->createProcessor()->process(
             $dto,
             $this->operation,
@@ -143,7 +145,9 @@ final class SignInProcessorTest extends UnitTestCase
         $dto = new SignInDto($this->faker->email(), $this->faker->password());
         $accessToken = $this->faker->sha256();
         $this->expectDispatchWithResponse(new SignInCommandResponse(false, $accessToken, null));
-        $this->cookieProvider->expects($this->once())->method('attach');
+        $this->cookieFactory->expects($this->once())->method('create')
+            ->with($accessToken, false)
+            ->willReturn(Cookie::create('__Host-auth_token', $accessToken));
         $response = $this->createProcessor()->process(
             $dto,
             $this->operation,
@@ -353,7 +357,7 @@ final class SignInProcessorTest extends UnitTestCase
             $this->commandBus,
             new SignInCommandFactory(),
             $this->requestContextResolver,
-            $this->cookieProvider,
+            $this->cookieFactory,
         );
     }
 }

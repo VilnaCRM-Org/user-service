@@ -9,11 +9,11 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SetupTwoFactorCommand;
 use App\User\Application\CommandHandler\SetupTwoFactorCommandHandler;
-use App\User\Application\Factory\Generator\TOTPSecretGeneratorInterface;
 use App\User\Application\Transformer\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Application\Factory\TOTPSecretFactoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -22,7 +22,7 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
     private TwoFactorSecretEncryptorInterface&MockObject $twoFactorSecretEncryptor;
-    private TOTPSecretGeneratorInterface&MockObject $totpSecretGenerator;
+    private TOTPSecretFactoryInterface&MockObject $totpSecretFactory;
     private UserFactory $userFactory;
     private UuidTransformer $uuidTransformer;
 
@@ -34,7 +34,7 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->twoFactorSecretEncryptor =
             $this->createMock(TwoFactorSecretEncryptorInterface::class);
-        $this->totpSecretGenerator = $this->createMock(TOTPSecretGeneratorInterface::class);
+        $this->totpSecretFactory = $this->createMock(TOTPSecretFactoryInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
     }
@@ -61,9 +61,9 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->with($email)
             ->willReturn(null);
-        $this->totpSecretGenerator
+        $this->totpSecretFactory
             ->expects($this->never())
-            ->method('generate');
+            ->method('create');
         $this->twoFactorSecretEncryptor
             ->expects($this->never())
             ->method('encrypt');
@@ -82,9 +82,9 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->with($user->getEmail())
             ->willReturn($user);
-        $this->totpSecretGenerator
+        $this->totpSecretFactory
             ->expects($this->never())
-            ->method('generate');
+            ->method('create');
         $this->twoFactorSecretEncryptor
             ->expects($this->never())
             ->method('encrypt');
@@ -99,7 +99,7 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
         return new SetupTwoFactorCommandHandler(
             $this->userRepository,
             $this->twoFactorSecretEncryptor,
-            $this->totpSecretGenerator,
+            $this->totpSecretFactory,
         );
     }
 
@@ -123,9 +123,9 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
 
     private function expectTotpGeneration(string $email, string $secret, string $otpauthUri): void
     {
-        $this->totpSecretGenerator
+        $this->totpSecretFactory
             ->expects($this->once())
-            ->method('generate')
+            ->method('create')
             ->with($email)
             ->willReturn([
                 'secret' => $secret,

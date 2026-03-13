@@ -6,17 +6,17 @@ namespace App\Tests\Unit\User\Application\EventPublisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Infrastructure\Publisher\SignInPublisher;
-use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
+use App\User\Application\Factory\EventIdFactoryInterface;
 use App\User\Domain\Event\AccountLockedOutEvent;
 use App\User\Domain\Event\SignInFailedEvent;
 use App\User\Domain\Event\UserSignedInEvent;
+use App\User\Infrastructure\Publisher\SignInPublisher;
 use PHPUnit\Framework\MockObject\MockObject;
 
 final class SignInPublisherTest extends UnitTestCase
 {
     private EventBusInterface&MockObject $eventBus;
-    private EventIdGeneratorInterface&MockObject $eventIdGenerator;
+    private EventIdFactoryInterface&MockObject $eventIdFactory;
     private SignInPublisher $publisher;
 
     #[\Override]
@@ -25,10 +25,10 @@ final class SignInPublisherTest extends UnitTestCase
         parent::setUp();
 
         $this->eventBus = $this->createMock(EventBusInterface::class);
-        $this->eventIdGenerator = $this->createMock(EventIdGeneratorInterface::class);
+        $this->eventIdFactory = $this->createMock(EventIdFactoryInterface::class);
         $this->publisher = new SignInPublisher(
             $this->eventBus,
-            $this->eventIdGenerator
+            $this->eventIdFactory
         );
     }
 
@@ -65,7 +65,7 @@ final class SignInPublisherTest extends UnitTestCase
         $userAgent = $this->faker->userAgent();
         $eventId = $this->faker->uuid();
 
-        $this->eventIdGenerator->method('generate')->willReturn($eventId);
+        $this->eventIdFactory->method('generate')->willReturn($eventId);
 
         $this->eventBus->expects($this->once())
             ->method('publish')
@@ -87,7 +87,7 @@ final class SignInPublisherTest extends UnitTestCase
         $userAgent = $this->faker->userAgent();
         $eventId = $this->faker->uuid();
 
-        $this->eventIdGenerator->method('generate')->willReturn($eventId);
+        $this->eventIdFactory->method('generate')->willReturn($eventId);
 
         $this->eventBus->expects($this->once())
             ->method('publish')
@@ -108,7 +108,7 @@ final class SignInPublisherTest extends UnitTestCase
         $reason = $this->faker->sentence();
         $eventId = $this->faker->uuid();
 
-        $this->eventIdGenerator->expects($this->once())
+        $this->eventIdFactory->expects($this->once())
             ->method('generate')->willReturn($eventId);
 
         $this->eventBus->expects($this->once())
@@ -127,7 +127,7 @@ final class SignInPublisherTest extends UnitTestCase
         $lockoutDurationSeconds = $this->faker->numberBetween(60, 3600);
         $eventId = $this->faker->uuid();
 
-        $this->eventIdGenerator->expects($this->once())
+        $this->eventIdFactory->expects($this->once())
             ->method('generate')->willReturn($eventId);
 
         $this->eventBus->expects($this->once())
@@ -164,7 +164,7 @@ final class SignInPublisherTest extends UnitTestCase
 
     private function arrangeEventId(string $eventId): void
     {
-        $this->eventIdGenerator->expects($this->once())
+        $this->eventIdFactory->expects($this->once())
             ->method('generate')->willReturn($eventId);
     }
 

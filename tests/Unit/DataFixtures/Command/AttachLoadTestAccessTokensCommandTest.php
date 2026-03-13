@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\DataFixtures\Command;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Factory\Generator\AccessTokenGeneratorInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Factory\AuthSessionFactory;
 use App\User\Infrastructure\Fixture\Command\AttachLoadTestAccessTokensCommand;
+use App\User\Application\Factory\AccessTokenFactoryInterface;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Console\Command\Command;
@@ -173,7 +173,7 @@ final class AttachLoadTestAccessTokensCommandTest extends UnitTestCase
      * @return array{
      *     command: AttachLoadTestAccessTokensCommand,
      *     documentManager: DocumentManager&MockObject,
-     *     accessTokenGenerator: AccessTokenGeneratorInterface&MockObject
+     *     accessTokenGenerator: AccessTokenFactoryInterface&MockObject
      * }
      */
     private function createDependenciesExpectingPersist(
@@ -210,12 +210,12 @@ final class AttachLoadTestAccessTokensCommandTest extends UnitTestCase
     }
 
     private function expectTokenGeneration(
-        AccessTokenGeneratorInterface&MockObject $accessTokenGenerator,
+        AccessTokenFactoryInterface&MockObject $accessTokenGenerator,
         int $persistCount
     ): void {
         $accessTokenGenerator
             ->expects($this->exactly($persistCount))
-            ->method('generate')
+            ->method('create')
             ->with($this->callback(
                 function (array $claims): bool {
                     $this->assertGreaterThan($claims['iat'], $claims['exp']);
@@ -231,7 +231,7 @@ final class AttachLoadTestAccessTokensCommandTest extends UnitTestCase
 
     private function expectWriteFailureDuringEncoding(
         DocumentManager&MockObject $documentManager,
-        AccessTokenGeneratorInterface&MockObject $accessTokenGenerator
+        AccessTokenFactoryInterface&MockObject $accessTokenGenerator
     ): void {
         $documentManager
             ->expects($this->once())
@@ -242,7 +242,7 @@ final class AttachLoadTestAccessTokensCommandTest extends UnitTestCase
             ->method('flush');
         $accessTokenGenerator
             ->expects($this->once())
-            ->method('generate')
+            ->method('create')
             ->willReturn("\xB1\x31");
     }
 
@@ -280,13 +280,13 @@ final class AttachLoadTestAccessTokensCommandTest extends UnitTestCase
      * @return array{
      *     command: AttachLoadTestAccessTokensCommand,
      *     documentManager: DocumentManager&MockObject,
-     *     accessTokenGenerator: AccessTokenGeneratorInterface&MockObject
+     *     accessTokenGenerator: AccessTokenFactoryInterface&MockObject
      * }
      */
     private function createDependencies(): array
     {
         $documentManager = $this->createMock(DocumentManager::class);
-        $accessTokenGenerator = $this->createMock(AccessTokenGeneratorInterface::class);
+        $accessTokenGenerator = $this->createMock(AccessTokenFactoryInterface::class);
 
         $command = new AttachLoadTestAccessTokensCommand(
             $documentManager,

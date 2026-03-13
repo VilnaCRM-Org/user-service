@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Shared\Auth\Factory;
 
-use App\User\Application\Factory\Generator\AccessTokenGeneratorInterface;
+use App\User\Application\Factory\AccessTokenFactoryInterface;
 use DateTimeImmutable;
 use Symfony\Component\Uid\Factory\UlidFactory;
 use Symfony\Component\Uid\Factory\UuidFactory;
@@ -16,7 +16,7 @@ final readonly class TestAccessTokenFactory
     private const JWT_AUDIENCE = 'vilnacrm-api';
 
     public function __construct(
-        private AccessTokenGeneratorInterface $accessTokenGenerator,
+        private AccessTokenFactoryInterface $accessTokenFactory,
         private UuidFactory $uuidFactory,
         private UlidFactory $ulidFactory,
     ) {
@@ -50,7 +50,7 @@ final readonly class TestAccessTokenFactory
 
         $timestamp = $issuedAt->getTimestamp();
 
-        return $this->accessTokenGenerator->generate([
+        return $this->accessTokenFactory->create([
             'sub' => $subject,
             'iss' => self::JWT_ISSUER,
             'aud' => self::JWT_AUDIENCE,

@@ -10,14 +10,14 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\CommandHandler\CompleteTwoFactorCommandHandler;
 use App\User\Application\DTO\IssuedSession;
-use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
-use App\User\Application\Factory\SessionIssuerInterface;
+use App\User\Application\Factory\IssuedSessionFactoryInterface;
 use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Uid\Ulid;
@@ -26,7 +26,7 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
     private PendingTwoFactorRepositoryInterface&MockObject $pendingTwoFactorRepository;
-    private SessionIssuerInterface&MockObject $sessionIssuer;
+    private IssuedSessionFactoryInterface&MockObject $sessionIssuer;
     private TwoFactorCodeVerifierInterface&MockObject $twoFactorCodeVerifier;
     private TwoFactorPublisherInterface&MockObject $events;
     private UserFactory $userFactory;
@@ -41,7 +41,7 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->pendingTwoFactorRepository = $this->createMock(
             PendingTwoFactorRepositoryInterface::class
         );
-        $this->sessionIssuer = $this->createMock(SessionIssuerInterface::class);
+        $this->sessionIssuer = $this->createMock(IssuedSessionFactoryInterface::class);
         $this->twoFactorCodeVerifier = $this->createMock(TwoFactorCodeVerifierInterface::class);
         $this->events = $this->createMock(TwoFactorPublisherInterface::class);
         $this->userFactory = new UserFactory();
@@ -81,7 +81,7 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->twoFactorCodeVerifier->method('verifyAndResolveMethod')->willReturn('totp');
 
         $issued = new IssuedSession((string) new Ulid(), 'access-token', 'refresh-token');
-        $this->sessionIssuer->method('issue')->willReturn($issued);
+        $this->sessionIssuer->method('create')->willReturn($issued);
 
         $this->pendingTwoFactorRepository->method('consumeIfActive')->willReturn(true);
         $this->events->method('publishCompleted');
@@ -245,7 +245,7 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
     {
         $issued = new IssuedSession((string) new Ulid(), $accessToken, $refreshToken);
         $this->sessionIssuer->expects($this->once())
-            ->method('issue')
+            ->method('create')
             ->willReturn($issued);
     }
 

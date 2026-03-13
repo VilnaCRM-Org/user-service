@@ -7,14 +7,14 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
-use App\User\Infrastructure\Publisher\SessionPublisherInterface;
-use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
-use App\User\Application\Factory\Generator\RecoveryCodeGeneratorInterface;
 use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
+use App\User\Infrastructure\Publisher\SessionPublisherInterface;
+use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
@@ -26,7 +26,7 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
         private UserRepositoryInterface $userRepository,
         private AuthSessionRepositoryInterface $authSessionRepository,
         private TwoFactorCodeVerifierInterface $twoFactorCodeVerifier,
-        private RecoveryCodeGeneratorInterface $recoveryCodeGenerator,
+        private RecoveryCodeBatchFactoryInterface $recoveryCodeBatchFactory,
         private TwoFactorPublisherInterface $events,
         private SessionPublisherInterface $sessionEvents,
     ) {
@@ -40,7 +40,7 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
         $user->enableTwoFactor();
         $this->userRepository->save($user);
 
-        $codes = $this->recoveryCodeGenerator->generateAndStore($user);
+        $codes = $this->recoveryCodeBatchFactory->create($user);
         $revokedCount = $this->revokeOtherSessions($user, $command->currentSessionId);
 
         $command->setResponse(new ConfirmTwoFactorCommandResponse($codes));

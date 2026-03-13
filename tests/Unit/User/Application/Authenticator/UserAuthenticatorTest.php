@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Authenticator;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use App\User\Application\Transformer\PasswordHasherInterface;
 use App\User\Application\Validator\AccountLockoutGuardInterface;
 use App\User\Application\Validator\UserAuthenticator;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\LockedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;

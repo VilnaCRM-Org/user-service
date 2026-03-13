@@ -7,14 +7,14 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\DTO\SignInCommandResponse;
-use App\User\Infrastructure\Publisher\SignInPublisherInterface;
-use App\User\Application\Factory\Generator\IdGeneratorInterface;
-use App\User\Application\Factory\SessionIssuerInterface;
+use App\User\Application\Factory\IssuedSessionFactoryInterface;
 use App\User\Application\Validator\UserAuthenticatorInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactoryInterface;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
+use App\User\Application\Factory\IdFactoryInterface;
+use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use DateTimeImmutable;
 
 /**
@@ -27,11 +27,11 @@ final class SignInCommandHandler implements CommandHandlerInterface
 
     public function __construct(
         private readonly UserAuthenticatorInterface $userAuthenticator,
-        private readonly SessionIssuerInterface $sessionIssuer,
+        private readonly IssuedSessionFactoryInterface $issuedSessionFactory,
         private readonly SignInPublisherInterface $signInPublisher,
         private readonly PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
         private readonly PendingTwoFactorFactoryInterface $pendingTwoFactorFactory,
-        private readonly IdGeneratorInterface $idGenerator,
+        private readonly IdFactoryInterface $idFactory,
         private readonly int $pendingTwoFactorTtlSeconds =
             self::DEFAULT_PENDING_TWO_FACTOR_TTL_SECONDS,
     ) {
@@ -75,7 +75,7 @@ final class SignInCommandHandler implements CommandHandlerInterface
         SignInCommand $command,
         DateTimeImmutable $now
     ): void {
-        $issued = $this->sessionIssuer->issue(
+        $issued = $this->issuedSessionFactory->create(
             $user,
             $command->ipAddress,
             $command->userAgent,
@@ -105,7 +105,7 @@ final class SignInCommandHandler implements CommandHandlerInterface
         bool $rememberMe
     ): PendingTwoFactor {
         $pending = $this->pendingTwoFactorFactory->create(
-            $this->idGenerator->generate(),
+            $this->idFactory->create(),
             $userId,
             $createdAt,
             $createdAt->modify(sprintf('+%d seconds', $this->pendingTwoFactorTtlSeconds))

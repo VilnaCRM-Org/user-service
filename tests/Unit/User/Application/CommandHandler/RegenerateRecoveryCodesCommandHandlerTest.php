@@ -10,7 +10,6 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\CommandHandler\RegenerateRecoveryCodesCommandHandler;
-use App\User\Application\Factory\Generator\RecoveryCodeGeneratorInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
@@ -18,6 +17,7 @@ use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -31,7 +31,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
     private UserRepositoryInterface&MockObject $userRepository;
     private RecoveryCodeRepositoryInterface&MockObject $recoveryCodeRepository;
     private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
-    private RecoveryCodeGeneratorInterface&MockObject $recoveryCodeGenerator;
+    private RecoveryCodeBatchFactoryInterface&MockObject $recoveryCodeBatchFactory;
     private CurrentTimestampProviderInterface&MockObject $currentTimestampProvider;
     private UserFactory $userFactory;
     private UuidTransformer $uuidTransformer;
@@ -44,7 +44,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->recoveryCodeRepository = $this->createMock(RecoveryCodeRepositoryInterface::class);
         $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
-        $this->recoveryCodeGenerator = $this->createMock(RecoveryCodeGeneratorInterface::class);
+        $this->recoveryCodeBatchFactory = $this->createMock(RecoveryCodeBatchFactoryInterface::class);
         $this->currentTimestampProvider = $this->createMock(
             CurrentTimestampProviderInterface::class
         );
@@ -69,8 +69,8 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         $generatedCodes = ['ABCD-1234', 'EFGH-5678', 'IJKL-9012', 'MNOP-3456',
             'QRST-7890', 'UVWX-1234', 'YZAB-5678', 'CDEF-9012',
         ];
-        $this->recoveryCodeGenerator->expects($this->once())
-            ->method('generateAndStore')
+        $this->recoveryCodeBatchFactory->expects($this->once())
+            ->method('create')
             ->with($user)
             ->willReturn($generatedCodes);
 
@@ -154,7 +154,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
             $this->userRepository,
             $this->recoveryCodeRepository,
             $this->authSessionRepository,
-            $this->recoveryCodeGenerator,
+            $this->recoveryCodeBatchFactory,
             $this->currentTimestampProvider,
         );
     }
@@ -248,7 +248,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
             ->with($sessionId)->willReturn($session);
         $this->recoveryCodeRepository->expects($this->once())
             ->method('deleteByUserId')->with($user->getId());
-        $this->recoveryCodeGenerator->method('generateAndStore')
+        $this->recoveryCodeBatchFactory->method('create')
             ->willReturn($this->generatedCodes());
 
         $command = new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId);

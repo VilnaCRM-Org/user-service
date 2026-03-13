@@ -9,7 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
-use App\User\Application\Factory\AuthCookieProviderInterface;
+use App\User\Application\Factory\AuthCookieFactoryInterface;
 use App\User\Application\Factory\CompleteTwoFactorCommandFactoryInterface;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,7 +24,7 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
         private CommandBusInterface $commandBus,
         private CompleteTwoFactorCommandFactoryInterface $completeTwoFactorCommandFactory,
         private HttpRequestContextResolverInterface $httpRequestContextResolver,
-        private AuthCookieProviderInterface $authCookieProvider,
+        private AuthCookieFactoryInterface $authCookieFactory,
     ) {
     }
 
@@ -55,11 +55,15 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
         $commandResponse = $command->getResponse();
 
         $response = new JsonResponse($this->buildResponseBody($commandResponse));
-        $this->authCookieProvider->attach(
-            $response,
-            $commandResponse->getAccessToken(),
-            $commandResponse->isRememberMe()
-        );
+        $accessToken = $commandResponse->getAccessToken();
+        if ($accessToken !== '') {
+            $response->headers->setCookie(
+                $this->authCookieFactory->create(
+                    $accessToken,
+                    $commandResponse->isRememberMe()
+                )
+            );
+        }
 
         return $response;
     }

@@ -8,12 +8,12 @@ use App\Shared\Application\Provider\CurrentTimestampProviderInterface;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\DTO\RegenerateRecoveryCodesCommandResponse;
-use App\User\Application\Factory\Generator\RecoveryCodeGeneratorInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
@@ -28,7 +28,7 @@ final readonly class RegenerateRecoveryCodesCommandHandler implements CommandHan
         private UserRepositoryInterface $userRepository,
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
         private AuthSessionRepositoryInterface $authSessionRepository,
-        private RecoveryCodeGeneratorInterface $recoveryCodeGenerator,
+        private RecoveryCodeBatchFactoryInterface $recoveryCodeBatchFactory,
         private CurrentTimestampProviderInterface $currentTimestampProvider,
     ) {
     }
@@ -39,7 +39,7 @@ final readonly class RegenerateRecoveryCodesCommandHandler implements CommandHan
         $this->verifySudoMode($command->currentSessionId);
 
         $this->recoveryCodeRepository->deleteByUserId($user->getId());
-        $codes = $this->recoveryCodeGenerator->generateAndStore($user);
+        $codes = $this->recoveryCodeBatchFactory->create($user);
 
         $command->setResponse(new RegenerateRecoveryCodesCommandResponse($codes));
     }

@@ -11,24 +11,24 @@ use App\Tests\Unit\User\Application\CommandHandler\Fixture\RecordingPendingTwoFa
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\CommandHandler\SignInCommandHandler;
 use App\User\Application\DTO\IssuedSession;
-use App\User\Infrastructure\Publisher\SignInPublisherInterface;
-use App\User\Application\Factory\Generator\IdGeneratorInterface;
-use App\User\Application\Factory\SessionIssuerInterface;
+use App\User\Application\Factory\IssuedSessionFactoryInterface;
 use App\User\Application\Validator\UserAuthenticatorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactory;
 use App\User\Domain\Factory\UserFactory;
+use App\User\Application\Factory\IdFactoryInterface;
+use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Uid\Ulid;
 
 abstract class SignInCommandHandlerTestCase extends UnitTestCase
 {
     protected UserAuthenticatorInterface&MockObject $userAuthenticator;
-    protected SessionIssuerInterface&MockObject $sessionIssuer;
+    protected IssuedSessionFactoryInterface&MockObject $sessionIssuer;
     protected SignInPublisherInterface&MockObject $signInPublisher;
     protected RecordingPendingTwoFactorRepository $pendingTwoFactorRepository;
     protected PendingTwoFactorFactory $pendingTwoFactorFactory;
-    protected IdGeneratorInterface&MockObject $idGenerator;
+    protected IdFactoryInterface&MockObject $idFactory;
     protected UserFactory $userFactory;
     protected UuidTransformer $uuidTransformer;
 
@@ -38,20 +38,20 @@ abstract class SignInCommandHandlerTestCase extends UnitTestCase
         parent::setUp();
 
         $this->userAuthenticator = $this->createMock(UserAuthenticatorInterface::class);
-        $this->sessionIssuer = $this->createMock(SessionIssuerInterface::class);
+        $this->sessionIssuer = $this->createMock(IssuedSessionFactoryInterface::class);
         $this->signInPublisher = $this->createMock(SignInPublisherInterface::class);
         $this->pendingTwoFactorRepository = new RecordingPendingTwoFactorRepository();
         $this->pendingTwoFactorFactory = new PendingTwoFactorFactory();
-        $this->idGenerator = $this->createMock(IdGeneratorInterface::class);
+        $this->idFactory = $this->createMock(IdFactoryInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
 
-        $this->configureDefaultSessionIssuer();
+        $this->configureDefaultIssuedSessionFactory();
     }
 
-    protected function configureDefaultSessionIssuer(): void
+    protected function configureDefaultIssuedSessionFactory(): void
     {
-        $this->sessionIssuer->method('issue')
+        $this->sessionIssuer->method('create')
             ->willReturn(new IssuedSession(
                 (string) new Ulid(),
                 'issued-access-token',
@@ -67,7 +67,7 @@ abstract class SignInCommandHandlerTestCase extends UnitTestCase
             $this->signInPublisher,
             $this->pendingTwoFactorRepository,
             $this->pendingTwoFactorFactory,
-            $this->idGenerator,
+            $this->idFactory,
         );
     }
 

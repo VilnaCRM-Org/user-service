@@ -263,8 +263,8 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
             ->willReturn($sessionTokens);
         $this->refreshTokenRepository->expects($this->once())->method('save');
         $this->configureTokenRotationFactories();
-        $this->accessTokenGenerator->expects($this->once())
-            ->method('generate')->willReturn('test-access-token');
+        $this->accessTokenFactory->expects($this->once())
+            ->method('create')->willReturn('test-access-token');
         $this->expectRotatedEventPublished($session, $user);
     }
 
@@ -351,7 +351,7 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
     ): void {
         $eventId = $this->faker->uuid();
 
-        $this->eventIdGenerator
+        $this->eventIdFactory
             ->expects($this->once())
             ->method('generate')
             ->willReturn($eventId);

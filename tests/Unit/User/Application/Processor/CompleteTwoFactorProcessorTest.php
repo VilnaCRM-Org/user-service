@@ -10,18 +10,19 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
-use App\User\Application\Factory\AuthCookieProviderInterface;
+use App\User\Application\Factory\AuthCookieFactoryInterface;
 use App\User\Application\Factory\CompleteTwoFactorCommandFactory;
 use App\User\Application\Processor\CompleteTwoFactorProcessor;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 
 final class CompleteTwoFactorProcessorTest extends UnitTestCase
 {
     private CommandBusInterface&MockObject $commandBus;
     private HttpRequestContextResolverInterface&MockObject $requestContextResolver;
-    private AuthCookieProviderInterface&MockObject $cookieProvider;
+    private AuthCookieFactoryInterface&MockObject $cookieFactory;
     private Operation $operation;
 
     #[\Override]
@@ -33,7 +34,7 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
         $this->requestContextResolver = $this->createMock(
             HttpRequestContextResolverInterface::class
         );
-        $this->cookieProvider = $this->createMock(AuthCookieProviderInterface::class);
+        $this->cookieFactory = $this->createMock(AuthCookieFactoryInterface::class);
         $this->operation = $this->createMock(Operation::class);
     }
 
@@ -52,8 +53,9 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
             $accessToken,
             $refreshToken
         );
-        $this->cookieProvider->expects($this->once())->method('attach')
-            ->with($this->anything(), $accessToken, false);
+        $this->cookieFactory->expects($this->once())->method('create')
+            ->with($accessToken, false)
+            ->willReturn(Cookie::create('__Host-auth_token', $accessToken));
         $response = $this->processDto($dto, $request);
         $this->assertSame(200, $response->getStatusCode());
         $this->assertExpectedTokensInResponse($response, $accessToken, $refreshToken);
@@ -73,13 +75,14 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
             $this->faker->sha256()
         ))->withRememberMe();
         $this->expectDispatchSetsResponse($commandResponse);
-        $this->cookieProvider->expects($this->once())->method('attach')
-            ->with($this->anything(), $accessToken, true);
+        $this->cookieFactory->expects($this->once())->method('create')
+            ->with($accessToken, true)
+            ->willReturn(Cookie::create('__Host-auth_token', $accessToken));
         $response = $this->processDto($dto, $request);
         $this->assertSame(200, $response->getStatusCode());
     }
 
-    public function testProcessAttachesCookieWithEmptyAccessToken(): void
+    public function testProcessDoesNotCreateCookieWhenAccessTokenIsEmpty(): void
     {
         $request = $this->createMock(Request::class);
         $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
@@ -93,8 +96,7 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
                 $this->faker->sha256()
             )
         );
-        $this->cookieProvider->expects($this->once())->method('attach')
-            ->with($this->anything(), '', false);
+        $this->cookieFactory->expects($this->never())->method('create');
         $response = $this->processDto($dto, $request);
         $this->assertSame(200, $response->getStatusCode());
     }
@@ -278,7 +280,7 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
             $this->commandBus,
             new CompleteTwoFactorCommandFactory(),
             $this->requestContextResolver,
-            $this->cookieProvider,
+            $this->cookieFactory,
         );
         if ($request !== null) {
             return $processor->process($dto, $this->operation, [], ['request' => $request]);

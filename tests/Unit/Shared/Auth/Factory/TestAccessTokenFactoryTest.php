@@ -6,7 +6,7 @@ namespace App\Tests\Unit\Shared\Auth\Factory;
 
 use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Factory\Generator\AccessTokenGeneratorInterface;
+use App\User\Application\Factory\AccessTokenFactoryInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Uid\Factory\UlidFactory;
@@ -81,8 +81,8 @@ final class TestAccessTokenFactoryTest extends UnitTestCase
         callable $assertion,
         string $returnValue
     ): MockObject {
-        $generator = $this->createMock(AccessTokenGeneratorInterface::class);
-        $generator->expects($this->once())->method('generate')
+        $generator = $this->createMock(AccessTokenFactoryInterface::class);
+        $generator->expects($this->once())->method('create')
             ->with($this->callback($assertion))->willReturn($returnValue);
         return $generator;
     }

@@ -6,9 +6,9 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\SignOutAllCommand;
-use App\User\Infrastructure\Publisher\SessionPublisherInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
+use App\User\Infrastructure\Publisher\SessionPublisherInterface;
 
 /**
  * @implements CommandHandlerInterface<SignOutAllCommand, void>

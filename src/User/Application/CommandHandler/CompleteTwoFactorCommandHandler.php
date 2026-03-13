@@ -8,13 +8,13 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\IssuedSession;
-use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
-use App\User\Application\Factory\SessionIssuerInterface;
+use App\User\Application\Factory\IssuedSessionFactoryInterface;
 use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
 use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
@@ -28,7 +28,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
-        private SessionIssuerInterface $sessionIssuer,
+        private IssuedSessionFactoryInterface $issuedSessionFactory,
         private TwoFactorCodeVerifierInterface $twoFactorCodeVerifier,
         private TwoFactorPublisherInterface $events,
     ) {
@@ -79,7 +79,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         string $userAgent,
         bool $rememberMe
     ): IssuedSession {
-        return $this->sessionIssuer->issue(
+        return $this->issuedSessionFactory->create(
             $user,
             $ipAddress,
             $userAgent,

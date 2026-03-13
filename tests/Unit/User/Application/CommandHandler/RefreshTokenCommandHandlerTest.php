@@ -135,7 +135,7 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
         $this->expectUserLookup($user);
         $this->refreshTokenRepository->expects($this->never())->method('save');
         $this->eventBus->expects($this->never())->method('publish');
-        $this->eventIdGenerator->expects($this->never())->method('generate');
+        $this->eventIdFactory->expects($this->never())->method('generate');
         $this->expectInvalidTokenException();
         $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
     }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\TwoFactor;
 
+use App\User\Infrastructure\Factory\TOTPCreatorInterface;
 use OTPHP\TOTP;
-use OTPHP\TOTPInterface;
 
 final class TOTPCreator implements TOTPCreatorInterface
 {
@@ -16,16 +16,24 @@ final class TOTPCreator implements TOTPCreatorInterface
     private const DEFAULT_DIGITS = 6;
     private const DEFAULT_EPOCH = 0;
 
+    /**
+     * @return array{secret: string, otpauth_uri: string}
+     */
     #[\Override]
-    public function create(?string $secret = null): TOTPInterface
+    public function create(string $label, string $issuer): array
     {
-        $totp = new TOTP($secret ?? $this->generateSecret());
+        $totp = new TOTP($this->generateSecret());
         $totp->setPeriod(self::DEFAULT_PERIOD);
         $totp->setDigest(self::DEFAULT_DIGEST);
         $totp->setDigits(self::DEFAULT_DIGITS);
         $totp->setEpoch(self::DEFAULT_EPOCH);
+        $totp->setLabel($label);
+        $totp->setIssuer($issuer);
 
-        return $totp;
+        return [
+            'secret' => $totp->getSecret(),
+            'otpauth_uri' => $totp->getProvisioningUri(),
+        ];
     }
 
     private function generateSecret(): string

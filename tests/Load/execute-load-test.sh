@@ -50,4 +50,7 @@ if [[ $scenario != "createUser" && $scenario != "graphQLCreateUser" && $scenario
   docker compose exec -T php bin/console app:load-test:attach-access-tokens
 fi
 
-eval "$K6" "/loadTests/scripts/${scenario}.js" -e run_smoke="${runSmoke}" -e run_average="${runAverage}" -e run_stress="${runStress}" -e run_spike="${runSpike}" -e serviceToken="${serviceToken}"
+scriptFile=$(find ./tests/Load/scripts -name "${scenario}.js" | head -1)
+scriptRelPath="${scriptFile#./tests/Load/}"
+
+eval "$K6" "/loadTests/${scriptRelPath}" -e run_smoke="${runSmoke}" -e run_average="${runAverage}" -e run_stress="${runStress}" -e run_spike="${runSpike}" -e serviceToken="${serviceToken}"

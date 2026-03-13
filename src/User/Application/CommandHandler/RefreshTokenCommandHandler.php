@@ -8,8 +8,7 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\RefreshTokenCommand;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
-use App\User\Application\Factory\Generator\AccessTokenGeneratorInterface;
-use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
+use App\User\Application\Factory\EventIdFactoryInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
@@ -18,6 +17,7 @@ use App\User\Domain\Event\RefreshTokenTheftDetectedEvent;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Application\Factory\AccessTokenFactoryInterface;
 use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
@@ -30,10 +30,10 @@ final readonly class RefreshTokenCommandHandler implements
         private AuthRefreshTokenRepositoryInterface $refreshTokenRepository,
         private AuthSessionRepositoryInterface $authSessionRepository,
         private UserRepositoryInterface $userRepository,
-        private AccessTokenGeneratorInterface $accessTokenGenerator,
+        private AccessTokenFactoryInterface $accessTokenFactory,
         private AuthTokenFactoryInterface $authTokenFactory,
         private EventBusInterface $eventBus,
-        private EventIdGeneratorInterface $eventIdGenerator,
+        private EventIdFactoryInterface $eventIdFactory,
         private int $refreshTokenGraceWindowSeconds = self::DEFAULT_GRACE_WINDOW_SECONDS,
     ) {
     }
@@ -203,7 +203,7 @@ final readonly class RefreshTokenCommandHandler implements
             $user->getId(),
             $session->getIpAddress(),
             $reason,
-            $this->eventIdGenerator->generate()
+            $this->eventIdFactory->generate()
         ));
 
         $this->throwUnauthorized();
@@ -358,7 +358,7 @@ final readonly class RefreshTokenCommandHandler implements
             )
         );
 
-        $accessToken = $this->accessTokenGenerator->generate(
+        $accessToken = $this->accessTokenFactory->create(
             $this->authTokenFactory->buildJwtPayload($user, $session->getId(), $issuedAt)
         );
 
@@ -424,7 +424,7 @@ final readonly class RefreshTokenCommandHandler implements
         $this->eventBus->publish(new RefreshTokenRotatedEvent(
             $session->getId(),
             $user->getId(),
-            $this->eventIdGenerator->generate()
+            $this->eventIdFactory->generate()
         ));
     }
 

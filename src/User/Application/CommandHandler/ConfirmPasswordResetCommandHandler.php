@@ -7,8 +7,6 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
-use App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisherInterface;
-use App\User\Infrastructure\Publisher\SessionPublisherInterface;
 use App\User\Application\Transformer\PasswordHasherInterface;
 use App\User\Application\Validator\AccountLockoutGuardInterface;
 use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
@@ -19,6 +17,8 @@ use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisherInterface;
+use App\User\Infrastructure\Publisher\SessionPublisherInterface;
 
 final readonly class ConfirmPasswordResetCommandHandler implements
     CommandHandlerInterface

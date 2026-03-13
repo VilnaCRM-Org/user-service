@@ -19,9 +19,9 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
             ->willReturn($user);
 
         $pendingSid = (string) Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB2');
-        $this->idGenerator->expects($this->once())->method('generate')->willReturn($pendingSid);
+        $this->idFactory->expects($this->once())->method('create')->willReturn($pendingSid);
 
-        $this->sessionIssuer->expects($this->never())->method('issue');
+        $this->sessionIssuer->expects($this->never())->method('create');
         $this->signInPublisher->expects($this->never())->method('publishSignedIn');
 
         $command = new SignInCommand($email, $pw, false, $ip, $ua);
@@ -44,7 +44,7 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
             ->willReturn($user);
 
         $pendingSid = (string) Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB3');
-        $this->idGenerator->method('generate')->willReturn($pendingSid);
+        $this->idFactory->method('create')->willReturn($pendingSid);
 
         $command = new SignInCommand($email, $pw, true, $ip, $ua);
         $this->createHandler()->__invoke($command);
@@ -65,7 +65,7 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
             ->willReturn($user);
 
         $pendingSid = (string) Ulid::fromString('01ARZ3NDEKTSV4RRFFQ69G5FB5');
-        $this->idGenerator->method('generate')->willReturn($pendingSid);
+        $this->idFactory->method('create')->willReturn($pendingSid);
 
         $handler = $this->createHandler();
 

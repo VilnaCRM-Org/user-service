@@ -14,15 +14,19 @@ final readonly class AuthCookieFactory implements AuthCookieFactoryInterface
 {
     public const COOKIE_NAME = '__Host-auth_token';
 
+    public function __construct(
+        private int $standardCookieMaxAge = 900,
+        private int $rememberMeCookieMaxAge = 2592000,
+    ) {
+    }
+
     #[\Override]
     public function create(
         string $token,
-        bool $rememberMe,
-        int $standardMaxAge,
-        int $rememberMeMaxAge,
-        DateTimeImmutable $now
+        bool $rememberMe
     ): Cookie {
-        $maxAge = $rememberMe ? $rememberMeMaxAge : $standardMaxAge;
+        $maxAge = $rememberMe ? $this->rememberMeCookieMaxAge : $this->standardCookieMaxAge;
+        $now = new DateTimeImmutable();
 
         return Cookie::create(
             self::COOKIE_NAME,

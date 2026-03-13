@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Publisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
-use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
+use App\User\Application\Factory\EventIdFactoryInterface;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Event\SessionRevokedEvent;
 
@@ -16,7 +16,7 @@ final readonly class SessionPublisher implements SessionPublisherInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,
-        private EventIdGeneratorInterface $eventIdGenerator,
+        private EventIdFactoryInterface $eventIdFactory,
     ) {
     }
 
@@ -30,7 +30,7 @@ final readonly class SessionPublisher implements SessionPublisherInterface
             $userId,
             $sessionId,
             $reason,
-            $this->eventIdGenerator->generate()
+            $this->eventIdFactory->generate()
         ));
     }
 
@@ -44,7 +44,7 @@ final readonly class SessionPublisher implements SessionPublisherInterface
             $userId,
             $reason,
             $revokedCount,
-            $this->eventIdGenerator->generate()
+            $this->eventIdFactory->generate()
         ));
     }
 }

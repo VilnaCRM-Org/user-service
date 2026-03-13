@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Publisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
-use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
+use App\User\Application\Factory\EventIdFactoryInterface;
 use App\User\Domain\Event\RecoveryCodeUsedEvent;
 use App\User\Domain\Event\TwoFactorCompletedEvent;
 use App\User\Domain\Event\TwoFactorDisabledEvent;
@@ -17,7 +17,7 @@ final readonly class TwoFactorPublisher implements TwoFactorPublisherInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,
-        private EventIdGeneratorInterface $eventIdGenerator,
+        private EventIdFactoryInterface $eventIdFactory,
     ) {
     }
 
@@ -27,7 +27,7 @@ final readonly class TwoFactorPublisher implements TwoFactorPublisherInterface
         $this->eventBus->publish(new TwoFactorEnabledEvent(
             $userId,
             $email,
-            $this->eventIdGenerator->generate()
+            $this->eventIdFactory->generate()
         ));
     }
 
@@ -37,7 +37,7 @@ final readonly class TwoFactorPublisher implements TwoFactorPublisherInterface
         $this->eventBus->publish(new TwoFactorDisabledEvent(
             $userId,
             $email,
-            $this->eventIdGenerator->generate()
+            $this->eventIdFactory->generate()
         ));
     }
 
@@ -56,7 +56,7 @@ final readonly class TwoFactorPublisher implements TwoFactorPublisherInterface
             $ipAddress,
             $userAgent,
             (string) $verificationMethod,
-            $this->eventIdGenerator->generate()
+            $this->eventIdFactory->generate()
         ));
         $this->eventBus->publish(new UserSignedInEvent(
             $userId,
@@ -65,7 +65,7 @@ final readonly class TwoFactorPublisher implements TwoFactorPublisherInterface
             $ipAddress,
             $userAgent,
             true,
-            $this->eventIdGenerator->generate()
+            $this->eventIdFactory->generate()
         ));
     }
 
@@ -79,7 +79,7 @@ final readonly class TwoFactorPublisher implements TwoFactorPublisherInterface
             $pendingSessionId,
             $ipAddress,
             $reason,
-            $this->eventIdGenerator->generate()
+            $this->eventIdFactory->generate()
         ));
     }
 
@@ -89,7 +89,7 @@ final readonly class TwoFactorPublisher implements TwoFactorPublisherInterface
         $this->eventBus->publish(new RecoveryCodeUsedEvent(
             $userId,
             $remainingCount,
-            $this->eventIdGenerator->generate()
+            $this->eventIdFactory->generate()
         ));
     }
 }

@@ -6,7 +6,6 @@ namespace App\Tests\Unit\User\Application\Factory;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Factory\AuthCookieFactory;
-use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Cookie;
 
 final class AuthCookieFactoryTest extends UnitTestCase
@@ -23,8 +22,7 @@ final class AuthCookieFactoryTest extends UnitTestCase
 
     public function testCreateReturnsCookieWithCorrectName(): void
     {
-        $now = new DateTimeImmutable();
-        $cookie = $this->factory->create($this->faker->sha256(), false, 900, 2592000, $now);
+        $cookie = $this->factory->create($this->faker->sha256(), false);
 
         $this->assertSame(AuthCookieFactory::COOKIE_NAME, $cookie->getName());
     }
@@ -32,16 +30,14 @@ final class AuthCookieFactoryTest extends UnitTestCase
     public function testCreateReturnsCookieWithCorrectToken(): void
     {
         $token = $this->faker->sha256();
-        $now = new DateTimeImmutable();
-        $cookie = $this->factory->create($token, false, 900, 2592000, $now);
+        $cookie = $this->factory->create($token, false);
 
         $this->assertSame($token, $cookie->getValue());
     }
 
     public function testCreateReturnsCookieWithSecureAttributes(): void
     {
-        $now = new DateTimeImmutable();
-        $cookie = $this->factory->create($this->faker->sha256(), false, 900, 2592000, $now);
+        $cookie = $this->factory->create($this->faker->sha256(), false);
 
         $this->assertSame('/', $cookie->getPath());
         $this->assertTrue($cookie->isSecure());
@@ -51,8 +47,7 @@ final class AuthCookieFactoryTest extends UnitTestCase
 
     public function testCreateUsesStandardMaxAgeWhenRememberMeIsFalse(): void
     {
-        $now = new DateTimeImmutable();
-        $cookie = $this->factory->create($this->faker->sha256(), false, 900, 2592000, $now);
+        $cookie = $this->factory->create($this->faker->sha256(), false);
 
         $this->assertGreaterThanOrEqual(899, $cookie->getMaxAge());
         $this->assertLessThanOrEqual(900, $cookie->getMaxAge());
@@ -60,8 +55,7 @@ final class AuthCookieFactoryTest extends UnitTestCase
 
     public function testCreateUsesRememberMeMaxAgeWhenRememberMeIsTrue(): void
     {
-        $now = new DateTimeImmutable();
-        $cookie = $this->factory->create($this->faker->sha256(), true, 900, 2592000, $now);
+        $cookie = $this->factory->create($this->faker->sha256(), true);
 
         $this->assertGreaterThanOrEqual(2591999, $cookie->getMaxAge());
         $this->assertLessThanOrEqual(2592000, $cookie->getMaxAge());

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Publisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
-use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
+use App\User\Application\Factory\EventIdFactoryInterface;
 use App\User\Domain\Event\AccountLockedOutEvent;
 use App\User\Domain\Event\SignInFailedEvent;
 use App\User\Domain\Event\UserSignedInEvent;
@@ -14,7 +14,7 @@ final readonly class SignInPublisher implements SignInPublisherInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,
-        private EventIdGeneratorInterface $eventIdGenerator,
+        private EventIdFactoryInterface $eventIdFactory,
     ) {
     }
 
@@ -34,7 +34,7 @@ final readonly class SignInPublisher implements SignInPublisherInterface
             $ipAddress,
             $userAgent,
             $twoFactorUsed,
-            $this->eventIdGenerator->generate()
+            $this->eventIdFactory->generate()
         ));
     }
 
@@ -50,7 +50,7 @@ final readonly class SignInPublisher implements SignInPublisherInterface
             $ipAddress,
             $userAgent,
             $reason,
-            $this->eventIdGenerator->generate()
+            $this->eventIdFactory->generate()
         ));
     }
 
@@ -64,7 +64,7 @@ final readonly class SignInPublisher implements SignInPublisherInterface
             $email,
             $failedAttempts,
             $lockoutDurationSeconds,
-            $this->eventIdGenerator->generate()
+            $this->eventIdFactory->generate()
         ));
     }
 }

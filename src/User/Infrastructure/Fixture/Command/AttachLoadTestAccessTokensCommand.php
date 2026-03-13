@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Fixture\Command;
 
-use App\User\Application\Factory\Generator\AccessTokenGeneratorInterface;
 use App\User\Domain\Factory\AuthSessionFactoryInterface;
+use App\User\Application\Factory\AccessTokenFactoryInterface;
 use DateTimeImmutable;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -36,7 +36,7 @@ final class AttachLoadTestAccessTokensCommand extends Command
 
     public function __construct(
         private readonly DocumentManager $documentManager,
-        private readonly AccessTokenGeneratorInterface $accessTokenGenerator,
+        private readonly AccessTokenFactoryInterface $accessTokenFactory,
         private readonly AuthSessionFactoryInterface $authSessionFactory,
         private readonly UlidFactory $ulidFactory,
         private readonly UuidFactory $uuidFactory,
@@ -160,7 +160,7 @@ final class AttachLoadTestAccessTokensCommand extends Command
     ): string {
         $issuedAt = $now->getTimestamp();
 
-        return $this->accessTokenGenerator->generate([
+        return $this->accessTokenFactory->create([
             'sub' => $userEmail,
             'iss' => self::JWT_ISSUER,
             'aud' => self::JWT_AUDIENCE,
